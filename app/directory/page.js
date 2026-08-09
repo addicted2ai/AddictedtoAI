@@ -8,9 +8,9 @@ const categories = [
         description: "Anthropic's assistant, strong at writing and reasoning.",
       },
       {
-        href: "https://gemini.google.com",
-        name: "Gemini",
-        description: "Google's multimodal assistant, built into Workspace.",
+        href: "https://you.com",
+        name: "You.com",
+        description: "AI search assistant with cited, up-to-date answers.",
       },
       {
         href: "https://huggingface.co/chat",

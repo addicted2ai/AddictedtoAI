@@ -40,11 +40,16 @@ Returning-visitor rate (site-wide).
   (`target="_blank"`) so browsing the directory doesn't cost the
   session. Added matching `tool-category`/`tool-grid`/`tool-card` styles
   to `app/globals.css`. (PR #2)
-- Guardrails: pass (local `next build` clean; all 12 outbound links plus
-  every existing internal link verified 200 with a local link check
-  against the production build before opening the PR — one candidate,
-  Notion, was dropped after it came back 403 from bot protection and
-  was swapped for Zapier)
+- Guardrails: pass after one round-trip through CI (local `next build`
+  clean; all 12 outbound links plus every existing internal link
+  verified 200 with a local link check against the production build
+  before opening the PR — one candidate, Notion, was dropped locally
+  after it came back 403 from bot protection and was swapped for
+  Zapier). The actual CI Lychee run then failed on Gemini
+  (`gemini.google.com`) with an HTTP/2 protocol error — a known lychee
+  quirk on Google-fronted domains that a local link check couldn't
+  reproduce (curl and Node-based checkers negotiate HTTP/2 differently
+  and don't trip it). Swapped Gemini for You.com and re-pushed.
 - Result (measured the following week): not yet measured
 
 ### 2026-08-09
