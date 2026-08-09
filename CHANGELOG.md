@@ -15,7 +15,14 @@ Returning-visitor rate (site-wide).
 - Demos: completion rate, repeat-use rate, session length
 
 ## Guardrails (never regress these)
-- Lighthouse performance / accessibility / SEO: all >= 0.85
+- Lighthouse: performance >= 0.80, accessibility / SEO >= 0.85 —
+  each asserted against the median of 3 runs (see `lighthouserc.json`).
+  Performance's floor was lowered from 0.85 and runs went from 1 to 3
+  with median scoring on 2026-08-09 after single-run performance scores
+  proved too noisy on shared CI hardware to gate on reliably (the same
+  untouched homepage scored 0.83 then 0.74 back to back). Accessibility
+  and SEO are static-analysis checks, not timing-based, so they weren't
+  the noisy ones and stayed at 0.85.
 - Zero net-new broken links
 - No failed deploy / rollback
 
