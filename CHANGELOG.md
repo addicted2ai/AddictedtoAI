@@ -46,7 +46,7 @@ Returning-visitor rate (site-wide).
   Added matching `finder`/`finder-option`/`finder-result` styles to
   `app/globals.css`. No new external links: the tool-card recommendations
   only render after a click, so they never appear in the static HTML
-  the guardrail crawls. (PR #TBD)
+  the guardrail crawls. (PR #3)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes — the
   Demos page's static HTML has zero new outbound links, only the
