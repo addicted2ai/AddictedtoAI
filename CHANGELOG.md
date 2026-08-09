@@ -52,7 +52,7 @@ Returning-visitor rate (site-wide).
   `page.js` for both is now a plain server component that exports
   metadata and renders the extracted client component — the officially
   documented pattern for this exact situation. No behavior changes to
-  either interactive feature. (PR #TBD)
+  either interactive feature. (PR #8)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes; manually
   verified each route's rendered `<title>` and meta description are
