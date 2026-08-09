@@ -39,7 +39,7 @@ Returning-visitor rate (site-wide).
   & Data), each an outbound link opened in a new tab
   (`target="_blank"`) so browsing the directory doesn't cost the
   session. Added matching `tool-category`/`tool-grid`/`tool-card` styles
-  to `app/globals.css`. (PR #TBD)
+  to `app/globals.css`. (PR #2)
 - Guardrails: pass (local `next build` clean; all 12 outbound links plus
   every existing internal link verified 200 with a local link check
   against the production build before opening the PR — one candidate,
