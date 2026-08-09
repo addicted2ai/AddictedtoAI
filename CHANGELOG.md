@@ -48,7 +48,7 @@ Returning-visitor rate (site-wide).
   (there's no post collection/CMS to generalize from yet — revisit
   this if a second post ships). Added `latest-post`/`latest-post-label`/
   `latest-post-link` styles to `app/globals.css`, matching the existing
-  `section-card` look. (PR #TBD)
+  `section-card` look. (PR #11)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes — no new
   unique links, just a second homepage path to the already-checked
