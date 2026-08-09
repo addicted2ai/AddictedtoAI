@@ -31,6 +31,33 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The Directory search box tells visitors they can
+  "Search tools by name or category..." — but the filter only ever
+  looked at each tool's name and description, never its category
+  name. The promise in the placeholder is simply not implemented.
+  Measured before touching anything: of the eight most obvious
+  category-shaped queries, five (`coding`, `image`, `assistants`,
+  `data`, `audio`) returned *zero* results and two more returned
+  partial results that happened to match on description text alone.
+  A visitor who types the exact word the UI invited them to type and
+  gets an empty page is the worst possible outcome for Directory's
+  "on-site search usage" metric — it teaches them the search box
+  doesn't work.
+- Change: `matches()` in `app/directory/DirectorySearch.js` now
+  includes the category name in the haystack alongside name and
+  description, so a category query returns every tool in that
+  category. One-line-scope fix: no new UI, no data changes, no new
+  CSS — the placeholder's existing promise now just holds. (PR #22)
+- Guardrails: pass (local `next build` clean, `/directory` chunk
+  1.31 kB → 1.32 kB; local link check with `linkinator` against the
+  production build for all 5 routes, 29 links, zero failures; the fix
+  verified end-to-end in a real browser with Puppeteer — all four
+  category names now return their full 3-tool category, the name
+  query `claude` still returns exactly 1, and a nonsense query still
+  correctly shows the no-results state)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: When a Directory search has no matches, the only way
   back to the full list is manually deleting the typed text — a small
   but real dead end in the exact feature built two rounds ago to give
