@@ -75,6 +75,10 @@ a { color: inherit; }
 
 .nav a:hover { color: var(--fg); }
 
+.nav a.nav-active {
+  color: var(--accent);
+}
+
 main {
   max-width: 780px;
   margin: 0 auto;

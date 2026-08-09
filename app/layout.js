@@ -1,5 +1,6 @@
 import "./globals.css";
 import { getSiteUrl } from "./lib/site";
+import Nav from "./Nav";
 
 export const metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -33,13 +34,7 @@ export default function RootLayout({ children }) {
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
-        <nav className="nav">
-          <a href="/">AddictedtoAI</a>
-          <a href="/blog">Blog</a>
-          <a href="/directory">Directory</a>
-          <a href="/projects">Projects</a>
-          <a href="/demos">Demos</a>
-        </nav>
+        <Nav />
         <main id="main-content" tabIndex={-1}>
           {children}
         </main>

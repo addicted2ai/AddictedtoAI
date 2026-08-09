@@ -31,6 +31,33 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The nav gives no indication of which page you're
+  currently on — all 5 links always render identically regardless of
+  route. That's both a missed visual affordance (helps orient
+  visitors, especially now that the nav can wrap to two lines on
+  narrow viewports) and an accessibility gap (`aria-current="page"`
+  is the standard way assistive tech announces current location in a
+  nav).
+- Change: Extracted the nav into `app/Nav.js`, a client component
+  using `usePathname()` to compare the current route against each
+  link's `href`. The matching link gets `aria-current="page"` and a
+  `nav-active` class (accent-colored, same accent used for focus/hover
+  states elsewhere) instead of the default muted color. `app/layout.js`
+  now renders `<Nav />` instead of the hardcoded `<nav>` markup it had
+  inline. Kept plain `<a>` tags rather than switching to `next/link`,
+  matching the codebase's existing convention (no page in this app
+  uses `next/link`) — this change is scoped to adding an active-state
+  indicator, not to changing the navigation/prefetching model.
+  (PR #20)
+- Guardrails: pass (local `next build` clean — the Nav client
+  component bundles into the shared JS chunk since it's used in the
+  root layout, no per-page size increase; local link check with
+  `linkinator` against the production build for all 5 routes; manually
+  verified via curl that each route server-renders exactly one
+  `aria-current="page"` link, matching that route)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: Every outbound link on the site (12 tool cards in
   Directory, 2 recommended-tool cards per Demos result, the GitHub
   profile link on Projects) opens `target="_blank"` with zero
