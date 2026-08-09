@@ -1,0 +1,26 @@
+name: Weekly proposal loop
+
+# Runs every Monday 14:00 UTC, and can be triggered manually to test
+# without waiting for the schedule.
+on:
+  schedule:
+    - cron: "0 14 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  propose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Claude Code to propose + implement one change
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt_file: prompts/propose-change.md
+          claude_args: "--max-turns 30"

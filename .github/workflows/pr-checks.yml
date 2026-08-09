@@ -1,0 +1,47 @@
+name: PR checks
+
+# Guardrail gate: every PR (including the loop's own) must pass this
+# before it's mergeable. Auto-merge policy is set in branch protection,
+# not here — see README.md.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build-and-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Start server
+        run: npm run start & npx wait-on http://localhost:3000
+
+      - name: Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            http://localhost:3000
+            http://localhost:3000/blog
+            http://localhost:3000/directory
+            http://localhost:3000/projects
+            http://localhost:3000/demos
+          configPath: "./lighthouserc.json"
+          uploadArtifacts: true
+
+      - name: Check for broken links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --base http://localhost:3000 ./app
+          fail: true
