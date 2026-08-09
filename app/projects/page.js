@@ -1,3 +1,9 @@
+export const metadata = {
+  title: "Projects",
+  description:
+    "Write-ups of personal AI projects, starting with AddictedtoAI.net itself — a hub site maintained by an automated propose-build-measure loop.",
+};
+
 export default function Projects() {
   return (
     <div>

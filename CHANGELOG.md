@@ -31,6 +31,37 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: Every route shared one generic `<title>`/description from
+  the root layout ("AddictedtoAI" / "AI news, tools, projects, and
+  demos.") — search engines saw the same title and snippet for `/`,
+  `/blog`, `/directory`, `/projects`, and `/demos` alike. That directly
+  works against Blog's own metric, organic search traffic, and every
+  other page's discoverability: duplicate titles/descriptions across a
+  site are a well-known ranking and click-through weakness, and a
+  generic snippet gives a search result nothing distinctive to show.
+  Giving each route its own accurate title and description should
+  improve how each page shows up in search results and how likely a
+  snippet is to earn a click.
+- Change: Added a title template (`"%s | AddictedtoAI"`) to the root
+  layout, and a real per-page `metadata` export (title + description)
+  to all five routes — the homepage uses an absolute title bypassing
+  the template. `/directory` and `/demos` are client components, and
+  Next.js doesn't allow a `metadata` export from a Client Component,
+  so their interactive parts were extracted into
+  `app/directory/DirectorySearch.js` and `app/demos/ToolFinder.js`;
+  `page.js` for both is now a plain server component that exports
+  metadata and renders the extracted client component — the officially
+  documented pattern for this exact situation. No behavior changes to
+  either interactive feature. (PR #8)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes; manually
+  verified each route's rendered `<title>` and meta description are
+  unique and correct; confirmed the Directory search input and Demos
+  Tool Finder still render and function identically after the
+  extraction)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: All four sections now have real content, so this pass
   looks for a metric with nothing measuring it rather than a
   placeholder. Directory's two documented metrics are "outbound
