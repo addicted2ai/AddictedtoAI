@@ -51,7 +51,7 @@ Returning-visitor rate (site-wide).
   match" paragraph from the no-results block, so there's exactly one
   copy of that message; the "Clear search" button added last round
   stays. Added `.directory-result-count` to `app/globals.css`.
-  (PR #TBD)
+  (PR #23)
 - Guardrails: pass (local `next build` clean, `/directory` chunk
   1.32 kB → 1.39 kB; local link check with `linkinator` against the
   production build for all 5 routes, 29 links, zero failures;
