@@ -24,7 +24,22 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
-- (empty — scaffold created, no loop runs yet)
+- Hypothesis: The homepage was a placeholder with no real entry points
+  into the four sections (nav links only). Visitors landing on `/` had
+  no on-page reason to explore more than one section, and session depth
+  (sections visited per session) is a leading indicator for the
+  north-star metric, returning-visitor rate. Replacing the placeholder
+  copy with four clickable section cards (title + one-line value prop)
+  should increase clicks from `/` into `/blog`, `/directory`,
+  `/projects`, and `/demos`, which should in turn lift returning-visitor
+  rate.
+- Change: Replaced the placeholder homepage body with a `section-grid`
+  of four `section-card` links (one per section, matching the metrics
+  already documented per-section), styled to match the existing dark
+  theme. (PR #TBD)
+- Guardrails: pass (local `next build` clean; no new links beyond the
+  four existing section routes, all already covered by nav)
+- Result (measured the following week): not yet measured
 
 <!--
 Entry template for future weeks:
