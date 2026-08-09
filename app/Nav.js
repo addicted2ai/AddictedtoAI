@@ -1,0 +1,33 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
+const links = [
+  { href: "/", label: "AddictedtoAI" },
+  { href: "/blog", label: "Blog" },
+  { href: "/directory", label: "Directory" },
+  { href: "/projects", label: "Projects" },
+  { href: "/demos", label: "Demos" },
+];
+
+export default function Nav() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="nav">
+      {links.map((link) => {
+        const isActive = pathname === link.href;
+        return (
+          <a
+            key={link.href}
+            href={link.href}
+            aria-current={isActive ? "page" : undefined}
+            className={isActive ? "nav-active" : undefined}
+          >
+            {link.label}
+          </a>
+        );
+      })}
+    </nav>
+  );
+}
