@@ -9,6 +9,12 @@ function matches(tool, categoryName, query) {
   return haystack.includes(query);
 }
 
+function countLabel(count) {
+  if (count === 0) return "No tools match";
+  if (count === 1) return "1 tool matches";
+  return `${count} tools match`;
+}
+
 export default function DirectorySearch() {
   const [query, setQuery] = useState("");
   const normalizedQuery = query.trim().toLowerCase();
@@ -24,6 +30,11 @@ export default function DirectorySearch() {
         .filter((category) => category.tools.length > 0)
     : toolCategories;
 
+  const matchCount = filteredCategories.reduce(
+    (total, category) => total + category.tools.length,
+    0
+  );
+
   return (
     <>
       <input
@@ -35,9 +46,20 @@ export default function DirectorySearch() {
         aria-label="Search tools"
       />
 
+      {/* Always rendered, even when empty: a live region has to be in the
+          DOM before its text changes for assistive tech to announce it. */}
+      <p className="directory-result-count" role="status">
+        {normalizedQuery ? (
+          <>
+            {countLabel(matchCount)} &ldquo;{query.trim()}&rdquo;.
+          </>
+        ) : (
+          ""
+        )}
+      </p>
+
       {filteredCategories.length === 0 ? (
         <div className="directory-no-results">
-          <p>No tools match &ldquo;{query}&rdquo;.</p>
           <button
             type="button"
             className="finder-restart"

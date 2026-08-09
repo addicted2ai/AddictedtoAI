@@ -31,6 +31,40 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: Directory search filters as you type, but nothing ever
+  says how many tools matched. A sighted visitor can count cards; a
+  screen-reader user gets nothing at all — the results silently swap
+  underneath them with no announcement, because there was no live
+  region on the page. That's the same class of gap as the last few
+  accessibility rounds, and it lands on the one feature Directory's
+  "on-site search usage" metric depends on. A visible, announced
+  count also tells everyone that a short query narrowed 12 tools to
+  3, which is the feedback that makes a search box feel like it's
+  working.
+- Change: Added a `role="status"` result-count line under the search
+  input in `app/directory/DirectorySearch.js` — "3 tools match
+  “coding”." / "1 tool matches “claude”." / "No tools match “zzzz”."
+  — with the wording centralised in one `countLabel()` helper.
+  The element is always in the DOM (empty when there's no query),
+  because a live region has to exist *before* its text changes for
+  assistive tech to announce it. Removed the now-duplicate "No tools
+  match" paragraph from the no-results block, so there's exactly one
+  copy of that message; the "Clear search" button added last round
+  stays. Added `.directory-result-count` to `app/globals.css`.
+  (PR #23)
+- Guardrails: pass (local `next build` clean, `/directory` chunk
+  1.32 kB → 1.39 kB; local link check with `linkinator` against the
+  production build for all 5 routes, 29 links, zero failures;
+  verified end-to-end with Puppeteer — the status element is present
+  and empty at rest, reports the right singular/plural/zero wording
+  for each query, trims whitespace from the echoed query, and there's
+  exactly one copy of the no-results message. The reserved
+  `min-height` was tuned against a measured layout shift: 1.35em
+  still let the tool grid jump 2px when the count appeared, 1.5em —
+  exactly one line box at the inherited line-height — measured 0px.)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The Directory search box tells visitors they can
   "Search tools by name or category..." — but the filter only ever
   looked at each tool's name and description, never its category

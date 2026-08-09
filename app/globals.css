@@ -250,8 +250,17 @@ article a:hover {
   border-color: var(--accent);
 }
 
+.directory-result-count {
+  margin: 0.75rem 0 0;
+  /* Reserve exactly one line box (body line-height is 1.5) so the tool
+     grid doesn't shift down when the count text appears. */
+  min-height: 1.5em;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .directory-no-results {
-  margin-top: 2rem;
+  margin-top: 1rem;
   color: var(--muted);
   font-size: 0.9rem;
 }
