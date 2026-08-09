@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { toolCategories } from "../lib/tool-categories";
 
-function matches(tool, query) {
-  const haystack = `${tool.name} ${tool.description}`.toLowerCase();
+function matches(tool, categoryName, query) {
+  const haystack =
+    `${tool.name} ${tool.description} ${categoryName}`.toLowerCase();
   return haystack.includes(query);
 }
 
@@ -16,7 +17,9 @@ export default function DirectorySearch() {
     ? toolCategories
         .map((category) => ({
           ...category,
-          tools: category.tools.filter((tool) => matches(tool, normalizedQuery)),
+          tools: category.tools.filter((tool) =>
+            matches(tool, category.name, normalizedQuery)
+          ),
         }))
         .filter((category) => category.tools.length > 0)
     : toolCategories;
