@@ -24,6 +24,37 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: Demos is the last of the four sections still showing the
+  placeholder note — the same dead-end problem that motivated last
+  week's Directory change. Its documented metrics (completion rate,
+  repeat-use rate, session length) all require something a visitor can
+  actually finish and replay, which a static placeholder can never
+  produce. Adding one small, fully client-side interactive demo — a
+  "Tool Finder" that asks what you're trying to do and recommends real
+  tools from the Directory — gives Demos a real completion event
+  (reaching a recommendation), a natural replay loop ("try another
+  category"), and a second real cross-section link (Demos to
+  Directory) reinforcing the session-depth bet from two weeks ago. This
+  should move Demos' completion rate and repeat-use rate, and modestly
+  add to Directory's outbound-click numbers.
+- Change: Extracted the tool data from `app/directory/page.js` into a
+  shared `app/lib/tool-categories.js` module (single source of truth so
+  Demos and Directory can never recommend different tools). Replaced
+  the Demos placeholder with a client component (`"use client"`) quiz:
+  pick a category, see two recommended tools plus a link to the full
+  category in the Directory, with a "try another category" reset.
+  Added matching `finder`/`finder-option`/`finder-result` styles to
+  `app/globals.css`. No new external links: the tool-card recommendations
+  only render after a click, so they never appear in the static HTML
+  the guardrail crawls. (PR #3)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes — the
+  Demos page's static HTML has zero new outbound links, only the
+  page's own JS chunk, so this change carries none of the external-link
+  risk the last two did)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: Last week's change sends real clicks from `/` into
   `/directory`, but the Directory page was still a placeholder note —
   visitors who followed that new entry point landed on a dead end with
