@@ -12,6 +12,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         <nav className="nav">
           <a href="/">AddictedtoAI</a>
           <a href="/blog">Blog</a>
@@ -19,7 +22,9 @@ export default function RootLayout({ children }) {
           <a href="/projects">Projects</a>
           <a href="/demos">Demos</a>
         </nav>
-        <main>{children}</main>
+        <main id="main-content" tabIndex={-1}>
+          {children}
+        </main>
       </body>
     </html>
   );

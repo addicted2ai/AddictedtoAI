@@ -31,6 +31,33 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: Keyboard and screen-reader users had no way to bypass
+  the nav and jump straight to page content — every page load forced
+  tabbing through 5 nav links first. That's a real accessibility gap,
+  and it's exactly the kind of thing the Lighthouse accessibility
+  guardrail (>= 0.85) exists to catch, though a static audit doesn't
+  always flag missing skip links specifically. This was originally
+  going to be Open Graph + Twitter Card metadata, but building it
+  surfaced that Next.js's Metadata API auto-generates Twitter Card
+  tags from any `openGraph` object with no documented opt-out —
+  confirmed empirically, not just from docs — which conflicts with an
+  explicit instruction to keep this site free of
+  Twitter/social-platform-specific integration. Open Graph was dropped
+  entirely rather than ship the auto-generated Twitter tags, and this
+  skip-link fix took its place for this round instead.
+- Change: Added a "Skip to content" link as the first focusable
+  element in `app/layout.js`, visually hidden until keyboard-focused
+  (standard accessible pattern: positioned off-screen, slides into
+  view on `:focus`). Points at `id="main-content"` on the `<main>`
+  element, with `tabIndex={-1}` so focus actually lands there when
+  the link is activated, not just a scroll. Added `.skip-link` styles
+  to `app/globals.css`. (PR #TBD)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes; manually
+  verified the skip link and its target render correctly in the HTML)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The homepage's only path into the blog is a generic
   section card ("Blog" / "AI news and commentary.") — the same
   abstract, category-level pitch every section card uses. It doesn't
