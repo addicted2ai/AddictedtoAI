@@ -48,7 +48,7 @@ Returning-visitor rate (site-wide).
   matching the codebase's existing convention (no page in this app
   uses `next/link`) — this change is scoped to adding an active-state
   indicator, not to changing the navigation/prefetching model.
-  (PR #TBD)
+  (PR #20)
 - Guardrails: pass (local `next build` clean — the Nav client
   component bundles into the shared JS chunk since it's used in the
   root layout, no per-page size increase; local link check with
