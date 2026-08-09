@@ -31,6 +31,39 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: Projects was the last remaining placeholder section.
+  Its metrics (inquiry/contact clicks, outbound repo clicks, time on
+  page) all need a real write-up with real actions to click, which a
+  one-line placeholder can't produce. The only project this loop can
+  write about truthfully, without inventing a portfolio, is
+  AddictedtoAI.net itself — same reasoning as the blog post.
+  Two details needed a human decision first (asked before building):
+  the site's own repo is private, so there's nothing to link for
+  "outbound repo clicks" without it 404ing for visitors; and there was
+  no contact channel yet for "inquiry clicks." Given the answers (link
+  the GitHub profile instead of the repo; use a dedicated
+  AddictedtoAI@proton.me address rather than the personal email), a
+  real write-up with working outbound actions should move time on
+  page and give both click metrics something to register for the
+  first time.
+- Change: Replaced the Projects placeholder in `app/projects/page.js`
+  with a write-up of the site itself — the idea, how the loop
+  works (linking to the blog post rather than repeating it), and the
+  stack — plus a `project-actions` row with two outbound
+  actions: a `mailto:AddictedtoAI@proton.me` link and a link to
+  github.com/addicted2ai. Reused the `article` typography added for
+  the blog post; added `project-actions`/`project-action` styles to
+  `app/globals.css` for the CTA row. (PR #TBD)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes.
+  Confirmed via lychee's own docs that mail-address checking is
+  opt-in via `--include-mail`, which `pr-checks.yml` doesn't pass, so
+  the mailto link isn't validated by CI at all — also confirmed
+  proton.me has valid MX records regardless. GitHub profile link
+  verified 200.)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: Blog is the last section still showing the placeholder
   note (Projects is too, but picking one at a time). Its metric,
   organic search traffic, needs something indexable and worth reading
