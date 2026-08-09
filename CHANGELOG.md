@@ -31,6 +31,26 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: When a Directory search has no matches, the only way
+  back to the full list is manually deleting the typed text — a small
+  but real dead end in the exact feature built two rounds ago to give
+  Directory's "on-site search usage" metric something to measure. A
+  visitor who hits a no-results state and doesn't know how to recover
+  is more likely to bounce than to try another search, undermining the
+  metric the search box exists to serve.
+- Change: Added a "Clear search" button to the no-results state in
+  `app/directory/DirectorySearch.js`, reusing the existing
+  `.finder-restart` style from the Demos Tool Finder's "try another
+  category" button rather than introducing a new near-duplicate class.
+  Resets the query to empty and restores all 12 tools. (PR #21)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes; the
+  interaction itself verified end-to-end with Puppeteer — typed a
+  no-match query, confirmed the button appears, clicked it, confirmed
+  the input clears and all 12 tool cards reappear)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The nav gives no indication of which page you're
   currently on — all 5 links always render identically regardless of
   route. That's both a missed visual affordance (helps orient
