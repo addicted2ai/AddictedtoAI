@@ -1,12 +1,33 @@
+import { getSiteUrl } from "../lib/site";
+
 export const metadata = {
   title: "How This Site Builds Itself",
   description:
     "AddictedtoAI.net is maintained by a scheduled, hypothesis-driven propose-build-measure loop instead of manual redesigns. Here's how the loop, guardrails, and review process work.",
 };
 
+const postJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: "How this site builds itself",
+  description:
+    "AddictedtoAI.net is maintained by a scheduled, hypothesis-driven propose-build-measure loop instead of manual redesigns. Here's how the loop, guardrails, and review process work.",
+  datePublished: "2026-08-09",
+  author: { "@type": "Organization", name: "AddictedtoAI" },
+  publisher: { "@type": "Organization", name: "AddictedtoAI" },
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": `${getSiteUrl()}/blog`,
+  },
+};
+
 export default function Blog() {
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(postJsonLd) }}
+      />
       <h1>How this site builds itself</h1>
       <p className="post-meta">Posted 2026-08-09</p>
 
