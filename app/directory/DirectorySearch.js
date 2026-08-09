@@ -33,9 +33,16 @@ export default function DirectorySearch() {
       />
 
       {filteredCategories.length === 0 ? (
-        <p className="directory-no-results">
-          No tools match &ldquo;{query}&rdquo;.
-        </p>
+        <div className="directory-no-results">
+          <p>No tools match &ldquo;{query}&rdquo;.</p>
+          <button
+            type="button"
+            className="finder-restart"
+            onClick={() => setQuery("")}
+          >
+            Clear search
+          </button>
+        </div>
       ) : (
         filteredCategories.map((category) => (
           <section key={category.name} className="tool-category">
