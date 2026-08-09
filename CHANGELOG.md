@@ -48,7 +48,7 @@ Returning-visitor rate (site-wide).
   or auto-derive the way `openGraph`/`twitter` title/description do
   (verified — there's no equivalent fallback mechanism), so each page
   needed its own explicit entry rather than one set at the root.
-  (PR #TBD)
+  (PR #14)
 - Guardrails: pass (local `next build` clean, no warnings; local link
   check with `linkinator` against the production build for all 5
   routes; manually verified each page's `<link rel="canonical">`
