@@ -31,6 +31,32 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: A mistyped or broken internal/external link (very
+  possible now that there are 24+ outbound links plus five internal
+  routes) hit Next's generic default 404 page — a dead end with no
+  way back into the site except the browser's back button. That's a
+  direct hit against the north-star metric: a visitor who lands on a
+  bare error page is much less likely to explore further or return
+  than one who lands somewhere that still offers a way in. Replacing
+  it with a styled 404 that links back into all four sections (same
+  `section-grid`/`section-card` pattern as the homepage) should
+  recover some of those sessions instead of losing them outright.
+- Change: Added `app/not-found.js` — Next's App Router convention for
+  a custom 404 — styled to match the site and listing all four
+  sections as recovery links. Extracted the `sections` list out of
+  `app/page.js` into `app/lib/sections.js` so the homepage and the
+  404 page share one source of truth instead of duplicating the same
+  four entries. No new CSS needed; reuses `section-grid`/`section-card`
+  as-is. (PR #10)
+- Guardrails: pass (local `next build` clean — `_not-found` now
+  compiles to a lighter custom page instead of Next's default;
+  local link check with `linkinator` confirmed all 4 recovery links
+  plus every existing route still resolve 200. The 404 test route
+  itself correctly reports 404, which is the intended behavior, not a
+  broken link, and isn't among the 5 routes CI actually checks)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The site had no `robots.txt` and no `sitemap.xml` —
   nothing explicitly telling search engines every route is crawlable,
   and no single file listing all five routes for a crawler to

@@ -1,3 +1,5 @@
+import { sections } from "./lib/sections";
+
 export const metadata = {
   title: {
     absolute: "AddictedtoAI — AI News, Tool Directory, Projects & Demos",
@@ -5,29 +7,6 @@ export const metadata = {
   description:
     "A hub for AI news, a curated AI tool directory, project write-ups, and interactive demos — built and maintained by an automated propose-build-measure loop.",
 };
-
-const sections = [
-  {
-    href: "/blog",
-    title: "Blog",
-    description: "AI news and commentary.",
-  },
-  {
-    href: "/directory",
-    title: "Directory",
-    description: "Curated AI tools, organized by category.",
-  },
-  {
-    href: "/projects",
-    title: "Projects",
-    description: "Write-ups of personal AI projects.",
-  },
-  {
-    href: "/demos",
-    title: "Demos",
-    description: "Interactive AI demos and playgrounds.",
-  },
-];
 
 export default function Home() {
   return (
