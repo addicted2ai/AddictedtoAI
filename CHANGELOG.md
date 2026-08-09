@@ -47,7 +47,7 @@ Returning-visitor rate (site-wide).
   `app/page.js` into `app/lib/sections.js` so the homepage and the
   404 page share one source of truth instead of duplicating the same
   four entries. No new CSS needed; reuses `section-grid`/`section-card`
-  as-is. (PR #TBD)
+  as-is. (PR #10)
 - Guardrails: pass (local `next build` clean — `_not-found` now
   compiles to a lighter custom page instead of Next's default;
   local link check with `linkinator` confirmed all 4 recovery links
