@@ -71,6 +71,7 @@ export default function Projects() {
             className="project-action"
           >
             GitHub profile
+            <span className="visually-hidden"> (opens in a new tab)</span>
           </a>
         </div>
       </article>
