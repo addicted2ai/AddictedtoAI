@@ -48,7 +48,7 @@ Returning-visitor rate (site-wide).
   match, case-insensitive), hiding categories with zero matches and
   showing a "no tools match" message when nothing does. No data or
   routing changes. Added `directory-search`/`directory-no-results`
-  styles to `app/globals.css`. (PR #TBD)
+  styles to `app/globals.css`. (PR #7)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes — the
   default empty-query render still statically includes all 12
