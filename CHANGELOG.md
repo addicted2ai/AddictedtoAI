@@ -45,7 +45,7 @@ Returning-visitor rate (site-wide).
   `app/layout.js` — `themeColor` lives in a separate `viewport` export
   in this Next.js version, not `metadata` (verified against current
   docs; the older pattern of putting it in `metadata` is deprecated).
-  (PR #TBD)
+  (PR #17)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes; manifest
   JSON validated to parse correctly; theme-color meta tag and manifest
