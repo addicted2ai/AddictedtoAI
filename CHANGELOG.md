@@ -51,7 +51,7 @@ Returning-visitor rate (site-wide).
   view on `:focus`). Points at `id="main-content"` on the `<main>`
   element, with `tabIndex={-1}` so focus actually lands there when
   the link is activated, not just a scroll. Added `.skip-link` styles
-  to `app/globals.css`. (PR #TBD)
+  to `app/globals.css`. (PR #12)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes; manually
   verified the skip link and its target render correctly in the HTML)
