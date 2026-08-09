@@ -43,7 +43,7 @@ Returning-visitor rate (site-wide).
   `animation-duration` to near-zero for every element, rather than
   patching each of the 7 individual transition rules by hand — more
   robust, and it automatically covers any transition/animation added
-  later too. (PR #TBD)
+  later too. (PR #18)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes; verified
   empirically with Puppeteer's `emulateMediaFeatures`, not just by
