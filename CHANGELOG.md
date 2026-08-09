@@ -47,7 +47,7 @@ Returning-visitor rate (site-wide).
   includes the category name in the haystack alongside name and
   description, so a category query returns every tool in that
   category. One-line-scope fix: no new UI, no data changes, no new
-  CSS — the placeholder's existing promise now just holds. (PR #TBD)
+  CSS — the placeholder's existing promise now just holds. (PR #22)
 - Guardrails: pass (local `next build` clean, `/directory` chunk
   1.31 kB → 1.32 kB; local link check with `linkinator` against the
   production build for all 5 routes, 29 links, zero failures; the fix
