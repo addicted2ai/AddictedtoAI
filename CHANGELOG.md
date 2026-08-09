@@ -53,7 +53,7 @@ Returning-visitor rate (site-wide).
   actions: a `mailto:AddictedtoAI@proton.me` link and a link to
   github.com/addicted2ai. Reused the `article` typography added for
   the blog post; added `project-actions`/`project-action` styles to
-  `app/globals.css` for the CTA row. (PR #TBD)
+  `app/globals.css` for the CTA row. (PR #6)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes.
   Confirmed via lychee's own docs that mail-address checking is
