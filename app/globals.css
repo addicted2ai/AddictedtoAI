@@ -80,3 +80,47 @@ main {
   color: var(--muted);
   font-size: 0.9rem;
 }
+
+.tool-category {
+  margin-top: 2.5rem;
+}
+
+.tool-category h2 {
+  font-size: 1rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 1rem;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.tool-card {
+  display: block;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--fg);
+  transition: border-color 0.15s ease;
+}
+
+.tool-card:hover,
+.tool-card:focus-visible {
+  border-color: var(--accent);
+}
+
+.tool-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+
+.tool-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
