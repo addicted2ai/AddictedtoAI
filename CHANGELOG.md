@@ -42,7 +42,7 @@ Returning-visitor rate (site-wide).
   `app/directory/DirectorySearch.js`, reusing the existing
   `.finder-restart` style from the Demos Tool Finder's "try another
   category" button rather than introducing a new near-duplicate class.
-  Resets the query to empty and restores all 12 tools. (PR #TBD)
+  Resets the query to empty and restores all 12 tools. (PR #21)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes; the
   interaction itself verified end-to-end with Puppeteer — typed a
