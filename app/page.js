@@ -26,6 +26,17 @@ export default function Home() {
           </a>
         ))}
       </div>
+
+      <div className="latest-post">
+        <p className="latest-post-label">Latest from the blog</p>
+        <a href="/blog" className="latest-post-link">
+          <h2>How this site builds itself</h2>
+          <p>
+            A weekly, hypothesis-driven loop proposes, ships, and measures
+            one change at a time &mdash; here's how it actually works.
+          </p>
+        </a>
+      </div>
     </div>
   );
 }

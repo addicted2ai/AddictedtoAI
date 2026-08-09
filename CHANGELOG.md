@@ -31,6 +31,31 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The homepage's only path into the blog is a generic
+  section card ("Blog" / "AI news and commentary.") — the same
+  abstract, category-level pitch every section card uses. It doesn't
+  say there's an actual post there, let alone what it's about. A
+  specific, concrete teaser naming the real post ("How this site
+  builds itself") is a stronger, more curiosity-driven reason to
+  click than a generic category label, and gives the homepage a
+  second, more compelling path into `/blog` on top of the existing
+  card. Should increase clicks from `/` into `/blog` beyond what the
+  section card alone gets, supporting session depth toward the
+  north-star returning-visitor metric.
+- Change: Added a "Latest from the blog" teaser to `app/page.js` below
+  the existing section grid, linking to `/blog` with the actual post
+  title and a one-line hook. Hardcoded to the current single post
+  (there's no post collection/CMS to generalize from yet — revisit
+  this if a second post ships). Added `latest-post`/`latest-post-label`/
+  `latest-post-link` styles to `app/globals.css`, matching the existing
+  `section-card` look. (PR #11)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes — no new
+  unique links, just a second homepage path to the already-checked
+  `/blog` route)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: A mistyped or broken internal/external link (very
   possible now that there are 24+ outbound links plus five internal
   routes) hit Next's generic default 404 page — a dead end with no
