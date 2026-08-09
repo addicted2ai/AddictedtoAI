@@ -31,6 +31,36 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The site had no custom favicon, so browser tabs and
+  bookmarks show Next.js's generic default icon instead of anything
+  that identifies AddictedtoAI — a small but real polish/identity gap
+  for a site that now has real content across every section.
+- Change: Original plan was `app/icon.js` using Next's `next/og`
+  `ImageResponse` convention (dynamic PNG generation). That broke
+  `next build` outright (exit code 1, not just a warning): the
+  bundled `next/og`'s default-font loader
+  (`fileURLToPath(new URL("./Geist-Regular.ttf", import.meta.url))`)
+  threw `TypeError: Invalid URL` in this environment. Tried supplying
+  an explicit custom font to avoid that code path, but every candidate
+  static-font URL tested came back 404 — not worth guessing at a
+  fetch-at-build-time dependency for a favicon, especially one that
+  can fail the *entire* build if the URL ever breaks. Went with a
+  static `app/icon.svg` instead: no build-time image generation, no
+  font dependency, works identically on every platform, and Next.js
+  picks it up automatically via the same file-convention mechanism.
+  Simple mark: rounded square in the site's accent color (`#5eead4`)
+  with a bold "A". Skipped a matching `apple-icon` for this round —
+  Apple requires PNG specifically (SVG isn't supported for home-screen
+  icons), which would need the same broken `ImageResponse` path or a
+  real image asset I don't have; worth a follow-up once there's a
+  proper image-generation path. (PR #TBD)
+- Guardrails: pass (local `next build` clean, exit code 0; local link
+  check with `linkinator` against the production build for all 5
+  routes; manually verified `/icon.svg` is served with a 200 and
+  correct content, and that `<link rel="icon">` points at it)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: `.nav` had no `flex-wrap`, and the nav has grown to 5
   items ("AddictedtoAI" plus the 4 sections). Measured with Puppeteer
   at a 360px mobile viewport (iPhone SE-class width) before touching
