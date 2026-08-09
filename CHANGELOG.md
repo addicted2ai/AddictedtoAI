@@ -48,7 +48,7 @@ Returning-visitor rate (site-wide).
   visible "Posted 2026-08-09" byline, author/publisher as the
   `AddictedtoAI` organization since there's no individual byline on
   the post). Both render as `<script type="application/ld+json">`
-  tags per Next.js's documented pattern. (PR #TBD)
+  tags per Next.js's documented pattern. (PR #13)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes; both
   JSON-LD blocks verified to parse as valid JSON and appear correctly
