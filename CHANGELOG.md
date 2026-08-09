@@ -49,7 +49,7 @@ Returning-visitor rate (site-wide).
   `NEXT_PUBLIC_SITE_URL` env var if one is ever set, falls back to
   Vercel's auto-injected `VERCEL_URL` (so it's correct on whatever
   domain is actually live, preview or production, with zero config),
-  falls back to `localhost:3000` for local dev. (PR #TBD)
+  falls back to `localhost:3000` for local dev. (PR #9)
 - Guardrails: pass (local `next build` clean — both new routes show up
   as static output; local link check with `linkinator` against the
   production build for all 5 main routes plus the two new ones;
