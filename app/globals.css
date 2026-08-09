@@ -144,6 +144,44 @@ article a:hover {
   font-size: 0.9rem;
 }
 
+.latest-post {
+  margin-top: 2.5rem;
+}
+
+.latest-post-label {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.latest-post-link {
+  display: block;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--fg);
+  transition: border-color 0.15s ease;
+}
+
+.latest-post-link:hover,
+.latest-post-link:focus-visible {
+  border-color: var(--accent);
+}
+
+.latest-post-link h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.latest-post-link p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .directory-search {
   display: block;
   width: 100%;
