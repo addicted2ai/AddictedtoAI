@@ -44,7 +44,7 @@ Returning-visitor rate (site-wide).
   `app/projects/page.js`, using a new `.visually-hidden` utility class
   in `app/globals.css` (standard clip-based sr-only pattern: present
   for assistive tech, not shown visually, doesn't affect layout).
-  (PR #TBD)
+  (PR #19)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes; manually
   verified the hidden text renders in the HTML on Directory (12
