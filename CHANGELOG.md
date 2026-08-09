@@ -47,7 +47,7 @@ Returning-visitor rate (site-wide).
   so nav items wrap onto a second line on narrow viewports instead of
   overflowing the page horizontally. Re-measured the same way after
   the fix: `document.body.scrollWidth` now matches `window.innerWidth`
-  exactly (360px) at the same viewport. (PR #TBD)
+  exactly (360px) at the same viewport. (PR #15)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes; the fix
   itself was verified empirically with a Puppeteer before/after
