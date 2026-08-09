@@ -11,6 +11,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  id-token: write
 
 jobs:
   propose:
@@ -18,9 +19,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Load prompt from file
+        id: load_prompt
+        run: |
+          {
+            echo 'content<<PROMPT_EOF'
+            cat prompts/propose-change.md
+            echo PROMPT_EOF
+          } >> "$GITHUB_OUTPUT"
+
       - name: Run Claude Code to propose + implement one change
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt_file: prompts/propose-change.md
+          prompt: ${{ steps.load_prompt.outputs.content }}
           claude_args: "--max-turns 30"
