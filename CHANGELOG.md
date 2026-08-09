@@ -31,6 +31,31 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: All four sections now have real content, so this pass
+  looks for a metric with nothing measuring it rather than a
+  placeholder. Directory's two documented metrics are "outbound
+  clicks to tools" (shipped, PR #2) and "on-site search usage" — but
+  there has never been any search or filter UI on the page, so that
+  second metric has had zero mechanism to register since the Directory
+  existed. Adding a simple client-side search box that filters the
+  existing tool cards by name/category as you type gives that metric
+  something to actually measure for the first time, and should also
+  help entries-browsed-per-session as the list grows past a quick
+  scan.
+- Change: Converted `app/directory/page.js` to a client component
+  (`"use client"`) with a search input; filtering happens client-side
+  against the existing `toolCategories` data (name + description
+  match, case-insensitive), hiding categories with zero matches and
+  showing a "no tools match" message when nothing does. No data or
+  routing changes. Added `directory-search`/`directory-no-results`
+  styles to `app/globals.css`. (PR #7)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes — the
+  default empty-query render still statically includes all 12
+  existing tool-card links unchanged, so no new link risk)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: Projects was the last remaining placeholder section.
   Its metrics (inquiry/contact clicks, outbound repo clicks, time on
   page) all need a real write-up with real actions to click, which a
