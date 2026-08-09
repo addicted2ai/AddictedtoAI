@@ -31,6 +31,28 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The site has 7 separate `transition` declarations across
+  its cards, buttons, and links, and none of them respected
+  `prefers-reduced-motion`. Motion sensitivity is a real accessibility
+  need (vestibular disorders, among others), and it's the kind of gap
+  a static Lighthouse audit doesn't reliably catch — this only shows
+  up if you actually check the OS-level preference.
+- Change: Added a single global
+  `@media (prefers-reduced-motion: reduce)` rule to
+  `app/globals.css` that collapses `transition-duration` and
+  `animation-duration` to near-zero for every element, rather than
+  patching each of the 7 individual transition rules by hand — more
+  robust, and it automatically covers any transition/animation added
+  later too. (PR #18)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes; verified
+  empirically with Puppeteer's `emulateMediaFeatures`, not just by
+  reading the CSS — a `.tool-card`'s computed `transition-duration`
+  measured 0.15s under normal conditions and dropped to 0.00001s with
+  `prefers-reduced-motion: reduce` emulated)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The site had no web app manifest and no `theme-color`,
   so mobile browser chrome (the address-bar area on Chrome
   Android/Safari iOS) doesn't match the site's dark theme, and there's
