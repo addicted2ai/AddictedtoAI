@@ -1,3 +1,9 @@
+export const metadata = {
+  title: "How This Site Builds Itself",
+  description:
+    "AddictedtoAI.net is maintained by a scheduled, hypothesis-driven propose-build-measure loop instead of manual redesigns. Here's how the loop, guardrails, and review process work.",
+};
+
 export default function Blog() {
   return (
     <article>

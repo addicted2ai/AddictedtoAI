@@ -1,3 +1,11 @@
+export const metadata = {
+  title: {
+    absolute: "AddictedtoAI — AI News, Tool Directory, Projects & Demos",
+  },
+  description:
+    "A hub for AI news, a curated AI tool directory, project write-ups, and interactive demos — built and maintained by an automated propose-build-measure loop.",
+};
+
 const sections = [
   {
     href: "/blog",

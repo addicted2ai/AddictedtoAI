@@ -1,7 +1,10 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "AddictedtoAI",
+  title: {
+    template: "%s | AddictedtoAI",
+    default: "AddictedtoAI",
+  },
   description: "AI news, tools, projects, and demos.",
 };
 
