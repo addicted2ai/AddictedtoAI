@@ -24,6 +24,30 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: Last week's change sends real clicks from `/` into
+  `/directory`, but the Directory page was still a placeholder note —
+  visitors who followed that new entry point landed on a dead end with
+  nothing to click. The Directory page's own metric (outbound clicks to
+  tools) can't move at all without real tools on the page, and a dead
+  end right after the homepage funnel undercuts the session-depth gain
+  that change was betting on. Replacing the placeholder with a real
+  curated list of AI tools, grouped by category, with outbound links,
+  should increase outbound clicks to tools and entries browsed per
+  session, both leading indicators for returning-visitor rate.
+- Change: Replaced the Directory placeholder with 12 real tools across
+  4 categories (Chat & Assistants, Coding, Image/Video/Audio, Workflow
+  & Data), each an outbound link opened in a new tab
+  (`target="_blank"`) so browsing the directory doesn't cost the
+  session. Added matching `tool-category`/`tool-grid`/`tool-card` styles
+  to `app/globals.css`. (PR #TBD)
+- Guardrails: pass (local `next build` clean; all 12 outbound links plus
+  every existing internal link verified 200 with a local link check
+  against the production build before opening the PR — one candidate,
+  Notion, was dropped after it came back 403 from bot protection and
+  was swapped for Zapier)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The homepage was a placeholder with no real entry points
   into the four sections (nav links only). Visitors landing on `/` had
   no on-page reason to explore more than one section, and session depth
@@ -36,7 +60,7 @@ Returning-visitor rate (site-wide).
 - Change: Replaced the placeholder homepage body with a `section-grid`
   of four `section-card` links (one per section, matching the metrics
   already documented per-section), styled to match the existing dark
-  theme. (PR #TBD)
+  theme. (PR #1)
 - Guardrails: pass (local `next build` clean; no new links beyond the
   four existing section routes, all already covered by nav)
 - Result (measured the following week): not yet measured
