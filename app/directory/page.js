@@ -4,6 +4,9 @@ export const metadata = {
   title: "Directory",
   description:
     "Curated AI tools, organized by category. Search or browse chat assistants, coding tools, image/video/audio generators, and workflow automation.",
+  alternates: {
+    canonical: "/directory",
+  },
 };
 
 export default function Directory() {

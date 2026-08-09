@@ -2,6 +2,7 @@ import "./globals.css";
 import { getSiteUrl } from "./lib/site";
 
 export const metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
     template: "%s | AddictedtoAI",
     default: "AddictedtoAI",

@@ -4,6 +4,9 @@ export const metadata = {
   title: "Demos",
   description:
     "Interactive AI demos and playgrounds. Try the Tool Finder to get AI tool recommendations for what you're trying to do.",
+  alternates: {
+    canonical: "/demos",
+  },
 };
 
 export default function Demos() {
