@@ -1,4 +1,5 @@
 import "./globals.css";
+import { getSiteUrl } from "./lib/site";
 
 export const metadata = {
   title: {
@@ -8,10 +9,22 @@ export const metadata = {
   description: "AI news, tools, projects, and demos.",
 };
 
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "AddictedtoAI",
+  url: getSiteUrl(),
+  description: "AI news, tools, projects, and demos.",
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>

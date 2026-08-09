@@ -31,6 +31,32 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The site has no structured data, so search engines can
+  only guess at what the homepage is (a site) and what the blog post
+  is (an article) from unstructured HTML. Schema.org JSON-LD is a
+  standard, low-effort way to state that explicitly, which can make a
+  page eligible for richer search result presentation (e.g. article
+  rich results with a byline/date) — a lever for Blog's organic
+  search traffic metric, complementing the per-page metadata,
+  robots.txt, and sitemap already shipped. This is real, accurate
+  markup (not fabricated): every field mirrors content already live
+  on the page.
+- Change: Added `WebSite` JSON-LD to `app/layout.js` (site-wide, name/
+  url/description matching the existing root metadata) and
+  `BlogPosting` JSON-LD to `app/blog/page.js` (headline/description
+  matching the page's own metadata, `datePublished` matching the
+  visible "Posted 2026-08-09" byline, author/publisher as the
+  `AddictedtoAI` organization since there's no individual byline on
+  the post). Both render as `<script type="application/ld+json">`
+  tags per Next.js's documented pattern. (PR #TBD)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes; both
+  JSON-LD blocks verified to parse as valid JSON and appear correctly
+  on their respective pages — WebSite site-wide, BlogPosting
+  additionally on `/blog`)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: Keyboard and screen-reader users had no way to bypass
   the nav and jump straight to page content — every page load forced
   tabbing through 5 nav links first. That's a real accessibility gap,
