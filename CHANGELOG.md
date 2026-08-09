@@ -31,6 +31,31 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: `.nav` had no `flex-wrap`, and the nav has grown to 5
+  items ("AddictedtoAI" plus the 4 sections). Measured with Puppeteer
+  at a 360px mobile viewport (iPhone SE-class width) before touching
+  anything: the nav caused 48px of horizontal overflow
+  (`document.body.scrollWidth` 408px vs. `window.innerWidth` 360px) —
+  a real, confirmed bug, not a hypothetical one. Horizontal overflow
+  on mobile is a concrete usability problem (content gets clipped or
+  the whole page gains an awkward horizontal scrollbar) that would
+  hurt every metric downstream of a mobile visitor actually being able
+  to use the site, most directly the north-star returning-visitor rate
+  if their first visit is broken.
+- Change: Added `flex-wrap: wrap` to `.nav` in `app/globals.css`
+  (plus switched `gap` to a row/column shorthand: `0.75rem 1.5rem`)
+  so nav items wrap onto a second line on narrow viewports instead of
+  overflowing the page horizontally. Re-measured the same way after
+  the fix: `document.body.scrollWidth` now matches `window.innerWidth`
+  exactly (360px) at the same viewport. (PR #TBD)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes; the fix
+  itself was verified empirically with a Puppeteer before/after
+  measurement at a 360px viewport, not just asserted from reading the
+  CSS)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: No page declared a canonical URL, and the sitemap
   (shipped a few rounds back) lists routes without a trailing slash
   while Next.js will happily serve the same content whether or not
