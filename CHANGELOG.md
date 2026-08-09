@@ -31,6 +31,33 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The site had no `robots.txt` and no `sitemap.xml` —
+  nothing explicitly telling search engines every route is crawlable,
+  and no single file listing all five routes for a crawler to
+  discover them efficiently. This is a standard, low-effort lever for
+  organic search traffic (Blog's metric) and general discoverability
+  across every section, complementing last round's per-page metadata:
+  metadata makes each page's snippet better once it's found; a
+  sitemap and robots.txt make pages easier to find in the first
+  place.
+- Change: Added `app/robots.js` (allows all crawling, points at the
+  sitemap) and `app/sitemap.js` (lists all five routes with
+  `lastModified`/`changeFrequency`/`priority`), using Next.js's App
+  Router file conventions — both compile to static `/robots.txt` and
+  `/sitemap.xml` routes. Added `app/lib/site.js` with a small
+  `getSiteUrl()` helper shared by both: prefers an explicit
+  `NEXT_PUBLIC_SITE_URL` env var if one is ever set, falls back to
+  Vercel's auto-injected `VERCEL_URL` (so it's correct on whatever
+  domain is actually live, preview or production, with zero config),
+  falls back to `localhost:3000` for local dev. (PR #TBD)
+- Guardrails: pass (local `next build` clean — both new routes show up
+  as static output; local link check with `linkinator` against the
+  production build for all 5 main routes plus the two new ones;
+  manually verified `/robots.txt` and `/sitemap.xml` render correct
+  content)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: Every route shared one generic `<title>`/description from
   the root layout ("AddictedtoAI" / "AI news, tools, projects, and
   demos.") — search engines saw the same title and snippet for `/`,
