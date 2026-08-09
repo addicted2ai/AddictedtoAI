@@ -24,6 +24,36 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: Blog is the last section still showing the placeholder
+  note (Projects is too, but picking one at a time). Its metric,
+  organic search traffic, needs something indexable and worth reading
+  — a one-line placeholder gives search engines and visitors nothing.
+  Rather than invent generic "AI news" commentary (stale fast, easy to
+  get wrong, not something this loop can responsibly write without a
+  human's editorial voice), the more honest and differentiated post is
+  a first-person, fully accurate explanation of how this site itself
+  gets built: the weekly propose-build-measure loop, the guardrails,
+  and what's shipped so far. It's real content this loop can write
+  truthfully (it's describing its own documented process), it's a
+  genuinely unusual angle for search ("a site that builds itself"),
+  and a substantive single post gives Blog's other metrics (avg. read
+  time, scroll depth) something to actually measure.
+- Change: Replaced the Blog placeholder in `app/blog/page.js` with a
+  single real post, "How this site builds itself," covering the loop
+  mechanics, the guardrails, and a recap of the three changes shipped
+  so far (PR #1-#3). Added minimal typography styles (`post-meta`,
+  `article h2/p/ul/li/code/a`) to `app/globals.css` — the site had no
+  prose styling yet since every prior page was short fragments or
+  cards. First draft linked out to the GitHub repo as "public"; caught
+  in the local link check that the repo is actually private (404 for
+  an unauthenticated visitor, not just the crawler), so that claim and
+  link were removed before opening the PR. (PR #TBD)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes, including
+  the one broken link caught and fixed pre-PR as above)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: Demos is the last of the four sections still showing the
   placeholder note — the same dead-end problem that motivated last
   week's Directory change. Its documented metrics (completion rate,

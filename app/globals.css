@@ -48,6 +48,46 @@ main {
   font-size: 0.9rem;
 }
 
+.post-meta {
+  margin: 0 0 2rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+article h2 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+article p {
+  margin: 0 0 1rem;
+}
+
+article ul {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+}
+
+article li {
+  margin-bottom: 0.5rem;
+}
+
+article code {
+  background: var(--border);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+article a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+article a:hover {
+  color: var(--fg);
+}
+
 .section-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
