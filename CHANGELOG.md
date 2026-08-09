@@ -31,6 +31,31 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: No page declared a canonical URL, and the sitemap
+  (shipped a few rounds back) lists routes without a trailing slash
+  while Next.js will happily serve the same content whether or not
+  one is appended — exactly the kind of ambiguity canonical tags
+  exist to resolve. Without one, search engines have to guess which
+  URL variant is authoritative for a page, which can dilute ranking
+  signal instead of consolidating it on one URL. This completes the
+  set of standard technical-SEO levers alongside per-page metadata,
+  robots.txt/sitemap.xml, and JSON-LD already shipped.
+- Change: Added `metadataBase: new URL(getSiteUrl())` to
+  `app/layout.js` (required for relative URLs in `alternates` to
+  resolve to absolute ones) and an explicit
+  `alternates: { canonical: "<path>" }` to each of the 5 pages'
+  existing `metadata` exports. Canonical `alternates` don't inherit
+  or auto-derive the way `openGraph`/`twitter` title/description do
+  (verified — there's no equivalent fallback mechanism), so each page
+  needed its own explicit entry rather than one set at the root.
+  (PR #TBD)
+- Guardrails: pass (local `next build` clean, no warnings; local link
+  check with `linkinator` against the production build for all 5
+  routes; manually verified each page's `<link rel="canonical">`
+  resolves to that page's own correct path)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The site has no structured data, so search engines can
   only guess at what the homepage is (a site) and what the blog post
   is (an article) from unstructured HTML. Schema.org JSON-LD is a

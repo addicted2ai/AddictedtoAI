@@ -6,6 +6,9 @@ export const metadata = {
   },
   description:
     "A hub for AI news, a curated AI tool directory, project write-ups, and interactive demos — built and maintained by an automated propose-build-measure loop.",
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function Home() {
