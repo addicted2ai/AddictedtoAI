@@ -43,5 +43,5 @@ jobs:
       - name: Check for broken links
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --base http://localhost:3000 ./app
+          args: --base http://localhost:3000 http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos
           fail: true
