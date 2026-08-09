@@ -10,6 +10,10 @@ export const metadata = {
   description: "AI news, tools, projects, and demos.",
 };
 
+export const viewport = {
+  themeColor: "#0b0d0f",
+};
+
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",

@@ -31,6 +31,28 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The site had no web app manifest and no `theme-color`,
+  so mobile browser chrome (the address-bar area on Chrome
+  Android/Safari iOS) doesn't match the site's dark theme, and there's
+  no metadata for "Add to Home Screen" to use. Small, standard PWA-lite
+  polish that costs nothing new — reuses the `icon.svg` and colors
+  already shipped.
+- Change: Added `app/manifest.js` (Next.js's file convention, compiles
+  to `/manifest.webmanifest`) with name/short_name/description/
+  background_color/theme_color all matching existing site metadata,
+  and a single SVG icon entry reusing `/icon.svg`. Added
+  `export const viewport = { themeColor: "#0b0d0f" }` to
+  `app/layout.js` — `themeColor` lives in a separate `viewport` export
+  in this Next.js version, not `metadata` (verified against current
+  docs; the older pattern of putting it in `metadata` is deprecated).
+  (PR #TBD)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes; manifest
+  JSON validated to parse correctly; theme-color meta tag and manifest
+  link tag verified present in rendered HTML)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The site had no custom favicon, so browser tabs and
   bookmarks show Next.js's generic default icon instead of anything
   that identifies AddictedtoAI — a small but real polish/identity gap
