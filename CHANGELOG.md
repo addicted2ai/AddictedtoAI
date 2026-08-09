@@ -31,6 +31,27 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: Every outbound link on the site (12 tool cards in
+  Directory, 2 recommended-tool cards per Demos result, the GitHub
+  profile link on Projects) opens `target="_blank"` with zero
+  indication that a new tab is about to open. For screen-reader users
+  especially, a new tab opening unannounced is disorienting — a
+  well-established accessibility practice is to signal this
+  explicitly rather than silently change context.
+- Change: Added a visually-hidden `" (opens in a new tab)"` suffix
+  inside every `target="_blank"` link across
+  `app/directory/DirectorySearch.js`, `app/demos/ToolFinder.js`, and
+  `app/projects/page.js`, using a new `.visually-hidden` utility class
+  in `app/globals.css` (standard clip-based sr-only pattern: present
+  for assistive tech, not shown visually, doesn't affect layout).
+  (PR #TBD)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` against the production build for all 5 routes; manually
+  verified the hidden text renders in the HTML on Directory (12
+  instances, matching all 12 tool links) and Projects)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The site has 7 separate `transition` declarations across
   its cards, buttons, and links, and none of them respected
   `prefers-reduced-motion`. Motion sensitivity is a real accessibility

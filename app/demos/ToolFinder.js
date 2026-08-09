@@ -24,6 +24,7 @@ export default function ToolFinder() {
             >
               <h3>{tool.name}</h3>
               <p>{tool.description}</p>
+              <span className="visually-hidden"> (opens in a new tab)</span>
             </a>
           ))}
         </div>
