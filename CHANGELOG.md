@@ -53,7 +53,7 @@ Returning-visitor rate (site-wide).
   Apple requires PNG specifically (SVG isn't supported for home-screen
   icons), which would need the same broken `ImageResponse` path or a
   real image asset I don't have; worth a follow-up once there's a
-  proper image-generation path. (PR #TBD)
+  proper image-generation path. (PR #16)
 - Guardrails: pass (local `next build` clean, exit code 0; local link
   check with `linkinator` against the production build for all 5
   routes; manually verified `/icon.svg` is served with a 200 and
