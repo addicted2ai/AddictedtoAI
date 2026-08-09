@@ -47,7 +47,7 @@ Returning-visitor rate (site-wide).
   cards. First draft linked out to the GitHub repo as "public"; caught
   in the local link check that the repo is actually private (404 for
   an unauthenticated visitor, not just the crawler), so that claim and
-  link were removed before opening the PR. (PR #TBD)
+  link were removed before opening the PR. (PR #4)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` against the production build for all 5 routes, including
   the one broken link caught and fixed pre-PR as above)
