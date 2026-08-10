@@ -69,6 +69,9 @@ jobs:
           NEXT_PUBLIC_GA_MEASUREMENT_ID: G-CI0000000
         run: |
           lsof -ti:3000 | xargs -r kill -9 || true
+          # Clear the blocking run's reports so the summary below only
+          # reads the analytics-enabled ones.
+          rm -rf .lighthouseci
           npm run build
           npm run start & npx wait-on http://localhost:3000
 
@@ -80,3 +83,13 @@ jobs:
           urls: http://localhost:3000
           configPath: "./lighthouserc.analytics.json"
           uploadArtifacts: true
+          # Distinct from the blocking run's artifact, which otherwise
+          # collides: "an artifact with this name already exists".
+          artifactName: lighthouse-results-analytics
+
+      # Warn-level assertions print nothing when they pass, so without
+      # this the number this whole sequence exists to surface would be
+      # invisible. Writes to the job summary as well as the log.
+      - name: Report analytics-enabled scores
+        if: always()
+        run: node scripts/report-lh-scores.mjs "Lighthouse with analytics enabled"

@@ -87,6 +87,22 @@ Bundled at the maintainer's request. (PR #29)
   rendered bytes are U+2019 and that no word was mangled. Zero
   violations of any other rule.
 
+- The informational Lighthouse step needed a second pass of its own,
+  because the first version of it reported nothing. Two faults, both
+  visible only by reading the CI log rather than the green tick:
+  the step uploaded its artifact under the same name as the blocking
+  run and got `409 Conflict: an artifact with this name already
+  exists` — swallowed by `continue-on-error`, so the report was never
+  actually saved — and warn-level assertions print nothing when they
+  pass, so the score this whole sequence exists to surface appeared
+  nowhere at all. Fixed with a distinct `artifactName`, an `rm -rf
+  .lighthouseci` before the analytics build so the summary reads only
+  that run, and `scripts/report-lh-scores.mjs`, which prints the
+  median scores plus total transfer size to the log *and* the GitHub
+  job summary. Smoke-tested against three real local Lighthouse runs:
+  it reported 97 KB transferred, matching the 97.4 KB measured
+  independently over CDP in PR #24 — two different tools agreeing is
+  the reason to believe the number.
 - Failed CI on the first attempt, and the cause is worth recording:
   `npm ci` errored with `EUSAGE`, "package.json and package-lock.json
   are not in sync," missing several `@emnapi/*` entries. Adding
