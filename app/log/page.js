@@ -31,10 +31,22 @@ const ORIGIN_LABELS = {
 
 // A round's badge: a commit link for archived rounds, a pull request link
 // for rounds built here, a plain badge when no repository is configured.
-function RoundRef({ pr }) {
+//
+// Which era a round belongs to cannot be decided from its PR number. This
+// repository restarted numbering at 1, so #1..#48 now mean two different
+// things, and looking the number up in the archive would send the next
+// forty-eight rounds to an unrelated predecessor commit -- a link returning
+// 200 and pointing at the wrong change, which is worse than a dead one and
+// invisible to any HTTP check. The first real round shipped as #1 and would
+// have hit this immediately.
+//
+// `declaredOrigin` is the partition that actually holds: rounds predating the
+// Origin field are exactly the 47 archived ones, and check-routes.sh pins that
+// count so it cannot drift.
+function RoundRef({ pr, archivedEra }) {
   if (!repoUrl) return <span className="log-pr">#{pr}</span>;
 
-  const archived = getArchivedPr(pr);
+  const archived = archivedEra ? getArchivedPr(pr) : null;
   const href = archived
     ? `${repoUrl}/commit/${archived.commit_sha}`
     : `${repoUrl}/pull/${pr}`;
@@ -118,7 +130,17 @@ export default function BuildLog() {
         </h2>
         <ol id="build-log-entries" className="log-list">
           {entries.map((entry) => (
-            <li key={entry.id} className="log-entry" id={entry.id} data-log-entry>
+            <li
+              key={entry.id}
+              className="log-entry"
+              id={entry.id}
+              data-log-entry
+              // Exposed so the route checks can assert each round links to the
+              // right kind of target. Without it the two eras are
+              // indistinguishable in the rendered markup, and the wrong-link
+              // failure is silent by construction.
+              data-era={entry.declaredOrigin ? "current" : "archive"}
+            >
             <div className="log-meta">
               {/* A real heading, so screen-reader heading navigation
                   walks the log round by round rather than landing in a
@@ -153,7 +175,7 @@ export default function BuildLog() {
                 {entry.origin}
               </span>
               {entry.prs.map((pr) => (
-                <RoundRef key={pr} pr={pr} />
+                <RoundRef key={pr} pr={pr} archivedEra={!entry.declaredOrigin} />
               ))}
             </div>
 

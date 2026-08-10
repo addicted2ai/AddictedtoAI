@@ -179,6 +179,14 @@ function parse(markdown) {
     const parsed = parseBody(body);
     const prs = [...body.matchAll(/\(PR #(\d+)\)/g)].map((m) => Number(m[1]));
     const declared = parsed.origin.trim().toLowerCase();
+    // How many change headings the entry *starts*, regardless of whether they
+    // parsed. The heading regex requires `**N. Title**` to close on one line,
+    // and everything else in this file hard-wraps at about 76 columns -- so a
+    // long title wraps, silently becomes note text, and the round quietly
+    // ships with fewer changes than it describes. validateEntries cannot see
+    // it, because it only checks that the changes which *did* parse are
+    // complete. Counted here so the mismatch can be made loud.
+    const headingsStarted = (body.match(/^\*\*\d+\./gm) || []).length;
     return {
       // A positional round number changes whenever a new section is added
       // above it. PR numbers are permanent, so use one for the anchor when
@@ -198,6 +206,7 @@ function parse(markdown) {
       // forgot to say are indistinguishable.
       declaredOrigin: declared !== "",
       origin: declared || LEGACY_ORIGIN,
+      headingsStarted,
     };
   });
 }
@@ -219,6 +228,33 @@ function validateEntries(entries) {
     );
     throw new Error(
       `CHANGELOG.md contains incomplete build-log entries: ${labels.join(", ")}`
+    );
+  }
+
+  // A change heading that started but did not parse was absorbed as prose and
+  // the round lost a change without anything saying so. PR #48 set out to make
+  // "a quiet incomplete public record" an actionable failure; this is the same
+  // defect one level up, and it survived that round because the validation
+  // only inspected changes that had already parsed.
+  // Compared against *named* changes, not all of them. A failed heading leaves
+  // its Hypothesis and Change bullets at entry level, where the normalisation
+  // for pre-heading entries folds them into a single unnamed change -- so the
+  // total still matched and the first version of this check passed on exactly
+  // the input it was written for.
+  const lostChanges = entries.filter(
+    (entry) =>
+      entry.headingsStarted > 0 &&
+      entry.headingsStarted !== entry.changes.filter((c) => c.title).length
+  );
+  if (lostChanges.length > 0) {
+    const labels = lostChanges.map(
+      (entry) =>
+        `round ${entry.number} (${entry.headingsStarted} heading(s) written, ` +
+        `${entry.changes.filter((c) => c.title).length} parsed)`
+    );
+    throw new Error(
+      `CHANGELOG.md has change headings that did not parse: ${labels.join(", ")}. ` +
+        `A '**N. Title**' heading must open and close on one line.`
     );
   }
 

@@ -26,6 +26,12 @@ import path from "path";
 import { execFileSync } from "child_process";
 import { load as parseYaml } from "js-yaml";
 
+// See the note in check-docket.mjs: CRLF makes the frontmatter regex match
+// nothing, and the `- Track:` history scan below is line-anchored too.
+function readText(file) {
+  return fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n");
+}
+
 const root = process.cwd();
 const asGithub = process.argv.includes("--github");
 
@@ -50,7 +56,7 @@ const open = fs.existsSync(openDir)
   ? fs
       .readdirSync(openDir)
       .filter((f) => f.endsWith(".md"))
-      .map((file) => frontmatter(fs.readFileSync(path.join(openDir, file), "utf8")))
+      .map((file) => frontmatter(readText(path.join(openDir, file))))
   : [];
 
 // An item blocked on something not yet done is not available work.
@@ -66,7 +72,7 @@ const ready = open.filter((item) =>
     .every((ref) => done.has(ref))
 );
 
-const changelog = fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf8");
+const changelog = readText(path.join(root, "CHANGELOG.md"));
 // Newest first, matching the file's order.
 const history = [...changelog.matchAll(/^- Track:\s*(\S+)/gm)].map((m) =>
   m[1].toLowerCase()

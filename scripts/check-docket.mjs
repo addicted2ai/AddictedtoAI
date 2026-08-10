@@ -19,6 +19,16 @@
 import fs from "fs";
 import path from "path";
 
+// Every regex below anchors on a bare newline. `.gitattributes` now forces LF
+// on checkout, but a working copy created before that attribute existed still
+// holds CRLF, and under CRLF the frontmatter block matches nothing at all --
+// which is how the first scout run found every pre-existing docket item
+// "malformed" in a repository where every committed blob was already LF.
+// Reading through here makes the parser independent of how the file arrived.
+function readText(file) {
+  return fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n");
+}
+
 const TRACKS = ["scout", "author", "build", "maintain", "audit", "meta"];
 const FILERS = [...TRACKS, "maintainer"];
 const SERVES = ["more-true", "more-checkable", "more-current", "floor"];
@@ -160,7 +170,7 @@ for (const status of statuses) {
     continue;
   }
   for (const file of fs.readdirSync(statusDir).filter((f) => f.endsWith(".md"))) {
-    const text = fs.readFileSync(path.join(statusDir, file), "utf8");
+    const text = readText(path.join(statusDir, file));
     const fields = checkItem(status, file, text);
     if (fields) items.push({ status, file, fields });
   }

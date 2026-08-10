@@ -69,6 +69,87 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+The first real run of the new machinery found four bugs in it, all mine, and
+one of them had broken every pull request the system could ever produce. This
+round fixes them. The run itself is PR #1 and is still open; this entry is
+about the machinery it ran on, not the work it did.
+
+Worth stating plainly: every one of these shipped with a green check beside it.
+The checks were real and I had proved each could fail — against inputs I chose,
+in a working copy I had written by hand. None of them had ever seen a fresh
+checkout, a second repository's numbering, or a changelog entry wrapped the way
+every other entry in the file is wrapped.
+
+**1. Line endings broke every docket parse on Windows**
+- Hypothesis: `check-docket.mjs`, `preflight.mjs` and `dispatch.mjs` all match
+  frontmatter with a regex anchored on a bare newline. Git for Windows checks
+  out CRLF by default, so on any Windows working copy the frontmatter block
+  matches nothing and every docket item reads as malformed. CI runs on Linux
+  with LF and is unaffected — meaning the checks pass exactly where they are
+  tested and fail on the machine where rounds are started by hand. Forcing LF
+  at checkout and normalising on read should make the parsers independent of
+  how the file arrived.
+- Change: Added `.gitattributes` with `* text=auto eol=lf`, and a `readText()`
+  helper in all three scripts. Verified against genuinely CRLF copies of the
+  real docket items, which now parse.
+
+**2. Round badges would have cited the wrong change for 48 rounds**
+- Hypothesis: `RoundRef` decided commit-link versus pull-request-link solely by
+  whether the number appears in `archive/prs.json`, which holds 1–48. This
+  repository restarted numbering at 1, so every new round from #1 to #48 would
+  have rendered a link to an unrelated predecessor commit. Both URLs return
+  200, and the existing assertion only checked that archived rounds do not link
+  to pull requests — the other direction, which is the one that bites. Deciding
+  era from whether the round declares an `Origin` should be correct, because
+  rounds predating that field are exactly the 47 archived ones and CI already
+  pins that count.
+- Change: `RoundRef` consults the archive only for rounds that predate the
+  Origin field. Each round now carries `data-era`, and the route checks assert
+  both directions. The first round through the system shipped as #1 and would
+  have hit this immediately.
+
+**3. A wrapped change heading silently lost the change**
+- Hypothesis: the parser requires `**N. Title**` to open and close on one line,
+  while everything else in this file hard-wraps at about 76 columns. A wrapped
+  heading is absorbed as prose, the round ships with fewer changes than it
+  describes, and `validateEntries` cannot see it because it only checks that
+  changes which already parsed are complete. PR #48 set out to make "a quiet
+  incomplete public record" an actionable failure; this is the same defect one
+  level up. Counting headings that *start* and comparing against those that
+  parse should make the loss loud.
+- Change: `getBuildLog()` now fails the build naming the round and both counts.
+  The first version of this check did not fire: a failed heading leaves its
+  bullets at entry level, where the normalisation for pre-heading entries folds
+  them into one unnamed change, so the totals matched. It compares against
+  named changes now, and was re-proved against both a wrapped heading and a
+  dropped one.
+
+**4. A broken lockfile failed CI on every pull request**
+- Hypothesis: adding `js-yaml` from Windows wrote a `package-lock.json` whose
+  platform-specific optional dependencies do not resolve on Linux, so `npm ci`
+  exits before any check runs. Nothing caught it because no pull request had
+  existed on this repository until now — the lockfile was committed and pushed
+  straight to `main`, which is precisely what branch protection now prevents
+  the loop from doing. A clean reinstall should produce a consistent lockfile.
+- Change: Regenerated `package-lock.json` from a clean install; `npm ci` now
+  agrees with `package.json`. Also added `"root": true` to `.eslintrc.json`,
+  which was causing an ESLint cascade conflict for any checkout nested inside
+  another, and added `.gitattributes` and `.eslintrc.json` to the meta track's
+  path scope — the scout run could see both problems and was allowed to touch
+  neither.
+
+- Origin: maintainer
+- Track: meta
+- Guardrails: `npm run lint`, `npm run build`, docket check, preflight,
+  dispatcher and all route checks pass. Each new assertion was proved able to
+  fail: reverting the era fix produced "current round links to …/commit/…,
+  expected a pull request"; a wrapped heading and a dropped heading each
+  produced the expected build error; the CRLF fix was verified against real
+  CRLF copies rather than synthetic strings.
+- Result: not measured. The observable outcome is that `npm ci` succeeds, so
+  pull requests can now reach their checks at all.
+
+### 2026-08-10
 A human-directed session, not a loop round. The site moved to a public
 repository, the loop gained a written charter it cannot amend, and the
 north-star metric was replaced with a direction. It is recorded here because

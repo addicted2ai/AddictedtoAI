@@ -1,0 +1,19 @@
+# Normalise line endings on checkout, everywhere.
+#
+# Without this, `core.autocrlf=true` (the Git for Windows default) checks the
+# repository out with CRLF, and every parser here that matches `\n` stops
+# working: the docket frontmatter regex, the changelog's bullet and heading
+# regexes, the track-scope diff. None of it shows up in CI, which runs on
+# Linux with LF, so the checks pass exactly where they are tested and fail on
+# the machine where rounds are actually started by hand.
+#
+# Found the hard way: the first scout run could not validate a single docket
+# item, in a working copy where every committed blob was already LF.
+* text=auto eol=lf
+
+# Binary-ish things that must not be touched.
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

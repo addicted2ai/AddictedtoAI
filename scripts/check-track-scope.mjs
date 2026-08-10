@@ -57,6 +57,12 @@ const SCOPES = {
     "prompts/",
     "CHARTER.md",
     "policy.yml",
+    // Repository-level configuration. Neither was in any track's scope, so no
+    // track could fix the line-ending bug that broke every docket parse on
+    // Windows, or the ESLint cascade conflict -- found by the first scout run,
+    // which could see both and touch neither.
+    ".gitattributes",
+    ".eslintrc.json",
     "lighthouserc.json",
     "lighthouserc.analytics.json",
     "docket/",

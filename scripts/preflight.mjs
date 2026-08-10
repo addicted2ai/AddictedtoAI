@@ -23,6 +23,12 @@ import fs from "fs";
 import path from "path";
 import { load as parseYaml } from "js-yaml";
 
+// See the note in check-docket.mjs: CRLF makes the frontmatter regex match
+// nothing, and `.gitattributes` only helps working copies created after it.
+function readText(file) {
+  return fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n");
+}
+
 const root = process.cwd();
 const json = process.argv.includes("--json");
 const findings = [];
@@ -48,7 +54,7 @@ function readOpenItems() {
     .filter((f) => f.endsWith(".md"))
     .map((file) => ({
       file,
-      fields: frontmatter(fs.readFileSync(path.join(dir, file), "utf8")),
+      fields: frontmatter(readText(path.join(dir, file))),
     }));
 }
 
