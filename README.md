@@ -29,7 +29,14 @@ maintained by a scheduled AI propose→build→measure loop. See
 
 4. **Set up analytics** (both free):
    - GA4 property → drop the measurement ID into the Vercel project's
-     environment variables as `NEXT_PUBLIC_GA_MEASUREMENT_ID`
+     environment variables as `NEXT_PUBLIC_GA_MEASUREMENT_ID`, then
+     redeploy (the value is inlined at build time). Leave it unset and
+     the site emits no analytics script at all.
+     - Cost, measured: `gtag.js` is ~146 KB over the wire, against
+       ~97 KB for the whole rest of the page. Note that `pr-checks.yml`
+       does *not* set this variable, so the Lighthouse guardrail
+       measures the analytics-off build, not what production serves
+       once you set it.
    - Search Console → verify the domain, no code changes needed
 
 5. **Test the loop before trusting the schedule.** Go to Actions →
