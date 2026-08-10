@@ -1,6 +1,6 @@
 import { getBuildLog, getBuildLogStats } from "../lib/build-log";
 import { inlineMarkdown } from "../lib/inline-markdown";
-import { feedAlternates } from "../lib/site";
+import { feedAlternates, getRepoUrl } from "../lib/site";
 import LogFilter from "./LogFilter";
 
 export const metadata = {
@@ -19,7 +19,7 @@ export const metadata = {
 // of them). So the numbers render as plain badges unless a public repo
 // URL is configured, at which point they become links with no code
 // change. See .env.example.
-const repoUrl = process.env.NEXT_PUBLIC_REPO_URL;
+const repoUrl = getRepoUrl();
 
 function Field({ label, children }) {
   if (!children) return null;

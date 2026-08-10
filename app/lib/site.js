@@ -26,3 +26,11 @@ export function getSiteUrl() {
   }
   return "http://localhost:3000";
 }
+
+// The repository URL is optional while the project is private. Normalize it
+// once so PR links do not grow a double slash when the configured value is a
+// conventional trailing-slash URL.
+export function getRepoUrl() {
+  const value = process.env.NEXT_PUBLIC_REPO_URL;
+  return value ? normaliseSiteUrl(value) : null;
+}

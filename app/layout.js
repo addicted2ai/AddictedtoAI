@@ -7,10 +7,11 @@ import {
   getSiteUrl,
 } from "./lib/site";
 import Nav from "./Nav";
+import { getAnalyticsMeasurementId } from "./lib/analytics";
 
 // Unset by default: with no measurement ID configured, no analytics
 // script is emitted at all. See .env.example and README step 4.
-const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const gaMeasurementId = getAnalyticsMeasurementId();
 
 export const metadata = {
   metadataBase: new URL(getSiteUrl()),

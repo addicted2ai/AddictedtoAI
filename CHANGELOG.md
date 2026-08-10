@@ -50,6 +50,45 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+The public links and measurement script are optional configuration, but a
+trailing slash can corrupt repository permalinks, whitespace can load a
+malformed analytics tag, and RSS currently checks item count without
+checking that each citation lands on a real round. (PR #45)
+
+**1. Keep configured repository links single-slash safe**
+- Hypothesis: When `NEXT_PUBLIC_REPO_URL` ends with `/`, the Log appends
+  `/pull/N` directly and emits a double slash. Normalizing the optional base
+  once should keep public PR citations valid for the common trailing-slash
+  configuration without touching the private-repository default.
+- Change: Added `getRepoUrl()` and routed Log PR links through it, trimming
+  whitespace and trailing slashes before appending the pull-request path.
+
+**2. Refuse malformed analytics measurement IDs**
+- Hypothesis: The optional GA value is currently loaded whenever it is
+  truthy, so whitespace or a mistyped value can emit a script that cannot
+  collect useful data and can make the production build differ for a typo.
+  Trimming and accepting only the documented `G-...` shape should make an
+  invalid setting fail closed while preserving the configured path.
+- Change: Added a shared measurement-ID validator. The layout now emits
+  Google Analytics only for a trimmed, case-insensitive `G-` identifier;
+  event tracking remains the existing no-op when no script is present.
+
+**3. Make RSS citations resolve to the Log**
+- Hypothesis: The feed already checks that it has one item per parsed round,
+  but a correctly sized feed can still link to an anchor that no longer
+  exists after permalink changes. Comparing every RSS round anchor with the
+  rendered Log ids should catch a broken citation at build time.
+- Change: Extended `scripts/check-routes.sh` to resolve every feed round link
+  against the rendered `/log` anchor set and fail if any target is missing.
+
+- Guardrails: pass locally. `npm run lint`, `npm run build`, and all route
+  checks pass; the feed-anchor assertion was also made deliberately wrong
+  and failed before restoration. Configured builds were checked with a
+  trailing-slash repository URL and with both invalid and valid analytics
+  IDs; only the valid ID emitted the analytics marker.
+- Result: not yet measured.
+
+### 2026-08-10
 The Tool Finder already moved focus and recorded completion, but its result
 state did not name itself to assistive technology, its handoff to Directory
 discarded the selected category, and recommendation clicks were invisible

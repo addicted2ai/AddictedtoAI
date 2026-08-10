@@ -98,6 +98,42 @@ else
   failures=$((failures + 1))
 fi
 
+# Counting feed items is not enough: a feed can contain the right number of
+# links while every anchor points at the wrong round. Resolve each round link
+# against the rendered Log ids so a citation in an RSS reader cannot silently
+# drift.
+echo
+BASE_URL="$BASE" node <<'NODE'
+const base = process.env.BASE_URL;
+(async () => {
+  const [feed, log] = await Promise.all([
+    fetch(`${base}/feed.xml`).then((response) => response.text()),
+    fetch(`${base}/log`).then((response) => response.text()),
+  ]);
+  const ids = new Set(
+    [...log.matchAll(/id="(round-[^"]+)"/g)].map(([, id]) => id)
+  );
+  const anchors = [
+    ...feed.matchAll(/<link>[^<]*#(round-[^<]+)<\/link>/g),
+  ].map(([, anchor]) => anchor);
+  let bad = 0;
+  for (const anchor of anchors) {
+    if (ids.has(anchor)) {
+      console.log(`ok    feed link anchor #${anchor} resolves in /log`);
+    } else {
+      console.log(`FAIL  feed link anchor #${anchor} is missing from /log`);
+      bad++;
+    }
+  }
+  if (anchors.length === 0) {
+    console.log("FAIL  feed contains no round link anchors");
+    bad++;
+  }
+  process.exitCode = bad ? 1 : 0;
+})();
+NODE
+failures=$((failures + $?))
+
 # The homepage advertises "N rounds say 'wrong'" and links that number
 # to /log?q=wrong. The number is computed at build time from the parsed
 # changelog; the search recomputes it in the browser from the rendered
