@@ -80,6 +80,60 @@ else
   failures=$((failures + 1))
 fi
 
+# The homepage advertises "N rounds say 'wrong'" and links that number
+# to /log?q=wrong. The number is computed at build time from the parsed
+# changelog; the search recomputes it in the browser from the rendered
+# DOM. Two implementations of the same count is two chances to be wrong,
+# and the failure mode is silent: a homepage promising 9 rounds and a
+# search returning 6 discredits the page more than not showing a number
+# at all. Recount from the rendered log here and require agreement.
+echo
+if node -e '
+const [home, log] = process.argv.slice(1);
+const fetchText = async (url) => (await fetch(url)).text();
+(async () => {
+  const homeHtml = await fetchText(home);
+  const logHtml = await fetchText(log);
+
+  // Only the rendered list -- everything after </ol> includes the RSC
+  // payload, which repeats every entry and would match every term.
+  const start = logHtml.indexOf(`<ol class="log-list"`);
+  const list = logHtml.slice(start, logHtml.indexOf("</ol>", start));
+  const entries = list
+    .split(`<li class="log-entry"`)
+    .slice(1)
+    .map((e) => e.replace(/<[^>]*>/g, " ").toLowerCase());
+
+  const links = [
+    ...homeHtml.matchAll(/href="\/log\?q=([a-z]+)"><strong>(\d+)<\/strong>/g),
+  ];
+  if (links.length === 0) {
+    console.log("FAIL  homepage advertises no round-mention counts");
+    process.exitCode = 1;
+    return;
+  }
+
+  let bad = 0;
+  for (const [, term, claimed] of links) {
+    const actual = entries.filter((e) => e.includes(term)).length;
+    if (Number(claimed) === actual) {
+      console.log(`ok    homepage says ${claimed} rounds say "${term}"; /log has ${actual}`);
+    } else {
+      console.log(`FAIL  homepage says ${claimed} rounds say "${term}", but /log has ${actual}`);
+      bad++;
+    }
+  }
+  // Setting exitCode rather than calling process.exit(): exiting from
+  // inside this async callback while fetch sockets are still open trips
+  // a libuv assertion on Windows and reports a false failure.
+  process.exitCode = bad ? 1 : 0;
+})();
+' "$BASE/" "$BASE/log"; then
+  :
+else
+  failures=$((failures + 1))
+fi
+
 # Every route in the sitemap must actually resolve. This is the check
 # that would have caught a sitemap listing a page that no longer exists.
 echo

@@ -37,6 +37,11 @@ Returning-visitor rate (site-wide).
   untouched homepage scored 0.83 then 0.74 back to back). Accessibility
   and SEO are static-analysis checks, not timing-based, so they weren't
   the noisy ones and stayed at 0.85.
+- Page weight: the HTML document must stay under 150,000 bytes over the
+  wire, asserted per URL against the median of 3 runs. Only `/log` is
+  anywhere near it (63.5 KB at 34 rounds); the budget exists because
+  that page grows by about 1.9 KB gzipped every round and nothing else
+  would have said so until it was already slow.
 - Zero net-new broken links
 - No failed deploy / rollback
 
@@ -45,6 +50,87 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+Three numbers this site publishes about itself. One was flattering and
+structurally incapable of being anything else, one was a hand-typed copy
+of a config file, and one was fine but growing without anything watching
+it. (PR #36)
+
+**1. Deleted the stat that could only ever say zero**
+- Hypothesis: The homepage showed "Guardrail failures: 0" directly under
+  a paragraph promising the record includes the rounds that went wrong.
+  The number was true. It was also incapable of being anything else: a
+  round that fails its guardrails never gets merged, so it never becomes
+  an entry, so a failure counter over shipped rounds reads zero forever.
+  Presented as evidence, it was arithmetic — and on a page whose entire
+  argument is "check the record," a stat that can't move is worse than
+  no stat.
+- Change: The stat is gone, and the homepage now says plainly why it was
+  removed. In its place, two counts that can move: how many rounds
+  contain the word "wrong", and how many contain "dropped", computed
+  from the changelog at build time and linked to `/log?q=wrong` so the
+  reader lands on those entries and judges for themselves. Deliberately
+  not quoting the figures here — writing this entry moved both of them,
+  which is the point.
+- Labelled as a word count, not a verdict. Classifying rounds as
+  mistakes would mean running a keyword heuristic over prose and
+  publishing whatever it decided — the same thing last round's search
+  deliberately refused to do. A count of a word is a fact about text.
+- New guardrail in `scripts/check-routes.sh`: the homepage computes
+  these counts from the parsed changelog, the browser search recomputes
+  them from the rendered DOM, and two implementations of one number is
+  two chances to be wrong. The check recounts from the rendered log and
+  requires agreement. Confirmed it can fail by making the build-time
+  count return one less: both lines went red and the script exited 1.
+
+**2. The blog's guardrail numbers now come from the config**
+- Hypothesis: The blog stated "accessibility and SEO at or above 0.85,
+  performance at or above 0.80, each scored against the median of three
+  runs." That is a hand-typed copy of `lighthouserc.json` sitting one
+  directory from the real thing, and nothing but a reader checking would
+  ever catch the two drifting. This site's standing rule is that a
+  stated fact is either derived at build time or can't drift; this was
+  neither, and it is the same failure the "reading thirty" line was
+  corrected for last round.
+- Change: `app/lib/guardrails.js` reads `lighthouserc.json` — the file
+  the CI job actually runs — and the sentence is assembled from it,
+  including which categories block a merge versus which are only
+  reported. Retuning a threshold now rewrites the post.
+
+**3. A budget for the page that grows every round**
+- Hypothesis: `/log` is the site's heaviest page and the only one that
+  grows without bound — one entry per round, forever. Suspected it was
+  already a problem.
+- Change: Measured first, and the suspicion was wrong: `/log` scores
+  0.99 performance with a 63.5 KB document and 2.0 s LCP. Nothing to
+  fix, so nothing was fixed. What shipped instead is the thing that
+  will notice: a `resource-summary:document:size` budget of 150,000
+  bytes in `lighthouserc.json`. At the measured growth rate of ~1.9 KB
+  gzipped per round that fires somewhere around round 80, which is
+  early enough to decide deliberately rather than discover in a
+  Lighthouse regression.
+- Worth recording what the measurement turned up: the page ships its
+  content twice. 108 KB of rendered HTML for the entries, plus a 164 KB
+  React Server Component payload carrying the same prose again as
+  escaped JSON — 59% of the raw page. Every distinctive phrase appears
+  exactly twice in the delivered bytes, confirmed by counting. That is
+  inherent to how the App Router hydrates a server-rendered page, not a
+  mistake here, and the alternatives (rendering entries through
+  `dangerouslySetInnerHTML`) trade a documented cost for an injection
+  surface this site removed on purpose. Recorded rather than acted on.
+
+- Guardrails: pass. Lint clean, build clean, all route checks pass
+  including the new count-agreement assertion, and last round's 12
+  browser checks still pass unchanged. Lighthouse `/` 1.00 / 1.00 /
+  1.00 / 1.00, `/blog` 1.00 across the board, `/log` 0.99 / 1.00 /
+  1.00 / 1.00. Documents measured at 3.8 KB, 5.5 KB and 63.5 KB
+  against the new 150 KB budget.
+- The budget assertion was checked in both directions before shipping,
+  against a real Lighthouse report: at a 40 KB limit `lhci assert`
+  reports `resource-summary.document.size failure`, at 150 KB it
+  passes. A budget that cannot fail is not a budget.
+- Result: not yet measured.
+
+### 2026-08-10
 The log became searchable last round, which made it browsable but not
 citable: there was still no way to point someone at one round. This round
 makes a single round addressable, puts the search in the URL so a

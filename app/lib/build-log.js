@@ -170,16 +170,48 @@ export function getBuildLogStats() {
   const entries = getBuildLog();
   const changes = entries.reduce((n, e) => n + e.changes.length, 0);
   const prs = new Set(entries.flatMap((e) => e.prs));
-  // Every round records its guardrail outcome as "pass" or "fail". Count
-  // rather than assert: if a round ever fails, this number should drop,
-  // and the homepage should say so.
-  const failed = entries.filter((e) =>
-    /^fail/i.test((e.guardrails || "").trim())
-  ).length;
   return {
     rounds: entries.length,
     changes,
     prs: prs.size,
-    failed,
   };
+}
+
+// The plain text of one entry, in the order the page renders it — the
+// same string the client-side search on /log matches against. Kept here
+// so a count computed at build time and a count produced by typing into
+// the search box cannot disagree; scripts/check-routes.sh asserts they
+// don't.
+//
+// Markdown tokens are stripped because `inlineMarkdown` turns them into
+// elements: the DOM has `next build`, the raw changelog has backticks
+// around it.
+function entryText(entry) {
+  const parts = [
+    `Round ${entry.number}`,
+    entry.unreleased ? "Unreleased" : entry.date,
+    ...entry.prs.map((pr) => `#${pr}`),
+  ];
+  if (entry.intro) parts.push(entry.intro);
+  for (const change of entry.changes) {
+    if (change.title) parts.push(change.title);
+    if (change.hypothesis) parts.push("Hypothesis", change.hypothesis);
+    if (change.change) parts.push("Change", change.change);
+    parts.push(...(change.notes || []));
+  }
+  parts.push(...entry.notes);
+  if (entry.guardrails) parts.push("Guardrails", entry.guardrails);
+  if (entry.result) parts.push("Result", entry.result);
+  return parts.join(" ").replace(/[`*]/g, "").toLowerCase();
+}
+
+// How many rounds mention a word. Deliberately a text count and nothing
+// more: it says "these entries contain this word", not "these rounds
+// were mistakes". Classifying rounds would mean running a keyword
+// heuristic over prose and publishing whatever it decided, which is the
+// opposite of what this site asks a reader to do.
+export function countMentioning(term) {
+  const needle = term.toLowerCase();
+  return getBuildLog().filter((entry) => entryText(entry).includes(needle))
+    .length;
 }

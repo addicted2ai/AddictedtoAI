@@ -1,9 +1,14 @@
 import { sections } from "./lib/sections";
 import { posts } from "./lib/posts";
-import { getBuildLogStats } from "./lib/build-log";
+import { countMentioning, getBuildLogStats } from "./lib/build-log";
 import { feedAlternates } from "./lib/site";
 
 const latestPost = posts[0];
+
+// Counted from the changelog text, and labelled as exactly that: how
+// many rounds contain the word. Not a verdict on which rounds were
+// mistakes — see countMentioning().
+const MENTIONS = ["wrong", "dropped"];
 
 export const metadata = {
   title: {
@@ -53,11 +58,30 @@ export default function Home() {
           <dt>Pull requests</dt>
           <dd>{stats.prs}</dd>
         </div>
-        <div>
-          <dt>Guardrail failures</dt>
-          <dd>{stats.failed}</dd>
-        </div>
       </dl>
+
+      <p className="hero-lead">
+        This panel used to carry a fourth number: <em>guardrail failures,
+        0</em>. It was true, and it was worthless. A round that fails its
+        guardrails doesn&rsquo;t get merged, so it never becomes an entry
+        &mdash; a failure counter over shipped rounds can only ever read
+        zero. It looked like evidence and was arithmetic.
+      </p>
+      <p className="hero-lead">
+        The real failures are in the prose, so here is the honest version:
+        the number of rounds whose write-up contains each word, counted
+        from the changelog at build time. It&rsquo;s a word count, not a
+        verdict &mdash; the links go to the search, and you can judge.
+      </p>
+
+      <p className="hero-mentions">
+        {MENTIONS.map((term) => (
+          <a key={term} className="hero-mention" href={`/log?q=${term}`}>
+            <strong>{countMentioning(term)}</strong> rounds say &ldquo;
+            {term}&rdquo;
+          </a>
+        ))}
+      </p>
 
       <p className="hero-cta-row">
         <a href="/log" className="hero-cta">

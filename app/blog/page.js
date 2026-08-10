@@ -1,6 +1,7 @@
 import { SITE_NAME, feedAlternates, getSiteUrl } from "../lib/site";
 import { posts } from "../lib/posts";
 import { getBuildLogStats } from "../lib/build-log";
+import { describeThresholds, getGuardrails } from "../lib/guardrails";
 
 const post = posts[0];
 
@@ -34,6 +35,7 @@ export default function Blog() {
   // thirty" — it was accurate the day it shipped and wrong three rounds
   // later, which is the whole argument for deriving it.
   const stats = getBuildLogStats();
+  const guardrails = getGuardrails();
 
   return (
     <article>
@@ -82,10 +84,32 @@ export default function Blog() {
       <h2>The guardrails</h2>
       <p>
         Every pull request, including the loop&rsquo;s own, has to clear the
-        same automated gate before it&rsquo;s mergeable: Lighthouse
-        accessibility and SEO at or above 0.85, performance at or
-        above 0.80, each scored against the median of three runs; zero
+        same automated gate before it&rsquo;s mergeable: Lighthouse{" "}
+        {describeThresholds(guardrails.blocking)}, each scored against
+        the {guardrails.aggregation} of {guardrails.runs} runs; zero
         net-new broken links; no failed deploy or rollback.
+        {guardrails.advisory.length > 0 ? (
+          <>
+            {" "}
+            Also measured, but reported rather than enforced:{" "}
+            {describeThresholds(guardrails.advisory)}.
+          </>
+        ) : null}
+        {guardrails.budgets.length > 0 ? (
+          <>
+            {" "}
+            And a page-weight budget: the HTML document may not exceed{" "}
+            {Math.round(guardrails.budgets[0].maxBytes / 1000)} kB over
+            the wire.
+          </>
+        ) : null}
+      </p>
+      <p className="post-footnote">
+        Those numbers aren&rsquo;t typed into this post. They&rsquo;re read out
+        of <code>lighthouserc.json</code> &mdash; the file the CI job
+        actually runs &mdash; when the page is built, because a
+        hand-copied threshold sitting one directory from the real one
+        drifts the moment somebody retunes it.
       </p>
       <p>
         That performance number started at 0.85, measured once &mdash;
