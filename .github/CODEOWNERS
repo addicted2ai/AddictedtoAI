@@ -1,0 +1,14 @@
+# Paths the loop may propose changes to but must not merge.
+#
+# CHARTER.md rule 10 says the charter, the workflow definitions, and the
+# loop's own prompt are human-owned. This file is what makes that true
+# rather than merely stated: with branch protection requiring code-owner
+# review on these paths, a pull request touching any of them will not
+# auto-merge however green its checks are.
+#
+# This file is itself covered by the /.github/ rule below, so the loop
+# cannot remove its own constraints by editing this list.
+
+/CHARTER.md   @addicted2ai
+/.github/     @addicted2ai
+/prompts/     @addicted2ai
