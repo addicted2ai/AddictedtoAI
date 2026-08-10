@@ -54,7 +54,7 @@ Returning-visitor rate (site-wide).
   paint a focus ring on a programmatically focused paragraph
   (verified — the element reports `:focus-visible` false and a
   computed `outline-style: none`), so there was nothing to suppress.
-  (PR #TBD)
+  (PR #25)
 - Guardrails: pass (local `next build` clean, `/demos` chunk 1.26 kB
   → 1.36 kB; local link check with `linkinator` for all 5 routes, 29
   links, zero failures; behaviour verified end-to-end with Puppeteer
