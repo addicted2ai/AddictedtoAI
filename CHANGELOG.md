@@ -69,6 +69,98 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+A scout round. Nothing was built and nothing was published; the output is five
+docket items. Four came from outside the repository — the EU AI Act's
+transparency obligations became applicable eight days ago and land squarely on
+what this site is, and half the Directory now describes products that have moved
+since it was written. The fifth did not, and is disclosed as such below. This
+entry deliberately carries no `(PR #N)` reference, for reasons the third item
+explains.
+
+**1. File the transparency rules that came into force on 2 August as build and
+author work**
+- Hypothesis: The site's charge is to be current about AI, and the largest thing
+  that changed in the field recently is regulatory rather than technical. I
+  expected the EU AI Act's August milestone to be either already handled or too
+  diffuse to act on. It was neither: Article 50's transparency obligations became
+  applicable on 2 August 2026, and the obligation on deployers publishing
+  AI-generated text turns on whether the publication had human review and
+  editorial responsibility — the exact distinction this site already records per
+  round in its `Origin` field. That coincidence is the item; a compliance chore
+  would not have been worth filing.
+- Change: Two items. A build item to give every page a disclosure that is
+  machine-readable and derived from the record rather than hardcoded, and an
+  author item for a post that separates what actually applied on 2 August from
+  the high-risk obligations the Digital Omnibus deferred to 2 December 2027 —
+  a distinction most coverage runs together — using this site as the worked
+  example. Both cite the Commission's own FAQs and its Code of Practice on
+  Transparency of AI-generated Content, retrieved this round. Neither item
+  asserts that the site is in scope; both require the run that executes them to
+  reach and publish its own conclusion.
+
+**2. Check the Directory against the vendors' own pages instead of against
+itself**
+- Hypothesis: The seeded scout item asks what the Directory is missing. I
+  expected the answer to be missing tools. Fetching each entry's link instead
+  suggested the descriptions were the problem, so I checked them one at a time.
+- Change: Of the twelve entries, seven were re-fetched against the vendor's own
+  page on 2026-08-10 and six of those had moved: n8n, You.com, Ollama,
+  HuggingChat, ElevenLabs and Runway. Five are staleness. One is a false claim —
+  the site calls n8n "open-source", and n8n's documentation says "we do not call
+  ourselves open source", with a licence restricting commercial use. Every link
+  still returns 200, so nothing here could have noticed; `runwayml.com` now
+  308-redirects to `runway.com` and a redirect-following link checker will report
+  it green forever. Filed as a maintain item naming each correction, plus a build
+  item on the structural half: the four categories predate agents and MCP, the
+  words "agent" and "MCP" appear nowhere in `app/`, and the six repositionings
+  all point the same way. Five entries were not re-verified and are recorded as
+  not asserted either way, rather than being padded into findings.
+
+**3. Record a wrong-citation bug found while running this round's own checks**
+- Hypothesis: None — this was not sought. While checking what number this
+  round's pull request would get, I expected the migration round's badge fix to
+  cover it.
+- Change: It does not. `/log` decides between a commit link and a pull request
+  link solely by whether the number appears in `archive/prs.json`, which holds
+  1–48. This repository was created today with no pull requests, so GitHub will
+  number the next one 1, and the next 48 rounds built here will each render a
+  badge pointing at an unrelated predecessor commit. The migration round fixed
+  the collision in one direction and the code comment describes an intent the
+  function cannot carry out, because a bare integer does not say which era it is
+  from. Both return 200, so no existing check can see it. Filed as a maintain
+  item; this entry omits its own `(PR #N)` rather than publish a citation known
+  to resolve to the wrong change, which costs it a stable anchor and is a
+  workaround, not a fix. The item is honest in its own text that its origin is
+  internal, which means one of the five items filed this round could have been
+  written without leaving the repository — a partial miss against scout's stated
+  failure condition, disclosed rather than dressed up.
+
+- Origin: supervised
+- Track: scout
+- Guardrails: `node scripts/check-track-scope.mjs` passes — the diff is five new
+  files in `docket/` and this entry. `node scripts/check-docket.mjs` fails
+  locally on the four pre-existing items, not on the new ones: the checker parses
+  frontmatter with an LF-only regex and Git for Windows checks the repository out
+  with CRLF, so no docket item validates on a Windows working copy. Confirmed by
+  re-running it against LF-normalised copies, where all eight items pass. The
+  evidence rule was checked for whether it can actually go red — stripping the
+  external links from one of the new items produced the expected failure, so its
+  green means something. `npm ci` could not run at all here: the committed
+  lockfile is missing `@emnapi/wasi-threads`, which this platform resolves, so
+  `npm install` was used instead and `package-lock.json` was restored to avoid a
+  change outside this track's scope. `npm run lint` exits 1 with an
+  `@next/next` plugin conflict, an artefact of the worktree sitting inside
+  another checkout that has its own `.eslintrc.json`; running ESLint on `app/`
+  with cascading disabled is clean. No code was changed this round, so none of
+  those three failures can be attributed to it — but none of them were fixed
+  either, and only the first is in any track's scope to fix. `.eslintrc.json` is
+  in no track's scope at all.
+- Result: not measured. A round that files queue items has nothing to measure
+  until something acts on them; the only checkable output is whether the items
+  are still true when picked up, and whether any of them turn out to have been
+  written without leaving the repository.
+
+### 2026-08-10
 A human-directed session, not a loop round. The site moved to a public
 repository, the loop gained a written charter it cannot amend, and the
 north-star metric was replaced with a direction. It is recorded here because
