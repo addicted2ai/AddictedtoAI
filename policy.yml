@@ -1,0 +1,91 @@
+# Loop-owned policy.
+#
+# CHARTER.md fixes the direction, the two tests, and the track charges. This
+# file holds everything else: how often each track runs, what counts as stale,
+# how much any one run may take down. The loop may change these with a stated
+# reason in the record. It may not change the charter.
+#
+# Nothing parses this yet -- it is read by the run, not by code. Anything that
+# becomes load-bearing should get a parser and a check that can fail, rather
+# than staying a number a prompt is trusted to honour.
+
+# --- Track quotas -----------------------------------------------------------
+#
+# Relative weights over a rolling window, not a fixed rotation. The dispatcher
+# picks the track most owed a run among those with available work.
+#
+# Scout and maintain dominate on purpose. Most runs should notice things; few
+# should publish. Eight runs a day of *publishing* is a content farm, and the
+# cadence is meant to buy responsiveness, not volume.
+tracks:
+  scout:
+    weight: 30
+    # Scout can always run: its input is the world, not the queue.
+    needs_docket_item: false
+  maintain:
+    weight: 25
+    needs_docket_item: false   # the staleness report is its queue
+  author:
+    weight: 15
+    needs_docket_item: true
+  build:
+    weight: 15
+    needs_docket_item: true
+  audit:
+    weight: 10
+    needs_docket_item: false
+    # Runs on a floor regardless of weight: quality review must not be
+    # crowded out by whatever else is queued.
+    minimum_runs_per_week: 3
+  meta:
+    weight: 5
+    needs_docket_item: true
+    # Hard cap. Meta is the only track with infinite available work, which is
+    # why it won for ten straight rounds. See prompts/tracks/meta.md.
+    max_share_of_runs: 0.10
+
+# --- Publishing -------------------------------------------------------------
+#
+# Deliberately decoupled from run cadence. Running often is how the site stays
+# responsive; publishing often is how it becomes slop.
+publishing:
+  max_posts_per_week: 3
+  max_posts_per_day: 1
+
+# --- Staleness --------------------------------------------------------------
+#
+# How long a published claim may go unverified before the preflight treats it
+# as urgent. Days.
+staleness_days:
+  directory_entry: 45
+  blog_post: 90
+  # Claims about this project's own process go stale fastest and are the ones
+  # a sceptical reader checks first. The site has published false claims about
+  # its own review process and cadence twice.
+  process_claim: 30
+  demo: 30
+
+# --- Audit ------------------------------------------------------------------
+audit:
+  # CHARTER.md rule 12: withdrawals are bounded per run, and a finding that
+  # would exceed the bound goes to the maintainer instead of being executed.
+  max_withdrawals_per_run: 2
+
+# --- Guardrails -------------------------------------------------------------
+#
+# The numbers live in lighthouserc.json, which is what CI actually runs. Do not
+# copy them here: a threshold restated in a second file drifts from the real
+# one the moment somebody retunes it, and the site already reads them from the
+# config at build time for exactly that reason.
+guardrails:
+  source: lighthouserc.json
+  # Rule 11: a run blocked by a guardrail may not be the run that loosens it.
+  # Tightening is always allowed.
+  loosening_requires_separate_run: true
+
+# --- Docket -----------------------------------------------------------------
+docket:
+  default_expiry_days: 90
+  # Past this, an item is reported for pruning. Not a build failure: the queue
+  # must not be able to break the site.
+  prune_after_expiry_days: 14

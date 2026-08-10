@@ -23,6 +23,19 @@ jobs:
       NEXT_PUBLIC_REPO_URL: https://github.com/addicted2ai/AddictedtoAI
     steps:
       - uses: actions/checkout@v4
+        with:
+          # check-track-scope needs the merge base to diff against.
+          fetch-depth: 0
+
+      # A loop branch may only change files its track owns. allowedTools
+      # removes capabilities but cannot scope Write to a directory, so this is
+      # where the blast radius is actually fixed. Runs before anything else:
+      # a scout run that shipped code should be told that, not made to wait
+      # for Lighthouse first.
+      - name: Check track scope
+        run: |
+          node scripts/check-track-scope.mjs \
+            "origin/${{ github.base_ref }}" "${{ github.head_ref }}"
 
       - uses: actions/setup-node@v4
         with:

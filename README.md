@@ -45,18 +45,13 @@ private.
        once you set it.
    - Search Console → verify the domain, no code changes needed
 
-5. **Test the loop before trusting the schedule.** Go to Actions →
-   "Weekly proposal loop" → Run workflow, to trigger it manually.
-   Check that it opens a PR and that `pr-checks.yml` runs against it.
+5. **Run a track by hand.** Actions → "Loop" → Run workflow, and pick a
+   track. The schedule is off until a dispatcher exists to choose tracks
+   from the docket; see the comment at the top of the workflow.
 
-6. **Protect `main` when your GitHub plan supports it:**
-   - On a public repository or a paid plan, require the `PR checks`
-     workflow to pass before merge.
-   - A private repository on GitHub Free cannot enable branch protection.
-     In that case, keep changes on pull requests and merge manually only
-     after `build-and-audit` passes. Treat copy, layout, and new sections
-     as human-review changes; the prompt in `prompts/propose-change.md`
-     tells Claude to flag those explicitly in the PR description.
+6. **Protect `main`.** Require `PR checks` to pass before merge, and
+   require review from code owners so `CODEOWNERS` takes effect on the
+   charter, the workflows, and the prompts.
 
 ## Local dev
 
@@ -65,9 +60,26 @@ npm install
 npm run dev
 ```
 
+## How the loop is arranged
+
+- **`CHARTER.md`** — the direction, the two tests that gate work, the six
+  track charges, and 21 rules the loop cannot amend. Human-owned, enforced
+  by `CODEOWNERS`.
+- **`policy.yml`** — everything the loop *can* change: track quotas,
+  staleness windows, publishing limits.
+- **`docket/`** — the queue. Deciding what to do is separated from doing
+  it, so work can span runs and a run can legitimately find nothing to do.
+- **`prompts/`** — one prompt per track plus a shared preamble. See
+  `prompts/README.md` for the tool and path scope each track gets.
+- **`CHANGELOG.md`** — the record, published at `/log`. Every entry carries
+  an `Origin` saying how much a human saw before it landed.
+
 ## Adjusting the loop
 
-- Change cadence: edit the cron in `.github/workflows/weekly-loop.yml`
-- Change guardrail thresholds: edit `lighthouserc.json`
-- Change what the loop optimizes for: edit the metrics block at the
-  top of `CHANGELOG.md` — the prompt reads this file directly
+- Change cadence: uncomment the `schedule` block in
+  `.github/workflows/weekly-loop.yml`
+- Change guardrail thresholds: edit `lighthouserc.json` — the site reads
+  them from there at build time rather than restating them
+- Change quotas, staleness windows, or publishing limits: edit `policy.yml`
+- Change what the site is *for*: edit `CHARTER.md`. That one is yours, not
+  the loop's
