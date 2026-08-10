@@ -1,16 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toolCategories } from "../lib/tool-categories";
 
 export default function ToolFinder() {
   const [selected, setSelected] = useState(null);
+  const resultRef = useRef(null);
+  const questionRef = useRef(null);
+  // Only move focus in response to a choice the visitor actually made,
+  // never on first paint.
+  const hasChosen = useRef(false);
+
+  useEffect(() => {
+    if (!hasChosen.current) return;
+    const target = selected ? resultRef.current : questionRef.current;
+    target?.focus();
+  }, [selected]);
+
+  function choose(name) {
+    hasChosen.current = true;
+    setSelected(name);
+  }
 
   if (selected) {
     const category = toolCategories.find((c) => c.name === selected);
     return (
       <div className="finder-result">
-        <p className="finder-result-label">
+        <p className="finder-result-label" ref={resultRef} tabIndex={-1}>
           For {category.name.toLowerCase()}, try:
         </p>
         <div className="tool-grid">
@@ -34,7 +50,7 @@ export default function ToolFinder() {
         <button
           type="button"
           className="finder-restart"
-          onClick={() => setSelected(null)}
+          onClick={() => choose(null)}
         >
           Try another category
         </button>
@@ -44,14 +60,16 @@ export default function ToolFinder() {
 
   return (
     <div className="finder-questions">
-      <p>What are you trying to do?</p>
+      <p ref={questionRef} tabIndex={-1}>
+        What are you trying to do?
+      </p>
       <div className="finder-options">
         {toolCategories.map((category) => (
           <button
             key={category.name}
             type="button"
             className="finder-option"
-            onClick={() => setSelected(category.name)}
+            onClick={() => choose(category.name)}
           >
             {category.name}
           </button>

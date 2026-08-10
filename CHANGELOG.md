@@ -31,6 +31,41 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The Tool Finder swaps the category buttons out for the
+  result, which destroys the element the visitor just activated —
+  and nothing catches the focus. Measured before touching anything,
+  by driving it with the keyboard exactly as a keyboard user would:
+  after pressing Enter on a category, `document.activeElement` is
+  `BODY`. A screen-reader user gets no announcement that anything
+  happened at all, and a keyboard user's next Tab restarts from the
+  top of the document — the skip link, then all five nav links —
+  before it reaches the recommendation they just asked for. The
+  "try another category" button had the same problem in reverse.
+  Demos' metrics are completion rate and repeat-use rate, and this
+  breaks precisely the moment of completion and the replay loop.
+- Change: `app/demos/ToolFinder.js` now moves focus to match the
+  view swap — to the "For <category>, try:" result line when a
+  category is chosen, and back to the "What are you trying to do?"
+  question when the visitor restarts. Both targets get
+  `tabIndex={-1}` (the same pattern `app/layout.js` already uses for
+  the skip link's target). A `hasChosen` ref guards the effect so
+  focus is only ever moved in response to a real choice, never
+  stolen on first paint. No new CSS: browsers correctly decline to
+  paint a focus ring on a programmatically focused paragraph
+  (verified — the element reports `:focus-visible` false and a
+  computed `outline-style: none`), so there was nothing to suppress.
+  (PR #TBD)
+- Guardrails: pass (local `next build` clean, `/demos` chunk 1.26 kB
+  → 1.36 kB; local link check with `linkinator` for all 5 routes, 29
+  links, zero failures; behaviour verified end-to-end with Puppeteer
+  before and after — focus goes `BODY` → the result line on choosing
+  and `BODY` → the question line on restart, the next Tab after
+  choosing now lands on the first recommended tool card instead of
+  the top of the document, and `activeElement` is still `BODY` on
+  page load, confirming the guard works)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: Every entry in this log ends with "Result: not yet
   measured," and it always will, because **nothing on this site is
   instrumented at all**. `README.md` step 4 and `.env.example` both
