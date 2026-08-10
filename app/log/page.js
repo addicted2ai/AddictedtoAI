@@ -47,7 +47,10 @@ export default function BuildLog() {
       <p className="log-lead">
         Every round states a hypothesis before the work starts and a
         measured result after it lands. The interesting entries are the
-        ones where the hypothesis was wrong.
+        ones where the hypothesis was wrong. Search below to find them,
+        or click any round heading to link straight to it &mdash; both
+        the search and the round end up in the URL, so you can cite a
+        single round rather than the whole page.
       </p>
 
       <dl className="log-stats">
@@ -73,8 +76,16 @@ export default function BuildLog() {
             <div className="log-meta">
               {/* A real heading, so screen-reader heading navigation
                   walks the log round by round rather than landing in a
-                  flat list of change titles. */}
-              <h2 className="log-round">Round {entry.number}</h2>
+                  flat list of change titles. The heading is also the
+                  round's permalink: the anchor ids already existed, but
+                  nothing exposed them, so citing one round meant sending
+                  someone the whole page and telling them to scroll. */}
+              <h2 className="log-round">
+                <a className="log-round-link" href={`#${entry.id}`}>
+                  Round {entry.number}
+                  <span className="visually-hidden"> — copy link to this round</span>
+                </a>
+              </h2>
               <span className="log-date">
                 {entry.unreleased ? "Unreleased" : entry.date}
               </span>

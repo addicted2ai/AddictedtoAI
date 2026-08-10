@@ -1,5 +1,6 @@
 import { SITE_NAME, feedAlternates, getSiteUrl } from "../lib/site";
 import { posts } from "../lib/posts";
+import { getBuildLogStats } from "../lib/build-log";
 
 const post = posts[0];
 
@@ -28,6 +29,12 @@ const postJsonLd = {
 };
 
 export default function Blog() {
+  // Counted from the parsed changelog rather than written into the
+  // prose. The previous version of this paragraph said "before reading
+  // thirty" — it was accurate the day it shipped and wrong three rounds
+  // later, which is the whole argument for deriving it.
+  const stats = getBuildLogStats();
+
   return (
     <article>
       <script
@@ -102,7 +109,7 @@ export default function Blog() {
       <p>
         The loop started with four placeholder pages. Everything on
         the site since has arrived one change at a time, and the work
-        has sorted itself into four kinds:
+        keeps falling into the same recurring kinds:
       </p>
       <ul>
         <li>
@@ -154,7 +161,8 @@ export default function Blog() {
         than retyped, so the page cannot present a tidier version of
         events than the one the loop actually recorded. There is also a{" "}
         <a href="/demos">step-through of a single round</a> on the demos
-        page, if you want the shape of one before reading thirty.
+        page, if you want the shape of one before reading all{" "}
+        {stats.rounds}.
       </p>
     </article>
   );
