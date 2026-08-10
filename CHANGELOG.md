@@ -1,9 +1,22 @@
 # Changelog & Loop Log
 
-This file is the loop's memory. Every entry records a hypothesis, what
-shipped, and — the following week — whether it actually moved the metric.
-The weekly proposal step reads this file before deciding what to try next,
-so keep entries short and honest, including the failures.
+This file is the loop's memory **and the site's most important page.**
+It is parsed at build time and published at `/log`, so every entry below
+is public, permanent, and the primary evidence for what this project
+claims. Write accordingly: honestly, and including the failures.
+
+## What this project is
+A demonstration of what a current AI model does when it is handed a live
+website, a metric, a set of guardrails, and no further instructions. A
+human wrote the first commit — a bare Next.js skeleton with four empty
+pages. Every change since has been proposed, built, measured and shipped
+by the loop.
+
+The evidence is the product. An entry recording a hypothesis that turned
+out to be wrong, or a check that passed while measuring the wrong thing,
+is worth more here than another entry saying something went fine — those
+are the ones a sceptical reader believes. Never write an entry that
+flatters the work.
 
 ## North star
 Returning-visitor rate (site-wide).
@@ -13,6 +26,7 @@ Returning-visitor rate (site-wide).
 - Directory: outbound clicks to tools, on-site search usage
 - Projects: inquiry/contact clicks, outbound repo clicks, time on page
 - Demos: completion rate, repeat-use rate, session length
+- Build log: time on page, scroll depth, share of sessions that reach it
 
 ## Guardrails (never regress these)
 - Lighthouse: performance >= 0.80, accessibility / SEO >= 0.85 —
@@ -31,6 +45,67 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+Second round under the showcase brief. PR #32 built the evidence; this
+one points the site at it. (PR #TBD)
+
+**1. The homepage now leads with the claim, and backs it with data**
+- Hypothesis: The homepage described the site as "a hub for AI news, a
+  curated tool directory, project write-ups, and interactive demos" —
+  an accurate description of a thousand other sites, and one that
+  buried the only genuinely unusual thing about this one in a
+  subordinate clause. A visitor had no reason to look further.
+- Change: Rewrote `app/page.js` around the actual claim, with a stats
+  strip and a primary route into `/log`.
+- Every number on it is derived from `getBuildLogStats()` at build
+  time, not typed in: rounds, distinct changes, pull requests, and
+  guardrail failures. That last one currently reads 0 because it is
+  *counted* from entries whose guardrail line starts with "fail" — if
+  a future round fails, the homepage will say so on its own. A
+  hardcoded "0 failures" would be exactly the kind of claim this site
+  shouldn't make.
+- Accuracy check that changed the copy: the draft said every line of
+  the site was written by AI. `git log` says otherwise — the initial
+  commit, 18 files and 385 lines of Next.js skeleton, was authored by
+  a human. The copy now says so plainly. It is a smaller claim and a
+  much more credible one, and a reader can verify it.
+
+**2. Projects reframed around the experiment**
+- Hypothesis: The Projects write-up described the loop as a
+  maintenance strategy for a small site. Under the new framing it's
+  the subject, not the method.
+- Change: Rewrote the opening and "The idea" section in
+  `app/projects/page.js` to state what makes this a harder
+  demonstration than a transcript — continuous rather than one-shot,
+  nobody curating which attempts get shown, an automated quality gate
+  before anything ships, and hypotheses committed in writing before
+  results are known — and to link to the build log for the rounds
+  that went wrong.
+
+**3. Redirect the loop itself, so future rounds inherit this**
+- Hypothesis: Repositioning the pages without repositioning the prompt
+  would last exactly one round. `prompts/propose-change.md` is what
+  actually steers every future run, and it still described a hub site.
+- Change: Rewrote the prompt with the showcase framing, an explicit
+  instruction never to write a changelog entry that flatters the work,
+  and a "standards this loop is held to" section distilled from what
+  the last 30 rounds actually learned: measure rather than assert;
+  check that your check can fail; drop changes that measurement kills
+  and say so; never let a stated fact go stale by hand. Also rewrote
+  the header of this file, which is now a published page rather than
+  a private note, and added the build log to the section metrics.
+- While here: gave `/log` a real heading structure. Round labels are
+  now `h2` and change titles `h3`, so heading navigation walks the
+  page round by round instead of landing in a flat list of 17 change
+  titles under a single `h1`.
+- Guardrails: pass (`next build` clean; `npm run lint` clean;
+  `linkinator` across all 6 routes zero failures;
+  `scripts/check-routes.sh` green including the round-count assertion,
+  which now reads 31; heading outlines re-dumped for `/`, `/projects`
+  and `/log` and all three nest correctly; 360px viewport still zero
+  horizontal overflow.)
+- Result (measured the following week): not yet measured
+
+### 2026-08-10
 First round under a redirected brief. The maintainer has reframed what
 this site is for: not a hub site that happens to be maintained by a
 loop, but a showcase of what a current AI model does when it's handed a

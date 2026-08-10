@@ -68,7 +68,10 @@ export default function BuildLog() {
         {entries.map((entry) => (
           <li key={entry.id} className="log-entry" id={entry.id}>
             <div className="log-meta">
-              <span className="log-round">Round {entry.number}</span>
+              {/* A real heading, so screen-reader heading navigation
+                  walks the log round by round rather than landing in a
+                  flat list of change titles. */}
+              <h2 className="log-round">Round {entry.number}</h2>
               <span className="log-date">
                 {entry.unreleased ? "Unreleased" : entry.date}
               </span>
@@ -102,9 +105,9 @@ export default function BuildLog() {
             {entry.changes.map((change, index) => (
               <div className="log-change" key={index}>
                 {change.title ? (
-                  <h2 className="log-change-title">
+                  <h3 className="log-change-title">
                     {inlineMarkdown(change.title)}
-                  </h2>
+                  </h3>
                 ) : null}
                 <Field label="Hypothesis">{change.hypothesis}</Field>
                 <Field label="Change">{change.change}</Field>

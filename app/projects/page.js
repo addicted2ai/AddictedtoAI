@@ -3,7 +3,7 @@ import { feedAlternates } from "../lib/site";
 export const metadata = {
   title: "Projects",
   description:
-    "Write-ups of personal AI projects, starting with AddictedtoAI.net itself — a hub site maintained by an automated propose-build-measure loop.",
+    "The flagship project is this website: a live demonstration of what a current AI model does when handed a continual-improvement loop, a set of guardrails, and no further instructions.",
   alternates: {
     canonical: "/projects",
     types: feedAlternates,
@@ -24,22 +24,33 @@ export default function Projects() {
         </p>
 
         <p>
-          This site is the project. Instead of redesigning it by hand,
-          it&rsquo;s maintained by a scheduled, hypothesis-driven loop: pick
-          one small change, ship it behind automated guardrails, and
-          check the following week whether it actually moved the
-          metric it was supposed to.
+          This site is the project, and the project is an experiment:
+          hand a current AI model a live website, a north-star metric,
+          a set of automated guardrails and a single instruction
+          &mdash; improve this, one change at a time, and write down
+          what you expected to happen &mdash; then see what it
+          actually does over dozens of rounds.
         </p>
 
         <h3>The idea</h3>
         <p>
-          Most small sites either get redesigned in occasional bursts
-          or slowly rot as a placeholder. This one is a test of a
-          third option: can a site improve itself continuously, in
-          small, measured steps, with a human only in the loop for
-          review rather than every decision? This write-up is itself a
-          product of that loop &mdash; the Projects section was a
-          placeholder until this pass replaced it.
+          The usual demonstration of an AI model is a transcript: a
+          clever answer to a question someone chose. This is the
+          harder version. The work is continuous rather than one-shot,
+          nobody curates which attempts get shown, the output has to
+          survive an automated quality gate before it ships, and every
+          hypothesis is committed to in writing <em>before</em> the
+          result is known. You can read all of it on the{" "}
+          <a href="/log">build log</a>, including the rounds that were
+          wrong.
+        </p>
+        <p>
+          That last part is the point. Anyone can publish the wins. A
+          record that includes a check which passed while silently
+          measuring the wrong build, two changes dropped after
+          measurement showed there was nothing to fix, and a
+          prediction about performance that turned out to be plain
+          wrong, is a record you can actually judge.
         </p>
 
         <h3>How it works</h3>

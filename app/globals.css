@@ -191,7 +191,8 @@ article a:hover {
   border-color: var(--accent);
 }
 
-.section-card h2 {
+.section-card h2,
+.section-card h3 {
   margin: 0 0 0.5rem;
   font-size: 1.1rem;
 }
@@ -229,7 +230,8 @@ article a:hover {
   border-color: var(--accent);
 }
 
-.latest-post-link h2 {
+.latest-post-link h2,
+.latest-post-link h3 {
   margin: 0 0 0.5rem;
   font-size: 1.1rem;
 }
@@ -490,6 +492,8 @@ article a:hover {
 }
 
 .log-round {
+  margin: 0;
+  font-weight: 600;
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -580,4 +584,66 @@ article a:hover {
 
 .log-entry strong {
   color: var(--fg);
+}
+
+/* ---- Homepage hero -------------------------------------------------- */
+
+.hero-title {
+  margin: 0 0 1.5rem;
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.hero-lead {
+  margin: 0 0 1.25rem;
+  max-width: 62ch;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--fg);
+}
+
+.hero-lead + .hero-lead {
+  color: var(--muted);
+}
+
+.hero-cta-row {
+  margin: 2rem 0 0;
+}
+
+.hero-cta {
+  display: inline-block;
+  padding: 0.7rem 1.25rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.hero-cta:hover,
+.hero-cta:focus-visible {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.home-heading {
+  margin: 3rem 0 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* The label above the latest-post card is a real heading now, so it
+   needs the label styling rather than the default h2 size. */
+h2.latest-post-label {
+  margin: 3rem 0 0.75rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-weight: 600;
 }
