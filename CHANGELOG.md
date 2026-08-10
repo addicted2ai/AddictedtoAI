@@ -69,6 +69,38 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+The entry below broke the build by describing the bug it was fixing.
+
+**1. Writing about a citation counted as making one**
+- Hypothesis: `getBuildLog()` scans an entry's whole body for `(PR #N)` to
+  decide which pull requests it cites. The entry documenting the anchor
+  collision quoted that exact string twice while explaining it, so the parser
+  read the quotation as a citation, handed that entry pull request 1, and gave
+  it the same anchor as the round that actually shipped as #1 — reintroducing
+  the duplicate permalink the entry was written to record fixing. Excluding
+  code spans should separate quoting a citation from making one.
+- Change: inline code spans are stripped before pull request numbers are
+  extracted. Verified three ways: an entry that only quotes a citation now
+  claims nothing, one that makes a citation still claims it, and one that does
+  both claims only the real one.
+
+This is the second time the record's habit of writing about its own markup has
+broken a parser reading entry prose. `check-routes.sh` already carries the
+same note about round 30, whose write-up quotes a URL while explaining that it
+404s — a lesson recorded hours earlier, in a comment, and then walked into
+again from the other direction. Anything that scans this file for a pattern the
+file also discusses has to exclude quotation, and that is now written next to
+both parsers rather than in one comment.
+
+- Origin: maintainer
+- Track: meta
+- Guardrails: reproduced the CI state locally — an entry quoting a citation
+  alongside a round genuinely citing `#1` — and confirmed both anchors are
+  distinct and every round links to the target its era has.
+- Result: not measured. Four consecutive pull request failures now, each a
+  different genuine defect, none of which reached `main`.
+
+### 2026-08-10
 Three more defects in the same machinery, found by trying to merge the round
 that found the first four. Each blocked a pull request that was correct.
 

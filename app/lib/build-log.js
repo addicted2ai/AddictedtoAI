@@ -177,7 +177,19 @@ function parse(markdown) {
     const date = section.slice(0, newline).trim();
     const body = section.slice(newline + 1);
     const parsed = parseBody(body);
-    const prs = [...body.matchAll(/\(PR #(\d+)\)/g)].map((m) => Number(m[1]));
+    // Code spans are stripped first. An entry that *quotes* a citation is
+    // discussing one, not making one -- and the entry describing this very
+    // collision quoted `(PR #1)` twice while explaining it, which handed that
+    // entry pull request 1 as its own and duplicated the scout round's anchor.
+    //
+    // This is the second time the record's habit of writing about its own
+    // markup has broken a parser that reads the whole body: check-routes.sh
+    // carries the same note about round 30, whose write-up quotes "/pull/1"
+    // while explaining that the URL 404s. Anything scanning entry prose for a
+    // pattern the record also discusses needs to exclude quotation.
+    const prs = [
+      ...body.replace(/`[^`]*`/g, "").matchAll(/\(PR #(\d+)\)/g),
+    ].map((m) => Number(m[1]));
     const declared = parsed.origin.trim().toLowerCase();
     // How many change headings the entry *starts*, regardless of whether they
     // parsed. The heading regex requires `**N. Title**` to close on one line,
