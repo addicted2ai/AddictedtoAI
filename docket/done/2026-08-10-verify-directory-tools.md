@@ -32,11 +32,27 @@ introduced, and `git log` shows no commit touching a tool entry since.
 
 ## Done when
 
-- [ ] Every tool's link has been fetched and resolves to the product it claims
-- [ ] Every description has been checked against what the page now says
-- [ ] Each entry carries the date it was last verified
-- [ ] `/directory` shows those dates, so a reader can judge freshness themselves
-- [ ] A check fails the build when any entry's verification date is older than
+- [x] Every tool's link has been fetched and resolves to the product it claims
+- [x] Every description has been checked against what the page now says
+- [x] Each entry carries the date it was last verified
+- [x] `/directory` shows those dates, so a reader can judge freshness themselves
+- [x] A check fails the build when any entry's verification date is older than
       the staleness threshold in the policy file
-- [ ] Anything that has moved, been renamed, shut down, or changed its pricing
+- [x] Anything that has moved, been renamed, shut down, or changed its pricing
       model is corrected, and the correction is recorded in `CHANGELOG.md`
+
+## Done
+
+All twelve tools were fetched and checked on 2026-08-10 by the maintain round
+(`loop/maintain/verify-directory-tools`). Every link resolved. Three
+descriptions had drifted: You.com now leads with web search APIs for AI agents
+rather than a consumer search assistant, Cursor now describes itself as a
+coding agent rather than "built on VS Code", and Ollama now offers cloud runs
+alongside local ones. All three were corrected in place, and the other nine
+descriptions were confirmed still accurate.
+
+Each entry now carries a `verified` date, `/directory` shows that date on every
+card, and `scripts/check-tool-staleness.mjs` fails `npm run build` (via the
+`prebuild` script) when any entry is missing a date or past the 45-day window
+that `policy.yml` sets for directory entries. Both failure paths — a stale
+date and a missing date — were shown to go red before the check was trusted.

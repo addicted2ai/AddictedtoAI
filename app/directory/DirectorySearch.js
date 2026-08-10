@@ -179,6 +179,10 @@ export default function DirectorySearch() {
                 >
                   <h3>{tool.name}</h3>
                   <p>{tool.description}</p>
+                  <p className="tool-verified">
+                    Verified{" "}
+                    <time dateTime={tool.verified}>{tool.verified}</time>
+                  </p>
                   <span className="visually-hidden"> (opens in a new tab)</span>
                 </a>
               ))}
