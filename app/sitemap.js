@@ -1,13 +1,30 @@
 import { getSiteUrl } from "./lib/site";
+import { posts } from "./lib/posts";
+
+// `lastModified` is only set where we can actually substantiate it.
+// It used to be `new Date()` for every route, which meant every deploy
+// told crawlers all five pages had just changed -- and this site
+// deploys once per shipped change, so that claim was wrong almost
+// every time. Google treats lastmod as a hint and discounts it when a
+// site's values look unreliable, so an always-now value is worse than
+// no value: it burns the signal for the one page where we do know.
+const routes = [
+  { path: "", priority: 1 },
+  { path: "/blog", priority: 0.8, lastModified: posts[0].datePublished },
+  { path: "/directory", priority: 0.8 },
+  { path: "/projects", priority: 0.8 },
+  { path: "/demos", priority: 0.8 },
+];
 
 export default function sitemap() {
   const siteUrl = getSiteUrl();
-  const routes = ["", "/blog", "/directory", "/projects", "/demos"];
 
   return routes.map((route) => ({
-    url: `${siteUrl}${route}`,
-    lastModified: new Date(),
+    url: `${siteUrl}${route.path}`,
     changeFrequency: "weekly",
-    priority: route === "" ? 1 : 0.8,
+    priority: route.priority,
+    ...(route.lastModified
+      ? { lastModified: new Date(route.lastModified) }
+      : {}),
   }));
 }

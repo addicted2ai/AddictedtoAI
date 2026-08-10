@@ -1,6 +1,11 @@
 import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { feedAlternates, getSiteUrl } from "./lib/site";
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  feedAlternates,
+  getSiteUrl,
+} from "./lib/site";
 import Nav from "./Nav";
 
 // Unset by default: with no measurement ID configured, no analytics
@@ -10,10 +15,10 @@ const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 export const metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    template: "%s | AddictedtoAI",
-    default: "AddictedtoAI",
+    template: `%s | ${SITE_NAME}`,
+    default: SITE_NAME,
   },
-  description: "AI news, tools, projects, and demos.",
+  description: SITE_DESCRIPTION,
   alternates: {
     types: feedAlternates,
   },
@@ -26,9 +31,9 @@ export const viewport = {
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "AddictedtoAI",
+  name: SITE_NAME,
   url: getSiteUrl(),
-  description: "AI news, tools, projects, and demos.",
+  description: SITE_DESCRIPTION,
 };
 
 export default function RootLayout({ children }) {

@@ -1,8 +1,10 @@
+import { SITE_DESCRIPTION, SITE_NAME } from "./lib/site";
+
 export default function manifest() {
   return {
-    name: "AddictedtoAI",
-    short_name: "AddictedtoAI",
-    description: "AI news, tools, projects, and demos.",
+    name: SITE_NAME,
+    short_name: SITE_NAME,
+    description: SITE_DESCRIPTION,
     start_url: "/",
     display: "standalone",
     background_color: "#0b0d0f",

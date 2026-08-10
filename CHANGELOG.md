@@ -31,6 +31,81 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+Four small changes shipped together in one PR at the maintainer's
+request, rather than as four separate rounds. Each keeps its own
+hypothesis, since each is testing something different. (PR #TBD)
+
+**1. Declare `color-scheme: dark`**
+- Hypothesis: The site is dark-themed in CSS but never told the
+  browser so — `getComputedStyle(document.documentElement).colorScheme`
+  reported `normal`. Everything the UA paints for itself rather than
+  from our stylesheet therefore came from the *light* palette:
+  scrollbars, the search field's clear button, form-control and
+  autofill defaults. On a `#0b0d0f` page that's visibly wrong, and
+  the search box it most affects is the one Directory's on-site
+  search metric depends on.
+- Change: One declaration, `color-scheme: dark` on `:root` in
+  `app/globals.css`.
+- Verified by measuring what the UA actually paints, not by reading
+  the spec: an unstyled control injected into the page renders
+  `rgb(255,255,255)` on black text with the old `normal` value and
+  `rgb(59,59,59)` on white text as shipped. Same probe, same page,
+  one declaration apart.
+
+**2. Stop lying in the sitemap**
+- Hypothesis: `app/sitemap.js` set `lastModified: new Date()` on all
+  five routes, so every deploy told crawlers all five pages had just
+  changed. This site deploys once per shipped change, and a change
+  almost always touches one page — so the claim was wrong nearly
+  every time. Google treats `lastmod` as a hint and discounts it when
+  a site's values look unreliable, which means an always-now value is
+  worse than none: it burns the signal for the one page where the
+  date is actually known.
+- Change: `lastModified` is now set only where it can be
+  substantiated — `/blog`, from the post's own `datePublished` in
+  `lib/posts.js` — and omitted elsewhere. `lastmod` is optional in
+  the sitemap spec; `changeFrequency` and `priority` are unchanged.
+- Verified against the served `/sitemap.xml`: exactly one `<lastmod>`,
+  on `/blog`, reading 2026-08-09.
+
+**3. Link the blog post into the sections it describes**
+- Hypothesis: The post names the directory, the projects write-up and
+  the Tool Finder, and links to none of them. It's the site's best
+  organic-search landing page and its longest read, and it dead-ends.
+  Session depth feeds the north-star returning-visitor rate.
+- Change: Three inline links in the "What's shipped so far" list.
+  Existing words, now clickable — no new copy.
+
+**4. One source of truth for the site's identity**
+- Hypothesis: `"AddictedtoAI"` appeared in five places and
+  `"AI news, tools, projects, and demos."` in four — root metadata,
+  the `WebSite` JSON-LD, the web app manifest, the RSS channel, the
+  blog post's author/publisher — with nothing keeping them in sync.
+  Nothing was broken yet; last round was spent fixing a page that had
+  drifted out of date, and this is the same failure mode waiting to
+  happen in structured data, where it's invisible.
+- Change: `SITE_NAME` / `SITE_DESCRIPTION` in `app/lib/site.js`, used
+  everywhere. Also deleted `.placeholder-note` from `globals.css` —
+  dead since the last placeholder page was replaced, confirmed by
+  grep across `app/`.
+- Verified byte-for-byte that the rendered output is unchanged:
+  same `<title>` on `/` and `/blog`, same manifest JSON, same feed
+  channel title and description.
+
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` for all 5 routes, 30 links, zero failures; feed still
+  parses as well-formed RSS 2.0 with a correct `atom:link rel="self"`.
+  Re-ran the previous rounds' Puppeteer checks as regression tests —
+  the Directory result count still reports correctly with 0px layout
+  shift, and Tool Finder focus still moves to the result and back.)
+- Result (measured the following week): not yet measured
+- Still queued, deliberately not bundled here: making `pr-checks.yml`
+  measure the analytics-enabled build. It is the highest-value
+  follow-up from PR #24, but it is the one change likely to *fail*
+  the performance guardrail on purpose, and bundling a probable red
+  build with four safe changes would have blocked all of them.
+
+### 2026-08-09
 - Hypothesis: The blog post is this site's pitch — a public, honest
   record of a loop that measures itself — and it has quietly gone out
   of date in the two ways most damaging to that pitch. It states the
