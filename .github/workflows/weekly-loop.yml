@@ -13,9 +13,14 @@ permissions:
   issues: write
   id-token: write
 
+concurrency:
+  group: weekly-proposal
+  cancel-in-progress: false
+
 jobs:
   propose:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 

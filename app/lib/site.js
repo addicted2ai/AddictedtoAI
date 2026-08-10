@@ -13,12 +13,16 @@ export const feedAlternates = {
   "application/rss+xml": [{ url: "/feed.xml", title: SITE_NAME }],
 };
 
+function normaliseSiteUrl(value) {
+  return value.trim().replace(/\/+$/, "");
+}
+
 export function getSiteUrl() {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return process.env.NEXT_PUBLIC_SITE_URL;
+    return normaliseSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
   }
   if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
+    return `https://${normaliseSiteUrl(process.env.VERCEL_URL)}`;
   }
   return "http://localhost:3000";
 }

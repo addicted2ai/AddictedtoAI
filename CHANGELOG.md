@@ -49,7 +49,7 @@ Returning-visitor rate (site-wide).
 
 ## Log
 
-### Unreleased
+### 2026-08-10
 Three numbers this site publishes about itself. One was flattering and
 structurally incapable of being anything else, one was a hand-typed copy
 of a config file, and one was fine but growing without anything watching
@@ -128,6 +128,57 @@ it. (PR #36)
   against a real Lighthouse report: at a 40 KB limit `lhci assert`
   reports `resource-summary.document.size failure`, at 150 KB it
   passes. A budget that cannot fail is not a budget.
+- Result: not yet measured.
+
+### Unreleased
+Three operational edges found by reading the loop itself: overlapping
+runs, a setup instruction this repository cannot use, and absolute URLs
+that break when a conventional trailing slash is configured. (PR #37)
+
+**1. Give the weekly loop an overlap and runtime guard**
+- Hypothesis: The weekly loop has no protection against overlapping
+  scheduled/manual runs, and no upper bound on a stuck Claude job. Adding
+  a concurrency group that queues one run at a time plus a 45-minute job
+  timeout should prevent duplicate proposals and bound the action's
+  worst-case runtime without changing the weekly cadence.
+- Change: Added a `weekly-proposal` concurrency group with
+  `cancel-in-progress: false` to `.github/workflows/weekly-loop.yml`, so
+  a manual test cannot run beside the scheduled job and discard one of
+  the proposals. Added a 45-minute timeout to the propose job so a stuck
+  run cannot consume a runner indefinitely.
+
+**2. Make the branch-protection instructions match the repository**
+- Hypothesis: README step 6 tells users to set branch protection on
+  `main` even though this private repository on GitHub Free cannot enable
+  it. That instruction sends a maintainer to an unavailable setting and
+  hides the real merge gate; documenting the plan-dependent paths should
+  reduce setup dead ends without changing the app.
+- Change: Rewrote step 6 to distinguish public/paid-plan repositories,
+  where branch protection can require `PR checks`, from private GitHub
+  Free repositories, where the documented gate is a passing
+  `build-and-audit` check followed by manual merge. Kept the prompt's
+  human-review warning for copy, layout, and new sections.
+
+**3. Keep configured absolute URLs single-slash safe**
+- Hypothesis: A trailing slash in `NEXT_PUBLIC_SITE_URL` makes generated
+  canonical, sitemap, and feed URLs contain a double slash because the
+  code appends route paths directly. Normalising the base once should
+  make all generated absolute URLs exactly one slash apart and remove a
+  silent SEO/feed failure for deployments configured with a conventional
+  trailing slash.
+- Change: `getSiteUrl()` now trims whitespace and trailing slashes from
+  `NEXT_PUBLIC_SITE_URL` and `VERCEL_URL` before the rest of the app uses
+  them. No caller needs its own URL cleanup, so metadata, robots, sitemap,
+  and RSS all inherit the same fix.
+
+- Guardrails: pass locally. Baseline proof for the URL issue was a
+  production build with `NEXT_PUBLIC_SITE_URL=https://example.test/`:
+  `/feed.xml`, `/sitemap.xml`, `/robots.txt`, and the feed self-link all
+  contained `https://example.test//...`; after the change the generated
+  files contain only `https://example.test/...`. Workflow and README
+  checks were verified by inspecting the committed keys and current
+  private-repository API response. `npm run lint` and `npm run build`
+  pass.
 - Result: not yet measured.
 
 ### 2026-08-10

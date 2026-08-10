@@ -43,13 +43,14 @@ maintained by a scheduled AI propose→build→measure loop. See
    "Weekly proposal loop" → Run workflow, to trigger it manually.
    Check that it opens a PR and that `pr-checks.yml` runs against it.
 
-6. **Set branch protection on `main`:**
-   - Require the `PR checks` workflow to pass before merge
-   - Decide your auto-merge policy: safe to auto-merge on guardrail
-     pass for pure technical changes; require manual approval for
-     anything touching copy, layout, or a new section (the prompt in
-     `prompts/propose-change.md` tells Claude to flag these explicitly
-     in the PR description — watch for that flag)
+6. **Protect `main` when your GitHub plan supports it:**
+   - On a public repository or a paid plan, require the `PR checks`
+     workflow to pass before merge.
+   - A private repository on GitHub Free cannot enable branch protection.
+     In that case, keep changes on pull requests and merge manually only
+     after `build-and-audit` passes. Treat copy, layout, and new sections
+     as human-review changes; the prompt in `prompts/propose-change.md`
+     tells Claude to flag those explicitly in the PR description.
 
 ## Local dev
 
