@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toolCategories } from "../lib/tool-categories";
 
 function matches(tool, categoryName, query) {
@@ -35,6 +35,19 @@ export default function DirectorySearch() {
     0
   );
 
+  const summary = normalizedQuery
+    ? `${countLabel(matchCount)} “${query.trim()}”.`
+    : "";
+
+  // The visible count updates on every keystroke, but announcing on
+  // every keystroke means a screen reader talking over someone who is
+  // still typing. Announce once they've paused instead.
+  const [announcement, setAnnouncement] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setAnnouncement(summary), 500);
+    return () => clearTimeout(timer);
+  }, [summary]);
+
   return (
     <>
       <input
@@ -46,16 +59,16 @@ export default function DirectorySearch() {
         aria-label="Search tools"
       />
 
+      {/* Sighted readers get the count immediately. aria-hidden so it
+          isn't announced twice -- the live region below owns that. */}
+      <p className="directory-result-count" aria-hidden="true">
+        {summary}
+      </p>
+
       {/* Always rendered, even when empty: a live region has to be in the
           DOM before its text changes for assistive tech to announce it. */}
-      <p className="directory-result-count" role="status">
-        {normalizedQuery ? (
-          <>
-            {countLabel(matchCount)} &ldquo;{query.trim()}&rdquo;.
-          </>
-        ) : (
-          ""
-        )}
+      <p className="visually-hidden" role="status">
+        {announcement}
       </p>
 
       {filteredCategories.length === 0 ? (

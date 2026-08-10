@@ -8,7 +8,13 @@
   --fg: #e8e8e6;
   --muted: #8a8f98;
   --accent: #5eead4;
+  /* Decorative framing on cards. Measures 1.28:1 against --bg, which is
+     fine for something whose content already identifies it. */
   --border: #22262b;
+  /* For borders that are the *only* thing marking a control as a
+     control -- the search field, the buttons. WCAG 1.4.11 asks for 3:1
+     there; this measures 3.25:1. */
+  --border-interactive: #5b6470;
 }
 
 * { box-sizing: border-box; }
@@ -67,12 +73,17 @@ a { color: inherit; }
 .nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  padding: 1.25rem 2rem;
+  /* Vertical padding moved onto the links below, so the header keeps
+     roughly its old height while the tap targets get much bigger. */
+  gap: 0.25rem 1.5rem;
+  padding: 0.5rem 2rem;
   border-bottom: 1px solid var(--border);
 }
 
 .nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   text-decoration: none;
   color: var(--muted);
   font-size: 0.95rem;
@@ -139,7 +150,7 @@ article a:hover {
 
 .project-action {
   padding: 0.6rem 1rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-interactive);
   border-radius: 6px;
   text-decoration: none;
   color: var(--fg);
@@ -229,7 +240,7 @@ article a:hover {
   width: 100%;
   margin-top: 1.5rem;
   padding: 0.65rem 0.9rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-interactive);
   border-radius: 6px;
   background: transparent;
   color: var(--fg);
@@ -336,7 +347,7 @@ article a:hover {
 
 .finder-option {
   padding: 0.6rem 1rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-interactive);
   border-radius: 6px;
   background: transparent;
   color: var(--fg);
@@ -375,7 +386,7 @@ article a:hover {
 .finder-restart {
   margin-top: 1rem;
   padding: 0.5rem 0.9rem;
-  border: 1px dashed var(--border);
+  border: 1px dashed var(--border-interactive);
   border-radius: 6px;
   background: transparent;
   color: var(--muted);
