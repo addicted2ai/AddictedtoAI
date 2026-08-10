@@ -10,7 +10,9 @@ import { posts } from "./lib/posts";
 // no value: it burns the signal for the one page where we do know.
 const routes = [
   { path: "", priority: 1 },
-  { path: "/blog", priority: 0.8, lastModified: posts[0].datePublished },
+  // lastmod is "last modified", not "published" -- the post has been
+  // edited since it went up.
+  { path: "/blog", priority: 0.8, lastModified: posts[0].dateModified },
   { path: "/directory", priority: 0.8 },
   { path: "/projects", priority: 0.8 },
   { path: "/demos", priority: 0.8 },

@@ -31,7 +31,7 @@ export default function Projects() {
           metric it was supposed to.
         </p>
 
-        <h2>The idea</h2>
+        <h3>The idea</h3>
         <p>
           Most small sites either get redesigned in occasional bursts
           or slowly rot as a placeholder. This one is a test of a
@@ -42,7 +42,7 @@ export default function Projects() {
           placeholder until this pass replaced it.
         </p>
 
-        <h2>How it works</h2>
+        <h3>How it works</h3>
         <p>
           The short version: a scheduled job reads the site&rsquo;s
           changelog for its north-star metric and guardrails, proposes
@@ -53,7 +53,7 @@ export default function Projects() {
           <a href="/blog">blog</a>.
         </p>
 
-        <h2>Stack</h2>
+        <h3>Stack</h3>
         <p>
           Next.js (App Router), plain CSS with no framework, deployed
           on Vercel. GitHub Actions runs the weekly loop and the
