@@ -80,17 +80,31 @@ The scheduled trigger is currently off, so runs are started manually. To start
 one locally with Claude Code or Codex:
 
 ```
-node scripts/build-prompt.mjs            # dispatcher picks the track
-node scripts/build-prompt.mjs --track scout   # or force one
+node scripts/round.mjs start --agent claude-code   # or --agent codex
+node scripts/round.mjs check
+node scripts/round.mjs ship
 ```
 
-That prints the prompt to give the agent — the same text the workflow builds,
-so a local run and a scheduled one get identical instructions. The agent
-branches as `loop/<track>/<slug>`, opens a pull request, and requests
-auto-merge; GitHub merges it once `build-and-audit` passes.
+`start` prints the track the dispatcher chose, the branch to use, that track's
+tool scope, and the prompt — the same text the workflow builds, so a local
+round and a scheduled one get identical instructions. Add `--track maintain` to
+force one.
 
-`node scripts/dispatch.mjs` on its own shows which track is due and why,
-without producing a prompt.
+`check` runs lint, the docket validator, the track scope, a production-shaped
+build and the full route checks, against a server it starts and stops itself on
+the port the assertions expect. Running those by hand is how a check came to
+pass against markup containing no badges.
+
+`ship` pushes, opens the pull request and requests auto-merge. It does not
+merge; GitHub does that when `build-and-audit` passes.
+
+Claude Code has a `/local-loop` skill for this; Codex reads `AGENTS.md`. Both
+drive the same three commands.
+
+`node scripts/dispatch.mjs` shows which track is due and why, without producing
+a prompt. `node scripts/loop-history.mjs` shows how many runs have been
+attempted and how many failed — the changelog only records the ones that
+finished.
 
 Local runs are **supervised** — you are present and can throw the result away.
 They also run as you, and you are an admin, so branch protection cannot

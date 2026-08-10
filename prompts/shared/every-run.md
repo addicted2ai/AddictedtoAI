@@ -68,6 +68,7 @@ One paragraph on what this round was about. (PR #N)
 
 - Origin: unsupervised | supervised | maintainer
 - Track: the track you were assigned
+- Agent: which model did the work (claude-code, codex, claude-code-action)
 - Guardrails: what you ran, and what it said
 - Result: not yet measured, or the number and where it came from
 ```
@@ -75,6 +76,10 @@ One paragraph on what this round was about. (PR #N)
 `Origin` is required and the build fails without it. `unsupervised` if this run
 was scheduled and nobody read it first; `supervised` if a human triggered it and
 can veto before merge.
+
+`Agent` records which model did the work. This project's rounds have been
+produced by Claude Code, Codex and the GitHub action, and the site says only
+"an AI builds this site" -- less specific than the record is able to be.
 
 `Track` is required too. `scripts/dispatch.mjs` reads these to hold tracks to
 their quotas — notably meta's cap, which needs to know how much recent shipped

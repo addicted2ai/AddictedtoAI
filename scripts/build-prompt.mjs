@@ -22,13 +22,16 @@ function arg(name, fallback) {
 }
 
 const origin = arg("origin", "supervised");
+const agent = arg("agent", "unknown");
 if (!["supervised", "unsupervised", "maintainer"].includes(origin)) {
   console.error(`unknown origin: ${origin}`);
   process.exit(1);
 }
 
 let track = arg("track", null);
-let reason = "forced by hand";
+// A caller that already ran the dispatcher passes its reason through, so a
+// forced track and a dispatched one are not both reported as "forced".
+let reason = arg("reason", "forced by hand");
 
 if (!track) {
   const out = execFileSync("node", ["scripts/dispatch.mjs"], { encoding: "utf8" });
@@ -58,8 +61,12 @@ ${
     ? "This run was scheduled and nobody read it first: Origin is 'unsupervised'."
     : `This run was started by hand: Origin is '${origin}'.`
 }
-Record '- Track: ${track}' in your changelog entry. The dispatcher reads those
-to hold tracks to their quotas.
+Record these in your changelog entry:
+  - Track: ${track}
+  - Agent: ${agent}
+The dispatcher reads Track to hold each track to its quota. Agent says which
+model did the work -- rounds here have been produced by Claude Code, Codex and
+the GitHub action, and "an AI" is less specific than the record can be.
 
 When you are done, open a pull request and run 'gh pr merge --auto --squash'.
 Do not merge it yourself and do not wait for the checks.`;

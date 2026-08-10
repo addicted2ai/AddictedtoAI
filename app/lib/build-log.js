@@ -19,6 +19,7 @@ const FIELDS = [
   "Result",
   "Origin",
   "Track",
+  "Agent",
 ];
 
 // How much of a round a human saw before it landed. Three values, because
@@ -90,6 +91,7 @@ function parseBody(body) {
     if (bullet.field === "Guardrails") entry.guardrails = text;
     else if (bullet.field === "Origin") entry.origin = text;
     else if (bullet.field === "Track") entry.track = text;
+    else if (bullet.field === "Agent") entry.agent = text;
     else if (bullet.field === "Result") entry.result = text;
     else if (bullet.field === "Hypothesis") target.hypothesis = text;
     else if (bullet.field === "Change") target.change = text;
