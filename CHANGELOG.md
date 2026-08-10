@@ -45,6 +45,77 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+Third round under the showcase brief. PR #32 built the evidence, PR #33
+pointed the site at it, this one makes it navigable and shows the method
+rather than describing it. (PR #TBD)
+
+**1. The build log is searchable**
+- Hypothesis: The homepage promises that the record includes the rounds
+  where the hypothesis was wrong. Delivering on that promise currently
+  requires reading 31 rounds to find them, which nobody will do. A
+  promise a visitor can't check is the same as no promise.
+- Change: A search field on `/log` plus preset chips for the queries
+  that surface the interesting entries. Searching "wrong" returns 7
+  rounds; "dropped" returns 5.
+- Deliberately a *search* rather than an editorial tag. Classifying
+  entries as "this one was a mistake" would mean running a keyword
+  heuristic over prose and publishing whatever it decided — on a site
+  whose entire argument is "don't take our word for it, read the
+  record." Search makes no claim; it just finds.
+- The filter toggles `hidden` on the server-rendered entries instead
+  of passing 31 rounds of prose into a client component and
+  re-rendering them. That keeps the parsed log out of the JavaScript
+  payload entirely: the route's client JS went 155 B → 914 B, and the
+  page's transfer size 144 KB → 152 KB. Re-rendering it client-side
+  would have roughly doubled the page. Lighthouse on `/log` still
+  measures performance 0.99 / accessibility 1.00 / SEO 1.00.
+
+**2. "Anatomy of a round" on Demos**
+- Hypothesis: Describing a hypothesis-and-measurement loop in prose
+  asks the reader to imagine it. A worked example of one real round,
+  steppable, shows it in about fifteen seconds — and Demos' own
+  metrics (completion rate, repeat use) want something finishable.
+- Change: `app/demos/RoundWalkthrough.js`, a four-step walkthrough —
+  Hypothesis, Change, Guardrails, Result — whose content is pulled
+  from the parsed build log rather than written for the demo. The
+  round is referenced by *pull request number*, not position, because
+  round numbers shift as entries are added and a positional reference
+  would silently start pointing at a different round. Tool Finder
+  stays; this is added alongside it, not in place of it.
+- Two things the browser check caught: the quoted text rendered raw
+  markdown backticks until `inlineMarkdown` was applied client-side,
+  and each step button's accessible name read "1Hypothesis" until the
+  decorative number was marked `aria-hidden` (the ordering is already
+  carried by the list and `aria-current="step"`). Verified after:
+  zero raw backticks or asterisks in the panel, 5 `code` elements and
+  1 `em`. `/demos` measures performance 1.00 / accessibility 1.00 /
+  SEO 1.00 at 103 KB.
+
+**3. The blog post points at the evidence instead of duplicating it**
+- Hypothesis: The post was written when it was the only account of how
+  the site works. It now sits alongside a homepage making the same
+  claim and a build log proving it, so its job has changed: explain
+  the machinery, then get out of the way.
+- Change: Opening rewritten to state the human-wrote-the-first-commit
+  fact plainly, an early pointer to `/log` for readers who'd rather
+  inspect output than read prose, and a closing note that the log is
+  published unedited and parsed rather than retyped — plus a link to
+  the new walkthrough for anyone wanting the shape of one round
+  before reading thirty.
+
+- Guardrails: pass (`next build` clean; `npm run lint` clean;
+  `linkinator` across all 6 routes, 32 links, zero failures;
+  `scripts/check-routes.sh` green including the round-count
+  assertion; `/log` and `/demos` both re-measured with Lighthouse.)
+- Note, not a guardrail failure: Vercel began rejecting deploys
+  mid-round with "Deployment rate limited — retry in 24 hours." That
+  is the Hobby plan's daily build cap, hit after 33 pull requests in
+  one day, not a defect — `build-and-audit` passed on every one of
+  them. The consequence is that the live site lags the repository
+  until the window resets.
+- Result (measured the following week): not yet measured
+
+### 2026-08-10
 Second round under the showcase brief. PR #32 built the evidence; this
 one points the site at it. (PR #33)
 

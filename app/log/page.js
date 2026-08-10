@@ -1,6 +1,7 @@
 import { getBuildLog, getBuildLogStats } from "../lib/build-log";
 import { inlineMarkdown } from "../lib/inline-markdown";
 import { feedAlternates } from "../lib/site";
+import LogFilter from "./LogFilter";
 
 export const metadata = {
   title: "The Build Log",
@@ -64,9 +65,11 @@ export default function BuildLog() {
         </div>
       </dl>
 
+      <LogFilter total={entries.length} />
+
       <ol className="log-list">
         {entries.map((entry) => (
-          <li key={entry.id} className="log-entry" id={entry.id}>
+          <li key={entry.id} className="log-entry" id={entry.id} data-log-entry>
             <div className="log-meta">
               {/* A real heading, so screen-reader heading navigation
                   walks the log round by round rather than landing in a

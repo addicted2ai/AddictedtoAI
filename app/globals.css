@@ -647,3 +647,153 @@ h2.latest-post-label {
   color: var(--muted);
   font-weight: 600;
 }
+
+/* ---- Build log filter ----------------------------------------------- */
+
+.log-filter {
+  margin-top: 2rem;
+}
+
+.log-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.log-presets-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-right: 0.25rem;
+}
+
+.log-preset {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border-interactive);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.log-preset:hover,
+.log-preset:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.log-preset[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ---- Round walkthrough ---------------------------------------------- */
+
+.walkthrough-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.walkthrough-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border-interactive);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.walkthrough-step:hover,
+.walkthrough-step:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.walkthrough-step[aria-current="step"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.walkthrough-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--fg);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.walkthrough-step[aria-current="step"] .walkthrough-step-number {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.walkthrough-caption {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+.walkthrough-quote {
+  margin: 0;
+  padding: 1rem 1.15rem;
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  background: rgba(94, 234, 212, 0.04);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.walkthrough-nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.walkthrough-nav .finder-restart:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.walkthrough-footnote {
+  margin: 1.5rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.walkthrough-footnote a {
+  color: var(--accent);
+}
+
+.walkthrough-quote code {
+  background: var(--border);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.88em;
+  overflow-wrap: break-word;
+}
