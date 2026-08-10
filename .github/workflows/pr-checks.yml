@@ -23,6 +23,7 @@ jobs:
           cache: "npm"
 
       - run: npm ci
+      - run: npm run lint
       - run: npm run build
 
       - name: Start server
@@ -46,3 +47,36 @@ jobs:
         with:
           args: --base http://localhost:3000 http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos
           fail: true
+
+      # The non-HTML routes are shipped code too, and nothing above
+      # touches them: lychee only crawls the five pages. A feed that
+      # 500s, a sitemap that stops listing a route, or a manifest that
+      # is no longer valid JSON would all have gone unnoticed.
+      - name: Check non-HTML routes and the 404
+        if: always()
+        run: bash scripts/check-routes.sh
+
+      # Production serves the analytics build; the Lighthouse gate above
+      # measures the analytics-OFF build, because this workflow doesn't
+      # set the measurement ID. That gap is why this step exists. It is
+      # informational on purpose -- assertions are warn-level in
+      # lighthouserc.analytics.json, so it reports the real cost of
+      # analytics on every PR without gating on a third-party script's
+      # bad day.
+      - name: Rebuild and serve with analytics enabled
+        if: always()
+        env:
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: G-CI0000000
+        run: |
+          lsof -ti:3000 | xargs -r kill -9 || true
+          npm run build
+          npm run start & npx wait-on http://localhost:3000
+
+      - name: Lighthouse CI (analytics enabled, informational)
+        if: always()
+        continue-on-error: true
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: http://localhost:3000
+          configPath: "./lighthouserc.analytics.json"
+          uploadArtifacts: true

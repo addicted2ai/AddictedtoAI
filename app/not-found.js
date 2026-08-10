@@ -9,7 +9,7 @@ export default function NotFound() {
     <div>
       <h1>Page not found</h1>
       <p>
-        That page doesn't exist, or it moved. Here's everything that
+        That page doesn&rsquo;t exist, or it moved. Here&rsquo;s everything that
         does:
       </p>
       <div className="section-grid">
