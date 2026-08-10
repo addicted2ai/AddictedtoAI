@@ -225,7 +225,7 @@ Log presets report their active state consistently. (PR #38)
   active `wrong` preset.
 - Result: not yet measured.
 
-### Unreleased
+### 2026-08-10
 The build log is now a recurring update source, its crawl hints match
 what actually changes, and round links no longer move when another round
 is added above them. (PR #39)
@@ -272,6 +272,45 @@ is added above them. (PR #39)
   and Projects, and generated Log anchors include permanent PR-based ids.
   The route check now asserts both the rendered round count and the feed's
   round-item count.
+- Result: not yet measured.
+
+### Unreleased
+The public freshness signals now come from the same dated changelog that
+drives the build log, so a deploy cannot claim a page changed merely
+because the server clock moved. (PR #40)
+
+**1. Give the freshness signals one dated source**
+- Hypothesis: The sitemap and feed need to know when the site's changing
+  content was last updated, but deriving that separately in each route
+  would invite the same drift this project has already found in copied
+  thresholds and counts. A small build-log helper returning the newest
+  dated entry should make the source explicit and reusable.
+- Change: Added `getLatestBuildLogDate()`, which skips an `Unreleased`
+  entry and returns the newest dated changelog heading. It returns `null`
+  rather than inventing a timestamp if a changelog has no dated entry.
+
+**2. Make sitemap lastmod describe content, not deploy time**
+- Hypothesis: The homepage, Blog, Demos, and Log all expose data derived
+  from the build log, so a new round changes them even when their prose
+  files do not. Adding the newest dated build-log entry as their
+  `lastModified` should give crawlers a truthful freshness hint while
+  leaving the static Directory and Projects pages untouched.
+- Change: Sitemap entries for `/`, `/blog`, `/demos`, and `/log` now use
+  the shared latest build-log date; the Blog keeps its existing post date
+  as a fallback if the log has no dated entry.
+
+**3. Tell feed readers when the build stream last changed**
+- Hypothesis: The RSS feed now contains a recurring item for each build
+  round, but its channel has no `lastBuildDate`. Adding one from the same
+  dated source should let feed readers refresh based on actual content
+  freshness rather than an absent or hand-typed value.
+- Change: Added an RSS `lastBuildDate` for the newest dated build-log
+  entry. Extended the non-HTML route checks to require the four dynamic
+  sitemap dates and the feed channel date to match that same source.
+
+- Guardrails: pass locally. `npm run lint`, `npm run build`, and all route
+  checks pass; the new freshness assertion was also fed a deliberately
+  wrong expected date and failed before the real date was restored.
 - Result: not yet measured.
 
 ### 2026-08-10

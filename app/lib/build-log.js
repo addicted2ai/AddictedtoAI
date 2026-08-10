@@ -183,6 +183,17 @@ export function getBuildLogStats() {
   };
 }
 
+// The newest entry may be Unreleased while a PR is in flight. The first
+// dated entry is therefore the newest date we can substantiate, and it is
+// the value public freshness metadata should use rather than the current
+// clock or a hand-maintained copy elsewhere.
+export function getLatestBuildLogDate() {
+  return (
+    getBuildLog().find((entry) => /^\d{4}-\d{2}-\d{2}$/.test(entry.date))
+      ?.date || null
+  );
+}
+
 // The plain text of one entry, in the order the page renders it — the
 // same string the client-side search on /log matches against. Kept here
 // so a count computed at build time and a count produced by typing into

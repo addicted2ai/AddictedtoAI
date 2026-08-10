@@ -1,6 +1,6 @@
 import { SITE_DESCRIPTION, SITE_NAME, getSiteUrl } from "../lib/site";
 import { posts } from "../lib/posts";
-import { getBuildLog } from "../lib/build-log";
+import { getBuildLog, getLatestBuildLogDate } from "../lib/build-log";
 
 function escapeXml(value) {
   return value
@@ -20,6 +20,12 @@ function roundSummary(entry) {
 
 export function GET() {
   const siteUrl = getSiteUrl();
+  const latestBuildLogDate = getLatestBuildLogDate();
+  const lastBuildDate = latestBuildLogDate
+    ? `\n    <lastBuildDate>${new Date(
+        latestBuildLogDate
+      ).toUTCString()}</lastBuildDate>`
+    : "";
 
   const items = posts
     .map((post) => {
@@ -62,6 +68,7 @@ export function GET() {
     <link>${escapeXml(siteUrl)}</link>
     <description>${escapeXml(SITE_DESCRIPTION)}</description>
     <language>en</language>
+${lastBuildDate}
     <atom:link href="${escapeXml(`${siteUrl}/feed.xml`)}" rel="self" type="application/rss+xml" />
 ${items}
 ${roundItems}

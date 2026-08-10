@@ -158,6 +158,43 @@ for loc in $(curl -s "$BASE/sitemap.xml" | grep -o '<loc>[^<]*</loc>' | sed 's|<
   fi
 done
 
+# The homepage, Blog, Demos, and Log all expose changelog-derived content.
+# Their sitemap lastmod and the RSS channel's lastBuildDate should therefore
+# agree with the newest dated changelog entry, not with the deploy clock.
+echo
+latest_date=$(grep '^### 20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]$' CHANGELOG.md | head -1 | sed 's/^### //')
+expected_freshness=$(node -e 'process.stdout.write(new Date(process.argv[1]).toISOString())' "$latest_date")
+sitemap_body=$(curl -s "$BASE/sitemap.xml")
+SITEMAP="$sitemap_body" BASE_URL="$BASE" EXPECTED="$expected_freshness" node <<'NODE'
+const sitemap = process.env.SITEMAP;
+const base = process.env.BASE_URL;
+const expected = process.env.EXPECTED;
+const paths = [base, `${base}/blog`, `${base}/demos`, `${base}/log`];
+let failures = 0;
+for (const path of paths) {
+  const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = sitemap.match(
+    new RegExp(`<url>\\s*<loc>${escaped}</loc>\\s*<lastmod>([^<]+)</lastmod>`)
+  );
+  if (match?.[1] === expected) {
+    console.log(`ok    sitemap freshness ${path} (${expected})`);
+  } else {
+    console.log(`FAIL  sitemap freshness ${path} -> ${match?.[1] || "missing"} (want ${expected})`);
+    failures++;
+  }
+}
+process.exitCode = failures ? 1 : 0;
+NODE
+failures=$((failures + $?))
+
+feed_last_build=$(curl -s "$BASE/feed.xml" | grep -o '<lastBuildDate>[^<]*</lastBuildDate>' | head -1)
+if [ "$feed_last_build" = "<lastBuildDate>$(node -e 'process.stdout.write(new Date(process.argv[1]).toUTCString())' "$latest_date")</lastBuildDate>" ]; then
+  echo "ok    feed freshness $feed_last_build"
+else
+  echo "FAIL  feed freshness $feed_last_build"
+  failures=$((failures + 1))
+fi
+
 echo
 if [ "$failures" -gt 0 ]; then
   echo "$failures check(s) failed"
