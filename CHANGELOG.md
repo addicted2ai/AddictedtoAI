@@ -32,7 +32,7 @@ Returning-visitor rate (site-wide).
 
 ### Unreleased
 Three interaction fixes in one PR, bundled at the maintainer's
-request. (PR #TBD)
+request. (PR #30)
 
 **1. Controls whose border is the only thing marking them**
 - Hypothesis: The search input and the Finder/CTA buttons have a
