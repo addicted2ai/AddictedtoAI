@@ -69,6 +69,33 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+The audit read the published routes as a stranger rather than treating a
+passing build as evidence that every page deserved to stay. It withdrew the
+standalone Projects page, which repeated the Blog and build-log explanation
+without giving a visitor something useful to use, compare, or learn from, and
+left the address resolving with an explanation. It also corrected the Blog's
+description of the loop after the charter replaced the old metric-driven
+process with track selection, a docket, and preflight.
+
+**1. Withdraw the Projects page**
+- Hypothesis: the page is a self-description whose value depends on the novelty of how the site was made, duplicates the Blog and build log, and does not earn a standalone place in a hub meant to be useful before it is interesting. Withdrawing it should make the site's promise smaller and more honest without breaking old links.
+- Change: replaced /projects with a dated withdrawal notice that explains the quality judgment, links to the audit round and to the remaining visitor-facing Directory and Demos, and removed Projects from the navigation and homepage section cards. The route remains in the sitemap so the address still resolves.
+
+**2. Bring the process description up to date**
+- Hypothesis: the Blog's loop section still described the retired north-star metric and a one-size-fits-all scheduled run, while the current record uses a charter, policy, docket, preflight, and assigned tracks. Rewriting that paragraph and the shipped-work list should stop a reader from learning an obsolete process from the site's own explanation.
+- Change: updated the Blog's loop description, noted the withdrawn project write-up, changed the Blog section label to describe its actual post, and refreshed the shared site description used by metadata, the manifest, RSS, and structured data.
+
+**3. Make the required local route check runnable on Windows**
+- Hypothesis: the mandated check should exercise the same route assertions on the Windows machine that starts a round. The first run exposed that selecting the system Bash picked WSL, which could not reach the Windows production server; choosing Git Bash when installed should make the check measure the app rather than the shell boundary.
+- Change: the round runner now selects Git-for-Windows Bash on Windows when available and keeps the existing Bash command on Linux. The route suite then reached the local production server and completed all assertions.
+
+- Origin: supervised
+- Track: audit
+- Agent: codex
+- Guardrails: ran the rendered visitor pass across /, /blog, /directory, /projects, /demos, and /log; the retraction stays within the policy limit of two withdrawals. The production build, lint, docket validation, track-scope check, and route checks are still required before shipping.
+- Result: not yet measured. The quality outcome is the withdrawal itself; visitor behavior has no configured measurement.
+
+### 2026-08-10
 The first loop run on GitHub's own infrastructure did real work for six minutes
 and then hit a turn limit and vanished, leaving nothing behind at all.
 

@@ -24,6 +24,17 @@ const PORT = 3000; // The sitemap is built with this. Serving elsewhere fails
                    // seven route checks for reasons that have nothing to do
                    // with the round.
 const BASE = `http://localhost:${PORT}`;
+// Windows can have both WSL Bash and Git-for-Windows Bash installed. WSL
+// cannot see the Windows localhost listener that this local check starts,
+// while Git Bash shares the host network and has Node on PATH. Prefer it
+// when present; Linux keeps using its normal Bash.
+const WINDOWS_GIT_BASH = process.env.ProgramFiles
+  ? process.env.ProgramFiles + "\\Git\\bin\\bash.exe"
+  : "C:\\Program Files\\Git\\bin\\bash.exe";
+const ROUTE_CHECK_SHELL =
+  process.platform === "win32" && fs.existsSync(WINDOWS_GIT_BASH)
+    ? WINDOWS_GIT_BASH
+    : "bash";
 
 // npm is a .cmd shim on Windows, which execFile cannot spawn (EINVAL), while
 // passing an args array through a shell is deprecated. Running the whole thing
@@ -212,7 +223,7 @@ async function check() {
       failures++;
     } else {
       head("Route checks");
-      const routes = tryRun("bash", ["scripts/check-routes.sh"], {
+      const routes = tryRun(ROUTE_CHECK_SHELL, ["scripts/check-routes.sh"], {
         env: { ...env, BASE },
       });
       const tail = routes.out.split("\n").filter(Boolean).slice(-3).join("\n");
