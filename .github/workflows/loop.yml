@@ -135,12 +135,63 @@ jobs:
             echo PROMPT_EOF
           } >> "$GITHUB_OUTPUT"
 
+      # No continue-on-error: a failed round must fail the job. The reporting
+      # step below runs on `if: always()`, which reads the outcome without
+      # swallowing it -- masking the failure to make it describable would be a
+      # strange way to improve visibility.
       - name: Run the ${{ needs.dispatch.outputs.track }} track
+        id: track_run
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.prompt.outputs.content }}
+          # No turn limit. The 45-minute job timeout above is the runaway
+          # guard, and inference is bounded by the maintainer's subscription
+          # (CHARTER.md rule 15).
+          #
+          # There was a 40-turn cap here, inherited from the old single-prompt
+          # loop that made one small change per round. It guaranteed that any
+          # research-shaped track failed: the first real maintain run spent 41
+          # turns fetching vendor pages and was cut off before it could commit
+          # anything. Scout, maintain and audit all fetch external sources by
+          # design -- that is the entire reason they have web access -- so a
+          # limit tuned for a round that edits one file is a limit that stops
+          # them working at all.
           claude_args: |
-            --max-turns 40
             --allowedTools "${{ steps.scope.outputs.tools }}"
           show_full_output: true
+
+      # A run that dies mid-round produces nothing: no branch, no pull request,
+      # and no changelog entry. The only trace is a red mark in a tab nobody is
+      # watching, and "no round shipped" then looks identical to "no round was
+      # attempted". Those are different facts, and CHARTER.md rule 8 does not
+      # let the record keep only the flattering one.
+      #
+      # This cannot write to the record itself -- a failed run has nothing to
+      # commit and the branch is protected -- so it makes the outcome legible
+      # where it can, and names what a human needs to do about it.
+      - name: Report the outcome
+        if: always()
+        env:
+          TRACK: ${{ needs.dispatch.outputs.track }}
+          REASON: ${{ needs.dispatch.outputs.reason }}
+          RESULT: ${{ steps.track_run.outcome }}
+        run: |
+          {
+            echo "### Loop run: \`$TRACK\`"
+            echo
+            echo "- Dispatcher: $REASON"
+            echo "- Outcome: **$RESULT**"
+            if [ "$RESULT" != "success" ]; then
+              echo
+              echo "This round shipped nothing and wrote no changelog entry."
+              echo "Nothing records that it was attempted except this run."
+              echo
+              echo "Check the step log for the cause. A \`error_max_turns\`"
+              echo "or timeout means the round was cut off mid-work, not that"
+              echo "there was nothing to do."
+              echo
+              echo "\`node scripts/loop-history.mjs\` shows how often this is"
+              echo "happening, which is the number that matters."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

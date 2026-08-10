@@ -69,6 +69,47 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+The first loop run on GitHub's own infrastructure did real work for six minutes
+and then hit a turn limit and vanished, leaving nothing behind at all.
+
+**1. Remove the turn limit**
+- Hypothesis: `--max-turns 40` was inherited from the old single-prompt loop,
+  which made one small change per round. A maintain round has to fetch twelve
+  vendor pages before it can compare anything, so the limit guaranteed that any
+  research-shaped track failed — scout, maintain and audit all fetch external
+  sources by design, which is the entire reason they have web access. The first
+  real maintain run spent 41 turns and $2.42 and was cut off before it could
+  commit. Removing the limit and relying on the 45-minute job timeout should let
+  those tracks finish, with inference still bounded by the maintainer's
+  subscription under rule 15.
+- Change: `--max-turns` removed. The runaway guard is now wall-clock only.
+
+**2. Make a failed run visible**
+- Hypothesis: a run that dies mid-round produces no branch, no pull request and
+  no changelog entry, so "no round shipped" is indistinguishable from "no round
+  was attempted". The record therefore contains only the runs that worked, which
+  is a numerator with no denominator and flatters the work in exactly the way
+  rule 7 forbids. The site publishes rounds shipped and cannot see any of this.
+- Change: the workflow now reports its outcome on every run, including failures,
+  and says plainly that a failed round wrote nothing. Added
+  `scripts/loop-history.mjs`, which reads the Actions API — the only place
+  attempts are recorded — and reports attempted, succeeded, failed and merged.
+  Run against live data at the time of writing it says: 2 attempted, 0
+  succeeded, 1 round merged. None of that is currently on the site, and a docket
+  item is filed to put it there.
+
+- Origin: maintainer
+- Track: meta
+- Guardrails: `loop.yml` parses and the run job's steps are in the expected
+  order; `loop-history.mjs` runs against the live API and reports the numbers
+  above. One thing was caught while writing it: the reporting step was first
+  given `continue-on-error` so it could read the outcome, which would have made
+  a failed round report success — masking a failure in order to describe it. It
+  reads the outcome under `if: always()` instead, which does not swallow it.
+- Result: not measured. The observable outcome is that the failure rate is now
+  computable at all; it was not before.
+
+### 2026-08-10
 The entry below broke the build by describing the bug it was fixing.
 
 **1. Writing about a citation counted as making one**
