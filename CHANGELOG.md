@@ -47,7 +47,7 @@ Returning-visitor rate (site-wide).
 ### Unreleased
 Third round under the showcase brief. PR #32 built the evidence, PR #33
 pointed the site at it, this one makes it navigable and shows the method
-rather than describing it. (PR #TBD)
+rather than describing it. (PR #34)
 
 **1. The build log is searchable**
 - Hypothesis: The homepage promises that the record includes the rounds
