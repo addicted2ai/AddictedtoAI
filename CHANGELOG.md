@@ -31,6 +31,48 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The north star is returning-visitor rate, and after 25
+  rounds the site still offers a visitor no mechanism whatsoever for
+  coming back on purpose. Every improvement so far has optimised the
+  visit someone is already having. A feed is the oldest and cheapest
+  "tell me when there's something new" primitive on the web, it costs
+  a returning visitor zero effort after subscribing once, and unlike
+  a mailing list it needs no consent flow, no address, and no
+  third-party service. One post makes for a thin feed today, but the
+  subscribe decision happens on the visit someone is already having —
+  the feed has to exist before the second post, not after it.
+- Change: Added `app/feed.xml/route.js`, a Route Handler emitting
+  RSS 2.0 at `/feed.xml` with the `atom:link rel="self"` element
+  validators expect, served as `application/rss+xml`. Extracted post
+  metadata into `app/lib/posts.js` so the page's `<title>`, its
+  visible heading, its JSON-LD, and the feed item all read from one
+  record instead of four hardcoded copies that can drift — the same
+  single-source-of-truth pattern as `lib/sections.js` and
+  `lib/tool-categories.js`. Added feed autodiscovery to all five
+  routes plus the 404, and a visible "Subscribe via RSS" link in the
+  blog byline, since browsers stopped surfacing autodiscovery years
+  ago and an invisible feed gets no subscribers. Also wrapped the
+  post date in a `<time dateTime="...">` element while it was being
+  templated. (PR #TBD)
+- Note for future rounds: `alternates` on a page **replaces** the
+  root layout's rather than merging with it — confirmed empirically,
+  the same trap the canonical-URL round hit. Setting the feed link
+  once at the root put it on the 404 and nowhere else. Hence
+  `feedAlternates` in `app/lib/site.js`, spread into each page's
+  `alternates` explicitly.
+- Guardrails: pass (local `next build` clean, `/feed.xml` compiles to
+  a static route, 0 B of client JS; local link check with `linkinator`
+  for all 5 routes, 30 links — one more than last round, the new feed
+  link — zero failures. Feed parsed and structurally checked rather
+  than eyeballed: well-formed XML, `rss version="2.0"`, correct
+  `atom:link rel="self"`, one item whose `guid`/`link` resolve to the
+  post and whose RFC-822 `pubDate` parses. Verified all 5 routes plus
+  a 404 each carry exactly one autodiscovery link, and that every
+  route's canonical URL is still its own — the risk in touching five
+  `alternates` blocks at once.)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The Tool Finder swaps the category buttons out for the
   result, which destroys the element the visitor just activated —
   and nothing catches the focus. Measured before touching anything,

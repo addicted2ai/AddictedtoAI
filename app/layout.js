@@ -1,6 +1,6 @@
 import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { getSiteUrl } from "./lib/site";
+import { feedAlternates, getSiteUrl } from "./lib/site";
 import Nav from "./Nav";
 
 // Unset by default: with no measurement ID configured, no analytics
@@ -14,6 +14,9 @@ export const metadata = {
     default: "AddictedtoAI",
   },
   description: "AI news, tools, projects, and demos.",
+  alternates: {
+    types: feedAlternates,
+  },
 };
 
 export const viewport = {

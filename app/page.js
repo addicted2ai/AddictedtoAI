@@ -1,4 +1,5 @@
 import { sections } from "./lib/sections";
+import { feedAlternates } from "./lib/site";
 
 export const metadata = {
   title: {
@@ -8,6 +9,7 @@ export const metadata = {
     "A hub for AI news, a curated AI tool directory, project write-ups, and interactive demos — built and maintained by an automated propose-build-measure loop.",
   alternates: {
     canonical: "/",
+    types: feedAlternates,
   },
 };
 

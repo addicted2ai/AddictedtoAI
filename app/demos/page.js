@@ -1,4 +1,5 @@
 import ToolFinder from "./ToolFinder";
+import { feedAlternates } from "../lib/site";
 
 export const metadata = {
   title: "Demos",
@@ -6,6 +7,7 @@ export const metadata = {
     "Interactive AI demos and playgrounds. Try the Tool Finder to get AI tool recommendations for what you're trying to do.",
   alternates: {
     canonical: "/demos",
+    types: feedAlternates,
   },
 };
 

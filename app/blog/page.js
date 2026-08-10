@@ -1,26 +1,28 @@
-import { getSiteUrl } from "../lib/site";
+import { feedAlternates, getSiteUrl } from "../lib/site";
+import { posts } from "../lib/posts";
+
+const post = posts[0];
 
 export const metadata = {
-  title: "How This Site Builds Itself",
-  description:
-    "AddictedtoAI.net is maintained by a scheduled, hypothesis-driven propose-build-measure loop instead of manual redesigns. Here's how the loop, guardrails, and review process work.",
+  title: post.metaTitle,
+  description: post.description,
   alternates: {
-    canonical: "/blog",
+    canonical: post.path,
+    types: feedAlternates,
   },
 };
 
 const postJsonLd = {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  headline: "How this site builds itself",
-  description:
-    "AddictedtoAI.net is maintained by a scheduled, hypothesis-driven propose-build-measure loop instead of manual redesigns. Here's how the loop, guardrails, and review process work.",
-  datePublished: "2026-08-09",
+  headline: post.title,
+  description: post.description,
+  datePublished: post.datePublished,
   author: { "@type": "Organization", name: "AddictedtoAI" },
   publisher: { "@type": "Organization", name: "AddictedtoAI" },
   mainEntityOfPage: {
     "@type": "WebPage",
-    "@id": `${getSiteUrl()}/blog`,
+    "@id": `${getSiteUrl()}${post.path}`,
   },
 };
 
@@ -31,8 +33,12 @@ export default function Blog() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(postJsonLd) }}
       />
-      <h1>How this site builds itself</h1>
-      <p className="post-meta">Posted 2026-08-09</p>
+      <h1>{post.title}</h1>
+      <p className="post-meta">
+        Posted <time dateTime={post.datePublished}>{post.datePublished}</time>
+        {" · "}
+        <a href="/feed.xml">Subscribe via RSS</a>
+      </p>
 
       <p>
         Nobody manually redesigns AddictedtoAI.net. Instead, a scheduled
