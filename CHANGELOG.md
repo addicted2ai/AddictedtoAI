@@ -49,7 +49,7 @@ The log became searchable last round, which made it browsable but not
 citable: there was still no way to point someone at one round. This round
 makes a single round addressable, puts the search in the URL so a
 filtered view can be shared, and removes the last hand-counted number
-from the blog. (PR #TBD)
+from the blog. (PR #35)
 
 **1. Every round has a permalink**
 - Hypothesis: The anchor ids (`id="round-12"`) have existed since the log
