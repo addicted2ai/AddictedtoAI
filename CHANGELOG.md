@@ -31,6 +31,39 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: The blog post is this site's pitch — a public, honest
+  record of a loop that measures itself — and it has quietly gone out
+  of date in the two ways most damaging to that pitch. It states the
+  guardrail as "Lighthouse performance, accessibility, and SEO scores
+  all at or above 0.85"; performance has been 0.80 against a
+  median of 3 since PR #5 lowered it. And its "What's shipped so far"
+  list names three changes, frozen at PR #3, while 25 loop PRs have
+  merged. A page arguing that the process is trustworthy because
+  everything gets written down, which is itself wrong about the
+  numbers it quotes, undercuts its own argument. This is Blog's
+  read-time and organic-search metric too: a stale post is a weaker
+  page.
+- Change: Corrected the guardrail paragraph in `app/blog/page.js` to
+  the real thresholds, and added the reason the performance floor
+  moved (the same untouched homepage scoring 0.83 then 0.74 back to
+  back on shared CI hardware) — the "why" is more interesting than
+  the number and is exactly the sort of thing the post exists to
+  show. Replaced the frozen three-item list with four thematic
+  groups: content, findability, accessibility, and fixing what
+  earlier rounds got wrong. That last group is the honest one, and
+  the post now says so. **Structural point: the list is a summary
+  rather than a running log specifically so it stops going stale** —
+  restating it round by round is what broke it the first time, and
+  `CHANGELOG.md` is already the per-round ledger the "Follow along"
+  section points at. (PR #27)
+- Guardrails: pass (local `next build` clean; local link check with
+  `linkinator` for all 5 routes, 30 links, zero failures; verified
+  against the served page that the "all at or above 0.85" claim is
+  gone and that the corrected thresholds render). Prose-only change:
+  no CSS, no new components, no routing.
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: The north star is returning-visitor rate, and after 25
   rounds the site still offers a visitor no mechanism whatsoever for
   coming back on purpose. Every improvement so far has optimised the
