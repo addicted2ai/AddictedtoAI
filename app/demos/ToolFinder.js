@@ -31,10 +31,19 @@ export default function ToolFinder() {
   if (selected) {
     const category = toolCategories.find((c) => c.name === selected);
     return (
-      <div className="finder-result">
-        <p className="finder-result-label" ref={resultRef} tabIndex={-1}>
+      <div
+        className="finder-result"
+        role="region"
+        aria-labelledby="finder-result-label"
+      >
+        <h3
+          id="finder-result-label"
+          className="finder-result-label"
+          ref={resultRef}
+          tabIndex={-1}
+        >
           For {category.name.toLowerCase()}, try:
-        </p>
+        </h3>
         <div className="tool-grid">
           {category.tools.slice(0, 2).map((tool) => (
             <a
@@ -43,6 +52,12 @@ export default function ToolFinder() {
               target="_blank"
               rel="noopener noreferrer"
               className="tool-card"
+              onClick={() =>
+                trackEvent("tool_finder_tool_click", {
+                  tool_name: tool.name,
+                  category: category.name,
+                })
+              }
             >
               <h3>{tool.name}</h3>
               <p>{tool.description}</p>
@@ -51,7 +66,11 @@ export default function ToolFinder() {
           ))}
         </div>
         <p className="finder-more-link">
-          <a href="/directory">See all {category.name} tools in the Directory &rarr;</a>
+          <a
+            href={`/directory?q=${encodeURIComponent(category.name)}`}
+          >
+            See all {category.name} tools in the Directory &rarr;
+          </a>
         </p>
         <button
           type="button"
@@ -65,8 +84,12 @@ export default function ToolFinder() {
   }
 
   return (
-    <div className="finder-questions">
-      <p ref={questionRef} tabIndex={-1}>
+    <div
+      className="finder-questions"
+      role="group"
+      aria-labelledby="finder-question-label"
+    >
+      <p id="finder-question-label" ref={questionRef} tabIndex={-1}>
         What are you trying to do?
       </p>
       <div className="finder-options">

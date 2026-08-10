@@ -50,6 +50,45 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+The Tool Finder already moved focus and recorded completion, but its result
+state did not name itself to assistive technology, its handoff to Directory
+discarded the selected category, and recommendation clicks were invisible
+to the interaction metrics. (PR #44)
+
+**1. Give the Finder states named boundaries**
+- Hypothesis: Selecting a Tool Finder category replaces the question with a
+  result, but the two states are generic containers. A named group for the
+  question and a named result region should make the current state easier to
+  identify when navigating by landmarks or reading order, while preserving
+  the existing focus move.
+- Change: Added explicit group and region relationships to the question and
+  result states, using the visible question/result text as their labels.
+
+**2. Preserve the selected category into Directory**
+- Hypothesis: The Finder's "See all" link says it opens all tools in the
+  selected category, but it currently lands on an unfiltered Directory. A
+  category query in the handoff URL should let a visitor continue from the
+  recommendation to the complete matching list without retyping anything.
+- Change: The handoff now links to `/directory?q=` using the selected
+  category's encoded name. Directory's existing category matching handles
+  the filter; no new search behavior is introduced.
+
+**3. Measure recommendation click-through**
+- Hypothesis: The Demos metrics now record Finder completion and restart,
+  but the two recommended tool cards are the action the completed state is
+  meant to produce and currently have no event. A `tool_finder_tool_click`
+  event with the tool and category should make that continuation measurable
+  without changing the external link behavior.
+- Change: Added the optional click event to each Finder recommendation card.
+  It remains a no-op when analytics is not configured.
+
+- Guardrails: pass locally. `npm run lint`, `npm run build`, and route checks
+  pass; the route checker asserts the server-rendered Finder group, and the
+  browser verified the named result state, the category query handoff, and
+  the expected event names in the client bundle.
+- Result: not yet measured.
+
+### 2026-08-10
 Search already shared its state and announced its counts, but the controls
 were still anonymous layout wrappers and Log matching included text that
 only exists for screen readers. (PR #43)
@@ -88,6 +127,8 @@ only exists for screen readers. (PR #43)
   In the browser, pressing Enter preserves the Directory and Log URLs, and
   a screen-reader-only link-label query returns zero visible rounds while a
   visible query still returns its expected matches.
+
+- Result: not yet measured.
 
 ### 2026-08-10
 Three numbers this site publishes about itself. One was flattering and
