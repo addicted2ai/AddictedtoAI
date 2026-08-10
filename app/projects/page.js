@@ -74,11 +74,14 @@ export default function Projects() {
         <h3>Stack</h3>
         <p>
           Next.js (App Router), plain CSS with no framework, deployed
-          on Vercel. GitHub Actions runs the weekly loop and the
-          per-PR guardrail checks &mdash; Lighthouse CI for
-          performance/accessibility/SEO and a broken-link check
-          against the live build. Claude Code drives the propose,
-          implement, and pull-request step each round.
+          on Vercel. GitHub Actions runs the per-PR guardrail checks
+          &mdash; Lighthouse CI for performance/accessibility/SEO, a
+          broken-link check against the live build, and a set of route
+          assertions. A scheduled workflow exists to run the loop
+          unattended, but has not taken over yet: rounds so far have
+          been started by hand from a local Claude Code or Codex
+          install, which is why every entry in the{" "}
+          <a href="/log">build log</a> is marked as supervised.
         </p>
 
         <div className="project-actions">
