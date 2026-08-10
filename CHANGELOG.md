@@ -31,6 +31,49 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+- Hypothesis: Every entry in this log ends with "Result: not yet
+  measured," and it always will, because **nothing on this site is
+  instrumented at all**. `README.md` step 4 and `.env.example` both
+  describe `NEXT_PUBLIC_GA_MEASUREMENT_ID` as the analytics hookup,
+  but no code has ever read that variable — grep confirms zero
+  references outside those two docs. So the north-star metric
+  (returning-visitor rate) and all eleven per-section metrics have no
+  mechanism behind them, and 22 rounds of hypotheses have been
+  graded on nothing. Wiring up the documented variable is the
+  precondition for this loop ever closing its own feedback cycle.
+- Change: Added `@next/third-parties` (Vercel's own package, pinned
+  to 14.2.35 to match `next`; adds zero transitive dependencies) and
+  render `<GoogleAnalytics gaId={...} />` from `app/layout.js`, gated
+  on `NEXT_PUBLIC_GA_MEASUREMENT_ID`. Unset — which is the state on
+  every environment today — the site emits no analytics script
+  whatsoever, so this ships inert and stays inert until a human sets
+  the variable in Vercel. Used the officially documented component
+  rather than hand-rolling the `gtag` bootstrap with `next/script`,
+  which is what Next's own `next-script-for-ga` lint rule exists to
+  discourage. Documented the measured cost in `README.md` and
+  `.env.example`. (PR #24)
+- Guardrails: pass, but with a caveat that matters more than the
+  pass. Local `next build` clean both ways; shared JS 87.2 kB →
+  87.3 kB with the variable unset (~100 bytes of client-reference
+  manifest for a component that never renders). Link check with
+  `linkinator` for all 5 routes, 29 links, zero failures. Verified
+  both configurations in a real browser: unset → zero
+  `googletagmanager` references anywhere in the built output and zero
+  third-party requests; set → exactly one tag on each of the 5
+  routes. **The cost, measured over the wire with CDP rather than
+  guessed: analytics off is 10 requests / 97.4 KB, analytics on is 12
+  requests / 243.3 KB. `gtag.js` alone is 145.9 KB — 1.5x the entire
+  rest of the page.** Local Lighthouse can't score that difference
+  (this machine returns 1.00 on performance either way; the CI
+  hardware is what the 0.80 floor was calibrated against), and
+  `pr-checks.yml` does not set the variable, so the guardrail is
+  currently measuring the analytics-off build and will keep passing
+  regardless of what analytics costs in production. That gap is real
+  and is the obvious next round: make CI measure the config we
+  actually ship.
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 - Hypothesis: Directory search filters as you type, but nothing ever
   says how many tools matched. A sighted visitor can count cards; a
   screen-reader user gets nothing at all — the results silently swap

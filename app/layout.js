@@ -1,6 +1,11 @@
 import "./globals.css";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { getSiteUrl } from "./lib/site";
 import Nav from "./Nav";
+
+// Unset by default: with no measurement ID configured, no analytics
+// script is emitted at all. See .env.example and README step 4.
+const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -38,6 +43,7 @@ export default function RootLayout({ children }) {
         <main id="main-content" tabIndex={-1}>
           {children}
         </main>
+        {gaMeasurementId ? <GoogleAnalytics gaId={gaMeasurementId} /> : null}
       </body>
     </html>
   );
