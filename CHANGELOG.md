@@ -45,6 +45,76 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+The log became searchable last round, which made it browsable but not
+citable: there was still no way to point someone at one round. This round
+makes a single round addressable, puts the search in the URL so a
+filtered view can be shared, and removes the last hand-counted number
+from the blog. (PR #TBD)
+
+**1. Every round has a permalink**
+- Hypothesis: The anchor ids (`id="round-12"`) have existed since the log
+  was built, but nothing on the page exposed them. Citing one round meant
+  sending someone 254 KB of HTML and telling them to scroll. If the
+  argument for this site is "don't take our word for it, read the
+  record," the smallest useful unit of that record has to be linkable.
+- Change: The `Round N` heading is now a link to its own anchor, with a
+  `#` affordance on hover and focus. Padded to 96x27 px so it clears the
+  24x24 minimum target size in WCAG 2.5.8 — measured in the browser, not
+  eyeballed — and offset by the same amount so adding the target moved
+  nothing.
+
+**2. The search lives in the URL**
+- Hypothesis: A filtered view was unshareable, which undercut the search
+  added last round: "search for 'wrong' and read those seven rounds" is a
+  worse instruction than a link that does it.
+- Change: The query syncs to `?q=`, and `/log?q=wrong` filters on
+  arrival. `replaceState`, not `pushState` — the search is a view
+  control, and pushing would put one history entry per keystroke between
+  the visitor and wherever they came from. Verified: `history.length`
+  does not move while typing. The trade-off is that Back leaves the page
+  instead of clearing the search.
+- The two features collide in a case worth writing down. A URL can carry
+  both a search and a permalink, and the search can hide the very round
+  the permalink points at — a link that silently resolves to nothing. The
+  rule is that the permalink wins: the search is dropped, the URL is
+  rewritten to match, and the round is scrolled into view.
+
+**3. Copy that counts things counts them from the data**
+- Hypothesis: The blog post ended with "if you want the shape of one
+  before reading thirty." That was accurate the day it shipped and wrong
+  three rounds later. The standing rule here is that a stated fact is
+  either derived at build time or can't drift; this was neither.
+- Change: The count is read from the parsed changelog. The neighbouring
+  "sorted itself into four kinds" was rewritten to "the same recurring
+  kinds" — the honest fix for a hand-maintained list isn't always to
+  derive it, sometimes it's to stop asserting a number nobody needs.
+
+Notes on the verification, since one part of it was wrong first:
+- The check for "permalink beats search" passed, then failed, then passed
+  for the wrong reason. The first version picked round 2 as its target
+  without checking whether round 2 actually matched the query — it did,
+  so nothing was being tested. The second version picked a genuinely
+  hidden round and went red. The cause was in the *test*: navigating
+  between two URLs that differ only by their hash is a same-document
+  navigation, so React never re-mounted and the page under test was still
+  the previous one.
+- That turned out to be a real bug rather than only a test artifact.
+  Pasting a `#round-N` onto an already-filtered page changes only the
+  hash, so nothing re-mounts and the permalink rule never ran. Fixed with
+  a `hashchange` listener, and both paths — cold load and same-document
+  hash change — are now checked separately.
+- The whole harness was then run against a deliberately disabled version
+  of the rule to confirm it could still go red: 10/12 instead of 12/12,
+  with the two conflict checks failing and nothing else moving.
+
+- Guardrails: pass. Lint clean, 12/12 browser checks, all route checks
+  pass. Lighthouse `/log` 0.99 / 1.00 / 1.00 / 1.00 and `/blog` 1.00
+  across the board, CLS 0 on both. `/log` transfer 155 KiB → 156 KiB;
+  route JS 914 B → 1.22 kB.
+- Result: not yet measured. Whether anyone actually cites a round is the
+  test, and that needs traffic.
+
+### 2026-08-10
 Third round under the showcase brief. PR #32 built the evidence, PR #33
 pointed the site at it, this one makes it navigable and shows the method
 rather than describing it. (PR #34)

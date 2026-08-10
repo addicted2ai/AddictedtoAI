@@ -16,27 +16,107 @@ function countLabel(count) {
   return `${count} rounds mention`;
 }
 
+// The entries are server-rendered. Filtering them by toggling `hidden`
+// on the existing markup — rather than passing all of that prose into a
+// client component and re-rendering it — keeps the parsed log out of the
+// JavaScript payload entirely. Measured: the alternative would have
+// roughly doubled the page's transfer size.
+function applyFilter(query) {
+  const normalised = query.trim().toLowerCase();
+  let shown = 0;
+  for (const el of document.querySelectorAll("[data-log-entry]")) {
+    const match =
+      !normalised || el.textContent.toLowerCase().includes(normalised);
+    el.hidden = !match;
+    if (match) shown += 1;
+  }
+  return shown;
+}
+
+// `replaceState`, not `pushState`: the search is a view control, not a
+// navigation. Pushing would put one history entry per keystroke between
+// the visitor and wherever they came from. The trade-off is that Back
+// leaves the page rather than clearing the search, which is the lesser
+// of the two.
+function writeUrl(query) {
+  const params = new URLSearchParams(window.location.search);
+  const trimmed = query.trim();
+  if (trimmed) params.set("q", trimmed);
+  else params.delete("q");
+  const search = params.toString();
+  const url = `${window.location.pathname}${search ? `?${search}` : ""}${
+    window.location.hash
+  }`;
+  window.history.replaceState(null, "", url);
+}
+
 export default function LogFilter({ total }) {
   const [query, setQuery] = useState("");
   const [matches, setMatches] = useState(total);
   const [announcement, setAnnouncement] = useState("");
   const inputRef = useRef(null);
+  const firstRun = useRef(true);
+  // Mirrors `query` for the hashchange listener, which is registered
+  // once and would otherwise only ever see the mount-time value.
+  const queryRef = useRef("");
 
-  // The 31 entries are server-rendered. Filtering them by toggling
-  // `hidden` on the existing markup — rather than passing all of that
-  // prose into a client component and re-rendering it — keeps the
-  // parsed log out of the JavaScript payload entirely. Measured: the
-  // alternative would have roughly doubled the page's transfer size.
+  // Adopt `?q=` from the URL on mount, filter immediately, then honour
+  // any `#round-N`. This runs the first filter pass itself rather than
+  // leaving it to the effect below, because the browser has already
+  // scrolled to the hash by now — against the *unfiltered* page — and
+  // hiding entries afterwards would leave that scroll pointing at the
+  // wrong round.
+  //
+  // Not read during render: the page is statically generated, so the
+  // server has no query string, and initialising state from the URL
+  // would be a hydration mismatch on the input's value.
   useEffect(() => {
-    const normalised = query.trim().toLowerCase();
-    let shown = 0;
-    for (const el of document.querySelectorAll("[data-log-entry]")) {
-      const match =
-        !normalised || el.textContent.toLowerCase().includes(normalised);
-      el.hidden = !match;
-      if (match) shown += 1;
+    // A permalink outranks a search. If the URL points at a round the
+    // active search would hide, the link is broken from the visitor's
+    // side — so drop the search, not the round.
+    const honourHash = () => {
+      const id = window.location.hash.slice(1);
+      const target = id ? document.getElementById(id) : null;
+      if (!target) return;
+      const current = queryRef.current;
+      if (
+        current &&
+        !target.textContent.toLowerCase().includes(current.toLowerCase())
+      ) {
+        queryRef.current = "";
+        setQuery("");
+        setMatches(applyFilter(""));
+        writeUrl("");
+      }
+      target.scrollIntoView();
+    };
+
+    const initial = (
+      new URLSearchParams(window.location.search).get("q") || ""
+    ).trim();
+    queryRef.current = initial;
+    setQuery(initial);
+    setMatches(applyFilter(initial));
+    honourHash();
+
+    // Changing only the hash is a same-document navigation: nothing
+    // re-mounts, so without this a pasted `#round-N` on an already
+    // filtered page silently scrolls to a hidden element.
+    window.addEventListener("hashchange", honourHash);
+    return () => window.removeEventListener("hashchange", honourHash);
+  }, []);
+
+  useEffect(() => {
+    queryRef.current = query;
+    // The mount effect above already ran the first pass, and `query` is
+    // still "" in this closure on that render — writing the URL here
+    // would strip the `?q=` it just adopted.
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
     }
-    setMatches(shown);
+    setMatches(applyFilter(query));
+    writeUrl(query);
   }, [query]);
 
   const summary = query.trim()
