@@ -12,9 +12,18 @@ name: Loop
 # of work should I do?" is the lever that produced ten rounds of this site
 # refining its own scaffolding: given the choice, a run picks work it can see,
 # and what it can see is its own repository.
+#
+# The schedule is off while the tracks are being exercised by hand from local
+# Claude Code and Codex installs. Those runs are supervised: a human is sitting
+# there and can throw the result away, which is the only enforcement a local
+# run gets, since it acts as the maintainer and the maintainer is an admin.
+#
+# Turn it back on by uncommenting the two lines below. Nothing else needs to
+# change -- the dispatcher, the scoping and auto-merge all behave the same
+# whether the run was scheduled or started by hand. Only Origin differs.
 on:
-  schedule:
-    - cron: "0 */3 * * *"
+  # schedule:
+  #   - cron: "0 */3 * * *"
   workflow_dispatch:
     inputs:
       track:
