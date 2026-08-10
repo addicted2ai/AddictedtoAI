@@ -16,6 +16,10 @@ const routes = [
   { path: "/directory", priority: 0.8 },
   { path: "/projects", priority: 0.8 },
   { path: "/demos", priority: 0.8 },
+  // The log is regenerated from CHANGELOG.md on every deploy, and the
+  // changelog gains an entry every round, so this one genuinely does
+  // change whenever the site does.
+  { path: "/log", priority: 0.9 },
 ];
 
 export default function sitemap() {

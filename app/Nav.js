@@ -8,6 +8,7 @@ const links = [
   { href: "/directory", label: "Directory" },
   { href: "/projects", label: "Projects" },
   { href: "/demos", label: "Demos" },
+  { href: "/log", label: "Build log" },
 ];
 
 export default function Nav() {

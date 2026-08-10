@@ -38,6 +38,7 @@ jobs:
             http://localhost:3000/directory
             http://localhost:3000/projects
             http://localhost:3000/demos
+            http://localhost:3000/log
           configPath: "./lighthouserc.json"
           uploadArtifacts: true
 
@@ -45,7 +46,7 @@ jobs:
         if: always()
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --base http://localhost:3000 http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos
+          args: --base http://localhost:3000 http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos http://localhost:3000/log
           fail: true
 
       # The non-HTML routes are shipped code too, and nothing above
