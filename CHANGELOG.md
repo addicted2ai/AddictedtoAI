@@ -69,13 +69,92 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+The first real run of the new machinery found four bugs in it, all mine, and
+one of them had broken every pull request the system could ever produce. This
+round fixes them. The run itself is PR #1 and is still open; this entry is
+about the machinery it ran on, not the work it did.
+
+Worth stating plainly: every one of these shipped with a green check beside it.
+The checks were real and I had proved each could fail — against inputs I chose,
+in a working copy I had written by hand. None of them had ever seen a fresh
+checkout, a second repository's numbering, or a changelog entry wrapped the way
+every other entry in the file is wrapped.
+
+**1. Line endings broke every docket parse on Windows**
+- Hypothesis: `check-docket.mjs`, `preflight.mjs` and `dispatch.mjs` all match
+  frontmatter with a regex anchored on a bare newline. Git for Windows checks
+  out CRLF by default, so on any Windows working copy the frontmatter block
+  matches nothing and every docket item reads as malformed. CI runs on Linux
+  with LF and is unaffected — meaning the checks pass exactly where they are
+  tested and fail on the machine where rounds are started by hand. Forcing LF
+  at checkout and normalising on read should make the parsers independent of
+  how the file arrived.
+- Change: Added `.gitattributes` with `* text=auto eol=lf`, and a `readText()`
+  helper in all three scripts. Verified against genuinely CRLF copies of the
+  real docket items, which now parse.
+
+**2. Round badges would have cited the wrong change for 48 rounds**
+- Hypothesis: `RoundRef` decided commit-link versus pull-request-link solely by
+  whether the number appears in `archive/prs.json`, which holds 1–48. This
+  repository restarted numbering at 1, so every new round from #1 to #48 would
+  have rendered a link to an unrelated predecessor commit. Both URLs return
+  200, and the existing assertion only checked that archived rounds do not link
+  to pull requests — the other direction, which is the one that bites. Deciding
+  era from whether the round declares an `Origin` should be correct, because
+  rounds predating that field are exactly the 47 archived ones and CI already
+  pins that count.
+- Change: `RoundRef` consults the archive only for rounds that predate the
+  Origin field. Each round now carries `data-era`, and the route checks assert
+  both directions. The first round through the system shipped as #1 and would
+  have hit this immediately.
+
+**3. A wrapped change heading silently lost the change**
+- Hypothesis: the parser requires `**N. Title**` to open and close on one line,
+  while everything else in this file hard-wraps at about 76 columns. A wrapped
+  heading is absorbed as prose, the round ships with fewer changes than it
+  describes, and `validateEntries` cannot see it because it only checks that
+  changes which already parsed are complete. PR #48 set out to make "a quiet
+  incomplete public record" an actionable failure; this is the same defect one
+  level up. Counting headings that *start* and comparing against those that
+  parse should make the loss loud.
+- Change: `getBuildLog()` now fails the build naming the round and both counts.
+  The first version of this check did not fire: a failed heading leaves its
+  bullets at entry level, where the normalisation for pre-heading entries folds
+  them into one unnamed change, so the totals matched. It compares against
+  named changes now, and was re-proved against both a wrapped heading and a
+  dropped one.
+
+**4. A broken lockfile failed CI on every pull request**
+- Hypothesis: adding `js-yaml` from Windows wrote a `package-lock.json` whose
+  platform-specific optional dependencies do not resolve on Linux, so `npm ci`
+  exits before any check runs. Nothing caught it because no pull request had
+  existed on this repository until now — the lockfile was committed and pushed
+  straight to `main`, which is precisely what branch protection now prevents
+  the loop from doing. A clean reinstall should produce a consistent lockfile.
+- Change: Regenerated `package-lock.json` from a clean install; `npm ci` now
+  agrees with `package.json`. Also added `"root": true` to `.eslintrc.json`,
+  which was causing an ESLint cascade conflict for any checkout nested inside
+  another, and added `.gitattributes` and `.eslintrc.json` to the meta track's
+  path scope — the scout run could see both problems and was allowed to touch
+  neither.
+
+- Origin: maintainer
+- Track: meta
+- Guardrails: `npm run lint`, `npm run build`, docket check, preflight,
+  dispatcher and all route checks pass. Each new assertion was proved able to
+  fail: reverting the era fix produced "current round links to …/commit/…,
+  expected a pull request"; a wrapped heading and a dropped heading each
+  produced the expected build error; the CRLF fix was verified against real
+  CRLF copies rather than synthetic strings.
+- Result: not measured. The observable outcome is that `npm ci` succeeds, so
+  pull requests can now reach their checks at all.
+
+### 2026-08-10
 A scout round. Nothing was built and nothing was published; the output is five
 docket items. Four came from outside the repository — the EU AI Act's
 transparency obligations became applicable eight days ago and land squarely on
 what this site is, and half the Directory now describes products that have moved
-since it was written. The fifth did not, and is disclosed as such below. This
-entry deliberately carries no `(PR #N)` reference, for reasons the third item
-explains.
+since it was written. The fifth did not, and is disclosed as such below. (PR #1)
 
 **1. File the 2 August transparency deadline as build and author work**
 - Hypothesis: The site's charge is to be current about AI, and the largest thing
@@ -134,33 +213,40 @@ explains.
   validation checked for missing fields rather than for change blocks that fail
   to parse at all. It was caught only by inspecting the parser's output instead
   of trusting a green check — the failure the record has already made twice.
-  Both are filed as one maintain item; this entry omits its own `(PR #N)` rather than publish a citation known
-  to resolve to the wrong change, which costs it a stable anchor and is a
-  workaround, not a fix. The item is honest in its own text that its origin is
+  Both are filed as one maintain item. This entry first omitted its own
+  `(PR #N)` rather than publish a citation known to resolve to the wrong
+  change; the maintainer fixed both on `main` before this round merged — a
+  round’s era now comes from whether it declares an `Origin`, and a heading
+  that starts but fails to parse now fails the build — so the citation is
+  restored and the workaround is gone. The item is honest in its own text that its origin is
   internal, which means one of the five items filed this round could have been
   written without leaving the repository — a partial miss against scout's stated
   failure condition, disclosed rather than dressed up.
 
 - Origin: supervised
 - Track: scout
-- Guardrails: `node scripts/check-track-scope.mjs` passes — the diff is five new
-  files in `docket/` and this entry. `node scripts/check-docket.mjs` fails
-  locally on the four pre-existing items, not on the new ones: the checker parses
-  frontmatter with an LF-only regex and Git for Windows checks the repository out
-  with CRLF, so no docket item validates on a Windows working copy. Confirmed by
-  re-running it against LF-normalised copies, where all eight items pass. The
-  evidence rule was checked for whether it can actually go red — stripping the
-  external links from one of the new items produced the expected failure, so its
-  green means something. `npm ci` could not run at all here: the committed
-  lockfile is missing `@emnapi/wasi-threads`, which this platform resolves, so
-  `npm install` was used instead and `package-lock.json` was restored to avoid a
-  change outside this track's scope. `npm run lint` exits 1 with an
-  `@next/next` plugin conflict, an artefact of the worktree sitting inside
-  another checkout that has its own `.eslintrc.json`; running ESLint on `app/`
-  with cascading disabled is clean. No code was changed this round, so none of
-  those three failures can be attributed to it — but none of them were fixed
-  either, and only the first is in any track's scope to fix. `.eslintrc.json` is
-  in no track's scope at all.
+- Guardrails: Run twice, and the difference is the point. As this round first
+  ran, four things were broken. `npm ci` could not install at all — the
+  committed lockfile was missing `@emnapi/wasi-threads`. `npm run lint` exited
+  1 on an `@next/next` plugin conflict. `node scripts/check-docket.mjs`
+  rejected all four pre-existing items, because it parsed frontmatter with an
+  LF-only regex against a CRLF working copy, so no docket item validated on a
+  Windows checkout. And `/log` would have cited the wrong change for the next
+  48 rounds. Only the last of those was found by looking for it; the other
+  three were found by the checks themselves failing, which is the argument for
+  running them on a machine that is not CI. The maintainer fixed all four on
+  `main` in a separate round before this one merged. After merging `main` into
+  this branch: `npm ci` exits 0, `npm run lint` reports no warnings or errors,
+  `check-docket.mjs` passes 9 items natively on Windows, and
+  `node scripts/check-track-scope.mjs main
+  loop/scout/transparency-rules-and-directory-drift` passes with six files, all
+  inside `docket/` and this one. Three assertions were then checked for whether
+  they can actually go red, rather than trusted for being green: stripping the
+  external links from one new docket item produced the expected evidence-rule
+  failure; wrapping a change heading in a copy of this file produced `round 49
+  (3 heading(s) written, 2 parsed)`; and replaying the badge logic over the real
+  log confirmed that round 49 resolves `#1` to `/pull/1` while archived round 1
+  resolves the same number to its commit. No code was changed by this round.
 - Result: not measured. A round that files queue items has nothing to measure
   until something acts on them; the only checkable output is whether the items
   are still true when picked up, and whether any of them turn out to have been

@@ -334,7 +334,38 @@ else:
         print(f"FAIL  commit link {sha} does not resolve in this repository")
     failures += len(unresolved)
 
-# 3. No archived round is linked as a pull request.
+# 3. Each round links to the kind of target its era actually has.
+#
+# The first version of this only checked one direction -- that an archived
+# round does not link to a pull request. The other direction is the one that
+# bit: this repository restarted PR numbering at 1, so a new round's #1..#48
+# collide with the archive, and looking the number up would send them to an
+# unrelated predecessor commit. Both URLs return 200, so nothing else here
+# would ever have noticed. The very first round shipped as #1.
+eras = re.findall(
+    r'<li[^>]*class="log-entry"[^>]*data-era="(archive|current)"[^>]*>(.*?)</li>',
+    html,
+    re.S,
+)
+if not eras:
+    print("FAIL  /log exposes no data-era on its rounds; era cannot be checked")
+    failures += 1
+for era, body in eras:
+    for tag in re.findall(r'<a[^>]*class="log-pr"[^>]*>', body):
+        href = re.search(r'href="([^"]*)"', tag)
+        if not href:
+            continue
+        target = href.group(1)
+        if era == "archive" and "/commit/" not in target:
+            print(f"FAIL  archived round links to {target}, expected a commit")
+            failures += 1
+        if era == "current" and "/pull/" not in target:
+            print(f"FAIL  current round links to {target}, expected a pull request")
+            failures += 1
+if failures == 0:
+    print(f"ok    all {len(eras)} rounds link to the target their era has")
+
+# 3b. Belt and braces: no archived round is linked as a pull request.
 mislinked = {
     int(m.group(1)) for h in hrefs for m in [re.search(r"/pull/(\d+)$", h)] if m
 } & archive

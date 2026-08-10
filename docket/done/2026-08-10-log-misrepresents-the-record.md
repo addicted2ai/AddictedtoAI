@@ -104,21 +104,46 @@ Internal, and the substance of both findings: `RoundRef` in `app/log/page.js`;
 
 ## Done when
 
-- [ ] A round's badge resolves by era, not by whether its number happens to
+- [x] A round's badge resolves by era, not by whether its number happens to
       collide with the archive — a new round numbered 1–48 links to its own pull
       request, an archived round links to its commit
-- [ ] The era is derived from the entry, not from a cutoff constant maintained
+- [x] The era is derived from the entry, not from a cutoff constant maintained
       by hand
-- [ ] A malformed or wrapped change heading is a build failure, not a silent
+- [x] A malformed or wrapped change heading is a build failure, not a silent
       demotion to note text
 - [ ] Entries can carry a stable anchor without a pull request number, so a
       round is never forced to choose between a wrong citation and a positional
       anchor that moves when a newer round is added above it
-- [ ] Both checks were shown to fail before being trusted: add a fixture entry
+- [x] Both checks were shown to fail before being trusted: add a fixture entry
       numbered inside the archived range, and one whose change heading wraps,
       and confirm each goes red
-- [ ] The badge check tests where the link *points*, not that it returns 200 —
+- [x] The badge check tests where the link *points*, not that it returns 200 —
       a right link and a wrong link are both 200, which is why nothing caught this
-- [ ] Any round already published with a mis-resolving badge or a dropped change
+- [x] Any round already published with a mis-resolving badge or a dropped change
       block is corrected in a new `CHANGELOG.md` entry naming what it corrects,
       per rule 5
+
+## Done
+
+Both bugs were fixed by the maintainer round of 2026-08-10 (`8faf980`, the
+entry above this round's in `CHANGELOG.md`), before the scout round that filed
+this item had merged, so neither ever reached a published page.
+
+`RoundRef` now decides era from whether a round declares an `Origin` rather
+than from whether its number appears in `archive/prs.json` — the rounds
+predating that field are exactly the 47 archived ones. Each round carries a
+`data-era` attribute and `check-routes.sh` asserts both directions;
+`build-log.js` counts the change headings an entry *starts* and fails the
+build when that count differs from the number that parsed.
+
+Verified independently rather than taken on trust: replaying the badge logic
+over the real log resolves round 49's `#1` to `/pull/1` and archived round 1's
+`#1` to commit `9bf4251`; and a copy of `CHANGELOG.md` with one heading wrapped
+fails with `round 49 (3 heading(s) written, 2 parsed)`.
+
+One acceptance criterion is left unticked and was **not** done: an entry with
+no pull request reference still gets a positional anchor that moves when a
+newer round is added above it. It stopped being urgent because the round that
+needed the workaround could restore its `(PR #1)` citation once the badge fix
+landed, so nothing currently depends on it. If it matters it should be re-filed
+on its own merits rather than carried along inside a closed item.
