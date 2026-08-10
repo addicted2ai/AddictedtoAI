@@ -23,6 +23,7 @@ jobs:
           cache: "npm"
 
       - run: npm ci
+      - run: npm run lint
       - run: npm run build
 
       - name: Start server
@@ -46,3 +47,57 @@ jobs:
         with:
           args: --base http://localhost:3000 http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos
           fail: true
+
+      # The non-HTML routes are shipped code too, and nothing above
+      # touches them: lychee only crawls the five pages. A feed that
+      # 500s, a sitemap that stops listing a route, or a manifest that
+      # is no longer valid JSON would all have gone unnoticed.
+      - name: Check non-HTML routes and the 404
+        if: always()
+        run: bash scripts/check-routes.sh
+
+      # Production serves the analytics build; the Lighthouse gate above
+      # measures the analytics-OFF build, because this workflow doesn't
+      # set the measurement ID. That gap is why this step exists. It is
+      # informational on purpose -- assertions are warn-level in
+      # lighthouserc.analytics.json, so it reports the real cost of
+      # analytics on every PR without gating on a third-party script's
+      # bad day.
+      - name: Rebuild and serve with analytics enabled
+        if: always()
+        env:
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: G-CI0000000
+        run: |
+          # Serve on a different port rather than trying to kill the
+          # first server. Killing it is a race that already went wrong
+          # once: the kill silently did nothing, the new server died
+          # with EADDRINUSE, wait-on succeeded against the *old*
+          # analytics-off server, and Lighthouse happily measured the
+          # wrong build and reported success.
+          rm -rf .lighthouseci
+          npm run build
+          PORT=3001 npm run start & npx wait-on http://localhost:3001
+          # And then prove it really is the analytics build. Without
+          # this, any future breakage in the step above goes back to
+          # silently measuring the wrong thing.
+          curl -sf http://localhost:3001 | grep -q 'G-CI0000000'
+          echo "confirmed: analytics build serving on :3001"
+
+      - name: Lighthouse CI (analytics enabled, informational)
+        if: always()
+        continue-on-error: true
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: http://localhost:3001
+          configPath: "./lighthouserc.analytics.json"
+          uploadArtifacts: true
+          # Distinct from the blocking run's artifact, which otherwise
+          # collides: "an artifact with this name already exists".
+          artifactName: lighthouse-results-analytics
+
+      # Warn-level assertions print nothing when they pass, so without
+      # this the number this whole sequence exists to surface would be
+      # invisible. Writes to the job summary as well as the log.
+      - name: Report analytics-enabled scores
+        if: always()
+        run: node scripts/report-lh-scores.mjs "Lighthouse with analytics enabled"

@@ -31,6 +31,127 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+Three changes in one PR, all about the gate rather than the site.
+Bundled at the maintainer's request. (PR #29)
+
+**1. Let CI see what analytics actually costs**
+- Hypothesis: PR #24 wired up analytics and measured it at +145.9 KB
+  over the wire, then noted the gap it left: `pr-checks.yml` never
+  sets `NEXT_PUBLIC_GA_MEASUREMENT_ID`, so the Lighthouse gate scores
+  the analytics-*off* build while production, once the variable is
+  set, serves the analytics-*on* one. The guardrail would pass
+  forever no matter how expensive analytics got.
+- Change: A second Lighthouse pass after the blocking one, against a
+  rebuild with the variable set, using `lighthouserc.analytics.json`
+  where every assertion is `warn` rather than `error`. It reports the
+  real number on every PR and cannot block a merge.
+- Why informational rather than blocking: the honest version of this
+  change gates on the analytics build, and it was very likely to fail
+  — the performance floor is 0.80, CI hardware already scored an
+  untouched homepage 0.83 then 0.74, and analytics adds 1.5x the
+  page's entire weight. Turning a gate red on a third-party script's
+  bad day blocks unrelated work. Reporting the number every time
+  gives the maintainer the data to decide, which is what was actually
+  missing.
+
+- **And the answer, first time it ran for real: analytics is
+  affordable.** On CI hardware, median of 3: performance 0.98
+  (0.97/0.98/0.99), accessibility 1.00, best-practices 1.00, SEO
+  1.00, 244 KB transferred versus 97 KB without. That 244 KB matches
+  the 243.3 KB measured independently over CDP in PR #24. So the
+  prediction that gating on this would fail — the reason it was built
+  informational — was wrong: 0.98 clears the 0.80 floor with room to
+  spare. Worth keeping it warn-level anyway, since the cost is a
+  third party's to change and the point is to see the number when it
+  moves; but the maintainer can now enable analytics knowing what it
+  costs rather than guessing.
+
+**2. Check the routes nothing was checking**
+- Hypothesis: lychee crawls the five HTML pages. `/feed.xml`,
+  `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest` and the
+  custom 404 are shipped code that no check has ever touched — the
+  feed and the truthful-sitemap work of the last two rounds landed
+  with zero CI coverage. A feed that 500s or a manifest that stops
+  being valid JSON would ship silently.
+- Change: `scripts/check-routes.sh`, run in CI and locally the same
+  way. Asserts status, content-type and a content marker for each,
+  requires the 404 to actually return 404 (a soft 404 returning 200
+  is its own SEO problem), and resolves every URL the sitemap
+  advertises.
+- Verified the check can fail, not just pass: fed it two deliberately
+  wrong expectations and confirmed it reported both and exited 1. A
+  green check that cannot go red is not a check.
+
+**3. `npm run lint` was a broken script**
+- Hypothesis: `package.json` has had a `lint` script since the first
+  commit, but eslint was never installed and no config existed, so
+  `next lint` would drop into an interactive setup prompt — it
+  cannot have run successfully in CI or locally, ever.
+- Change: Added `eslint` + `eslint-config-next` (dev only, pinned to
+  the installed `next`), an `.eslintrc.json` extending
+  `next/core-web-vitals`, and a `npm run lint` step in CI ahead of
+  the build.
+- Landing the gate meant clearing the 22 existing violations. All 22
+  were the same rule and the same character: a raw `'` in JSX prose.
+  Converted to `&rsquo;`, which matches the `&mdash;` and
+  `&ldquo;`/`&rdquo;` these files already use, so it's a small
+  typographic improvement rather than a suppression. Verified the
+  rendered bytes are U+2019 and that no word was mangled. Zero
+  violations of any other rule.
+
+- Then the step reported the wrong number, which was worse than
+  reporting none: it printed 97 KB — the analytics-*off* figure —
+  while claiming to measure analytics on. Cause, from the CI log:
+  `lsof -ti:3000 | xargs -r kill -9 || true` silently did nothing,
+  the new server died with `EADDRINUSE`, `wait-on` then succeeded
+  against the *old* analytics-off server still holding the port, and
+  Lighthouse measured that and passed. Exactly the failure this
+  round's other two changes are about — a check that looks green
+  while measuring the wrong thing. Fixed by deleting the race rather
+  than tuning it: the analytics build is served on port 3001, so
+  there is nothing to kill. Added a verification gate — `curl` the
+  new server and grep for the measurement ID — so that if this ever
+  breaks again it fails loudly instead of quietly measuring the wrong
+  build. Both directions tested locally: the gate passes against the
+  analytics build on :3001 and exits 1 against the analytics-off
+  build on :3000.
+- The informational Lighthouse step needed a second pass of its own,
+  because the first version of it reported nothing. Two faults, both
+  visible only by reading the CI log rather than the green tick:
+  the step uploaded its artifact under the same name as the blocking
+  run and got `409 Conflict: an artifact with this name already
+  exists` — swallowed by `continue-on-error`, so the report was never
+  actually saved — and warn-level assertions print nothing when they
+  pass, so the score this whole sequence exists to surface appeared
+  nowhere at all. Fixed with a distinct `artifactName`, an `rm -rf
+  .lighthouseci` before the analytics build so the summary reads only
+  that run, and `scripts/report-lh-scores.mjs`, which prints the
+  median scores plus total transfer size to the log *and* the GitHub
+  job summary. Smoke-tested against three real local Lighthouse runs:
+  it reported 97 KB transferred, matching the 97.4 KB measured
+  independently over CDP in PR #24 — two different tools agreeing is
+  the reason to believe the number.
+- Failed CI on the first attempt, and the cause is worth recording:
+  `npm ci` errored with `EUSAGE`, "package.json and package-lock.json
+  are not in sync," missing several `@emnapi/*` entries. Adding
+  eslint on Windows produced a lockfile that omitted optional
+  platform-specific transitive deps that Linux needs — nothing to do
+  with the workflow edits themselves, which is what the cascade of
+  six red route checks and a `next: not found` made it look like at
+  first glance. Fixed by deleting `package-lock.json` and
+  `node_modules` and regenerating from scratch: 6 `@emnapi` entries
+  before, 11 after. Verified by running `npm ci` locally against a
+  wiped `node_modules`, which is the thing that actually failed, not
+  just `npm install`.
+- Guardrails: pass (local `next build` clean; `npm ci` clean from a
+  wiped `node_modules`; `npm run lint` clean; `linkinator` for all 5
+  routes, 30 links, zero failures; `scripts/check-routes.sh` green on
+  all 11 assertions. Re-ran the earlier rounds' Puppeteer checks as
+  regressions — Directory's result count still correct at 0px layout
+  shift, Tool Finder focus still lands on the result.)
+- Result (measured the following week): not yet measured
+
+### 2026-08-09
 Four small changes shipped together in one PR at the maintainer's
 request, rather than as four separate rounds. Each keeps its own
 hypothesis, since each is testing something different. (PR #28)

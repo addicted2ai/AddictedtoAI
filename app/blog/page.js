@@ -54,8 +54,8 @@ export default function Blog() {
         the north-star metric this site is optimized for
         (returning-visitor rate), the per-section metrics for blog,
         directory, projects, and demos, the guardrails that must never
-        regress, and the complete log of what's already been tried,
-        including what didn't work. From that, it picks exactly one
+        regress, and the complete log of what&rsquo;s already been tried,
+        including what didn&rsquo;t work. From that, it picks exactly one
         small, testable change &mdash; preferring things not yet tried,
         or a revision of something that underperformed &mdash; states a
         hypothesis for what metric should move and why, implements the
@@ -65,8 +65,8 @@ export default function Blog() {
 
       <h2>The guardrails</h2>
       <p>
-        Every pull request, including the loop's own, has to clear the
-        same automated gate before it's mergeable: Lighthouse
+        Every pull request, including the loop&rsquo;s own, has to clear the
+        same automated gate before it&rsquo;s mergeable: Lighthouse
         accessibility and SEO at or above 0.85, performance at or
         above 0.80, each scored against the median of three runs; zero
         net-new broken links; no failed deploy or rollback.
@@ -74,22 +74,22 @@ export default function Blog() {
       <p>
         That performance number started at 0.85, measured once &mdash;
         until the same untouched homepage scored 0.83 and then 0.74
-        back to back on shared CI hardware. That's noise, not a
+        back to back on shared CI hardware. That&rsquo;s noise, not a
         regression. Lowering the floor and taking a median was the
-        honest fix: a threshold that fails at random isn't a
+        honest fix: a threshold that fails at random isn&rsquo;t a
         guardrail, it just blocks good changes on a coin flip.
         Accessibility and SEO are static-analysis checks rather than
         timing ones, so they were never the noisy pair and stayed
         where they were.
       </p>
       <p>
-        Guardrails passing doesn't mean a PR merges itself, though.
+        Guardrails passing doesn&rsquo;t mean a PR merges itself, though.
         Anything that touches site copy tone, adds a new top-level
         section, or shifts the design direction gets flagged explicitly
         for a human to look at, on top of the automated checks.
       </p>
 
-      <h2>What's shipped so far</h2>
+      <h2>What&rsquo;s shipped so far</h2>
       <p>
         The loop started with four placeholder pages. Everything on
         the site since has arrived one change at a time, and the work
@@ -112,7 +112,7 @@ export default function Blog() {
         <li>
           <strong>Being usable by everyone</strong> &mdash; a skip
           link, reduced-motion support, an indicator for which page
-          you're on, notice before a link opens a new tab, and focus
+          you&rsquo;re on, notice before a link opens a new tab, and focus
           that follows along when an interactive panel swaps out from
           under you.
         </li>
@@ -133,11 +133,11 @@ export default function Blog() {
       <h2>Follow along</h2>
       <p>
         The full history &mdash; hypotheses, what shipped, and the
-        results once they're measured, failures included &mdash; lives
+        results once they&rsquo;re measured, failures included &mdash; lives
         in <code>CHANGELOG.md</code>, right next to the code it
-        describes. It's the loop's memory: every run reads it before
-        deciding what to try next, so it's also the most honest record
-        of what's actually worked on this site so far.
+        describes. It&rsquo;s the loop&rsquo;s memory: every run reads it before
+        deciding what to try next, so it&rsquo;s also the most honest record
+        of what&rsquo;s actually worked on this site so far.
       </p>
     </article>
   );

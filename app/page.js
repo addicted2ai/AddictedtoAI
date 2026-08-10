@@ -21,7 +21,7 @@ export default function Home() {
         A hub for AI news, a curated tool directory, project write-ups, and
         interactive demos. This site is maintained by a scheduled
         propose-build-measure loop &mdash; see CHANGELOG.md in the repo for
-        what's shipped and why.
+        what&rsquo;s shipped and why.
       </p>
       <div className="section-grid">
         {sections.map((section) => (
@@ -38,7 +38,7 @@ export default function Home() {
           <h2>How this site builds itself</h2>
           <p>
             A weekly, hypothesis-driven loop proposes, ships, and measures
-            one change at a time &mdash; here's how it actually works.
+            one change at a time &mdash; here&rsquo;s how it actually works.
           </p>
         </a>
       </div>

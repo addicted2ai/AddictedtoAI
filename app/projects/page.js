@@ -25,7 +25,7 @@ export default function Projects() {
 
         <p>
           This site is the project. Instead of redesigning it by hand,
-          it's maintained by a scheduled, hypothesis-driven loop: pick
+          it&rsquo;s maintained by a scheduled, hypothesis-driven loop: pick
           one small change, ship it behind automated guardrails, and
           check the following week whether it actually moved the
           metric it was supposed to.
@@ -44,12 +44,12 @@ export default function Projects() {
 
         <h2>How it works</h2>
         <p>
-          The short version: a scheduled job reads the site's
+          The short version: a scheduled job reads the site&rsquo;s
           changelog for its north-star metric and guardrails, proposes
           one small testable change with a stated hypothesis,
           implements it, and opens a pull request for review. The
-          full mechanics &mdash; the guardrails, what's shipped so
-          far, why it's built this way &mdash; are written up on the{" "}
+          full mechanics &mdash; the guardrails, what&rsquo;s shipped so
+          far, why it&rsquo;s built this way &mdash; are written up on the{" "}
           <a href="/blog">blog</a>.
         </p>
 
