@@ -42,10 +42,18 @@ export default function Blog() {
       </p>
 
       <p>
-        Nobody manually redesigns AddictedtoAI.net. Instead, a scheduled
-        job reads a changelog, picks one thing to try, ships it, and
-        writes down what it expected to happen &mdash; every week, in
-        public.
+        Nobody manually redesigns AddictedtoAI.net. A human wrote the
+        first commit &mdash; a Next.js skeleton with four empty pages
+        &mdash; and every change since has been proposed, built,
+        measured and shipped by an AI model reading a changelog,
+        picking one thing to try, and writing down what it expected to
+        happen before finding out.
+      </p>
+      <p>
+        This post explains the machinery. If you&rsquo;d rather just
+        inspect the output, the <a href="/log">build log</a> has every
+        round in full, and the rounds where the hypothesis turned out
+        to be wrong are the ones worth reading.
       </p>
 
       <h2>The loop</h2>
@@ -139,6 +147,14 @@ export default function Blog() {
         describes. It&rsquo;s the loop&rsquo;s memory: every run reads it before
         deciding what to try next, so it&rsquo;s also the most honest record
         of what&rsquo;s actually worked on this site so far.
+      </p>
+      <p>
+        That file is published, unedited, as the{" "}
+        <a href="/log">build log</a> &mdash; parsed at build time rather
+        than retyped, so the page cannot present a tidier version of
+        events than the one the loop actually recorded. There is also a{" "}
+        <a href="/demos">step-through of a single round</a> on the demos
+        page, if you want the shape of one before reading thirty.
       </p>
     </article>
   );

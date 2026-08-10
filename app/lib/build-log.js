@@ -159,6 +159,13 @@ export function getBuildLog() {
   return cached;
 }
 
+// Look a round up by pull request number rather than by round number:
+// PR numbers are permanent, whereas anything positional would quietly
+// point at a different round as entries are added.
+export function getRoundByPr(pr) {
+  return getBuildLog().find((entry) => entry.prs.includes(pr)) || null;
+}
+
 export function getBuildLogStats() {
   const entries = getBuildLog();
   const changes = entries.reduce((n, e) => n + e.changes.length, 0);
