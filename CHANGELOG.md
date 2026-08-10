@@ -240,6 +240,109 @@ every other entry in the file is wrapped.
   pull requests can now reach their checks at all.
 
 ### 2026-08-10
+A scout round. Nothing was built and nothing was published; the output is five
+docket items. Four came from outside the repository — the EU AI Act's
+transparency obligations became applicable eight days ago and land squarely on
+what this site is, and half the Directory now describes products that have moved
+since it was written. The fifth did not, and is disclosed as such below. (PR #1)
+
+**1. File the 2 August transparency deadline as build and author work**
+- Hypothesis: The site's charge is to be current about AI, and the largest thing
+  that changed in the field recently is regulatory rather than technical. I
+  expected the EU AI Act's August milestone to be either already handled or too
+  diffuse to act on. It was neither: Article 50's transparency obligations became
+  applicable on 2 August 2026, and the obligation on deployers publishing
+  AI-generated text turns on whether the publication had human review and
+  editorial responsibility — the exact distinction this site already records per
+  round in its `Origin` field. That coincidence is the item; a compliance chore
+  would not have been worth filing.
+- Change: Two items. A build item to give every page a disclosure that is
+  machine-readable and derived from the record rather than hardcoded, and an
+  author item for a post that separates what actually applied on 2 August from
+  the high-risk obligations the Digital Omnibus deferred to 2 December 2027 —
+  a distinction most coverage runs together — using this site as the worked
+  example. Both cite the Commission's own FAQs and its Code of Practice on
+  Transparency of AI-generated Content, retrieved this round. Neither item
+  asserts that the site is in scope; both require the run that executes them to
+  reach and publish its own conclusion.
+
+**2. Check the Directory against the vendors' own pages**
+- Hypothesis: The seeded scout item asks what the Directory is missing. I
+  expected the answer to be missing tools. Fetching each entry's link instead
+  suggested the descriptions were the problem, so I checked them one at a time.
+- Change: Of the twelve entries, seven were re-fetched against the vendor's own
+  page on 2026-08-10 and six of those had moved: n8n, You.com, Ollama,
+  HuggingChat, ElevenLabs and Runway. Five are staleness. One is a false claim —
+  the site calls n8n "open-source", and n8n's documentation says "we do not call
+  ourselves open source", with a licence restricting commercial use. Every link
+  still returns 200, so nothing here could have noticed; `runwayml.com` now
+  308-redirects to `runway.com` and a redirect-following link checker will report
+  it green forever. Filed as a maintain item naming each correction, plus a build
+  item on the structural half: the four categories predate agents and MCP, the
+  words "agent" and "MCP" appear nowhere in `app/`, and the six repositionings
+  all point the same way. Five entries were not re-verified and are recorded as
+  not asserted either way, rather than being padded into findings.
+
+**3. Record two /log bugs found while running this round's checks**
+- Hypothesis: None — this was not sought. While checking what number this
+  round's pull request would get, I expected the migration round's badge fix to
+  cover it.
+- Change: It does not. `/log` decides between a commit link and a pull request
+  link solely by whether the number appears in `archive/prs.json`, which holds
+  1–48. This repository was created today with no pull requests, so GitHub will
+  number the next one 1, and the next 48 rounds built here will each render a
+  badge pointing at an unrelated predecessor commit. The migration round fixed
+  the collision in one direction and the code comment describes an intent the
+  function cannot carry out, because a bare integer does not say which era it is
+  from. Both return 200, so no existing check can see it.
+  The same pass surfaced a second one. The changelog parser recognises a
+  numbered change heading only when the whole bold heading sits on one line, so
+  a heading that hard-wraps is silently dropped as a change and absorbed as a
+  note. Two of this entry's three headings did exactly that on the first
+  attempt, and the entry still validated, because the round that added entry
+  validation checked for missing fields rather than for change blocks that fail
+  to parse at all. It was caught only by inspecting the parser's output instead
+  of trusting a green check — the failure the record has already made twice.
+  Both are filed as one maintain item. This entry first omitted its own
+  `(PR #N)` rather than publish a citation known to resolve to the wrong
+  change; the maintainer fixed both on `main` before this round merged — a
+  round’s era now comes from whether it declares an `Origin`, and a heading
+  that starts but fails to parse now fails the build — so the citation is
+  restored and the workaround is gone. The item is honest in its own text that its origin is
+  internal, which means one of the five items filed this round could have been
+  written without leaving the repository — a partial miss against scout's stated
+  failure condition, disclosed rather than dressed up.
+
+- Origin: supervised
+- Track: scout
+- Guardrails: Run twice, and the difference is the point. As this round first
+  ran, four things were broken. `npm ci` could not install at all — the
+  committed lockfile was missing `@emnapi/wasi-threads`. `npm run lint` exited
+  1 on an `@next/next` plugin conflict. `node scripts/check-docket.mjs`
+  rejected all four pre-existing items, because it parsed frontmatter with an
+  LF-only regex against a CRLF working copy, so no docket item validated on a
+  Windows checkout. And `/log` would have cited the wrong change for the next
+  48 rounds. Only the last of those was found by looking for it; the other
+  three were found by the checks themselves failing, which is the argument for
+  running them on a machine that is not CI. The maintainer fixed all four on
+  `main` in a separate round before this one merged. After merging `main` into
+  this branch: `npm ci` exits 0, `npm run lint` reports no warnings or errors,
+  `check-docket.mjs` passes 9 items natively on Windows, and
+  `node scripts/check-track-scope.mjs main
+  loop/scout/transparency-rules-and-directory-drift` passes with six files, all
+  inside `docket/` and this one. Three assertions were then checked for whether
+  they can actually go red, rather than trusted for being green: stripping the
+  external links from one new docket item produced the expected evidence-rule
+  failure; wrapping a change heading in a copy of this file produced `round 49
+  (3 heading(s) written, 2 parsed)`; and replaying the badge logic over the real
+  log confirmed that round 49 resolves `#1` to `/pull/1` while archived round 1
+  resolves the same number to its commit. No code was changed by this round.
+- Result: not measured. A round that files queue items has nothing to measure
+  until something acts on them; the only checkable output is whether the items
+  are still true when picked up, and whether any of them turn out to have been
+  written without leaving the repository.
+
+### 2026-08-10
 A human-directed session, not a loop round. The site moved to a public
 repository, the loop gained a written charter it cannot amend, and the
 north-star metric was replaced with a direction. It is recorded here because
