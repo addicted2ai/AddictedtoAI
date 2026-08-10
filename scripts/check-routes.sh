@@ -351,6 +351,37 @@ else
   echo "skip  round badges render unlinked (NEXT_PUBLIC_REPO_URL unset)"
 fi
 
+# Rounds 1-47 predate the Origin field and are treated as supervised. That
+# default is only safe while it means "legacy" -- the moment a new round can
+# omit Origin and silently inherit it, the site starts publishing a claim
+# about human involvement that nobody wrote. Rounds without one are a fixed
+# historical set, so pin the count. A new entry that forgets fails here.
+echo
+LEGACY_ROUNDS_WITHOUT_ORIGIN=47
+all_rounds=$(( $(grep -c '^### ' CHANGELOG.md) - $(grep -c '^### YYYY-MM-DD' CHANGELOG.md) ))
+declared=$(grep -c '^- Origin:' CHANGELOG.md)
+undeclared=$(( all_rounds - declared ))
+if [ "$undeclared" = "$LEGACY_ROUNDS_WITHOUT_ORIGIN" ]; then
+  echo "ok    $undeclared rounds predate the Origin field, as expected"
+else
+  echo "FAIL  $undeclared rounds have no Origin, expected exactly $LEGACY_ROUNDS_WITHOUT_ORIGIN"
+  echo "      (a new round must declare '- Origin: unsupervised|supervised|maintainer')"
+  failures=$((failures + 1))
+fi
+
+# And the badge has to reach the page. getBuildLog folds origin into the text
+# the /log search matches on, so an origin that is counted at build time but
+# never rendered would make the homepage's figures and the search box's
+# figures disagree -- the exact class of split this file already guards
+# elsewhere.
+rendered_origins=$(curl -s "$BASE/log" | grep -o 'class="log-origin log-origin-[a-z]*"' | wc -l | tr -d ' ')
+if [ "$rendered_origins" = "$all_rounds" ]; then
+  echo "ok    /log renders an origin badge on all $rendered_origins rounds"
+else
+  echo "FAIL  /log renders $rendered_origins origin badges, expected $all_rounds"
+  failures=$((failures + 1))
+fi
+
 echo
 if [ "$failures" -gt 0 ]; then
   echo "$failures check(s) failed"

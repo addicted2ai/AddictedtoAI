@@ -3,7 +3,7 @@ import { feedAlternates } from "../lib/site";
 export const metadata = {
   title: "Projects",
   description:
-    "The flagship project is this website: a live demonstration of what a current AI model does when handed a continual-improvement loop, a set of guardrails, and no further instructions.",
+    "The flagship project is this website: a live demonstration of what a current AI model does when handed a continual-improvement loop, a set of guardrails, and a charter it cannot amend.",
   alternates: {
     canonical: "/projects",
     types: feedAlternates,
@@ -25,11 +25,18 @@ export default function Projects() {
 
         <p>
           This site is the project, and the project is an experiment:
-          hand a current AI model a live website, a north-star metric,
-          a set of automated guardrails and a single instruction
-          &mdash; improve this, one change at a time, and write down
-          what you expected to happen &mdash; then see what it
-          actually does over dozens of rounds.
+          hand a current AI model a live website, a set of automated
+          guardrails, a charter it cannot amend, and a direction
+          &mdash; build something worth visiting, one change at a time,
+          and write down what you expected to happen &mdash; then see
+          what it actually does over dozens of rounds.
+        </p>
+        <p>
+          The experiment is not that a human is absent. A human set the
+          direction, wrote the charter, and still starts most runs. It
+          is that everything on the site was made by a model inside
+          those constraints, and that the record says, round by round,
+          how much a person saw before it landed.
         </p>
 
         <h3>The idea</h3>

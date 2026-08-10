@@ -6,11 +6,27 @@ is public, permanent, and the primary evidence for what this project
 claims. Write accordingly: honestly, and including the failures.
 
 ## What this project is
-A demonstration of what a current AI model does when it is handed a live
-website, a metric, a set of guardrails, and no further instructions. A
-human wrote the first commit — a bare Next.js skeleton with four empty
-pages. Every change since has been proposed, built, measured and shipped
-by the loop.
+An AI builds this site. A human sets the rules it builds under, and the
+record says which rounds were which.
+
+A human wrote the first commit — a bare Next.js skeleton with four empty
+pages. Everything on the site since has been written by a model. But the
+direction, the charter it operates inside, and the machinery that runs it
+are human-set, and rounds differ in how much a human saw before they
+landed. That is recorded per round rather than asserted, because it is the
+part a reader has most reason to doubt.
+
+Each entry carries an **Origin**:
+
+- `unsupervised` — scheduled, merged itself, nobody read it first
+- `supervised` — a human triggered the run and could veto before merge
+- `maintainer` — a human decided what and why; an assistant did the typing
+
+Rounds 1–47 predate the field and were all `supervised`: every one was
+hand-triggered locally. Their entries are not edited to say so — amending
+past entries is what `CHARTER.md` rule 5 forbids — so an absent Origin
+means exactly that, and the number of entries without one is asserted in
+CI so it cannot quietly grow.
 
 The evidence is the product. An entry recording a hypothesis that turned
 out to be wrong, or a check that passed while measuring the wrong thing,
@@ -18,15 +34,18 @@ is worth more here than another entry saying something went fine — those
 are the ones a sceptical reader believes. Never write an entry that
 flatters the work.
 
-## North star
-Returning-visitor rate (site-wide).
+## Direction
+See `CHARTER.md`. The short form: build an AI hub good enough that a
+stranger would use it without caring how it was made, then let how it was
+made be the second surprise. Work that advances the site must pass both
+tests in the charter; the track charges there say what each kind of run is
+for.
 
-## Section metrics
-- Blog: organic search traffic, avg. read time, scroll depth
-- Directory: outbound clicks to tools, on-site search usage
-- Projects: inquiry/contact clicks, outbound repo clicks, time on page
-- Demos: completion rate, repeat-use rate, session length
-- Build log: time on page, scroll depth, share of sessions that reach it
+This replaced a north-star metric — returning-visitor rate — that never
+had a data source. Analytics has never been configured in production, so
+all 47 rounds recorded "Result: not yet measured" against a number nothing
+could read. Metrics will return once they can be observed, and will be
+published rather than optimised.
 
 ## Guardrails (never regress these)
 - Lighthouse: performance >= 0.80, accessibility / SEO >= 0.85 —
@@ -49,7 +68,108 @@ Returning-visitor rate (site-wide).
 
 ## Log
 
-### Unreleased
+### 2026-08-10
+A human-directed session, not a loop round. The site moved to a public
+repository, the loop gained a written charter it cannot amend, and the
+north-star metric was replaced with a direction. It is recorded here because
+`CHARTER.md` rule 8 says the record's completeness is never traded against the
+site's quality, and this is precisely the work that would otherwise go
+unwritten: it does not feel like a round, so it slips out of the log.
+
+Nothing here went through a pull request. Every change was pushed straight to
+`main` — which rule 10 forbids the loop from doing, and which a maintainer round
+is not entitled to either. It was possible only because the branch is not
+protected yet. That is a gap, and it closes when protection goes on.
+
+**1. Publish from a new repository, and archive the old one**
+- Hypothesis: The repository was private because 48 `refs/pull/*` refs carry a
+  personal email address in commit metadata, and neither a force-push nor a
+  history rewrite can clear them — GitHub keeps those refs permanently, and
+  deleting the repository does not remove them either. Seeding a *new* public
+  repository with the same history, email-scrubbed, should make the record
+  publicly verifiable while exposing nothing, because a new repository starts
+  with no pull refs at all.
+- Change: Rewrote author and committer emails across all 129 commits with
+  `git filter-repo` and pushed to a new public repository. The migrated `HEAD`
+  tree hash is byte-identical to the pre-migration one, so nothing but metadata
+  changed. The predecessor is archived and stays private permanently.
+
+**2. Link archived rounds to commits rather than pull request numbers**
+- Hypothesis: Pull requests cannot be migrated, so numbers 1–47 are unclaimed in
+  the new repository and will be reused by unrelated pull requests. Pointing
+  `/log` at `/pull/22` would produce a link that resolves to the wrong change —
+  worse than a dead one, and invisible to any HTTP check, since it returns 200
+  either way. Linking archived rounds to their commit should make every citation
+  resolve to the thing it claims.
+- Change: Exported all 48 predecessor pull requests to `archive/prs.json`, with
+  merge commits translated through the rewrite, and `/log` now resolves each
+  round's badge by era. Which rounds are archived is derived from that file, not
+  from a cutoff constant.
+
+**3. Adopt a charter the loop cannot amend**
+- Hypothesis: The loop is about to run every few hours and merge its own work.
+  Guardrails it can retune are not a boundary. Putting the fixed rules in a file
+  that requires human review under `CODEOWNERS` should make the boundary
+  mechanical rather than honour-based, because auto-merge waits on required
+  reviews as well as required checks.
+- Change: Added `CHARTER.md` — 21 rules covering truth, the record, the limits of
+  autonomy, inference, and restraint — and `.github/CODEOWNERS` covering the
+  charter, the workflows, the prompts, and itself.
+
+**4. Replace the north-star metric with a direction**
+- Hypothesis: Returning-visitor rate never had a data source. Analytics has never
+  been configured in production, so every round's "not yet measured" was measured
+  against a number nothing could read. A metric is also a hill, and hill-climbing
+  on the only reachable terrain is what produced 47 rounds of refining this
+  site's own scaffolding. A direction that can reject work should do what a
+  metric could not.
+- Change: The charter now carries a direction, two tests that gate work, and six
+  track charges, each with the condition that makes it a failure. Ownership of
+  what this site is for moved from the loop to the maintainer.
+
+**5. Record how much a human saw**
+- Hypothesis: The site claimed every change since the first commit was proposed,
+  built, measured and shipped by a model given "no further instructions". That
+  was never quite true — every round so far was hand-triggered — and this session
+  made it plainly false. Recording an origin per round should replace an
+  unfalsifiable boast with a figure a reader can check, and give the project an
+  arc: the share of rounds that ran unattended is currently zero.
+- Change: Entries now carry an `Origin` of `unsupervised`, `supervised`, or
+  `maintainer`. Rounds 1–47 predate the field and were all supervised; their
+  entries are *not* edited to say so, because rule 5 forbids amending past
+  entries. An absent Origin means exactly that, and CI asserts the number of
+  entries without one never grows.
+
+**6. Date two rounds that had shipped but still said Unreleased**
+- Hypothesis: Rounds 42 and 48 were merged but still rendered as "Unreleased",
+  because the step that converts the label to a date was silently dropped after
+  round 42 and no check noticed — every assertion derives its expectation from
+  the changelog, so page and file agreed while both were wrong. A check that
+  takes its expected value from the artefact under test can only catch
+  transcription errors, never truth errors.
+- Change: Dated both to their merge commits (42 → 2026-08-09, 48 → 2026-08-10).
+  This is an amendment to past entries and is disclosed rather than made
+  quietly: only the status label moved, which is the transition the format
+  always intended, and no entry text was altered.
+
+- Origin: maintainer
+- Guardrails: `npm run lint`, `npm run build` and all route checks pass. The
+  three new assertions covering commit links were each confirmed able to fail
+  before being trusted — a corrupted SHA and a deliberately broken era map both
+  produced the expected red. The first draft of one of them was wrong in a way
+  worth recording: it scanned the whole document for `/pull/` and failed on round
+  30, whose write-up *quotes* that string as prose while explaining the URL 404s.
+  It reads badge hrefs only now. Separately, CI was building with no repository
+  URL configured, so every assertion about round badges would have passed against
+  markup no visitor sees — the same failure as the analytics build measured on
+  the wrong server. Fixed at job level.
+- Result: not measured, and not measurable in the usual sense: this session
+  changed what the project is for, so there is no before-and-after to compare.
+  What is observable is that `/log` now resolves 47 commit links that previously
+  rendered as inert badges, and that the site's claims about its own autonomy
+  now match what happened.
+
+### 2026-08-10
 Search inputs identify their counts and controls, but their result targets
 are still anonymous containers, and the changelog parser can render an
 incomplete entry without failing the build. (PR #48)
@@ -594,7 +714,7 @@ loading analytics when no measurement id is configured. (PR #41)
   returns before touching `window` during server rendering.
 - Result: not yet measured.
 
-### Unreleased
+### 2026-08-09
 Both search controls could recover from a no-match state, but only after
 the visitor searched for nothing and found a conditional button. The next
 pass makes clearing available whenever a query exists and tells assistive

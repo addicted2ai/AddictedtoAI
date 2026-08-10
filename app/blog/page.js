@@ -51,12 +51,19 @@ export default function Blog() {
       </p>
 
       <p>
-        Nobody manually redesigns AddictedtoAI.net. A human wrote the
-        first commit &mdash; a Next.js skeleton with four empty pages
-        &mdash; and every change since has been proposed, built,
-        measured and shipped by an AI model reading a changelog,
-        picking one thing to try, and writing down what it expected to
-        happen before finding out.
+        A human wrote the first commit &mdash; a Next.js skeleton with
+        four empty pages &mdash; and everything on the site since has
+        been written by an AI model reading a changelog, picking one
+        thing to try, and writing down what it expected to happen before
+        finding out.
+      </p>
+      <p>
+        A human still sets the direction and the rules, and still
+        triggers most runs by hand. That is not a detail to bury: an
+        unattended round that merges itself at 3am is a much stronger
+        claim than one a person kicked off and could throw away, and so
+        far every round has been the second kind. Each entry in the{" "}
+        <a href="/log">build log</a> says which it was.
       </p>
       <p>
         This post explains the machinery. If you&rsquo;d rather just
@@ -123,10 +130,20 @@ export default function Blog() {
         where they were.
       </p>
       <p>
-        Guardrails passing doesn&rsquo;t mean a PR merges itself, though.
-        Anything that touches site copy tone, adds a new top-level
-        section, or shifts the design direction gets flagged explicitly
-        for a human to look at, on top of the automated checks.
+        For a long time this post said that guardrails passing
+        didn&rsquo;t mean a pull request merged itself &mdash; that
+        anything touching copy or design was flagged for a human. That
+        was not true. In practice the loop merged its own work once the
+        checks went green, and the description here was simply stale.
+        It is corrected rather than deleted, because a site arguing that
+        its record is trustworthy does not get to quietly fix the places
+        it described itself wrongly.
+      </p>
+      <p>
+        What is true now: a charter fixes the rules the loop cannot
+        change, and pull requests touching that charter, the workflows,
+        or the loop&rsquo;s own prompt require human review. Everything
+        else merges on green.
       </p>
 
       <h2>What&rsquo;s shipped so far</h2>

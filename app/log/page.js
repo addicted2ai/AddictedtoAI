@@ -23,6 +23,12 @@ export const metadata = {
 // plain badges, as they did while the project was private.
 const repoUrl = getRepoUrl();
 
+const ORIGIN_LABELS = {
+  unsupervised: "Scheduled run, merged itself, nobody read it first",
+  supervised: "A human triggered this run and could veto before merge",
+  maintainer: "A human decided what and why; an assistant did the typing",
+};
+
 // A round's badge: a commit link for archived rounds, a pull request link
 // for rounds built here, a plain badge when no repository is configured.
 function RoundRef({ pr }) {
@@ -132,6 +138,19 @@ export default function BuildLog() {
                 ) : (
                   <time dateTime={entry.date}>{entry.date}</time>
                 )}
+              </span>
+              {/* How much of this round a human saw before it landed. Rounds
+                  that predate the field inherit "supervised" and say so with
+                  a title, rather than being edited to claim they declared it. */}
+              <span
+                className={`log-origin log-origin-${entry.origin}`}
+                title={
+                  entry.declaredOrigin
+                    ? ORIGIN_LABELS[entry.origin]
+                    : `${ORIGIN_LABELS[entry.origin]} (predates the Origin field)`
+                }
+              >
+                {entry.origin}
               </span>
               {entry.prs.map((pr) => (
                 <RoundRef key={pr} pr={pr} />

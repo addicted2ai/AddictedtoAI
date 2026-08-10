@@ -12,7 +12,24 @@ import path from "path";
 // future entry is written in a shape this doesn't understand, the counts
 // move and CI says so.
 
-const FIELDS = ["Hypothesis", "Change", "Guardrails", "Result"];
+const FIELDS = ["Hypothesis", "Change", "Guardrails", "Result", "Origin"];
+
+// How much of a round a human saw before it landed. Three values, because
+// two would not describe what actually happens here:
+//
+//   unsupervised — scheduled, merged itself, nobody read it first
+//   supervised   — a human triggered the run and could veto before merge
+//   maintainer   — a human decided what and why; an assistant did the typing
+//
+// Rounds 1-47 predate this field. They were all supervised: every one was
+// hand-triggered locally. Rather than edit 47 past entries to say so --
+// which is exactly the retroactive amendment CHARTER.md rule 5 forbids --
+// an absent Origin means "supervised, and predates the field". A round
+// written from here on must say. scripts/check-routes.sh asserts the number
+// of entries without one never grows, so a future round that forgets fails
+// the build instead of quietly claiming to be legacy.
+const LEGACY_ORIGIN = "supervised";
+const ORIGINS = ["unsupervised", "supervised", "maintainer"];
 
 function fieldOf(text) {
   for (const name of FIELDS) {
@@ -38,7 +55,14 @@ function unwrap(lines) {
 
 function parseBody(body) {
   const lines = body.split("\n");
-  const entry = { intro: "", changes: [], notes: [], guardrails: "", result: "" };
+  const entry = {
+    intro: "",
+    changes: [],
+    notes: [],
+    guardrails: "",
+    result: "",
+    origin: "",
+  };
 
   let current = null; // the numbered change block we're inside, if any
   let bullet = null; // { field, lines }
@@ -49,6 +73,7 @@ function parseBody(body) {
     const text = unwrap(bullet.lines);
     const target = current || entry;
     if (bullet.field === "Guardrails") entry.guardrails = text;
+    else if (bullet.field === "Origin") entry.origin = text;
     else if (bullet.field === "Result") entry.result = text;
     else if (bullet.field === "Hypothesis") target.hypothesis = text;
     else if (bullet.field === "Change") target.change = text;
@@ -137,6 +162,7 @@ function parse(markdown) {
     const body = section.slice(newline + 1);
     const parsed = parseBody(body);
     const prs = [...body.matchAll(/\(PR #(\d+)\)/g)].map((m) => Number(m[1]));
+    const declared = parsed.origin.trim().toLowerCase();
     return {
       // A positional round number changes whenever a new section is added
       // above it. PR numbers are permanent, so use one for the anchor when
@@ -151,6 +177,11 @@ function parse(markdown) {
       unreleased: /unreleased/i.test(date),
       prs: [...new Set(prs)],
       ...parsed,
+      // Kept separate from `origin` so the count of rounds that predate the
+      // field stays checkable. Without it, a legacy round and a round that
+      // forgot to say are indistinguishable.
+      declaredOrigin: declared !== "",
+      origin: declared || LEGACY_ORIGIN,
     };
   });
 }
@@ -172,6 +203,22 @@ function validateEntries(entries) {
     );
     throw new Error(
       `CHANGELOG.md contains incomplete build-log entries: ${labels.join(", ")}`
+    );
+  }
+
+  // A declared Origin has to be one of the three. A typo would otherwise
+  // become a fourth category on the site, silently, and the counts the
+  // homepage publishes would stop adding up.
+  const badOrigin = entries.filter(
+    (entry) => entry.declaredOrigin && !ORIGINS.includes(entry.origin)
+  );
+  if (badOrigin.length > 0) {
+    const labels = badOrigin.map(
+      (entry) => `round ${entry.number} ("${entry.origin}")`
+    );
+    throw new Error(
+      `CHANGELOG.md declares unknown Origin values: ${labels.join(", ")}. ` +
+        `Expected one of: ${ORIGINS.join(", ")}`
     );
   }
 }
@@ -196,10 +243,19 @@ export function getBuildLogStats() {
   const entries = getBuildLog();
   const changes = entries.reduce((n, e) => n + e.changes.length, 0);
   const prs = new Set(entries.flatMap((e) => e.prs));
+
+  const byOrigin = Object.fromEntries(ORIGINS.map((name) => [name, 0]));
+  for (const entry of entries) byOrigin[entry.origin] += 1;
+
   return {
     rounds: entries.length,
     changes,
     prs: prs.size,
+    byOrigin,
+    // Rounds that state their own origin rather than inheriting the legacy
+    // default. Published so the "N ran unattended" figure can be read
+    // against how many rounds were in a position to say.
+    declaredOrigins: entries.filter((entry) => entry.declaredOrigin).length,
   };
 }
 
@@ -227,6 +283,11 @@ function entryText(entry) {
   const parts = [
     `Round ${entry.number}`,
     entry.unreleased ? "Unreleased" : entry.date,
+    // Rendered as a visible badge on /log. It has to be in here too, or the
+    // count the homepage computes at build time and the count the search box
+    // computes from the DOM would disagree -- which check-routes.sh asserts
+    // they don't.
+    entry.origin,
     ...entry.prs.map((pr) => `#${pr}`),
   ];
   if (entry.intro) parts.push(entry.intro);

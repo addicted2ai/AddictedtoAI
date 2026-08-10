@@ -12,10 +12,10 @@ const MENTIONS = ["wrong", "dropped"];
 
 export const metadata = {
   title: {
-    absolute: "AddictedtoAI — A Website That Builds Itself",
+    absolute: "AddictedtoAI — An AI Builds This Site",
   },
   description:
-    "A human wrote the first commit. Every change since has been proposed, built, measured and shipped by an AI model running a continual-improvement loop — with the full record, including the wrong guesses, published on the site.",
+    "An AI writes this site; a human sets the rules it works under. Every round is published in full — the wrong guesses, the checks that measured the wrong thing, and how much a human saw before each one landed.",
   alternates: {
     canonical: "/",
     types: feedAlternates,
@@ -27,22 +27,22 @@ export default function Home() {
 
   return (
     <div>
-      <h1 className="hero-title">This site builds itself.</h1>
+      <h1 className="hero-title">An AI builds this site.</h1>
 
       <p className="hero-lead">
         A human wrote the first commit &mdash; a Next.js skeleton with four
-        empty pages. Everything since has been proposed, built, measured
-        and shipped by an AI model running a continual-improvement loop:
-        pick one change, state up front what it should move and why, prove
-        it against automated guardrails, then write down whether it
-        actually worked.
+        empty pages. Everything on the site since has been written by a
+        model: pick one change, state up front what it should do and why,
+        prove it against automated guardrails, then write down what
+        happened.
       </p>
 
       <p className="hero-lead">
-        The interesting part isn&rsquo;t that it works. It&rsquo;s that
-        the entire record is public &mdash; including the rounds where the
-        hypothesis turned out to be wrong, and the checks that had to be
-        fixed because they were quietly measuring the wrong thing.
+        What a human still does is set the direction and the rules. Those
+        live in a charter the loop works inside and can propose changes to
+        but cannot merge. And how much a human saw
+        before any given round landed is recorded on the round itself,
+        because that is the part you have most reason to doubt.
       </p>
 
       <dl className="log-stats">
@@ -55,10 +55,21 @@ export default function Home() {
           <dd>{stats.changes}</dd>
         </div>
         <div>
-          <dt>Pull requests</dt>
-          <dd>{stats.prs}</dd>
+          <dt>Ran unattended</dt>
+          <dd>{stats.byOrigin.unsupervised}</dd>
         </div>
       </dl>
+
+      <p className="hero-lead">
+        That third number is the one worth watching, and today it is{" "}
+        {stats.byOrigin.unsupervised}. Every round so far was triggered by
+        hand with a human able to discard it, and{" "}
+        {stats.byOrigin.maintainer === 1
+          ? "one was a human-directed session"
+          : `${stats.byOrigin.maintainer} were human-directed sessions`}{" "}
+        rather than a loop round at all. Claiming otherwise would be easy
+        and unverifiable; counting it is neither.
+      </p>
 
       <p className="hero-lead">
         This panel used to carry a fourth number: <em>guardrail failures,

@@ -601,6 +601,25 @@ article a:hover {
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
+/* How much of a round a human saw before it landed. Deliberately quiet:
+   it is a fact about the round, not a badge of honour, and the interesting
+   one (unsupervised) earns the only accent. */
+.log-origin {
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  padding: 0.1rem 0.45rem;
+  border: 1px dashed var(--border-interactive);
+  border-radius: 999px;
+  color: var(--muted);
+  cursor: help;
+}
+
+.log-origin-unsupervised {
+  border-style: solid;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .log-pr:hover,
 .log-pr:focus-visible {
   border-color: var(--accent);
