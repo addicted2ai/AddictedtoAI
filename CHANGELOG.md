@@ -181,7 +181,7 @@ that break when a conventional trailing slash is configured. (PR #37)
   pass.
 - Result: not yet measured.
 
-### Unreleased
+### 2026-08-10
 Three search refinements, each about making an existing control keep its
 place: a Directory filter can be shared, clearing it returns focus, and
 Log presets report their active state consistently. (PR #38)
@@ -223,6 +223,55 @@ Log presets report their active state consistently. (PR #38)
   identical, writes only `?q=` with `replaceState`, focuses the retained
   search input from the no-results clear path, and treats `WRONG` as the
   active `wrong` preset.
+- Result: not yet measured.
+
+### Unreleased
+The build log is now a recurring update source, its crawl hints match
+what actually changes, and round links no longer move when another round
+is added above them. (PR #39)
+
+**1. Let RSS subscribers receive build-log updates**
+- Hypothesis: The site advertises RSS, but the feed has only the one blog
+  post; the build log is the project's only recurring content, so a
+  subscriber receives no notice when a new round lands. Adding one compact
+  RSS item per parsed build-log entry should provide a machine-readable
+  update stream without duplicating the full log prose into every item.
+- Change: `/feed.xml` now keeps the existing blog item and adds one short
+  item per parsed build-log round, with a stable guid, a link to the round,
+  and its intro or first hypothesis as the summary. The full entry remains
+  on `/log`; the feed item is deliberately an update and a link, not a
+  second copy of the page.
+
+**2. Make sitemap freshness hints evidence-based**
+- Hypothesis: The sitemap labels every route `weekly`, but Directory and
+  Projects do not change when the loop adds a round while the homepage,
+  Blog, Demos, and Log all expose build-log-derived counts. Giving static
+  pages a monthly hint and changing pages a weekly hint should make the
+  crawl guidance match the content instead of claiming a cadence the code
+  does not support.
+- Change: Added an explicit `changeFrequency` per route in
+  `app/sitemap.js`: Directory and Projects are `monthly`; the homepage,
+  Blog, Demos, and Log remain `weekly`. The existing `/blog` last-modified
+  date is untouched because it describes the post, not the crawl hint.
+
+**3. Make round permalinks stable as the log grows**
+- Hypothesis: The Log's round anchors are positional (`round-N`), but the
+  parser numbers newest-first, so inserting a new round changes every old
+  round's id. A link that silently moves to a different entry is not a
+  permalink; deriving the anchor from the first permanent PR number should
+  keep old citations attached to the same round.
+- Change: Build-log entries with a PR now use `round-pr-N` ids based on
+  that PR, with the positional id retained only as a fallback for legacy
+  entries without a PR reference. Updated the route check to count the
+  stable anchor shape and added the RSS round-item assertion, so both the
+  page and feed fail loudly if a parsed round disappears.
+
+- Guardrails: pass locally. `npm run lint` and `npm run build` pass;
+  the generated feed contains one `addictedtoai:round:` item per parsed
+  changelog round, the generated sitemap emits monthly only for Directory
+  and Projects, and generated Log anchors include permanent PR-based ids.
+  The route check now asserts both the rendered round count and the feed's
+  round-item count.
 - Result: not yet measured.
 
 ### 2026-08-10

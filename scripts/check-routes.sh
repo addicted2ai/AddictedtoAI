@@ -72,11 +72,22 @@ expected=$((all_headings - template_headings))
 # Count the per-entry anchor ids, not the visible "Round N" text: React
 # splits interpolated text with comment nodes, so the rendered markup
 # reads `Round <!-- -->30` and a naive grep counts one.
-rounds=$(curl -s "$BASE/log" | grep -o 'id="round-[0-9]*"' | sort -u | wc -l | tr -d ' ')
+rounds=$(curl -s "$BASE/log" | grep -o 'id="round-[^"]*"' | sort -u | wc -l | tr -d ' ')
 if [ "$rounds" = "$expected" ]; then
   echo "ok    /log renders all $rounds rounds in CHANGELOG.md"
 else
   echo "FAIL  /log renders $rounds rounds, CHANGELOG.md has $expected"
+  failures=$((failures + 1))
+fi
+
+# RSS should carry one compact build-log item per parsed round. The guid
+# prefix is deliberately distinct from the blog's permalink guid, so this
+# remains true if the blog gains more posts later.
+feed_rounds=$(curl -s "$BASE/feed.xml" | grep -c '<guid isPermaLink="false">addictedtoai:round:')
+if [ "$feed_rounds" = "$expected" ]; then
+  echo "ok    /feed.xml contains all $feed_rounds build-log rounds"
+else
+  echo "FAIL  /feed.xml contains $feed_rounds build-log rounds, CHANGELOG.md has $expected"
   failures=$((failures + 1))
 fi
 

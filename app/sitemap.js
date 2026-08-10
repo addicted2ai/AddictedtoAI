@@ -9,17 +9,24 @@ import { posts } from "./lib/posts";
 // site's values look unreliable, so an always-now value is worse than
 // no value: it burns the signal for the one page where we do know.
 const routes = [
-  { path: "", priority: 1 },
+  { path: "", priority: 1, changeFrequency: "weekly" },
   // lastmod is "last modified", not "published" -- the post has been
   // edited since it went up.
-  { path: "/blog", priority: 0.8, lastModified: posts[0].dateModified },
-  { path: "/directory", priority: 0.8 },
-  { path: "/projects", priority: 0.8 },
-  { path: "/demos", priority: 0.8 },
+  {
+    path: "/blog",
+    priority: 0.8,
+    lastModified: posts[0].dateModified,
+    changeFrequency: "weekly",
+  },
+  // These pages have no build-log-derived content and do not change every
+  // time the loop ships a round.
+  { path: "/directory", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/projects", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/demos", priority: 0.8, changeFrequency: "weekly" },
   // The log is regenerated from CHANGELOG.md on every deploy, and the
   // changelog gains an entry every round, so this one genuinely does
   // change whenever the site does.
-  { path: "/log", priority: 0.9 },
+  { path: "/log", priority: 0.9, changeFrequency: "weekly" },
 ];
 
 export default function sitemap() {
@@ -27,7 +34,7 @@ export default function sitemap() {
 
   return routes.map((route) => ({
     url: `${siteUrl}${route.path}`,
-    changeFrequency: "weekly",
+    changeFrequency: route.changeFrequency,
     priority: route.priority,
     ...(route.lastModified
       ? { lastModified: new Date(route.lastModified) }

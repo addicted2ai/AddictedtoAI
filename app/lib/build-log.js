@@ -138,7 +138,13 @@ function parse(markdown) {
     const parsed = parseBody(body);
     const prs = [...body.matchAll(/\(PR #(\d+)\)/g)].map((m) => Number(m[1]));
     return {
-      id: `round-${sections.length - index}`,
+      // A positional round number changes whenever a new section is added
+      // above it. PR numbers are permanent, so use one for the anchor when
+      // available and keep the positional fallback only for old entries with
+      // no PR reference.
+      id: prs.length
+        ? `round-pr-${prs[0]}`
+        : `round-${sections.length - index}`,
       // Newest first in the file, so the last section is round 1.
       number: sections.length - index,
       date,
