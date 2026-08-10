@@ -366,6 +366,11 @@ article a:hover {
   font-size: 0.85rem;
 }
 
+.tool-card .tool-verified {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+}
+
 .finder {
   margin-top: 2rem;
   padding: 1.5rem;

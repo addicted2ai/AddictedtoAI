@@ -69,6 +69,50 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+The Directory had never been re-checked since it was built: twelve hardcoded
+tool entries, no record of when each was last verified, and nothing stopping a
+description from going quietly stale. This round fetched every tool's page,
+corrected the three descriptions that had drifted, stamped each entry with the
+date it was checked, showed those dates to the reader, and made staleness a
+build failure — so the state that had built up unchecked for the Directory's
+whole life now cannot exist for 45 days.
+
+**1. Verify all twelve Directory tools and record when they were checked**
+- Hypothesis: the Directory is the part of the site most likely to be quietly
+  wrong, because no tool had ever been re-fetched and nothing distinguished a
+  description checked last week from one checked never. Re-checking all twelve
+  against their live pages would find drift that no local check could see.
+- Change: fetched every tool's page on 2026-08-10. All twelve links resolve.
+  Three descriptions had drifted and were corrected in place: You.com now leads
+  with web search APIs for AI agents rather than a consumer search assistant;
+  Cursor now describes itself as an AI coding agent rather than "built on VS
+  Code"; Ollama now offers cloud runs alongside local ones. The other nine
+  (Claude, HuggingChat, GitHub Copilot, Runway, ElevenLabs, Suno, Zapier, n8n,
+  LangChain) still matched what their pages say.
+
+**2. Make Directory freshness visible and load-bearing**
+- Hypothesis: a date nobody can see and a window nothing enforces are both
+  theatre. Showing "Verified YYYY-MM-DD" on each card lets a reader judge
+  freshness themselves, and a check that reads the 45-day window from
+  `policy.yml` turns the policy's staleness clock into something that can fail.
+- Change: each entry now carries a `verified` date shown on `/directory`;
+  `scripts/check-tool-staleness.mjs` runs before every `npm run build` (via
+  `prebuild`) and fails when any entry is missing a date or past the
+  `staleness_days.directory_entry` window. Both failure paths were proven red
+  before the check was trusted — a backdated date and a deleted date each fail,
+  naming the tool.
+
+- Origin: supervised
+- Track: maintain
+- Agent: codex
+- Guardrails: the staleness check was shown to fail with a stale date and with
+  a missing date before being trusted; lint, docket validation, the track-scope
+  check, the production build, and the route checks are required before
+  shipping.
+- Result: not yet measured. The verification itself is the product; the next
+  round that runs the build past 2026-09-24 without re-checking will fail.
+
+### 2026-08-10
 The audit read the published routes as a stranger rather than treating a
 passing build as evidence that every page deserved to stay. It withdrew the
 standalone Projects page, which repeated the Blog and build-log explanation
