@@ -46,7 +46,7 @@ Returning-visitor rate (site-wide).
 
 ### Unreleased
 Second round under the showcase brief. PR #32 built the evidence; this
-one points the site at it. (PR #TBD)
+one points the site at it. (PR #33)
 
 **1. The homepage now leads with the claim, and backs it with data**
 - Hypothesis: The homepage described the site as "a hub for AI news, a
