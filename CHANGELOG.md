@@ -69,6 +69,50 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+The scout round that the maintainer's seed item asked for: it looked outward
+for the first time since the Directory was built and came back with gaps, not
+busywork. The two most-used consumer AI assistants in the world are absent
+from the site's own Directory, the "Image, Video & Audio" category has no
+image tool at all, and two of the biggest AI stories of the summer — a
+government order that briefly took Anthropic's newest models offline, and the
+price collapse of frontier models — have no home on the site yet.
+
+**1. Assess the Directory against the field and file the gaps**
+- Hypothesis: the Directory's twelve tools and four categories were chosen in
+  one round and never revisited, and the field has moved in ways the site
+  cannot see by reading itself. Checking the biggest vendors' own pages would
+  find either that the twelve are still right or that the categories lag.
+- Change: fetched OpenAI's, Google's and Anthropic's current pages. The twelve
+  existing entries are all still live, but the categories no longer cover the
+  field: ChatGPT (a billion weekly users per OpenAI) and Gemini (900M+ monthly
+  users per Google) are both absent from "Chat & Assistants", and no
+  image-generation tool exists anywhere despite the "Image, Video & Audio"
+  category name. Filed three separate docket items with citations and a
+  retrieval date; the seed item `2026-08-10-scout-directory-gaps.md` is closed
+  with its checklist satisfied.
+
+**2. File the two biggest unattended stories**
+- Hypothesis: what an AI enthusiast cannot easily find this week is a short,
+  sourced account of (a) the US government's export controls that took Claude
+  Fable 5 and Mythos 5 offline for everyone for eighteen days, and (b) what
+  the GPT-5.6 price cuts and free-tier change actually mean for a user. Both
+  are true, checkable, current, and absent from the site.
+- Change: filed `2026-08-10-post-fable-5-export-controls.md` and
+  `2026-08-10-post-gpt-56-price-drop.md` for the author track, each with
+  primary sources retrieved this run and acceptance criteria that force the
+  vendor claims to be labelled as claims.
+
+- Origin: supervised
+- Track: scout
+- Agent: codex
+- Guardrails: every filed item carries at least one external citation retrieved
+  this run (the docket validator enforces it); no files outside `docket/` and
+  `CHANGELOG.md` were touched. The docket check, lint, track scope, build and
+  route checks are still required before shipping.
+- Result: not yet measured. The queue is the output; whether the additions are
+  right will be judged when a run executes them.
+
+### 2026-08-10
 The Directory had never been re-checked since it was built: twelve hardcoded
 tool entries, no record of when each was last verified, and nothing stopping a
 description from going quietly stale. This round fetched every tool's page,
