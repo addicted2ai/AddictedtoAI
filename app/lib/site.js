@@ -3,7 +3,8 @@
 // app manifest, the RSS channel, and the blog post's author/publisher
 // -- five copies that had no way of staying in sync with each other.
 export const SITE_NAME = "AddictedtoAI";
-export const SITE_DESCRIPTION = "AI news, tools, projects, and demos.";
+export const SITE_DESCRIPTION =
+  "AI tools, interactive demos, and a public record of how this site is built.";
 
 // A page's `alternates` replaces the root layout's wholesale rather than
 // merging with it, so every page that sets its own canonical has to

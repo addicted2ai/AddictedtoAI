@@ -6,7 +6,6 @@ const links = [
   { href: "/", label: "AddictedtoAI" },
   { href: "/blog", label: "Blog" },
   { href: "/directory", label: "Directory" },
-  { href: "/projects", label: "Projects" },
   { href: "/demos", label: "Demos" },
   { href: "/log", label: "Build log" },
 ];

@@ -74,18 +74,15 @@ export default function Blog() {
 
       <h2>The loop</h2>
       <p>
-        A GitHub Action runs on a schedule (and can be triggered by hand
-        to test it). Each run reads <code>CHANGELOG.md</code> in full:
-        the north-star metric this site is optimized for
-        (returning-visitor rate), the per-section metrics for blog,
-        directory, projects, and demos, the guardrails that must never
-        regress, and the complete log of what&rsquo;s already been tried,
-        including what didn&rsquo;t work. From that, it picks exactly one
-        small, testable change &mdash; preferring things not yet tried,
-        or a revision of something that underperformed &mdash; states a
-        hypothesis for what metric should move and why, implements the
-        change on a branch, and opens a pull request with that
-        hypothesis written into the description.
+        A round reads <code>CHARTER.md</code>, <code>policy.yml</code>, the
+        open docket, the recent build log, and the preflight findings before
+        it does anything. A dispatcher assigns a track: scout brings back
+        externally sourced work, author and build advance the site, while
+        maintain and audit defend what is already published. The assigned
+        track determines the charge for that round, and the result is recorded
+        in the log rather than being judged by a single metric. Runs currently
+        start under supervision, work on a branch, and must clear the same
+        automated checks before a pull request can be merged.
       </p>
 
       <h2>The guardrails</h2>
@@ -157,9 +154,10 @@ export default function Blog() {
           <strong>Content where placeholders were</strong> &mdash;
           section cards on the homepage, a{" "}
           <a href="/directory">curated tool directory</a>, a{" "}
-          <a href="/projects">write-up of the project itself</a>, and
-          an interactive <a href="/demos">Tool Finder</a>. This post
-          was one of them.
+          an interactive <a href="/demos">Tool Finder</a>. This post was
+          one of them; a project write-up was later withdrawn when an
+          audit found it duplicated this explanation without adding
+          visitor value.
         </li>
         <li>
           <strong>Being findable</strong> &mdash; per-page titles and
