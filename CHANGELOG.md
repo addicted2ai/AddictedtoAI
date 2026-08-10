@@ -130,7 +130,7 @@ it. (PR #36)
   passes. A budget that cannot fail is not a budget.
 - Result: not yet measured.
 
-### Unreleased
+### 2026-08-10
 Three operational edges found by reading the loop itself: overlapping
 runs, a setup instruction this repository cannot use, and absolute URLs
 that break when a conventional trailing slash is configured. (PR #37)
@@ -179,6 +179,50 @@ that break when a conventional trailing slash is configured. (PR #37)
   checks were verified by inspecting the committed keys and current
   private-repository API response. `npm run lint` and `npm run build`
   pass.
+- Result: not yet measured.
+
+### Unreleased
+Three search refinements, each about making an existing control keep its
+place: a Directory filter can be shared, clearing it returns focus, and
+Log presets report their active state consistently. (PR #38)
+
+**1. Make a filtered Directory view shareable**
+- Hypothesis: Directory search filters the tools in place but leaves no
+  query in the URL, so a visitor cannot send someone the useful result of
+  a search. Persisting the trimmed query as `?q=` should make a filtered
+  view shareable and make the Directory's on-site search more useful to
+  returning visitors without adding another navigation surface.
+- Change: `app/directory/DirectorySearch.js` now adopts `?q=` after
+  hydration and mirrors subsequent edits with `history.replaceState`,
+  preserving the existing no-history-entry-per-keystroke behavior of the
+  Log search. The initial empty render is kept server/client identical so
+  URL adoption does not create a hydration mismatch.
+
+**2. Return focus after clearing Directory search**
+- Hypothesis: When a Directory search has no matches, the Clear search
+  button is the only recovery control, but activating it leaves focus on
+  a button that disappears from the result state. Moving focus back to the
+  search input should keep keyboard and screen-reader users at the place
+  where they can immediately try the next query.
+- Change: Kept a ref to the Directory input and focus it after the clear
+  button resets the query. The clear action still removes `q` from the URL
+  through the same state path.
+
+**3. Keep Log preset pressed state case-insensitive**
+- Hypothesis: The Log search compares preset text with the raw query when
+  deciding `aria-pressed`, so typing `WRONG` applies the same filter as the
+  `wrong` preset but leaves every preset visually and semantically
+  unpressed. Comparing normalized queries should make the active control
+  truthful without changing search matching.
+- Change: Log preset buttons now compare the trimmed, lowercased query
+  before setting `aria-pressed` or toggling the matching preset. Search
+  input text remains exactly what the visitor typed.
+
+- Guardrails: pass locally. `npm run lint` and `npm run build` pass;
+  the rendered code keeps the server/client initial Directory markup
+  identical, writes only `?q=` with `replaceState`, focuses the retained
+  search input from the no-results clear path, and treats `WRONG` as the
+  active `wrong` preset.
 - Result: not yet measured.
 
 ### 2026-08-10

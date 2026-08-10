@@ -147,8 +147,10 @@ export default function LogFilter({ total }) {
             key={preset}
             type="button"
             className="log-preset"
-            aria-pressed={query === preset}
-            onClick={() => setQuery(query === preset ? "" : preset)}
+            aria-pressed={query.trim().toLowerCase() === preset}
+            onClick={() =>
+              setQuery(query.trim().toLowerCase() === preset ? "" : preset)
+            }
           >
             {preset}
           </button>

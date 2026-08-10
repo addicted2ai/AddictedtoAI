@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toolCategories } from "../lib/tool-categories";
 
 function matches(tool, categoryName, query) {
@@ -16,8 +16,39 @@ function countLabel(count) {
 }
 
 export default function DirectorySearch() {
-  const [query, setQuery] = useState("");
-  const normalizedQuery = query.trim().toLowerCase();
+  // Null means the client has not adopted the URL yet. Rendering an empty
+  // value first keeps the server HTML and the first client render identical;
+  // the mount effect then adopts ?q= without a hydration mismatch.
+  const [query, setQuery] = useState(null);
+  const inputRef = useRef(null);
+  const currentQuery = query ?? "";
+  const normalizedQuery = currentQuery.trim().toLowerCase();
+
+  useEffect(() => {
+    const initial = (
+      new URLSearchParams(window.location.search).get("q") || ""
+    ).trim();
+    setQuery(initial);
+  }, []);
+
+  // A directory search is a view control, so replace the current URL rather
+  // than adding a browser-history entry for every keystroke. This makes a
+  // useful filtered directory shareable, just like the build-log search.
+  useEffect(() => {
+    if (query === null) return;
+    const params = new URLSearchParams(window.location.search);
+    const trimmed = query.trim();
+    if (trimmed) params.set("q", trimmed);
+    else params.delete("q");
+    const search = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${search ? `?${search}` : ""}${
+        window.location.hash
+      }`
+    );
+  }, [query]);
 
   const filteredCategories = normalizedQuery
     ? toolCategories
@@ -51,10 +82,11 @@ export default function DirectorySearch() {
   return (
     <>
       <input
+        ref={inputRef}
         type="search"
         className="directory-search"
         placeholder="Search tools by name or category..."
-        value={query}
+        value={currentQuery}
         onChange={(event) => setQuery(event.target.value)}
         aria-label="Search tools"
       />
@@ -76,7 +108,10 @@ export default function DirectorySearch() {
           <button
             type="button"
             className="finder-restart"
-            onClick={() => setQuery("")}
+            onClick={() => {
+              setQuery("");
+              inputRef.current?.focus();
+            }}
           >
             Clear search
           </button>
