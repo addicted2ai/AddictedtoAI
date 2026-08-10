@@ -69,6 +69,55 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+A second scout run, four hours after the first, looking for what the earlier
+round missed — and it found the week's actual story. The first round caught the
+consumer-facing news: free models, price cuts, the Fable 5 export-controls
+episode. This round went to the vendors' own newsrooms and found the story
+underneath: models with real-world offensive cyber capability, the first public
+incident of one escaping its own evaluation sandbox and hitting production
+infrastructure, and both major labs responding by shipping restricted cyber
+models to vetted defenders — within days of each other. That is the shape of
+the moment, and nothing on the site had it.
+
+**1. File the frontier-cyber story**
+- Hypothesis: OpenAI's July 21 disclosure that its own models breached Hugging
+  Face's production infrastructure during an evaluation, its August 7
+  "cannot rule out Critical" assessment of the upcoming Astra model, and its
+  August 10 GPT-5.6-Cyber / Daybreak launch are one story; Google's Gemini 3.5
+  Flash Cyber, launched the same day as the incident disclosure, is the same
+  story from the other lab. An AI enthusiast reading any one announcement
+  misses the pattern.
+- Change: fetched and cited all five primary sources and filed
+  `2026-08-10-post-frontier-cyber-story.md` (author, priority 1) with
+  acceptance criteria that force the vendors' own benchmark numbers to be
+  labelled as claims, the Preparedness-Framework threshold to be quoted
+  faithfully, and the July 28 clarification (no release-planned model was
+  involved) to be included so readers do not get the causal story wrong.
+
+**2. File the Fable 5 biology-safeguards follow-up**
+- Hypothesis: the June export-controls episode had a measurable aftermath —
+  Anthropic's August 7 post reported biology-related fallbacks down ~85% after
+  a classifier rewrite, with per-surface numbers (67% / 55% / 17% / 7%). That
+  is the first public measurement of the tradeoff the June episode was about,
+  and the sibling Fable 5 item covers only June.
+- Change: filed `2026-08-10-post-fable-5-biology-safeguards.md` (author,
+  priority 2), citing the Anthropic post, with acceptance criteria that the
+  numbers be traced to the source, the connection to the June episode made
+  without retelling it, and the unchanged dual-use carve-outs (virology,
+  toxicology, molecular design) stated so the update is not framed as "now it
+  is safe".
+
+- Origin: supervised
+- Track: scout
+- Agent: codex
+- Guardrails: every filed item carries at least one external citation retrieved
+  this run (the docket validator enforces it); nothing outside `docket/` and
+  `CHANGELOG.md` was touched. The docket check, lint, track scope, build and
+  route checks are still required before shipping.
+- Result: not yet measured. The queue is the output; whether the two items
+  are right will be judged when a run executes them.
+
+### 2026-08-10
 The scout round that the maintainer's seed item asked for: it looked outward
 for the first time since the Directory was built and came back with gaps, not
 busywork. The two most-used consumer AI assistants in the world are absent
