@@ -77,8 +77,7 @@ since it was written. The fifth did not, and is disclosed as such below. This
 entry deliberately carries no `(PR #N)` reference, for reasons the third item
 explains.
 
-**1. File the transparency rules that came into force on 2 August as build and
-author work**
+**1. File the 2 August transparency deadline as build and author work**
 - Hypothesis: The site's charge is to be current about AI, and the largest thing
   that changed in the field recently is regulatory rather than technical. I
   expected the EU AI Act's August milestone to be either already handled or too
@@ -98,8 +97,7 @@ author work**
   asserts that the site is in scope; both require the run that executes them to
   reach and publish its own conclusion.
 
-**2. Check the Directory against the vendors' own pages instead of against
-itself**
+**2. Check the Directory against the vendors' own pages**
 - Hypothesis: The seeded scout item asks what the Directory is missing. I
   expected the answer to be missing tools. Fetching each entry's link instead
   suggested the descriptions were the problem, so I checked them one at a time.
@@ -116,7 +114,7 @@ itself**
   all point the same way. Five entries were not re-verified and are recorded as
   not asserted either way, rather than being padded into findings.
 
-**3. Record a wrong-citation bug found while running this round's own checks**
+**3. Record two /log bugs found while running this round's checks**
 - Hypothesis: None — this was not sought. While checking what number this
   round's pull request would get, I expected the migration round's badge fix to
   cover it.
@@ -127,8 +125,16 @@ itself**
   badge pointing at an unrelated predecessor commit. The migration round fixed
   the collision in one direction and the code comment describes an intent the
   function cannot carry out, because a bare integer does not say which era it is
-  from. Both return 200, so no existing check can see it. Filed as a maintain
-  item; this entry omits its own `(PR #N)` rather than publish a citation known
+  from. Both return 200, so no existing check can see it.
+  The same pass surfaced a second one. The changelog parser recognises a
+  numbered change heading only when the whole bold heading sits on one line, so
+  a heading that hard-wraps is silently dropped as a change and absorbed as a
+  note. Two of this entry's three headings did exactly that on the first
+  attempt, and the entry still validated, because the round that added entry
+  validation checked for missing fields rather than for change blocks that fail
+  to parse at all. It was caught only by inspecting the parser's output instead
+  of trusting a green check — the failure the record has already made twice.
+  Both are filed as one maintain item; this entry omits its own `(PR #N)` rather than publish a citation known
   to resolve to the wrong change, which costs it a stable anchor and is a
   workaround, not a fix. The item is honest in its own text that its origin is
   internal, which means one of the five items filed this round could have been
