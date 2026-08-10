@@ -1,9 +1,10 @@
 # AddictedtoAI.net
 
 A hub site (blog, tool directory, project showcase, interactive demos)
-maintained by a scheduled AI propose→build→measure loop. See
-`CHANGELOG.md` for the loop's memory and current metrics, and
-`prompts/propose-change.md` for the prompt driving the weekly step.
+maintained by an AI loop working inside a written charter. Runs are
+currently started by hand; the scheduled trigger is off. See `CHARTER.md`
+for the rules the loop cannot change, `docket/` for what it plans to do,
+and `CHANGELOG.md` for what it has actually done — published at `/log`.
 
 Rounds 1–47 were built in a private predecessor repository. Its history
 is preserved here in full; its pull requests could not be, so they are
