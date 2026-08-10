@@ -31,6 +31,13 @@ jobs:
 
       - run: npm ci
       - run: npm run lint
+
+      # Before the build, because a malformed docket is a planning error and
+      # should be reported as one rather than surfacing three minutes later
+      # behind a Lighthouse run. Needs no server.
+      - name: Check the docket
+        run: node scripts/check-docket.mjs
+
       - run: npm run build
 
       - name: Start server
