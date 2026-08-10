@@ -10,6 +10,10 @@ set -uo pipefail
 
 BASE="${BASE:-http://localhost:3000}"
 failures=0
+# Skipped checks are reported separately from passing ones. "all route checks
+# passed" alongside a silent skip is how a hand-started run comes to believe
+# it verified something it never looked at.
+skipped=0
 
 check() {
   local path="$1" want_status="$2" want_type="$3" want_text="$4"
@@ -81,9 +85,21 @@ expected=$((all_headings - template_headings))
 # Count the per-entry anchor ids, not the visible "Round N" text: React
 # splits interpolated text with comment nodes, so the rendered markup
 # reads `Round <!-- -->30` and a naive grep counts one.
-rounds=$(curl -s "$BASE/log" | grep -o 'id="round-[^"]*"' | sort -u | wc -l | tr -d ' ')
-if [ "$rounds" = "$expected" ]; then
-  echo "ok    /log renders all $rounds rounds in CHANGELOG.md"
+all_ids=$(curl -s "$BASE/log" | grep -o 'id="round-[^"]*"')
+rounds=$(printf '%s\n' "$all_ids" | sort -u | wc -l | tr -d ' ')
+total_ids=$(printf '%s\n' "$all_ids" | wc -l | tr -d ' ')
+
+# Two rounds sharing an anchor look exactly like one round going missing, and
+# the first version of this check reported it that way -- "renders 49, has 50"
+# when nothing was missing and two rounds were both claiming `round-pr-1`.
+# A duplicate permalink is its own failure: a citation resolves to whichever
+# the browser reaches first, silently.
+if [ "$total_ids" != "$rounds" ]; then
+  echo "FAIL  /log has duplicate round anchors — $total_ids ids, $rounds unique:"
+  printf '%s\n' "$all_ids" | sort | uniq -d | sed 's/^/        /'
+  failures=$((failures + 1))
+elif [ "$rounds" = "$expected" ]; then
+  echo "ok    /log renders all $rounds rounds, each with a unique anchor"
 else
   echo "FAIL  /log renders $rounds rounds, CHANGELOG.md has $expected"
   failures=$((failures + 1))
@@ -380,6 +396,9 @@ PY
   failures=$((failures + $?))
 else
   echo "skip  round badges render unlinked (NEXT_PUBLIC_REPO_URL unset)"
+  echo "      every badge assertion above is skipped, not satisfied — a local"
+  echo "      build without that variable verifies nothing about round links"
+  skipped=$((skipped + 1))
 fi
 
 # Rounds 1-47 predate the Origin field and are treated as supervised. That
@@ -418,4 +437,9 @@ if [ "$failures" -gt 0 ]; then
   echo "$failures check(s) failed"
   exit 1
 fi
-echo "all route checks passed"
+if [ "$skipped" -gt 0 ]; then
+  echo "all route checks passed, but $skipped group(s) were SKIPPED — see above"
+  echo "(set NEXT_PUBLIC_REPO_URL to exercise them; CI always does)"
+else
+  echo "all route checks passed"
+fi

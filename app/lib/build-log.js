@@ -189,11 +189,19 @@ function parse(markdown) {
     const headingsStarted = (body.match(/^\*\*\d+\./gm) || []).length;
     return {
       // A positional round number changes whenever a new section is added
-      // above it. PR numbers are permanent, so use one for the anchor when
-      // available and keep the positional fallback only for old entries with
-      // no PR reference.
+      // above it, so a PR number is used for the anchor when there is one.
+      //
+      // But a bare PR number stopped being unique the moment this repository
+      // restarted numbering at 1: archived round 1 and the first round shipped
+      // here both cite `(PR #1)`, and both wanted the anchor `round-pr-1`. Two
+      // rounds then share a permalink, and a citation silently resolves to
+      // whichever the browser reaches first.
+      //
+      // Archived rounds are marked instead of the current ones, so that
+      // `round-pr-N` goes on meaning "pull request N in this repository" --
+      // which is what anyone constructing a link by hand would assume.
       id: prs.length
-        ? `round-pr-${prs[0]}`
+        ? `round-${declared ? "" : "archived-"}pr-${prs[0]}`
         : `round-${sections.length - index}`,
       // Newest first in the file, so the last section is round 1.
       number: sections.length - index,
