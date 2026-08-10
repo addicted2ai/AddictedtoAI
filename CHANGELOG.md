@@ -33,7 +33,7 @@ Returning-visitor rate (site-wide).
 ### Unreleased
 Four small changes shipped together in one PR at the maintainer's
 request, rather than as four separate rounds. Each keeps its own
-hypothesis, since each is testing something different. (PR #TBD)
+hypothesis, since each is testing something different. (PR #28)
 
 **1. Declare `color-scheme: dark`**
 - Hypothesis: The site is dark-themed in CSS but never told the
