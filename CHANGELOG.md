@@ -69,6 +69,64 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+Three more defects in the same machinery, found by trying to merge the round
+that found the first four. Each blocked a pull request that was correct.
+
+The pattern across all seven is now clear enough to name: every one was a
+collision between the predecessor repository's pull request numbers and this
+one's, and each fix addressed a single surface — the link target, then the
+anchor, then the check — while leaving the others keyed on a bare integer that
+had stopped being unique. Fixing one layer and shipping it green, three times.
+
+**1. Two rounds claimed the same permalink**
+- Hypothesis: the badge fix keyed the link target on era but left the anchor id
+  keyed on a bare pull request number. Archived round 1 and the first round
+  shipped here both cite `(PR #1)`, so both wanted `round-pr-1` — two rounds
+  sharing a permalink, with a citation resolving to whichever the browser
+  reaches first. Marking the archived ones should keep `round-pr-N` meaning
+  "pull request N in this repository", which is what anyone building a link by
+  hand would assume.
+- Change: archived rounds now use `round-archived-pr-N`. This renames 47
+  anchors, a breaking change to a published surface, taken now because the site
+  is hours old and its only consumer is a feed that regenerates from the same
+  parse.
+
+**2. The duplicate looked like a missing round**
+- Hypothesis: the round-count assertion compared unique anchors against the
+  changelog's round count, so a duplicate anchor and a dropped round produce an
+  identical message. CI reported "renders 49 rounds, CHANGELOG.md has 50" when
+  nothing was missing, which sends a reader looking in the wrong place.
+  Comparing total anchors against unique ones should distinguish them.
+- Change: the check now reports the duplicated id by name. Proved by reverting
+  the anchor fix with a colliding round present: "duplicate round anchors — 50
+  ids, 49 unique: id=round-pr-1".
+
+**3. A check that fired on correct output**
+- Hypothesis: a "belt and braces" assertion flagged any `/pull/N` link whose N
+  appeared in the archive. It predated the era distinction and collected hrefs
+  from the whole page, so it could not tell which round a link came from — only
+  that the number also existed in the archive. Once a round could legitimately
+  cite this repository's own #1, it began failing on correct output, and it
+  blocked the first real round for citing its own pull request. The per-round
+  era check already asserts both directions with the information this one
+  lacked.
+- Change: removed rather than repaired. A second check over strictly less
+  context could only ever disagree with the first, and a check that fires on a
+  correct state costs more than the one it duplicates.
+
+- Origin: maintainer
+- Track: meta
+- Guardrails: the CI scenario was reproduced locally before and after —
+  a current-era round citing `(PR #1)` alongside archived round 1 — and now
+  passes with unique anchors and both link targets correct. `check-routes.sh`
+  also reports skipped groups separately from passing ones: the badge
+  assertions correctly skip when `NEXT_PUBLIC_REPO_URL` is unset, but the
+  summary still said "all route checks passed", so a hand-started run could
+  read that as covering links it never examined.
+- Result: not measured. Observable outcome: three consecutive pull request
+  failures, each on a different genuine defect, none of which reached `main`.
+
+### 2026-08-10
 The first real run of the new machinery found four bugs in it, all mine, and
 one of them had broken every pull request the system could ever produce. This
 round fixes them. The run itself is PR #1 and is still open; this entry is
