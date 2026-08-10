@@ -163,13 +163,16 @@ export function getBuildLogStats() {
   const entries = getBuildLog();
   const changes = entries.reduce((n, e) => n + e.changes.length, 0);
   const prs = new Set(entries.flatMap((e) => e.prs));
-  const measured = entries.filter((e) =>
-    /measured|verified/i.test(e.guardrails || "")
+  // Every round records its guardrail outcome as "pass" or "fail". Count
+  // rather than assert: if a round ever fails, this number should drop,
+  // and the homepage should say so.
+  const failed = entries.filter((e) =>
+    /^fail/i.test((e.guardrails || "").trim())
   ).length;
   return {
     rounds: entries.length,
     changes,
     prs: prs.size,
-    measured,
+    failed,
   };
 }
