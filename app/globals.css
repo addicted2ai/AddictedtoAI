@@ -1,4 +1,9 @@
 :root {
+  /* Tell the UA this is a dark page so it paints the bits CSS can't
+     reach -- scrollbars, the search field's clear button, form control
+     and autofill defaults -- from the dark palette instead of the
+     light one. */
+  color-scheme: dark;
   --bg: #0b0d0f;
   --fg: #e8e8e6;
   --muted: #8a8f98;
@@ -83,15 +88,6 @@ main {
   max-width: 780px;
   margin: 0 auto;
   padding: 3rem 1.5rem;
-}
-
-.placeholder-note {
-  margin-top: 2rem;
-  padding: 1rem;
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  color: var(--muted);
-  font-size: 0.9rem;
 }
 
 .post-meta {

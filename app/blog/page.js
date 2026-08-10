@@ -1,4 +1,4 @@
-import { feedAlternates, getSiteUrl } from "../lib/site";
+import { SITE_NAME, feedAlternates, getSiteUrl } from "../lib/site";
 import { posts } from "../lib/posts";
 
 const post = posts[0];
@@ -18,8 +18,8 @@ const postJsonLd = {
   headline: post.title,
   description: post.description,
   datePublished: post.datePublished,
-  author: { "@type": "Organization", name: "AddictedtoAI" },
-  publisher: { "@type": "Organization", name: "AddictedtoAI" },
+  author: { "@type": "Organization", name: SITE_NAME },
+  publisher: { "@type": "Organization", name: SITE_NAME },
   mainEntityOfPage: {
     "@type": "WebPage",
     "@id": `${getSiteUrl()}${post.path}`,
@@ -98,9 +98,11 @@ export default function Blog() {
       <ul>
         <li>
           <strong>Content where placeholders were</strong> &mdash;
-          section cards on the homepage, a curated tool directory, a
-          write-up of the project itself, and an interactive Tool
-          Finder on <code>/demos</code>. This post was one of them.
+          section cards on the homepage, a{" "}
+          <a href="/directory">curated tool directory</a>, a{" "}
+          <a href="/projects">write-up of the project itself</a>, and
+          an interactive <a href="/demos">Tool Finder</a>. This post
+          was one of them.
         </li>
         <li>
           <strong>Being findable</strong> &mdash; per-page titles and

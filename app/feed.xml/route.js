@@ -1,4 +1,4 @@
-import { getSiteUrl } from "../lib/site";
+import { SITE_DESCRIPTION, SITE_NAME, getSiteUrl } from "../lib/site";
 import { posts } from "../lib/posts";
 
 function escapeXml(value) {
@@ -28,9 +28,9 @@ export function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>AddictedtoAI</title>
+    <title>${escapeXml(SITE_NAME)}</title>
     <link>${escapeXml(siteUrl)}</link>
-    <description>AI news, tools, projects, and demos.</description>
+    <description>${escapeXml(SITE_DESCRIPTION)}</description>
     <language>en</language>
     <atom:link href="${escapeXml(`${siteUrl}/feed.xml`)}" rel="self" type="application/rss+xml" />
 ${items}
