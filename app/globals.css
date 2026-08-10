@@ -406,3 +406,178 @@ article a:hover {
   border-color: var(--accent);
   color: var(--fg);
 }
+
+/* ---- Build log ------------------------------------------------------ */
+
+.log-lead {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 62ch;
+}
+
+.log-lead code {
+  background: var(--border);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.log-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  margin: 2rem 0 0;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.log-stats div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.log-stats dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.log-stats dd {
+  margin: 0;
+  font-size: 1.9rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--accent);
+}
+
+.log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.log-entry {
+  position: relative;
+  padding: 2.5rem 0 0 1.5rem;
+  border-left: 1px solid var(--border);
+}
+
+/* The dot on the timeline rail. */
+.log-entry::before {
+  content: "";
+  position: absolute;
+  top: 3rem;
+  left: -4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border-interactive);
+}
+
+.log-entry:last-child {
+  border-left-color: transparent;
+}
+
+.log-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.log-round {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.log-date {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.log-pr {
+  font-size: 0.75rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--border-interactive);
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.log-pr:hover,
+.log-pr:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.log-intro {
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+}
+
+.log-change {
+  margin-bottom: 1.5rem;
+}
+
+.log-change-title {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.log-field {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  max-width: 68ch;
+}
+
+.log-field-label {
+  display: inline-block;
+  margin-right: 0.5rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  vertical-align: 0.15em;
+}
+
+.log-note {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+.log-outcome {
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+}
+
+.log-outcome .log-field {
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.log-entry code {
+  background: var(--border);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.88em;
+  overflow-wrap: break-word;
+}
+
+.log-entry strong {
+  color: var(--fg);
+}

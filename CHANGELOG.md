@@ -31,6 +31,113 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+First round under a redirected brief. The maintainer has reframed what
+this site is for: not a hub site that happens to be maintained by a
+loop, but a showcase of what a current AI model does when it's handed a
+continual-improvement loop and left to run. This PR is the foundation
+for that, and it takes the position that the strongest possible version
+of that claim is evidence rather than assertion. (PR #32)
+
+**1. Parse the changelog into structured data**
+- Hypothesis: This project's genuinely unusual asset is not the tool
+  directory or the quiz — those exist on a thousand sites. It's that
+  30 rounds of work each carry a hypothesis stated *before* the work,
+  a measurement taken after, and an honest record of the times the
+  hypothesis was wrong. That asset is currently invisible: it lives in
+  a markdown file in the repository, where no visitor will ever read
+  it. Any showcase framing that doesn't surface it is just a claim.
+- Change: `app/lib/build-log.js` reads `CHANGELOG.md` at build time and
+  parses it into entries, each with a date, PR numbers, and one or more
+  changes carrying hypothesis / change / notes, plus the round's
+  guardrail and result. Handles both formats the file has used: the
+  early single-change entries and the later bundled `**N. Title**`
+  ones.
+- The deliberate choice here is *parsing* rather than maintaining a
+  second copy for the website. A hand-written showcase page would be
+  free to flatter the record; a parsed one cannot, because it is the
+  record. It also can't go stale, which is the failure PR #27 had to
+  fix by hand.
+- Verified against known counts before building any UI: 30 entries, 39
+  distinct changes, 30 pull requests, and zero entries missing a
+  hypothesis, change, guardrail or result.
+
+**2. `/log` — the record, rendered**
+- Hypothesis: A visitor who is told "an AI built this site" has no
+  reason to believe anything follows from that. A visitor who can read
+  30 rounds of hypothesis-and-measurement, including "the prediction
+  that gating on this would fail was wrong" and two changes dropped
+  after measuring showed there was nothing to fix, can judge for
+  themselves. Show the work.
+- Change: A new top-level `/log` route rendering every round as a
+  timeline — round number, date, links to the real pull requests, each
+  change's hypothesis and outcome, and the guardrail result. New
+  `app/lib/inline-markdown.js` tokenises the three inline constructs
+  the changelog actually uses (`code`, bold, italic) into React nodes
+  rather than pulling in a markdown dependency or setting innerHTML
+  from a file — so there is no HTML-injection surface at all. Added to
+  the nav, the sitemap at priority 0.9, and its own metadata.
+- Measured, because a 30-round page is a lot of HTML: 222 KB of markup,
+  49.8 KB gzipped, 144 KB transferred. Lighthouse on `/log`,
+  median of 3: performance 0.99, accessibility 1.00, SEO 1.00. Well
+  clear of the guardrails, so the whole record stays on one page
+  instead of being paginated.
+
+**3. Put the new route under the guardrails**
+- Hypothesis: PR #29's lesson was that shipped code nothing checks is
+  shipped code that breaks silently. A new top-level route added
+  without touching CI would repeat exactly that.
+- Change: `/log` added to both the Lighthouse URL list and the lychee
+  crawl in `pr-checks.yml`, and a new assertion in
+  `scripts/check-routes.sh` that the page renders every round the
+  changelog contains.
+- That assertion derives its expected count from `CHANGELOG.md` itself
+  rather than hardcoding a number, so it can't go stale — a constant
+  needing a bump every round would be the same rot the log page exists
+  to prevent. It guards the real failure mode: a future entry written
+  in a shape the parser doesn't understand would still render a page,
+  just quietly missing rounds.
+- Also caught by verification rather than review: the first version of
+  that assertion counted the visible "Round N" text and reported 1
+  round instead of 30. React splits interpolated text with comment
+  nodes, so the rendered markup separates the label from the number.
+  Counting the entry anchor ids instead.
+- And the check then failed a second time, on the count *it derived*.
+  Deriving it by deleting the changelog's HTML comment block with a
+  `sed` range broke as soon as an entry's prose happened to quote an
+  HTML comment — which this very entry does, describing the bug above.
+  The range opened early and swallowed the rest of the file, so the
+  expected count came back as 1. Now counted by subtracting the
+  template placeholder heading, with no range matching involved. Two
+  self-inflicted bugs in one check, both found by running it rather
+  than by reading it.
+
+**4. The PR links were all broken, which the link check caught**
+- Hypothesis: rendering each round's real PR numbers as links to the
+  actual pull requests would be the strongest evidence on the page.
+- What actually happened: `linkinator` failed the build with 30 broken
+  links. The repository is private, so every one of those URLs returns
+  404 to a visitor who isn't signed in — the same trap PR #4 hit when
+  it first described the repo as public. Confirmed directly: both the
+  repo page and `/pull/1` return 404 unauthenticated.
+- Change: PR numbers render as plain badges, and become links only
+  when `NEXT_PUBLIC_REPO_URL` is set — the same env-gated pattern used
+  for the site URL and the analytics ID, documented in `.env.example`.
+  Both paths were verified rather than assumed: unset gives 30 badges
+  and zero anchors; set gives 30 anchors pointing at the right PRs.
+- **For the maintainer:** making the repository public would turn this
+  on with a single environment variable and no code change. It is the
+  single biggest upgrade available to the showcase framing — right now
+  the page asks you to take its word for 30 pull requests, when it
+  could link you to all of them. That's a call only you can make.
+- Guardrails: pass (`next build` clean; `npm run lint` clean;
+  `linkinator` zero failures; `scripts/check-routes.sh` green
+  including the new round-count assertion; `/log` measured at
+  performance 0.99 / accessibility 1.00 / SEO 1.00; the 6-item nav
+  re-checked at a 360px viewport, still exactly zero horizontal
+  overflow.)
+- Result (measured the following week): not yet measured
+
+### 2026-08-10
 Three content-plumbing fixes in one PR, bundled at the maintainer's
 request. (PR #31)
 
