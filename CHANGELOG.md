@@ -87,6 +87,22 @@ Bundled at the maintainer's request. (PR #29)
   rendered bytes are U+2019 and that no word was mangled. Zero
   violations of any other rule.
 
+- Then the step reported the wrong number, which was worse than
+  reporting none: it printed 97 KB — the analytics-*off* figure —
+  while claiming to measure analytics on. Cause, from the CI log:
+  `lsof -ti:3000 | xargs -r kill -9 || true` silently did nothing,
+  the new server died with `EADDRINUSE`, `wait-on` then succeeded
+  against the *old* analytics-off server still holding the port, and
+  Lighthouse measured that and passed. Exactly the failure this
+  round's other two changes are about — a check that looks green
+  while measuring the wrong thing. Fixed by deleting the race rather
+  than tuning it: the analytics build is served on port 3001, so
+  there is nothing to kill. Added a verification gate — `curl` the
+  new server and grep for the measurement ID — so that if this ever
+  breaks again it fails loudly instead of quietly measuring the wrong
+  build. Both directions tested locally: the gate passes against the
+  analytics build on :3001 and exits 1 against the analytics-off
+  build on :3000.
 - The informational Lighthouse step needed a second pass of its own,
   because the first version of it reported nothing. Two faults, both
   visible only by reading the CI log rather than the green tick:

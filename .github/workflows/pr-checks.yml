@@ -68,19 +68,27 @@ jobs:
         env:
           NEXT_PUBLIC_GA_MEASUREMENT_ID: G-CI0000000
         run: |
-          lsof -ti:3000 | xargs -r kill -9 || true
-          # Clear the blocking run's reports so the summary below only
-          # reads the analytics-enabled ones.
+          # Serve on a different port rather than trying to kill the
+          # first server. Killing it is a race that already went wrong
+          # once: the kill silently did nothing, the new server died
+          # with EADDRINUSE, wait-on succeeded against the *old*
+          # analytics-off server, and Lighthouse happily measured the
+          # wrong build and reported success.
           rm -rf .lighthouseci
           npm run build
-          npm run start & npx wait-on http://localhost:3000
+          PORT=3001 npm run start & npx wait-on http://localhost:3001
+          # And then prove it really is the analytics build. Without
+          # this, any future breakage in the step above goes back to
+          # silently measuring the wrong thing.
+          curl -sf http://localhost:3001 | grep -q 'G-CI0000000'
+          echo "confirmed: analytics build serving on :3001"
 
       - name: Lighthouse CI (analytics enabled, informational)
         if: always()
         continue-on-error: true
         uses: treosh/lighthouse-ci-action@v11
         with:
-          urls: http://localhost:3000
+          urls: http://localhost:3001
           configPath: "./lighthouserc.analytics.json"
           uploadArtifacts: true
           # Distinct from the blocking run's artifact, which otherwise
