@@ -55,7 +55,7 @@ Returning-visitor rate (site-wide).
   rather than a running log specifically so it stops going stale** —
   restating it round by round is what broke it the first time, and
   `CHANGELOG.md` is already the per-round ledger the "Follow along"
-  section points at. (PR #TBD)
+  section points at. (PR #27)
 - Guardrails: pass (local `next build` clean; local link check with
   `linkinator` for all 5 routes, 30 links, zero failures; verified
   against the served page that the "all at or above 0.85" claim is
