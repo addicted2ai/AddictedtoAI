@@ -10,6 +10,12 @@ function matches(tool, categoryName, query) {
   return haystack.includes(query);
 }
 
+function queryFromUrl() {
+  return (
+    new URLSearchParams(window.location.search).get("q") || ""
+  ).trim();
+}
+
 function countLabel(count) {
   if (count === 0) return "No tools match";
   if (count === 1) return "1 tool matches";
@@ -26,10 +32,10 @@ export default function DirectorySearch() {
   const normalizedQuery = currentQuery.trim().toLowerCase();
 
   useEffect(() => {
-    const initial = (
-      new URLSearchParams(window.location.search).get("q") || ""
-    ).trim();
-    setQuery(initial);
+    const adoptQuery = () => setQuery(queryFromUrl());
+    adoptQuery();
+    window.addEventListener("popstate", adoptQuery);
+    return () => window.removeEventListener("popstate", adoptQuery);
   }, []);
 
   // A directory search is a view control, so replace the current URL rather

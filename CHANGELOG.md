@@ -50,6 +50,48 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+The two shareable searches write their state into the URL, but browser
+history could change that URL without changing the visible filter, and a
+Log permalink conflict still compared against hidden assistive copy. (PR
+#46)
+
+**1. Let Directory search follow browser history**
+- Hypothesis: Directory search persists `?q=` so a filtered view can be
+  shared, but the component only reads that query on mount. If a visitor
+  uses browser history to return to a previous Directory URL, the address
+  bar can change while the visible tool list stays filtered to the old
+  query. Listening for `popstate` should keep the shareable URL and the
+  displayed results synchronized.
+- Change: Directory search now adopts the query from the URL on browser
+  history changes, while preserving the existing replace-state behavior for
+  typing and the hydration-safe empty first render.
+
+**2. Let Log search follow browser history**
+- Hypothesis: The Build Log has the same URL-backed state gap, but its
+  filter also hides server-rendered entries and has a permalink/hash rule.
+  Applying a history query through the same filter and hash-handling path
+  should make Back/Forward restore the visible rounds and the matching
+  permalink behavior together.
+- Change: Log search now listens for `popstate`, reapplies the URL query to
+  the existing entries, updates the result count, and re-runs the hash
+  reconciliation without adding history entries of its own.
+
+**3. Make Log permalink conflicts use visible copy**
+- Hypothesis: Filtering deliberately excludes `.visually-hidden` labels, but
+  the rule that decides whether a permalinked round matches the active query
+  still reads raw `textContent`. A query that only matches a hidden "copy
+  link" instruction could therefore keep a permalinked round hidden. Using
+  the same cleaned text as filtering should make the conflict rule truthful.
+- Change: The permalink/hash reconciliation now uses the cached searchable
+  text with hidden nodes removed, so it agrees with the result set it is
+  meant to reveal.
+
+- Guardrails: pass locally. `npm run lint`, `npm run build`, and route checks
+  pass; browser checks cover Directory and Log URL adoption, history changes,
+  and a hidden-only permalink query. (PR #46)
+- Result: not yet measured.
+
+### 2026-08-10
 The public links and measurement script are optional configuration, but a
 trailing slash can corrupt repository permalinks, whitespace can load a
 malformed analytics tag, and RSS currently checks item count without

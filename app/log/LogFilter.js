@@ -96,7 +96,7 @@ export default function LogFilter({ total }) {
       const current = queryRef.current;
       if (
         current &&
-        !target.textContent.toLowerCase().includes(current.toLowerCase())
+        !searchableText(target).includes(current.toLowerCase())
       ) {
         queryRef.current = "";
         setQuery("");
@@ -106,19 +106,27 @@ export default function LogFilter({ total }) {
       target.scrollIntoView();
     };
 
-    const initial = (
-      new URLSearchParams(window.location.search).get("q") || ""
-    ).trim();
-    queryRef.current = initial;
-    setQuery(initial);
-    setMatches(applyFilter(initial));
-    honourHash();
+    const adoptUrl = () => {
+      const initial = (
+        new URLSearchParams(window.location.search).get("q") || ""
+      ).trim();
+      queryRef.current = initial;
+      setQuery(initial);
+      setMatches(applyFilter(initial));
+      honourHash();
+    };
+
+    adoptUrl();
 
     // Changing only the hash is a same-document navigation: nothing
     // re-mounts, so without this a pasted `#round-N` on an already
     // filtered page silently scrolls to a hidden element.
     window.addEventListener("hashchange", honourHash);
-    return () => window.removeEventListener("hashchange", honourHash);
+    window.addEventListener("popstate", adoptUrl);
+    return () => {
+      window.removeEventListener("hashchange", honourHash);
+      window.removeEventListener("popstate", adoptUrl);
+    };
   }, []);
 
   useEffect(() => {
