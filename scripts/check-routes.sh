@@ -98,6 +98,42 @@ else
   failures=$((failures + 1))
 fi
 
+# Feed descriptions are consumed outside the site, so the changelog's
+# presentation syntax must not leak into them as literal Markdown markers.
+# This keeps the feed summary readable without making RSS readers understand
+# the site's private inline-markdown subset.
+echo
+BASE_URL="$BASE" node <<'NODE'
+const base = process.env.BASE_URL;
+(async () => {
+  const feed = await fetch(`${base}/feed.xml`).then((response) => response.text());
+  const descriptions = [
+    ...feed.matchAll(/<description>([^<]*)<\/description>/g),
+  ].map(([, description]) => description);
+  const bad = descriptions.filter(
+    (description) => description.includes("`") || description.includes("**")
+  );
+  if (bad.length === 0) {
+    console.log(`ok    RSS descriptions contain no raw Markdown markers (${descriptions.length} checked)`);
+  } else {
+    console.log(`FAIL  RSS contains ${bad.length} description(s) with raw Markdown markers`);
+    process.exitCode = 1;
+  }
+})();
+NODE
+failures=$((failures + $?))
+
+# Dated rounds expose their date as machine-readable HTML, while the current
+# Unreleased round intentionally remains text until it receives a date.
+dated_rounds=$(grep -c '^### 20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]$' CHANGELOG.md)
+log_dates=$(curl -s "$BASE/log" | grep -o '<time[^>]*dateTime="20[0-9-]*"' | wc -l | tr -d ' ')
+if [ "$log_dates" = "$dated_rounds" ]; then
+  echo "ok    /log exposes all $log_dates dated rounds as <time>"
+else
+  echo "FAIL  /log exposes $log_dates dated rounds as <time>, CHANGELOG.md has $dated_rounds"
+  failures=$((failures + 1))
+fi
+
 # Counting feed items is not enough: a feed can contain the right number of
 # links while every anchor points at the wrong round. Resolve each round link
 # against the rendered Log ids so a citation in an RSS reader cannot silently

@@ -50,6 +50,46 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+The build log is now a useful RSS source, but its summaries can expose the
+changelog's inline Markdown literally, and its dates are only visual text.
+(PR #47)
+
+**1. Keep RSS round summaries readable**
+- Hypothesis: RSS descriptions currently reuse changelog prose directly, so
+  a summary containing backticks or emphasis can show raw Markdown markers in
+  a feed reader that does not render the site's inline syntax. Stripping the
+  supported inline formatting before XML escaping should keep the evidence
+  readable without duplicating the full Log entry.
+- Change: Added a shared `stripInlineMarkdown()` helper and applied it to
+  build-log RSS summaries. The feed still escapes the resulting plain text as
+  XML and leaves the full formatted record on `/log`.
+
+**2. Mark dated Log rounds as dates**
+- Hypothesis: The Log currently displays dated headings as plain text, so
+  assistive technology and crawlers have to infer their meaning from a class
+  and a string. Rendering dated entries as `<time dateTime="YYYY-MM-DD">`
+  should expose the same date semantically while leaving the Unreleased state
+  honest and unchanged.
+- Change: Dated round labels now render inside `<time>`; the current
+  Unreleased label remains a plain span because it has no calendar date.
+
+**3. Keep feed and Log evidence formats under the route gate**
+- Hypothesis: Existing checks prove RSS item count and Log round count, but
+  neither would catch Markdown leaking into feed descriptions or a dated
+  round losing its machine-readable date. Assertions derived from the
+  changelog and rendered output should make both regressions fail before a
+  deployment.
+- Change: Extended `scripts/check-routes.sh` to reject raw Markdown markers in
+  RSS descriptions and to require one rendered `<time>` for every dated
+  changelog heading.
+
+- Guardrails: pass locally. `npm run lint`, `npm run build`, and route checks
+  pass; the feed contains plain-text summaries, the Log exposes every dated
+  round as `<time>`, and the assertions were exercised against deliberately
+  malformed local output before restoration. (PR #47)
+- Result: not yet measured.
+
+### 2026-08-10
 The two shareable searches write their state into the URL, but browser
 history could change that URL without changing the visible filter, and a
 Log permalink conflict still compared against hidden assistive copy. (PR

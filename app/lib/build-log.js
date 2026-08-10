@@ -222,6 +222,16 @@ function entryText(entry) {
   return parts.join(" ").replace(/[`*]/g, "").toLowerCase();
 }
 
+// RSS descriptions are plain text, not a second Markdown renderer. Strip
+// the small inline syntax the changelog supports so feed readers do not show
+// code ticks or emphasis markers as part of a round summary.
+export function stripInlineMarkdown(text) {
+  return text
+    .replace(/`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*/g, "$1$2$3")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // How many rounds mention a word. Deliberately a text count and nothing
 // more: it says "these entries contain this word", not "these rounds
 // were mistakes". Classifying rounds would mean running a keyword

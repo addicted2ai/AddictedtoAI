@@ -1,6 +1,10 @@
 import { SITE_DESCRIPTION, SITE_NAME, getSiteUrl } from "../lib/site";
 import { posts } from "../lib/posts";
-import { getBuildLog, getLatestBuildLogDate } from "../lib/build-log";
+import {
+  getBuildLog,
+  getLatestBuildLogDate,
+  stripInlineMarkdown,
+} from "../lib/build-log";
 
 function escapeXml(value) {
   return value
@@ -11,7 +15,7 @@ function escapeXml(value) {
 }
 
 function roundSummary(entry) {
-  return (
+  return stripInlineMarkdown(
     entry.intro ||
     entry.changes?.[0]?.hypothesis ||
     `Round ${entry.number} was added to the build log.`

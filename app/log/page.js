@@ -87,7 +87,11 @@ export default function BuildLog() {
                 </a>
               </h2>
               <span className="log-date">
-                {entry.unreleased ? "Unreleased" : entry.date}
+                {entry.unreleased ? (
+                  "Unreleased"
+                ) : (
+                  <time dateTime={entry.date}>{entry.date}</time>
+                )}
               </span>
               {entry.prs.map((pr) =>
                 repoUrl ? (
