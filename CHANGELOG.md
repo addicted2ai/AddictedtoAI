@@ -87,12 +87,24 @@ Bundled at the maintainer's request. (PR #29)
   rendered bytes are U+2019 and that no word was mangled. Zero
   violations of any other rule.
 
-- Guardrails: pass (local `next build` clean; `npm run lint` clean;
-  `linkinator` for all 5 routes, 30 links, zero failures;
-  `scripts/check-routes.sh` green on all 11 assertions. Re-ran the
-  earlier rounds' Puppeteer checks as regressions — Directory's
-  result count still correct at 0px layout shift, Tool Finder focus
-  still lands on the result.)
+- Failed CI on the first attempt, and the cause is worth recording:
+  `npm ci` errored with `EUSAGE`, "package.json and package-lock.json
+  are not in sync," missing several `@emnapi/*` entries. Adding
+  eslint on Windows produced a lockfile that omitted optional
+  platform-specific transitive deps that Linux needs — nothing to do
+  with the workflow edits themselves, which is what the cascade of
+  six red route checks and a `next: not found` made it look like at
+  first glance. Fixed by deleting `package-lock.json` and
+  `node_modules` and regenerating from scratch: 6 `@emnapi` entries
+  before, 11 after. Verified by running `npm ci` locally against a
+  wiped `node_modules`, which is the thing that actually failed, not
+  just `npm install`.
+- Guardrails: pass (local `next build` clean; `npm ci` clean from a
+  wiped `node_modules`; `npm run lint` clean; `linkinator` for all 5
+  routes, 30 links, zero failures; `scripts/check-routes.sh` green on
+  all 11 assertions. Re-ran the earlier rounds' Puppeteer checks as
+  regressions — Directory's result count still correct at 0px layout
+  shift, Tool Finder focus still lands on the result.)
 - Result (measured the following week): not yet measured
 
 ### 2026-08-09
