@@ -14,6 +14,13 @@ permissions:
 jobs:
   build-and-audit:
     runs-on: ubuntu-latest
+    # Production serves round badges as links; without this, CI would build
+    # them as plain spans and every assertion about them would pass against
+    # markup no visitor sees. Same failure mode as the analytics build that
+    # was silently measured on the wrong server -- see the step at the end
+    # of this job.
+    env:
+      NEXT_PUBLIC_REPO_URL: https://github.com/addicted2ai/AddictedtoAI
     steps:
       - uses: actions/checkout@v4
 
@@ -46,7 +53,13 @@ jobs:
         if: always()
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --base http://localhost:3000 http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos http://localhost:3000/log
+          # The 47 archived-round commit links are excluded here and checked
+          # in scripts/check-routes.sh instead, by resolving each SHA against
+          # this repository's own history. That is both stricter than an HTTP
+          # request and immune to GitHub rate-limiting a shared CI runner,
+          # which is how a green link check would otherwise start failing for
+          # reasons that have nothing to do with the site.
+          args: --base http://localhost:3000 --exclude 'github\.com/addicted2ai/AddictedtoAI/commit/' http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos http://localhost:3000/log
           fail: true
 
       # The non-HTML routes are shipped code too, and nothing above

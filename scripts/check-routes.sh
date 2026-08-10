@@ -276,6 +276,81 @@ else
   failures=$((failures + 1))
 fi
 
+# Round badges link to the change itself. Rounds carried over from the
+# private predecessor repository link to a commit rather than a pull
+# request: their PR numbers now belong to *this* repository, so
+# `/pull/22` would resolve to an unrelated future pull request. That is a
+# citation that is wrong rather than merely dead, which is worse, and no
+# HTTP check would ever catch it -- the link returns 200 either way.
+#
+# So resolve each rendered SHA against this repository's own history.
+# Stricter than a request, and immune to GitHub rate-limiting CI.
+echo
+if curl -s "$BASE/log" | grep -q '<a class="log-pr"'; then
+  BASE_URL="$BASE" python <<'PY'
+import json, os, re, subprocess, sys
+from urllib.request import urlopen
+
+html = urlopen(os.environ["BASE_URL"] + "/log").read().decode("utf-8", "replace")
+archive = {
+    p["number"]
+    for p in json.load(open("archive/prs.json", encoding="utf-8"))
+    if p.get("commit_sha")
+}
+cited = {int(n) for n in re.findall(r"\(PR #(\d+)\)", open("CHANGELOG.md", encoding="utf-8").read())}
+failures = 0
+
+# Read the badge links, not the page text. The first version of this check
+# scanned the whole document and failed on round 30, whose write-up quotes
+# the string "/pull/1" while explaining that the URL 404s -- prose, inside a
+# <code> element, not a link. The record discusses URLs, so any assertion
+# about this page's links has to look at hrefs specifically.
+hrefs = {
+    m.group(1)
+    for tag in re.findall(r'<a[^>]*class="log-pr"[^>]*>', html)
+    for m in [re.search(r'href="([^"]*)"', tag)]
+    if m
+}
+
+# 1. Every archived round the changelog cites renders a commit link.
+rendered = {m.group(1) for h in hrefs for m in [re.search(r"/commit/([0-9a-f]{40})$", h)] if m}
+expected = cited & archive
+if len(rendered) == len(expected):
+    print(f"ok    /log renders {len(rendered)} archived-round commit links")
+else:
+    print(f"FAIL  /log renders {len(rendered)} archived-round commit links, expected {len(expected)}")
+    failures += 1
+
+# 2. Each one resolves to a commit we actually have.
+unresolved = [
+    sha for sha in sorted(rendered)
+    if subprocess.run(["git", "cat-file", "-e", sha + "^{commit}"],
+                      capture_output=True).returncode != 0
+]
+if not unresolved:
+    print(f"ok    all {len(rendered)} commit links resolve in this repository")
+else:
+    for sha in unresolved:
+        print(f"FAIL  commit link {sha} does not resolve in this repository")
+    failures += len(unresolved)
+
+# 3. No archived round is linked as a pull request.
+mislinked = {
+    int(m.group(1)) for h in hrefs for m in [re.search(r"/pull/(\d+)$", h)] if m
+} & archive
+if not mislinked:
+    print("ok    no archived round links to a pull request number")
+else:
+    print(f"FAIL  archived rounds linked as pull requests: {sorted(mislinked)}")
+    failures += 1
+
+sys.exit(1 if failures else 0)
+PY
+  failures=$((failures + $?))
+else
+  echo "skip  round badges render unlinked (NEXT_PUBLIC_REPO_URL unset)"
+fi
+
 echo
 if [ "$failures" -gt 0 ]; then
   echo "$failures check(s) failed"

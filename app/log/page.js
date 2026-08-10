@@ -1,5 +1,6 @@
 import { getBuildLog, getBuildLogStats } from "../lib/build-log";
 import { inlineMarkdown } from "../lib/inline-markdown";
+import { getArchivedPr } from "../lib/pr-archive";
 import { feedAlternates, getRepoUrl } from "../lib/site";
 import LogFilter from "./LogFilter";
 
@@ -13,13 +14,36 @@ export const metadata = {
   },
 };
 
-// Every round's PR numbers are real, and linking them would be the
-// strongest evidence on the page -- but the repository is private, so
-// those URLs 404 for a visitor (confirmed: the link check caught all 30
-// of them). So the numbers render as plain badges unless a public repo
-// URL is configured, at which point they become links with no code
-// change. See .env.example.
+// Every round's PR numbers are real, and linking them is the strongest
+// evidence on the page. Where that link points depends on when the round
+// was built: rounds from the private predecessor repository link to their
+// commit, because their pull requests could not be migrated and the same
+// number here will eventually mean a different pull request entirely.
+// See app/lib/pr-archive.js. Without a configured repo URL both render as
+// plain badges, as they did while the project was private.
 const repoUrl = getRepoUrl();
+
+// A round's badge: a commit link for archived rounds, a pull request link
+// for rounds built here, a plain badge when no repository is configured.
+function RoundRef({ pr }) {
+  if (!repoUrl) return <span className="log-pr">#{pr}</span>;
+
+  const archived = getArchivedPr(pr);
+  const href = archived
+    ? `${repoUrl}/commit/${archived.commit_sha}`
+    : `${repoUrl}/pull/${pr}`;
+
+  return (
+    <a className="log-pr" href={href} target="_blank" rel="noopener noreferrer">
+      #{pr}
+      <span className="visually-hidden">
+        {archived
+          ? " — commit for this round (opens in a new tab)"
+          : " — pull request (opens in a new tab)"}
+      </span>
+    </a>
+  );
+}
 
 function Field({ label, children }) {
   if (!children) return null;
@@ -51,6 +75,15 @@ export default function BuildLog() {
         or click any round heading to link straight to it &mdash; both
         the search and the round end up in the URL, so you can cite a
         single round rather than the whole page.
+      </p>
+      <p className="log-lead">
+        The <code>#</code> badge on each round opens the change itself.
+        Rounds built in this repository link to their pull request; rounds
+        from the private repository this one succeeds link to their commit,
+        because those pull requests could not be migrated and the same
+        number here would eventually point at something else entirely.
+        Their original descriptions, hypotheses included, are archived in{" "}
+        <code>archive/prs.json</code>.
       </p>
 
       <dl className="log-stats">
@@ -100,27 +133,9 @@ export default function BuildLog() {
                   <time dateTime={entry.date}>{entry.date}</time>
                 )}
               </span>
-              {entry.prs.map((pr) =>
-                repoUrl ? (
-                  <a
-                    key={pr}
-                    className="log-pr"
-                    href={`${repoUrl}/pull/${pr}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    #{pr}
-                    <span className="visually-hidden">
-                      {" "}
-                      (opens in a new tab)
-                    </span>
-                  </a>
-                ) : (
-                  <span key={pr} className="log-pr">
-                    #{pr}
-                  </span>
-                )
-              )}
+              {entry.prs.map((pr) => (
+                <RoundRef key={pr} pr={pr} />
+              ))}
             </div>
 
             {entry.intro ? (
