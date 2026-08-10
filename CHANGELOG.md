@@ -36,7 +36,7 @@ this site is for: not a hub site that happens to be maintained by a
 loop, but a showcase of what a current AI model does when it's handed a
 continual-improvement loop and left to run. This PR is the foundation
 for that, and it takes the position that the strongest possible version
-of that claim is evidence rather than assertion. (PR #TBD)
+of that claim is evidence rather than assertion. (PR #32)
 
 **1. Parse the changelog into structured data**
 - Hypothesis: This project's genuinely unusual asset is not the tool
