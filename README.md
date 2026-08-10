@@ -76,8 +76,8 @@ npm run dev
 
 ## Adjusting the loop
 
-- Change cadence: uncomment the `schedule` block in
-  `.github/workflows/weekly-loop.yml`
+- Change cadence: edit the cron in
+  `.github/workflows/loop.yml`
 - Change guardrail thresholds: edit `lighthouserc.json` — the site reads
   them from there at build time rather than restating them
 - Change quotas, staleness windows, or publishing limits: edit `policy.yml`

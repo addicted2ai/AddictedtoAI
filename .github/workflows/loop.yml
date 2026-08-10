@@ -1,0 +1,149 @@
+name: Loop
+
+# Every three hours, plus manual runs.
+#
+# The cadence buys responsiveness, not volume. Most runs should notice things
+# rather than publish them -- the quotas in policy.yml weight scout and
+# maintain heavily, and publishing has its own separate limits. Eight runs a
+# day of *publishing* would be a content farm.
+#
+# A scheduled run does not choose its own track. scripts/dispatch.mjs picks
+# one from the docket and the quotas before the run starts, because "what kind
+# of work should I do?" is the lever that produced ten rounds of this site
+# refining its own scaffolding: given the choice, a run picks work it can see,
+# and what it can see is its own repository.
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Force a track (leave empty to let the dispatcher choose)"
+        required: false
+        type: choice
+        options: ["", scout, author, build, maintain, audit, meta]
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+concurrency:
+  group: loop
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    outputs:
+      track: ${{ steps.pick.outputs.track }}
+      reason: ${{ steps.pick.outputs.reason }}
+      run: ${{ steps.pick.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      - run: npm ci
+
+      - name: Pick a track
+        id: pick
+        run: |
+          if [ -n "${{ inputs.track }}" ]; then
+            echo "track=${{ inputs.track }}" >> "$GITHUB_OUTPUT"
+            echo "reason=forced by hand" >> "$GITHUB_OUTPUT"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Track forced: ${{ inputs.track }}"
+          else
+            node scripts/dispatch.mjs --github
+            node scripts/dispatch.mjs
+          fi
+
+      - name: Summary
+        run: |
+          {
+            echo "### Loop dispatch"
+            echo
+            echo "- Track: \`${{ steps.pick.outputs.track || 'none' }}\`"
+            echo "- Reason: ${{ steps.pick.outputs.reason }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  run:
+    needs: dispatch
+    if: needs.dispatch.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      # Capability scope per track. This is the half that cannot be argued
+      # with: a scout run has no Edit tool, so it cannot modify existing code
+      # regardless of what it decides would be helpful.
+      #
+      # It is only half. allowedTools cannot scope Write to a directory --
+      # scout needs Write to file docket items -- so the blast radius is fixed
+      # by scripts/check-track-scope.mjs in pr-checks.yml, which rejects
+      # changes outside the track's paths.
+      - name: Resolve tool scope
+        id: scope
+        run: |
+          case "${{ needs.dispatch.outputs.track }}" in
+            scout)
+              # No Edit: scout files work, it does not do the work.
+              tools="Read,Write,Glob,Grep,Bash,WebSearch,WebFetch" ;;
+            meta)
+              # No web access: meta's charge is to fix what blocks other
+              # tracks, and that answer is always inside the repository. With
+              # a search tool it could justify any machinery change by finding
+              # an article recommending it.
+              tools="Read,Write,Edit,Glob,Grep,Bash" ;;
+            *)
+              tools="Read,Write,Edit,Glob,Grep,Bash,WebSearch,WebFetch" ;;
+          esac
+          echo "tools=$tools" >> "$GITHUB_OUTPUT"
+
+      - name: Build prompt
+        id: prompt
+        env:
+          TRACK: ${{ needs.dispatch.outputs.track }}
+          REASON: ${{ needs.dispatch.outputs.reason }}
+          MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          {
+            echo 'content<<PROMPT_EOF'
+            echo "You are running the **$TRACK** track."
+            echo
+            echo "The dispatcher chose it: $REASON"
+            echo
+            echo "Read prompts/shared/every-run.md first, then"
+            echo "prompts/tracks/$TRACK.md, and follow them."
+            echo
+            echo "Your track was chosen for you. You may argue in the record"
+            echo "that it was the wrong choice; you may not switch tracks."
+            echo
+            echo "Branch as loop/$TRACK/<slug>. CI reads your track from that"
+            echo "branch name and rejects changes outside your track's paths."
+            echo
+            if [ "$MANUAL" = "true" ]; then
+              echo "This run was started by hand: Origin is 'supervised'."
+            else
+              echo "This run was scheduled and nobody read it first:"
+              echo "Origin is 'unsupervised'."
+            fi
+            echo "Record '- Track: $TRACK' in your changelog entry. The"
+            echo "dispatcher reads those to hold tracks to their quotas."
+            echo PROMPT_EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run the ${{ needs.dispatch.outputs.track }} track
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.prompt.outputs.content }}
+          claude_args: |
+            --max-turns 40
+            --allowedTools "${{ steps.scope.outputs.tools }}"
+          show_full_output: true

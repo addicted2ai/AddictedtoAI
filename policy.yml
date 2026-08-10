@@ -34,9 +34,11 @@ tracks:
   audit:
     weight: 10
     needs_docket_item: false
-    # Runs on a floor regardless of weight: quality review must not be
-    # crowded out by whatever else is queued.
-    minimum_runs_per_week: 3
+    # Audit is due when this many shipped rounds have gone by without one.
+    # Expressed as a gap rather than a rate on purpose: a fixed "N per week"
+    # floor fires on a cold start and forces consecutive audit runs with
+    # nothing yet to audit. A gap only opens once other work has shipped.
+    max_rounds_between_runs: 5
   meta:
     weight: 5
     needs_docket_item: true

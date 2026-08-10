@@ -67,6 +67,7 @@ One paragraph on what this round was about. (PR #N)
 - Change: what actually shipped
 
 - Origin: unsupervised | supervised | maintainer
+- Track: the track you were assigned
 - Guardrails: what you ran, and what it said
 - Result: not yet measured, or the number and where it came from
 ```
@@ -74,6 +75,11 @@ One paragraph on what this round was about. (PR #N)
 `Origin` is required and the build fails without it. `unsupervised` if this run
 was scheduled and nobody read it first; `supervised` if a human triggered it and
 can veto before merge.
+
+`Track` is required too. `scripts/dispatch.mjs` reads these to hold tracks to
+their quotas — notably meta's cap, which needs to know how much recent shipped
+work was meta. Omitting it does not just lose a label; it lets a track escape
+its share.
 
 Never rewrite a past entry (rule 5). Corrections are new entries naming what
 they correct. Never write an entry that flatters the work — a round that guessed

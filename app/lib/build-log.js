@@ -12,7 +12,14 @@ import path from "path";
 // future entry is written in a shape this doesn't understand, the counts
 // move and CI says so.
 
-const FIELDS = ["Hypothesis", "Change", "Guardrails", "Result", "Origin"];
+const FIELDS = [
+  "Hypothesis",
+  "Change",
+  "Guardrails",
+  "Result",
+  "Origin",
+  "Track",
+];
 
 // How much of a round a human saw before it landed. Three values, because
 // two would not describe what actually happens here:
@@ -62,6 +69,14 @@ function parseBody(body) {
     guardrails: "",
     result: "",
     origin: "",
+    // Which track produced this round. Read by scripts/dispatch.mjs to hold
+    // tracks to their quotas -- notably meta's cap, which needs to know how
+    // much recent *shipped* work was meta. Absent on rounds that predate the
+    // tracks, and deliberately not rendered on /log yet: getBuildLog folds
+    // origin into the text the search matches on, and a field counted at
+    // build time but never rendered would split the homepage's figures from
+    // the search box's. Rendering it is a docket item.
+    track: "",
   };
 
   let current = null; // the numbered change block we're inside, if any
@@ -74,6 +89,7 @@ function parseBody(body) {
     const target = current || entry;
     if (bullet.field === "Guardrails") entry.guardrails = text;
     else if (bullet.field === "Origin") entry.origin = text;
+    else if (bullet.field === "Track") entry.track = text;
     else if (bullet.field === "Result") entry.result = text;
     else if (bullet.field === "Hypothesis") target.hypothesis = text;
     else if (bullet.field === "Change") target.change = text;
