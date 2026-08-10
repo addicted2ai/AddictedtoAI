@@ -10,6 +10,22 @@ import { useEffect, useRef, useState } from "react";
 // "don't take our word for it" shouldn't be inventing labels.
 const PRESETS = ["wrong", "dropped", "failed", "measured", "accessibility"];
 
+// Search should match the prose a visitor can read, not the text-only
+// affordances supplied to assistive technology (for example, "copy link to
+// this round" on every heading). Cache the cleaned text because the DOM is
+// static while only the hidden attribute changes during filtering.
+const visibleTextCache = new WeakMap();
+
+function searchableText(element) {
+  if (visibleTextCache.has(element)) return visibleTextCache.get(element);
+
+  const copy = element.cloneNode(true);
+  copy.querySelectorAll(".visually-hidden").forEach((node) => node.remove());
+  const text = copy.textContent.toLowerCase();
+  visibleTextCache.set(element, text);
+  return text;
+}
+
 function countLabel(count) {
   if (count === 0) return "No rounds mention";
   if (count === 1) return "1 round mentions";
@@ -25,8 +41,7 @@ function applyFilter(query) {
   const normalised = query.trim().toLowerCase();
   let shown = 0;
   for (const el of document.querySelectorAll("[data-log-entry]")) {
-    const match =
-      !normalised || el.textContent.toLowerCase().includes(normalised);
+    const match = !normalised || searchableText(el).includes(normalised);
     el.hidden = !match;
     if (match) shown += 1;
   }
@@ -134,7 +149,12 @@ export default function LogFilter({ total }) {
   }, [summary]);
 
   return (
-    <div className="log-filter">
+    <form
+      className="log-filter"
+      role="search"
+      aria-label="Search the build log"
+      onSubmit={(event) => event.preventDefault()}
+    >
       <div className="search-control">
         <input
           ref={inputRef}
@@ -183,6 +203,6 @@ export default function LogFilter({ total }) {
       >
         {announcement}
       </p>
-    </div>
+    </form>
   );
 }

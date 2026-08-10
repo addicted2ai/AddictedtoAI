@@ -49,6 +49,46 @@ Returning-visitor rate (site-wide).
 
 ## Log
 
+### Unreleased
+Search already shared its state and announced its counts, but the controls
+were still anonymous layout wrappers and Log matching included text that
+only exists for screen readers. (PR #43)
+
+**1. Give Directory search a real search landmark**
+- Hypothesis: Directory search is an important section metric, but its
+  input currently sits in a generic `div`, so landmark navigation cannot
+  take a visitor directly to it and pressing Enter has no form semantics.
+  A named search form that handles submit without navigation should make
+  the control easier to discover and safer to use from the keyboard.
+- Change: Wrapped the Directory control in a named `role="search"` form
+  and prevent its submit action from reloading the page. Existing query
+  and URL replacement behavior is unchanged.
+
+**2. Give Log search the same keyboard contract**
+- Hypothesis: The Build Log has the same missing landmark and submit
+  behavior, which makes its primary wayfinding control inconsistent with
+  the Directory search. Giving it the same named search form should make
+  both searchable pages predictable for keyboard and assistive-technology
+  users.
+- Change: Wrapped the Log input, presets, count, and status in a named
+  `role="search"` form that prevents accidental navigation on Enter.
+
+**3. Search visible Log copy, not assistive affordances**
+- Hypothesis: Log filtering currently matches `textContent`, which also
+  includes repeated screen-reader-only link labels.
+  Searching for a phrase a visitor cannot see can return every round and
+  make the result count misleading. Matching a cached copy with those
+  labels removed should keep search aligned with the visible record.
+- Change: Log filtering now removes `.visually-hidden` nodes before caching
+  each entry's searchable text, so hidden link instructions do not become
+  accidental search hits.
+
+- Guardrails: pass. `npm run lint`, `npm run build`, and all route checks
+  pass; the route checker now asserts both server-rendered search landmarks.
+  In the browser, pressing Enter preserves the Directory and Log URLs, and
+  a screen-reader-only link-label query returns zero visible rounds while a
+  visible query still returns its expected matches.
+
 ### 2026-08-10
 Three numbers this site publishes about itself. One was flattering and
 structurally incapable of being anything else, one was a hand-typed copy

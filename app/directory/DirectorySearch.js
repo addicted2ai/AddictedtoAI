@@ -100,7 +100,12 @@ export default function DirectorySearch() {
 
   return (
     <>
-      <div className="search-control">
+      <form
+        className="search-control"
+        role="search"
+        aria-label="Search the tool directory"
+        onSubmit={(event) => event.preventDefault()}
+      >
         <input
           ref={inputRef}
           type="search"
@@ -121,7 +126,7 @@ export default function DirectorySearch() {
             Clear
           </button>
         ) : null}
-      </div>
+      </form>
 
       {/* Sighted readers get the count immediately. aria-hidden so it
           isn't announced twice -- the live region below owns that. */}
