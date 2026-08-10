@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toolCategories } from "../lib/tool-categories";
+import { trackEvent } from "../lib/analytics";
 
 function matches(tool, categoryName, query) {
   const haystack =
@@ -74,10 +75,23 @@ export default function DirectorySearch() {
   // every keystroke means a screen reader talking over someone who is
   // still typing. Announce once they've paused instead.
   const [announcement, setAnnouncement] = useState("");
+  const lastTrackedQuery = useRef("");
   useEffect(() => {
-    const timer = setTimeout(() => setAnnouncement(summary), 500);
+    const timer = setTimeout(() => {
+      setAnnouncement(summary);
+      if (
+        normalizedQuery !== lastTrackedQuery.current &&
+        normalizedQuery
+      ) {
+        trackEvent("directory_search", {
+          search_term: normalizedQuery,
+          result_count: matchCount,
+        });
+      }
+      lastTrackedQuery.current = normalizedQuery;
+    }, 500);
     return () => clearTimeout(timer);
-  }, [summary]);
+  }, [matchCount, normalizedQuery, summary]);
 
   return (
     <>
@@ -128,6 +142,12 @@ export default function DirectorySearch() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="tool-card"
+                  onClick={() =>
+                    trackEvent("directory_tool_click", {
+                      tool_name: tool.name,
+                      category: category.name,
+                    })
+                  }
                 >
                   <h3>{tool.name}</h3>
                   <p>{tool.description}</p>

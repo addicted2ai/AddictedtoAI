@@ -274,7 +274,7 @@ is added above them. (PR #39)
   round-item count.
 - Result: not yet measured.
 
-### Unreleased
+### 2026-08-10
 The public freshness signals now come from the same dated changelog that
 drives the build log, so a deploy cannot claim a page changed merely
 because the server clock moved. (PR #40)
@@ -311,6 +311,47 @@ because the server clock moved. (PR #40)
 - Guardrails: pass locally. `npm run lint`, `npm run build`, and all route
   checks pass; the new freshness assertion was also fed a deliberately
   wrong expected date and failed before the real date was restored.
+- Result: not yet measured.
+
+### Unreleased
+The site already claims to optimize search usage, tool click-through, and
+demo completion, but the optional analytics layer was only recording page
+views. These three events make those interactions observable without
+loading analytics when no measurement id is configured. (PR #41)
+
+**1. Make Directory search usage measurable**
+- Hypothesis: Directory search is a documented section metric, but page
+  views cannot distinguish a visitor who types a query from one who only
+  scans the list. Sending one event after a paused, non-empty query should
+  make search usage measurable without emitting one event per keystroke.
+- Change: Added an optional `directory_search` event after the existing
+  500ms announcement delay, including the normalized term and visible
+  result count. Repeating the same query does not emit another event until
+  the query is cleared.
+
+**2. Make Directory outbound clicks measurable**
+- Hypothesis: The Directory's primary metric is outbound tool clicks, but
+  the current page only provides generic pageview data. Tracking a click
+  with the tool name and category should identify which directory content
+  produces the action without changing the external link behavior.
+- Change: Directory tool cards now emit `directory_tool_click` with the
+  clicked tool and category when analytics is available. The handler is
+  attached to the existing cards, so no new links or navigation behavior
+  are introduced.
+
+**3. Make Tool Finder completion and replay measurable**
+- Hypothesis: Demos documents completion and repeat use as its metrics, but
+  selecting a category and restarting the Finder currently leave no event
+  evidence. Emitting one completion event per category selection and one
+  restart event should make both actions visible while keeping the existing
+  focus behavior and recommendation UI unchanged.
+- Change: Tool Finder now emits `tool_finder_complete` with the selected
+  category and `tool_finder_restart` when a visitor chooses another
+  category. The shared helper is a no-op when GA is not configured.
+
+- Guardrails: pass locally. `npm run lint` and `npm run build` pass; the
+  analytics-off build contains no measurement script, and the event helper
+  returns before touching `window` during server rendering.
 - Result: not yet measured.
 
 ### 2026-08-10

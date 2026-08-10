@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toolCategories } from "../lib/tool-categories";
+import { trackEvent } from "../lib/analytics";
 
 export default function ToolFinder() {
   const [selected, setSelected] = useState(null);
@@ -19,6 +20,11 @@ export default function ToolFinder() {
 
   function choose(name) {
     hasChosen.current = true;
+    if (name) {
+      trackEvent("tool_finder_complete", { category: name });
+    } else {
+      trackEvent("tool_finder_restart");
+    }
     setSelected(name);
   }
 
