@@ -32,7 +32,7 @@ Returning-visitor rate (site-wide).
 
 ### Unreleased
 Three content-plumbing fixes in one PR, bundled at the maintainer's
-request. (PR #TBD)
+request. (PR #31)
 
 **1. The homepage teaser was the last hardcoded copy of post metadata**
 - Hypothesis: PR #26 pulled post metadata into `lib/posts.js` so the
