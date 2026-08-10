@@ -108,7 +108,7 @@ const fetchText = async (url) => (await fetch(url)).text();
 
   // Only the rendered list -- everything after </ol> includes the RSC
   // payload, which repeats every entry and would match every term.
-  const start = logHtml.indexOf(`<ol class="log-list"`);
+  const start = logHtml.search(/<ol\b[^>]*class="log-list"/);
   const list = logHtml.slice(start, logHtml.indexOf("</ol>", start));
   const entries = list
     .split(`<li class="log-entry"`)

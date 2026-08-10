@@ -70,7 +70,7 @@ export default function BuildLog() {
 
       <LogFilter total={entries.length} />
 
-      <ol className="log-list">
+      <ol id="build-log-entries" className="log-list">
         {entries.map((entry) => (
           <li key={entry.id} className="log-entry" id={entry.id} data-log-entry>
             <div className="log-meta">

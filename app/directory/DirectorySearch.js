@@ -71,6 +71,11 @@ export default function DirectorySearch() {
     ? `${countLabel(matchCount)} “${query.trim()}”.`
     : "";
 
+  function clearSearch() {
+    setQuery("");
+    inputRef.current?.focus();
+  }
+
   // The visible count updates on every keystroke, but announcing on
   // every keystroke means a screen reader talking over someone who is
   // still typing. Announce once they've paused instead.
@@ -95,15 +100,28 @@ export default function DirectorySearch() {
 
   return (
     <>
-      <input
-        ref={inputRef}
-        type="search"
-        className="directory-search"
-        placeholder="Search tools by name or category..."
-        value={currentQuery}
-        onChange={(event) => setQuery(event.target.value)}
-        aria-label="Search tools"
-      />
+      <div className="search-control">
+        <input
+          ref={inputRef}
+          type="search"
+          className="directory-search"
+          placeholder="Search tools by name or category..."
+          value={currentQuery}
+          onChange={(event) => setQuery(event.target.value)}
+          aria-label="Search tools"
+          aria-controls="directory-results"
+          aria-describedby="directory-search-status"
+        />
+        {currentQuery ? (
+          <button
+            type="button"
+            className="search-clear"
+            onClick={clearSearch}
+          >
+            Clear
+          </button>
+        ) : null}
+      </div>
 
       {/* Sighted readers get the count immediately. aria-hidden so it
           isn't announced twice -- the live region below owns that. */}
@@ -113,25 +131,18 @@ export default function DirectorySearch() {
 
       {/* Always rendered, even when empty: a live region has to be in the
           DOM before its text changes for assistive tech to announce it. */}
-      <p className="visually-hidden" role="status">
+      <p
+        id="directory-search-status"
+        className="visually-hidden"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {announcement}
       </p>
 
-      {filteredCategories.length === 0 ? (
-        <div className="directory-no-results">
-          <button
-            type="button"
-            className="finder-restart"
-            onClick={() => {
-              setQuery("");
-              inputRef.current?.focus();
-            }}
-          >
-            Clear search
-          </button>
-        </div>
-      ) : (
-        filteredCategories.map((category) => (
+      <div id="directory-results">
+        {filteredCategories.map((category) => (
           <section key={category.name} className="tool-category">
             <h2>{category.name}</h2>
             <div className="tool-grid">
@@ -156,8 +167,8 @@ export default function DirectorySearch() {
               ))}
             </div>
           </section>
-        ))
-      )}
+        ))}
+      </div>
     </>
   );
 }

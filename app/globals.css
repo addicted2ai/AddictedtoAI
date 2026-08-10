@@ -274,6 +274,39 @@ article a:hover {
   border-color: var(--accent);
 }
 
+.search-control {
+  position: relative;
+  margin-top: 1.5rem;
+}
+
+.search-control .directory-search {
+  margin-top: 0;
+  padding-right: 5.25rem;
+}
+
+.search-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.4rem;
+  min-width: 44px;
+  min-height: 36px;
+  padding: 0.3rem 0.6rem;
+  transform: translateY(-50%);
+  border: 1px solid var(--border-interactive);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.search-clear:hover,
+.search-clear:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .directory-result-count {
   margin: 0.75rem 0 0;
   /* Reserve exactly one line box (body line-height is 1.5) so the tool

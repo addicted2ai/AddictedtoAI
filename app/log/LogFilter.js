@@ -123,6 +123,11 @@ export default function LogFilter({ total }) {
     ? `${countLabel(matches)} “${query.trim()}”.`
     : "";
 
+  function clearSearch() {
+    setQuery("");
+    inputRef.current?.focus();
+  }
+
   useEffect(() => {
     const timer = setTimeout(() => setAnnouncement(summary), 500);
     return () => clearTimeout(timer);
@@ -130,15 +135,24 @@ export default function LogFilter({ total }) {
 
   return (
     <div className="log-filter">
-      <input
-        ref={inputRef}
-        type="search"
-        className="directory-search"
-        placeholder="Search all rounds — try “wrong”…"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        aria-label="Search the build log"
-      />
+      <div className="search-control">
+        <input
+          ref={inputRef}
+          type="search"
+          className="directory-search"
+          placeholder="Search all rounds — try “wrong”…"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          aria-label="Search the build log"
+          aria-controls="build-log-entries"
+          aria-describedby="log-search-status"
+        />
+        {query ? (
+          <button type="button" className="search-clear" onClick={clearSearch}>
+            Clear
+          </button>
+        ) : null}
+      </div>
 
       <div className="log-presets">
         <span className="log-presets-label">Jump to:</span>
@@ -160,24 +174,15 @@ export default function LogFilter({ total }) {
       <p className="directory-result-count" aria-hidden="true">
         {summary}
       </p>
-      <p className="visually-hidden" role="status">
+      <p
+        id="log-search-status"
+        className="visually-hidden"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {announcement}
       </p>
-
-      {matches === 0 ? (
-        <div className="directory-no-results">
-          <button
-            type="button"
-            className="finder-restart"
-            onClick={() => {
-              setQuery("");
-              inputRef.current?.focus();
-            }}
-          >
-            Clear search
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }

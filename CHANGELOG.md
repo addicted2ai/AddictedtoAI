@@ -313,7 +313,7 @@ because the server clock moved. (PR #40)
   wrong expected date and failed before the real date was restored.
 - Result: not yet measured.
 
-### Unreleased
+### 2026-08-10
 The site already claims to optimize search usage, tool click-through, and
 demo completion, but the optional analytics layer was only recording page
 views. These three events make those interactions observable without
@@ -352,6 +352,54 @@ loading analytics when no measurement id is configured. (PR #41)
 - Guardrails: pass locally. `npm run lint` and `npm run build` pass; the
   analytics-off build contains no measurement script, and the event helper
   returns before touching `window` during server rendering.
+- Result: not yet measured.
+
+### Unreleased
+Both search controls could recover from a no-match state, but only after
+the visitor searched for nothing and found a conditional button. The next
+pass makes clearing available whenever a query exists and tells assistive
+technology exactly which content and status the control owns. (PR #42)
+
+**1. Keep Directory search recovery beside the query**
+- Hypothesis: Directory search only rendered a Clear button after a query
+  hid every tool, so a visitor with valid matches had to edit the field by
+  keyboard or select its contents manually. A persistent clear action while
+  the field is non-empty should make trying a second query faster without
+  changing the URL replacement or focus behavior.
+- Change: Added a visible Clear button inside the Directory search control
+  for every non-empty query. It clears the URL-backed state and returns
+  focus to the search input; the old no-match-only button is no longer
+  needed.
+
+**2. Keep Log search recovery beside the query**
+- Hypothesis: The Build Log had the same recovery gap: Clear appeared only
+  when the current query matched zero rounds, even though changing from one
+  useful filter to another is a common browse path. Showing the same clear
+  action for every non-empty query should reduce friction while preserving
+  the existing preset and permalink behavior.
+- Change: Added the same focus-restoring Clear action to Log search and
+  removed the duplicate no-results-only control. The summary still states
+  when no rounds match.
+
+**3. Connect search controls to their changing content**
+- Hypothesis: The search inputs update a visible count and hide or show
+  existing content, but their relationships are implicit: assistive
+  technology is not told which region is controlled or that the delayed
+  status is the complete announcement. Explicit `aria-controls`,
+  `aria-describedby`, `aria-live`, and `aria-atomic` wiring should make the
+  same interaction understandable without adding a client-side rerender.
+- Change: Added stable result-region and status ids for Directory and Log,
+  connected each input to both, and marked the existing delayed status
+  announcements as polite and atomic.
+
+- Guardrails: the first local browser pass was green, but CI initially
+  caught a real test fragility: adding the result id before the existing
+  class made the route checker look for an exact `<ol class="log-list"`
+  prefix and count zero matching rounds. Changed the checker to find the
+  log list by its class regardless of attribute order; the rerun passes.
+  `npm run lint`, `npm run build`, all route checks, and the search behavior
+  checks now pass, and both inputs expose the declared result/status
+  relationships in the rendered DOM.
 - Result: not yet measured.
 
 ### 2026-08-10
