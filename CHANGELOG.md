@@ -31,6 +31,75 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+Three interaction fixes in one PR, bundled at the maintainer's
+request. (PR #TBD)
+
+**1. Controls whose border is the only thing marking them**
+- Hypothesis: The search input and the Finder/CTA buttons have a
+  transparent background, so the 1px border is the *only* visual
+  information identifying them as controls at all. Measured, that
+  border is `#22262b` on `#0b0d0f` — 1.28:1, against the 3:1 WCAG
+  1.4.11 asks for exactly this case. Lighthouse's accessibility audit
+  doesn't catch it, which is why it survived six rounds of
+  accessibility work.
+- Change: A second token, `--border-interactive: #5b6470` (3.25:1,
+  the smallest step off the existing hue that clears the bar),
+  applied to `.directory-search`, `.finder-option`, `.finder-restart`
+  and `.project-action`. Decorative card borders keep `--border`
+  deliberately: a tool card is identified by the heading and text
+  inside it, not by its frame, so 1.4.11 doesn't apply and changing
+  them would be a visual redesign rather than a fix.
+- Verified from the browser's computed styles rather than the
+  stylesheet: all three control types report 3.25:1, both card types
+  still report 1.28:1 by design.
+
+**2. Nav tap targets were 23px tall**
+- Hypothesis: The nav links had no vertical padding, so their hit
+  area was just the text box — measured at 23px tall for all five.
+  Honest framing: this is **not** a WCAG 2.5.8 failure. That rule's
+  spacing exception applies here (24px circles centred on each link
+  don't intersect — nearest centres are ~69px apart horizontally,
+  ~35px vertically when wrapped). But 23px is under every touch
+  guideline there is, and this is the one control on every page that
+  every visitor uses.
+- Change: `min-height: 44px` on `.nav a` with `inline-flex` centring,
+  and the nav's own vertical padding reduced from 1.25rem to 0.5rem
+  to compensate.
+- Measured after: targets 23px → 44px tall, while the header actually
+  got *shorter*, 64px → 61px. Re-checked the 360px mobile viewport
+  that PR #15 fixed: still exactly zero horizontal overflow.
+
+**3. The result count announced on every keystroke**
+- Hypothesis: PR #23's live region put the visible count and the
+  announcement in the same element, so typing a six-character query
+  queued six announcements — a screen reader talking over someone who
+  is still typing.
+- Change: Split them. The visible count stays instant and is now
+  `aria-hidden`, and a `visually-hidden` `role="status"` region
+  carries the announcement on a 500 ms debounce after typing stops.
+- Measured: 80 ms after typing "coding" the visible text reads
+  "3 tools match “coding”." while the live region is still empty;
+  780 ms after, both match. Exactly one live region on the page, and
+  it's still present when empty so the first announcement fires.
+
+**Dropped after measuring — two candidates that turned out not to be
+real.** Nav links were going to get an explicit `:focus-visible` style
+as a fourth fix, on the theory that they were the only interactive
+element without one. Screenshotting a focused nav link showed the
+browser's default ring is perfectly clear (and `color-scheme: dark`
+from PR #28 is what makes it render light against this background), so
+there was nothing to fix. Separately, `--muted` text was going to be
+darkened for contrast until it measured 5.99:1 against the background —
+comfortably past the 4.5:1 it needs. Both would have been changes that
+looked diligent and fixed nothing.
+
+- Guardrails: pass (`next build` clean; `npm run lint` clean;
+  `linkinator` 30 links zero failures; `scripts/check-routes.sh` green
+  on all 11 assertions; `/directory` chunk 1.39 kB → 1.47 kB. Tool
+  Finder focus regression check still passes.)
+- Result (measured the following week): not yet measured
+
+### 2026-08-10
 Three changes in one PR, all about the gate rather than the site.
 Bundled at the maintainer's request. (PR #29)
 
