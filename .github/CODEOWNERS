@@ -1,6 +1,6 @@
 # Paths the loop may propose changes to but must not merge.
 #
-# CHARTER.md rule 10 says the charter, the workflow definitions, and the
+# CHARTER.md rule 11 says the charter, the workflow definitions, and the
 # loop's own prompt are human-owned. This file is what makes that true
 # rather than merely stated: with branch protection requiring code-owner
 # review on these paths, a pull request touching any of them will not
