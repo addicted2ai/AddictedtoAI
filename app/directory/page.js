@@ -1,4 +1,5 @@
 import DirectorySearch from "./DirectorySearch";
+import { feedAlternates } from "../lib/site";
 
 export const metadata = {
   title: "Directory",
@@ -6,6 +7,7 @@ export const metadata = {
     "Curated AI tools, organized by category. Search or browse chat assistants, coding tools, image/video/audio generators, and workflow automation.",
   alternates: {
     canonical: "/directory",
+    types: feedAlternates,
   },
 };
 
