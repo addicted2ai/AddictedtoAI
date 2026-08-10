@@ -87,6 +87,9 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       # Capability scope per track. This is the half that cannot be argued
       # with: a scout run has no Edit tool, so it cannot modify existing code
@@ -114,36 +117,21 @@ jobs:
           esac
           echo "tools=$tools" >> "$GITHUB_OUTPUT"
 
+      # Assembled by the same script a local run uses, so a hand-started run
+      # and a scheduled one are given identical instructions. Two copies of
+      # this text would drift, and the difference would surface as tracks
+      # behaving differently depending on who started them.
       - name: Build prompt
         id: prompt
-        env:
-          TRACK: ${{ needs.dispatch.outputs.track }}
-          REASON: ${{ needs.dispatch.outputs.reason }}
-          MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
+          origin=unsupervised
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            origin=supervised
+          fi
           {
             echo 'content<<PROMPT_EOF'
-            echo "You are running the **$TRACK** track."
-            echo
-            echo "The dispatcher chose it: $REASON"
-            echo
-            echo "Read prompts/shared/every-run.md first, then"
-            echo "prompts/tracks/$TRACK.md, and follow them."
-            echo
-            echo "Your track was chosen for you. You may argue in the record"
-            echo "that it was the wrong choice; you may not switch tracks."
-            echo
-            echo "Branch as loop/$TRACK/<slug>. CI reads your track from that"
-            echo "branch name and rejects changes outside your track's paths."
-            echo
-            if [ "$MANUAL" = "true" ]; then
-              echo "This run was started by hand: Origin is 'supervised'."
-            else
-              echo "This run was scheduled and nobody read it first:"
-              echo "Origin is 'unsupervised'."
-            fi
-            echo "Record '- Track: $TRACK' in your changelog entry. The"
-            echo "dispatcher reads those to hold tracks to their quotas."
+            node scripts/build-prompt.mjs \
+              --track "${{ needs.dispatch.outputs.track }}" --origin "$origin"
             echo PROMPT_EOF
           } >> "$GITHUB_OUTPUT"
 

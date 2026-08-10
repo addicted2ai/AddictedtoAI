@@ -74,6 +74,29 @@ npm run dev
 - **`CHANGELOG.md`** — the record, published at `/log`. Every entry carries
   an `Origin` saying how much a human saw before it landed.
 
+## Running a track by hand
+
+The scheduled trigger is currently off, so runs are started manually. To start
+one locally with Claude Code or Codex:
+
+```
+node scripts/build-prompt.mjs            # dispatcher picks the track
+node scripts/build-prompt.mjs --track scout   # or force one
+```
+
+That prints the prompt to give the agent — the same text the workflow builds,
+so a local run and a scheduled one get identical instructions. The agent
+branches as `loop/<track>/<slug>`, opens a pull request, and requests
+auto-merge; GitHub merges it once `build-and-audit` passes.
+
+`node scripts/dispatch.mjs` on its own shows which track is due and why,
+without producing a prompt.
+
+Local runs are **supervised** — you are present and can throw the result away.
+They also run as you, and you are an admin, so branch protection cannot
+constrain them the way it constrains the loop. That difference is recorded per
+round as `Origin`.
+
 ## Adjusting the loop
 
 - Change cadence: edit the cron in
