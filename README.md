@@ -5,6 +5,12 @@ maintained by a scheduled AI propose→build→measure loop. See
 `CHANGELOG.md` for the loop's memory and current metrics, and
 `prompts/propose-change.md` for the prompt driving the weekly step.
 
+Rounds 1–47 were built in a private predecessor repository. Its history
+is preserved here in full; its pull requests could not be, so they are
+exported to `archive/prs.json` and `/log` links those rounds to their
+commits instead. See `archive/README.md` for why the predecessor stays
+private.
+
 ## Setup
 
 1. **Push to GitHub.** Use a **public** repo — GitHub Actions minutes
