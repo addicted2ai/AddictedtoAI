@@ -67,8 +67,22 @@ export default function Blog() {
       <p>
         Every pull request, including the loop's own, has to clear the
         same automated gate before it's mergeable: Lighthouse
-        performance, accessibility, and SEO scores all at or above
-        0.85; zero net-new broken links; no failed deploy or rollback.
+        accessibility and SEO at or above 0.85, performance at or
+        above 0.80, each scored against the median of three runs; zero
+        net-new broken links; no failed deploy or rollback.
+      </p>
+      <p>
+        That performance number started at 0.85, measured once &mdash;
+        until the same untouched homepage scored 0.83 and then 0.74
+        back to back on shared CI hardware. That's noise, not a
+        regression. Lowering the floor and taking a median was the
+        honest fix: a threshold that fails at random isn't a
+        guardrail, it just blocks good changes on a coin flip.
+        Accessibility and SEO are static-analysis checks rather than
+        timing ones, so they were never the noisy pair and stayed
+        where they were.
+      </p>
+      <p>
         Guardrails passing doesn't mean a PR merges itself, though.
         Anything that touches site copy tone, adds a new top-level
         section, or shifts the design direction gets flagged explicitly
@@ -76,29 +90,42 @@ export default function Blog() {
       </p>
 
       <h2>What's shipped so far</h2>
+      <p>
+        The loop started with four placeholder pages. Everything on
+        the site since has arrived one change at a time, and the work
+        has sorted itself into four kinds:
+      </p>
       <ul>
         <li>
-          Real entry points on the homepage &mdash; four section cards
-          replacing placeholder copy, so landing on <code>/</code> gives
-          visitors an actual reason to click into a section.
+          <strong>Content where placeholders were</strong> &mdash;
+          section cards on the homepage, a curated tool directory, a
+          write-up of the project itself, and an interactive Tool
+          Finder on <code>/demos</code>. This post was one of them.
         </li>
         <li>
-          A curated tool directory &mdash; real AI tools, grouped by
-          category, replacing the placeholder note that used to sit at{" "}
-          <code>/directory</code>.
+          <strong>Being findable</strong> &mdash; per-page titles and
+          descriptions, canonical URLs, <code>robots.txt</code> and a
+          sitemap, structured data, and a feed.
         </li>
         <li>
-          An interactive Tool Finder on <code>/demos</code> &mdash; a
-          small quiz that recommends tools from that same directory, so
-          Demos has something to actually finish and replay instead of
-          another placeholder.
+          <strong>Being usable by everyone</strong> &mdash; a skip
+          link, reduced-motion support, an indicator for which page
+          you're on, notice before a link opens a new tab, and focus
+          that follows along when an interactive panel swaps out from
+          under you.
+        </li>
+        <li>
+          <strong>Fixing what earlier rounds got wrong</strong> &mdash;
+          a nav that overflowed narrow screens, a 404 that was a dead
+          end, and a search box whose placeholder promised to match
+          categories when the code never looked at them.
         </li>
       </ul>
       <p>
-        Each of those shipped with a stated hypothesis and a guardrail
-        result in the changelog; whether they actually moved their
-        metric gets checked and logged the following week, failures
-        included.
+        That last category is the one worth dwelling on. A loop that
+        only ever adds things accumulates its own mistakes; the useful
+        part is that each round reads the whole log first, so the
+        mistakes are visible and get picked up as future work.
       </p>
 
       <h2>Follow along</h2>
