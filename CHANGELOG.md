@@ -31,6 +31,64 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+Three content-plumbing fixes in one PR, bundled at the maintainer's
+request. (PR #TBD)
+
+**1. The homepage teaser was the last hardcoded copy of post metadata**
+- Hypothesis: PR #26 pulled post metadata into `lib/posts.js` so the
+  page title, heading, JSON-LD and feed item couldn't drift — but
+  missed the homepage teaser, which still hardcoded the post's title
+  and hook. PR #11's own changelog entry flagged this: "revisit this
+  if a second post ships." A second post would now silently leave the
+  homepage advertising the first one.
+- Change: Added an `excerpt` field to the post record (deliberately
+  distinct from `description`, which has to work as a search-result
+  snippet) and pointed `app/page.js` at `posts[0]` for title, path
+  and excerpt.
+- Caught in verification, not review: moving the hook out of JSX into
+  a JS string silently downgraded its `&rsquo;` to a straight
+  apostrophe, since entities don't work inside JS strings — the
+  homepage rendered `&#x27;` where it used to render U+2019. Fixed by
+  using the literal curly character in `posts.js`, and confirmed at
+  the byte level that both the teaser and the meta description now
+  emit U+2019 again.
+
+**2. `dateModified` — the post has been edited since it was published**
+- Hypothesis: The post carries `datePublished: 2026-08-09` and
+  nothing else, but its content was rewritten in PR #27 and touched
+  again in PR #29. The `BlogPosting` JSON-LD therefore told search
+  engines the current text was the text published on the 9th, and
+  last round's sitemap work made it worse by deriving `lastmod` from
+  `datePublished` — the sitemap's *last modified* field was reporting
+  the publish date. That's the same class of inaccuracy the sitemap
+  round set out to fix, introduced by the fix.
+- Change: A `dateModified` field on the post record, set from the
+  actual commit date of the last content change (`git log` on
+  `app/blog/page.js`: 2026-08-10 UTC — not guessed). JSON-LD now
+  emits both dates, and the sitemap's `lastmod` reads `dateModified`.
+  The RSS `pubDate` correctly still reads `datePublished`, which is
+  what that field means.
+
+**3. Projects had a flat heading outline**
+- Hypothesis: Dumping every page's headings from the served HTML,
+  `/projects` was the only one that came back wrong: `h1 Projects`,
+  then `h2 AddictedtoAI.net`, then `h2 The idea` / `h2 How it works`
+  / `h2 Stack`. Those three are subsections *of* the write-up, but
+  they're marked up as its siblings, so anyone navigating by heading
+  gets four peers and no structure. Every other page nests correctly.
+- Change: Demoted the three subsections to `h3` and added an
+  `article h3` rule to `globals.css`. Verified the served outline is
+  now `h1 > h2 > h3 h3 h3`, and re-dumped the other four pages to
+  confirm nothing else moved.
+
+- Guardrails: pass (`next build` clean; `npm run lint` clean;
+  `linkinator` 30 links zero failures; `scripts/check-routes.sh`
+  green; feed still parses as valid RSS 2.0. Regressions re-run:
+  Directory result count at 0px layout shift, nav still 61px with
+  zero horizontal overflow at 360px.)
+- Result (measured the following week): not yet measured
+
+### 2026-08-10
 Three interaction fixes in one PR, bundled at the maintainer's
 request. (PR #30)
 

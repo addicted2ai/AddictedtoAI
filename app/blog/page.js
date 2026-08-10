@@ -18,6 +18,7 @@ const postJsonLd = {
   headline: post.title,
   description: post.description,
   datePublished: post.datePublished,
+  dateModified: post.dateModified,
   author: { "@type": "Organization", name: SITE_NAME },
   publisher: { "@type": "Organization", name: SITE_NAME },
   mainEntityOfPage: {

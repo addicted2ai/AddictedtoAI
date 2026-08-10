@@ -1,5 +1,8 @@
 import { sections } from "./lib/sections";
+import { posts } from "./lib/posts";
 import { feedAlternates } from "./lib/site";
+
+const latestPost = posts[0];
 
 export const metadata = {
   title: {
@@ -34,12 +37,9 @@ export default function Home() {
 
       <div className="latest-post">
         <p className="latest-post-label">Latest from the blog</p>
-        <a href="/blog" className="latest-post-link">
-          <h2>How this site builds itself</h2>
-          <p>
-            A weekly, hypothesis-driven loop proposes, ships, and measures
-            one change at a time &mdash; here&rsquo;s how it actually works.
-          </p>
+        <a href={latestPost.path} className="latest-post-link">
+          <h2>{latestPost.title}</h2>
+          <p>{latestPost.excerpt}</p>
         </a>
       </div>
     </div>
