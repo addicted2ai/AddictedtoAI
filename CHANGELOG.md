@@ -32,7 +32,7 @@ Returning-visitor rate (site-wide).
 
 ### Unreleased
 Three changes in one PR, all about the gate rather than the site.
-Bundled at the maintainer's request. (PR #TBD)
+Bundled at the maintainer's request. (PR #29)
 
 **1. Let CI see what analytics actually costs**
 - Hypothesis: PR #24 wired up analytics and measured it at +145.9 KB
