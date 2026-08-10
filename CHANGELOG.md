@@ -53,7 +53,7 @@ Returning-visitor rate (site-wide).
   blog byline, since browsers stopped surfacing autodiscovery years
   ago and an invisible feed gets no subscribers. Also wrapped the
   post date in a `<time dateTime="...">` element while it was being
-  templated. (PR #TBD)
+  templated. (PR #26)
 - Note for future rounds: `alternates` on a page **replaces** the
   root layout's rather than merging with it — confirmed empirically,
   the same trap the canonical-URL round hit. Setting the feed link
