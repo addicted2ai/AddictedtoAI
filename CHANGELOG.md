@@ -54,6 +54,18 @@ Bundled at the maintainer's request. (PR #29)
   gives the maintainer the data to decide, which is what was actually
   missing.
 
+- **And the answer, first time it ran for real: analytics is
+  affordable.** On CI hardware, median of 3: performance 0.98
+  (0.97/0.98/0.99), accessibility 1.00, best-practices 1.00, SEO
+  1.00, 244 KB transferred versus 97 KB without. That 244 KB matches
+  the 243.3 KB measured independently over CDP in PR #24. So the
+  prediction that gating on this would fail — the reason it was built
+  informational — was wrong: 0.98 clears the 0.80 floor with room to
+  spare. Worth keeping it warn-level anyway, since the cost is a
+  third party's to change and the point is to see the number when it
+  moves; but the maintainer can now enable analytics knowing what it
+  costs rather than guessing.
+
 **2. Check the routes nothing was checking**
 - Hypothesis: lychee crawls the five HTML pages. `/feed.xml`,
   `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest` and the
