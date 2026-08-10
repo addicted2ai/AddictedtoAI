@@ -51,7 +51,7 @@ Returning-visitor rate (site-wide).
   rather than hand-rolling the `gtag` bootstrap with `next/script`,
   which is what Next's own `next-script-for-ga` lint rule exists to
   discourage. Documented the measured cost in `README.md` and
-  `.env.example`. (PR #TBD)
+  `.env.example`. (PR #24)
 - Guardrails: pass, but with a caveat that matters more than the
   pass. Local `next build` clean both ways; shared JS 87.2 kB →
   87.3 kB with the variable unset (~100 bytes of client-reference
