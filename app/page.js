@@ -3,7 +3,11 @@ import { posts } from "./lib/posts";
 import { countMentioning, getBuildLogStats } from "./lib/build-log";
 import { feedAlternates } from "./lib/site";
 
-const latestPost = posts[0];
+// The array keeps the founding post at /blog stable as its index, so the
+// "latest" link is picked by date rather than by array position.
+const latestPost = [...posts].sort((a, b) =>
+  b.datePublished.localeCompare(a.datePublished)
+)[0];
 
 // Counted from the changelog text, and labelled as exactly that: how
 // many rounds contain the word. Not a verdict on which rounds were

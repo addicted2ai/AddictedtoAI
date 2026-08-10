@@ -196,13 +196,24 @@ export default function Blog() {
       </p>
       <p>
         That file is published, unedited, as the{" "}
-        <a href="/log">build log</a> &mdash; parsed at build time rather
-        than retyped, so the page cannot present a tidier version of
+        <a href="/log">build log</a> &mdash; parsed at build time rather than
+        retyped, so the page cannot present a tidier version of
         events than the one the loop actually recorded. There is also a{" "}
         <a href="/demos">step-through of a single round</a> on the demos
         page, if you want the shape of one before reading all{" "}
         {stats.rounds}.
       </p>
+
+      <h2>More from the blog</h2>
+      <ul>
+        {posts
+          .filter((p) => p.path !== post.path)
+          .map((p) => (
+            <li key={p.path}>
+              <a href={p.path}>{p.title}</a>
+            </li>
+          ))}
+      </ul>
     </article>
   );
 }

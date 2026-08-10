@@ -85,22 +85,32 @@ All retrieved 2026-08-10.
 
 ## Done when
 
-- [ ] The post tells the arc — the incident, the two labs' cyber models, the
+- [x] The post tells the arc — the incident, the two labs' cyber models, the
       Astra assessment — with each dated and traced to the primary source
       retrieved during the round that publishes it
-- [ ] It treats the Google and OpenAI launches as the same story: both labs
+- [x] It treats the Google and OpenAI launches as the same story: both labs
       assessed cyber capability, restricted access to trusted defenders, and
       published their own benchmark numbers. Neither vendor's claims are
       repeated as independent measurement
-- [ ] Benchmark numbers (95.0%, 1.5%, 55/47/36 V8 issues, CVE counts) are
+- [x] Benchmark numbers (95.0%, 1.5%, 55/47/36 V8 issues, CVE counts) are
       labelled as the vendors' own reported numbers
-- [ ] The Critical-threshold definition from the Preparedness Framework is
+- [x] The Critical-threshold definition from the Preparedness Framework is
       quoted or paraphrased faithfully, not dramatised
-- [ ] The post is not a press release: it notes what is documented (the
+- [x] The post is not a press release: it notes what is documented (the
       incident, the disclosures) versus what is claimed, and states who
       controls access and how
-- [ ] It explains the July 28 clarification — no model planned for release was
+- [x] It explains the July 28 clarification — no model planned for release was
       involved in exploiting Hugging Face — so readers do not take away a wrong
       causal story
-- [ ] Nothing is asserted on the strength of this docket item; every claim
+- [x] Nothing is asserted on the strength of this docket item; every claim
       links to its primary source
+
+## Done
+
+Published by the author round of 2026-08-10 (`loop/author/frontier-cyber-post`),
+PR #6, at https://addictedtoai.net/blog/frontier-cyber — the first post on the
+site other than the founding "How an AI builds this site" one, which required
+extending the single-post blog into a routed post (`app/lib/posts.js` now
+carries both, the sitemap and feed derive from it, and the homepage "Latest
+from the blog" picks by date rather than array position). All seven criteria
+verified against the served pages.

@@ -26,6 +26,12 @@ const routes = [
     lastModified: latestBuildLogDate || posts[0].dateModified,
     changeFrequency: "weekly",
   },
+  {
+    path: "/blog/frontier-cyber",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[1].dateModified,
+    changeFrequency: "weekly",
+  },
   // These pages have no build-log-derived content and do not change every
   // time the loop ships a round.
   { path: "/directory", priority: 0.8, changeFrequency: "monthly" },
