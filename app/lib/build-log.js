@@ -157,10 +157,30 @@ function parse(markdown) {
 
 let cached;
 
+function validateEntries(entries) {
+  const incomplete = entries.filter(
+    (entry) =>
+      entry.changes.length === 0 ||
+      entry.changes.some((change) => !change.hypothesis || !change.change) ||
+      !entry.guardrails ||
+      !entry.result
+  );
+
+  if (incomplete.length > 0) {
+    const labels = incomplete.map((entry) =>
+      entry.prs[0] ? `PR #${entry.prs[0]}` : `round ${entry.number}`
+    );
+    throw new Error(
+      `CHANGELOG.md contains incomplete build-log entries: ${labels.join(", ")}`
+    );
+  }
+}
+
 export function getBuildLog() {
   if (!cached) {
     const file = path.join(process.cwd(), "CHANGELOG.md");
     cached = parse(fs.readFileSync(file, "utf8"));
+    validateEntries(cached);
   }
   return cached;
 }

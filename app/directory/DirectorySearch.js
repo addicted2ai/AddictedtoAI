@@ -152,7 +152,13 @@ export default function DirectorySearch() {
         {announcement}
       </p>
 
-      <div id="directory-results">
+      <section
+        id="directory-results"
+        aria-labelledby="directory-results-label"
+      >
+        <h2 id="directory-results-label" className="visually-hidden">
+          Directory results
+        </h2>
         {filteredCategories.map((category) => (
           <section key={category.name} className="tool-category">
             <h2>{category.name}</h2>
@@ -179,7 +185,7 @@ export default function DirectorySearch() {
             </div>
           </section>
         ))}
-      </div>
+      </section>
     </>
   );
 }

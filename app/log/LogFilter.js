@@ -172,7 +172,7 @@ export default function LogFilter({ total }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           aria-label="Search the build log"
-          aria-controls="build-log-entries"
+          aria-controls="build-log-results"
           aria-describedby="log-search-status"
         />
         {query ? (

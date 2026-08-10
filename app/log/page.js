@@ -70,9 +70,16 @@ export default function BuildLog() {
 
       <LogFilter total={entries.length} />
 
-      <ol id="build-log-entries" className="log-list">
-        {entries.map((entry) => (
-          <li key={entry.id} className="log-entry" id={entry.id} data-log-entry>
+      <section
+        id="build-log-results"
+        aria-labelledby="build-log-results-label"
+      >
+        <h2 id="build-log-results-label" className="visually-hidden">
+          Build log results
+        </h2>
+        <ol id="build-log-entries" className="log-list">
+          {entries.map((entry) => (
+            <li key={entry.id} className="log-entry" id={entry.id} data-log-entry>
             <div className="log-meta">
               {/* A real heading, so screen-reader heading navigation
                   walks the log round by round rather than landing in a
@@ -147,9 +154,10 @@ export default function BuildLog() {
               <Field label="Guardrails">{entry.guardrails}</Field>
               <Field label="Result">{entry.result}</Field>
             </div>
-          </li>
-        ))}
-      </ol>
+            </li>
+          ))}
+        </ol>
+      </section>
     </div>
   );
 }

@@ -50,6 +50,44 @@ Returning-visitor rate (site-wide).
 ## Log
 
 ### Unreleased
+Search inputs identify their counts and controls, but their result targets
+are still anonymous containers, and the changelog parser can render an
+incomplete entry without failing the build. (PR #48)
+
+**1. Give Directory results a named region**
+- Hypothesis: Directory search declares `aria-controls="directory-results"`,
+  but that id currently points to a generic `div` with no accessible name.
+  Making the target a labelled section should tell assistive technology what
+  content the search changes without altering the existing filtered cards.
+- Change: Wrapped Directory results in a named `<section>` with a visually
+  hidden heading and kept the existing result id so the input relationship
+  remains stable.
+
+**2. Give Log results a named region**
+- Hypothesis: The Build Log search has the same anonymous result target, and
+  its input points directly at the ordered list rather than a named region.
+  A labelled section around the list should make the relationship explicit
+  while preserving the list semantics and existing filter behavior.
+- Change: Added a named Log results section around the ordered list and
+  pointed `aria-controls` at that region; the list keeps its original id for
+  filtering code and round counting.
+
+**3. Fail fast on incomplete build-log entries**
+- Hypothesis: The parser currently counts a round even if a malformed
+  changelog shape silently loses a hypothesis, change, guardrail, or result.
+  Validating those required evidence fields during the build should turn a
+  quiet incomplete public record into an actionable failure before deploy.
+- Change: `getBuildLog()` now rejects any entry without at least one complete
+  change and all required outcome fields, identifying the affected PR or
+  positional round in the build error.
+
+- Guardrails: pass locally. `npm run lint`, `npm run build`, and route checks
+  pass; the route checker asserts both named result regions, and a temporary
+  malformed changelog entry made the build fail with the affected round before
+  the entry was restored. (PR #48)
+- Result: not yet measured.
+
+### 2026-08-10
 The build log is now a useful RSS source, but its summaries can expose the
 changelog's inline Markdown literally, and its dates are only visual text.
 (PR #47)
