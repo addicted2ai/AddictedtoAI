@@ -381,15 +381,18 @@ for era, body in eras:
 if failures == 0:
     print(f"ok    all {len(eras)} rounds link to the target their era has")
 
-# 3b. Belt and braces: no archived round is linked as a pull request.
-mislinked = {
-    int(m.group(1)) for h in hrefs for m in [re.search(r"/pull/(\d+)$", h)] if m
-} & archive
-if not mislinked:
-    print("ok    no archived round links to a pull request number")
-else:
-    print(f"FAIL  archived rounds linked as pull requests: {sorted(mislinked)}")
-    failures += 1
+# There was a "belt and braces" check here that flagged any `/pull/N` link
+# whose N appeared in the archive. It predated the era distinction, and once
+# rounds could legitimately cite this repository's own #1..#48 it started
+# failing on correct output: it collected hrefs from the whole page, so it
+# could not tell which round a link came from, only that the number also
+# existed in the archive. It blocked the first real round for citing its own
+# pull request.
+#
+# Removed rather than repaired. The per-round check above already asserts both
+# directions using data-era, which is the information this one was missing; a
+# second check over strictly less context could only ever disagree with it, and
+# a check that fires on a correct state costs more than the one it duplicates.
 
 sys.exit(1 if failures else 0)
 PY
