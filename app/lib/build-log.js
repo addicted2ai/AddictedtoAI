@@ -422,8 +422,32 @@ export function stripInlineMarkdown(text) {
 // were mistakes". Classifying rounds would mean running a keyword
 // heuristic over prose and publishing whatever it decided, which is the
 // opposite of what this site asks a reader to do.
-export function countMentioning(term) {
+//
+// `scope` exists because the record is rendered across two pages and the
+// count is published as a link. A figure counted over the whole record
+// while pointing at one page is a number a reader disproves by clicking
+// it -- which is what the homepage did between round 70 (the split) and
+// round 74 (the audit that measured it): "28 rounds say wrong" opened a
+// page reporting 15. Count what the destination shows.
+//
+//   "all"     — the whole record, both pages
+//   "current" — the rounds rendered on /log
+//   "archive" — the rounds rendered on /log/archive
+const SCOPES = {
+  all: getBuildLog,
+  current: getCurrentEraLog,
+  archive: getArchivedLog,
+};
+
+export function countMentioning(term, scope = "all") {
+  const select = SCOPES[scope];
+  if (!select) {
+    throw new Error(
+      `countMentioning: unknown scope "${scope}". Expected one of: ${Object.keys(
+        SCOPES
+      ).join(", ")}`
+    );
+  }
   const needle = term.toLowerCase();
-  return getBuildLog().filter((entry) => entryText(entry).includes(needle))
-    .length;
+  return select().filter((entry) => entryText(entry).includes(needle)).length;
 }

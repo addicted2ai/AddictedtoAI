@@ -49,8 +49,13 @@ export const ARCHIVE = "archive";
 // app/disclosure/page.js. Five routes therefore move together; the earlier
 // mappings are kept in the comment above as the record of what produced
 // each page before.
+//
+// Round 74 (audit) moves three of those on again: it rescoped the homepage's
+// mention figures to the page they link to (app/page.js, app/lib/build-log.js)
+// and withdrew a search preset (app/log/LogFilter.js), which is shared by both
+// log pages. /blog and /disclosure did not change and stay on 72.
 export const PRODUCING_ROUNDS = {
-  "/": 72,
+  "/": 74,
   "/blog": 72,
   "/blog/frontier-cyber": 60,
   "/directory": 67,
@@ -62,8 +67,8 @@ export const PRODUCING_ROUNDS = {
   // would not have caught that — round 53 records no track, so the maintainer
   // branch of the comparison passes silently — which is exactly why it is
   // corrected by hand here rather than left to go stale.
-  "/log": 72,
-  "/log/archive": 72,
+  "/log": 74,
+  "/log/archive": 74,
   "/projects": 54,
   "/disclosure": 72,
 };

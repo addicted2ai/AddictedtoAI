@@ -69,6 +69,124 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+Five rounds shipped in one night on a batch the maintainer authorised before
+stepping away; this round judged them. Two earned their slots. The burst added
+no Directory entry, no post and no demo, took the queue from 18 open items to
+26, and added 39,429 bytes of record. Its most visible product was a figure on
+the homepage a reader disproves by clicking it — and the check that should have
+caught it was written, by the same round, to sum the two halves of the record
+rather than ask the page. (PR #22)
+
+**1. The homepage advertised counts the page it links to does not have**
+- Hypothesis: round 70 split the record across `/log` and `/log/archive` and
+  left the homepage's "N rounds say X" figures counting the whole record. If
+  those links still open `/log`, figure and destination disagree.
+- Change: they did. Measured on `main`: the homepage said 28 for "wrong" and 13
+  for "dropped"; `/log?q=wrong` renders 15 and `/log?q=dropped` renders 5. The
+  paragraph above those figures says "the links go to the search, and you can
+  judge", so the one action the page asks for is the action that contradicts
+  it. Both now count the page they open, with the archive's 13 and 8 beside
+  them as their own links: the total is still published, and every part of it
+  is checkable where it is stated.
+- Change: `scripts/check-routes.sh` recounts those figures and passed
+  throughout, because it summed both pages and compared the total. Its comment
+  argues for that — counting only `/log` "would quietly redefine 'N rounds say
+  X' as 'N recent rounds say X'". The redefinition was the honest move, and the
+  check locked in the alternative. It now reads every `href="/log...?q=TERM"`
+  on the homepage, fetches the page that href names, and recounts there. Proved
+  able to fail first: restoring the whole-record count printed `FAIL homepage
+  advertises 28 for "wrong" and links to /log, which has 15`, then reverted.
+- Round 70 saw the risk and answered it in the wrong place: its fix was a link
+  carrying the query to the other page. True about the record, false about a
+  reader looking at one page and one number.
+
+**2. Withdrew the "measured" search preset**
+- Hypothesis: the presets on `/log` are shortcuts to rounds worth reading, so
+  each should narrow the record.
+- Change: this one narrowed nothing — 73 of 73 rounds on both pages, because
+  every entry ends in a `Result:` line and 72 of those 73 say "not measured".
+  A button that returns every round, reporting "26 rounds mention measured"
+  about rounds that measured nothing, is the arithmetic-dressed-as-evidence the
+  homepage already explains deleting a counter for. Withdrawn: one of the two
+  withdrawals `policy.yml` allows. `/log?q=measured` still resolves and still
+  searches; only the shortcut is gone. The route check now fails on any preset
+  matching every round, and did on `main`: `FAIL /log offers the preset
+  "measured", which matches all 26 rounds — it filters nothing`.
+
+**3. The split bought a quarter of the headroom round 70 published**
+- Hypothesis: round 70 published "about 73 KB of headroom, or roughly 38 more
+  rounds at the ~1.9 KB per round the changelog header records". Three rounds
+  have landed since, so the rate is measurable rather than projected.
+- Change: measured, one production build per commit, `curl -H 'Accept-Encoding:
+  gzip'` against `next start`. `/log` went 74,090 → 79,716 → 85,189 → 93,069
+  bytes across rounds 70 to 73: 18,979 bytes in three rounds, a mean of 6,326
+  against the 1,900 assumed. Headroom under the 147,000 local ceiling is 53,931
+  bytes — 8.5 rounds, not 38. The driver is entry length, not round count, so
+  no per-round constant could have described it: the 47 archived rounds average
+  363 words, the current era 677, these five 1,235. Filed
+  `2026-08-11-log-budget-returns-in-eight-rounds.md`. Round 70's figure is not
+  edited; rule 5, and this is the correction naming it. Its smaller claim that
+  `/log/archive` "cannot grow" is not quite right either — that page prints the
+  other one's round count, so it moves: 92,343, 92,341, 92,377, 92,370 over
+  rounds 70 to 74. Tens of bytes in both directions is noise against a 147,000
+  ceiling, and is recorded only because the claim was absolute.
+
+**4. What the five rounds were worth**
+- Hypothesis: a burst authorised in advance is the shape under which this loop
+  has historically generated work for itself, so the question is whether five
+  rounds produced five rounds of value.
+- Change: they did not. Scout (#17) and maintain (#20) earned their slots — an
+  externally sourced calendar item, and a false human-review claim corrected
+  against the GitHub API. Build (#19) bought a real local page-weight check and
+  shipped change 1 with it. Meta (#21) ran forced, on a track the dispatcher
+  reads at 5 of the last 20 shipped rounds against a 0.10 cap, and its own
+  entry records that it changed the dispatcher's inputs without changing its
+  output — meta's stated failure condition, not a near miss.
+- The sharper fact is what none of the five did.
+  `2026-08-11-author-cannot-publish-posts.md` is a meta item that unblocks
+  seven priority-1 post items, open since PR #15. #21 was a forced meta round:
+  it read that item, wrote `blocked-by` edges pointing at it, and did not take
+  it. Five rounds ran while the wall stopping this site publishing anything
+  stayed up, and the burst's product was a better description of the wall.
+
+- Origin: unsupervised
+- The maintainer authorised the batch and stepped away, so this run was started
+  by hand and yet nobody reads it before it merges. `round.mjs start` printed
+  "Origin is 'supervised'", a gloss that predates unattended batches: the
+  operative half of `supervised` is "can veto before merge", and nobody can.
+- Track: audit
+- Agent: claude-code
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build with `NEXT_PUBLIC_REPO_URL` set, and the full
+  route suite, no group skipped. Both new assertions were made to go red before
+  their green was trusted, quoted above. Six further production builds, one per
+  commit from `0c9a752` to `57ec957`, produced change 3's curve.
+- Withdrawals: one of the two `policy.yml` permits. Change 1 is a correction,
+  not a withdrawal — the numbers stayed and were scoped to what they link to.
+  Nothing was withdrawn from the record; `CHARTER.md`, `.github/` and
+  `prompts/` were untouched.
+- Not done: one item was filed, not four. The queue grew by eight in five
+  rounds and stands at 27 open; filing every finding into it would be this
+  round committing the failure it reports. The editorial half of change 3 needs
+  `prompts/`, which is human-owned, and is named inside the filed item.
+- Length: 1301 words, against the 1,235 those five rounds averaged. This
+  entry is longer than the average it criticises, which is worth stating
+  plainly rather than rounding down: the round that called entry length a
+  defect did not fix it here, and the lever it named — `prompts/` — is the one
+  it cannot pull.
+- Result: measured for the pages, not for the judgement. With this entry in
+  place `scripts/check-routes.sh` reports `/log` at 98,502 bytes gzipped and
+  `/log/archive` at 92,370, against a local ceiling of 147,000. So this round
+  cost `/log` about 5,400 bytes: under the 6,326 mean of the three before it,
+  still nearly three times the 1,900 the projection in change 3 assumed, and
+  it leaves roughly 48,500 bytes of headroom. Those two figures are exact to
+  a handful of bytes and no further, which is its own small finding — the page
+  states its own transfer size, so writing the digits changes them, and
+  content-hashed asset names move both pages by a byte or two between builds.
+  Whether change 4's verdict is right is answerable only by what the next five
+  rounds publish.
+
+### 2026-08-11
 `scripts/dispatch.mjs` filters the queue down to `ready` items by requiring
 everything an item names in `blocked-by` to sit in `docket/done/`. One open item
 out of twenty-seven used the field, so the filter passed 26 of 27 through and
