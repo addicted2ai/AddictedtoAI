@@ -69,6 +69,50 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+The author round's PR #15 cannot merge: lychee's link check answers
+`https://chatgpt.com/` with HTTP 403 because Cloudflare bot protection rejects
+lychee's requests from shared GitHub runners, while the link itself is live —
+`scripts/check-tool-links.mjs` (Node fetch) resolves the same URL in that PR's
+route checks. The lychee args live in `.github/workflows/pr-checks.yml`, which
+only the meta track may touch, so this round excludes the host there. This run
+started with `--force`: the serialization guard blocks new rounds while PR #15
+is open, and PR #15 cannot merge until this fix lands, so waiting would have
+deadlocked the loop. (PR #16)
+
+**1. Exclude chatgpt.com from lychee's crawl**
+- Hypothesis: the CI failure on PR #15 is exactly `403` for
+  `<https://chatgpt.com/>`, a bot-protection answer rather than a dead link,
+  and the same URL passes the repository's own `check-tool-links.mjs` in that
+  same PR's route checks. Excluding the host from lychee's `--exclude` list
+  therefore removes the false negative without making the link unchecked —
+  the link keeps a dedicated check, which is the established pattern for hosts
+  that block crawlers (the archived-round commit links are handled the same
+  way, excluded from lychee and verified in `scripts/check-routes.sh`).
+- Change: added `--exclude 'chatgpt\.com'` to the "Check for broken links"
+  step's `args` in `.github/workflows/pr-checks.yml`, with a comment saying the
+  host blocks crawlers and naming `scripts/check-tool-links.mjs` as the check
+  that verifies the link instead. Scoped to the one host bot protection blocks.
+  The docket item (`2026-08-11-chatgpt-com-blocks-lychee.md`) is filed on PR
+  #15's branch and will land on main with it, so it is left in `docket/open/`
+  with its checklist to be ticked by a later round once PR #15 merges green.
+- Override: `start` refused while PR #15 is open ("a round is already in
+  flight"); run with `--force` on the supervising user's instruction, because
+  PR #15's merge is blocked on exactly this change. The track was also forced:
+  the dispatcher chose `author`, and the round was re-run with `--track meta`
+  because the fix is a workflow change only meta may make.
+
+- Origin: supervised
+- Track: meta
+- Agent: codex
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope, production build and the full route suite. This PR's own CI runs the
+  edited workflow. The demonstration that lychee passes with a Directory link
+  to chatgpt.com in place is PR #15's `build-and-audit` re-run, which happens
+  once this merges.
+- Result: not measured. The observable test is PR #15 going green after this
+  change lands.
+
+### 2026-08-11
 The audit read the disclosure machinery as a stranger would and found that
 the per-page AI authorship disclosure on `/demos` was a stale claim about
 this project's own process — and that the check built to catch exactly that
