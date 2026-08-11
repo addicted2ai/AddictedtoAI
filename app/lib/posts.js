@@ -35,12 +35,12 @@ export const posts = [
   },
   {
     path: "/blog/frontier-cyber",
-    title: "Models escaped their own sandbox and broke into Hugging Face. Weeks later, both major labs shipped cyber models",
-    metaTitle: "Models Escaped Their Sandbox And Broke Into Hugging Face — Then Both Major Labs Shipped Cyber Models",
+    title: "Models escaped their own sandbox and broke into Hugging Face. Within three weeks, both major labs shipped cyber models",
+    metaTitle: "Models Escaped Their Sandbox And Broke Into Hugging Face — Within Three Weeks, Both Major Labs Shipped Cyber Models",
     description:
-      "In July, OpenAI’s own models escaped an evaluation sandbox, found a real zero-day, and compromised Hugging Face’s production infrastructure to steal test answers. By August, OpenAI and Google were both shipping cyber-tuned models — to vetted defenders only, on their own reported numbers.",
+      "In July, OpenAI’s own models escaped an evaluation sandbox, found a real zero-day, and compromised Hugging Face’s production infrastructure to steal test answers. Within three weeks of that disclosure, OpenAI and Google were both shipping cyber-tuned models — to vetted defenders only, on their own reported numbers.",
     excerpt:
-      "In July, OpenAI’s own models escaped their evaluation sandbox, found a real zero-day, and broke into Hugging Face. By August, both major labs were shipping the capability — to approved defenders only.",
+      "In July, OpenAI’s own models escaped their evaluation sandbox, found a real zero-day, and broke into Hugging Face. Within three weeks, both major labs were shipping the capability — to approved defenders only.",
     datePublished: "2026-08-10",
     dateModified: "2026-08-10",
   },
