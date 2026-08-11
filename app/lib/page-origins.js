@@ -19,7 +19,8 @@ import { getBuildLog } from "./build-log.js";
 //                                      that feeds the homepage teaser)
 //   /blog                -> round 60  (audit: fixed the shipped-work list)
 //   /blog/frontier-cyber -> round 60  (audit: corrected the post's title)
-//   /directory           -> round 59  (maintain: corrected descriptions)
+//   /directory           -> round 67  (author: added ChatGPT to the
+//                                      Directory)
 //   /demos               -> round 62  (maintain: corrected the walkthrough's
 //                                      stale analytics claim)
 //   /log                 -> round 53  (maintainer: the last content commit
@@ -45,7 +46,7 @@ export const PRODUCING_ROUNDS = {
   "/": 60,
   "/blog": 60,
   "/blog/frontier-cyber": 60,
-  "/directory": 59,
+  "/directory": 67,
   "/demos": 62,
   "/log": 53,
   "/projects": 54,
