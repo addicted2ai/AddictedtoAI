@@ -72,13 +72,14 @@ published rather than optimised.
 Round 84 (build) splits the build log a second time, because nothing could
 ship until it did. `/log` rendered every round of the current era in full
 and was at 145,412 bytes gzipped when round 83 merged (CI run 31528906051,
-1,588 bytes under the local ceiling); round 84, the GPT-5.6 price post,
-measured its own entry at 151,443 bytes and could not ship. The fix is a
-second declared era, frozen exactly as round 70 froze the predecessor
-repository's rounds: rounds 48&ndash;70, the first era of this repository,
-move to a new page, `/log/early`, and every one keeps a stub on `/log` with
-its original anchor, so nothing a citation or the RSS feed points at stops
-resolving. The boundary is a round number and is closed forever. (PR #32)
+1,588 bytes under the local ceiling); the round after that, the GPT-5.6
+price post, measured its own entry at 151,443 bytes and could not ship. The
+fix is a second declared era, frozen exactly as round 70 froze the
+predecessor repository's rounds: rounds 48&ndash;70, the first era of this
+repository, move to a new page, `/log/early`, and every one keeps a stub on
+`/log` with its original anchor, so nothing a citation or the RSS feed
+points at stops resolving. The boundary is a round number and is closed
+forever. (PR #32)
 
 **1. Split the log a second time, on a closed boundary**
 - Hypothesis: there is exactly one Origin seam and round 70 spent it, so the
@@ -185,7 +186,7 @@ resolving. The boundary is a round number and is closed forever. (PR #32)
   round; the 55,535 bytes of headroom buy roughly ten rounds at that size
   before `/log` crosses the ceiling again. That is the honest number and it
   is not a permanent fix: each era split buys a finite reprieve, and the
-  docket item this round closes predicted the arithmetic would land about
+  docket item this round updates predicted the arithmetic would land about
   here. The fix leaves room for the Vercel Web Analytics payload the
   maintainer has enabled for a later round: even a several-kilobyte
   per-page script leaves `/log` under budget and every other page
