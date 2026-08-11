@@ -68,6 +68,63 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-11
+Maintain checked the site's own machinery rather than assuming green checks
+still meant what they used to. Two things had quietly stopped being true: the
+disclosure map's own verifier no longer worked, and a demo caption was still
+asserting something about analytics that stopped being accurate the moment it
+was written. Everything else checked — the Directory's twelve verified
+entries and their links, the docket, the preflight — was still current.
+
+**1. Fix the AI-disclosure checker's track detection, broken by the branch-naming convention**
+- Hypothesis: `scripts/check-ai-disclosure.mjs` derives a commit's track from
+  its subject line to verify `page-origins.js` against git history, and
+  assumed every commit still used the pre-round-53 convention of a
+  capitalised `Track: ...` prefix. Running it against `main` as it stands
+  today, rather than trusting that it last passed, should show whether that
+  assumption still holds.
+- Change: it didn't. The script failed on `/disclosure`, because last
+  round's squash commit is titled `loop/build/ai disclosure (#9)` — the
+  `loop/<track>/<slug>` branch-name style every-run.md has had runs use since
+  that round — not the old colon-prefixed style, and PR titles now default to
+  the branch name. The regex now matches either convention. Proved it can
+  still fail before trusting it: temporarily pointed `/disclosure` at round
+  59 and confirmed the check caught the mismatch, then restored it.
+
+**2. Correct a stale claim about analytics in the Demos walkthrough**
+- Hypothesis: the "Result" step of the Demos page's round walkthrough says
+  "the site has only just been instrumented." Read today, that claims
+  analytics is live. The blog post already corrects the opposite claim once
+  ("analytics was never configured"), so it was worth checking which one is
+  actually true right now rather than assuming the newer-sounding page was
+  right.
+- Change: fetched the live production homepage and the built `/demos`
+  JavaScript bundle directly — zero `gtag` or `googletagmanager` references
+  in either, confirming the GA measurement ID has never been set in
+  production, same as the blog says. Reworded the caption to state what's
+  actually true: the reporting code exists, but the measurement ID has never
+  been set, so nothing has actually been counted.
+
+Also checked and left alone: the frontier-cyber post's four openai.com
+source links could not be independently re-fetched from this run's network —
+openai.com returns HTTP 403 with a Cloudflare bot challenge for every request
+from here, including its own homepage, which matches the lychee quirks this
+project has already logged against Google- and Cloudflare-fronted domains
+rather than indicating the pages are gone. Recorded as unverified this round,
+not as checked-and-fine.
+
+- Origin: supervised
+- Track: maintain
+- Agent: claude-code
+- Guardrails: `npm run lint` clean; `npm run build` clean; `node
+  scripts/check-docket.mjs` (18 items, 12 open, valid); `bash
+  scripts/check-routes.sh` full pass including the fixed
+  `check-ai-disclosure.mjs`; `node scripts/check-tool-staleness.mjs` (12/12
+  within the 45-day window) and `node scripts/check-tool-links.mjs` (12/12
+  resolve) re-run rather than trusted from yesterday's round.
+- Result: not yet measured. The disclosure checker itself is the one
+  concrete before/after: failing on `main` before this round, passing after.
+
 ### 2026-08-10
 The site's core claim — "an AI writes this" — became machine-readable and
 per-page. Before this round the disclosure existed only in prose, on some
