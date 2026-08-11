@@ -50,6 +50,12 @@ export const ROUTE_FILES = {
     "app/log/LogEntry.js",
     "app/lib/build-log.js",
   ],
+  "/log/early": [
+    "app/log/early/page.js",
+    "app/log/LogFilter.js",
+    "app/log/LogEntry.js",
+    "app/lib/build-log.js",
+  ],
   "/log/archive": [
     "app/log/archive/page.js",
     "app/log/LogFilter.js",

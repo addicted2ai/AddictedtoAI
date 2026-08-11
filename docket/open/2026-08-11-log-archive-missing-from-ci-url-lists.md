@@ -52,6 +52,12 @@ rule-count check on that page runs in CI via the same script — but `/charter`
 is not in the Lighthouse or lychee URL lists, and the build track cannot add it
 without editing `.github/`.
 
+And it happened again the same day (round 84, build): `/log/early` shipped
+holding rounds 48-70 of the record. Same mitigation, same gap — it is in the
+page-weight loop, the disclosure loop, the sitemap-resolution check and the
+new three-page partition assertion, but not in either CI URL list. Three
+published routes now carry no Lighthouse floors and no lychee crawl.
+
 ## Evidence
 
 - `.github/workflows/pr-checks.yml` — the `urls:` block for the Lighthouse
@@ -72,9 +78,14 @@ without editing `.github/`.
 - [ ] `/charter` joins it, the same way and for the same reason — a route CI
       does not measure is a route whose Lighthouse floors silently do not
       apply
+- [ ] `/log/early` joins them, the same way and for the same reason — round 84
+      created it and this item is where build records the routes CI has not
+      been told about
 - [ ] `/log/archive` is in the lychee step's URL arguments, so its links are
       crawled
 - [ ] `/charter` is in the lychee step's URL arguments, so its links are
+      crawled
+- [ ] `/log/early` is in the lychee step's URL arguments, so its links are
       crawled
 - [ ] A decision is recorded on whether the URL list moves somewhere both
       tracks can read. If it stays in `.github/`, the record says so and says

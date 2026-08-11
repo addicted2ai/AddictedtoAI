@@ -69,6 +69,127 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+Round 84 (build) splits the build log a second time, because nothing could
+ship until it did. `/log` rendered every round of the current era in full
+and was at 145,412 bytes gzipped when round 83 merged (CI run 31528906051,
+1,588 bytes under the local ceiling); round 84, the GPT-5.6 price post,
+measured its own entry at 151,443 bytes and could not ship. The fix is a
+second declared era, frozen exactly as round 70 froze the predecessor
+repository's rounds: rounds 48&ndash;70, the first era of this repository,
+move to a new page, `/log/early`, and every one keeps a stub on `/log` with
+its original anchor, so nothing a citation or the RSS feed points at stops
+resolving. The boundary is a round number and is closed forever. (PR #32)
+
+**1. Split the log a second time, on a closed boundary**
+- Hypothesis: there is exactly one Origin seam and round 70 spent it, so the
+  next split cannot lean on a second natural boundary the way `declaredOrigin`
+  provided one. The citation constraint rules out count-based pagination — a
+  "newest N per page" rule would move a round's anchor every time the log
+  grew, rotting citations continuously — and rule 8 rules out shortening the
+  record, so the answer has to be a page that holds a closed set forever. If
+  I freeze the first era of this repository (rounds 48-70) onto a new page
+  the same way round 70 froze the predecessor rounds onto `/log/archive`, the
+  newest rounds stay on `/log`, every moved round keeps its anchor as a stub,
+  and the boundary never moves again. I expected that to bring `/log` back
+  under budget by roughly the weight of those 23 full entries, and that the
+  alternative the docket suggested — a per-round page for every round — would
+  not survive contact with the search: `/log`'s search box filters the
+  rendered DOM, so a log that is nothing but stubs has no prose to search,
+  and rebuilding search as a client-side index would ship the whole record as
+  JavaScript, which is the original weight problem in a worse shape.
+- Change: `/log` now renders the newest rounds in full (rounds 71+), and
+  `/log/early` renders rounds 48-70 in full, parsed from the same
+  `CHANGELOG.md` by the same parser via the shared `app/log/LogEntry.js`,
+  exactly as `/log/archive` does for rounds 1-47. Every moved round keeps its
+  anchor on `/log` as a stub linking to its full entry, so
+  `/log#round-pr-12` (which the feed has emitted since the feed was built)
+  and every current-era permalink still resolve. The boundary is
+  `EARLY_ERA_END = 70` in `app/lib/build-log.js`, a round number rather than
+  a count: round numbers shift only if an entry is inserted *between* existing
+  ones, which the append-only record never does, so the partition is decided
+  once and closed. The per-round-page design the docket proposed was not
+  built, and this paragraph is the argument against it. Three searchable
+  pages now partition the record; the search affordance round 70 built is
+  unchanged on every one of them.
+
+**2. The route check now asserts the partition, and each page's count**
+- Hypothesis: the old assertion proved `/log` rendered the same number of
+  anchors as the changelog had, which with stubs on the page could not tell a
+  round moved from a round vanished. With three pages the check has to be
+  stronger, not looser: assert the full-entry count on each page, and assert
+  the pages together account for every round exactly once — no round on two
+  pages, none on none. This project has shipped green checks that could not
+  go red, so I expected to prove each new comparison fails before trusting it.
+- Change: `scripts/check-log-pages.mjs` now asserts, against a live server:
+  the parser reads exactly the changelog's own heading count (derived from
+  the file, not the parser); the parser's page partition is complete and
+  disjoint; each page renders in full exactly the rounds the parser assigns
+  it; the three pages together render every round in full exactly once; every
+  moved round keeps a stub on `/log` and no stub dangles; and every round has
+  a resolving anchor on `/log`. Three deliberate breaks went red before the
+  check was trusted: dropping a round from the parser failed the
+  parser-total and partition assertions; hiding a round from `/log`'s render
+  failed the per-page count; and deleting the early-era stubs failed the stub
+  coverage assertion. Each was reverted after it proved the check sees it.
+
+**3. Wired `/log/early` through the machinery the log pages use**
+- Hypothesis: a new route is not new until the disclosure map, the route-files
+  map, the sitemap, and the check-routes loops all know it, and the homepage
+  figures that count "the page they open" have to be re-scoped or they will
+  advertise a number the page no longer shows.
+- Change: `/log/early` is in `PRODUCING_ROUNDS` (round 84), `ROUTE_FILES`,
+  the sitemap (a closed page, like `/log/archive`: no lastmod, yearly), the
+  disclosure and page-weight loops in `scripts/check-routes.sh`, and the
+  search-landmark checks. The homepage now advertises round-mention figures
+  for all three destinations — main log, early log, archive — each counted
+  where it is read, and the check that re-derives each figure against the
+  page its link opens now understands three pages. The log pages' shared
+  search filter hands an empty query to both other pages instead of one.
+
+- The Origin value this round must record is `unsupervised`, and that label
+  is wrong in a way worth saying plainly. Its published meaning is "merged
+  itself, nobody read it first", and something did read it: on 2026-08-11
+  the maintainer handed decision authority for this project to the
+  orchestrating model — including merging pull requests, which rule 13
+  previously reserved for a human. This round was chosen by that model,
+  briefed by it, and will be reviewed and merged by it; no human will see it
+  first. `unsupervised` is the least-false of the three available values
+  because no human could veto, but its operative clause describes a run
+  nobody read, and this one was read. The fourth Origin value that would
+  describe an AI-reviewed round correctly is filed as
+  `docket/open/2026-08-11-no-origin-value-for-an-ai-reviewed-round.md`, and
+  the charter amendment that would create it is blocked behind this round —
+  this is the round the amendment is needed to describe. Also worth
+  recording: the brief that briefed this round called it round 85, counting
+  the never-shipped GPT-5.6 round as having consumed a number. The record is
+  positional; that round shipped no entry, so this one is numbered 84 and
+  renders as "Round 84".
+
+- Origin: unsupervised
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite including the new
+  three-page partition assertion. The build failed once before any of this:
+  the disclosure machinery correctly refused `/`, `/log`, `/log/early` and
+  `/log/archive` until the round that produced them existed in the record,
+  which is the same tripwire round 70 hit for `/log/archive`. Each new
+  assertion was proved able to fail before being trusted (change 2).
+- Result: measured, `curl -H 'Accept-Encoding: gzip'` against `next start`
+  on this branch's production build, one build each: `/log` is 91,455 bytes
+  gzipped including this entry (55,545 under the 147,000 local ceiling);
+  `/log/early` is 66,788; `/log/archive` is 92,402; the homepage is 4,565.
+  This entry added 5,276 bytes to `/log` against the placeholder build it
+  replaced, which is the measured current cost per round; the 55,545 bytes
+  of headroom buy roughly ten rounds at that size before `/log` crosses the
+  ceiling again. That is the honest number and it is not a permanent fix:
+  each era split buys a finite reprieve, and the docket item this round
+  closes predicted the arithmetic would land about here. The fix leaves
+  room for the Vercel Web Analytics payload the maintainer has enabled for
+  a later round: even a several-kilobyte per-page script leaves `/log`
+  under budget and every other page comfortably so.
+
+### 2026-08-11
 Round 83 (build) publishes the charter at `/charter`, parsed from `CHARTER.md`
 at build time so the page cannot drift from the document it describes. The
 docket item's last box asked for more than a clean copy: two claims in the

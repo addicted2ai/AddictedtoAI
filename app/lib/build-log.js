@@ -311,25 +311,48 @@ export function getBuildLog() {
   return cached;
 }
 
-// The log is rendered across two pages because one page cannot hold it.
+// The log is rendered across three pages because one page cannot hold it.
 // /log carried every round in full and crossed the 150,000-byte document
 // budget in lighthouserc.json at 71 rounds — measured at 153,532 bytes
 // gzipped, against a 3,976-byte homepage. Nothing was wasted: a previous
 // round had already stopped the search from shipping the prose twice. The
 // page was simply the whole record.
 //
-// `declaredOrigin` is the split, and it is the same partition the page
-// already relied on for anchors and link targets: rounds predating the
-// Origin field are exactly the archived ones from the private predecessor
-// repository, they are closed, and their count cannot grow. Splitting on
-// era rather than on a count matters — a "20 newest per page" rule would
-// move a round's anchor every time the log grew, so citations would rot
-// continuously instead of once.
+// Round 70 split it once, on `declaredOrigin`: the rounds predating the
+// Origin field are exactly the 47 from the private predecessor repository,
+// they are closed, and their count cannot grow. That era is /log/archive.
+// It bought a quarter of the headroom it appeared to — measured in
+// docket/open/2026-08-11-log-budget-returns-in-eight-rounds.md, /log was
+// at 145,412 bytes by round 83 and one entry took it over the ceiling the
+// next round. There is no second Origin seam: every round since 47 declares
+// one.
 //
-// Every archived round keeps its anchor on /log as a stub linking here, so
-// no published citation breaks. See app/log/page.js.
-export function getCurrentEraLog() {
-  return getBuildLog().filter((entry) => entry.declaredOrigin);
+// Round 84 freezes a second era instead: the first rounds built in this
+// repository, numbers 48..EARLY_ERA_END, move to /log/early the same way
+// the predecessor rounds moved to /log/archive — full entry there, stub on
+// /log carrying the same anchor. The boundary is a round number so it is
+// closed forever. A round's page is decided once at the boundary; rounds
+// above it stay on /log as the log grows and their anchors never move
+// again. Splitting on a count would be different — "the newest N per page"
+// would move a round's anchor every time the log grew, so citations would
+// rot continuously instead of once. Round numbers are positional, but they
+// only shift if an entry is inserted *between* existing ones, which the
+// append-only record (rule 5) never does.
+//
+// Every moved round keeps its anchor on /log as a stub linking to its full
+// entry, so no published citation breaks. See app/log/page.js.
+export const EARLY_ERA_END = 70;
+
+export function getCurrentLog() {
+  return getBuildLog().filter(
+    (entry) => entry.declaredOrigin && entry.number > EARLY_ERA_END
+  );
+}
+
+export function getEarlyEraLog() {
+  return getBuildLog().filter(
+    (entry) => entry.declaredOrigin && entry.number <= EARLY_ERA_END
+  );
 }
 
 export function getArchivedLog() {
@@ -423,19 +446,21 @@ export function stripInlineMarkdown(text) {
 // heuristic over prose and publishing whatever it decided, which is the
 // opposite of what this site asks a reader to do.
 //
-// `scope` exists because the record is rendered across two pages and the
+// `scope` exists because the record is rendered across three pages and the
 // count is published as a link. A figure counted over the whole record
 // while pointing at one page is a number a reader disproves by clicking
-// it -- which is what the homepage did between round 70 (the split) and
+// it — which is what the homepage did between round 70 (the split) and
 // round 74 (the audit that measured it): "28 rounds say wrong" opened a
 // page reporting 15. Count what the destination shows.
 //
-//   "all"     — the whole record, both pages
-//   "current" — the rounds rendered on /log
+//   "all"     — the whole record, all three pages
+//   "log"     — the rounds rendered on /log
+//   "early"   — the rounds rendered on /log/early
 //   "archive" — the rounds rendered on /log/archive
 const SCOPES = {
   all: getBuildLog,
-  current: getCurrentEraLog,
+  log: getCurrentLog,
+  early: getEarlyEraLog,
   archive: getArchivedLog,
 };
 
