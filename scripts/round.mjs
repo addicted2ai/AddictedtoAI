@@ -237,9 +237,14 @@ function syncBase() {
     process.exit(1);
   }
 
+  // Assert the end state rather than trusting the exit code. `merge --ff-only`
+  // reports success when local main is merely *ahead* of origin/main, because
+  // origin/main is then already an ancestor and there is nothing to fast
+  // forward -- so a round that had committed to main would pass this check
+  // right up until something else merged and made main diverge for real.
   const ff = tryRun("git", ["merge", "--ff-only", "origin/main"]);
-  if (!ff.ok) {
-    bad("local main has diverged from origin/main and cannot fast-forward");
+  if (!ff.ok || run("git", ["rev-parse", "HEAD"]).trim() !== origin) {
+    bad("local main is not origin/main and cannot be fast-forwarded to it");
     const extra = tryRun("git", ["log", "--oneline", "origin/main..main"]);
     if (extra.ok) {
       for (const line of extra.out.split("\n").filter(Boolean)) {
