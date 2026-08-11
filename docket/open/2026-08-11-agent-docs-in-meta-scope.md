@@ -4,7 +4,7 @@ filed-by: maintainer
 title: Put the agent-facing round docs inside some track's scope, because none can edit them today
 created: 2026-08-11
 expires: 2026-11-11
-serves: floor
+serves: more-true
 priority: 2
 ---
 
