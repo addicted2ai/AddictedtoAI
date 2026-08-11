@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Run one round locally, without remembering any of it.
 //
-//   node scripts/round.mjs start [--track X] [--agent Y]
+//   node scripts/round.mjs start [--track X] [--agent Y] [--force]
 //   node scripts/round.mjs check
 //   node scripts/round.mjs ship
 //
@@ -53,6 +53,9 @@ const cmd = rawCmd.replace(/^--/, "");
 function arg(name, fallback = null) {
   const i = rest.indexOf(`--${name}`);
   return i !== -1 && rest[i + 1] ? rest[i + 1] : fallback;
+}
+function flag(name) {
+  return rest.includes(`--${name}`);
 }
 
 const ok = (m) => console.log(`  ok    ${m}`);
@@ -108,6 +111,157 @@ function killTree(pid) {
   }
 }
 
+// --- guards -----------------------------------------------------------------
+
+function ghJson(args) {
+  const result = tryRun("gh", args);
+  if (!result.ok) return { ok: false, out: result.out };
+  try {
+    return { ok: true, data: JSON.parse(result.out) };
+  } catch {
+    return { ok: false, out: result.out };
+  }
+}
+
+const BUSY_RUN_STATES = new Set([
+  "queued",
+  "in_progress",
+  "requested",
+  "waiting",
+  "pending",
+]);
+
+// Is a round already in flight anywhere?
+//
+// GitHub is the only state the remote workflow, a local Claude Code run and a
+// local Codex run can all three see, so it is where this gets answered.
+// loop.yml already serialises remote runs with `concurrency: group: loop`;
+// this makes a local round join that same queue instead of being invisible
+// to it.
+//
+// Serialisation is not mainly about merge conflicts. dispatch.mjs computes
+// each track's share from *shipped* rounds, so two rounds running at once each
+// read a history that excludes the other and can both pick the same track --
+// blowing the meta cap, or double-spending the audit gap. The quota arithmetic
+// is only correct while rounds are serial.
+//
+// The open pull request doubles as the docket claim. There is no separate
+// claimed/ directory and no lock file, so there is no stale lock to clear.
+function roundInFlight() {
+  const blockers = [];
+  let checked = true;
+
+  const runs = ghJson([
+    "run", "list", "--workflow", "loop.yml",
+    "--limit", "20", "--json", "status,url",
+  ]);
+  if (runs.ok) {
+    for (const entry of runs.data) {
+      if (BUSY_RUN_STATES.has(entry.status)) {
+        blockers.push(`remote run ${entry.status}: ${entry.url}`);
+      }
+    }
+  } else checked = false;
+
+  const prs = ghJson([
+    "pr", "list", "--state", "open", "--json", "number,headRefName",
+  ]);
+  if (prs.ok) {
+    for (const pr of prs.data) {
+      if (pr.headRefName.startsWith("loop/")) {
+        blockers.push(`open round PR #${pr.number} (${pr.headRefName})`);
+      }
+    }
+  } else checked = false;
+
+  return { blockers, checked };
+}
+
+// Put HEAD on origin/main, so whatever branch the round creates is based on
+// what actually shipped.
+//
+// Squash merge is why this matters. When a round's pull request lands, GitHub
+// replaces its commits with a single new commit carrying a different SHA, so
+// the originals become permanent orphans. That is harmless for a branch you
+// delete -- and corrosive the moment a round has also committed to local main,
+// because main then diverges forever and the *next* round inherits the stray
+// commits and conflicts on CHANGELOG.md.
+//
+// That is not hypothetical: local main sat "ahead 2, behind 1" after a build
+// round committed to it and its pull request squash-merged. No concurrency was
+// involved. One round committing to main was enough.
+function syncBase() {
+  const fetched = tryRun("git", ["fetch", "origin", "main"]);
+  if (!fetched.ok) {
+    bad("could not fetch origin/main — the base for this round cannot be verified");
+    console.log(fetched.out.trim());
+    process.exit(1);
+  }
+
+  if (run("git", ["status", "--porcelain"]).trim()) {
+    bad("working tree is dirty");
+    console.log("        commit, stash or discard before starting a round");
+    process.exit(1);
+  }
+
+  const origin = run("git", ["rev-parse", "origin/main"]).trim();
+  if (run("git", ["rev-parse", "HEAD"]).trim() === origin) {
+    ok(`on origin/main (${origin.slice(0, 7)})`);
+    return;
+  }
+
+  // Refuse to move off a branch that still holds work nobody else has.
+  //
+  // Measured against the branch's own upstream, not against origin/main. After
+  // a squash merge a merged branch permanently has commits origin/main does not
+  // -- that is what squashing does -- so comparing to origin/main would flag
+  // every finished round's branch as unshipped. Unpushed commits are the thing
+  // that would actually be lost.
+  const current = branch();
+  if (/^loop\//.test(current)) {
+    const upstream = tryRun("git", ["rev-parse", "--abbrev-ref", "@{u}"]);
+    const unpushed = upstream.ok
+      ? run("git", ["rev-list", "--count", "@{u}..HEAD"]).trim()
+      : run("git", ["rev-list", "--count", "origin/main..HEAD"]).trim();
+    if (unpushed !== "0") {
+      bad(`'${current}' has ${unpushed} commit(s) that are not pushed anywhere`);
+      console.log("        that is an unshipped round. Ship it, or delete the branch.");
+      process.exit(1);
+    }
+  }
+
+  const checkout = tryRun("git", ["checkout", "main"]);
+  if (!checkout.ok) {
+    bad("could not check out main");
+    console.log(checkout.out.trim());
+    process.exit(1);
+  }
+
+  // Assert the end state rather than trusting the exit code. `merge --ff-only`
+  // reports success when local main is merely *ahead* of origin/main, because
+  // origin/main is then already an ancestor and there is nothing to fast
+  // forward -- so a round that had committed to main would pass this check
+  // right up until something else merged and made main diverge for real.
+  const ff = tryRun("git", ["merge", "--ff-only", "origin/main"]);
+  if (!ff.ok || run("git", ["rev-parse", "HEAD"]).trim() !== origin) {
+    bad("local main is not origin/main and cannot be fast-forwarded to it");
+    const extra = tryRun("git", ["log", "--oneline", "origin/main..main"]);
+    if (extra.ok) {
+      for (const line of extra.out.split("\n").filter(Boolean)) {
+        console.log(`          ${line}`);
+      }
+    }
+    console.log("\n        A round committed to main rather than to its own branch. If its");
+    console.log("        pull request has since squash-merged, that content is already on");
+    console.log("        origin/main under a different SHA and these commits are orphans.");
+    console.log("        Confirm that before discarding them:");
+    console.log("          git log --oneline origin/main..main");
+    console.log("          git checkout main && git reset --hard origin/main");
+    process.exit(1);
+  }
+  ok(`main fast-forwarded to origin/main (${origin.slice(0, 7)})`);
+}
+
 // --- start ------------------------------------------------------------------
 
 const TOOL_SCOPE = {
@@ -118,6 +272,31 @@ const TOOL_SCOPE = {
 function start() {
   const forced = arg("track");
   const agent = arg("agent", "unknown");
+  const force = flag("force");
+
+  head("Before starting");
+  const flight = roundInFlight();
+  if (!flight.checked) {
+    console.log("  WARN  could not reach GitHub — the in-flight guard did not run.");
+    console.log("        That is not the same as 'no round is in flight'. A check");
+    console.log("        that was skipped has not passed.");
+  }
+  if (flight.blockers.length > 0) {
+    for (const blocker of flight.blockers) console.log(`        ${blocker}`);
+    if (!force) {
+      bad("a round is already in flight");
+      console.log("\n        Rounds are serial on purpose: dispatch.mjs computes each");
+      console.log("        track's share from shipped rounds, so two at once can both");
+      console.log("        pick the same track. Wait for it, or pass --force.");
+      process.exit(1);
+    }
+    bad("OVERRIDE: --force, starting while a round is in flight");
+    console.log("        Record this override in the round's changelog entry.");
+  } else if (flight.checked) {
+    ok("no round in flight");
+  }
+
+  syncBase();
 
   const dispatch = tryRun("node", ["scripts/dispatch.mjs"]);
   if (!dispatch.ok) {
@@ -151,6 +330,8 @@ function start() {
   head(`Round: ${track}`);
   console.log(`  why:    ${reason}`);
   console.log(`  branch: loop/${track}/<slug>   (CI reads the track from this)`);
+  console.log(`          HEAD is already on origin/main — branch from here, and`);
+  console.log(`          never commit to main itself.`);
   console.log(`  agent:  ${agent}`);
   if (TOOL_SCOPE[track]) {
     console.log(`\n  Tool scope for this track, which nothing local enforces:`);
@@ -182,9 +363,14 @@ async function check() {
 
   const current = branch();
   if (/^loop\//.test(current)) {
+    // origin/main, not main. CI diffs against origin/<base_ref>, and a local
+    // main that is stale or diverged would check a different set of files
+    // than the one the pull request actually changes -- the same wrong-base
+    // class of bug that syncBase() exists to prevent.
+    tryRun("git", ["fetch", "origin", "main"]);
     step(
       `track scope for ${current}`,
-      tryRun("node", ["scripts/check-track-scope.mjs", "main", current])
+      tryRun("node", ["scripts/check-track-scope.mjs", "origin/main", current])
     );
   } else {
     console.log(`  skip  track scope — on '${current}', not a loop/<track>/<slug> branch`);

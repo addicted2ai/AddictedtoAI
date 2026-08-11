@@ -69,6 +69,86 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+A maintainer-directed round, prompted by finding local `main` two commits
+ahead of and one commit behind `origin/main`. The obvious explanation was that
+two agents had raced, and that was wrong: no two rounds ever overlapped. One
+round committing to `main` instead of to its own branch was sufficient, because
+the pull request then squash-merged and orphaned the originals. The next round
+to branch from `main` would have carried two stray commits into its own diff
+and conflicted on this file.
+
+Both guards below sit in `scripts/round.mjs start`, which is local-only. The
+remote workflow checks out fresh from `main` every time and already serialises
+itself with `concurrency: group: loop`, so neither failure can reach it.
+
+**1. Branch every round from `origin/main`, never from local `main`**
+- Hypothesis: squash merge replaces a branch's commits with one new commit
+  carrying a different SHA. That is harmless for a branch you delete, and
+  corrosive the moment a round has also committed to local `main` — `main` then
+  diverges permanently, and the next round inherits the strays. Putting HEAD on
+  `origin/main` before a round branches should make local `main`'s state
+  irrelevant rather than load-bearing.
+- Change: `syncBase()` fetches, refuses on a dirty tree, refuses when the
+  current branch holds commits pushed nowhere, and otherwise fast-forwards
+  `main` to `origin/main`. Two failure modes were proved before being trusted:
+  a branch with an unpushed commit, and a `main` carrying a commit
+  `origin/main` does not have.
+- Note: the first version of this check was wrong, and the test that caught it
+  was wrong too. It read the exit code of `git merge --ff-only origin/main`,
+  which reports *success* when local `main` is merely ahead — `origin/main` is
+  already an ancestor, so there is nothing to fast-forward. That is exactly the
+  state a round leaves the moment it commits to `main`, before anything else
+  merges. It now asserts HEAD equals `origin/main` afterwards. The first two
+  attempts to prove it also passed for a bad reason: `git checkout main`
+  reverts the working tree to `main`'s copy of `round.mjs`, so both runs
+  executed the old script. Running the new one from outside the tree showed the
+  real behaviour.
+
+**2. Refuse to start a round while one is already in flight**
+- Hypothesis: three things can now start a round — the remote workflow, a local
+  Claude Code run, and a local Codex run — and nothing but the operator's memory
+  keeps them apart. That is cheap to enforce while rounds are already serial and
+  stops being free when the schedule is switched on, since a scheduled run
+  cannot know a local round is open. Serialisation matters beyond merge
+  conflicts: `dispatch.mjs` computes each track's share from *shipped* rounds,
+  so two at once each read a history excluding the other and can both pick the
+  same track, blowing the meta cap or double-spending the audit gap.
+- Change: `roundInFlight()` refuses to start when a `loop.yml` run is queued or
+  running, or a `loop/` pull request is open. GitHub is used as the lock because
+  it is the only state all three actors can see; the open pull request doubles
+  as the docket claim, so there is no lock file to go stale. `--force`
+  overrides, announces itself, and says the override must be recorded here.
+  When GitHub cannot be reached the guard reports that it *did not run* rather
+  than reporting no round in flight — a skipped check is not a passed one, which
+  is the lesson `check-routes.sh` already carries about its badge assertions.
+
+**3. Check track scope against `origin/main`, not `main`**
+- Hypothesis: `round.mjs check` passed `main` to `check-track-scope.mjs` while
+  CI diffs against `origin/<base_ref>`. A stale or diverged local `main` would
+  therefore check a different set of files locally than the pull request
+  actually changes — the third instance of the same wrong-base assumption, found
+  while reading the file to fix the first two.
+- Change: it fetches and diffs against `origin/main`.
+
+Also filed: `AGENTS.md` and `.claude/skills/local-loop/SKILL.md` are in no
+track's scope, so this round could change how `round.mjs start` behaves and
+could not change either document that describes it to agents. Both now describe
+a command with an option and two failure modes they do not mention. Recorded as
+a docket item rather than fixed out of scope.
+
+- Origin: maintainer
+- Track: meta
+- Agent: claude-code
+- Guardrails: `npm run lint`, the docket validator, the track-scope check
+  against `origin/main`, a production build and the full route checks. Both new
+  guards were shown to fail before being trusted, and one of them was shown to
+  fail for the wrong reason first.
+- Result: not measured. What is observable is that the specific state this
+  round was written for — local `main` diverged from `origin/main` — now stops
+  a round at the first command instead of surfacing as a conflict in its pull
+  request.
+
+### 2026-08-11
 Maintain checked the site's own machinery rather than assuming green checks
 still meant what they used to. Two things had quietly stopped being true: the
 disclosure map's own verifier no longer worked, and a demo caption was still
