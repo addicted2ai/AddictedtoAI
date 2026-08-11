@@ -153,8 +153,8 @@ export default function Blog() {
         <li>
           <strong>Content where placeholders were</strong> &mdash;
           section cards on the homepage, a{" "}
-          <a href="/directory">curated tool directory</a>, a{" "}
-          an interactive <a href="/demos">Tool Finder</a>. This post was
+          <a href="/directory">curated tool directory</a>, and an
+          interactive <a href="/demos">Tool Finder</a>. This post was
           one of them; a project write-up was later withdrawn when an
           audit found it duplicated this explanation without adding
           visitor value.

@@ -69,6 +69,63 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+The audit read the published pages as a stranger and found three real defects
+in live content — two of them invisible to every automated check. The newest
+post's title contradicted its own body (and the sources) about which lab
+shipped first; the founding blog post carried a broken phrase from the
+previous audit's prose edit; and the entire site's canonicals, sitemap, and
+structured data pointed at a Vercel preview hostname rather than the
+production domain. All three were corrected in place, and the third
+uncovered a check that could not catch what it was for.
+
+**1. Correct the frontier-cyber post's title and excerpt**
+- Hypothesis: the post body says Google launched Gemini 3.5 Flash Cyber "the
+  same day as the incident disclosure" (21 July), but the title said "Weeks
+  later, both major labs shipped cyber models" and the excerpt said "By
+  August". The most prominent text on the page contradicted its own sources
+  about the very fact the post is about — the timing of the field's response.
+- Change: title now "Within three weeks, both major labs shipped cyber
+  models" (true for both: Google same day, OpenAI 20 days later); excerpt and
+  description aligned. Corrected in place because rule 6 — the correction is
+  exactly as prominent as the thing it corrected.
+
+**2. Fix the broken phrase in the blog's shipped-work list**
+- Hypothesis: "a curated tool directory, a an interactive Tool Finder" is on
+  the live blog. It came from the previous audit round's prose edit; the
+  withdrawal decision that edit was part of is not mine to revisit (rule 12),
+  but a "a an" is a mechanical defect every reader sees, not a judgment.
+- Change: now "a curated tool directory, and an interactive Tool Finder".
+  The withdrawal of the Projects page stands; this is a typo correction only,
+  recorded so the boundary is visible.
+
+**3. Point canonicals, sitemap, and JSON-LD at the production domain**
+- Hypothesis: `getSiteUrl()` trusted `VERCEL_URL` (the current deployment's
+  URL) whenever `NEXT_PUBLIC_SITE_URL` was unset, and the production site
+  serves under `www.addictedtoai.net` while its canonical, sitemap and JSON-LD
+  URLs were the `*.vercel.app` preview hostname. Every check passed because
+  every check asks "does this URL resolve", and the preview URL resolves —
+  the checks could not fail on the wrong host, only on a dead one.
+- Change: prefer `VERCEL_PROJECT_PRODUCTION_URL` (the project's production
+  custom domain, set on every deployment per Vercel's documentation, fetched
+  this run) before falling back to the deployment URL. Also noted: the
+  `.env.example` does not document `NEXT_PUBLIC_SITE_URL` at all, so there was
+  no configured way to fix this from the project's own settings — a gap worth
+  a docket item if the env-var path is not preferred.
+
+- Origin: supervised
+- Track: audit
+- Agent: codex
+- Guardrails: every correction traced to the fetched source (the title fix to
+  the post's own citations, the env-var fix to Vercel's system-environment
+  variables reference retrieved 2026-08-10); nothing was withdrawn, so the
+  policy's two-withdrawal bound was not approached; lint, docket validation,
+  track scope, the production build, and the route checks all pass.
+- Result: not yet measured. The fixes are in place; whether the preview-host
+  finding is fully resolved depends on the next production deploy picking up
+  `VERCEL_PROJECT_PRODUCTION_URL`, which this round cannot see from the
+  repository.
+
+### 2026-08-10
 The follow-up maintain round to the one that stamped every Directory entry
 with a verified date: that round found three drifted descriptions, this one
 found four more plus a false claim, and a new check that records where each
