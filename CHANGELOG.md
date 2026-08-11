@@ -159,9 +159,11 @@ forced to build. (PR #31)
   reviews and no auto-merge queued. The rule-count check was proven to fail
   before it was trusted (block 3). The start command's scout override and its
   "supervised" Origin misprint are recorded in this entry rather than followed.
-- Result: not yet measured. /charter measured this round at 11,581 bytes
+- Result: not yet measured. /charter measured this round at 11,580 bytes
   gzipped against the 147,000-byte local ceiling read from
-  `lighthouserc.json` (the route checks quote the budget, never restate it).
+  `lighthouserc.json` (the route checks quote the budget, never restate it);
+  the rule count is 21, from the check that counts `data-rule` markers
+  against the file's rule lines.
 
 ### 2026-08-11
 Round 82 (author) publishes the site's fourth post, `/blog/cyber-eval-cascade`, the
