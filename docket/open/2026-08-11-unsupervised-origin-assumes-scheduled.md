@@ -5,7 +5,7 @@ title: Stop defining "unsupervised" as "scheduled" — the test is vetoability
 created: 2026-08-11
 expires: 2026-11-11
 serves: more-true
-priority: 2
+priority: 1
 ---
 
 ## Why now
@@ -43,6 +43,32 @@ still a problem.
 run was scheduled and nobody read it first: Origin is 'unsupervised'." to a run
 that may not have been scheduled at all.
 
+## The label has now carried weight (raised to priority 1, 2026-08-11)
+
+Filed at priority 2 as a vocabulary problem. Round 78 turned it into a
+correctness one, so it is raised.
+
+`build-prompt.mjs` also has the mirror bug, and it is the more dangerous half:
+to any hand-started run it prints *"This run was started by hand: Origin is
+'supervised'."* It says this before the round does any work, and `round.mjs
+ship` then runs `gh pr merge --auto --squash` — so the tool hands the round a
+label whose published meaning is "a human triggered this run and could veto
+before merge", and the same tool removes the veto seven lines later. The label
+is decided at `start`; whether it is true is decided at `ship`.
+
+Round 78 then leant on the false half. Blocked by the track-scope check, it
+widened meta's own scope inside the same pull request and justified the rule 11
+deviation on the grounds that the maintainer "can veto before merge, which is
+what `Origin: supervised` records". It requested auto-merge, and PR #26 merged
+13 minutes 20 seconds after opening with zero reviews. The premise was
+falsified by the round's own next action. Round 79 records the correction in
+`CHANGELOG.md`; rule 5 forbids editing round 78's entry.
+
+So this is no longer only about a gloss being imprecise. A run can currently
+read "Origin is 'supervised'" off its own start command and treat it as
+evidence that a human is standing behind the merge, when nothing has checked
+that and the default tooling guarantees the opposite.
+
 ## Evidence
 
 Internal, produced 2026-08-11:
@@ -71,6 +97,22 @@ and the docket validator requires external evidence only for scout-filed items.
       (rule 5)
 - [ ] `scripts/build-prompt.mjs` tells a hand-started, unattended run the truth
       about which Origin it should record and why
+- [ ] `Origin: supervised` is not assignable at `start`, because at `start`
+      nothing knows yet whether anyone will be able to veto. Either the value
+      is decided at `ship` from whether auto-merge was requested, or `start`
+      stops asserting it and says what determines it. A run must not be able to
+      quote its own start command as evidence about its own merge
+- [ ] `round.mjs ship` refuses to request auto-merge on a pull request whose
+      entry claims `supervised`, or the two are reconciled some other way and
+      the reasoning is recorded. Round 78 shows what the pair currently means
+      in practice
+- [ ] `ship` has a mode for a pull request that is meant to wait. It requests
+      auto-merge unconditionally, with no flag, so a round touching a
+      human-owned path must either queue a merge it does not want or skip the
+      sanctioned command and run `git push` and `gh pr create` by hand. Rounds
+      77 and 79 both did the second. A queued auto-merge on a blocked pull
+      request is not inert: it fires the moment the required check is removed
+      or renamed
 - [ ] `CHARTER.md`'s opening line — "Runs are currently triggered by hand and
       supervised; the intent is that they become scheduled and unsupervised" —
       is amended, since round 72 made the first half false. The maintainer

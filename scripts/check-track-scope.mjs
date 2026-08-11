@@ -15,6 +15,14 @@
 // The point is scout. A scout run that ships code has failed its charge, and
 // "it seemed useful while I was in there" is exactly how rounds 38-48 happened.
 // Everything else is proportionate caution.
+//
+// THIS FILE IS MAINTAINER-OWNED. It is listed in the `human-owned-paths` job in
+// .github/workflows/pr-checks.yml, so a pull request that edits it cannot merge
+// on green and waits for a human. The reason is round 78: this checker reads
+// SCOPES from the branch it is judging, so a run can grant itself a path and
+// spend it in the same pull request, and every check passes. Round 78 did
+// exactly that. A round may still propose a scope change -- it just cannot be
+// the one that approves it.
 
 import { execFileSync } from "child_process";
 
@@ -48,9 +56,13 @@ const SCOPES = {
     "docket/",
     "CHANGELOG.md",
   ],
-  // Meta may touch the human-owned paths. It cannot merge them: CODEOWNERS
-  // requires review there and auto-merge waits on required reviews. Rule 13 is
-  // enforced at the merge, not at the edit.
+  // Meta may touch the maintainer-owned paths. It cannot merge them: the
+  // `human-owned-paths` job fails on any pull request that touches one, and it
+  // is a required check, so auto-merge will not land it. Rule 13 is enforced at
+  // the merge, not at the edit. (This comment said CODEOWNERS was the
+  // mechanism until round 79. It never was -- branch protection asks for zero
+  // approving reviews, so the code-owner rule had nothing to demand. See
+  // .github/CODEOWNERS.)
   meta: [
     "scripts/",
     ".github/",
@@ -70,12 +82,13 @@ const SCOPES = {
     // the Hobby plan's 100-deployments-per-day limit became the binding
     // constraint on how often a round can run.
     "vercel.json",
-    // Exactly one app/ file, by full path, not the directory: the disclosure
-    // check's route->files data. Meta moved it here from scripts/ so the
-    // author track (which cannot touch scripts/) can register new post routes.
-    // Meta owns creating and maintaining the data file; author owns the data
-    // once it exists. The check LOGIC that reads it stays in scripts/.
-    "app/lib/route-files.js",
+    // Round 78 added "app/lib/route-files.js" here so that a meta round could
+    // create that file, and used the grant in the same pull request. Rule 11
+    // forbids exactly that, and this checker could not see it because it reads
+    // SCOPES from the branch under test. Round 79 removes the grant. Nothing
+    // needs it: the file lives in app/, which author, build, maintain and audit
+    // all own already, so the tracks that would maintain it can. Meta has no
+    // app/ path and is back to having none.
     "docket/",
     "CHANGELOG.md",
   ],

@@ -27,7 +27,15 @@
 #
 # This file is itself covered by the /.github/ rule below, so the loop
 # cannot remove its own constraints by editing this list.
+#
+# The fourth entry is not a rule 13 path. `check-track-scope.mjs` holds the
+# map of which files each track may write, and CI runs the branch's copy of
+# it -- so a round can grant itself a path and use it in the same pull
+# request, which round 78 did. It is guarded here and in the workflow so a
+# scope change costs a human merge. Rule 11's remedy in mechanical form:
+# propose the widening, let someone else decide it.
 
-/CHARTER.md   @addicted2ai
-/.github/     @addicted2ai
-/prompts/     @addicted2ai
+/CHARTER.md                       @addicted2ai
+/.github/                         @addicted2ai
+/prompts/                         @addicted2ai
+/scripts/check-track-scope.mjs    @addicted2ai

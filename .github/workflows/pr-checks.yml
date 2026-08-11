@@ -35,7 +35,25 @@ jobs:
   # Until `human-owned-paths` is added to that list, this job will correctly
   # report the problem and then watch the merge happen anyway. Adding it is a
   # settings change; nothing in this repository can make it for itself, which
-  # is the point.
+  # is the point. It was added to that list on 2026-08-11 and PR #25 is the
+  # first pull request it actually stopped.
+  #
+  # A FOURTH PATH, ADDED ROUND 79: scripts/check-track-scope.mjs.
+  # Rule 13 names three paths and this job now guards four, because the fourth
+  # is where a round can rewrite what every other path check means.
+  # check-track-scope.mjs runs from the branch it is judging, so a run can add
+  # a path to its own track's SCOPES and spend that path in the same pull
+  # request -- the checker consults the branch's copy of the rules and agrees
+  # with it. Round 78 did this: it granted meta `app/lib/route-files.js` and
+  # created that file in one pull request, and every check was green. Rule 11
+  # says a run blocked by a guardrail may not be the run that loosens it, and
+  # nothing mechanical was enforcing that.
+  #
+  # This does not close that hole -- the checker still reads its rules from the
+  # branch, and 2026-08-11-track-scope-judges-itself.md stays open for the fix
+  # that does. It makes the hole cost a human merge, which is the same shape as
+  # rule 11's remedy: a round may still propose a scope change, it just cannot
+  # be the one that approves it.
   human-owned-paths:
     runs-on: ubuntu-latest
     steps:
@@ -47,14 +65,31 @@ jobs:
       - name: Fail if this pull request changes human-owned paths
         run: |
           changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
-          owned=$(printf '%s\n' "$changed" | grep -E '^(CHARTER\.md|\.github/|prompts/)' || true)
+          # Prefix match, deliberately not anchored at the end. A guard that
+          # over-matches costs a human one unnecessary merge; a guard that
+          # under-matches is a bypass. So CHARTER.md.bak and
+          # check-track-scope.mjs.orig are guarded too, and that is the right
+          # direction to be wrong in.
+          owned=$(printf '%s\n' "$changed" \
+            | grep -E '^(CHARTER\.md|\.github/|prompts/|scripts/check-track-scope\.mjs)' \
+            || true)
           if [ -n "$owned" ]; then
             echo "This pull request changes paths the maintainer owns:"
             printf '%s\n' "$owned" | sed 's/^/    /'
             echo ""
-            echo "CHARTER.md rule 13: the loop may propose changes to these and must"
-            echo "not merge them. This check fails so auto-merge cannot land it. A"
-            echo "maintainer merges it by hand, and that act is the review."
+            echo "CHARTER.md rule 13 makes the charter, the workflow definitions and"
+            echo "the loop's own prompt human-owned: the loop may propose changes to"
+            echo "them and must not merge them."
+            echo ""
+            echo "scripts/check-track-scope.mjs is guarded here as well, though rule 13"
+            echo "does not name it. It is the file that says which paths each track may"
+            echo "write, and it reads that map from the branch it is judging -- so a"
+            echo "round can grant itself a path and use it in the same pull request"
+            echo "(round 78 did). Rule 11: the run a guardrail blocks is not the run"
+            echo "that loosens it."
+            echo ""
+            echo "This check fails so auto-merge cannot land it. A maintainer merges"
+            echo "it by hand, and that act is the review."
             exit 1
           fi
           echo "ok  no human-owned paths touched"
