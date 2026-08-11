@@ -67,12 +67,50 @@ const ROUTE_FILES = {
   "/disclosure": ["app/disclosure/page.js"],
 };
 
-function lastCommitSubject(files) {
-  const out = execFileSync("git", ["log", "-1", "--format=%s", "--", ...files], {
-    encoding: "utf8",
-    cwd: root,
-  });
-  return out.trim();
+// A commit that also touched the disclosure machinery is a chrome commit,
+// not a content change: adding the disclosure banner to every page should
+// not rewrite every page's producing round. Content commits leave these
+// files alone, so the rule is mechanical and cannot be gamed.
+const DISCLOSURE_FILES = [
+  "app/components/AiDisclosure.js",
+  "app/lib/page-origins.js",
+  "app/disclosure/",
+  "scripts/check-ai-disclosure.mjs",
+];
+
+function lastContentCommitSubject(files, route) {
+  // Walk commits newest-first, skipping any that also touched the disclosure
+  // machinery (the round that added the banner touched every page at once,
+  // and should not rewrite every page's producing round). A content commit
+  // leaves the disclosure files alone, so the rule is mechanical. The
+  // /disclosure page is exempt: its own files are the disclosure, so its
+  // producing round is the round that built it.
+  const commits = execFileSync(
+    "git",
+    ["log", "-10", "--format=%h|%s", "--", ...files],
+    { encoding: "utf8", cwd: root }
+  )
+    .trim()
+    .split("\n")
+    .filter(Boolean);
+  for (const line of commits) {
+    const [sha, subject] = line.split("|");
+    const touched = execFileSync(
+      "git",
+      ["diff-tree", "--no-commit-id", "--name-only", "-r", sha],
+      { encoding: "utf8", cwd: root }
+    )
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+    const isChrome =
+      route !== "/disclosure" &&
+      touched.some((file) =>
+        DISCLOSURE_FILES.some((d) => file === d || file.startsWith(d))
+      );
+    if (!isChrome) return subject;
+  }
+  return "";
 }
 
 const problems = [];
@@ -104,7 +142,7 @@ for (const route of Object.keys(ROUTE_FILES)) {
     continue;
   }
 
-  const subject = lastCommitSubject(ROUTE_FILES[route]);
+  const subject = lastContentCommitSubject(ROUTE_FILES[route], route);
   const trackMatch = subject.match(/^([A-Za-z]+):/);
   // Commit subjects capitalise the track ("Maintain: ..."); the build log
   // stores it lower-case ("maintain"). Compare case-insensitively.
