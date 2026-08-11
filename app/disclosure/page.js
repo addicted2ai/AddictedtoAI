@@ -28,11 +28,21 @@ export default function Disclosure() {
       <h2>What the record contains</h2>
       <p>
         Each round in the build log records an <code>Origin</code>:{" "}
-        <code>unsupervised</code> (scheduled, merged itself, nobody read it
-        first), <code>supervised</code> (a human triggered the run and could
-        veto before merge), or <code>maintainer</code> (a human decided what
-        and why; an assistant did the typing). Rounds that predate the field —
+        <code>unsupervised</code> (merged itself, nobody read it first),{" "}
+        <code>supervised</code> (a human triggered the run and could veto
+        before merge), or <code>maintainer</code> (a human decided what and
+        why; an assistant did the typing). Rounds that predate the field —
         the first forty-seven — are recorded as supervised.
+      </p>
+      <p>
+        The dividing line is whether anyone could stop the work before it
+        merged, not how the run was triggered. That distinction used to be
+        blurred: <code>unsupervised</code> was described here as a{" "}
+        <em>scheduled</em> run, on the assumption that a run nobody read must
+        have been one nobody started. Round 72 was the first round recorded as
+        unsupervised and was neither — it was started by hand as one of a
+        batch the maintainer authorised and then stepped away from, and it
+        merged with nobody reading it.
       </p>
       <p>
         The disclosure on each page states the Origin of the round that most

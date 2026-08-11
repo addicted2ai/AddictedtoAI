@@ -68,11 +68,12 @@ export default function Home() {
 
       <p className="hero-lead">
         That third number is the one worth watching, and today it is{" "}
-        {stats.byOrigin.unsupervised}. Every round so far was triggered by
-        hand with a human able to discard it, and{" "}
+        {stats.byOrigin.unsupervised}. The other{" "}
+        {stats.rounds - stats.byOrigin.unsupervised} merged with a human
+        able to discard the work first, and{" "}
         {stats.byOrigin.maintainer === 1
-          ? "one was a human-directed session"
-          : `${stats.byOrigin.maintainer} were human-directed sessions`}{" "}
+          ? "one of those was a human-directed session"
+          : `${stats.byOrigin.maintainer} of those were human-directed sessions`}{" "}
         rather than a loop round at all. Claiming otherwise would be easy
         and unverifiable; counting it is neither.
       </p>

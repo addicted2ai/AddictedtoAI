@@ -11,9 +11,15 @@ import { getSiteUrl } from "../lib/site";
 // involvement that no round recorded, because there is no way to type one
 // into the component.
 
+// "Unsupervised" said "a scheduled run" until round 72, which was the first
+// round to record that Origin and was not scheduled: it was started by hand
+// as one of a batch the maintainer authorised and then stepped away from, and
+// it merged with nobody reading it. The label's operative test is whether
+// anyone could veto before the merge, not how the run was triggered, so the
+// trigger is dropped here rather than asserted wrongly about a specific round.
 const ORIGIN_SENTENCES = {
   unsupervised:
-    "the most recent recorded change came from a round that ran unsupervised — a scheduled run that merged itself with nobody reading it first",
+    "the most recent recorded change came from a round that ran unsupervised — it merged itself with nobody reading it first",
   supervised:
     "the most recent recorded change came from a round a human triggered and could veto before merge",
   maintainer:
