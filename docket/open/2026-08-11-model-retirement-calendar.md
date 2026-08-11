@@ -68,6 +68,18 @@ assembled from summaries is worse than no calendar, because it looks checkable.
 Every row must be read off the vendor's own page by the round that publishes
 it.
 
+**A wall in the last acceptance criterion, found by triage on 2026-08-11.** The
+staleness-check criterion below asks for "a window added to `policy.yml`", and
+`policy.yml` is in meta's scope only — build's scope is `app/`, `public/`,
+`scripts/`, `package.json`, `package-lock.json`, `docket/` and `CHANGELOG.md`.
+So a build round can ship the page, the rows and the check, and cannot add the
+number the check reads. It must not add `policy.yml` to its own scope to get
+past this: `CHARTER.md` rule 11 says the run a guardrail blocks is not the run
+that loosens it. Ship what is in scope, then file the policy key as its own
+item. This item is deliberately *not* marked `blocked-by` for it — six of its
+seven criteria are executable today, and hiding a priority-1 page from the
+dispatcher over its last mile would be the opposite mistake.
+
 ## Evidence
 
 - OpenAI, "Deprecations", <https://developers.openai.com/api/docs/deprecations>

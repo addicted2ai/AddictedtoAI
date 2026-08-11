@@ -6,6 +6,7 @@ created: 2026-08-10
 expires: 2026-10-09
 serves: more-current
 priority: 2
+blocked-by: 2026-08-11-author-cannot-publish-posts.md
 ---
 
 ## Why now

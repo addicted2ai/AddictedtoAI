@@ -53,6 +53,16 @@ Round 72 corrected the site's published claim about this (it had said those
 paths "require human review"). Correcting the page does not close the hole, and
 no track can close it: it is a repository settings change, not a file.
 
+**The queue cannot say that.** The triage round of 2026-08-11 went through every
+open item asking what blocked it, and found this one is the only item blocked on
+something outside the repository entirely. `blocked-by` names other docket items
+and `check-docket.mjs` rejects anything else, so there is no way to mark this
+unready and the dispatcher keeps counting it as available meta work. That was
+left as a finding rather than fixed: one instance does not justify a second
+readiness mechanism, and a `blocked-by: maintainer` value that nothing ever
+clears would be a permanent hole in the readiness filter rather than a use of
+it. If a second item of this shape turns up, it is worth building.
+
 ## The trap in the obvious fix
 
 Setting `required_approving_review_count` to 1 would break every loop round.

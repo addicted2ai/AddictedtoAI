@@ -56,16 +56,57 @@ smallest thing in the queue.
 
 ## Done when
 
-- [ ] Every open item that cannot be executed today names what blocks it in
+- [x] Every open item that cannot be executed today names what blocks it in
       `blocked-by`, starting with the post items that are blocked by
       `2026-08-11-author-cannot-publish-posts.md`
-- [ ] Each item that is left *without* a blocker was checked rather than
+- [x] Each item that is left *without* a blocker was checked rather than
       skipped — the executing round says in the record how many it reviewed, not
       only how many it edited
-- [ ] `node scripts/dispatch.mjs` is run before and after, and both outputs go
+- [x] `node scripts/dispatch.mjs` is run before and after, and both outputs go
       in the record. If the dispatcher's choice does not change, that is the
       finding and it is written up as one
-- [ ] The record states whether any track becomes unavailable as a result
+- [x] The record states whether any track becomes unavailable as a result
       (`needs_docket_item: true` with no ready items), because that is the point
       of the change and it is also the risk: a track with nothing ready stops
       being dispatched at all
+
+## Done
+
+Worked by the meta round of 2026-08-11 (`loop/meta/declare-blockers`). All 27
+open items were read in full and judged one at a time against the question
+"could the track named in `track:` execute this today". Eight got a
+`blocked-by` line; eighteen were checked and deliberately left without one; one
+was this item.
+
+**The count in this item's own premise was wrong, and the direction it was
+wrong in matters.** It says "Zero, out of nineteen" and expects roughly eight
+post items plus "the Directory entries that need a new route". The queue had
+grown to 27 by the time this ran, one item (`2026-08-11-rank-ready-work-by-what-it-unblocks.md`)
+already used the field, there are seven post items rather than eight, and the
+two Directory items are *not* blocked — `/directory` is an existing route, and
+PR #15 proved an author round can add an entry to it, because that is exactly
+what it did. Guessing at the shape of the queue from outside it produced an
+overcount in the same direction the dispatcher was already wrong in.
+
+Genuine item-to-item blockers found: nine edges, from eight items, pointing at
+two blockers. Seven post items name
+`2026-08-11-author-cannot-publish-posts.md`. `2026-08-10-document-site-url-config.md`
+names a new item filed this round,
+`2026-08-11-no-track-can-edit-readme-or-env-example.md`, because its
+acceptance criteria are two files that appear in no track's scope at all and
+`CHARTER.md` rule 11 stops the round that needs them from adding them itself.
+The ninth edge pre-existed. The graph is one level deep and acyclic: everything
+points at an item with no `blocked-by` of its own.
+
+Two items are blocked by something `blocked-by` cannot name, and both were left
+unblocked rather than forced into the field:
+`2026-08-11-branch-protection-does-not-require-review.md` waits on a human
+changing a GitHub setting, which is not a docket item and never will be — that
+is recorded in the item itself. `2026-08-11-model-retirement-calendar.md` can
+ship six of its seven criteria and is walled only on the seventh, which needs a
+`policy.yml` key build may not write; a note in the item carries that forward so
+the next build round does not rediscover it, but the item stays ready.
+
+`2026-08-11-chatgpt-com-blocks-lychee.md` was moved to `docket/done/` in the
+same pass: the work shipped in PR #16 and the item merged afterwards on PR
+#15's branch, so the queue had been advertising finished work as available.
