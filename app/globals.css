@@ -540,6 +540,41 @@ article a:hover {
   margin-bottom: 0.75rem;
 }
 
+/* The archived rounds' placeholders on /log. Same header as a full entry so
+   the page reads continuously, but no rail dot and much tighter spacing:
+   there are forty-seven of them and they are a directory, not a timeline. */
+.log-stub-list {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.log-stub {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.log-stub .log-meta {
+  margin-bottom: 0;
+}
+
+.log-archive-heading {
+  margin-top: 3.5rem;
+}
+
+/* The link to the other half of the record. Sits under the search because
+   that is the moment a reader needs it: a query that found nothing here has
+   not necessarily found nothing. */
+.log-counterpart {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
+
+.log-counterpart-link {
+  color: var(--muted);
+}
+
 .log-round {
   margin: 0;
   font-weight: 600;

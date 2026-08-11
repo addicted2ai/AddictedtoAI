@@ -48,7 +48,14 @@ export const PRODUCING_ROUNDS = {
   "/blog/frontier-cyber": 60,
   "/directory": 67,
   "/demos": 62,
-  "/log": 53,
+  // Both log pages are produced by round 70, the build round that split the
+  // log in two. /log was mapped to 53 until then; leaving it there would have
+  // had the page claim a maintainer origin for a form a build round gave it.
+  // The check would not have caught that — round 53 records no track, so the
+  // maintainer branch of the comparison passes silently — which is exactly
+  // why it is corrected by hand here rather than left to go stale.
+  "/log": 70,
+  "/log/archive": 70,
   "/projects": 54,
   "/disclosure": 61,
 };

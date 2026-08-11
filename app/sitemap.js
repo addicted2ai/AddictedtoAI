@@ -57,6 +57,11 @@ const routes = [
     changeFrequency: "weekly",
     lastModified: latestBuildLogDate,
   },
+  // The archive is closed: it holds the rounds from the private predecessor
+  // repository and cannot gain another one, so it is not regenerated with
+  // meaning on every deploy the way /log is. Lower priority and no
+  // lastModified, because nothing here can substantiate one.
+  { path: "/log/archive", priority: 0.5, changeFrequency: "yearly" },
 ];
 
 export default function sitemap() {

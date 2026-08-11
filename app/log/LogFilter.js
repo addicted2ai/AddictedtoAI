@@ -65,7 +65,7 @@ function writeUrl(query) {
   window.history.replaceState(null, "", url);
 }
 
-export default function LogFilter({ total }) {
+export default function LogFilter({ total, counterpartHref, counterpartLabel }) {
   const [query, setQuery] = useState("");
   const [matches, setMatches] = useState(total);
   const [announcement, setAnnouncement] = useState("");
@@ -202,6 +202,27 @@ export default function LogFilter({ total }) {
       <p className="directory-result-count" aria-hidden="true">
         {summary}
       </p>
+
+      {/* The record spans two pages, so a search that finds nothing here has
+          not necessarily found nothing. The link carries the query across
+          rather than stating a count for the other page: this component can
+          only see the DOM it is in, and a number it cannot recompute is a
+          number this site should not print. */}
+      {counterpartHref ? (
+        <p className="log-counterpart">
+          <a
+            className="log-counterpart-link"
+            href={
+              query.trim()
+                ? `${counterpartHref}?q=${encodeURIComponent(query.trim())}`
+                : counterpartHref
+            }
+          >
+            {counterpartLabel}
+            {query.trim() ? ` for “${query.trim()}”` : ""} &rarr;
+          </a>
+        </p>
+      ) : null}
       <p
         id="log-search-status"
         className="visually-hidden"
