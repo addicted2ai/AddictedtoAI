@@ -8,7 +8,17 @@ import { useEffect, useRef, useState } from "react";
 // tagging entries "this one was a mistake" — a keyword heuristic over
 // prose would mislabel rounds, and a site whose whole argument is
 // "don't take our word for it" shouldn't be inventing labels.
-const PRESETS = ["wrong", "dropped", "failed", "measured", "accessibility"];
+//
+// "measured" was here and was withdrawn by round 74. It matched every
+// round on both pages — 73 of 73 when it was removed — because the entry
+// format ends in a `Result:` line and 72 of those 73 lines say "not
+// measured". So the shortcut filtered nothing and reported "N rounds
+// mention measured" about rounds that had measured nothing, which is the
+// same failure as the "guardrail failures: 0" counter the homepage
+// already explains deleting: it looked like evidence and was arithmetic.
+// scripts/check-routes.sh now fails on any preset that matches every
+// round, so this cannot come back by accident.
+const PRESETS = ["wrong", "dropped", "failed", "accessibility"];
 
 // Search should match the prose a visitor can read, not the text-only
 // affordances supplied to assistive technology (for example, "copy link to

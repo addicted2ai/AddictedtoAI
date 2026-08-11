@@ -254,51 +254,65 @@ const base = process.env.BASE_URL;
 NODE
 failures=$((failures + $?))
 
-# The homepage advertises "N rounds say 'wrong'" and links that number
-# to /log?q=wrong. The number is computed at build time from the parsed
-# changelog; the search recomputes it in the browser from the rendered
-# DOM. Two implementations of the same count is two chances to be wrong,
-# and the failure mode is silent: a homepage promising 9 rounds and a
-# search returning 6 discredits the page more than not showing a number
-# at all. Recount from the rendered log here and require agreement.
+# Every figure the homepage advertises is a link, and the number has to
+# match the page that link opens.
+#
+# The previous version of this check summed BOTH log pages and compared the
+# total to the homepage. That is the arithmetic the site can defend and not
+# the number a reader sees: after round 70 split the record, the homepage
+# said "28 rounds say wrong", the link opened /log, and /log reported 15.
+# The check passed the whole time, because it was asserting the figure
+# against the record rather than against the destination. A green check that
+# measures something other than what a visitor experiences is this project's
+# oldest recurring bug, and this is one more instance of it.
+#
+# So: read every `<a href="/log...?q=TERM">N ...</a>` on the homepage, fetch
+# the page that href names, and recount there. Re-pointing a link without
+# re-scoping its number now fails.
+#
+# Only the rendered list on each page -- everything after </ol> includes the
+# RSC payload, which repeats every entry and would match every term. The
+# archived stubs on /log are `<li class="log-stub"`, so they are not picked
+# up: they carry no prose, and counting them would credit a round with a
+# mention that is not on the page. Text inside `.visually-hidden` is dropped
+# because LogFilter.js drops it too, and the count has to be the search's.
 echo
 if node -e '
-const [home, ...logs] = process.argv.slice(1);
+const [home, base] = process.argv.slice(1);
 const fetchText = async (url) => (await fetch(url)).text();
+
+function entriesOf(html) {
+  const start = html.search(/<ol\b[^>]*class="log-list"/);
+  if (start === -1) return null;
+  const list = html.slice(start, html.indexOf("</ol>", start));
+  return list
+    .split(`<li class="log-entry"`)
+    .slice(1)
+    .map((e) =>
+      e
+        .replace(/<span class="visually-hidden">[\s\S]*?<\/span>/g, " ")
+        .replace(/<!--[\s\S]*?-->/g, "")
+        .replace(/<[^>]*>/g, " ")
+        .toLowerCase()
+    );
+}
+
 (async () => {
   const homeHtml = await fetchText(home);
+  const pages = new Map();
+  const load = async (path) => {
+    if (!pages.has(path)) pages.set(path, entriesOf(await fetchText(base + path)));
+    return pages.get(path);
+  };
 
-  // The record spans two pages since the log was split by era, and the
-  // homepage figure counts the whole record. Summing both pages is what
-  // keeps that figure honest -- counting only /log would quietly redefine
-  // "N rounds say X" as "N recent rounds say X" and the homepage would go
-  // on printing the larger number.
-  //
-  // Only the rendered list on each page -- everything after </ol> includes
-  // the RSC payload, which repeats every entry and would match every term.
-  // The archived stubs on /log are `<li class="log-stub"`, so they are not
-  // picked up here: they carry no prose, and counting them would credit a
-  // round with a mention that is not on the page.
-  const entries = [];
-  for (const url of logs) {
-    const html = await fetchText(url);
-    const start = html.search(/<ol\b[^>]*class="log-list"/);
-    if (start === -1) {
-      console.log(`FAIL  ${url} renders no <ol class="log-list">`);
-      process.exitCode = 1;
-      return;
-    }
-    const list = html.slice(start, html.indexOf("</ol>", start));
-    entries.push(
-      ...list
-        .split(`<li class="log-entry"`)
-        .slice(1)
-        .map((e) => e.replace(/<[^>]*>/g, " ").toLowerCase())
-    );
-  }
+  let bad = 0;
 
+  // Anchor text, not a fixed <strong> shape: the homepage states one figure
+  // as "<strong>15</strong> rounds say ..." and another as "13 for ...", and
+  // an assertion that only understood one of them would silently stop
+  // covering the other.
   const links = [
-    ...homeHtml.matchAll(/href="\/log\?q=([a-z]+)"><strong>(\d+)<\/strong>/g),
+    ...homeHtml.matchAll(/<a[^>]*href="(\/log(?:\/archive)?)\?q=([a-z]+)"[^>]*>([\s\S]*?)<\/a>/g),
   ];
   if (links.length === 0) {
     console.log("FAIL  homepage advertises no round-mention counts");
@@ -306,22 +320,78 @@ const fetchText = async (url) => (await fetch(url)).text();
     return;
   }
 
-  let bad = 0;
-  for (const [, term, claimed] of links) {
-    const actual = entries.filter((e) => e.includes(term)).length;
-    if (Number(claimed) === actual) {
-      console.log(`ok    homepage says ${claimed} rounds say "${term}"; the log pages have ${actual}`);
-    } else {
-      console.log(`FAIL  homepage says ${claimed} rounds say "${term}", but the log pages have ${actual}`);
+  for (const [, path, term, inner] of links) {
+    const text = inner.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]*>/g, " ");
+    const claimed = (text.match(/\d+/) || [])[0];
+    if (claimed === undefined) {
+      console.log(`FAIL  homepage link to ${path}?q=${term} advertises no number`);
       bad++;
+      continue;
+    }
+    const entries = await load(path);
+    if (entries === null) {
+      console.log(`FAIL  ${path} renders no <ol class="log-list">`);
+      bad++;
+      continue;
+    }
+    const actual = entries.filter((e) => e.includes(term)).length;
+    if (Number(claimed) !== actual) {
+      console.log(
+        `FAIL  homepage advertises ${claimed} for "${term}" and links to ${path}, which has ${actual}`
+      );
+      bad++;
+      continue;
+    }
+    // A count equal to every round on the page is not a signal, it is the
+    // page size wearing a number. The homepage explains at length why it
+    // deleted a "guardrail failures: 0" counter for being arithmetic that
+    // looked like evidence; printing "N rounds say X" where N is every
+    // round would be the same thing in the same panel.
+    if (actual === entries.length) {
+      console.log(
+        `FAIL  homepage advertises "${term}", which matches all ${actual} rounds on ${path} — that is the page size, not a finding`
+      );
+      bad++;
+      continue;
+    }
+    console.log(`ok    homepage advertises ${claimed} for "${term}"; ${path} has ${actual} of ${entries.length}`);
+  }
+
+  // The search presets are the same promise in a different control: a
+  // shortcut that returns everything has filtered nothing. "measured" was
+  // one -- it matched 73 of 73 rounds, because the entry format ends in a
+  // Result line and almost all of them say "not measured" -- and round 74
+  // withdrew it.
+  for (const path of ["/log", "/log/archive"]) {
+    const html = await fetchText(base + path);
+    const entries = await load(path);
+    const presets = [
+      ...html.matchAll(/<button[^>]*class="log-preset"[^>]*>([a-z]+)<\/button>/g),
+    ].map(([, term]) => term);
+    if (presets.length === 0) {
+      console.log(`FAIL  ${path} renders no search presets`);
+      bad++;
+      continue;
+    }
+    for (const term of presets) {
+      const actual = entries.filter((e) => e.includes(term)).length;
+      if (actual === entries.length) {
+        console.log(
+          `FAIL  ${path} offers the preset "${term}", which matches all ${actual} rounds — it filters nothing`
+        );
+        bad++;
+      } else {
+        console.log(`ok    ${path} preset "${term}" narrows ${entries.length} rounds to ${actual}`);
+      }
     }
   }
+
   // Setting exitCode rather than calling process.exit(): exiting from
   // inside this async callback while fetch sockets are still open trips
   // a libuv assertion on Windows and reports a false failure.
   process.exitCode = bad ? 1 : 0;
 })();
-' "$BASE/" "$BASE/log" "$BASE/log/archive"; then
+' "$BASE/" "$BASE"; then
   :
 else
   failures=$((failures + 1))
