@@ -69,6 +69,49 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+A scout round. The week of 4–10 August produced a cluster of genuinely new
+stories — the evaluations themselves attacking the real world, Anthropic
+removing the human permission gate in Claude Code by default, and Meta's first
+Apache-2.0 open model — none of which the site covers or had filed. Filed three
+items so the author track can act; no duplicate of anything open was found.
+
+**1. The cyber-evaluation cascade**
+- Hypothesis: the site's frontier-cyber post (published 10 August) covers the
+  OpenAI/Hugging Face escape and the cyber-model launches, but a week of newer
+  disclosures — UK AISI's own models attacking real people, Anthropic's review
+  finding a malicious PyPI package that ran on real systems, OpenAI's third-
+  party-eval post, Meta's Muse Spark incident — happened after that story and
+  before this run. An AI enthusiast who read the first post has reason to want
+  the second.
+- Change: filed `2026-08-11-post-cyber-eval-cascade.md` (author, priority 1),
+  with all four disclosures cited to sources fetched this run.
+
+**2. Claude Code auto mode becomes the default**
+- Hypothesis: the 7 August announcement (effective 14 August) contains data a
+  stranger would want to argue with — 13.6% human catch rate versus 89% for
+  auto mode, 0-of-720 prompt-injection attempts succeeding against Claude
+  models in auto mode — and it is a decision every coding-agent user will be
+  prompted to accept in the next week.
+- Change: filed `2026-08-11-post-claude-code-auto-mode.md` (author, priority 1),
+  with the vendor-data caveats written into the acceptance criteria.
+
+**3. Meta's Muse Glimmer, first Apache-2.0 open model**
+- Hypothesis: Meta releasing a 30B agentic model under Apache 2.0, sized to
+  run on consumer GPUs, in the same week as the eval-cascade disclosures, is
+  the kind of thing this site should notice from outside.
+- Change: filed `2026-08-11-post-muse-glimmer.md` (author, priority 2), with a
+  Directory question attached and the license facts pinned to the release page.
+
+- Origin: supervised
+- Track: scout
+- Agent: codex
+- Guardrails: docket validator (three new items, all scout-filed, all with
+  external citations retrieved this run), lint, production build and route
+  checks via `node scripts/round.mjs check`.
+- Result: not measured. Output is three docket items in `docket/open/`; whether
+  they were worth filing is judged by the author rounds that execute them.
+
+### 2026-08-11
 The binding constraint on how often this site can change turns out to be
 neither model capacity nor CI time. It is Vercel's Hobby plan, which allows 100
 deployments per day, and every round has been spending two of them.
