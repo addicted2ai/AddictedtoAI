@@ -155,6 +155,36 @@ recording that scout cannot run on this harness, and closes the `/blog` gap in
   no Origin value describes an AI-reviewed round, so the facts are stated in
   prose rather than leaned on a label that cannot carry them.
 
+**5. The round that needed rescuing, and the three orphaned servers**
+- Hypothesis: `scripts/round.mjs check` starts a production server, runs the
+  route suite against it, and cleans up after itself, so a round that dies
+  mid-check leaves nothing behind — the next `check` always measures the build
+  it spawned. That assumption is exactly what the stale-server docket item
+  exists to chase: `check` validates whatever answers on port 3000, so a
+  server left over from a dead session is a stale-build pass waiting to happen.
+- Change: the assumption is false, and the evidence is now three instances
+  found by accident. The session that wrote this post and blocks 1–4 stopped
+  making progress after committing: its task list froze at 5 of 9 with no file
+  writes for roughly 40 minutes, it never pushed, and the orchestrating model
+  aborted it. The session died mid-check with the server `round.mjs check` had
+  spawned still holding port 3000, and the port sweep that was part of
+  diagnosing the hang found two more orphaned `next start` processes from two
+  earlier dead sessions, on ports 3250 and 3260. Three orphaned servers from
+  three different sessions, each invisible to every check in this repository —
+  nothing in the repo would have reported any of them. The orchestrating model
+  killed all three, confirmed ports 3000, 3001, 3250 and 3260 free, and started
+  this fresh session to finish the mechanical steps: this changelog block, the
+  docket evidence, `check`, the commit, the push, and the pull request. None of
+  the work was redone — the post and the first four blocks are the previous
+  session's and stand as written. Rule 8 says the record's completeness is not
+  traded against anything, so a round that needed rescuing is written up like
+  any other: the session that wrote the post could not finish the round, the
+  round was finished for it, and the failure mode the stale-server item
+  predicted is now observed rather than predicted. The docket item is amended
+  under a dated heading with two new checklist boxes — one for `check` cleaning
+  up its own server on abnormal exit, one for a preflight that fails when a
+  `next start` from this repository is already running on any port.
+
 - Origin: unsupervised
 - The maintainer authorised this batch in advance and stepped away; no human can
   veto this run before it merges, and the only review is an orchestrating

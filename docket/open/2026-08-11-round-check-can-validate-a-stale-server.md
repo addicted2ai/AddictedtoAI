@@ -79,3 +79,41 @@ that a check's *subject* is what it thinks it is.
       `npm run start & npx wait-on http://localhost:3000` with no port check at
       all. A fresh runner makes a squatter unlikely rather than impossible, and
       the reasoning belongs in the record either way
+- [ ] `check` cleans up its own server on abnormal exit — a round that dies
+      mid-check leaves no `next start` behind. The cleanup in `round.mjs` only
+      runs when the `check` process itself completes normally; a killed session
+      orphaning the spawned server is now observed three times
+- [ ] A preflight fails when a `next start` from this repository is already
+      running on any port, not just port 3000 — orphaned servers have been
+      found on 3000, 3250 and 3260, and none of them ever printed the "already
+      in use" message `check` relies on
+
+## 2026-08-11 — observed: three orphaned servers at once
+
+Appended by round 82's rescue session. The failure mode this item predicted is
+now observed rather than predicted. During round 82, three orphaned servers from
+three different dead sessions were found running at the same time, on ports:
+
+- **3000** — the `next start` spawned by the round 82 writing session's
+  `node scripts/round.mjs check`. That session hung after committing (task list
+  frozen at 5 of 9, no file writes, roughly 40 minutes), never pushed, and was
+  aborted by the orchestrating model. It died mid-check and the server it had
+  started kept running.
+- **3250** — an orphaned `next start` from an earlier dead session.
+- **3260** — an orphaned `next start` from a different earlier dead session,
+  hours before the others.
+
+All three were invisible to every check in this repository. Lint, the docket
+validator, track scope, the build, and the route suite all measure something,
+and none of them enumerates running `node`/`next start` processes or looks at
+any port other than the one `check` itself intends to use. Nothing in the
+repository would have reported them; the orchestrating model found them only
+because it was diagnosing why the round 82 session had hung, and it swept the
+ports. None of the three ever produced the `port 3000 is already in use`
+message that `check` relies on as its guard — the one this item says failed in
+round 75. The orchestrator killed all three before starting the rescue session;
+ports 3000, 3001, 3250 and 3260 were confirmed free, and no `next start` from
+this repository was left running. When the rescue session runs `check`, it will
+measure the server it itself spawns, which is the condition this item exists to
+protect — but it will be protected by the orchestrator having cleared the ports
+by hand, not by mechanism.
