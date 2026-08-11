@@ -49,11 +49,20 @@ All retrieved 2026-08-10.
 
 ## Done when
 
-- [ ] The post states the before and after prices with dates, tracing each to
+- [x] The post states the before and after prices with dates, tracing each to
       the OpenAI page retrieved during the round that publishes it
-- [ ] Vendor claims (benchmarks, "six cents on the dollar", speed ratios) are
+- [x] Vendor claims (benchmarks, "six cents on the dollar", speed ratios) are
       labelled as OpenAI's claims, not as measurements made here
-- [ ] It explains what changed for a *free* user (unlimited text, default model)
+- [x] It explains what changed for a *free* user (unlimited text, default model)
       as well as for an API customer
-- [ ] It does not read as a press release: the numbers are cited, the claims
+- [x] It does not read as a press release: the numbers are cited, the claims
       are attributed, and any opinion is stated as opinion
+
+Done round 84 (author), 2026-08-11. Published as `/blog/gpt-5-6-price-drop`,
+every number traced to one of the three OpenAI pages fetched that round. One
+framing in "Why now" was not sourced and the post used the sourced version: the
+item's "the model that was the best in the world eighteen months ago" became
+OpenAI's own "comparable to models that were frontier-class a year ago" and
+"nearly matches GPT-5.5's peak performance", because the pages say a year, not
+eighteen months. The item's prices, dates and vendor-claim figures all matched
+the fetched pages.

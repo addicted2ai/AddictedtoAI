@@ -45,6 +45,12 @@ const routes = [
     changeFrequency: "weekly",
   },
   {
+    path: "/blog/gpt-5-6-price-drop",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[4].dateModified,
+    changeFrequency: "weekly",
+  },
+  {
     path: "/disclosure",
     priority: 0.7,
     lastModified: latestBuildLogDate,

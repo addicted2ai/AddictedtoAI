@@ -52,6 +52,17 @@ rule-count check on that page runs in CI via the same script — but `/charter`
 is not in the Lighthouse or lychee URL lists, and the build track cannot add it
 without editing `.github/`.
 
+It happened again the same day (2026-08-11, author): `/blog/gpt-5-6-price-drop`
+shipped with the same gap, and this round appends it the same way — a route CI
+does not measure is a route whose Lighthouse floors silently do not apply, and
+the author track cannot add a URL to `.github/` either. A route's disclosure
+and page weight are still asserted locally by `check-routes.sh`, which is
+inside build and maintain scope and already covers every route — but the
+Lighthouse and lychee lists stay one round behind new pages until a meta
+round widens them. The general defect now has three instances (`/log/archive`,
+`/charter`, this post); the decision box below is the point of diminishing
+returns.
+
 ## Evidence
 
 - `.github/workflows/pr-checks.yml` — the `urls:` block for the Lighthouse

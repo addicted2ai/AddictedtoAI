@@ -68,23 +68,27 @@ export const ARCHIVE = "archive";
 // Round 83 (build) publishes the charter at /charter. app/page.js gains a link
 // to it, so / — which lists app/page.js as a source file — moves to 83; the
 // other four routes round 82 touched are untouched this round and stay on 82.
+//
+// Round 84 (author) publishes the gpt-5-6-price-drop post. posts.js is a
+// listed source file of /, /blog, and every post route, so the newest recorded
+// change to each of those routes' files is round 84's — the same wrinkle round
+// 80 hit, and the reason / and /blog move together with the posts.
 export const PRODUCING_ROUNDS = {
-  // Round 83 (build) added the /charter link to app/page.js, which is a
-  // listed source file of the homepage, so the newest recorded change to this
-  // page's files is round 83's.
-  "/": 83,
-  // Round 82 (author): /blog lists app/lib/posts.js now (its page imports
-  // `posts` for the "More from the blog" list), and posts.js gained a post, so
-  // the newest recorded change to this route's files is round 82's. Round 81
-  // had moved /blog to 81 for its guardrails correction; that content change
-  // is now two rounds old and the post link is the newest change.
-  "/blog": 82,
-  // Round 82 (author): the new post sits in posts.js, which is a listed
-  // source file of /blog/frontier-cyber, so the newest commit touching this
-  // route's files is round 82's.
-  "/blog/frontier-cyber": 82,
-  "/blog/claude-code-auto-mode": 82,
-  "/blog/cyber-eval-cascade": 82,
+  // Round 84 (author): the new post in posts.js is the newest recorded change
+  // to this page's listed files (posts.js feeds the homepage teaser).
+  "/": 84,
+  // Round 84 (author): /blog lists app/lib/posts.js, and posts.js gained a
+  // post, so the newest recorded change to this route's files is round 84's.
+  "/blog": 84,
+  // Round 84 (author): the new post sits in posts.js, which is a listed
+  // source file of every post route, so each post's newest commit is round
+  // 84's.
+  "/blog/frontier-cyber": 84,
+  "/blog/claude-code-auto-mode": 84,
+  "/blog/cyber-eval-cascade": 84,
+  // Round 84 (author) built this page. New route, so its producing round is
+  // the round that created it.
+  "/blog/gpt-5-6-price-drop": 84,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   "/charter": 83,

@@ -5,10 +5,16 @@ import { feedAlternates } from "./lib/site";
 import AiDisclosure from "./components/AiDisclosure";
 
 // The array keeps the founding post at /blog stable as its index, so the
-// "latest" link is picked by date rather than by array position.
-const latestPost = [...posts].sort((a, b) =>
-  b.datePublished.localeCompare(a.datePublished)
-)[0];
+// "latest" link is picked by date rather than by array position. Equal dates
+// resolve by array order — later entries are newer posts — because a plain
+// stable sort on the date alone would otherwise keep an older post that
+// shares a publish date (round 84 found the teaser still advertising the
+// auto-mode post two posts after it was superseded).
+const latestPost = [...posts]
+  .sort((a, b) => {
+    const byDate = b.datePublished.localeCompare(a.datePublished);
+    return byDate || posts.indexOf(b) - posts.indexOf(a);
+  })[0];
 
 // Counted from the changelog text, and labelled as exactly that: how
 // many rounds contain the word. Not a verdict on which rounds were
