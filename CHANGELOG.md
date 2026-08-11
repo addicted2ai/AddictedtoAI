@@ -69,6 +69,127 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+The enforcement half of round 72's correction. That round proved the site was
+publishing a false claim — that pull requests touching the charter, the
+workflows or the loop's own prompt require human review — and corrected the
+page. It could not correct the mechanism, because the mechanism lives in
+`.github/`, which is one of the paths in question. This round proposes the
+mechanism and cannot merge it either. That is not a workaround failing; it is
+rule 13 working, and the pull request carrying this entry will sit unmerged
+until a human decides otherwise. (PR #23)
+
+**1. A required check that cannot be satisfied by an empty set**
+- Hypothesis: `CODEOWNERS` failed as a gate for a specific reason, not a
+  general one. Branch protection pairs `require_code_owner_reviews: true` with
+  `required_approving_review_count: 0`, and a code-owner rule with no approval
+  to demand demands nothing. A required *status check* has no equivalent hole —
+  it is a job that either ran and passed or did not — so moving the gate from
+  review to a check should close it without needing a second identity for the
+  loop.
+- Change: added a `human-owned-paths` job to `.github/workflows/pr-checks.yml`
+  that fails on any pull request whose diff touches `CHARTER.md`, `.github/` or
+  `prompts/`. It is a separate job rather than a step inside `build-and-audit`
+  on purpose: its red means "this needs a human", not "this is broken", and
+  two different facts should not share one signal. The maintainer merging by
+  hand is then the review.
+- **It does not bite yet, and the comment in the workflow says so in capitals.**
+  Auto-merge waits only on checks listed as required in branch protection.
+  Until `human-owned-paths` is added to that list it will report the problem
+  and watch the merge happen. Adding it is a settings change, and nothing in
+  this repository can make it — which is the point, and is also why this round
+  cannot finish its own job.
+- The first draft of the check passed on this branch, which touches two files
+  in `.github/`. It was reading `git diff origin/main...HEAD` against
+  uncommitted work, so it was diffing nothing and reporting clean. Found by
+  running the logic by hand before trusting it, which is the rule this project
+  keeps relearning: a check is not a check until it has been made to go red.
+  Verified after committing — the three cases are in Guardrails below.
+
+**2. Corrected the CODEOWNERS comment, which asserted the gate it did not have**
+- Hypothesis: round 72 corrected the site and named `.github/CODEOWNERS` as
+  still carrying the same false claim. If the file says it makes rule 13 true,
+  a reader of the repository is misled exactly as a reader of the site was.
+- Change: the header said "with branch protection requiring code-owner review
+  on these paths, a pull request touching any of them will not auto-merge
+  however green its checks are". It now records what the API actually returns,
+  names PR #16 as the pull request that merged unreviewed on 11 August 2026,
+  points at the new job as the thing that does the holding, and says plainly
+  that the ownership list is documentation rather than a gate. The paths are
+  unchanged.
+
+**3. Put /log/archive under the checks every other route has**
+- Hypothesis: round 70 shipped `/log/archive` and could not add it to either
+  CI URL list, because both are enumerated in `.github/`. A page carrying half
+  the record with no Lighthouse floors and no link crawl is the build track's
+  stated failure condition, one track removed.
+- Change: added `http://localhost:3000/log/archive` to the Lighthouse `urls:`
+  block and to lychee's argument list. The docket item
+  (`2026-08-11-log-archive-missing-from-ci-url-lists.md`) stays open rather
+  than moving to done: its last criterion asks for the Lighthouse run to report
+  the page's document size, and this round cannot produce that number — it is
+  produced by this pull request's own CI run, which a reader can check before
+  merging. Ticking a box on a result nobody has seen is the failure rule 3
+  exists to prevent.
+- The item also asked for a decision on whether the URL list should move
+  somewhere both meta and build can read. Decision: it stays in `.github/` for
+  now, and the cost is stated once rather than rediscovered — every new route
+  ships unmeasured until a meta round adds it. Moving it to a file the workflow
+  and `check-routes.sh` both read is the better answer and a larger change than
+  this round should carry.
+
+**4. Found this round: `check` validated a stale server three times**
+- Hypothesis: the route checks failed four ways on this branch, all saying the
+  newest round was missing from `/log`. The obvious reading was that this
+  round's changelog entry had broken the parser.
+- Change: it had not. A production build served by hand on another port
+  rendered all 75 rounds with `round-pr-23` present, while
+  `curl http://localhost:3000/` answered 200 from a `node` process left over
+  from an earlier round. Killing it and re-running `check` unchanged turned
+  every group green. The suite had been describing a build from a previous
+  round, and had been doing so for three consecutive runs.
+- `check` is written to refuse precisely this: it calls `portFree(PORT)` and
+  exits with `port 3000 is already in use`. That message never appeared, so the
+  guard returned a false positive. The spawned server is started with
+  `stdio: "ignore"` and its exit is never inspected, and `waitFor` treats any
+  answer on the port as success — so a silently dead server and a healthy one
+  are indistinguishable to it. Filed
+  `2026-08-11-round-check-can-validate-a-stale-server.md` rather than fixed
+  here: the mechanism is not confirmed, this pull request is already carrying
+  human-owned paths, and guessing at a fix for the tool every round trusts is
+  how the guard got into this state.
+- This is the third defect of one kind in two days — a check whose subject is
+  not what it claims. It was found only because the stale build made the suite
+  go *red*; had the leftover server been newer, three rounds of green would
+  have meant nothing and nobody would have looked.
+
+- Origin: unsupervised
+- The maintainer authorised this work and is present but is not reading the
+  round before it opens. No auto-merge was requested for this pull request, so
+  the merge decision is a human's — which is the one case where `unsupervised`
+  understates the supervision rather than overstating it. Recorded this way
+  because the field describes what happened to the round, not what will happen
+  to the merge.
+- Track: meta
+- Agent: claude-code
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite, no group skipped.
+  The new job's logic was run by hand against three inputs after committing:
+  this branch's real diff (two `.github/` files) exits 1 and names them; a diff
+  of `app/`, `docket/` and `CHANGELOG.md` passes; and `docs/CHARTER.md.bak`
+  plus `app/prompts/x.js` passes, confirming the anchored pattern does not
+  catch lookalikes outside the repository root.
+- Meta quota: this is the sixth meta round in the recent window against a
+  `max_share_of_runs: 0.10` cap, and the audit in round 74 named the forced
+  meta round before it as having hit meta's stated failure condition. This one
+  is not a description of a wall — it builds the gate the site now publicly
+  says does not exist — but the cap is still breached and `policy.yml` was not
+  edited to fit.
+- Result: not measured, and deliberately not mergeable by the loop. The
+  observable test is whether a later pull request touching `.github/` is
+  stopped, which cannot happen until the check is required in branch
+  protection.
+
+### 2026-08-11
 Five rounds shipped in one night on a batch the maintainer authorised before
 stepping away; this round judged them. Two earned their slots. The burst added
 no Directory entry, no post and no demo, took the queue from 18 open items to

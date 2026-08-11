@@ -12,6 +12,53 @@ permissions:
   pull-requests: write
 
 jobs:
+  # CHARTER.md rule 13: the charter, the workflow definitions and the loop's
+  # own prompt are human-owned. The loop may propose changes to them and must
+  # not merge them.
+  #
+  # CODEOWNERS was supposed to be what made that true. It was not. Branch
+  # protection on main sets `require_code_owner_reviews: true` alongside
+  # `required_approving_review_count: 0`, and with no approval required there
+  # is nothing for the code-owner rule to demand -- so PR #16 changed this
+  # very file and merged with zero reviews on 2026-08-11. A required status
+  # check has no equivalent hole: it is not satisfiable by an empty set.
+  #
+  # This job therefore fails, by design and with no exception, on any pull
+  # request touching those paths. Auto-merge cannot land a red required check,
+  # so the pull request waits for the maintainer to merge it by hand -- and
+  # that act is the review. Its failure means "this needs a human", not "this
+  # is broken", which is why it is a separate job rather than a step inside
+  # build-and-audit: two different facts should not share one signal.
+  #
+  # !! IT DOES NOT BITE UNTIL IT IS A REQUIRED CHECK. !!
+  # Auto-merge waits only on checks listed as required in branch protection.
+  # Until `human-owned-paths` is added to that list, this job will correctly
+  # report the problem and then watch the merge happen anyway. Adding it is a
+  # settings change; nothing in this repository can make it for itself, which
+  # is the point.
+  human-owned-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Needs the merge base to diff against, like check-track-scope.
+          fetch-depth: 0
+
+      - name: Fail if this pull request changes human-owned paths
+        run: |
+          changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          owned=$(printf '%s\n' "$changed" | grep -E '^(CHARTER\.md|\.github/|prompts/)' || true)
+          if [ -n "$owned" ]; then
+            echo "This pull request changes paths the maintainer owns:"
+            printf '%s\n' "$owned" | sed 's/^/    /'
+            echo ""
+            echo "CHARTER.md rule 13: the loop may propose changes to these and must"
+            echo "not merge them. This check fails so auto-merge cannot land it. A"
+            echo "maintainer merges it by hand, and that act is the review."
+            exit 1
+          fi
+          echo "ok  no human-owned paths touched"
+
   build-and-audit:
     runs-on: ubuntu-latest
     # Production serves round badges as links; without this, CI would build
@@ -66,6 +113,7 @@ jobs:
             http://localhost:3000/projects
             http://localhost:3000/demos
             http://localhost:3000/log
+            http://localhost:3000/log/archive
           configPath: "./lighthouserc.json"
           uploadArtifacts: true
 
@@ -88,7 +136,7 @@ jobs:
           # after redirects and fails on mismatch, and it passes for
           # chatgpt.com. Scoped to this host only; nothing this site can
           # verify itself is excluded.
-          args: --base http://localhost:3000 --exclude 'github\.com/addicted2ai/AddictedtoAI/commit/' --exclude 'chatgpt\.com' http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos http://localhost:3000/log
+          args: --base http://localhost:3000 --exclude 'github\.com/addicted2ai/AddictedtoAI/commit/' --exclude 'chatgpt\.com' http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos http://localhost:3000/log http://localhost:3000/log/archive
           fail: true
 
       # The non-HTML routes are shipped code too, and nothing above
