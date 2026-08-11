@@ -143,9 +143,19 @@ for (const route of Object.keys(ROUTE_FILES)) {
   }
 
   const subject = lastContentCommitSubject(ROUTE_FILES[route], route);
-  const trackMatch = subject.match(/^([A-Za-z]+):/);
-  // Commit subjects capitalise the track ("Maintain: ..."); the build log
-  // stores it lower-case ("maintain"). Compare case-insensitively.
+  // Two conventions have produced merged commits here. PRs #1-8 squashed to
+  // a commit subject that capitalised the track ("Maintain: ..."); the build
+  // log stores it lower-case ("maintain"), so the comparison is
+  // case-insensitive. From PR #9 on, branches are named `loop/<track>/<slug>`
+  // per prompts/shared/every-run.md, and GitHub's squash merge defaults the
+  // commit subject to the PR title plus number -- which is the branch-style
+  // name, not the old colon-prefixed one ("loop/build/ai disclosure (#9)").
+  // Recognising only the first convention made this check fail on every
+  // route touched by a PR merged after the branch-naming convention landed,
+  // which is exactly the kind of quietly-false assertion maintain exists to
+  // catch: it wasn't lying about a route, it had stopped being able to see one.
+  const trackMatch =
+    subject.match(/^([A-Za-z]+):/) || subject.match(/^loop\/([A-Za-z]+)\//);
   const lastTrack = trackMatch ? trackMatch[1].toLowerCase() : null;
 
   if (PRODUCING_ROUNDS[route] === ARCHIVE) {
