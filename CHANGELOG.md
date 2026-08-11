@@ -90,6 +90,18 @@ filed, one design rejected, and one live defect found while filing. (PR #18)
   urgency-0 finding of its own, so this is one more finding plus a guard that
   consults it), and
   `2026-08-11-open-items-do-not-declare-blockers.md`. All three are meta.
+- The first item was widened before this pull request merged, because it
+  predicted its own second instance within hours. This pull request's
+  `build-and-audit` failed on a check `round.mjs check` had just reported green:
+  `resource-summary.document.size` for `/log`, expected <= 150,000, found
+  154,019. The page-weight budget lives in `lighthouserc.json` and is asserted
+  only by the Lighthouse action in the workflow, so nothing local measures it —
+  the same defect as lychee, on a different check, the same day. Measured
+  afterwards against the production build: `/log` is 153,532 bytes gzipped,
+  707,524 raw, against a homepage of 3,976 gzipped. The item now covers both
+  gates, and carries the warning that the local copy must read 150,000 from
+  `lighthouserc.json` rather than restate it, since rule 11 forbids a blocked
+  round from raising the number it is blocked by.
 - The hardest requirement is in the second item and is not the detection:
   telling a red pull request apart from one that is green and correctly waiting
   on `CODEOWNERS`. Rule 13 makes pull requests touching `CHARTER.md`, `.github/`
