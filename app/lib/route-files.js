@@ -33,6 +33,7 @@ export const ROUTE_FILES = {
     "app/blog/cyber-eval-cascade/page.js",
     "app/lib/posts.js",
   ],
+  "/charter": ["app/charter/page.js", "app/lib/charter.js"],
   "/directory": [
     "app/directory/page.js",
     "app/directory/DirectorySearch.js",

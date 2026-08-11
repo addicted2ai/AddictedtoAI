@@ -50,6 +50,10 @@ const routes = [
     lastModified: latestBuildLogDate,
     changeFrequency: "monthly",
   },
+  // The charter changes only when the maintainer amends it, which is not on
+  // every deploy the way /log is, and nothing on the page substantiates a
+  // lastmod the way the changelog does for /log — so no lastModified.
+  { path: "/charter", priority: 0.7, changeFrequency: "monthly" },
   // These pages have no build-log-derived content and do not change every
   // time the loop ships a round.
   { path: "/directory", priority: 0.8, changeFrequency: "monthly" },

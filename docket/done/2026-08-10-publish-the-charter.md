@@ -33,10 +33,15 @@ loop works inside" in prose with nothing to click.
 
 ## Done when
 
-- [ ] `/charter` renders `CHARTER.md`, parsed at build time, not retyped
-- [ ] The homepage's mention of the charter links to it
-- [ ] The amendment history renders, so a reader can see what changed and when
-- [ ] A check fails the build if the rendered rule count and the file's rule
+- [x] `/charter` renders `CHARTER.md`, parsed at build time, not retyped
+- [x] The homepage's mention of the charter links to it
+- [x] The amendment history renders, so a reader can see what changed and when
+- [x] A check fails the build if the rendered rule count and the file's rule
       count disagree, so a parser that silently drops a rule is caught
-- [ ] The page states plainly which paths `CODEOWNERS` protects and what that
+- [x] The page states plainly which paths are guarded and what that
       mechanically prevents, rather than asserting the loop "cannot" edit it
+
+Closed by the build round of 2026-08-11 (`loop/build/publish-the-charter`).
+Note on the last box: the mechanism that guards the paths is the required
+`human-owned-paths` status check, not `CODEOWNERS`, which is documentation
+since round 79 — the page says so, in the correction callouts.

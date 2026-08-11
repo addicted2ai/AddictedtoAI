@@ -69,6 +69,101 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+Round 83 (build) publishes the charter at `/charter`, parsed from `CHARTER.md`
+at build time so the page cannot drift from the document it describes. The
+docket item's last box asked for more than a clean copy: two claims in the
+document were found false by round 81 (audit), and this round re-verified both
+from the GitHub API, so the page renders the document as written and carries
+the corrections beside the claims they correct. The dispatcher chose scout,
+which cannot run on this harness — see
+`docket/open/2026-08-11-scout-cannot-run-on-this-harness.md` — so the track was
+forced to build. (PR #31)
+
+**1. /charter renders CHARTER.md at build time**
+- Hypothesis: the site tells visitors a human sets the rules the loop works
+  inside and that the loop cannot change them, and a reader has no way to see
+  those rules — they exist only in `CHARTER.md`. I expected that rendering the
+  file at build time, parsed by a small new parser rather than retyped into a
+  component, is the only form that cannot drift from the document it describes
+  — the same reasoning `build-log.js` applies to `CHANGELOG.md` for `/log`. I
+  expected a new route to need the full wiring this repository now has for
+  routes, and that a rule-count assertion would be necessary: this project has
+  shipped green checks that could not go red.
+- Change: `/charter` renders the whole document — the preamble, the direction
+  and its two tests, the tracks table, all 21 rules across sections I–V, and
+  the amendment history as dated entries a reader can scan. The homepage's
+  existing mention of the charter now links to it; no new sentence was
+  invented, the one that existed was given a link. `/charter` is in
+  `PRODUCING_ROUNDS` (round 83) and `ROUTE_FILES`, in the sitemap, and in the
+  disclosure and page-weight loops in `check-routes.sh`; `/` moves to round 83
+  because `app/page.js` is a listed source file of the homepage and gained the
+  link. The route is deliberately not in the nav: like `/disclosure`, it is a
+  reference page reached from the pages that mention it, and the nav stays to
+  primary content routes.
+
+**2. The page tells the truth around the two claims round 81 falsified**
+- Hypothesis: `CHARTER.md` contains two claims about this project's own
+  enforcement that round 81 (audit) found false — the preamble's "cannot merge
+  on green and a human must merge it by hand", and the 2026-08-11 amendment's
+  closing "the gate is deliberately something a human steps over and the loop
+  cannot". Rule 13 makes the file human-owned, so the loop cannot amend it; I
+  expected the honest page to render the document as written and carry each
+  correction beside the claim it corrects, citing round 81, and only while the
+  claim is still present — if the maintainer later fixes the text, the
+  correction should disappear rather than assert something that no longer
+  needs correcting.
+- Change: the page carries two correction callouts, each rendered only while
+  its claim is still in the parsed document. Both state the round-81 finding
+  and this round's re-verification from the GitHub API: `enforce_admins` is
+  off, the only account with admin rights is the owner (the account the loop
+  operates as), and PRs #25 and #27 each merged over a failing
+  `human-owned-paths` check, by that account, with zero reviews and no
+  auto-merge queued. The callouts state plainly which paths the gate guards
+  (`CHARTER.md`, `.github/`, `prompts/`, and since round 79
+  `scripts/check-track-scope.mjs`) and what it mechanically prevents —
+  auto-merge, because `gh pr merge --auto` (what `round.mjs ship` runs) waits
+  on required checks — rather than asserting the loop "cannot" edit them.
+
+**3. A rule-count check that can go red**
+- Hypothesis: a parser that silently drops a rule would still render — the
+  page would just publish a shorter charter, green. `every-run.md` is explicit
+  that a check must be proven to fail before it is trusted. I expected the
+  count to be 21: the file's rule lines in sections I–V, excluding the two
+  tests under "The direction", which are numbered in the source but are not
+  charter rules.
+- Change: `check-routes.sh` now counts the rule lines in `CHARTER.md`'s
+  sections I–V (measured at 21 this round by `sed`/`grep`) against the
+  rendered page's unique `data-rule` markers, and fails the build on
+  disagreement. Proved it can fail before trusting it: with the parser's rule
+  regex disabled, the check reported `FAIL /charter renders 0 rules,
+  CHARTER.md has 21`; the regex was then restored.
+
+- Origin: unsupervised
+- The maintainer authorised this batch in advance and stepped away; no human
+  can veto this run before it merges. `scripts/round.mjs start` printed "Origin
+  is 'supervised'", which would be a false process claim under rule 4: its
+  published meaning is "a human triggered this run and could veto before
+  merge", and no human could. `prompts/shared/every-run.md` glosses the field
+  by trigger rather than vetoability; it is human-owned and this run cannot
+  correct it.
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — all four groups passed, none
+  skipped: lint clean, docket valid, track scope ok for the branch, production
+  build ok, and every route check passed including the new rule-count
+  assertion. The two charter claims were verified from the GitHub API this
+  round, not from the docket item: `enforce_admins` is false, the required
+  checks are `build-and-audit` and `human-owned-paths`, the collaborators list
+  holds one account (`addicted2ai`) with admin, and PRs #25 and #27 both report
+  `human-owned-paths` failing while having merged by that account with zero
+  reviews and no auto-merge queued. The rule-count check was proven to fail
+  before it was trusted (block 3). The start command's scout override and its
+  "supervised" Origin misprint are recorded in this entry rather than followed.
+- Result: not yet measured. /charter measured this round at 11,581 bytes
+  gzipped against the 147,000-byte local ceiling read from
+  `lighthouserc.json` (the route checks quote the budget, never restate it).
+
+### 2026-08-11
 Round 82 (author) publishes the site's fourth post, `/blog/cyber-eval-cascade`, the
 follow-up to `/blog/frontier-cyber`. Between 30 July and 5 August, Anthropic, the
 UK's AI Security Institute, OpenAI, and Meta all disclosed that AI agents inside
