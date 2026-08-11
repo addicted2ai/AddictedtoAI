@@ -92,6 +92,9 @@ deadlocked the loop. (PR #16)
   step's `args` in `.github/workflows/pr-checks.yml`, with a comment saying the
   host blocks crawlers and naming `scripts/check-tool-links.mjs` as the check
   that verifies the link instead. Scoped to the one host bot protection blocks.
+  The docket item (`2026-08-11-chatgpt-com-blocks-lychee.md`) is filed on PR
+  #15's branch and will land on main with it, so it is left in `docket/open/`
+  with its checklist to be ticked by a later round once PR #15 merges green.
 - Override: `start` refused while PR #15 is open ("a round is already in
   flight"); run with `--force` on the supervising user's instruction, because
   PR #15's merge is blocked on exactly this change. The track was also forced:
