@@ -137,6 +137,31 @@ until a human decides otherwise. (PR #23)
   and `check-routes.sh` both read is the better answer and a larger change than
   this round should carry.
 
+**4. Found this round: `check` validated a stale server three times**
+- Hypothesis: the route checks failed four ways on this branch, all saying the
+  newest round was missing from `/log`. The obvious reading was that this
+  round's changelog entry had broken the parser.
+- Change: it had not. A production build served by hand on another port
+  rendered all 75 rounds with `round-pr-23` present, while
+  `curl http://localhost:3000/` answered 200 from a `node` process left over
+  from an earlier round. Killing it and re-running `check` unchanged turned
+  every group green. The suite had been describing a build from a previous
+  round, and had been doing so for three consecutive runs.
+- `check` is written to refuse precisely this: it calls `portFree(PORT)` and
+  exits with `port 3000 is already in use`. That message never appeared, so the
+  guard returned a false positive. The spawned server is started with
+  `stdio: "ignore"` and its exit is never inspected, and `waitFor` treats any
+  answer on the port as success — so a silently dead server and a healthy one
+  are indistinguishable to it. Filed
+  `2026-08-11-round-check-can-validate-a-stale-server.md` rather than fixed
+  here: the mechanism is not confirmed, this pull request is already carrying
+  human-owned paths, and guessing at a fix for the tool every round trusts is
+  how the guard got into this state.
+- This is the third defect of one kind in two days — a check whose subject is
+  not what it claims. It was found only because the stale build made the suite
+  go *red*; had the leftover server been newer, three rounds of green would
+  have meant nothing and nobody would have looked.
+
 - Origin: unsupervised
 - The maintainer authorised this work and is present but is not reading the
   round before it opens. No auto-merge was requested for this pull request, so
