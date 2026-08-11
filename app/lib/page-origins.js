@@ -56,7 +56,10 @@ export const ARCHIVE = "archive";
 // log pages. /blog and /disclosure did not change and stay on 72.
 export const PRODUCING_ROUNDS = {
   "/": 74,
-  "/blog": 72,
+  // Round 76 rewrote the "what is true now" paragraph: round 75 made the
+  // human-owned-paths check a required one, which falsified the sentence
+  // round 72 had written to be true at the time.
+  "/blog": 76,
   "/blog/frontier-cyber": 60,
   "/directory": 67,
   "/demos": 62,
