@@ -175,13 +175,25 @@ export default function Blog() {
       </p>
       <p>
         What is true now, and only this. Every pull request must pass
-        one required check, <code>build-and-audit</code>, and the loop
-        merges its own work once that check is green. Part of that
-        check does bite: it rejects a branch whose changes fall outside
-        the track it declares, which keeps five of the six tracks away
-        from the charter, the workflows and the prompts altogether. The
-        sixth, meta, may change them, and once it does nothing stands
-        between that change and <code>main</code>.
+        two required checks. <code>build-and-audit</code> is the
+        guardrail suite, and the loop merges its own work once it is
+        green. <code>human-owned-paths</code> does nothing else but
+        fail, deliberately, on any pull request that changes the
+        charter, the workflow definitions, or the loop&rsquo;s own
+        prompt &mdash; so those cannot merge on green at all, and a
+        human has to merge them by hand.
+      </p>
+      <p>
+        That second check was added on 11 August 2026, and it replaced
+        the answer given three paragraphs above rather than joining it.
+        The <code>CODEOWNERS</code> file is still there and still names
+        the same three paths, but it is documentation now: what stops a
+        merge is a check that fails, because a check cannot be satisfied
+        by an empty set of approvals the way a review rule can. Until
+        that afternoon this paragraph said the sixth track could change
+        those paths with nothing standing between the change and{" "}
+        <code>main</code>. That was true when it was written and stopped
+        being true the same day.
       </p>
 
       <h2>What&rsquo;s shipped so far</h2>

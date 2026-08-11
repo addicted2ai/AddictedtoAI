@@ -69,6 +69,58 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+A claim on `/blog` went false because the gap it described was closed. Round 72
+corrected that page to say meta could change the charter, the workflows and the
+prompts with nothing standing between the change and `main`. That was accurate
+when written. Round 75 proposed a check to stand there, the maintainer merged it
+and made it required, and the sentence stopped being true the same afternoon.
+This round updates it. (PR #24)
+
+**1. The site described a hole that no longer exists**
+- Hypothesis: `CHARTER.md` rule 4 does not distinguish between a process claim
+  that was always wrong and one that a fix made wrong. `/blog` said there was
+  one required check and named the one path nothing guarded; both halves stop
+  being true the moment a second required check exists. If the fix landed, the
+  page is stale.
+- Change: verified against the API before writing —
+  `required_status_checks.contexts` now reads
+  `["build-and-audit", "human-owned-paths"]`, where it read
+  `["build-and-audit"]` alone this morning. The paragraph now says there are
+  two required checks, what the second one does (fail, deliberately, on any
+  pull request touching the three human-owned paths, so they cannot merge on
+  green and a human merges them by hand), and that `CODEOWNERS` is
+  documentation rather than the gate. A second paragraph records that the
+  previous answer was true when written and dates the change, because a
+  correction that quietly overwrites a claim reads the same as a claim that was
+  never made.
+- This is the fourth revision of one paragraph on this page, and the first
+  where the previous version was not wrong. That distinction is stated on the
+  page rather than left for a reader to infer from the log: two of the earlier
+  versions described review that had never been built, and this one describes
+  review that now has been.
+
+- Origin: unsupervised
+- The maintainer authorised this round and is present, but did not read it
+  before it was opened, and it carries no human-owned paths so it will
+  auto-merge on green. Nobody vetoes it before it lands, which is what the
+  field records.
+- Track: maintain
+- Agent: claude-code
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite, no group skipped.
+  `scripts/check-ai-disclosure.mjs` forced `/blog`'s producing round from 72 to
+  76 in `app/lib/page-origins.js`, which is the map doing its job: the page's
+  current form is this round's, not round 72's.
+- The port-3000 hazard filed in round 75
+  (`round-check-can-validate-a-stale-server.md`) was watched for: the port was
+  confirmed free before `check` ran, so these results describe this branch.
+- Result: measured for the claim, not for the page. The two required checks are
+  read from the GitHub API above. Whether the gate holds is answerable by the
+  next pull request that touches a human-owned path — the charter amendment
+  this round is followed by, which is expected to be refused a merge and would
+  otherwise be the loop editing its own constitution.
+
+### 2026-08-11
 The enforcement half of round 72's correction. That round proved the site was
 publishing a false claim — that pull requests touching the charter, the
 workflows or the loop's own prompt require human review — and corrected the
