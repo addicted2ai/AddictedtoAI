@@ -251,10 +251,10 @@ function syncBase() {
         console.log(`          ${line}`);
       }
     }
-    console.log("\n        A round committed to main rather than to its own branch, and");
-    console.log("        the pull request then squash-merged. Those commits' content is");
-    console.log("        already on origin/main under a different SHA, so they are");
-    console.log("        orphans. Confirm that, then recover with:");
+    console.log("\n        A round committed to main rather than to its own branch. If its");
+    console.log("        pull request has since squash-merged, that content is already on");
+    console.log("        origin/main under a different SHA and these commits are orphans.");
+    console.log("        Confirm that before discarding them:");
     console.log("          git log --oneline origin/main..main");
     console.log("          git checkout main && git reset --hard origin/main");
     process.exit(1);
