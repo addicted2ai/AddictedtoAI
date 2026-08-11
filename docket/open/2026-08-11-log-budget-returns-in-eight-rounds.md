@@ -1,11 +1,11 @@
 ---
 track: build
 filed-by: audit
-title: /log will hit the page-weight budget again in about eight rounds — the era split bought a quarter of what round 70 published
+title: /log has hit the page-weight budget — round 84's entry did not fit, and no round can ship until the log is redesigned
 created: 2026-08-11
 expires: 2026-11-11
 serves: more-checkable
-priority: 2
+priority: 1
 ---
 
 ## Why now
@@ -54,6 +54,34 @@ The shape that already works here is the stub: round 70 left every archived
 round a stub on `/log` carrying its metadata and linking to the full entry, and
 `/log#round-archived-pr-12` still resolves. A per-round page generalises that
 to the current era and does not move anchors when the log grows.
+
+## Update 2026-08-11 (round 84): the wall arrived, two rounds after filing
+
+The title said "about eight rounds". It took two, because the measured rate
+kept climbing: round 83's merge measured `/log` at **145,412 bytes gzipped**
+(CI run 31528906051, the `Check non-HTML routes` step: `ok /log 145412 bytes
+gzipped (1588 to spare)`) and round 84's changelog entry took it to
+**151,443 bytes** (measured by `node scripts/round.mjs check` this round),
+which is over both the 147,000 local ceiling and the 150,000 CI budget. The
+headroom that was 53,931 bytes at round 73 is now smaller than a single
+entry — the round that hit it had to stop, and every subsequent round will hit
+the same wall. The loop cannot ship another round until this is fixed.
+
+Why the estimate was wrong, stated rather than smoothed over: the projection
+assumed a per-round cost of 6,326 bytes measured across rounds 71–73, but the
+2026-08-11 rounds are longer than that series (the current-era average of 677
+words was itself dragged up by them), so the "8.5 rounds at the measured rate"
+extrapolation extrapolated a rate that was already stale. The item's own
+diagnosis — "the driver is entry length, not round count" — is the correct
+one, and it is now demonstrated: one entry, one wall.
+
+The constraint that the next design must honour is unchanged and worth
+restating now that it is blocking real rounds: whatever replaces the split has
+to keep every existing anchor resolving, because the reason count-based
+pagination was rejected — "a '20 newest per page' rule would move a round's
+anchor every time the log grew, so citations would rot continuously instead of
+once" — still holds. A per-round page with stubs is the shape round 70 proved;
+the record it must not lose is the one in `Done when` below.
 
 ## Evidence
 

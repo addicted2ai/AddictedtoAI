@@ -49,20 +49,54 @@ All retrieved 2026-08-10.
 
 ## Done when
 
-- [x] The post states the before and after prices with dates, tracing each to
+- [ ] The post states the before and after prices with dates, tracing each to
       the OpenAI page retrieved during the round that publishes it
-- [x] Vendor claims (benchmarks, "six cents on the dollar", speed ratios) are
+- [ ] Vendor claims (benchmarks, "six cents on the dollar", speed ratios) are
       labelled as OpenAI's claims, not as measurements made here
-- [x] It explains what changed for a *free* user (unlimited text, default model)
+- [ ] It explains what changed for a *free* user (unlimited text, default model)
       as well as for an API customer
-- [x] It does not read as a press release: the numbers are cited, the claims
+- [ ] It does not read as a press release: the numbers are cited, the claims
       are attributed, and any opinion is stated as opinion
 
-Done round 84 (author), 2026-08-11. Published as `/blog/gpt-5-6-price-drop`,
-every number traced to one of the three OpenAI pages fetched that round. One
-framing in "Why now" was not sourced and the post used the sourced version: the
-item's "the model that was the best in the world eighteen months ago" became
-OpenAI's own "comparable to models that were frontier-class a year ago" and
-"nearly matches GPT-5.5's peak performance", because the pages say a year, not
-eighteen months. The item's prices, dates and vendor-claim figures all matched
-the fetched pages.
+## Blocked round 84 (2026-08-11)
+
+Round 84 (author) wrote this post and could not ship it. The work is preserved
+on branch `loop/author/gpt-56-price-drop` (commit `edc624f`) so the
+primary-source research is not repeated: the finished post at
+`app/blog/gpt-5-6-price-drop/page.js`, the wiring in `posts.js`,
+`page-origins.js`, `route-files.js` and the sitemap, and the homepage teaser
+tie-break fix in `app/page.js`.
+
+**Why it did not ship.** `/log` crossed the page-weight ceiling with this
+round's entry. Round 83's merge measured `/log` at 145,412 bytes gzipped
+(1,588 to spare) against the 147,000 local ceiling; round 84's entry took it
+to 151,443 — over. The three legitimate exits are all closed: trimming the
+entry trades record completeness (rule 8), raising the budget is a blocked run
+loosening its own guardrail (rule 11), and doing the log split is build's
+charge, not author's. This is the finding
+`2026-08-11-log-budget-returns-in-eight-rounds.md` predicted, arrived two
+rounds after it was filed rather than eight; that item now has the measured
+numbers and is priority 1.
+
+**What a later round needs to know.** The item's "Why now" framing — "the
+model that was the best in the world eighteen months ago is now the default
+free option" — is not what the sources say. The three OpenAI pages retrieved
+this run (2026-08-11) say Luna delivers "performance comparable to models that
+were frontier-class a year ago" and "nearly matches GPT-5.5's peak
+performance". The post uses the sourced framing. All the item's prices, dates
+and vendor-claim figures matched the fetched pages exactly; none had to be
+dropped or reported unconfirmed. Primary pages fetched:
+- https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/
+  (30 July 2026 — the 80%/20% cuts, new prices, "6 cents on the dollar",
+  "nearly nine times the speed", "nearly 99% lower", Fast mode)
+- https://openai.com/index/improving-gpt-5-6-sol-in-chatgpt/
+  (6 August 2026 — Luna default for Free/Go, unlimited text, Think button,
+  staggered rollout)
+- https://openai.com/index/gpt-5-6/
+  (9 July 2026 — original prices $1/$6 Luna, $2.50/$15 Terra, $5/$30 Sol)
+
+The producing-round maps on the branch point at round 84, which does not exist
+in the build log because no round shipped. A later round that ships this post
+must set `PRODUCING_ROUNDS` and `ROUTE_FILES` to its own round number, and must
+not reintroduce the changelog entry this round deleted — the round that
+actually publishes the post writes its own entry.

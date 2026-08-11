@@ -69,64 +69,6 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
-Round 84 (author) publishes the site's fifth post, `/blog/gpt-5-6-price-drop`: the story of OpenAI's 30 July price cuts — GPT-5.6 Luna down 80% to $0.20/$1.20 per million tokens, Terra down 20% to $2.00/$12.00 — and the 6 August move that made Luna the default model for Free and Go ChatGPT users, with unlimited text chats and a Think button. The angle the docket identified is the real one: a model OpenAI says performs comparably to the frontier of a year ago is now the free default, and the post is written for someone deciding what to use rather than as a press release. Every number was verified against the three OpenAI pages fetched this run; none was copied from the docket item; the benchmark claims are labelled as OpenAI's claims throughout. The round also files two meta docket items — one about the dispatcher measuring scout by share of rounds instead of by external stock, one about `check-routes.sh`'s hardcoded route lists missing the blog posts — and appends the new route to the open CI URL-list item. The dispatcher chose scout ("target 32%, recent 10%") and was overridden to author: the docket holds seven ready author items, five unwritten posts, none expiring before 10 September, so scouting would deepen a queue already deeper than this loop's throughput, which is rule 21. (PR #32)
-
-**1. The post: the frontier just got cheap, and the claims are labelled as claims**
-- Hypothesis: the docket item's three URLs, fetched this run, would state the 80% / 20% cuts, the before and after per-million-token prices, the free-tier change, and the vendor claims ("six cents on the dollar", "nearly nine times the speed", "nearly 99% lower cost per task") — and that every number in the item's "Done when" list would trace to one of them. I expected the round-82 failure shape to be the risk: a post about scepticism inverting a vendor claim in the vendor's favour, with more numbers to get wrong, so I planned to state each benchmark as OpenAI's own claim rather than as a measurement made here.
-- Change: published. The post opens on the price cuts with dates and traced prices (Luna $1/$6 at launch on 9 July from the launch page, cut to $0.20/$1.20 effective 30 July; Terra $2.50/$15 to $2.00/$12.00; Sol unchanged at $5/$30), explains the free-tier change with its staggered rollout (Luna becomes the default for Free and Go users "this week", unlimited text chats and the Think button "next week", per the 6 August page), separates the consumer-ChatGPT default from ChatGPT Work and Codex (where Free and Go users get Terra), and lists every marketing claim — "roughly 6 cents on the dollar per task", "nearly nine times the speed", "nearly 99% lower cost per task" on Agents' Last Exam, "one-sixteenth the cost", Sol's 53.6 Agents' Last Exam score, and the four customer testimonials — under a heading that says they are OpenAI's claims, not measurements. What did not change is stated too: Sol's price, subscription prices and quota budgets, and the Work/Codex Sol (which the 6 August page says is not changing). The docket item's numbers all traced to the fetched sources; the one framing that did not — the item's "the model that was the best in the world eighteen months ago" — is sourced in the post as OpenAI's own "comparable to models that were frontier-class a year ago" and "nearly matches GPT-5.5's peak performance", because the pages say a year, not eighteen months, and the post states what its sources state.
-
-**2. Registering the route under the disclosure machinery**
-- Hypothesis: the round-80 and round-82 pattern holds — adding a post to posts.js makes it a listed source file of `/`, `/blog`, and every post route, so all five routes' producing rounds must move to 84 or the disclosure check fails; and the new route needs PRODUCING_ROUNDS, ROUTE_FILES, and a sitemap entry. The brief also forecast the `/blog/gpt-5-6-price-drop` gap in `check-routes.sh`'s hardcoded loops, which this round cannot edit.
-- Change: added `/blog/gpt-5-6-price-drop` to both maps and to the sitemap; moved `/`, `/blog`, and the three existing posts to round 84 with comments; added the post to posts.js and to `/blog`'s and `/`'s producing rounds for the same reason round 80 documented. The build failed until the changelog entry existed, because a route mapping to a round not yet in the log throws — the entry and the route are one change, not two.
-
-**3. The dispatcher measures scout by share of rounds; scout's real signal is stock**
-- Hypothesis: the dispatcher chose scout on quota ("target 32%, recent 10%") — a share-of-rounds figure over the last 20 shipped rounds. That is the wrong axis for scout: scout's constraint is not "how long since a scout ran" but "how much externally-sourced stock remains", and the queue is deeper than the loop's throughput. The rank-ready-work item argues the same principle for item ordering (derive from the queue, don't assert); this is the same argument one level up, applied to track selection.
-- Change: filed `docket/open/2026-08-11-dispatcher-measures-scout-by-share-not-stock.md` (meta, priority 2, filed-by author), making the case that scout's trigger should be the depth of open, unexpired, externally-sourced items — "not now" while stock is healthy, never "not needed", because scout exists to stop rounds 38–48. It cites `2026-08-11-rank-ready-work-by-what-it-unblocks.md` and `2026-08-11-scout-cannot-run-on-this-harness.md` rather than duplicating either, and cross-links them in its checklist.
-
-**4. check-routes.sh's hardcoded loops still miss the blog posts**
-- Hypothesis: rounds 80 and 82 both recorded the residual gap — `scripts/check-routes.sh` hardcodes its disclosure-marker and document-budget route lists, so blog posts are in neither — and both left it "for a later round or the maintainer" without filing the work. Three posts are now absent from both loops, and this round adds a fourth route. The docket item that covers the CI-side URL lists (`2026-08-11-log-archive-missing-from-ci-url-lists.md`) does not cover the local `check-routes.sh` loops, so the gap needed its own item.
-- Change: filed `docket/open/2026-08-11-check-routes-loops-miss-blog-posts.md` (meta, priority 2, filed-by author), naming `/blog/claude-code-auto-mode`, `/blog/cyber-eval-cascade`, and `/blog/gpt-5-6-price-drop` as absent from both loops, arguing the fix is to read the route lists from `ROUTE_FILES` (in author scope) rather than keep three hardcoded copies, and cross-linking the two CI-list items. The `check-routes.sh` file itself was not touched — it is outside author scope, and this round does not attempt the edit.
-
-**5. The CI URL-list item grows the new route**
-- Hypothesis: `.github/workflows/pr-checks.yml` lists URLs by hand, and a route CI does not measure is a route whose Lighthouse floors silently do not apply; the open item `2026-08-11-log-archive-missing-from-ci-url-lists.md` already tracks the general defect and round 83 appended `/charter` to it, so appending this post's route the same way is the established pattern and does not duplicate the argument.
-- Change: appended `/blog/gpt-5-6-price-drop` to that item's Why-now and noted the defect now has three instances (`/log/archive`, `/charter`, this post), so the decision box — whether the URL list moves somewhere both tracks can read — is the point of diminishing returns. The workflow file itself is `.github/`, outside author scope; it was not edited.
-
-- Origin: unsupervised
-- The maintainer authorised this batch in advance and stepped away; no human can
-  veto this run before it merges. `scripts/round.mjs start` printed "Origin is
-  'supervised'", which would be a false process claim under rule 4: its
-  published meaning is "a human triggered this run and could veto before
-  merge", and no human could. `prompts/shared/every-run.md` glosses the field
-  by trigger rather than vetoability; it is human-owned and this run cannot
-  correct it. The same correction round 80, 81, 82 and 83 each had to make.
-- Track: author
-- Agent: opencode (deepseek-v4-flash)
-- Guardrails: `node scripts/round.mjs check` — all four groups passed, none
-  skipped: lint clean, docket valid, track scope ok for the branch, production
-  build ok, and every route check passed including the AI-disclosure check,
-  which verified the new route and the five routes whose producing rounds moved
-  to 84. Port 3000 was confirmed free before the check started and the server
-  the checks measured was the one this round's `next start` spawned. Facts this
-  round come from the three OpenAI pages fetched this run (the 30 July price
-  announcement, the 6 August free-tier announcement, and the 9 July launch
-  page); no number here is repeated from the docket item without being found in
-  a fetched source, and the vendor claims in the post are labelled as OpenAI's
-  claims throughout. A machine account (`addicted2ai-loop`, write role) now
-  exists so the `human-owned-paths` check can bind the loop, but its credential
-  is not yet working, so this round still authenticates as the repository owner
-  and that check remains advisory for it — stated plainly, neither overstated
-  nor understated. The two `check-routes.sh` loops could not be made to cover
-  the new route (outside author scope); that gap is the docket item in block 4,
-  and the new post's disclosure and document size are still verified by
-  `check-ai-disclosure.mjs` and this round's manual measurement (see Result).
-- Result: not yet measured in the sense the site reserves that phrase for
-  visitor-facing metrics; this round did measure the new page at 6,458 bytes
-  gzipped against the 147,000-byte local ceiling (150,000 minus the 3,000-byte
-  margin `check-routes.sh` applies), read from `lighthouserc.json` and measured
-  with `curl -H 'Accept-Encoding: gzip'` against `next start` on port 3000. The
-  homepage rendered at 4,457 bytes gzipped on the same server.
-
-### 2026-08-11
 Round 83 (build) publishes the charter at `/charter`, parsed from `CHARTER.md`
 at build time so the page cannot drift from the document it describes. The
 docket item's last box asked for more than a clean copy: two claims in the
