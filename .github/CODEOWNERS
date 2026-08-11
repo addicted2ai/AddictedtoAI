@@ -1,10 +1,29 @@
 # Paths the loop may propose changes to but must not merge.
 #
 # CHARTER.md rule 13 says the charter, the workflow definitions, and the
-# loop's own prompt are human-owned. This file is what makes that true
-# rather than merely stated: with branch protection requiring code-owner
-# review on these paths, a pull request touching any of them will not
-# auto-merge however green its checks are.
+# loop's own prompt are human-owned.
+#
+# THIS FILE DOES NOT ENFORCE THAT, and the comment here used to claim it
+# did: "with branch protection requiring code-owner review on these paths,
+# a pull request touching any of them will not auto-merge however green its
+# checks are." That was conditional on a setting that was never made. Read
+# from the GitHub API on 2026-08-11, branch protection on main has
+# `require_code_owner_reviews: true` but `required_approving_review_count: 0`
+# -- and with no approval required, there is nothing for the code-owner rule
+# to demand. `enforce_admins` is false as a second, independent hole, and the
+# loop pushes as the repository owner.
+#
+# The consequence was not hypothetical: PR #16 changed a workflow file in
+# this directory and merged with zero reviews on 2026-08-11.
+#
+# What actually holds these paths is the `human-owned-paths` job in
+# workflows/pr-checks.yml, which fails on any pull request touching them so
+# that auto-merge cannot land one -- and that job only bites once it is added
+# to branch protection's required checks, because auto-merge waits on
+# required checks alone.
+#
+# The ownership below is still worth stating: it routes review requests and
+# says who owns these paths. It is documentation, not a gate.
 #
 # This file is itself covered by the /.github/ rule below, so the loop
 # cannot remove its own constraints by editing this list.
