@@ -19,8 +19,11 @@ import { getRepoUrl } from "../lib/site";
 // plain badges, as they did while the project was private.
 const repoUrl = getRepoUrl();
 
+// This badge asserts something about the round it sits on, so it cannot
+// describe how the run was triggered. Round 72 is the first unsupervised
+// round and was not scheduled — see app/components/AiDisclosure.js.
 export const ORIGIN_LABELS = {
-  unsupervised: "Scheduled run, merged itself, nobody read it first",
+  unsupervised: "Merged itself, nobody read it first",
   supervised: "A human triggered this run and could veto before merge",
   maintainer: "A human decided what and why; an assistant did the typing",
 };

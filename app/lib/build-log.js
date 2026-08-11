@@ -25,9 +25,14 @@ const FIELDS = [
 // How much of a round a human saw before it landed. Three values, because
 // two would not describe what actually happens here:
 //
-//   unsupervised — scheduled, merged itself, nobody read it first
+//   unsupervised — merged itself, nobody read it first
 //   supervised   — a human triggered the run and could veto before merge
 //   maintainer   — a human decided what and why; an assistant did the typing
+//
+// The test is vetoability, not the trigger. prompts/shared/every-run.md and
+// the preamble of CHANGELOG.md still gloss unsupervised as "scheduled",
+// which round 72 -- the first round to record it -- was not. See
+// docket/open/2026-08-11-unsupervised-origin-assumes-scheduled.md.
 //
 // Rounds 1-47 predate this field. They were all supervised: every one was
 // hand-triggered locally. Rather than edit 47 past entries to say so --

@@ -61,11 +61,16 @@ export default function Blog() {
       </p>
       <p>
         A human still sets the direction and the rules, and still
-        triggers most runs by hand. That is not a detail to bury: an
-        unattended round that merges itself at 3am is a much stronger
-        claim than one a person kicked off and could throw away, and so
-        far every round has been the second kind. Each entry in the{" "}
-        <a href="/log">build log</a> says which it was.
+        starts the runs. That is not a detail to bury: a round that
+        merges itself with nobody reading it is a much stronger claim
+        than one a person kicked off and could throw away.{" "}
+        {stats.byOrigin.unsupervised === 0
+          ? "So far every round has been the second kind."
+          : `${stats.byOrigin.unsupervised} of ${stats.rounds} recorded rounds ${
+              stats.byOrigin.unsupervised === 1 ? "has" : "have"
+            } been the first kind; the rest merged with a human able to discard the work.`}{" "}
+        Each entry in the <a href="/log">build log</a> says which it
+        was.
       </p>
       <p>
         This post explains the machinery. If you&rsquo;d rather just
@@ -82,9 +87,10 @@ export default function Blog() {
         externally sourced work, author and build advance the site, while
         maintain and audit defend what is already published. The assigned
         track determines the charge for that round, and the result is recorded
-        in the log rather than being judged by a single metric. Runs currently
-        start under supervision, work on a branch, and must clear the same
-        automated checks before a pull request can be merged.
+        in the log rather than being judged by a single metric. Runs work on a
+        branch and must clear the same automated check before a pull request
+        can be merged; how much a human saw first varies from round to round
+        and is recorded on the round rather than assumed.
       </p>
 
       <h2>The guardrails</h2>
@@ -139,10 +145,43 @@ export default function Blog() {
         it described itself wrongly.
       </p>
       <p>
-        What is true now: a charter fixes the rules the loop cannot
-        change, and pull requests touching that charter, the workflows,
-        or the loop&rsquo;s own prompt require human review. Everything
-        else merges on green.
+        That correction did not go far enough, and this is the second
+        time this page has claimed a human check that did not exist.
+        The paragraph that used to sit here said pull requests touching
+        the charter, the workflows, or the loop&rsquo;s own prompt
+        required human review. That was false as well. A{" "}
+        <code>CODEOWNERS</code> file does name those three paths, and
+        it reads exactly like an enforcement mechanism &mdash; but the
+        branch protection behind it asks for zero approving reviews and
+        does not apply to administrators, so naming a path there
+        blocked nothing. Read from the GitHub API on 11 August 2026:{" "}
+        <code>required_approving_review_count</code> is 0 and{" "}
+        <code>enforce_admins</code> is false.
+      </p>
+      <p>
+        That is not hypothetical. Across the nineteen pull requests
+        that preceded this one, exactly one had ever touched any of
+        those paths: #16, which changed a CI workflow file and merged
+        on 11 August 2026 with zero reviews. All nineteen merged with
+        zero reviews &mdash; #16 is the one that was supposed to wait.
+      </p>
+      <p>
+        Correcting the same overstatement twice on one page is worth
+        saying out loud rather than smoothing over, so: it happened
+        twice. Both times the claim was about human review, and both
+        times it survived because nothing tested it. The first version
+        described a review step that had never been built; the second
+        pointed at a file that looks like one and read it as proof.
+      </p>
+      <p>
+        What is true now, and only this. Every pull request must pass
+        one required check, <code>build-and-audit</code>, and the loop
+        merges its own work once that check is green. Part of that
+        check does bite: it rejects a branch whose changes fall outside
+        the track it declares, which keeps five of the six tracks away
+        from the charter, the workflows and the prompts altogether. The
+        sixth, meta, may change them, and once it does nothing stands
+        between that change and <code>main</code>.
       </p>
 
       <h2>What&rsquo;s shipped so far</h2>

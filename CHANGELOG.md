@@ -69,6 +69,128 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+The site said pull requests touching the charter, the workflows or the loop's
+own prompt required human review. They do not, and one has already merged
+without any. That paragraph sat directly beneath an earlier correction of a
+*different* false human-review claim, so this page now corrects the same
+overstatement twice — which is stated on the page rather than smoothed over.
+The real fix is a GitHub settings change no track can make, so it is filed
+rather than claimed. This is also the first round in this project's history
+recorded as `unsupervised`, which falsified three more sentences on the way
+past. (PR #20)
+
+**1. Corrected the second false human-review claim on /blog**
+- Hypothesis: `.github/CODEOWNERS` names `/CHARTER.md`, `/.github/` and
+  `/prompts/`, and its header comment asserts that a pull request touching any
+  of them "will not auto-merge however green its checks are". If that were
+  true, PR #16 — the only pull request that has ever touched one of those paths
+  — would have waited for a human. It did not wait, so the claim had to be
+  checked against the settings rather than the file.
+- Change: rewrote the paragraph to say what is actually enforced. Read from the
+  GitHub API this round: `require_code_owner_reviews` is true but
+  `required_approving_review_count` is 0, so there is no approval for the
+  code-owner rule to demand, and `enforce_admins` is false as a second,
+  independent hole. `gh pr view 16` reports merged 2026-08-11T05:22:38Z, 0
+  reviews, files `.github/workflows/pr-checks.yml` and `CHANGELOG.md`. Checking
+  `reviews` and `files` across all nineteen pull requests that preceded this one
+  found #16 is the only one to touch a protected path, and all nineteen merged
+  with zero reviews. The page now states only this: every pull request must pass
+  one required check, `build-and-audit`, and the loop merges its own work once
+  it is green — with the one part that does bite named, which is
+  `check-track-scope.mjs` keeping five of the six tracks away from those paths
+  entirely. Meta is the sixth and nothing stops it merging.
+- The page carries the admission that this is the second correction of the same
+  class, because the paragraph immediately above it is the first one. Hiding
+  that would have been worse than the original error: a reader who watches a
+  site correct the same overstatement twice is owed the fact that it was twice.
+- Nothing here says the gap "is being fixed". `CHARTER.md` rule 4 forbids
+  publishing a process claim that is not currently true, and this page has now
+  broken that rule twice on exactly this subject; a third sentence about
+  machinery that does not exist would have been the same mistake in a more
+  flattering tense.
+
+**2. Recorded the first `unsupervised` round, and fixed what that made false**
+- Hypothesis: recording `Origin: unsupervised` would be a one-line change to
+  this entry. It was not. Three published sentences and one rendered label
+  asserted that no such round existed or described it wrongly, and the
+  disclosure map would have gone stale in the same commit.
+- Change: the homepage said "Every round so far was triggered by hand with a
+  human able to discard it" beside a build-time count of unattended rounds that
+  was about to read 1 — a page contradicting its own derived figure. That
+  sentence and the equivalent one on /blog are now derived from
+  `getBuildLogStats()` rather than typed, so they cannot disagree with the
+  number next to them. /blog's "Runs currently start under supervision" is gone.
+  And "unsupervised" was rendered in four places as "a *scheduled* run": this
+  round was started by hand as one of an authorised batch, so that word was
+  false about the only round it will describe. Dropped from
+  `AiDisclosure.js`, `page-origins.js`, `LogEntry.js` and `/disclosure`, which
+  now explains the distinction — the test is whether anyone could stop the work
+  before it merged, not how the run was triggered.
+- Five routes therefore move to round 72 in `PRODUCING_ROUNDS`: `/`, `/blog`,
+  `/log`, `/log/archive` and `/disclosure`. `check-ai-disclosure.mjs` forces
+  this and would have failed the build otherwise, which is the check working.
+- The governing documents were left alone and disagree with the site as a
+  result. `prompts/shared/every-run.md`, the preamble above this log and
+  `scripts/build-prompt.mjs` still gloss `unsupervised` as "scheduled".
+  `every-run.md` is human-owned under rule 13 and outside maintain's scope;
+  the other two are filed with it rather than split across two rounds.
+
+**3. Filed the real fix, which no track can execute**
+- Hypothesis: the branch-protection hole would turn out to be repairable from
+  the repository, since almost everything else in this project's guardrails is
+  a file.
+- Change: it is not — `required_approving_review_count` and `enforce_admins`
+  are GitHub settings, and rule 14 confines the loop to this repository and its
+  deployment. Filed
+  `docket/open/2026-08-11-branch-protection-does-not-require-review.md`
+  (`track: meta`, `filed-by: maintain`), which says in as many words that the
+  executing step is the maintainer in the GitHub settings UI. It carries the
+  trap: setting the count to 1 would break every loop round, because the count
+  is a property of the branch rather than of a path — GitHub's documentation
+  describes no path-scoped variant — and because every loop pull request is
+  opened by `addicted2ai`, the same identity as the sole code owner, while
+  GitHub states that "Pull request authors cannot approve their own pull
+  requests". The naive fix converts "merges everything" into "merges nothing".
+  Also filed `2026-08-11-unsupervised-origin-assumes-scheduled.md` for the
+  vocabulary gap in change 2.
+
+**4. Left standing: two documents that still make the corrected claim**
+- Hypothesis: correcting the site would be the whole job.
+- Change: it was not. `CHARTER.md` says "this file, `.github/`, and `prompts/`
+  require human review under `CODEOWNERS`, so a pull request touching any of
+  them will not auto-merge no matter how green it is", and its opening line
+  says runs "are currently triggered by hand and supervised" — both false as of
+  this round. `.github/CODEOWNERS`'s header comment says the same thing about
+  auto-merge. All three are human-owned under rule 13 and outside maintain's
+  scope in `check-track-scope.mjs`, so this round did not touch them and did
+  not try. They are named in the Done-when of both filed items. Recording the
+  gap here because a correction that fixes the reader-facing copy and leaves
+  the governing document asserting the opposite is half a correction, and the
+  half that is missing is the authoritative one.
+
+- Origin: unsupervised
+- The maintainer authorised this batch of rounds and then stepped away, so this
+  round was started by hand and yet nobody read it before it merged.
+  `round.mjs start` guessed `supervised`, which would have been the false
+  process claim on the one round that exists to correct one: `supervised`'s
+  operative clause is "can veto before merge", and nobody could.
+- Track: maintain
+- Agent: claude-code
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator, the
+  track-scope check against `origin/main`, a production build with
+  `NEXT_PUBLIC_REPO_URL` set, and the full route suite including
+  `check-ai-disclosure.mjs`. All passing, no group skipped. Facts came from
+  `gh api .../branches/main/protection`, `gh pr view` over #1–#19, and two
+  pages of GitHub's own documentation retrieved this round.
+- Result: not measured, and largely not measurable from here. The claim on the
+  page is now checkable by anyone with the two `gh` commands quoted in the
+  docket item, which is the point. Whether the hole itself closes is a
+  maintainer action; the filed item asks for it to be demonstrated on a real
+  pull request rather than read off the settings page, because this repository
+  has already shipped one enforcement mechanism that everything believed worked
+  and did not.
+
+### 2026-08-11
 A maintainer-directed post-mortem of the PR #15 / PR #16 deadlock, filed as
 queue rather than executed. The maintainer's opening question was whether the
 loop needs a seventh track for rescuing stuck pull requests. Reading the

@@ -42,26 +42,35 @@ const LEGACY_ORIGIN = "supervised";
 // field; build-log.js inherits LEGACY_ORIGIN for such rounds.
 export const ARCHIVE = "archive";
 
+// Round 72 (maintain) corrected the false human-review claim on /blog, the
+// homepage sentence that claimed every round was vetoable, and the wording
+// that described an unsupervised round as a scheduled one — which reaches
+// /log, /log/archive and /disclosure through app/log/LogEntry.js and
+// app/disclosure/page.js. Five routes therefore move together; the earlier
+// mappings are kept in the comment above as the record of what produced
+// each page before.
 export const PRODUCING_ROUNDS = {
-  "/": 60,
-  "/blog": 60,
+  "/": 72,
+  "/blog": 72,
   "/blog/frontier-cyber": 60,
   "/directory": 67,
   "/demos": 62,
-  // Both log pages are produced by round 70, the build round that split the
-  // log in two. /log was mapped to 53 until then; leaving it there would have
-  // had the page claim a maintainer origin for a form a build round gave it.
-  // The check would not have caught that — round 53 records no track, so the
-  // maintainer branch of the comparison passes silently — which is exactly
-  // why it is corrected by hand here rather than left to go stale.
-  "/log": 70,
-  "/log/archive": 70,
+  // Both log pages were produced by round 70, the build round that split the
+  // log in two, until round 72 changed the origin badge they both render.
+  // /log was mapped to 53 until 70; leaving it there would have had the page
+  // claim a maintainer origin for a form a build round gave it. The check
+  // would not have caught that — round 53 records no track, so the maintainer
+  // branch of the comparison passes silently — which is exactly why it is
+  // corrected by hand here rather than left to go stale.
+  "/log": 72,
+  "/log/archive": 72,
   "/projects": 54,
-  "/disclosure": 61,
+  "/disclosure": 72,
 };
 
 const ORIGIN_MEANINGS = {
-  unsupervised: "a scheduled run that merged itself with nobody reading it first",
+  // Not "a scheduled run": see the note in app/components/AiDisclosure.js.
+  unsupervised: "a run that merged itself with nobody reading it first",
   supervised: "a human triggered this run and could veto before merge",
   maintainer: "a human decided what and why; an assistant did the typing",
 };
