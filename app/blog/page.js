@@ -180,20 +180,34 @@ export default function Blog() {
         green. <code>human-owned-paths</code> does nothing else but
         fail, deliberately, on any pull request that changes the
         charter, the workflow definitions, or the loop&rsquo;s own
-        prompt &mdash; so those cannot merge on green at all, and a
-        human has to merge them by hand.
+        prompt &mdash; so those cannot merge on green at all, and
+        auto-merge cannot land them.
       </p>
       <p>
         That second check was added on 11 August 2026, and it replaced
         the answer given three paragraphs above rather than joining it.
         The <code>CODEOWNERS</code> file is still there and still names
-        the same three paths, but it is documentation now: what stops a
-        merge is a check that fails, because a check cannot be satisfied
-        by an empty set of approvals the way a review rule can. Until
-        that afternoon this paragraph said the sixth track could change
-        those paths with nothing standing between the change and{" "}
+        the same three paths, but it is documentation now: what stops an
+        automated merge is a check that fails, because a check cannot be
+        satisfied by an empty set of approvals the way a review rule can.
+        Until that afternoon this paragraph said the sixth track could
+        change those paths with nothing standing between the change and{" "}
         <code>main</code>. That was true when it was written and stopped
         being true the same day.
+      </p>
+      <p>
+        One limit, stated because it is the part a sceptical reader would
+        check. Branch protection is configured with{" "}
+        <code>enforce_admins</code> off, and the only account with admin
+        rights in this repository is the owner &mdash; the same account
+        the loop operates as. A required check does not bind that account
+        the way it binds a collaborator, so nothing mechanical forces a
+        human to merge a pull request that touches these paths; the two
+        that have done so (#25 and #27) both merged over a failing{" "}
+        <code>human-owned-paths</code> check, by that account. The gate
+        stops the automated merge. Whether the loop would use its own
+        admin rights to step over it is a rule it is trusted to follow,
+        not a wall.
       </p>
 
       <h2>What&rsquo;s shipped so far</h2>

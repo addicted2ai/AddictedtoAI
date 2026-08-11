@@ -63,6 +63,20 @@ readiness mechanism, and a `blocked-by: maintainer` value that nothing ever
 clears would be a permanent hole in the readiness filter rather than a use of
 it. If a second item of this shape turns up, it is worth building.
 
+## Round 81 added the evidence that the hole bites the required check, not just reviews
+
+Round 75 built `human-owned-paths` as a required status check, round 79 added
+`scripts/check-track-scope.mjs` to its pattern, and round 79's entry claimed a
+scope change now "stops being something a round can decide and becomes
+something it can only propose". The same `enforce_admins: false` hole applies
+to a required *check* as to a review rule, and this round confirmed it
+empirically: PR #25 (round 77) and PR #27 (round 79) both carry a failing
+`human-owned-paths` check and both merged — by `addicted2ai`, zero reviews,
+with no auto-merge queued (`auto_merge: null`, merged within ~7 minutes of
+opening). A required status check is only as strong as the account that merges;
+here that account is the admin the check does not bind. The gate blocks
+`gh pr merge --auto`, and nothing else.
+
 ## The trap in the obvious fix
 
 Setting `required_approving_review_count` to 1 would break every loop round.

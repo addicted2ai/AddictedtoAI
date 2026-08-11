@@ -66,7 +66,13 @@ export const PRODUCING_ROUNDS = {
   // Round 76 rewrote the "what is true now" paragraph: round 75 made the
   // human-owned-paths check a required one, which falsified the sentence
   // round 72 had written to be true at the time.
-  "/blog": 76,
+  //
+  // Round 81 (audit) corrected that paragraph again: round 76 had claimed
+  // a human "has to merge them by hand", which is not what the mechanism
+  // enforces — branch protection has enforce_admins off and the loop's own
+  // account is the repository owner — so the page now states the limit
+  // round 76's version overstated past.
+  "/blog": 81,
   // Round 80 (author): the new post sits in posts.js, which is a listed
   // source file of /blog/frontier-cyber, so the newest commit touching this
   // route's files is round 80's even though the post page itself is new.
