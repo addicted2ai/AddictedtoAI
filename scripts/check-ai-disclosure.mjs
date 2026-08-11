@@ -24,11 +24,14 @@
 //    current-era commit, or a route maps to a loop round but its files were
 //    last touched by a pre-track (maintainer-era) commit.
 //
-// The route -> files mapping lives here rather than in page-origins.js so
-// the disclosure data stays about what to *say*, and this script stays about
-// how to *check* it. The two must agree on the route list: any route in
-// PRODUCING_ROUNDS that is missing here is a route this check cannot verify,
-// which is itself a failure.
+// The route -> files mapping lives in app/lib/route-files.js rather than
+// here so the route *data* stays where the track that creates routes can
+// extend it: author scope is app/, public/, docket/ and CHANGELOG.md, and a
+// blog post is a new route. The check *logic* stays here, in scripts/,
+// because the tracks the disclosure verifies must not be able to weaken the
+// verification itself. The two maps must agree on the route list: any route
+// in PRODUCING_ROUNDS that is missing from ROUTE_FILES is a route this check
+// cannot verify, which is itself a failure.
 
 import { execFileSync } from "child_process";
 import path from "path";
@@ -39,44 +42,12 @@ const root = process.cwd();
 const { PRODUCING_ROUNDS, ARCHIVE, getPageDisclosure } = await import(
   `file://${path.join(root, "app", "lib", "page-origins.js").replace(/\\/g, "/")}`
 );
+const { ROUTE_FILES } = await import(
+  `file://${path.join(root, "app", "lib", "route-files.js").replace(/\\/g, "/")}`
+);
 const { getBuildLog } = await import(
   `file://${path.join(root, "app", "lib", "build-log.js").replace(/\\/g, "/")}`
 );
-
-// Which source files constitute each published page. Used to find the most
-// recent commit touching a page; a route missing here cannot be verified.
-const ROUTE_FILES = {
-  "/": ["app/page.js", "app/lib/posts.js", "app/lib/sections.js"],
-  "/blog": ["app/blog/page.js"],
-  "/blog/frontier-cyber": [
-    "app/blog/frontier-cyber/page.js",
-    "app/lib/posts.js",
-  ],
-  "/directory": [
-    "app/directory/page.js",
-    "app/directory/DirectorySearch.js",
-    "app/lib/tool-categories.js",
-  ],
-  "/demos": [
-    "app/demos/page.js",
-    "app/demos/ToolFinder.js",
-    "app/demos/RoundWalkthrough.js",
-  ],
-  "/log": [
-    "app/log/page.js",
-    "app/log/LogFilter.js",
-    "app/log/LogEntry.js",
-    "app/lib/build-log.js",
-  ],
-  "/log/archive": [
-    "app/log/archive/page.js",
-    "app/log/LogFilter.js",
-    "app/log/LogEntry.js",
-    "app/lib/build-log.js",
-  ],
-  "/projects": ["app/projects/page.js"],
-  "/disclosure": ["app/disclosure/page.js"],
-};
 
 // A commit that also touched the disclosure machinery is *not* necessarily
 // a chrome commit. The banner round (PR #9) added the disclosure to every
@@ -140,6 +111,19 @@ for (const route of Object.keys(ROUTE_FILES)) {
   if (!(route in PRODUCING_ROUNDS)) {
     problems.push(
       `${route}: in ROUTE_FILES but missing from PRODUCING_ROUNDS — the page renders no disclosure`
+    );
+  }
+}
+// An empty file list would verify nothing: `git log --` with no pathspec
+// returns commits from the whole repository, and the newest one is usually
+// the round being checked — so a route with no files would pass against a
+// history that says nothing about it. The data now lives in app/ where the
+// publishing track edits it, so an author round's typo must be a loud
+// failure, not a quiet pass.
+for (const route of Object.keys(ROUTE_FILES)) {
+  if (ROUTE_FILES[route].length === 0) {
+    problems.push(
+      `${route}: ROUTE_FILES lists no source files — this check cannot verify it`
     );
   }
 }
