@@ -69,6 +69,53 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+An author round that discovered the track's main product is currently
+unshippable and shipped what was reachable. Every blog-post docket item turns
+out to be blocked by the AI-disclosure machinery: a new post route must be
+registered both in `PRODUCING_ROUNDS` (`app/`, in scope) and in `ROUTE_FILES`
+(`scripts/check-ai-disclosure.mjs`, out of author scope), and the bidirectional
+check hard-fails otherwise. The site has never hit this because
+`/blog/frontier-cyber`, the only routed post, predates the disclosure check.
+Filing the case per rule 11; the round instead published the priority-1
+Directory gap that was in scope — ChatGPT, which the Directory omitted while
+listing HuggingChat.
+
+**1. Add ChatGPT to the Directory**
+- Hypothesis: the Directory's "Chat & Assistants" category lists Claude,
+  You.com and HuggingChat but no OpenAI product — the most-used assistant in
+  the world, per OpenAI's own "every week, 1 billion people turn to ChatGPT".
+  OpenAI's 6 August page also states the free tier's default is now GPT-5.6
+  Luna with unlimited text chats and a Think button for harder questions, which
+  makes the entry current rather than a year-old description. A stranger
+  reading a curated AI directory notices the omission immediately.
+- Change: added ChatGPT as the first entry under "Chat & Assistants", linking
+  to https://chatgpt.com and verified 2026-08-11 against OpenAI's 6 August post
+  (fetched this run). The description names only GPT-5.6 Luna, which that post
+  names. The staleness and link checks pass with the new entry.
+
+**2. File the blog-post blocker for a meta round**
+- Hypothesis: rule 11 says a run blocked by a guardrail may not be the run that
+  loosens it. The author track cannot add a new post route without editing
+  `scripts/check-ai-disclosure.mjs`, which no author branch may touch — so
+  seven open author items are unshippable, and the round that found the wall
+  must file it rather than route around it.
+- Change: filed `docket/open/2026-08-11-author-cannot-publish-posts.md` (meta,
+  priority 1) documenting the two-map constraint, why it has never fired
+  before, and a done-when that keeps the fix in a meta round's hands.
+
+- Origin: supervised
+- Track: author
+- Agent: codex
+- Guardrails: docket validator (one new item, author-filed, no external
+  citation required), lint, production build and full route suite — including
+  the disclosure, tool-link and tool-staleness checks — via
+  `node scripts/round.mjs check`.
+- Result: not measured. The Directory's "Chat & Assistants" category went from
+  three entries to four, and a stranger no longer finds the most-used assistant
+  missing from a curated AI directory; whether the filed blocker gets fixed is
+  for a meta round.
+
+### 2026-08-11
 The audit read the disclosure machinery as a stranger would and found that
 the per-page AI authorship disclosure on `/demos` was a stale claim about
 this project's own process — and that the check built to catch exactly that

@@ -42,11 +42,22 @@ category currently holds Claude, You.com and HuggingChat only.
 
 ## Done when
 
-- [ ] ChatGPT is listed under "Chat & Assistants" with a link fetched during the
+- [x] ChatGPT is listed under "Chat & Assistants" with a link fetched during the
       round that adds it
-- [ ] The description was checked against the vendor's page the same day and
+- [x] The description was checked against the vendor's page the same day and
       says what ChatGPT now is — including the unlimited-text free tier — not
       what it was a year ago
-- [ ] The entry carries a `verified` date, and the staleness check
+- [x] The entry carries a `verified` date, and the staleness check
       (`scripts/check-tool-staleness.mjs`) passes with it
-- [ ] The description is one line and names no model version it does not cite
+- [x] The description is one line and names no model version it does not cite
+
+## Done
+
+Published by the author round of 2026-08-11 (`loop/author/directory-chatgpt`):
+ChatGPT is now the first entry under "Chat & Assistants", linking to
+https://chatgpt.com, verified 2026-08-11 against OpenAI's 6 August post
+("Improving GPT‑5.6 Sol in ChatGPT—and expanding access to GPT‑5.6 Luna for
+free users"), which states the free tier's default model is GPT-5.6 Luna with
+unlimited text chats and a Think button for harder questions. The staleness
+check (`verified` within the 45-day window) and the tool-link check
+(chatgpt.com resolves to the recorded URL) both pass with the entry in place.

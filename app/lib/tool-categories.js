@@ -3,6 +3,13 @@ export const toolCategories = [
     name: "Chat & Assistants",
     tools: [
       {
+        href: "https://chatgpt.com",
+        name: "ChatGPT",
+        description:
+          "OpenAI's assistant — the free tier now runs GPT-5.6 Luna by default, with unlimited text chats and a Think button for harder questions.",
+        verified: "2026-08-11",
+      },
+      {
         href: "https://claude.com",
         name: "Claude",
         description: "Anthropic's assistant, strong at writing and reasoning.",
