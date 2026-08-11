@@ -67,24 +67,38 @@ const ROUTE_FILES = {
   "/disclosure": ["app/disclosure/page.js"],
 };
 
-// A commit that also touched the disclosure machinery is a chrome commit,
-// not a content change: adding the disclosure banner to every page should
-// not rewrite every page's producing round. Content commits leave these
-// files alone, so the rule is mechanical and cannot be gamed.
-const DISCLOSURE_FILES = [
-  "app/components/AiDisclosure.js",
-  "app/lib/page-origins.js",
-  "app/disclosure/",
-  "scripts/check-ai-disclosure.mjs",
-];
+// A commit that also touched the disclosure machinery is *not* necessarily
+// a chrome commit. The banner round (PR #9) added the disclosure to every
+// page at once and should not rewrite every page's producing round — but
+// the round that fixed the disclosure checker (PR #10) also corrected a
+// demos caption in the same commit, and the old rule (skip any commit that
+// touched a disclosure file) swallowed that real content change whole: the
+// /demos map went stale under a green check. A commit is chrome only when
+// its *diff to this route's files* is purely the banner insertion — the
+// import and the <AiDisclosure> element — so a content change is detected
+// even in a commit that also touched the disclosure machinery.
+function isBannerOnlyDiff(sha, files) {
+  const diff = execFileSync(
+    "git",
+    ["show", "--format=", sha, "--", ...files],
+    { encoding: "utf8", cwd: root }
+  );
+  const changedLines = diff.split("\n").filter(
+    (l) =>
+      (l.startsWith("+") || l.startsWith("-")) &&
+      !l.startsWith("+++") &&
+      !l.startsWith("---")
+  );
+  if (changedLines.length === 0) return false;
+  return changedLines.every((l) => l.includes("AiDisclosure"));
+}
 
 function lastContentCommitSubject(files, route) {
-  // Walk commits newest-first, skipping any that also touched the disclosure
-  // machinery (the round that added the banner touched every page at once,
-  // and should not rewrite every page's producing round). A content commit
-  // leaves the disclosure files alone, so the rule is mechanical. The
-  // /disclosure page is exempt: its own files are the disclosure, so its
-  // producing round is the round that built it.
+  // Walk commits newest-first, skipping banner-only ones (the round that
+  // added the banner touched every page at once, and should not rewrite
+  // every page's producing round). The /disclosure page is exempt: its own
+  // files are the disclosure, so its producing round is the round that
+  // built it.
   const commits = execFileSync(
     "git",
     ["log", "-10", "--format=%h|%s", "--", ...files],
@@ -95,20 +109,8 @@ function lastContentCommitSubject(files, route) {
     .filter(Boolean);
   for (const line of commits) {
     const [sha, subject] = line.split("|");
-    const touched = execFileSync(
-      "git",
-      ["diff-tree", "--no-commit-id", "--name-only", "-r", sha],
-      { encoding: "utf8", cwd: root }
-    )
-      .trim()
-      .split("\n")
-      .filter(Boolean);
-    const isChrome =
-      route !== "/disclosure" &&
-      touched.some((file) =>
-        DISCLOSURE_FILES.some((d) => file === d || file.startsWith(d))
-      );
-    if (!isChrome) return subject;
+    if (route !== "/disclosure" && isBannerOnlyDiff(sha, files)) continue;
+    return subject;
   }
   return "";
 }
@@ -143,19 +145,23 @@ for (const route of Object.keys(ROUTE_FILES)) {
   }
 
   const subject = lastContentCommitSubject(ROUTE_FILES[route], route);
-  // Two conventions have produced merged commits here. PRs #1-8 squashed to
+  // Three conventions have produced merged commits here. PRs #1-8 squashed to
   // a commit subject that capitalised the track ("Maintain: ..."); the build
   // log stores it lower-case ("maintain"), so the comparison is
   // case-insensitive. From PR #9 on, branches are named `loop/<track>/<slug>`
   // per prompts/shared/every-run.md, and GitHub's squash merge defaults the
   // commit subject to the PR title plus number -- which is the branch-style
   // name, not the old colon-prefixed one ("loop/build/ai disclosure (#9)").
-  // Recognising only the first convention made this check fail on every
-  // route touched by a PR merged after the branch-naming convention landed,
-  // which is exactly the kind of quietly-false assertion maintain exists to
-  // catch: it wasn't lying about a route, it had stopped being able to see one.
+  // And a PR title is editable: PR #10 merged with a colon where the branch
+  // name had a slash ("loop/maintain: fix the disclosure checker ..."), so
+  // the loop/ prefix is followed by the track and then either a slash or a
+  // colon. Recognising only the first two conventions made this check pass
+  // over exactly the commit that made the /demos map stale -- the format
+  // gap and the chrome rule (fixed above) were the same PR, and each masked
+  // the other.
   const trackMatch =
-    subject.match(/^([A-Za-z]+):/) || subject.match(/^loop\/([A-Za-z]+)\//);
+    subject.match(/^([A-Za-z]+):/) ||
+    subject.match(/^loop\/([A-Za-z]+)[:/]/);
   const lastTrack = trackMatch ? trackMatch[1].toLowerCase() : null;
 
   if (PRODUCING_ROUNDS[route] === ARCHIVE) {

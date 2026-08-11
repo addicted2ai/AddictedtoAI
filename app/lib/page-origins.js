@@ -20,11 +20,12 @@ import { getBuildLog } from "./build-log.js";
 //   /blog                -> round 60  (audit: fixed the shipped-work list)
 //   /blog/frontier-cyber -> round 60  (audit: corrected the post's title)
 //   /directory           -> round 59  (maintain: corrected descriptions)
-//   /demos               -> archive   (last change predates the Origin
-//                                      field; recorded as supervised)
-//   /log                 -> round 53  (meta: made the local round runner
-//                                      three commands, which last changed
-//                                      the log's build-time parsing)
+//   /demos               -> round 62  (maintain: corrected the walkthrough's
+//                                      stale analytics claim)
+//   /log                 -> round 53  (maintainer: the last content commit
+//                                      touching the log's files carries no
+//                                      track prefix; 53 is the nearest
+//                                      recorded maintainer round)
 //   /projects            -> round 54  (audit: withdrew the page)
 //   /disclosure          -> round 61  (build round that built this)
 //
@@ -45,7 +46,7 @@ export const PRODUCING_ROUNDS = {
   "/blog": 60,
   "/blog/frontier-cyber": 60,
   "/directory": 59,
-  "/demos": ARCHIVE,
+  "/demos": 62,
   "/log": 53,
   "/projects": 54,
   "/disclosure": 61,

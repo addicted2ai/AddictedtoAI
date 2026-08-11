@@ -69,6 +69,61 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+The audit read the disclosure machinery as a stranger would and found that
+the per-page AI authorship disclosure on `/demos` was a stale claim about
+this project's own process — and that the check built to catch exactly that
+was structurally unable to. The map said the page "predates the Origin
+field"; the page's most recent recorded change came from round 62, a
+current-era supervised maintain round. The check passed anyway, because its
+chrome rule skipped any commit that also touched the disclosure machinery,
+and the round that fixed that machinery in the same commit also fixed the
+demos caption — the exact commit that made the map stale. Its own comment
+claimed "the rule is mechanical and cannot be gamed"; round 62 gamed it.
+
+**1. Correct the `/demos` disclosure map**
+- Hypothesis: `PRODUCING_ROUNDS["/demos"] = ARCHIVE` says the page's current
+  form predates the Origin field, but `git log` shows the last content commit
+  touching `/demos` files is `loop/maintain: fix the disclosure checker and a
+  stale analytics claim (#10)` — a current-era round that declares an Origin.
+  The visible disclosure ("It predates the Origin field…") and its structured
+  data (`predatesOriginField: true`, `producingRound: null`) are therefore
+  false, and a reader on `/demos` gets a wrong claim about the site's own
+  process.
+- Change: mapped `/demos` to round 62 (supervised, maintain), which the
+  corrected check now verifies against git. The visible disclosure and the
+  JSON-LD are derived from the record again, not from a stale constant.
+
+**2. Make the disclosure check able to see what it is for**
+- Hypothesis: the chrome rule skipped any commit that touched the disclosure
+  machinery wholesale — including commits that also changed page content —
+  so the round that touched both the checker and a page's content in one
+  commit was invisible to it. Proved before fixing: the check reported
+  "archive-era producing round" for `/demos` while its actual last content
+  commit was PR #10, and "all page disclosures resolve" stayed green. The
+  track-prefix regex was also narrower than the history: PR #10's subject is
+  `loop/maintain: …` (colon), which the `^loop\/([A-Za-z]+)\//` (slash)
+  pattern does not match, so even an uncovered commit read as pre-track.
+- Change: a commit is chrome only when its diff against the route's files is
+  purely the banner insertion (import + `<AiDisclosure …/>`); anything else —
+  a caption edit, a prose change — is content even in a commit that also
+  touched the machinery. The track regex now accepts either separator.
+  Verified both directions: with the stale map, the check fails naming
+  `/demos` and the offending commit; with the corrected map it passes. The
+  other seven routes were re-verified unchanged.
+
+- Origin: supervised
+- Track: audit
+- Agent: codex
+- Guardrails: the fixed check was proven to fail on the stale map and pass
+  on the corrected one, both against real history; `npm run lint` clean; the
+  docket validator, track scope, production build and full route suite via
+  `node scripts/round.mjs check`.
+- Result: not measured. The observable outcome is that `/demos` now
+  discloses round 62's recorded Origin, and the check that previously
+  reported "all page disclosures resolve and match git history" while the
+  map was stale now fails loudly on exactly that state.
+
+### 2026-08-11
 A scout round. The week of 4–10 August produced a cluster of genuinely new
 stories — the evaluations themselves attacking the real world, Anthropic
 removing the human permission gate in Claude Code by default, and Meta's first
