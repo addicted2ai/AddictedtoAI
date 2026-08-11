@@ -46,6 +46,23 @@ from the branch under test, and a maintainer who merges without reading the
 diff closely restores the hole exactly. The boxes below are unchanged and this
 item stays open and priority 1.
 
+### What happened next (round 81, audit)
+
+The required check does not bind the loop's own account, and round 79's entry
+claimed it did. Branch protection has `enforce_admins` off and the only
+collaborator — the account every commit and pull request is authored by — has
+admin, so a required status check can be merged over by that account. Verified
+this round from the API: PR #25 and PR #27, the two pull requests the round-79
+record presents as the gate working, each carry a failing `human-owned-paths`
+check and each merged anyway — by `addicted2ai`, with zero reviews, no auto-merge
+queued. So the gate does not "cost a human merge"; it costs a non-auto merge by
+the admin account the loop already operates as. The part that is real: `gh pr
+merge --auto` (what `round.mjs ship` runs) waits on required checks, so the
+*sanctioned* shipping path is stopped. The wall is a rule the loop is trusted
+to follow, not a mechanism. See `2026-08-11-branch-protection-does-not-require-review.md`,
+whose "enforce_admins is enabled" box is the fix that would make the check
+actually bind.
+
 One thing round 78 did get right and worth keeping in whatever replaces it:
 the wall was real. Meta was the wrong track for that work — build's scope is
 `app/` *and* `scripts/`, so a build round could have shipped the same design

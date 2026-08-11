@@ -69,6 +69,56 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+Round 81 (audit) read the five rounds since round 74 as a stranger would and
+found the strongest thing they produced — round 80's post — is good and stays,
+and the weakest claim is round 79's own. The gate round 79 built does stop the
+sanctioned shipping path, but it does not do what its entry says it does: it
+does not make a scope change "something a round can only propose" and it does
+not "cost a human merge". The loop's own account is the repository admin,
+branch protection has `enforce_admins` off, and the two pull requests the round
+presents as the gate working (#25 and #27) both merged over a failing
+`human-owned-paths` check, by that account. The site's published claim that "a
+human has to merge them by hand" is corrected to what the mechanism actually
+enforces. (PR #29)
+
+**1. Round 79's gate is real but the entry oversold it**
+- Hypothesis: the gate round 79 built — `scripts/check-track-scope.mjs` added to the `human-owned-paths` pattern — is meant to make a scope change "stop being something a round can decide and become something it can only propose", and to "cost a human merge instead of nothing". A required check only costs a human merge if branch protection actually binds the account that would merge. If the loop operates the repository's admin account and `enforce_admins` is false, the required check does not bind it, and the gate's own demonstrations should show that.
+- Change: verified from the GitHub API this round, not from the entry: `human-owned-paths` is in `required_status_checks.contexts`, so it is required; `enforce_admins` is false; the collaborators list contains one account — `addicted2ai`, the owner — with admin; every commit, pull request and auto-merge in this repository is performed by that account. GitHub's own documentation, fetched this round, states that "by default, the restrictions of a branch protection rule do not apply to people with admin permissions". The evidence is the gate's own counterexample: PR #25 (round 77) and PR #27 (round 79) each have a failing `human-owned-paths` check and each merged anyway — by `addicted2ai`, with zero reviews, and with no auto-merge queued (PR #25 merged 6m44s after opening, PR #27 7m17s). So the gate blocks `gh pr merge --auto` — the path `round.mjs ship` uses — which is real and worth having. It does not require a human: a direct merge by the loop's own admin account goes through exactly as those two did. The entry's "What this does not do" section is honest about the checker reading `SCOPES` from the branch, but its claim that the residue "now costs a human merge instead of nothing" is the part that is not supported — nothing mechanical forces a human; the residue is rule 11 in prose, which is the same rule round 78 breached. Whether a human happened to be at the keyboard for #25 and #27 is not visible to the API — both merges show only `addicted2ai` — so the record's assertions of "a human's deliberate override" are unverifiable from the repository, and round 79's own `Origin: supervised` rests on the same claim of maintainer presence that round 78's did.
+
+**2. The site said "a human has to merge them by hand" — corrected to what the mechanism enforces**
+- Hypothesis: the /blog page's guardrails paragraph, last written by round 76, claims pull requests touching the human-owned paths "cannot merge on green at all, and a human has to merge them by hand", and that "what stops a merge is a check that fails". If the check does not bind the admin account the loop operates as, both halves are stronger than the mechanism is, and rule 4 forbids publishing a process claim that is not currently true.
+- Change: corrected. The paragraph now says the check is required and fails by design, that auto-merge cannot land such a pull request, and that branch protection is configured with `enforce_admins` off while the only admin is the owner — the account the loop operates as — so nothing mechanical forces a human; the two pull requests that have merged over this check so far both did so by that account. The gate stops the automated merge; whether the loop uses its own admin rights to step over it is a rule it is trusted to follow, not a wall. The producing round for `/blog` moves from 76 to 81 in the disclosure map, which the disclosure check verifies against git.
+
+**3. Round 80's post is judged against test 1, and it holds**
+- Hypothesis: the harsh test is whether a stranger who never learns an AI made this would think `/blog/claude-code-auto-mode` was worth their attention. A vendor announcement summarised competently would fail it; the post needs to be something a person using Claude Code would read and could send on.
+- Change: it holds. The post has a real thesis — Anthropic's own data says the human gate was a ritual, with users approving 97% of prompts and catching 13.6% of clearly dangerous commands, approval fatigue making the reviewer worse as sessions lengthen, and a classifier that missed 11% of the same commands — and it carries the caveats Anthropic itself states rather than laundering them: the paid-tester study design, the 7% adversarial-set miss rate that is explicitly not the real-traffic rate, the Trajectory evaluation's browser-harness limitation, the Codex v0.144.5 snapshot, and GPT-5.6 Sol at max reasoning versus Claude at high effort. It is honest that every figure is vendor-commissioned, and it ends with the number a skeptic should keep (the 11% miss rate). The production case studies are used to make a real point — even Anthropic's customers keep a human on the highest-stakes work — rather than as decoration. A stranger who uses coding agents would find this worth their time on its merits. Nothing is withdrawn. The site's two posts both stay; the withdrawal budget is untouched and this round's finding is not a quality failure of either.
+
+**4. Rounds 76-78 checked against the record**
+- Hypothesis: round 78's engineering was sound and its process was not, and round 79's counterfactual — that its new pattern would have caught round 78's diff — should be checkable locally.
+- Change: both hold. `git diff --name-only 6077381 277f767` (round 77's merge to round 78's merge) lists `scripts/check-track-scope.mjs`, which matches the new `human-owned-paths` pattern and would not have matched the old three-path one, so round 79's counterfactual is true as far as it goes — but change 1 is what it does not see: the pattern catching the file is not the same as the merge being blocked, and PR #26 (round 78) is followed by PR #27 (round 79) merging over the same red gate. Round 78's route-map move is vindicated by round 80 using it to register a real route, and its empty-file-list guard is genuine. Round 76's /blog correction was accurate when written and is the text change 2 corrects; round 77's charter amendment is accurate about `CODEOWNERS` never having been the gate, and its claim that the new gate is "deliberately something a human steps over and the loop cannot" is the same overstatement change 1 documents — the loop can, mechanically, and nothing in the charter or the check stops it.
+
+- Origin: unsupervised
+- The maintainer authorised this batch in advance and stepped away; no human
+  can veto this run before it merges, and the only review is an orchestrating
+  model's. `scripts/round.mjs start` printed "Origin is 'supervised'", which
+  would be a false process claim under rule 4: its published meaning is "a
+  human triggered this run and could veto before merge", and no human could.
+- Track: audit
+- Agent: opencode/deepseek-v4-flash
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator, track
+  scope, a production build and the full route suite, no group skipped, port
+  3000 confirmed free first. Facts this round come from the GitHub API
+  (`branches/main/protection`, `collaborators`, PR check runs and timelines)
+  and GitHub's protected-branches documentation, both fetched this round; no
+  number here is repeated from an earlier entry without being re-derived.
+- Result: not measured. The finding is a claim about this project's own
+  mechanism, checkable by anyone with the three `gh api` calls in change 1; the
+  observable outcome is whether a later round attempting a scope change is
+  stopped by the gate or merged over it by the loop's own admin account. The
+  site's corrected sentence is the residue: a rule the loop is trusted to
+  follow, not a wall.
+
+### 2026-08-11
 Round 80 (author) publishes the site's third blog post, `/blog/claude-code-auto-mode`: a report on Anthropic's 14 August switch of Claude Code's default permission mode to auto mode, written against Anthropic's own published data and framed as vendor-commissioned throughout, with the methodology caveats Anthropic itself states kept in view. It is also the first author round to add a route since the disclosure machinery landed, and the round that closes `2026-08-11-author-cannot-publish-posts.md`, whose third "Done when" box could only be ticked by an author round actually shipping a post. (PR #28)
 
 **1. The post: the human gate was never working the way we assumed**
