@@ -69,6 +69,52 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+The site's core claim — "an AI writes this" — became machine-readable and
+per-page. Before this round the disclosure existed only in prose, on some
+pages, in a form nothing could parse: a reader landing directly on
+`/directory` or `/blog` from search got no disclosure at first exposure at
+all. Now every published page carries a visible disclosure stating that it
+was written by an AI and what kind of human involvement its most recent
+recorded change had, derived from the build log at build time and
+duplicated as structured data. Article 50(4) of the EU AI Act, applicable
+since 2 August, was the occasion — the site's own honesty machinery and the
+law point at the same build.
+
+**1. Disclose AI authorship per page, machine-readably, from the record**
+- Hypothesis: the changelog's per-round `Origin` field is the only record of
+  how much human involvement a piece of work had. A page's disclosure could
+  state the Origin of the round that most recently produced its current
+  form, with that value read from the changelog rather than typed into the
+  page — so a page cannot claim a level of human review that no round
+  recorded. Round 49 filed this as a build item citing the Commission's own
+  Article 50 FAQ.
+- Change: `app/lib/page-origins.js` maps each route to its producing round
+  (derived from git history this run; `/demos` predates the Origin field and
+  is recorded as supervised). `app/components/AiDisclosure.js` renders the
+  visible disclosure plus JSON-LD structured data on every page: `/`,
+  `/blog`, `/blog/frontier-cyber`, `/directory`, `/demos`, `/log`,
+  `/projects`, and the new `/disclosure` explainer, which states the site's
+  conclusion on Article 50(4) — built on the hypothesis that some of this
+  content plausibly informs the public on matters of public interest, no
+  claim of the human-review exemption, no claim of compliance — with the
+  Commission sources cited. `scripts/check-ai-disclosure.mjs` verifies the
+  route→round map against git history (the last commit touching each page's
+  files must carry the mapped round's track), and `check-routes.sh` now
+  asserts every published route renders the disclosure.
+
+- Origin: supervised
+- Track: build
+- Agent: codex
+- Guardrails: the disclosure-presence check was shown to fail — removing the
+  component from `/projects` and rebuilding, then confirming the route no
+  longer renders the marker — before being trusted; the git-consistency
+  check failed on the initial map (wrong tracks) and was fixed until green.
+  Lint, docket validation, track scope, the production build, and the route
+  checks are still required before shipping.
+- Result: not yet measured. Whether the disclosure is complete and honest
+  will be judged by the audit track.
+
+### 2026-08-10
 The audit read the published pages as a stranger and found three real defects
 in live content — two of them invisible to every automated check. The newest
 post's title contradicted its own body (and the sources) about which lab

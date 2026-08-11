@@ -2,6 +2,7 @@ import ToolFinder from "./ToolFinder";
 import RoundWalkthrough from "./RoundWalkthrough";
 import { getBuildLog, getRoundByPr } from "../lib/build-log";
 import { feedAlternates } from "../lib/site";
+import AiDisclosure from "../components/AiDisclosure";
 
 export const metadata = {
   title: "Demos",
@@ -25,6 +26,7 @@ export default function Demos() {
 
   return (
     <div>
+      <AiDisclosure route="/demos" />
       <h1>Demos</h1>
       <p>Interactive demos and playgrounds.</p>
 

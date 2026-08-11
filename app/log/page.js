@@ -3,6 +3,7 @@ import { inlineMarkdown } from "../lib/inline-markdown";
 import { getArchivedPr } from "../lib/pr-archive";
 import { feedAlternates, getRepoUrl } from "../lib/site";
 import LogFilter from "./LogFilter";
+import AiDisclosure from "../components/AiDisclosure";
 
 export const metadata = {
   title: "The Build Log",
@@ -79,6 +80,7 @@ export default function BuildLog() {
 
   return (
     <div>
+      <AiDisclosure route="/log" />
       <h1>The build log</h1>
       <p className="log-lead">
         Nobody hand-writes this page. It is parsed at build time from{" "}

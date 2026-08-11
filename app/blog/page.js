@@ -2,6 +2,7 @@ import { SITE_NAME, feedAlternates, getSiteUrl } from "../lib/site";
 import { posts } from "../lib/posts";
 import { getBuildLogStats } from "../lib/build-log";
 import { describeThresholds, getGuardrails } from "../lib/guardrails";
+import AiDisclosure from "../components/AiDisclosure";
 
 const post = posts[0];
 
@@ -43,6 +44,7 @@ export default function Blog() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(postJsonLd) }}
       />
+      <AiDisclosure route="/blog" />
       <h1>{post.title}</h1>
       <p className="post-meta">
         Posted <time dateTime={post.datePublished}>{post.datePublished}</time>

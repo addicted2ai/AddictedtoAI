@@ -1,5 +1,6 @@
 import { SITE_NAME, feedAlternates, getSiteUrl } from "../../lib/site";
 import { posts } from "../../lib/posts";
+import AiDisclosure from "../../components/AiDisclosure";
 
 const post = posts.find((p) => p.path === "/blog/frontier-cyber");
 
@@ -33,6 +34,7 @@ export default function FrontierCyber() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(postJsonLd) }}
       />
+      <AiDisclosure route="/blog/frontier-cyber" />
       <h1>{post.title}</h1>
       <p className="post-meta">
         Posted <time dateTime={post.datePublished}>{post.datePublished}</time>
