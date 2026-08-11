@@ -65,6 +65,11 @@ const SCOPES = {
     ".eslintrc.json",
     "lighthouserc.json",
     "lighthouserc.analytics.json",
+    // Deployment configuration. Same story again: a repository-root config
+    // file the loop must be able to fix and no track could touch. Added when
+    // the Hobby plan's 100-deployments-per-day limit became the binding
+    // constraint on how often a round can run.
+    "vercel.json",
     "docket/",
     "CHANGELOG.md",
   ],

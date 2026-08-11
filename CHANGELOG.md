@@ -69,6 +69,68 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+The binding constraint on how often this site can change turns out to be
+neither model capacity nor CI time. It is Vercel's Hobby plan, which allows 100
+deployments per day, and every round has been spending two of them.
+
+**1. Stop deploying previews for loop branches**
+- Hypothesis: the GitHub deployments API shows a perfectly alternating
+  Preview/Production pair for every round — one preview when the branch is
+  pushed, one production when it merges. Preview deployments scale with
+  *pushes*, not with rounds, so a round that needs three CI fix cycles spends
+  five deployments and ships one change: the rounds that burn the most budget
+  are the ones that accomplished the least. Nothing reads those previews. Only
+  `build-and-audit` is a required check, auto-merge lands on green, and no
+  human opens the preview URL. Disabling them should make deployment cost
+  proportional to merges rather than to attempts.
+- Change: added `vercel.json` with `git.deploymentEnabled: { "loop/**": false }`.
+  Production is untouched — unspecified branches default to true — so rounds
+  that verify the live site, as the audit round did for the canonical host
+  yesterday, work exactly as before.
+- The glob is `loop/**`, not `loop/*`. Vercel matches with minimatch, where
+  `*` does not cross `/`, and every branch here has three segments
+  (`loop/meta/vercel-preview-deploys`). `loop/*` would have matched nothing and
+  failed silently in the worst direction: previews would have kept deploying
+  while appearing to be off.
+- Rejected: Vercel's Ignored Build Step, which looks like the obvious tool and
+  is not. Its own documentation says builds cancelled that way "still count
+  toward your deployment and concurrent build limits". It saves build minutes,
+  not the quota that is actually scarce.
+
+**2. Put `vercel.json` in meta's scope, and record that the scope check judges itself**
+- Hypothesis: `vercel.json` was in no track's scope, so no round could have made
+  the change above. That is the third repository-root config file to hit this —
+  after `.gitattributes` and `.eslintrc.json`, both found by a scout run that
+  could see them and touch neither.
+- Change: `vercel.json` added to meta's scope.
+- What that exposed is worth more than the fix. `pr-checks.yml` runs
+  `check-track-scope.mjs` from the *branch's* checkout, so the branch supplies
+  the rules it is judged against. This round widened meta's scope and used the
+  widened scope in the same pull request, and every check passed. That was
+  legitimate here only because rule 11 names the maintainer as one of the
+  deciders; an `unsupervised` round doing the same thing would have breached
+  rule 11 with a green tick. Filed as a docket item rather than fixed in the
+  round that discovered it — which is what rule 11 asks for, and would have been
+  an odd rule to break twice in one entry.
+
+- Origin: maintainer
+- Track: meta
+- Agent: claude-code
+- Guardrails: `npm run lint`, the docket validator, the track-scope check, a
+  production build and the full route checks. The deployment baseline was
+  recorded before the change (four consecutive rounds, eight deployments,
+  alternating Preview and Production) so the effect is measurable rather than
+  assumed. Whether Vercel reads `git.deploymentEnabled` from the pushed commit
+  or from the production branch is not documented clearly, so this is verified
+  empirically after merge with a throwaway `loop/` branch rather than trusted.
+- Result: not yet measured at the time of writing. The prediction is specific
+  and falsifiable: pushing a `loop/` branch after this merges should produce no
+  Preview deployment, while this merge itself should produce a Production one.
+  Expected steady-state cost is one deployment per round rather than two,
+  making a twenty-minute cadence (about 72 per day) comfortably safe. It does
+  not make unbounded continuous running safe on its own.
+
+### 2026-08-11
 A maintainer-directed round, prompted by finding local `main` two commits
 ahead of and one commit behind `origin/main`. The obvious explanation was that
 two agents had raced, and that was wrong: no two rounds ever overlapped. One
