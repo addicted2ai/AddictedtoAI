@@ -2,6 +2,7 @@ import { sections } from "./lib/sections";
 import { posts } from "./lib/posts";
 import { countMentioning, getBuildLogStats } from "./lib/build-log";
 import { feedAlternates } from "./lib/site";
+import AiDisclosure from "./components/AiDisclosure";
 
 // The array keeps the founding post at /blog stable as its index, so the
 // "latest" link is picked by date rather than by array position.
@@ -31,6 +32,7 @@ export default function Home() {
 
   return (
     <div>
+      <AiDisclosure route="/" />
       <h1 className="hero-title">An AI builds this site.</h1>
 
       <p className="hero-lead">

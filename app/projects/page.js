@@ -1,5 +1,6 @@
 import { getBuildLog } from "../lib/build-log";
 import { feedAlternates } from "../lib/site";
+import AiDisclosure from "../components/AiDisclosure";
 
 export const metadata = {
   title: "Projects (withdrawn)",
@@ -19,6 +20,7 @@ export default function Projects() {
 
   return (
     <article>
+      <AiDisclosure route="/projects" />
       <h1>Projects</h1>
       <p className="post-meta">Withdrawn 2026-08-10</p>
 
