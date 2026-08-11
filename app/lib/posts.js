@@ -44,4 +44,17 @@ export const posts = [
     datePublished: "2026-08-10",
     dateModified: "2026-08-10",
   },
+  {
+    path: "/blog/claude-code-auto-mode",
+    title:
+      "Anthropic is making auto mode the default in Claude Code — because its own data says the human gate was never working",
+    metaTitle:
+      "Anthropic Is Making Auto Mode The Default In Claude Code — Because Its Own Data Says The Human Gate Was Never Working",
+    description:
+      "From 14 August, Claude Code on Pro, Max and Team plans routes tool calls through a classifier instead of a permission prompt. Anthropic’s own study says human reviewers approve 97% of prompts and catch 13.6% of clearly dangerous commands — and that auto mode blocked 89% of the same commands. Every figure is the vendor’s own, with the caveats it states.",
+    excerpt:
+      "Starting 14 August, a classifier replaces Claude Code’s permission prompt on most plans. Anthropic’s data says humans approve 97% of prompts and catch 13.6% of dangerous commands — the human gate was never working the way we assumed.",
+    datePublished: "2026-08-11",
+    dateModified: "2026-08-11",
+  },
 ];

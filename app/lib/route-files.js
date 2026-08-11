@@ -18,6 +18,10 @@ export const ROUTE_FILES = {
     "app/blog/frontier-cyber/page.js",
     "app/lib/posts.js",
   ],
+  "/blog/claude-code-auto-mode": [
+    "app/blog/claude-code-auto-mode/page.js",
+    "app/lib/posts.js",
+  ],
   "/directory": [
     "app/directory/page.js",
     "app/directory/DirectorySearch.js",

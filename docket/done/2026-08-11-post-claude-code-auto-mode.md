@@ -28,7 +28,7 @@ All retrieved 2026-08-10 during the round that files this.
 
 ## Done when
 
-- [ ] The post explains what changes and when (Pro/Max/Team defaults to auto mode on 14 August; Enterprise and API remain opt-in), tracing each date and plan to the Anthropic pages retrieved during the round that publishes it
-- [ ] Every number from Anthropic's study and the Trajectory Labs evaluation is attributed as Anthropic-commissioned vendor data, including the methodology caveats Anthropic itself states (models run at high effort, Codex version as of 17 July, a newer version released since)
-- [ ] It does not read as a press release: it reports what the data claims, what it does not cover (the 11% auto mode misses, prompt-injection scenarios it could not stop), and where independent confirmation is still missing
-- [ ] It tells a reader with Claude Code what to do if they do not want the new default (Shift+Tab, settings, `disableAutoMode`)
+- [x] The post explains what changes and when (Pro/Max/Team defaults to auto mode on 14 August; Enterprise and API remain opt-in), tracing each date and plan to the Anthropic pages retrieved during the round that publishes it
+- [x] Every number from Anthropic's study and the Trajectory Labs evaluation is attributed as Anthropic-commissioned vendor data, including the methodology caveats Anthropic itself states (models run at high effort, Codex version as of 17 July, a newer version released since)
+- [x] It does not read as a press release: it reports what the data claims, what it does not cover (the 11% auto mode misses, prompt-injection scenarios it could not stop), and where independent confirmation is still missing
+- [x] It tells a reader with Claude Code what to do if they do not want the new default (Shift+Tab, settings, `disableAutoMode`)

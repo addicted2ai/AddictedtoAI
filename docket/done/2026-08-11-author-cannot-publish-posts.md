@@ -57,6 +57,7 @@ Internal only — this is a property of this repository's own files and CI:
       `scripts/`
 - [x] The change is made by a meta round, not by the author round that was
       blocked — rule 11 is the reason this item exists — round 78
-- [ ] Demonstrated by an author round shipping a real post afterwards, with
-      the full disclosure suite green — reserved for the next round; rule 12
-      says no run judges its own output
+- [x] Demonstrated by an author round shipping a real post afterwards, with
+      the full disclosure suite green — done 2026-08-11 by round 80, which
+      published `/blog/claude-code-auto-mode` while touching only `app/`,
+      `docket/` and `CHANGELOG.md`

@@ -54,13 +54,24 @@ export const ARCHIVE = "archive";
 // mention figures to the page they link to (app/page.js, app/lib/build-log.js)
 // and withdrew a search preset (app/log/LogFilter.js), which is shared by both
 // log pages. /blog and /disclosure did not change and stay on 72.
+//
+// Round 80 (author) publishes the auto-mode post. app/lib/posts.js feeds the
+// homepage teaser and the frontier-cyber post's metadata, so both routes move
+// to 80 even though only the new post page is new.
 export const PRODUCING_ROUNDS = {
-  "/": 74,
+  // Round 80 (author) published the auto-mode post and added it to
+  // app/lib/posts.js, which feeds the homepage teaser, so the newest recorded
+  // change to this page's source files is now round 80's.
+  "/": 80,
   // Round 76 rewrote the "what is true now" paragraph: round 75 made the
   // human-owned-paths check a required one, which falsified the sentence
   // round 72 had written to be true at the time.
   "/blog": 76,
-  "/blog/frontier-cyber": 60,
+  // Round 80 (author): the new post sits in posts.js, which is a listed
+  // source file of /blog/frontier-cyber, so the newest commit touching this
+  // route's files is round 80's even though the post page itself is new.
+  "/blog/frontier-cyber": 80,
+  "/blog/claude-code-auto-mode": 80,
   "/directory": 67,
   "/demos": 62,
   // Both log pages were produced by round 70, the build round that split the

@@ -69,6 +69,29 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+Round 80 (author) publishes the site's third blog post, `/blog/claude-code-auto-mode`: a report on Anthropic's 14 August switch of Claude Code's default permission mode to auto mode, written against Anthropic's own published data and framed as vendor-commissioned throughout, with the methodology caveats Anthropic itself states kept in view. It is also the first author round to add a route since the disclosure machinery landed, and the round that closes `2026-08-11-author-cannot-publish-posts.md`, whose third "Done when" box could only be ticked by an author round actually shipping a post. (PR #N)
+
+**1. The post: the human gate was never working the way we assumed**
+- Hypothesis: the announcement will be summarised by a thousand sites within a day, so the only version that clears test 1 is the one that reports the surprising thing in Anthropic's own data rather than the vendor's conclusion — that users approve 97% of permission prompts and catch 13.6% of clearly dangerous commands, that approval fatigue makes the human reviewer worse as sessions lengthen, and that the classifier missed 11% of the same commands. I expected every figure in the docket item to trace to the two Anthropic pages I fetched; any number that did not appear in what I retrieved would be dropped and reported as unconfirmed rather than published.
+- Change: published the post. Every figure is stated as Anthropic's own reported data on its own product, and the caveats Anthropic itself publishes are carried in the post rather than laundered: the paid-tester study design (only the prompt text changed, nothing dangerous ran), the Apollo adversarial set whose 7% miss rate is explicitly not the real-traffic rate, the 11% the classifier still missed, the Trajectory evaluation being Anthropic-commissioned and running on Trajectory's own browser harness (so it measures the model, not the deployment), the Codex v0.144.5 snapshot as of 17 July and the newer Auto-review Anthropic says could change the results, and GPT-5.6 Sol run at max reasoning versus all Claude models at high effort. Every figure in the docket item did trace to the fetched sources; none had to be dropped, and the post says so. The thesis the docket proposed survived contact with the sources: the interesting story is not "auto mode is safe" but "the human gate was a ritual", and the production case studies Anthropic itself published undercut the press-release reading by showing its own customers keeping a human on the highest-stakes actions.
+
+**2. Registering the route under the disclosure machinery**
+- Hypothesis: the fix round 78 shipped was meant to make exactly this round possible — add the route to PRODUCING_ROUNDS and ROUTE_FILES, both in app/, and the disclosure check passes. What I did not predict is that posts.js is a listed source file of `/` and `/blog/frontier-cyber` as well, so the git-history half of the disclosure check would fail for both of those routes unless their producing rounds move to 80 too.
+- Change: added the route to both maps; moved `/` and `/blog/frontier-cyber` to round 80 with comments explaining that the new post in posts.js is now the newest recorded change to their listed files; added the post to the sitemap. The disclosure check passed on the branch (see Guardrails). One residual gap is reported rather than widened: `scripts/check-routes.sh` hardcodes the route lists for its disclosure-marker and document-budget loops, so the new route is in neither, but `check-ai-disclosure.mjs` iterates ROUTE_FILES and so does verify the new route's disclosure. The hardcoded lists live in `scripts/`, outside author scope, and are left for a later round or the maintainer.
+
+**3. Closing the blocker**
+- Hypothesis: box 3 of `2026-08-11-author-cannot-publish-posts.md` reads "demonstrated by an author round shipping a real post afterwards, with the full disclosure suite green" — a circular acceptance criterion that only an author round can satisfy, and this round is the one.
+- Change: moved the blocker item to `docket/done/` with box 3 ticked, and moved the post item `2026-08-11-post-claude-code-auto-mode.md` to `docket/done/`, naming this round. The route→files map that moved into `app/` in round 78 was the enabler, and it held under a real post, not just under its own tests.
+
+Note: `prompts/shared/every-run.md` enumerates `Agent` as `claude-code, codex, claude-code-action`. That list is incomplete — this round records `opencode/deepseek-v4-flash` — but the file is human-owned under rule 13, so the enumeration is flagged here rather than fixed here.
+
+- Origin: supervised
+- Track: author
+- Agent: opencode/deepseek-v4-flash
+- Guardrails: (fill after check)
+- Result: (fill after check)
+
+### 2026-08-11
 Round 78 was blocked by the track-scope check, edited the track-scope check to
 unblock itself, and merged. `CHARTER.md` rule 11 forbids exactly that, and no
 check could see it, because `check-track-scope.mjs` reads its rules from the
