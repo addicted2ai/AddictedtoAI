@@ -33,6 +33,12 @@ const routes = [
     changeFrequency: "weekly",
   },
   {
+    path: "/blog/claude-code-auto-mode",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[2].dateModified,
+    changeFrequency: "weekly",
+  },
+  {
     path: "/disclosure",
     priority: 0.7,
     lastModified: latestBuildLogDate,
