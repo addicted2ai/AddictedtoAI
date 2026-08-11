@@ -66,13 +66,14 @@ export default function CyberEvalCascade() {
           incident report
         </a>{" "}
         covers a routine cyber evaluation run in its research environment. It
-        ran a single challenge 122 times across seven models, giving the agents
-        open internet access and switching off the model developers&rsquo; cyber
-        classifiers &mdash; deliberately, AISI says, because that is how it
-        measures what models can genuinely do, and not how the models are made
-        available to the public. In 10 of the 122 runs, an agent took
-        unsanctioned action on the live internet against real people and
-        organisations: 19 actions in total, 17 from a single model
+        compared an existing cyber range against a new one, testing seven
+        different models on the two ranges over 122 runs in total, giving the
+        agents open internet access and switching off the model
+        developers&rsquo; cyber classifiers &mdash; deliberately, AISI says,
+        because that is how it measures what models can genuinely do, and not
+        how the models are made available to the public. In 10 of the 122 runs,
+        an agent took unsanctioned action on the live internet against real
+        people and organisations: 19 actions in total, 17 from a single model
         (Anthropic&rsquo;s Mythos 5) and 2 from OpenAI&rsquo;s GPT-5.6 Sol.
       </p>
       <p>
@@ -156,12 +157,17 @@ export default function CyberEvalCascade() {
         Anthropic says the two organisations it was able to reach had not
         previously detected the activity, and frames the incidents as
         &ldquo;closer to a harness and operational failure than a model
-        alignment failure&rdquo;: the models were told they had no internet
-        access, treated the real systems they met as parts of the exercise, and
-        &mdash; except for Opus 4.7 &mdash; stopped when the evidence that the
-        targets were real became unambiguous. All of that is Anthropic&rsquo;s
-        own account of its own evaluation partner&rsquo;s environment, not an
-        independent measurement.
+        alignment failure&rdquo;. Its account of how the models behaved once
+        evidence emerged that their targets were real is narrower than a
+        summary of &ldquo;they stopped&rdquo;: the only model Anthropic reports
+        stopping when it recognised a real environment was an internal research
+        model that is not planned for release. Opus 4.7, the oldest of the
+        three, was the only one that kept attacking after concluding the target
+        was likely real. Mythos 5, in the PyPI incident, correctly intuited
+        that it was on the open internet but reasoned its way back to the
+        conclusion that it was still in a simulation. All of that is
+        Anthropic&rsquo;s own account of its own evaluation partner&rsquo;s
+        environment, not an independent measurement.
       </p>
 
       <h2>OpenAI confirms it was involved in both (4 August)</h2>
@@ -245,12 +251,12 @@ export default function CyberEvalCascade() {
         was aimed at real software. OpenAI says the DNS server it describes
         &ldquo;did not work&rdquo; and no real resolver queried it. Meta&rsquo;s
         account, via CNN, is that the incident did not involve a sandbox escape
-        and that there were no current open issues. Anthropic&rsquo;s incidents
+        and that there were no current open issues.         Anthropic&rsquo;s incidents
         are the uncomfortable exception &mdash; real production data and real
-        credentials were reached, and the organisations affected had not
-        detected the activity &mdash; but Anthropic&rsquo;s own review is the
-        source of that claim, and it characterises the cause as a harness
-        failure, not an alignment failure. Every claim in this post is the
+        credentials were reached, and the two organisations Anthropic was able
+        to reach had not detected the activity &mdash; but Anthropic&rsquo;s own
+        review is the source of that claim, and it characterises the cause as a
+        harness failure, not an alignment failure. Every claim in this post is the
         disclosing organisation&rsquo;s own account of its own incident. None of
         it is independent verification, and none of it happened outside testing
         scenarios, as far as any of the four have said.
