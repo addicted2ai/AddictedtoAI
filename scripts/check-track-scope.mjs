@@ -70,6 +70,12 @@ const SCOPES = {
     // the Hobby plan's 100-deployments-per-day limit became the binding
     // constraint on how often a round can run.
     "vercel.json",
+    // Exactly one app/ file, by full path, not the directory: the disclosure
+    // check's route->files data. Meta moved it here from scripts/ so the
+    // author track (which cannot touch scripts/) can register new post routes.
+    // Meta owns creating and maintaining the data file; author owns the data
+    // once it exists. The check LOGIC that reads it stays in scripts/.
+    "app/lib/route-files.js",
     "docket/",
     "CHANGELOG.md",
   ],

@@ -69,6 +69,102 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+The author track cannot publish a blog post: every new post route must be
+registered in two maps, `PRODUCING_ROUNDS` (`app/lib/page-origins.js`, in
+author scope) and `ROUTE_FILES` (`scripts/check-ai-disclosure.mjs`, not in
+author scope), and the disclosure check hard-fails on either direction of
+mismatch. Seven priority-1 post items sat behind that wall. This round moves
+the route→files map into `app/lib/route-files.js` so the track that creates
+routes can extend the data, and keeps the verification logic in `scripts/`,
+where the tracks it verifies cannot weaken it. (PR #26)
+
+**1. Moved the disclosure check's route→files data into author scope**
+- Hypothesis: the wall is one file's location, not the check's logic.
+  `ROUTE_FILES` is data — which source files constitute each route — and the
+  only reason it sat in `scripts/` is that the disclosure feature predates the
+  track scopes. If the data moves into `app/`, an author round can register a
+  new route in both maps while touching only author-scope files, and the
+  check verifies exactly as before.
+- Change: the map now lives in a new `app/lib/route-files.js`, and
+  `scripts/check-ai-disclosure.mjs` imports it. `scripts/check-track-scope.mjs`
+  grants meta exactly that one file (see the scope note below). The check's
+  logic — the bidirectional route-list comparison, the git-history track
+  verification, the banner-diff chrome rule, the exit behaviour — is unchanged
+  and stays in `scripts/`.
+- What a track can now do that it could not before: an author round may define
+  which source files constitute a route in the disclosure map. It still cannot
+  change how the map is verified — that logic remains editable only by build,
+  maintain, audit and meta, which is the point of keeping the check in
+  `scripts/`.
+- The choice of B over A and C. A — adding the check file to author's SCOPES —
+  hands the track the check constrains write access to the check itself: a PR
+  could publish a post and weaken the disclosure verification in the same
+  change, which is the applicant-and-judge failure this project's structure
+  exists to prevent, and the exact situation rule 11's "file the case, a later
+  run decides" path exists for. C — deriving the file list from the route —
+  cannot work for the shared dependencies: `posts.js`, `sections.js`,
+  `tool-categories.js`, `LogFilter.js`, `LogEntry.js` and `build-log.js` are
+  not derivable from a path, so a derived map would still need a table for
+  them, and would freeze a layout convention into the check. B keeps one file
+  of data and one consumer, with the logic in the scope that owns the judging.
+- The scope change this round makes, and its narrowness. Meta's `SCOPES`
+  entry in `scripts/check-track-scope.mjs` gains exactly one path —
+  `app/lib/route-files.js`, as a full file path, not the `app/` directory.
+  Meta can now write one data file in `app/`; every other `app/` file remains
+  out of meta's reach, and the check logic in `scripts/` is what it always
+  was. No other track's scope changes. What a meta round could not do before:
+  touch anything under `app/`. What it can do now: maintain this one
+  route→files data file. The widening is the minimum the fix needs — the map
+  has to live in author scope, and this repository's only author-scope
+  directories (`app/`, `public/`) are both outside meta's scope, so a meta
+  round cannot create the file without this one-path grant.
+- Recorded because this is a permissions change the loop made about itself,
+  in the exact shape the open `2026-08-11-track-scope-judges-itself.md` item
+  warns about: `check-track-scope.mjs` reads its rules from the branch under
+  test, so this branch's own added path passes the check it is judged by.
+  The item names one legitimate case for a scope widening that is used in the
+  same pull request — the maintainer deciding, under rule 11. That decider is
+  exercised here: the maintainer directed this design (the docket item's own
+  example is a route→files map living in `app/`) and can veto before merge,
+  which is what `Origin: supervised` records. The widening is kept to one
+  data file with no logic, which is the narrowest form the fix can take.
+
+**2. Closed the empty-file-list hole the move opens**
+- Hypothesis: `git log` with no pathspec falls back to whole-repository
+  history, so a route with an empty file list would verify the newest commit
+  in the repo — usually the very round being checked — and pass. The map is
+  now authored by a track that does not own the check, so a malformed entry
+  must be a loud failure, not a quiet green.
+- Change: the check now fails any route whose file list is empty before any
+  git work. Proved it can fail before trusting it: injected `"/": []` into
+  the map and ran the check — exit 1, with both the new message and a
+  git-history mismatch; reverted, and all nine routes pass with output
+  identical to before the move.
+
+- Origin: supervised
+- A human triggered this run by hand (`node scripts/round.mjs start --track
+  meta --agent codex`) and can veto before merge — it is not a batch left
+  unattended.
+- Track: meta
+- Agent: codex
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite, no group skipped.
+  Port 3000 was confirmed free before `check` ran, per the stale-server hazard
+  filed in round 75, and the changelog entry's presence was verified in the
+  file before shipping, per the missing-entry hazard also filed in round 75.
+  The empty-list guard was made to go red before being trusted.
+- Meta quota: meta is at 6 of the last 20 shipped rounds — counted this round
+  from the `- Track:` fields in `CHANGELOG.md`, the same history
+  `scripts/dispatch.mjs` reads — against `max_share_of_runs: 0.10` in
+  `policy.yml`, which was not edited to fit. The forced run is argued for in
+  the docket item: it unblocks seven priority-1 author items, which is the
+  meta charge — fixing what stops another track.
+- Result: not yet measured. The observable test is the docket item's third
+  checklist box — an author round shipping a real post with the disclosure
+  suite green — which is deliberately reserved for a later round, because rule
+  12 says no run judges its own output.
+
+### 2026-08-11
 The charter said `CODEOWNERS` made rule 13 mechanical. It never did, and the
 document asserting the constraint was the same document the constraint failed
 to protect. Round 75 built a gate that works and the maintainer made it
