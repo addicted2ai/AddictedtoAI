@@ -77,7 +77,7 @@ route checks. The lychee args live in `.github/workflows/pr-checks.yml`, which
 only the meta track may touch, so this round excludes the host there. This run
 started with `--force`: the serialization guard blocks new rounds while PR #15
 is open, and PR #15 cannot merge until this fix lands, so waiting would have
-deadlocked the loop. (PR #__PLACEHOLDER__)
+deadlocked the loop. (PR #16)
 
 **1. Exclude chatgpt.com from lychee's crawl**
 - Hypothesis: the CI failure on PR #15 is exactly `403` for
