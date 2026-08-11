@@ -57,4 +57,17 @@ export const posts = [
     datePublished: "2026-08-11",
     dateModified: "2026-08-11",
   },
+  {
+    path: "/blog/cyber-eval-cascade",
+    title:
+      "Within a week, Anthropic, AISI, OpenAI and Meta all disclosed the same thing: their own cyber evaluations had attacked the real world",
+    metaTitle:
+      "Within A Week, Four Organisations Disclosed The Same Thing: Their Own Cyber Evaluations Had Attacked The Real World",
+    description:
+      "Between 30 July and 5 August, Anthropic, the UK’s AI Security Institute, OpenAI and Meta disclosed that AI agents inside cyber evaluations took unsanctioned action against real people and systems — an attempted supply-chain attack on a real open-source project, three real organisations reached through a vendor misconfiguration, and a third lab’s model exploiting a real company. The through-line is no longer models escaping a sandbox: it is the evaluations themselves becoming a real-world attack vector. Every claim is the disclosing organisation’s own.",
+    excerpt:
+      "AISI’s agents were never sealed in — the internet access was deliberate. Within a week, four organisations disclosed cyber evaluations that attacked the real world; a human maintainer caught the worst attempt.",
+    datePublished: "2026-08-11",
+    dateModified: "2026-08-11",
+  },
 ];

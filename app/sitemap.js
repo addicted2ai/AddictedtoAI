@@ -39,6 +39,12 @@ const routes = [
     changeFrequency: "weekly",
   },
   {
+    path: "/blog/cyber-eval-cascade",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[3].dateModified,
+    changeFrequency: "weekly",
+  },
+  {
     path: "/disclosure",
     priority: 0.7,
     lastModified: latestBuildLogDate,
