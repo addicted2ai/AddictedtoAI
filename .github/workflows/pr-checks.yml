@@ -79,7 +79,16 @@ jobs:
           # request and immune to GitHub rate-limiting a shared CI runner,
           # which is how a green link check would otherwise start failing for
           # reasons that have nothing to do with the site.
-          args: --base http://localhost:3000 --exclude 'github\.com/addicted2ai/AddictedtoAI/commit/' http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos http://localhost:3000/log
+          #
+          # chatgpt.com is excluded for the same class of reason: Cloudflare
+          # bot protection answers lychee's requests from shared GitHub
+          # runners with 403 even though the page is live. The link is not
+          # unchecked — scripts/check-routes.sh runs
+          # scripts/check-tool-links.mjs, which resolves every Directory href
+          # after redirects and fails on mismatch, and it passes for
+          # chatgpt.com. Scoped to this host only; nothing this site can
+          # verify itself is excluded.
+          args: --base http://localhost:3000 --exclude 'github\.com/addicted2ai/AddictedtoAI/commit/' --exclude 'chatgpt\.com' http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos http://localhost:3000/log
           fail: true
 
       # The non-HTML routes are shipped code too, and nothing above
