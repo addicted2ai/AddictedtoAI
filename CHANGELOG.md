@@ -160,6 +160,14 @@ second time. It was simply the whole record, and the record keeps growing.
   (`route "/log/archive" maps to round 70, which is not in the build log`),
   which is the disclosure machinery working: a new page cannot render before
   the round that produced it exists in the record.
+- Both new assertions were proved able to fail before being trusted, which is
+  the rule this project keeps having to relearn. Lowering the budget to 70,000
+  in a scratch copy of `lighthouserc.json` turned the document-size check red
+  on `/log` and `/log/archive` and it was reverted; pointing the mention-count
+  check at `/log` alone made it report "homepage says 26 rounds say 'wrong',
+  but the log pages have 13". That second number is what this round would have
+  shipped if the count had not been taught to span both pages: a homepage
+  advertising 26 and a page showing 13.
 - Result: measured. `/log` went from 153,532 bytes gzipped to **73,293**, a 52%
   reduction, against a 150,000 budget and a 147,000 local ceiling — about 73 KB
   of headroom, or roughly 38 more rounds at the ~1.9 KB per round the changelog
