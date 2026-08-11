@@ -44,6 +44,14 @@ read — a JSON file at the repository root that the workflow and
 `check-routes.sh` both consume — so adding a route is one edit inside build's
 scope instead of a cross-track handoff.
 
+It happened the next round (2026-08-11, build): `/charter` shipped with the
+same gap. The round mitigated from inside build's scope exactly as the
+`/log/archive` round did — `check-routes.sh` asserts the document-size budget
+and the disclosure marker for every route including `/charter`, and the
+rule-count check on that page runs in CI via the same script — but `/charter`
+is not in the Lighthouse or lychee URL lists, and the build track cannot add it
+without editing `.github/`.
+
 ## Evidence
 
 - `.github/workflows/pr-checks.yml` — the `urls:` block for the Lighthouse
@@ -61,7 +69,12 @@ scope instead of a cross-track handoff.
 - [ ] `/log/archive` is in the Lighthouse step's `urls:` list, so the page
       carries the same performance, accessibility, SEO and page-weight
       assertions as every other route
+- [ ] `/charter` joins it, the same way and for the same reason — a route CI
+      does not measure is a route whose Lighthouse floors silently do not
+      apply
 - [ ] `/log/archive` is in the lychee step's URL arguments, so its links are
+      crawled
+- [ ] `/charter` is in the lychee step's URL arguments, so its links are
       crawled
 - [ ] A decision is recorded on whether the URL list moves somewhere both
       tracks can read. If it stays in `.github/`, the record says so and says

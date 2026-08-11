@@ -973,3 +973,138 @@ h2.latest-post-label {
   font-size: 0.88em;
   overflow-wrap: break-word;
 }
+
+/* ---- Charter ----------------------------------------------------------- */
+
+.charter-section h2 {
+  margin: 2.5rem 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.charter-section h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1rem;
+}
+
+.charter-section > p {
+  max-width: 62ch;
+}
+
+/* The 21 rules, sections I–V, numbered by the document (which restarts the
+   numbering per section via the <ol start>). */
+.charter-rules {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.charter-rules > li {
+  margin-bottom: 1.5rem;
+}
+
+.charter-rules > li > p {
+  margin: 0 0 0.5rem;
+  max-width: 62ch;
+}
+
+.charter-subbullets {
+  margin: 0.5rem 0 0;
+}
+
+/* The two tests in "The direction". */
+.charter-tests {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.charter-tests li p {
+  margin: 0;
+  max-width: 62ch;
+}
+
+/* The tracks table. */
+.charter-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.25rem;
+  font-size: 0.9rem;
+}
+
+.charter-table th,
+.charter-table td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.charter-table th {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Dated amendment entries, one per change, newest last. */
+.charter-history {
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+}
+
+.charter-history-entry {
+  padding: 1.25rem 0 1.25rem 1.5rem;
+  border-left: 1px solid var(--border);
+}
+
+.charter-history-entry:last-child {
+  border-left-color: transparent;
+}
+
+.charter-history-date {
+  margin: 0 0 0.5rem;
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
+.charter-history-entry p {
+  margin: 0 0 0.5rem;
+  max-width: 62ch;
+}
+
+.charter-history-entry p:last-child {
+  margin-bottom: 0;
+}
+
+/* A correction carried beside a claim in the document that its own audit
+   found false. Rendered only while the claim is still present. */
+.charter-correction {
+  margin: 1.75rem 0;
+  padding: 1.1rem 1.25rem;
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  background: rgba(94, 234, 212, 0.04);
+}
+
+.charter-correction h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.charter-correction p {
+  margin: 0 0 0.75rem;
+  max-width: 62ch;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.charter-correction p:last-child {
+  margin-bottom: 0;
+}
+
+.charter-correction code {
+  background: var(--border);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+  overflow-wrap: break-word;
+}

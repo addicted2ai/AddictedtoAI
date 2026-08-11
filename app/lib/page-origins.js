@@ -64,11 +64,15 @@ export const ARCHIVE = "archive";
 // change to each of those routes' files is round 82's — and this round also
 // closes the gap round 80 noted: /blog now lists posts.js, which its page
 // imports for the "More from the blog" list. All five routes move together.
+//
+// Round 83 (build) publishes the charter at /charter. app/page.js gains a link
+// to it, so / — which lists app/page.js as a source file — moves to 83; the
+// other four routes round 82 touched are untouched this round and stay on 82.
 export const PRODUCING_ROUNDS = {
-  // Round 82 (author) added the cyber-eval-cascade post to app/lib/posts.js,
-  // which feeds the homepage teaser, so the newest recorded change to this
-  // page's source files is now round 82's.
-  "/": 82,
+  // Round 83 (build) added the /charter link to app/page.js, which is a
+  // listed source file of the homepage, so the newest recorded change to this
+  // page's files is round 83's.
+  "/": 83,
   // Round 82 (author): /blog lists app/lib/posts.js now (its page imports
   // `posts` for the "More from the blog" list), and posts.js gained a post, so
   // the newest recorded change to this route's files is round 82's. Round 81
@@ -81,6 +85,9 @@ export const PRODUCING_ROUNDS = {
   "/blog/frontier-cyber": 82,
   "/blog/claude-code-auto-mode": 82,
   "/blog/cyber-eval-cascade": 82,
+  // Round 83 (build) built this page and its parser. New route, so its
+  // producing round is the round that created it.
+  "/charter": 83,
   "/directory": 67,
   "/demos": 62,
   // Both log pages were produced by round 70, the build round that split the
