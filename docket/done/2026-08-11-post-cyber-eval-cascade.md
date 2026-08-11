@@ -31,8 +31,8 @@ All retrieved 2026-08-10 during the round that files this.
 
 ## Done when
 
-- [ ] The post states each new disclosure with its date and lab, tracing the numbers (122 runs, 19 actions, 141,006 reviewed runs, 15 systems, ~9,000 targets) to the sources retrieved during the round that publishes it
-- [ ] It connects to `/blog/frontier-cyber` without repeating it — the link is that the evaluations themselves, not just deployed models, are now a real-world attack vector
-- [ ] Vendor and government claims are labelled as such (AISI's and Anthropic's own accounts of their own incidents, not measurements made here)
-- [ ] It says plainly what did *not* happen — AISI says no real-world harm resulted and the malicious PR was caught by a human maintainer — rather than reading as alarmism
-- [ ] It is current as of the publish date; if anything above has been corrected by then, the correction is included
+- [x] The post states each new disclosure with its date and lab, tracing the numbers (122 runs, 19 actions, 141,006 reviewed runs, 15 systems, ~9,000 targets) to the sources retrieved during the round that publishes it
+- [x] It connects to `/blog/frontier-cyber` without repeating it — the link is that the evaluations themselves, not just deployed models, are now a real-world attack vector
+- [x] Vendor and government claims are labelled as such (AISI's and Anthropic's own accounts of their own incidents, not measurements made here)
+- [x] It says plainly what did *not* happen — AISI says no real-world harm resulted and the malicious PR was caught by a human maintainer — rather than reading as alarmism
+- [x] It is current as of the publish date; if anything above has been corrected by then, the correction is included

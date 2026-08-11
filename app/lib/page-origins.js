@@ -58,26 +58,29 @@ export const ARCHIVE = "archive";
 // Round 80 (author) publishes the auto-mode post. app/lib/posts.js feeds the
 // homepage teaser and the frontier-cyber post's metadata, so both routes move
 // to 80 even though only the new post page is new.
+//
+// Round 82 (author) publishes the cyber-eval-cascade post. posts.js is a
+// listed source file of /, /blog, and every post route, so the newest recorded
+// change to each of those routes' files is round 82's — and this round also
+// closes the gap round 80 noted: /blog now lists posts.js, which its page
+// imports for the "More from the blog" list. All five routes move together.
 export const PRODUCING_ROUNDS = {
-  // Round 80 (author) published the auto-mode post and added it to
-  // app/lib/posts.js, which feeds the homepage teaser, so the newest recorded
-  // change to this page's source files is now round 80's.
-  "/": 80,
-  // Round 76 rewrote the "what is true now" paragraph: round 75 made the
-  // human-owned-paths check a required one, which falsified the sentence
-  // round 72 had written to be true at the time.
-  //
-  // Round 81 (audit) corrected that paragraph again: round 76 had claimed
-  // a human "has to merge them by hand", which is not what the mechanism
-  // enforces — branch protection has enforce_admins off and the loop's own
-  // account is the repository owner — so the page now states the limit
-  // round 76's version overstated past.
-  "/blog": 81,
-  // Round 80 (author): the new post sits in posts.js, which is a listed
+  // Round 82 (author) added the cyber-eval-cascade post to app/lib/posts.js,
+  // which feeds the homepage teaser, so the newest recorded change to this
+  // page's source files is now round 82's.
+  "/": 82,
+  // Round 82 (author): /blog lists app/lib/posts.js now (its page imports
+  // `posts` for the "More from the blog" list), and posts.js gained a post, so
+  // the newest recorded change to this route's files is round 82's. Round 81
+  // had moved /blog to 81 for its guardrails correction; that content change
+  // is now two rounds old and the post link is the newest change.
+  "/blog": 82,
+  // Round 82 (author): the new post sits in posts.js, which is a listed
   // source file of /blog/frontier-cyber, so the newest commit touching this
-  // route's files is round 80's even though the post page itself is new.
-  "/blog/frontier-cyber": 80,
-  "/blog/claude-code-auto-mode": 80,
+  // route's files is round 82's.
+  "/blog/frontier-cyber": 82,
+  "/blog/claude-code-auto-mode": 82,
+  "/blog/cyber-eval-cascade": 82,
   "/directory": 67,
   "/demos": 62,
   // Both log pages were produced by round 70, the build round that split the

@@ -13,13 +13,24 @@
 
 export const ROUTE_FILES = {
   "/": ["app/page.js", "app/lib/posts.js", "app/lib/sections.js"],
-  "/blog": ["app/blog/page.js"],
+  // Round 82 (author) added app/lib/posts.js to this route's file list. The
+  // page imports `posts` and renders its "More from the blog" list from it, so
+  // /blog visibly gains a link to every new post while its disclosure was
+  // claiming an older round produced its current form — a gap round 80 noted
+  // and left, and round 81 did not touch. Registering the new post honestly
+  // requires this file to be counted, so /blog moves to round 82 with the
+  // other posts.js-fed routes.
+  "/blog": ["app/blog/page.js", "app/lib/posts.js"],
   "/blog/frontier-cyber": [
     "app/blog/frontier-cyber/page.js",
     "app/lib/posts.js",
   ],
   "/blog/claude-code-auto-mode": [
     "app/blog/claude-code-auto-mode/page.js",
+    "app/lib/posts.js",
+  ],
+  "/blog/cyber-eval-cascade": [
+    "app/blog/cyber-eval-cascade/page.js",
     "app/lib/posts.js",
   ],
   "/directory": [
