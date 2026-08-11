@@ -3,12 +3,13 @@ import { getArchivedPr } from "../lib/pr-archive";
 import { getRepoUrl } from "../lib/site";
 
 // One round, rendered. Extracted from app/log/page.js when the log split
-// across two pages: /log renders the current era and /log/archive renders
-// the rounds that predate the Origin field. Both pages render a round the
-// same way, and the markup is load-bearing — scripts/check-routes.sh counts
-// `<li class="log-entry"` to recount the homepage's round-mention figures,
-// and LogFilter.js searches `[data-log-entry]`. One copy, so the two pages
-// cannot drift into rendering the record differently.
+// across pages: /log renders the newest rounds in full, /log/archive the
+// rounds that predate the Origin field, and /log/early the first rounds of
+// this repository, frozen at a closed boundary. Every page renders a round
+// the same way, and the markup is load-bearing — scripts/check-routes.sh
+// counts `<li class="log-entry"` to recount the homepage's round-mention
+// figures, and LogFilter.js searches `[data-log-entry]`. One copy, so the
+// pages cannot drift into rendering the record differently.
 
 // Every round's PR numbers are real, and linking them is the strongest
 // evidence on the page. Where that link points depends on when the round
@@ -171,25 +172,26 @@ export function LogEntry({ entry }) {
   );
 }
 
-// An archived round's placeholder on /log. It exists so that a citation
-// written before the split — `/log#round-archived-pr-12`, which the RSS feed
-// has been emitting since the feed was built — still resolves to something
-// that explains itself and points at the full entry. CHARTER.md rule 9:
-// nothing published disappears silently, and a reader who followed a link is
-// owed an explanation rather than a dead end.
+// A moved round's placeholder on /log. It exists so that a citation written
+// before the round left this page — `/log#round-archived-pr-12`, which the
+// RSS feed has been emitting since the feed was built, or a newer
+// `/log#round-pr-N` for a round now read at /log/early — still resolves to
+// something that explains itself and points at the full entry. CHARTER.md
+// rule 9: nothing published disappears silently, and a reader who followed
+// a link is owed an explanation rather than a dead end.
 //
 // Deliberately NOT `class="log-entry"` and NOT `data-log-entry`: the stub
 // carries no prose, so counting it as a searchable round would make the
 // homepage's "N rounds say X" figure disagree with what the search finds.
 // check-routes.sh recounts those figures by splitting on `<li class="log-entry"`
 // and would silently include stubs if they shared the class.
-export function LogStub({ entry }) {
+export function LogStub({ entry, fullHref = "/log/archive", linkLabel }) {
   return (
     <li className="log-stub" id={entry.id}>
       <RoundMeta
         entry={entry}
-        headingHref={`/log/archive#${entry.id}`}
-        linkLabel=" — read this round in the archive"
+        headingHref={`${fullHref}#${entry.id}`}
+        linkLabel={linkLabel || " — read this round in the archive"}
       />
     </li>
   );

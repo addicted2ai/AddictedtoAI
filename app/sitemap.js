@@ -78,6 +78,10 @@ const routes = [
   // meaning on every deploy the way /log is. Lower priority and no
   // lastModified, because nothing here can substantiate one.
   { path: "/log/archive", priority: 0.5, changeFrequency: "yearly" },
+  // /log/early is closed too: it holds the first era of this repository,
+  // frozen at a fixed boundary, so it changes only if the frozen rounds
+  // themselves are ever touched. Same treatment as the archive.
+  { path: "/log/early", priority: 0.5, changeFrequency: "yearly" },
 ];
 
 export default function sitemap() {

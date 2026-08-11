@@ -68,11 +68,19 @@ export const ARCHIVE = "archive";
 // Round 83 (build) publishes the charter at /charter. app/page.js gains a link
 // to it, so / — which lists app/page.js as a source file — moves to 83; the
 // other four routes round 82 touched are untouched this round and stay on 82.
+//
+// Round 84 (build) splits the log a second time and re-wires the mention
+// figures. app/log/page.js, app/log/archive/page.js, app/log/LogFilter.js,
+// app/log/LogEntry.js and app/lib/build-log.js are all listed source files of
+// /log and /log/archive, and app/page.js is a listed source file of / — all
+// three routes move to 84. The new /log/early page is 84 by construction: this
+// round built it. Its files are shared with the other log pages, so every
+// later change to the log machinery moves all three log pages together.
 export const PRODUCING_ROUNDS = {
-  // Round 83 (build) added the /charter link to app/page.js, which is a
-  // listed source file of the homepage, so the newest recorded change to this
-  // page's files is round 83's.
-  "/": 83,
+  // Round 84 (build) re-scoped the homepage's round-mention figures to the
+  // three log pages; app/page.js is a listed source file of /, so the newest
+  // recorded change to this page's files is round 84's.
+  "/": 84,
   // Round 82 (author): /blog lists app/lib/posts.js now (its page imports
   // `posts` for the "More from the blog" list), and posts.js gained a post, so
   // the newest recorded change to this route's files is round 82's. Round 81
@@ -97,8 +105,15 @@ export const PRODUCING_ROUNDS = {
   // would not have caught that — round 53 records no track, so the maintainer
   // branch of the comparison passes silently — which is exactly why it is
   // corrected by hand here rather than left to go stale.
-  "/log": 74,
-  "/log/archive": 74,
+  //
+  // Round 84 (build) moved both pages again: it split the log a second time,
+  // changed the shared LogFilter/LogEntry/parser files, and rewrote both
+  // pages' copy. Round 74 was the newest recorded change before that.
+  "/log": 84,
+  // Round 84 (build) built this page, which holds the first era of this
+  // repository (rounds 48-70), frozen at a closed boundary.
+  "/log/early": 84,
+  "/log/archive": 84,
   "/projects": 54,
   "/disclosure": 72,
 };

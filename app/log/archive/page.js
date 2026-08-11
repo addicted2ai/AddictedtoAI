@@ -1,4 +1,4 @@
-import { getArchivedLog, getCurrentEraLog } from "../../lib/build-log";
+import { getArchivedLog, getCurrentLog, getEarlyEraLog } from "../../lib/build-log";
 import { feedAlternates } from "../../lib/site";
 import LogFilter from "../LogFilter";
 import { LogEntry } from "../LogEntry";
@@ -16,7 +16,8 @@ export const metadata = {
 
 export default function BuildLogArchive() {
   const entries = getArchivedLog();
-  const current = getCurrentEraLog();
+  const current = getCurrentLog();
+  const early = getEarlyEraLog();
 
   return (
     <div>
@@ -50,8 +51,16 @@ export default function BuildLogArchive() {
 
       <LogFilter
         total={entries.length}
-        counterpartHref="/log"
-        counterpartLabel={`Search the ${current.length} rounds built here`}
+        counterparts={[
+          {
+            href: "/log",
+            label: `Search the ${current.length} newest rounds`,
+          },
+          {
+            href: "/log/early",
+            label: `Search the ${early.length} early rounds`,
+          },
+        ]}
       />
 
       <section

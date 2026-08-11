@@ -62,9 +62,12 @@ check /log       200 "text/html" '<form class="log-filter" role="search" aria-la
 check /demos     200 "text/html" 'role="group" aria-labelledby="finder-question-label"'
 check /directory 200 "text/html" 'id="directory-results" aria-labelledby="directory-results-label"'
 check /log       200 "text/html" 'id="build-log-results" aria-labelledby="build-log-results-label"'
-# The archive carries the other half of the record and the same search.
+# The archive and the early-log pages carry the rest of the record and the
+# same search.
 check /log/archive 200 "text/html" '<form class="log-filter" role="search" aria-label="Search the build log"'
 check /log/archive 200 "text/html" 'id="build-log-results" aria-labelledby="build-log-results-label"'
+check /log/early 200 "text/html" '<form class="log-filter" role="search" aria-label="Search the build log"'
+check /log/early 200 "text/html" 'id="build-log-results" aria-labelledby="build-log-results-label"'
 
 # lychee follows redirects and reports 200, so a Directory link that now
 # resolves somewhere else -- runwayml.com -> runway.com -- passes its check
@@ -80,7 +83,7 @@ node scripts/check-tool-links.mjs || failures=$((failures + $?))
 # scripts/check-ai-disclosure.mjs separately verifies the producing-round map
 # against the build log and git history.
 echo
-for route in / /blog /blog/frontier-cyber /directory /demos /log /log/archive /projects /disclosure /charter; do
+for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter; do
   body=$(curl -s "$BASE$route")
   case "$body" in
     *'data-ai-disclosure'*) echo "ok    $route carries the AI disclosure" ;;
@@ -118,7 +121,7 @@ else
   MARGIN=3000
   ceiling=$((budget - MARGIN))
   echo "      document budget $budget bytes; local ceiling $ceiling (margin $MARGIN)"
-  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/archive /projects /disclosure /charter; do
+  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter; do
     bytes=$(curl -s -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}' "$BASE$route")
     if [ "$bytes" -gt "$ceiling" ]; then
       echo "FAIL  $route is $bytes bytes gzipped, over the local ceiling of $ceiling"
@@ -180,28 +183,17 @@ echo
 all_headings=$(grep -c '^### ' CHANGELOG.md)
 template_headings=$(grep -c '^### YYYY-MM-DD' CHANGELOG.md)
 expected=$((all_headings - template_headings))
-# Count the per-entry anchor ids, not the visible "Round N" text: React
-# splits interpolated text with comment nodes, so the rendered markup
-# reads `Round <!-- -->30` and a naive grep counts one.
-all_ids=$(curl -s "$BASE/log" | grep -o 'id="round-[^"]*"')
-rounds=$(printf '%s\n' "$all_ids" | sort -u | wc -l | tr -d ' ')
-total_ids=$(printf '%s\n' "$all_ids" | wc -l | tr -d ' ')
-
-# Two rounds sharing an anchor look exactly like one round going missing, and
-# the first version of this check reported it that way -- "renders 49, has 50"
-# when nothing was missing and two rounds were both claiming `round-pr-1`.
-# A duplicate permalink is its own failure: a citation resolves to whichever
-# the browser reaches first, silently.
-if [ "$total_ids" != "$rounds" ]; then
-  echo "FAIL  /log has duplicate round anchors — $total_ids ids, $rounds unique:"
-  printf '%s\n' "$all_ids" | sort | uniq -d | sed 's/^/        /'
-  failures=$((failures + 1))
-elif [ "$rounds" = "$expected" ]; then
-  echo "ok    /log renders all $rounds rounds, each with a unique anchor"
-else
-  echo "FAIL  /log renders $rounds rounds, CHANGELOG.md has $expected"
-  failures=$((failures + 1))
-fi
+# The record now spans three pages, so "renders the right number of anchors"
+# is no longer the assertion that protects it: a round could vanish between
+# pages, or be rendered in full on two of them, and the total would still add
+# up. scripts/check-log-pages.mjs asserts the partition instead -- each page
+# renders in full exactly the rounds the parser assigns it, the pages together
+# account for every round exactly once, and every moved round keeps a stub on
+# /log so its anchor still resolves. The parser's own total is checked against
+# this heading count, so a parser that stops understanding a heading shape
+# fails against the file rather than against itself.
+echo
+node scripts/check-log-pages.mjs || failures=$((failures + $?))
 
 # RSS should carry one compact build-log item per parsed round. The guid
 # prefix is deliberately distinct from the blog's permalink guid, so this
@@ -344,7 +336,7 @@ function entriesOf(html) {
   // an assertion that only understood one of them would silently stop
   // covering the other.
   const links = [
-    ...homeHtml.matchAll(/<a[^>]*href="(\/log(?:\/archive)?)\?q=([a-z]+)"[^>]*>([\s\S]*?)<\/a>/g),
+    ...homeHtml.matchAll(/<a[^>]*href="(\/log(?:\/early|\/archive)?)\?q=([a-z]+)"[^>]*>([\s\S]*?)<\/a>/g),
   ];
   if (links.length === 0) {
     console.log("FAIL  homepage advertises no round-mention counts");
@@ -394,7 +386,7 @@ function entriesOf(html) {
   // one -- it matched 73 of 73 rounds, because the entry format ends in a
   // Result line and almost all of them say "not measured" -- and round 74
   // withdrew it.
-  for (const path of ["/log", "/log/archive"]) {
+  for (const path of ["/log", "/log/early", "/log/archive"]) {
     const html = await fetchText(base + path);
     const entries = await load(path);
     const presets = [

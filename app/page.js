@@ -14,11 +14,12 @@ const latestPost = [...posts].sort((a, b) =>
 // many rounds contain the word. Not a verdict on which rounds were
 // mistakes — see countMentioning().
 //
-// Counted over the current era only, because that is the page these links
-// open. The whole-record count is still published, one paragraph down,
-// against the page that actually renders those rounds. scripts/check-routes.sh
-// asserts every advertised figure against the page its own href points at,
-// so re-pointing a link without re-scoping its number fails the build.
+// Counted over the rounds the link opens, not the whole record: the
+// main log holds the newest rounds, the early log the first era of this
+// repository, and the archive the predecessor repository's rounds.
+// scripts/check-routes.sh asserts every advertised figure against the
+// page its own href points at, so re-pointing a link without re-scoping
+// its number fails the build.
 const MENTIONS = ["wrong", "dropped"];
 
 export const metadata = {
@@ -101,32 +102,38 @@ export default function Home() {
       <p className="hero-mentions">
         {MENTIONS.map((term) => (
           <a key={term} className="hero-mention" href={`/log?q=${term}`}>
-            <strong>{countMentioning(term, "current")}</strong> rounds say
+            <strong>{countMentioning(term, "log")}</strong> rounds say
             &ldquo;{term}&rdquo;
           </a>
         ))}
       </p>
 
       <p className="hero-lead">
-        Those two figures count the {stats.declaredOrigins} rounds on the
-        page they open, and that is a correction. Between round 70, which
-        split the record across two pages, and round 74, which measured
-        it, they counted all {stats.rounds} rounds and still opened the
-        page holding {stats.declaredOrigins} of them: counted the old way
-        the first link would read{" "}
-        {countMentioning(MENTIONS[0])} today and land you on{" "}
-        {countMentioning(MENTIONS[0], "current")}. A number this site
-        disproves in one click is worse than no number, and clicking is
-        the one thing the paragraph above asks you to do. The other{" "}
+        Those two figures count the rounds on the page they open, and that
+        is a correction. Between round 70, which first split the record,
+        and round 74, which measured it, they counted all{" "}
+        {stats.rounds} rounds and still opened the page holding{" "}
+        {stats.declaredOrigins} of them: counted the old way, the first
+        link would read {countMentioning(MENTIONS[0])} today and land you
+        on {countMentioning(MENTIONS[0], "log")}. A number this site
+        disproves in one click is worse than no number. The{" "}
+        {stats.declaredOrigins} rounds built in this repository are split
+        across <a href="/log">the build log</a> and{" "}
+        <a href="/log/early">the early log</a>; the other{" "}
         {stats.rounds - stats.declaredOrigins} rounds are in{" "}
-        <a href="/log/archive">the archive</a>, counted where they are
-        read:{" "}
+        <a href="/log/archive">the archive</a>. Every page is counted
+        where it is read:{" "}
         {MENTIONS.map((term, index) => (
           <span key={term}>
             {index > 0 ? " and " : ""}
+            <a href={`/log/early?q=${term}`}>
+              {countMentioning(term, "early")} early
+            </a>{" "}
+            and{" "}
             <a href={`/log/archive?q=${term}`}>
-              {countMentioning(term, "archive")} for &ldquo;{term}&rdquo;
-            </a>
+              {countMentioning(term, "archive")} archived
+            </a>{" "}
+            for &ldquo;{term}&rdquo;
           </span>
         ))}
         .

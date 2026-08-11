@@ -1,7 +1,8 @@
 import {
   getArchivedLog,
   getBuildLogStats,
-  getCurrentEraLog,
+  getCurrentLog,
+  getEarlyEraLog,
 } from "../lib/build-log";
 import { feedAlternates } from "../lib/site";
 import LogFilter from "./LogFilter";
@@ -19,7 +20,8 @@ export const metadata = {
 };
 
 export default function BuildLog() {
-  const entries = getCurrentEraLog();
+  const entries = getCurrentLog();
+  const early = getEarlyEraLog();
   const archived = getArchivedLog();
   const stats = getBuildLogStats();
 
@@ -42,13 +44,16 @@ export default function BuildLog() {
         single round rather than the whole page.
       </p>
       <p className="log-lead">
-        This page holds the {entries.length} rounds built in this
-        repository. The {archived.length} earlier rounds, from the private
-        repository this one succeeds, are listed below and read in full in{" "}
-        <a href="/log/archive">the archive</a>. They were split off when this
-        page outgrew its own page-weight budget; every one of them keeps its
-        anchor here, so a link written before the split still lands
-        somewhere that explains where the round went.
+        This page holds the {entries.length} newest rounds built in this
+        repository. The earlier rounds are listed below and read in full on
+        their own pages: the {early.length} first rounds of this repository
+        on <a href="/log/early">the early log</a>, and the{" "}
+        {archived.length} rounds from the private repository this one
+        succeeds in <a href="/log/archive">the archive</a>. The log was
+        split because one page could not hold it and stay under its own
+        page-weight budget; every moved round keeps its anchor here, so a
+        link written before the split still lands somewhere that explains
+        where the round went.
       </p>
       <p className="log-lead">
         The <code>#</code> badge on each round opens the change itself.
@@ -77,8 +82,16 @@ export default function BuildLog() {
 
       <LogFilter
         total={entries.length}
-        counterpartHref="/log/archive"
-        counterpartLabel={`Search the ${archived.length} archived rounds`}
+        counterparts={[
+          {
+            href: "/log/early",
+            label: `Search the ${early.length} early rounds`,
+          },
+          {
+            href: "/log/archive",
+            label: `Search the ${archived.length} archived rounds`,
+          },
+        ]}
       />
 
       <section
@@ -95,12 +108,36 @@ export default function BuildLog() {
         </ol>
       </section>
 
-      {/* The archived rounds keep their anchors on this page so nothing
+      {/* The moved rounds keep their anchors on this page so nothing
           published stops resolving — the RSS feed has been emitting
           /log#round-archived-pr-N links since it was built, and rule 9 says
           a reader who followed a link is owed an explanation, not a dead
           end. The stubs carry no prose, which is the entire point: the full
-          text is one link away and 80 KB lighter. */}
+          text is one link away and hundreds of bytes lighter. */}
+      <section aria-labelledby="log-early-label">
+        <h2 id="log-early-label" className="log-archive-heading">
+          The first {early.length} rounds of this repository
+        </h2>
+        <p className="log-lead">
+          These are the rounds this repository opened with, from the move
+          to this repository up to the round that first split the log. They
+          are listed here so their links keep working; each one opens its
+          full entry on{" "}
+          <a href="/log/early">the early log</a>
+          , where they are also searchable.
+        </p>
+        <ol className="log-stub-list">
+          {early.map((entry) => (
+            <LogStub
+              key={entry.id}
+              entry={entry}
+              fullHref="/log/early"
+              linkLabel=" — read this round on the early log"
+            />
+          ))}
+        </ol>
+      </section>
+
       <section aria-labelledby="log-archive-label">
         <h2 id="log-archive-label" className="log-archive-heading">
           The first {archived.length} rounds

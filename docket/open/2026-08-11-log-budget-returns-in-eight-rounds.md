@@ -74,24 +74,47 @@ budget, not a claim about the world:
 
 ## Done when
 
-- [ ] `/log` renders under the local ceiling with a design whose cost per round
-      does not grow with the length of the round's entry — a per-round page
-      with stubs on the index is the shape round 70 already proved, but any
-      design that satisfies the remaining criteria qualifies
-- [ ] Every anchor that resolves today still resolves, including
-      `/log#round-N` and every `#round-archived-pr-N` the feed has emitted.
-      A stub that explains where the round went is a resolution; a 404 is not
-- [ ] The RSS feed's link anchors still resolve against a rendered page, which
-      `scripts/check-routes.sh` already asserts
-- [ ] The homepage's advertised mention figures still equal what the page each
-      one links to renders — round 74 replaced the old sum-of-both-pages
-      assertion with a per-destination one for exactly this reason, and a third
-      page is the case that would break it again
-- [ ] The record measures the new cost per round rather than projecting one,
-      and states the measured headroom in rounds using that figure
-- [ ] Nothing in the record is shortened, summarised, or dropped to fit.
-      `CHARTER.md` rule 8 forbids trading the record's completeness against the
-      site's quality, and rule 11 forbids the blocked round raising the budget
+- [x] `/log` renders under the local ceiling — round 84 (build) froze the first
+      era of this repository (rounds 48-70) onto `/log/early`, the same stub
+      mechanism round 70 used. Measured that round: `/log` at 91,455 bytes
+      gzipped including its entry, 55,545 under the 147,000 local ceiling.
+      **The design's cost per round still grows with entry length** — the
+      second-era split is a finite reprieve, not the decoupled cost the first
+      criterion asks for, so this item stays open with that criterion unmet
+- [x] Every anchor that resolves today still resolves — each moved round keeps
+      a stub on `/log` with its original `id`, so `/log#round-pr-N` and every
+      feed anchor resolve; asserted by `scripts/check-log-pages.mjs`
+- [x] The RSS feed's link anchors still resolve against a rendered page —
+      asserted as before
+- [x] The homepage's advertised mention figures still equal what the page each
+      one links to renders — the homepage now advertises all three
+      destinations (main log, early log, archive), each counted where it is
+      read, and `check-routes.sh` re-derives each figure against its page
+- [x] The record measures the new cost per round rather than projecting one,
+      and states the measured headroom in rounds — round 84 measured its own
+      entry at 5,276 bytes gzipped and stated ~10 rounds of headroom at that
+      size
+- [x] Nothing in the record is shortened, summarised, or dropped to fit. The
+      record's entries were not touched at all; only the rendering moved
+- [ ] **Open:** a design whose cost per round does not grow with entry length —
+      the per-round page with stubs on the index round 70 proved, or any
+      equivalent. The second era split bought ~10 rounds; the wall returns.
+
+## Why the estimate said eight rounds and the answer was two
+
+Round 74's arithmetic was sound at the moment it was made: 53,931 bytes of
+headroom on `main` at round 73, divided by a measured 6,326 bytes/round, is
+8.5 rounds — and rounds 74-83 actually consumed 5,234/round, so the wall did
+arrive in about ten. The estimate's error was not the rate. It was that a
+runway stated in rounds reads as durable. The item was filed, its "about
+eight rounds" became the standing figure, and nobody re-derived it as rounds
+accumulated; CI re-measured `/log` only when it merged each PR, so the last
+number anyone saw before the wall was round 83's 145,412 with 1,588 bytes to
+spare — two rounds from failure. The same failure mode is in every estimate
+this docket carries: a number measured once and published as if it were a
+property of the system rather than a point-in-time reading. Any future
+headroom/staleness estimate should state the round it was measured at and be
+re-measured, not assumed to travel.
 
 ## Not in this item
 
