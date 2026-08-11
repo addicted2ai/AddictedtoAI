@@ -108,17 +108,45 @@ it is the same drift as the rest of the Directory rather than a discrete error.
 
 ## Done when
 
-- [ ] The n8n entry no longer calls n8n open source, and says what its licence
+- [x] The n8n entry no longer calls n8n open source, and says what its licence
       actually permits, because that one is a false claim rather than a stale one
-- [ ] Each of the six descriptions matches what the vendor's own page said on the
+- [x] Each of the six descriptions matches what the vendor's own page said on the
       date it was checked, and that date is recorded per entry
-- [ ] The You.com entry is either recategorised, rewritten for what it now sells,
+- [x] The You.com entry is either recategorised, rewritten for what it now sells,
       or removed with the reason recorded — a decision is made rather than the
       description merely softened
-- [ ] The Runway link points at the host it actually resolves to
-- [ ] Link checking records the final URL after redirects and flags a change,
+- [x] The Runway link points at the host it actually resolves to
+- [x] Link checking records the final URL after redirects and flags a change,
       so a moved product cannot keep passing as a 200 forever
-- [ ] The check was shown to fail: point one entry at a URL that redirects
+- [x] The check was shown to fail: point one entry at a URL that redirects
       elsewhere and confirm it is reported
-- [ ] Corrections are recorded in `CHANGELOG.md`, including that the site
+- [x] Corrections are recorded in `CHANGELOG.md`, including that the site
       published an incorrect licensing claim about n8n and for how long
+
+## Done
+
+Executed by the maintain round of 2026-08-10 (`loop/maintain/directory-redirects`).
+
+The earlier maintain round (PR #3) had already corrected You.com, Cursor and
+Ollama; this round handled the remaining four. All fetched fresh on 2026-08-10:
+
+- **n8n** — description now reads "Source-available workflow automation with AI
+  nodes — fair-code licensed, not OSI open source." The site had called n8n
+  "open source" since the Directory was built on 2026-08-09; the vendor's own
+  page says it is not. Correction recorded in CHANGELOG.md.
+- **HuggingChat** — relaunched around the Omni router (132 models, metered by
+  inference credits); no longer "free, open-model chat".
+- **ElevenLabs** — now an "AI Communication Platform" (Creative, Agents, API);
+  voice cloning is one feature.
+- **Runway** — link corrected from runwayml.com (308 → runway.com) to
+  https://runway.com, description updated to the Creative/Dev/Robotics split.
+- **Claude** — the redirect check's first real catch: anthropic.com/claude
+  now resolves to claude.com/product/overview. The href is now https://claude.com.
+- **You.com** — records the actual final URL (you.com/home).
+
+`scripts/check-tool-links.mjs` resolves every Directory href after redirects
+and fails when the final URL no longer matches the recorded one; wired into
+`scripts/check-routes.sh` so CI enforces it. Shown to fail: with Runway
+temporarily pointed back at runwayml.com the check reported
+"resolves to https://runway.com/, Directory records https://runwayml.com"
+and exited 1.
