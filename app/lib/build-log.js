@@ -306,6 +306,31 @@ export function getBuildLog() {
   return cached;
 }
 
+// The log is rendered across two pages because one page cannot hold it.
+// /log carried every round in full and crossed the 150,000-byte document
+// budget in lighthouserc.json at 71 rounds — measured at 153,532 bytes
+// gzipped, against a 3,976-byte homepage. Nothing was wasted: a previous
+// round had already stopped the search from shipping the prose twice. The
+// page was simply the whole record.
+//
+// `declaredOrigin` is the split, and it is the same partition the page
+// already relied on for anchors and link targets: rounds predating the
+// Origin field are exactly the archived ones from the private predecessor
+// repository, they are closed, and their count cannot grow. Splitting on
+// era rather than on a count matters — a "20 newest per page" rule would
+// move a round's anchor every time the log grew, so citations would rot
+// continuously instead of once.
+//
+// Every archived round keeps its anchor on /log as a stub linking here, so
+// no published citation breaks. See app/log/page.js.
+export function getCurrentEraLog() {
+  return getBuildLog().filter((entry) => entry.declaredOrigin);
+}
+
+export function getArchivedLog() {
+  return getBuildLog().filter((entry) => !entry.declaredOrigin);
+}
+
 // Look a round up by pull request number rather than by round number:
 // PR numbers are permanent, whereas anything positional would quietly
 // point at a different round as entries are added.

@@ -69,6 +69,105 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+The build log outgrew its own page-weight budget and this round split it in
+two. `/log` had been rendering all 70 rounds in full and crossed the 150,000-byte
+document budget in `lighthouserc.json` — CI's median of 3 read 154,019 on PR
+#18, which is how the project found out. Nothing was wasted on that page; a
+previous round had already stopped the search shipping every entry's prose a
+second time. It was simply the whole record, and the record keeps growing.
+(PR #19)
+
+**1. Split the log by era, keeping every anchor where it was**
+- Hypothesis: the record divides cleanly at a seam the page already used.
+  `declaredOrigin` separates the 23 rounds built in this repository from the 47
+  that predate the Origin field, the page already tagged entries
+  `data-era` with exactly that partition, and the two eras already used
+  different anchor namespaces. If the archived rounds are 58% of the parsed record —
+  119,660 characters against 85,241, counted this round —
+  moving them to their own page should bring `/log` comfortably under budget
+  without touching a single word of the record.
+- Change: `/log` now renders the current era in full and `/log/archive` renders
+  the archived rounds in full, both from the same parser via a shared
+  `app/log/LogEntry.js`. Every archived round keeps its anchor on `/log` as a
+  stub carrying its round number, date, origin badge and commit link, and
+  linking to the full entry. So `/log#round-archived-pr-12` — which the RSS
+  feed has emitted since the feed was built — still resolves, which is what
+  rule 9 requires: a reader who followed a link is owed an explanation, not a
+  dead end. Splitting by era rather than by a count was deliberate: "20 newest
+  per page" would move a round's anchor every time the log grew, so citations
+  would rot continuously instead of once.
+- The alternative that would have worked in one line was trimming this
+  entry. `CHARTER.md` rule 8 forbids it — the record's completeness is never
+  traded against the site's quality — and rule 11 forbids the other easy
+  answer, raising the budget, since this round is the one the budget blocked.
+  Between them the rules left exactly one honest move, which is the point of
+  having them.
+- The search had to change with it. The homepage advertises "N rounds say
+  'wrong'" over the whole record and links to `/log?q=wrong`; with half the
+  prose on another page, that number would have gone on being true while the
+  page it links to showed less. Both log pages now carry a link that hands the
+  query to the other one. No count is printed for the other page: the filter
+  can only see the DOM it is in, and a number this site cannot recompute is a
+  number it should not print.
+
+**2. Gave the local check the page-weight budget it never had**
+- Hypothesis: PR #18 shipped over budget because `round.mjs check` reported
+  every group green while the assertion that failed lived only in CI. The same
+  measurement is one `curl` with `Accept-Encoding: gzip`, so the gap was never
+  difficulty — it was that nobody had wired it into the gate a round actually
+  runs.
+- Change: `scripts/check-routes.sh` now measures the gzipped document size of
+  every HTML route and fails against the budget **read from**
+  `lighthouserc.json` rather than restated, because a second copy of that
+  number is how a blocked round would loosen the guardrail while appearing to
+  obey rule 11. The local ceiling is 3,000 bytes *tighter* than CI's: measured
+  on the same commit, curl reported 153,532 where CI's median reported 154,019,
+  so a local check failing at exactly the budget would still pass pages CI then
+  rejects. Tightening is always allowed; loosening never is. The check also
+  prints each route's headroom, so a round can see the wall before hitting it.
+- This is a partial execution of a meta item filed hours earlier
+  (`local-check-must-match-ci-gate`), done from a build round because the new
+  page needed a health check and build's failure condition is shipping one
+  without. The item stays open: it also covers lychee, and the URL lists both
+  CI checks read still live in `.github/`.
+
+**3. Filed what this round could not reach**
+- Hypothesis: adding a route should be enough to get it measured.
+- Change: it is not. Both CI checks enumerate their URLs inside
+  `.github/workflows/pr-checks.yml`, which is meta's alone, so `/log/archive`
+  ships with no Lighthouse assertions for performance, accessibility or SEO and
+  no lychee crawl. Filed
+  `2026-08-11-log-archive-missing-from-ci-url-lists.md`. It is a general
+  defect rather than a one-off — every new route ships unmeasured by default —
+  and the item asks whether the URL list should move somewhere both tracks can
+  read.
+- Also found, and recorded here rather than filed twice: the in-flight guard
+  reported "no round in flight" while PR #18 was open, because it only counts
+  pull requests whose branch starts with `loop/` and #18 is on
+  `maintainer/queue-repairs`. The `--force` this round was started with turned
+  out to be unnecessary. That is the third place `round.mjs` and the rest of
+  the machinery disagree about what a maintainer branch is, and it belongs with
+  the item PR #18 filed on exactly that subject. The guard's own comment says
+  serialisation exists partly to stop two rounds conflicting on
+  `CHANGELOG.md` — which is precisely what PR #18 now has to rebase through.
+
+- Origin: supervised
+- Track: build
+- Agent: claude-code
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite, including the new
+  per-route document-size assertion. The first build failed outright
+  (`route "/log/archive" maps to round 70, which is not in the build log`),
+  which is the disclosure machinery working: a new page cannot render before
+  the round that produced it exists in the record.
+- Result: measured. `/log` went from 153,532 bytes gzipped to **73,293**, a 52%
+  reduction, against a 150,000 budget and a 147,000 local ceiling — about 73 KB
+  of headroom, or roughly 38 more rounds at the ~1.9 KB per round the changelog
+  header records. `/log/archive` is 92,343 bytes and cannot grow: it holds a
+  closed era. The homepage is 3,974. All figures from `curl -H 'Accept-Encoding:
+  gzip'` against `next start` on this branch's production build.
+
+### 2026-08-11
 The second scout round in three hours (PR #13 merged at 03:40 UTC), which made
 "file nothing" the likely outcome and shaped the run: three hours of world does
 not produce three hours of news. Searching for anything dated 10-11 August that

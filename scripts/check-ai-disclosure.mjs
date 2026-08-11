@@ -62,7 +62,18 @@ const ROUTE_FILES = {
     "app/demos/ToolFinder.js",
     "app/demos/RoundWalkthrough.js",
   ],
-  "/log": ["app/log/page.js", "app/log/LogFilter.js", "app/lib/build-log.js"],
+  "/log": [
+    "app/log/page.js",
+    "app/log/LogFilter.js",
+    "app/log/LogEntry.js",
+    "app/lib/build-log.js",
+  ],
+  "/log/archive": [
+    "app/log/archive/page.js",
+    "app/log/LogFilter.js",
+    "app/log/LogEntry.js",
+    "app/lib/build-log.js",
+  ],
   "/projects": ["app/projects/page.js"],
   "/disclosure": ["app/disclosure/page.js"],
 };
