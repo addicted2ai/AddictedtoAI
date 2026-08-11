@@ -69,6 +69,64 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+The charter said `CODEOWNERS` made rule 13 mechanical. It never did, and the
+document asserting the constraint was the same document the constraint failed
+to protect. Round 75 built a gate that works and the maintainer made it
+required; this round corrects the text to describe it, and corrects a second
+sentence that the last two days falsified. Proposed only — the loop cannot
+merge this, and the check it describes is what stops it. (PR #25)
+
+**1. Named the mechanism that actually enforces rule 13**
+- Hypothesis: rule 4 says this document is not exempt from the ban on false
+  process claims, and the preamble carried the same claim round 72 corrected on
+  the site. If the site is now accurate and the charter is not, the
+  authoritative half is the wrong one.
+- Change: the preamble said a pull request touching this file, `.github/` or
+  `prompts/` "will not auto-merge no matter how green it is" under
+  `CODEOWNERS`. It now names `human-owned-paths`, says `CODEOWNERS` routes
+  review but is not the gate, and records that the gate holds only while it
+  stays in branch protection's required list and `enforce_admins` stays false.
+  The amendment history entry carries the numbers: `require_code_owner_reviews`
+  true against `required_approving_review_count` 0, PR #16 merged unreviewed,
+  and every pull request before it merged with zero reviews.
+
+**2. Corrected "triggered by hand and supervised"**
+- Hypothesis: the opening line described a cadence that two days of batch runs
+  falsified, and an aspiration in a governing document reads as a statement.
+- Change: it now says runs are triggered both by hand and in batches a
+  maintainer authorises in advance and then leaves unattended, and that how much
+  a human saw is recorded per round rather than asserted centrally — which is
+  what the `Origin` field already does and the preamble was duplicating badly.
+
+**3. This round shipped a commit with no record and nearly got away with it**
+- Hypothesis: `round.mjs check` would catch a round that forgot its changelog
+  entry, since the build parses `CHANGELOG.md` and rejects incomplete entries.
+- Change: it does not, and this round proved it by accident. The entry was
+  written to `/tmp/e.md` from Git Bash and read back by Node, which resolved it
+  as `D:\tmp\e.md` and failed; the `&&` chain still reached `git commit`, which
+  committed the charter change alone. Every check then passed, because a
+  *missing* entry is not an *incomplete* one — `validateEntries` only inspects
+  entries that exist. A round that silently ships no record is precisely what
+  rule 8 forbids, and nothing between the commit and the pull request would
+  have said so. Filed
+  `2026-08-11-check-cannot-see-a-missing-changelog-entry.md`. The entry you are
+  reading was added by amending that commit.
+
+- Origin: unsupervised
+- The maintainer authorised this and stepped away. No auto-merge was requested,
+  and `human-owned-paths` fails on this branch by design, so the merge is a
+  human's deliberate override — the one act this pull request must not be able
+  to perform on itself.
+- Track: meta
+- Agent: claude-code
+- Guardrails: `node scripts/round.mjs check`, no group skipped; port 3000
+  confirmed free first, per the hazard filed in round 75. This branch is also
+  the first live test of the gate: `human-owned-paths` should fail and, now that
+  it is required, GitHub should refuse the merge rather than warn about it.
+- Result: not measured, and not mergeable by the loop. If this pull request
+  merges without a human, the gate is decorative and that is the finding.
+
+### 2026-08-11
 A claim on `/blog` went false because the gap it described was closed. Round 72
 corrected that page to say meta could change the charter, the workflows and the
 prompts with nothing standing between the change and `main`. That was accurate

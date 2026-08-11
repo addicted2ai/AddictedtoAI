@@ -1,15 +1,20 @@
 # Charter
 
-This site is built and maintained by an AI loop. Runs are currently triggered by
-hand and supervised; the intent is that they become scheduled and unsupervised.
-This document is the boundary of that autonomy in both modes.
+This site is built and maintained by an AI loop. Runs are triggered both by hand
+and in batches a maintainer authorises in advance and then leaves unattended;
+the intent is that they become scheduled. This document is the boundary of that
+autonomy in every mode, and how much a human saw before a round landed is
+recorded per round rather than asserted here.
 
 It is owned by the human maintainer. The loop may propose amendments in writing;
 it may not merge them. Enforcement is mechanical where it can be — this file,
-`.github/`, and `prompts/` require human review under `CODEOWNERS`, so a pull
-request touching any of them will not auto-merge no matter how green it is. On a
-supervised run the maintainer is present and is the enforcement. Neither mode
-excuses the loop from any rule below.
+`.github/`, and `prompts/` are guarded by the `human-owned-paths` job in
+`.github/workflows/pr-checks.yml`, a required status check that fails on any
+pull request touching them, so such a request cannot merge on green and a human
+must merge it by hand. `.github/CODEOWNERS` names the same paths and routes
+review requests, but it is documentation, not the gate. When the maintainer is
+present they are also the enforcement. No mode excuses the loop from any rule
+below.
 
 The direction, the tests, and the track charges in this document are fixed.
 Everything else is the loop's to decide — which metrics to keep, what the
@@ -234,3 +239,35 @@ subject to the same append-only rule it imposes on everything else.
   retraction that explains itself and can be undone; rule 12 keeps a run from
   judging its own work and caps how much any one run can take down. Rules
   renumbered.
+
+- **2026-08-11** — Corrected the preamble's two false statements about this
+  project's own process, and named the mechanism that now enforces rule 13.
+
+  The preamble claimed that `CODEOWNERS` made rule 13 mechanical: that a pull
+  request touching this file, `.github/` or `prompts/` "will not auto-merge no
+  matter how green it is". That was never true. Branch protection on `main`
+  paired `require_code_owner_reviews: true` with
+  `required_approving_review_count: 0`, and a code-owner rule with no approval
+  to demand demands nothing; `enforce_admins` was false as a second, independent
+  bypass. PR #16 changed a workflow file and merged with zero reviews on
+  11 August 2026, and every pull request in this repository up to that point had
+  merged with zero reviews. The document asserting the constraint was the same
+  document the constraint failed to protect, which is the specific way a
+  governing text goes stale without anyone noticing: nothing tests it.
+
+  The replacement is a required status check, `human-owned-paths`, which fails
+  by design on any pull request touching those three paths. A check cannot be
+  satisfied by an empty set the way a review rule can. It only holds while it
+  remains in branch protection's required list, and `enforce_admins` must stay
+  false for a maintainer to merge past it by hand — the gate is deliberately
+  something a human steps over and the loop cannot.
+
+  The preamble also said runs "are currently triggered by hand and supervised".
+  That stopped being true the same day: rounds now run in batches a maintainer
+  authorises in advance and then leaves, which merge with nobody reading them
+  first. Rule 4 forbids publishing a claim about this project's process that is
+  not currently true and says this document is not exempt, so the sentence is
+  corrected rather than left as an aspiration.
+
+  Proposed by the loop under the amendment procedure below; merged by the
+  maintainer, who is the only party that can.
