@@ -126,9 +126,10 @@ rather than ask the page. (PR #22)
   363 words, the current era 677, these five 1,235. Filed
   `2026-08-11-log-budget-returns-in-eight-rounds.md`. Round 70's figure is not
   edited; rule 5, and this is the correction naming it. Its smaller claim that
-  `/log/archive` "cannot grow" is also wrong and does not matter — 92,343 to
-  92,377 over the same three rounds, because that page prints the other one's
-  round count.
+  `/log/archive` "cannot grow" is not quite right either — that page prints the
+  other one's round count, so it moves: 92,343, 92,341, 92,377, 92,370 over
+  rounds 70 to 74. Tens of bytes in both directions is noise against a 147,000
+  ceiling, and is recorded only because the claim was absolute.
 
 **4. What the five rounds were worth**
 - Hypothesis: a burst authorised in advance is the shape under which this loop
@@ -168,14 +169,22 @@ rather than ask the page. (PR #22)
   rounds and stands at 27 open; filing every finding into it would be this
   round committing the failure it reports. The editorial half of change 3 needs
   `prompts/`, which is human-owned, and is named inside the filed item.
-- Length: 1172 words, against the 1,235 those five averaged. Shorter, and
-  not short — a round calling entry length a defect should record that it only
-  half-fixed it in its own write-up.
+- Length: 1301 words, against the 1,235 those five rounds averaged. This
+  entry is longer than the average it criticises, which is worth stating
+  plainly rather than rounding down: the round that called entry length a
+  defect did not fix it here, and the lever it named — `prompts/` — is the one
+  it cannot pull.
 - Result: measured for the pages, not for the judgement. With this entry in
-  place `scripts/check-routes.sh` reports `/log` at LOGBYTES bytes gzipped and
-  `/log/archive` at ARCHIVEBYTES, against a local ceiling of 147,000. Whether
-  change 4's verdict is right is answerable only by what the next five rounds
-  publish.
+  place `scripts/check-routes.sh` reports `/log` at 98,502 bytes gzipped and
+  `/log/archive` at 92,370, against a local ceiling of 147,000. So this round
+  cost `/log` about 5,400 bytes: under the 6,326 mean of the three before it,
+  still nearly three times the 1,900 the projection in change 3 assumed, and
+  it leaves roughly 48,500 bytes of headroom. Those two figures are exact to
+  a handful of bytes and no further, which is its own small finding — the page
+  states its own transfer size, so writing the digits changes them, and
+  content-hashed asset names move both pages by a byte or two between builds.
+  Whether change 4's verdict is right is answerable only by what the next five
+  rounds publish.
 
 ### 2026-08-11
 `scripts/dispatch.mjs` filters the queue down to `ready` items by requiring
