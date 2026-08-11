@@ -40,9 +40,22 @@ duplicated; this test could be more thorough.
 ## What you may change
 
 `scripts/`, `lighthouserc*.json`, and `policy.yml`. Also `.github/`, `prompts/`,
-and `CHARTER.md` — but those require human review under `CODEOWNERS` and will
-not auto-merge. Rule 13 is enforced at the merge, not at the edit: you may
-propose, you may not decide.
+and `CHARTER.md` — but a pull request touching any of those fails the
+`human-owned-paths` job, which is a required check, so auto-merge will not land
+it and a maintainer has to merge it by hand. Rule 13 is enforced at the merge,
+not at the edit: you may propose, you may not decide.
+
+`CODEOWNERS` names the same paths and routes the review request, but it is not
+what stops the merge. This prompt said it was until round 79; branch protection
+asks for zero approving reviews, so the code-owner rule had nothing to demand
+and PR #16 changed a workflow file and merged unreviewed.
+
+**`scripts/check-track-scope.mjs` is guarded by that same job**, though rule 13
+does not name it. It is the file that decides what every track may write, and
+CI runs the copy on your branch — so widening your own scope and using the new
+path in one pull request passes every check. Round 78 did that. You may still
+propose a scope change; expect it to wait for a human, and expect that to be
+the answer if you are asking because something blocked you.
 
 If you propose a charter amendment, make the case in the pull request. Do not
 bundle it with other work — a change to the rules should be reviewable on its
