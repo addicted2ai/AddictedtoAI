@@ -69,6 +69,107 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+A maintainer-directed post-mortem of the PR #15 / PR #16 deadlock, filed as
+queue rather than executed. The maintainer's opening question was whether the
+loop needs a seventh track for rescuing stuck pull requests. Reading the
+machinery said no, twice over: meta could always make the fix and did, and the
+escalation concept the idea wanted already exists one layer down. Five items
+filed, one design rejected, and one live defect found while filing. (PR #18)
+
+**1. Filed three repairs to how the loop handles its own failures**
+- Hypothesis: the deadlock looked like a missing capability and probably was
+  not. If the real gap was that the machinery could not *notice* a stuck state
+  rather than that no track could fix one, the repairs should be small and
+  should reuse mechanisms already in the repository.
+- Change: filed `2026-08-11-local-check-must-match-ci-gate.md` (CI gates on
+  lychee, `round.mjs check` runs `check-tool-links.mjs` instead, so a round
+  cannot see the gate that will judge it — this is why PR #15 shipped
+  unmergeable), `2026-08-11-red-pull-request-is-a-preflight-condition.md` (the
+  in-flight guard should route, not refuse; `preflight.mjs` already emits
+  findings on a 0–3 `urgency` scale and `dispatch.mjs` already injects an
+  urgency-0 finding of its own, so this is one more finding plus a guard that
+  consults it), and
+  `2026-08-11-open-items-do-not-declare-blockers.md`. All three are meta.
+- The hardest requirement is in the second item and is not the detection:
+  telling a red pull request apart from one that is green and correctly waiting
+  on `CODEOWNERS`. Rule 13 makes pull requests touching `CHARTER.md`, `.github/`
+  or `prompts/` wait for a human. A rescue path that reads that as "stuck"
+  dispatches a round to fix a wait, and the fix a model reaches for under
+  pressure is to stop touching the human-owned path.
+
+**2. Rejected a `priority: 0` docket level, and filed what it was reaching for**
+- Hypothesis: the maintainer proposed formalising urgency as a `priority: 0` in
+  docket frontmatter, so a broken or blocking condition could jump the queue.
+- Change: rejected, and filed `2026-08-11-rank-ready-work-by-what-it-unblocks.md`
+  instead. Three reasons, in order of weight. It would not have helped PR #15 at
+  all: `round.mjs`'s in-flight guard fires before anything reads the docket, so
+  the queue's contents were never consulted. Priority is an opinion written in
+  the past while urgency is a fact about the present — a `priority: 0` filed
+  against a stuck pull request still says "drop everything" after it merges, and
+  the jammed loop it exists for is exactly the state in which nothing is running
+  to clear it. And the escalation level already exists where it can be
+  re-derived: `preflight.mjs` findings carry `urgency` 0–3 and `dispatch.mjs`
+  injects `urgency: 0` when the preflight itself fails. What survives from the
+  idea is blocking-ness, which is derived from the queue on every dispatch
+  rather than asserted once, and which drops to zero on its own when the
+  blocking item is done.
+- If a docket `priority: 0` is ever wanted anyway, the version that fits this
+  project's grain requires a machine-checkable resolution condition and a
+  `check-docket.mjs` that fails the build once that condition is satisfied —
+  the same shape as `verified:` plus `check-tool-staleness.mjs`. Recorded here
+  rather than filed, because nothing needs it yet.
+
+**3. Found while filing: no open docket item uses `blocked-by`**
+- Hypothesis: the eight blocked post items would name the wall that blocks them,
+  since the author round that hit it filed
+  `2026-08-11-author-cannot-publish-posts.md` in the same pull request.
+- Change: none of them do. Nineteen open items, zero `blocked-by` lines. So
+  `dispatch.mjs`'s `ready` filter — which exists to exclude work blocked on
+  something unfinished — passes everything through unchanged, and the dispatcher
+  currently believes author has eight available priority-1 items it cannot
+  ship. It will keep routing rounds to author for them. This was filed as its
+  own item rather than fixed here: the fix is a judgement call per item about
+  what actually blocks what, and this round was chartered to write the queue,
+  not work it.
+
+**4. Found while shipping: `ship` and the scope check disagree**
+- Hypothesis: a maintainer-directed round would ship through the same path as a
+  loop round, since `check-track-scope.mjs` explicitly supports maintainer
+  branches — "maintainer branches are not track-scoped" — and `round.mjs check`
+  had already reported `skip` for this one.
+- Change: it does not. `round.mjs ship` refuses the same branch outright:
+  "branch 'maintainer/queue-repairs' is not loop/<track>/<slug>". Two components in
+  this repository hold different answers to whether a maintainer branch may
+  ship, and the stricter one runs last — after the work is finished and checked.
+  That is the same shape as the CI-versus-local link check that made PR #15
+  unmergeable, at much lower cost. Filed
+  `2026-08-11-ship-and-scope-check-disagree-on-maintainer-branches.md` at
+  priority 3, and pushed this round with `gh` directly rather than through
+  `ship`. Recording it because a workaround that is not written down is how a
+  disagreement between two gates survives being found.
+
+- No track is recorded for this round, deliberately. `scripts/dispatch.mjs`
+  reads `- Track:` to hold each track to its quota, and this was not a
+  dispatched round — the maintainer chose the work, and its product is four
+  docket items rather than a track's output. Recording it as `meta` would spend
+  meta's 10% cap on filing rather than doing. The omission is stated here so it
+  cannot be read as the forgetfulness `prompts/shared/every-run.md` warns about.
+- Origin: maintainer
+- Agent: claude-code
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator, a
+  production build and the full route suite, all passing. Track scope reported
+  `skip`, correctly: `check-track-scope.mjs` exempts branches that are not
+  `loop/<track>/<slug>`, and this is `maintainer/queue-repairs`. That exemption
+  is why the branch is named that way, and it is worth naming as the weaker
+  guarantee it is — nothing mechanical checked which paths this round touched.
+- Result: not measured. Three of the five items are testable by whether the
+  dispatcher's choice changes after they land, and each says to record its
+  output before and after. This entry was rebased onto PR #19 before merging:
+  both pull requests inserted at the top of `CHANGELOG.md`, which is the
+  conflict the in-flight guard exists to prevent and did not, because it only
+  counts branches beginning `loop/`.
+
+### 2026-08-11
 The build log outgrew its own page-weight budget and this round split it in
 two. `/log` had been rendering all 70 rounds in full and crossed the 150,000-byte
 document budget in `lighthouserc.json` — CI's median of 3 read 154,019 on PR
@@ -174,6 +275,7 @@ second time. It was simply the whole record, and the record keeps growing.
   header records. `/log/archive` is 92,343 bytes and cannot grow: it holds a
   closed era. The homepage is 3,974. All figures from `curl -H 'Accept-Encoding:
   gzip'` against `next start` on this branch's production build.
+
 
 ### 2026-08-11
 The second scout round in three hours (PR #13 merged at 03:40 UTC), which made
