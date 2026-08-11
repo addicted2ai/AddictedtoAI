@@ -52,7 +52,7 @@ export default function Home() {
       <p className="hero-lead">
         What a human still does is set the direction and the rules. Those
         live in <a href="/charter">a charter</a> the loop works inside and can
-        propose changes to but cannot merge. And how much a human saw
+        propose changes to but may not merge. And how much a human saw
         before any given round landed is recorded on the round itself,
         because that is the part you have most reason to doubt.
       </p>

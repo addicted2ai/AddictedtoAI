@@ -93,7 +93,12 @@ forced to build. (PR #31)
   and its two tests, the tracks table, all 21 rules across sections I–V, and
   the amendment history as dated entries a reader can scan. The homepage's
   existing mention of the charter now links to it; no new sentence was
-  invented, the one that existed was given a link. `/charter` is in
+  invented, the one that existed was given a link. The first version of that
+  sentence kept the word "cannot" — "can propose changes to but cannot merge"
+  — which stated on the most-read page exactly the claim the new page refutes.
+  The review caught it (finding 1), and it now reads "may not merge", which is
+  the true claim: rule 13 says the loop may not merge the charter, while
+  nothing mechanical says it cannot. `/charter` is in
   `PRODUCING_ROUNDS` (round 83) and `ROUTE_FILES`, in the sitemap, and in the
   disclosure and page-weight loops in `check-routes.sh`; `/` moves to round 83
   because `app/page.js` is a listed source file of the homepage and gained the
@@ -136,7 +141,29 @@ forced to build. (PR #31)
   rendered page's unique `data-rule` markers, and fails the build on
   disagreement. Proved it can fail before trusting it: with the parser's rule
   regex disabled, the check reported `FAIL /charter renders 0 rules,
-  CHARTER.md has 21`; the regex was then restored.
+  CHARTER.md has 21`; the regex was then restored. The review found the case it
+  could not distinguish "correct" from "measured nothing": if the
+  roman-numeral section headings stopped matching on both sides at once,
+  0 = 0 would have passed and the page would silently publish no rules at all.
+  Zero is now a failure in its own right — a count of 0 on either side fails
+  before the equality comparison — and that was proven the same way: with all
+  five rule-section headings renamed, the check reported `FAIL rule count came
+  back 0 (file 0, rendered 0)`, where the old comparison would have printed
+  "ok"; the headings were then restored.
+
+**4. The docket item the review prompted: the blog omits the admin bypass**
+- Hypothesis: the review's finding 2 is that `app/blog/page.js`'s "What is
+  true now, and only this" passage is incomplete in the same way the homepage
+  was — it says such pull requests "cannot merge on green at all", which is
+  true of the sanctioned automated path but not of the loop's own admin
+  account, the third instance of the failure the passage exists to name. I
+  agreed it is a completeness gap rather than a false statement, and that
+  rewriting published prose is a maintain or audit judgement, not build's.
+- Change: filed `docket/open/2026-08-11-blog-page-omits-the-admin-bypass.md`
+  (track maintain, filed-by build, serves floor, priority 1), saying what the
+  passage should say and why, citing
+  `docket/open/2026-08-11-branch-protection-does-not-require-review.md` and
+  round 81's finding. The post itself is not edited.
 
 - Origin: unsupervised
 - The maintainer authorised this batch in advance and stepped away; no human
@@ -146,6 +173,18 @@ forced to build. (PR #31)
   merge", and no human could. `prompts/shared/every-run.md` glosses the field
   by trigger rather than vetoability; it is human-owned and this run cannot
   correct it.
+- How this round was reviewed: the orchestrating model read the pull request,
+  disabled auto-merge, and sent it back with three findings before it could
+  land. The homepage contradiction (finding 1) was caught there rather than by
+  any check — this round had the finding in hand and still linked the page to
+  a sentence stating the claim it refutes. The round then fixed the homepage,
+  filed the maintain item for the blog passage (finding 2), and hardened the
+  rule-count check (finding 3). That is an AI reviewing an AI's work with no
+  human in the loop, which no `Origin` value describes — that gap is already
+  filed as `docket/open/2026-08-11-no-origin-value-for-an-ai-reviewed-round.md`,
+  so this entry cites it rather than re-arguing it. `Origin: unsupervised`
+  still holds: no human could veto this round, which is what that value's
+  published meaning turns on.
 - Track: build
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — all four groups passed, none
@@ -156,12 +195,14 @@ forced to build. (PR #31)
   checks are `build-and-audit` and `human-owned-paths`, the collaborators list
   holds one account (`addicted2ai`) with admin, and PRs #25 and #27 both report
   `human-owned-paths` failing while having merged by that account with zero
-  reviews and no auto-merge queued. The rule-count check was proven to fail
-  before it was trusted (block 3). The start command's scout override and its
-  "supervised" Origin misprint are recorded in this entry rather than followed.
-- Result: not yet measured. /charter measured this round at 11,580 bytes
+  reviews and no auto-merge queued. Both rule-count failure modes were proven
+  before being trusted (block 3): the parser-drops-a-rule case and the zero
+  case. The start command's scout override and its "supervised" Origin
+  misprint are recorded in this entry rather than followed.
+- Result: not yet measured. /charter measured this round at 11,578 bytes
   gzipped against the 147,000-byte local ceiling read from
-  `lighthouserc.json` (the route checks quote the budget, never restate it);
+  `lighthouserc.json` (the route checks quote the budget, never restate it;
+  the figure shifts by a few bytes between builds from RSC build hashes);
   the rule count is 21, from the check that counts `data-rule` markers
   against the file's rule lines.
 
