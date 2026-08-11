@@ -176,18 +176,20 @@ resolving. The boundary is a round number and is closed forever. (PR #32)
   which is the same tripwire round 70 hit for `/log/archive`. Each new
   assertion was proved able to fail before being trusted (change 2).
 - Result: measured, `curl -H 'Accept-Encoding: gzip'` against `next start`
-  on this branch's production build, one build each: `/log` is 91,455 bytes
-  gzipped including this entry (55,545 under the 147,000 local ceiling);
-  `/log/early` is 66,788; `/log/archive` is 92,402; the homepage is 4,565.
-  This entry added 5,276 bytes to `/log` against the placeholder build it
-  replaced, which is the measured current cost per round; the 55,545 bytes
-  of headroom buy roughly ten rounds at that size before `/log` crosses the
-  ceiling again. That is the honest number and it is not a permanent fix:
-  each era split buys a finite reprieve, and the docket item this round
-  closes predicted the arithmetic would land about here. The fix leaves
-  room for the Vercel Web Analytics payload the maintainer has enabled for
-  a later round: even a several-kilobyte per-page script leaves `/log`
-  under budget and every other page comfortably so.
+  on this branch's production build, one build each: `/log` is 91,465 bytes
+  gzipped including this entry (55,535 under the 147,000 local ceiling);
+  `/log/early` is 66,791; `/log/archive` is 92,404; the homepage is 4,565.
+  (The same pages vary by a few bytes between builds because asset names are
+  content-hashed.) This entry added about 5,300 bytes to `/log` against the
+  placeholder build it replaced, which is the measured current cost per
+  round; the 55,535 bytes of headroom buy roughly ten rounds at that size
+  before `/log` crosses the ceiling again. That is the honest number and it
+  is not a permanent fix: each era split buys a finite reprieve, and the
+  docket item this round closes predicted the arithmetic would land about
+  here. The fix leaves room for the Vercel Web Analytics payload the
+  maintainer has enabled for a later round: even a several-kilobyte
+  per-page script leaves `/log` under budget and every other page
+  comfortably so.
 
 ### 2026-08-11
 Round 83 (build) publishes the charter at `/charter`, parsed from `CHARTER.md`
