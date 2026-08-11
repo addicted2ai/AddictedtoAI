@@ -3,13 +3,13 @@ export const toolCategories = [
     name: "Chat & Assistants",
     tools: [
       {
-        href: "https://www.anthropic.com/claude",
+        href: "https://claude.com",
         name: "Claude",
         description: "Anthropic's assistant, strong at writing and reasoning.",
         verified: "2026-08-10",
       },
       {
-        href: "https://you.com",
+        href: "https://you.com/home",
         name: "You.com",
         description:
           "Web search APIs for AI agents, with a consumer chat assistant.",
@@ -18,7 +18,8 @@ export const toolCategories = [
       {
         href: "https://huggingface.co/chat",
         name: "HuggingChat",
-        description: "Free, open-model chat interface from Hugging Face.",
+        description:
+          "Chat with open models via Hugging Face's Omni router, metered by inference credits.",
         verified: "2026-08-10",
       },
     ],
@@ -51,15 +52,17 @@ export const toolCategories = [
     name: "Image, Video & Audio",
     tools: [
       {
-        href: "https://runwayml.com",
+        href: "https://runway.com",
         name: "Runway",
-        description: "AI video generation and editing tools.",
+        description:
+          "AI video generation and world-model research — Creative, Dev, and Robotics platforms.",
         verified: "2026-08-10",
       },
       {
         href: "https://elevenlabs.io",
         name: "ElevenLabs",
-        description: "Realistic AI voice generation and cloning.",
+        description:
+          "AI voice, music, agents, and translation platform, with voice cloning as one feature.",
         verified: "2026-08-10",
       },
       {
@@ -82,7 +85,8 @@ export const toolCategories = [
       {
         href: "https://n8n.io",
         name: "n8n",
-        description: "Open-source workflow automation with AI nodes.",
+        description:
+          "Source-available workflow automation with AI nodes — fair-code licensed, not OSI open source.",
         verified: "2026-08-10",
       },
       {

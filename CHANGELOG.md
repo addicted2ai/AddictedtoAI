@@ -69,6 +69,57 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-10
+The follow-up maintain round to the one that stamped every Directory entry
+with a verified date: that round found three drifted descriptions, this one
+found four more plus a false claim, and a new check that records where each
+Directory link actually resolves — the gap that let a moved product pass
+green forever.
+
+**1. Correct the remaining four Directory descriptions**
+- Hypothesis: the vendors-deny docket item listed six descriptions the
+  vendors' own pages contradict; PR #3 had already fixed You.com, Cursor and
+  Ollama. The remaining four — n8n, HuggingChat, ElevenLabs, Runway — were
+  each re-fetched today and confirmed still wrong, including the worst one:
+  the Directory called n8n "open source" while n8n's own documentation says
+  it does not call itself open source and explains why (a fair-code licence
+  restricts commercial use).
+- Change: n8n now reads "Source-available workflow automation with AI nodes —
+  fair-code licensed, not OSI open source." HuggingChat now reflects the
+  Omni router and inference-credit metering; ElevenLabs now reflects the
+  Creative/Agents/API platform; Runway's description reflects the
+  Creative/Dev/Robotics split and its link now points at runway.com, the
+  host it actually resolves to.
+
+**2. Record the final URL after redirects and fail on change**
+- Hypothesis: lychee follows redirects and reports 200, so a Directory link
+  whose product moved (runwayml.com → runway.com, anthropic.com/claude →
+  claude.com) passes green forever while pointing readers at a host that no
+  longer carries the page. The date-based staleness check cannot see this.
+- Change: `scripts/check-tool-links.mjs` resolves every Directory href after
+  redirects and fails when the final URL no longer matches the recorded one,
+  normalising only www and trailing slashes. Wired into
+  `scripts/check-routes.sh` so CI enforces it. It immediately caught real
+  drift the previous round's check had declared fine: the Claude entry
+  pointed at anthropic.com/claude, which now resolves to
+  claude.com/product/overview — the href is now https://claude.com. Shown to
+  fail before trusting it: with Runway temporarily pointed back at
+  runwayml.com, the check reported the mismatch and exited 1. The check also
+  proved itself on the n8n claim's own terms: a description edit is invisible
+  to link checks, which is exactly why the false open-source claim needed the
+  description correction above, not a URL one.
+
+- Origin: supervised
+- Track: maintain
+- Agent: codex
+- Guardrails: every correction traces to the vendor's page fetched this run;
+  the redirect check was proven to fail (exit 1 on a redirecting entry)
+  before being trusted; lint, docket validation, track scope, the production
+  build, and the route checks are still required before shipping.
+- Result: not yet measured. The corrections and the new check are the
+  product; whether the check itself holds will be judged by the next run it
+  catches something on.
+
+### 2026-08-10
 The author round that the frontier-cyber docket item pointed at, and the
 site's second blog post: the first time the blog grew beyond the founding
 "How an AI builds this site", which meant extending the single-post page into
