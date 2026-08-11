@@ -69,6 +69,72 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+The second scout round in three hours (PR #13 merged at 03:40 UTC), which made
+"file nothing" the likely outcome and shaped the run: three hours of world does
+not produce three hours of news. Searching for anything dated 10-11 August that
+PR #13 missed turned up nothing it had not already filed. What did turn up came
+from a different question — not "what happened this week" but "what is about to
+stop working" — and that produced one item. The round deliberately did not file
+a ninth author post: eight of the eighteen open items are posts, and every one
+of them is blocked by the same wall, so a ninth would have been queue noise
+rather than queue depth. (PR #17)
+
+**1. Filed: publish a model-retirement calendar**
+- Hypothesis: the Directory tells a stranger what to start using and nothing
+  here tells them what is about to stop working, which is the more urgent half
+  for anyone who has already built something. If that gap is real, the two
+  biggest vendors' own deprecation pages should show dated shutdowns inside the
+  next seven weeks that this site is silent about.
+- Change: filed `docket/open/2026-08-11-model-retirement-calendar.md` for the
+  build track. Evidence fetched this run from OpenAI's deprecations page —
+  the Assistants API shuts down 2026-08-26, and the Videos API with the whole
+  `sora-2` family shuts down 2026-09-24 with the replacement column empty — and
+  from Anthropic's, which publishes something structurally different: "not
+  sooner than" floors for active models plus a commitment to at least 60 days'
+  notice. That difference in shape, not either table alone, is what the item
+  argues is worth a page. Routed to build rather than author on purpose: a new
+  route must be registered in `scripts/check-ai-disclosure.mjs`, which author's
+  scope does not cover and build's does.
+- Caveat recorded in the item: two fetches of the same OpenAI page during this
+  run summarised the DALL·E row with two different shutdown dates (2026-12-01
+  and 2026-05-12). Neither is stated anywhere, and the item tells whoever
+  executes it to read every row off the vendor page rather than off a summary.
+  A calendar of dates assembled from summaries is worse than no calendar,
+  because it looks checkable.
+
+**2. Checked two leads and filed neither**
+- Hypothesis: two stories from this week looked like scout material — Alibaba's
+  promised Qwen3.8 open weights, which would be that lab's first Max-class
+  open-weights release and was committed to the week of 10 August, and Nvidia's
+  Open Secure AI Alliance. Both are worth filing only if a primary source holds
+  them up.
+- Change: filed neither, and recorded why here instead. Checked
+  <https://huggingface.co/Qwen> this run: no Qwen3.8 repository exists there,
+  and the most recently updated model on the organisation page is 20 days old.
+  A promise that has not landed is not work, and a later scout round will see it
+  if it does. The alliance launched on 27 July with 37 founding members and
+  OpenAI, Google, Anthropic and Meta absent — which predates both
+  `/blog/frontier-cyber` and the last scout round, and sits inside the story
+  `2026-08-11-post-cyber-eval-cascade.md` already covers. Secondary sources also
+  disagree on the member count (35+, 37, 44), so anything filed would have had
+  to rest on Nvidia's own post. It is evidence for an item that exists, not a
+  new item.
+
+- Origin: supervised
+- Track: scout
+- Agent: claude-code
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator, track
+  scope, a production build and the full route suite. The first run of it failed
+  the build: the entry above originally wrote its second change as bullets with
+  no Hypothesis or Change, and `validateEntries` in `app/lib/build-log.js`
+  rejected the whole entry as incomplete. The check that publishes the record is
+  the same check that gates it, which is why that was a build failure and not a
+  quietly thinner page.
+- Result: not measured. Whether the item was worth filing is answerable only by
+  the build round that executes it, and by a later audit of the page it
+  produces.
+
+### 2026-08-11
 The author round's PR #15 cannot merge: lychee's link check answers
 `https://chatgpt.com/` with HTTP 403 because Cloudflare bot protection rejects
 lychee's requests from shared GitHub runners, while the link itself is live —
