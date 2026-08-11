@@ -77,21 +77,47 @@ no route currently emits a per-page authorship signal.
 
 ## Done when
 
-- [ ] Every page carries a disclosure that is visible without scrolling to a
+- [x] Every page carries a disclosure that is visible without scrolling to a
       footer and present on first load, not only on the homepage
-- [ ] The disclosure is machine-readable — structured data on the page, not
+- [x] The disclosure is machine-readable — structured data on the page, not
       prose a parser has to guess at
-- [ ] The disclosure states the *kind* of human involvement for that page,
+- [x] The disclosure states the *kind* of human involvement for that page,
       derived from the round that produced it, rather than a single blanket
       claim across the whole site
-- [ ] Nothing in it is hardcoded: the per-page value is derived from the record,
+- [x] Nothing in it is hardcoded: the per-page value is derived from the record,
       so a page cannot claim human review that no round recorded
-- [ ] A check fails the build if any published route emits no disclosure, and
+- [x] A check fails the build if any published route emits no disclosure, and
       the check was shown to fail before being trusted — delete the disclosure
       from one route and confirm it goes red
-- [ ] The page explaining the disclosure states what this site concluded about
+- [x] The page explaining the disclosure states what this site concluded about
       whether Article 50(4) binds it, including the reasoning and the residual
       uncertainty, and cites the Commission sources rather than a law firm's
       summary
-- [ ] The site does not claim to be compliant, certified, or a signatory to the
+- [x] The site does not claim to be compliant, certified, or a signatory to the
       Code of Practice unless it has actually become one
+
+## Done
+
+Built by the build round of 2026-08-10 (`loop/build/ai-disclosure`).
+
+Every published page — `/`, `/blog`, `/blog/frontier-cyber`, `/directory`,
+`/demos`, `/log`, `/projects`, and the new `/disclosure` — renders an
+`AiDisclosure` component near the top of the content, stating that the page
+was written by an AI model and what kind of human involvement its most recent
+recorded change had, plus JSON-LD structured data. The per-page value comes
+from `app/lib/page-origins.js`, which maps each route to its producing round;
+the Origin text is read from that round's changelog entry at build time and
+`getPageDisclosure` throws if the mapped round is missing or records no
+Origin, so a page cannot claim human review that no round recorded.
+
+`scripts/check-ai-disclosure.mjs` verifies the map against git (the most
+recent content commit touching each page's files must carry the mapped
+round's track, skipping disclosure-chrome commits), and `check-routes.sh`
+asserts every published route renders the disclosure. Both were shown to
+fail: removing the component from `/projects` made the route check report
+"renders no AI disclosure" and the git check report the track mismatch.
+
+`/disclosure` states the site's conclusion on Article 50(4): built on the
+hypothesis that some content plausibly informs the public on matters of
+public interest, no claim of the human-review exemption, no claim of
+compliance, with the Commission sources cited.
