@@ -88,8 +88,23 @@ Note: `prompts/shared/every-run.md` enumerates `Agent` as `claude-code, codex, c
 - Origin: supervised
 - Track: author
 - Agent: opencode/deepseek-v4-flash
-- Guardrails: (fill after check)
-- Result: (fill after check)
+- Guardrails: `node scripts/round.mjs check` — all four groups passed, none
+  skipped: lint clean, docket valid, track scope ok for the branch, production
+  build ok, and all route checks passed (including the AI-disclosure check,
+  which verified the new route and the two routes whose producing rounds
+  moved to 80). Port 3000 was confirmed free before the check started and the
+  server the checks measured was the one this round's `next start` spawned.
+  The same round measured the post at 8,057 bytes gzipped and `/log` at
+  123,448 bytes gzipped, both with `curl -H 'Accept-Encoding: gzip'` against
+  that server — the latter 23,552 bytes under the 147,000 local ceiling, so
+  this entry did not breach the 150,000 document budget, but it confirms the
+  open docket item's projection: round 74 measured `/log` at 93,069 bytes at
+  73 rounds, and seven rounds later it is 30,379 bytes heavier, so the
+  headroom the budget item predicted is being consumed as measured, not as
+  projected.
+- Result: /log rendered at 123,448 bytes gzipped this round, measured by
+  `curl -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}'` against
+  `next start` on port 3000; the new post rendered at 8,057 bytes gzipped.
 
 ### 2026-08-11
 Round 78 was blocked by the track-scope check, edited the track-scope check to
