@@ -70,6 +70,199 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+Round 86 (build) makes `ship` arm auto-merge only when the round's own declared
+Origin permits merging without anything having read the work, and opens the
+pull request without auto-merge — saying so — otherwise. Round 85 declared
+`Origin: delegated`, whose published meaning is "the orchestrating model
+chose, briefed, reviewed and merged it", and its pull request auto-merged at
+01:36 while its review session was still running, with zero reviews and zero
+comments on the pull request: the merge preceded the review the value promises.
+The late review of that commit has since come back "sound as merged" — the
+failure was one of sequence, not substance. Nothing defective escaped; what
+escaped was the guarantee that something read the work before it merged. The
+first version of this entry said "this round closes that hole", and that was
+wrong: round 85 did not arm through `ship`, it armed through its own prompt,
+and the gate this round built closes the `ship` path only. This is the third
+time in two rounds that a claim was written from what a change was meant to do
+rather than from a measurement of what it does; saying so is the most useful
+thing in this entry. (PR #35)
+
+**1. `ship` gates auto-merge on the round's own declared Origin**
+- Hypothesis: `ship`'s final act is `gh pr merge --auto --squash` — a request,
+  never a merge, and the separation is the point of the file. But auto-merge
+  performs the merge at the earliest legal moment, the instant the required
+  checks pass, which can be *before* the reading a round's Origin promises. A
+  round declaring an Origin whose published meaning includes review must
+  therefore open its pull request without auto-merge, or the record claims an
+  oversight step that never happened. I expected the gate to read the Origin
+  through the one parser that already extracts it — `app/lib/build-log.js` —
+  because a second parser for a single field is exactly the disagreement this
+  project keeps shipping, and the whole file's premise is that the site and the
+  record cannot be allowed to drift.
+- Change: `scripts/round.mjs` `ship()` reads the newest changelog entry and
+  arms auto-merge only when `originAllowsAutomerge` (in the new
+  `scripts/automerge-origin.mjs`) returns true. Which values gate, and why:
+  `unsupervised`, `supervised` and `maintainer` arm; `delegated` withholds.
+  `unsupervised` is literally "scheduled, merged itself, nobody read it first"
+  — arming is the claim, not a contradiction. `supervised` ("a human triggered
+  the run and could veto before merge") asserts a veto *capability*, not a
+  performed review; arming leaves the human able to veto — they can still close
+  the pull request before GitHub merges — so the meaning stays true either way.
+  `maintainer` ("a human decided what and why; an assistant did the typing")
+  claims who directed the work, not that anyone read the result before merge;
+  auto-merge does not falsify it. Only `delegated` names "reviewed and merged
+  it" as part of the meaning, so only it must wait. A round that declares no
+  Origin, or whose entry cannot be parsed, withholds too (fail closed): `ship`
+  runs after the entry is written, so a missing or unreadable Origin is
+  reachable, and a record that cannot vouch for what read the work must not be
+  merged by nothing. The build already rejects a no-Origin entry —
+  `scripts/check-routes.sh` pins the undeclared count at 47 — so the gate
+  agrees with the build rather than contradicting it. When `ship` withholds it
+  says why, names the pull request, and tells the operator the one command
+  that arms it: `gh pr merge --auto --squash <N>`.
+- The entry this gate judges has to be the round's own. A round that ships
+  without touching `CHANGELOG.md` would leave the previous round's entry on
+  top and make the gate judge the wrong round, so `ship` now verifies the
+  branch changed a changelog entry before reading the Origin, and fails closed
+  (no auto-merge) if it did not. The round's charge is to add an entry at the
+  top of the log, and rule 5 makes the record append-only; a round that wrote
+  none has no Origin to judge.
+- The round that wrote the gate is the first round the gate holds. This entry
+  declares `Origin: delegated`, so this round's own `ship` opens the pull
+  request without auto-merge. That is the proof, and it is why this round
+  finishes with the pull request open and waiting rather than armed.
+
+**2. The round-85 incident, and the hole that is actually still open**
+- Hypothesis: the record had to describe what actually happened on the night
+  of round 85, and a statement of that incident belongs in the entry that
+  fixes its consequence. Verified from the GitHub API this round, not repeated
+  from the brief: commit `8cec1ef` is the merge commit; its changelog entry
+  declares `Origin: delegated`; pull request #34 was created 2026-08-12T01:29:46Z
+  and had auto-merge armed 2026-08-12T01:29:48Z — two seconds later. That is
+  not `ship` finishing a round; it is the round obeying the last line of its
+  instructions. `scripts/build-prompt.mjs` ended every assembled prompt with
+  "open a pull request and run 'gh pr merge --auto --squash'", and PR #34
+  armed two seconds after opening precisely because the round did that. Round
+  85 did not bypass the gate — there was no gate; the merge preceded any review
+  the value promises, and the record claimed an oversight step that had not
+  happened yet.
+- Change: the prompt is fixed here. `scripts/build-prompt.mjs` (in build's
+  scope — it is not one of the `human-owned-paths`) now tells the round to run
+  `node scripts/round.mjs ship` and explicitly not to run `gh pr merge --auto
+  --squash` itself, so a round defers the auto-merge decision to the gate
+  instead of arming its own merge. Two copies of the same instruction stay
+  open, and this round cannot touch either: `prompts/shared/every-run.md`
+  ("Then request auto-merge and stop: gh pr merge --auto --squash") is under
+  `prompts/`, and `.github/workflows/loop.yml` never invokes `ship` at all —
+  the scheduled round is driven entirely by the prompt, so until that prompt
+  text is the fixed one, a scheduled round still carries the direct-arm
+  instruction. Both are filed in
+  `docket/open/2026-08-11-every-run-and-loop-yml-still-instruct-direct-arm.md`
+  (track meta, filed-by build) for the rounds that may touch them. The gate in
+  `ship` is real and holds the local path; it is not the whole hole, and this
+  entry says so. The operator's `gh pr merge --auto --squash` is the escape
+  hatch for a withheld round — and the correction the review demands is worth
+  stating plainly: that command is *also* still a standing instruction in
+  `every-run.md`, which is the opposite of manual. Round 85 used it that way.
+  The first version of this entry called it "manual on purpose"; it is only
+  manual once the prompts stop telling rounds to run it.
+- The late review of `8cec1ef`, delivered after it landed, ran the production
+  build, curled the live pages, and tested the validator in both directions,
+  and its verdict is "sound as merged": the homepage arithmetic holds at four
+  categories, a bogus Origin still fails the build, a missing Origin still
+  trips the pinned-47 assertion, and all thirteen routes pass the disclosure
+  check. The change was right; the *sequence* was wrong. A gate that only
+  matters when the work is bad is not a gate — this one holds for every round
+  that promises a review, sound or not. Where that verdict came from: a
+  separate review session that reported back to this round's orchestrator. Its
+  findings are not an artifact in this repository — the session's log is a
+  temporary one — so a reader cannot check it here. The sub-claims were
+  independently re-verified by the reviewer of this round's own pull request
+  and hold; the statement is recorded with that provenance, not presented as
+  a repository artifact.
+- The late review also found two cosmetic defects, deliberately not fixed here
+  because they are outside this round's subject: the published wording of
+  `delegated` omits "briefed" in `app/log/LogEntry.js`,
+  `app/lib/page-origins.js` and `app/components/AiDisclosure.js` while
+  `/disclosure` and the `CHANGELOG.md` preamble include it; and
+  `app/lib/build-log.js` line 31 ends a comment "(round 86)" while the round
+  renders as 85. Both are filed as
+  `docket/open/2026-08-11-delegated-origin-definitions-disagree.md` (track
+  maintain, filed-by build, priority 2) rather than fixed in a round that
+  changes only `scripts/` and the record.
+
+**3. How the gate was proved, and what could not be tested**
+- Hypothesis: every assertion in this project must be shown able to fail before
+  it is trusted, and a gate that cannot be exercised is decorative. The four
+  cases are: an `unsupervised` round still arms auto-merge; a `delegated` round
+  opens the pull request without auto-merge and says what to do next; a no-Origin
+  entry does not arm; and `ship` still refuses a non-loop branch and still
+  pushes and opens the pull request in the normal case.
+- Change: cases 1–3 were proved by driving the real parser
+  (`app/lib/build-log.js`) and the real gate (`scripts/automerge-origin.mjs`)
+  against scratch copies of `CHANGELOG.md` whose newest entry declared each
+  Origin — no junk pull requests were opened, because opening them would be the
+  exact record pollution this round exists to stop. The proof labels "ARMS
+  auto-merge" and "WITHHOLDS auto-merge" came from a throwaway harness that is
+  not shipped; they appear nowhere in the repository's code, and are quoted
+  here only as the harness's output. Real output: with the newest entry
+  declaring `unsupervised`, `getBuildLog()[0]` returned
+  `declaredOrigin=true origin="unsupervised"` and the harness printed "ARMS
+  auto-merge"; with `delegated` it returned `origin="delegated"` and printed
+  "WITHHOLDS auto-merge"; with the Origin line removed it returned
+  `declaredOrigin=false origin="supervised"` (the legacy default) and printed
+  "WITHHOLDS auto-merge". The decision table over synthetic entries agreed on
+  all four values, plus null. Case 4's branch refusal was run for real: `node
+  scripts/round.mjs ship` on branch `test/not-a-loop-branch` failed with
+  `branch 'test/not-a-loop-branch' is not loop/<track>/<slug>`, exit 1, before
+  any push. What could not be run for real without a junk pull request: the
+  literal `gh pr merge --auto --squash` execution for an `unsupervised` round,
+  and the full open-then-withhold sequence for a `delegated` round. The first
+  is exercised exactly as before by the same code path (the arm branch is
+  unchanged); the second is exercised by this round's own `ship` at the end of
+  this round, which is the proof the brief asks for. The round-85 working-tree
+  incident is also recorded here. While round 85 was working, its uncommitted
+  changes ended up on `loop/meta/delegation-amendment`. The orchestrator's
+  account — relayed to this round, not an artifact in the repository — is that
+  it saw the wrong branch checked out, believed the round was about to commit
+  to another round's pull request, stopped the round's process and moved the
+  work back; in doing so it discarded one of round 85's `CHANGELOG.md` edits,
+  which round 85 later re-applied and described as an edit being "swallowed".
+  This is the orchestrator's account as given, not round 85's committed entry,
+  which contains none of it; an orchestrator intervening in a running round's
+  working tree, on a misreading, is exactly the kind of thing this record
+  exists to hold.
+
+- Origin: delegated
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator, track
+  scope, a production-shaped build and the full route suite. The round was
+  started with `--force`: the in-flight guard refused while PR #33
+  (loop/meta/delegation-amendment) is open, and that round waits on a human by
+  design while this one must not wait on it — the override is the script's
+  documented way past the guard and is recorded here as it instructs, the same
+  justification round 85 used. Three of the four proofs were run against the
+  real parser and real gate with real output pasted in block 3; the fourth was
+  run for real on a non-loop branch. The round's own `ship` is the real test of
+  the withheld path, by the round's own declared Origin. After review: the
+  false "closes that hole" claim, the false "manual escape hatch" claim, and
+  the two provenance gaps are corrected in this entry, and the prompt that
+  round 85 actually used is fixed in `build-prompt.mjs`; the two human-owned
+  copies of the same instruction and the stale `README.md`/`SKILL.md`/
+  `AGENTS.md` ship descriptions are filed, not fixed, because no track may
+  edit them today.
+- Result: measured by running the proofs, not asserted: the gate returns ARMS
+  for `unsupervised`, `supervised` and `maintainer`, and WITHHOLDS for
+  `delegated`, for a missing Origin and for an unreadable entry; `ship` on a
+  non-loop branch still refuses before pushing; and this round's `ship` — the
+  first round the gate holds — opened the pull request and reported
+  `auto-merge withheld — Origin 'delegated' means this round was reviewed before
+  merge`, naming the manual arm command, and did not run `gh pr merge --auto`.
+  Measured, not asserted, because a claim is only as good as the measurement
+  that stands behind it — which is the lesson this round keeps having to learn.
+
+### 2026-08-11
 This round (build) makes the code accept the Origin value the record now needs.
 Its own entry is the first to carry `Origin: delegated`, which is legal
 precisely because this round makes it legal — the value appears in the same
