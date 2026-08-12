@@ -19,6 +19,7 @@
 import { execFileSync, execSync, spawn } from "child_process";
 import fs from "fs";
 import net from "net";
+import path from "path";
 
 const PORT = 3000; // The sitemap is built with this. Serving elsewhere fails
                    // seven route checks for reasons that have nothing to do
@@ -436,7 +437,28 @@ async function check() {
 
 // --- ship -------------------------------------------------------------------
 
-function ship() {
+// Auto-merge is requested, never performed: `gh pr merge --auto --squash`
+// queues a merge that GitHub performs only when the required checks pass. A
+// run that polls for green and merges itself is both applicant and judge, and
+// can merge over a failing check.
+//
+// But the merge has to be *earned* by the round's own Origin. A round's Origin
+// is a published claim about what read the work before it landed, and
+// auto-merge performs the merge at the earliest legal moment — which can be
+// before the reading that Origin promises. Round 85 is the instance: it
+// declared `Origin: delegated` ("reviewed and merged it") and auto-merged at
+// 01:36 while its review session was still running, with zero reviews on the
+// pull request. The work proved sound, but the record claimed an oversight
+// step that had not happened yet, and it happened to be vindicated afterwards.
+// A gate that only matters when the work is bad is not a gate.
+//
+// So `ship` arms auto-merge only when the round's own Origin permits merging
+// without anything having read the work, and it opens the pull request
+// WITHOUT auto-merge otherwise, saying so. The Origin is read through the same
+// parser the site builds from (app/lib/build-log.js) — a second parser for one
+// field is the disagreement this project keeps shipping. Which values gate is
+// decided in scripts/automerge-origin.mjs, next to the gate itself.
+async function ship() {
   const current = branch();
   head("Shipping");
 
@@ -459,6 +481,7 @@ function ship() {
   ok(`pushed ${current}`);
 
   const existing = tryRun("gh", ["pr", "view", "--json", "number", "-q", ".number"]);
+  let prNumber = null;
   if (!existing.ok) {
     const created = tryRun("gh", ["pr", "create", "--fill"]);
     if (!created.ok) {
@@ -467,18 +490,64 @@ function ship() {
       process.exit(1);
     }
     ok("pull request opened");
+    const found = tryRun("gh", ["pr", "view", "--json", "number", "-q", ".number"]);
+    prNumber = found.ok ? found.out.trim() : null;
   } else {
-    ok(`pull request #${existing.out.trim()} already open`);
+    prNumber = existing.out.trim();
+    ok(`pull request #${prNumber} already open`);
   }
 
-  // Requested, never performed. A run that polls for green and merges itself
-  // is both applicant and judge, and can merge over a failing check.
-  const auto = tryRun("gh", ["pr", "merge", "--auto", "--squash"]);
-  if (auto.ok) ok("auto-merge requested — GitHub merges it if the checks pass");
-  else {
-    bad("could not request auto-merge");
-    console.log(auto.out);
+  // Read the round's own Origin from the entry it just wrote, with the same
+  // parser the site builds from — never a second parser. The newest entry is
+  // the round's own: ship runs after the round commits its entry.
+  const { getBuildLog } = await import(
+    `file://${path.join(process.cwd(), "app", "lib", "build-log.js").replace(/\\/g, "/")}`
+  );
+  const { originAllowsAutomerge } = await import(
+    `file://${path.join(process.cwd(), "scripts", "automerge-origin.mjs").replace(/\\/g, "/")}`
+  );
+
+  let entry;
+  try {
+    entry = getBuildLog()[0];
+  } catch (error) {
+    bad("could not parse CHANGELOG.md — auto-merge withheld");
+    console.log(`        ${error.message}`);
+    console.log("\n  The pull request is open but nothing will merge it. This is a");
+    console.log("  fail-closed default: a record that cannot be read cannot vouch");
+    console.log("  for what read the work. Fix the entry, then arm the merge:");
+    console.log("    gh pr merge --auto --squash");
     process.exit(1);
+  }
+
+  const origin = entry && entry.declaredOrigin ? entry.origin : "";
+  if (originAllowsAutomerge(entry)) {
+    // Requested, never performed. A run that polls for green and merges itself
+    // is both applicant and judge, and can merge over a failing check.
+    const auto = tryRun("gh", ["pr", "merge", "--auto", "--squash"]);
+    if (auto.ok) ok("auto-merge requested — GitHub merges it if the checks pass");
+    else {
+      bad("could not request auto-merge");
+      console.log(auto.out);
+      process.exit(1);
+    }
+  } else {
+    if (!origin) {
+      bad("auto-merge withheld — this round's entry declares no Origin");
+      console.log("        a round that does not state what read its work must not merge");
+      console.log("        itself. The build rejects such an entry anyway (check-routes.sh");
+      console.log("        pins the undeclared count at 47). Fix the entry, then arm it:");
+      console.log("          gh pr merge --auto --squash");
+      process.exit(1);
+    }
+    ok(`auto-merge withheld — Origin '${origin}' means this round was reviewed before merge`);
+    console.log("\n  The pull request is open and waits for that review. When the review");
+    console.log("  is done, arm the merge yourself:");
+    console.log(`    gh pr merge --auto --squash ${prNumber || "<N>"}`);
+    console.log("\n  Do not merge it yourself. Watch it with:");
+    console.log("    gh pr checks");
+    console.log("    node scripts/loop-history.mjs");
+    return;
   }
 
   console.log("\n  Do not merge it yourself. Watch it with:");
@@ -495,7 +564,7 @@ if (!fs.existsSync("CHARTER.md")) {
 
 if (cmd === "start") start();
 else if (cmd === "check") await check();
-else if (cmd === "ship") ship();
+else if (cmd === "ship") await ship();
 else {
   console.error(`unknown command: ${cmd}`);
   console.error("usage: node scripts/round.mjs [start|check|ship]");
