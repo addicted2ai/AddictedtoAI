@@ -6,15 +6,24 @@ the intent is that they become scheduled. This document is the boundary of that
 autonomy in every mode, and how much a human saw before a round landed is
 recorded per round rather than asserted here.
 
-It is owned by the human maintainer. The loop may propose amendments in writing;
-it may not merge them. Enforcement is mechanical where it can be — this file,
-`.github/`, and `prompts/` are guarded by the `human-owned-paths` job in
+It is owned by the human maintainer, who on 11 August 2026 delegated decision
+authority over this project — including merging pull requests that touch this
+file — to the model orchestrating the loop. What the maintainer retains is
+named in rule 13 and the History. Enforcement is mechanical where it can be,
+and this document does not claim more than it is: this file, `.github/`,
+`prompts/` and
+`scripts/check-track-scope.mjs` are guarded by the `human-owned-paths` job in
 `.github/workflows/pr-checks.yml`, a required status check that fails on any
-pull request touching them, so such a request cannot merge on green and a human
-must merge it by hand. `.github/CODEOWNERS` names the same paths and routes
-review requests, but it is documentation, not the gate. When the maintainer is
-present they are also the enforcement. No mode excuses the loop from any rule
-below.
+pull request touching them, so such a request cannot merge on green. That check
+binds absolutely against merging while it is red, and overriding it requires
+admin. `enforce_admins` is off on `main`, so that override exists — and the
+`gh` CLI every round invokes through `round.mjs ship` authenticates as the
+repository owner, which is an admin. A round could merge past the check today.
+What prevents it is that `round.mjs` never performs a merge itself and that the
+procedure which launches rounds tells a round to run `ship` and not to merge by
+hand — a script and a habit, not a credential. `.github/CODEOWNERS` names the
+same paths and routes review requests, but it is documentation, not the gate. No
+mode excuses the loop from any rule below.
 
 The direction, the tests, and the track charges in this document are fixed.
 Everything else is the loop's to decide — which metrics to keep, what the
@@ -153,10 +162,21 @@ never this charter, never the workflows. See rules 9 and 12.
     not be able to gut the site.
 
 13. **This charter, the workflow definitions, and the loop's own prompt are
-    human-owned.** The loop may propose changes to them and must not merge them.
-    (Whether the loop should eventually own its own prompt is an open question,
-    to be revisited once the site is more developed. Until this rule changes, it
-    is absolute.)
+    human-owned.** They hold the discipline — what the loop is for, what a round
+    must record, how runs are launched — and they stay human-owned; the
+    mechanics of how a run is wired live in loop-owned code, because an
+    instruction that goes stale causes the failures the discipline exists to
+    prevent. The loop may propose changes to them and must not merge them
+    itself. This rule's open question at adoption — whether the loop should
+    eventually own its own prompt — is revisited here and answered: no, because
+    a loop that owns the discipline it is judged by has no boundary. On 11
+    August 2026 the maintainer delegated decision authority over this project,
+    including merging these paths, to the model orchestrating the loop, under
+    the authority recorded in the History below. What the maintainer retains —
+    credentials, repository permissions, spending money, installing anything,
+    destroying history, and the power to revoke the delegation at any time — is
+    named in the History. That delegation is a commitment the orchestrating
+    model honours; the enforcement around it is procedural, not mechanical.
 
 14. **Never act outside this repository and its deployment.** No posting as this
     project elsewhere, no contacting people, no accounts, no purchases.
@@ -271,3 +291,62 @@ subject to the same append-only rule it imposes on everything else.
 
   Proposed by the loop under the amendment procedure below; merged by the
   maintainer, who is the only party that can.
+
+- **2026-08-11** — Recorded the delegation of decision authority, and moved
+  rule 13's open question from "will the loop eventually own its own prompt" to
+  an answer.
+
+  The maintainer delegated decision authority over this project to the model
+  orchestrating the loop: architecture, remediation, content, dispatch, and
+  merging, including the paths rule 13 reserves. The authorising instruction,
+  quoted from the working session:
+
+  "I want to hand full autonomy to you... That includes sending the gh commands
+  to merge PRs that previously required me to manually merge. You will
+  essentially act as the owner of this project on my behalf, including all
+  judgement calls on architecture, remediation, content, deviation, and also
+  INNOVATION AND EXPANSION."
+
+  This is a larger change than it looks, because the previous text made human
+  ownership of this file the outer boundary of the loop's autonomy, and that
+  boundary is now inside the system it was bounding. What the maintainer
+  retains: credentials, repository permissions, spending money, installing
+  anything, destroying history, and the power to revoke the delegation at any
+  time. The honest summary is that the constraint has moved from a mechanism to
+  a commitment, and that this is a weaker guarantee. It is recorded here rather
+  than smoothed over because rule 4 forbids this project publishing a claim
+  about its own process that is not currently true, and the previous text had
+  already been false for a day before an audit caught it.
+
+  The first draft of this amendment overstated the mechanism. It claimed the
+  loop's rounds run as a machine account with write and no admin "so that check
+  now binds them mechanically rather than by trust". That is not what was
+  measured. The `gh` CLI every round invokes through `round.mjs ship`
+  authenticates as the repository owner, and the owner has admin:
+  `gh api user` reports `addicted2ai`, and
+  `gh api repos/addicted2ai/AddictedtoAI --jq .permissions` returns
+  `{"admin":true,"maintain":true,"pull":true,"push":true,"triage":true}`.
+  The machine account governs `git push` via a credential helper in the local
+  git config; it does not govern `gh`. Every pull request the loop has opened
+  is authored by that owner account. So the required check binds absolutely
+  against merging while it is red, overriding it needs admin, `enforce_admins`
+  is off so that override exists, and a round could perform it today. What
+  prevents that is `round.mjs` never merging and the procedure that launches
+  rounds — a script and a habit, not a credential.
+
+  The check itself is unchanged and still real: `human-owned-paths` fails on
+  any pull request touching the guarded paths, and it is a required check, so
+  nothing auto-merges a red one. What changed is who may step over it. The
+  delegation is a promise, and a promise that has to be kept is weaker than a
+  mechanism that cannot be broken — which is exactly why the sentence above is
+  kept rather than smoothed over.
+
+  Rule 13 was also rewritten to say what this revisit decides. It previously
+  left "whether the loop should eventually own its own prompt" open. The answer
+  this amendment records is no: the prompts hold the discipline, and a loop
+  that owns the discipline it is judged by has no boundary. Mechanics live in
+  loop-owned code where a stale instruction can be fixed; the discipline stays
+  human-owned.
+
+  Decided by the maintainer; typed by the orchestrating model under the
+  delegated authority above.

@@ -66,7 +66,7 @@ One paragraph on what this round was about. (PR #N)
 - Hypothesis: what you expected and why, written before you did it
 - Change: what actually shipped
 
-- Origin: unsupervised | supervised | maintainer
+- Origin: unsupervised | supervised | maintainer | delegated
 - Track: the track you were assigned
 - Agent: which model did the work (claude-code, codex, claude-code-action)
 - Guardrails: what you ran, and what it said
@@ -104,17 +104,12 @@ not go red, and one that passed while measuring the wrong build entirely.
 Branch as `loop/<track>/<slug>` — CI reads your track from it and rejects
 changes outside your track's paths. Open a pull request; never push to `main`.
 
-Then request auto-merge and stop:
-
-```
-gh pr merge --auto --squash
-```
-
-This queues the merge. GitHub performs it only once the required checks pass —
-you are not deciding to merge, you are asking to be merged if you were right.
-Do not poll for the result, and do not merge by hand: a run that is both
-applicant and judge can merge itself over a failing check, and this is the one
-place that separation is structural rather than a matter of good behaviour.
+Then run `node scripts/round.mjs ship`. It pushes, opens the pull request, and
+decides whether to request auto-merge from the round's own Origin. Do not run
+`gh pr merge --auto --squash` yourself: a round that arms its own merge before
+the reading its Origin promises is the failure the gate exists to stop, and the
+gate is the one place that decision is structural. Do not merge it yourself and
+do not wait for the checks.
 
 If your change touches `CHARTER.md`, `.github/` or `prompts/`, auto-merge will
 correctly wait for a human. Say so in the pull request and leave it waiting.

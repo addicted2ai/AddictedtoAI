@@ -69,6 +69,14 @@ const SCOPES = {
     "prompts/",
     "CHARTER.md",
     "policy.yml",
+    // Agent-facing documentation at the repository root. Neither this file nor
+    // the round skills were in any track's scope, so the round that grew
+    // round.mjs with --force and two start-time guards could change the
+    // behaviour but not the documents describing it. AGENTS.md is added here
+    // so a later meta round can fix it; this pull request does not edit the
+    // file (rule 11: a run does not spend a permission it grants itself in the
+    // same change).
+    "AGENTS.md",
     // Repository-level configuration. Neither was in any track's scope, so no
     // track could fix the line-ending bug that broke every docket parse on
     // Windows, or the ESLint cascade conflict -- found by the first scout run,
