@@ -1115,3 +1115,48 @@ h2.latest-post-label {
   font-size: 0.9em;
   overflow-wrap: break-word;
 }
+
+/* ---- Vendor-retirement commitments ----------------------------------- */
+
+.commitment-shape {
+  margin: 0 0 1.75rem;
+}
+
+.commitment-shape h3 {
+  margin: 0 0 0.5rem;
+}
+
+.commitment-shape ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.commitment-row {
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.commitment-row:first-child {
+  border-top: none;
+}
+
+.commitment-row a {
+  color: var(--accent);
+}
+
+.commitment-quote {
+  color: var(--fg);
+}
+
+.commitment-more {
+  color: var(--muted);
+}
+
+.commitment-verified {
+  color: var(--muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}

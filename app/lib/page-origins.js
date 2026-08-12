@@ -94,6 +94,14 @@ export const ARCHIVE = "archive";
 // tie-break fix. So / and /blog and every post route move to 87; the log pages
 // and /disclosure are untouched and stay on 85. (Round 86 is the build round
 // that shipped the auto-merge gate, which touched scripts/, not these pages.)
+//
+// Round 88 (author) publishes the vendor-retirement-promises comparison at
+// /what-vendors-promise. It is a new route, so its producing round is 88 by
+// construction. Its files — app/what-vendors-promise/page.js and
+// app/lib/retirement-commitments.js — are new and touched by nothing else, so
+// no other route moves this round. app/Nav.js gains a link to it but Nav.js is
+// not a listed source file of any route, so the nav change is invisible to
+// this map.
 export const PRODUCING_ROUNDS = {
   // Round 87 (author): posts.js gained a post and page.js gained a teaser
   // tie-break fix, and both are listed source files of /, so the newest
@@ -113,7 +121,12 @@ export const PRODUCING_ROUNDS = {
   "/blog/gpt-5-6-price-drop": 87,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
+  // Round 83 (build) built this page and its parser. New route, so its
+  // producing round is the round that created it.
   "/charter": 83,
+  // Round 88 (author) built this page. New route, so its producing round is
+  // the round that created it.
+  "/what-vendors-promise": 88,
   "/directory": 67,
   "/demos": 62,
   // Both log pages were produced by round 70, the build round that split the

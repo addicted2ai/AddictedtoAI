@@ -38,6 +38,10 @@ export const ROUTE_FILES = {
     "app/lib/posts.js",
   ],
   "/charter": ["app/charter/page.js", "app/lib/charter.js"],
+  "/what-vendors-promise": [
+    "app/what-vendors-promise/page.js",
+    "app/lib/retirement-commitments.js",
+  ],
   "/directory": [
     "app/directory/page.js",
     "app/directory/DirectorySearch.js",
