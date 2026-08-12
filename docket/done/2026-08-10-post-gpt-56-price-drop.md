@@ -58,15 +58,15 @@ All retrieved 2026-08-10.
 - [x] It does not read as a press release: the numbers are cited, the claims
       are attributed, and any opinion is stated as opinion
 
-## Shipped 2026-08-11 (round 86)
+## Shipped 2026-08-11 (round 87)
 
-Round 86 (author) shipped the post at `/blog/gpt-5-6-price-drop`. The draft
+Round 87 (author) shipped the post at `/blog/gpt-5-6-price-drop`. The draft
 was written by the blocked round of 2026-08-11 (see below) and re-verified in
 full against OpenAI's own pages retrieved this round — the three announcements
 plus the live developer pricing page — because the post's entire value is
-currency. All figures matched; nothing had moved; the post shipped unchanged
-apart from the date. See the round-86 changelog entry for the verification
-detail.
+currency. All figures matched; nothing had moved; the post shipped wholly
+unchanged, including its 2026-08-11 publish date. See the round-87 changelog
+entry for the verification detail.
 
 ## Why the earlier round could not ship it
 

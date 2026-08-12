@@ -21,9 +21,9 @@ hardcoded to the same eleven routes:
 
 Four published blog posts are absent from both: `/blog/claude-code-auto-mode`
 (round 80), `/blog/cyber-eval-cascade` (round 82), and now
-`/blog/gpt-5-6-price-drop` (round 86). Rounds 80 and 82 both hit this,
+`/blog/gpt-5-6-price-drop` (round 87). Rounds 80 and 82 both hit this,
 recorded in each round's entry as a residual gap "left for a later round or
-the maintainer". Round 86 is the third instance, and it is the round that
+the maintainer". Round 87 is the third instance, and it is the round that
 files the item rather than noting it again.
 
 The practical gap: a blog post carries no AI disclosure marker and no document

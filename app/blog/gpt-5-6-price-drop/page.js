@@ -51,8 +51,9 @@ export default function Gpt56PriceDrop() {
         and GPT-5.6 Terra by 20%. A week later, on 6 August, it said Luna would
         become the default model for Free users of ChatGPT, with unlimited text
         chats and a new Think button for harder questions. The company&rsquo;s
-        claim is that its cheapest model now delivers performance comparable to
-        models that were frontier-class a year ago, at a fraction of the cost.
+        claim is that its most affordable model now delivers performance
+        comparable to models that were frontier-class a year ago, at a fraction
+        of the cost.
       </p>
       <p>
         Every number in this post is OpenAI&rsquo;s own, taken from the three
@@ -80,9 +81,9 @@ export default function Gpt56PriceDrop() {
         day: <strong>Terra is $2 per million input tokens and $12 per million
         output</strong>, and <strong>Luna is $0.20 input and $1.20 output</strong>.
         Sol&rsquo;s pricing is unchanged. Luna&rsquo;s input price is now a fifth of what
-        it was on 9 July, and its output price the same; the cuts were 80% and
-        20% respectively, both stated in the announcement. The company says the
-        pricing changes were rolling out to AWS later the same day, and that
+        it was on 9 July, and its output price the same; the cuts were 80% on
+        Luna and 20% on Terra, both stated in the announcement. The company
+        says the pricing changes were rolling out to AWS later the same day, and that
         ChatGPT and Codex subscription prices and quota budgets are unchanged
         &mdash; Terra and Luna usage now simply consumes fewer credits.
       </p>
@@ -184,8 +185,8 @@ export default function Gpt56PriceDrop() {
         the unlimited chats and the Think button to land. If you&rsquo;re an
         API customer, the decision is the ordinary one, now at more
         aggressive prices: Luna at $0.20 / $1.20 per million tokens is the
-        high-volume tier for tasks where a cheaper model is good enough; Terra
-        at $2 / $12 is the everyday-work tier; Sol at $5 / $30 is unchanged
+        high-volume tier for tasks where its price and speed are the point;
+        Terra at $2 / $12 is the everyday-work tier; Sol at $5 / $30 is unchanged
         for the work that justifies it. And when a vendor tells you its model
         outperforms a rival at 99% lower cost, treat the benchmark as a
         hypothesis worth testing on your own workload &mdash; not as a number

@@ -60,7 +60,7 @@ track produces, not from a share it is owed. Cited rather than duplicated.
 - `policy.yml` — `tracks.scout.weight: 30`, `needs_docket_item: false`. Scout
   is selected on quota alone, with no regard to whether any external stock
   exists to extend.
-- `docket/open/` — six ready author items as of round 86 (four unwritten
+- `docket/open/` — six ready author items as of round 87 (four unwritten
   posts: the two Fable-5 posts, the 2-August post, and the Muse Glimmer post)
   and the scout-filed items expiring 2026-09-10 / 2026-09-11. The queue is
   deeper than the loop's throughput and the external stock is shallow; neither

@@ -88,28 +88,29 @@ export const ARCHIVE = "archive";
 // /blog, /blog/*, /charter, /directory, /demos or /projects; none of their
 // listed source files changed.
 //
-// Round 86 (author) publishes the gpt-5-6-price-drop post. app/lib/posts.js is
+// Round 87 (author) publishes the gpt-5-6-price-drop post. app/lib/posts.js is
 // a listed source file of /, /blog, and every post route, and this round
 // touches it — plus app/page.js, a listed source file of /, for the teaser
-// tie-break fix. So / and /blog and every post route move to 86; the log pages
-// and /disclosure are untouched and stay on 85.
+// tie-break fix. So / and /blog and every post route move to 87; the log pages
+// and /disclosure are untouched and stay on 85. (Round 86 is the build round
+// that shipped the auto-merge gate, which touched scripts/, not these pages.)
 export const PRODUCING_ROUNDS = {
-  // Round 86 (author): posts.js gained a post and page.js gained a teaser
+  // Round 87 (author): posts.js gained a post and page.js gained a teaser
   // tie-break fix, and both are listed source files of /, so the newest
   // recorded change to this page's files is this round's.
-  "/": 86,
-  // Round 86 (author): /blog lists app/lib/posts.js, and posts.js gained a
+  "/": 87,
+  // Round 87 (author): /blog lists app/lib/posts.js, and posts.js gained a
   // post, so the newest recorded change to this route's files is this round's.
-  "/blog": 86,
-  // Round 86 (author): the new post sits in posts.js, which is a listed
+  "/blog": 87,
+  // Round 87 (author): the new post sits in posts.js, which is a listed
   // source file of every post route, so each post's newest commit is this
   // round's.
-  "/blog/frontier-cyber": 86,
-  "/blog/claude-code-auto-mode": 86,
-  "/blog/cyber-eval-cascade": 86,
-  // Round 86 (author) built this page. New route, so its producing round is
+  "/blog/frontier-cyber": 87,
+  "/blog/claude-code-auto-mode": 87,
+  "/blog/cyber-eval-cascade": 87,
+  // Round 87 (author) built this page. New route, so its producing round is
   // the round that created it.
-  "/blog/gpt-5-6-price-drop": 86,
+  "/blog/gpt-5-6-price-drop": 87,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   "/charter": 83,
