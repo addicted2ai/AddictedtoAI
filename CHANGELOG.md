@@ -83,7 +83,7 @@ round invokes through `round.mjs ship` authenticates as the repository owner
 (`addicted2ai`), whose permissions include admin — `enforce_admins` is off, so
 a round could merge past the `human-owned-paths` check today. What prevents it
 is `round.mjs` never merging and the procedure that launches rounds, a script
-and a habit, not a credential. The charter now says what is true. (PR #N)
+and a habit, not a credential. The charter now says what is true. (PR #39)
 
 **1. Recorded the delegation in the charter, accurately**
 - Hypothesis: rule 4 forbids the charter publishing a claim about this
