@@ -17,14 +17,14 @@ export const metadata = {
 
 const SHAPES = {
   "floor-dates": {
-    label: "Floor + hard dates",
+    label: "Floor + dates",
     meaning:
-      "the vendor promises a minimum notice period and publishes the shutdown dates",
+      "the vendor promises a minimum notice period and publishes shutdown dates as dates — you can plan against a calendar",
   },
   earliest: {
     label: "Earliest-possible",
     meaning:
-      "dates are published as the earliest possible and may be extended",
+      "dates are published, but the vendor's own page frames them as the earliest possible and may move them; a notice floor may still be firm, the date is not",
   },
   "ad-hoc": {
     label: "Ad-hoc",
@@ -62,7 +62,7 @@ export default function WhatVendorsPromise() {
         promises, not a calendar of dates.
       </p>
 
-      <h2>The four shapes of a promise</h2>
+      <h2>The shapes of a promise</h2>
       <table className="charter-table">
         <thead>
           <tr>
@@ -72,19 +72,20 @@ export default function WhatVendorsPromise() {
         </thead>
         <tbody>
           <tr>
-            <td>Floor + hard dates</td>
+            <td>Floor + dates</td>
             <td>
               The vendor promises a minimum notice period <em>and</em>{" "}
-              publishes the shutoff dates. You can plan against both a number
-              and a calendar.
+              publishes shutdown dates as dates. You can plan against both a
+              number and a calendar.
             </td>
           </tr>
           <tr>
             <td>Earliest-possible</td>
             <td>
-              Dates are published as the earliest possible, with the caveat
-              that they may be extended. A slip is the vendor behaving as
-              documented, not an error.
+              Dates are published, but the vendor&rsquo;s own page frames them
+              as the earliest possible and may move them. The minimum-notice
+              floor can still be firm; the date is not a promise. A slip is
+              the vendor behaving as documented, not an error.
             </td>
           </tr>
           <tr>
@@ -103,6 +104,15 @@ export default function WhatVendorsPromise() {
           </tr>
         </tbody>
       </table>
+      <p>
+        The two strongest-looking documentations — Anthropic and Microsoft —
+        are filed under earliest-possible, not floor + dates. Anthropic&rsquo;s
+        active models publish only &ldquo;not sooner than&rdquo; floors, and
+        Microsoft&rsquo;s schedule is explicitly &ldquo;subject to change&rdquo;.
+        A vendor can publish a notice floor <em>and</em> dates it reserves the
+        right to move; this taxonomy expresses that combination rather than
+        forcing a choice.
+      </p>
 
       <h2>The commitments, by vendor</h2>
       <p>
@@ -157,6 +167,16 @@ export default function WhatVendorsPromise() {
       </p>
       <ul>
         <li>
+          <strong>Even the vendors with the strongest lifecycle documentation
+          publish dates they reserve the right to move.</strong> Anthropic
+          publishes &ldquo;not sooner than&rdquo; floors, Microsoft&rsquo;s
+          schedule is &ldquo;subject to change&rdquo;, and Google states its
+          shutdown dates are &ldquo;the earliest possible dates&rdquo;. A
+          reader choosing a vendor reads those three as making a firmer promise
+          than they make — that is the reason the earliest-possible shape
+          exists on this page.
+        </li>
+        <li>
           <strong>xAI has only per-event migration guides.</strong> The May 15,
           2026 Grok retirement is announced as a migration guide with a date,
           not as the consequence of a standing policy.
@@ -168,19 +188,21 @@ export default function WhatVendorsPromise() {
         </li>
         <li>
           <strong>Meta could not be verified this run.</strong> Its docs
-          returned HTTP 400 / transport errors on 2026-08-11, so this page
-          does not claim whether Meta publishes a lifecycle page. What is
-          verifiable from other vendors&rsquo; pages: hosted Llama endpoints
-          appear on each host&rsquo;s own schedule (Bedrock and Foundry both
-          list Meta models on <em>their</em> lifecycle pages), which is a
+          returned HTTP 400 / transport errors to a browser-like client, and
+          the reachable Model API pages contain no lifecycle page, so this page
+          does not claim whether Meta publishes one for hosted Llama. What is
+          verifiable from another vendor&rsquo;s page: Microsoft Foundry lists
+          Meta models on <em>its</em> retirement schedule, which is a
           retirement shaped by the host, not by Meta.
         </li>
       </ul>
       <p>
-        No existing tracker states these three as findings, because the
-        existing trackers are about dates. This page is about the shape of the
-        promise, and the empty cells are the part of that shape most worth
-        stating.
+        No existing tracker states these empty cells as findings. The trackers
+        record dates (and endoflife.date records Anthropic&rsquo;s 60-day
+        notice commitment), but none of them names the vendors who promise
+        nothing, or the vendors whose dates can move. This page is about the
+        shape of the promise, and the empty cells are the part of that shape
+        most worth stating.
       </p>
 
       <h2>Who already tracks the dates, and what this page adds</h2>
@@ -210,18 +232,18 @@ export default function WhatVendorsPromise() {
       <p>
         Every row carries the date it was verified. The page is re-verified by
         re-fetching each vendor&rsquo;s page; a row&rsquo;s date is updated
-        only when it is checked. Google and Meta were unreachable when this
-        page was written and say so, and nothing is asserted about either.
-        Staleness is enforced the way the Directory enforces its own
-        verification dates (<code>scripts/check-tool-staleness.mjs</code>);
-        wiring this page into that mechanism, and adding the window to
-        <code>policy.yml</code>, is filed as docket work for the tracks that
-        own those files.
+        only when it is checked. Meta was unreachable when this page was
+        written and says so, and nothing is asserted about it. Staleness is
+        enforced the way the Directory enforces its own verification dates (
+        <code>scripts/check-tool-staleness.mjs</code>); wiring this page into
+        that mechanism, and adding the window to <code>policy.yml</code>, is
+        filed as docket work for the tracks that own those files.
       </p>
 
       <p className="post-footnote">
         All sentences quoted from the vendors&rsquo; own pages on 2026-08-11,
-        except the Google and Meta rows, which could not be fetched that day.
+        except the Meta row, which could not be verified that day. Google was
+        recovered the same day with a plain HTTP client after webfetch failed.
       </p>
     </article>
   );
