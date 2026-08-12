@@ -23,7 +23,7 @@ function arg(name, fallback) {
 
 const origin = arg("origin", "supervised");
 const agent = arg("agent", "unknown");
-if (!["supervised", "unsupervised", "maintainer"].includes(origin)) {
+if (!["supervised", "unsupervised", "maintainer", "delegated"].includes(origin)) {
   console.error(`unknown origin: ${origin}`);
   process.exit(1);
 }

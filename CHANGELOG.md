@@ -70,6 +70,126 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+Round 89 (meta) records the delegation of decision authority to the
+orchestrating model accurately, and removes the last prompt instruction that
+told a round to arm its own merge. On 2026-08-11 the maintainer delegated
+decision authority over this project to the model orchestrating the loop,
+including merging pull requests that touch the paths rule 13 reserves. The
+previous attempt to record it (PR #33, closed for drift) got the substance
+right but asserted a false enforcement claim: that the loop's rounds run as a
+machine account with write and no admin, "so that check now binds them
+mechanically rather than by trust". Measured this round: the `gh` CLI a
+locally-started round invokes through `round.mjs ship` authenticates as the
+repository owner (`addicted2ai`), whose permissions include admin —
+`enforce_admins` is off, so such a round could merge past the
+`human-owned-paths` check today. What prevents it is `round.mjs` never merging
+and the procedure that launches rounds, a script and a habit, not a credential.
+A round run through the workflow action is different: PR #10
+(`loop/maintain/fix-disclosure-check-and-analytics-claim`) was authored and
+merged by `app/claude`, the action's app, not the owner. The charter now says
+what is true. (PR #39)
+
+**1. Recorded the delegation in the charter, accurately**
+- Hypothesis: rule 4 forbids the charter publishing a claim about this
+  project's own process that is not currently true, and the delegation is the
+  largest such fact since the charter was adopted. The closed PR #33's History
+  paragraph had the honest core right — the constraint moved from a mechanism
+  to a commitment, a weaker guarantee — but its enforcement claim (a machine
+  account with no admin) is false, and repeating it would be exactly the kind
+  of stale process claim this project keeps having to correct.
+- Change: the charter preamble now names the delegation, keeps the honest core
+  ("the constraint has moved from a mechanism to a commitment, and that is a
+  weaker guarantee"), and states what is true about enforcement, each clause
+  checked against the repository rather than the brief: the `human-owned-paths`
+  required check fails on any pull request touching the guarded paths; that
+  check binds absolutely against merging while red; overriding it needs admin;
+  `enforce_admins` is off so the override exists; the `gh` CLI a
+  locally-started round invokes through `round.mjs ship` authenticates as the
+  repository owner, an admin; such a round could perform the override today;
+  what prevents it is `round.mjs` never merging and the procedure that
+  launches rounds. A round run through the workflow action is scoped out: its
+  `gh` runs as the action's app, and PR #10 was authored and merged by
+  `app/claude`, not the owner. Rule 13 now
+  states the principle this revisit settles — prompts hold the discipline and
+  are human-owned, mechanics live in loop-owned code because a stale
+  instruction causes the failures the discipline exists to prevent — and
+  records that its old open question ("should the loop own its own prompt") is
+  answered no. The History entry quotes the authorising instruction from the
+  working session.
+
+**2. Removed the direct-arm instruction from every-run.md, by subtraction**
+- Hypothesis: `prompts/shared/every-run.md` is the document every round reads
+  first and trusts most, and it still ended by telling rounds to run
+  `gh pr merge --auto --squash` themselves. `scripts/build-prompt.mjs` was
+  changed in round 86 to say the opposite — run `ship`, and do not arm the
+  merge yourself — so a round had two instructions for how a run ends, and the
+  one it reads first said the thing that produced the false `Origin: delegated`
+  claim. The defect is duplication: two copies of one instruction, edited
+  separately, drifted. This repository has shipped that same bug three times.
+- Change: the mechanical instruction is removed from `every-run.md` — its
+  shipping section now points to `scripts/build-prompt.mjs`, which assembles
+  the prompt every run reads, and does not restate the instruction, so the
+  document a round reads first and the prompt cannot disagree again. `every-run.md`
+  keeps the discipline — what an entry must contain, never flatter the work,
+  the record's standards. This is convergence, not consolidation: `AGENTS.md`
+  still carries its own shorter copy of the ending instruction, now agreeing.
+  That file was added to meta's scope this round so a later round can
+  consolidate it; this round does not edit it (rule 11 forbids spending a
+  permission granted in the same change). The docket item
+  `2026-08-11-every-run-and-loop-yml-still-instruct-direct-arm.md` recorded
+  that the loop.yml scheduled path bypasses the gate entirely; that is block 4
+  below, which could not be made safe.
+
+**3. `delegated` accepted in the three places that still rejected it**
+- Hypothesis: round 85 added the `delegated` Origin value but three places
+  still enumerated only three values: the Origin line in `every-run.md`, the
+  origin validation in `build-prompt.mjs`, and the failure message in
+  `check-routes.sh`. A round declaring `delegated` was accepted by the build
+  log parser but the prompt builder would reject the origin and the route check
+  would name only three values.
+- Change: all three now include `delegated`. `AGENTS.md` is added to meta's
+  scope in `scripts/check-track-scope.mjs` so a later round can fix it; this
+  round does not edit the file — rule 11 forbids spending a permission a round
+  grants itself in the same change.
+
+**4. The loop.yml scheduled path still bypasses the gate — left, with reasons**
+- Hypothesis: `.github/workflows/loop.yml` never invokes `node scripts/round.mjs
+  ship`; the scheduled round is driven straight from the assembled prompt, so
+  it does not go through the same gate a local round does. The brief asked to
+  make it run `ship`, and said a broken scheduled loop is worse than an ungated
+  one, and that it cannot be tested.
+- Change: left unchanged, and the docket item stays open. The workflow's
+  scheduled path runs the assembled prompt through the claude-code-action; the
+  prompt it builds is `build-prompt.mjs`, which after round 86 says to run
+  `ship` and not to arm the merge itself, so the scheduled round and a local
+  round now carry the same instruction. Making the workflow itself invoke
+  `ship` was not attempted: wiring it correctly requires testing the scheduled
+  loop end to end, which cannot be done from inside a round. The checklist in
+  `2026-08-11-every-run-and-loop-yml-still-instruct-direct-arm.md` is updated
+  to match: the every-run.md half is fixed; the loop.yml half stays open with
+  its reasoning.
+- Origin: delegated
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite, no group skipped.
+  This branch touches `CHARTER.md`, `prompts/` and
+  `scripts/check-track-scope.mjs`, all human-owned, so the `human-owned-paths`
+  required check will fail on GitHub by design and this pull request will not
+  merge on green. That is the gate working. The brief pre-authorised this
+  round and said both the red check and the withheld auto-merge are expected.
+  Started with `--force` while PR #38 (`loop/author/what-vendors-promise`) was
+  in flight; `round.mjs start` demanded the override be recorded here, and the
+  two rounds shared one checkout — this round's uncommitted edits were
+  displaced onto PR #38's branch by the shared working tree and had to be
+  reassembled onto this branch by the orchestrator. The round that found them
+  stashed them with descriptive labels rather than committing them, which is
+  the only reason they survived. Nothing was lost. PR #38 has since merged
+  (2026-08-12T05:26:57Z) and took the round-88 slot, so this round renders as
+  round 89; it was renumbered when main was merged in after that landed.
+- Result: not yet measured.
+
+### 2026-08-11
 This round (author) publishes `/what-vendors-promise`, a comparison of what
 each AI vendor commits to before switching off a model — the shape of the
 promise, not a calendar of dates. It supersedes the false-premise calendar
