@@ -4,8 +4,8 @@ import { getBuildLog } from "./build-log.js";
 //
 // The changelog's per-round `Origin` field is the site's only record of how
 // much human involvement a piece of work had (unsupervised / supervised /
-// maintainer). A page's disclosure states the Origin of the round that most
-// recently produced its current form. That value is never hardcoded here:
+// maintainer / delegated). A page's disclosure states the Origin of the round
+// that most recently produced its current form. That value is never hardcoded here:
 // this file maps a route to a producing round *number*, and the Origin text
 // is read from that round's changelog entry at build time. If the mapped
 // round does not exist or lacks an Origin, getPageDisclosure throws and the
@@ -76,11 +76,29 @@ export const ARCHIVE = "archive";
 // three routes move to 84. The new /log/early page is 84 by construction: this
 // round built it. Its files are shared with the other log pages, so every
 // later change to the log machinery moves all three log pages together.
+//
+// Round 85 (build) moves five routes. It adds the `delegated` Origin value to
+// the shared parser (app/lib/build-log.js) and to LogEntry.js — both listed
+// source files of every log page, so /log, /log/early and /log/archive move
+// together — and adds the value's meaning to /disclosure (app/disclosure/page.js
+// is that route's only listed source file). It also rewrote the homepage's
+// human-involvement sentence, which was true for three Origins and would have
+// gone false the moment a round with no human in the loop shipped; app/page.js
+// is a listed source file of /, so / moves too. This round does not touch
+// /blog, /blog/*, /charter, /directory, /demos or /projects; none of their
+// listed source files changed.
+//
+// This round is numbered 85 because the build log holds 84 shipped rounds on
+// the base this branch was cut from. Round 85's meta pull request (PR #33) is
+// open; if it lands first it consumes the 85 slot and this round renumbers to
+// 86. The map must name a round that exists in the build log this branch
+// parses, so it names this round's number here — if PR #33 lands first, these
+// five entries move to 86 when this round's entry gains that number.
 export const PRODUCING_ROUNDS = {
-  // Round 84 (build) re-scoped the homepage's round-mention figures to the
-  // three log pages; app/page.js is a listed source file of /, so the newest
-  // recorded change to this page's files is round 84's.
-  "/": 84,
+  // Round 85 (build): this round rewrote the sentence that splits rounds by
+  // how much of a human saw them, and app/page.js is a listed source file of
+  // /, so the newest recorded change to this page's files is this round's.
+  "/": 85,
   // Round 82 (author): /blog lists app/lib/posts.js now (its page imports
   // `posts` for the "More from the blog" list), and posts.js gained a post, so
   // the newest recorded change to this route's files is round 82's. Round 81
@@ -109,13 +127,22 @@ export const PRODUCING_ROUNDS = {
   // Round 84 (build) moved both pages again: it split the log a second time,
   // changed the shared LogFilter/LogEntry/parser files, and rewrote both
   // pages' copy. Round 74 was the newest recorded change before that.
-  "/log": 84,
+  //
+  // Round 85 (build) moves them again: it adds the `delegated` Origin value
+  // to the shared parser (app/lib/build-log.js) and to LogEntry.js, both
+  // listed source files of every log page.
+  "/log": 85,
   // Round 84 (build) built this page, which holds the first era of this
-  // repository (rounds 48-70), frozen at a closed boundary.
-  "/log/early": 84,
-  "/log/archive": 84,
+  // repository (rounds 48-70), frozen at a closed boundary. Round 85 moves it
+  // with the other two log pages: it changed the same shared parser and
+  // LogEntry files.
+  "/log/early": 85,
+  "/log/archive": 85,
   "/projects": 54,
-  "/disclosure": 72,
+  // Round 72 (maintain) rewrote the page's meanings; round 85 (build) adds
+  // the fourth Origin value's meaning to the enumeration it publishes, so
+  // the page's current form is round 85's.
+  "/disclosure": 85,
 };
 
 const ORIGIN_MEANINGS = {
@@ -123,6 +150,8 @@ const ORIGIN_MEANINGS = {
   unsupervised: "a run that merged itself with nobody reading it first",
   supervised: "a human triggered this run and could veto before merge",
   maintainer: "a human decided what and why; an assistant did the typing",
+  delegated:
+    "the orchestrating model chose this work, reviewed it and merged it; no human saw it before it landed",
 };
 
 export function getPageDisclosure(route) {

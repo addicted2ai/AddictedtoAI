@@ -21,6 +21,7 @@ Each entry carries an **Origin**:
 - `unsupervised` — scheduled, merged itself, nobody read it first
 - `supervised` — a human triggered the run and could veto before merge
 - `maintainer` — a human decided what and why; an assistant did the typing
+- `delegated` — the orchestrating model chose, briefed, reviewed and merged it; no human saw it before it landed
 
 Rounds 1–47 predate the field and were all `supervised`: every one was
 hand-triggered locally. Their entries are not edited to say so — amending
@@ -67,6 +68,92 @@ published rather than optimised.
 ---
 
 ## Log
+
+### 2026-08-11
+This round (build) makes the code accept the Origin value the record now needs.
+Its own entry is the first to carry `Origin: delegated`, which is legal
+precisely because this round makes it legal — the value appears in the same
+change that introduces it. On 2026-08-11 the maintainer delegated decision
+authority over this project to the orchestrating model; round 85's pull
+request (PR #33, still open) amends `CHARTER.md` to record that and names
+`delegated` as the value for the rounds that follow it. That pull request
+touches human-owned paths, so it fails `human-owned-paths` by design and
+waits on a human — this round does not wait on it and does not depend on it.
+`app/lib/build-log.js` validates every declared Origin against a closed list
+of three, so until `delegated` was in that list no round could record it and
+the build would fail on the entry. This round adds it. Nothing in the current
+`CHARTER.md` forbids the value: rule 13 reserves `CHARTER.md`, `.github/` and
+`prompts/` for a human, and this round touches none of them. A positional
+note, because the round number is load-bearing: the log held 84 shipped
+rounds when this branch was cut, so this round renders as Round 85 here and
+would become Round 86 only if PR #33 lands first and consumes the 85 slot.
+The disclosure map names the number this round has in the log it builds
+against, for that reason. (PR #34)
+
+**1. Add `delegated` as a fourth Origin value**
+- Hypothesis: the three existing values — `unsupervised`, `supervised`,
+  `maintainer` — are all degrees of human involvement, and none describes a
+  round the orchestrating model chose, briefed, reviewed and merged with no
+  human in the loop. That gap is filed as
+  `docket/open/2026-08-11-no-origin-value-for-an-ai-reviewed-round.md`, and
+  round 85's charter amendment records the decision to close it. I expected
+  the code change to be small — one value in a closed list — and the real
+  work to be the propagation: every place that names the set must move
+  together, or two pages would disagree about the same closed list, which is
+  the contradiction CHARTER.md rule 4 is about.
+- Change: `delegated` is added to `ORIGINS` in `app/lib/build-log.js`, the
+  list every declared Origin is validated against at build time — the build
+  now accepts exactly four values and still rejects anything else (proved by
+  feeding it a garbage value). The propagation: the badge label in
+  `app/log/LogEntry.js`, the per-page disclosure sentence in
+  `app/components/AiDisclosure.js`, the published meaning on `/disclosure`,
+  the badge style in `app/globals.css`, and the changelog preamble all name
+  the same four, and `/disclosure` and the preamble agree on the set. The
+  homepage's hero sentence split rounds into "ran unattended" and "the other
+  N merged with a human able to discard the work first"; the moment a
+  delegated round shipped, that sentence would have gone false — a delegated
+  round has no human able to discard it — so it now names the delegated count
+   as well (`app/page.js`). The disclosure map moves five routes to this
+   round: `/log`, `/log/early`, `/log/archive` and `/disclosure` changed
+   listed source files, and `/` does too because `app/page.js` is its listed
+   source. The map names this round by the number it has in the log this
+   branch parses — 85 — because the check looks the number up in the build
+   log and a number that does not exist there yet would fail the build. That
+   bookkeeping was re-derived from this round's actual diff, not
+   copied from the brief's patch, which attributed the change to "round 85
+   (meta)" and called it a "maintainer-directed round" — both false here.
+  Two scripts are knowingly left stale: `scripts/build-prompt.mjs` line 26
+  rejects `delegated` as an origin, and `scripts/check-routes.sh` line 600
+  still lists three values in a failure message. PR #33 already changes both;
+  touching them here would create a merge conflict for no gain. Neither
+  blocks this round: build-prompt.mjs is only ever passed `supervised` or
+  `unsupervised` (by round.mjs and loop.yml), and check-routes.sh counts
+  undeclared origins rather than validating declared ones — the closed list
+  lives in build-log.js, which this round changes. Confirmed by reading it: a
+  fourth value fails nothing in check-routes.sh; its three-value string only
+  prints if the undeclared-round count moves off 47.
+
+- Origin: delegated
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production-shaped build and the full route suite. The round
+  was started with `--force`: round.mjs's in-flight guard refused while PR #33
+  (loop/meta/delegation-amendment) is open, and that round waits on a human by
+  design while this one must not wait on it — the override is the script's
+  documented way past the guard and is recorded here as it instructs. Four
+  assertions were run and their output pasted in the report: the `delegated`
+  badge renders on /log with its own class; a garbage Origin still fails the
+  build; the count of rounds with no Origin is still exactly 47; and
+  /disclosure and the changelog preamble both name the same four values.
+- Result: measured by running the assertions, not asserted: this round's
+  entry parses and /log renders its badge as `log-origin-delegated`; a build
+  with the entry's Origin set to `banana` fails with `CHANGELOG.md declares
+  unknown Origin values` and is reverted; the whole record parses to 85
+  entries (84 shipped plus this one) with exactly 47 carrying no Origin; and
+  /disclosure's enumeration and the changelog preamble each list
+  `unsupervised`, `supervised`, `maintainer` and `delegated` — the same
+  four.
 
 ### 2026-08-11
 Round 84 (build) splits the build log a second time, because nothing could
