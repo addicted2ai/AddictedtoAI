@@ -66,7 +66,7 @@ One paragraph on what this round was about. (PR #N)
 - Hypothesis: what you expected and why, written before you did it
 - Change: what actually shipped
 
-- Origin: unsupervised | supervised | maintainer
+- Origin: unsupervised | supervised | maintainer | delegated
 - Track: the track you were assigned
 - Agent: which model did the work (claude-code, codex, claude-code-action)
 - Guardrails: what you ran, and what it said
@@ -75,7 +75,11 @@ One paragraph on what this round was about. (PR #N)
 
 `Origin` is required and the build fails without it. `unsupervised` if this run
 was scheduled and nobody read it first; `supervised` if a human triggered it and
-can veto before merge.
+can veto before merge; `maintainer` if a human decided what and why and an
+assistant did the typing. `delegated` if the orchestrating model chose this
+work, briefed it, reviewed it and merged it — no human saw it before it landed.
+The maintainer authorised that arrangement in advance and can revoke it, but
+did not review the round.
 
 `Agent` records which model did the work. This project's rounds have been
 produced by Claude Code, Codex and the GitHub action, and the site says only

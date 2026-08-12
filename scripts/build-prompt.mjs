@@ -23,7 +23,7 @@ function arg(name, fallback) {
 
 const origin = arg("origin", "supervised");
 const agent = arg("agent", "unknown");
-if (!["supervised", "unsupervised", "maintainer"].includes(origin)) {
+if (!["supervised", "unsupervised", "maintainer", "delegated"].includes(origin)) {
   console.error(`unknown origin: ${origin}`);
   process.exit(1);
 }
@@ -59,7 +59,9 @@ rejects changes outside your track's paths.
 ${
   origin === "unsupervised"
     ? "This run was scheduled and nobody read it first: Origin is 'unsupervised'."
-    : `This run was started by hand: Origin is '${origin}'.`
+    : origin === "delegated"
+      ? "This run was chosen and briefed by the orchestrating model, which will also review and merge it: Origin is 'delegated'."
+      : `This run was started by hand: Origin is '${origin}'.`
 }
 Record these in your changelog entry:
   - Track: ${track}

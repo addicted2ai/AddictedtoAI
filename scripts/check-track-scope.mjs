@@ -69,6 +69,12 @@ const SCOPES = {
     "prompts/",
     "CHARTER.md",
     "policy.yml",
+    // AGENTS.md, the repository-root guidance every run reads. It went stale
+    // after the delegation of 2026-08-11 (it still tells rounds to record
+    // `Origin: supervised` and `Agent: codex`, and that the charter cannot be
+    // amended from inside a round). No track could touch it, so no round could
+    // fix it. This grant is added by round 85 and deliberately not spent in
+    // the same change -- rule 11 -- so a later round fixes the file.
     // Repository-level configuration. Neither was in any track's scope, so no
     // track could fix the line-ending bug that broke every docket parse on
     // Windows, or the ESLint cascade conflict -- found by the first scout run,
@@ -77,6 +83,7 @@ const SCOPES = {
     ".eslintrc.json",
     "lighthouserc.json",
     "lighthouserc.analytics.json",
+    "AGENTS.md",
     // Deployment configuration. Same story again: a repository-root config
     // file the loop must be able to fix and no track could touch. Added when
     // the Hobby plan's 100-deployments-per-day limit became the binding

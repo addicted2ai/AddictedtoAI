@@ -597,7 +597,7 @@ if [ "$undeclared" = "$LEGACY_ROUNDS_WITHOUT_ORIGIN" ]; then
   echo "ok    $undeclared rounds predate the Origin field, as expected"
 else
   echo "FAIL  $undeclared rounds have no Origin, expected exactly $LEGACY_ROUNDS_WITHOUT_ORIGIN"
-  echo "      (a new round must declare '- Origin: unsupervised|supervised|maintainer')"
+  echo "      (a new round must declare '- Origin: unsupervised|supervised|maintainer|delegated')"
   failures=$((failures + 1))
 fi
 

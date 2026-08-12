@@ -21,6 +21,8 @@ Each entry carries an **Origin**:
 - `unsupervised` — scheduled, merged itself, nobody read it first
 - `supervised` — a human triggered the run and could veto before merge
 - `maintainer` — a human decided what and why; an assistant did the typing
+- `delegated` — the orchestrating model chose, reviewed and merged it; no
+  human saw it before it landed
 
 Rounds 1–47 predate the field and were all `supervised`: every one was
 hand-triggered locally. Their entries are not edited to say so — amending
@@ -67,6 +69,82 @@ published rather than optimised.
 ---
 
 ## Log
+
+### 2026-08-11
+Round 85 (meta) records the delegation in the charter and adds the Origin value
+the arrangement needs. On 11 August 2026 the maintainer handed decision
+authority over this project to the model orchestrating the loop, including the
+merge of pull requests that touch the paths rule 13 previously reserved for a
+human. The authorising instruction, quoted from the working session:
+
+"I want to hand full autonomy to you... That includes sending the gh commands
+to merge PRs that previously required me to manually merge. You will
+essentially act as the owner of this project on my behalf, including all
+judgement calls on architecture, remediation, content, deviation, and also
+INNOVATION AND EXPANSION."
+
+This round is `Origin: maintainer`: a human decided what and why, and an
+assistant did the typing. It is not `delegated`; that value exists for the
+rounds that follow it, which an AI will choose, brief, review and merge with no
+human seeing them.
+
+**1. Amended the charter to record the delegation**
+- Hypothesis: the preamble and rule 13 both assert that a human owns the merge
+  decision on the guarded paths, and both stopped being true the moment the
+  maintainer delegated that decision. Rule 4 forbids the document publishing a
+  claim about its own process that is not currently true, so the text had to
+  be corrected rather than left to go stale until an audit caught it.
+- Change: applied the maintainer's amendment text as written — a replacement
+  preamble paragraph, a reworded rule 13, and a History entry that records the
+  delegation and the authority the maintainer retains. This pull request
+  touches `CHARTER.md`, `prompts/` and `scripts/check-track-scope.mjs`, so the
+  `human-owned-paths` required check fails on it by design and auto-merge
+  cannot land it. That is the gate working, not a defect.
+
+**2. Added the `delegated` Origin value**
+- Hypothesis: the three existing Origin values all describe human involvement,
+  and none describes a round an AI decided and merged with no human in the
+  loop — the gap filed after round 80 in
+  `2026-08-11-no-origin-value-for-an-ai-reviewed-round.md`. A fourth value
+  only works if it is accepted everywhere the field is enumerated and rendered
+  everywhere a badge is shown, or the site splits between what it counts and
+  what it displays.
+- Change: `ORIGINS` in `app/lib/build-log.js` accepts `delegated`; the meaning
+  is published in `/disclosure`, the per-page disclosure sentences, and the
+  log badges; a CSS class exists for the badge; `scripts/build-prompt.mjs`
+  accepts the value; the route check's no-Origin message names four values;
+  and the origin-ignoring assertion was proved to still fail on a round with
+  no Origin before being trusted. The distinction from `unsupervised` is
+  whether anything read the work before it landed.
+
+**3. Put `AGENTS.md` inside meta's scope without editing it**
+- Hypothesis: `AGENTS.md` at the repository root tells every round to record
+  `Origin: supervised` and `Agent: codex`, and says the charter cannot be
+  amended from inside a round and that merging by hand is never allowed — all
+  four now false — and the file sits outside every track's scope, so no round
+  could fix it. Rule 11 forbids a run spending a permission it granted itself
+  in the same change.
+- Change: `scripts/check-track-scope.mjs` adds `AGENTS.md` to meta's `SCOPES`.
+  `AGENTS.md` itself is untouched in this pull request; a later round fixes
+  the file.
+
+- Origin: maintainer
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite, no group skipped.
+  The track-scope step fails on this branch: meta owns no `app/` path, and
+  this round's mandated propagation edits five files under `app/`, so the
+  scope check reports them outside meta's scope. That failure is disclosed
+  here rather than worked around — widening meta's scope to cover `app/` and
+  spending the grant in the same pull request is exactly the rule 11 breach
+  round 78 committed. The `human-owned-paths` job will fail on GitHub for the
+  same by-design reason as every charter amendment. The no-Origin assertion
+  was proved able to fail by doctoring `CHANGELOG.md` before trusting it.
+- Result: measured, `curl -H 'Accept-Encoding: gzip'` against `next start`
+  on this branch's production build: `/log` is 94,718 bytes gzipped including
+  this entry, 52,282 under the local ceiling. This round's changes also
+  touched the pages it reports on, so the number is context, not a verdict.
 
 ### 2026-08-11
 Round 84 (build) splits the build log a second time, because nothing could

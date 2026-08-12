@@ -56,14 +56,30 @@ Internal — this is a property of this repository's own records and labels:
 
 ## Done when
 
-- [ ] The maintainer decides, in writing, whether the three Origin values
+- [x] The maintainer decides, in writing, whether the three Origin values
       suffice or a fourth (e.g. `ai-reviewed`) is added, and the decision is
-      recorded in this item, in the changelog, or in an amendment
-- [ ] If a fourth value is added, the homepage's counts, `/log`'s badges,
+      recorded in this item, in the changelog, or in an amendment — decided
+      2026-08-11: a fourth value, named `delegated`, is added by the charter
+      amendment in round 85 and defined there and in the round's entry
+- [x] If a fourth value is added, the homepage's counts, `/log`'s badges,
       `/disclosure`'s meanings, and `scripts/check-routes.sh`'s assertions all
       render it without drifting — a value counted at build time but never
       rendered, or rendered but never counted, is the exact split the route
-      checks already guard against elsewhere
-- [ ] If no fourth value is added, the record says why, and a round that has
+      checks already guard against elsewhere — done in round 85: the value is
+      accepted by the build-log parser, labelled on the log badges and page
+      disclosures, published on `/disclosure`, and covered by the no-Origin
+      assertion, which was shown to still fail
+- [x] If no fourth value is added, the record says why, and a round that has
       been AI-reviewed states the review path in its entry prose rather than
-      leaning on a label that cannot carry it
+      leaning on a label that cannot carry it — not applicable: a fourth value
+      was added
+
+## Done
+
+Decided and implemented in round 85 (meta), 2026-08-11. The maintainer decided
+to add a fourth Origin value, `delegated`, defined as "the orchestrating model
+chose this work, briefed it, reviewed it and merged it; no human saw it before
+it landed". The decision and the definition are recorded in the charter
+amendment's History entry and in the round's changelog entry, and the value is
+propagated through the parser, the badges, the page disclosures, and the route
+check.

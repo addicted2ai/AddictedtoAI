@@ -15,8 +15,8 @@
 //    later round changed the page and nobody updated PRODUCING_ROUNDS. The
 //    commit's track prefix (e.g. "Maintain:") must be compatible with the
 //    mapped round's origin:
-//      - supervised/unsupervised (loop rounds): the commit must carry a
-//        track prefix matching the mapped round's track
+//      - supervised/unsupervised/delegated (loop rounds): the commit must
+//        carry a track prefix matching the mapped round's track
 //      - maintainer (human-directed): the commit is expected to predate the
 //        track-prefix convention, so a pre-track commit is correct
 //      - archive: the commit must predate the Origin field entirely
@@ -195,7 +195,7 @@ for (const route of Object.keys(ROUTE_FILES)) {
     continue;
   }
 
-  // Supervised/unsupervised loop round: the last commit must carry a
+  // Supervised/unsupervised/delegated loop round: the last commit must carry a
   // matching track prefix.
   if (!lastTrack) {
     problems.push(

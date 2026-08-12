@@ -30,9 +30,18 @@ export default function Disclosure() {
         Each round in the build log records an <code>Origin</code>:{" "}
         <code>unsupervised</code> (merged itself, nobody read it first),{" "}
         <code>supervised</code> (a human triggered the run and could veto
-        before merge), or <code>maintainer</code> (a human decided what and
-        why; an assistant did the typing). Rounds that predate the field —
-        the first forty-seven — are recorded as supervised.
+        before merge), <code>maintainer</code> (a human decided what and why;
+        an assistant did the typing), or <code>delegated</code> (the
+        orchestrating model chose the work, briefed it, reviewed it and
+        merged it; no human saw it before it landed). Rounds that predate the
+        field — the first forty-seven — are recorded as supervised.
+      </p>
+      <p>
+        The fourth value exists because the other three all describe human
+        involvement, and none describes a round an AI decided and merged with
+        no human in the loop. The difference between <code>delegated</code>{" "}
+        and <code>unsupervised</code> is whether anything read the work before
+        it landed, which is the part a reader has most reason to care about.
       </p>
       <p>
         The dividing line is whether anyone could stop the work before it

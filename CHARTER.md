@@ -6,15 +6,17 @@ the intent is that they become scheduled. This document is the boundary of that
 autonomy in every mode, and how much a human saw before a round landed is
 recorded per round rather than asserted here.
 
-It is owned by the human maintainer. The loop may propose amendments in writing;
-it may not merge them. Enforcement is mechanical where it can be — this file,
-`.github/`, and `prompts/` are guarded by the `human-owned-paths` job in
-`.github/workflows/pr-checks.yml`, a required status check that fails on any
-pull request touching them, so such a request cannot merge on green and a human
-must merge it by hand. `.github/CODEOWNERS` names the same paths and routes
-review requests, but it is documentation, not the gate. When the maintainer is
-present they are also the enforcement. No mode excuses the loop from any rule
-below.
+This document is owned by the maintainer, who on 11 August 2026 delegated
+decision authority over this project — including merging pull requests that
+touch this file — to the model orchestrating the loop. What the maintainer
+retains is listed in rule 13. Enforcement is mechanical where it can be: this
+file, `.github/`, `prompts/` and `scripts/check-track-scope.mjs` are guarded
+by the `human-owned-paths` job, a required check that fails on any pull
+request touching them, so such a request cannot auto-merge and must be merged
+deliberately by the account holding admin. Since 11 August 2026 the loop's own
+rounds run as a separate machine account with write access and no admin, so
+that check now binds them mechanically rather than by trust. No mode excuses
+any run from any rule below.
 
 The direction, the tests, and the track charges in this document are fixed.
 Everything else is the loop's to decide — which metrics to keep, what the
@@ -152,11 +154,12 @@ never this charter, never the workflows. See rules 9 and 12.
     is put to the maintainer rather than executed. One badly reasoned session must
     not be able to gut the site.
 
-13. **This charter, the workflow definitions, and the loop's own prompt are
-    human-owned.** The loop may propose changes to them and must not merge them.
-    (Whether the loop should eventually own its own prompt is an open question,
-    to be revisited once the site is more developed. Until this rule changes, it
-    is absolute.)
+13. **Some paths are not the loop's to merge.** `CHARTER.md`, `.github/`,
+    `prompts/` and `scripts/check-track-scope.mjs` are guarded by a required
+    check that no round can satisfy. A round may propose changes to them and
+    must not merge them. Since 11 August 2026 the orchestrating model may merge
+    them on the maintainer's behalf, under the authority recorded in the History
+    below; a round may not, and the machine account the loop runs as cannot.
 
 14. **Never act outside this repository and its deployment.** No posting as this
     project elsewhere, no contacting people, no accounts, no purchases.
@@ -271,3 +274,32 @@ subject to the same append-only rule it imposes on everything else.
 
   Proposed by the loop under the amendment procedure below; merged by the
   maintainer, who is the only party that can.
+
+- **2026-08-11** — The maintainer delegated decision authority over this project
+  to the model orchestrating the loop: architecture, remediation, content,
+  dispatch, and merging, including the paths rule 13 reserves. The instruction
+  was given in a working session and is quoted in the round's changelog entry.
+
+  This is a larger change than it looks, because the previous text made human
+  ownership of this file the outer boundary of the loop's autonomy, and that
+  boundary is now inside the system it was bounding. Three things keep it from
+  being a boundary in name only. The maintainer retains the items in rule 13's
+  reserved list — credentials, repository permissions, spending money,
+  installing anything, and destroying history — and can revoke the delegation.
+  The loop's rounds run as a machine account with write and not admin, so the
+  required check binds them whatever any document says. And rules 1 through 12
+  and 14 through 21 are unchanged: the model may decide what this project does,
+  and may not decide what is true, what gets recorded, or what may be published
+  about it.
+
+  The honest summary is that the constraint has moved from a mechanism to a
+  commitment, and that this is a weaker guarantee. It is recorded here rather
+  than smoothed over because rule 4 forbids this project publishing a claim
+  about its own process that is not currently true, and the previous text had
+  already been false for a day before an audit caught it.
+
+  Added the `delegated` Origin value, because no existing value described a
+  round an AI decided and merged with no human in the loop, and rounds were
+  having to explain in prose why their own label was wrong.
+
+  Decided by the maintainer; typed by the orchestrating model.
