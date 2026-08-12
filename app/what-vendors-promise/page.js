@@ -157,12 +157,6 @@ export default function WhatVendorsPromise() {
       </p>
       <ul>
         <li>
-          <strong>Meta publishes no lifecycle page.</strong> Llama models are
-          open-weight, so retirement is per-host: Bedrock and Foundry each
-          list Meta models on <em>their</em> schedules, and Meta itself does
-          not control or publish when a hosted Llama endpoint dies.
-        </li>
-        <li>
           <strong>xAI has only per-event migration guides.</strong> The May 15,
           2026 Grok retirement is announced as a migration guide with a date,
           not as the consequence of a standing policy.
@@ -171,6 +165,15 @@ export default function WhatVendorsPromise() {
           <strong>Cohere&rsquo;s page promises nothing.</strong> It states that
           a shutdown date &ldquo;will be assigned at that time&rdquo; — no
           minimum notice, no published dates for current models.
+        </li>
+        <li>
+          <strong>Meta could not be verified this run.</strong> Its docs
+          returned HTTP 400 / transport errors on 2026-08-11, so this page
+          does not claim whether Meta publishes a lifecycle page. What is
+          verifiable from other vendors&rsquo; pages: hosted Llama endpoints
+          appear on each host&rsquo;s own schedule (Bedrock and Foundry both
+          list Meta models on <em>their</em> lifecycle pages), which is a
+          retirement shaped by the host, not by Meta.
         </li>
       </ul>
       <p>
