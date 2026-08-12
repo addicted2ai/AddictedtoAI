@@ -58,6 +58,16 @@ page-weight loop, the disclosure loop, the sitemap-resolution check and the
 new three-page partition assertion, but not in either CI URL list. Three
 published routes now carry no Lighthouse floors and no lychee crawl.
 
+And round 86 (author) ships `/blog/gpt-5-6-price-drop` with the same gap, and
+this round appends it the same way — a route CI does not measure is a route
+whose Lighthouse floors silently do not apply, and the author track cannot add
+a URL to `.github/` either. A route's disclosure and page weight are still
+asserted locally by `check-routes.sh`, which is inside build and maintain scope
+and already covers every route — but the Lighthouse and lychee lists stay one
+round behind new pages until a meta round widens them. The general defect now
+has four instances (`/log/archive`, `/charter`, `/log/early`, this post); the
+decision box below is the point of diminishing returns.
+
 ## Evidence
 
 - `.github/workflows/pr-checks.yml` — the `urls:` block for the Lighthouse
@@ -87,6 +97,9 @@ published routes now carry no Lighthouse floors and no lychee crawl.
       crawled
 - [ ] `/log/early` is in the lychee step's URL arguments, so its links are
       crawled
+- [ ] `/blog/gpt-5-6-price-drop` joins both lists, the same way and for the
+      same reason — round 86 shipped it and this item is where the routes CI
+      has not been told about are recorded
 - [ ] A decision is recorded on whether the URL list moves somewhere both
       tracks can read. If it stays in `.github/`, the record says so and says
       that adding a route will keep requiring a meta round — an accepted cost

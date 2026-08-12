@@ -49,11 +49,33 @@ All retrieved 2026-08-10.
 
 ## Done when
 
-- [ ] The post states the before and after prices with dates, tracing each to
+- [x] The post states the before and after prices with dates, tracing each to
       the OpenAI page retrieved during the round that publishes it
-- [ ] Vendor claims (benchmarks, "six cents on the dollar", speed ratios) are
+- [x] Vendor claims (benchmarks, "six cents on the dollar", speed ratios) are
       labelled as OpenAI's claims, not as measurements made here
-- [ ] It explains what changed for a *free* user (unlimited text, default model)
+- [x] It explains what changed for a *free* user (unlimited text, default model)
       as well as for an API customer
-- [ ] It does not read as a press release: the numbers are cited, the claims
+- [x] It does not read as a press release: the numbers are cited, the claims
       are attributed, and any opinion is stated as opinion
+
+## Shipped 2026-08-11 (round 86)
+
+Round 86 (author) shipped the post at `/blog/gpt-5-6-price-drop`. The draft
+was written by the blocked round of 2026-08-11 (see below) and re-verified in
+full against OpenAI's own pages retrieved this round — the three announcements
+plus the live developer pricing page — because the post's entire value is
+currency. All figures matched; nothing had moved; the post shipped unchanged
+apart from the date. See the round-86 changelog entry for the verification
+detail.
+
+## Why the earlier round could not ship it
+
+The blocked round of 2026-08-11 wrote this post and could not ship it because
+`/log` crossed the page-weight ceiling with its changelog entry (measured at
+151,443 bytes gzipped against the 147,000 local ceiling / 150,000 CI budget;
+round 83's merge had been at 145,412 with 1,588 to spare). The wall was fixed
+by round 84 (build), which split the log a second time onto `/log/early`; the
+blocked round's work was preserved on branch `loop/author/gpt-56-price-drop`
+(commit `edc624f`) so the primary-source research would not be repeated. That
+research is superseded by this round's re-verification, which is the version
+the record cites.
