@@ -61,12 +61,15 @@ published routes now carry no Lighthouse floors and no lychee crawl.
 And round 86 (author) ships `/blog/gpt-5-6-price-drop` with the same gap, and
 this round appends it the same way — a route CI does not measure is a route
 whose Lighthouse floors silently do not apply, and the author track cannot add
-a URL to `.github/` either. A route's disclosure and page weight are still
-asserted locally by `check-routes.sh`, which is inside build and maintain scope
-and already covers every route — but the Lighthouse and lychee lists stay one
-round behind new pages until a meta round widens them. The general defect now
-has four instances (`/log/archive`, `/charter`, `/log/early`, this post); the
-decision box below is the point of diminishing returns.
+a URL to `.github/` either. Note a wrinkle specific to this instance: the
+local loops in `scripts/check-routes.sh` hardcode their route lists too, and
+this post is absent from them exactly as it is from CI's — see
+`2026-08-11-check-routes-loops-miss-blog-posts.md`. So for this route, even
+the local disclosure-marker and page-weight assertions do not apply; only the
+`ROUTE_FILES`-driven disclosure map check in `check-ai-disclosure.mjs` covers
+it. The general defect now has four instances (`/log/archive`, `/charter`,
+`/log/early`, this post); the decision box below is the point of diminishing
+returns.
 
 ## Evidence
 
