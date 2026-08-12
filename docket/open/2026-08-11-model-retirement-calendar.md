@@ -80,6 +80,22 @@ item. This item is deliberately *not* marked `blocked-by` for it — six of its
 seven criteria are executable today, and hiding a priority-1 page from the
 dispatcher over its last mile would be the opposite mistake.
 
+**The premise this item was filed on is false, found 2026-08-11.** Its "Why
+now" claims the comparison is "not published anywhere neutral that this run
+could find." Round 88's survey found two neutral trackers it did not: The Model
+Graveyard (`https://aimodelgraveyard.com`, multi-vendor, methodology page,
+statuses computed from dates) and endoflife.date's Claude page
+(`https://endoflife.date/claude`). Round 88 (author) therefore published a
+different page instead of this one: `/what-vendors-promise`, a comparison of
+what each vendor *commits to* — the shape of the promise — which is the question
+the trackers do not answer, with every row linking the vendor's own page and
+carrying the date it was verified. This item remains open because a dated
+shutdowns table is still a distinct, useful product and its other six criteria
+stand; whoever executes it should read round 88's page first and either build
+the dated table as its complement or drop this item for the reason above,
+saying so. Its first paragraph must not be quoted as if the trackers did not
+exist.
+
 ## Evidence
 
 - OpenAI, "Deprecations", <https://developers.openai.com/api/docs/deprecations>

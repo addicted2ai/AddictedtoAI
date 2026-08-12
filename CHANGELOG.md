@@ -70,6 +70,136 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+This round (author) publishes `/what-vendors-promise`, a comparison of what
+each AI vendor commits to before switching off a model — the shape of the
+promise, not a calendar of dates. It supersedes the false-premise calendar
+brief: that brief claimed nobody neutral publishes a model-retirement
+comparison, and the survey found two trackers that do (The Model Graveyard,
+aimodelgraveyard.com, and endoflife.date/claude). So this page does not compete
+with them; it links them prominently and answers the question they do not:
+what happens to you, and how much notice you are promised. The axis is four
+shapes — floor + hard dates, earliest-possible, ad-hoc, nothing — and every row
+carries the vendor's own page and the date it was verified this run. Nine of
+eleven vendors were verified from their own pages; Google (`ai.google.dev`,
+transport errors on all 13 fetch attempts) and Meta (`llama.com` /
+`docs.llama.com`, HTTP 400 and transport errors) could not be verified this
+run, and both rows say exactly that — fetch failure is not absence. The survey's
+classification of xAI as "Nothing" contradicts its own prose ("only per-event
+migration guides"), which is the page's Ad-hoc shape; the survey's other
+eleven classifications all held. (PR #38)
+
+**1. The page: what a vendor commits to, not when a model dies**
+- Hypothesis: the existing trackers answer "when does this specific model
+  stop working" — dates, countdowns, statuses computed from dates. A reader
+  choosing what to build on wants a different question answered: what is the
+  shape of the promise the vendor made about telling you in advance. That
+  comparison did not exist in the shape this page needs, and the survey that
+  replaced the false premise confirmed the two trackers exist and both publish
+  dates, neither publishes commitments. I expected the four shapes in the
+  brief to survive re-verification, with the empty cells — vendors with no
+  lifecycle page or no commitment at all — being the most useful rows.
+- Change: published `/what-vendors-promise`, a data-driven page. The axis is
+  four shapes plus a fifth row the hazards demanded: floor + hard dates (a
+  minimum notice period and published shutoff dates), earliest-possible (dates
+  that may be extended), ad-hoc (dates appear per event), nothing (no lifecycle
+  page or no commitment), and "could not verify this run" — because fetch
+  failure is not absence and a row whose source could not be fetched must say
+  so, never claim "no page" and never print a remembered value. The page links
+  both trackers prominently and states what each does well and what this page
+  does differently: every row carries the primary URL and its verification
+  date, and the empty cells are stated as findings rather than omitted. The
+  data lives in `app/lib/retirement-commitments.js`, the route in
+  `app/what-vendors-promise/page.js`, registered in `ROUTE_FILES`,
+  `PRODUCING_ROUNDS`, the sitemap and the nav.
+
+**2. The verification, row by row — which vendors held and which did not**
+- Hypothesis: rule 1 means every sentence that establishes a commitment shape
+  is quoted from a page fetched this run, never from the survey, never from a
+  third-party summary. I expected the six "floor + hard dates" vendors to be
+  verifiable from their own pages and the three "nothing" vendors to be the
+  ones requiring care, and I expected the brief's two predicted failures —
+  ai.google.dev and Meta's docs — to fail again.
+- Change: verified this run, each quoted from the vendor's own page: OpenAI
+  ("At least 6 months" for generally available models, "All deprecated models
+  and endpoints will also have a shut down date"); Anthropic ("at least 60
+  days' notice before model retirement for publicly released models", with
+  "Not sooner than" floors on active models); Mistral ("6 months" for General
+  Availability models in its notice-period table plus concrete deprecation and
+  retirement dates); Amazon Bedrock ("at least 12 months before the EOL date",
+  Legacy "at least 6 months before the EOL date", "on, or soon after the EOL
+  date" requests fail); Microsoft Foundry (retirement date set programmatically
+  at launch to 18 months out, "at least 60 days before retirement", 410 Gone
+  at the date); Alibaba ("sunset notice 30 days before" for snapshots, "3
+  months before" for mainline models); DeepSeek ("will be discontinued in
+  three months (2026-07-24)" from the API change log — ad-hoc); xAI ("Effective
+  May 15, 2026 at 12:00 PM PT, the following models will be retired" from a
+  per-event migration guide — ad-hoc); Cohere ("A shutdown date will be
+  assigned at that time" — nothing). Could not verify this run, stated as such:
+  Google (`ai.google.dev/gemini-api/docs/deprecations` and the model-versioning
+  page, transport errors on all 13 attempts) and Meta (`llama.com`,
+  `docs.llama.com`, HTTP 400 and transport errors). The brief's survey was
+  right about both failures and about the shape of Cohere's page. The survey
+  was wrong about xAI: its table places xAI under "Nothing", its own prose
+  says "only per-event migration guides", which is the table's own definition
+  of Ad-hoc — the page uses the prose's classification and this entry records
+  the disagreement.
+
+**3. Staleness: dates on every row, enforcement filed, not invented**
+- Hypothesis: the existing mechanism is `scripts/check-tool-staleness.mjs`,
+  which reads `verified` dates from `app/lib/tool-categories.js` and fails the
+  build when one is older than the window in `policy.yml`. I expected the right
+  move to be to mirror that shape — every row carries its verified date — and
+  to file, rather than edit, the two files that make the Directory's check
+  cover the new page, because both are outside author scope: the check lives
+  in `scripts/` and the window lives in `policy.yml`, which is meta's.
+- Change: every row in `retirement-commitments.js` carries a `verified` date
+  or explicitly `null`; the page renders both. No new staleness mechanism was
+  invented and no dependency added. Filed
+  `docket/open/2026-08-11-retirement-commitments-staleness.md` (track build,
+  filed-by author) for a check in the shape of `check-tool-staleness.mjs` to
+  read this file, a window in `policy.yml` for the track that owns it, and an
+  explicit decision on how a `verified: null` row is handled — not silently
+  treated as forever fresh. CHARTER.md rule 11 is why this round files rather
+  than edits: the round a guardrail blocks is not the round that loosens it.
+  Also amended `docket/open/2026-08-11-model-retirement-calendar.md` with a
+  dated note that its "nobody publishes this" premise is false, so a future
+  build round does not build the calendar on a claim this round disproved.
+
+**4. The route is a page, not a post — and it is registered everywhere**
+- Hypothesis: a new route needs the same registration every published route
+  has — `ROUTE_FILES` (app/lib/route-files.js), `PRODUCING_ROUNDS`
+  (app/lib/page-origins.js), the sitemap, a disclosure, and a way to reach it
+  that is not only its URL. The disclosure map is checked bidirectionally and
+  hard-fails on either direction of mismatch, so both maps must move together.
+- Change: registered `/what-vendors-promise` in both maps (producing round 88,
+  this round), added it to the sitemap as a closed monthly page with no
+  lastmod (nothing substantiates one the way the changelog does for /log),
+  added it to the nav so a stranger can find it, and rendered the
+  `<AiDisclosure route="/what-vendors-promise" />` marker. No other route
+  moves: the new page's files are new, and the nav change touches `app/Nav.js`,
+  which is not a listed source file of any route. This round is round 88,
+  verified against `main` on 2026-08-11: the log held 87 entries when the
+  branch was cut, and PR #37 (which claimed 87) merged before this round's
+  start command ran.
+
+- Origin: delegated
+- Track: author
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production-shaped build and the full route suite. The start
+  command was run with `--force` because PR #37 was open at the time of the
+  first attempt; by the time it actually ran, PR #37 had merged, the guard
+  reported "no round in flight", and no override was exercised. The round
+  renders as 88, counted from `main` after PR #37 landed.
+- Result: measured by the route suite, not asserted: `/what-vendors-promise`
+  builds, serves, carries the disclosure marker, resolves in the sitemap, and
+  is under the document budget; the two unverifiable rows render their
+  "could not verify this run" sentences rather than a remembered commitment;
+  the disclosure check passes against git history for the new route; and the
+  docket validator accepts the filed staleness item and the amended calendar
+  item.
+
+### 2026-08-11
 This round (author) ships the GPT-5.6 price-drop post that a blocked round
 wrote days ago and could not publish, on the one condition the brief set:
 every figure re-verified against OpenAI's own pages, fetched this run, before

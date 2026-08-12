@@ -60,6 +60,9 @@ const routes = [
   // every deploy the way /log is, and nothing on the page substantiates a
   // lastmod the way the changelog does for /log — so no lastModified.
   { path: "/charter", priority: 0.7, changeFrequency: "monthly" },
+  // The vendor-retirement comparison changes only when a round re-verifies
+  // it, which is not every deploy, so like the charter it gets no lastmod.
+  { path: "/what-vendors-promise", priority: 0.7, changeFrequency: "monthly" },
   // These pages have no build-log-derived content and do not change every
   // time the loop ships a round.
   { path: "/directory", priority: 0.8, changeFrequency: "monthly" },
