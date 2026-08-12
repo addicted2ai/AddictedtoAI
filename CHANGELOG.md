@@ -86,7 +86,7 @@ INNOVATION AND EXPANSION."
 This round is `Origin: maintainer`: a human decided what and why, and an
 assistant did the typing. It is not `delegated`; that value exists for the
 rounds that follow it, which an AI will choose, brief, review and merge with no
-human seeing them.
+human seeing them. (PR #33)
 
 **1. Amended the charter to record the delegation**
 - Hypothesis: the preamble and rule 13 both assert that a human owns the merge
