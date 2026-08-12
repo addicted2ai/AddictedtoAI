@@ -342,7 +342,7 @@ function start() {
   console.log(prompt);
   head("Then");
   console.log("  node scripts/round.mjs check     # every check, right port, no setup");
-  console.log("  node scripts/round.mjs ship      # push, open PR, request auto-merge");
+  console.log("  node scripts/round.mjs ship      # push, open PR, arm auto-merge by Origin");
 }
 
 // --- check ------------------------------------------------------------------
@@ -499,7 +499,22 @@ async function ship() {
 
   // Read the round's own Origin from the entry it just wrote, with the same
   // parser the site builds from — never a second parser. The newest entry is
-  // the round's own: ship runs after the round commits its entry.
+  // the round's own *only if it wrote one*: ship runs after the round commits,
+  // and a round that ships without touching CHANGELOG.md leaves the previous
+  // round's entry on top, which would make this gate judge the wrong round.
+  // The round's charge is to add an entry at the top of the log (rule 5 makes
+  // the record append-only), so if the branch changes no changelog entry there
+  // is no round of its own to judge — fail closed rather than arm or withhold
+  // on somebody else's Origin.
+  const logChanged = tryRun("git", ["diff", "--name-only", "origin/main...HEAD", "--", "CHANGELOG.md"]);
+  if (!logChanged.ok || !logChanged.out.trim()) {
+    bad("this branch changes no changelog entry — auto-merge withheld");
+    console.log("        the gate reads the round's Origin from the entry it wrote; a");
+    console.log("        round with no entry has no Origin to judge. Write the entry,");
+    console.log("        commit, push, and run ship again (or arm by hand after review):");
+    console.log("          gh pr merge --auto --squash");
+    process.exit(1);
+  }
   const { getBuildLog } = await import(
     `file://${path.join(process.cwd(), "app", "lib", "build-log.js").replace(/\\/g, "/")}`
   );

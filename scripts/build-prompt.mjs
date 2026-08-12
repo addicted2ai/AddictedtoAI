@@ -68,8 +68,12 @@ The dispatcher reads Track to hold each track to its quota. Agent says which
 model did the work -- rounds here have been produced by Claude Code, Codex and
 the GitHub action, and "an AI" is less specific than the record can be.
 
-When you are done, open a pull request and run 'gh pr merge --auto --squash'.
-Do not merge it yourself and do not wait for the checks.`;
+When you are done, run 'node scripts/round.mjs ship'. It pushes, opens the pull
+request, and decides whether to arm auto-merge from the round's own Origin. Do
+not run 'gh pr merge --auto --squash' yourself: a round that arms its own merge
+before the reading its Origin promises is the failure this gate exists to stop,
+and the gate is the one place that decision is structural. Do not merge it
+yourself and do not wait for the checks.`;
 
 process.stdout.write(prompt + "\n");
 process.stderr.write(`\n[track: ${track}] [origin: ${origin}] ${reason}\n`);
