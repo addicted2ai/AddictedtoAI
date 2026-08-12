@@ -189,10 +189,11 @@ auto-merge. (PR #37)
 - Result: verification was by direct comparison of every figure in the post
   against the four OpenAI pages fetched this run (all matched; nothing moved),
   and independently by the separate review session (all matched). Page weight
-  measured against the final commit, gzipped: `/` NNN, `/log` NNN (NNN under
-  the 147,000 local ceiling), and the new `/blog/gpt-5-6-price-drop` NNN — `/`
-  and `/log` by `round.mjs check`'s route loop, the post route by hand, since
-  `check-routes.sh`'s hardcoded list does not include it.
+  measured against the final commit, gzipped: `/` 4,612, `/log` 110,530
+  (36,470 under the 147,000 local ceiling), and the new
+  `/blog/gpt-5-6-price-drop` 6,477 — `/` and `/log` by `round.mjs check`'s
+  route loop, the post route by hand, since `check-routes.sh`'s hardcoded list
+  does not include it.
 
 ### 2026-08-11
 Round 86 (build) makes `ship` arm auto-merge only when the round's own declared
