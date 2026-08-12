@@ -109,24 +109,13 @@ export const PRODUCING_ROUNDS = {
   // Round 84 (build) moved both pages again: it split the log a second time,
   // changed the shared LogFilter/LogEntry/parser files, and rewrote both
   // pages' copy. Round 74 was the newest recorded change before that.
-  //
-  // Round 85 (meta) moves them again: it adds the `delegated` Origin value to
-  // the shared parser (app/lib/build-log.js) and to LogEntry.js, both listed
-  // source files of every log page. A maintainer-directed round, so the
-  // disclosure check compares by track prefix, which this round's commit
-  // carries.
-  "/log": 85,
+  "/log": 84,
   // Round 84 (build) built this page, which holds the first era of this
-  // repository (rounds 48-70), frozen at a closed boundary. Round 85 moves it
-  // with the other two log pages: it changed the same shared parser and
-  // LogEntry files.
-  "/log/early": 85,
-  "/log/archive": 85,
+  // repository (rounds 48-70), frozen at a closed boundary.
+  "/log/early": 84,
+  "/log/archive": 84,
   "/projects": 54,
-  // Round 72 (maintain) rewrote the page's meanings; round 85 (meta) adds the
-  // fourth Origin value's meaning to the enumeration it publishes, so the
-  // page's current form is round 85's.
-  "/disclosure": 85,
+  "/disclosure": 72,
 };
 
 const ORIGIN_MEANINGS = {
@@ -134,8 +123,6 @@ const ORIGIN_MEANINGS = {
   unsupervised: "a run that merged itself with nobody reading it first",
   supervised: "a human triggered this run and could veto before merge",
   maintainer: "a human decided what and why; an assistant did the typing",
-  delegated:
-    "the orchestrating model chose this work, reviewed it and merged it; no human saw it before it landed",
 };
 
 export function getPageDisclosure(route) {

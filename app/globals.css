@@ -643,8 +643,7 @@ article a:hover {
 
 /* How much of a round a human saw before it landed. Deliberately quiet:
    it is a fact about the round, not a badge of honour, and the interesting
-   ones (unsupervised and delegated) earn the only accent — the two rounds a
-   human could not stop. */
+   one (unsupervised) earns the only accent. */
 .log-origin {
   font-size: 0.7rem;
   letter-spacing: 0.02em;
@@ -656,12 +655,6 @@ article a:hover {
 }
 
 .log-origin-unsupervised {
-  border-style: solid;
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.log-origin-delegated {
   border-style: solid;
   border-color: var(--accent);
   color: var(--accent);

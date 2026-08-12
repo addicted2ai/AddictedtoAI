@@ -109,13 +109,24 @@ human seeing them. (PR #33)
   only works if it is accepted everywhere the field is enumerated and rendered
   everywhere a badge is shown, or the site splits between what it counts and
   what it displays.
-- Change: `ORIGINS` in `app/lib/build-log.js` accepts `delegated`; the meaning
-  is published in `/disclosure`, the per-page disclosure sentences, and the
-  log badges; a CSS class exists for the badge; `scripts/build-prompt.mjs`
-  accepts the value; the route check's no-Origin message names four values;
-  and the origin-ignoring assertion was proved to still fail on a round with
-  no Origin before being trusted. The distinction from `unsupervised` is
-  whether anything read the work before it landed.
+- Change: the value is defined in `CHARTER.md` and documented in
+  `prompts/shared/every-run.md`; `scripts/build-prompt.mjs` accepts it, the
+  route check's no-Origin message names four values, and that assertion was
+  proved to still fail on a round with no Origin before being trusted. The
+  distinction from `unsupervised` is whether anything read the work before it
+  landed.
+- Change: the rendering half does **not** ship here. Accepting `delegated` in
+  `app/lib/build-log.js`, publishing its meaning on `/disclosure` and the
+  per-page disclosure sentences, and giving the badge a CSS class are all edits
+  under `app/`, which meta does not own. This round wrote them, found the track
+  scope check red on six `app/` files, and the orchestrator split them out
+  rather than widen meta's scope — that widening is precisely round 78's rule 11
+  breach. They ship as a separate build round.
+- Consequence, stated rather than left to be discovered: between this round and
+  that one, `CHARTER.md` names an Origin value the code does not yet accept. No
+  round may record `Origin: delegated` until the build round lands, or the
+  build will fail. The brief that produced this round asked meta to edit `app/`;
+  that instruction was wrong, and the round was right to refuse it.
 
 **3. Put `AGENTS.md` inside meta's scope without editing it**
 - Hypothesis: `AGENTS.md` at the repository root tells every round to record

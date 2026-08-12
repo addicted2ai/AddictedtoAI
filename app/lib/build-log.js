@@ -22,14 +22,12 @@ const FIELDS = [
   "Agent",
 ];
 
-// How much of a round a human saw before it landed. Four values, because
-// three would not describe what actually happens here:
+// How much of a round a human saw before it landed. Three values, because
+// two would not describe what actually happens here:
 //
 //   unsupervised — merged itself, nobody read it first
 //   supervised   — a human triggered the run and could veto before merge
 //   maintainer   — a human decided what and why; an assistant did the typing
-//   delegated    — the orchestrating model chose, briefed and merged it;
-//                  no human saw it before it landed (round 85)
 //
 // The test is vetoability, not the trigger. prompts/shared/every-run.md and
 // the preamble of CHANGELOG.md still gloss unsupervised as "scheduled",
@@ -44,7 +42,7 @@ const FIELDS = [
 // of entries without one never grows, so a future round that forgets fails
 // the build instead of quietly claiming to be legacy.
 const LEGACY_ORIGIN = "supervised";
-const ORIGINS = ["unsupervised", "supervised", "maintainer", "delegated"];
+const ORIGINS = ["unsupervised", "supervised", "maintainer"];
 
 function fieldOf(text) {
   for (const name of FIELDS) {
