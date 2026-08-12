@@ -51,19 +51,20 @@ edit them, and the meta round's pull request will wait on a human by design.
       `node scripts/round.mjs ship` and drops the instruction to run
       `gh pr merge --auto --squash` directly (or says to run it only after
       `ship` withholds and names the round's review as the gate) — done in
-      round 88 (meta): the instruction was removed by subtraction and
-      `build-prompt.mjs` is the single source for how a run ends.
+      round 88 (meta): the mechanical instruction was reduced to a pointer and
+      `build-prompt.mjs` is the single source for the assembled prompt's ending.
+      Convergence, not consolidation: `AGENTS.md` still carries its own
+      agreeing copy; it is in meta's scope now (added round 88) for a later
+      round to consolidate.
 - [ ] `.github/workflows/loop.yml` invokes `ship` (or the prompt it builds is
       the fixed `build-prompt.mjs` text) so the scheduled path and the local
       path reach the same gate — the second half is true now: the workflow
       builds its prompt from `build-prompt.mjs`, which after round 86 says to
       run `ship`. Making the workflow itself invoke `ship` was evaluated in
-      round 88 and left: the round runs inside the action's checkout and `ship`
-      reads the round's own branch, so a workflow step after the action would
-      run against a working tree that is not the round's branch; wiring it
-      correctly requires testing the scheduled loop end to end, which a round
-      cannot do. A broken scheduled loop is worse than an ungated one. This
-      half stays open for a round that can test it.
+      round 88 and left: wiring it correctly requires testing the scheduled
+      loop end to end, which a round cannot do, and a broken scheduled loop is
+      worse than an ungated one. This half stays open for a round that can test
+      it.
 - [x] The round that changes them records in its entry that the change to
       human-owned paths waits on a human by design, and the changelog preamble
       describing auto-merge does not contradict the gate round 86 built — done

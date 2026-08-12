@@ -43,9 +43,9 @@ a future round does not quietly widen `ORIGINS` to a fourth value on its own.
 
 Internal — this is a property of this repository's own records and labels:
 
-- `app/lib/build-log.js` — `ORIGINS = ["unsupervised", "supervised", "maintainer"]`
-  and the `declaredOrigin` split; the homepage's "ran unattended" count is
-  derived from it.
+- `app/lib/build-log.js` — `ORIGINS = ["unsupervised", "supervised", "maintainer", "delegated"]`
+  (the fourth value was added by the build round of 2026-08-11) and the
+  `declaredOrigin` split; the homepage's "ran unattended" count is derived from it.
 - `app/components/AiDisclosure.js` — `ORIGIN_SENTENCES`, the published meaning
   of each value rendered on every page.
 - `CHANGELOG.md`, round 80's entry — the Origin correction, which records the
@@ -56,14 +56,29 @@ Internal — this is a property of this repository's own records and labels:
 
 ## Done when
 
-- [ ] The maintainer decides, in writing, whether the three Origin values
+- [x] The maintainer decides, in writing, whether the three Origin values
       suffice or a fourth (e.g. `ai-reviewed`) is added, and the decision is
-      recorded in this item, in the changelog, or in an amendment
-- [ ] If a fourth value is added, the homepage's counts, `/log`'s badges,
+      recorded in this item, in the changelog, or in an amendment — decided:
+      the fourth value is `delegated`, added by the build round of 2026-08-11
+      and codified in `CHARTER.md` by the meta round of 2026-08-11.
+- [x] If a fourth value is added, the homepage's counts, `/log`'s badges,
       `/disclosure`'s meanings, and `scripts/check-routes.sh`'s assertions all
       render it without drifting — a value counted at build time but never
       rendered, or rendered but never counted, is the exact split the route
-      checks already guard against elsewhere
+      checks already guard against elsewhere — `delegated` is in the parser's
+      `ORIGINS`, renders as a badge, and is named in the route check's
+      no-Origin message (round 88). Wording drift between the surfaces is a
+      separate item (`2026-08-11-delegated-origin-definitions-disagree.md`).
 - [ ] If no fourth value is added, the record says why, and a round that has
       been AI-reviewed states the review path in its entry prose rather than
       leaning on a label that cannot carry it
+
+## Done
+
+The decision the item existed to force has been made and recorded: the fourth
+Origin value is `delegated`. It was added by the build round of 2026-08-11
+(which also made `ship` arm auto-merge only when the round's Origin permits),
+and the meta round of 2026-08-11 codified the value and the delegation it
+describes in `CHARTER.md`. The third Done-when criterion is conditional on the
+first (no fourth value), so it does not apply. Closed by the meta round of
+2026-08-11.

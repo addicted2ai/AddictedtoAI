@@ -104,15 +104,16 @@ not go red, and one that passed while measuring the wrong build entirely.
 Branch as `loop/<track>/<slug>` — CI reads your track from it and rejects
 changes outside your track's paths. Open a pull request; never push to `main`.
 
-Then run `node scripts/round.mjs ship`. It pushes, opens the pull request, and
-decides whether to request auto-merge from the round's own Origin. Do not run
-`gh pr merge --auto --squash` yourself: a round that arms its own merge before
-the reading its Origin promises is the failure the gate exists to stop, and the
-gate is the one place that decision is structural. Do not merge it yourself and
-do not wait for the checks.
+How the run ends is the last instruction of the prompt that launched you. That
+instruction lives in `scripts/build-prompt.mjs`, which assembles the prompt
+every run reads; it is deliberately not restated here, so this document and the
+prompt cannot disagree again.
 
-If your change touches `CHARTER.md`, `.github/` or `prompts/`, auto-merge will
-correctly wait for a human. Say so in the pull request and leave it waiting.
+If your change touches a human-owned path — `CHARTER.md`, `.github/`,
+`prompts/` or `scripts/check-track-scope.mjs` — `ship` withholds auto-merge and
+the change waits for the maintainer's delegated authority: the orchestrating
+model may merge it, a round may not. Say so in the pull request and leave it
+waiting.
 
 Update the docket item you worked from: move it to `docket/done/` if it is
 finished, leave it open if it is not.

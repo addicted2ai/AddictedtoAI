@@ -78,12 +78,16 @@ including merging pull requests that touch the paths rule 13 reserves. The
 previous attempt to record it (PR #33, closed for drift) got the substance
 right but asserted a false enforcement claim: that the loop's rounds run as a
 machine account with write and no admin, "so that check now binds them
-mechanically rather than by trust". Measured this round: the `gh` CLI every
-round invokes through `round.mjs ship` authenticates as the repository owner
-(`addicted2ai`), whose permissions include admin — `enforce_admins` is off, so
-a round could merge past the `human-owned-paths` check today. What prevents it
-is `round.mjs` never merging and the procedure that launches rounds, a script
-and a habit, not a credential. The charter now says what is true. (PR #39)
+mechanically rather than by trust". Measured this round: the `gh` CLI a
+locally-started round invokes through `round.mjs ship` authenticates as the
+repository owner (`addicted2ai`), whose permissions include admin —
+`enforce_admins` is off, so such a round could merge past the
+`human-owned-paths` check today. What prevents it is `round.mjs` never merging
+and the procedure that launches rounds, a script and a habit, not a credential.
+A round run through the workflow action is different: PR #10
+(`loop/maintain/fix-disclosure-check-and-analytics-claim`) was authored and
+merged by `app/claude`, the action's app, not the owner. The charter now says
+what is true. (PR #39)
 
 **1. Recorded the delegation in the charter, accurately**
 - Hypothesis: rule 4 forbids the charter publishing a claim about this
@@ -99,16 +103,19 @@ and a habit, not a credential. The charter now says what is true. (PR #39)
   checked against the repository rather than the brief: the `human-owned-paths`
   required check fails on any pull request touching the guarded paths; that
   check binds absolutely against merging while red; overriding it needs admin;
-  `enforce_admins` is off so the override exists; the `gh` CLI every round
-  invokes through `round.mjs ship` authenticates as the repository owner, an
-  admin; a round could perform the override today; what prevents it is
-  `round.mjs` never merging and the procedure that launches rounds. Rule 13 now
+  `enforce_admins` is off so the override exists; the `gh` CLI a
+  locally-started round invokes through `round.mjs ship` authenticates as the
+  repository owner, an admin; such a round could perform the override today;
+  what prevents it is `round.mjs` never merging and the procedure that
+  launches rounds. A round run through the workflow action is scoped out: its
+  `gh` runs as the action's app, and PR #10 was authored and merged by
+  `app/claude`, not the owner. Rule 13 now
   states the principle this revisit settles — prompts hold the discipline and
   are human-owned, mechanics live in loop-owned code because a stale
   instruction causes the failures the discipline exists to prevent — and
-   records that its old open question ("should the loop own its own prompt") is
-   answered no. The History entry quotes the authorising instruction from the
-   working session.
+  records that its old open question ("should the loop own its own prompt") is
+  answered no. The History entry quotes the authorising instruction from the
+  working session.
 
 **2. Removed the direct-arm instruction from every-run.md, by subtraction**
 - Hypothesis: `prompts/shared/every-run.md` is the document every round reads
@@ -119,13 +126,19 @@ and a habit, not a credential. The charter now says what is true. (PR #39)
   one it reads first said the thing that produced the false `Origin: delegated`
   claim. The defect is duplication: two copies of one instruction, edited
   separately, drifted. This repository has shipped that same bug three times.
-- Change: the mechanical instruction is removed from `every-run.md` and
-  `build-prompt.mjs` remains the single source for how a run ends. `every-run.md`
-  now defers to `node scripts/round.mjs ship` and keeps the discipline — what
-  an entry must contain, never flatter the work, the record's standards. The
-  docket item `2026-08-11-every-run-and-loop-yml-still-instruct-direct-arm.md`
-  recorded that the loop.yml scheduled path bypasses the gate entirely; that is
-  block 4 below, which could not be made safe.
+- Change: the mechanical instruction is removed from `every-run.md` — its
+  shipping section now points to `scripts/build-prompt.mjs`, which assembles
+  the prompt every run reads, and does not restate the instruction, so the
+  document a round reads first and the prompt cannot disagree again. `every-run.md`
+  keeps the discipline — what an entry must contain, never flatter the work,
+  the record's standards. This is convergence, not consolidation: `AGENTS.md`
+  still carries its own shorter copy of the ending instruction, now agreeing.
+  That file was added to meta's scope this round so a later round can
+  consolidate it; this round does not edit it (rule 11 forbids spending a
+  permission granted in the same change). The docket item
+  `2026-08-11-every-run-and-loop-yml-still-instruct-direct-arm.md` recorded
+  that the loop.yml scheduled path bypasses the gate entirely; that is block 4
+  below, which could not be made safe.
 
 **3. `delegated` accepted in the three places that still rejected it**
 - Hypothesis: round 85 added the `delegated` Origin value but three places
@@ -150,12 +163,8 @@ and a habit, not a credential. The charter now says what is true. (PR #39)
   prompt it builds is `build-prompt.mjs`, which after round 86 says to run
   `ship` and not to arm the merge itself, so the scheduled round and a local
   round now carry the same instruction. Making the workflow itself invoke
-  `ship` cannot be done safely from here: the round runs inside the action's
-  checkout, `ship` reads the round's own branch and changelog entry, and a
-  separate workflow step would run in the action's container after the round
-  finishes, in a working tree that is not the round's branch. Wiring that
-  correctly requires testing the scheduled loop end to end, which cannot be
-  done from a round. The checklist in
+  `ship` was not attempted: wiring it correctly requires testing the scheduled
+  loop end to end, which cannot be done from inside a round. The checklist in
   `2026-08-11-every-run-and-loop-yml-still-instruct-direct-arm.md` is updated
   to match: the every-run.md half is fixed; the loop.yml half stays open with
   its reasoning.

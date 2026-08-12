@@ -16,14 +16,17 @@ and this document does not claim more than it is: this file, `.github/`,
 `.github/workflows/pr-checks.yml`, a required status check that fails on any
 pull request touching them, so such a request cannot merge on green. That check
 binds absolutely against merging while it is red, and overriding it requires
-admin. `enforce_admins` is off on `main`, so that override exists — and the
-`gh` CLI every round invokes through `round.mjs ship` authenticates as the
-repository owner, which is an admin. A round could merge past the check today.
-What prevents it is that `round.mjs` never performs a merge itself and that the
-procedure which launches rounds tells a round to run `ship` and not to merge by
-hand — a script and a habit, not a credential. `.github/CODEOWNERS` names the
-same paths and routes review requests, but it is documentation, not the gate. No
-mode excuses the loop from any rule below.
+admin. `enforce_admins` is off on `main`, so that override exists. A
+locally-started round's `gh` CLI — the one `round.mjs ship` invokes —
+authenticates as the repository owner, which is an admin, so such a round
+could merge past the check today. What prevents it is that `round.mjs` never
+performs a merge itself and that the procedure which launches local rounds
+tells the round to run `ship` and not to merge by hand — a script and a habit,
+not a credential. A round run through the workflow action is different: the
+one that has done so, PR #10 (`loop/maintain/fix-disclosure-check-and-analytics-claim`),
+was authored and merged by `app/claude`, the action's app, not the owner.
+`.github/CODEOWNERS` names the same paths and routes review requests, but it is
+documentation, not the gate. No mode excuses the loop from any rule below.
 
 The direction, the tests, and the track charges in this document are fixed.
 Everything else is the loop's to decide — which metrics to keep, what the
@@ -321,18 +324,21 @@ subject to the same append-only rule it imposes on everything else.
   The first draft of this amendment overstated the mechanism. It claimed the
   loop's rounds run as a machine account with write and no admin "so that check
   now binds them mechanically rather than by trust". That is not what was
-  measured. The `gh` CLI every round invokes through `round.mjs ship`
-  authenticates as the repository owner, and the owner has admin:
+  measured. The `gh` CLI a locally-started round invokes through `round.mjs
+  ship` authenticates as the repository owner, and the owner has admin:
   `gh api user` reports `addicted2ai`, and
   `gh api repos/addicted2ai/AddictedtoAI --jq .permissions` returns
   `{"admin":true,"maintain":true,"pull":true,"push":true,"triage":true}`.
   The machine account governs `git push` via a credential helper in the local
-  git config; it does not govern `gh`. Every pull request the loop has opened
-  is authored by that owner account. So the required check binds absolutely
+  git config; it does not govern `gh`. Every pull request a locally-started
+  round has opened is authored by that owner account — but not every round is
+  locally-started: PR #10 (`loop/maintain/fix-disclosure-check-and-analytics-claim`)
+  was authored and merged by `app/claude`, the workflow action's app. So for
+  locally-started rounds the required check binds absolutely
   against merging while it is red, overriding it needs admin, `enforce_admins`
   is off so that override exists, and a round could perform it today. What
   prevents that is `round.mjs` never merging and the procedure that launches
-  rounds — a script and a habit, not a credential.
+  local rounds — a script and a habit, not a credential.
 
   The check itself is unchanged and still real: `human-owned-paths` fails on
   any pull request touching the guarded paths, and it is a required check, so
