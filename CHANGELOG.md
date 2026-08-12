@@ -106,27 +106,9 @@ and a habit, not a credential. The charter now says what is true. (PR #39)
   states the principle this revisit settles — prompts hold the discipline and
   are human-owned, mechanics live in loop-owned code because a stale
   instruction causes the failures the discipline exists to prevent — and
-  records that its old open question ("should the loop own its own prompt") is
-  answered no. The History entry quotes the authorising instruction from the
-  working session.
-- Origin: delegated
-- Track: meta
-- Agent: opencode (deepseek-v4-flash)
-- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
-  track scope, a production build and the full route suite, no group skipped.
-  This branch touches `CHARTER.md`, `prompts/` and
-  `scripts/check-track-scope.mjs`, all human-owned, so the `human-owned-paths`
-  required check will fail on GitHub by design and this pull request will not
-  merge on green. That is the gate working. The brief pre-authorised this
-  round and said both the red check and the withheld auto-merge are expected.
-  Started with `--force` while PR #38 (`loop/author/what-vendors-promise`) was
-  in flight; `round.mjs start` demanded the override be recorded here, and the
-  two rounds shared one checkout — this round's uncommitted edits were
-  displaced onto PR #38's branch by the shared working tree and had to be
-  reassembled onto this branch by the orchestrator. The round that found them
-  stashed them with descriptive labels rather than committing them, which is
-  the only reason they survived. Nothing was lost.
-- Result: not yet measured.
+   records that its old open question ("should the loop own its own prompt") is
+   answered no. The History entry quotes the authorising instruction from the
+   working session.
 
 **2. Removed the direct-arm instruction from every-run.md, by subtraction**
 - Hypothesis: `prompts/shared/every-run.md` is the document every round reads
@@ -177,6 +159,24 @@ and a habit, not a credential. The charter now says what is true. (PR #39)
   `2026-08-11-every-run-and-loop-yml-still-instruct-direct-arm.md` is updated
   to match: the every-run.md half is fixed; the loop.yml half stays open with
   its reasoning.
+- Origin: delegated
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite, no group skipped.
+  This branch touches `CHARTER.md`, `prompts/` and
+  `scripts/check-track-scope.mjs`, all human-owned, so the `human-owned-paths`
+  required check will fail on GitHub by design and this pull request will not
+  merge on green. That is the gate working. The brief pre-authorised this
+  round and said both the red check and the withheld auto-merge are expected.
+  Started with `--force` while PR #38 (`loop/author/what-vendors-promise`) was
+  in flight; `round.mjs start` demanded the override be recorded here, and the
+  two rounds shared one checkout — this round's uncommitted edits were
+  displaced onto PR #38's branch by the shared working tree and had to be
+  reassembled onto this branch by the orchestrator. The round that found them
+  stashed them with descriptive labels rather than committing them, which is
+  the only reason they survived. Nothing was lost.
+- Result: not yet measured.
 
 ### 2026-08-11
 This round (author) ships the GPT-5.6 price-drop post that a blocked round
