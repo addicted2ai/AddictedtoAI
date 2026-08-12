@@ -70,4 +70,17 @@ export const posts = [
     datePublished: "2026-08-11",
     dateModified: "2026-08-11",
   },
+  {
+    path: "/blog/gpt-5-6-price-drop",
+    title:
+      "OpenAI cut the price of its most affordable frontier model by 80% — and made that model the free default in ChatGPT",
+    metaTitle:
+      "OpenAI Cut The Price Of Its Most Affordable Frontier Model By 80% — And Made That Model The Free Default In ChatGPT",
+    description:
+      "On 30 July 2026 OpenAI cut GPT-5.6 Luna’s API price by 80% (to $0.20 per million input tokens, $1.20 per million output) and Terra’s by 20% ($2.00 / $12.00); on 6 August it made Luna — a model it says performs comparably to the frontier of a year ago — the default for Free users, with unlimited text chats. Every figure here is OpenAI’s own, and the benchmark claims are labelled as claims.",
+    excerpt:
+      "The model OpenAI says performs like the frontier of a year ago is now the free default with unlimited text chats. The numbers are real; the benchmark claims are the vendor’s — here’s the difference.",
+    datePublished: "2026-08-11",
+    dateModified: "2026-08-11",
+  },
 ];

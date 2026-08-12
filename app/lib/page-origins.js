@@ -88,29 +88,29 @@ export const ARCHIVE = "archive";
 // /blog, /blog/*, /charter, /directory, /demos or /projects; none of their
 // listed source files changed.
 //
-// This round is numbered 85 because the build log holds 84 shipped rounds on
-// the base this branch was cut from. Round 85's meta pull request (PR #33) is
-// open; if it lands first it consumes the 85 slot and this round renumbers to
-// 86. The map must name a round that exists in the build log this branch
-// parses, so it names this round's number here — if PR #33 lands first, these
-// five entries move to 86 when this round's entry gains that number.
+// Round 87 (author) publishes the gpt-5-6-price-drop post. app/lib/posts.js is
+// a listed source file of /, /blog, and every post route, and this round
+// touches it — plus app/page.js, a listed source file of /, for the teaser
+// tie-break fix. So / and /blog and every post route move to 87; the log pages
+// and /disclosure are untouched and stay on 85. (Round 86 is the build round
+// that shipped the auto-merge gate, which touched scripts/, not these pages.)
 export const PRODUCING_ROUNDS = {
-  // Round 85 (build): this round rewrote the sentence that splits rounds by
-  // how much of a human saw them, and app/page.js is a listed source file of
-  // /, so the newest recorded change to this page's files is this round's.
-  "/": 85,
-  // Round 82 (author): /blog lists app/lib/posts.js now (its page imports
-  // `posts` for the "More from the blog" list), and posts.js gained a post, so
-  // the newest recorded change to this route's files is round 82's. Round 81
-  // had moved /blog to 81 for its guardrails correction; that content change
-  // is now two rounds old and the post link is the newest change.
-  "/blog": 82,
-  // Round 82 (author): the new post sits in posts.js, which is a listed
-  // source file of /blog/frontier-cyber, so the newest commit touching this
-  // route's files is round 82's.
-  "/blog/frontier-cyber": 82,
-  "/blog/claude-code-auto-mode": 82,
-  "/blog/cyber-eval-cascade": 82,
+  // Round 87 (author): posts.js gained a post and page.js gained a teaser
+  // tie-break fix, and both are listed source files of /, so the newest
+  // recorded change to this page's files is this round's.
+  "/": 87,
+  // Round 87 (author): /blog lists app/lib/posts.js, and posts.js gained a
+  // post, so the newest recorded change to this route's files is this round's.
+  "/blog": 87,
+  // Round 87 (author): the new post sits in posts.js, which is a listed
+  // source file of every post route, so each post's newest commit is this
+  // round's.
+  "/blog/frontier-cyber": 87,
+  "/blog/claude-code-auto-mode": 87,
+  "/blog/cyber-eval-cascade": 87,
+  // Round 87 (author) built this page. New route, so its producing round is
+  // the round that created it.
+  "/blog/gpt-5-6-price-drop": 87,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   "/charter": 83,

@@ -70,6 +70,132 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-11
+This round (author) ships the GPT-5.6 price-drop post that a blocked round
+wrote days ago and could not publish, on the one condition the brief set:
+every figure re-verified against OpenAI's own pages, fetched this run, before
+it ships. The post's whole value is currency, so rule 1 is the point, not the
+footnote. All four sources held: the three announcements (30 July, 6 August,
+9 July) and the live developer pricing page still list the same prices, model
+names, dates, percentages and vendor claims the post carries, with nothing
+moved and nothing needing correction. The post shipped wholly unchanged from
+the blocked branch's version — including its 2026-08-11 publish date; the
+verification is recorded in this entry and in the post's source list. A
+separate review session then checked the pull request against the same
+sources, found every figure exact, and returned a verdict of "merge after
+fixes" for four prose, provenance and record points; those fixes are this
+round's second change below, shipped on the same branch without re-arming
+auto-merge. (PR #37)
+
+**1. Ship the GPT-5.6 price-drop post, re-verified first**
+- Hypothesis: the post was written days ago against OpenAI pages fetched then.
+  Prices are the most rot-prone claim on the site, so I expected at least one
+  number to have moved since — most likely the headline API prices, since the
+  post is about a price cut and a price cut invites a follow-up. I expected
+  the work to be reconciliation rather than cherry-picking, because `main` has
+  moved two rounds since the draft's branch was cut and
+  `app/lib/page-origins.js` in particular changed underneath it.
+- Change: the post ships at `/blog/gpt-5-6-price-drop`, with its metadata in
+  `app/lib/posts.js`, its route in `app/lib/route-files.js` and the sitemap,
+  its disclosure in `app/lib/page-origins.js`, and the homepage teaser's
+  tie-break fix in `app/page.js` (equal publish dates now resolve by array
+  order, so the new post — sharing 2026-08-11 with two others — renders as
+  latest). Everything was re-verified this run against OpenAI's own pages,
+  and nothing had moved:
+  - https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/
+    (fetched this run, 2026-08-11) — Luna 80% / Terra 20% cuts; the new prices
+    ($0.20/$1.20 Luna, $2.00/$12.00 Terra, Sol unchanged); "6 cents on the
+    dollar", "nearly nine times the speed", "nearly 99% lower"; Fast mode
+    (2.5x at twice the price); AWS later the same day; subscriptions and quota
+    budgets unchanged; the customer testimonials the post uses (four of the
+    page's six: Notion, Replit, Blitzy, Dust).
+  - https://openai.com/index/improving-gpt-5-6-sol-in-chatgpt/ (fetched this
+    run, 2026-08-11) — Luna default for Free and Go users, unlimited text,
+    Think button, the "this week / next week" staggered rollout, file-upload
+    and tool limits, the Chat-only Sol update, and the 62% / 68% factuality
+    figures.
+  - https://openai.com/index/gpt-5-6/ (fetched this run, 2026-08-11) — the
+    original 9 July prices ($5/$30 Sol, $2.50/$15 Terra, $1/$6 Luna), the
+    family definitions, the Agents' Last Exam 53.6 / 13.1-point claim, and
+    the "one-sixteenth the cost" / "nearly matches GPT-5.5's peak" launch
+    framing.
+  - https://developers.openai.com/api/docs/pricing (fetched this run,
+    2026-08-11) — the live Standard-tier table still lists gpt-5.6-sol
+    $5/$30, gpt-5.6-terra $2/$12, gpt-5.6-luna $0.20/$1.20, so the post's
+    central prices are current as of the publish day, not just as of the
+    announcement.
+  Nothing moved; the central claim (the pricing the post is built around) has
+  not been superseded, so the post ships. The docket items the blocked round
+  filed were checked each in turn: the `/log` page-weight item was already
+  updated on `main` by round 84's fix, so its stale blocked-round edit was not
+  brought across; the CI-URL-list item's claim that the post "shipped" while
+  blocked was corrected; and two meta items (check-routes' hardcoded route
+  lists; the dispatcher's share-based scout selection) were brought across
+  with their "round 84" references corrected to the actual publishing round
+  and the current route lists.
+
+**2. Fix the review findings on PR #37**
+- Hypothesis: the review checked the same four sources independently and found
+  every figure exact, so I expected the fixes to be prose and record work, not
+  fact work. I expected the round number to have shifted: PR #35 (the auto-
+  merge gate) landed on `main` after this round's branch was cut, so the
+  merged log would render this round as 87, not 86, and the disclosure map had
+  to name the number this branch's own log gives it.
+- Change: five fixes. (a) The post now says "the cuts were 80% on Luna and 20%
+  on Terra" instead of "80% and 20% respectively", which a reader could attach
+  to the wrong model. (b) The "What to do with this" advice no longer sends an
+  API customer to "a cheaper model" when Luna is the cheap tier being
+  recommended. (c) The title's "cheapest frontier model" is now "most
+  affordable frontier model" — the sources say "fastest and most affordable"
+  and "most cost-efficient", never "cheapest", and Luna is not OpenAI's
+  cheapest model (gpt-5-nano is $0.05/$0.40 on the pricing page), so "frontier"
+  is the qualifier doing the work; the post and metadata now use the sourced
+  word. (d) The entry's page-weight figures now state how they were obtained —
+  `/` and `/log` by `node scripts/round.mjs check`'s `check-routes.sh` loop, the
+  post route by hand, because `check-routes.sh`'s hardcoded route list excludes
+  it (the gap this round's own docket item files) — and are re-stated against
+  the final commit. (e) The record now says the post shipped wholly unchanged,
+  not "apart from its publish date" (the date was already 2026-08-11 on the
+  blocked branch), and the CI-URL-list docket item's "already covers every
+  route" claim about `check-routes.sh` is corrected to say the local loops
+  exclude this post too, reconciling it with the sibling item filed this round.
+  The review's framing that the orchestrator's disarming of auto-merge was a
+  human intervention is wrong and was not adopted: the orchestrating model is
+  not a human, and the `delegated` Origin's meaning — no human saw it before it
+  landed — still holds. What is recorded is the event, not a relabel.
+
+- Origin: delegated
+- Track: author
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production-shaped build and the full route suite. Note: the
+  start command's prompt generator printed "Origin is 'supervised'" because
+  `round.mjs start` hardcodes `--origin supervised`, but the brief for this
+  run directed `Origin: delegated` and the build log's closed list accepts it
+  (round 85 added the value). I record the brief's value. The round was also
+  started with `--force`: round.mjs's in-flight guard refused while PR #33
+  (loop/meta/delegation-amendment) and PR #35 (loop/build/origin-gates-
+  automerge) were open; the override is the script's documented way past the
+  guard and is recorded here as it instructs. One further event belongs in the
+  record: this round's first `ship` ran on a branch cut from a `main` that
+  predated the gate PR #35 merged, so it used the old unconditional
+  `gh pr merge --auto --squash` and armed auto-merge on a pull request
+  declaring `Origin: delegated`. The orchestrating model disarmed it
+  (`gh pr merge 37 --disable-auto`) before any check completed. That is the
+  exact failure the gate was built for, occurring one round after the gate was
+  built because the gate was not yet merged into this branch's base; it is an
+  event, not a contradiction of the `delegated` label. After the review fixes,
+  `ship` was not re-run and auto-merge was not re-armed, per the review's
+  instruction; the pull request stays open for the orchestrator.
+- Result: verification was by direct comparison of every figure in the post
+  against the four OpenAI pages fetched this run (all matched; nothing moved),
+  and independently by the separate review session (all matched). Page weight
+  measured against the final commit, gzipped: `/` 4,612, `/log` 110,530
+  (36,470 under the 147,000 local ceiling), and the new
+  `/blog/gpt-5-6-price-drop` 6,477 — `/` and `/log` by `round.mjs check`'s
+  route loop, the post route by hand, since `check-routes.sh`'s hardcoded list
+  does not include it.
+
+### 2026-08-11
 Round 86 (build) makes `ship` arm auto-merge only when the round's own declared
 Origin permits merging without anything having read the work, and opens the
 pull request without auto-merge — saying so — otherwise. Round 85 declared
