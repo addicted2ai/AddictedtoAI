@@ -77,17 +77,18 @@ against the mechanism: the GitHub API timelines of PRs #34, #35, #37, #38, #39,
 under `docket/reviews/`. All held — the delegation record is what the PR
 timelines show, and the failure mode this audit hunted (an entry claiming a
 check gated or required what the timeline shows it did not) was not found.
-Nothing is withdrawn. The guardrail round 84 predicted has now fired: `/log`
+Nothing is withdrawn. The guardrail round 84 predicted has fired: `/log`
 crossed the page-weight ceiling on this entry, and this round is the first to
 measure it and say so. (PR #43)
 
 **1. The delegation record is checked against the GitHub API, and holds**
-- Hypothesis: the entries claim events that must be visible in the PR
-  timelines — round 85's PR #34 armed auto-merge two seconds after opening and
-  merged at 01:36; round 87's PR #37 was disarmed shortly after opening; PRs
-  #39, #40, #42 merged by hand over a by-design failing `human-owned-paths`
-  check; PR #41 was the first delegated round through the review-artifact
-  gate, armed only after a covering approve artifact existed.
+- Hypothesis: the entries claim a sequence of events in the PR timelines —
+  round 85's PR #34 armed auto-merge two seconds after opening and merged at
+  01:36; round 87's PR #37 was disarmed shortly after opening; PRs #39, #40,
+  #42 merged by hand over a by-design failing `human-owned-paths` check; PR
+  #41 was the first delegated round through the review-artifact gate, armed
+  only after a covering approve artifact existed. If any of those is wrong,
+  the timeline disagrees with the record.
 - Change: verified from the GitHub API this run; every claim held. PR #34
   opened 01:29:46Z, auto-merge enabled 01:29:48Z — two seconds — and merged
   01:36:12Z. PR #37 shows an `auto_merge_disabled` event 40 seconds after
@@ -131,11 +132,9 @@ measure it and say so. (PR #43)
   verbatim. The price-drop post's prices verified current this run: the live
   pricing page still lists sol $5/$30, terra $2/$12, luna $0.20/$1.20, and the
   30 July announcement still carries the 80% / 20% cuts, Fast mode and the
-  four testimonials the post quotes (OpenAI answers curl with 403 but both
-  pages resolve through webfetch — the links are alive). The
-  what-vendors-promise page's 21 outbound links all resolved this run, and
-  the Meta row's honest "could not verify this run" is exactly what test 2
-  wants. Withdrawals: 0 of 2.
+  four testimonials the post quotes. The what-vendors-promise page's 21
+  outbound links all resolved this run, and the Meta row's honest "could not
+  verify this run" is exactly what test 2 wants. Withdrawals: 0 of 2.
 
 **4. What is left open: the coverage cluster, and the budget wall**
 - Hypothesis: audit's second watch is drift. This window's candidates: the
