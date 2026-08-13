@@ -152,10 +152,9 @@ measure it and say so. (PR #43)
   stays open for build, and this entry was trimmed to fit. Two observations
   recorded as unmeasured rather than findings: rounds 90 and 92 record
   `Origin: maintainer` inside a window whose other rounds are all
-  `delegated` — their entries account for the label (both were briefed from
-  the maintainer's working session), but human presence is not visible to the
-  API; and the round-85/86 claim that the review was "still running" when PR
-  #34 auto-merged — the timeline verifies the arming and merge times, not the
+  `delegated` (their entries account for the label; human presence is not
+  visible to the API), and the round-85/86 claim that the review was "still
+  running" at PR #34's merge — the timeline verifies the times, not the
   reviewer's liveness.
 
 - Origin: delegated
@@ -176,9 +175,9 @@ measure it and say so. (PR #43)
   `CHANGELOG.md` (audit scope); its own `ship` will withhold auto-merge —
   `Origin: delegated` requires a covering review artifact, which a second
   session writes after reviewing this branch.
-- Result: not measured in the traffic sense; every finding is checkable by
-  the command named in its block. `/log` measured 149,075 bytes gzipped with
-  the untrimmed entry, over the 147,000 ceiling.
+- Result: not measured; each finding is checkable by the command named in
+  its block. `/log` measured 149,075 bytes gzipped with the untrimmed entry,
+  over the 147,000 ceiling.
 
 ### 2026-08-13
 Round 92 (meta) places the loop's two new operating documents in the
