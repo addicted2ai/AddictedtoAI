@@ -70,6 +70,122 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-13
+Round 91 (build) fixes one specific false failure in the Directory link check.
+The checker ran against the live site and reported every link resolving to its
+recorded URL, so the Directory is fine; what failed was the checker's own
+transport for one URL. `gemini.google.com` sends ~24 KiB of response headers,
+over undici's 16 KiB fetch cap, so `fetch` aborts it with
+`UND_ERR_HEADERS_OVERFLOW` and the link was reported unreachable even though
+it resolves. The previous session established that diagnosis, wrote the fix and
+hung before committing any of it; this round recovered the uncommitted work
+first and finished it. The fix re-tests only that one cause with a raised
+header limit; every other failure still reports unreachable, and the safe
+direction is preserved — if undici renames the error code, the cause stops
+matching and the URL fails loudly again. A loopback regression test now pins
+both directions of the fallback without reaching the public internet. The
+round also moved `/directory`'s producing round to 91 on the strength of
+branch history, CI showed the merged tree carries no such change, and the
+mapping was restored to 67. (PR #41)
+
+**1. The checker stops mistaking undici's header cap for a dead link**
+- Hypothesis: the previous session's diagnosis was that the single
+  `FAIL gemini.google.com` line was a checker defect, not a dead link: undici
+  caps response headers at 16 KiB and aborts with `UND_ERR_HEADERS_OVERFLOW`
+  when a site exceeds that, and gemini.google.com sends ~24 KiB of CSP and
+  cookie headers while remaining healthy. The fix should handle exactly that
+  cause — detect the error code, re-test the same URL through core
+  `http`/`https` with a raised header limit, following redirects itself — and
+  leave every other failure reporting as unreachable, so a fallback can never
+  swallow a genuinely dead link. If the error code ever changes, the match
+  stops and the URL fails loudly again, which is the safe direction.
+- Change: `scripts/check-tool-links.mjs` detects `UND_ERR_HEADERS_OVERFLOW`
+  through the error's cause chain (`isHeadersOverflow`, walking `cause`
+  because the shape has differed across Node versions) and for that one cause
+  calls `resolveWithLargerHeaders`, which re-tests with `maxHeaderSize`
+  64 KiB and follows redirects itself, up to 10 hops. Any other fetch failure
+  keeps reporting `unreachable: <reason>` as before. The work was found
+  uncommitted on this branch — the previous session had written it and hung
+  before committing — and was committed first, unchanged, before this round
+  continued.
+
+**2. The proof is recorded from measured output, not from what was expected**
+- Hypothesis: the fix had been proven against the real world in the previous
+  session, but the proof was only a description. The record needs the actual
+  lines, so this round re-ran the checker with the two synthetic Directory
+  entries in place, and the result must show the overflow URL resolving and a
+  genuinely dead URL still failing — if either direction is wrong, the fix or
+  its limit is wrong too.
+- Change: with the TEST entries temporarily present, the checker printed
+  `ok    TEST Gemini overflow -> https://gemini.google.com/` and
+  `FAIL  TEST dead port: unreachable: fetch failed` (exit 1). The entries were
+  then removed; on the real directory every link resolves, including
+  `ok    HuggingChat -> https://huggingface.co/chat/`, and the checker exits 0.
+
+**3. The fallback gets a regression test that does not reach the internet**
+- Hypothesis: the fix's trigger only exists on one real URL, so the
+  real-directory run can never tell a working fallback from a silently
+  disabled one — the internet keeps working either way. A loopback server
+  emitting the same oversized headers would hold the checker to its promise
+  cheaply: the checker reads `app/lib/tool-categories.js` from its working
+  directory, so a synthetic tree can be pointed at the test server without
+  touching the real one.
+- Change: added `scripts/test-tool-links-overflow.mjs`, which serves ~24 KiB
+  of response headers on loopback, runs the checker against a temp directory
+  containing only that URL, and asserts it resolves (exit 0); then runs it
+  against a port nothing listens on and asserts it fails (exit 1). The test is
+  wired into `scripts/check-routes.sh` next to the real-directory run. It was
+  proven able to fail before trusting it: with the fallback condition disabled
+  it printed `FAIL  oversized headers should resolve; exit 1` and
+  `FAIL  loopback test: unreachable: fetch failed`, exit 1, then went green
+  again with the fix restored. One implementation note for future maintainers:
+  the checker is spawned (not `spawnSync`) because a synchronous child blocks
+  the event loop that accepts the loopback connection, and the test deadlocks.
+
+**4. `/directory`'s producing round moved on branch history, then was restored**
+- Hypothesis: this round's removal of the TEST entries touched
+  `app/lib/tool-categories.js`, a listed source file of `/directory`, and the
+  disclosure check walks `git log` for each route's files. On the branch, that
+  history ends in this round's commits, so the local check demanded the map
+  move from 67 to 91.
+- Change: the map was moved to 91 (`app/lib/page-origins.js`), and the local
+  disclosure check passed against the branch. CI then failed on the merged
+  tree, which is what actually ships: the TEST entries were added and removed
+  within the branch, so the merged `tool-categories.js` is byte-identical to
+  `main`, and `/directory`'s newest real change is still round 67's (PR #15,
+  author). The mapping was restored to 67 — the local check and CI answer
+  different questions about the same branch, and that gap is filed in the
+  docket rather than papered over here.
+
+- Origin: delegated
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the route suite. On this branch the
+  suite's disclosure group fails with `FAIL  /directory: mapped to round 67
+  (author), but its files were last touched by "build: remove TEST scaffolding
+  entries from tool-categories.js" (build)` — the check reads branch commit
+  history, where this round's TEST-removal commits still touch the route's
+  files, while CI's gate reads the merged tree, where they do not. The
+  mapping was restored to the value the merged tree requires, and the CI gate
+  is the one that matters. Proof of
+  the fix on the real world, measured this round: with the TEST entries in,
+  `ok    TEST Gemini overflow -> https://gemini.google.com/` and `FAIL  TEST
+  dead port: unreachable: fetch failed`, exit 1; then with the entries
+  removed, 13 `ok` lines including
+  `ok    HuggingChat -> https://huggingface.co/chat/`, exit 0. Regression
+  test: `ok    oversized headers resolve through the fallback` / `ok    dead
+  port still fails` / `all overflow regression assertions passed`, exit 0;
+  and, with the fallback disabled, `FAIL  oversized headers should resolve;
+  exit 1`, exit 1. The `gemini.google.com` overflow URL itself was re-fetched
+  with `fetch` in isolation this round and threw `TypeError  fetch failed`
+  with `cause: HeadersOverflowError UND_ERR_HEADERS_OVERFLOW`, confirming the
+  trigger is undici's header cap and not the site.
+- Result: not yet measured. The observable success is the checker reporting
+  gemini.google.com as resolving, which any later round's run of
+  `scripts/check-tool-links.mjs` re-verifies; a regression would be caught by
+  `scripts/test-tool-links-overflow.mjs` before it needs the real site.
+
+### 2026-08-13
 Round 90 (meta) builds a checkable gate for the `Origin: delegated` claim, and
 puts the gate where this loop actually controls the merge. A round that
 declares `delegated` claims an orchestrating model reviewed it before merge.
