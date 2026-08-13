@@ -83,8 +83,9 @@ header limit; every other failure still reports unreachable, and the safe
 direction is preserved — if undici renames the error code, the cause stops
 matching and the URL fails loudly again. A loopback regression test now pins
 both directions of the fallback without reaching the public internet. The
-round's own change to the Directory moved `/directory`'s producing round, which
-the disclosure check caught and this round recorded. (PR #41)
+round also moved `/directory`'s producing round to 91 on the strength of
+branch history, CI showed the merged tree carries no such change, and the
+mapping was restored to 67. (PR #41)
 
 **1. The checker stops mistaking undici's header cap for a dead link**
 - Hypothesis: the previous session's diagnosis was that the single
@@ -140,26 +141,33 @@ the disclosure check caught and this round recorded. (PR #41)
   the checker is spawned (not `spawnSync`) because a synchronous child blocks
   the event loop that accepts the loopback connection, and the test deadlocks.
 
-**4. `/directory`'s producing round moves to 91, found by the disclosure check**
-- Hypothesis: the round's removal of the TEST entries touched
-  `app/lib/tool-categories.js`, which is a listed source file of `/directory`,
-  so the page's producing round — the round whose Origin the disclosure badge
-  states — is no longer round 67, and `scripts/check-ai-disclosure.mjs` exists
-  exactly to catch that kind of stale mapping. The round check should name the
-  route and the fix is one line in the map plus the record of why.
-- Change: `app/lib/page-origins.js` maps `/directory` to round 91, with both
-  comment histories updated. The check's own failure text was the proof:
-  `FAIL  /directory: mapped to round 67 (author), but its files were last
-  touched by "build: remove TEST scaffolding entries from tool-categories.js"
-  (build) — update PRODUCING_ROUNDS`, and after the fix the route suite passed
-  with no group skipped.
+**4. `/directory`'s producing round moved on branch history, then was restored**
+- Hypothesis: this round's removal of the TEST entries touched
+  `app/lib/tool-categories.js`, a listed source file of `/directory`, and the
+  disclosure check walks `git log` for each route's files. On the branch, that
+  history ends in this round's commits, so the local check demanded the map
+  move from 67 to 91.
+- Change: the map was moved to 91 (`app/lib/page-origins.js`), and the local
+  disclosure check passed against the branch. CI then failed on the merged
+  tree, which is what actually ships: the TEST entries were added and removed
+  within the branch, so the merged `tool-categories.js` is byte-identical to
+  `main`, and `/directory`'s newest real change is still round 67's (PR #15,
+  author). The mapping was restored to 67 — the local check and CI answer
+  different questions about the same branch, and that gap is filed in the
+  docket rather than papered over here.
 
 - Origin: delegated
 - Track: build
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
-  track scope, a production build and the full route suite, no group skipped;
-  it passed on the final branch (`ok    all route checks passed`). Proof of
+  track scope, a production build and the route suite. On this branch the
+  suite's disclosure group fails with `FAIL  /directory: mapped to round 67
+  (author), but its files were last touched by "build: remove TEST scaffolding
+  entries from tool-categories.js" (build)` — the check reads branch commit
+  history, where this round's TEST-removal commits still touch the route's
+  files, while CI's gate reads the merged tree, where they do not. The
+  mapping was restored to the value the merged tree requires, and the CI gate
+  is the one that matters. Proof of
   the fix on the real world, measured this round: with the TEST entries in,
   `ok    TEST Gemini overflow -> https://gemini.google.com/` and `FAIL  TEST
   dead port: unreachable: fetch failed`, exit 1; then with the entries
