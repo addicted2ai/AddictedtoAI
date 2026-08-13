@@ -102,6 +102,11 @@ export const ARCHIVE = "archive";
 // no other route moves this round. app/Nav.js gains a link to it but Nav.js is
 // not a listed source file of any route, so the nav change is invisible to
 // this map.
+//
+// Round 91 (build) fixes the tool-links checker's headers-overflow false
+// failure and removes the two TEST entries its predecessor session left in
+// app/lib/tool-categories.js — a listed source file of /directory, so that
+// route moves to 91. No other route's listed source files changed this round.
 export const PRODUCING_ROUNDS = {
   // Round 87 (author): posts.js gained a post and page.js gained a teaser
   // tie-break fix, and both are listed source files of /, so the newest
@@ -124,10 +129,15 @@ export const PRODUCING_ROUNDS = {
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   "/charter": 83,
-  // Round 88 (author) built this page. New route, so its producing round is
-  // the round that created it.
-  "/what-vendors-promise": 88,
-  "/directory": 67,
+// Round 88 (author) built this page. New route, so its producing round is
+// the round that created it.
+"/what-vendors-promise": 88,
+// Round 91 (build) fixes the headers-overflow false failure in the
+// tool-links checker and removes the two TEST entries its predecessor left in
+// app/lib/tool-categories.js — a listed source file of /directory, so the
+// newest recorded change to this route's files is this round's. Round 67
+// (author, adding ChatGPT) was the previous producing round.
+"/directory": 91,
   "/demos": 62,
   // Both log pages were produced by round 70, the build round that split the
   // log in two, until round 72 changed the origin badge they both render.
