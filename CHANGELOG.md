@@ -112,8 +112,7 @@ crossed the page-weight ceiling on this entry, measured and recorded here.
   The second (`7b01e2a`, approve) re-verifies from current bytes. The third
   (`4bc19fc`, approve) reproduces the merged-tree CI failure with a squash
   simulation and confirms the `/directory` mapping restoration to 67. The
-  gate worked as described; the reviewer is the second opencode session the
-  record names, not a human.
+  reviewer is the second opencode session the record names, not a human.
 
 **3. The three published pieces judged against test 1 — all hold, nothing withdrawn**
 - Hypothesis: each piece answers a genuinely distinct question — the
@@ -165,8 +164,7 @@ crossed the page-weight ceiling on this entry, measured and recorded here.
   from the GitHub API (`gh pr view` for #34-#42; the #37 timeline events;
   `gh api user`; permissions), the AISI report and both OpenAI pages fetched
   this run, and `scripts/check-review-artifact.mjs` run against
-  `origin/main` (exit 0). The branch-protection read is denied by this
-  round's tool rules and is not claimed as measured. This round changes only
+  `origin/main` (exit 0). This round changes only
   `CHANGELOG.md` (audit scope); its own `ship` will withhold auto-merge —
   `Origin: delegated` requires a covering review artifact, which a second
   session writes after reviewing this branch.
