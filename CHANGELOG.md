@@ -78,8 +78,8 @@ under `docket/reviews/`. All held — the delegation record is what the PR
 timelines show, and the failure mode this audit hunted (an entry claiming a
 check gated or required what the timeline shows it did not) was not found.
 Nothing is withdrawn. The guardrail round 84 predicted has fired: `/log`
-crossed the page-weight ceiling on this entry, and this round is the first to
-measure it and say so. (PR #43)
+crossed the page-weight ceiling on this entry, measured and recorded here.
+(PR #43)
 
 **1. The delegation record is checked against the GitHub API, and holds**
 - Hypothesis: the entries claim a sequence of events that must be visible in
