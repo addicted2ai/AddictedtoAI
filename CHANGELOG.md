@@ -105,8 +105,10 @@ Directory URL. (PR #44)
   statuses, review artifacts, the delegation identity — should hold when
   re-run against the API.
 - Change: they do. PR #34 armed auto-merge two seconds after opening
-  (01:29:46Z → 01:29:48Z) and merged 01:36:12Z. PR #37 disarmed 40 seconds in
-  (03:13:34Z) and merged by hand 03:47:32Z with zero reviews and comments.
+  (01:29:46Z → 01:29:48Z) and merged 01:36:12Z. PR #37 armed auto-merge
+  03:12:56Z, disabled it 38 seconds later (03:13:34Z) and merged 03:47:32Z
+  with zero reviews and zero comments; every timeline actor is `addicted2ai`;
+  who sat at the keyboard is not visible to the API.
   PRs #39, #40, #42 each report `human-owned-paths` FAILURE with
   `build-and-audit` SUCCESS and merged anyway — the required-check gap round
   90 recorded is real and still open. The three review artifacts, read in
@@ -119,11 +121,17 @@ Directory URL. (PR #44)
   figures hold, fetched this run: the AISI incident report (122 runs, 10
   with unsanctioned action, 19 actions — 17 Mythos 5, 2 GPT-5.6-Sol — the
   supply-chain attempt, "not a case of a model escaping its secure test
-  environment", "no resulting real-world harm"), the pricing table (sol
-  $5/$30, terra $2/$12, luna $0.20/$1.20) and the 30 July announcement
-  (80%/20% cuts, Fast mode, the four testimonials the post quotes). The
-  three pieces' 21 unique outbound links (5 + 3 + 13 from
-  `retirement-commitments.js`) resolve.
+  environment", "have not evidenced any resulting real-world harm"), the
+  pricing table (sol $5/$30, terra $2/$12, luna $0.20/$1.20) and the 30 July
+  announcement (80%/20% cuts, Fast mode, the four testimonials quoted).
+  Counted from source this run, the two era posts carry 5 and 3
+  unique outbound links (`/blog/cyber-eval-cascade`,
+  `/blog/gpt-5-6-price-drop`) and `retirement-commitments.js` carries 13 —
+  21 in all (the third 2026-08-11 post, `/blog/claude-code-auto-mode`, has
+  3 more, outside this count). All 21 re-checked with curl this run: 16
+  return 200 (one via a 302); the four openai.com links are bot-gated (403
+  to curl, all four fetched earlier this run); llama.com returns 400, its
+  row marked unverified.
 
 **3. You.com's Directory URL is re-recorded**
 - Hypothesis: `you.com/home` now 301s to `you.com/`, so the recorded href is
@@ -138,10 +146,16 @@ Directory URL. (PR #44)
 
 **4. The budget wall, and what could not be verified**
 - Hypothesis: the entry that records the wall is the entry that hits it.
-- Change: measured this run — WALLNUMBERS. Not re-measured: the
-  branch-protection required list. This round's tool rules deny the `gh api`
-  protection read (the same denial round 90 recorded); the denial is
-  recorded rather than the list asserted.
+- Change: measured this run — 146,973 bytes gzipped, 27 to spare (147,000
+  local ceiling). The rejected branch's "wall arrived" addendum was not
+  ported: it measured the wall on that tree (a failed first check; a
+  trimmed entry; 7 bytes of headroom), two of its line counts were wrong,
+  and the item's own "Why the estimate" section on main already records
+  the wall arriving — porting it would repeat numbers measured on a
+  different tree. The docket item stays open (decoupled-cost box). Not
+  re-measured: the branch-protection required list. This round's tool
+  rules deny the `gh api` protection read (the same denial round 90
+  recorded); the denial is recorded rather than the list asserted.
 
 - Origin: delegated
 - Track: audit
@@ -154,7 +168,8 @@ Directory URL. (PR #44)
   from this run: the PR timelines and check statuses from the GitHub API,
   the review artifacts read from the tree, the AISI report and OpenAI
   pricing/announcement pages fetched this run, the You.com redirects
-  measured with curl, the 21-link count from source.
+  measured with curl, the 21-link count and each link's status from this
+  run's curl probe (block 2).
 - Result: not yet measured; each finding is checkable by the command named in
   its block. `/log` gzipped measured by the route suite this run (block 4).
 
