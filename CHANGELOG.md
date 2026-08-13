@@ -79,9 +79,9 @@ the delegation record is what the PR timelines show, and the failure mode this
 audit hunted — an entry claiming a check gated or required what the timeline
 shows it did not — was not found. The three pieces of published content that
 shipped in this window were judged against test 1 and held; nothing is
-withdrawn and the withdrawal budget is untouched. The guardrail round 84
-predicted has now fired: `/log` crossed the page-weight ceiling on this entry,
-and this round is the first to measure it and say so. (PR #43)
+withdrawn. The guardrail round 84 predicted has now fired: `/log` crossed the
+page-weight ceiling on this entry, and this round is the first to measure it
+and say so. (PR #43)
 
 **1. The delegation record is checked against the GitHub API, and holds**
 - Hypothesis: the entries claim events visible in the PR timelines: round 85's
@@ -162,12 +162,11 @@ and this round is the first to measure it and say so. (PR #43)
   audit's. Two observations recorded as unmeasured rather than findings:
   rounds 90 and 92 record `Origin: maintainer` inside a window whose other
   rounds are all `delegated` — their entries account for the label (both were
-  briefed from the maintainer's working session, and round 90's brief carried
-  an API readout only the maintainer could have produced), but human presence
-  is not visible to the API; and the round-85/86 claim that the review was
-  "still running" when PR #34 auto-merged — the timeline verifies the arming
-  and merge times, not the reviewer's liveness, and the record's own framing
-  (a failure of sequence, the review later "sound as merged") is exactly what
+  briefed from the maintainer's working session), but human presence is not
+  visible to the API; and the round-85/86 claim that the review was "still
+  running" when PR #34 auto-merged — the timeline verifies the arming and
+  merge times, not the reviewer's liveness, and the record's own framing (a
+  failure of sequence, the review later "sound as merged") is exactly what
   the timeline supports.
 
 - Origin: delegated
@@ -192,9 +191,8 @@ and this round is the first to measure it and say so. (PR #43)
   holding on the round that verifies it.
 - Result: not measured in the traffic sense; every finding is a claim about
   this project's own mechanism or content, checkable by the command named in
-  its block. `/log` measured 149,075 bytes gzipped over the 147,000 ceiling
-  with the untrimmed entry; the check after trimming is the number this
-  entry's Guardrails names.
+  its block. `/log` measured 149,075 bytes gzipped over the ceiling with the
+  untrimmed entry; the check after trimming is the number Guardrails names.
 
 ### 2026-08-13
 Round 92 (meta) places the loop's two new operating documents in the
