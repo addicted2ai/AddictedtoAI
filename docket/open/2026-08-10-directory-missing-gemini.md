@@ -39,6 +39,17 @@ round, and the two most-used consumer assistants were never in it.
 Internal, for the diff: `app/lib/tool-categories.js` — no Google product
 appears anywhere in the Directory.
 
+## Blockers
+
+Cleared 2026-08-13 (build round `loop/build/tool-links-header-overflow`): the
+tool-links checker failed `https://gemini.google.com` with
+`UND_ERR_HEADERS_OVERFLOW` because the page sends ~24 KiB of response headers,
+over undici's 16 KiB fetch cap — a checker defect, not a dead link. The checker
+now re-tests that one cause with a raised header limit, and a loopback
+regression test (`scripts/test-tool-links-overflow.mjs`) pins the behavior.
+Verified this round: `ok    TEST Gemini overflow -> https://gemini.google.com/`.
+A future author round adding Gemini will not rediscover the blocker.
+
 ## Done when
 
 - [ ] Gemini is listed under "Chat & Assistants" with a link fetched during the
