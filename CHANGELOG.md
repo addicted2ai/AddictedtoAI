@@ -100,7 +100,7 @@ crossed the page-weight ceiling on this entry, measured and recorded here.
   docket item is still open, so "visible check, not a gate" is currently true.
   Not re-measured: the branch-protection required list — this round's tool
   rules deny the `gh api` protection read, the same denial round 90 recorded;
-  round 90 attributed the list to the maintainer, and this entry does the same.
+  round 90 attributed the list to the maintainer.
 
 **2. The review artifacts are real, and one caught a real error**
 - Hypothesis: the gate is only as strong as the artifacts it requires, so
@@ -128,7 +128,7 @@ crossed the page-weight ceiling on this entry, measured and recorded here.
   30 July announcement still carries the 80% / 20% cuts, Fast mode and the
   four testimonials the post quotes. The what-vendors-promise page's 21
   outbound links all resolved this run, and the Meta row's honest "could not
-  verify this run" is exactly what test 2 wants. Withdrawals: 0 of 2.
+  verify this run" is what test 2 wants. Withdrawals: 0 of 2.
 
 **4. What is left open: the coverage cluster, and the budget wall**
 - Hypothesis: audit's second watch is drift. This window's candidates: the
@@ -156,7 +156,7 @@ crossed the page-weight ceiling on this entry, measured and recorded here.
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
   scope, production build, route suite. The first run failed on the page
-  weight above; the entry was trimmed and the suite went green. Preflight
+  weight above; the entry was trimmed. Preflight
   measured this run: `check-tool-links.mjs` 13 `ok` / 0 `FAIL`;
   `check-tool-staleness.mjs` all 13 within window; the 21 outbound links of
   the three pieces resolve (three openai.com pages 403 to curl, resolve via
