@@ -69,6 +69,114 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-13
+Round 90 (meta) builds a checkable gate for the `Origin: delegated` claim, and
+puts the gate where this loop actually controls the merge. A round that
+declares `delegated` claims an orchestrating model reviewed it before merge.
+That claim needs a real artifact, so this round adds the `review-artifact`
+check: a file at `docket/reviews/<sha>.md` whose `Verdict:` is `approve`,
+whose `Commit:` is an ancestor of the pull request head, and after which
+nothing outside `docket/reviews/` changed. The late review of the first draft
+caught the load-bearing mistake: the check was described as "a required check"
+but is not on the branch-protection required list, so GitHub's auto-merge
+would have ignored it and a delegated round would have merged with the
+`review-artifact` job red. The gate therefore lives in `ship`'s arming step,
+which runs the same checker before it will arm auto-merge for a delegated
+round; the CI job is kept as a visible check and a promotion request is filed
+for the maintainer to add it to the required list. The round also re-verifies
+the round-81 finding that `human-owned-paths` blocks `gh pr merge --auto` and
+nothing else, and records it precisely in the docket. (PR #40)
+
+**1. The `delegated` gate is moved from a CI job that does not bind to the arming step that does**
+- Hypothesis: a round that declares `Origin: delegated` claims an AI reviewed
+  it before merge, and auto-merge performs the merge at the earliest legal
+  moment — round 85 is the instance where the review session was still running
+  when the pull request auto-merged. The first draft of this round added
+  `delegated` to `AUTOMERGE_ORIGINS` on the strength of a new `review-artifact`
+  CI job, but that job is not a required check: it is not in the branch
+  protection rule's required list, so GitHub's auto-merge waits only on
+  `build-and-audit` and `human-owned-paths` and would merge a delegated pull
+  request with `review-artifact` red and ignored. A gate that exists to be
+  ignored is not a gate. The fix is to gate the thing the loop controls:
+  `ship` arms auto-merge, and a delegated round must earn that arming by the
+  same conditions the CI job checks.
+- Change: `delegated` is removed from the unconditional `AUTOMERGE_ORIGINS`
+  set in `scripts/automerge-origin.mjs`. `ship` now runs
+  `scripts/check-review-artifact.mjs` before arming a delegated round, and
+  refuses to arm — saying why — when the artifact is missing, its verdict is
+  not `approve`, or something outside `docket/reviews/` changed after the
+  reviewed commit. The same checker runs in CI as the `review-artifact` job,
+  which is now described accurately everywhere as a *visible* check, not a
+  gate, until the maintainer adds it to the required list. The checker is one
+  implementation of the rule in one file, read through the one Origin parser
+  (`app/lib/build-log.js`); `ship` does not re-implement the rule. Proven
+  before trusting, per every-run.md, on scratch branches: a delegated round
+  with no artifact fails the checker and cannot arm; the same round with a
+  covering approve review passes; a review that exists but is stale — a
+  substantive file changed after the reviewed commit — fails. The real
+  commands and their output are in the Guardrails line.
+
+**2. The promotion of `review-artifact` to a required check is filed as a settings change**
+- Hypothesis: the CI job only bites if it is on the branch-protection required
+  list, and adding it there is a repository settings change that `CHARTER.md`
+  rule 14 keeps out of reach of every track. The case for it should be
+  written down so the maintainer can make the change against the reasoning,
+  not from a passing comment in a workflow file.
+- Change: filed `docket/open/2026-08-13-promote-review-artifact-to-required-check.md`,
+  stating plainly what the change is (Settings → Branches → the `main`
+  protection rule, or an equivalent API call by the maintainer), what it would
+  buy (the check binds at GitHub's merge layer instead of only at `ship`'s
+  arming), and what it would not fix (`enforce_admins` is off and the only
+  admin is the account the loop operates as, so a direct admin merge could
+  still step over it). Until that change is made, the arming gate in `ship` is
+  the only thing that holds, which is why it is the gate.
+
+**3. The `human-owned-paths` finding is re-verified and recorded precisely**
+- Hypothesis: round 81 found that the `human-owned-paths` required check
+  blocks `gh pr merge --auto` — the path `ship` uses — and nothing else, and
+  that the round-79 claim that the guard makes a scope change "cost a human
+  merge instead of nothing" is not supported by the mechanism. That finding
+  was correct and worth preserving precisely, so this round re-checks it
+  rather than re-arguing it.
+- Change: re-verified from the GitHub API this round: PR #25 (merged
+  2026-08-11T13:15:56Z) and PR #27 (merged 2026-08-11T15:39:31Z) each report
+  `human-owned-paths` failing while `build-and-audit` passed, and each merged
+  anyway — by `addicted2ai`, with zero reviews and no auto-merge queued. The
+  branch-protection readout itself (required contexts `["build-and-audit",
+  "human-owned-paths"]`, `enforce_admins` false, required approving reviews 0)
+  is recorded as the maintainer verified it, because this round's tool rules
+  deny the `gh api` branch-protection read and a number that could not be
+  re-measured is not claimed as measured. The finding is recorded as a dated
+  addendum in the existing branch-protection docket item, which keeps the
+  correction visible rather than softening it.
+
+- Origin: maintainer
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite, no group skipped.
+  The arming gate was proven before trusting it, on scratch branches built
+  from `origin/main` with the new checker copied in, never pushed. Proof 1 —
+  a delegated round with no artifact:
+  `node scripts/check-review-artifact.mjs origin/main` printed `FAIL  no file
+  under docket/reviews/ on this branch` and `2 problem(s) — a delegated round
+  cannot merge without a covering approve review`, exit 1. Proof 2 — the same
+  round with a covering approve review at
+  `docket/reviews/<55c6674>.md`: `ok  review artifact verified: 1 covering
+  review(s) approve the merged tree`, exit 0. Proof 3 — a review that exists
+  but is stale (a substantive file changed after the reviewed commit):
+  `note  ... does not cover the merged tree` and `1 problem(s)`, exit 1. The
+  checker on the real branch reports Origin `maintainer`, to which the check
+  does not apply. PR #25 and PR #27 were re-read from the GitHub API with
+  `gh pr view` and `gh pr checks`; the required-contexts list is attributed to
+  the maintainer's API verification in this round's brief, which this round
+  could not re-run. This branch touches `.github/workflows/pr-checks.yml`, so
+  `human-owned-paths` will fail by design and this pull request will not merge
+  on green; it is merged by hand.
+- Result: not yet measured. The gate's observable success is a delegated round
+  that refuses to arm without a covering review, and a later round or the
+  maintainer can check whether the promotion docket item gets made.
+
 ### 2026-08-11
 Round 89 (meta) records the delegation of decision authority to the
 orchestrating model accurately, and removes the last prompt instruction that

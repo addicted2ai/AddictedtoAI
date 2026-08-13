@@ -77,6 +77,28 @@ opening). A required status check is only as strong as the account that merges;
 here that account is the admin the check does not bind. The gate blocks
 `gh pr merge --auto`, and nothing else.
 
+## Round 90 re-verified, on the way to building the review-artifact gate
+
+The meta round of 2026-08-13 re-checked the same two claims while deciding
+where to put the gate for `Origin: delegated` rounds, and both held. Verified
+by the maintainer from the API this round: `enforce_admins` is false; the
+required contexts are `["build-and-audit","human-owned-paths"]`;
+`required_approving_review_count` is 0. Verified by the round from `gh pr
+view` and `gh pr checks`: PR #25 merged 2026-08-11T13:15:56Z and PR #27 merged
+2026-08-11T15:39:31Z, both by `addicted2ai`, both with `reviews: []` and
+`autoMergeRequest: null`, both reporting `human-owned-paths` fail while
+`build-and-audit` passed.
+
+The claim round 79's entry made — that the guard makes a scope change "cost a
+human merge instead of nothing" — is still not supported by the mechanism. The
+gate blocks `gh pr merge --auto`, the path `round.mjs ship` uses, and nothing
+else. A direct admin merge lands a guarded change with the check red. Whether
+a human was at the keyboard for #25 and #27 is not visible from the API: both
+merges show only `addicted2ai`. Recorded because it is the same shape as the
+gate being built this round: this project keeps proposing checks that assume a
+merge cannot happen past them, and the mechanism keeps not supporting the
+assumption. This item's `enforce_admins` box is the fix that would.
+
 ## The trap in the obvious fix
 
 Setting `required_approving_review_count` to 1 would break every loop round.

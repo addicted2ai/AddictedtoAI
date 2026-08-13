@@ -94,6 +94,51 @@ jobs:
           fi
           echo "ok  no human-owned paths touched"
 
+  # A round that declares `Origin: delegated` claims the orchestrating model
+  # reviewed it before merge. A review asserted in the changelog is not a
+  # review; a review is a file, and this job requires the file and that it
+  # cover the tree being merged.
+  #
+  # For a delegated round it requires all of:
+  #   - a file docket/reviews/<sha>.md on the branch,
+  #   - its `Verdict:` line reads `approve`,
+  #   - its `Commit:` SHA is an ancestor of, or equal to, the pull request
+  #     head, and
+  #   - `git diff --name-only <that sha>..HEAD` lists nothing outside
+  #     `docket/reviews/`.
+  #
+  # The last condition is the load-bearing one. It proves nothing substantive
+  # changed after the reviewer looked, so a review of an earlier commit never
+  # vouches for later code -- that failure has happened here once already,
+  # when CI went green on one commit and the corrected commit was different.
+  # It also resolves the circularity of committing the review: the artifact
+  # can never name the head it lands on, because committing it changes the
+  # head. It names what it read, and the diff proves the difference is only
+  # the review itself.
+  #
+  # !! THIS IS A VISIBLE CHECK, NOT A GATE. !!
+  # Auto-merge waits only on checks listed as required in branch protection,
+  # and this job is not on that list. Until the maintainer adds it to the
+  # required list, GitHub's auto-merge would ignore it -- a delegated round
+  # could merge with this job red and nothing stop it. The gate is
+  # `scripts/round.mjs ship`, which runs this same script (same rule, same
+  # parser) before it will arm auto-merge for a delegated round. Adding this
+  # job to the required list is a settings change only the maintainer can
+  # make; see the docket item.
+  #
+  # The Origin is read through the same parser the site builds from
+  # (app/lib/build-log.js) -- never a second parser. A second parser that can
+  # disagree with the first is the bug this repository keeps shipping.
+  review-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Needs the merge base to diff against, like check-track-scope.
+          fetch-depth: 0
+      - name: Verify the review artifact covers the merged tree
+        run: node scripts/check-review-artifact.mjs "origin/${{ github.base_ref }}"
+
   build-and-audit:
     runs-on: ubuntu-latest
     # Production serves round badges as links; without this, CI would build
