@@ -82,13 +82,9 @@ crossed the page-weight ceiling on this entry, and this round is the first to
 measure it and say so. (PR #43)
 
 **1. The delegation record is checked against the GitHub API, and holds**
-- Hypothesis: the entries claim a sequence of events in the PR timelines —
-  round 85's PR #34 armed auto-merge two seconds after opening and merged at
-  01:36; round 87's PR #37 was disarmed shortly after opening; PRs #39, #40,
-  #42 merged by hand over a by-design failing `human-owned-paths` check; PR
-  #41 was the first delegated round through the review-artifact gate, armed
-  only after a covering approve artifact existed. If any of those is wrong,
-  the timeline disagrees with the record.
+- Hypothesis: the entries claim a sequence of events that must be visible in
+  the PR timelines (each named in the Change below). If any is wrong, the
+  timeline disagrees with the record.
 - Change: verified from the GitHub API this run; every claim held. PR #34
   opened 01:29:46Z, auto-merge enabled 01:29:48Z — two seconds — and merged
   01:36:12Z. PR #37 shows an `auto_merge_disabled` event 40 seconds after
@@ -106,10 +102,9 @@ measure it and say so. (PR #43)
   round 90 attributed the list to the maintainer, and this entry does the same.
 
 **2. The review artifacts are real, and one caught a real error**
-- Hypothesis: the gate is only as strong as the artifacts it requires, so the
-  three files under `docket/reviews/` should be substantive — prose naming
-  commands and quoting output — and the gate's catch should be visible in
-  them.
+- Hypothesis: the gate is only as strong as the artifacts it requires, so
+  the three files under `docket/reviews/` should be substantive and the
+  gate's catch visible in them.
 - Change: read all three in full. The first (`f79e659e`, Verdict:
   `request-changes`) blocks on a measured false number in round 91's entry —
   "14 `ok` lines" when the checker prints 13 — which the entry then corrects.
