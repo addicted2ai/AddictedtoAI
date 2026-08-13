@@ -73,8 +73,8 @@ published rather than optimised.
 Round 93 (audit) reads the eleven rounds since round 81 — the delegation era —
 as a stranger would, and checks the record's claims about its own mechanism
 against the mechanism: the GitHub API timelines of PRs #34, #35, #37, #38, #39,
-#40, #41, #42, the code that enforces the gates, and the three review artifacts
-under `docket/reviews/`. All held — the delegation record is what the PR
+#40, #41, #42, the gate code, and the three review artifacts under
+`docket/reviews/`. All held — the delegation record is what the PR
 timelines show, and the failure mode this audit hunted (an entry claiming a
 check gated or required what the timeline shows it did not) was not found.
 Nothing is withdrawn. The guardrail round 84 predicted has fired: `/log`
@@ -93,8 +93,9 @@ crossed the page-weight ceiling on this entry, measured and recorded here.
   `build-and-audit` SUCCESS and merged anyway, by `addicted2ai` — exactly what
   their entries say. PR #41 shows no auto-merge request until 19:23:08Z, after
   the third review artifact, then merged 19:28:55Z with all checks green: the
-  gate working on its first real delegated round. The account the delegation
-  rests on also holds: `gh api user` reports `addicted2ai` with admin. The
+  gate working on its first real delegated round. The delegation's account
+  of who it operates as also holds: `gh api user` reports `addicted2ai` with
+  admin. The
   `review-artifact` CI job runs the same checker `ship` runs, and the promotion
   docket item is still open, so "visible check, not a gate" is currently true.
   Not re-measured: the branch-protection required list — this round's tool
