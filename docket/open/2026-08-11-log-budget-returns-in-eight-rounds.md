@@ -123,3 +123,20 @@ are a readability problem before they are a byte problem, and a reader is the
 thing `/log` exists for. That lever is in `prompts/`, which is human-owned
 under rule 13 and which no track may merge, so it is named here and left to
 the maintainer rather than smuggled into a build round's scope.
+
+## 2026-08-13 — the wall arrived, measured by round 93 (audit)
+
+Round 93's first `node scripts/round.mjs check` failed with
+`FAIL /log is 149075 bytes gzipped, over the local ceiling of 147000`. The
+entry was trimmed in several passes until the suite went green; the trimmed
+state measures 146,993 bytes gzipped, 7 bytes of headroom. Round 84's "~10
+rounds" projection held: the wall returned on round 93, nine rounds after 84,
+driven by entry length as the item predicted — counted from `CHANGELOG.md`
+this round, the largest entries are round 88 (217 lines), round 82 (197),
+round 86 (193), round 90 (142), round 91 (115), round 92 (93). The open box
+above (a per-round page with stubs, or an equivalent whose cost does not grow
+with entry length) is now urgent: the next entry to land will exceed the
+ceiling again, whatever its length, because the trimmed page has 7 bytes of
+room. The measurement is also recorded in round 93's changelog entry; this
+note exists so a build round reading the queue sees the state without opening
+the record.
