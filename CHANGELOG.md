@@ -72,41 +72,40 @@ published rather than optimised.
 ### 2026-08-13
 Round 93 (audit) reads the eleven rounds since round 81 — the delegation era —
 as a stranger would, and checks the record's claims about its own mechanism
-against the mechanism. Every claim was checked against the GitHub API timelines
-of PRs #34, #35, #37, #38, #39, #40, #41, #42, against the code that enforces
-them, and against the three review artifacts under `docket/reviews/`. All held:
-the delegation record is what the PR timelines show, and the failure mode this
-audit hunted — an entry claiming a check gated or required what the timeline
-shows it did not — was not found. The three pieces of published content that
-shipped in this window were judged against test 1 and held; nothing is
-withdrawn. The guardrail round 84 predicted has now fired: `/log` crossed the
-page-weight ceiling on this entry, and this round is the first to measure it
-and say so. (PR #43)
+against the mechanism: the GitHub API timelines of PRs #34, #35, #37, #38, #39,
+#40, #41, #42, the code that enforces the gates, and the three review artifacts
+under `docket/reviews/`. All held — the delegation record is what the PR
+timelines show, and the failure mode this audit hunted (an entry claiming a
+check gated or required what the timeline shows it did not) was not found. The
+three pieces of published content that shipped in this window were judged
+against test 1 and held; nothing is withdrawn. The guardrail round 84
+predicted has now fired: `/log` crossed the page-weight ceiling on this entry,
+and this round is the first to measure it and say so. (PR #43)
 
 **1. The delegation record is checked against the GitHub API, and holds**
-- Hypothesis: the entries claim events visible in the PR timelines: round 85's
-  PR #34 armed auto-merge two seconds after opening and merged at 01:36; round
-  87's PR #37 was disarmed by the orchestrator shortly after opening; PRs #39,
-  #40, #42 each merged by hand over a by-design failing `human-owned-paths`
+- Hypothesis: the entries claim events that must be visible in the PR
+  timelines — round 85's PR #34 armed auto-merge two seconds after opening and
+  merged at 01:36; round 87's PR #37 was disarmed shortly after opening; PRs
+  #39, #40, #42 merged by hand over a by-design failing `human-owned-paths`
   check; PR #41 was the first delegated round through the review-artifact
   gate, armed only after a covering approve artifact existed. If any of those
   is wrong, the timeline disagrees with the record.
 - Change: verified from the GitHub API this run; every claim held. PR #34
-  opened 2026-08-12T01:29:46Z, auto-merge enabled 01:29:48Z — two seconds —
-  and merged 01:36:12Z. PR #37 shows an `auto_merge_disabled` event 40 seconds
-  after opening, then a by-hand merge at 03:47:32Z with zero reviews and zero
+  opened 01:29:46Z, auto-merge enabled 01:29:48Z — two seconds — and merged
+  01:36:12Z. PR #37 shows an `auto_merge_disabled` event 40 seconds after
+  opening, then a by-hand merge at 03:47:32Z with zero reviews and zero
   comments. PRs #39, #40, #42 each report `human-owned-paths` FAILURE with
   `build-and-audit` SUCCESS and merged anyway, by `addicted2ai` — exactly what
   their entries say. PR #41 shows no auto-merge request until 19:23:08Z, after
   the third review artifact, then merged 19:28:55Z with all checks green: the
   gate working on its first real delegated round. The account the delegation
-  rests on also holds: `gh api user` reports `addicted2ai` with admin
-  permissions. The `review-artifact` CI job runs the same checker `ship` runs,
-  and the promotion docket item is still open, so "visible check, not a gate"
-  is currently true. Not re-measured: the branch-protection required list —
-  this round's tool rules deny the `gh api` protection read, the same denial
-  round 90 recorded; round 90 attributed the list to the maintainer's
-  verification rather than claiming it measured, and this entry does the same.
+  rests on also holds: `gh api user` reports `addicted2ai` with admin. The
+  `review-artifact` CI job runs the same checker `ship` runs, and the promotion
+  docket item is still open, so "visible check, not a gate" is currently true.
+  Not re-measured: the branch-protection required list — this round's tool
+  rules deny the `gh api` protection read, the same denial round 90 recorded;
+  round 90 attributed the list to the maintainer rather than claiming it
+  measured, and this entry does the same.
 
 **2. The review artifacts are real, and one caught a real error**
 - Hypothesis: the gate is only as strong as the artifacts it requires, so the
@@ -156,18 +155,17 @@ and say so. (PR #43)
   1) is two days old and inside its expiry, and the items are precise about
   their changes. Named here rather than re-filed. The wall is here, measured:
   this round's first `check` failed with `FAIL /log is 149075 bytes gzipped,
-  over the local ceiling of 147000` — the item's "the wall returns" box is
-  the per-round-page design, which stays open for build. This entry was
-  trimmed to bring the page back under budget; the structural fix is not an
-  audit's. Two observations recorded as unmeasured rather than findings:
-  rounds 90 and 92 record `Origin: maintainer` inside a window whose other
-  rounds are all `delegated` — their entries account for the label (both were
-  briefed from the maintainer's working session), but human presence is not
-  visible to the API; and the round-85/86 claim that the review was "still
-  running" when PR #34 auto-merged — the timeline verifies the arming and
-  merge times, not the reviewer's liveness, and the record's own framing (a
-  failure of sequence, the review later "sound as merged") is exactly what
-  the timeline supports.
+  over the local ceiling of 147000` — the item's open box (a per-round page)
+  stays open for build. This entry was trimmed to bring the page back under
+  budget; the structural fix is not an audit's. Two observations recorded as
+  unmeasured rather than findings: rounds 90 and 92 record `Origin:
+  maintainer` inside a window whose other rounds are all `delegated` — their
+  entries account for the label (both were briefed from the maintainer's
+  working session), but human presence is not visible to the API; and the
+  round-85/86 claim that the review was "still running" when PR #34
+  auto-merged — the timeline verifies the arming and merge times, not the
+  reviewer's liveness, and the record's own framing (a failure of sequence,
+  the review later "sound as merged") is exactly what the timeline supports.
 
 - Origin: delegated
 - Track: audit
@@ -175,14 +173,13 @@ and say so. (PR #43)
 - Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
   scope, production build, route suite. The first run failed on the page
   weight above; the entry was trimmed and the suite went green. Preflight
-  measured this run: `check-tool-links.mjs` prints 13 `ok` / 0 `FAIL`;
-  `check-tool-staleness.mjs` reports all 13 Directory tools within window;
-  the 21 outbound links of the three pieces resolve (18 return HTTP 200, the
-  three openai.com pages 403 to curl but resolve via webfetch). Facts come
-  from this run: the PR timelines and check statuses from the GitHub API
-  (`gh pr view` for #34, #35, #37, #38, #39, #40, #41, #42; the #37 timeline
-  events; `gh api user`; permissions), the AISI report and both OpenAI pages
-  fetched this run, and `scripts/check-review-artifact.mjs` run against
+  measured this run: `check-tool-links.mjs` 13 `ok` / 0 `FAIL`;
+  `check-tool-staleness.mjs` all 13 within window; the 21 outbound links of
+  the three pieces resolve (three openai.com pages 403 to curl, resolve via
+  webfetch). Facts come from this run: the PR timelines and check statuses
+  from the GitHub API (`gh pr view` for #34-#42; the #37 timeline events;
+  `gh api user`; permissions), the AISI report and both OpenAI pages fetched
+  this run, and `scripts/check-review-artifact.mjs` run against
   `origin/main` (exit 0). The branch-protection read is denied by this
   round's tool rules and is not claimed as measured. This round changes only
   `CHANGELOG.md` (audit scope); its own `ship` will withhold auto-merge —
