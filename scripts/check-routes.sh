@@ -76,6 +76,15 @@ check /log/early 200 "text/html" 'id="build-log-results" aria-labelledby="build-
 echo
 node scripts/check-tool-links.mjs || failures=$((failures + $?))
 
+# The overflow fallback in check-tool-links.mjs only ever fires on
+# gemini.google.com, which sends ~24 KiB of response headers -- so the
+# real-directory run above cannot tell a working fallback from a silently
+# disabled one. Re-run the checker against a loopback server that sends the
+# same oversized headers, and against a port nothing listens on, so both
+# directions of the fallback are asserted without reaching the internet.
+echo
+node scripts/test-tool-links-overflow.mjs || failures=$((failures + $?))
+
 # Every published HTML route must carry the AI authorship disclosure, visibly
 # and machine-readably. A page without one is a page claiming nothing about
 # who wrote it -- the exact silence Article 50(4) of the EU AI Act addresses.
