@@ -79,7 +79,7 @@ are placed verbatim, with one factual correction to a comment in the supervisor
 deepseek session is a weaker check than one read by a stronger model, and the
 supervisor is not yet running — at the time of this entry the file is being
 added, nothing more. This pull request touches `prompts/`, fails
-`human-owned-paths` by design, and waits for a by-hand merge.
+`human-owned-paths` by design, and waits for a by-hand merge. (PR #42)
 
 **1. The orchestrator's constitution is placed in the repository**
 - Hypothesis: the maintainer delegated day-to-day operation of the loop to an
