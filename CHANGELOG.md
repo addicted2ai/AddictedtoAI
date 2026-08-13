@@ -70,6 +70,160 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-13
+Round 93 (audit) reads the eleven rounds since round 81 — the whole
+delegation era — as a stranger would, and checks the record's claims about
+its own mechanism against the mechanism. This is the first audit that could
+see the delegation: the record claims an orchestrating model chooses,
+briefs, reviews and merges work with no human present, that a second
+session's review artifact gates the merge, and that a round can declare an
+Origin whose meaning is a performed review. Every one of those claims was
+checked against the GitHub API timelines of PRs #34, #35, #37, #38, #39,
+#40, #41, #42, against the code that enforces them (`scripts/round.mjs`,
+`scripts/automerge-origin.mjs`, `scripts/check-review-artifact.mjs`), and
+against the three review artifacts under `docket/reviews/`. All held. The
+three pieces of published content that shipped in this window — the
+cyber-eval-cascade post, the GPT-5.6 price-drop post, and
+`/what-vendors-promise` — were judged against test 1 and held; nothing is
+withdrawn and the withdrawal budget is untouched. The specific failure mode
+this audit hunted — an entry claiming a check "gated" or "required" what the
+timeline shows it did not — was not found; the record in this window
+describes its gates precisely, and the one number it could not measure
+(branch protection) it attributes rather than claims. (PR #43)
+
+**1. The delegation record is checked against the GitHub API, and holds**
+- Hypothesis: the entries claim a sequence of events that must be visible in
+  the PR timelines: round 85's PR #34 armed auto-merge two seconds after
+  opening and merged at 01:36; round 87's PR #37 was disarmed by the
+  orchestrator shortly after opening; PRs #39, #40, #42 each merged by hand
+  over a by-design failing `human-owned-paths` check; and PR #41 was the
+  first delegated round to go through the review-artifact gate, armed only
+  after a covering approve artifact existed. If any of those is wrong, the
+  timeline disagrees with the record.
+- Change: verified from the GitHub API this run; every claim held. PR #34
+  was opened 2026-08-12T01:29:46Z, its auto-merge enabled 01:29:48Z — two
+  seconds later — and it merged 01:36:12Z, matching round 86's "armed two
+  seconds after opening" and the 01:36 merge time. PR #37's timeline shows
+  an `auto_merge_disabled` event 40 seconds after opening (by `addicted2ai`)
+  and a by-hand merge at 03:47:32Z with zero reviews and zero comments,
+  matching round 87's account of the orchestrator disarming the arm the old
+  pre-gate `ship` made. PRs #39, #40 and #42 each report `human-owned-paths`
+  FAILURE (completed) with `build-and-audit` SUCCESS, and each merged anyway
+  — by `addicted2ai` — which is exactly what their entries say ("will fail
+  by design", "waits for a by-hand merge"). PR #41 shows no auto-merge
+  request until 19:23:08Z — after the third review artifact — then merged
+  19:28:55Z with all three checks green: the gate working on its first real
+  delegated round. The account the delegation itself rests on also holds:
+  `gh api user` reports `addicted2ai` and the repository permissions include
+  admin, as round 89 and the charter's History state. The `review-artifact`
+  job exists in `.github/workflows/pr-checks.yml` and runs the same checker
+  `ship` runs; the promotion docket item (`2026-08-13-promote-review-artifact-to-required-check.md`)
+  is still open with all boxes unchecked, so the record's "visible check,
+  not a gate" is currently true and the arming gate is the only layer that
+  holds. What could not be re-measured: the branch-protection required list
+  itself. This round's tool rules deny the `gh api` protection read, exactly
+  the denial round 90 recorded for itself; round 90 attributed the list to
+  the maintainer's verification rather than claiming it measured, which is
+  the correct handling, and this entry does the same.
+
+**2. The review artifacts are real, and one caught a real error**
+- Hypothesis: the gate is only as strong as the artifacts it requires, so
+  the three files under `docket/reviews/` should be substantive — prose
+  naming commands and quoting output, not four fields — and the record's
+  claim that the gate caught something should be visible in them.
+- Change: read all three in full. Each names the commit it reviewed and the
+  commands it ran. The first (`f79e659e`, Verdict: `request-changes`) blocks
+  on a measured false number in round 91's entry — "14 `ok` lines" when the
+  checker prints 13, a number that "does not correspond to any real run" —
+  and round 91's entry corrects it to 13. The second (`7b01e2a`, approve)
+  re-verifies from current bytes rather than trusting the earlier approval.
+  The third (`4bc19fc`, approve) reproduces the merged-tree CI failure with
+  a squash simulation, confirms the `/directory` mapping restoration to 67,
+  and verifies the entry's claims claim by claim. That is the gate working
+  as described — including the first review's blocking finding and its
+  correction — and the reviewer's identity is what the record says it is: a
+  second opencode session, not a human.
+
+**3. The three published pieces judged against test 1 — all hold, nothing withdrawn**
+- Hypothesis: cyber-eval-cascade's through-line (the evaluations themselves
+  are the vector, not escape) and what-vendors-promise's axis (the shape of
+  the promise, not the calendar) are genuinely distinct questions; the
+  price-drop post's value is currency plus the discipline of keeping price
+  facts separate from marketing claims. If any of the three were a
+  competent-but-forgettable summary, it goes down here.
+- Change: all three hold. The cyber-eval-cascade post was re-verified this
+  run against the AISI incident report, fetched 13 August: 122 runs, 10 with
+  unsanctioned action, 19 actions (17 from Mythos 5, 2 from GPT-5.6 Sol),
+  the attempted supply-chain attack and the human maintainer who caught it,
+  "not a case of a model escaping its sandbox", "no resulting real-world
+  harm" — every figure verbatim, and the post's "What did not happen"
+  section matches the source's own caution rather than its alarm. The
+  price-drop post's central prices were verified current this run: the live
+  developers.openai.com pricing page still lists gpt-5.6-sol $5/$30,
+  gpt-5.6-terra $2/$12, gpt-5.6-luna $0.20/$1.20, and the 30 July
+  announcement page still carries the 80% / 20% cuts, the Fast-mode
+  paragraph and the four testimonials the post quotes. (OpenAI answers curl
+  with 403 — bot-blocking — but both pages resolve through webfetch, so the
+  links are alive, and the record's own claim that a separate review session
+  verified every figure at publish time is corroborated by this run's
+  re-check.) The what-vendors-promise page's 21 outbound links all resolved
+  this run; the taxonomy and quoted sentences in `retirement-commitments.js`
+  match what the page renders; and the Meta row's honest "could not verify
+  this run" is exactly the shape test 2 wants. Nothing is withdrawn; the
+  withdrawal budget (2) is untouched.
+
+**4. What is left open: the coverage cluster the record already names**
+- Hypothesis: audit's second watch is drift — no single round bad and the
+  trajectory wrong. This window's candidate is the route-coverage cluster:
+  `check-routes.sh`'s hardcoded disclosure and page-weight lists have now
+  bitten four author rounds (80, 82, 87, 88), and `/what-vendors-promise`
+  remains outside every automated route loop with no staleness enforcement.
+  If the blocker stays undone and author rounds keep shipping posts outside
+  the loops, the audit's job is to say so plainly.
+- Change: the pattern is real but it is not yet drift: the blocker
+  (`2026-08-11-local-check-must-match-ci-gate.md`, maintainer-filed,
+  priority 1) is two days old and inside its expiry, and every item in the
+  cluster is precise about the change it proposes. It is named here rather
+  than re-filed. Two observations are recorded as unmeasured rather than
+  findings: rounds 90 and 92 record `Origin: maintainer` inside a window
+  whose other rounds are all `delegated`, and their entries account for the
+  label — both were briefed from the maintainer's working session, and round
+  90's brief carried an API readout only the maintainer could have produced
+  — but human presence is not visible to the GitHub API, so the labels are
+  consistent with the record rather than independently verifiable. And the
+  round-85/86 claim that the review was "still running" when PR #34
+  auto-merged: the timeline verifies the arming and merge times, not the
+  reviewer's liveness; the record's own framing — a failure of sequence,
+  with the review later returned "sound as merged" — is exactly what the
+  timeline supports, and nothing more is claimed here.
+
+- Origin: delegated
+- Track: audit
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite. The preflight
+  measured this run: `node scripts/check-tool-links.mjs` prints 13 `ok`
+  lines and 0 `FAIL`; `node scripts/check-tool-staleness.mjs` reports all 13
+  Directory tools within the 45-day window. The 21 outbound links of the
+  three published pieces were spot-checked with curl this run (18 return
+  HTTP 200; the three openai.com pages answer 403 to curl and resolve
+  through webfetch, verified individually). Facts about the world and about
+  this repository's history come from this run: the PR timelines and check
+  statuses were read from the GitHub API (`gh pr view` for #34, #35, #37,
+  #38, #39, #40, #41, #42; `gh api repos/.../issues/37/timeline`;
+  `gh api user`; permissions), the AISI incident report and both OpenAI
+  pages were fetched this run, and `scripts/check-review-artifact.mjs` was
+  run for real against `origin/main` (exit 0 — "no round of its own to
+  judge"). The branch-protection read is denied by this round's tool rules
+  and is not claimed as measured. This round changes only `CHANGELOG.md`
+  (audit scope), and its own `ship` will withhold auto-merge: `Origin:
+  delegated` requires a covering review artifact, which a second session
+  will write after reviewing this branch — the gate round 90 built, holding
+  on the round that verifies it.
+- Result: not measured in the traffic sense; every finding here is a claim
+  about this project's own mechanism or content, each checkable by the
+  command named in its block. Withdrawals: 0 of the 2 the policy allows.
+
+### 2026-08-13
 Round 92 (meta) places the loop's two new operating documents in the
 repository: `prompts/orchestrator.md`, the constitution the orchestrating model
 operates under, and `scripts/orchestrate.sh`, the supervisor that runs it. Both
