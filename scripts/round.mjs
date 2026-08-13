@@ -536,7 +536,32 @@ async function ship() {
   }
 
   const origin = entry && entry.declaredOrigin ? entry.origin : "";
-  if (originAllowsAutomerge(entry)) {
+
+  // A delegated round claims an orchestrating model reviewed it before merge.
+  // That claim is only true if a covering review artifact exists. The
+  // review-artifact CI job is a visible check, not a required one — it is not
+  // in the branch-protection required list — so GitHub's auto-merge would
+  // ignore it. The gate is here, in arming, which is the one place this loop
+  // controls the merge: `ship` runs the same checker CI runs
+  // (scripts/check-review-artifact.mjs — the same rule, no second
+  // implementation, no second parser) and refuses to arm a delegated round
+  // unless a file at docket/reviews/<sha>.md approves and covers the merged
+  // tree.
+  let shouldArm = originAllowsAutomerge(entry);
+  let withheldReason = "";
+  if (origin === "delegated") {
+    const artifact = tryRun("node", ["scripts/check-review-artifact.mjs", "origin/main"]);
+    if (!artifact.ok) {
+      withheldReason =
+        "Origin 'delegated' has no covering approve review artifact — ship ran the same " +
+        "check CI runs and it failed; the output above says why";
+      console.log(artifact.out.trim());
+    } else {
+      shouldArm = true;
+    }
+  }
+
+  if (shouldArm) {
     // Requested, never performed. A run that polls for green and merges itself
     // is both applicant and judge, and can merge over a failing check.
     const auto = tryRun("gh", ["pr", "merge", "--auto", "--squash"]);
@@ -555,7 +580,9 @@ async function ship() {
       console.log("          gh pr merge --auto --squash");
       process.exit(1);
     }
-    ok(`auto-merge withheld — Origin '${origin}' means this round was reviewed before merge`);
+    bad(
+      `auto-merge withheld — ${withheldReason || `Origin '${origin}' means this round was reviewed before merge`}`
+    );
     console.log("\n  The pull request is open and waits for that review. When the review");
     console.log("  is done, arm the merge yourself:");
     console.log(`    gh pr merge --auto --squash ${prNumber || "<N>"}`);

@@ -14,7 +14,7 @@
 // delivered. A gate that only matters when the work is bad is not a gate; it
 // has to hold for every round carrying an Origin that promises a review.
 //
-// So auto-merge is armed only for Origins whose published meaning permits the
+// So auto-merge is armed for the Origins whose published meaning permits the
 // merge to happen with nothing having read the work:
 //
 //   unsupervised — "scheduled, merged itself, nobody read it first". The value
@@ -29,11 +29,21 @@
 //                  typing". The claim is who directed the work, not that
 //                  anyone read the result before merge; auto-merge does not
 //                  falsify it. Allowed.
-//   delegated    — "the orchestrating model chose, briefed, reviewed and
-//                  merged it". A review is asserted as part of the merge
-//                  sequence, and auto-merge can perform the merge first.
-//                  Withheld: the pull request opens and waits for the review,
-//                  then a human arms the merge by hand.
+//
+// `delegated` is NOT here. Its published meaning is "the orchestrating model
+// chose, briefed, reviewed and merged it" — a performed review, which
+// auto-merge can beat. Round 85 was that failure: it declared `Origin:
+// delegated` and auto-merged while its review session was still running. It
+// was withheld entirely until the review had a shape that can be checked: a
+// file in `docket/reviews/` that approves and covers the merged tree. Now
+// `ship` arms a delegated round only when that artifact exists, by running
+// `scripts/check-review-artifact.mjs` — the same check CI runs — and refuses
+// to arm when it does not, saying why. The gate lives in the arming, not in
+// CI: the `review-artifact` job in `.github/workflows/pr-checks.yml` is a
+// *visible* check, not a required one (the required list is `build-and-audit`
+// and `human-owned-paths`), so GitHub's auto-merge would ignore it. Until the
+// maintainer promotes it to a required check — a settings change, see the
+// docket item — this arming gate is the only thing that holds.
 //
 // A round that declares no Origin, or one the parser cannot read, is withheld
 // too (fail closed): `ship` runs after the entry is written, so this is
@@ -46,7 +56,9 @@
 // app/lib/build-log.js, and `ship` reads the Origin through it; a second
 // parser that could disagree with the first is the bug this repository keeps
 // shipping. This module only decides, from the fields that parser already
-// extracted.
+// extracted. It also does not implement the review-artifact rule; that is
+// scripts/check-review-artifact.mjs, and `ship` runs it. A second
+// implementation of the rule is the same bug in another hat.
 export const AUTOMERGE_ORIGINS = new Set([
   "unsupervised",
   "supervised",

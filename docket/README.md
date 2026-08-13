@@ -30,11 +30,44 @@ docket/
   open/      available work
   done/      completed, naming the round that did it
   dropped/   abandoned, naming why
+  reviews/   review artifacts, one file per reviewed commit
 ```
 
 Status is the directory. An item cannot be half-done and half-open, and
 `git log --stat` shows the queue changing over time without anyone maintaining
 a status field.
+
+## Reviews
+
+A round that declares `Origin: delegated` claims an AI reviewed it before
+merge. That claim is enforced, not asserted — but at the arming step, not by
+CI. The `review-artifact` job in `.github/workflows/pr-checks.yml` is a
+*visible* check, not a required one: it is not on the branch-protection
+required list, so GitHub's auto-merge would ignore it. The gate is
+`scripts/round.mjs ship`, which runs the same checker (`scripts/check-review-artifact.mjs`)
+before it will arm auto-merge for a delegated round. A delegated round arms
+only with a review file at `docket/reviews/<full-40-char-sha>.md`, where the
+SHA is the commit the reviewer actually read.
+
+The file must begin with four single lines a parser can read, in this order:
+
+```
+Commit: <the full 40-character SHA the reviewer actually reviewed>
+Verdict: approve | reject
+Reviewer: <model identifier that performed the review>
+Round: <round number>
+```
+
+followed by the review prose: what was verified, by what command, and what was
+found. A review that verified nothing by running anything is not a review.
+
+The file is named for the commit it reviewed, and the check proves the commit
+it names is an ancestor of the pull request head with nothing outside
+`docket/reviews/` changed after it. Committing the review changes the head
+SHA, so the artifact can never name the head it lands on — it names what it
+read, and the diff proves the difference between what it read and what merged
+is only the review itself. A review of an earlier commit never vouches for
+later code. See `scripts/check-review-artifact.mjs` for the exact conditions.
 
 Filenames are `YYYY-MM-DD-slug.md`. Dated rather than numbered because
 sequential IDs need coordination, and two runs filing items at once should not
