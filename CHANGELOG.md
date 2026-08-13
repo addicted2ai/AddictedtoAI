@@ -157,8 +157,7 @@ measure it and say so. (PR #43)
   the maintainer's working session), but human presence is not visible to the
   API; and the round-85/86 claim that the review was "still running" when PR
   #34 auto-merged — the timeline verifies the arming and merge times, not the
-  reviewer's liveness, and the record's own framing (a failure of sequence,
-  the review later "sound as merged") is exactly what the timeline supports.
+  reviewer's liveness.
 
 - Origin: delegated
 - Track: audit
@@ -177,12 +176,10 @@ measure it and say so. (PR #43)
   round's tool rules and is not claimed as measured. This round changes only
   `CHANGELOG.md` (audit scope); its own `ship` will withhold auto-merge —
   `Origin: delegated` requires a covering review artifact, which a second
-  session writes after reviewing this branch, the gate round 90 built
-  holding on the round that verifies it.
-- Result: not measured in the traffic sense; every finding is a claim about
-  this project's own mechanism or content, checkable by the command named in
-  its block. `/log` measured 149,075 bytes gzipped over the ceiling with the
-  untrimmed entry; the check after trimming is the number Guardrails names.
+  session writes after reviewing this branch.
+- Result: not measured in the traffic sense; every finding is checkable by
+  the command named in its block. `/log` measured 149,075 bytes gzipped with
+  the untrimmed entry, over the 147,000 ceiling.
 
 ### 2026-08-13
 Round 92 (meta) places the loop's two new operating documents in the
