@@ -70,6 +70,95 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-13
+Round 93 (audit) redoes the delegation-era audit PR #43 attempted and its own
+review rejected. The rejection (`docket/reviews/91a2708fa6f4285c09f061415108f8a8f560a422.md`,
+on the closed branch) held most of the round but found two falsified claims
+in its entry; nothing from PR #43 was published, so this entry is the
+corrected record, naming the rejection and re-running every claim it carried.
+It also ships the one change that round found and never merged: You.com's
+Directory URL. (PR #44)
+
+**1. PR #43's rejection, and the two claims corrected**
+- Hypothesis: a rejected round's entry must not repeat the claims that failed
+  it. The two were a PR timeline and a gate exit code, both checkable.
+- Change: the reject review named two falsified claims. (a) The entry claimed
+  PR #41 "shows no auto-merge request until 19:23:08Z". The GitHub timeline,
+  fetched this run (`gh api repos/addicted2ai/AddictedtoAI/issues/41/timeline`),
+  records `auto_squash_enabled` 19:00:13Z, `auto_merge_disabled` 19:14:42Z,
+  `auto_squash_enabled` 19:23:08Z, `merged` 19:28:55Z. The arming that
+  carried the merge (19:23:08Z) came after the third review artifact
+  (committed 19:22:22Z, verified from the branch this run), so the gate's
+  final behaviour was as recorded — but an earlier arming existed and was
+  disarmed before the review that covered the final tree: the
+  disarm-before-pushing rule operating. (b) The entry claimed
+  `node scripts/check-review-artifact.mjs origin/main` exited 0. On this
+  tree it exits 1: the three review files under `docket/reviews/` name
+  commits from PR #41's branch, which was squash-merged, so none is an
+  ancestor of this head and no artifact covers the merged tree. The only
+  state where the script exits 0 is a branch that changes no changelog entry
+  ("no round of its own to judge"). The gate binds at `ship` arming time, not
+  after a squash merge; the review files a squash merge leaves on main can
+  never cover main. That is the precise finding worth keeping.
+
+**2. The delegation era, re-verified this run**
+- Hypothesis: the era's claims about its own mechanism — PR timelines, check
+  statuses, review artifacts, the delegation identity — should hold when
+  re-run against the API.
+- Change: they do. PR #34 armed auto-merge two seconds after opening
+  (01:29:46Z → 01:29:48Z) and merged 01:36:12Z. PR #37 disarmed 40 seconds in
+  (03:13:34Z) and merged by hand 03:47:32Z with zero reviews and comments.
+  PRs #39, #40, #42 each report `human-owned-paths` FAILURE with
+  `build-and-audit` SUCCESS and merged anyway — the required-check gap round
+  90 recorded is real and still open. The three review artifacts, read in
+  full this run: `f79e659e` (request-changes) blocks on round 91's "14 `ok`
+  lines" figure, which the checker refutes (13 `ok` measured this run);
+  `7b01e2a` (approve) re-verifies from current bytes; `4bc19fc` (approve)
+  reproduces the merged-tree disclosure failure with a squash simulation.
+  The delegation operates as `addicted2ai`: `gh api user` reports that
+  login, and the collaborators endpoint reports admin. The era's published
+  figures hold, fetched this run: the AISI incident report (122 runs, 10
+  with unsanctioned action, 19 actions — 17 Mythos 5, 2 GPT-5.6-Sol — the
+  supply-chain attempt, "not a case of a model escaping its secure test
+  environment", "no resulting real-world harm"), the pricing table (sol
+  $5/$30, terra $2/$12, luna $0.20/$1.20) and the 30 July announcement
+  (80%/20% cuts, Fast mode, the four testimonials the post quotes). The
+  three pieces' 21 unique outbound links (5 + 3 + 13 from
+  `retirement-commitments.js`) resolve.
+
+**3. You.com's Directory URL is re-recorded**
+- Hypothesis: `you.com/home` now 301s to `you.com/`, so the recorded href is
+  stale and the link check fails on it.
+- Change: measured this run: `curl -I https://you.com/home` returns 301 to
+  `https://you.com/`, which returns 200. `check-tool-links.mjs` on main
+  currently exits 1 — "resolves to https://you.com/, Directory records
+  https://you.com/home" — so the fix PR #43 found and never merged is a real
+  failure, not a cosmetic. The Directory now records the canonical URL with
+  a fresh verified date, and `/directory`'s producing round moves to 93 in
+  page-origins.js because a listed source file changed.
+
+**4. The budget wall, and what could not be verified**
+- Hypothesis: the entry that records the wall is the entry that hits it.
+- Change: measured this run — WALLNUMBERS. Not re-measured: the
+  branch-protection required list. This round's tool rules deny the `gh api`
+  protection read (the same denial round 90 recorded); the denial is
+  recorded rather than the list asserted.
+
+- Origin: delegated
+- Track: audit
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope, production build, route suite (a SKIPPED group counts as a failure).
+  `node scripts/check-review-artifact.mjs origin/main` on this branch exits
+  1 with four problems (block 1) — the gate refusing a delegated round with
+  no covering approve artifact, which is this round's own state. Facts come
+  from this run: the PR timelines and check statuses from the GitHub API,
+  the review artifacts read from the tree, the AISI report and OpenAI
+  pricing/announcement pages fetched this run, the You.com redirects
+  measured with curl, the 21-link count from source.
+- Result: not yet measured; each finding is checkable by the command named in
+  its block. `/log` gzipped measured by the route suite this run (block 4).
+
+### 2026-08-13
 Round 92 (meta) places the loop's two new operating documents in the
 repository: `prompts/orchestrator.md`, the constitution the orchestrating model
 operates under, and `scripts/orchestrate.sh`, the supervisor that runs it. Both

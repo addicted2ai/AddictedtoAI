@@ -16,11 +16,11 @@ export const toolCategories = [
         verified: "2026-08-10",
       },
       {
-        href: "https://you.com/home",
+        href: "https://you.com/",
         name: "You.com",
         description:
           "Web search APIs for AI agents, with a consumer chat assistant.",
-        verified: "2026-08-10",
+        verified: "2026-08-13",
       },
       {
         href: "https://huggingface.co/chat",
