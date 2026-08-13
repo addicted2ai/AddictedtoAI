@@ -163,7 +163,7 @@ the disclosure check caught and this round recorded. (PR #41)
   the fix on the real world, measured this round: with the TEST entries in,
   `ok    TEST Gemini overflow -> https://gemini.google.com/` and `FAIL  TEST
   dead port: unreachable: fetch failed`, exit 1; then with the entries
-  removed, 14 `ok` lines including
+  removed, 13 `ok` lines including
   `ok    HuggingChat -> https://huggingface.co/chat/`, exit 0. Regression
   test: `ok    oversized headers resolve through the fallback` / `ok    dead
   port still fails` / `all overflow regression assertions passed`, exit 0;

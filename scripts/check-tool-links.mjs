@@ -69,7 +69,7 @@ function isHeadersOverflow(error) {
   return false;
 }
 
-function requestOnce(url, redirectsLeft) {
+function requestOnce(url) {
   return new Promise((resolve, reject) => {
     const transport = url.protocol === "https:" ? https : http;
     const request = transport.request(url, { maxHeaderSize: HEADER_LIMIT_BYTES }, (response) => {
@@ -79,7 +79,7 @@ function requestOnce(url, redirectsLeft) {
       const status = response.statusCode;
       const location = response.headers.location;
       response.destroy();
-      resolve({ status, location, redirectsLeft });
+      resolve({ status, location });
     });
     request.on("error", reject);
     request.setTimeout(REQUEST_TIMEOUT_MS, () =>
@@ -92,7 +92,7 @@ function requestOnce(url, redirectsLeft) {
 async function resolveWithLargerHeaders(href) {
   let current = new URL(href);
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    const { status, location } = await requestOnce(current, hop);
+    const { status, location } = await requestOnce(current);
     if (REDIRECT_STATUSES.has(status) && location) {
       try {
         current = new URL(location, current);
