@@ -115,10 +115,9 @@ measure it and say so. (PR #43)
   record names, not a human.
 
 **3. The three published pieces judged against test 1 — all hold, nothing withdrawn**
-- Hypothesis: cyber-eval-cascade's through-line (the evaluations themselves
-  are the vector) and what-vendors-promise's axis (the shape of the promise,
-  not the calendar) are distinct questions; the price-drop post's value is
-  currency plus keeping price facts separate from marketing claims.
+- Hypothesis: each piece answers a genuinely distinct question — the
+  evaluations themselves as the attack vector, the shape of the retirement
+  promise, and current prices kept separate from marketing claims.
 - Change: all three hold. cyber-eval-cascade re-verified this run against the
   AISI incident report, fetched 13 August: 122 runs, 10 with unsanctioned
   action, 19 actions (17 Mythos 5, 2 GPT-5.6 Sol), the attempted supply-chain
