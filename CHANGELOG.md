@@ -82,7 +82,9 @@ first and finished it. The fix re-tests only that one cause with a raised
 header limit; every other failure still reports unreachable, and the safe
 direction is preserved — if undici renames the error code, the cause stops
 matching and the URL fails loudly again. A loopback regression test now pins
-both directions of the fallback without reaching the public internet. (PR #41)
+both directions of the fallback without reaching the public internet. The
+round's own change to the Directory moved `/directory`'s producing round, which
+the disclosure check caught and this round recorded. (PR #41)
 
 **1. The checker stops mistaking undici's header cap for a dead link**
 - Hypothesis: the previous session's diagnosis was that the single
@@ -138,24 +140,38 @@ both directions of the fallback without reaching the public internet. (PR #41)
   the checker is spawned (not `spawnSync`) because a synchronous child blocks
   the event loop that accepts the loopback connection, and the test deadlocks.
 
+**4. `/directory`'s producing round moves to 91, found by the disclosure check**
+- Hypothesis: the round's removal of the TEST entries touched
+  `app/lib/tool-categories.js`, which is a listed source file of `/directory`,
+  so the page's producing round — the round whose Origin the disclosure badge
+  states — is no longer round 67, and `scripts/check-ai-disclosure.mjs` exists
+  exactly to catch that kind of stale mapping. The round check should name the
+  route and the fix is one line in the map plus the record of why.
+- Change: `app/lib/page-origins.js` maps `/directory` to round 91, with both
+  comment histories updated. The check's own failure text was the proof:
+  `FAIL  /directory: mapped to round 67 (author), but its files were last
+  touched by "build: remove TEST scaffolding entries from tool-categories.js"
+  (build) — update PRODUCING_ROUNDS`, and after the fix the route suite passed
+  with no group skipped.
+
 - Origin: delegated
 - Track: build
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
-  track scope, a production build and the full route suite, no group skipped
-  (to be run before push; see Result). Proof of the fix on the real world,
-  measured this round: `ok    TEST Gemini overflow -> https://gemini.google.com/`
-  and `FAIL  TEST dead port: unreachable: fetch failed` with the TEST entries
-  in, exit 1; then with the entries removed,
-  `ok    HuggingChat -> https://huggingface.co/chat/` and 14 `ok` lines total,
-  exit 0. Regression test: `ok    oversized headers resolve through the
-  fallback` / `ok    dead port still fails` / `all overflow regression
-  assertions passed`, exit 0; and, with the fallback disabled, `FAIL  oversized
-  headers should resolve; exit 1`, exit 1. The `gemini.google.com` overflow URL
-  itself was re-fetched with `fetch` in isolation this round and threw
-  `TypeError  fetch failed` with `cause: HeadersOverflowError
-  UND_ERR_HEADERS_OVERFLOW`, confirming the trigger is undici's header cap
-  and not the site.
+  track scope, a production build and the full route suite, no group skipped;
+  it passed on the final branch (`ok    all route checks passed`). Proof of
+  the fix on the real world, measured this round: with the TEST entries in,
+  `ok    TEST Gemini overflow -> https://gemini.google.com/` and `FAIL  TEST
+  dead port: unreachable: fetch failed`, exit 1; then with the entries
+  removed, 14 `ok` lines including
+  `ok    HuggingChat -> https://huggingface.co/chat/`, exit 0. Regression
+  test: `ok    oversized headers resolve through the fallback` / `ok    dead
+  port still fails` / `all overflow regression assertions passed`, exit 0;
+  and, with the fallback disabled, `FAIL  oversized headers should resolve;
+  exit 1`, exit 1. The `gemini.google.com` overflow URL itself was re-fetched
+  with `fetch` in isolation this round and threw `TypeError  fetch failed`
+  with `cause: HeadersOverflowError UND_ERR_HEADERS_OVERFLOW`, confirming the
+  trigger is undici's header cap and not the site.
 - Result: not yet measured. The observable success is the checker reporting
   gemini.google.com as resolving, which any later round's run of
   `scripts/check-tool-links.mjs` re-verifies; a regression would be caught by
