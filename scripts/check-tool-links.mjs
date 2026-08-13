@@ -21,6 +21,8 @@
 // the page truly resolves to, not a reason to widen the normalisation.
 
 import fs from "fs";
+import http from "http";
+import https from "https";
 import path from "path";
 
 const root = process.cwd();
@@ -44,6 +46,68 @@ function normalize(url) {
   }
 }
 
+// fetch (undici) caps response headers at 16 KiB and aborts the whole request
+// with UND_ERR_HEADERS_OVERFLOW when a site exceeds that. gemini.google.com
+// sends ~24 KiB of CSP and cookie headers and is otherwise healthy; the error
+// is a checker defect, not a dead link. Core http/https lets the cap be raised
+// per request, so on that ONE cause we re-test the same URL with headroom and
+// follow redirects ourselves. Any other fetch failure keeps reporting as
+// unreachable: a fallback that ran on every error would be a checker that
+// swallows failures. If undici ever renames the code, the cause stops matching
+// and the URL fails loudly again -- the safe direction.
+const HEADER_LIMIT_BYTES = 64 * 1024;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+const MAX_REDIRECTS = 10;
+const REQUEST_TIMEOUT_MS = 15000;
+
+function isHeadersOverflow(error) {
+  // The cause chain shape has differed across Node versions; walk it rather
+  // than assuming the undici error is the direct cause.
+  for (let current = error; current; current = current.cause) {
+    if (current.code === "UND_ERR_HEADERS_OVERFLOW") return true;
+  }
+  return false;
+}
+
+function requestOnce(url, redirectsLeft) {
+  return new Promise((resolve, reject) => {
+    const transport = url.protocol === "https:" ? https : http;
+    const request = transport.request(url, { maxHeaderSize: HEADER_LIMIT_BYTES }, (response) => {
+      // Headers are all this check needs; the body is discarded and the
+      // connection closed as soon as they arrive.
+      response.on("error", () => {});
+      const status = response.statusCode;
+      const location = response.headers.location;
+      response.destroy();
+      resolve({ status, location, redirectsLeft });
+    });
+    request.on("error", reject);
+    request.setTimeout(REQUEST_TIMEOUT_MS, () =>
+      request.destroy(new Error("request timed out"))
+    );
+    request.end();
+  });
+}
+
+async function resolveWithLargerHeaders(href) {
+  let current = new URL(href);
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+    const { status, location } = await requestOnce(current, hop);
+    if (REDIRECT_STATUSES.has(status) && location) {
+      try {
+        current = new URL(location, current);
+      } catch {
+        // A Location that does not parse: fetch treats the redirect as
+        // final, so do the same and report what actually responded.
+        return current.href;
+      }
+      continue;
+    }
+    return current.href;
+  }
+  throw new Error(`too many redirects (more than ${MAX_REDIRECTS})`);
+}
+
 const results = [];
 for (const block of blocks) {
   const name = field(block, "name") || field(block, "href");
@@ -63,8 +127,21 @@ for (const block of blocks) {
     clearTimeout(timer);
     finalUrl = response.url;
   } catch (error) {
-    results.push({ name, ok: false, problem: `unreachable: ${error.message}` });
-    continue;
+    if (isHeadersOverflow(error)) {
+      try {
+        finalUrl = await resolveWithLargerHeaders(href);
+      } catch (fallbackError) {
+        results.push({
+          name,
+          ok: false,
+          problem: `unreachable: ${fallbackError.message}`,
+        });
+        continue;
+      }
+    } else {
+      results.push({ name, ok: false, problem: `unreachable: ${error.message}` });
+      continue;
+    }
   }
   const recorded = normalize(href);
   const resolved = normalize(finalUrl);

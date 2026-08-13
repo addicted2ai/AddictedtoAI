@@ -29,6 +29,18 @@ export const toolCategories = [
           "Chat with open models via Hugging Face's Omni router, metered by inference credits.",
         verified: "2026-08-10",
       },
+      {
+        href: "https://gemini.google.com",
+        name: "TEST Gemini overflow",
+        description: "TEST entry, remove before shipping.",
+        verified: "2026-08-13",
+      },
+      {
+        href: "http://127.0.0.1:9/",
+        name: "TEST dead port",
+        description: "TEST entry, remove before shipping.",
+        verified: "2026-08-13",
+      },
     ],
   },
   {
