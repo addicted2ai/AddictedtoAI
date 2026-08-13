@@ -164,8 +164,8 @@ crossed the page-weight ceiling on this entry, measured and recorded here.
   from the GitHub API (`gh pr view` for #34-#42; the #37 timeline events;
   `gh api user`; permissions), the AISI report and both OpenAI pages fetched
   this run, and `scripts/check-review-artifact.mjs` run against
-  `origin/main` (exit 0). This round changes only
-  `CHANGELOG.md` (audit scope); its own `ship` will withhold auto-merge —
+  `origin/main` (exit 0). This round changes `CHANGELOG.md` and one docket
+  item, both in audit scope; its own `ship` will withhold auto-merge —
   `Origin: delegated` requires a covering review artifact, which a second
   session writes after reviewing this branch.
 - Result: not measured; each finding is checkable by the command named in
