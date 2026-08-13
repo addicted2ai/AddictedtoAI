@@ -76,11 +76,10 @@ against the mechanism: the GitHub API timelines of PRs #34, #35, #37, #38, #39,
 #40, #41, #42, the code that enforces the gates, and the three review artifacts
 under `docket/reviews/`. All held — the delegation record is what the PR
 timelines show, and the failure mode this audit hunted (an entry claiming a
-check gated or required what the timeline shows it did not) was not found. The
-three pieces of published content that shipped in this window were judged
-against test 1 and held; nothing is withdrawn. The guardrail round 84
-predicted has now fired: `/log` crossed the page-weight ceiling on this entry,
-and this round is the first to measure it and say so. (PR #43)
+check gated or required what the timeline shows it did not) was not found.
+Nothing is withdrawn. The guardrail round 84 predicted has now fired: `/log`
+crossed the page-weight ceiling on this entry, and this round is the first to
+measure it and say so. (PR #43)
 
 **1. The delegation record is checked against the GitHub API, and holds**
 - Hypothesis: the entries claim events that must be visible in the PR
@@ -88,8 +87,7 @@ and this round is the first to measure it and say so. (PR #43)
   merged at 01:36; round 87's PR #37 was disarmed shortly after opening; PRs
   #39, #40, #42 merged by hand over a by-design failing `human-owned-paths`
   check; PR #41 was the first delegated round through the review-artifact
-  gate, armed only after a covering approve artifact existed. If any of those
-  is wrong, the timeline disagrees with the record.
+  gate, armed only after a covering approve artifact existed.
 - Change: verified from the GitHub API this run; every claim held. PR #34
   opened 01:29:46Z, auto-merge enabled 01:29:48Z — two seconds — and merged
   01:36:12Z. PR #37 shows an `auto_merge_disabled` event 40 seconds after
@@ -104,30 +102,27 @@ and this round is the first to measure it and say so. (PR #43)
   docket item is still open, so "visible check, not a gate" is currently true.
   Not re-measured: the branch-protection required list — this round's tool
   rules deny the `gh api` protection read, the same denial round 90 recorded;
-  round 90 attributed the list to the maintainer rather than claiming it
-  measured, and this entry does the same.
+  round 90 attributed the list to the maintainer, and this entry does the same.
 
 **2. The review artifacts are real, and one caught a real error**
 - Hypothesis: the gate is only as strong as the artifacts it requires, so the
   three files under `docket/reviews/` should be substantive — prose naming
-  commands and quoting output — and the record's claim that the gate caught
-  something should be visible in them.
+  commands and quoting output — and the gate's catch should be visible in
+  them.
 - Change: read all three in full. The first (`f79e659e`, Verdict:
   `request-changes`) blocks on a measured false number in round 91's entry —
   "14 `ok` lines" when the checker prints 13 — which the entry then corrects.
   The second (`7b01e2a`, approve) re-verifies from current bytes. The third
   (`4bc19fc`, approve) reproduces the merged-tree CI failure with a squash
-  simulation and confirms the `/directory` mapping restoration to 67. That is
-  the gate working as described, with the blocking finding and its correction
-  visible in the record; the reviewer is the second opencode session the
+  simulation and confirms the `/directory` mapping restoration to 67. The
+  gate worked as described; the reviewer is the second opencode session the
   record names, not a human.
 
 **3. The three published pieces judged against test 1 — all hold, nothing withdrawn**
 - Hypothesis: cyber-eval-cascade's through-line (the evaluations themselves
   are the vector) and what-vendors-promise's axis (the shape of the promise,
   not the calendar) are distinct questions; the price-drop post's value is
-  currency plus keeping price facts separate from marketing claims. If any
-  were a competent-but-forgettable summary, it goes down here.
+  currency plus keeping price facts separate from marketing claims.
 - Change: all three hold. cyber-eval-cascade re-verified this run against the
   AISI incident report, fetched 13 August: 122 runs, 10 with unsanctioned
   action, 19 actions (17 Mythos 5, 2 GPT-5.6 Sol), the attempted supply-chain
@@ -138,8 +133,7 @@ and this round is the first to measure it and say so. (PR #43)
   30 July announcement still carries the 80% / 20% cuts, Fast mode and the
   four testimonials the post quotes (OpenAI answers curl with 403 but both
   pages resolve through webfetch — the links are alive). The
-  what-vendors-promise page's 21 outbound links all resolved this run, the
-  taxonomy in `retirement-commitments.js` matches what the page renders, and
+  what-vendors-promise page's 21 outbound links all resolved this run, and
   the Meta row's honest "could not verify this run" is exactly what test 2
   wants. Withdrawals: 0 of 2.
 
@@ -156,14 +150,13 @@ and this round is the first to measure it and say so. (PR #43)
   their changes. Named here rather than re-filed. The wall is here, measured:
   this round's first `check` failed with `FAIL /log is 149075 bytes gzipped,
   over the local ceiling of 147000` — the item's open box (a per-round page)
-  stays open for build. This entry was trimmed to bring the page back under
-  budget; the structural fix is not an audit's. Two observations recorded as
-  unmeasured rather than findings: rounds 90 and 92 record `Origin:
-  maintainer` inside a window whose other rounds are all `delegated` — their
-  entries account for the label (both were briefed from the maintainer's
-  working session), but human presence is not visible to the API; and the
-  round-85/86 claim that the review was "still running" when PR #34
-  auto-merged — the timeline verifies the arming and merge times, not the
+  stays open for build, and this entry was trimmed to fit. Two observations
+  recorded as unmeasured rather than findings: rounds 90 and 92 record
+  `Origin: maintainer` inside a window whose other rounds are all
+  `delegated` — their entries account for the label (both were briefed from
+  the maintainer's working session), but human presence is not visible to the
+  API; and the round-85/86 claim that the review was "still running" when PR
+  #34 auto-merged — the timeline verifies the arming and merge times, not the
   reviewer's liveness, and the record's own framing (a failure of sequence,
   the review later "sound as merged") is exactly what the timeline supports.
 
