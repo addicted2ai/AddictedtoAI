@@ -70,6 +70,100 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-13
+Round 92 (meta) places the loop's two new operating documents in the
+repository: `prompts/orchestrator.md`, the constitution the orchestrating model
+operates under, and `scripts/orchestrate.sh`, the supervisor that runs it. Both
+were written by the orchestrating model in the maintainer's working session and
+are placed verbatim, with one factual correction to a comment in the supervisor
+(change 4). The arrangement is recorded honestly: a round reviewed by a second
+deepseek session is a weaker check than one read by a stronger model, and the
+supervisor is not yet running — at the time of this entry the file is being
+added, nothing more. This pull request touches `prompts/`, fails
+`human-owned-paths` by design, and waits for a by-hand merge.
+
+**1. The orchestrator's constitution is placed in the repository**
+- Hypothesis: the maintainer delegated day-to-day operation of the loop to an
+  orchestrating model — dispatch, review, merging under the gates — and the
+  rules that model operates under were written in a working session but lived
+  only there. A loop whose operator is invoked fresh each time needs its
+  constitution on disk, where every invocation reads it, or the rules and the
+  lessons sessions have already paid for drift back into memory.
+- Change: placed `prompts/orchestrator.md` verbatim. It records the hard lines
+  from the maintainer (nothing that costs money, no credentials, no repository
+  administration, no destroying history, nothing identifying the maintainer,
+  no social media); the load-bearing things it must not change (the guards
+  `human-owned-paths` and `review-artifact`, `scripts/automerge-origin.mjs`,
+  `scripts/check-track-scope.mjs`, the append-only record, positional round
+  numbering, the Origin taxonomy, the site's discipline); the stop conditions
+  (write `docket/HOLD.md`); and the operational lessons that have already cost
+  sessions — the `--variant max` rule and its silent default, the `"$(cat
+  file)"`-alone launch rule that silently killed four launches, the 11 August
+  hang pattern, the 13 August credential-hunt, and the `.github/workflows/`
+  push restriction. It also names the chosen dispatch mechanism and why
+  (change 3).
+
+**2. The supervisor is placed, stateless, and not yet running**
+- Hypothesis: four OpenCode sessions froze mid-round on 11 August, twice at
+  the same step, so a long-lived session is the wrong place to keep the loop's
+  state; the supervisor should keep none and rebuild it from the repository
+  each iteration. Liveness must be judged by the iteration log's mtime, not by
+  the process: the 13 August round hung at 10:49 with its process alive and
+  stayed that way for 94 minutes, because everything watching it waited for an
+  exit that never came.
+- Change: placed `scripts/orchestrate.sh`. It halts on a non-empty
+  `docket/HOLD.md` and after three consecutive failed iterations; kills an
+  iteration whose log is silent for 15 minutes and one past a 90-minute hard
+  ceiling; clears orphaned `next start` listeners on ports 3000, 3250, 3260
+  and 8101 before each iteration; and reads its constitution from
+  `ORCHESTRATE_PROMPT` so it can run against a staged copy before
+  `prompts/orchestrator.md` merges. The supervisor is **not yet running**:
+  at the time of this entry the file is being added, nothing more, and this
+  entry does not claim the loop operates under it.
+
+**3. Dispatch is the CLI, not the `task` tool, and the review is worth exactly what it is**
+- Hypothesis: both dispatch paths were measured on 13 August. Nested `opencode
+  run` from inside a session works and honours `--variant max`. The built-in
+  `task` subagent tool also works but accepts only `description`, `prompt` and
+  `subagent_type` — no parameter for model or reasoning effort — so every
+  subagent would silently run at its agent type's default. The CLI is used for
+  that reason, not because the task tool is unavailable.
+- Change: the constitution records the CLI as the only dispatch path. It also
+  records what the second-session review is worth: one deepseek session
+  reviewing another is a weaker check than a stronger model reading the diff.
+  It is used because it costs almost nothing and is far better than no review.
+  This is not an improvement in rigour over what it replaces, and the document
+  says so rather than presenting it as one.
+
+**4. One factual error corrected in the supervisor's comments**
+- Hypothesis: the supervisor's comment claimed port 8101 was the loopback
+  server used by `scripts/test-tool-links-overflow.mjs`. A claim about this
+  repository is checkable, so before shipping the file it was checked.
+- Change: measured against the committed test, which binds an OS-assigned port
+  (`server.listen(0, "127.0.0.1", ...)`) — it never uses 8101. The PR #41
+  review artifacts record what 8101 actually was: the port of the leftover
+  `overflow-server.mjs` scratch server the hung development session left
+  running from a temp directory (outside the repository). The comment now says
+  that, keeps the kill-list entry (a listener on 8101 is a leftover by
+  definition), and keeps the incident account — the spawnSync deadlock and the
+  94-minute hang — which stands as written. No other change was made to either
+  file.
+
+- Origin: maintainer
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope, a production build and the full route suite (a group reported
+  as SKIPPED counts as a failure). `bash -n scripts/orchestrate.sh` — syntax
+  ok. The 8101 claim was checked against the committed test and the PR #41
+  review artifacts before the correction. This pull request touches `prompts/`,
+  so the `human-owned-paths` required check fails **by design**; it waits for a
+  by-hand merge, and this round does not arm or perform that merge.
+- Result: not yet measured. The observable success is an iteration of
+  `scripts/orchestrate.sh` dispatching a round that ships under the gates;
+  since the supervisor is not yet running at the time of this entry, that
+  number does not exist yet.
+
+### 2026-08-13
 Round 91 (build) fixes one specific false failure in the Directory link check.
 The checker ran against the live site and reported every link resolving to its
 recorded URL, so the Directory is fine; what failed was the checker's own
