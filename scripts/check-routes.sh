@@ -68,6 +68,13 @@ check /log/archive 200 "text/html" '<form class="log-filter" role="search" aria-
 check /log/archive 200 "text/html" 'id="build-log-results" aria-labelledby="build-log-results-label"'
 check /log/early 200 "text/html" '<form class="log-filter" role="search" aria-label="Search the build log"'
 check /log/early 200 "text/html" 'id="build-log-results" aria-labelledby="build-log-results-label"'
+# The retirement calendar is data-driven: both halves of its promise must
+# render (upcoming and past), and a known row must survive the render.
+# "gpt-5.2-chat-latest" exists only as a data row, so it cannot be satisfied
+# by prose. The past table existing is the "shutdowns stay visible" promise.
+check /model-retirement-calendar 200 "text/html" 'data-retirement-table="upcoming"'
+check /model-retirement-calendar 200 "text/html" 'data-retirement-table="past"'
+check /model-retirement-calendar 200 "text/html" 'gpt-5.2-chat-latest'
 
 # lychee follows redirects and reports 200, so a Directory link that now
 # resolves somewhere else -- runwayml.com -> runway.com -- passes its check
@@ -101,7 +108,7 @@ node scripts/test-review-artifact.mjs || failures=$((failures + $?))
 # scripts/check-ai-disclosure.mjs separately verifies the producing-round map
 # against the build log and git history.
 echo
-for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter; do
+  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar; do
   body=$(curl -s "$BASE$route")
   case "$body" in
     *'data-ai-disclosure'*) echo "ok    $route carries the AI disclosure" ;;
@@ -139,7 +146,7 @@ else
   MARGIN=3000
   ceiling=$((budget - MARGIN))
   echo "      document budget $budget bytes; local ceiling $ceiling (margin $MARGIN)"
-  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter; do
+for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar; do
     bytes=$(curl -s -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}' "$BASE$route")
     if [ "$bytes" -gt "$ceiling" ]; then
       echo "FAIL  $route is $bytes bytes gzipped, over the local ceiling of $ceiling"

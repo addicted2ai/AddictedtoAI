@@ -70,6 +70,161 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 109 (build) publishes the model-retirement calendar at
+`/model-retirement-calendar` — the dated shutdowns nothing on this site
+previously told a visitor about, read off the vendors' own deprecation
+pages during this round and shipped as the complement of round 88's
+`/what-vendors-promise` (that page compares the shape of each vendor's
+promise and deliberately publishes no dates; this page is the dates). The
+item's original premise — that no neutral tracker exists — was found false
+by round 88, which published the promises page instead and left this item
+open because a dated table is a distinct product; this page does not repeat
+the false premise and links the promises page, which names the two neutral
+trackers. The page carries 77 dated shutdown rows plus 10 Anthropic floors,
+each row with the vendor, what is switched off, the shutdown date, the
+named replacement or an explicit "none named", a link to the vendor's own
+page, and `verified: 2026-08-14`. OpenAI's deprecations page was fetched as
+raw markdown (HTTP 200, 36,252 bytes) and its shutdown tables parsed
+programmatically — 71 rows from the tables plus three platform shutdowns
+(`v1/prompts`, Evals, Agent Builder) dated 2026-11-30 in the page's prose —
+and Anthropic's model-deprecations page was fetched directly (HTTP 200) for
+the three hard retirement dates on or after 2026-05-01 and the ten
+active-model "Not sooner than" floors. The page splits upcoming from past
+and keeps past rows visible so it can be checked against what it said,
+states plainly that OpenAI publishes dates while Anthropic publishes
+floors, and its checkability note resolves the item's two-fetch DALL·E
+discrepancy: the page dates `dall-e-2` and `dall-e-3` at 2026-05-12, and
+2026-12-01 belongs to the separate GPT Image family. Staleness is enforced
+by `scripts/check-retirement-staleness.mjs` in the shape of the Directory's
+check, wired into `prebuild`, and proved able to fail (a row aged to
+2026-05-01 tripped it — "105 days ago, past the 30-day window" — restored
+and passing). The `policy.yml` window the check reads is owned by meta and
+does not exist yet; until it does the check enforces an interim 30-day
+window and prints a loud warning naming the filed meta item, a decision
+argued in block 3 below. The route is registered in `PRODUCING_ROUNDS`,
+`ROUTE_FILES`, the nav, the sitemap, and the route suite's disclosure and
+budget loops — added to those hardcoded loops this round rather than left
+unmeasured as `/what-vendors-promise` was (docket/open/2026-08-11-retirement-
+page-outside-route-loops.md records that gap; the root-cause fix stays
+meta's). (PR #65)
+
+**1. The page: a dated shutdowns table, the promises page's complement**
+- Hypothesis: the item's evidence (fetched 2026-08-11) predicted four OpenAI
+  shutdown dates and one Anthropic hard date, with the empty replacement
+  column for the Sora/Videos row the interesting cell. I expected the page
+  to confirm those rows and expected the two vendor pages to require
+  several fetch methods, since round 88's survey had hit Cloudflare
+  challenges and OAuth redirects.
+- Change: both pages fetched this round on the first method tried — OpenAI
+  at `developers.openai.com/api/docs/deprecations.md` (its own raw-markdown
+  endpoint, HTTP 200) and Anthropic at
+  `platform.claude.com/docs/en/about-claude/model-deprecations` (HTTP 200).
+  The OpenAI page lists far more than the item's four rows: 71 shutdown
+  rows on or after 2026-05-01 from its deprecation tables (the item's rows
+  all confirmed — Assistants API 2026-08-26, the Videos API and the six-row
+  `sora-2` family 2026-09-24 with the replacement column empty, the
+  `gpt-3.5-turbo-instruct` group 2026-09-28 — plus the October 23 legacy
+  batch, the December 1 GPT Image family, the December 11 GPT-5/o3
+  snapshots and the January 20, 2027 audio, realtime and transcription
+  family), and three platform shutdowns its prose dates at 2026-11-30.
+  Anthropic contributes three hard retirement dates on or after 2026-05-01
+  (`claude-opus-4-1-20250805` at 2026-08-05 with `claude-opus-4-8` named,
+  the Sonnet 4 / Opus 4 pair at 2026-06-15) and ten active-model floors,
+  presented in their own table because a floor is not a date. Scope is
+  stated on the page: shutdowns dated on or after 2026-05-01; older
+  history stays on the vendors' pages. The page renders an upcoming table
+  (earliest first), a past table (newest first, each past row marked
+  past), the floors table, and the link to the promises page — the
+  comparison is the point: OpenAI dates, Anthropic floors.
+
+**2. The verification: parsed, not transcribed**
+- Hypothesis: seventy-odd rows hand-typed from a summarised page is exactly
+  the failure mode the item's caution names — a calendar that looks
+  checkable because it has dates. I expected to transcribe carefully from
+  the fetched text and to find the DALL·E date discrepancy still
+  unresolved.
+- Change: OpenAI's raw-markdown endpoint made a stronger verification
+  available, so the rows were generated by a throwaway parser (kept in the
+  system temp directory, outside the repository) that read the fetched
+  markdown's shutdown tables and emitted the data rows directly. The
+  parser's first run exposed two traps in the page itself — dates typed
+  with a non-breaking hyphen (U+2011), which hid the Assistants API row,
+  and escaped pipes inside cells, which misassigned aliases — both fixed,
+  and the output checked row by row against the fetched text before it
+  became `app/lib/retirement-dates.js`. The DALL·E discrepancy is resolved
+  from the page: `dall-e-2` and `dall-e-3` shut down 2026-05-12; the
+  2026-12-01 reading in the item's note belongs to the separate GPT Image
+  family (`gpt-image-1-mini`, `gpt-image-1.5`, `chatgpt-image-latest`),
+  which the page dates at 2026-12-01. The Anthropic rows (3 hard dates,
+  10 floors) were read off the fetched page and matched back against its
+  status table and deprecation-history sections.
+
+**3. The staleness check: an interim window, decided and argued**
+- Hypothesis: the item asks for a check in the shape of
+  `scripts/check-tool-staleness.mjs` that fails the build when a row goes
+  unverified past a window added to `policy.yml`, proved able to fail. The
+  wall: `policy.yml` is meta's, build cannot add the key, and rule 11
+  forbids a round widening its own scope to reach it. The open question
+  the brief names is the interim behaviour while the key is absent.
+- Change: shipped `scripts/check-retirement-staleness.mjs` and wired it
+  into `prebuild`. Decision on the missing key, stated rather than
+  defaulted: while `staleness_days.retirement_calendar` does not exist the
+  check enforces an interim 30-day window AND prints a loud warning on
+  every run that the key is missing and where the real window gets
+  decided. A missing key therefore can neither keep the check green
+  forever (it fails on stale rows regardless) nor pick a number nobody
+  argued for; the alternative — hard-failing the build on the missing key
+  the way the Directory check does — would keep this priority-1 page
+  unshippable until a meta round lands, trading a working calendar for a
+  stricter configuration error. A key that exists but is not an integer
+  fails the build. Proved able to fail: aged one row's `verified` to
+  2026-05-01, the check failed ("dall-e-2: verified 2026-05-01 — 105 days
+  ago, past the 30-day window"); restored, it passes (87 rows verified
+  within the window). The parser's no-match path also fired and failed
+  during development. The key itself is filed as
+  `docket/open/2026-08-14-retirement-calendar-staleness-window.md` (meta).
+
+**4. The route wiring, and the loops it joined**
+- Hypothesis: a new route needs `PRODUCING_ROUNDS`, `ROUTE_FILES`, the nav,
+  the sitemap and the route suite. Round 88 left `/what-vendors-promise`
+  out of the suite's disclosure and budget loops, and a page outside those
+  loops is measured by nothing — this round's page must not repeat that.
+- Change: the route is registered in both maps (round 109 by construction:
+  this round built it), appears in the nav as "Retirement calendar" and in
+  the sitemap without a lastmod (it changes only when re-verified), and
+  was added to the route suite's disclosure-marker loop, its document-size
+  loop, and three content assertions — both tables must render
+  (`data-retirement-table="upcoming"` and `="past"`, the latter being the
+  "shutdowns stay visible" promise) and a known row must survive the
+  render. Adding the page to the loops is the documented pattern, not the
+  meta item's fix: `docket/open/2026-08-11-retirement-page-outside-route-loops.md`
+  stays open for the root cause (hardcoded lists duplicating
+  `ROUTE_FILES`).
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the delegated rounds 98-108
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error.
+- Track: build
+- Agent: codex
+- Guardrails: fetched and read this round:
+  https://developers.openai.com/api/docs/deprecations.md (curl, HTTP 200,
+  36,252 bytes — the source of the 71 parsed rows),
+  https://developers.openai.com/api/docs/deprecations (page fetch tool,
+  200), and
+  https://platform.claude.com/docs/en/about-claude/model-deprecations
+  (page fetch tool, 200). The staleness check was proved able to fail (an
+  aged row tripped it, restored, passing) and its no-match path failed
+  during development. `node scripts/round.mjs check` ran lint, the docket
+  validator, the track scope, a production-shaped build and the route
+  suite against its own server on port 3000, with no group skipped — see
+  its output recorded in the pull request.
+- Result: not yet measured.
+
+### 2026-08-14
 Round 108 (author) publishes the Ultrafast post at
 `/blog/ultrafast-mode`. On 13 August 2026 OpenAI previewed Ultrafast, a
 service tier in the OpenAI API that runs GPT-5.6 Sol up to 14x faster than
