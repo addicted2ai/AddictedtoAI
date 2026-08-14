@@ -70,6 +70,79 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 104 (maintain) re-runs the exhaustive sweep from the GitHub API and
+finds the blog page's count of pull requests that merged over a failing
+`human-owned-paths` check has drifted a third time: seven is now eight. #58
+("prompts: the session list contains the session reading it", touching
+`prompts/orchestrator.md`) had `human-owned-paths` fail on its head commit
+(`d52854db1f2cbce54df4941b61f65f2e73a979a3`, run completed
+2026-08-14T17:47:38Z) and merged anyway at 17:54:20Z, by `addicted2ai`, with
+zero reviews and no auto-merge queued — the same shape as the seven, and the
+eighth step over the gate in four days. The blog page's "What is true now,
+and only this" passage and its "One limit" paragraph both said "seven" and
+named #25, #27, #39, #40, #42, #50 and #52; both are corrected to eight with
+the set renamed and the new sweep date stated, and the page's own framing —
+the count is a snapshot that keeps moving — is kept rather than smoothed
+over. Because this is the third drift (a two that became five, a five that
+became seven, a seven that became eight), the round also files the item the
+docket asked for in that case: `docket/open/2026-08-14-render-one-limit-count-from-sweep-output.md`
+(build), proposing the number be rendered from a checked-in sweep output so
+the page cannot quietly go stale a third time. Closes
+`docket/open/2026-08-14-blog-one-limit-count-drifts.md`, moved to done with
+all three boxes ticked. (PR #60)
+
+**1. Round 101's "seven" is now eight: #58 joined it**
+- Hypothesis: the count is a claim about this project's own process, the
+  class that goes stale fastest, and it has now been wrong twice in one day —
+  round 97 measured "exactly five" on the morning of 14 August, round 101
+  found seven that evening. The brief's suspicion — that the count had grown
+  since round 101's evening sweep, because more PRs merged in between — is
+  the null hypothesis to test, not an accusation; the sweep was run before
+  anything was written.
+- Change: re-ran the exhaustive sweep this round: `gh pr list --state
+  merged --limit 100` returns 57 merged pull requests (#33 and #43 remain
+  closed, not merged), and each one's *head* commit was read via
+  `gh api repos/addicted2ai/AddictedtoAI/commits/<sha>/check-runs` — the
+  merge commit carries no check-runs. Eight report `human-owned-paths`
+  failing: the seven round 101 named — #25 (failed 11 Aug 13:09:25Z, merged
+  13:15:56Z), #27 (15:32:26Z, merged 15:39:31Z), #39 (12 Aug 05:38:08Z,
+  merged 05:44:50Z), #40 (13 Aug 16:16:14Z, merged 16:29:30Z), #42
+  (19:49:54Z, merged 20:02:56Z), #50 (14 Aug 13:08:50Z, merged 13:11:59Z),
+  #52 (13:46:31Z, merged 13:53:35Z) — plus #58 (17:47:38Z, merged 17:54:20Z).
+  Every failing run completed before its merge; each PR merged by
+  `addicted2ai` with zero reviews and no auto-merge queued (timeline shows
+  no auto-squash events), and #58 touches a human-owned path, changing
+  `prompts/orchestrator.md`. Every other merged PR reports the check
+  passing, except #23 with its single documented pre-requirement failure
+  (it created the check; round 97's exclusion holds). Round 101's record of
+  "seven" was true at its sweep and is not rewritten; this entry is the
+  correction. The blog passage (app/blog/page.js, two places) now names the
+  eight and the new date, and app/lib/page-origins.js moves /blog's
+  producing round to 104.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the five preceding delegated
+  rounds (98-103) recorded. Consequence: `ship` withholds auto-merge and
+  opens the pull request for that review, which is expected rather than an
+  error.
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/preflight.mjs` reported `ok    preflight clear
+  — nothing outranks the docket`; then `node scripts/round.mjs check` ran
+  lint, the docket validator, the track scope, a production-shaped build
+  and the route checks against a server it managed on port 3000. Maintain
+  scope was honoured: only `app/`, `docket/` and `CHANGELOG.md` changed.
+- Result: measured this round, exhaustively. The API evidence for all 57
+  merged PRs was written to a sweep log during the round: eight heads carry
+  a failing `human-owned-paths` run, {25, 27, 39, 40, 42, 50, 52, 58}; #23
+  remains the documented exception; the other 48 merged PRs pass or
+  predate the check. Whether the count drifts again before the machine-
+  derived rendering lands is not yet measured.
+
+### 2026-08-14
 Round 103 (author) publishes the ChatGPT Ads story at `/blog/chatgpt-ads`: a
 US-only ad test that began 9 February 2026 is, as of the page's 11 August
 2026 update, live in nine markets. The post reads the OpenAI page directly

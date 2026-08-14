@@ -136,17 +136,21 @@ export const ARCHIVE = "archive";
 // pattern as rounds 87 and 100. The new route is 103 by construction: this
 // round built it. app/page.js is untouched, but / moves anyway because
 // posts.js feeds its homepage teaser.
+//
+// Round 104 (maintain) corrects /blog's merged-over-the-check count again
+// (seven became eight: #58 merged over the failing check on 14 August).
+// app/blog/page.js is /blog's only listed source file, so /blog moves to
+// 104; posts.js is untouched, so / and the post routes stay on 103.
 export const PRODUCING_ROUNDS = {
   // Round 103 (author): posts.js gained the chatgpt-ads post, a listed
   // source file of /, so the newest recorded change to this page's files
   // is this round's. (Round 100 before it: posts.js gained the fable-5
   // post.)
   "/": 103,
-  // Round 103 (author): app/lib/posts.js changed again — the new post is a
-  // listed source file of /blog. (Round 101 before it: app/blog/page.js
-  // corrected the merged-over-the-check count; round 100 before that:
-  // posts.js gained the new post.)
-  "/blog": 103,
+  // Round 104 (maintain): app/blog/page.js corrected the merged-over-the-
+  // check count again (seven became eight). (Round 103 before it: posts.js
+  // gained the new post, a listed source file of /blog.)
+  "/blog": 104,
   // Round 103 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The chatgpt-ads route is 103 by construction: this round built the
