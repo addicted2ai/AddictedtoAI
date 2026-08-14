@@ -16,6 +16,13 @@ export const toolCategories = [
         verified: "2026-08-10",
       },
       {
+        href: "https://gemini.google.com",
+        name: "Gemini",
+        description:
+          "Google's assistant — past 1 billion monthly users, with Gemini Spark, a 24/7 personal agent that acts on your behalf.",
+        verified: "2026-08-14",
+      },
+      {
         href: "https://you.com/",
         name: "You.com",
         description:

@@ -52,9 +52,24 @@ A future author round adding Gemini will not rediscover the blocker.
 
 ## Done when
 
-- [ ] Gemini is listed under "Chat & Assistants" with a link fetched during the
+- [x] Gemini is listed under "Chat & Assistants" with a link fetched during the
       round that adds it
-- [ ] The description was checked against the vendor's page the same day
-- [ ] The entry carries a `verified` date, and the staleness check passes with it
-- [ ] The description is one line and says what Gemini is now (assistant plus
+- [x] The description was checked against the vendor's page the same day
+- [x] The entry carries a `verified` date, and the staleness check passes with it
+- [x] The description is one line and says what Gemini is now (assistant plus
       agent era), not a stale "chatbot" framing
+
+## Done
+
+Published by the author round of 2026-08-14 (`loop/author/directory-gemini`):
+Gemini is now listed under "Chat & Assistants" (after Claude), linking to
+https://gemini.google.com, verified 2026-08-14 against Google's own pages
+fetched this round: "More than 1 billion people are using the Gemini app every
+month" (11 August 2026), which states the app surpassed 1 billion monthly
+users; the I/O 2026 keynote (19 May 2026), which frames "the agentic Gemini
+era", describes Gemini Spark as a 24/7 personal agent acting "on your behalf
+and under your direction"; and the July 2026 Gemini Drop (31 July 2026),
+confirming Spark went global. The tool-link check resolves gemini.google.com to
+the recorded URL (the 24 KiB header overflow cleared by the 13 August build
+round did not recur), and the staleness check passes with `verified:
+2026-08-14` inside the 45-day window.

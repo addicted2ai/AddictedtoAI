@@ -70,6 +70,56 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 98 (author) closes the last scout-filed Directory gap: Gemini joins
+"Chat & Assistants" as its fifth entry. The category previously listed
+ChatGPT, Claude, You.com and HuggingChat — four assistants, no Google product,
+while Google's own post of 11 August 2026 says the Gemini app surpassed 1
+billion monthly users. The one-line description says what Gemini is now —
+assistant plus agent — naming Gemini Spark, the 24/7 personal agent that acts
+on your behalf, sourced to Google's I/O 2026 keynote fetched this round. The
+entry was verified 2026-08-14 against the vendor's pages the same day; the
+tool-link and staleness checks both pass, and the gemini.google.com
+header-overflow blocker cleared by the 13 August build round did not recur.
+This closes `docket/open/2026-08-10-directory-missing-gemini.md`, moved to
+done with all four boxes ticked. (PR #)
+
+**1. Add Gemini to the Directory**
+- Hypothesis: the Directory's "Chat & Assistants" category lists ChatGPT,
+  Claude, You.com and HuggingChat but no Google product, while Google's own
+  pages say the Gemini app surpassed 1 billion monthly users (11 August 2026)
+  and that the company is in "the agentic Gemini era" with Gemini Spark, a
+  24/7 personal agent that takes action on your behalf (I/O 2026 keynote, 19
+  May 2026). A stranger reading a curated AI directory notices the absence of a
+  Google product with a billion monthly users — Google calls the app the
+  fastest-growing product in its history — immediately; the same class of gap
+  the ChatGPT entry closed for OpenAI.
+- Change: added Gemini under "Chat & Assistants" after Claude, linking to
+  https://gemini.google.com and verified 2026-08-14. The description says what
+  Gemini is now — "Google's assistant — past 1 billion monthly users, with
+  Gemini Spark, a 24/7 personal agent that acts on your behalf" — not a stale
+  "chatbot" framing. Every claim in it traces to a Google page fetched this
+  run: the 1-billion-users post (11 August 2026), the I/O 2026 keynote (19 May
+  2026), and July's Gemini Drop (31 July 2026), which confirms Spark "going
+  global" and available worldwide.
+
+- Origin: delegated
+- Track: author
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/check-tool-staleness.mjs` printed `ok    14
+  Directory tools verified within the 45-day window`; `node
+  scripts/check-tool-links.mjs` printed `ok    Gemini ->
+  https://gemini.google.com/` and 13 further `ok` lines, no failures. Then
+  `node scripts/round.mjs check` and `node scripts/round.mjs ship`. Note on
+  Origin: the start prompt hardcodes `supervised`, but this round was chosen
+  and briefed by the orchestrating model and will be read by a separate review
+  session before it merges, so `delegated` is recorded per the brief — with
+  the consequence that `ship` withholds auto-merge and opens the pull request
+  for that review session, which is expected rather than an error.
+- Result: not yet measured. The Directory's "Chat & Assistants" category went
+  from four entries to five, and a stranger no longer finds the largest Google
+  consumer product missing from a curated AI directory.
+
+### 2026-08-14
 Round 97 (maintain) corrects the blog post's "What is true now, and only this"
 passage, which presented the `human-owned-paths` gate as something that stops
 a pull request touching the charter, the workflows, or the loop's own prompt
