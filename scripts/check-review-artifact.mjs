@@ -45,6 +45,22 @@
 // as belonging to an already-merged or squashed tree, and counts them for
 // nothing: they can never satisfy the gate, and they are never a problem.
 //
+// That decision is made from the artifact's FILENAME, before anything else
+// and before the file is even read: the filename is the reviewed SHA, so
+// ancestry can be settled without trusting the file's contents at all. This
+// order is the load-bearing part of the rule. A malformed artifact --
+// missing fields, an unreadable file, anything -- that names a commit absent
+// from this branch's history is still a record of a tree this branch never
+// had, so it is still informational: a malformed record of a destroyed tree
+// is a record of a destroyed tree. The reverse does not follow: an artifact
+// that names a commit IN this branch's history might be evidence, so it must
+// be well-formed to count for anything and is a failure if it is not. The
+// field checks are strict for artifacts that could possibly concern this
+// branch; the reordering only stops them from running on artifacts that
+// cannot. Deciding ancestry from the filename also means the one fact that
+// matters about an artifact -- does it concern this branch at all -- never
+// depends on what the artifact says.
+//
 // The Origin is read through the same parser the site builds from
 // (app/lib/build-log.js) -- never a second parser. A second parser that could
 // disagree with the first is a bug this repository has shipped before. The
@@ -161,6 +177,38 @@ for (const file of reviewFiles) {
     bad(`${file}: filename is not a full 40-character SHA`);
     continue;
   }
+
+  // Condition 3, decided first and from the filename alone. The filename is
+  // the reviewed SHA, so ancestry does not require the file's contents to be
+  // trusted, or even read.
+  //
+  // A commit that is not in this branch's history is not evidence about this
+  // branch at all. The artifact still records a review that really happened —
+  // it just names a commit that the merge strategy destroyed: a squash merge
+  // discards the branch's individual commits, so the shas its review artifacts
+  // name never become ancestors of anything merged afterwards. Treating that
+  // as a failure would make the gate fail on its own first successful use.
+  // That is true whether or not the artifact is well-formed: a malformed
+  // record of a destroyed tree is still a record of a destroyed tree, so the
+  // ancestry decision runs before the field checks, and a file that fails
+  // them is still reported as informational when the commit it is named for
+  // is absent from this branch's history. Such an artifact is clearly
+  // labelled as belonging to an already-merged or squashed tree and counts
+  // for nothing. The reverse is unchanged: an artifact naming a commit that
+  // IS in this branch's history must be well-formed to count for anything,
+  // and is a failure if it is not.
+  const ancestor = tryGit(["merge-base", "--is-ancestor", name, head]);
+  if (!ancestor.ok) {
+    console.log(
+      `  note  ${file}: Commit ${name} is not in this branch's history — it ` +
+        "belongs to an already-merged or squashed tree (or names a commit this " +
+        "repository does not have), so it is not evidence about this branch; " +
+        "informational only, counts for nothing"
+    );
+    informational++;
+    continue;
+  }
+
   const text = tryGit(["show", `HEAD:${file}`]);
   if (!text.ok) {
     bad(`${file}: could not be read from the branch`);
@@ -178,28 +226,6 @@ for (const file of reviewFiles) {
   }
   if (reviewProse(text.out).length === 0) {
     bad(`${file}: no prose — a review that verified nothing by running anything is not a review`);
-    continue;
-  }
-
-  // Condition 3: the reviewed commit must be part of the branch's history.
-  //
-  // A commit that is not in this branch's history is not evidence about this
-  // branch at all. The artifact still records a review that really happened —
-  // it just names a commit that the merge strategy destroyed: a squash merge
-  // discards the branch's individual commits, so the shas its review artifacts
-  // name never become ancestors of anything merged afterwards. Treating that
-  // as a failure would make the gate fail on its own first successful use.
-  // Such an artifact is reported as informational — clearly labelled as
-  // belonging to an already-merged or squashed tree — and counts for nothing.
-  const ancestor = tryGit(["merge-base", "--is-ancestor", fields.Commit, head]);
-  if (!ancestor.ok) {
-    console.log(
-      `  note  ${file}: Commit ${fields.Commit} is not in this branch's history — it ` +
-        "belongs to an already-merged or squashed tree (or names a commit this " +
-        "repository does not have), so it is not evidence about this branch; " +
-        "informational only, counts for nothing"
-    );
-    informational++;
     continue;
   }
 

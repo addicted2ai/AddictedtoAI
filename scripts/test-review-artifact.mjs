@@ -2,8 +2,8 @@
 // Regression test for the review-artifact gate, without touching the real
 // repository's history. Builds a scratch git repository in the temp
 // directory, constructs branches whose review artifacts are real, stale, or
-// rejecting, and asserts the checker's verdict on each. The three cases hold
-// the three properties the gate must keep, after the squash-merge fix made
+// rejecting, and asserts the checker's verdict on each. The cases hold the
+// three properties the gate must keep, after the squash-merge fix made
 // absent-commit artifacts informational:
 //
 //   1. a branch with a covering `approve` passes,
@@ -12,9 +12,22 @@
 //      a failure,
 //   3. a branch whose head is covered by a `reject` fails.
 //
+// Two more cases hold the ordering the checker was changed to, on top of the
+// squash-merge fix: ancestry is decided from the artifact's filename before
+// its contents are read, so the two rules cannot shadow each other.
+//
+//   4. an artifact naming a commit absent from this branch's history fails
+//      the gate as informational EVEN when it is malformed (missing fields) —
+//      a malformed record of a destroyed tree is still a record of a
+//      destroyed tree; the gate fails for want of a covering approve, not
+//      because of that file,
+//   5. an artifact naming a commit that IS in this branch's history and is
+//      missing fields still fails — "informational" is not a way for a
+//      broken artifact about live code to slip through.
+//
 //   node scripts/test-review-artifact.mjs
 //
-// Runs in about a second, needs only git and node. Exit 0 means all three
+// Runs in about a second, needs only git and node. Exit 0 means all five
 // properties held.
 //
 // The checker is spawned with the scratch repo as its working directory, so
@@ -85,22 +98,21 @@ function makeRepo() {
   return { repo, base, work };
 }
 
-function reviewFile(commit, verdict) {
+function reviewFile(commit, verdict, minimal = false) {
   return (
     `Commit: ${commit}\n` +
     `Verdict: ${verdict}\n` +
-    `Reviewer: test\n` +
-    `Round: 94\n` +
+    (minimal ? "" : `Reviewer: test\nRound: 94\n`) +
     `\n` +
     `Reviewed the scratch commit ${commit} in full; the diff from it to HEAD ` +
     `is only this review file.\n`
   );
 }
 
-function addReview(repo, commit, verdict) {
+function addReview(repo, commit, verdict, minimal = false) {
   const dir = path.join(repo, "docket", "reviews");
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, `${commit}.md`), reviewFile(commit, verdict));
+  fs.writeFileSync(path.join(dir, `${commit}.md`), reviewFile(commit, verdict, minimal));
   git(repo, ["add", "docket/reviews"]);
   git(repo, ["commit", "-q", "-m", "review"]);
 }
@@ -179,6 +191,67 @@ function runChecker(repo, base) {
       console.log(`FAIL  covering reject should fail; exit ${result.status}`);
       console.log(result.stdout.trim());
       failures.push("covering reject did not fail");
+    }
+  } finally {
+    fs.rmSync(repo, { recursive: true, force: true });
+  }
+}
+
+// Case 4: an artifact naming a commit absent from this branch's history AND
+// missing the Reviewer and Round fields. The ordering the checker was
+// changed to must decide ancestry before field validation: a malformed
+// record of a destroyed tree is still a record of a destroyed tree, so the
+// artifact is informational and the gate fails for want of a covering
+// approve -- never because of this file.
+{
+  const { repo, base } = makeRepo();
+  try {
+    const orphan = git(repo, ["commit-tree", "HEAD^{tree}", "-m", "orphaned by squash"]);
+    addReview(repo, orphan, "approve", true);
+    const result = runChecker(repo, base);
+    if (result.status !== 1) {
+      console.log(`FAIL  absent+malformed branch should exit 1; exit ${result.status}`);
+      failures.push("absent+malformed branch did not fail");
+    } else if (!result.stdout.includes("no review artifact covers the merged tree")) {
+      console.log("FAIL  absent+malformed branch failed for the wrong reason:");
+      console.log(result.stdout.trim());
+      failures.push("absent+malformed branch failed for the wrong reason");
+    } else if (result.stdout.includes(`FAIL  docket/reviews/${orphan}.md`)) {
+      console.log("FAIL  a malformed artifact about an absent commit was reported as a failure:");
+      console.log(result.stdout.trim());
+      failures.push("malformed absent-commit artifact counted as a problem");
+    } else if (!result.stdout.includes("not in this branch's history")) {
+      console.log("FAIL  the malformed absent-commit artifact was not reported as informational:");
+      console.log(result.stdout.trim());
+      failures.push("malformed absent-commit artifact not reported as a note");
+    } else {
+      console.log("ok    absent+malformed artifact is a note; gate fails for no covering approve");
+    }
+  } finally {
+    fs.rmSync(repo, { recursive: true, force: true });
+  }
+}
+
+// Case 5: an artifact naming a commit that IS in this branch's history but
+// is missing fields must fail. The reordering must not make "informational"
+// a way for a broken artifact about live code to slip through: this artifact
+// could be evidence about this branch, and it cannot be parsed, so it is a
+// failure.
+{
+  const { repo, base, work } = makeRepo();
+  try {
+    addReview(repo, work, "approve", true);
+    const result = runChecker(repo, base);
+    if (
+      result.status === 1 &&
+      result.stdout.includes("missing field(s) Reviewer, Round") &&
+      !result.stdout.includes("review artifact verified")
+    ) {
+      console.log("ok    malformed artifact about a present commit fails");
+    } else {
+      console.log(`FAIL  malformed artifact about a present commit should fail; exit ${result.status}`);
+      console.log(result.stdout.trim());
+      failures.push("malformed present-commit artifact did not fail");
     }
   } finally {
     fs.rmSync(repo, { recursive: true, force: true });
