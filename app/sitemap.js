@@ -1,6 +1,9 @@
 import { getSiteUrl } from "./lib/site";
 import { posts } from "./lib/posts";
-import { getLatestBuildLogDate } from "./lib/build-log";
+import {
+  getLatestBuildLogDate,
+  getPagedLog,
+} from "./lib/build-log";
 
 // `lastModified` is only set where we can actually substantiate it.
 // It used to be `new Date()` for every route, which meant every deploy
@@ -91,6 +94,18 @@ const routes = [
   // frozen at a fixed boundary, so it changes only if the frozen rounds
   // themselves are ever touched. Same treatment as the archive.
   { path: "/log/early", priority: 0.5, changeFrequency: "yearly" },
+  // The older current-era rounds each live on a permanent page of their own
+  // at /log/rounds/<id>. A page appears when its round ages out of /log's
+  // fixed full block and never moves again; the round's own date is the
+  // most recent change it can substantiate.
+  ...getPagedLog().map((entry) => ({
+    path: `/log/rounds/${entry.id}`,
+    priority: 0.6,
+    changeFrequency: "yearly",
+    ...(/^\d{4}-\d{2}-\d{2}$/.test(entry.date)
+      ? { lastModified: entry.date }
+      : {}),
+  })),
 ];
 
 export default function sitemap() {
