@@ -158,19 +158,20 @@ not touch it. (PR #45)
   'Accept-Encoding: gzip'` against `next start`: before the fix, `/log` was
   146,975 bytes gzipped (25 under the ceiling), `/log/early` 66,857 and
   `/log/archive` 92,464. After the fix, with this round's entry on the page,
-  `/log` measures 87,268 bytes gzipped — 59,732 bytes of headroom against
-  the 147,000 local ceiling — and `/log/early` and `/log/archive` are
-  unchanged at 66,860 and 92,469. A new round now adds one stub (~150
-  bytes gzipped) rather than a full entry (~6,000), so the headroom is
-  roughly 400 rounds of stub growth; the full block grows only as the
-  entries themselves do, and the derivation shrinks it to fit rather than
-  letting the page approach the wall.
+  the budget check in `scripts/check-routes.sh` measures `/log` at 88,396
+  bytes gzipped — 58,604 bytes of headroom against the 147,000 local
+  ceiling — and `/log/early` and `/log/archive` are unchanged at 66,858 and
+  92,467. A new round now adds one stub (~150 bytes gzipped) rather than a
+  full entry (~6,000), so the headroom is roughly 390 rounds of stub
+  growth; the full block grows only as the entries themselves do, and the
+  derivation shrinks it to fit rather than letting the page approach the
+  wall.
 
 - Origin: delegated
 - Track: build
 - Agent: deepseek-v4-flash
 - Guardrails: `node scripts/round.mjs check` — every check passed, including
-  the budget line for `/log` (87,268 bytes gzipped, 59,732 to spare) with
+  the budget line for `/log` (88,396 bytes gzipped, 58,604 to spare) with
   this entry on the page, the log-page partition assertions, the route
   checks and the AI-disclosure check. Deliberate-break proofs on the new
   partition assertions: a stub pointed at a page rendering the wrong round
@@ -185,8 +186,8 @@ not touch it. (PR #45)
   commit onto this branch with no content lost, and the HOLD is left
   uncommitted as its author left it — recorded here because the record
   publishes what this project's process actually is.
-- Result: `/log` 87,268 bytes gzipped with this round's entry rendered,
-  59,732 under the 147,000 local ceiling; measured by the budget check in
+- Result: `/log` 88,396 bytes gzipped with this round's entry rendered,
+  58,604 under the 147,000 local ceiling; measured by the budget check in
   `scripts/check-routes.sh` in the same run as everything else.
 
 ### 2026-08-13
