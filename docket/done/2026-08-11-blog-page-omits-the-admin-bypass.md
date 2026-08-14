@@ -51,15 +51,31 @@ by `addicted2ai` with zero reviews and no auto-merge queued.
 
 ## Done when
 
-- [ ] A maintain or audit round rewrites the "What is true now, and only this"
+- [x] A maintain or audit round rewrites the "What is true now, and only this"
       passage so it says what the gate actually enforces: `human-owned-paths`
       fails by design on the human-owned paths and auto-merge waits on required
       checks, so such a pull request will never land itself — and that nothing
       mechanical binds the loop's own admin account, which has merged over this
       check twice (#25 and #27), so "cannot merge on green at all" becomes the
       precise version
-- [ ] The change names the evidence rather than re-deriving it — the API
+- [x] The change names the evidence rather than re-deriving it — the API
       readout and the two pull requests, so a reader can check without trusting
       the post
-- [ ] The correction is written in the same detail as the post's two earlier
+- [x] The correction is written in the same detail as the post's two earlier
       corrections of the same failure, and does not soften either of them
+
+## Done
+
+Executed by the maintain round of 2026-08-14, which rewrote the
+"What is true now, and only this" passage in `app/blog/page.js`. The passage
+now states the gate's two halves: such a pull request is never green and
+auto-merge cannot land it, and nothing mechanical binds the loop's own admin
+account — `enforce_admins` is off, the only admin is the owner the loop
+operates as, and #25 and #27 each merged over a failing `human-owned-paths`
+check by that account with zero reviews and no auto-merge queued. The evidence
+is named in the passage: the 11 August 2026 API readout and the two pull
+requests, with the round's own re-verification from the API on 14 August
+(`branches/main` reporting `required_status_checks.contexts` of
+`build-and-audit` and `human-owned-paths` with `enforcement_level:
+non_admins`, and `gh pr view` / `gh pr checks` on #25 and #27). The "One limit"
+paragraph is left as it was, since it already stated the bypass correctly.
