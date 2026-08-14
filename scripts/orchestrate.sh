@@ -290,13 +290,16 @@ while true; do
   # The session is found by title and directory, never by pid: /session has no
   # pids, and the session id is how the server is told to stop the round. It is
   # not available at launch -- the session appears a moment after `opencode
-  # run` starts -- so it is polled for a bounded window. An iteration whose
-  # session never appears still runs (a lost id means a lost abort, not a lost
-  # round): the stop path then skips the abort and goes straight to the
-  # last-resort client kill.
+  # run` starts -- so it is polled for a bounded window. The lookup narrows by
+  # time.created against this iteration's launch and fails closed on
+  # ambiguity: more than one same-title candidate means no id (an abort of
+  # nothing plus a logged warning naming the ids, never a silent pick). An
+  # iteration whose session never appears still runs (a lost id means a lost
+  # abort, not a lost round): the stop path then skips the abort and goes
+  # straight to the last-resort client kill.
   sesid=""
   for _ in $(seq 1 "$SESSION_POLL_TICKS"); do
-    sesid=$(api_session_id "$marker")
+    sesid=$(api_session_id "$marker" "$started" 2>>"$LOG_DIR/supervisor.log")
     [ -n "$sesid" ] && break
     if ! kill -0 "$child" 2>/dev/null; then
       break

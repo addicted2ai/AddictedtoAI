@@ -44,21 +44,36 @@ api_newest() {
 # never will. This is the id the supervisor hands to
 # POST /session/<id>/abort when an iteration stalls -- ids are strings from
 # the API, never pids.
+#
+# The match is narrowed by time.created: a candidate whose record predates
+# this iteration's launch ($2, epoch seconds) is rejected -- the supervisor
+# knows when it launched, and a stale-but-active session sharing the stamp
+# must never be abortable as this round. If more than one candidate survives
+# the lookup fails closed: it prints no id, writes the ambiguity naming the
+# ids to stderr (the caller appends that to the supervisor log), and the
+# iteration falls through to its existing no-session-id handling. An abort of
+# nothing plus a warning is correct; silently picking one is not.
 api_session_id() {
-  curl -s --max-time 10 "$HELPER_SERVER/session" 2>/dev/null | ORCH_REPO_WIN="$HELPER_REPO_WIN" ORCH_TITLE="$1" node -e '
+  curl -s --max-time 10 "$HELPER_SERVER/session" 2>/dev/null | ORCH_REPO_WIN="$HELPER_REPO_WIN" ORCH_TITLE="$1" ORCH_LAUNCH="${2:-0}" node -e '
     let d = "";
     process.stdin.on("data", c => { d += c; });
     process.stdin.on("end", () => {
       try {
         const want = (process.env.ORCH_REPO_WIN || "").toLowerCase().replace(/[\\/]+$/, "");
         const title = process.env.ORCH_TITLE || "";
+        const floor = (Number(process.env.ORCH_LAUNCH) || 0) * 1000;
         const list = JSON.parse(d);
+        const match = [];
         for (const s of (list || [])) {
           const dir = (s.directory || "").toLowerCase().replace(/[\\/]+$/, "");
           if (dir === want && s.title === title && s.id) {
-            console.log(s.id);
-            return;
+            if (!floor || (Number(s.time && s.time.created) || 0) >= floor) match.push(s);
           }
+        }
+        if (match.length === 1) {
+          console.log(match[0].id);
+        } else if (match.length > 1) {
+          console.error(new Date().toISOString() + "  ambiguous session title " + title + ": " + match.map(s => s.id).join(" ") + " -- aborting nothing");
         }
       } catch (e) { /* not JSON, or no matching session: no signal */ }
     });
