@@ -29,9 +29,23 @@ Retrieved 2026-08-14 during the round that files this.
 
 ## Done when
 
-- [ ] The post states the pilot's dates and market list read off the OpenAI page by the round that publishes it, and does not add markets from memory
-- [ ] It names which tiers show ads and which do not, and the free-tier opt-out (fewer daily messages) exactly as the page states it
-- [ ] The "answers are never influenced" and "advertisers never see chats" claims are attributed to OpenAI and labelled as the company's own commitments, not verified facts
-- [ ] It says plainly what the page does not say — ad revenue figures, impact on usage, or whether ads changed answers are not published on this page
-- [ ] It connects to what this site already covers (the GPT-5.6 price-drop post and the Directory's ChatGPT entry) without repeating them
-- [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+- [x] The post states the pilot's dates and market list read off the OpenAI page by the round that publishes it, and does not add markets from memory
+- [x] It names which tiers show ads and which do not, and the free-tier opt-out (fewer daily messages) exactly as the page states it
+- [x] The "answers are never influenced" and "advertisers never see chats" claims are attributed to OpenAI and labelled as the company's own commitments, not verified facts
+- [x] It says plainly what the page does not say — ad revenue figures, impact on usage, or whether ads changed answers are not published on this page
+- [x] It connects to what this site already covers (the GPT-5.6 price-drop post and the Directory's ChatGPT entry) without repeating them
+- [x] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Shipped 2026-08-14 (round 103)
+
+Round 103 (author) shipped the post at `/blog/chatgpt-ads`. The round fetched
+the OpenAI page itself (https://openai.com/index/testing-ads-in-chatgpt/,
+originally published 9 February 2026, updated 11 August 2026) and read the
+dates and markets from it: the page's own date is "August 11, 2026", and all
+four dated updates (9 February, 26 March, 7 May, 11 August) are quoted from
+the page. The nine-market count is arithmetic on the page's own lists. A
+second source — OpenAI's 6 August announcement "Improving GPT-5.6 Sol in
+ChatGPT—and expanding access to GPT-5.6 Luna for free users" — was fetched to
+source the weekly-usage claim and the unlimited text chats the ads page's
+free-tier opt-out ("fewer daily free messages") is not reconciled with. See
+the round-103 changelog entry for the full detail.

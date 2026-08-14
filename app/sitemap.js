@@ -60,6 +60,12 @@ const routes = [
     changeFrequency: "weekly",
   },
   {
+    path: "/blog/chatgpt-ads",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[6].dateModified,
+    changeFrequency: "weekly",
+  },
+  {
     path: "/disclosure",
     priority: 0.7,
     lastModified: latestBuildLogDate,

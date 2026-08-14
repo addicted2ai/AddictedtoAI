@@ -70,6 +70,75 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 103 (author) publishes the ChatGPT Ads story at `/blog/chatgpt-ads`: a
+US-only ad test that began 9 February 2026 is, as of the page's 11 August
+2026 update, live in nine markets. The post reads the OpenAI page directly
+and separates what it states from what it promises: the four dated updates
+and their market lists, the tiers that show ads (Free and Go, logged-in
+adults) and the five that never do (Plus, Pro, Business, Enterprise,
+Education), the free-tier opt-out (fewer daily free messages), the
+under-18 and sensitive-topic exclusions, and the three core commitments —
+ads never influence answers, advertisers never see chats or memory, and
+matching runs on conversation topic plus past chats and ad interactions —
+all labelled as OpenAI's own claims, none verified by anything on the page.
+The post also says plainly what the page does not publish: ad revenue
+figures, numbers behind the "no impact on consumer trust metrics" March
+claim, or any measurement that ads did not change answers. It connects to
+the site's existing coverage of the same tier — the GPT-5.6 price-drop post
+and the Directory's ChatGPT entry — without repeating either, and notes the
+page offers no reconciliation between the ads opt-out's "fewer daily free
+messages" and the unlimited text chats OpenAI announced for Free and Go
+users five days earlier. Closes
+`docket/open/2026-08-14-post-chatgpt-ads.md`, moved to done with all six
+boxes ticked. (PR #59)
+
+**1. Publish the ChatGPT Ads post**
+- Hypothesis: the arc is the story — a cautious US test in February that is
+  a nine-market product by August, on the free tier of the product OpenAI
+  says a billion people turn to every week — and a correct spec rewrite is
+  not. The post's value had to be the shape of the record: a page whose
+  whole point is checkable claims, where the commitments are asserted and
+  the numbers that would check them are absent. Expected: the dates and
+  markets read off the page itself (the docket's warning that the
+  news-listing card dates the update 12 August while the page says "August
+  11, 2026" was resolved by reading the page and using its dates), no
+  markets added from memory, and the vendor commitments kept labelled as
+  commitments.
+- Change: a new post at /blog/chatgpt-ads, registered in app/lib/posts.js,
+  app/lib/route-files.js, app/lib/page-origins.js (the eight routes that
+  list posts.js move to producing round 103 together — the same pattern as
+  rounds 87 and 100 — and the new route is 103 by construction) and
+  app/sitemap.js. Two sources fetched this round: OpenAI's "Testing ads in
+  ChatGPT" page (originally published 9 February 2026, updated 11 August
+  2026) for every date, market list, tier, exclusion, opt-out and
+  commitment in the post, and OpenAI's 6 August announcement "Improving
+  GPT-5.6 Sol in ChatGPT—and expanding access to GPT-5.6 Luna for free
+  users" for the weekly-usage claim and the unlimited text chats that the
+  ads page does not reconcile with its opt-out. The nine-market count is
+  arithmetic on the page's own lists (US + Canada/Australia/New Zealand +
+  UK/Mexico/Brazil/Japan/South Korea). The post is written for a stranger:
+  the arc (a pilot that became nine markets in six months, the free tier of
+  the most-used consumer AI product becoming ad-funded), not the spec.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the four preceding delegated
+  rounds (98-101) recorded. Consequence: `ship` withholds auto-merge and
+  opens the pull request for that review, which is expected rather than an
+  error.
+- Track: author
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/preflight.mjs` reported `ok    preflight clear
+  — nothing outranks the docket`; then `node scripts/round.mjs check` ran
+  lint, the docket validator, the track scope, a production-shaped build
+  and the route checks against a server it managed on port 3000.
+- Result: not yet measured. The post renders at its route with the
+  disclosure map, sitemap and feed consistent; whether the arc reaches any
+  reader is not yet measured.
+
+### 2026-08-14
 Round 102 (scout) runs after zero scout rounds in the last twenty shipped —
 the dispatcher's quota readout, run this round, is `quota: target 32%, recent
 0% over last 20 shipped round(s)` — and files five new docket items from
