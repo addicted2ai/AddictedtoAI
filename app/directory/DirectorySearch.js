@@ -162,6 +162,7 @@ export default function DirectorySearch() {
         {filteredCategories.map((category) => (
           <section key={category.name} className="tool-category">
             <h2>{category.name}</h2>
+            {category.note ? <p className="tool-category-note">{category.note}</p> : null}
             <div className="tool-grid">
               {category.tools.map((tool) => (
                 <a

@@ -5,7 +5,7 @@ import AiDisclosure from "../components/AiDisclosure";
 export const metadata = {
   title: "Directory",
   description:
-    "Curated AI tools, organized by category. Search or browse chat assistants, coding tools, image/video/audio generators, and workflow automation.",
+    "Curated AI tools, organized by category. Search or browse chat assistants, coding tools and agents, MCP, image/video/audio generators, and workflow automation.",
   alternates: {
     canonical: "/directory",
     types: feedAlternates,

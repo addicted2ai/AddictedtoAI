@@ -334,6 +334,12 @@ article a:hover {
   margin: 0 0 1rem;
 }
 
+.tool-category-note {
+  margin: -0.5rem 0 1rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .tool-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

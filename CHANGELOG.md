@@ -70,6 +70,80 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 99 (build) restructures the Directory around the field's present centre
+of gravity — agents and MCP. The four categories it was drawn with predated
+them: there was nowhere a coding agent, an MCP server, or an agent framework
+belonged, and the words "agent" and "MCP" appeared nowhere on the site. The
+category set is reconsidered rather than appended to: "Chat & Assistants" and
+"Coding" still describe their own members, so the honest finding is that the
+field grew new joints rather than the old ones moving — and two new
+categories are added to carve them: "Agents", for frameworks that build
+agents, and "MCP", for the protocol itself. LangChain moves from "Workflow &
+Data" to "Agents" because its own page is agent-first. Four entries are added
+on merit, each carrying a link fetched this round and a description checked
+against the vendor's own page today: Claude Code, Claude Agent SDK, OpenAI
+Agents SDK, and the Model Context Protocol. The MCP category holds one
+curated pointer to the protocol rather than a list of the servers built on it
+(the Linux Foundation's announcement puts that figure above 10,000).
+Closes `docket/open/2026-08-10-directory-describes-a-pre-agent-field.md`,
+moved to done with all six boxes ticked. (PR #)
+
+**1. Give the Directory a home for agents and MCP**
+- Hypothesis: the Directory's four categories were drawn before agents and
+  tool-calling protocols became the field's centre of gravity, so a coding
+  agent, an MCP server, and an agent framework each lacked a home, and a
+  visitor asking what to use to run agents — and what connects them to their
+  own data — would find no answer. If the gap is real, the fix is the
+  category set, not a single entry: the old categories may still describe
+  their members, but the field now has joints (agent frameworks, MCP) that
+  the old set does not carve. Expected, on merit: "Agents" and "MCP" as new
+  categories, LangChain re-filed because its vendor page is agent-first, and
+  a small set of additions — small enough to re-verify honestly in one round.
+- Change: the Directory is now six categories. "Agents" holds frameworks for
+  building   your own agents — Claude Agent SDK (https://code.claude.com/docs/en/agent-sdk/
+  overview, "the same tools, agent loop, and context management that power
+  Claude Code"), OpenAI Agents SDK (https://openai.github.io/openai-agents-python/,
+  "build agentic AI apps in a lightweight, easy-to-use package"), and LangChain
+  moved from "Workflow & Data" after its page repositioned around agents
+  ("Observe, Evaluate, and Deploy Reliable AI Agents"; "quick start agents
+  with any model provider"). "MCP" holds one entry, the Model Context Protocol
+  (https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro),
+  with a category note stating it is one curated pointer to the standard rather
+  than a list of the servers built on it. Claude Code joins "Coding"
+  (https://claude.com/product/claude-code: "AI Coding Agent, Terminal, IDE").
+  Every added or moved entry carries a link fetched this run and a description
+  checked against the vendor's own page on 2026-08-14; the page metadata now
+  names agent frameworks and MCP in its description; and both new categories
+  carry a note stating the basis for inclusion, so the section reads as a
+  curated answer rather than a list of everything that exists. "Chat &
+  Assistants" and "Coding" are kept with the reason stated: they still
+  describe their members, and the item's test was whether they carve the field
+  at its joints — the field grew joints, it did not lose them.
+
+- Origin: delegated
+- Track: build
+- Agent: opencode
+- Guardrails: `node scripts/check-tool-staleness.mjs` printed `ok    18
+  Directory tools verified within the 45-day window`; `node
+  scripts/check-tool-links.mjs` printed `ok    Claude Code ->
+  https://claude.com/product/claude-code`, `ok    Claude Agent SDK ->
+  https://code.claude.com/docs/en/agent-sdk/overview`, `ok    OpenAI Agents SDK
+  -> https://openai.github.io/openai-agents-python/`, `ok    Model Context
+  Protocol -> https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro`,
+  `ok    LangChain -> https://www.langchain.com/` and 13 further `ok` lines,
+  no failures. Then
+  `node scripts/round.mjs check` and `node scripts/round.mjs ship`. Note on
+  Origin: the start prompt hardcodes `supervised`, but this round was chosen
+  and briefed by the orchestrating model and will be read by a separate review
+  session before it merges, so `delegated` is recorded per the brief — with
+  the consequence that `ship` withholds auto-merge and opens the pull request
+  for that review session, which is expected rather than an error.
+- Result: not yet measured. The Directory grew from four categories and
+  fourteen entries to six and eighteen, every entry still verified within the
+  staleness window, and the words "agent" and "MCP" now appear on the site it
+  publishes. Whether visitors find the new sections is not yet measured.
+
+### 2026-08-14
 Round 98 (author) closes the last scout-filed Directory gap: Gemini joins
 "Chat & Assistants" as its fifth entry. The category previously listed
 ChatGPT, Claude, You.com and HuggingChat — four assistants, no Google product,
