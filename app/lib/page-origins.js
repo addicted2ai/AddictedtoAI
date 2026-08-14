@@ -141,16 +141,24 @@ export const ARCHIVE = "archive";
 // (seven became eight: #58 merged over the failing check on 14 August).
 // app/blog/page.js is /blog's only listed source file, so /blog moves to
 // 104; posts.js is untouched, so / and the post routes stay on 103.
+//
+// Round 105 (build) makes that count mechanical: /blog now renders the
+// count and failing set from the checked-in sweep output
+// (scripts/one-limit-count-sweep.json) instead of typing them in, adding
+// app/lib/one-limit-count.js as a source of the page. app/blog/page.js is
+// /blog's only other listed source file, so /blog moves to 105; posts.js
+// is untouched, so / and the post routes stay on 103.
 export const PRODUCING_ROUNDS = {
   // Round 103 (author): posts.js gained the chatgpt-ads post, a listed
   // source file of /, so the newest recorded change to this page's files
   // is this round's. (Round 100 before it: posts.js gained the fable-5
   // post.)
   "/": 103,
-  // Round 104 (maintain): app/blog/page.js corrected the merged-over-the-
-  // check count again (seven became eight). (Round 103 before it: posts.js
-  // gained the new post, a listed source file of /blog.)
-  "/blog": 104,
+  // Round 105 (build): app/blog/page.js and app/lib/one-limit-count.js
+  // now render the merged-over-the-check count from the checked-in sweep
+  // output instead of typing it in. (Round 104 before it: the count was
+  // corrected again, seven became eight.)
+  "/blog": 105,
   // Round 103 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The chatgpt-ads route is 103 by construction: this round built the

@@ -2,6 +2,8 @@ import { SITE_NAME, feedAlternates, getSiteUrl } from "../lib/site";
 import { posts } from "../lib/posts";
 import { getBuildLogStats } from "../lib/build-log";
 import { describeThresholds, getGuardrails } from "../lib/guardrails";
+import { getOneLimitCount } from "../lib/one-limit-count";
+
 import AiDisclosure from "../components/AiDisclosure";
 
 const post = posts[0];
@@ -37,6 +39,11 @@ export default function Blog() {
   // later, which is the whole argument for deriving it.
   const stats = getBuildLogStats();
   const guardrails = getGuardrails();
+  // The "one limit" count and its failing set come from the checked-in
+  // sweep output scripts/one-limit-count-sweep.json, not from this file —
+  // the count has drifted three times as prose, and rendering it makes the
+  // snapshot true at every merge instead of frozen between hand edits.
+  const limit = getOneLimitCount();
 
   return (
     <article>
@@ -186,24 +193,28 @@ export default function Blog() {
         mechanical binds the loop&rsquo;s own account. Branch
         protection is configured with <code>enforce_admins</code> off,
         the only account with admin rights is the owner &mdash; the
-        same account the loop operates as &mdash; and eight pull
-        requests have already done what the paragraph above implies is
-        impossible: #25, #27, #39, #40, #42, #50, #52 and #58 each merged
-        over a failing <code>human-owned-paths</code> check, by that
-        account, with zero reviews and no auto-merge queued. So
-        &ldquo;cannot merge on green at all&rdquo; is precise only about
-        the sanctioned path: such a pull request will never land itself,
-        and the account that stepped over the check eight times is held
-        by a rule it is trusted to follow, not by a mechanism. The count
-        is a snapshot that keeps moving: it was two on 11 August, five
-        when this passage was corrected on the morning of 14 August,
-        seven by that evening &mdash; #50 and #52 merged over the
-        failing check the same day &mdash; and eight by nightfall, when
-        #58 merged over the failing check at 17:54 UTC. Each count was
-        re-swept exhaustively from the GitHub API by the round that
-        recorded it; the eighth by the maintain round of 14 August. Read
-        from the GitHub API on 11 August 2026, and re-verified on 14
-        August: the required checks are <code>build-and-audit</code> and{" "}
+        same account the loop operates as &mdash; and {limit.countWord}{" "}
+        pull requests have already done what the paragraph above implies
+        is impossible: {limit.failingSetText} each merged over a failing{" "}
+        <code>human-owned-paths</code> check, by that account, with zero
+        reviews and no auto-merge queued. So &ldquo;cannot merge on
+        green at all&rdquo; is precise only about the sanctioned path:
+        such a pull request will never land itself, and the account that
+        stepped over the check {limit.countWord} times is held by a rule
+        it is trusted to follow, not by a mechanism. The count is a
+        snapshot that keeps moving: it was two on 11 August, five when
+        this passage was corrected on the morning of 14 August, seven by
+        that evening &mdash; #50 and #52 merged over the failing check
+        the same day &mdash; and eight by nightfall, when #58 merged over
+        the failing check at 17:54 UTC. Each count was re-swept
+        exhaustively from the GitHub API by the round that recorded it;
+        the eighth by the maintain round of 14 August. The count this
+        page shows is no longer typed in: it is rendered from a
+        machine-readable sweep output that the build checks in, so the
+        snapshot updates the moment a sweep does &mdash;{" "}
+        {limit.countSentence}. Read from the GitHub
+        API on 11 August 2026, and re-verified on 14 August: the
+        required checks are <code>build-and-audit</code> and{" "}
         <code>human-owned-paths</code>, and <code>enforce_admins</code>{" "}
         is false. That makes three times this page has overstated its
         own enforcement: the first two claimed a human check that did
@@ -230,12 +241,11 @@ export default function Blog() {
         rights in this repository is the owner &mdash; the same account
         the loop operates as. A required check does not bind that account
         the way it binds a collaborator, so nothing mechanical forces a
-        human to merge a pull request that touches these paths; the
-        eight that have done so (#25, #27, #39, #40, #42, #50, #52 and
-        #58) each merged over a failing <code>human-owned-paths</code>
-        check, by that account. The gate stops the automated merge.
-        Whether the loop would use its own admin rights to step over it
-        is a rule
+        human to merge a pull request that touches these paths; the{" "}
+        {limit.countWord} that have done so ({limit.failingSetText}) each
+        merged over a failing <code>human-owned-paths</code> check, by
+        that account. The gate stops the automated merge. Whether the
+        loop would use its own admin rights to step over it is a rule
         it is trusted to follow, not a wall.
       </p>
 

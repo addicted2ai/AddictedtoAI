@@ -70,6 +70,104 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 105 (build) makes the blog page's "one limit" count mechanical: the
+number of pull requests that merged over a failing `human-owned-paths` check
+has drifted three times in four days (two → five → seven → eight), each time
+caught only by a hand-run sweep, and the page now renders the count from a
+checked-in sweep output instead of typed prose. A new script,
+`scripts/sweep-one-limit-count.mjs`, enumerates every merged pull request
+from the GitHub API, reads each PR's head-commit check-runs, and writes
+`scripts/one-limit-count-sweep.json` — the count, the failing set, the sweep
+timestamp, and the rules that make the count mean anything, stated in the
+output rather than only in comments. Re-run this round, the sweep measures
+the count as eight again: 58 merged pull requests, failing set {25, 27, 39,
+40, 42, 50, 52, 58} unchanged since round 104's sweep — the one PR merged
+since then (#60, the round itself) passed the check. `app/blog/page.js`
+renders the count, the set and a sweep-dated sentence from that output via a
+new `app/lib/one-limit-count.js`, and two guardrails close the drift loop: a
+build-time check (`scripts/check-one-limit-count.mjs`, wired into `prebuild`)
+validates the output's internal shape — count must equal the set size, #23
+must stay excluded, the rules must be stated — and a rendered check in
+`scripts/check-routes.sh` asserts the served page carries the exact sweep
+sentence. Both run under `node scripts/round.mjs check` and in CI's
+`build-and-audit`, so the snapshot updates the moment a sweep does and a
+page edited back to hardcoding fails the checks. The sweep script's two
+sharp edges are enforced, not just documented: it reads head commits (merge
+commits carry no check-runs), and it fails loudly when a merged PR whose
+head shows no `human-owned-paths` run merged after the check existed — "no
+run" can never masquerade as "passed". Closes
+`docket/open/2026-08-14-render-one-limit-count-from-sweep-output.md`, moved
+to done with all six boxes ticked. (PR #61)
+
+**1. Render the "one limit" count from a checked-in sweep output**
+- Hypothesis: the count keeps drifting because nothing re-measures it
+  between hand-run sweeps — a page that reads the count from a checked-in
+  sweep output, with a guardrail that fails when the two disagree, makes
+  the snapshot true at every merge. The sweep pattern from rounds 97, 101
+  and 104 (and the review of PR #60) said the API reads are
+  `gh pr list --state merged` plus per-head
+  `gh api .../commits/<head>/check-runs`, with two sharp edges: use the
+  head commit, and exclude #23.
+- Change: wrote `scripts/sweep-one-limit-count.mjs` and ran it this round
+  against the GitHub API: 58 merged PRs (1–60 minus the two
+  closed-not-merged, #33 and #43), each head read for check-runs. The
+  failing set is {25, 27, 39, 40, 42, 50, 52, 58} — eight, unchanged from
+  round 104; #59 and #60 both merged with `human-owned-paths` passing. The
+  sweep's "no run" boundary is derived from the data, not a hardcoded date:
+  the check's first run appeared on #23 (merged 2026-08-11T12:46:26Z), and
+  a merged PR with no run on its head is recorded as predating the check
+  only if it merged before that instant — 22 PRs do, and the script fails
+  loudly on any post-introduction PR with no run (its first run of the
+  round tripped on exactly this, and the boundary had to be re-derived from
+  #23's merge rather than assumed from the date). The output file states
+  the head-commit rule, the #23 exclusion, and the no-run boundary in its
+  `rules` field. `app/lib/one-limit-count.js` reads the output at build
+  time; `app/blog/page.js` renders the count word, the set, and one
+  sweep-dated sentence from it in both passages, keeping the "snapshot that
+  keeps moving" framing and the dated history (two → five → seven → eight)
+  as prose. The guardrail is two halves wired where `round.mjs check` and
+  CI run: `prebuild` now runs `scripts/check-one-limit-count.mjs`, which
+  validates the output's shape (count equals set size, sorted distinct
+  members, #23 absent, rules stated, date real) and asserts the page
+  imports the reader; `scripts/check-routes.sh` now runs it in
+  `--rendered` mode against the served `/blog`, asserting the exact sweep
+  sentence — including the sweep date, which appears nowhere else on the
+  page, so a page edited back to hardcoding fails even when its numbers
+  match the history.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the six preceding delegated rounds
+  (98-104) recorded. Consequence: `ship` withholds auto-merge and opens the
+  pull request for that review, which is expected rather than an error.
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/preflight.mjs` reported `ok    preflight clear
+  — nothing outranks the docket`; then `node scripts/round.mjs check` ran
+  lint, the docket validator, the track scope, a production-shaped build
+  and the route checks against a server it managed on port 3000. The new
+  guardrail was proven able to fail before trusting it: a corrupted output
+  (count ≠ set), the #23 exception inside the set, a future sweep date, a
+  page missing the reader import, and a page hardcoded back to a stale
+  sentence each failed the relevant check and exited non-zero, then the
+  correct values were restored and the checks went green again. The
+  fail-loud paths of the sweep script itself were exercised by the real
+  data — PR #22 (no run after the check existed) tripped the boundary
+  logic, and PR #1 (carries other checks, not this one) proved the boundary
+  must key on this check's runs, not any run. Build scope honoured: only
+  `app/`, `scripts/`, `package.json`, `docket/` and `CHANGELOG.md` changed.
+- Result: measured this round, exhaustively, from the GitHub API: the
+  sweep output at `scripts/one-limit-count-sweep.json` records count 8,
+  failing {25, 27, 39, 40, 42, 50, 52, 58}, swept 2026-08-14T19:42:15Z
+  over 58 merged PRs (27 passing, 22 predating, 1 excluded). The rendered
+  `/blog` shows the same sentence the output implies. Whether the count
+  ever drifts again is now guarded, not merely measured: a future sweep
+  that changes the count moves the page, and a page that stops rendering
+  it fails the checks.
+
+### 2026-08-14
 Round 104 (maintain) re-runs the exhaustive sweep from the GitHub API and
 finds the blog page's count of pull requests that merged over a failing
 `human-owned-paths` check has drifted a third time: seven is now eight. #58

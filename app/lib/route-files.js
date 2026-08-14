@@ -20,7 +20,7 @@ export const ROUTE_FILES = {
   // and left, and round 81 did not touch. Registering the new post honestly
   // requires this file to be counted, so /blog moves to round 82 with the
   // other posts.js-fed routes.
-  "/blog": ["app/blog/page.js", "app/lib/posts.js"],
+  "/blog": ["app/blog/page.js", "app/lib/posts.js", "app/lib/one-limit-count.js"],
   "/blog/frontier-cyber": [
     "app/blog/frontier-cyber/page.js",
     "app/lib/posts.js",
