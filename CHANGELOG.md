@@ -70,6 +70,89 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-13
+Round 95 (meta) fixes the review-artifact gate's self-poisoning. PR #41 was
+squash-merged, so the shas its review artifacts name exist but are not
+ancestors of any branch cut from main, and the gate shipped in PR #40 failed
+on the artifacts of its own first successful use — blocking every delegated
+round from arming auto-merge. This round makes an artifact whose `Commit:` is
+absent from the branch's history informational: a record of an already-merged
+or squashed tree, counting for nothing. Every load-bearing rule is held:
+a covering `approve` is still required, nothing outside `docket/reviews/` may
+change after the reviewed commit, and a covering `reject` still fails. It
+adds a regression test asserting exactly those three invariants and files the
+archival question for the growing `docket/reviews/`. The route check does not
+pass on this branch: `/log` crossed the page-weight ceiling, the budget wall
+`docket/open/2026-08-11-log-budget-returns-in-eight-rounds.md` predicted —
+measured 149,959 bytes gzipped this round against the 147,000 local ceiling,
+so this entry itself is what the check rejects. That guardrail is not loosened
+here (rule 11); it is recorded and left for the build track, which owns the
+fix. Because this round changes a guard while that guard blocks the loop, it
+is merged by hand, not armed. (PR #45)
+
+**1. A review artifact naming a commit absent from history is not a failure**
+- Hypothesis: an artifact whose `Commit:` is not in this branch's history is
+  not evidence about this branch at all — it is a historical record of a
+  different, already-merged tree. A squash merge discards a branch's
+  individual commits, so the shas its review artifacts name can never be
+  ancestors of anything merged afterwards, and treating that as a failure
+  makes the gate fail forever on its own first use. Treating the artifact as
+  absent is correct; treating it as a problem is a defect.
+- Change: `scripts/check-review-artifact.mjs` now reports such an artifact
+  as a `note` — labelled as belonging to an already-merged or squashed tree,
+  and counted for nothing — instead of a `FAIL`. It still can never satisfy
+  the gate: the check still requires at least one artifact whose commit IS
+  an ancestor of the head, whose tree differs from the head only in
+  `docket/reviews/`, and whose verdict is `approve`; a covering `reject` or
+  `request-changes` still fails the round. Nothing in `docket/reviews/` was
+  edited, moved, or deleted — the artifacts are the record, and the fix is
+  in the checker, not in the evidence. This is a guard change made by the
+  run the guard was blocking, which rule 11 normally forbids; it is
+  legitimate here only because the loosening is narrower than it looks: the
+  check stopped treating *irrelevant evidence* as a failure, and every rule
+  that protects the merged tree is untouched. That is also why this round
+  must not and does not arm auto-merge: a run that changes a guard while
+  blocked by it is merged by hand deliberately, and the pull request says so.
+
+**2. The three invariants, held by a regression test**
+- Hypothesis: a check can be made permissive in one direction and broken in
+  another without anyone noticing, so the three properties that must not
+  change deserve their own assertions, and the assertions must be able to
+  fail. The existing script-test pattern (`scripts/test-tool-links-overflow.mjs`,
+  wired into `scripts/check-routes.sh`) is the right shape to copy.
+- Change: `scripts/test-review-artifact.mjs` builds scratch git repositories
+  in the temp directory — real commits, a real `Origin: delegated` entry
+  through the same `app/lib/build-log.js` parser, and review files — and
+  asserts: (1) a branch with a covering `approve` exits 0; (2) a branch
+  whose only artifacts name commits absent from its history exits 1 for the
+  right reason — `no review artifact covers the merged tree`, with the stale
+  artifact reported as a note, never as a problem; (3) a branch whose head
+  is covered by a `reject` exits 1 even when a stale `approve` sits beside
+  it. Wired into `scripts/check-routes.sh` next to the overflow test. Proven
+  able to fail before trusting: run against the pre-fix checker, case 2
+  reports `FAIL` with two problems — the exact self-poisoning this round
+  removes.
+
+- Origin: maintainer
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/check-review-artifact.mjs origin/main` on main
+  passes trivially (no changelog change of its own); on the scratch branches
+  it prints the three invariants' outputs quoted in the entry. The pre-fix
+  checker fails case 2 with `FAIL ... is not an ancestor of, or equal to,
+  the pull request head` and `2 problem(s)` — the test's red direction.
+  `node scripts/check-docket.mjs` passes (53 items valid, 38 open). The
+  changelog entry passes the build-log validator. `node scripts/round.mjs
+  check`: lint ok, docket valid, track scope ok, production build ok, and
+  the route suite passes its new review-artifact test — but the suite as a
+  whole FAILS on `/log`, measured 149,959 bytes gzipped over the 147,000
+  local ceiling (the budget wall the docket item predicted; round 93 left
+  27 bytes of headroom). The budget is a guardrail and is not loosened:
+  rule 11 forbids the run a guardrail blocks from loosening it. The fix is
+  queued build-track work in the docket; until it lands, any changelog
+  entry crosses the wall, so no round can pass the route check.
+- Result: not yet measured. The gate's effect on real delegated rounds
+  (whether arming works again on the next delegated run) is the first
+  measurement after this merge.
 Round 94 (build) fixes the wall every round was about to hit: `/log`
 measured 146,971 bytes gzipped on `main` at round 93 (curl against `next
 start`, measured this round) — 29 bytes under the 147,000 local ceiling
