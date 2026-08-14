@@ -69,6 +69,224 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-14
+Round 96 (meta) replaces the supervisor's liveness test before it can destroy
+the loop it protects. The old test measured the mtime of the iteration's own
+log, and that log is silent for the whole duration of a nested round — the
+supervisor dispatches `opencode run` and waits, writing nothing — so at the
+default `STALL_SECONDS=900` it would have killed every healthy round about
+fifteen minutes in, and the failure would have looked like the round's own,
+not the supervisor's. The new liveness reads `time.updated` on `/session` from
+the OpenCode server — the shared store advances it for sessions started by
+other processes — backed by a CPU vote over the server's process tree and with
+the log mtime demoted to a deliberate third signal. The round's first stop
+path killed the CLI client it launched, translating the child's msys pid and
+calling `taskkill //T //F //PID`. Review (this branch's review of the first
+submission) measured that path to be wrong in a way the harness could not see:
+an attached round's work does not live in the client's process tree, it lives
+in the server's, so killing the client left the session either working to
+completion (16,210 output and 4,066 reasoning tokens produced after the kill,
+`time.updated` advancing ~238s past it) or a permanent busy zombie that only
+the session API could clear. Every harness proof passed because the stub's
+work sat inside the killed tree — the defect was the test design, not the
+code — and the round's claim that a stalled iteration "is really gone" was
+true of the client and false of the round. The stop path was rebuilt as a
+session abort: `POST /session/<id>/abort` cancels the round where it actually
+runs, which deleted most of the first stop path's machinery (winpid
+translation, the `/proc/<pid>/winpid` read, `taskkill //T`, the pid-recycle
+race, the server-refusal guard). Three sessions built the first version —
+61f0689 takes the salvage of the first, which killed its own server; 84eb2da
+adds the liveness and the kill path; 03b9453, co-authored by Claude Opus 5,
+adds the stop-path contract and then hangs on a harness whose backgrounded
+stub inherited the tool's stdout — a fourth ran the review (596e030), and a
+fifth, spent on this correction, died on a bare `ls /proc/` under the
+session's own permission layer. This finishing session reproduced the review's
+finding with its own probe, rebuilt the stop path as an abort, and re-proved
+the round against the deployment topology.
+
+**1. Liveness is the session's `time.updated`, not the iteration log's mtime**
+- Hypothesis: the iteration log is silent for the whole duration of a nested
+  round — the supervisor dispatches `opencode run` and waits, and minutes pass
+  with nothing written, so silence is the normal state of a healthy loop. A
+  supervisor keyed on that log's mtime alone (as PR #42's first version was)
+  would decide a perfectly healthy round had hung and kill it, every time,
+  roughly `STALL_SECONDS` in — at the default 900 seconds that is every
+  healthy round about fifteen minutes in — and because the supervisor then
+  records the killed iteration as the round's failure, the fault would read as
+  the rounds' own and nobody would look for it in the supervisor.
+- Change: liveness is now "did any of three signals advance recently". The
+  primary signal is `time.updated` on `GET /session` from the OpenCode server:
+  the shared store records it on every session while it works, including
+  sessions started by a different process, so an advance is real activity
+  (measured 13 August: two concurrent rounds reported 30s/884s and then
+  25s/11s since last update across a 45-second interval, tracking real work).
+  The second signal is CPU consumed in the server's process tree, rooted on
+  the pid listening on the server's port — a round launched with `--attach`
+  runs its tool shells inside the server's tree (measured 14 August: a tool
+  shell spawned by an `--attach` session descended from the server process,
+  not the CLI client) — which carries the case of a long silent generation or
+  tool call that freezes `time.updated` (measured 13 August: age grew 6s to
+  37s across a 40-second busy tool; measured again 14 August: frozen ~60s at
+  zero tokens before a working probe round jumped to 1,208 output and 3,946
+  reasoning tokens in one poll; and measured across the review's sessions
+  this round: a 7,738-output/4,867-reasoning generation kept `time.updated`
+  frozen and tokens at 0/0 for 29 samples, ~145s, then jumped to the final
+  counts in one poll — `/session` reports a long generation only at
+  completion, and `time.updated` advances per completed step, not
+  continuously). The session-API heartbeat alone would therefore read a
+  healthy long generation as silent, which is why the CPU vote over the
+  server tree is load-bearing rather than a fallback of convenience: it is
+  what carries liveness through a long generation. And `STALL_SECONDS` must
+  stay comfortably above the longest generation a round can run: at the
+  current default of 900, the longest measured generation (~145s frozen,
+  ~157s to the completion jump on the session record) leaves roughly 6x of
+  margin — adequate today, and the margin is the point, because a generation
+  that grows toward the stall window would read as a stall from the session
+  API alone. The log mtime remains as the third, last
+  vote. A curl that fails or a server that answers garbage yields no signal,
+  never a stop on its own. The decision logic is verified with stubs
+  (`ORCHESTRATE_COMMAND` pointed at stubs, never at a real prompt): a silent
+  stub past the stall threshold is stopped and really gone; a working round is
+  not stopped (the regression that matters); a dry run (`ORCHESTRATE_DRY_KILL=1`)
+  stops nothing and logs what it would have stopped. One harness failure this
+  round was the harness's own: the pin that copies the branch's scripts into
+  the test clone was uncommitted, and the supervisor's iteration-start
+  `git checkout main` discarded it — the CPU probe then ran nothing and a busy
+  stub looked stalled. The pin is now committed into the clone's own `main`
+  with the remote removed, so neither the checkout nor the pull can move the
+  tested tree. This block also corrects the reason `/session/status`
+  was rejected as the signal. The first version of this entry said it reports
+  only the sessions the queried server owns in memory, so CLI-launched rounds
+  never appear — a rationale that came from this round's brief. Measurement
+  showed that to be false: the reviewer's attached probe sessions, launched
+  exactly as the supervisor launches rounds, appeared in `/session/status` as
+  `{"type":"busy"}` throughout their runs, because attached rounds are
+  server-owned. `/session` is still the right signal, for a different reason:
+  `/session/status` carries no timestamps, so it cannot distinguish a working
+  round from a stuck zombie, and `time.updated` can.
+
+**2. The stop path aborts the session; the client kill is gone**
+- Hypothesis: killing the CLI client that launched the round stops the round.
+  The round's work lives in the client's process tree, so killing the
+  translated winpid with `taskkill //T //F //PID` removes it root-first; and
+  because `taskkill //T` only descends, the ancestry-climbing bug — a previous
+  session killed the maintainer's OpenCode server by walking a process tree
+  into its own — is impossible by construction.
+- Change: the hypothesis is false for attached rounds, and the harness could
+  not see it. This round reproduced the review's measurement before touching
+  the code: a probe round launched with the supervisor's exact shape, its
+  client killed with `taskkill //T //F //PID` (winpid 27892), stayed at 0
+  tokens with `time.updated` frozen for ~180s and then produced 4,066 output
+  and 7,038 reasoning tokens with `time.updated` advancing 109s past the kill
+  — the work survived the client. The supervisor therefore no longer kills the
+  round's process at all. It launches with a generated `--title` stamp and
+  records the round's session id by polling `GET /session` for the entry whose
+  title matches the stamp and whose directory is this repository — handling
+  the id appearing a moment after launch, and logging it when the id never
+  appears (a lost id means a lost abort, not a lost round). On a stall
+  decision it sends `POST /session/<id>/abort`, then waits, bounded
+  (`ORCHESTRATE_ABORT_WAIT`, default 90s), for two confirmations rather than
+  assuming: the client exits on its own, and the session stops advancing on
+  the server. Only a client still alive after that bound is killed, as a last
+  resort: a plain `kill` then `kill -9` of the msys pid bash already holds
+  (`$!`). That fallback is not claimed to be safe by construction — a pid
+  recycled between the liveness check and the kill lands the signal on an
+  unrelated process, and in the deployment topology it reaches only the
+  client, never the server tree where the round's work lives. The winpid
+  translation, the `/proc/<pid>/winpid` read, `taskkill //T`, and the
+  server-refusal guard are deleted; `orchestrate-cpu.ps1` keeps its descent-
+  only walk but roots it on the server tree alone, and
+  `orchestrate-liveness.sh` gains `api_session_id` and `api_session_updated`
+  for the abort path. The stop-path contract from 03b9453 survives: the caller
+  never waits on a round that is still running. The session lookup fails
+  closed on ambiguity: `api_session_id` rejects candidates whose
+  `time.created` predates this iteration's launch, and if more than one
+  same-title candidate survives it returns no id and logs the ambiguity
+  naming the ids — an abort of nothing plus a warning, never a silent pick of
+  the newest, because a stale-but-active session sharing the stamp must not
+  be abortable as this round (duplicate titles already exist in the server's
+  store). The confirmation loop deliberately has no single-bump tolerance:
+  every poll compares `time.updated` against the fixed pre-abort value, so a
+  post-abort bump would hold the full wait and end with a false "the abort
+  did not stop it" note. That tolerance is not implemented because an abort
+  never bumps `time.updated` (measured 14 August across completed, zombie,
+  and mid-generation aborts — all left it frozen); a session that is
+  genuinely still working keeps advancing, which is exactly what the
+  confirmation exists to catch. The comment once claimed the tolerance
+  existed; it described behaviour the code lacked, which is a defect in a
+  script that runs unattended, and this entry records that it does not.
+
+**3. The harness proved the wrong thing — and no longer does**
+- Hypothesis: the stub harness's topology was the deployment topology. The
+  stubs' work sat inside the tree the supervisor killed, so a killed stub
+  really was gone, and the proofs that passed under that assumption proved
+  the deployment shape too.
+- Change: they did not. The review measured the difference directly: killing
+  the client of a real attached round either let the session keep working to
+  completion (a duplicate round, free to finish and push) or left a busy
+  zombie only the session API could clear. The stub harness's "really gone"
+  assertion was also narrower than it looked: it checked the stub's own pid,
+  never its descendants, while every harness run since midnight had leaked one
+  orphaned `sleep` process through `taskkill //T` — nine such orphans were
+  found on this machine and cleaned up. The proofs now match the topology.
+  The decision logic stays stub-based, and the new harness (24 of 24
+  assertions, at `C:/Users/BadBitch/AppData/Local/Temp/opencode/sup-live/
+  harness.sh`) adds the descendant check the old one lacked: it asserts the
+  machine's `sleep.exe` count is unchanged across every run. The keep-busy
+  proof now puts the stub's work where deployment puts it — a fake server
+  (port 59998, answering `[]` so only the CPU vote can move) spawns a
+  CPU-burning child in its own tree, and the supervisor, rooting its CPU probe
+  on the fake server's listener, correctly refuses to stall (measured 14
+  August: 79 then 114 tenths of CPU across a 3-second sample, rooted on the
+  listener's winpid). And one proof is now a real attached round
+  (`probe-abort-real.sh`, outside the repository): `opencode run --attach
+  http://127.0.0.1:4097 --title <stamp> --model
+  opencode-go/deepseek-v4-flash --variant max` with a pure-thinking prompt
+  that cannot use tools or touch the repository. What this probe could not
+  show is a mid-generation stop: its trigger was "first sample with output >
+  0", and `/session` reports tokens and `time.updated` only at completion
+  for a long generation, so that trigger necessarily fires after the
+  generation has finished. Its session record holds the final counts (1,208
+  output, 3,946 reasoning) and its client log the complete essay — the
+  frozen `time.updated` and non-growing tokens the probe measured were the
+  completed state, and the client would have exited on its own. Every number
+  the probe printed is true; what it demonstrated is that an abort of a
+  finished round is accepted and stops nothing that was not about to stop
+  anyway. The review found this gap, and the mid-generation stop is
+  established by the review's own probe instead: aborting 75 seconds into a
+  ~150-second generation, the session froze at 0/0 tokens across 16
+  post-abort samples over 48s, never reaching the 7,738 output / 4,867
+  reasoning tokens its unaborted twin produced, the client exited with
+  `Error: Aborted` ~3s later, and the machine held 0 `sleep` processes and 0
+  processes carrying the probe's stamp. This block is the most important one
+  in the round: the first version
+  of the harness proved the wrong thing about the wrong tree, and the finding
+  that a stub proof cannot stand in for the deployment topology is worth more
+  than the fix it produced.
+
+- Origin: delegated
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope, production build, full route suite (a SKIPPED group counts as a
+  failure). `bash -n` on both shipped shell files — syntax ok. Supervisor
+  decision-logic proofs via the harness at
+  `C:/Users/BadBitch/AppData/Local/Temp/opencode/sup-live/harness.sh`: 24 of
+  24 assertions pass, including the sleep-orphan count on every proof (quoted
+  in blocks 1–3) and test 4, which proves `api_session_id` rejects a stale
+  same-title candidate and fails closed on duplicate fresh titles (quoted in
+  block 2). The mid-generation stop is established by the review's 75s probe
+  (quoted in block 3); the round's own probe demonstrates the completed-state
+  abort and the entry says so. The round also reproduced the review's kill
+  finding with its own probe (block 2). Machine
+  left as found: one `opencode` process (the 4097 server), no listeners on
+  3000/3250/3260/8101, zero `sleep` processes, no supervisor or stubs running,
+  `git status` clean.
+- Result: not yet measured. The observable success is the supervisor running
+  unattended through nested rounds without stopping a healthy one; the
+  supervisor is still not running at the time of this entry, so that number
+  does not exist yet.
+
 ### 2026-08-13
 Round 95 (meta) finishes the review-artifact round PR #45 interrupted, and
 fixes a live blocker PR #45 left behind. The round started as round 94, but
