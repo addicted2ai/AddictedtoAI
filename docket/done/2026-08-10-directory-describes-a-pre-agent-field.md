@@ -14,9 +14,13 @@ The Directory's four categories are "Chat & Assistants", "Coding",
 "Image, Video & Audio" and "Workflow & Data". They were drawn once and never
 revisited, and they describe the field as it was before agents and tool-calling
 protocols became its centre of gravity. There is no category a coding agent, an
-MCP server, or an agent framework belongs in, and the words "agent" and "MCP"
-appear nowhere on this site — the only match in `app/` is the `userAgent` key in
-`robots.js`.
+MCP server, or an agent framework belongs in, and no category, Directory
+entry, or navigation is named for agents or MCP — the Directory has no home
+for them. (The original text claimed the words "agent" and "MCP" appeared
+nowhere on this site, with the `userAgent` key in `robots.js` the only match
+in `app/`. Round 99's review found that false — the words already appeared in
+published posts and in Directory entry descriptions — and this sentence was
+corrected after that review.)
 
 The evidence that this is a real shift rather than a fashion is that it shows up
 twice, independently.

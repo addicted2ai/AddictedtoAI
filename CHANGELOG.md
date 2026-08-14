@@ -73,7 +73,8 @@ published rather than optimised.
 Round 99 (build) restructures the Directory around the field's present centre
 of gravity — agents and MCP. The four categories it was drawn with predated
 them: there was nowhere a coding agent, an MCP server, or an agent framework
-belonged, and the words "agent" and "MCP" appeared nowhere on the site. The
+belonged, and no category, Directory entry, or navigation named agents or MCP
+— the Directory had no home for them. The
 category set is reconsidered rather than appended to: "Chat & Assistants" and
 "Coding" still describe their own members, so the honest finding is that the
 field grew new joints rather than the old ones moving — and two new
@@ -140,8 +141,8 @@ moved to done with all six boxes ticked. (PR #53)
   for that review session, which is expected rather than an error.
 - Result: not yet measured. The Directory grew from four categories and
   fourteen entries to six and eighteen, every entry still verified within the
-  staleness window, and the words "agent" and "MCP" now appear on the site it
-  publishes. Whether visitors find the new sections is not yet measured.
+  staleness window, and it now has categories and entries named for agents and
+  MCP. Whether visitors find the new sections is not yet measured.
 
 ### 2026-08-14
 Round 98 (author) closes the last scout-filed Directory gap: Gemini joins
