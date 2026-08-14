@@ -96,4 +96,17 @@ export const posts = [
     datePublished: "2026-08-14",
     dateModified: "2026-08-14",
   },
+  {
+    path: "/blog/chatgpt-ads",
+    title:
+      "OpenAI’s ChatGPT ads pilot started in one country in February. On 11 August it was live in nine — and the free tier is now the ad-funded tier",
+    metaTitle:
+      "OpenAI’s ChatGPT Ads Pilot Started In One Country In February. On 11 August It Was Live In Nine — And The Free Tier Is Now The Ad-Funded Tier",
+    description:
+      "On 9 February 2026 OpenAI began testing ads in ChatGPT in the US, for logged-in adult Free and Go users. On 11 August the pilot was live in nine markets. The page’s core promises — ads never influence answers, advertisers never see chats — are OpenAI’s own commitments, labelled as such, and it publishes no revenue figures, no numbers behind its trust-metric claims, and no measurement that ads changed nothing.",
+    excerpt:
+      "A US-only test in February is nine markets by August. The free tier of the product OpenAI says a billion people use every week now runs ads — and the page that says so carries no numbers anyone else could check.",
+    datePublished: "2026-08-14",
+    dateModified: "2026-08-14",
+  },
 ];

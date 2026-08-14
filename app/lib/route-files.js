@@ -41,6 +41,7 @@ export const ROUTE_FILES = {
     "app/blog/fable-5-export-controls/page.js",
     "app/lib/posts.js",
   ],
+  "/blog/chatgpt-ads": ["app/blog/chatgpt-ads/page.js", "app/lib/posts.js"],
   "/charter": ["app/charter/page.js", "app/lib/charter.js"],
   "/what-vendors-promise": [
     "app/what-vendors-promise/page.js",

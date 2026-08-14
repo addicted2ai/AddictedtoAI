@@ -129,29 +129,34 @@ export const ARCHIVE = "archive";
 // listed source files change, so /blog and /blog/fable-5-export-controls
 // move to 101; the other post routes and / list posts.js, untouched this
 // round, and stay on 100.
+//
+// Round 103 (author) publishes the chatgpt-ads post. app/lib/posts.js is a
+// listed source file of /, /blog, and every post route, and this round
+// touches it, so all eight of those routes move to 103 together — the same
+// pattern as rounds 87 and 100. The new route is 103 by construction: this
+// round built it. app/page.js is untouched, but / moves anyway because
+// posts.js feeds its homepage teaser.
 export const PRODUCING_ROUNDS = {
-  // Round 100 (author): posts.js gained the fable-5-export-controls post,
-  // a listed source file of /, so the newest recorded change to this
-  // page's files is this round's. (Round 94 before it: app/page.js.)
-  "/": 100,
-  // Round 101 (audit): app/blog/page.js changed again — the merged-over-
-  // the-check count is corrected from five to seven, re-swept from the
-  // GitHub API this round. (Round 100 before it: posts.js gained the new
-  // post; round 97 before that: the admin-bypass passage.)
-  "/blog": 101,
-  // Round 100 (author): the new post sits in posts.js, a listed source
+  // Round 103 (author): posts.js gained the chatgpt-ads post, a listed
+  // source file of /, so the newest recorded change to this page's files
+  // is this round's. (Round 100 before it: posts.js gained the fable-5
+  // post.)
+  "/": 103,
+  // Round 103 (author): app/lib/posts.js changed again — the new post is a
+  // listed source file of /blog. (Round 101 before it: app/blog/page.js
+  // corrected the merged-over-the-check count; round 100 before that:
+  // posts.js gained the new post.)
+  "/blog": 103,
+  // Round 103 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
-  // The fable-5-export-controls route is 100 by construction: this round
-  // built the page.
-  "/blog/frontier-cyber": 100,
-  "/blog/claude-code-auto-mode": 100,
-  "/blog/cyber-eval-cascade": 100,
-  "/blog/gpt-5-6-price-drop": 100,
-  // Round 101 (audit): this post's own page changed — the Mythos 5
-  // restoration timing was corrected from "a week earlier" to "five days
-  // earlier", measured against the 26 June approval in the redeployment
-  // post. (Round 100 before it: the page was built.)
-  "/blog/fable-5-export-controls": 101,
+  // The chatgpt-ads route is 103 by construction: this round built the
+  // page.
+  "/blog/frontier-cyber": 103,
+  "/blog/claude-code-auto-mode": 103,
+  "/blog/cyber-eval-cascade": 103,
+  "/blog/gpt-5-6-price-drop": 103,
+  "/blog/fable-5-export-controls": 103,
+  "/blog/chatgpt-ads": 103,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 83 (build) built this page and its parser. New route, so its
