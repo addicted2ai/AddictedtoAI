@@ -57,21 +57,25 @@ ORCHESTRATE_COMMAND="${ORCHESTRATE_COMMAND:-}"
 #      13 August: two concurrent rounds reported 30s/884s and then 25s/11s
 #      since last update across a 45-second interval, tracking real activity.
 #      A curl that fails or a server that answers garbage yields no signal,
-#      never a kill on its own.
+#      never a stop on its own. `/session/status` carries no timestamps and
+#      cannot tell a working round from a stuck zombie, which is why `/session`
+#      was chosen over it (an earlier entry gave a different reason, which
+#      measurement corrected -- see the round record).
 #
-#   2. CPU in the round's process trees (scripts/orchestrate-cpu.ps1, via
+#   2. CPU in the server's process tree (scripts/orchestrate-cpu.ps1, via
 #      scripts/orchestrate-liveness.sh). A hung process burns no CPU; a
-#      working one does. The trees are rooted on Windows pids: the launched
-#      child's (translated from its msys pid) and the server's, because a
-#      round launched with `--attach` runs its tool shells and `node` work
-#      inside the server's tree -- measured 14 August: a tool shell spawned by
-#      a --attach session descended from the server process, not from the CLI
-#      client -- so rooting on the child alone would show a flat total for a
-#      busy round. The walk only descends, so it never counts the machine's
+#      working one does. The tree is rooted on the server's Windows pid (the
+#      process listening on ORCHESTRATE_SERVER's port), because a round
+#      launched with `--attach` runs its tool shells and `node` work inside
+#      the server's tree -- measured 14 August: a tool shell spawned by an
+#      --attach session descended from the server process, not from the CLI
+#      client. The walk only descends, so it never counts the machine's
 #      unrelated work as progress. This vote is load-bearing even when the
 #      server is up: a session's time.updated is frozen for the whole duration
-#      of a long silent tool call (measured 13 August: age grew 6s to 37s
-#      across a 40-second busy tool), and the CPU tree carries that case.
+#      of a long silent generation or tool call (measured 13 August: age grew
+#      6s to 37s across a 40-second busy tool; measured 14 August: frozen
+#      ~238s while 16,000 tokens were produced), and the CPU tree carries that
+#      case.
 #
 #   3. Log mtime, and deliberately last. The orchestrator's own log is silent
 #      for the entire duration of a nested round: when it dispatches
@@ -82,14 +86,18 @@ ORCHESTRATE_COMMAND="${ORCHESTRATE_COMMAND:-}"
 #      in, destroying exactly the work it exists to protect. mtime stays only
 #      as a cheap third vote.
 #
-# The kill path is Windows-primitive, not a process-tree walk. A previous
-# session's hand-rolled walk climbed into its own ancestry and killed the
-# maintainer's OpenCode server, so the supervisor now translates the child's
-# msys pid to its Windows pid (/proc/<msys-pid>/winpid) and calls
-# `taskkill //T //F //PID <winpid>`: /T kills the process and its descendants
-# and can never climb to anything above the child. A guard refuses the kill
-# if the target is the process serving ORCHESTRATE_SERVER, and a dry-run mode
-# (ORCHESTRATE_DRY_KILL=1) logs what would be killed and kills nothing.
+# The stop path is a session abort, not a process kill. Killing the CLI client
+# that launched the round does not stop the round: an attached round's work
+# lives in the server's tree, not the client's -- measured 14 August, killing
+# the client left the session either working to completion (16,210 output and
+# 4,066 reasoning tokens produced after the kill, `time.updated` advancing
+# ~238s past it) or a permanent busy zombie that only the session API could
+# clear. The server owns the work, so the server must stop it:
+# `POST /session/<id>/abort` cancels the session, and the attached client then
+# exits on its own. The session id is found by matching the iteration's stamp
+# against the sessions' titles in `GET /session` -- ids are strings from the
+# API, never pids. A dry-run mode (ORCHESTRATE_DRY_KILL=1) logs what would be
+# aborted and killed, and does neither.
 STALL_SECONDS="${ORCHESTRATE_STALL:-900}"
 HARD_TIMEOUT="${ORCHESTRATE_TIMEOUT:-5400}"
 TICK_SECONDS="${ORCHESTRATE_TICK:-30}"
@@ -97,9 +105,18 @@ TICK_SECONDS="${ORCHESTRATE_TICK:-30}"
 # previous sample. 15 tenths per sample window is far below any working round
 # and far above sampling noise.
 CPU_VOTE_TENTHS=15
-# Dry-run the kill path: log what would be killed and kill nothing. Used to
-# exercise the stall decision end to end without ever terminating a round.
+# Dry-run the stop path: log what would be aborted and killed and do neither.
+# Used to exercise the stall decision end to end without ever stopping a round.
 DRY_KILL="${ORCHESTRATE_DRY_KILL:-0}"
+# How long, after a stop decision, to wait for two confirmations before the
+# last-resort client kill: the round's own client exits, and the session stops
+# advancing on the server.
+ABORT_WAIT_SECONDS="${ORCHESTRATE_ABORT_WAIT:-90}"
+# How many times the launch-time session-id poll runs (each attempt sleeps 5s
+# between probes). The session appears a moment after `opencode run` starts;
+# this is the bound on "it never appeared". A lost id means a lost abort, not
+# a lost round -- the iteration runs either way.
+SESSION_POLL_TICKS="${ORCHESTRATE_SESSION_POLL:-12}"
 
 mkdir -p "$LOG_DIR"
 
@@ -130,53 +147,94 @@ clear_orphans() {
   done
 }
 
-# Kill the iteration's process tree, root first, descendants with it.
+# Stop the iteration: cancel its session on the server, then wait, bounded,
+# for the round's own client to exit and for the session to stop advancing.
+# Neither is assumed -- the abort returns the moment the server accepts it and
+# the round can take a beat to wind down -- so both are confirmed by polling
+# before the supervisor moves on.
 #
-# The pid bash reports for a backgrounded job ($!) is an msys pid; PowerShell,
-# CIM and taskkill all need the Windows pid, so it is translated through the
-# msys /proc table first. The translation is stable for the process's whole
-# lifetime (verified 14 August: the winpid of a launched native exe was alive
-# and unchanged at 20/40/60/80/100 seconds), so it is read once at launch and
-# re-read here in case the child is already gone.
+# A client still alive when the wait ends is killed as a last resort: a plain
+# `kill` (then `kill -9`) of the msys pid bash already holds ($!), the pid of
+# the process this shell itself launched. That kill reaches the client process
+# and its descendants only in the stub topology; in the deployment topology
+# the round's work lives in the server's tree, which a client kill cannot
+# reach -- aborting the session is what stops that, which is why the abort
+# comes first. The last resort can also be wrong: if the client died and its
+# pid was recycled between the liveness check and the kill, the signal lands
+# on an unrelated process. It is a bounded cleanup, not a guarantee, and it is
+# never claimed to be impossible to misdirect.
 #
-# `taskkill //T //F //PID <winpid>` is the whole kill. It takes the process
-# and its descendants and never climbs, so it cannot reach the OpenCode server
-# or the supervisor's own ancestry -- a previous session killed the
-# maintainer's server by walking a process tree into its own, and this is the
-# primitive that makes that class of bug impossible. The doubled slashes are
-# deliberate: git-bash would otherwise rewrite /T as a path. The one target
-# the guard still refuses is the server itself: if the translated winpid is
-# the process listening on ORCHESTRATE_SERVER's port, the translation is
-# wrong (the round is a fresh launch, never the server), so nothing is killed
-# and the refusal is logged. Dry-run mode logs the would-be target and kills
-# nothing. Returns 0 when the child was actually killed (or already gone) and
-# 1 when the kill did not happen -- the caller must not wait on a round that
-# is still running.
-kill_iteration() {
-  child="$1"
-  winpid="$(cat "/proc/$child/winpid" 2>/dev/null)"
-  if [ -z "$winpid" ]; then
-    if [ "$DRY_KILL" -eq 1 ]; then
-      note "stall: would kill msys pid $child (no winpid translation)"
+# When no session id was recorded, the abort half is skipped and the stop is
+# the last-resort kill alone -- a lost id means a lost abort, not a lost
+# round, and the supervisor says so in its log.
+#
+# Returns 0 when the client is confirmed gone, 1 when it is still running --
+# the caller must not wait on a round that is still running (dry-run, a
+# failed abort, or a client that survived the last resort), so the iteration
+# is counted failed and the loop moves on.
+stop_iteration() {
+  if [ "$DRY_KILL" -eq 1 ]; then
+    if [ -n "${sesid:-}" ]; then
+      note "dry-run: would abort session $sesid"
+    else
+      note "dry-run: no session id recorded, would kill client msys pid $child"
+    fi
+    return 1
+  fi
+
+  if [ -n "${sesid:-}" ]; then
+    updated_before=$(api_session_updated "$sesid")
+    note "aborting session $sesid (last update seen: ${updated_before:-unknown})"
+    code=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" -X POST "$ORCHESTRATE_SERVER/session/$sesid/abort")
+    note "abort -> HTTP $code"
+    if [ "$code" != "200" ]; then
+      note "abort was not accepted -- the server could not be told to stop this round"
+    fi
+  else
+    note "no session id recorded for this iteration -- the abort path is unavailable"
+  fi
+
+  # Bounded wait for the two confirmations. A stopped session either stops
+  # changing time.updated or disappears from /session; both read as stopped.
+  # A single post-abort bump of time.updated is tolerated: the check compares
+  # against the last value seen, so a bumped-but-frozen session reads stopped
+  # on the next poll, while a session that keeps working never matches.
+  waited=0
+  client_gone=0
+  session_stopped=1
+  while [ "$waited" -lt "$ABORT_WAIT_SECONDS" ]; do
+    sleep 5
+    waited=$((waited + 5))
+    if ! kill -0 "$child" 2>/dev/null; then
+      client_gone=1
+    fi
+    if [ -n "${sesid:-}" ]; then
+      now_upd=$(api_session_updated "$sesid")
+      if [ -n "$now_upd" ] && [ "$now_upd" != "$updated_before" ]; then
+        session_stopped=0
+      fi
+    fi
+    if [ "$client_gone" -eq 1 ] && [ "$session_stopped" -eq 1 ]; then
+      break
+    fi
+  done
+
+  if [ "$client_gone" -eq 1 ]; then
+    note "client exited on its own (waited ${waited}s)"
+  else
+    note "client still alive after ${waited}s -- killing it as a last resort (msys pid $child)"
+    kill "$child" 2>/dev/null || true
+    sleep 2
+    kill -9 "$child" 2>/dev/null || true
+    sleep 2
+    if kill -0 "$child" 2>/dev/null; then
+      note "client survived even the last-resort kill -- leaving it running and counting the iteration failed"
       return 1
     fi
-    note "no winpid for child $child -- falling back to kill -9"
-    kill -9 "$child" 2>/dev/null
-    return 0
   fi
-  if [ "$winpid" = "$(server_winpid)" ]; then
-    note "REFUSING to kill winpid $winpid: it is the server on $ORCHESTRATE_SERVER"
-    return 1
+  if [ "$session_stopped" -eq 0 ]; then
+    note "session ${sesid:-unknown} was still advancing when the wait ended -- the abort did not stop it"
   fi
-  if [ "$DRY_KILL" -eq 1 ]; then
-    note "stall: would kill winpid $winpid (child msys pid $child)"
-    return 1
-  fi
-  note "killing iteration: taskkill //T //F //PID $winpid (child msys pid $child)"
-  taskkill //T //F //PID "$winpid" >/dev/null 2>&1 || true
-  # If the Windows kill missed (the process outlived it, or taskkill could
-  # not see it), fall back to the msys kill.
-  kill -0 "$child" 2>/dev/null && kill -9 "$child" 2>/dev/null
   return 0
 }
 
@@ -229,23 +287,40 @@ while true; do
   killed=0
   note "iteration child msys pid $child"
 
-  # The child is found by pid, never by command-line marker: a PowerShell
-  # probe that matches a marker in the command line matches its own process
-  # (measured 14 August), which is how a naive "kill everything carrying my
-  # marker" kills the wrong thing. Translate once -- the winpid is stable for
-  # the process's whole lifetime -- and root the CPU walk on the child's tree
-  # plus the server's, where a --attach round actually works.
-  child_winpid="$(cat "/proc/$child/winpid" 2>/dev/null || true)"
+  # The session is found by title and directory, never by pid: /session has no
+  # pids, and the session id is how the server is told to stop the round. It is
+  # not available at launch -- the session appears a moment after `opencode
+  # run` starts -- so it is polled for a bounded window. An iteration whose
+  # session never appears still runs (a lost id means a lost abort, not a lost
+  # round): the stop path then skips the abort and goes straight to the
+  # last-resort client kill.
+  sesid=""
+  for _ in $(seq 1 "$SESSION_POLL_TICKS"); do
+    sesid=$(api_session_id "$marker")
+    [ -n "$sesid" ] && break
+    if ! kill -0 "$child" 2>/dev/null; then
+      break
+    fi
+    sleep 5
+  done
+  note "session ${sesid:-not found} for title $marker"
+
+  # The CPU vote is rooted on the server's process tree alone, where an
+  # --attach round actually works (measured 14 August). The root is the pid
+  # listening on the server port -- never a name and never a command-line
+  # marker: a probe that matches a marker string in the command line matches
+  # its own process (measured 14 August), which is how a naive kill finds the
+  # wrong thing.
   server_pid="$(server_winpid)"
-  note "child winpid ${child_winpid:-untranslated}, server winpid ${server_pid:-not found}"
-  tree_prev="$(cpu_tenths "${child_winpid},${server_pid}")"
+  note "server winpid ${server_pid:-not found} -- CPU vote rooted on the server tree"
+  tree_prev="$(cpu_tenths "$server_pid")"
   tree_prev="${tree_prev:-0}"
 
   # The log is not the heartbeat. A hung session keeps its process and the
   # orchestrator's log stays silent while a nested round works, so liveness is
   # "any of the three votes advanced recently", not "the pid exists" and not
   # "the log grew recently". Any one vote advancing keeps the iteration alive;
-  # only a full three-signal silence for STALL_SECONDS kills it.
+  # only a full three-signal silence for STALL_SECONDS stops it.
   while kill -0 "$child" 2>/dev/null; do
     sleep "$TICK_SECONDS"
     now=$(date +%s)
@@ -256,7 +331,7 @@ while true; do
       progressed=1
     fi
 
-    tree_now=$(cpu_tenths "${child_winpid},${server_pid}")
+    tree_now=$(cpu_tenths "$server_pid")
     tree_now="${tree_now:-0}"
     tree_delta=$((tree_now - tree_prev))
     if [ "$tree_delta" -gt "$CPU_VOTE_TENTHS" ]; then
@@ -276,29 +351,29 @@ while true; do
 
     if [ $((now - last_progress)) -ge "$STALL_SECONDS" ]; then
       if [ -n "${newest:-}" ]; then
-        note "iteration stalled: no session update for $ORCHESTRATE_REPO on $ORCHESTRATE_SERVER ($((now - newest))s old), no CPU in the child/server process trees (winpids ${child_winpid:-?},${server_pid:-?}; +$tree_delta tenths since last sample), no log write ($((now - log_now))s old) -- killing it"
+        note "iteration stalled: no session update for $ORCHESTRATE_REPO on $ORCHESTRATE_SERVER ($((now - newest))s old), no CPU in the server tree (winpid ${server_pid:-?}; +$tree_delta tenths since last sample), no log write ($((now - log_now))s old) -- stopping it"
       else
-        note "iteration stalled: no session signal from $ORCHESTRATE_SERVER (unreachable or no session for $ORCHESTRATE_REPO), no CPU in the child/server process trees (winpids ${child_winpid:-?},${server_pid:-?}; +$tree_delta tenths since last sample), no log write ($((now - log_now))s old) -- killing it"
+        note "iteration stalled: no session signal from $ORCHESTRATE_SERVER (unreachable or no session for $ORCHESTRATE_REPO), no CPU in the server tree (winpid ${server_pid:-?}; +$tree_delta tenths since last sample), no log write ($((now - log_now))s old) -- stopping it"
       fi
-      kill_iteration "$child"
+      stop_iteration
       killed=$?
       break
     fi
     if [ $((now - started)) -ge "$HARD_TIMEOUT" ]; then
-      note "iteration exceeded hard timeout of ${HARD_TIMEOUT}s -- killing it"
-      kill_iteration "$child"
+      note "iteration exceeded hard timeout of ${HARD_TIMEOUT}s -- stopping it"
+      stop_iteration
       killed=$?
       break
     fi
   done
 
   if [ "${killed:-0}" -eq 1 ]; then
-    # Dry-run or a refused kill left the round running. Waiting on it would
-    # block the supervisor until the round finishes on its own, so the
-    # iteration is counted as failed and the loop moves on; whoever ran the
-    # dry-run cleans the leftover round up.
+    # Dry-run, or an abort and last-resort kill that both failed to stop the
+    # round. Waiting on it would block the supervisor until the round finishes
+    # on its own, so the iteration is counted as failed and the loop moves on;
+    # whoever ran the dry-run cleans the leftover round up.
     status=1
-    note "iteration left running -- kill was dry-run or refused"
+    note "iteration left running -- stop was dry-run or failed"
   else
     wait "$child" 2>/dev/null
     status=$?

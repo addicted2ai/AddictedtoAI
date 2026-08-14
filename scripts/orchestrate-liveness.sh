@@ -1,7 +1,7 @@
 # Liveness probes for scripts/orchestrate.sh, defined here so the supervisor
 # can source them and a test can source them directly.
 #
-# Both probes return empty output on failure, never a crash and never a false
+# The probes return empty output on failure, never a crash and never a false
 # "alive": the supervisor treats an empty probe as "no signal" and decides
 # from whatever signals remain. A supervisor that dies because a probe failed
 # is worse than one that is briefly less precise.
@@ -28,7 +28,7 @@ api_newest() {
           const dir = (s.directory || "").toLowerCase().replace(/[\\/]+$/, "");
           if (dir === want) {
             const u = Number(s.time && s.time.updated) || 0;
-            if (u > newest) newest = u;
+            if (u > 0 && u > newest) newest = u;
           }
         }
         if (newest > 0) console.log(Math.floor(newest / 1000));
@@ -37,25 +37,77 @@ api_newest() {
   '
 }
 
+# Session id of the iteration's own session: the entry in GET /session whose
+# title is exactly the per-iteration stamp and whose directory is this
+# project. The session is created a moment after `opencode run --attach`
+# starts, so the caller polls for it; empty means it has not appeared yet, or
+# never will. This is the id the supervisor hands to
+# POST /session/<id>/abort when an iteration stalls -- ids are strings from
+# the API, never pids.
+api_session_id() {
+  curl -s --max-time 10 "$HELPER_SERVER/session" 2>/dev/null | ORCH_REPO_WIN="$HELPER_REPO_WIN" ORCH_TITLE="$1" node -e '
+    let d = "";
+    process.stdin.on("data", c => { d += c; });
+    process.stdin.on("end", () => {
+      try {
+        const want = (process.env.ORCH_REPO_WIN || "").toLowerCase().replace(/[\\/]+$/, "");
+        const title = process.env.ORCH_TITLE || "";
+        const list = JSON.parse(d);
+        for (const s of (list || [])) {
+          const dir = (s.directory || "").toLowerCase().replace(/[\\/]+$/, "");
+          if (dir === want && s.title === title && s.id) {
+            console.log(s.id);
+            return;
+          }
+        }
+      } catch (e) { /* not JSON, or no matching session: no signal */ }
+    });
+  '
+}
+
+# time.updated, epoch seconds, for one session id, or empty. Used after an
+# abort to confirm the session has stopped advancing: a working session
+# changes this on every poll, a stopped one returns the same value, and one
+# the server has dropped returns empty -- which the caller reads as stopped.
+api_session_updated() {
+  curl -s --max-time 10 "$HELPER_SERVER/session" 2>/dev/null | ORCH_SESID="$1" node -e '
+    let d = "";
+    process.stdin.on("data", c => { d += c; });
+    process.stdin.on("end", () => {
+      try {
+        const want = process.env.ORCH_SESID || "";
+        const list = JSON.parse(d);
+        for (const s of (list || [])) {
+          if (s.id === want) {
+            const u = Number(s.time && s.time.updated) || 0;
+            if (u > 0) console.log(Math.floor(u / 1000));
+            return;
+          }
+        }
+      } catch (e) { /* not JSON, or session gone: no signal */ }
+    });
+  '
+}
+
 # Windows pid of the process listening on HELPER_SERVER's port, or empty when
-# no listener is visible from this machine. This is the one process the
-# supervisor must never kill, and -- because a round launched with --attach
-# runs its tool shells inside the server's tree -- the root that lets the CPU
-# probe see a busy round. Both uses need exactly this: the pid, not the name,
-# since every opencode process carries the same name.
+# no listener is visible from this machine. This is the root of the CPU probe:
+# a round launched with --attach runs its tool shells and `node` work inside
+# the server's tree (measured 14 August), so the listening process's tree is
+# where a busy round's CPU shows up. Found by port, never by name -- every
+# opencode process carries the same name.
 server_winpid() {
   port="${HELPER_SERVER##*:}"
   netstat -ano 2>/dev/null | grep -E "LISTENING" | grep -E ":${port}\b" | awk '{print $NF}' | head -1
 }
 
-# CPU consumed by the root Windows pids (comma-separated) and everything
-# beneath them, tenths of a second, via scripts/orchestrate-cpu.ps1. A hung
-# process burns no CPU; a working one does, and the walk sees the child `node`
-# processes and tool shells where the work actually happens. The caller
-# compares successive samples: only an *advance* is a signal. The roots are
-# pids, never names and never command-line markers: a probe that matches a
-# marker string in the command line matches its own process (measured
-# 14 August), which is how a naive kill finds the wrong thing.
+# CPU consumed by the root Windows pid (the server's) and everything beneath
+# it, tenths of a second, via scripts/orchestrate-cpu.ps1. A hung process
+# burns no CPU; a working one does, and the walk sees the server's `node`
+# processes and tool shells where the round's work actually happens. The
+# caller compares successive samples: only an *advance* is a signal. The root
+# is a pid, never a name and never a command-line marker: a probe that
+# matches a marker string in the command line matches its own process
+# (measured 14 August), which is how a naive kill finds the wrong thing.
 cpu_tenths() {
   powershell -NoProfile -ExecutionPolicy Bypass -File "$HELPER_REPO/scripts/orchestrate-cpu.ps1" -RootPids "${1:-}" 2>/dev/null | tr -dc '0-9'
 }

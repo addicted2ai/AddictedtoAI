@@ -2,17 +2,18 @@
 # everything beneath them.
 #
 # The liveness fallback for scripts/orchestrate.sh needs to see work wherever
-# it actually happens. The roots are the launched child's Windows pid (its
-# msys pid translated via /proc/<msys-pid>/winpid) and the pid of the process
-# serving ORCHESTRATE_SERVER: a round launched with `--attach` runs its tool
-# shells inside the server's tree (measured 14 August: a tool shell spawned
-# by a --attach session descended from the server process, not from the CLI
-# client), so a busy round can look flat when only the round CLI's own tree
-# is counted.
+# it actually happens. The root is the pid of the process serving
+# ORCHESTRATE_SERVER: a round launched with `--attach` runs its tool shells
+# and `node` work inside the server's tree (measured 14 August: a tool shell
+# spawned by a --attach session descended from the server process, not from
+# the CLI client), so a busy round would look flat if only the round CLI's own
+# tree were counted. The supervisor passes one root, the server's; the
+# comma-separated form is kept so a test can probe several trees at once.
 #
 # The walk is strictly downward, from the roots through ParentProcessId, so
 # it can never reach anything above the roots -- the supervisor's own
-# ancestry, or the OpenCode server's. It never matches process names or
+# ancestry, or the OpenCode server's (when the server is the root, that is
+# exactly the tree being measured). It never matches process names or
 # command-line markers: a probe that greps command lines for a marker matches
 # its own process (measured 14 August), which is how a naive kill finds the
 # wrong thing, and name matching would count every opencode process on the
