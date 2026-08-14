@@ -34,6 +34,17 @@
 // satisfy the gate. The gate passes only when some covering artifact says
 // `approve`; a covering artifact that says `reject` fails the round.
 //
+// One other shape is deliberately NOT a failure: an artifact whose `Commit:`
+// is not in this branch's history at all. Such an artifact is not evidence
+// about this branch -- it is a historical record of a different, already-
+// merged tree, most often because the branch it reviewed was squash-merged.
+// Squashing discards a branch's individual commits, so the shas its review
+// artifacts name never become ancestors of anything merged afterwards, and
+// the artifacts of the first squash-merged round would fail every later
+// round that carried them. The gate reports them as informational, labelled
+// as belonging to an already-merged or squashed tree, and counts them for
+// nothing: they can never satisfy the gate, and they are never a problem.
+//
 // The Origin is read through the same parser the site builds from
 // (app/lib/build-log.js) -- never a second parser. A second parser that could
 // disagree with the first is a bug this repository has shipped before. The
@@ -142,6 +153,7 @@ function reviewProse(text) {
 }
 
 const covering = [];
+let informational = 0;
 for (const file of reviewFiles) {
   const name = path.basename(file, ".md");
   console.log(`\n  ${file}`);
@@ -170,9 +182,24 @@ for (const file of reviewFiles) {
   }
 
   // Condition 3: the reviewed commit must be part of the branch's history.
+  //
+  // A commit that is not in this branch's history is not evidence about this
+  // branch at all. The artifact still records a review that really happened —
+  // it just names a commit that the merge strategy destroyed: a squash merge
+  // discards the branch's individual commits, so the shas its review artifacts
+  // name never become ancestors of anything merged afterwards. Treating that
+  // as a failure would make the gate fail on its own first successful use.
+  // Such an artifact is reported as informational — clearly labelled as
+  // belonging to an already-merged or squashed tree — and counts for nothing.
   const ancestor = tryGit(["merge-base", "--is-ancestor", fields.Commit, head]);
   if (!ancestor.ok) {
-    bad(`${file}: Commit ${fields.Commit} is not an ancestor of, or equal to, the pull request head`);
+    console.log(
+      `  note  ${file}: Commit ${fields.Commit} is not in this branch's history — it ` +
+        "belongs to an already-merged or squashed tree (or names a commit this " +
+        "repository does not have), so it is not evidence about this branch; " +
+        "informational only, counts for nothing"
+    );
+    informational++;
     continue;
   }
 
@@ -194,7 +221,13 @@ for (const file of reviewFiles) {
 console.log("");
 if (covering.length === 0) {
   bad("no review artifact covers the merged tree");
-  console.log("      a review of an earlier commit never vouches for later code");
+  if (informational > 0) {
+    console.log(`      ${informational} artifact(s) above name commits absent from this branch's`);
+    console.log("      history — records of already-merged or squashed trees, not failures,");
+    console.log("      and never covering. A covering approve is still required.");
+  } else {
+    console.log("      a review of an earlier commit never vouches for later code");
+  }
 } else {
   for (const { file, fields } of covering) {
     const verdict = fields.Verdict.toLowerCase();
