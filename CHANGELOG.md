@@ -91,7 +91,7 @@ guard change holds every invariant its entry claims, round 94's wall fix is
 real and its numbers carry the noise floor it discloses, and rounds 98, 99
 and 100 check out against their fetched sources — one imprecision in the
 Fable 5 post ("a week earlier" for five days) is corrected. No withdrawals.
-(PR #)
+(PR #55)
 
 **1. Round 97's "exactly five" is now seven: #50 and #52 joined it**
 - Hypothesis: the blog page's count of pull requests that merged over a
