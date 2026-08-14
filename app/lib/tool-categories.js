@@ -54,11 +54,58 @@ export const toolCategories = [
         verified: "2026-08-10",
       },
       {
+        href: "https://claude.com/product/claude-code",
+        name: "Claude Code",
+        description:
+          "Anthropic's coding agent — build, debug, and ship from your terminal, IDE, Slack, or web.",
+        verified: "2026-08-14",
+      },
+      {
         href: "https://ollama.com",
         name: "Ollama",
         description:
           "Run open-source LLMs locally with one command — or in the cloud.",
         verified: "2026-08-10",
+      },
+    ],
+  },
+  {
+    name: "Agents",
+    note: "Frameworks for building your own agents — chosen on merit, not an exhaustive list.",
+    tools: [
+      {
+        href: "https://code.claude.com/docs/en/agent-sdk/overview",
+        name: "Claude Agent SDK",
+        description:
+          "Anthropic's library for building production agents — the same agent loop, tools, and context management that power Claude Code, in Python and TypeScript.",
+        verified: "2026-08-14",
+      },
+      {
+        href: "https://openai.github.io/openai-agents-python/",
+        name: "OpenAI Agents SDK",
+        description:
+          "OpenAI's lightweight Python SDK for building agentic apps — agents, handoffs, guardrails, sessions, and built-in tracing.",
+        verified: "2026-08-14",
+      },
+      {
+        href: "https://www.langchain.com",
+        name: "LangChain",
+        description:
+          "Open-source framework for building agents with any model provider — quick-start agents, plus LangGraph for low-level control.",
+        verified: "2026-08-14",
+      },
+    ],
+  },
+  {
+    name: "MCP",
+    note: "The standard that connects agents to your tools and data — one curated pointer to the protocol itself rather than the thousands of servers built on it.",
+    tools: [
+      {
+        href: "https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro",
+        name: "Model Context Protocol",
+        description:
+          "The open-source standard for connecting AI applications to tools and data — used by Claude, ChatGPT, and VS Code, governed under the Linux Foundation's Agentic AI Foundation.",
+        verified: "2026-08-14",
       },
     ],
   },
@@ -101,12 +148,6 @@ export const toolCategories = [
         name: "n8n",
         description:
           "Source-available workflow automation with AI nodes — fair-code licensed, not OSI open source.",
-        verified: "2026-08-10",
-      },
-      {
-        href: "https://www.langchain.com",
-        name: "LangChain",
-        description: "Framework for building LLM-powered applications.",
         verified: "2026-08-10",
       },
     ],

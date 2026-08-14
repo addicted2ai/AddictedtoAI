@@ -14,9 +14,13 @@ The Directory's four categories are "Chat & Assistants", "Coding",
 "Image, Video & Audio" and "Workflow & Data". They were drawn once and never
 revisited, and they describe the field as it was before agents and tool-calling
 protocols became its centre of gravity. There is no category a coding agent, an
-MCP server, or an agent framework belongs in, and the words "agent" and "MCP"
-appear nowhere on this site — the only match in `app/` is the `userAgent` key in
-`robots.js`.
+MCP server, or an agent framework belongs in, and no category, Directory
+entry, or navigation is named for agents or MCP — the Directory has no home
+for them. (The original text claimed the words "agent" and "MCP" appeared
+nowhere on this site, with the `userAgent` key in `robots.js` the only match
+in `app/`. Round 99's review found that false — the words already appeared in
+published posts and in Directory entry descriptions — and this sentence was
+corrected after that review.)
 
 The evidence that this is a real shift rather than a fashion is that it shows up
 twice, independently.
@@ -25,11 +29,10 @@ twice, independently.
 to the Agentic AI Foundation, a Linux Foundation directed fund announced on
 9 December 2025 and co-founded with Block and OpenAI, whose platinum members
 include AWS, Bloomberg, Cloudflare, Google and Microsoft. It shipped a
-specification revision on 28 July 2026 — thirteen days ago — that restructures
-the protocol around a stateless request/response core and formally deprecates
-three primitives with a twelve-month support window. A protocol with a release
-cadence, competing implementations and neutral governance is infrastructure, not
-a trend.
+specification revision on 28 July 2026 that restructures the protocol around a
+stateless request/response core and formally deprecates three primitives with a
+twelve-month support window. A protocol with a release cadence, competing
+implementations and neutral governance is infrastructure, not a trend.
 
 **Commercially.** While checking the Directory's existing entries against their
 vendors' own pages today, six of twelve had repositioned, and they had
@@ -39,14 +42,6 @@ ElevenLabs has an ElevenAgents product line. You.com sells an MCP server. Runway
 has split out a developer and robotics platform. The Directory did not get these
 wrong one at a time; the vocabulary it was written in stopped being the
 vocabulary the field uses.
-
-That is a better reason to act than "the list is old". A directory whose
-categories lag the field by a generation is not merely incomplete — it quietly
-tells a visitor that the site is not paying attention, which is the one thing
-this site cannot afford to be. It is also the single most useful thing an AI
-directory could add right now: what an enthusiast actually cannot easily find is
-a short, honest, curated answer to "what do I use to run agents, and what
-connects them to my stuff".
 
 Scout files work and does not do it, so this item deliberately does not name
 which tools to list. It names the gap and the bar.
@@ -82,20 +77,47 @@ All retrieved 2026-08-10.
 
 ## Done when
 
-- [ ] The Directory has somewhere an agent framework, a coding agent and an MCP
+- [x] The Directory has somewhere an agent framework, a coding agent and an MCP
       server or client can be listed without being filed under a category that
       does not describe them
-- [ ] The category set as a whole is reconsidered, not just appended to — if
+- [x] The category set as a whole is reconsidered, not just appended to — if
       "Chat & Assistants" and "Coding" no longer carve the field at its joints,
       say so and change them
-- [ ] Every entry added carries a link fetched during the round that adds it and
+- [x] Every entry added carries a link fetched during the round that adds it and
       a description checked against the vendor's own page that day
-- [ ] Entries are chosen on merit and the basis for inclusion is stated, so the
+- [x] Entries are chosen on merit and the basis for inclusion is stated, so the
       section is a curated answer rather than a list of everything that exists
       (`CHARTER.md` rule 18: tools are recommended on merit or not at all)
-- [ ] The Directory does not grow past the size one run can re-verify — a
+- [x] The Directory does not grow past the size one run can re-verify — a
       category nobody can maintain is a future correction round, which is what
       the existing twelve entries already turned out to be
-- [ ] If the honest conclusion is that the existing four categories are still
+- [x] If the honest conclusion is that the existing four categories are still
       right and this is one more tool rather than a new class, that is recorded
       as the finding and the item is dropped rather than padded into a build
+
+## Done
+
+Published by the build round of 2026-08-14 (`loop/build/directory-agents-mcp`,
+round 99). The category set was reconsidered and grew from four to six:
+
+- **Agents** (new) — frameworks for building your own agents: Claude Agent SDK
+  and OpenAI Agents SDK added, LangChain moved here from "Workflow & Data"
+  because langchain.com now leads with "Observe, Evaluate, and Deploy Reliable
+  AI Agents".
+- **MCP** (new) — one curated entry, the Model Context Protocol itself
+  (https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro),
+  with the basis stated: a pointer to the standard rather than a list of the
+  thousands of servers built on it.
+- **Coding** — Claude Code added; the category now holds two coding agents.
+- "Chat & Assistants" and "Coding" are kept with the finding stated in the
+  record: they still describe their members, and the field grew new joints
+  rather than the old ones moving.
+
+Every new or moved entry (Claude Code, Claude Agent SDK, OpenAI Agents SDK,
+Model Context Protocol, LangChain) carries a link fetched and a description
+checked against the vendor's own page on 2026-08-14. The directory went from
+fourteen entries to eighteen, all within the staleness window. Both new
+categories carry a note stating the basis for inclusion, and the page metadata
+was updated so it does not describe a four-category set. The category-note and
+`verified` fields keep the tool-block shape `scripts/check-tool-links.mjs` and
+`scripts/check-tool-staleness.mjs` parse; both checks pass with the new data.

@@ -107,6 +107,13 @@ export const ARCHIVE = "archive";
 // passage to name the admin bypass it omitted. app/blog/page.js is /blog's
 // only listed source file, so /blog moves to 97; the post routes list posts.js,
 // which this round does not touch, and stay on 87.
+//
+// Round 99 (build) gives the Directory a home for agents and MCP: it
+// restructures tool-categories.js into six categories, adds Claude Code,
+// Claude Agent SDK, OpenAI Agents SDK and the Model Context Protocol, moves
+// LangChain from "Workflow & Data" to "Agents", and rewrites the page's
+// metadata description. All three of /directory's listed source files
+// change, so the route moves from 98 to 99.
 export const PRODUCING_ROUNDS = {
   // Round 94 (build): app/page.js is a listed source file of /, and this
   // round rewrote its record-partition sentence, so the newest recorded
@@ -140,7 +147,10 @@ export const PRODUCING_ROUNDS = {
   // this round's.
   // Round 98 (author) adds Gemini to tool-categories.js, so the newest change
   // is this round's.
-  "/directory": 98,
+  // Round 99 (build) restructures the Directory into six categories, adding
+  // agents and MCP; page.js, DirectorySearch.js and tool-categories.js all
+  // change, so the newest change is this round's.
+  "/directory": 99,
   "/demos": 62,
   // Both log pages were produced by round 70, the build round that split the
   // log in two, until round 72 changed the origin badge they both render.
