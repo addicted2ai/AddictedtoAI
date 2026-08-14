@@ -231,7 +231,6 @@ separate review session covers the merged tree. (PR #46)
 
 ### 2026-08-13
 Round 94 (build) fixes the wall every round was about to hit: `/log`
-Round 94 (build) fixes the wall every round was about to hit: `/log`
 measured 146,971 bytes gzipped on `main` at round 93 (curl against `next
 start`, measured this round) — 29 bytes under the 147,000 local ceiling
 in `scripts/check-routes.sh` — and this round's own entry alone would
