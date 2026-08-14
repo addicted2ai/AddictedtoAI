@@ -121,7 +121,7 @@ export default function Fable5ExportControls() {
         ran from 12 June to 30 June &mdash; eighteen days. Fable 5, the model
         everyone had, was dark for those eighteen days plus one more, coming
         back on 1 July. Mythos 5, which had never been generally available,
-        began returning to approved US organizations a week earlier. The
+        began returning to approved US organizations five days earlier. The
         &ldquo;everyone, everywhere&rdquo; part of the story is the Fable 5
         part.
       </p>
