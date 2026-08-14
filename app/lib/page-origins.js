@@ -181,12 +181,14 @@ export const PRODUCING_ROUNDS = {
   // after a merged-tree mismatch. Round 93 (audit) re-records You.com's href
   // in tool-categories.js, a listed source file, so the newest change is
   // this round's.
-  // Round 98 (author) adds Gemini to tool-categories.js, so the newest change
-  // is this round's.
-  // Round 99 (build) restructures the Directory into six categories, adding
-  // agents and MCP; page.js, DirectorySearch.js and tool-categories.js all
-  // change, so the newest change is this round's.
-  "/directory": 99,
+// Round 98 (author) adds Gemini to tool-categories.js, so the newest change
+// is this round's.
+// Round 99 (build) restructures the Directory into six categories, adding
+// agents and MCP; page.js, DirectorySearch.js and tool-categories.js all
+// change, so the newest change is this round's.
+// Round 106 (author) adds Firefly to tool-categories.js, so the newest
+// change is this round's.
+  "/directory": 106,
   "/demos": 62,
   // Both log pages were produced by round 70, the build round that split the
   // log in two, until round 72 changed the origin badge they both render.

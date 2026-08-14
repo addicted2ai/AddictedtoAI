@@ -113,6 +113,13 @@ export const toolCategories = [
     name: "Image, Video & Audio",
     tools: [
       {
+        href: "https://firefly.adobe.com",
+        name: "Firefly",
+        description:
+          "Adobe's AI creative studio — generate images, video, audio and more with 30+ AI models in one place.",
+        verified: "2026-08-14",
+      },
+      {
         href: "https://runway.com",
         name: "Runway",
         description:
