@@ -70,6 +70,76 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 102 (scout) runs after zero scout rounds in the last twenty shipped —
+the dispatcher's quota readout, run this round, is `quota: target 32%, recent
+0% over last 20 shipped round(s)` — and files five new docket items from
+six primary sources fetched this round. The week's outward changes, none
+of them covered on the site: OpenAI's ChatGPT Ads pilot has launched in the
+United Kingdom, Mexico, Brazil, Japan and South Korea, the third update in
+an arc that began with the US pilot on 9 February (post); Google released
+Gemini 3.7 Flash on 13 August at an introductory price of $0.75 / $3.75 per
+million tokens that doubles on 1 January 2027 (post); OpenAI previewed
+Ultrafast mode, GPT-5.6 Sol served up to 14x faster on Cerebras hardware, in
+limited API preview (post); Mistral announced in-region endpoints GA, an
+SLA-backed priority tier, hosting of third-party open models starting with
+Z.ai's GLM-5.2, and a European Compute Units coalition aiming at up to 1 GW
+of capacity by 2030 (post); and Anthropic's model-deprecations page now says
+`temperature`, `top_p` and `top_k` return a 400 error on Claude 4.7 and
+later, and that Claude Mythos Preview is deprecated with no retirement date
+given (post). The round also leaves a note inside the retirement-calendar
+item's subject matter: this round's direct read of OpenAI's deprecations
+page resolves the DALL-E row ambiguity the calendar item recorded on
+2026-08-11 — the page now shows `dall-e-2`/`dall-e-3` shut down 2026-05-12,
+under Past deprecations — and shows eight further deprecation
+announcements beyond the four rows the item's table captured, including the
+legacy audio, realtime and transcription families shutting down 2027-01-20.
+(PR #56)
+
+**1. File five outward-looking items; verify the quota claim; note the calendar evidence**
+- Hypothesis: scout's failure condition is filing items that could have been
+  written without leaving the repository, so this run's product had to name
+  specific, dated changes on vendor pages fetched this round, each routed to
+  the right track with acceptance criteria. The brief's quota claim was
+  checked rather than trusted — `node scripts/dispatch.mjs` reports exactly
+  what the brief said (`scout: quota: target 32%, recent 0% over last 20
+  shipped round(s)`). And the brief's claim about the site's existing
+  coverage was checked against the repo: the cyber-Daybreak posts of 10
+  August are already cited in `/blog/frontier-cyber`, so no item was filed
+  there; the Directory's Gemini entry already names Spark, so the 3.7 Flash
+  item connects to it rather than re-covering it.
+- Change: five items filed in `docket/open/` (chatgpt-ads, gemini-3-7-flash,
+  ultrafast-mode, mistral-sovereign-ai, anthropic-sampling-parameters), each
+  `track: author`, each carrying at least one external source retrieved this
+  round with the retrieval date, each with a "Done when" checklist that
+  names the numbers to read off the vendor page by the publishing round and
+  the claims to label as the vendor's own. Four of the five (everything but
+  the OpenAI deprecations reading) are new events dated 11-13 August 2026;
+  the Anthropic item is filed because the page states it today, not because
+  this run could prove the change is new since the calendar item's
+  2026-08-11 fetch — that fetch ran through a summarising model and the
+  calendar item itself records the DALL-E date ambiguity it produced.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the three preceding delegated
+  rounds (98-100) recorded. Consequence: `ship` withholds auto-merge and
+  opens the pull request for that review, which is expected rather than an
+  error. The brief also claimed a quota of `target 32%, recent 0%`; the
+  dispatcher's own readout, run this round, agrees verbatim.
+- Track: scout
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/check-docket.mjs` after the five items were
+  filed and `npm run lint` — both reported `ok` before `node scripts/round.mjs
+  check` was run, which ran the docket validator, track scope, build and
+  route checks against a server it managed on port 3000. Scout's scope was
+  honoured: only `docket/` and `CHANGELOG.md` changed.
+- Result: not yet measured. Five items were filed from seven sources fetched
+  this round; whether any is picked up, and whether what they name stays
+  true, is for the executing rounds and future checks to answer.
+
+### 2026-08-14
 Round 101 (audit) audits rounds 94-100 and finds the window holding except
 for one stale claim about this project's own process, which it corrects.
 Re-running round 97's exhaustive sweep from the GitHub API this round shows
