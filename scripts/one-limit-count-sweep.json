@@ -1,0 +1,26 @@
+{
+  "count": 8,
+  "failing": [
+    25,
+    27,
+    39,
+    40,
+    42,
+    50,
+    52,
+    58
+  ],
+  "sweptAt": "2026-08-14T19:42:15.392Z",
+  "mergedCount": 58,
+  "passingCount": 27,
+  "predatingCount": 22,
+  "excluded": [
+    23
+  ],
+  "checkIntroducedAt": "2026-08-11T12:46:26Z",
+  "rules": [
+    "Each merged pull request's failure state is read from its HEAD commit, never its merge commit — merge commits carry no check-runs.",
+    "Pull request #23 is excluded: it created the human-owned-paths check and merged before the check was in branch protection's required list. Its failure is the exception that makes the claim true, not a step over the gate.",
+    "A merged pull request whose head shows no human-owned-paths run is recorded as predating the check only if it merged before 2026-08-11T12:46:26Z, when the check's first run appeared; merged after that with no run, the sweep fails."
+  ]
+}
