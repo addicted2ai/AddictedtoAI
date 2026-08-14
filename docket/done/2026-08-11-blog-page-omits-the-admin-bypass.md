@@ -66,7 +66,7 @@ by `addicted2ai` with zero reviews and no auto-merge queued.
 
 ## Done
 
-Executed by the maintain round of 2026-08-14, which rewrote the
+Executed by the maintain round of 2026-08-14 (PR #48), which rewrote the
 "What is true now, and only this" passage in `app/blog/page.js`. The passage
 now states the gate's two halves: such a pull request is never green and
 auto-merge cannot land it, and nothing mechanical binds the loop's own admin

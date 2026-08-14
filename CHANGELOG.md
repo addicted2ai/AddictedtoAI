@@ -87,7 +87,7 @@ GitHub API on 14 August. It also names what the post's earlier corrections
 established: this is the third time this page has overstated its own
 enforcement; the first two were false, this third is incomplete. This closes
 `docket/open/2026-08-11-blog-page-omits-the-admin-bypass.md`, moved to done
-with all three boxes ticked. (PR #N)
+with all three boxes ticked. (PR #48)
 
 **1. The "What is true now" passage says what the gate enforces, including its limit**
 - Hypothesis: the passage presenting itself as the full truth about the gate
