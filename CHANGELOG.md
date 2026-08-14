@@ -106,7 +106,7 @@ argued in block 3 below. The route is registered in `PRODUCING_ROUNDS`,
 budget loops — added to those hardcoded loops this round rather than left
 unmeasured as `/what-vendors-promise` was (docket/open/2026-08-11-retirement-
 page-outside-route-loops.md records that gap; the root-cause fix stays
-meta's). (PR #N)
+meta's). (PR #65)
 
 **1. The page: a dated shutdowns table, the promises page's complement**
 - Hypothesis: the item's evidence (fetched 2026-08-11) predicted four OpenAI
