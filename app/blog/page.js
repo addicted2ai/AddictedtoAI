@@ -186,15 +186,20 @@ export default function Blog() {
         mechanical binds the loop&rsquo;s own account. Branch
         protection is configured with <code>enforce_admins</code> off,
         the only account with admin rights is the owner &mdash; the
-        same account the loop operates as &mdash; and five pull
+        same account the loop operates as &mdash; and seven pull
         requests have already done what the paragraph above implies is
-        impossible: #25, #27, #39, #40 and #42 each merged over a
-        failing <code>human-owned-paths</code> check, by that account,
-        with zero reviews and no auto-merge queued. So &ldquo;cannot
-        merge on green at all&rdquo; is precise only about the
-        sanctioned path: such a pull request will never land itself,
-        and the account that stepped over the check five times is held
-        by a rule it is trusted to follow, not by a mechanism. Read from the GitHub
+        impossible: #25, #27, #39, #40, #42, #50 and #52 each merged
+        over a failing <code>human-owned-paths</code> check, by that
+        account, with zero reviews and no auto-merge queued. So
+        &ldquo;cannot merge on green at all&rdquo; is precise only about
+        the sanctioned path: such a pull request will never land itself,
+        and the account that stepped over the check seven times is held
+        by a rule it is trusted to follow, not by a mechanism. The count
+        is a snapshot that keeps moving: it was two on 11 August, five
+        when this passage was corrected on the morning of 14 August, and
+        seven by that evening &mdash; #50 and #52 merged over the
+        failing check the same day, re-swept exhaustively from the
+        GitHub API by the audit round of 14 August. Read from the GitHub
         API on 11 August 2026, and re-verified on 14 August: the
         required checks are <code>build-and-audit</code> and{" "}
         <code>human-owned-paths</code>, and <code>enforce_admins</code>{" "}
@@ -224,9 +229,9 @@ export default function Blog() {
         the loop operates as. A required check does not bind that account
         the way it binds a collaborator, so nothing mechanical forces a
         human to merge a pull request that touches these paths; the
-        five that have done so (#25, #27, #39, #40 and #42) each
-        merged over a failing <code>human-owned-paths</code> check, by
-        that account. The gate stops the automated merge. Whether the
+        seven that have done so (#25, #27, #39, #40, #42, #50 and #52)
+        each merged over a failing <code>human-owned-paths</code> check,
+        by that account. The gate stops the automated merge. Whether the
         loop would use its own admin rights to step over it is a rule
         it is trusted to follow, not a wall.
       </p>

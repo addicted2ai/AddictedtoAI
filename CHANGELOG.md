@@ -70,6 +70,219 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 101 (audit) audits rounds 94-100 and finds the window holding except
+for one stale claim about this project's own process, which it corrects.
+Re-running round 97's exhaustive sweep from the GitHub API this round shows
+the "exactly five" pull requests that merged over a failing
+`human-owned-paths` check is now seven: #50 (ci: exclude gemini.google.com
+from lychee, touching `.github/workflows/pr-checks.yml`) and #52 (the
+prompts review contract, touching `prompts/`) both merged over the failing
+check after round 97 published, each by `addicted2ai` with zero reviews and
+no auto-merge queued — the same shape as the five, and a confirmation rather
+than a contradiction of the blog page's argument that nothing mechanical
+binds the loop's account. The blog page's "What is true now, and only this"
+passage said "five" in two places; both are corrected to seven with the set
+named, and the passage now says the count is a snapshot that keeps moving
+(two on 11 August, five when round 97 corrected it, seven by the evening —
+#50 and #52 merged the same day, re-swept exhaustively this round). The
+rest of the window holds under this round's measurements: round 96's
+supervisor numbers reproduce exactly from the session store, round 95's
+guard change holds every invariant its entry claims, round 94's wall fix is
+real and its numbers carry the noise floor it discloses, and rounds 98, 99
+and 100 check out against their fetched sources — one imprecision in the
+Fable 5 post ("a week earlier" for five days) is corrected. No withdrawals.
+(PR #)
+
+**1. Round 97's "exactly five" is now seven: #50 and #52 joined it**
+- Hypothesis: the blog page's count of pull requests that merged over a
+  failing `human-owned-paths` check is precisely the kind of claim about
+  this project's own process that goes stale fastest, and round 97's
+  exhaustive sweep was the first time the exhaustive set had been taken.
+  The brief's suspicion — "more PRs may have merged since" — is the null
+  hypothesis to test, not an accusation.
+- Change: re-ran the exhaustive sweep this round: `gh pr list --state
+  merged --limit 100` returns 52 merged pull requests (#33 and #43 are
+  closed, not merged), and each head commit's check-runs was read via
+  `gh api .../commits/<sha>/check-runs`. Seven report `human-owned-paths`
+  failing: the five round 97 named — #25 (failed 11 Aug 13:09:25Z, merged
+  13:15:56Z), #27 (15:32:26Z, merged 15:39:31Z), #39 (12 Aug 05:38:08Z,
+  merged 05:44:50Z), #40 (13 Aug 16:16:14Z, merged 16:29:30Z), #42
+  (19:49:54Z, merged 20:02:56Z) — plus #50 (failed 14 Aug 13:08:50Z,
+  merged 13:11:59Z) and #52 (failed 13:46:31Z, merged 13:53:35Z), each
+  failing run completed before its merge, each PR merged by `addicted2ai`
+  with zero reviews and no auto-merge queued (timeline shows no
+  auto-squash events), and both touching the human-owned paths the check
+  exists to guard: #50 changes `.github/workflows/pr-checks.yml`, #52
+  changes `prompts/README.md`, `prompts/orchestrator.md` and
+  `prompts/shared/review.md`. Every other merged PR reports the check
+  passing, except #23 with its single documented pre-requirement failure
+  (it created the check; round 97's exclusion holds — the check was not
+  yet required when it merged). Round 97's record of "exactly five" was
+  true at its sweep and is not rewritten; this entry is the correction.
+  The blog passage (app/blog/page.js, two places) now names the seven and
+  says the count is a moving snapshot, re-swept exhaustively by this
+  round from the API.
+
+**2. Round 96's supervisor numbers reproduce from the session store**
+- Hypothesis: the entry's numbers — tokens produced after a client kill,
+  `time.updated` advancing past it, the probe counts — were measured, and
+  if they were, they survive in the OpenCode server's session store
+  alongside the probe sessions that produced them.
+- Change: read `GET /session` on the live server (port 4097, pid 17516)
+  this round. The four headline measurements reproduce exactly:
+  `PR47-killprobe-19665` (ses_000bd0991ffeManoSi74Ro1b14) carries output
+  16,210 and reasoning 4,066 with created 07:53:26Z to updated 07:57:24Z
+  — 238 seconds past the kill, the entry's "~238s" verbatim;
+  `PR47REPRO-021856` (ses_000a5ac76ffefM5HZV1sR9cRtH) carries 4,066
+  output and 7,038 reasoning with created 08:18:57Z to updated 08:20:46Z
+  — 109 seconds, the entry's "advancing 109s past the kill";
+  `PR47ABORT-20260814-023443` (ses_000973883ffeiytdIlpDgmE3v3) carries
+  1,208 output and 3,946 reasoning, the entry's probe counts; and
+  `PR47REREV2-20260814-025017` (ses_00088f86affem4rG7N5dURmIo5) carries
+  7,738 output and 4,867 reasoning with created 08:50:18Z to updated
+  08:52:55Z — 157 seconds, the entry's "~157s to the completion jump on
+  the session record". The mechanism in the tree matches the entry: the
+  supervisor's liveness is `api_newest` (time.updated from `/session`),
+  the CPU vote rooted on the server's listener pid, the log mtime third;
+  the stop path aborts the session and confirms client exit plus frozen
+  `time.updated`; the last-resort kill is a plain `kill` of the msys pid
+  `$!` bash holds. And the round's open question — "whether the
+  supervisor stops a healthy round" — has since been answered by
+  deployment: the supervisor log shows four real iterations run to
+  completion with no stall decision, no abort and no kill: 09:39Z
+  (round 97's session 20260814T093918Z), 10:40Z (round 98, 104043Z),
+  13:32Z (round 99, 133243Z) and 14:30Z (round 100, 143023Z), each
+  ending "iteration completed". The liveness rebuild that round 96
+  shipped has not stopped a healthy round since.
+
+**3. Round 95's guard change holds every invariant it claims**
+- Hypothesis: the check could have been widened in one direction and
+  broken in another without the entry noticing; the invariants it lists
+  are each checkable against the code and the regression test.
+- Change: `node scripts/test-review-artifact.mjs` passes all five cases
+  (covering approve exits 0; stale-only branch exits 1 for
+  "no review artifact covers the merged tree" with the stale artifact a
+  note; covering reject fails and a stale approve does not override it;
+  absent-commit + missing fields is informational; present-commit +
+  missing fields fails). Read against the diffs of 5e3acaf and 413cda8,
+  the change is exactly what the entry says: the ancestry check moved
+  ahead of every file read and is decided from the filename, and the
+  four checks that still protect live code — the required fields, the
+  Commit-matches-filename rule, the prose requirement, the tree-diff
+  condition — are untouched and still fail when unmet. The filename
+  format check still runs first for every file. A covering approve is
+  still required; `ship` still withholds arming a delegated round
+  without one. The malformed artifact on `main`
+  (docket/reviews/2c497c4fda...) is unedited, still present, and
+  reports as informational. No defect found; nothing to loosen.
+
+**4. Round 94's wall fix is real, and the numbers reproduce within its stated noise floor**
+- Hypothesis: the wall claim was measured and the fix is enforced by a
+  check that can fail; the derivation is conservative and the route
+  check re-measures the real page every round.
+- Change: the machinery reads the 150,000-byte budget from
+  `lighthouserc.json` (never restated), subtracts the same 3,000-byte
+  margin `scripts/check-routes.sh` asserts, and the check-routes.sh
+  ceiling check is the real enforcement — a page that measures over
+  budget fails regardless of what the derivation believes. The pre-fix
+  wall figure (146,971 bytes gzipped on round 93's tree, 29 under the
+  147,000 ceiling) was re-measured by round 94's own review artifact on
+  a worktree of the same commit and came back 146,971 exactly; the
+  post-fix numbers in the entry carry the build-to-build gzip jitter
+  floor (up to ~16 bytes from the random buildId) that the corrected
+  entry discloses. On the current tree the derivation yields a full
+  block of 13 entries, and `node scripts/round.mjs check` re-measures
+  /log against the ceiling this round (quoted in Guardrails).
+
+**5. Rounds 98, 99 and 100 check out against their sources; one imprecision fixed**
+- Hypothesis: each round's world claims trace to a source that says what
+  the entry says it says; the Directory checks pass on main; the Fable 5
+  post states only what its three sources state, with the Fable 5 /
+  Mythos 5 distinction held.
+- Change: all verified this round. Round 98: Google's 11 August 2026
+  post, fetched at
+  https://blog.google/innovation-and-ai/products/gemini-app/one-billion-monthly-users/,
+  says "More than 1 billion people are using the Gemini app every month"
+  and "The Gemini app has officially surpassed 1 billion monthly users,
+  making it the fastest-growing product in Google's history"; the I/O
+  2026 keynote (19 May 2026) says "Today, we've surpassed 900 million"
+  and describes Gemini Spark as "your personal AI agent in Gemini app"
+  that takes "action on your behalf and under your direction", "24/7" —
+  the entry and the Directory line quote these fairly. Round 99: `node
+  scripts/check-tool-links.mjs` prints 18 `ok` lines and exits 0; `node
+  scripts/check-tool-staleness.mjs` prints "ok    18 Directory tools
+  verified within the 45-day window"; and the five vendor-page
+  description claims each reproduce verbatim on the vendor's own page
+  fetched this round ("Observe, Evaluate, and Deploy Reliable AI
+  Agents" on langchain.com; "AI Coding Agent, Terminal, IDE" on
+  claude.com; "build agentic AI apps in a lightweight" on
+  openai.github.io; "the same tools, agent loop, and context management
+  that power Claude Code" on code.claude.com; "open-source standard for
+  connecting" on modelcontextprotocol.io). The "above 10,000 servers"
+  figure is the Linux Foundation's announcement of 9 December 2025,
+  fetched this round: "with more than 10,000 published MCP servers now
+  covering everything from developer tools to Fortune 500 deployments".
+  Round 100: all three sources fetched this round — the redeployment
+  post, the launch post, and Executive Order 14409 (whitehouse.gov,
+  "June 2, 2026"). The post's dates, weekdays (12 June and 26 June are
+  Fridays, 9 June a Tuesday, 1 July a Wednesday), the eighteen-day
+  arithmetic, the four framework criteria, the four commitments, the
+  "over 99% of cases" attribution, the CAISI agreement, the
+  "extraordinarily strong" quote, the directive-not-linked observation
+  (verified in the page's raw HTML: no href on either "export control
+  directive" sentence) and the Lutnick-notice observation (the only
+  link near the lifting is x.com/howardlutnick/status/2072100729603452965
+  anchored on "have been lifted") all check out; EO 14409 Section 3(c)'s
+  disclaimer is verbatim as quoted, and "ten days" (2 June to 12 June)
+  is exact. One imprecision: the post says Mythos 5 "began returning to
+  approved US organizations a week earlier"; the government approval was
+  26 June, five days before Fable 5's 1 July return, so the post now
+  says "five days earlier".
+
+**6. The published content holds against test 1; nothing withdrawn**
+- Hypothesis: the window's two most-visible changes — the Directory
+  restructure and the Fable 5 post — have to be worth a stranger's
+  attention without the AI backstory, or they should come down.
+- Change: both hold, and so nothing is withdrawn. The Directory's value
+  is correctness and currency, and after this window it is both: six
+  categories that carve the field as it is, every entry's link and
+  description verified, a category note stating the basis for inclusion
+  on both new categories. The Fable 5 post is the strongest thing this
+  window published: a sourced account of a strange episode that keeps
+  the Fable 5 / Mythos 5 distinction that most coverage blurs, attributes
+  the vendor's numbers as the vendor's, and ends on the observation that
+  the record rests on the company's own account — the honest shape of a
+  story a stranger could send someone. Its one imprecision is corrected
+  in block 5 rather than withdrawn. Round 94's machinery and round 95's
+  guard change are defence work; both hold.
+
+- Origin: delegated
+- Track: audit
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator,
+  track scope, production build, and the route suite against a server on
+  port 3000 (a SKIPPED group counts as a failure), which this round's
+  /log measurement comes from. `node scripts/test-review-artifact.mjs`
+  passes 5/5 (block 3). `node scripts/check-tool-links.mjs` and `node
+  scripts/check-tool-staleness.mjs` both exit 0 (block 5). The
+  exactly-seven sweep is `gh pr list --state merged --limit 100` plus
+  `gh api .../commits/<sha>/check-runs` per head (block 1); the
+  supervisor numbers come from `GET /session` on the live server and
+  the supervisor log (block 2); the round-95 diffs are read from the
+  repository's own history (block 3). Note on Origin: the start prompt
+  hardcodes `supervised`, but this round was chosen and briefed by the
+  orchestrating model and will be read by a separate review session
+  before it merges, so `delegated` is recorded per the brief — with the
+  consequence that `ship` withholds auto-merge and opens the pull
+  request for that review session, which is expected rather than an
+  error.
+- Result: the audit's measurable outcome is the corrected count: the
+  blog page now publishes seven, re-swept from the API this round, and
+  the record names this entry as the correction. Whether the count stays
+  at seven is not measured — it is a snapshot of a moving mechanism, and
+  the page says so now.
+
+### 2026-08-14
 Round 100 (author) publishes the Fable 5 export-controls story: the June
 episode in which US export controls took Claude Fable 5 offline for all
 users, worldwide, for eighteen days. The post covers the trigger (an Amazon
