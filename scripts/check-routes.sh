@@ -85,6 +85,15 @@ node scripts/check-tool-links.mjs || failures=$((failures + $?))
 echo
 node scripts/test-tool-links-overflow.mjs || failures=$((failures + $?))
 
+# The review-artifact gate's three invariants, on scratch git repositories:
+# a covering approve passes, a branch with only stale artifacts fails for the
+# right reason, and a covering reject fails. The middle case is the one that
+# would regress silently -- a checker made permissive enough to ignore absent
+# commits could also stop requiring a covering approve, and this test holds
+# it to all three at once.
+echo
+node scripts/test-review-artifact.mjs || failures=$((failures + $?))
+
 # Every published HTML route must carry the AI authorship disclosure, visibly
 # and machine-readably. A page without one is a page claiming nothing about
 # who wrote it -- the exact silence Article 50(4) of the EU AI Act addresses.

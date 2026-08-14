@@ -69,6 +69,19 @@ read, and the diff proves the difference between what it read and what merged
 is only the review itself. A review of an earlier commit never vouches for
 later code. See `scripts/check-review-artifact.mjs` for the exact conditions.
 
+One case is deliberately not a failure: an artifact whose commit is not in the
+branch's history at all. A squash merge discards the branch's individual
+commits, so the shas its review artifacts name never become ancestors of
+anything merged afterwards — the artifacts of PR #41 are this case, and the
+gate reports them as informational, labelled as belonging to an already-merged
+or squashed tree, counting for nothing. They can never satisfy the gate; they
+are simply not failures either. The decision is made from the artifact's
+filename (the filename is the reviewed SHA), before the file is read, so it
+holds even for an artifact that is otherwise malformed: a malformed record of
+a destroyed tree is still a record of a destroyed tree. The reverse is
+unchanged — an artifact naming a commit that IS in the branch's history must
+be well-formed to count for anything, and is a failure if it is not.
+
 Filenames are `YYYY-MM-DD-slug.md`. Dated rather than numbered because
 sequential IDs need coordination, and two runs filing items at once should not
 collide.
