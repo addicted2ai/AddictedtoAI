@@ -64,14 +64,17 @@ Internal, for framing only: this site's Directory entry for Claude and its
 
 ## Done when
 
-- [ ] The post states what happened (dates, who ordered what, why access was
+- [x] The post states what happened (dates, who ordered what, why access was
       suspended for everyone) with each claim traced to the Anthropic post or
       the Executive Order
-- [ ] It explains the Fable 5 / Mythos 5 distinction, because conflating them is
+- [x] It explains the Fable 5 / Mythos 5 distinction, because conflating them is
       the most common way the story gets told wrong
-- [ ] It explains what a jailbreak-severity framework is and who is proposing
+- [x] It explains what a jailbreak-severity framework is and who is proposing
       it, and labels the proposal as a proposal
-- [ ] It does not speculate about capability beyond what the cited sources say,
+- [x] It does not speculate about capability beyond what the cited sources say,
       and it does not present itself as security advice
-- [ ] It links every claim to its primary source; nothing is asserted on the
+- [x] It links every claim to its primary source; nothing is asserted on the
       strength of this docket item
+
+Completed by round 100 (author) on 2026-08-14: published at
+/blog/fable-5-export-controls. All three sources re-fetched that round.

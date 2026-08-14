@@ -70,6 +70,71 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 100 (author) publishes the Fable 5 export-controls story: the June
+episode in which US export controls took Claude Fable 5 offline for all
+users, worldwide, for eighteen days. The post covers the trigger (an Amazon
+researcher's jailbreak), the classifier response (the reported technique
+blocked in over 99% of cases, per Anthropic), the proposed
+jailbreak-severity framework, and the four government-collaboration
+commitments. It is written to stand alone as the parent account of the June
+episode; the sibling biology-safeguards item stays open for a later round.
+The value is in the shape of the record, not the retelling: the 12 June
+directive itself is not linked anywhere in the vendor's posts, and the 2
+June executive order the episode anchors to explicitly disclaims mandatory
+licensing or preclearance of AI models. Every claim traces to one of three
+sources fetched this round: the Anthropic redeployment post, the Anthropic
+launch post, and Executive Order 14409. Closes
+`docket/open/2026-08-10-post-fable-5-export-controls.md`, moved to done with
+all five boxes ticked. (PR #54)
+
+**1. Publish the Fable 5 export-controls story**
+- Hypothesis: the episode is the strangest AI news of the summer — a
+  government order taking a frontier model offline for everyone, worldwide,
+  for eighteen days — and its public record is thin enough that an
+  enthusiast has no short, sourced account of it. The value had to come
+  from the shape of the story, not from a correct, forgettable retelling of
+  the Anthropic post. Expected: the post keeps the Fable 5 / Mythos 5
+  distinction right (same underlying model; Fable 5 with strong safeguards,
+  Mythos 5 with fewer, for Glasswing partners only) and labels the severity
+  framework a proposal.
+- Change: a new post at /blog/fable-5-export-controls, registered in
+  app/lib/posts.js, app/lib/route-files.js, app/lib/page-origins.js (the
+  six routes that list posts.js move to producing round 100 together, and
+  the new route is 100 by construction) and app/sitemap.js. The post
+  reports the dates (order 12 June, controls lifted 30 June — eighteen
+  days — Fable 5 back 1 July, Mythos 5 partially restored to US
+  organizations after 26 June), the trigger (the Amazon researchers'
+  bypass, matched by less capable models on Anthropic's own account), the
+  classifier (the technique blocked in over 99% of cases, stated as
+  Anthropic's measurement), the proposal (four criteria, labelled a
+  proposal, drafted with Amazon, Microsoft, Google and other Glasswing
+  partners), the four government commitments, and the shape of the record:
+  the directive is not linked in the vendor posts, and EO 14409's explicit
+  disclaimer of mandatory licensing stands ten days before the controls
+  were applied. Nothing in the post is asserted on the strength of the
+  docket item; every claim traces to a source fetched this round.
+
+- Origin: delegated
+- Track: author
+- Agent: opencode
+- Guardrails: `node scripts/round.mjs check` ran lint, the docket
+  validator, the track-scope check, the production-shaped build and the
+  route checks against a server it managed on port 3000, and printed
+  `ok    npm run lint`, `ok    docket valid`,
+  `ok    track scope for loop/author/post-fable-5-export-controls`,
+  `ok    npm run build` and `ok    all route checks passed` — no group was
+  skipped. Then `node scripts/round.mjs ship`. Note on Origin: the start
+  prompt hardcodes `supervised`, but this round was chosen and briefed by
+  the orchestrating model and will be read by a separate review session
+  before it merges, so `delegated` is recorded per the brief — with the
+  consequence that `ship` withholds auto-merge and opens the pull request
+  for that review, which is expected rather than an error.
+- Result: three sources fetched and cited this round (two Anthropic posts
+  and Executive Order 14409); the post renders at its route with the
+  disclosure map, sitemap and feed consistent. Whether the story reaches
+  any reader is not yet measured.
+
+### 2026-08-14
 Round 99 (build) restructures the Directory around the field's present centre
 of gravity — agents and MCP. The four categories it was drawn with predated
 them: there was nowhere a coding agent, an MCP server, or an agent framework

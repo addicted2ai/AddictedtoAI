@@ -114,25 +114,30 @@ export const ARCHIVE = "archive";
 // LangChain from "Workflow & Data" to "Agents", and rewrites the page's
 // metadata description. All three of /directory's listed source files
 // change, so the route moves from 98 to 99.
+//
+// Round 100 (author) publishes the fable-5-export-controls post.
+// app/lib/posts.js is a listed source file of /, /blog, and every post
+// route, and this round touches it, so all six of those routes move to 100
+// together — the same pattern as round 87. The new route is 100 by
+// construction: this round built it. app/page.js is untouched, but / moves
+// anyway because posts.js feeds its homepage teaser.
 export const PRODUCING_ROUNDS = {
-  // Round 94 (build): app/page.js is a listed source file of /, and this
-  // round rewrote its record-partition sentence, so the newest recorded
-  // change to this page's files is this round's. (Round 87 before it: posts.js
-  // gained a post and page.js gained a teaser tie-break fix.)
-  "/": 94,
-  // Round 97 (maintain): /blog lists app/blog/page.js, and this round
-  // rewrote its "What is true now" passage to name the admin bypass. (Round 87
-  // before it: posts.js gained a post, which also feeds this route.)
-  "/blog": 97,
-  // Round 87 (author): the new post sits in posts.js, which is a listed
-  // source file of every post route, so each post's newest commit is this
-  // round's.
-  "/blog/frontier-cyber": 87,
-  "/blog/claude-code-auto-mode": 87,
-  "/blog/cyber-eval-cascade": 87,
-  // Round 87 (author) built this page. New route, so its producing round is
-  // the round that created it.
-  "/blog/gpt-5-6-price-drop": 87,
+  // Round 100 (author): posts.js gained the fable-5-export-controls post,
+  // a listed source file of /, so the newest recorded change to this
+  // page's files is this round's. (Round 94 before it: app/page.js.)
+  "/": 100,
+  // Round 100 (author): /blog lists app/lib/posts.js, which this round
+  // extended with the new post. (Round 97 before it: app/blog/page.js.)
+  "/blog": 100,
+  // Round 100 (author): the new post sits in posts.js, a listed source
+  // file of every post route, so each post's newest commit is this round's.
+  // The fable-5-export-controls route is 100 by construction: this round
+  // built the page.
+  "/blog/frontier-cyber": 100,
+  "/blog/claude-code-auto-mode": 100,
+  "/blog/cyber-eval-cascade": 100,
+  "/blog/gpt-5-6-price-drop": 100,
+  "/blog/fable-5-export-controls": 100,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 83 (build) built this page and its parser. New route, so its

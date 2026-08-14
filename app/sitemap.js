@@ -54,6 +54,12 @@ const routes = [
     changeFrequency: "weekly",
   },
   {
+    path: "/blog/fable-5-export-controls",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[5].dateModified,
+    changeFrequency: "weekly",
+  },
+  {
     path: "/disclosure",
     priority: 0.7,
     lastModified: latestBuildLogDate,
