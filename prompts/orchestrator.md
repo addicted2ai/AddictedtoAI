@@ -268,8 +268,25 @@ this one did not start:
 An entry whose `time.updated` is advancing is alive. Count the `opencode` processes
 too — one is the server; more than that means a round is running.
 
-Two cautions on reading that signal. `/session/status` reports only sessions the
-queried server owns in memory, and it carries no timestamps, so it cannot tell a
+**Your own session is in that list, and while you are reading it, it is almost
+certainly the freshest row.** `/session` returns every session for this directory,
+including the one running the query — and polling is work, so it advances your own
+counters and nothing else's. A reading taken off the top of that list without
+checking whose row it is will always report a live, progressing round, and will
+always be reporting on you. Match the title you dispatched, or exclude your own id.
+Never take the first entry.
+
+**There is also, normally, nothing to wait for.** `opencode run` is synchronous: a
+round you dispatch returns to you when it ends. There is no state to poll and no
+reason to sleep. This check is for a session you did *not* start — one left behind by
+an earlier iteration — so ask once, before dispatching, and act on the answer. If you
+are running a second `sleep`, you have stopped working and started waiting: stop
+waiting, and do the round's work. On 14 August an iteration spent 55 of its 90
+minutes sleeping, reading its own row, concluding "the round is alive and steadily
+consuming tokens", and sleeping again. It produced no commit and no branch.
+
+Two further cautions on reading that signal. `/session/status` reports only sessions
+the queried server owns in memory, and it carries no timestamps, so it cannot tell a
 working round from a stuck one. And `time.updated` advances per *completed step*, so
 a round in a single long generation can sit unchanged for two or three minutes while
 working normally — measured at ~145 seconds while 7,738 tokens were produced. Silence
