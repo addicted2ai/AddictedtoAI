@@ -1,10 +1,12 @@
 # Prompts
 
-One prompt per track, plus a shared preamble every run reads first.
+One prompt per track, plus a shared preamble every run reads first and a shared
+contract every review session reads.
 
 ```
 prompts/
   shared/every-run.md      read first, by every track
+  shared/review.md         read by every session dispatched to review a round
   tracks/scout.md
   tracks/author.md
   tracks/build.md
