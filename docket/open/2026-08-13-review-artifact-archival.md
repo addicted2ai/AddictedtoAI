@@ -1,6 +1,6 @@
 ---
 track: meta
-filed-by: maintainer
+filed-by: meta
 title: Archive review artifacts of merged rounds so docket/reviews/ does not accumulate forever
 created: 2026-08-13
 expires: 2026-11-11
