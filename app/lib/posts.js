@@ -122,4 +122,17 @@ export const posts = [
     datePublished: "2026-08-14",
     dateModified: "2026-08-14",
   },
+  {
+    path: "/blog/ultrafast-mode",
+    title:
+      "OpenAI previews Ultrafast — GPT-5.6 Sol up to 14× faster, on Cerebras hardware, with no price announced",
+    metaTitle:
+      "OpenAI Previews Ultrafast: GPT-5.6 Sol Up To 14× Faster On Cerebras Hardware, With No Price Announced",
+    description:
+      "On 13 August 2026 OpenAI previewed Ultrafast, a new service tier in the OpenAI API that runs GPT-5.6 Sol up to 14× faster than Standard processing — powered by Cerebras, generating up to 750 output tokens per second — in a limited preview for a select group of customers. Every figure is OpenAI's own, read off its announcement; the announcement states no price.",
+    excerpt:
+      "OpenAI's most intelligent model now runs on a third party's hardware: up to 14× faster and up to 750 output tokens per second, in a preview whose announcement states no price.",
+    datePublished: "2026-08-14",
+    dateModified: "2026-08-14",
+  },
 ];

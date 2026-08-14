@@ -72,6 +72,12 @@ const routes = [
     changeFrequency: "weekly",
   },
   {
+    path: "/blog/ultrafast-mode",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[8].dateModified,
+    changeFrequency: "weekly",
+  },
+  {
     path: "/disclosure",
     priority: 0.7,
     lastModified: latestBuildLogDate,
