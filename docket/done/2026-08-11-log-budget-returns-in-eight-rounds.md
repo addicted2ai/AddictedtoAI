@@ -109,8 +109,8 @@ now renders the newest rounds in full — the count derived at build time
 from the budget in `lighthouserc.json` and the measured gzipped weight of
 the actual entries (12 on the day it shipped) — and every older
 current-era round lives on a permanent page at `/log/rounds/<id>`, with a
-stub on `/log` keeping its anchor. Measured that round: `/log` 90,310
-bytes gzipped with its entry on the page, 56,690 under the ceiling; a new
+stub on `/log` keeping its anchor. Measured that round: `/log` 90,329
+bytes gzipped with its entry on the page, 56,671 under the ceiling; a new
 round adds one stub (~150 bytes) rather than a full entry (~6,000), so the
 cost per round no longer grows with entry length — the open criterion this
 item carried. If entries get fatter, the derived block shrinks instead of

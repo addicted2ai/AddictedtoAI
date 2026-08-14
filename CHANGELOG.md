@@ -176,8 +176,8 @@ two conflicting wall measurements.
   'Accept-Encoding: gzip'` against `next start`: before the fix, `/log` was
   146,971 bytes gzipped (29 under the ceiling), `/log/early` 66,852 and
   `/log/archive` 92,468. After the fix, with this round's entry on the page,
-  the budget check in `scripts/check-routes.sh` measures `/log` at 90,310
-  bytes gzipped — 56,690 bytes of headroom against the 147,000 local
+  the budget check in `scripts/check-routes.sh` measures `/log` at 90,329
+  bytes gzipped — 56,671 bytes of headroom against the 147,000 local
   ceiling — and `/log/early` and `/log/archive`, their content unchanged
   by the fix, at 66,855 and 92,465. A new round now adds one stub (~150
   bytes gzipped) rather than a full entry (~6,000), so the headroom is
@@ -200,7 +200,7 @@ two conflicting wall measurements.
 - Track: build
 - Agent: deepseek-v4-flash
 - Guardrails: `node scripts/round.mjs check` — every check passed, including
-  the budget line for `/log` (90,310 bytes gzipped, 56,690 to spare) with
+  the budget line for `/log` (90,329 bytes gzipped, 56,671 to spare) with
   this entry on the page, the log-page partition assertions, the route
   checks and the AI-disclosure check. Deliberate-break proofs on the new
   partition assertions: a stub pointed at a page rendering the wrong round
@@ -219,8 +219,8 @@ two conflicting wall measurements.
   `470742f`), so the file appears in no commit of this branch's history.
   Its text survives at `05b5bce:docket/HOLD.md`, including the warning
   that a hand-tuned page-size constant is exactly what the brief forbade.
-- Result: `/log` 90,310 bytes gzipped with this round's entry rendered,
-  56,690 under the 147,000 local ceiling; measured by the budget check in
+- Result: `/log` 90,329 bytes gzipped with this round's entry rendered,
+  56,671 under the 147,000 local ceiling; measured by the budget check in
   `scripts/check-routes.sh` in the same run as everything else.
 
 ### 2026-08-13
