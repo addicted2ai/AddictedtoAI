@@ -253,8 +253,8 @@ armed, and only after a separate review session covers the merged tree.
   the missing-fields guard removed reports exit 0 with `ok ... covers the
   merged tree ... Verdict: approve` — a broken artifact about live code
   passing the gate — and the assertion fails. Both restored, the full suite
-  passes five for five. `node scripts/check-docket.mjs` passes (54 items
-  valid, 38 open). The changelog entry passes the build-log validator.
+  passes five for five. `node scripts/check-docket.mjs` passes (55 items
+  valid, 39 open). The changelog entry passes the build-log validator.
   `node scripts/round.mjs check` passes in full: lint, docket, track scope,
   production build, and the route suite with no group skipped; the route
   check measures `/log` at 91,002 bytes gzipped against the 147,000 local
