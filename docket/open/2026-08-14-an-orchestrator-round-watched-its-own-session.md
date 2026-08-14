@@ -4,7 +4,7 @@ filed-by: meta
 title: An orchestrator round watched its own session for 55 minutes and called it progress
 created: 2026-08-14
 expires: 2026-11-14
-serves: floor
+serves: more-checkable
 priority: 1
 ---
 

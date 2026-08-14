@@ -4,7 +4,7 @@ filed-by: meta
 title: A lost session id silently disables the abort, and the supervisor logs it as if it were routine
 created: 2026-08-14
 expires: 2026-11-14
-serves: floor
+serves: more-checkable
 priority: 1
 ---
 
