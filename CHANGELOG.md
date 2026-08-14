@@ -173,8 +173,8 @@ armed, and only after a separate review session covers the merged tree.
   history can never cover anything, so nothing about its contents is read
   or judged. The missing-fields narrowing is the headline case: it is the
   whole reason the malformed artifact on `main` stopped blocking. The
-  malformed artifact on `main` is not
-  edited — the record is the product, and the fix is in the checker — and
+  malformed artifact on `main` is not edited — the record is the product,
+  and the fix is in the checker — and
   now reports as a note; the gate on `main`'s tree fails with exactly one
   problem, `no review artifact covers the merged tree`, which is correct.
   Rule 11, stated honestly: the widening is the block 1 rule applied one
