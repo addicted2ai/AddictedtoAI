@@ -59,17 +59,19 @@ ORCHESTRATE_COMMAND="${ORCHESTRATE_COMMAND:-}"
 #      A curl that fails or a server that answers garbage yields no signal,
 #      never a kill on its own.
 #
-#   2. CPU in the opencode process tree (scripts/orchestrate-cpu.ps1, via
-#      scripts/orchestrate-liveness.sh). A hung process burns no CPU; a working
-#      one does. The tree, not `opencode` alone: real work happens in child
-#      `node` processes and in tool shells under the server, so a busy round
-#      shows a flat `opencode` CPU total while its descendants burn. Counted
-#      from the opencode processes (plus the launched child), never by summing
-#      every `node` on the machine, which would count unrelated work as
-#      progress. This vote is load-bearing even when the server is up: a
-#      session's time.updated is frozen for the whole duration of a long
-#      silent tool call (measured 13 August: age grew 6s to 37s across a
-#      40-second busy tool), and the CPU tree is what carries that case.
+#   2. CPU in the round's process trees (scripts/orchestrate-cpu.ps1, via
+#      scripts/orchestrate-liveness.sh). A hung process burns no CPU; a
+#      working one does. The trees are rooted on Windows pids: the launched
+#      child's (translated from its msys pid) and the server's, because a
+#      round launched with `--attach` runs its tool shells and `node` work
+#      inside the server's tree -- measured 14 August: a tool shell spawned by
+#      a --attach session descended from the server process, not from the CLI
+#      client -- so rooting on the child alone would show a flat total for a
+#      busy round. The walk only descends, so it never counts the machine's
+#      unrelated work as progress. This vote is load-bearing even when the
+#      server is up: a session's time.updated is frozen for the whole duration
+#      of a long silent tool call (measured 13 August: age grew 6s to 37s
+#      across a 40-second busy tool), and the CPU tree carries that case.
 #
 #   3. Log mtime, and deliberately last. The orchestrator's own log is silent
 #      for the entire duration of a nested round: when it dispatches
@@ -79,6 +81,15 @@ ORCHESTRATE_COMMAND="${ORCHESTRATE_COMMAND:-}"
 #      healthy round had hung and kill it, every time, roughly STALL_SECONDS
 #      in, destroying exactly the work it exists to protect. mtime stays only
 #      as a cheap third vote.
+#
+# The kill path is Windows-primitive, not a process-tree walk. A previous
+# session's hand-rolled walk climbed into its own ancestry and killed the
+# maintainer's OpenCode server, so the supervisor now translates the child's
+# msys pid to its Windows pid (/proc/<msys-pid>/winpid) and calls
+# `taskkill //T //F //PID <winpid>`: /T kills the process and its descendants
+# and can never climb to anything above the child. A guard refuses the kill
+# if the target is the process serving ORCHESTRATE_SERVER, and a dry-run mode
+# (ORCHESTRATE_DRY_KILL=1) logs what would be killed and kills nothing.
 STALL_SECONDS="${ORCHESTRATE_STALL:-900}"
 HARD_TIMEOUT="${ORCHESTRATE_TIMEOUT:-5400}"
 TICK_SECONDS="${ORCHESTRATE_TICK:-30}"
@@ -86,6 +97,9 @@ TICK_SECONDS="${ORCHESTRATE_TICK:-30}"
 # previous sample. 15 tenths per sample window is far below any working round
 # and far above sampling noise.
 CPU_VOTE_TENTHS=15
+# Dry-run the kill path: log what would be killed and kill nothing. Used to
+# exercise the stall decision end to end without ever terminating a round.
+DRY_KILL="${ORCHESTRATE_DRY_KILL:-0}"
 
 mkdir -p "$LOG_DIR"
 
@@ -116,19 +130,51 @@ clear_orphans() {
   done
 }
 
-# Kill the iteration's processes. The pid bash reports for a backgrounded job
-# is a double-fork layer that exits within seconds on this machine, so the
-# round is found by its command-line marker instead: every process carrying
-# the per-iteration marker is taskkilled with its whole tree, so a killed
-# round never leaves its tool shells and node children burning.
+# Kill the iteration's process tree, root first, descendants with it.
+#
+# The pid bash reports for a backgrounded job ($!) is an msys pid; PowerShell,
+# CIM and taskkill all need the Windows pid, so it is translated through the
+# msys /proc table first. The translation is stable for the process's whole
+# lifetime (verified 14 August: the winpid of a launched native exe was alive
+# and unchanged at 20/40/60/80/100 seconds), so it is read once at launch and
+# re-read here in case the child is already gone.
+#
+# `taskkill //T //F //PID <winpid>` is the whole kill. It takes the process
+# and its descendants and never climbs, so it cannot reach the OpenCode server
+# or the supervisor's own ancestry -- a previous session killed the
+# maintainer's server by walking a process tree into its own, and this is the
+# primitive that makes that class of bug impossible. The doubled slashes are
+# deliberate: git-bash would otherwise rewrite /T as a path. The one target
+# the guard still refuses is the server itself: if the translated winpid is
+# the process listening on ORCHESTRATE_SERVER's port, the translation is
+# wrong (the round is a fresh launch, never the server), so nothing is killed
+# and the refusal is logged. Dry-run mode logs the would-be target and kills
+# nothing.
 kill_iteration() {
-  found="$(marker_pids "$1")"
-  found="${found//,/ }"
-  # shellcheck disable=SC2086
-  for pid in $found; do
-    taskkill //PID "$pid" //F //T >/dev/null 2>&1 || true
-  done
-  taskkill //PID "$2" //F //T >/dev/null 2>&1 || kill -9 "$2" 2>/dev/null
+  child="$1"
+  winpid="$(cat "/proc/$child/winpid" 2>/dev/null)"
+  if [ -z "$winpid" ]; then
+    if [ "$DRY_KILL" -eq 1 ]; then
+      note "stall: would kill msys pid $child (no winpid translation)"
+      return
+    fi
+    note "no winpid for child $child -- falling back to kill -9"
+    kill -9 "$child" 2>/dev/null
+    return
+  fi
+  if [ "$winpid" = "$(server_winpid)" ]; then
+    note "REFUSING to kill winpid $winpid: it is the server on $ORCHESTRATE_SERVER"
+    return
+  fi
+  if [ "$DRY_KILL" -eq 1 ]; then
+    note "stall: would kill winpid $winpid (child msys pid $child)"
+    return
+  fi
+  note "killing iteration: taskkill //T //F //PID $winpid (child msys pid $child)"
+  taskkill //T //F //PID "$winpid" >/dev/null 2>&1 || true
+  # If the Windows kill missed (the process outlived it, or taskkill could
+  # not see it), fall back to the msys kill.
+  kill -0 "$child" 2>/dev/null && kill -9 "$child" 2>/dev/null
 }
 
 source "$REPO/scripts/orchestrate-liveness.sh"
@@ -162,27 +208,34 @@ while true; do
   if [ -n "$ORCHESTRATE_COMMAND" ]; then
     # Split on whitespace and run directly, never via eval: an eval'd
     # background job leaves $! pointing at a short-lived msys fork layer, so
-    # the round would not be findable by pid. The marker is appended as a
-    # trailing argument (stub scripts ignore it) so the CPU walk and the kill
-    # can find the round by command line. The command line must be a plain
-    # command plus arguments -- no shell metacharacters.
+    # the round would not be findable by pid. The command line must be a
+    # plain command plus arguments -- no shell metacharacters.
     # shellcheck disable=SC2086
-    $ORCHESTRATE_COMMAND "$marker" > "$log" 2>&1 &
+    $ORCHESTRATE_COMMAND > "$log" 2>&1 &
   else
     # The prompt argument must be "$(cat file)" alone. Appending anything after
     # it breaks OpenCode startup silently: no session, no error, a zero-byte
-    # log. `--attach` makes the round appear in the maintainer's web UI;
-    # `--title` carries the per-iteration marker into the command line so the
-    # supervisor can find and kill the round even though bash's reported pid
-    # is a double-fork layer that dies within seconds.
+    # log. `--attach` makes the round appear in the maintainer's web UI and
+    # `--title` carries the per-iteration marker into the session's title.
     opencode run --attach "$ORCHESTRATE_SERVER" --title "$marker" --model "$MODEL" --variant "$VARIANT" "$(cat "$PROMPT")" > "$log" 2>&1 &
   fi
   child=$!
   started=$(date +%s)
   last_progress=$started
-  tree_prev=0
   log_prev=""
-  note "iteration child pid $child"
+  note "iteration child msys pid $child"
+
+  # The child is found by pid, never by command-line marker: a PowerShell
+  # probe that matches a marker in the command line matches its own process
+  # (measured 14 August), which is how a naive "kill everything carrying my
+  # marker" kills the wrong thing. Translate once -- the winpid is stable for
+  # the process's whole lifetime -- and root the CPU walk on the child's tree
+  # plus the server's, where a --attach round actually works.
+  child_winpid="$(cat "/proc/$child/winpid" 2>/dev/null || true)"
+  server_pid="$(server_winpid)"
+  note "child winpid ${child_winpid:-untranslated}, server winpid ${server_pid:-not found}"
+  tree_prev="$(cpu_tenths "${child_winpid},${server_pid}")"
+  tree_prev="${tree_prev:-0}"
 
   # The log is not the heartbeat. A hung session keeps its process and the
   # orchestrator's log stays silent while a nested round works, so liveness is
@@ -199,7 +252,7 @@ while true; do
       progressed=1
     fi
 
-    tree_now=$(cpu_tenths "$child" "$marker")
+    tree_now=$(cpu_tenths "${child_winpid},${server_pid}")
     tree_now="${tree_now:-0}"
     tree_delta=$((tree_now - tree_prev))
     if [ "$tree_delta" -gt "$CPU_VOTE_TENTHS" ]; then
@@ -219,16 +272,16 @@ while true; do
 
     if [ $((now - last_progress)) -ge "$STALL_SECONDS" ]; then
       if [ -n "${newest:-}" ]; then
-        note "iteration stalled: no session update for $ORCHESTRATE_REPO on $ORCHESTRATE_SERVER ($((now - newest))s old), no CPU in the opencode process tree (+$tree_delta tenths since last sample), no log write ($((now - log_now))s old) -- killing it"
+        note "iteration stalled: no session update for $ORCHESTRATE_REPO on $ORCHESTRATE_SERVER ($((now - newest))s old), no CPU in the child/server process trees (winpids ${child_winpid:-?},${server_pid:-?}; +$tree_delta tenths since last sample), no log write ($((now - log_now))s old) -- killing it"
       else
-        note "iteration stalled: no session signal from $ORCHESTRATE_SERVER (unreachable or no session for $ORCHESTRATE_REPO), no CPU in the opencode process tree (+$tree_delta tenths since last sample), no log write ($((now - log_now))s old) -- killing it"
+        note "iteration stalled: no session signal from $ORCHESTRATE_SERVER (unreachable or no session for $ORCHESTRATE_REPO), no CPU in the child/server process trees (winpids ${child_winpid:-?},${server_pid:-?}; +$tree_delta tenths since last sample), no log write ($((now - log_now))s old) -- killing it"
       fi
-      kill_iteration "$marker" "$child"
+      kill_iteration "$child"
       break
     fi
     if [ $((now - started)) -ge "$HARD_TIMEOUT" ]; then
       note "iteration exceeded hard timeout of ${HARD_TIMEOUT}s -- killing it"
-      kill_iteration "$marker" "$child"
+      kill_iteration "$child"
       break
     fi
   done

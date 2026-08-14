@@ -37,20 +37,25 @@ api_newest() {
   '
 }
 
-# CPU consumed by the opencode process tree plus the marker-matched and
-# RootPids processes, tenths of a second, via scripts/orchestrate-cpu.ps1. A
-# hung process burns no CPU; a working one does, and the walk sees the child
-# `node` processes and tool shells where the work actually happens. The caller
-# compares successive samples: only an *advance* is a signal.
-cpu_tenths() {
-  powershell -NoProfile -ExecutionPolicy Bypass -File "$HELPER_REPO/scripts/orchestrate-cpu.ps1" -RootPids "${1:-0}" -Marker "${2:-}" 2>/dev/null | tr -dc '0-9'
+# Windows pid of the process listening on HELPER_SERVER's port, or empty when
+# no listener is visible from this machine. This is the one process the
+# supervisor must never kill, and -- because a round launched with --attach
+# runs its tool shells inside the server's tree -- the root that lets the CPU
+# probe see a busy round. Both uses need exactly this: the pid, not the name,
+# since every opencode process carries the same name.
+server_winpid() {
+  port="${HELPER_SERVER##*:}"
+  netstat -ano 2>/dev/null | grep -E "LISTENING" | grep -E ":${port}\b" | awk '{print $NF}' | head -1
 }
 
-# Live pids whose command line carries the iteration marker (the round itself,
-# or a stub launched with it). This is the only reliable way to find the child
-# on this machine: bash double-forks background jobs, so the pid bash reports
-# is a fork layer that dies within seconds while the real process tree hangs
-# beneath it. Printed one per line, digits only.
-marker_pids() {
-  powershell -NoProfile -ExecutionPolicy Bypass -File "$HELPER_REPO/scripts/orchestrate-cpu.ps1" -ListPids -Marker "${1:-}" 2>/dev/null | tr -dc '0-9,'
+# CPU consumed by the root Windows pids (comma-separated) and everything
+# beneath them, tenths of a second, via scripts/orchestrate-cpu.ps1. A hung
+# process burns no CPU; a working one does, and the walk sees the child `node`
+# processes and tool shells where the work actually happens. The caller
+# compares successive samples: only an *advance* is a signal. The roots are
+# pids, never names and never command-line markers: a probe that matches a
+# marker string in the command line matches its own process (measured
+# 14 August), which is how a naive kill finds the wrong thing.
+cpu_tenths() {
+  powershell -NoProfile -ExecutionPolicy Bypass -File "$HELPER_REPO/scripts/orchestrate-cpu.ps1" -RootPids "${1:-}" 2>/dev/null | tr -dc '0-9'
 }

@@ -1,49 +1,33 @@
-# CPU total for the opencode process tree, in tenths of a second.
+# CPU total, in tenths of a second, for a set of root Windows pids and
+# everything beneath them.
 #
 # The liveness fallback for scripts/orchestrate.sh needs to see work wherever
-# it actually happens. `Get-Process opencode | Measure-Object CPU -Sum` sees
-# only the opencode processes themselves: a round's real work runs in child
-# `node` processes and in tool shells under the server, so a busy round can
-# show a flat opencode total while its descendants burn.
+# it actually happens. The roots are the launched child's Windows pid (its
+# msys pid translated via /proc/<msys-pid>/winpid) and the pid of the process
+# serving ORCHESTRATE_SERVER: a round launched with `--attach` runs its tool
+# shells inside the server's tree (measured 14 August: a tool shell spawned
+# by a --attach session descended from the server process, not from the CLI
+# client), so a busy round can look flat when only the round CLI's own tree
+# is counted.
 #
-# The walk is rooted on three things:
-#   - every opencode process (the round CLI, the --attach server, the TUI);
-#   - every process whose command line contains the per-iteration Marker the
-#     supervisor injects into the launch (as `--title` for the opencode run,
-#     as a trailing argument for an ORCHESTRATE_COMMAND stub);
-#   - the pids passed in RootPids (the pid bash reports for the job).
-# then closed transitively over ParentProcessId.
-#
-# Parentage alone cannot do this. msys bash double-forks a backgrounded job:
-# the pid bash reports ($!) is a fork layer that exits within seconds, and the
-# real child tree hangs beneath dead pids whose WMI parent records never
-# change, so a parent-chain walk from any bash ancestor stops at the first
-# dead link. A command-line marker is the one fact that survives that
-# structure. Walking from the marker and the opencode names rather than
-# summing every `node` on the machine never counts unrelated work as progress.
+# The walk is strictly downward, from the roots through ParentProcessId, so
+# it can never reach anything above the roots -- the supervisor's own
+# ancestry, or the OpenCode server's. It never matches process names or
+# command-line markers: a probe that greps command lines for a marker matches
+# its own process (measured 14 August), which is how a naive kill finds the
+# wrong thing, and name matching would count every opencode process on the
+# machine, unrelated work included. Dead roots simply contribute nothing.
 #
 # Output: a single integer, tenths of a CPU second for the whole tree.
 # Prints nothing else; the caller strips non-digits anyway.
 
-param(
-  [string]$RootPids = "",
-  [string]$Marker = "",
-  [switch]$ListPids
-)
+param([string]$RootPids = "")
 
 $ErrorActionPreference = "SilentlyContinue"
 
 $all = @(Get-CimInstance Win32_Process)
 
 $matched = @{}
-foreach ($p in $all) {
-  if ($p.Name -like "*opencode*") {
-    $matched[[int]$p.ProcessId] = $true
-  }
-  if ($Marker -and $p.CommandLine -and ($p.CommandLine -like "*$Marker*")) {
-    $matched[[int]$p.ProcessId] = $true
-  }
-}
 foreach ($token in ($RootPids -split ",")) {
   # PID 0 is System Idle Process; its "CPU" is idle time and it anchors the
   # whole machine. A supervisor bug passing 0 must not measure the machine.
@@ -52,15 +36,9 @@ foreach ($token in ($RootPids -split ",")) {
   }
 }
 
-if ($ListPids) {
-  ($matched.Keys | Sort-Object) -join ","
-  exit
-}
-
-# Close transitively over the live snapshot, then sum CPU time. Dead
-# intermediates are barriers by design: a process whose parent record names a
-# dead pid is not added, which is exactly what keeps a stale child from a
-# previous iteration out of the count.
+# Close transitively over the live snapshot, then sum CPU time. The walk only
+# ever adds a process whose parent is already in the set, so it descends from
+# the roots and cannot climb anywhere.
 $changed = $true
 while ($changed) {
   $changed = $false
