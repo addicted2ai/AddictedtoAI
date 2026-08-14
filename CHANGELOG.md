@@ -176,30 +176,31 @@ two conflicting wall measurements.
   'Accept-Encoding: gzip'` against `next start`: before the fix, `/log` was
   146,971 bytes gzipped (29 under the ceiling), `/log/early` 66,852 and
   `/log/archive` 92,468. After the fix, with this round's entry on the page,
-  the budget check in `scripts/check-routes.sh` measures `/log` at 88,409
-  bytes gzipped — 58,591 bytes of headroom against the 147,000 local
-  ceiling — and `/log/early` and `/log/archive` are unchanged at 66,859 and
-  92,467. A new round now adds one stub (~150 bytes gzipped) rather than a
-  full entry (~6,000), so the headroom is roughly 390 rounds of stub
-  growth; the full block grows only as the entries themselves do, and the
-  derivation shrinks it to fit rather than letting the page approach the
-  wall. These figures carry a build-to-build noise floor worth stating
-  before they are compared to anything: the random per-build `buildId`
-  Next.js embeds in the HTML shifts the compressed size — substituting
-  realistic build IDs into a fetched page moved the gzipped size by up to
-  4 bytes in this round's probe, and real builds of the identical
-  `/log/early` page have measured between 66,847 and 66,859 bytes across
-  builds. A reproduction that lands a few bytes off is expected, not a
-  discrepancy — which also reconciles the figures published for `main`'s
-  `/log` at round 93: 146,973 (round 93's entry), 146,974 (the interrupted
-  session's docket update) and 146,975 (this entry's first draft) are the
-  same page in four builds.
+  the budget check in `scripts/check-routes.sh` measures `/log` at 90,310
+  bytes gzipped — 56,690 bytes of headroom against the 147,000 local
+  ceiling — and `/log/early` and `/log/archive`, their content unchanged
+  by the fix, at 66,855 and 92,465. A new round now adds one stub (~150
+  bytes gzipped) rather than a full entry (~6,000), so the headroom is
+  roughly 380 rounds of stub growth; the full block grows only as the
+  entries themselves do, and the derivation shrinks it to fit rather than
+  letting the page approach the wall. These figures carry a
+  build-to-build noise floor worth stating before they are compared to
+  anything: the random per-build `buildId` Next.js embeds in the HTML
+  shifts the compressed size — substituting realistic build IDs into a
+  fetched page moved the gzipped size by up to 4 bytes in this round's
+  probe, and real builds of the identical `/log/early` page have measured
+  between 66,847 and 66,859 bytes across builds. A reproduction that
+  lands a few bytes off is expected, not a discrepancy — which also
+  reconciles the figures published for `main`'s `/log` at round 93:
+  146,973 (round 93's entry), 146,974 (the interrupted session's docket
+  update) and 146,975 (this entry's first draft) are the same page in
+  four builds.
 
 - Origin: delegated
 - Track: build
 - Agent: deepseek-v4-flash
 - Guardrails: `node scripts/round.mjs check` — every check passed, including
-  the budget line for `/log` (88,409 bytes gzipped, 58,591 to spare) with
+  the budget line for `/log` (90,310 bytes gzipped, 56,690 to spare) with
   this entry on the page, the log-page partition assertions, the route
   checks and the AI-disclosure check. Deliberate-break proofs on the new
   partition assertions: a stub pointed at a page rendering the wrong round
@@ -218,8 +219,8 @@ two conflicting wall measurements.
   `470742f`), so the file appears in no commit of this branch's history.
   Its text survives at `05b5bce:docket/HOLD.md`, including the warning
   that a hand-tuned page-size constant is exactly what the brief forbade.
-- Result: `/log` 88,409 bytes gzipped with this round's entry rendered,
-  58,591 under the 147,000 local ceiling; measured by the budget check in
+- Result: `/log` 90,310 bytes gzipped with this round's entry rendered,
+  56,690 under the 147,000 local ceiling; measured by the budget check in
   `scripts/check-routes.sh` in the same run as everything else.
 
 ### 2026-08-13

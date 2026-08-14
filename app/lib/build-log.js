@@ -366,8 +366,8 @@ export const EARLY_ERA_END = 70;
 // ran 1.68–3.53 times the gzipped size of its searchable text, median
 // 2.15. ENTRY_WEIGHT_FACTOR = 3.0 sits above the median but below the top
 // of that range, so it does not cover every entry — what it guarantees is
-// an aggregate that overshoots: the estimated page (135,005 bytes) ran
-// 46,596 above the real measured page (88,409) on the day it shipped, and
+// an aggregate that overshoots: the estimated page (137,540 bytes) ran
+// 47,230 above the real measured page (90,310) on the day it shipped, and
 // the route check re-measures the real gzipped page every round and fails
 // over the ceiling regardless of what the derivation believes. Page
 // chrome and stub weight were measured at ~3,100 and ~150 bytes gzipped;
