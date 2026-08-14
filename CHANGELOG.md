@@ -128,7 +128,21 @@ the round against the deployment topology.
   tool call that freezes `time.updated` (measured 13 August: age grew 6s to
   37s across a 40-second busy tool; measured again 14 August: frozen ~60s at
   zero tokens before a working probe round jumped to 1,208 output and 3,946
-  reasoning tokens in one poll). The log mtime remains as the third, last
+  reasoning tokens in one poll; and measured across the review's sessions
+  this round: a 7,738-output/4,867-reasoning generation kept `time.updated`
+  frozen and tokens at 0/0 for 29 samples, ~145s, then jumped to the final
+  counts in one poll — `/session` reports a long generation only at
+  completion, and `time.updated` advances per completed step, not
+  continuously). The session-API heartbeat alone would therefore read a
+  healthy long generation as silent, which is why the CPU vote over the
+  server tree is load-bearing rather than a fallback of convenience: it is
+  what carries liveness through a long generation. And `STALL_SECONDS` must
+  stay comfortably above the longest generation a round can run: at the
+  current default of 900, the longest measured generation (~145s frozen,
+  ~157s to the completion jump on the session record) leaves roughly 6x of
+  margin — adequate today, and the margin is the point, because a generation
+  that grows toward the stall window would read as a stall from the session
+  API alone. The log mtime remains as the third, last
   vote. A curl that fails or a server that answers garbage yields no signal,
   never a stop on its own. The decision logic is verified with stubs
   (`ORCHESTRATE_COMMAND` pointed at stubs, never at a real prompt): a silent
@@ -184,7 +198,23 @@ the round against the deployment topology.
   only walk but roots it on the server tree alone, and
   `orchestrate-liveness.sh` gains `api_session_id` and `api_session_updated`
   for the abort path. The stop-path contract from 03b9453 survives: the caller
-  never waits on a round that is still running.
+  never waits on a round that is still running. The session lookup fails
+  closed on ambiguity: `api_session_id` rejects candidates whose
+  `time.created` predates this iteration's launch, and if more than one
+  same-title candidate survives it returns no id and logs the ambiguity
+  naming the ids — an abort of nothing plus a warning, never a silent pick of
+  the newest, because a stale-but-active session sharing the stamp must not
+  be abortable as this round (duplicate titles already exist in the server's
+  store). The confirmation loop deliberately has no single-bump tolerance:
+  every poll compares `time.updated` against the fixed pre-abort value, so a
+  post-abort bump would hold the full wait and end with a false "the abort
+  did not stop it" note. That tolerance is not implemented because an abort
+  never bumps `time.updated` (measured 14 August across completed, zombie,
+  and mid-generation aborts — all left it frozen); a session that is
+  genuinely still working keeps advancing, which is exactly what the
+  confirmation exists to catch. The comment once claimed the tolerance
+  existed; it described behaviour the code lacked, which is a defect in a
+  script that runs unattended, and this entry records that it does not.
 
 **3. The harness proved the wrong thing — and no longer does**
 - Hypothesis: the stub harness's topology was the deployment topology. The
@@ -199,7 +229,7 @@ the round against the deployment topology.
   never its descendants, while every harness run since midnight had leaked one
   orphaned `sleep` process through `taskkill //T` — nine such orphans were
   found on this machine and cleaned up. The proofs now match the topology.
-  The decision logic stays stub-based, and the new harness (19 of 19
+  The decision logic stays stub-based, and the new harness (24 of 24
   assertions, at `C:/Users/BadBitch/AppData/Local/Temp/opencode/sup-live/
   harness.sh`) adds the descendant check the old one lacked: it asserts the
   machine's `sleep.exe` count is unchanged across every run. The keep-busy
@@ -212,14 +242,24 @@ the round against the deployment topology.
   (`probe-abort-real.sh`, outside the repository): `opencode run --attach
   http://127.0.0.1:4097 --title <stamp> --model
   opencode-go/deepseek-v4-flash --variant max` with a pure-thinking prompt
-  that cannot use tools or touch the repository. This run aborted its session
-  mid-generation: `POST /session/<id>/abort` returned HTTP 200 with body
-  `true`, and over the next 60 seconds twelve samples of `/session` showed
-  `time.updated` frozen and the token counts (1,208 output, 3,946 reasoning)
-  not growing — the stop measured from the server, not inferred from the
-  client. The client exited on its own ~3s after the abort; afterwards the
-  machine held 0 `sleep` processes and 0 processes carrying the probe's
-  stamp. This block is the most important one in the round: the first version
+  that cannot use tools or touch the repository. What this probe could not
+  show is a mid-generation stop: its trigger was "first sample with output >
+  0", and `/session` reports tokens and `time.updated` only at completion
+  for a long generation, so that trigger necessarily fires after the
+  generation has finished. Its session record holds the final counts (1,208
+  output, 3,946 reasoning) and its client log the complete essay — the
+  frozen `time.updated` and non-growing tokens the probe measured were the
+  completed state, and the client would have exited on its own. Every number
+  the probe printed is true; what it demonstrated is that an abort of a
+  finished round is accepted and stops nothing that was not about to stop
+  anyway. The review found this gap, and the mid-generation stop is
+  established by the review's own probe instead: aborting 75 seconds into a
+  ~150-second generation, the session froze at 0/0 tokens across 16
+  post-abort samples over 48s, never reaching the 7,738 output / 4,867
+  reasoning tokens its unaborted twin produced, the client exited with
+  `Error: Aborted` ~3s later, and the machine held 0 `sleep` processes and 0
+  processes carrying the probe's stamp. This block is the most important one
+  in the round: the first version
   of the harness proved the wrong thing about the wrong tree, and the finding
   that a stub proof cannot stand in for the deployment topology is worth more
   than the fix it produced.
@@ -231,11 +271,14 @@ the round against the deployment topology.
   scope, production build, full route suite (a SKIPPED group counts as a
   failure). `bash -n` on both shipped shell files — syntax ok. Supervisor
   decision-logic proofs via the harness at
-  `C:/Users/BadBitch/AppData/Local/Temp/opencode/sup-live/harness.sh`: 19 of
-  19 assertions pass, including the sleep-orphan count on every proof (quoted
-  in blocks 1–3). The abort path proved against a real attached round on the
-  live server (`probe-abort-real.sh`, quoted in block 3). The round also
-  reproduced the review's kill finding with its own probe (block 2). Machine
+  `C:/Users/BadBitch/AppData/Local/Temp/opencode/sup-live/harness.sh`: 24 of
+  24 assertions pass, including the sleep-orphan count on every proof (quoted
+  in blocks 1–3) and test 4, which proves `api_session_id` rejects a stale
+  same-title candidate and fails closed on duplicate fresh titles (quoted in
+  block 2). The mid-generation stop is established by the review's 75s probe
+  (quoted in block 3); the round's own probe demonstrates the completed-state
+  abort and the entry says so. The round also reproduced the review's kill
+  finding with its own probe (block 2). Machine
   left as found: one `opencode` process (the 4097 server), no listeners on
   3000/3250/3260/8101, zero `sleep` processes, no supervisor or stubs running,
   `git status` clean.
