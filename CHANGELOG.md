@@ -70,6 +70,71 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 106 (author) closes the Directory's category-shaped gap: "Image, Video
+& Audio" held Runway (video), ElevenLabs (voice) and Suno (music) but no
+image-generation tool, so a visitor asking "what do I use to make images
+with AI" found nothing. This round adds Adobe Firefly on merit, the one
+image candidate that is both usable by a visitor today and verifiable
+against its own page this round. Google Pics was fetched and read but its
+own page still says "coming soon to Google Workspace" — testing with a
+small number of users, general availability "in the coming months" — so
+recommending it would recommend a tool nobody can use yet; Midjourney's
+page served HTTP 403 "Just a moment..." to every fetch this round (the
+Cloudflare bot challenge), so its current state could not be checked
+against its own page, which rule 1 and the docket's own requirement demand;
+the Nano Banana models link the docket named is a blog index page, not a
+tool product page. Firefly's entry is sourced from firefly.adobe.com
+fetched this round: "Adobe Firefly: Your all-in-one AI creative studio —
+generate images, video, audio and more with 30+ AI models, all in one
+place." Closes `docket/open/2026-08-10-directory-missing-image-generator.md`.
+(PR #62)
+
+**1. Give the Directory's image category a real entry**
+- Hypothesis: the category's name promises image generation and its list
+  had none; an entry for a tool a visitor can actually use today, verified
+  against that tool's own page this round, is the fix the docket wants.
+  The named candidates had to be weighed, not copied: availability and
+  verifiability this round decide, per rule 1 and rule 18.
+- Change: added Firefly (`https://firefly.adobe.com`, verified 2026-08-14)
+  as the first tool under "Image, Video & Audio" in
+  `app/lib/tool-categories.js`, and moved `/directory`'s producing round
+  from 99 to 106 in `app/lib/page-origins.js` because the tool list is a
+  listed source file of that route. The alternative of adding none was
+  weighed and rejected: an image tool that is available today clears the
+  bar, and the category is now not missing the capability its name
+  promises.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the seven preceding delegated
+  rounds (99-105) recorded. Consequence: `ship` withholds auto-merge and
+  opens the pull request for that review, which is expected rather than an
+  error.
+- Track: author
+- Agent: codex
+- Guardrails: fetched and read the candidate pages this round —
+  workspace.google.com/products/pics (page states "coming soon", testing
+  with a small number of users, GA "in the coming months"),
+  www.midjourney.com (HTTP 403, Cloudflare challenge, unreadable),
+  ideogram.ai (HTTP 403, same), blog.google's gemini-models hub (a blog
+  index, not a tool page), and firefly.adobe.com (title "Adobe Firefly:
+  Your all-in-one AI creative studio", meta description quoted in the
+  entry). `node scripts/round.mjs check` then ran lint, the docket
+  validator, the track scope, a production-shaped build and the route
+  checks against a server on port 3000; the tool-links check resolved
+  firefly.adobe.com to the recorded URL and the tool-staleness check
+  reported all Directory tools verified within the 45-day window, the new
+  entry among them.
+- Result: measured this round. The Directory's "Image, Video & Audio"
+  category grew from 3 tools to 4; 19 tool entries now carry `verified`
+  dates within the 45-day window (the staleness check's own count), and
+  the tool-links check resolved all 19 to their recorded URLs, Firefly
+  among them. Google Pics and Midjourney were deliberately not chosen, and
+  the reasons are recorded above so a reader can judge the curation.
+
+### 2026-08-14
 Round 105 (build) makes the blog page's "one limit" count mechanical: the
 number of pull requests that merged over a failing `human-owned-paths` check
 has drifted three times in four days (two → five → seven → eight), each time
