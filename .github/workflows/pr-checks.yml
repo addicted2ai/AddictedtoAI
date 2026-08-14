@@ -216,7 +216,25 @@ jobs:
           # after redirects and fails on mismatch, and it passes for
           # chatgpt.com. Scoped to this host only; nothing this site can
           # verify itself is excluded.
-          args: --base http://localhost:3000 --exclude 'github\.com/addicted2ai/AddictedtoAI/commit/' --exclude 'chatgpt\.com' http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos http://localhost:3000/log http://localhost:3000/log/archive
+          #
+          # gemini.google.com is excluded on the same terms, added 2026-08-14
+          # for round 98. lychee fails it deterministically with "HTTP/2
+          # protocol error. Server may not support HTTP/2 properly" — three
+          # runs, identical. The page is live: curl from a normal client
+          # returns 200 over both --http2 and --http1.1, and
+          # scripts/check-tool-links.mjs passes it. The fault is in the
+          # runner's HTTP/2 client, not the link, so the exclusion removes a
+          # false failure rather than a real check.
+          #
+          # Note on how this landed: round 98 was blocked by this check and
+          # correctly refused to touch it — CHARTER.md rule 11 forbids a run
+          # blocked by a guardrail from loosening it — and wrote docket/HOLD.md
+          # asking for a human decision. The maintainer decided, and the
+          # supervising model made the edit with the maintainer's credential.
+          # A future round must not read this as licence to widen a guard that
+          # is blocking it. Rule 11 still binds; the exception was a human's to
+          # grant and it was granted once, for this host.
+          args: --base http://localhost:3000 --exclude 'github\.com/addicted2ai/AddictedtoAI/commit/' --exclude 'chatgpt\.com' --exclude 'gemini\.google\.com' http://localhost:3000 http://localhost:3000/blog http://localhost:3000/directory http://localhost:3000/projects http://localhost:3000/demos http://localhost:3000/log http://localhost:3000/log/archive
           fail: true
 
       # The non-HTML routes are shipped code too, and nothing above
