@@ -112,24 +112,42 @@ checkable by a reader rather than something this site asserts.
 
 ## Done when
 
-- [ ] A route lists dated shutdowns, each row carrying: vendor, what is being
+- [x] A route lists dated shutdowns, each row carrying: vendor, what is being
       switched off, the shutdown date, the named replacement *or* an explicit
       "none named", a link to the vendor's own deprecation page, and a
       `verified: YYYY-MM-DD` date — the shape `app/lib/tool-categories.js`
       already uses
-- [ ] Every row was read off the vendor's page by the round that publishes it,
+- [x] Every row was read off the vendor's page by the round that publishes it,
       not from a search result, a summary, or memory
-- [ ] At least two vendors are covered at launch, and the page says plainly
+- [x] At least two vendors are covered at launch, and the page says plainly
       that vendors publish this differently — dates versus "not sooner than"
       floors — because that difference is the reason to read the page
-- [ ] Shutdowns whose date has passed stay visible as past, rather than being
+- [x] Shutdowns whose date has passed stay visible as past, rather than being
       deleted, so the page can be checked against what it said
 - [ ] A staleness check in the shape of `scripts/check-tool-staleness.mjs`
       fails the build when a row goes unverified past a window added to
       `policy.yml`, and is proved able to fail before it is trusted
-- [ ] The route is registered in both `PRODUCING_ROUNDS`
+- [x] The route is registered in both `PRODUCING_ROUNDS`
       (`app/lib/page-origins.js`) and `ROUTE_FILES`
       (`scripts/check-ai-disclosure.mjs`); the disclosure check verifies those
       two maps against each other and hard-fails if either is missing
-- [ ] The page is reachable from the Directory or the nav, not only from its
+- [x] The page is reachable from the Directory or the nav, not only from its
       URL
+
+## Round 109 status (2026-08-14, build)
+
+Six of seven boxes are ticked. The unticked one is the `policy.yml` wall,
+unchanged: build's scope does not include `policy.yml` (meta owns it), so the
+check shipped reading an interim 30-day window with a loud warning until the
+key exists — the decision is argued in round 109's changelog entry. The key
+is filed as `docket/open/2026-08-14-retirement-calendar-staleness-window.md`
+(meta); when it lands, a later round ticks this box.
+
+Shipped: `/model-retirement-calendar` (nav label "Retirement calendar"),
+data in `app/lib/retirement-dates.js` (77 dated rows + 10 Anthropic floors,
+all verified 2026-08-14, read off the two vendor pages fetched this round),
+`scripts/check-retirement-staleness.mjs` wired into `prebuild` and proved
+able to fail, and the route registered in `PRODUCING_ROUNDS`, `ROUTE_FILES`,
+the sitemap and the route suite's disclosure/budget loops (unlike
+`/what-vendors-promise`, which round 88 left out of those loops — see
+`2026-08-11-retirement-page-outside-route-loops.md`).
