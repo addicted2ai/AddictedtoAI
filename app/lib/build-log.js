@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import zlib from "zlib";
 
 // CHANGELOG.md is the loop's memory and the only record of why anything
 // on this site exists. Parsing it at build time — rather than keeping a
@@ -345,10 +346,113 @@ export function getBuildLog() {
 // entry, so no published citation breaks. See app/log/page.js.
 export const EARLY_ERA_END = 70;
 
-export function getCurrentLog() {
+// How many of the newest rounds /log renders in full. Rounds of the current
+// era beyond this count each get a permanent page at /log/rounds/<id> and
+// keep a stub on /log, the same pattern the archive and early eras use.
+//
+// The count is DERIVED at build time, not tuned by hand: it is the largest
+// number of newest entries whose estimated weight keeps /log under the same
+// budget scripts/check-routes.sh asserts — read from lighthouserc.json,
+// never restated — less the same 3,000-byte margin. A fixed count would
+// silently approach the wall again as entries got fatter; a derived one
+// shrinks the full block to fit, so the wall cannot return from
+// accumulation: a new round adds one stub (~150 bytes gzipped), not one
+// full entry, and the block the page holds is whatever fits the budget.
+//
+// The estimate is deliberately conservative, and the safety argument is
+// about the aggregate, not about every entry. Measured 2026-08-13 (round
+// 94) on the 23-entry page: an entry's gzipped contribution to /log —
+// rendered markup plus the RSC flight payload, which repeats the entry —
+// ran 1.68–3.53 times the gzipped size of its searchable text, median
+// 2.15. ENTRY_WEIGHT_FACTOR = 3.0 sits above the median but below the top
+// of that range, so it does not cover every entry — what it guarantees is
+// an aggregate that overshoots: the estimated page (137,567 bytes) ran
+// 47,234 above the real measured page (90,333) on the day it shipped, and
+// the route check re-measures the real gzipped page every round and fails
+// over the ceiling regardless of what the derivation believes. Page
+// chrome and stub weight were measured at ~3,100 and ~150 bytes gzipped;
+// 3,500 absorbs the paged-era heading this round added.
+//
+// The route check's ceiling assertion remains the real enforcement — the
+// derivation only chooses how many rounds the page holds, and a page that
+// measures over budget still fails. If these measured constants ever go
+// stale (a round changes the entry markup), the derivation gets
+// conservative and the check, not the budget, is where the failure shows.
+//
+// The boundary moves every round (the oldest of the full block becomes a
+// stub when a newer round arrives), but nothing else moves: the per-round
+// pages and the /log anchors are permanent, which is the property a
+// round-number boundary was protecting. A count boundary was once argued
+// against on anchor grounds — "the newest N per page would move a round's
+// anchor every time the log grew" — but here the anchor does not move: the
+// stub keeps it forever, and only the full-vs-stub rendering changes.
+const ENTRY_WEIGHT_FACTOR = 3.0;
+const CHROME_WEIGHT = 3500;
+const STUB_WEIGHT = 150;
+// The same margin scripts/check-routes.sh subtracts from the budget before
+// asserting the ceiling. Two copies of the number; they drift only if one
+// of them stops asserting the other's premise, which the ceiling check
+// would notice.
+const MARGIN = 3000;
+
+// The derivation itself, exported for scripts/check-log-pages.mjs to
+// assert against: the real entries must yield a page the budget fits, and
+// fattening the newest entries must rebalance the block smaller rather
+// than pushing the page toward the wall.
+export function estimateLogPageWeight(currentEra) {
+  const budget = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), "lighthouserc.json"), "utf8")
+  );
+  const max = budget.ci?.assert?.assertions?.[
+    "resource-summary:document:size"
+  ]?.[1]?.maxNumericValue;
+  if (!Number.isFinite(max)) {
+    throw new Error(
+      "lighthouserc.json carries no resource-summary:document:size budget " +
+        "to derive the log page size from"
+    );
+  }
+  const ceiling = max - MARGIN;
+  // Every round renders as a stub on /log; promoting the newest entries to
+  // full swaps a stub for the entry's estimated weight.
+  let used = CHROME_WEIGHT + getBuildLog().length * STUB_WEIGHT;
+  let size = 0;
+  for (const entry of currentEra) {
+    const weight = ENTRY_WEIGHT_FACTOR * zlib.gzipSync(entryText(entry)).length;
+    if (used + weight - STUB_WEIGHT > ceiling) break;
+    used += weight - STUB_WEIGHT;
+    size += 1;
+  }
+  return {
+    size: Math.max(1, size),
+    estimatedWeight: used,
+    ceiling,
+  };
+}
+
+let derivedSize;
+
+export function getLogPageSize() {
+  if (derivedSize === undefined) {
+    derivedSize = estimateLogPageWeight(getCurrentEra()).size;
+  }
+  return derivedSize;
+}
+
+function getCurrentEra() {
   return getBuildLog().filter(
     (entry) => entry.declaredOrigin && entry.number > EARLY_ERA_END
   );
+}
+
+export function getCurrentLog() {
+  return getCurrentEra().slice(0, getLogPageSize());
+}
+
+// The current-era rounds too old for /log's derived block. Each is rendered
+// in full on its own page at /log/rounds/<id> and keeps a stub on /log.
+export function getPagedLog() {
+  return getCurrentEra().slice(getLogPageSize());
 }
 
 export function getEarlyEraLog() {
@@ -455,8 +559,9 @@ export function stripInlineMarkdown(text) {
 // round 74 (the audit that measured it): "28 rounds say wrong" opened a
 // page reporting 15. Count what the destination shows.
 //
-//   "all"     — the whole record, all three pages
-//   "log"     — the rounds rendered on /log
+//   "all"     — the whole record, all pages
+//   "log"     — the rounds rendered in full on /log (the newest getLogPageSize();
+//                older rounds of the current era are not on any one page)
 //   "early"   — the rounds rendered on /log/early
 //   "archive" — the rounds rendered on /log/archive
 const SCOPES = {

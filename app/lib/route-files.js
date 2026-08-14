@@ -70,6 +70,14 @@ export const ROUTE_FILES = {
     "app/log/LogEntry.js",
     "app/lib/build-log.js",
   ],
+  // The per-round pages: one dynamic route, one disclosure. Files shared
+  // with the other log pages, so a later change to the log machinery moves
+  // the route with them.
+  "/log/rounds/[id]": [
+    "app/log/rounds/[id]/page.js",
+    "app/log/LogEntry.js",
+    "app/lib/build-log.js",
+  ],
   "/projects": ["app/projects/page.js"],
   "/disclosure": ["app/disclosure/page.js"],
 };

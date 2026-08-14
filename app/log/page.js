@@ -3,6 +3,7 @@ import {
   getBuildLogStats,
   getCurrentLog,
   getEarlyEraLog,
+  getPagedLog,
 } from "../lib/build-log";
 import { feedAlternates } from "../lib/site";
 import LogFilter from "./LogFilter";
@@ -21,6 +22,7 @@ export const metadata = {
 
 export default function BuildLog() {
   const entries = getCurrentLog();
+  const paged = getPagedLog();
   const early = getEarlyEraLog();
   const archived = getArchivedLog();
   const stats = getBuildLogStats();
@@ -45,15 +47,16 @@ export default function BuildLog() {
       </p>
       <p className="log-lead">
         This page holds the {entries.length} newest rounds built in this
-        repository. The earlier rounds are listed below and read in full on
-        their own pages: the {early.length} first rounds of this repository
-        on <a href="/log/early">the early log</a>, and the{" "}
-        {archived.length} rounds from the private repository this one
-        succeeds in <a href="/log/archive">the archive</a>. The log was
-        split because one page could not hold it and stay under its own
-        page-weight budget; every moved round keeps its anchor here, so a
-        link written before the split still lands somewhere that explains
-        where the round went.
+        repository, in full. Every older round is listed below and read in
+        full on its own page: the {paged.length} rounds that came after the
+        first era each on a page of their own, the {early.length} first
+        rounds of this repository on{" "}
+        <a href="/log/early">the early log</a>, and the {archived.length}{" "}
+        rounds from the private repository this one succeeds in{" "}
+        <a href="/log/archive">the archive</a>. The log was split because one
+        page could not hold it and stay under its own page-weight budget;
+        every moved round keeps its anchor here, so a link written before the
+        split still lands somewhere that explains where the round went.
       </p>
       <p className="log-lead">
         The <code>#</code> badge on each round opens the change itself.
@@ -114,6 +117,30 @@ export default function BuildLog() {
           a reader who followed a link is owed an explanation, not a dead
           end. The stubs carry no prose, which is the entire point: the full
           text is one link away and hundreds of bytes lighter. */}
+      <section aria-labelledby="log-paged-label">
+        <h2 id="log-paged-label" className="log-archive-heading">
+          The other {paged.length} rounds of this repository
+        </h2>
+        <p className="log-lead">
+          These rounds came after the first era and each now has a page of
+          its own: rendering them all in full here would push this page past
+          the same weight budget that moved the earlier eras. They are listed
+          here so their links keep working; each one opens its full entry on
+          its own page. The search above covers the {entries.length} newest
+          rounds on this page; the list below links every older round.
+        </p>
+        <ol className="log-stub-list">
+          {paged.map((entry) => (
+            <LogStub
+              key={entry.id}
+              entry={entry}
+              fullHref={`/log/rounds/${entry.id}`}
+              linkLabel=" — read this round on its own page"
+            />
+          ))}
+        </ol>
+      </section>
+
       <section aria-labelledby="log-early-label">
         <h2 id="log-early-label" className="log-archive-heading">
           The first {early.length} rounds of this repository

@@ -1,6 +1,11 @@
 import { sections } from "./lib/sections";
 import { posts } from "./lib/posts";
-import { countMentioning, getBuildLogStats } from "./lib/build-log";
+import {
+  countMentioning,
+  getBuildLogStats,
+  getCurrentLog,
+  getPagedLog,
+} from "./lib/build-log";
 import { feedAlternates } from "./lib/site";
 import AiDisclosure from "./components/AiDisclosure";
 
@@ -132,8 +137,10 @@ export default function Home() {
         on {countMentioning(MENTIONS[0], "log")}. A number this site
         disproves in one click is worse than no number. The{" "}
         {stats.declaredOrigins} rounds built in this repository are split
-        across <a href="/log">the build log</a> and{" "}
-        <a href="/log/early">the early log</a>; the other{" "}
+        across <a href="/log">the build log</a> — which renders the{" "}
+        {getCurrentLog().length} newest in full — the{" "}
+        {getPagedLog().length} older rounds of this era on pages of their
+        own, and <a href="/log/early">the early log</a>; the other{" "}
         {stats.rounds - stats.declaredOrigins} rounds are in{" "}
         <a href="/log/archive">the archive</a>. Every page is counted
         where it is read:{" "}

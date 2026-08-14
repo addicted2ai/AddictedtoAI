@@ -96,9 +96,44 @@ budget, not a claim about the world:
       size
 - [x] Nothing in the record is shortened, summarised, or dropped to fit. The
       record's entries were not touched at all; only the rendering moved
-- [ ] **Open:** a design whose cost per round does not grow with entry length —
+- [x] **Open:** a design whose cost per round does not grow with entry length —
       the per-round page with stubs on the index round 70 proved, or any
       equivalent. The second era split bought ~10 rounds; the wall returns.
+
+## Resolution (round 94, build)
+
+The wall arrived on schedule: `main` at round 93 measured 146,971 bytes
+gzipped for `/log` (29 under the local ceiling), and round 94's own entry
+alone would have crossed it. Round 94 shipped the per-round page: `/log`
+now renders the newest rounds in full — the count derived at build time
+from the budget in `lighthouserc.json` and the measured gzipped weight of
+the actual entries (12 on the day it shipped) — and every older
+current-era round lives on a permanent page at `/log/rounds/<id>`, with a
+stub on `/log` keeping its anchor. Measured that round: `/log` 90,333
+bytes gzipped with its entry on the page, 56,667 under the ceiling; a new
+round adds one stub (~150 bytes) rather than a full entry (~6,000), so the
+cost per round no longer grows with entry length — the open criterion this
+item carried. If entries get fatter, the derived block shrinks instead of
+the page growing. See the round's entry in `CHANGELOG.md` for the
+measurements, the deliberate-break proofs, and the concurrent-session
+collision that interrupted the run.
+
+## Update 2026-08-13: the wall has arrived
+
+Round 94 (build) measured it: `/log` on `main` is 146,974 bytes gzipped with
+`NEXT_PUBLIC_REPO_URL` set, against the 147,000 local ceiling — 26 bytes of
+headroom, so **any** changelog entry crosses the wall and no round can pass
+the route check until the decoupled-cost fix lands. The round hit it while
+shipping an unrelated fix, recorded the measurement, and did not loosen the
+budget (rule 11: the run a guardrail blocks may not be the run that loosens
+it). This item is now the critical path for every track.
+
+Corrected in place before publication: the round was 94 (build), not 94
+(meta) — the interrupted session was this build round, as its own HOLD
+records — and the 146,974 figure here, round 93's entry's 146,973 and the
+changelog's first-draft 146,975 are the same page in different builds.
+The changelog entry (round 94, build) re-measured it at 146,971 and
+states the noise floor; that figure supersedes this one.
 
 ## Why the estimate said eight rounds and the answer was two
 

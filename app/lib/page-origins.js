@@ -103,10 +103,11 @@ export const ARCHIVE = "archive";
 // not a listed source file of any route, so the nav change is invisible to
 // this map.
 export const PRODUCING_ROUNDS = {
-  // Round 87 (author): posts.js gained a post and page.js gained a teaser
-  // tie-break fix, and both are listed source files of /, so the newest
-  // recorded change to this page's files is this round's.
-  "/": 87,
+  // Round 94 (build): app/page.js is a listed source file of /, and this
+  // round rewrote its record-partition sentence, so the newest recorded
+  // change to this page's files is this round's. (Round 87 before it: posts.js
+  // gained a post and page.js gained a teaser tie-break fix.)
+  "/": 94,
   // Round 87 (author): /blog lists app/lib/posts.js, and posts.js gained a
   // post, so the newest recorded change to this route's files is this round's.
   "/blog": 87,
@@ -148,13 +149,21 @@ export const PRODUCING_ROUNDS = {
   // Round 85 (build) moves them again: it adds the `delegated` Origin value
   // to the shared parser (app/lib/build-log.js) and to LogEntry.js, both
   // listed source files of every log page.
-  "/log": 85,
+  //
+  // Round 94 (build) moves them once more: it gives the older current-era
+  // rounds permanent pages of their own (/log/rounds/<id>), touching the
+  // shared parser, LogEntry and /log's page, and rewrites the homepage's
+  // record-partition sentence.
+  "/log": 94,
   // Round 84 (build) built this page, which holds the first era of this
   // repository (rounds 48-70), frozen at a closed boundary. Round 85 moves it
   // with the other two log pages: it changed the same shared parser and
-  // LogEntry files.
-  "/log/early": 85,
-  "/log/archive": 85,
+  // LogEntry files. Round 94 moves it again, touching those shared files.
+  "/log/early": 94,
+  "/log/archive": 94,
+  // Round 94 (build) built this route: one page per older current-era round.
+  // New route, so its producing round is the round that created it.
+  "/log/rounds/[id]": 94,
   "/projects": 54,
   // Round 72 (maintain) rewrote the page's meanings; round 85 (build) adds
   // the fourth Origin value's meaning to the enumeration it publishes, so

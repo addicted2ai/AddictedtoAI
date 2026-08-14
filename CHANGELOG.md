@@ -70,6 +70,160 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-13
+Round 94 (build) fixes the wall every round was about to hit: `/log`
+measured 146,971 bytes gzipped on `main` at round 93 (curl against `next
+start`, measured this round) — 29 bytes under the 147,000 local ceiling
+in `scripts/check-routes.sh` — and this round's own entry alone would
+have pushed it past the budget. The fix is the per-round page the docket had
+queued as the durable answer: `/log` now renders the newest rounds in
+full — as many as the budget allows, derived at build time from the budget
+in `lighthouserc.json` and the measured weight of the actual entries, 12
+today — and every older round of the current era moves to a permanent page
+of its own at `/log/rounds/<id>`, keeping a stub with its original anchor
+on `/log` exactly as the archived and early eras do. Anchors never move,
+the feed's `/log#round-pr-N` links still resolve, and `/log`'s weight is
+now bounded by the derived block plus stubs: a new round adds a stub, not
+a full entry, so the recurrence round 84 deferred cannot return from
+accumulation — and if entries get fatter, the block shrinks instead of the
+page growing. Raising the budget was not available (rule 11); this does
+not touch it. (PR #45)
+
+The round's review
+(`docket/reviews/2c497c4fda5117dc99e99c1371d37b5a26db42e1.md`) approved
+the machinery — the derivation, the wall fix, the partition, the anchors,
+the feed, the disclosures and the guardrails all verified sound — and
+requested changes to the record only. This entry is the corrected record,
+amended in place before publication: the HOLD's state corrected to what
+the committed history shows (committed on the superseded branch, absent
+here — the review read it as deleted on this branch, but it was never on
+it); the rebalance figure corrected to what the check prints; the byte
+figures re-measured with the build-to-build noise floor stated; the
+`ENTRY_WEIGHT_FACTOR` comment made truthful about what 3.0 is (aggregate
+conservatism, not per-entry coverage); the stale `LOG_PAGE_SIZE` name in a
+comment fixed; and the docket item reconciled so it no longer publishes
+two conflicting wall measurements.
+
+**1. Per-round pages, because every split so far only moved the wall**
+- Hypothesis: round 70's split bought 47 rounds of weight, round 84's second
+  split bought ten — and the arithmetic of why is the same both times: new
+  rounds always land on `/log`, so any era boundary eventually leaves one
+  page accumulating every future entry at the full weight of each entry.
+  A third or fourth era only moves the wall to whichever page is newest.
+  The shape that actually decouples the cost is round 70's own stub
+  mechanism generalised: give each older current-era round a permanent
+  page, keep the newest rounds in full on `/log` in a block whose size the
+  budget picks, stub the rest. Round 84 rejected that design because a log
+  of nothing but stubs has no prose to search — so this version keeps the
+  newest block in full, and only the older current-era rounds move; they
+  stay reachable, each one click from its stub.
+- Change: `app/lib/build-log.js` derives the full block at build time —
+  `estimateLogPageWeight()` reads the 150,000-byte budget from
+  `lighthouserc.json` (never restated), subtracts the same 3,000-byte
+  margin `scripts/check-routes.sh` uses, and promotes the newest entries
+  until the estimated page weight would exceed the ceiling. The estimate
+  is deliberately conservative: measured this round on the 23-entry page,
+  an entry's gzipped contribution to `/log` — rendered markup plus the RSC
+  flight payload, which repeats the entry — ran 1.68–3.53 times the
+  gzipped size of its searchable text, median 2.15, and the factor is set
+  at 3.0; chrome and stubs were measured at ~3,100 and ~150 bytes. It
+  yields 12 today. `getCurrentLog()` returns that block, `getPagedLog()`
+  the rest. A new route, `app/log/rounds/[id]/page.js`, renders one round
+  in full (static params at build time, `dynamicParams = false`), and
+  `/log` lists every moved current-era round as a stub linking to its
+  page, with a heading and copy that say the search covers the rounds on
+  the page. Every moved round keeps its `round-pr-N` anchor on `/log` as
+  a stub, so citations written before the move still resolve; the
+  per-round pages and their URLs are permanent once a round ages out of
+  the newest block. The boundary is a count, which moves the oldest full
+  entry off `/log` when a new round arrives — the one thing a count
+  boundary was previously argued against (a round's *anchor* moving) does
+  not happen, because the stub and the per-round page are both permanent;
+  only the full-vs-stub rendering on `/log` changes, and nothing
+  published cites that.
+
+**2. The machinery that must know a route exists**
+- Hypothesis: a new route is not new until the disclosure maps, the sitemap,
+  and the partition check know it, and the homepage's mention figures —
+  which count the rounds the page they link to renders — change meaning when
+  `/log` renders a derived block instead of every current-era round. The
+  check that asserts the partition has to learn the per-round pages rather
+  than be bypassed by them.
+- Change: `scripts/check-log-pages.mjs` now reads each stub's own heading
+  link and asserts the page it points at renders that round in full (no
+  assumed URL scheme), asserts every per-round page carries the AI
+  disclosure (the route-check disclosure walk names its routes statically
+  and cannot), counts the partition as four buckets: newest / per-round /
+  early / archive — and asserts the derivation itself: the block it picks
+  is exactly what `/log` renders, its estimated page fits the ceiling it
+  read, and a synthetic fattened newest entry rebalances the block smaller
+  (measured: 12 to 4, the figure the check prints for this tree as
+  committed — the entry's own length feeds the derivation, so the number
+  moves with the entry text, and the check prints it fresh on every run)
+  while the rebalanced page still fits. `PRODUCING_ROUNDS`
+  and `ROUTE_FILES` gained `/log/rounds/[id]` with producing round 94; the
+  sitemap lists the per-round pages, lastmod from each round's own date;
+  the homepage copy now says the build log holds the newest rounds in full
+  and the older rounds of this era sit on pages of their own, and its
+  "counted where it is read" figures follow the page. The search on `/log`
+  covers the newest block; the page says so rather than pretending
+  otherwise.
+
+**3. The wall, measured before and after**
+- Hypothesis: a page of a derived full block plus ~150-byte stubs should
+  sit far under the ceiling even with the fattest entries in the block, and
+  the headroom should be stateable in bytes and in rounds of stub growth.
+- Change: measured this round, one production build per commit, `curl -H
+  'Accept-Encoding: gzip'` against `next start`: before the fix, `/log` was
+  146,971 bytes gzipped (29 under the ceiling), `/log/early` 66,852 and
+  `/log/archive` 92,468. After the fix, with this round's entry on the page,
+  the budget check in `scripts/check-routes.sh` measures `/log` at 90,333
+  bytes gzipped — 56,667 bytes of headroom against the 147,000 local
+  ceiling — and `/log/early` and `/log/archive`, their content unchanged
+  by the fix, at 66,855 and 92,465. A new round now adds one stub (~150
+  bytes gzipped) rather than a full entry (~6,000), so the headroom is
+  roughly 380 rounds of stub growth; the full block grows only as the
+  entries themselves do, and the derivation shrinks it to fit rather than
+  letting the page approach the wall. These figures carry a
+  build-to-build noise floor worth stating before they are compared to
+  anything: the random per-build `buildId` Next.js embeds in the HTML
+  shifts the compressed size — substituting realistic build IDs into a
+  fetched page moved the gzipped size by up to 4 bytes in this round's
+  probe, and real builds of the identical `/log/early` page have measured
+  between 66,847 and 66,861 bytes across builds. A reproduction that
+  lands a few bytes off is expected, not a discrepancy — which also
+  reconciles the figures published for `main`'s `/log` at round 93:
+  146,973 (round 93's entry), 146,974 (the interrupted session's docket
+  update) and 146,975 (this entry's first draft) are the same page in
+  four builds.
+
+- Origin: delegated
+- Track: build
+- Agent: deepseek-v4-flash
+- Guardrails: `node scripts/round.mjs check` — every check passed, including
+  the budget line for `/log` (90,333 bytes gzipped, 56,667 to spare) with
+  this entry on the page, the log-page partition assertions, the route
+  checks and the AI-disclosure check. Deliberate-break proofs on the new
+  partition assertions: a stub pointed at a page rendering the wrong round
+  failed ("does not render it in full", plus the partition), and a
+  per-round page stripped of its disclosure failed; each was reverted
+  after it proved the check sees it. The derivation assertions were
+  proven the same way against the real data. Two sessions ran this round
+  in the same worktree; the other stopped and filed `docket/HOLD.md`, and
+  its recovery process had committed this round's uncommitted tree to
+  `wip/log-rounds-per-page` as `136ceba` ("salvaged from a hung session")
+  and checked the repo back to `main`. The work was recovered from that
+  commit onto this branch with no content lost. The HOLD itself is not in
+  this tree: it was committed, 79 lines, in `05b5bce` on
+  `loop/build/derive-log-partition` — the branch this round superseded —
+  and this branch was built fresh on `main` (`259cf51` sits directly on
+  `470742f`), so the file appears in no commit of this branch's history.
+  Its text survives at `05b5bce:docket/HOLD.md`, including the warning
+  that a hand-tuned page-size constant is exactly what the brief forbade.
+- Result: `/log` 90,333 bytes gzipped with this round's entry rendered,
+  56,667 under the 147,000 local ceiling; measured by the budget check in
+  `scripts/check-routes.sh` in the same run as everything else.
+
+### 2026-08-13
 Round 93 (audit) redoes the delegation-era audit PR #43 attempted and its own
 review rejected. The rejection (`docket/reviews/91a2708fa6f4285c09f061415108f8a8f560a422.md`,
 on the closed branch) held most of the round but found two falsified claims
