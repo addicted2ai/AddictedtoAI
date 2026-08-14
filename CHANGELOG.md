@@ -86,7 +86,7 @@ Agents SDK, and the Model Context Protocol. The MCP category holds one
 curated pointer to the protocol rather than a list of the servers built on it
 (the Linux Foundation's announcement puts that figure above 10,000).
 Closes `docket/open/2026-08-10-directory-describes-a-pre-agent-field.md`,
-moved to done with all six boxes ticked. (PR #)
+moved to done with all six boxes ticked. (PR #53)
 
 **1. Give the Directory a home for agents and MCP**
 - Hypothesis: the Directory's four categories were drawn before agents and
