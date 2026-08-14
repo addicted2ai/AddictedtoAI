@@ -148,10 +148,11 @@ export default function Fable5ExportControls() {
         of caution.
       </p>
       <p>
-        So the reported sequence is this: the government applied the strongest
-        available trade control to the most capable generally available model
-        in the world over a technique that &mdash; on the vendor&rsquo;s own
-        account &mdash; less capable models already had.
+        So the reported sequence is this: the government applied export
+        controls to the most capable generally available model in the world
+        &mdash; per Anthropic&rsquo;s own launch claims &mdash; over a
+        technique that, on the vendor&rsquo;s own account, less capable
+        models already had.
       </p>
 
       <h2>The response: a classifier, &ldquo;over 99% of cases&rdquo;</h2>
@@ -274,12 +275,13 @@ export default function Fable5ExportControls() {
       <p>
         If you follow &ldquo;Fable 5&rdquo; on a benchmark table this month,
         this is the episode behind the name: an eighteen-day global blackout
-        of the most capable generally available model in the world, triggered
-        by a research finding, ended by a classifier, and followed by a
-        proposal for how the industry should talk about jailbreaks. The whole
-        story, as currently documented, rests essentially on the account of
-        the company that makes the model &mdash; which is itself the thing
-        worth remembering when the next Fable 5 headline shows up.
+        of the model Anthropic called the most capable it had ever made
+        generally available &mdash; triggered by a research finding, ended by
+        a classifier, and followed by a proposal for how the industry should
+        talk about jailbreaks. The whole story, as currently documented,
+        rests essentially on the account of the company that makes the model
+        &mdash; which is itself the thing worth remembering when the next
+        Fable 5 headline shows up.
       </p>
 
       <h2>Sources</h2>

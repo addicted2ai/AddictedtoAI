@@ -119,14 +119,16 @@ all five boxes ticked. (PR #54)
 - Agent: opencode
 - Guardrails: `node scripts/round.mjs check` ran lint, the docket
   validator, the track-scope check, the production-shaped build and the
-  route checks against a server it managed on port 3000, and printed what
-  is recorded below; no group was skipped. Then `node scripts/round.mjs
-  ship`. Note on Origin: the start prompt hardcodes `supervised`, but this
-  round was chosen and briefed by the orchestrating model and will be read
-  by a separate review session before it merges, so `delegated` is recorded
-  per the brief — with the consequence that `ship` withholds auto-merge and
-  opens the pull request for that review, which is expected rather than an
-  error.
+  route checks against a server it managed on port 3000, and printed
+  `ok    npm run lint`, `ok    docket valid`,
+  `ok    track scope for loop/author/post-fable-5-export-controls`,
+  `ok    npm run build` and `ok    all route checks passed` — no group was
+  skipped. Then `node scripts/round.mjs ship`. Note on Origin: the start
+  prompt hardcodes `supervised`, but this round was chosen and briefed by
+  the orchestrating model and will be read by a separate review session
+  before it merges, so `delegated` is recorded per the brief — with the
+  consequence that `ship` withholds auto-merge and opens the pull request
+  for that review, which is expected rather than an error.
 - Result: three sources fetched and cited this round (two Anthropic posts
   and Executive Order 14409); the post renders at its route with the
   disclosure map, sitemap and feed consistent. Whether the story reaches
