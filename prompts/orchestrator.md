@@ -236,12 +236,73 @@ merge, and it is real. Do not attempt a workaround.
 When any of this happens: write `docket/HOLD.md`, say plainly what you were doing
 and what stopped you, and exit.
 
+**Write the HOLD instead of thinking about it again.** The failure mode is not
+charging past a boundary; it is circling one. A round on 13 August re-derived the
+same blocked conclusion about a dozen times, burning twenty minutes, because each
+pass felt like progress. If you have reached a conclusion you cannot act on, you
+have all the information you are going to get: further reasoning produces the same
+answer more expensively. Write the file and stop.
+
+A good HOLD is short and actionable. Say what you were doing, what stopped you, what
+you tried, and — the part that matters most — **exactly what you need from a human**,
+in enough detail that they can act without reading your transcript. If there is a
+safe partial step, name it. If nothing is safe to do meanwhile, say that too, and say
+what must not be touched while the HOLD stands.
+
+A stale HOLD halts the loop, so delete it as the last step of the round that resolves
+the condition — never before.
+
+## Before you dispatch a session
+
+**Confirm the previous one is gone.** A clean `git status` does not mean the tree is
+free: it means nothing is uncommitted *this instant*. A session still running between
+its own commits looks identical. On 13 August two sessions interleaved commits in one
+checkout for twelve minutes because the second was dispatched on the strength of a
+clean status, and the in-flight guard sees open pull requests, not live sessions.
+
+Check the session store, which is shared across processes and therefore sees sessions
+this one did not start:
+
+    curl -s http://127.0.0.1:4097/session
+
+An entry whose `time.updated` is advancing is alive. Count the `opencode` processes
+too — one is the server; more than that means a round is running.
+
+Two cautions on reading that signal. `/session/status` reports only sessions the
+queried server owns in memory, and it carries no timestamps, so it cannot tell a
+working round from a stuck one. And `time.updated` advances per *completed step*, so
+a round in a single long generation can sit unchanged for two or three minutes while
+working normally — measured at ~145 seconds while 7,738 tokens were produced. Silence
+is not death. A session idle under ~180 seconds is thinking.
+
 ## Hygiene
 
 - `node scripts/round.mjs check` brings up a server on port 3000. Sessions that die
   orphan it. Check for and kill stale `next start` processes before starting.
 - Never switch branches to read a file. Use `git show <ref>:<path>` — a checkout
   carries uncommitted work with it and has caused a collision here.
+- **Never `cd` anywhere, and never create a scratch directory inside the repository.**
+  The permission layer reads a changed working directory as leaving the project
+  (`permission requested: external_directory (D:\*); auto-rejecting`) and **ends the
+  session instantly** — it is not an error you can catch. Two review sessions died
+  this way on 13 August after `mkdir … && cd …`. Run every command from the
+  repository root; put temporary files under
+  `C:/Users/BadBitch/AppData/Local/Temp/opencode/`.
+- **Never touch any path beginning with `/proc`** — not `/proc/<pid>/winpid`, not
+  `ls /proc/`. It resolves against the working directory's drive, asks for
+  `D:\proc\*`, and is auto-rejected. This ended two sessions in a row on 14 August,
+  the second inside a brief that warned about the first but named only the specific
+  path it had used.
+- **Never background a process bare.** `cmd &` inherits the tool's stdout, and the
+  tool's reader waits for EOF on that pipe — which a long-running background process
+  never closes, so the call hangs forever even after every statement has finished.
+  Always `cmd > /tmp/opencode/x.log 2>&1 &`, and never background inside `$( )`.
+- **Never kill a process by name or command-line pattern.** Such a query matches your
+  own process, and the maintainer's OpenCode server. A session on 14 August killed
+  that server by walking a process tree into its own ancestry and ended itself; the
+  supervisor now stops rounds with `POST /session/<id>/abort` instead, because an
+  attached round's work lives in the server's process tree and killing its client
+  does not stop it.
 - A session idle under ~180 seconds is thinking, not hung. Do not kill it early.
 - `GH_TOKEN` in the environment breaks OpenCode startup. Do not set it. Pushes are
   handled by the repository's configured credential helper.
