@@ -162,6 +162,14 @@ export const ARCHIVE = "archive";
 // pattern as rounds 87, 100, 103 and 107. The new route is 108 by
 // construction: this round built it. app/page.js is untouched, but / moves
 // anyway because posts.js feeds its homepage teaser.
+//
+// Round 109 (build) publishes the model-retirement calendar at
+// /model-retirement-calendar. It is a new route, so its producing round is
+// 109 by construction. Its files — app/model-retirement-calendar/page.js and
+// app/lib/retirement-dates.js — are new and touched by nothing else, so no
+// other route moves this round. app/Nav.js gains a link to it but Nav.js is
+// not a listed source file of any route, so the nav change is invisible to
+// this map.
 export const PRODUCING_ROUNDS = {
   // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
@@ -192,6 +200,9 @@ export const PRODUCING_ROUNDS = {
   // Round 88 (author) built this page. New route, so its producing round is
   // the round that created it.
   "/what-vendors-promise": 88,
+  // Round 109 (build) built this page. New route, so its producing round is
+  // the round that created it.
+  "/model-retirement-calendar": 109,
   // Round 67 (author) built this page; round 91 (build) restored the mapping
   // after a merged-tree mismatch. Round 93 (audit) re-records You.com's href
   // in tool-categories.js, a listed source file, so the newest change is

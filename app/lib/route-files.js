@@ -55,6 +55,10 @@ export const ROUTE_FILES = {
     "app/what-vendors-promise/page.js",
     "app/lib/retirement-commitments.js",
   ],
+  "/model-retirement-calendar": [
+    "app/model-retirement-calendar/page.js",
+    "app/lib/retirement-dates.js",
+  ],
   "/directory": [
     "app/directory/page.js",
     "app/directory/DirectorySearch.js",

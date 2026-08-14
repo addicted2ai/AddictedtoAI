@@ -1166,3 +1166,12 @@ h2.latest-post-label {
   font-size: 0.8rem;
   white-space: nowrap;
 }
+
+/* A retirement-calendar row whose shutdown date has passed. Kept visible
+   and marked, never deleted — see app/model-retirement-calendar/page.js. */
+.retirement-past {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
