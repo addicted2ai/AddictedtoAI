@@ -81,7 +81,7 @@ entry was verified 2026-08-14 against the vendor's pages the same day; the
 tool-link and staleness checks both pass, and the gemini.google.com
 header-overflow blocker cleared by the 13 August build round did not recur.
 This closes `docket/open/2026-08-10-directory-missing-gemini.md`, moved to
-done with all four boxes ticked. (PR #)
+done with all four boxes ticked. (PR #49)
 
 **1. Add Gemini to the Directory**
 - Hypothesis: the Directory's "Chat & Assistants" category lists ChatGPT,
