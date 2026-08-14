@@ -84,7 +84,7 @@ with Cerebras" phrasing, states the announcement contains no price and
 publishes no price, labels the four early customers (Jane Street, Podium,
 Basis, Rogo) and their quotes as OpenAI's claims, and links the site's
 GPT-5.6 price-drop post as the price axis of the same story without
-repeating it. (PR #)
+repeating it. (PR #64)
 
 **1. Publish the Ultrafast post**
 - Hypothesis: the docket item argues this is the speed half of a
