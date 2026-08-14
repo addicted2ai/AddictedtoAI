@@ -94,7 +94,7 @@ for the growing `docket/reviews/`. The round was also briefed with the wrong
 Origin (`maintainer`); block 4 corrects it to `delegated` — no human decided
 what or why for this round. Because this round changes a guard while that
 guard blocks the loop, it is merged by hand, not armed, and only after a
-separate review session covers the merged tree.
+separate review session covers the merged tree. (PR #46)
 
 **1. A review artifact naming a commit absent from history is not a failure**
 - Hypothesis: an artifact whose `Commit:` is not in this branch's history is
