@@ -92,9 +92,13 @@ about a commit that IS in this branch's history still fails. It adds a
 regression test asserting those invariants and files the archival question
 for the growing `docket/reviews/`. The round was also briefed with the wrong
 Origin (`maintainer`); block 4 corrects it to `delegated` — no human decided
-what or why for this round. Because this round changes a guard while that
-guard blocks the loop, it is merged by hand, not armed, and only after a
-separate review session covers the merged tree. (PR #46)
+what or why for this round. The review session that followed (61ef766)
+found this round had also modified a past entry: the record-finishing
+commit duplicated a line into round 94's published intro. Block 5 corrects
+it and says plainly that no automated check caught it. Because this round
+changes a guard while that guard blocks the loop, it is merged by hand, not
+armed, and only after a separate review session covers the merged tree.
+(PR #46)
 
 **1. A review artifact naming a commit absent from history is not a failure**
 - Hypothesis: an artifact whose `Commit:` is not in this branch's history is
@@ -162,10 +166,14 @@ separate review session covers the merged tree. (PR #46)
   artifact naming a commit that IS in this branch's history, every check is
   unchanged — the four fields, the Commit-matches-filename rule, the prose
   requirement, the tree-diff condition — and each is still a failure when
-  unmet. The one check whose reach narrows is Commit-vs-filename mismatch,
-  and it narrows only for artifacts whose declared commit is absent from
-  this branch's history, where the mismatch was guarding nothing: such an
-  artifact can never cover anything. The malformed artifact on `main` is not
+  unmet. Four checks now run only for artifacts whose filename is an
+  ancestor of this branch's head — the missing-fields check, the prose
+  requirement, the file's readability, and Commit-vs-filename mismatch —
+  because an artifact whose declared commit is absent from this branch's
+  history can never cover anything, so nothing about its contents is read
+  or judged. The missing-fields narrowing is the headline case: it is the
+  whole reason the malformed artifact on `main` stopped blocking. The
+  malformed artifact on `main` is not
   edited — the record is the product, and the fix is in the checker — and
   now reports as a note; the gate on `main`'s tree fails with exactly one
   problem, `no review artifact covers the merged tree`, which is correct.
@@ -200,16 +208,44 @@ separate review session covers the merged tree. (PR #46)
   round, and this pull request is not armed — it awaits that review and a
   by-hand merge.
 
+**5. The record is the product: the review caught the corruption of a past entry**
+- Hypothesis: the record-finishing commit of this round (17d5de0) inserted
+  a duplicate `### 2026-08-13` section header and a duplicate of round 94's
+  opening line into round 94's entry. Nothing caught it: the build-log
+  parser absorbs the duplication, so the check suite passes with it in
+  place, and `app/log/LogEntry.js` renders `entry.intro` — so round 94's
+  published intro on `/log` would have shown the sentence twice. Rule 5
+  forbids modifying a past entry; this round broke it and went green,
+  because the append-only rule is charter text with no check behind it.
+- Change: this round modified a past changelog entry — round 94's — and
+  the review (`docket/reviews/61ef766...`) caught it where no automated
+  check did. The duplicated line is deleted; round 94's entry is now
+  byte-identical to its text on `main` (diffed between `origin/main` and
+  this branch, including the header: empty). The gap that let this pass —
+  nothing enforces rule 5 — is filed as
+  `docket/open/2026-08-13-changelog-append-only-unenforced.md`, which
+  sketches the check that would assert it; implementing that check is a
+  separate round, so this round's widening stays accountable to rule 11
+  on its own.
+
 - Origin: delegated
 - Track: meta
 - Agent: opencode (deepseek-v4-flash)
-- Guardrails: `node scripts/check-review-artifact.mjs 470742f` puts current
-  `main` in the position of a delegated branch and reproduces the live
-  blocker before the fix: `FAIL docket/reviews/2c497c4fda...: missing
-  field(s) Reviewer, Round` and `2 problem(s)`. After the fix the same
-  command reports all six artifacts as notes and fails with exactly
-  `1 problem(s)` — `no review artifact covers the merged tree` — which is
-  correct, because a covering approve is still required. Both new test cases
+- Guardrails: `node scripts/check-review-artifact.mjs 470742f` run in a
+  worktree of current `main` (f327f96) against three checker revisions
+  shows the live blocker and its shape at each step, each number measured
+  this round with the checker that produces it. The checker as `main`
+  carries it: `7 problem(s)` — all six artifacts fail (`2c497c4fda...` on
+  `missing field(s) Reviewer, Round`, the other five as `not an ancestor
+  of, or equal to, the pull request head`), plus the no-covering failure.
+  An intermediate revision of this round's checker (absent-commit
+  artifacts informational, but the field checks still first):
+  `2 problem(s)` — the five well-formed artifacts are notes,
+  `2c497c4fda...` still fails on missing fields, plus the no-covering
+  failure. The checker on this branch: `1 problem(s)` — all six artifacts
+  are notes, and only `no review artifact covers the merged tree` fails,
+  which is correct, because a covering approve is still required. Both new
+  test cases
   were proven able to fail and restored: case 4 (absent commit + missing
   fields is informational) run against the pre-fix checker reports
   `FAIL ... missing field(s) Reviewer, Round` — the blocker — and the
