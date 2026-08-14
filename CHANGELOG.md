@@ -82,7 +82,7 @@ DeepSWE v1.1 65.3% vs 49.0%, GDP.pdf 34.0% vs 22.0%, AutomationBench 30.4%
 vs 17.0%, WebDev Arena Elo 1588 vs 1538) are labelled as Google's own
 reported numbers. The post also records the consumer connection: the
 Directory's Gemini entry already names Spark from I/O, and the announcement
-says Spark starts using 3.7 Flash on the day of release.
+says Spark starts using 3.7 Flash on the day of release. (PR #63)
 
 **1. Publish the Gemini 3.7 Flash post**
 - Hypothesis: the docket item argues that a model whose price doubles on a
