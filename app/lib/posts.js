@@ -109,4 +109,17 @@ export const posts = [
     datePublished: "2026-08-14",
     dateModified: "2026-08-14",
   },
+  {
+    path: "/blog/gemini-3-7-flash",
+    title:
+      "Gemini 3.7 Flash launches at half of 3.6 Flash's original price — and the rate doubles on 1 January 2027",
+    metaTitle:
+      "Gemini 3.7 Flash Launches At Half Of 3.6 Flash's Original Price — And The Rate Doubles On 1 January 2027",
+    description:
+      "On 13 August 2026 Google released Gemini 3.7 Flash, three weeks after 3.6 Flash, at an introductory $0.75 / $3.75 per million input/output tokens — half of 3.6 Flash's original cost, expiring 31 December 2026. From 1 January 2027 the rate becomes $1.50 / $7.50, exactly what 3.6 Flash cost at launch. Every figure is Google's own, read off its announcement.",
+    excerpt:
+      "A model whose price doubles on a stated date: Gemini 3.7 Flash costs half of what 3.6 Flash did at launch — until 1 January 2027, when the rate reverts to 3.6 Flash's original price exactly.",
+    datePublished: "2026-08-14",
+    dateModified: "2026-08-14",
+  },
 ];

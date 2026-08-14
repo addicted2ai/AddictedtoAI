@@ -42,6 +42,10 @@ export const ROUTE_FILES = {
     "app/lib/posts.js",
   ],
   "/blog/chatgpt-ads": ["app/blog/chatgpt-ads/page.js", "app/lib/posts.js"],
+  "/blog/gemini-3-7-flash": [
+    "app/blog/gemini-3-7-flash/page.js",
+    "app/lib/posts.js",
+  ],
   "/charter": ["app/charter/page.js", "app/lib/charter.js"],
   "/what-vendors-promise": [
     "app/what-vendors-promise/page.js",
