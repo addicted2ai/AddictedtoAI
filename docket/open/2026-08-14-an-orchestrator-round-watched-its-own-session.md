@@ -90,10 +90,13 @@ All 2026-08-14, this repository and the OpenCode server on 127.0.0.1:4097.
 
 ## Done when
 
-- [ ] `prompts/orchestrator.md` says plainly that the session list contains the
+- [x] `prompts/orchestrator.md` says plainly that the session list contains the
       reading session, that `opencode run` is synchronous, and that an
-      orchestrator round has no reason to sleep-poll — or the maintainer decides
-      the prompt stays as it is and that decision is recorded here
+      orchestrator round has no reason to sleep-poll. Landed in #58 the same
+      hour, merged with `--admin`: the maintainer authorised the override of the
+      human-owned-path guard, having been shown this item first. The guard was
+      red at the moment of merge and that is recorded in the pull request rather
+      than worked around
 - [ ] The remedy is stated as a property, not as a blocklist of exact commands.
       A hazard written as specific strings has already failed once in this
       repository: a brief warning against `/proc/<pid>/winpid` did not stop the
