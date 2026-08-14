@@ -83,4 +83,17 @@ export const posts = [
     datePublished: "2026-08-11",
     dateModified: "2026-08-11",
   },
+  {
+    path: "/blog/fable-5-export-controls",
+    title:
+      "The US government took Claude Fable 5 offline for everyone, worldwide, for eighteen days — and the record of why is essentially one Anthropic post",
+    metaTitle:
+      "The US Government Took Claude Fable 5 Offline For Everyone, Worldwide, For Eighteen Days — And The Record Of Why Is Essentially One Anthropic Post",
+    description:
+      "On 12 June 2026 the US applied export controls to Anthropic’s newest models; unable to verify nationality in real time, Anthropic suspended Fable 5 and Mythos 5 for all users. The controls lasted eighteen days. The trigger was an Amazon researcher’s jailbreak; the aftermath was a proposed jailbreak-severity framework and four government-collaboration commitments. Every claim traces to two Anthropic posts and Executive Order 14409, all fetched for this post.",
+    excerpt:
+      "An export-controls order took the most capable generally available model in the world offline for everyone, everywhere, for eighteen days. The trigger was a research jailbreak; the aftermath was a proposal. The whole story on the public record is essentially the vendor’s own account.",
+    datePublished: "2026-08-14",
+    dateModified: "2026-08-14",
+  },
 ];

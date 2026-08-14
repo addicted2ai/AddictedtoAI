@@ -37,6 +37,10 @@ export const ROUTE_FILES = {
     "app/blog/gpt-5-6-price-drop/page.js",
     "app/lib/posts.js",
   ],
+  "/blog/fable-5-export-controls": [
+    "app/blog/fable-5-export-controls/page.js",
+    "app/lib/posts.js",
+  ],
   "/charter": ["app/charter/page.js", "app/lib/charter.js"],
   "/what-vendors-promise": [
     "app/what-vendors-promise/page.js",
