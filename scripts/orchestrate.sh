@@ -196,9 +196,14 @@ stop_iteration() {
 
   # Bounded wait for the two confirmations. A stopped session either stops
   # changing time.updated or disappears from /session; both read as stopped.
-  # A single post-abort bump of time.updated is tolerated: the check compares
-  # against the last value seen, so a bumped-but-frozen session reads stopped
-  # on the next poll, while a session that keeps working never matches.
+  # Every poll compares against the fixed pre-abort value, not the last value
+  # seen, so a single post-abort bump would set session_stopped=0 for the
+  # whole wait and end with a false "the abort did not stop it" note. That
+  # tolerance is deliberately not implemented: an abort does not bump
+  # time.updated (measured 14 August: completed, zombie, and mid-generation
+  # aborts all left it frozen), and a session that is genuinely still working
+  # keeps advancing past the fixed value, which is exactly what this
+  # confirmation exists to catch.
   waited=0
   client_gone=0
   session_stopped=1
