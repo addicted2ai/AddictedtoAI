@@ -69,6 +69,135 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-14
+Round 96 (meta) replaces the supervisor's liveness test before it can destroy
+the loop it protects. The old test measured the mtime of the iteration's own
+log, and that log is silent for the whole duration of a nested round — the
+supervisor dispatches `opencode run` and waits, writing nothing — so at the
+default `STALL_SECONDS=900` it would have killed every healthy round about
+fifteen minutes in, and the failure would have looked like the round's own,
+not the supervisor's. The new liveness reads `time.updated` on `/session` from
+the OpenCode server — the shared store advances it for sessions started by
+other processes — backed by a CPU vote over the round's process trees and with
+the log mtime demoted to a deliberate third signal. The kill path was rebuilt
+around the platform's real primitives: `$!` in git-bash is an msys pid, not a
+Windows pid, so the child is translated via `/proc/<pid>/winpid` and killed
+with `taskkill //T //F //PID`, which only descends — a previous session killed
+the maintainer's OpenCode server by walking a process tree into its own
+ancestry, and this kill path makes that class of bug impossible by
+construction. Three sessions were spent on this round. The first killed its
+own server and its work had to be salvaged (61f0689 takes the salvage); the
+second built the session-API liveness and the taskkill path (84eb2da); the
+third added the `kill_iteration` return-code contract and then hung on a test
+harness whose backgrounded stub inherited the tool's stdout, so the command
+substitution never saw EOF and the session had to be killed from outside
+(03b9453, co-authored by Claude Opus 5). This finishing session re-ran the
+three proofs once, found the busy-stub proof had only been green by a
+stale-clone accident — the supervisor's own iteration-start `git checkout
+main` discards an uncommitted pin, so on a current clone the CPU probe ran
+nothing and a busy stub looked stalled — fixed the harness by committing the
+pin into the clone's own `main`, and verified all three proofs pass (14 of 14
+assertions).
+
+**1. Liveness is the session's `time.updated`, not the iteration log's mtime**
+- Hypothesis: the iteration log is silent for the whole duration of a nested
+  round — the supervisor dispatches `opencode run` and waits, and minutes pass
+  with nothing written, so silence is the normal state of a healthy loop. A
+  supervisor keyed on that log's mtime alone (as PR #42's first version was)
+  would decide a perfectly healthy round had hung and kill it, every time,
+  roughly `STALL_SECONDS` in — at the default 900 seconds that is every
+  healthy round about fifteen minutes in — and because the supervisor then
+  records the killed iteration as the round's failure, the fault would read as
+  the rounds' own and nobody would look for it in the supervisor.
+- Change: liveness is now "did any of three signals advance recently". The
+  primary signal is `time.updated` on `GET /session` from the OpenCode server:
+  the shared store records it on every session while it works, including
+  sessions started by a different process, so an advance is real activity
+  (measured 13 August: two concurrent rounds reported 30s/884s and then
+  25s/11s since last update across a 45-second interval, tracking real work).
+  `/session/status` was rejected as the signal because it only reports the
+  sessions the queried server owns in memory. The second signal is CPU
+  consumed by the round's process trees, rooted on the launched child's
+  translated winpid and the server's winpid — a round launched with `--attach`
+  runs its tool shells inside the server's tree (measured 14 August: a tool
+  shell spawned by an `--attach` session descended from the server process,
+  not the CLI client) — which carries the case of a long silent tool call that
+  freezes `time.updated` (measured 13 August: its age grew 6s to 37s across a
+  40-second busy tool). The log mtime remains as the third, last vote. A curl
+  that fails or a server that answers garbage yields no signal, never a kill
+  on its own. Verified with a harness outside the repository (stubs that sleep
+  silently, burn CPU writing nothing, and exit; `ORCHESTRATE_COMMAND` pointed
+  at the stubs, never at a real prompt): a silent stub past the stall
+  threshold is killed and really gone; a busy stub writing nothing is not
+  killed (the regression that matters); a dry run (`ORCHESTRATE_DRY_KILL=1`)
+  kills nothing and logs what it would have killed. The harness's first
+  re-run this round failed the busy-stub proof, and the cause was the harness,
+  not the supervisor: the pin that copies the branch's scripts into the test
+  clone is uncommitted, and the supervisor's own iteration-start `git checkout
+  main` discards uncommitted copies — the earlier green run had survived only
+  because a stale clone made that checkout fail. The pin is now committed into
+  the clone's own `main` with the remote removed, so neither the checkout nor
+  the pull can move the tested tree; all three proofs then pass (14 of 14).
+
+**2. The kill path cannot climb: winpid translation, `taskkill //T`, and a server guard**
+- Hypothesis: a hand-rolled process-tree walk can walk upward as easily as
+  down, and it did — a previous session killed the maintainer's OpenCode
+  server by walking a tree into its own ancestry, and no kill path that can do
+  that belongs in an unattended supervisor. Windows has a primitive for "this
+  process and its descendants" that only ever descends; the supervisor should
+  use it and keep nothing hand-rolled.
+- Change: the supervisor now translates the launched child's msys pid to its
+  Windows pid (`/proc/<pid>/winpid`), reads it again at kill time in case the
+  child is already gone, and kills with `taskkill //T //F //PID <winpid>` —
+  the process and its descendants, never anything above the child, which makes
+  the ancestry-climbing bug impossible by construction. A guard refuses the
+  kill if the translated winpid is the process listening on
+  `ORCHESTRATE_SERVER`'s port — the round is a fresh launch, never the server —
+  logging the refusal rather than killing. `kill_iteration` returns 0 when the
+  child was killed (or already gone) and 1 when the kill did not happen, and
+  the caller does not wait on a round that is still running; that contract
+  came from the hung take-3 session and is preserved as commit 03b9453.
+
+**3. Two platform facts recorded so they stop costing sessions**
+- Hypothesis: the failures this round kept hitting are not one-off mysteries;
+  each cost a session to rediscover, and a record that names them once does
+  not pay for them again. (a) `$!` in git-bash is an msys pid, not a Windows
+  pid — PowerShell, CIM and taskkill all need the Windows pid, and
+  `/proc/<pid>/winpid` is the translation, which is stable for the process's
+  whole lifetime (verified 14 August: alive and unchanged at
+  20/40/60/80/100 seconds). (b) A PowerShell query that matches processes by a
+  marker string in the command line matches its own process (measured 14
+  August), so such a query must exclude `$PID` — which is how a naive "kill
+  everything carrying my marker" finds the wrong thing.
+- Change: the supervisor finds children by pid, never by command-line marker,
+  and the CPU roots are pids, never names and never markers; both findings are
+  recorded in the shipped files' comments and in this entry. The supervisor
+  is still stateless — a hang costs one iteration, not the loop — and testing
+  never pointed it at the real orchestrator prompt: `ORCHESTRATE_COMMAND`
+  launches only stubs. The three shipped files each earn their place:
+  `orchestrate.sh` is the supervisor, `orchestrate-liveness.sh` the probes a
+  test can source directly, `orchestrate-cpu.ps1` the PowerShell walk that
+  cannot live inside a bash script.
+
+- Origin: delegated
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope, production build, full route suite (a SKIPPED group counts as a
+  failure). `bash -n` on both shipped shell files — syntax ok. The three
+  supervisor proofs re-run once on the committed tree via the harness at
+  `C:/Users/BadBitch/AppData/Local/Temp/opencode/sup-live/harness.sh`: 14 of
+  14 assertions pass (quoted in block 1); the busy-stub proof first failed for
+  the stale-clone reason block 1 records, and the harness fix is what makes
+  the pass deterministic. Commit 03b9453's message and the `wip/supervisor-
+  liveness` branch record the two dead sessions. Machine left as found: one
+  `opencode` process (the 4097 server), no listeners on 3000/3250/3260/8101,
+  no stubs running, `git status` clean.
+- Result: not yet measured. The observable success is the supervisor running
+  unattended through nested rounds without killing a healthy one; the
+  supervisor is still not running at the time of this entry, so that number
+  does not exist yet.
+
 ### 2026-08-13
 Round 95 (meta) finishes the review-artifact round PR #45 interrupted, and
 fixes a live blocker PR #45 left behind. The round started as round 94, but
