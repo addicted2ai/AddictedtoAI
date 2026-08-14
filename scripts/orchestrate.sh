@@ -149,32 +149,35 @@ clear_orphans() {
 # the process listening on ORCHESTRATE_SERVER's port, the translation is
 # wrong (the round is a fresh launch, never the server), so nothing is killed
 # and the refusal is logged. Dry-run mode logs the would-be target and kills
-# nothing.
+# nothing. Returns 0 when the child was actually killed (or already gone) and
+# 1 when the kill did not happen -- the caller must not wait on a round that
+# is still running.
 kill_iteration() {
   child="$1"
   winpid="$(cat "/proc/$child/winpid" 2>/dev/null)"
   if [ -z "$winpid" ]; then
     if [ "$DRY_KILL" -eq 1 ]; then
       note "stall: would kill msys pid $child (no winpid translation)"
-      return
+      return 1
     fi
     note "no winpid for child $child -- falling back to kill -9"
     kill -9 "$child" 2>/dev/null
-    return
+    return 0
   fi
   if [ "$winpid" = "$(server_winpid)" ]; then
     note "REFUSING to kill winpid $winpid: it is the server on $ORCHESTRATE_SERVER"
-    return
+    return 1
   fi
   if [ "$DRY_KILL" -eq 1 ]; then
     note "stall: would kill winpid $winpid (child msys pid $child)"
-    return
+    return 1
   fi
   note "killing iteration: taskkill //T //F //PID $winpid (child msys pid $child)"
   taskkill //T //F //PID "$winpid" >/dev/null 2>&1 || true
   # If the Windows kill missed (the process outlived it, or taskkill could
   # not see it), fall back to the msys kill.
   kill -0 "$child" 2>/dev/null && kill -9 "$child" 2>/dev/null
+  return 0
 }
 
 source "$REPO/scripts/orchestrate-liveness.sh"
@@ -223,6 +226,7 @@ while true; do
   started=$(date +%s)
   last_progress=$started
   log_prev=""
+  killed=0
   note "iteration child msys pid $child"
 
   # The child is found by pid, never by command-line marker: a PowerShell
@@ -277,17 +281,28 @@ while true; do
         note "iteration stalled: no session signal from $ORCHESTRATE_SERVER (unreachable or no session for $ORCHESTRATE_REPO), no CPU in the child/server process trees (winpids ${child_winpid:-?},${server_pid:-?}; +$tree_delta tenths since last sample), no log write ($((now - log_now))s old) -- killing it"
       fi
       kill_iteration "$child"
+      killed=$?
       break
     fi
     if [ $((now - started)) -ge "$HARD_TIMEOUT" ]; then
       note "iteration exceeded hard timeout of ${HARD_TIMEOUT}s -- killing it"
       kill_iteration "$child"
+      killed=$?
       break
     fi
   done
 
-  wait "$child" 2>/dev/null
-  status=$?
+  if [ "${killed:-0}" -eq 1 ]; then
+    # Dry-run or a refused kill left the round running. Waiting on it would
+    # block the supervisor until the round finishes on its own, so the
+    # iteration is counted as failed and the loop moves on; whoever ran the
+    # dry-run cleans the leftover round up.
+    status=1
+    note "iteration left running -- kill was dry-run or refused"
+  else
+    wait "$child" 2>/dev/null
+    status=$?
+  fi
 
   size=$(wc -c < "$log" 2>/dev/null || echo 0)
 
