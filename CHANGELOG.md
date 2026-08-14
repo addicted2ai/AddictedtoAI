@@ -70,6 +70,63 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 107 (author) publishes the Gemini 3.7 Flash post at
+`/blog/gemini-3-7-flash`. The post's reason to exist is the price shape
+Google announced with the model on 13 August 2026: an introductory $0.75 /
+$3.75 per million input/output tokens — "half the original 3.6 Flash cost
+per million tokens", expiring 31 December 2026 — with $1.50 / $7.50 applying
+from 1 January 2027, which is exactly what 3.6 Flash cost at launch per its
+own 21 July announcement. Every figure was read off the two Google pages by
+this round; the benchmark figures (FrontierCode 1.1 Main 43.6% vs 34.4%,
+DeepSWE v1.1 65.3% vs 49.0%, GDP.pdf 34.0% vs 22.0%, AutomationBench 30.4%
+vs 17.0%, WebDev Arena Elo 1588 vs 1538) are labelled as Google's own
+reported numbers. The post also records the consumer connection: the
+Directory's Gemini entry already names Spark from I/O, and the announcement
+says Spark starts using 3.7 Flash on the day of release. (PR #63)
+
+**1. Publish the Gemini 3.7 Flash post**
+- Hypothesis: the docket item argues that a model whose price doubles on a
+  stated date is a claim about the world a builder would act on before New
+  Year, and that this round's own fetches of Google's page can verify every
+  figure — which is the difference between this and a rewritten
+  announcement. The round fetched the announcement and the 3.6 Flash page
+  it links to before writing anything; both cleared test 1 and test 2.
+- Change: added the post at `/blog/gemini-3-7-flash`
+  (`app/blog/gemini-3-7-flash/page.js`), its metadata in
+  `app/lib/posts.js` (which feeds the homepage teaser, sitemap and feed),
+  its sitemap entry, its registration in `app/lib/route-files.js`, and
+  moved `/`, `/blog` and every post route's producing round to 107 in
+  `app/lib/page-origins.js`, the new route being 107 by construction — the
+  same pattern as rounds 87, 100 and 103. The docket item moved to
+  `docket/done/` with all six boxes ticked.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the nine preceding delegated
+  rounds (98-106) recorded. Consequence: `ship` withholds auto-merge and
+  opens the pull request for that review, which is expected rather than an
+  error.
+- Track: author
+- Agent: codex
+- Guardrails: fetched and read this round
+  blog.google's "Introducing Gemini 3.7 Flash" page (dated Aug 13, 2026)
+  and the "Introducing Gemini 3.6 Flash, 3.5 Flash-Lite, and 3.5 Flash
+  Cyber" page it links to (dated Jul 21, 2026) — the post contains no
+  number that was not read from one of those two pages. `node
+  scripts/round.mjs check` ran lint, the docket validator, the track scope,
+  a production-shaped build and the route checks against a server on port
+  3000; all passed with no group skipped.
+- Result: measured this round. The 3.7 Flash page's footnote states the
+  introductory pricing expires 31 December 2026 and that $1.50 / $7.50
+  applies from 1 January 2027; the 3.6 Flash page states that model's
+  launch price of $1.50 / $7.50 — so the post's "the rate doubles to
+  exactly what 3.6 Flash cost at launch" framing is arithmetic on two
+  numbers read this round. What 3.6 Flash costs today was not measured and
+  the post says the comparison is against the original price, not today's.
+
+### 2026-08-14
 Round 106 (author) closes the Directory's category-shaped gap: "Image, Video
 & Audio" held Runway (video), ElevenLabs (voice) and Suno (music) but no
 image-generation tool, so a visitor asking "what do I use to make images

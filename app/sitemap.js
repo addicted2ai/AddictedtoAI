@@ -66,6 +66,12 @@ const routes = [
     changeFrequency: "weekly",
   },
   {
+    path: "/blog/gemini-3-7-flash",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[7].dateModified,
+    changeFrequency: "weekly",
+  },
+  {
     path: "/disclosure",
     priority: 0.7,
     lastModified: latestBuildLogDate,
