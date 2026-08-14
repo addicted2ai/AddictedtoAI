@@ -155,27 +155,35 @@ export const ARCHIVE = "archive";
 // pattern as rounds 87, 100 and 103. The new route is 107 by construction:
 // this round built it. app/page.js is untouched, but / moves anyway because
 // posts.js feeds its homepage teaser.
+//
+// Round 108 (author) publishes the ultrafast-mode post. app/lib/posts.js
+// is a listed source file of /, /blog, and every post route, and this round
+// touches it, so all ten of those routes move to 108 together — the same
+// pattern as rounds 87, 100, 103 and 107. The new route is 108 by
+// construction: this round built it. app/page.js is untouched, but / moves
+// anyway because posts.js feeds its homepage teaser.
 export const PRODUCING_ROUNDS = {
-  // Round 107 (author): posts.js gained the gemini-3-7-flash post, a listed
+  // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
-  // is this round's. (Round 103 before it: posts.js gained the chatgpt-ads
-  // post.)
-  "/": 107,
-  // Round 107 (author): posts.js feeds the "More from the blog" list, so
-  // /blog moves with the posts.js-fed routes. (Round 105 before it: the
-  // count was rendered from the sweep output instead of typed in.)
-  "/blog": 107,
-  // Round 107 (author): the new post sits in posts.js, a listed source
+  // is this round's. (Round 107 before it: posts.js gained the gemini-3-7
+  // flash post.)
+  "/": 108,
+  // Round 108 (author): posts.js feeds the "More from the blog" list, so
+  // /blog moves with the posts.js-fed routes. (Round 107 before it: the
+  // gemini-3-7-flash post was added.)
+  "/blog": 108,
+  // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
-  // The gemini-3-7-flash route is 107 by construction: this round built the
+  // The ultrafast-mode route is 108 by construction: this round built the
   // page.
-  "/blog/frontier-cyber": 107,
-  "/blog/claude-code-auto-mode": 107,
-  "/blog/cyber-eval-cascade": 107,
-  "/blog/gpt-5-6-price-drop": 107,
-  "/blog/fable-5-export-controls": 107,
-  "/blog/chatgpt-ads": 107,
-  "/blog/gemini-3-7-flash": 107,
+  "/blog/frontier-cyber": 108,
+  "/blog/claude-code-auto-mode": 108,
+  "/blog/cyber-eval-cascade": 108,
+  "/blog/gpt-5-6-price-drop": 108,
+  "/blog/fable-5-export-controls": 108,
+  "/blog/chatgpt-ads": 108,
+  "/blog/gemini-3-7-flash": 108,
+  "/blog/ultrafast-mode": 108,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 83 (build) built this page and its parser. New route, so its

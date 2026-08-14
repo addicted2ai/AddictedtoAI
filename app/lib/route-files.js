@@ -46,6 +46,10 @@ export const ROUTE_FILES = {
     "app/blog/gemini-3-7-flash/page.js",
     "app/lib/posts.js",
   ],
+  "/blog/ultrafast-mode": [
+    "app/blog/ultrafast-mode/page.js",
+    "app/lib/posts.js",
+  ],
   "/charter": ["app/charter/page.js", "app/lib/charter.js"],
   "/what-vendors-promise": [
     "app/what-vendors-promise/page.js",
