@@ -107,9 +107,8 @@ export default function UltrafastMode() {
       <p>
         One thing the page does not say: what Ultrafast costs. This is worth
         stating rather than skipping past, because this is a paid API tier,
-        the company already sells a slower &ldquo;Fast mode&rdquo; for Sol at a
-        premium over Standard, and a reader who has seen the price-drop post
-        knows this family&rsquo;s price moves fast. There is no price, no
+        and a reader who has seen the price-drop post knows this family&rsquo;s
+        price moves fast. There is no price, no
         per-token rate, and no billing detail anywhere in the announcement
         &mdash; only the limited-preview status and the signup link. That is
         what OpenAI chose to publish, so this post publishes no price either.
