@@ -70,6 +70,70 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 108 (author) publishes the Ultrafast post at
+`/blog/ultrafast-mode`. On 13 August 2026 OpenAI previewed Ultrafast, a
+service tier in the OpenAI API that runs GPT-5.6 Sol up to 14x faster than
+Standard processing, generating up to 750 output tokens per second, powered
+by Cerebras, in a limited preview for a select group of customers. Every
+figure in the post was read off the announcement by this round; the page
+was fetched this round (curl and a node https request both got Cloudflare's
+403 challenge; the page fetch tool got 200 with the full article text). The
+post keeps "up to" in both figures, attributes them to OpenAI, names
+Cerebras as the inference provider with the "next step in our partnership
+with Cerebras" phrasing, states the announcement contains no price and
+publishes no price, labels the four early customers (Jane Street, Podium,
+Basis, Rogo) and their quotes as OpenAI's claims, and links the site's
+GPT-5.6 price-drop post as the price axis of the same story without
+repeating it. (PR #)
+
+**1. Publish the Ultrafast post**
+- Hypothesis: the docket item argues this is the speed half of a
+  price-performance story the site already covers, plus a structural change
+  — OpenAI's most intelligent model served on a third party's hardware —
+  that a stranger might actually send on. The round expected to verify every
+  figure against the announcement fetched this round, and to find the
+  announcement silent on price, as the item insists.
+- Change: added the post at `/blog/ultrafast-mode`
+  (`app/blog/ultrafast-mode/page.js`), its metadata in `app/lib/posts.js`
+  (which feeds the homepage teaser, sitemap and feed), its sitemap entry,
+  its registration in `app/lib/route-files.js`, and moved `/`, `/blog` and
+  every post route's producing round to 108 in `app/lib/page-origins.js`,
+  the new route being 108 by construction — the same pattern as rounds 87,
+  100, 103 and 107. The docket item moved to `docket/done/` with all six
+  boxes ticked.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the ten preceding delegated
+  rounds (98-107) recorded. Consequence: `ship` withholds auto-merge and
+  opens the pull request for that review, which is expected rather than an
+  error.
+- Track: author
+- Agent: codex
+- Guardrails: fetched and read this round https://openai.com/index/previewing-ultrafast/
+  (curl 403, node https 403 — Cloudflare's "Enable JavaScript and cookies"
+  challenge — page fetch tool 200; the full article text was extracted from
+  the fetched HTML and read: title "Previewing Ultrafast mode: GPT-5.6 Sol at
+  up to 14X the speed", dated August 13, 2026, category Product). `node
+  scripts/round.mjs check` ran lint, the docket validator, the track scope,
+  a production-shaped build and the route checks against a server on port
+  3000; all passed with no group skipped.
+- Result: measured this round. The post contains no number that was not read
+  off the fetched page this round: "a new service tier that runs GPT-5.6 Sol
+  up to 14x faster than Standard processing, launching first in the OpenAI
+  API"; "Powered by Cerebras, Ultrafast generates up to 750 output tokens
+  per second"; "available in a limited preview today to a select group of
+  customers"; "Ultrafast marks the next step in our partnership with
+  Cerebras"; the four early customers and their four quotes; the "Until now,
+  getting real-time speed typically meant choosing a smaller or more
+  specialized model" line. The absence of a price is the page's own: the
+  complete announcement text contains no price, rate or billing detail.
+  Whether the tier's real-world speed matches "up to 14x" was not measured
+  by anyone and is asserted only as OpenAI's claim.
+
+### 2026-08-14
 Round 107 (author) publishes the Gemini 3.7 Flash post at
 `/blog/gemini-3-7-flash`. The post's reason to exist is the price shape
 Google announced with the model on 13 August 2026: an introductory $0.75 /

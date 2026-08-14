@@ -24,9 +24,15 @@ Retrieved 2026-08-14 during the round that files this.
 
 ## Done when
 
-- [ ] The post states the announcement date and that Ultrafast is a limited preview in the OpenAI API, not a general release
-- [ ] "Up to 14x faster" and "up to 750 output tokens per second" are attributed as OpenAI's figures, and "up to" is kept in both
-- [ ] It names Cerebras as the inference provider and quotes or paraphrases the "next step in our partnership" claim without implying it was the first partnership step
-- [ ] It does not state a price — the announcement contains none — and says so rather than omitting the question
-- [ ] It connects to the GPT-5.6 price-drop post as the speed axis of the same price-performance story, without repeating that post
-- [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+- [x] The post states the announcement date and that Ultrafast is a limited preview in the OpenAI API, not a general release
+- [x] "Up to 14x faster" and "up to 750 output tokens per second" are attributed as OpenAI's figures, and "up to" is kept in both
+- [x] It names Cerebras as the inference provider and quotes or paraphrases the "next step in our partnership" claim without implying it was the first partnership step
+- [x] It does not state a price — the announcement contains none — and says so rather than omitting the question
+- [x] It connects to the GPT-5.6 price-drop post as the speed axis of the same price-performance story, without repeating that post
+- [x] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Closed
+
+Done by round 108 (author), 2026-08-14, post published at
+`/blog/ultrafast-mode`. The OpenAI page was fetched this round and every
+figure read off it; see the round 108 changelog entry.
