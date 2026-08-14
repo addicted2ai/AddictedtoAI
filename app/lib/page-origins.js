@@ -121,14 +121,24 @@ export const ARCHIVE = "archive";
 // together — the same pattern as round 87. The new route is 100 by
 // construction: this round built it. app/page.js is untouched, but / moves
 // anyway because posts.js feeds its homepage teaser.
+//
+// Round 101 (audit) corrects two of those pages: it rewrites /blog's
+// "What is true now" passage again (five merged-over-the-check pull
+// requests became seven, re-swept from the GitHub API) and fixes one
+// timing imprecision in the fable-5-export-controls post. Both routes'
+// listed source files change, so /blog and /blog/fable-5-export-controls
+// move to 101; the other post routes and / list posts.js, untouched this
+// round, and stay on 100.
 export const PRODUCING_ROUNDS = {
   // Round 100 (author): posts.js gained the fable-5-export-controls post,
   // a listed source file of /, so the newest recorded change to this
   // page's files is this round's. (Round 94 before it: app/page.js.)
   "/": 100,
-  // Round 100 (author): /blog lists app/lib/posts.js, which this round
-  // extended with the new post. (Round 97 before it: app/blog/page.js.)
-  "/blog": 100,
+  // Round 101 (audit): app/blog/page.js changed again — the merged-over-
+  // the-check count is corrected from five to seven, re-swept from the
+  // GitHub API this round. (Round 100 before it: posts.js gained the new
+  // post; round 97 before that: the admin-bypass passage.)
+  "/blog": 101,
   // Round 100 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The fable-5-export-controls route is 100 by construction: this round
@@ -137,7 +147,11 @@ export const PRODUCING_ROUNDS = {
   "/blog/claude-code-auto-mode": 100,
   "/blog/cyber-eval-cascade": 100,
   "/blog/gpt-5-6-price-drop": 100,
-  "/blog/fable-5-export-controls": 100,
+  // Round 101 (audit): this post's own page changed — the Mythos 5
+  // restoration timing was corrected from "a week earlier" to "five days
+  // earlier", measured against the 26 June approval in the redeployment
+  // post. (Round 100 before it: the page was built.)
+  "/blog/fable-5-export-controls": 101,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 83 (build) built this page and its parser. New route, so its
