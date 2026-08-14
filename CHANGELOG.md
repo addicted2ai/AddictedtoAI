@@ -261,8 +261,11 @@ Fable 5 post ("a week earlier" for five days) is corrected. No withdrawals.
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — lint, docket validator,
   track scope, production build, and the route suite against a server on
-  port 3000 (a SKIPPED group counts as a failure), which this round's
-  /log measurement comes from. `node scripts/test-review-artifact.mjs`
+  port 3000 (a SKIPPED group counts as a failure). /log measured 90,353
+  bytes gzipped against the 147,000 local ceiling this round (curl with
+  `Accept-Encoding: gzip` against the production build, the check's own
+  command — 56,647 bytes of headroom, and the derived block fits 13
+  entries). `node scripts/test-review-artifact.mjs`
   passes 5/5 (block 3). `node scripts/check-tool-links.mjs` and `node
   scripts/check-tool-staleness.mjs` both exit 0 (block 5). The
   exactly-seven sweep is `gh pr list --state merged --limit 100` plus
