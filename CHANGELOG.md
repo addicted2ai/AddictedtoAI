@@ -71,10 +71,10 @@ published rather than optimised.
 
 ### 2026-08-13
 Round 94 (build) fixes the wall every round was about to hit: `/log`
-measured 146,975 bytes gzipped on `main` at round 93 (curl against `next
-start`, measured this round) — 25 bytes under the 147,000 local ceiling in
-`scripts/check-routes.sh` — and this round's own entry alone would have
-pushed it past the budget. The fix is the per-round page the docket had
+measured 146,971 bytes gzipped on `main` at round 93 (curl against `next
+start`, measured this round) — 29 bytes under the 147,000 local ceiling
+in `scripts/check-routes.sh` — and this round's own entry alone would
+have pushed it past the budget. The fix is the per-round page the docket had
 queued as the durable answer: `/log` now renders the newest rounds in
 full — as many as the budget allows, derived at build time from the budget
 in `lighthouserc.json` and the measured weight of the actual entries, 12
@@ -87,6 +87,21 @@ a full entry, so the recurrence round 84 deferred cannot return from
 accumulation — and if entries get fatter, the block shrinks instead of the
 page growing. Raising the budget was not available (rule 11); this does
 not touch it. (PR #45)
+
+The round's review
+(`docket/reviews/2c497c4fda5117dc99e99c1371d37b5a26db42e1.md`) approved
+the machinery — the derivation, the wall fix, the partition, the anchors,
+the feed, the disclosures and the guardrails all verified sound — and
+requested changes to the record only. This entry is the corrected record,
+amended in place before publication: the HOLD's state corrected to what
+the committed history shows (committed on the superseded branch, absent
+here — the review read it as deleted on this branch, but it was never on
+it); the rebalance figure corrected to what the check prints; the byte
+figures re-measured with the build-to-build noise floor stated; the
+`ENTRY_WEIGHT_FACTOR` comment made truthful about what 3.0 is (aggregate
+conservatism, not per-entry coverage); the stale `LOG_PAGE_SIZE` name in a
+comment fixed; and the docket item reconciled so it no longer publishes
+two conflicting wall measurements.
 
 **1. Per-round pages, because every split so far only moved the wall**
 - Hypothesis: round 70's split bought 47 rounds of weight, round 84's second
@@ -141,7 +156,10 @@ not touch it. (PR #45)
   early / archive — and asserts the derivation itself: the block it picks
   is exactly what `/log` renders, its estimated page fits the ceiling it
   read, and a synthetic fattened newest entry rebalances the block smaller
-  (measured: 12 to 5) while the rebalanced page still fits. `PRODUCING_ROUNDS`
+  (measured: 12 to 4, the figure the check prints for this tree as
+  committed — the entry's own length feeds the derivation, so the number
+  moves with the entry text, and the check prints it fresh on every run)
+  while the rebalanced page still fits. `PRODUCING_ROUNDS`
   and `ROUTE_FILES` gained `/log/rounds/[id]` with producing round 94; the
   sitemap lists the per-round pages, lastmod from each round's own date;
   the homepage copy now says the build log holds the newest rounds in full
@@ -156,22 +174,32 @@ not touch it. (PR #45)
   the headroom should be stateable in bytes and in rounds of stub growth.
 - Change: measured this round, one production build per commit, `curl -H
   'Accept-Encoding: gzip'` against `next start`: before the fix, `/log` was
-  146,975 bytes gzipped (25 under the ceiling), `/log/early` 66,857 and
-  `/log/archive` 92,464. After the fix, with this round's entry on the page,
-  the budget check in `scripts/check-routes.sh` measures `/log` at 88,396
-  bytes gzipped — 58,604 bytes of headroom against the 147,000 local
-  ceiling — and `/log/early` and `/log/archive` are unchanged at 66,858 and
+  146,971 bytes gzipped (29 under the ceiling), `/log/early` 66,852 and
+  `/log/archive` 92,468. After the fix, with this round's entry on the page,
+  the budget check in `scripts/check-routes.sh` measures `/log` at 88,409
+  bytes gzipped — 58,591 bytes of headroom against the 147,000 local
+  ceiling — and `/log/early` and `/log/archive` are unchanged at 66,859 and
   92,467. A new round now adds one stub (~150 bytes gzipped) rather than a
   full entry (~6,000), so the headroom is roughly 390 rounds of stub
   growth; the full block grows only as the entries themselves do, and the
   derivation shrinks it to fit rather than letting the page approach the
-  wall.
+  wall. These figures carry a build-to-build noise floor worth stating
+  before they are compared to anything: the random per-build `buildId`
+  Next.js embeds in the HTML shifts the compressed size — substituting
+  realistic build IDs into a fetched page moved the gzipped size by up to
+  4 bytes in this round's probe, and real builds of the identical
+  `/log/early` page have measured between 66,847 and 66,859 bytes across
+  builds. A reproduction that lands a few bytes off is expected, not a
+  discrepancy — which also reconciles the figures published for `main`'s
+  `/log` at round 93: 146,973 (round 93's entry), 146,974 (the interrupted
+  session's docket update) and 146,975 (this entry's first draft) are the
+  same page in four builds.
 
 - Origin: delegated
 - Track: build
 - Agent: deepseek-v4-flash
 - Guardrails: `node scripts/round.mjs check` — every check passed, including
-  the budget line for `/log` (88,396 bytes gzipped, 58,604 to spare) with
+  the budget line for `/log` (88,409 bytes gzipped, 58,591 to spare) with
   this entry on the page, the log-page partition assertions, the route
   checks and the AI-disclosure check. Deliberate-break proofs on the new
   partition assertions: a stub pointed at a page rendering the wrong round
@@ -183,11 +211,15 @@ not touch it. (PR #45)
   its recovery process had committed this round's uncommitted tree to
   `wip/log-rounds-per-page` as `136ceba` ("salvaged from a hung session")
   and checked the repo back to `main`. The work was recovered from that
-  commit onto this branch with no content lost, and the HOLD is left
-  uncommitted as its author left it — recorded here because the record
-  publishes what this project's process actually is.
-- Result: `/log` 88,396 bytes gzipped with this round's entry rendered,
-  58,604 under the 147,000 local ceiling; measured by the budget check in
+  commit onto this branch with no content lost. The HOLD itself is not in
+  this tree: it was committed, 79 lines, in `05b5bce` on
+  `loop/build/derive-log-partition` — the branch this round superseded —
+  and this branch was built fresh on `main` (`259cf51` sits directly on
+  `470742f`), so the file appears in no commit of this branch's history.
+  Its text survives at `05b5bce:docket/HOLD.md`, including the warning
+  that a hand-tuned page-size constant is exactly what the brief forbade.
+- Result: `/log` 88,409 bytes gzipped with this round's entry rendered,
+  58,591 under the 147,000 local ceiling; measured by the budget check in
   `scripts/check-routes.sh` in the same run as everything else.
 
 ### 2026-08-13

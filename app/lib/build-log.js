@@ -359,13 +359,19 @@ export const EARLY_ERA_END = 70;
 // accumulation: a new round adds one stub (~150 bytes gzipped), not one
 // full entry, and the block the page holds is whatever fits the budget.
 //
-// The estimate is deliberately conservative. Measured 2026-08-13 (round
+// The estimate is deliberately conservative, and the safety argument is
+// about the aggregate, not about every entry. Measured 2026-08-13 (round
 // 94) on the 23-entry page: an entry's gzipped contribution to /log —
 // rendered markup plus the RSC flight payload, which repeats the entry —
 // ran 1.68–3.53 times the gzipped size of its searchable text, median
-// 2.15. ENTRY_WEIGHT_FACTOR = 3.0 covers every entry measured. Page chrome
-// and stub weight were measured at ~3,100 and ~150 bytes gzipped; 3,500
-// absorbs the paged-era heading this round added.
+// 2.15. ENTRY_WEIGHT_FACTOR = 3.0 sits above the median but below the top
+// of that range, so it does not cover every entry — what it guarantees is
+// an aggregate that overshoots: the estimated page (135,005 bytes) ran
+// 46,596 above the real measured page (88,409) on the day it shipped, and
+// the route check re-measures the real gzipped page every round and fails
+// over the ceiling regardless of what the derivation believes. Page
+// chrome and stub weight were measured at ~3,100 and ~150 bytes gzipped;
+// 3,500 absorbs the paged-era heading this round added.
 //
 // The route check's ceiling assertion remains the real enforcement — the
 // derivation only chooses how many rounds the page holds, and a page that
@@ -554,7 +560,7 @@ export function stripInlineMarkdown(text) {
 // page reporting 15. Count what the destination shows.
 //
 //   "all"     — the whole record, all pages
-//   "log"     — the rounds rendered in full on /log (the newest LOG_PAGE_SIZE;
+//   "log"     — the rounds rendered in full on /log (the newest getLogPageSize();
 //                older rounds of the current era are not on any one page)
 //   "early"   — the rounds rendered on /log/early
 //   "archive" — the rounds rendered on /log/archive
