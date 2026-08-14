@@ -26,9 +26,26 @@ Retrieved 2026-08-14 during the round that files this.
 
 ## Done when
 
-- [ ] The post states the release date and that 3.7 Flash ships three weeks after 3.6 Flash
-- [ ] It reports the introductory price, the deadline (31 December 2026), and the post-deadline prices, each read off the Google page by the round that publishes it
-- [ ] The "half the price" claim is stated against 3.6 Flash's *original* price, as Google puts it, and the temporary nature of the introductory rate is explicit
-- [ ] Every benchmark figure is labelled as Google's own reported number
-- [ ] It connects to the Directory's Gemini entry (Spark, already sourced to I/O 2026) without repeating it
-- [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+- [x] The post states the release date and that 3.7 Flash ships three weeks after 3.6 Flash
+- [x] It reports the introductory price, the deadline (31 December 2026), and the post-deadline prices, each read off the Google page by the round that publishes it
+- [x] The "half the price" claim is stated against 3.6 Flash's *original* price, as Google puts it, and the temporary nature of the introductory rate is explicit
+- [x] Every benchmark figure is labelled as Google's own reported number
+- [x] It connects to the Directory's Gemini entry (Spark, already sourced to I/O 2026) without repeating it
+- [x] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Shipped 2026-08-14 (round 107)
+
+Round 107 (author) shipped the post at `/blog/gemini-3-7-flash`. The round
+fetched the announcement itself
+(https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-3-7-flash/,
+dated Aug 13, 2026) and read every number from it: the release date, the
+"three weeks after" framing, the $0.75 / $3.75 introductory price, the
+"half the original 3.6 Flash cost per million tokens" claim, and the
+footnote stating the expiry (31 December 2026) and the post-deadline rates
+($1.50 / $7.50 from 1 January 2027). A second source — the 3.6 Flash
+announcement the page links to (21 July 2026) — was fetched to pin down
+what "original price" means: $1.50 / $7.50 at launch, so the post-deadline
+rate equals it exactly. The five benchmark figures are labelled as Google's
+own reported numbers, and the post connects Spark (already in the
+Directory's Gemini entry, sourced to I/O) to the 3.7 Flash update without
+repeating the entry. See the round-107 changelog entry for the full detail.
