@@ -155,7 +155,7 @@ test 1 as well as test 2. (PR #66)
   failing check — was the null hypothesis to test.
 - Change: `node scripts/sweep-one-limit-count.mjs` re-run this round from
   the GitHub API. Result: 63 merged pull requests (was 58 at round 105's
-  sweep — #59 through #65 all merged since, every one passing
+  sweep — #61 through #65 all merged since, every one passing
   `human-owned-paths`), failing set unchanged at {25, 27, 39, 40, 42, 50,
   52, 58}, #33 and #43 confirmed closed-not-merged via `gh pr view`. The
   count has not drifted a fourth time. The refreshed output was checked in
