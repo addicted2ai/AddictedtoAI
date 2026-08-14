@@ -189,7 +189,7 @@ two conflicting wall measurements.
   shifts the compressed size — substituting realistic build IDs into a
   fetched page moved the gzipped size by up to 4 bytes in this round's
   probe, and real builds of the identical `/log/early` page have measured
-  between 66,847 and 66,859 bytes across builds. A reproduction that
+  between 66,847 and 66,861 bytes across builds. A reproduction that
   lands a few bytes off is expected, not a discrepancy — which also
   reconciles the figures published for `main`'s `/log` at round 93:
   146,973 (round 93's entry), 146,974 (the interrupted session's docket
