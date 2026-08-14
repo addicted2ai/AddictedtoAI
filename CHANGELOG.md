@@ -127,20 +127,21 @@ with all three boxes ticked. (PR #48)
     `addicted2ai` with `admin: true`, and `addicted2ai-loop` with push and no
     admin. The only admin is the owner.
   - The exhaustive set, not a sample: `gh pr list --state merged --limit 100`
-    returned 47 merged pull requests, and each one's head commit was checked
-    via `gh api repos/addicted2ai/AddictedtoAI/commits/<sha>/check-runs`.
+    returned 45 merged pull requests — #33 and #43 are closed, not merged,
+    and #48 is still open — and each one's head commit was checked via
+    `gh api repos/addicted2ai/AddictedtoAI/commits/<sha>/check-runs`.
     Exactly five report `human-owned-paths` failing — #25 (failed
     2026-08-11T13:09:25Z, merged 13:15:56Z), #27 (15:32:26Z, merged
     15:39:31Z), #39 (2026-08-12T05:38:08Z, merged 05:44:50Z), #40
     (2026-08-13T16:16:14Z, merged 16:29:30Z), #42 (19:49:54Z, merged
     20:02:56Z) — each failing run completed before the merge, and each PR
     merged by `addicted2ai` with `reviews: []` and `autoMergeRequest: null`.
-    Every other merged PR reports `human-owned-paths` pass. PRs #1–#22
-    predate the check and have no such run. PR #23's head carries one failing
-    `human-owned-paths` run, but it is the PR that created the check and was
-    merged before `human-owned-paths` was in the required list — the same
-    finding the review's sweep recorded — so it is not one of the five; the
-    set is exactly {25, 27, 39, 40, 42}.
+    Every other merged PR reports `human-owned-paths` pass except PR #23,
+    whose head carries one failing run: #23 created the check and was merged
+    before `human-owned-paths` was in the required list — the same finding
+    the review's sweep recorded — so it is not one of the five. PRs #1–#22
+    predate the check and have no such run. The set is exactly
+    {25, 27, 39, 40, 42}.
 
 **2. The first submission's count was wrong, and the review caught it**
 - Hypothesis: an entry that writes "re-verified from the GitHub API" about a
