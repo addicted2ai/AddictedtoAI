@@ -102,15 +102,21 @@ export const ARCHIVE = "archive";
 // no other route moves this round. app/Nav.js gains a link to it but Nav.js is
 // not a listed source file of any route, so the nav change is invisible to
 // this map.
+//
+// Round 97 (maintain) rewrites /blog's "What is true now, and only this"
+// passage to name the admin bypass it omitted. app/blog/page.js is /blog's
+// only listed source file, so /blog moves to 97; the post routes list posts.js,
+// which this round does not touch, and stay on 87.
 export const PRODUCING_ROUNDS = {
   // Round 94 (build): app/page.js is a listed source file of /, and this
   // round rewrote its record-partition sentence, so the newest recorded
   // change to this page's files is this round's. (Round 87 before it: posts.js
   // gained a post and page.js gained a teaser tie-break fix.)
   "/": 94,
-  // Round 87 (author): /blog lists app/lib/posts.js, and posts.js gained a
-  // post, so the newest recorded change to this route's files is this round's.
-  "/blog": 87,
+  // Round 97 (maintain): /blog lists app/blog/page.js, and this round
+  // rewrote its "What is true now" passage to name the admin bypass. (Round 87
+  // before it: posts.js gained a post, which also feeds this route.)
+  "/blog": 97,
   // Round 87 (author): the new post sits in posts.js, which is a listed
   // source file of every post route, so each post's newest commit is this
   // round's.

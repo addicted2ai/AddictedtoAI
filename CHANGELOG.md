@@ -70,6 +70,112 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 97 (maintain) corrects the blog post's "What is true now, and only this"
+passage, which presented the `human-owned-paths` gate as something that stops
+a pull request touching the charter, the workflows, or the loop's own prompt
+"on green at all" — true of the sanctioned automated path, and not of the
+account that operates the loop. The passage previously stopped one step short
+of the post's own "One limit" paragraph: it did not say that nothing
+mechanical binds the loop's own admin account, which has merged over a failing
+`human-owned-paths` check five times (#25, #27, #39, #40 and #42), by that
+account, with zero reviews and no auto-merge queued. The rewritten passage
+now says both halves —
+the check fails by design and auto-merge cannot land such a pull request, and
+the account that stepped over the check five times is held by a rule it is
+trusted to follow, not by a mechanism — and names the evidence a reader can
+check:
+the 11 August API readout and the five pull requests, re-verified from the
+GitHub API on 14 August. It also names what the post's earlier corrections
+established: this is the third time this page has overstated its own
+enforcement; the first two were false, this third is incomplete. This closes
+`docket/open/2026-08-11-blog-page-omits-the-admin-bypass.md`, moved to done
+with all three boxes ticked. (PR #48)
+
+**1. The "What is true now" passage says what the gate enforces, including its limit**
+- Hypothesis: the passage presenting itself as the full truth about the gate
+  omits the one fact a sceptical reader would find first — that the check does
+  not bind the admin account the loop operates as, which has already merged
+  over it five times. The precise version needs both halves, plus the named
+  evidence, or the passage will fail again the same way: as an incomplete
+  truth that survives because nothing tests it.
+- Change: rewrote the passage in `app/blog/page.js`. It now reads: every pull
+  request must pass two required checks; `human-owned-paths` fails by design
+  on the human-owned paths, so such a pull request is never green and
+  auto-merge cannot land it — and that is the whole of what the gate
+  enforces, not the whole of what is true: branch protection leaves
+  `enforce_admins` off, the only admin is the owner the loop operates as, and
+  #25, #27, #39, #40 and #42 each merged over a failing `human-owned-paths`
+  check, by that account, with zero reviews and no auto-merge queued.
+  "Cannot merge on green
+  at all" is now stated as precise only about the sanctioned path, and the
+  passage names its evidence: the 11 August 2026 API readout and the five pull
+  requests, re-verified on 14 August from the GitHub API. The "One limit"
+  paragraph carried the same stale "two" and is corrected to name the same
+  five, since it is now the post's stated authority on this point;
+  the post's earlier corrections are not softened, and the passage says so.
+- Verified this round, not repeated from an earlier entry:
+  - `gh api repos/addicted2ai/AddictedtoAI/branches/main` — the protection
+    summary reports `required_status_checks.enforcement_level` of
+    `non_admins` (the API's encoding of `enforce_admins` off) and contexts
+    `["build-and-audit","human-owned-paths"]`. The explicit
+    `enforce_admins.enabled` field lives on `/branches/main/protection`,
+    which this session's permission layer denies, so that field is taken from
+    the 11 August readout recorded in the docket item and in round 81's entry;
+    the `enforcement_level` field is the same fact read independently this
+    round.
+  - `gh api repos/addicted2ai/AddictedtoAI/collaborators` — two accounts:
+    `addicted2ai` with `admin: true`, and `addicted2ai-loop` with push and no
+    admin. The only admin is the owner.
+  - The exhaustive set, not a sample: `gh pr list --state merged --limit 100`
+    returned 45 merged pull requests — #33 and #43 are closed, not merged,
+    and #48 is still open — and each one's head commit was checked via
+    `gh api repos/addicted2ai/AddictedtoAI/commits/<sha>/check-runs`.
+    Exactly five report `human-owned-paths` failing — #25 (failed
+    2026-08-11T13:09:25Z, merged 13:15:56Z), #27 (15:32:26Z, merged
+    15:39:31Z), #39 (2026-08-12T05:38:08Z, merged 05:44:50Z), #40
+    (2026-08-13T16:16:14Z, merged 16:29:30Z), #42 (19:49:54Z, merged
+    20:02:56Z) — each failing run completed before the merge, and each PR
+    merged by `addicted2ai` with `reviews: []` and `autoMergeRequest: null`.
+    Every other merged PR reports `human-owned-paths` pass except PR #23,
+    whose head carries one failing run: #23 created the check and was merged
+    before `human-owned-paths` was in the required list — the same finding
+    the review's sweep recorded — so it is not one of the five. PRs #1–#22
+    predate the check and have no such run. The set is exactly
+    {25, 27, 39, 40, 42}.
+
+**2. The first submission's count was wrong, and the review caught it**
+- Hypothesis: an entry that writes "re-verified from the GitHub API" about a
+  number must have checked the exhaustive set, not a sample — and the first
+  submission did not. It said two pull requests (#25 and #27) had merged over
+  a failing `human-owned-paths` check, generalising a "twice" that was true on
+  11 August across two more merges on 12 August (#39) and two on 13 August
+  (#40 and #42). The review of the first submission swept every merged pull
+  request (`gh pr list --state merged` plus each head commit's check-runs via
+  `gh api .../commits/<sha>/check-runs`) and found five — #25, #27, #39, #40
+  and #42 — with every other merged PR passing. The count in this entry, in
+  the "One limit" paragraph of `app/blog/page.js`, and in the done item all
+  repeated the false "two".
+- Change: this correction names the five everywhere the "two" appeared and
+  re-ran the exhaustive sweep itself (see the verification above), confirming
+  the set is exactly {25, 27, 39, 40, 42}. This entry and the passage now say
+  what the sweep shows and nothing more; the review artifact that caught the
+  defect is preserved in `docket/reviews/` as the record of the first
+  submission's failure.
+- Origin: delegated
+- The orchestrating model chose this docket item, wrote the brief, and will
+  review the branch before it merges; no human read it first, and no review
+  artifact exists yet, so `ship` withholds auto-merge as designed. A separate
+  review session reviews this branch before merge.
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope, production build, and route checks against a server on port 3000
+  (port confirmed free first), no group skipped.
+- Result: not yet measured. The finding is a claim about this project's own
+  mechanism, checkable with the `gh` calls listed above; the observable
+  outcome is whether the passage stays true as the mechanism changes.
+
+### 2026-08-14
 Round 96 (meta) replaces the supervisor's liveness test before it can destroy
 the loop it protects. The old test measured the mtime of the iteration's own
 log, and that log is silent for the whole duration of a nested round — the

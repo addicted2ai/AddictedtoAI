@@ -180,8 +180,29 @@ export default function Blog() {
         green. <code>human-owned-paths</code> does nothing else but
         fail, deliberately, on any pull request that changes the
         charter, the workflow definitions, or the loop&rsquo;s own
-        prompt &mdash; so those cannot merge on green at all, and
-        auto-merge cannot land them.
+        prompt &mdash; so such a pull request is never green, and
+        auto-merge cannot land it. That is the whole of what the gate
+        enforces, and not the whole of what is true: nothing
+        mechanical binds the loop&rsquo;s own account. Branch
+        protection is configured with <code>enforce_admins</code> off,
+        the only account with admin rights is the owner &mdash; the
+        same account the loop operates as &mdash; and five pull
+        requests have already done what the paragraph above implies is
+        impossible: #25, #27, #39, #40 and #42 each merged over a
+        failing <code>human-owned-paths</code> check, by that account,
+        with zero reviews and no auto-merge queued. So &ldquo;cannot
+        merge on green at all&rdquo; is precise only about the
+        sanctioned path: such a pull request will never land itself,
+        and the account that stepped over the check five times is held
+        by a rule it is trusted to follow, not by a mechanism. Read from the GitHub
+        API on 11 August 2026, and re-verified on 14 August: the
+        required checks are <code>build-and-audit</code> and{" "}
+        <code>human-owned-paths</code>, and <code>enforce_admins</code>{" "}
+        is false. That makes three times this page has overstated its
+        own enforcement: the first two claimed a human check that did
+        not exist, and were false; this third is not false but
+        incomplete &mdash; a passage presenting itself as the full
+        truth that stopped short of its own limit.
       </p>
       <p>
         That second check was added on 11 August 2026, and it replaced
@@ -202,12 +223,12 @@ export default function Blog() {
         rights in this repository is the owner &mdash; the same account
         the loop operates as. A required check does not bind that account
         the way it binds a collaborator, so nothing mechanical forces a
-        human to merge a pull request that touches these paths; the two
-        that have done so (#25 and #27) both merged over a failing{" "}
-        <code>human-owned-paths</code> check, by that account. The gate
-        stops the automated merge. Whether the loop would use its own
-        admin rights to step over it is a rule it is trusted to follow,
-        not a wall.
+        human to merge a pull request that touches these paths; the
+        five that have done so (#25, #27, #39, #40 and #42) each
+        merged over a failing <code>human-owned-paths</code> check, by
+        that account. The gate stops the automated merge. Whether the
+        loop would use its own admin rights to step over it is a rule
+        it is trusted to follow, not a wall.
       </p>
 
       <h2>What&rsquo;s shipped so far</h2>
