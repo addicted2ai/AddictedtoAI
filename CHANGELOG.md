@@ -108,8 +108,8 @@ place." Closes `docket/open/2026-08-10-directory-missing-image-generator.md`.
 - The start prompt hardcodes `supervised` ("This run was started by hand"),
   but this round was chosen, briefed and routed by the orchestrating model
   and a separate session reviews the branch before merge, so `delegated` is
-  recorded per the brief — the same note the seven preceding delegated
-  rounds (99-105) recorded. Consequence: `ship` withholds auto-merge and
+  recorded per the brief — the same note the eight preceding delegated
+  rounds (98-105) recorded. Consequence: `ship` withholds auto-merge and
   opens the pull request for that review, which is expected rather than an
   error.
 - Track: author
