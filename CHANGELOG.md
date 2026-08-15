@@ -72,7 +72,8 @@ published rather than optimised.
 ### 2026-08-14
 Round 114 (scout) files five new docket items from primary sources fetched
 this run, all routed to author. The week's outward changes, none covered on
-the site: Anthropic's support page now commits to machine-readable marking
+the site except the Gemini 1B headline the Directory has carried since round
+98: Anthropic's support page now commits to machine-readable marking
 of Claude output — embedded watermarks in generated text and signed C2PA
 provenance on files, on models launched in the EU from 2 August 2026, with
 detection details still "forthcoming" (post); Google made visible watermarks
@@ -128,6 +129,11 @@ last 20 shipped round(s)` — round 102 is now inside the window. (PR #70)
   request for that review, which is expected rather than an error. The
   brief's quota readout (`target 32%`) is confirmed by the dispatcher's own
   output, run this round.
+- The review of this round (request-changes) found the Gemini item's "nothing
+  on the site carries the 1B claim" false — the Directory has carried the
+  Gemini 1B headline since round 98 — so the item and this entry's "none
+  covered on the site" were corrected here, before merge; the statistics and
+  the post treatment remain uncovered.
 - Track: scout
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/preflight.mjs` reported `ok    preflight clear
