@@ -4,7 +4,7 @@ filed-by: audit
 title: Nothing regenerates the loop-history snapshot or the one-limit sweep between rounds — both count files age by the merge rate until the 30-day staleness wall trips
 created: 2026-08-15
 expires: 2026-11-15
-serves: floor
+serves: more-true
 priority: 2
 ---
 
