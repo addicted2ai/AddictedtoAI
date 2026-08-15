@@ -76,6 +76,17 @@ check /model-retirement-calendar 200 "text/html" 'data-retirement-table="upcomin
 check /model-retirement-calendar 200 "text/html" 'data-retirement-table="past"'
 check /model-retirement-calendar 200 "text/html" 'gpt-5.2-chat-latest'
 
+# The loop-history page is data-driven: its figures come from the committed
+# snapshot, and the snapshot's own timestamp must be visible so a stale figure
+# reads as stale. The page's claim to checkability is the snapshot date and
+# the "attempted is not shipped" distinction — both must survive the render.
+# The taken-at date is read from the snapshot file, never restated, so this
+# assertion does not need bumping when a later round regenerates it.
+loop_snapshot=$(node -e 'const s=require("./app/lib/loop-history.json");process.stdout.write(s.taken_at)')
+check /loop-history 200 "text/html" 'data-loop-history-stats'
+check /loop-history 200 "text/html" "$loop_snapshot"
+check /loop-history 200 "text/html" 'Attempted is not shipped'
+
 # lychee follows redirects and reports 200, so a Directory link that now
 # resolves somewhere else -- runwayml.com -> runway.com -- passes its check
 # forever. The href in tool-categories.js is the recorded final URL; this
@@ -108,7 +119,7 @@ node scripts/test-review-artifact.mjs || failures=$((failures + $?))
 # scripts/check-ai-disclosure.mjs separately verifies the producing-round map
 # against the build log and git history.
 echo
-  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar; do
+  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /loop-history; do
   body=$(curl -s "$BASE$route")
   case "$body" in
     *'data-ai-disclosure'*) echo "ok    $route carries the AI disclosure" ;;
@@ -156,7 +167,7 @@ else
   MARGIN=3000
   ceiling=$((budget - MARGIN))
   echo "      document budget $budget bytes; local ceiling $ceiling (margin $MARGIN)"
-for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar; do
+for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /loop-history; do
     bytes=$(curl -s -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}' "$BASE$route")
     if [ "$bytes" -gt "$ceiling" ]; then
       echo "FAIL  $route is $bytes bytes gzipped, over the local ceiling of $ceiling"

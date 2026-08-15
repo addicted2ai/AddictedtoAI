@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/check-tool-staleness.mjs && node scripts/check-one-limit-count.mjs && node scripts/check-retirement-staleness.mjs",
+    "prebuild": "node scripts/check-tool-staleness.mjs && node scripts/check-one-limit-count.mjs && node scripts/check-retirement-staleness.mjs && node scripts/check-loop-history-snapshot.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

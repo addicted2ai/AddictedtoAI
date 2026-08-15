@@ -217,6 +217,9 @@ export const PRODUCING_ROUNDS = {
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
   "/model-retirement-calendar": 109,
+  // Round 113 (build) publishes the loop's run history at /loop-history. New
+  // route, so its producing round is the round that created it.
+  "/loop-history": 113,
   // Round 67 (author) built this page; round 91 (build) restored the mapping
   // after a merged-tree mismatch. Round 93 (audit) re-records You.com's href
   // in tool-categories.js, a listed source file, so the newest change is
