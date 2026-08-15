@@ -28,7 +28,7 @@ export const ORIGIN_LABELS = {
   supervised: "A human triggered this run and could veto before merge",
   maintainer: "A human decided what and why; an assistant did the typing",
   delegated:
-    "The orchestrating model chose this work, reviewed it and merged it; no human saw it before it landed",
+    "The orchestrating model chose, briefed, reviewed and merged it; no human saw it before it landed",
 };
 
 // A round's badge: a commit link for archived rounds, a pull request link

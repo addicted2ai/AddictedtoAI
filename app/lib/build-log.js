@@ -30,7 +30,7 @@ const FIELDS = [
 //   supervised   — a human triggered the run and could veto before merge
 //   maintainer   — a human decided what and why; an assistant did the typing
 //   delegated    — the orchestrating model chose, briefed, reviewed and
-//                  merged it; no human saw it before it landed (round 86)
+//                  merged it; no human saw it before it landed (round 85)
 //
 // The test is vetoability, not the trigger. prompts/shared/every-run.md and
 // the preamble of CHANGELOG.md still gloss unsupervised as "scheduled",

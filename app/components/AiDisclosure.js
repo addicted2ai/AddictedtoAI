@@ -25,7 +25,7 @@ const ORIGIN_SENTENCES = {
   maintainer:
     "the most recent recorded change came from a round where a human decided what and why, and an assistant did the typing",
   delegated:
-    "the most recent recorded change came from a round the orchestrating model chose, reviewed and merged — no human saw it before it landed",
+    "the most recent recorded change came from a round the orchestrating model chose, briefed, reviewed and merged — no human saw it before it landed",
 };
 
 export default function AiDisclosure({ route }) {

@@ -91,8 +91,8 @@ export default function Home() {
         {stats.byOrigin.delegated === 1
           ? "round was delegated to the orchestrating model"
           : `${stats.byOrigin.delegated} rounds were delegated to the orchestrating model`}{" "}
-        &mdash; chosen, briefed, reviewed and merged with no human in the
-        loop before it landed. The other{" "}
+        &mdash; the orchestrating model chose, briefed, reviewed and merged
+        it, with no human in the loop before it landed. The other{" "}
         {stats.rounds -
           stats.byOrigin.unsupervised -
           stats.byOrigin.delegated}{" "}
