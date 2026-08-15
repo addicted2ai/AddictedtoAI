@@ -261,8 +261,13 @@ export const PRODUCING_ROUNDS = {
 // Round 125 (maintain) re-verifies ten of the Directory's entries against
 // their live pages and renews their verified dates to 2026-08-15, touching
 // tool-categories.js, so the newest change is this round's.
+// Round 131 (maintain) corrects the /demos walkthrough's "Result" caption:
+// it claimed every round so far reads "not yet measured", which the record
+// has falsified since round 70 (31 current-era rounds record measured
+// results, and the demo's own example round 74 reads one). RoundWalkthrough.js
+// is a listed source file of /demos, so the route moves to 131.
   "/directory": 125,
-  "/demos": 62,
+  "/demos": 131,
   // Both log pages were produced by round 70, the build round that split the
   // log in two, until round 72 changed the origin badge they both render.
   // /log was mapped to 53 until 70; leaving it there would have had the page

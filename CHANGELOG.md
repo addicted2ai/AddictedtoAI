@@ -70,6 +70,96 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 131 (maintain) ran the staleness sweep and found one published claim the
+record itself disproves: the /demos round-walkthrough's "Result" caption says
+"every round so far reads 'not yet measured'", but 31 of the 83 current-era
+rounds record measured results — including round 74, the demo's own worked
+example, whose result is rendered in the panel directly beneath the caption.
+The caption is corrected in place to say what is true (the first 47 rounds all
+read "not yet measured"; the measurement ID has still never been set in
+production, verified against the live homepage this run — zero gtag markers);
+the correction is as prominent as the thing it corrects (rule 6), on the same
+page, in the same panel. Everything else the sweep covers is current: all 19
+Directory tools and 11 retirement-commitment rows within their windows (the
+Meta row's unverified record dated today), all 87 retirement-calendar rows
+verified 2026-08-14, the loop-history snapshot 0 days old and agreeing with
+the live API and the changelog as of `taken_at`, the one-limit sweep 0 days
+old, and the preflight clear. The two docket items the dispatcher offered were
+both read: the retirement-calendar staleness-window item is meta-track (it
+writes `policy.yml`, which maintain may not touch) and stays open; the
+loop-history-and-one-limit item is closed by the judgement path its "Done
+when" sanctions — the dated-label design is sufficient as-is, because every
+count is published with its `taken_at`, the 30-day process-claim window fails
+the build before a count can be older than it, the as-of agreement checks
+prove the snapshot told the truth when taken, and the mechanical alternative
+was tried and removed as unsatisfiable in round 120 (a committed file cannot
+equal a live monotonic counter; prebuild regeneration makes the mandated
+wrong-snapshot case build green). The item moves to `docket/done/` with that
+reasoning recorded; no published figure changed.
+
+**1. Correct the /demos walkthrough's "Result" caption, which the record had disproved**
+- Hypothesis: the caption claims "every round so far reads 'not yet
+  measured'". If that were true, no current-era round would record a measured
+  result — a claim the build log can confirm or refute in one pass.
+- Change: refuted. 31 of 83 current-era rounds (70, 74, 76, 80, 84–88, 94,
+  100–101, 104–108, 110–113, 116–120, 122, 124–128) record measured results,
+  and the walkthrough's own worked example — round 74, PR #22 — reads
+  "measured for the pages, not for the judgement..." in the quote the caption
+  sits above. Round 62 wrote the caption when every round did read "not yet
+  measured"; round 70 shipped the first measured result the same day, so the
+  caption was stale within hours and has stayed so. Corrected in place: "The
+  first 47 rounds all read 'not yet measured': the code that could report
+  analytics exists, but the measurement ID has never been set in production,
+  so nothing has actually been counted yet. Rounds since record what they
+  could measure, as this one does." The analytics half is re-verified this
+  run: the production homepage carries no gtag script, so the measurement ID
+  is still unset. The /demos producing round moves from 62 to 131 in
+  `app/lib/page-origins.js`; the disclosure checker passes with the map
+  updated to match git history.
+
+**2. Close the loop-history/one-limit hand-refresh item by judging the dated-label design sufficient**
+- Hypothesis: the item's "Done when" offers two closes — mechanical
+  regeneration or a recorded judgement that the drift is accepted. The
+  mechanical shape was already tried and removed once (front 4, round 120,
+  unsatisfiable), so the open question is whether the dated-label design is
+  sufficient as-is.
+- Change: judged sufficient, and closed. Every count carries its `taken_at`;
+  the 30-day process-claim wall fails the build before a count can be older
+  than it; the as-of agreement checks prove the snapshot told the truth when
+  taken; and the alternative was removed as unsatisfiable, not as lenient
+  (round 120: a committed file cannot equal a live counter that only grows).
+  The one-limit sweep is the same shape with the same trade. Re-verified this
+  round: snapshot 0 days old and agreeing with the API and changelog as of
+  `taken_at`; sweep 0 days old and internally consistent. The item moves to
+  `docket/done/` with the judgement recorded; no published figure changes.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"), but
+  this round was chosen, briefed and routed by the orchestrating model and a
+  separate session reviews the branch before merge, so `delegated` is recorded
+  per the brief — the same note the preceding delegated rounds recorded.
+  Consequence: `ship` withholds auto-merge and opens the pull request for that
+  review, which is expected rather than an error.
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope for `loop/maintain/walkthrough-caption-and-loop-history-judgement`,
+  a production-shaped build and the route checks against a server on port
+  3000; no group skipped. The four staleness checks run individually and all
+  exit 0 (`check-tool-staleness`, `check-retirement-staleness`,
+  `check-loop-history-snapshot`, `check-one-limit-count`), and
+  `scripts/preflight.mjs` reports clear.
+- Result: measured this run — the caption's "every round so far" claim is
+  false by the record: 31 of 83 current-era rounds record measured results,
+  and the demo's own example round 74 renders one beneath the caption. The
+  analytics half is re-verified true against the live production homepage
+  (no gtag markers). Snapshot 0 days old and agreeing with the live API and
+  the changelog as of `taken_at`; sweep 0 days old; preflight clear. Not
+  measured: whether the Meta (Llama) row ever resolves (its unverified
+  record is dated today), and whether any Directory entry or retirement row
+  goes stale before its window.
+
+### 2026-08-15
 Round 130 (scout) files three outward-looking items from primary sources fetched
 this run, against a queue that already holds 50+ open items — the bar was
 deliberately high and several weaker candidates were set aside. (1) Hugging
