@@ -70,7 +70,7 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
-Round 113 (build) publishes the loop's failure rate. The site published how
+Round 112 (build) publishes the loop's failure rate. The site published how
 many rounds shipped — 111 rounds in the build log, every one of them
 finished — but a run that dies mid-round writes nothing at all, so the
 shipped count was a numerator with no denominator, which flatters the work
@@ -84,7 +84,11 @@ date the snapshot was taken; the build reads the committed snapshot and
 makes no network call; and a new check fails the build when the snapshot is
 malformed, older than the 30-day process-claim window in `policy.yml`, or
 disagrees with the live API — proven able to fail this round in all three
-directions and then restored to green.
+directions and then restored to green. (The brief counted this as round
+113, "the number of entries in CHANGELOG.md is 112"; measured this round,
+main holds 111 dated entries — the 112th `### ` line is the `### YYYY-MM-DD`
+template placeholder — so the parser, which numbers entries positionally,
+assigns this entry round 112. The mapping and this entry follow the code.)
 
 **1. The denominator, published**
 - Hypothesis: the changelog contains only rounds that finished, so the
