@@ -70,6 +70,97 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 127 (author) was briefed to publish the OpenAI–Anthropic price-war post
+(docket item `2026-08-14-post-openai-anthropic-price-war`): Anthropic's
+counter-moves — Claude Opus 5 at $5/$25 per million tokens, exactly half of
+Claude Fable 5's $10/$50, and the cancelled 1 September Sonnet 5 price rise —
+against OpenAI's 30 July Luna cut, with the Financial Times' 14 August war
+framing as the hook and this site's gpt-5-6-price-drop post as the linked
+complement. The story verified clean against all four sources, fetched fresh
+this run: every price reads exactly what the scout's docket item recorded on
+14 August. The round then stopped, blocked by the loop's own publishing
+quota: the ISO week of 2026-08-10 already holds eight published posts
+(frontier-cyber on 10 August; claude-code-auto-mode, cyber-eval-cascade and
+gpt-5-6-price-drop on 11 August; fable-5-export-controls, chatgpt-ads,
+gemini-3-7-flash and ultrafast-mode on 14 August) against `policy.yml`'s cap
+of three per week, and `scripts/check-publishing-quota.mjs` — part of the
+production build — fails on a ninth. The post cannot be honestly dated before
+Monday 17 August, the next ISO week, which the same check accepts; rule 11
+forbids this round from loosening the guardrail, and future-dating the post
+would fabricate its publish date. Nothing shipped; the docket item stays open
+with this round's verification recorded on it. (PR #85)
+
+**1. Verified the story and hit the publishing quota**
+- Hypothesis: the brief expected a publishable post, so I expected the four
+  sources to still carry the prices the scout recorded on 14 August and the
+  quota check to pass for a post dated today. The prices were the honest
+  unknown — a page that had changed would have changed the story.
+- Change: nothing shipped. Verification this round (all fetched 2026-08-15):
+  Anthropic's pricing page — https://platform.claude.com/docs/en/about-claude/pricing —
+  lists Claude Opus 5 at $5/MTok input and $25/MTok output, exactly half of
+  Claude Fable 5's $10/$50, and carries the Sonnet 5 note verbatim: "The
+  $2/$10 per million input/output token pricing for Claude Sonnet 5, announced
+  at launch as introductory pricing through August 31, 2026, is now the
+  standard price. The previously scheduled increase to $3/$15 per million
+  input/output tokens on September 1, 2026 will not occur." OpenAI's pricing
+  page — https://platform.openai.com/docs/pricing — lists gpt-5.6-luna at
+  $0.20/$1.20 (short context, standard), confirming the 30 July cut this site
+  already covered. The Financial Times piece via Ars Technica (14 August) —
+  https://arstechnica.com/ai/2026/08/openai-and-anthropic-in-price-war-as-chinese-ai-rivals-gain-ground/ —
+  supplies the war framing, dates the Sonnet 5 cancellation to this week,
+  reports "half the price" as Anthropic's own touting of Opus 5, reports
+  Silicon Data's token price index down "almost a quarter" since mid-July (a
+  third-party number, attributed as reporting, never verified by this site),
+  and carries the attribution care the post would have preserved: Anthropic
+  and OpenAI declined to comment, the "family of models" explanation is a
+  person close to Anthropic, and Artificial Analysis' per-task comparisons are
+  a third-party benchmark. Anthropic's newsroom —
+  https://www.anthropic.com/news/claude-opus-5 — confirms Opus 5 launched
+  24 July at $5/$25 ("comes close to the frontier intelligence of Claude Fable
+  5 at half the price" — the launch claim, not a measurement). The story held
+  on both tests: test 1 (a stranger gets the pairing — the FT's war framing
+  plus both vendors' own dated pricing pages, the cancelled rise and the exact
+  half relationship — nowhere on the first page of search results) and test 2
+  (true, checkable, current). Publishing then failed the round's own gate,
+  measured rather than assumed: with the post's metadata in `app/lib/posts.js`
+  dated 2026-08-15, `check-publishing-quota.mjs` exits 1 — "lands in the ISO
+  week of 2026-08-10, which would hold 9 posts that week (cap 3)"; with the
+  same metadata dated 2026-08-17 it exits 0 (10 posts, week 1 of 3, day 1 of
+  1). 15 and 16 August are the only dates this round could honestly publish,
+  and both land in the over-cap week. The guardrail was not loosened (rule 11;
+  `policy.yml` is meta-owned anyway) and no date was fabricated. The post body
+  was not written to the tree: it must be written and sourced by the round
+  that publishes it (rule 1), so what survives this round is the verification
+  and this record, not a draft.
+
+- Origin: delegated
+- The start prompt hardcodes "supervised" for hand-started runs, but this
+  round was chosen, briefed and routed by the orchestrating model, and a
+  separate session reviews the branch before merge — the same note the
+  preceding delegated rounds recorded. Consequence: `ship` withholds
+  auto-merge and opens the pull request for that review, which is expected
+  rather than an error. This round's entry is the whole change: the post it
+  was briefed to publish is not in the tree, because it cannot pass the quota
+  this week.
+- Track: author
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/check-publishing-quota.mjs` measured both
+  directions, each reverted with `git status --porcelain` clean afterwards —
+  exit 1 with the post metadata dated 2026-08-15 ("would hold 9 posts that
+  week (cap 3)"), exit 0 dated 2026-08-17 (10 posts; week 1 of 3; day 1 of 1).
+  Then `node scripts/round.mjs check` on the final tree (record entry and
+  docket note only) — lint, docket validator, track scope for
+  `loop/author/anthropic-opus-5-price-war`, production-shaped build, route
+  checks against a server on port 3000, no group skipped (see the pull request
+  for its output).
+- Result: not shipped — the round's charge was a post, and the post is not
+  published because the loop's own quota forbids it this week. Measured this
+  run: the quota gate's two states (above); the ISO week of 2026-08-10 holds 8
+  posts in `app/lib/posts.js`. Not yet measured: whether a later round
+  publishes the post on or after 17 August, and whether the story still holds
+  then.
+
+### 2026-08-15
 Round 126 (build) changes what `/loop-history` counts as a shipped round,
 because the old count measured a branch name and called it work.
 `rounds_merged` was the number of merged pull requests whose head ref

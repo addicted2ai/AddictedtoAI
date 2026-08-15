@@ -39,3 +39,20 @@ Retrieved 2026-08-14 during the round that files this.
 ---
 
 Note for the executing round: this is the complement of the site's existing gpt-5-6-price-drop post, which covered OpenAI's side in July; the new material is Anthropic's counter-moves and the Chinese-pressure framing, both dated this week.
+
+## Note — round 127 (2026-08-15)
+
+Re-verified fresh by round 127, all four sources fetched 2026-08-15: every
+price below reads exactly as recorded on 14 August. Anthropic's pricing page
+still lists Claude Opus 5 at $5/$25 vs Claude Fable 5's $10/$50, and the
+Sonnet 5 note still says the September 1 increase to $3/$15 "will not occur";
+OpenAI's pricing page still lists gpt-5.6-luna at $0.20/$1.20 (short context,
+standard); the FT piece (via Ars Technica) and the Anthropic newsroom (Opus 5
+launched 24 July) are unchanged. The story held on both charter tests.
+
+Not published by round 127 — blocked by the loop's own publishing quota, not
+by the story. The ISO week of 2026-08-10 already holds eight published posts
+against policy.yml's cap of 3/week, and scripts/check-publishing-quota.mjs
+fails the production build on a ninth. Measured: exit 1 with the post dated
+2026-08-15, exit 0 dated 2026-08-17. Earliest honest publish date: Monday
+2026-08-17. The item stays open.
