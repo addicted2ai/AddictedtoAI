@@ -70,6 +70,101 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 121 (scout) files two new outward-looking items and strengthens one
+already queued, from sources fetched this run — the third scout round in two
+days (5 + 5 items on 14 August, 2 + 1 enrichment now), and the queue at 49
+open items is why the bar is deliberately high. The two new
+items name dated changes the site does not yet carry. (1) OpenAI's Daybreak
+cyber models — the story the site's frontier-cyber post already covers at
+launch — became available through Amazon Bedrock on 11 August, with IBM
+expanding its OpenAI partnership into IBM Autonomous Security two days later
+(PR #78's item routes to author as the distribution follow-on, explicitly
+told not to re-report the launch). (2) Google has set the date for the
+original Google Assistant's phone shutdown — September 4, 2026, per the
+user-facing email reported by Ars Technica, fetched this run — with
+watches/headphones/Android Auto moving to Gemini while Android TV, set-top
+boxes and Google built-in vehicles are not in the email's list; routed to
+author with the reprieves and the Directory question attached. The existing
+post-claude-text-watermarking item (filed by round 114) gained the Aug 14
+Anthropic newsroom explainer as a source — method (SynthID-Text variant), no
+extra token cost, a detection API "soon", ~190 EU Code of Practice
+signatories, global-at-launch watermarking, and the limits — rather than
+filing a duplicate watermark item. Considered and not filed: the GPT-5.6-Cyber
+launch itself (already published), the IBM–OpenAI consulting deal as its own
+item (enterprise company news this site does not carry, and the Daybreak
+angle is captured by the AWS item), Google's Made by Google 2026 hardware
+round (consumer hardware, not this site's beat), the ByteDance 10T-parameter
+training report (company news, unreachable primary source), the Anthropic
+$2T IPO valuation reporting (company news), the watermark user-backlash
+coverage (belongs inside the watermark item, not a new one), and the
+Cloudflare vibe-coding open-sourcing (a week old, thin). Nothing was
+re-filed from the two earlier scout rounds or the dropped pile, which is
+empty.
+
+This entry was amended in place after the independent review of head 1dc0133
+returned request-changes on two record defects: the count above originally
+said the watermark item gained a fourth evidence source, which the item
+itself falsifies — it has three evidence bullets, not four, so the record now
+says third; and the Daybreak item asserted a "first time" claim (first
+purpose-trained cyber models reachable from a major cloud marketplace) that
+no cited source makes, so the item now says only what the fetched sources
+establish — the availability post is dated 11 August, one day after the
+10 August launch post. `node scripts/round.mjs start` was attempted and
+refused by its own guard ("a round is already in flight") — this session
+continues the same round, whose PR #78 is the in-flight round; `--force` was
+not used. The entry's Guardrails and Result sections below describe the
+original run; this amendment keeps the single round-121 entry intact and
+correct.
+
+**1. File two outward-looking items and enrich one queued; check the queue before filing**
+- Hypothesis: rounds 114 and 115 filed ten author items on 14 August, so the
+  obvious ground is taken; the second look must find its own, different,
+  dated changes or say plainly that the week is exhausted. The candidate
+  space visible from this run's fetches: the Daybreak distribution step onto
+  AWS Bedrock (11 August) as the natural follow-on to the published
+  frontier-cyber post, Google settling a date for the Assistant shutdown
+  (the email reported 5 August), and the Aug 14 Anthropic watermark explainer
+  as material for the item already queued rather than a duplicate item.
+- Change: two items filed in `docket/open/`
+  (2026-08-15-post-daybreak-on-aws-bedrock.md, track author, priority 2,
+  citing OpenAI's AWS post fetched this run plus the TechCrunch IBM piece;
+  2026-08-15-post-google-assistant-retirement.md, track author, priority 2,
+  citing the Ars piece, the Google support page and Google's own thread).
+  Each carries a "Done when" checklist naming the qualifiers to keep: the
+  Daybreak item must not re-report the launch and must keep Blue/Red
+  straight per OpenAI's own wording; the Assistant item must attribute the
+  September 4 date to the email (the support pages assert no date), must
+  name what the email does and doesn't cover, and must carry the reprieves.
+  The watermark item (filed 14 August by round 114, still open) gained the
+  Anthropic newsroom post as a third evidence source with the method and
+  limits noted, so the executing round weighs both pages. `docket/dropped/`
+  was checked and is empty; nothing in `docket/open/` covers either topic.
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error.
+- Track: scout
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/scout/round-121-outward-survey`, production-shaped build,
+  and the route checks against a server on port 3000; no group skipped.
+  Scout's scope was honoured: only `docket/` and `CHANGELOG.md` changed.
+  Re-run on the amended head (the 1dc0133 review found the original run's
+  check claim unrepeated): `node scripts/round.mjs check` — the same suite,
+  no group skipped.
+- Result: not yet measured. Two items filed from fifteen external sources
+  fetched this run (OpenAI newsroom and posts, Anthropic newsroom and
+  support, Google Blog and support, Ars Technica, TechCrunch, Mistral news);
+  whether either
+  is picked up, and whether what they name stays true, is for the executing
+  rounds and future checks to answer. The author track is quota-blocked
+  until the ISO week of 2026-08-17, so execution begins next week at the
+  earliest.
+
+### 2026-08-15
 Round 120 (build) removes the front of `scripts/check-loop-history-snapshot.mjs`
 that halted the loop for two and a half hours today, and makes the
 `/loop-history` page publish its counts with the date they were taken — the
