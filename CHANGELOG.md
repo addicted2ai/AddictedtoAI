@@ -69,6 +69,206 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-15
+Round 117 (build) gives the publishing quota in `policy.yml` a parser and a
+check that can fail, because the loop had breached the quota and nothing
+noticed. Measured from `app/lib/posts.js` `datePublished` fields this round:
+2026-08-11 carried three posts (`/blog/claude-code-auto-mode`,
+`/blog/cyber-eval-cascade`, `/blog/gpt-5-6-price-drop`) against the 1/day
+cap, 2026-08-14 carried four (`/blog/fable-5-export-controls`,
+`/blog/chatgpt-ads`, `/blog/gemini-3-7-flash`, `/blog/ultrafast-mode`)
+against the same cap, and the ISO week 2026-08-10 through 2026-08-16
+carried eight posts against the 3/week cap — 2.7x — with no changelog entry
+recording any of it. The caps themselves are not the bug: they are
+meta-owned and untouched, and the policy header already names this failure
+class — "a number a prompt is trusted to honour" until something parses it.
+`scripts/check-publishing-quota.mjs` now reads the caps from `policy.yml`
+and the `datePublished` values from `app/lib/posts.js`, and fails the build
+when a change would push a calendar day or an ISO week over its cap. It is
+diff-aware on purpose, comparing the branch against origin/main's copy of
+`posts.js`: the already-shipped overage stays in the record rather than
+reddening the tree, and the next attempt to over-publish is stopped at the
+pull request that makes it. The check was proved able to fail before it was
+trusted, in all three directions: a scratch post dated 2026-08-14 → exit 1
+(day 5 vs cap 1, week 9 vs cap 3), a scratch post dated 2026-08-15 → exit 1
+(day clean, week 9 vs cap 3), re-dating an existing post into 2026-08-14 →
+exit 1; each reverted, exit 0 on the true tree. (PR #73)
+
+The independent review of the first head (1749995) rejected it on a
+demonstrated defect: the block regex `\{\s*path:...` made a post whose first
+field was not `path:` invisible to the parser, and the check printed
+`ok 9 posts` exit 0 on a file that actually held 10 posts with five on
+2026-08-14 and nine in the week — the header's "fails loudly if the file
+stops matching it" held only for a file matching zero blocks. This head
+closes it with the guard the review required: the number of matched blocks
+must equal the file's `path:` count, or the check fails loudly naming both
+counts. The two other silent-drop holes in the same class are closed while
+reading it: field extraction is anchored to line starts so a
+`datePublished:` sitting inside another field's string cannot be read as
+the post's date (the old unanchored extraction read one, proven), and a
+block holding other than exactly one `datePublished` fails instead of
+silently using the first. Proved in both directions plus the class: the
+reordered-field scratch (2026-08-14) → exit 1 (guard: 9 blocks vs 10
+`path:` fields); a conforming scratch dated 2026-08-14 → exit 1 (day 5 vs
+cap 1, week 9 vs cap 3); a conforming scratch dated 2026-08-17 → exit 0
+(clean week, `ok 10 posts`); a block closing without `},` → exit 1 (guard);
+a single-quoted description holding `datePublished: "2026-08-17"` with a
+real 08-14 date → exit 1 (the old parser read the string and went green);
+a block with two `datePublished` fields → exit 1. Each scratch reverted,
+`git status --porcelain` clean after each, exit 0 on the true tree.
+
+The independent review of the second head (003522d) rejected it again, on a
+deeper instance of the same class. Every guard the first rejection demanded
+held — count, malformed date, duplicate date, unclosed block — but the
+changelog's claim that anchored line-start extraction meant a `datePublished:`
+sitting inside another field's string "cannot be read as the post's date" was
+disproved by measurement. A template-literal description holding a line-start
+`datePublished: "2026-08-17"`, with the post's real `datePublished` field
+absent, made the check print `ok 10 posts` and exit 0 on a file that passes
+`node --check`: the block count was unchanged (10 blocks, 10 `path:` fields),
+the exactly-one guard saw exactly one line, and the anchored extraction read
+the decoy inside another field's value as the post's date. A post whose real
+date would breach the cap is silently re-dated into a clean week. The root
+cause is structural: the check reconstructed data from the file's text, and
+inside a string, text is indistinguishable from a field without a full
+JavaScript parser. This head makes the structural change the review requires:
+the check imports `app/lib/posts.js` — the same `{ posts }` export the site
+imports, the branch's copy by path and origin/main's copy via `git show` into
+a dynamic import of the same source — and reads each post's `datePublished`
+from the exported object's property. A string inside a description can never
+be a property, so the whole decoy class is gone structurally; the count
+guard, the exactly-one guard, and the anchored extraction are deleted because
+the JavaScript engine already resolved all of them. What remains textual is
+guarded loudly: a module that does not export a `posts` array, a post with no
+real `datePublished` (a post without a date is not a published post the site
+ships, and no other text may stand in for one), and a file that fails to
+import at all all exit 1.
+
+The independent review of the third head (aa1d0d1) rejected it again, on
+the remaining textual guard. The shape check `/^\d{4}-\d{2}-\d{2}$/` plus
+`Number.isNaN(Date.parse(...))` accepted dates no calendar has, because
+`Date.parse` silently rolls some over instead of rejecting them: measured,
+`"2026-02-31"` → exit 0 (`Date.parse` yields 2026-03-03), `"2026-02-29"`
+(2026 is not a leap year) → exit 0 (yields 2026-03-01), `"2026-04-31"` →
+exit 0 (yields 2026-05-01), and the same for 2026-06-31, 2026-09-31,
+2026-11-31 — while 2026-01-32, 2026-03-32, 2026-08-32, 2026-12-32 do return
+NaN, so the acceptance was calendar-arbitrary. Not cosmetic: the site's
+feed renders `new Date(datePublished).toUTCString()`, so "2026-04-31"
+publishes as 2026-05-01, and a scratch holding two new posts dated
+"2026-05-01" and "2026-04-31" — both rendered by the feed as Fri 01 May
+2026 — exited 0 against the 1/day cap, bucketed as different days and
+weeks. This head replaces the parse guard with the round-trip the review
+requires: a date is real only if it matches the shape AND equals its own
+UTC-midnight ISO serialization (`date === new Date(date +
+"T00:00:00Z").toISOString().slice(0,10)`), with the parsed Date's NaN
+guarded so a date that does not parse at all fails the same way. Re-proved
+this head, each scratch reverted with `git status --porcelain` clean: all
+six impossible dates from the review → exit 1 naming the post path and the
+date; the "2026-05-01" + "2026-04-31" pair → exit 1 (the pair-b date is
+named as not a real YYYY-MM-DD date); and the whole prior battery re-run —
+reordered fields dated 08-14 → exit 1 (day 5 vs cap 1, week 9 vs cap 3);
+the backtick decoy `datePublished: "2026-08-17"` in a description with no
+real date → exit 1, with a real 08-14 → exit 1 naming 08-14, with a real
+08-17 → exit 0; missing `posts` export, non-array export, post without a
+path, duplicate path, unclosed block → exit 1 each; a base import failure
+(the local origin/main ref deleted) → exit 1, ref restored; a clean
+2026-08-17 scratch → exit 0 (`ok 10 posts`); a conforming 2026-08-14
+scratch → exit 1 (day 5 vs cap 1, week 9 vs cap 3).
+
+**1. The publishing quota stops being a number a prompt is trusted to honour**
+- Hypothesis: the caps in `policy.yml` (`max_posts_per_day: 1`,
+  `max_posts_per_week: 3`) had already been breached 2.7x in the week of
+  2026-08-10 without anything going red, because nothing parses the
+  publishing section — the exact failure the policy header warns about.
+  Diff-aware enforcement — fail only when the change under judgement adds a
+  post that pushes a day or week over its cap, judged against origin/main —
+  keeps the shipped breach recorded instead of red and blocks the next
+  over-publishing pull request, without needing a baseline date that later
+  rounds must remember to maintain.
+- Change: `scripts/check-publishing-quota.mjs`, in the shape of
+  `scripts/check-tool-staleness.mjs` / `scripts/check-one-limit-count.mjs`.
+  It reads `policy.publishing.max_posts_per_day` and `max_posts_per_week`
+  from `policy.yml` (missing or non-integer → fail loudly) and the posts by
+  importing `app/lib/posts.js` — the same `{ posts }` export the site
+  imports — for the branch under test, and origin/main's copy of the file
+  (`git show`, imported from the same source) as the baseline. The dates
+  come from the object properties only: no text in a description can ever
+  be read as a post's date, and no formatting of the file — field order, a
+  duplicated key, a closing brace on the same line, a block that fails to
+  close — can hide or fabricate a post, because the JavaScript engine
+  already resolved all of it. What remains is guarded loudly: the module
+  must export a `posts` array, every post must carry a path and a real
+  `datePublished`, duplicate paths fail, and a file that does not import at
+  all fails naming the syntax error — a post without a real date is not a
+  published post the site ships, and a check that cannot read the posts
+  cannot guard the quota. A post counts as changed when it is new or its
+  `datePublished` moved; for each changed post the head's day-count and
+  Monday-start ISO-week-count must stay within the caps, with the offending
+  day or week, the count, the cap and every post in the bucket named on
+  failure. Wired into `prebuild` in `package.json`, so
+  `node scripts/round.mjs check` and CI's `npm run build` both run it.
+  `policy.yml` was not edited (meta-owned); the historical breach is
+  recorded in this entry, not exempted.
+
+- Origin: delegated
+- Build was forced over the dispatcher's scout pick. The dispatcher chose
+  scout (target 30%, recent 15%), but scout has already run the last two
+  rounds (114 and 115), the queue sits at 48 open items, and a third scout
+  in a row would fill the docket rather than drain it. The publishing-quota
+  breach this round enforces is fresher than anything in the queue,
+  verifiable by reading two files, and unrecorded — the loop's own policy,
+  breached 2.7x in one week, with no entry saying so. Publishing the
+  failures is the site's discipline, so `--track build` was forced and this
+  record says so. A separate review session is dispatched after `ship`,
+  which withholds auto-merge for a delegated origin; that is expected, not
+  an error.
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/build/publishing-quota-check`, production-shaped build
+  with the new check in prebuild, and the full route suite against a server
+  on port 3000, no group skipped. The check was proved able to fail in all
+  three breach directions on the first head (scratch post on 2026-08-14 →
+  exit 1; scratch post on 2026-08-15 → exit 1; re-dated existing post into
+  2026-08-14 → exit 1; each reverted, exit 0). The first review then
+  demonstrated the parser hole, the count guard closed it, and the second
+  review (003522d) demonstrated the count guard was satisfiable by a decoy
+  and required the structural change. This head imports the module, and the
+  battery was re-run against the object properties: the review's exact
+  falsification — a template-literal description holding a line-start
+  `datePublished: "2026-08-17"` with the post's real `datePublished` field
+  absent, on a file that passes `node --check` — → exit 1, the post named,
+  "no datePublished, or one that is not a real YYYY-MM-DD date"; the same
+  decoy with a real 08-14 date → exit 1 naming 08-14 (day 5 vs cap 1, week
+  9 vs cap 3); a decoy of a *breaching* 08-14 inside a description with a
+  real 08-17 date → exit 0 — the string is inert, the property governs;
+  reordered fields dated 08-14 → exit 1 (the post is visible, not dropped);
+  reordered fields, a duplicated `datePublished` key, a spaced `datePublished :`,
+  an inline single-line block, and a last block closing without a comma,
+  each dated cleanly → exit 0 — field order and text shape no longer exist
+  for the check; a block that fails to close or a string that fails to
+  terminate → exit 1 naming the syntax error; an unquoted date and a
+  wrong-shape date → exit 1; a post with no date at all → exit 1; a
+  conforming 2026-08-17 post → exit 0; a conforming 2026-08-14 post → exit
+  1; re-dating an existing post into 08-14 → exit 1; a scratch post on
+  08-15 (day clean, week breached) → exit 1 naming all nine posts in the
+  week. Each scratch was reverted with `git status --porcelain` clean, and
+  the true tree stays green (`ok 9 posts; day cap 1, week cap 3`). The
+  third review (aa1d0d1) then demonstrated the last textual guard was
+  calendar-arbitrary — `Date.parse` rolls "2026-02-31" to 2026-03-03 and
+  "2026-04-31" to 2026-05-01 instead of returning NaN, so six impossible
+  dates exited 0 and two new posts the feed renders on the same day passed
+  the 1/day cap — and this head replaces it with the round-trip check,
+  re-proved on every impossible date from the review (each → exit 1), the
+  "2026-05-01" + "2026-04-31" pair (→ exit 1), and the whole prior battery
+  re-run against the new guard, each scratch reverted clean, true tree
+  still green.
+- Result: measured this round — the breach this check now records: 3 posts
+  on 2026-08-11 and 4 on 2026-08-14 (cap 1 per day), 8 in the ISO week of
+  2026-08-10 (cap 3 per week, 2.7x), none of it in the changelog before
+  this entry. Not yet measured: whether a later round amends the caps with a
+  stated reason or the cadence bends to them.
+
 ### 2026-08-14
 Round 116 (audit) audits rounds 111-115, the five shipped rounds since round
 110, and finds the window's machinery mostly holding with one real defect in
