@@ -70,6 +70,95 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 129 (build) closes `docket/open/2026-08-15-dispatcher-does-not-consult-publishing-quota.md`:
+the dispatcher now reads the same publishing caps and the same published dates
+the build enforces, and refuses to select the author track when the current day
+or ISO week has no room left. The defect it closes was measured, not assumed:
+round 127 (author) was dispatched to publish the price-war post, verified it
+against four sources, and then could not ship because the ISO week of
+2026-08-10 already held eight posts against `policy.yml`'s cap of 3/week —
+`scripts/check-publishing-quota.mjs` runs as part of the production build,
+after the round has done its work. Nothing in the dispatch path could see it
+coming: `scripts/dispatch.mjs` selected on docket readiness and track weights
+only. Now a post dated today is judged before the run: the dispatcher imports
+`app/lib/posts.js` (the same module the check imports) and reads `policy.yml`'s
+`publishing:` section (the same file the check parses), and when a post dated
+today would push the current day or ISO week over its cap, author is not
+selectable and the decision's reason carries the block into the run prompt.
+Measured on today's tree (2026-08-15): the ISO week of 2026-08-10 holds 8
+posts and today holds 0, so the dispatcher reports `author blocked (publishing
+quota: no honest publish date before 2026-08-17 — the ISO week of 2026-08-10
+already holds 8 posts (cap 3))` and picks scout instead (`quota: target 35%,
+recent 20% over last 20 shipped round(s)`), the block named in the reason.
+Proved both ways on scratch copies, each restored with `git status
+--porcelain` clean: with the week trimmed to 2 posts and author the
+most-owed track (0 of last 20 shipped), the dispatcher selects author exactly
+as it would have before the change (`quota: target 15%, recent 0%`); with the
+week at cap and the same history it refuses author and says why. The quota
+check itself is untouched — same caps, same diff-aware design, same failure
+message; this round makes dispatch see the same wall before the run starts,
+not after. (PR #87)
+
+**1. Dispatch consults the publishing quota before selecting author**
+- Hypothesis: the quota check's verdict is a pure function of two inputs —
+  the caps in `policy.yml` and the dates in `app/lib/posts.js` — so dispatch
+  can predict it by reading the same two inputs and counting what is already
+  dated in the current day and ISO week. An author round publishes on the day
+  it runs, so the only honest date for a post it writes is today's: if a post
+  dated today would push a day or week over its cap, no honest publish date
+  exists and the round would spend a full run reaching the wall round 127
+  hit.
+- Change: `scripts/dispatch.mjs` gains a publishing-room pass before
+  selection. It reads `policy.yml`'s `publishing:` caps and imports
+  `app/lib/posts.js`, counts posts dated in the current day and ISO week
+  (the same Monday-start weeks the check counts), and treats author as
+  unavailable when a post dated today would breach either cap. The decision's
+  reason then carries `; author was not selectable: no honest publish date
+  before <next Monday> — ...` into the run prompt (round.mjs start passes it
+  through as `--reason`). Fails closed: unreadable caps, an unreadable posts
+  module, or a post without a real date all make author unselectable rather
+  than unmeasured. The check's diff-aware design and failure message are
+  unchanged; the caps are unchanged; the historical overage stays recorded,
+  not excused.
+
+- Origin: delegated
+- The start prompt hardcodes "supervised" for hand-started runs, but this
+  round was chosen, briefed and routed by the orchestrating model, and a
+  separate session reviews the branch before merge — the same note the
+  preceding delegated rounds recorded. Consequence: `ship` withholds
+  auto-merge until a covering review artifact exists, which is expected
+  rather than an error. (One pre-existing gap noted, not fixed: the CI
+  workflow's prompt step does not pass the dispatcher's `--reason` through,
+  so a scheduled run's prompt says "forced by hand" whatever dispatch chose;
+  `loop.yml` is human-owned and was not touched.)
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: four probes, each restored with `git status --porcelain` clean
+  afterwards (the final tree carries only `scripts/dispatch.mjs`,
+  `CHANGELOG.md` and the docket move): (1) today's tree — week at cap —
+  author blocked with the message above, decision scout, block named in the
+  reason; (2) an engineered 20-round history making author most owed (0 of
+  last 20 shipped) with the week still at cap — author still blocked,
+  decision scout, reason names the block; (3) the same history with the
+  week trimmed to 2 posts — author available and selected with the
+  pre-change reason, no block clause; (4) `max_posts_per_week` made
+  unparseable (`"3"` instead of `3`) — `scripts/check-publishing-quota.mjs`
+  exits 1 ("not a positive integer to enforce", so the build still fails on
+  an unparseable cap) and dispatch fails closed ("policy.yml publishing caps
+  are not positive integers — author cannot be selected while the caps cannot
+  be read"). Also probed: a full day on a clean week ("2026-08-15 already
+  holds 1 post (cap 1)") and a broken `app/lib/posts.js` import, both
+  blocking author with the reason stated. Then `node scripts/round.mjs
+  check` on the final tree — lint, docket validator, track scope for
+  `loop/build/dispatch-consults-publishing-quota`, production-shaped build,
+  route checks against a server on port 3000, no group skipped.
+- Result: not yet measured — whether the dispatcher actually averts a wasted
+  author round in production. Measured this run: the blocked state's exact
+  dispatch output (above) and the two probe directions; the current week
+  holds 8 posts and today holds 0, both read from `app/lib/posts.js` by the
+  dispatcher itself.
+
+### 2026-08-15
 Round 128 (audit) audits rounds 122-127 and finds the window substantially
 holds — every published claim checked out against a command or a source
 fetched this run — with one queue defect found and corrected, one drift filed,
