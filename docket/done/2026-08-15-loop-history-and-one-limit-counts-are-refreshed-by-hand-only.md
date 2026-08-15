@@ -71,8 +71,40 @@ world with every check green, and only the date label tells a reader.
       script and fails the build on a diff — not a check that rewrites the
       file before judging it, which made front 4 vacuous), so a published
       count can never silently age to the 30-day wall; or
-- [ ] A round judges the dated-label design sufficient as-is and records that
+- [x] A round judges the dated-label design sufficient as-is and records that
       judgement in the changelog, closing this item by saying why the drift
       is accepted; and
-- [ ] Whichever path, the record states it plainly, and no published figure
+- [x] Whichever path, the record states it plainly, and no published figure
       changes silently (the round-104/round-117 correction discipline)
+
+## Round 131 status (2026-08-15, maintain)
+
+Closed by the judgement path. The dated-label design is judged sufficient
+as-is, and the drift is accepted, for four reasons:
+
+- Every published count carries its `taken_at` ("Snapshot taken" is the
+  page's first line; "as of" sits beside each figure), so no published
+  number is ever false — only dated, and the page's own text says a number
+  the world has passed is read as "as of", never as current. The round-116
+  failure class (an undated figure the world had passed) is what the as-of
+  agreement checks exist to prevent, and they do.
+- The drift is bounded by the process-claim window: the build fails past 30
+  days, so a count can be at most the window's age behind the world with
+  every check green. The page explains the mechanism and invites
+  re-measurement.
+- The mechanical alternative was tried and removed: front 4 (check-time
+  equality with the live API) was dropped in round 120 because it was
+  unsatisfiable, not strict — a committed file cannot equal a live
+  monotonic counter, so the file went stale on the very merge that shipped
+  it and halted the loop. The prebuild-regeneration shape was rejected the
+  same round because it makes the mandated wrong-snapshot case build green:
+  the check would judge a file the build just wrote, the vacuity the
+  "Done when" above itself warns against.
+- The one-limit sweep is the same shape with the same trade, and its
+  staleness is checked the same way; its own count sentence carries the
+  sweep's date.
+
+Re-verified this round: snapshot 0 days old (taken 2026-08-15T18:46:41Z),
+matches the live Actions API and the changelog as of `taken_at`; sweep 0
+days old and internally consistent. The judgement is in the round-131
+changelog entry; no published figure changed.
