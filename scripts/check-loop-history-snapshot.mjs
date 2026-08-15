@@ -23,18 +23,30 @@
 //
 // 3. Agreement with GitHub. The site is a public repository, so the Actions
 //    API answers unauthenticated requests. When it is reachable, this check
-//    recomputes the counts from the live API over the runs that had already
-//    completed by taken_at — later runs are not the snapshot's business, and
-//    filtering on completion time keeps a run that was in progress when the
-//    snapshot was taken from false-failing the comparison — and fails if
-//    the snapshot disagrees with GitHub in any direction. That includes a
-//    snapshot claiming zero failures while the API reports some: "no failed
-//    runs" is the easiest lie for this project to tell itself, and it is the
-//    one this check exists to catch. When the API is unreachable the live
-//    comparison degrades to a loud warning rather than a failure — the
-//    shape and staleness checks still run, and the numbers still carry
-//    their date — which is the "degrades cleanly when it cannot" clause of
-//    the docket item.
+//    recomputes the run counts from the live API over the runs that had
+//    already completed by taken_at — later runs are not the snapshot's
+//    business, and filtering on completion time keeps a run that was in
+//    progress when the snapshot was taken from false-failing the comparison
+//    — and fails if the snapshot disagrees with GitHub in any direction.
+//    That includes a snapshot claiming zero failures while the API reports
+//    some: "no failed runs" is the easiest lie for this project to tell
+//    itself, and it is the one this check exists to catch. When the API is
+//    unreachable the live comparison degrades to a loud warning rather than
+//    a failure — the shape and staleness checks still run, and the numbers
+//    still carry their date — which is the "degrades cleanly when it
+//    cannot" clause of the docket item.
+//
+//    rounds_merged is checked against the changelog, not the pull-request
+//    API: a round is a changelog entry (a round number and a record), and
+//    the count as of taken_at is anchored in origin/main's history — the
+//    last commit that touched CHANGELOG.md before taken_at is the record at
+//    taken_at, because a squash merge stamps the merge instant as the
+//    commit's committer date. Branch names are not part of the definition,
+//    so the pull-request API is deliberately never consulted for it (see
+//    the round-126 changelog entry). The anchored count is fixed by
+//    taken_at, so it never goes stale the way a check-time comparison
+//    would; it is also the same computation the producer used, from the one
+//    shared definition in scripts/count-changelog-rounds.mjs.
 //
 // 4. What front 3 cannot see, the page says. Front 3 is anchored at taken_at:
 //    it proves the snapshot told the truth when it was taken, and it cannot
@@ -49,15 +61,16 @@
 //    count with its taken_at date, and front 2's staleness window bounds
 //    how old that date may be.
 //
-// The comparison is over the live API, never over a second copy of the
-// numbers: a snapshot regenerated with scripts/loop-history.mjs --snapshot
-// always agrees with the API, and a snapshot edited by hand stops agreeing
-// the moment the API is checked against it.
+// The comparison is never against a second copy of the numbers: a snapshot
+// regenerated with scripts/loop-history.mjs --snapshot agrees with the API
+// and the changelog by construction, and a snapshot edited by hand stops
+// agreeing the moment either is checked against it.
 
 import { execFileSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import { load as parseYaml } from "js-yaml";
+import { countRoundsAsOf } from "./count-changelog-rounds.mjs";
 
 const root = process.cwd();
 const REPO = "addicted2ai/AddictedtoAI";
@@ -184,24 +197,15 @@ if (runsRaw !== null && Array.isArray(runsRaw.workflow_runs)) {
   runs = fetchJsonGh([runsUrl])?.workflow_runs || null;
 }
 
-let liveMerged = null;
-if (runs !== null) {
-  const pullsUrl = `${apiBase}/pulls?state=closed&per_page=100`;
-  let pullsRaw = fetchJson([pullsUrl]);
-  if (!Array.isArray(pullsRaw)) pullsRaw = fetchJsonGh([pullsUrl]);
-  if (Array.isArray(pullsRaw)) {
-    liveMerged = pullsRaw.filter(
-      (pr) => pr.merged_at != null && (pr.head?.ref || "").startsWith("loop/")
-    );
-  }
-}
-
 if (runs === null) {
   console.error(
     "WARN  could not reach the Actions API — live agreement not checked this run"
   );
   console.error(
-    "      the snapshot still must be well-formed and within its staleness window"
+    "      rounds_merged is still checked against the changelog below; the run"
+  );
+  console.error(
+    "      counts must still be well-formed and within their staleness window"
   );
 } else if (Number.isNaN(takenAt.getTime())) {
   // Shape already failed on the date; the comparison window is undefined.
@@ -250,21 +254,6 @@ if (runs === null) {
     );
   }
 
-  if (Array.isArray(liveMerged)) {
-    const mergedByCutoff = liveMerged.filter(
-      (pr) => pr.merged_at <= cutoff
-    ).length;
-    if (snapshot.rounds_merged !== mergedByCutoff) {
-      mismatches.push(
-        `rounds_merged: snapshot says ${snapshot.rounds_merged}, the API has ${mergedByCutoff} merged by ${cutoff}`
-      );
-    }
-  } else {
-    console.error(
-      "WARN  could not fetch merged pull requests — rounds_merged not checked against the live API"
-    );
-  }
-
   // Front 4 was removed in round 120: it compared the counts against the live
   // API at check time, and the comparison was unsatisfiable, not strict. A
   // committed file cannot equal a live counter that only grows — the snapshot
@@ -275,6 +264,31 @@ if (runs === null) {
 
   if (mismatches.length > 0) {
     fail(`the snapshot disagrees with GitHub's Actions API: ${mismatches.join("; ")}`);
+  }
+}
+
+// rounds_merged is anchored the same way, but in the changelog, not the
+// pull-request API: a round is a changelog entry, and the record as of
+// taken_at is the last commit on origin/main that touched CHANGELOG.md at or
+// before taken_at (see scripts/count-changelog-rounds.mjs — the one
+// definition, shared with the producer). The git history is local, so this
+// runs whether or not the Actions API was reachable, and it can only go red
+// when the snapshot disagrees with the record — never because the world
+// moved after taken_at.
+const cutoff = Number.isNaN(takenAt.getTime()) ? null : takenAt.toISOString();
+if (cutoff !== null) {
+  let changelogRounds = null;
+  try {
+    changelogRounds = countRoundsAsOf(cutoff);
+  } catch (error) {
+    fail(
+      `could not count the changelog as of ${cutoff}: ${String(error.message).split("\n")[0]}`
+    );
+  }
+  if (changelogRounds !== null && snapshot.rounds_merged !== changelogRounds) {
+    fail(
+      `rounds_merged: snapshot says ${snapshot.rounds_merged}, the changelog has ${changelogRounds} round entries as of ${cutoff}`
+    );
     fail(
       `re-run node scripts/loop-history.mjs --snapshot to take a fresh one — do not edit the numbers by hand`
     );
@@ -293,6 +307,12 @@ console.log(
 if (runs !== null) {
   console.log(
     `ok    snapshot matches the live API over ${snapshot.runs_attempted} completed run(s) as of ${snapshot.taken_at}`
+  );
+}
+if (cutoff !== null) {
+  const changelogRounds = countRoundsAsOf(cutoff);
+  console.log(
+    `ok    rounds_merged matches the changelog: ${changelogRounds} round entries as of ${snapshot.taken_at}`
   );
 }
 process.exit(0);

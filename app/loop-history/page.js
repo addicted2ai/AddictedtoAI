@@ -35,9 +35,9 @@ export default function LoopHistory() {
         cannot contain the rounds that <em>did not</em> finish — a run that
         dies mid-round writes nothing at all — so the shipped count alone is
         a numerator with no denominator. GitHub is the only place attempts
-        are recorded, and this page publishes what GitHub says: how many
-        rounds were attempted, how many of those runs failed, and how many
-        rounds shipped.
+        are recorded, and this page publishes them next to the shipped
+        count: how many rounds were attempted, how many of those runs
+        failed, and how many rounds shipped.
       </p>
 
       <dl className="log-stats" data-loop-history-stats>
@@ -75,7 +75,8 @@ export default function LoopHistory() {
       <ul>
         <li>
           <strong>Attempted is not shipped.</strong> A run is an attempt; a
-          round ships only when its pull request merges. Runs attempted (
+          round ships when its record lands in the changelog, which happens
+          when its pull request merges. Runs attempted (
           {snapshot.runs_attempted}) versus rounds shipped (
           {snapshot.rounds_merged}) are different counts of different things.
         </li>
@@ -89,18 +90,22 @@ export default function LoopHistory() {
           <strong>A successful run is not the same as a shipped round.</strong>{" "}
           A run can conclude successfully by correctly finding nothing to do,
           or by leaving its work in a pull request that has not merged yet.
-          Counting only merged pull requests keeps &ldquo;it ran and found
-          nothing&rdquo; apart from &ldquo;nothing ran&rdquo;.
+          A round is counted only once its entry lands in the changelog, so
+          &ldquo;it ran and found nothing&rdquo; stays apart from
+          &ldquo;nothing ran&rdquo;.
         </li>
       </ul>
 
       <p>
-        The record in the build log holds {logStats.rounds} rounds in total;
-        the {snapshot.rounds_merged} shipped rounds above are the pull
-        requests merged from <code>loop/</code> branches, as GitHub reports
-        them. The two differ because the changelog also records rounds from
-        before the loop ran in this repository, and rounds whose work shipped
-        differently.
+        A round is an entry in the build log — a round number and a changelog
+        entry, nothing else. The {snapshot.rounds_merged} rounds above are
+        the entries the changelog held as of the snapshot&rsquo;s{" "}
+        <code>taken_at</code>, counted from the repository&rsquo;s own
+        history: how a pull request&rsquo;s branch was named plays no part,
+        and a pull request that merged without dispatching a round has no
+        entry and never counts. The record now holds {logStats.rounds} rounds
+        in total; the difference is the rounds whose entries landed after the
+        snapshot was taken.
       </p>
 
       {snapshot.runs_failed > 0 ? (
@@ -132,12 +137,14 @@ export default function LoopHistory() {
         time, and each count is labelled with it — a number the world has
         passed is read as &ldquo;as of&rdquo;, never as current. The build
         fails if the snapshot is malformed, is older than the process-claim
-        staleness window in <code>policy.yml</code>, or disagrees with
-        GitHub&rsquo;s Actions API <em>as of</em> <code>taken_at</code> —
-        including a snapshot claiming zero failures while GitHub reports some,
-        and including a number GitHub never agreed with at any point. Any
-        visitor can re-measure the snapshot against the{" "}
-        <a href={API_RUNS}>workflow&rsquo;s run history</a>.
+        staleness window in <code>policy.yml</code>, disagrees with
+        GitHub&rsquo;s Actions API <em>as of</em> <code>taken_at</code> about
+        the runs, or disagrees with the changelog <em>as of</em>{" "}
+        <code>taken_at</code> about the rounds — including a snapshot
+        claiming zero failures while GitHub reports some. Any visitor can
+        re-measure the snapshot against the{" "}
+        <a href={API_RUNS}>workflow&rsquo;s run history</a> and against the
+        build log.
       </p>
     </article>
   );
