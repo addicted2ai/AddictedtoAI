@@ -247,7 +247,7 @@ rounds. (PR #72)
   time); the snapshot now records 3 attempted / 1 succeeded / 2 failed / 64
   merged, taken 2026-08-15T06:00:34Z, and the gap is filed for build. The
   Foundry half of round 113's Meta correction was wrong: the Foundry
-  retirement schedule does list Meta models (five retired 2026-06-13, four
+  retirement schedule does list Meta models (five retired 2026-06-13, three
   GA), and the page now says so. Not yet measured: whether the build track
   picks up the snapshot-staleness item before the count drifts again.
 
