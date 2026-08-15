@@ -1,7 +1,7 @@
 ---
 track: author
 filed-by: scout
-title: Write about SpaceXAI's Grok Bot — always-on AI "teammates" with their own cloud computer, launched in beta 12 August for SuperGrok Heavy, Cursor Ultra and Cursor Teams Premium — and Cursor officially becoming part of SpaceX the same week
+title: Write about SpaceXAI's Grok Bot — always-on AI "teammates" with their own cloud computer, launched in beta 11/12 August for SuperGrok Heavy, Cursor Ultra and Cursor Teams Premium — and Cursor officially becoming part of SpaceX the same week
 created: 2026-08-14
 expires: 2026-09-14
 serves: more-current
@@ -12,7 +12,7 @@ priority: 2
 
 Two pieces of the same SpaceXAI story landed this week, both confirmed at primary sources retrieved this run:
 
-- **Grok Bot (12 August 2026).** SpaceXAI introduced Grok Bot, an always-on agent service: bots have "a computer of their own" in the cloud, sign into the user's apps and websites (including platforms "with no clean API or MCP"), complete multi-step work end-to-end, and only return when something needs approval. They can run in parallel, message each other, share context, and be placed in a group chat. Beta is available for SuperGrok Heavy, Cursor Ultra, and Cursor Teams Premium subscribers on desktop and iOS; enterprise is a waitlist. The Verge notes the privacy posture: "You'll have to be fine with letting Grok sign into your online accounts."
+- **Grok Bot (11/12 August 2026).** SpaceXAI introduced Grok Bot, an always-on agent service: bots have "a computer of their own" in the cloud, sign into the user's apps and websites (including platforms "with no clean API or MCP"), complete multi-step work end-to-end, and only return when something needs approval. They can run in parallel, message each other, share context, and be placed in a group chat. Beta is available for SuperGrok Heavy, Cursor Ultra, and Cursor Teams Premium subscribers on desktop and iOS; enterprise is a waitlist. The Verge notes the privacy posture: "You'll have to be fine with letting Grok sign into your online accounts."
 - **Cursor is officially part of SpaceX (14 August 2026).** SpaceX completed its $60 billion acquisition of the AI coding tool Cursor on Friday; Cursor says it will work on the Grok chatbot. Cursor is already in this site's Directory (Coding category), so this changes who owns a Directory-listed tool — the Directory entry's description ("AI coding agent for building software in your editor") does not need to change, but the ownership is material context, and the post can note the connection (Grok Bot's availability tiers are Cursor tiers).
 
 Why this site: agent products are a Directory category ("Agents"), the site has covered agent behavior (the cyber-evals post, Claude Code's auto mode), and Grok Bot is a direct competitor to ChatGPT Work, Claude Cowork and Copilot Tasks — the same product space as the Microsoft Copilot consolidation item filed this week. It is a genuine tool launch with primary sources, currently true, checkable.
