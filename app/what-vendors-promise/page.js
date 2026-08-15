@@ -48,7 +48,7 @@ export default function WhatVendorsPromise() {
       <AiDisclosure route="/what-vendors-promise" />
       <h1>What AI vendors promise before switching off a model</h1>
       <p className="post-meta">
-        Last verified <time dateTime="2026-08-11">2026-08-11</time>{" "}
+        Last verified <time dateTime="2026-08-14">2026-08-14</time>{" "}
         <a href="/feed.xml">via RSS</a>
       </p>
 
@@ -117,8 +117,8 @@ export default function WhatVendorsPromise() {
       <h2>The commitments, by vendor</h2>
       <p>
         Each row links the vendor&rsquo;s own page, quotes the sentence that
-        establishes the commitment, and carries the date it was verified this
-        run. A row marked <em>could not verify this run</em> means exactly
+        establishes the commitment, and carries the date it was last
+        re-verified. A row marked <em>could not verify this run</em> means exactly
         that: the vendor&rsquo;s page was unreachable, so nothing is claimed
         about it. Fetch failure is not absence.
       </p>
@@ -163,7 +163,7 @@ export default function WhatVendorsPromise() {
       <h2>The empty cells are the story</h2>
       <p>
         What a vendor does <em>not</em> promise is often more useful than any
-        date on the page. Three findings fall out of the table above:
+        date on the page. Four findings fall out of the table above:
       </p>
       <ul>
         <li>
@@ -187,13 +187,17 @@ export default function WhatVendorsPromise() {
           minimum notice, no published dates for current models.
         </li>
         <li>
-          <strong>Meta could not be verified this run.</strong> Its docs
-          returned HTTP 400 / transport errors to a browser-like client, and
-          the reachable Model API pages contain no lifecycle page, so this page
-          does not claim whether Meta publishes one for hosted Llama. What is
-          verifiable from another vendor&rsquo;s page: Microsoft Foundry lists
-          Meta models on <em>its</em> retirement schedule, which is a
-          retirement shaped by the host, not by Meta.
+          <strong>Meta could not be verified this run either.</strong> Its
+          docs URL now redirects to developer.meta.com, which serves a
+          client-rendered page with no readable content (HTTP 400 to a
+          browser-like client, HTTP 200 but an empty shell to a plain one),
+          and the reachable Model API docs still contain no lifecycle page,
+          so this page still does not claim whether Meta publishes one for
+          hosted Llama. The other half of that finding stopped
+          verifying: the Microsoft Foundry page fetched this run lists no
+          Meta models on <em>its</em> retirement schedule, so the one
+          other-vendor citation this page used to carry no longer checks
+          out.
         </li>
       </ul>
       <p>
@@ -232,8 +236,9 @@ export default function WhatVendorsPromise() {
       <p>
         Every row carries the date it was verified. The page is re-verified by
         re-fetching each vendor&rsquo;s page; a row&rsquo;s date is updated
-        only when it is checked. Meta was unreachable when this page was
-        written and says so, and nothing is asserted about it. Staleness is
+        only when it is checked. Meta could not be verified when this page was
+        written, or when it was re-checked on 2026-08-14, and says so; nothing
+        is asserted about it. Staleness is
         enforced the way the Directory enforces its own verification dates (
         <code>scripts/check-tool-staleness.mjs</code>); wiring this page into
         that mechanism, and adding the window to <code>policy.yml</code>, is
@@ -242,8 +247,13 @@ export default function WhatVendorsPromise() {
 
       <p className="post-footnote">
         All sentences quoted from the vendors&rsquo; own pages on 2026-08-11,
-        except the Meta row, which could not be verified that day. Google was
-        recovered the same day with a plain HTTP client after webfetch failed.
+        and every row except Meta re-fetched and re-confirmed on 2026-08-14.
+        The Meta row was re-attempted that day — llama.com/docs now redirects
+        to a client-rendered developer.meta.com page with no readable content,
+        and the reachable Model API docs still contain no lifecycle page — and
+        remains unverified, saying exactly that. Google was recovered on
+        2026-08-11 with a plain HTTP client after webfetch failed, and was
+        re-fetched the same way on 2026-08-14.
       </p>
     </article>
   );

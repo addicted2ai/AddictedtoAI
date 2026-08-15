@@ -42,7 +42,7 @@ export const RETIREMENT_COMMITMENTS = [
       "Unless safety or compliance concerns require a faster timeline, we provide the following minimum notice periods before model retirement: Generally available models: At least 6 months. Specialized variants of generally available models: At least 3 months.",
     sentenceMore:
       "All deprecated models and endpoints will also have a shut down date. The faster-timeline clause means even these dates can move earlier.",
-    verified: "2026-08-11",
+    verified: "2026-08-14",
   },
   {
     vendor: "Anthropic",
@@ -52,7 +52,7 @@ export const RETIREMENT_COMMITMENTS = [
       "Anthropic notifies customers with active deployments for models with upcoming retirements, providing at least 60 days' notice before model retirement for publicly released models.",
     sentenceMore:
       "Active models carry a floor rather than a date \u2014 \u201cNot sooner than September 29, 2026\u201d \u2014 so the date is the earliest a model may retire, not a commitment to that day. The 60-day notice is the firm floor; the date can move.",
-    verified: "2026-08-11",
+    verified: "2026-08-14",
   },
   {
     vendor: "Mistral",
@@ -62,7 +62,7 @@ export const RETIREMENT_COMMITMENTS = [
       "Deprecation is announced as soon as a replacement model is available. During the deprecation period, the model remains accessible. Once retired, requests to its identifiers fail with a 404 error.",
     sentenceMore:
       "The lifecycle policy (docs.mistral.ai/inference/model-lifecycle) commits to 6 months' notice for General Availability models; the models page (this link) lists concrete deprecation and retirement dates.",
-    verified: "2026-08-11",
+    verified: "2026-08-14",
   },
   {
     vendor: "Amazon Bedrock",
@@ -72,7 +72,7 @@ export const RETIREMENT_COMMITMENTS = [
       "Once a model launches on Amazon Bedrock, it will remain on Amazon Bedrock for at least 12 months before the EOL date.",
     sentenceMore:
       "A model will be in the Legacy state for at least 6 months before the EOL date, and \u201con, or soon after the EOL date\u201d requests to the version will fail \u2014 the EOL date itself is fixed, the failure can slip a little later. The lifecycle table lists each model's EOL date.",
-    verified: "2026-08-11",
+    verified: "2026-08-14",
   },
   {
     vendor: "Microsoft Foundry",
@@ -82,7 +82,7 @@ export const RETIREMENT_COMMITMENTS = [
       "GA models have their retirement date set programmatically at launch to 18 months out \u2014 there's no separate \u201cannouncement.\u201d",
     sentenceMore:
       "GA model retirement notice is \u201cat least 60 days before retirement\u201d; at 18 months from launch, all inference returns 410 Gone. But the page says the schedule details \u201care subject to change\u201d \u2014 the published date is not a hard commitment.",
-    verified: "2026-08-11",
+    verified: "2026-08-14",
   },
   {
     vendor: "Alibaba (Model Studio)",
@@ -92,7 +92,7 @@ export const RETIREMENT_COMMITMENTS = [
       "For snapshot models, we issue a sunset notice 30 days before the official sunset date. For mainline models, we issue a sunset notice 3 months before the official sunset date.",
     sentenceMore:
       "The page then lists concrete deprecation dates with replacement models.",
-    verified: "2026-08-11",
+    verified: "2026-08-14",
   },
   {
     vendor: "Google (Gemini API)",
@@ -102,7 +102,7 @@ export const RETIREMENT_COMMITMENTS = [
       "The shutdown dates listed in the table indicate the earliest possible dates on which a model might be retired.",
     sentenceMore:
       "Recovered with a plain curl User-Agent: webfetch's browser-like UA is redirected into an OAuth login loop. The deprecation table lists dated shutdowns with recommended replacements.",
-    verified: "2026-08-11",
+    verified: "2026-08-14",
   },
   {
     vendor: "DeepSeek",
@@ -112,14 +112,14 @@ export const RETIREMENT_COMMITMENTS = [
       "The two legacy API model names, deepseek-chat and deepseek-reasoner, will be discontinued in three months (2026-07-24).",
     sentenceMore:
       "Announced in the change log on 2026-04-24; the retirement took effect on 2026-07-24, before this page was written. The docs have no lifecycle-policy page, so notice is announced per event rather than promised up front.",
-    verified: "2026-08-11",
+    verified: "2026-08-14",
   },
   {
     vendor: "Meta (Llama)",
     href: "https://www.llama.com/docs/",
     shape: "unverified",
     sentence:
-      "Could not verify this run: llama.com serves a client-rendered page with no readable content and its llms.txt returns an error page; the reachable dev.meta.ai Model API docs contain no lifecycle or deprecation page. Whether Meta publishes a lifecycle commitment for hosted Llama could not be determined.",
+      "Could not verify again this run: www.llama.com/docs now redirects to developer.meta.com/ai/docs/overview/, which serves a client-rendered page with no readable content (HTTP 400 to a browser-like User-Agent, HTTP 200 but an empty shell to a plain one); developer.meta.com/llms.txt points Llama resources at ai.developer.meta.com, which requires an OAuth login; and the dev.meta.ai Model API docs, fetched in full this run, still contain no lifecycle or deprecation page. Whether Meta publishes a lifecycle commitment for hosted Llama could not be determined.",
     verified: null,
   },
   {
@@ -130,7 +130,7 @@ export const RETIREMENT_COMMITMENTS = [
       "Effective May 15, 2026 at 12:00 PM PT, the following models will be retired from the xAI API.",
     sentenceMore:
       "Retirements are announced as per-event migration guides; the docs have no lifecycle-policy page, so notice is given per event without a standing floor.",
-    verified: "2026-08-11",
+    verified: "2026-08-14",
   },
   {
     vendor: "Cohere",
@@ -140,7 +140,7 @@ export const RETIREMENT_COMMITMENTS = [
       "A shutdown date will be assigned at that time.",
     sentenceMore:
       "Cohere has a deprecations page, but this is the only commitment it makes: no minimum notice period and no published dates for current models.",
-    verified: "2026-08-11",
+    verified: "2026-08-14",
   },
 ];
 

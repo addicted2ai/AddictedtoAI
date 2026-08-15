@@ -151,3 +151,18 @@ able to fail, and the route registered in `PRODUCING_ROUNDS`, `ROUTE_FILES`,
 the sitemap and the route suite's disclosure/budget loops (unlike
 `/what-vendors-promise`, which round 88 left out of those loops — see
 `2026-08-11-retirement-page-outside-route-loops.md`).
+
+## Round 113 status (2026-08-14, maintain)
+
+Moved to `docket/done/` by round 113. Re-verified this round, per the brief:
+`scripts/check-retirement-staleness.mjs` exists and ran green this round (87
+rows within the interim 30-day window, with its loud warning that the
+`policy.yml` key is missing — that key is meta-owned and is filed as
+`docket/open/2026-08-14-retirement-calendar-staleness-window.md`, which stays
+open); the route is registered in `PRODUCING_ROUNDS` (producing round 109),
+`ROUTE_FILES`, the sitemap and the nav, and is exercised by the route suite.
+The one unticked box — a `staleness_days.retirement_calendar` window in
+`policy.yml` — is out of every executing track's scope except meta's; the
+check already reads the interim window with a loud warning, so nothing about
+the shipped page, rows or check changes when the key lands. Ticking that box
+belongs to the meta item, not to this one.
