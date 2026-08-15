@@ -3,6 +3,9 @@
 //
 //   node scripts/loop-history.mjs           # summary
 //   node scripts/loop-history.mjs --json    # machine-readable
+//   node scripts/loop-history.mjs --snapshot [path]
+//                                          # write a committed snapshot for
+//                                          # the /loop-history page
 //
 // Needs `gh` authenticated. Reads the Actions API rather than the changelog,
 // deliberately: the changelog only contains rounds that finished. A run that
@@ -12,12 +15,28 @@
 // which flatters the work in exactly the way CHARTER.md rule 7 forbids.
 //
 // GitHub is the only place that records the attempts. This asks it.
+//
+// `--snapshot` writes the report plus the date it was taken to a JSON file
+// (default app/lib/loop-history.json) that the /loop-history page reads at
+// build time. The build never calls the API: the snapshot is committed, and
+// scripts/check-loop-history-snapshot.mjs keeps it from going stale or
+// disagreeing with the live API. Committing the truth here instead of
+// fetching it in `next build` is what lets a visitor check the published
+// numbers against GitHub without the build holding any credentials.
 
 import { execFileSync } from "child_process";
+import fs from "fs";
+import path from "path";
 
 const REPO = "addicted2ai/AddictedtoAI";
 const WORKFLOW = "loop.yml";
 const asJson = process.argv.includes("--json");
+const snapshotArg = process.argv.indexOf("--snapshot");
+const snapshotPath =
+  snapshotArg !== -1
+    ? process.argv[snapshotArg + 1] ||
+      path.join(process.cwd(), "app", "lib", "loop-history.json")
+    : null;
 
 function gh(args) {
   return JSON.parse(execFileSync("gh", args, { encoding: "utf8", maxBuffer: 8e6 }));
@@ -62,6 +81,7 @@ const report = {
   runs_failed: failed.length,
   failure_rate: finished.length ? failed.length / finished.length : 0,
   rounds_merged: merged.length,
+  failed_run_ids: failed.map((r) => r.id),
   recent_failures: failed.slice(0, 5).map((r) => ({
     id: r.id,
     when: r.created_at,
@@ -69,6 +89,15 @@ const report = {
     url: `https://github.com/${REPO}/actions/runs/${r.id}`,
   })),
 };
+
+if (snapshotPath) {
+  const snapshot = { ...report, taken_at: new Date().toISOString() };
+  fs.writeFileSync(snapshotPath, JSON.stringify(snapshot, null, 2) + "\n");
+  console.log(`snapshot written to ${snapshotPath}`);
+  console.log(`  taken at: ${snapshot.taken_at}`);
+  console.log(`  runs attempted / succeeded / failed: ${snapshot.runs_attempted} / ${snapshot.runs_succeeded} / ${snapshot.runs_failed}`);
+  process.exit(0);
+}
 
 if (asJson) {
   process.stdout.write(JSON.stringify(report, null, 2) + "\n");
