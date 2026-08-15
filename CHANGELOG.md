@@ -144,6 +144,37 @@ real `datePublished` (a post without a date is not a published post the site
 ships, and no other text may stand in for one), and a file that fails to
 import at all all exit 1.
 
+The independent review of the third head (aa1d0d1) rejected it again, on
+the remaining textual guard. The shape check `/^\d{4}-\d{2}-\d{2}$/` plus
+`Number.isNaN(Date.parse(...))` accepted dates no calendar has, because
+`Date.parse` silently rolls some over instead of rejecting them: measured,
+`"2026-02-31"` → exit 0 (`Date.parse` yields 2026-03-03), `"2026-02-29"`
+(2026 is not a leap year) → exit 0 (yields 2026-03-01), `"2026-04-31"` →
+exit 0 (yields 2026-05-01), and the same for 2026-06-31, 2026-09-31,
+2026-11-31 — while 2026-01-32, 2026-03-32, 2026-08-32, 2026-12-32 do return
+NaN, so the acceptance was calendar-arbitrary. Not cosmetic: the site's
+feed renders `new Date(datePublished).toUTCString()`, so "2026-04-31"
+publishes as 2026-05-01, and a scratch holding two new posts dated
+"2026-05-01" and "2026-04-31" — both rendered by the feed as Fri 01 May
+2026 — exited 0 against the 1/day cap, bucketed as different days and
+weeks. This head replaces the parse guard with the round-trip the review
+requires: a date is real only if it matches the shape AND equals its own
+UTC-midnight ISO serialization (`date === new Date(date +
+"T00:00:00Z").toISOString().slice(0,10)`), with the parsed Date's NaN
+guarded so a date that does not parse at all fails the same way. Re-proved
+this head, each scratch reverted with `git status --porcelain` clean: all
+six impossible dates from the review → exit 1 naming the post path and the
+date; the "2026-05-01" + "2026-04-31" pair → exit 1 (the pair-b date is
+named as not a real YYYY-MM-DD date); and the whole prior battery re-run —
+reordered fields dated 08-14 → exit 1 (day 5 vs cap 1, week 9 vs cap 3);
+the backtick decoy `datePublished: "2026-08-17"` in a description with no
+real date → exit 1, with a real 08-14 → exit 1 naming 08-14, with a real
+08-17 → exit 0; missing `posts` export, non-array export, post without a
+path, duplicate path, unclosed block → exit 1 each; a base import failure
+(the local origin/main ref deleted) → exit 1, ref restored; a clean
+2026-08-17 scratch → exit 0 (`ok 10 posts`); a conforming 2026-08-14
+scratch → exit 1 (day 5 vs cap 1, week 9 vs cap 3).
+
 **1. The publishing quota stops being a number a prompt is trusted to honour**
 - Hypothesis: the caps in `policy.yml` (`max_posts_per_day: 1`,
   `max_posts_per_week: 3`) had already been breached 2.7x in the week of
@@ -222,7 +253,16 @@ import at all all exit 1.
   1; re-dating an existing post into 08-14 → exit 1; a scratch post on
   08-15 (day clean, week breached) → exit 1 naming all nine posts in the
   week. Each scratch was reverted with `git status --porcelain` clean, and
-  the true tree stays green (`ok 9 posts; day cap 1, week cap 3`).
+  the true tree stays green (`ok 9 posts; day cap 1, week cap 3`). The
+  third review (aa1d0d1) then demonstrated the last textual guard was
+  calendar-arbitrary — `Date.parse` rolls "2026-02-31" to 2026-03-03 and
+  "2026-04-31" to 2026-05-01 instead of returning NaN, so six impossible
+  dates exited 0 and two new posts the feed renders on the same day passed
+  the 1/day cap — and this head replaces it with the round-trip check,
+  re-proved on every impossible date from the review (each → exit 1), the
+  "2026-05-01" + "2026-04-31" pair (→ exit 1), and the whole prior battery
+  re-run against the new guard, each scratch reverted clean, true tree
+  still green.
 - Result: measured this round — the breach this check now records: 3 posts
   on 2026-08-11 and 4 on 2026-08-14 (cap 1 per day), 8 in the ISO week of
   2026-08-10 (cap 3 per week, 2.7x), none of it in the changelog before

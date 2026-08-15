@@ -67,6 +67,23 @@ if (!Number.isInteger(weekCap) || weekCap < 1) {
 // ships. `path` tells the posts apart for the diff; `datePublished` is what
 // the quota is judged on. A post without a real date fails loudly — it is
 // not a published post, and no other text in the file may stand in for one.
+// A date is real only if it round-trips as an exact calendar day. The shape
+// check alone lets "2026-02-31" through, and Date.parse rolls such dates over
+// instead of rejecting them — "2026-02-31" becomes 2026-03-03, "2026-04-31"
+// becomes 2026-05-01 — so a shape-and-parse guard accepts dates no calendar
+// has, which the site's feed renders as the rolled day. Parsing into a
+// UTC-midnight Date and comparing the ISO serialization back to the source
+// string accepts exactly the real YYYY-MM-DD dates: a rolled date can never
+// equal the string it was rolled from, and the parsed Date's own ISO form is
+// the calendar's verdict. A date that does not even parse (2026-13-01) is
+// likewise not real; the NaN guard keeps toISOString from throwing on it.
+function isRealCalendarDate(date) {
+  if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  const parsed = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return false;
+  return date === parsed.toISOString().slice(0, 10);
+}
+
 function postsFromModule(mod, label) {
   if (!Array.isArray(mod.posts)) {
     fail(`${label}: ${POSTS_FILE} does not export a "posts" array — the module no longer matches what the site ships`);
@@ -83,7 +100,7 @@ function postsFromModule(mod, label) {
     }
     seen.add(postPath);
     const date = post?.datePublished;
-    if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
+    if (!isRealCalendarDate(date)) {
       fail(
         `${label}: post ${postPath} has no datePublished, or one that is not a real YYYY-MM-DD date — a post without a real published date is not a post the site ships, and reading a date from any other text in the file would fabricate one`
       );
