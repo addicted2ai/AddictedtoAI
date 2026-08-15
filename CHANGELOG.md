@@ -127,13 +127,12 @@ any surface's definition drifts a third time.
 - Change: `git log -S "delegated" -- app/lib/build-log.js` shows the
   earliest commit to name the value in that file is `3f61b7a` (the
   delegation record), and the commit that wrote "(round 86)" into the
-  comment is `8cec1ef` (PR #34) — the build round whose own entry, "This
-  round (build) makes the code accept the Origin value the record now
-  needs. Its own entry is the first to carry `Origin: delegated`", renders
-  as round 85 in the current record (round 86 is the ship-arm build round
-  that followed; the meta delegation round merged as 89). The comment now
-  names (round 85), and the new check pins it there so it cannot go stale
-  again.
+  comment is `8cec1ef` — the build round whose own entry, "This round
+  (build) makes the code accept the Origin value the record now needs. Its
+  own entry is the first to carry `Origin: delegated`", renders as round 85
+  in the current record (round 86 is the ship-arm build round that
+  followed; the meta delegation round merged as 89). The comment now names
+  (round 85), and the new check pins it there so it cannot go stale again.
 
 **4. The route map follows the files that changed**
 - Hypothesis: changing a route's listed source files moves its producing
