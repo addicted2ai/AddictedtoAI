@@ -12,6 +12,13 @@ import path from "path";
 // scripts/check-loop-history-snapshot.mjs fails the build when the snapshot
 // goes stale or disagrees with the live API.
 //
+// rounds_merged is the one count that comes from the changelog rather than
+// the API: a round is a changelog entry, counted as of taken_at from the
+// repository's own history (scripts/count-changelog-rounds.mjs, the one
+// definition shared with the producer and the check). How a pull request's
+// branch was named is not part of the definition — the round-126 changelog
+// entry records why.
+//
 // The shape is validated lightly here (the strict version is the check
 // script's) so that a malformed snapshot fails `next build` even if the
 // check were somehow skipped — the page must never publish numbers a reader

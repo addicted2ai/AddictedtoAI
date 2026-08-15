@@ -59,11 +59,26 @@ not track-scoped"*.
 
 ## Done when
 
-- [ ] `rounds_merged` counts rounds, not branch prefixes — a round is something
+- [x] `rounds_merged` counts rounds, not branch prefixes — a round is something
       with a round number and a changelog entry, and the count should be derivable
       from that rather than from how a branch was named
-- [ ] The two pull requests above are excluded, or the page says plainly what the
+- [x] The two pull requests above are excluded, or the page says plainly what the
       number counts, with the same care the "one limit" passage on `/blog` uses
-- [ ] Whatever the fix, it does not silently change a published figure: the
+- [x] Whatever the fix, it does not silently change a published figure: the
       correction is recorded in `CHANGELOG.md`, the way round 104 recorded seven
       becoming eight
+
+## Shipped 2026-08-15 (round 126)
+
+`rounds_merged` now counts the changelog, not the branch prefix. The one
+definition lives in `scripts/count-changelog-rounds.mjs` (a round is an
+entry in the build log; the count is the record as of the snapshot's
+`taken_at`, anchored in origin/main's history) and is shared by
+`scripts/loop-history.mjs --snapshot` and
+`scripts/check-loop-history-snapshot.mjs`, whose pull-request fetch was
+removed entirely. The published figure changes from 68 (as of
+2026-08-15T12:26:57.365Z) to 125 (as of 2026-08-15T18:46:41.179Z) — a
+redefinition recorded in the round-104 discipline, not a silent change.
+#57 and #58 have no changelog entries and are excluded by construction;
+the `/loop-history` page says plainly what the number counts. See the
+round-126 changelog entry for the full argument and the fail-proof tests.
