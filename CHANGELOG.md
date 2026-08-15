@@ -70,6 +70,78 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 119 (build) gives the one-limit sweep output the staleness guard
+round 118 gave the loop-history snapshot, closing the sibling item the
+round-110 audit filed: the blog page's count of pull requests that merged
+over a failing `human-owned-paths` check could age in its checked-in JSON
+with every check staying green, because `scripts/check-one-limit-count.mjs`
+validated `sweptAt` for form and future-datedness only — nothing aged it
+against the live world. The check now reads the window from `policy.yml`
+(`staleness_days.process_claim`, 30 days — reused, not restated; policy.yml
+was not edited, meta owns it) and fails the build when the sweep is older
+than it, naming the remedy: re-run `node scripts/sweep-one-limit-count.mjs`
+and check the fresh output in. Measured this run: the committed sweep was
+dated 2026-08-14T22:55:12.114Z, a day old and inside the window; the sweep
+was re-run live against the API this round — count 8, failing set {25, 27,
+39, 40, 42, 50, 52, 58}, 72 merged in total, up from the 63 the committed
+sweep recorded, with the nine newcomers all passing the check, which is why
+the count held — and the fresh output (swept 2026-08-15T09:20:06.810Z) was
+checked in. (PR #75)
+
+**1. The one-limit count cannot age past the process-claim window**
+- Hypothesis: the sweep output's own date is honest, but nothing ages it —
+  the sweep script is run by hand and its output checked in by the round
+  that runs it, and the count can drift silently past the world (the exact
+  failure mode round 105 claimed to have closed, with the prose replaced by
+  a checked-in file). An age window on `sweptAt`, read from the same
+  `policy.yml` key the loop-history guard reuses, makes the build refuse to
+  publish a sweep older than the window, exactly as round 118 made it refuse
+  to publish a trailing snapshot.
+- Change: `scripts/check-one-limit-count.mjs` gains a staleness front after
+  the existing form and future-datedness checks: `policy.yml`'s
+  `staleness_days.process_claim` must be an integer to enforce, and a sweep
+  older than that window fails with the age, the window, and the remedy
+  ("re-run node scripts/sweep-one-limit-count.mjs and check the fresh output
+  in"). The existing future-datedness check is untouched and still fails on
+  its own. The `ok` line now carries the measured age and the window. The
+  sweep output was re-run and re-checked in this round with the sweep
+  script's own output (same count, same set, fresh date, 72 merged).
+- Origin: delegated
+- The orchestrator chose this work deliberately, over the dispatcher's
+  scout pick: author is blocked this week by the publishing-quota check
+  round 117 shipped (the ISO week already carries 8 posts against the
+  3/week cap), scout has already run twice this week, and this item is the
+  direct sibling of the one round 118 closed — the same failure class, still
+  open. A separate review session is dispatched after `ship`, which withholds
+  auto-merge for a delegated origin; that is expected, not an error.
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/build/one-limit-sweep-staleness`, production-shaped build
+  with the new staleness front in prebuild, and the full route suite against
+  a server on port 3000, no group skipped. The new check was proved able to
+  fail in both mandated directions before it was trusted. Failing direction
+  1 (aged `sweptAt`, exit non-zero): `node scripts/check-one-limit-count.mjs`
+  on a scratch with `sweptAt` 2026-07-01T00:00:00.000Z → exit 1, "sweep
+  output is dated 2026-07-01T00:00:00.000Z — 45 days ago, past the 30-day
+  process-claim window — re-run node scripts/sweep-one-limit-count.mjs and
+  check the fresh output in"; reverted, `git status --porcelain` clean.
+  Failing direction 2 (future `sweptAt`, the existing form check, still
+  red): a scratch with `sweptAt` 2026-09-01T00:00:00.000Z → exit 1, "sweep
+  output is dated 2026-09-01T00:00:00.000Z, in the future — the sweep output
+  is not what was run"; reverted, clean. Passing: the committed tree →
+  `node scripts/check-one-limit-count.mjs` exit 0, "ok sweep output is
+  internally consistent: count 8, 8 set member(s), swept
+  2026-08-14T22:55:12.114Z, 0 day(s) old, within the 30-day process-claim
+  window", and the fresh sweep (swept 2026-08-15T09:20:06.810Z) → exit 0.
+- Result: measured this run — the count the page renders is verified live
+  at 8 (set {25, 27, 39, 40, 42, 50, 52, 58}) with 72 merged in total, and
+  the committed sweep now carries a fresh date within the 30-day window.
+  Not yet measured: whether the sweep is re-run before a round ships once a
+  stale file fails every build, or a later round makes regeneration
+  mechanical.
+
+### 2026-08-15
 Round 118 (build) closes the loop-history staleness item round 116's audit
 filed: the `/loop-history` page's counts could age past the live count with
 nothing going red, because `scripts/check-loop-history-snapshot.mjs`
