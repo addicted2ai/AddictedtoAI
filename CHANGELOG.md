@@ -88,7 +88,7 @@ production build — fails on a ninth. The post cannot be honestly dated before
 Monday 17 August, the next ISO week, which the same check accepts; rule 11
 forbids this round from loosening the guardrail, and future-dating the post
 would fabricate its publish date. Nothing shipped; the docket item stays open
-with this round's verification recorded on it. (PR #N)
+with this round's verification recorded on it. (PR #85)
 
 **1. Verified the story and hit the publishing quota**
 - Hypothesis: the brief expected a publishable post, so I expected the four
