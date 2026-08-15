@@ -86,7 +86,13 @@ was re-run live against the API this round — count 8, failing set {25, 27,
 39, 40, 42, 50, 52, 58}, 72 merged in total, up from the 63 the committed
 sweep recorded, with the nine newcomers all passing the check, which is why
 the count held — and the fresh output (swept 2026-08-15T09:20:06.810Z) was
-checked in. (PR #75)
+checked in. Round 118's own guard then did its first work on a later round:
+`node scripts/round.mjs check` failed on the loop-history snapshot (66
+merged, the live API has 67 — PR #74 merged after the snapshot's taken_at
+of 2026-08-15T09:00:53.377Z), and the snapshot was regenerated with the
+guard's named remedy (`node scripts/loop-history.mjs --snapshot`, taken
+2026-08-15T09:23:33.900Z, 3/1/2/67, check green) rather than edited by
+hand. (PR #75)
 
 **1. The one-limit count cannot age past the process-claim window**
 - Hypothesis: the sweep output's own date is honest, but nothing ages it —
