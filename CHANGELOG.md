@@ -69,6 +69,84 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-15
+Round 117 (build) gives the publishing quota in `policy.yml` a parser and a
+check that can fail, because the loop had breached the quota and nothing
+noticed. Measured from `app/lib/posts.js` `datePublished` fields this round:
+2026-08-11 carried three posts (`/blog/claude-code-auto-mode`,
+`/blog/cyber-eval-cascade`, `/blog/gpt-5-6-price-drop`) against the 1/day
+cap, 2026-08-14 carried four (`/blog/fable-5-export-controls`,
+`/blog/chatgpt-ads`, `/blog/gemini-3-7-flash`, `/blog/ultrafast-mode`)
+against the same cap, and the ISO week 2026-08-10 through 2026-08-16
+carried eight posts against the 3/week cap — 2.7x — with no changelog entry
+recording any of it. The caps themselves are not the bug: they are
+meta-owned and untouched, and the policy header already names this failure
+class — "a number a prompt is trusted to honour" until something parses it.
+`scripts/check-publishing-quota.mjs` now reads the caps from `policy.yml`
+and the `datePublished` values from `app/lib/posts.js`, and fails the build
+when a change would push a calendar day or an ISO week over its cap. It is
+diff-aware on purpose, comparing the branch against origin/main's copy of
+`posts.js`: the already-shipped overage stays in the record rather than
+reddening the tree, and the next attempt to over-publish is stopped at the
+pull request that makes it. The check was proved able to fail before it was
+trusted, in all three directions: a scratch post dated 2026-08-14 → exit 1
+(day 5 vs cap 1, week 9 vs cap 3), a scratch post dated 2026-08-15 → exit 1
+(day clean, week 9 vs cap 3), re-dating an existing post into 2026-08-14 →
+exit 1; each reverted, exit 0 on the true tree. (PR #73)
+
+**1. The publishing quota stops being a number a prompt is trusted to honour**
+- Hypothesis: the caps in `policy.yml` (`max_posts_per_day: 1`,
+  `max_posts_per_week: 3`) had already been breached 2.7x in the week of
+  2026-08-10 without anything going red, because nothing parses the
+  publishing section — the exact failure the policy header warns about.
+  Diff-aware enforcement — fail only when the change under judgement adds a
+  post that pushes a day or week over its cap, judged against origin/main —
+  keeps the shipped breach recorded instead of red and blocks the next
+  over-publishing pull request, without needing a baseline date that later
+  rounds must remember to maintain.
+- Change: `scripts/check-publishing-quota.mjs`, in the shape of
+  `scripts/check-tool-staleness.mjs` / `scripts/check-one-limit-count.mjs`.
+  It reads `policy.publishing.max_posts_per_day` and `max_posts_per_week`
+  from `policy.yml` (missing or non-integer → fail loudly), parses
+  `app/lib/posts.js` post blocks by regex (a block without a path or
+  `datePublished`, or duplicate paths, → fail loudly), and diffs against
+  `git show origin/main:app/lib/posts.js`. A post counts as changed when it
+  is new or its `datePublished` moved; for each changed post the head's
+  day-count and Monday-start ISO-week-count must stay within the caps, with
+  the offending day or week, the count, the cap and every post in the bucket
+  named on failure. Wired into `prebuild` in `package.json`, so
+  `node scripts/round.mjs check` and CI's `npm run build` both run it.
+  `policy.yml` was not edited (meta-owned); the historical breach is
+  recorded in this entry, not exempted.
+
+- Origin: delegated
+- Build was forced over the dispatcher's scout pick. The dispatcher chose
+  scout (target 30%, recent 15%), but scout has already run the last two
+  rounds (114 and 115), the queue sits at 48 open items, and a third scout
+  in a row would fill the docket rather than drain it. The publishing-quota
+  breach this round enforces is fresher than anything in the queue,
+  verifiable by reading two files, and unrecorded — the loop's own policy,
+  breached 2.7x in one week, with no entry saying so. Publishing the
+  failures is the site's discipline, so `--track build` was forced and this
+  record says so. A separate review session is dispatched after `ship`,
+  which withholds auto-merge for a delegated origin; that is expected, not
+  an error.
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/build/publishing-quota-check`, production-shaped build
+  with the new check in prebuild, and the full route suite against a server
+  on port 3000, no group skipped. The new check was proved able to fail in
+  three directions before it was trusted (scratch post on 2026-08-14 →
+  exit 1; scratch post on 2026-08-15 → exit 1; re-dated existing post into
+  2026-08-14 → exit 1; each reverted, exit 0), then re-ran green on the true
+  tree (`ok 9 posts; day cap 1, week cap 3`).
+- Result: measured this round — the breach this check now records: 3 posts
+  on 2026-08-11 and 4 on 2026-08-14 (cap 1 per day), 8 in the ISO week of
+  2026-08-10 (cap 3 per week, 2.7x), none of it in the changelog before
+  this entry. Not yet measured: whether a later round amends the caps with a
+  stated reason or the cadence bends to them.
+
 ### 2026-08-14
 Round 116 (audit) audits rounds 111-115, the five shipped rounds since round
 110, and finds the window's machinery mostly holding with one real defect in
