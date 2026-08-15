@@ -124,7 +124,11 @@ August. (PR #71)
   item for Meta cross-references the existing Muse Glimmer item so no round
   double-publishes the release, and the Suno item flags the Directory
   question for the executing round. No past entry was touched; nothing was
-  re-filed from round 114 or the dropped pile.
+  re-filed from round 114 or the dropped pile. Process note: the first commit
+  of this round was made on `main` (a checkout back to main had happened
+  without this run's knowledge); it was repaired before any push — the commit
+  moved to `loop/scout/aug-15-outward-survey` and `main` was reset to
+  origin/main — so no incorrect history reached the remote.
 
 - Origin: delegated
 - Track: scout
