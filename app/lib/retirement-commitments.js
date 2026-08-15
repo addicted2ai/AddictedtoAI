@@ -28,11 +28,13 @@
 // plus Google (verified this run from the page: "earliest possible dates"), so
 // a vendor can publish a notice floor AND dates it reserves the right to move.
 //
-// Staleness follows the Directory's mechanism (scripts/check-tool-staleness.mjs
-// reads policy.yml's window over `verified` dates). Extending that check to
-// this file, and adding a window to policy.yml, is filed as
-// docket/open/2026-08-11-retirement-commitments-staleness.md — both live
-// outside author scope.
+// Staleness is enforced by the same check as the Directory:
+// scripts/check-tool-staleness.mjs reads policy.yml's
+// staleness_days.directory_entry window over the `verified` dates in this
+// file too. A row whose page was unreachable carries `verified: null` plus a
+// dated `unverifiedSince` record; the check fails once that record is past
+// the window, so an unverified row is never treated as fresh (round 124 wired
+// this; its changelog entry argues the shared window).
 export const RETIREMENT_COMMITMENTS = [
   {
     vendor: "OpenAI",
@@ -119,10 +121,11 @@ export const RETIREMENT_COMMITMENTS = [
     href: "https://www.llama.com/docs/",
     shape: "unverified",
     sentence:
-      "Could not verify again this run: www.llama.com/docs now redirects to developer.meta.com/ai/docs/overview/, which serves a client-rendered page with no readable content (HTTP 400 to a browser-like User-Agent, HTTP 200 but an empty shell to a plain one); developer.meta.com/llms.txt points Llama resources at ai.developer.meta.com, which requires an OAuth login; and the dev.meta.ai Model API docs, fetched in full this run, still contain no lifecycle or deprecation page. Whether Meta publishes a lifecycle commitment for hosted Llama could not be determined.",
+      "Re-checked 2026-08-15 by the build round that wired this page's staleness check, which reproduced every block: www.llama.com/docs now redirects to developer.meta.com/ai/docs/overview/, which serves a client-rendered page with no readable content (HTTP 400 to a browser-like User-Agent, HTTP 200 but an empty shell to a plain one); developer.meta.com/llms.txt points Llama resources at ai.developer.meta.com, which requires an OAuth login; and the dev.meta.ai Model API docs, fetched in full on 2026-08-14, still contain no lifecycle or deprecation page. Whether Meta publishes a lifecycle commitment for hosted Llama could not be determined.",
     sentenceMore:
       "The one reachable page recording Llama retirements is not Meta's: the Microsoft Foundry model retirement schedule (learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-retirement-schedule), fetched 2026-08-14, lists five Llama models retired 2026-06-13 (Meta-Llama-3.1-405B-Instruct, Meta-Llama-3.1-8B, Meta-Llama-3.1-8B-Instruct, Llama-3.2-11B-Vision-Instruct, Llama-3.2-90B-Vision-Instruct) and three GA without dates (Llama-3.3-70B-Instruct, Llama-4-Maverick-17B-128E-Instruct-FP8, Llama-4-Scout-17B-16E-Instruct) \u2014 Microsoft's page about Foundry, not a commitment Meta published.",
     verified: null,
+    unverifiedSince: "2026-08-15",
   },
   {
     vendor: "xAI (Grok)",
