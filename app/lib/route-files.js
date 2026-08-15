@@ -72,6 +72,7 @@ export const ROUTE_FILES = {
     "app/demos/page.js",
     "app/demos/ToolFinder.js",
     "app/demos/RoundWalkthrough.js",
+    "app/lib/demos.js",
   ],
   "/log": [
     "app/log/page.js",

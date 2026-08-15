@@ -56,6 +56,8 @@ export default function Blog() {
       <p className="post-meta">
         Posted <time dateTime={post.datePublished}>{post.datePublished}</time>
         {" · "}
+        Facts verified <time dateTime={post.verified}>{post.verified}</time>
+        {" · "}
         <a href="/feed.xml">Subscribe via RSS</a>
       </p>
 
