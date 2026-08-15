@@ -117,6 +117,33 @@ real 08-14 date → exit 1 (the old parser read the string and went green);
 a block with two `datePublished` fields → exit 1. Each scratch reverted,
 `git status --porcelain` clean after each, exit 0 on the true tree.
 
+The independent review of the second head (003522d) rejected it again, on a
+deeper instance of the same class. Every guard the first rejection demanded
+held — count, malformed date, duplicate date, unclosed block — but the
+changelog's claim that anchored line-start extraction meant a `datePublished:`
+sitting inside another field's string "cannot be read as the post's date" was
+disproved by measurement. A template-literal description holding a line-start
+`datePublished: "2026-08-17"`, with the post's real `datePublished` field
+absent, made the check print `ok 10 posts` and exit 0 on a file that passes
+`node --check`: the block count was unchanged (10 blocks, 10 `path:` fields),
+the exactly-one guard saw exactly one line, and the anchored extraction read
+the decoy inside another field's value as the post's date. A post whose real
+date would breach the cap is silently re-dated into a clean week. The root
+cause is structural: the check reconstructed data from the file's text, and
+inside a string, text is indistinguishable from a field without a full
+JavaScript parser. This head makes the structural change the review requires:
+the check imports `app/lib/posts.js` — the same `{ posts }` export the site
+imports, the branch's copy by path and origin/main's copy via `git show` into
+a dynamic import of the same source — and reads each post's `datePublished`
+from the exported object's property. A string inside a description can never
+be a property, so the whole decoy class is gone structurally; the count
+guard, the exactly-one guard, and the anchored extraction are deleted because
+the JavaScript engine already resolved all of them. What remains textual is
+guarded loudly: a module that does not export a `posts` array, a post with no
+real `datePublished` (a post without a date is not a published post the site
+ships, and no other text may stand in for one), and a file that fails to
+import at all all exit 1.
+
 **1. The publishing quota stops being a number a prompt is trusted to honour**
 - Hypothesis: the caps in `policy.yml` (`max_posts_per_day: 1`,
   `max_posts_per_week: 3`) had already been breached 2.7x in the week of
@@ -130,20 +157,24 @@ a block with two `datePublished` fields → exit 1. Each scratch reverted,
 - Change: `scripts/check-publishing-quota.mjs`, in the shape of
   `scripts/check-tool-staleness.mjs` / `scripts/check-one-limit-count.mjs`.
   It reads `policy.publishing.max_posts_per_day` and `max_posts_per_week`
-  from `policy.yml` (missing or non-integer → fail loudly), parses
-  `app/lib/posts.js` post blocks by regex — the match must be total: the
-  matched-block count is compared with the file's `path:` count and a
-  mismatch fails loudly naming both (a reordered-field post, or a block
-  closing without `},`, is red, not invisible); field extraction is
-  anchored to line starts so `datePublished:` text inside another field's
-  string cannot be read as the post's date; a block without a path or
-  `datePublished`, more than one `datePublished`, or duplicate paths →
-  fail loudly — and diffs against
-  `git show origin/main:app/lib/posts.js`. A post counts as changed when it
-  is new or its `datePublished` moved; for each changed post the head's
-  day-count and Monday-start ISO-week-count must stay within the caps, with
-  the offending day or week, the count, the cap and every post in the bucket
-  named on failure. Wired into `prebuild` in `package.json`, so
+  from `policy.yml` (missing or non-integer → fail loudly) and the posts by
+  importing `app/lib/posts.js` — the same `{ posts }` export the site
+  imports — for the branch under test, and origin/main's copy of the file
+  (`git show`, imported from the same source) as the baseline. The dates
+  come from the object properties only: no text in a description can ever
+  be read as a post's date, and no formatting of the file — field order, a
+  duplicated key, a closing brace on the same line, a block that fails to
+  close — can hide or fabricate a post, because the JavaScript engine
+  already resolved all of it. What remains is guarded loudly: the module
+  must export a `posts` array, every post must carry a path and a real
+  `datePublished`, duplicate paths fail, and a file that does not import at
+  all fails naming the syntax error — a post without a real date is not a
+  published post the site ships, and a check that cannot read the posts
+  cannot guard the quota. A post counts as changed when it is new or its
+  `datePublished` moved; for each changed post the head's day-count and
+  Monday-start ISO-week-count must stay within the caps, with the offending
+  day or week, the count, the cap and every post in the bucket named on
+  failure. Wired into `prebuild` in `package.json`, so
   `node scripts/round.mjs check` and CI's `npm run build` both run it.
   `policy.yml` was not edited (meta-owned); the historical breach is
   recorded in this entry, not exempted.
@@ -168,16 +199,30 @@ a block with two `datePublished` fields → exit 1. Each scratch reverted,
   on port 3000, no group skipped. The check was proved able to fail in all
   three breach directions on the first head (scratch post on 2026-08-14 →
   exit 1; scratch post on 2026-08-15 → exit 1; re-dated existing post into
-  2026-08-14 → exit 1; each reverted, exit 0). The independent review then
-  demonstrated the parser hole, and this head proves the guard in both
-  directions plus the class: a reordered-field post (2026-08-14) → exit 1
-  (9 blocks vs 10 `path:` fields); a conforming 2026-08-14 post → exit 1
-  (day 5 vs cap 1, week 9 vs cap 3); a conforming 2026-08-17 post → exit 0;
-  a block closing without `},` → exit 1; an in-string `datePublished` with a
-  real 08-14 date → exit 1 (the old unanchored parser read the string's
-  08-17 and would have gone green); a duplicate `datePublished` → exit 1.
-  Each scratch was reverted with `git status --porcelain` clean, and the
-  true tree stays green (`ok 9 posts; day cap 1, week cap 3`).
+  2026-08-14 → exit 1; each reverted, exit 0). The first review then
+  demonstrated the parser hole, the count guard closed it, and the second
+  review (003522d) demonstrated the count guard was satisfiable by a decoy
+  and required the structural change. This head imports the module, and the
+  battery was re-run against the object properties: the review's exact
+  falsification — a template-literal description holding a line-start
+  `datePublished: "2026-08-17"` with the post's real `datePublished` field
+  absent, on a file that passes `node --check` — → exit 1, the post named,
+  "no datePublished, or one that is not a real YYYY-MM-DD date"; the same
+  decoy with a real 08-14 date → exit 1 naming 08-14 (day 5 vs cap 1, week
+  9 vs cap 3); a decoy of a *breaching* 08-14 inside a description with a
+  real 08-17 date → exit 0 — the string is inert, the property governs;
+  reordered fields dated 08-14 → exit 1 (the post is visible, not dropped);
+  reordered fields, a duplicated `datePublished` key, a spaced `datePublished :`,
+  an inline single-line block, and a last block closing without a comma,
+  each dated cleanly → exit 0 — field order and text shape no longer exist
+  for the check; a block that fails to close or a string that fails to
+  terminate → exit 1 naming the syntax error; an unquoted date and a
+  wrong-shape date → exit 1; a post with no date at all → exit 1; a
+  conforming 2026-08-17 post → exit 0; a conforming 2026-08-14 post → exit
+  1; re-dating an existing post into 08-14 → exit 1; a scratch post on
+  08-15 (day clean, week breached) → exit 1 naming all nine posts in the
+  week. Each scratch was reverted with `git status --porcelain` clean, and
+  the true tree stays green (`ok 9 posts; day cap 1, week cap 3`).
 - Result: measured this round — the breach this check now records: 3 posts
   on 2026-08-11 and 4 on 2026-08-14 (cap 1 per day), 8 in the ISO week of
   2026-08-10 (cap 3 per week, 2.7x), none of it in the changelog before

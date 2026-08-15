@@ -25,16 +25,22 @@
 // restated in a second file drifts from the one a run is told to honour.
 // policy.yml is owned by the meta track; this script never writes it.
 //
-// posts.js is ESM in a CommonJS project, so instead of importing it this
-// script reads the file and matches post blocks — the same approach
-// check-tool-staleness.mjs takes with tool-categories.js. The match must be
-// total, not partial: the parser fails loudly unless the number of matched
-// blocks is exactly the number of `path:` fields the file holds, because a
-// parser that silently finds one post fewer than the file holds is how a
-// guardrail goes green forever.
+// The dates come from the module's exports, not from the file's text. The
+// site imports `{ posts }` from app/lib/posts.js; so does this check — the
+// branch's copy by path, origin/main's copy via `git show` into a dynamic
+// import of the same source. A `datePublished:` line inside a description is
+// just a string and can never be read as the post's date, and no formatting
+// of the file — field order, a duplicated key, a closing brace on the same
+// line — can hide a post from the check, because the JavaScript engine
+// already resolved all of it into the object the site ships. The check fails
+// loudly if the module does not export a posts array, if a post lacks a real
+// datePublished, or if the file is not valid JavaScript at all: a check that
+// cannot read the posts cannot guard the quota, and silently inventing a
+// date from text is how this guardrail previously went green on a lie.
 
 import fs from "fs";
 import path from "path";
+import { pathToFileURL } from "url";
 import { execFileSync } from "child_process";
 import { load as parseYaml } from "js-yaml";
 
@@ -57,53 +63,58 @@ if (!Number.isInteger(weekCap) || weekCap < 1) {
   fail("policy.yml publishing.max_posts_per_week is not a positive integer to enforce");
 }
 
-// One match per post: `{ path: ..., ..., datePublished: "YYYY-MM-DD",
-// dateModified: ... }`. Matched greedily to the first closing `},` and parsed
-// for fields.
-function readPosts(source, label) {
-  const blocks = [...source.matchAll(/\{\s*path:[\s\S]*?\n\s*\},/g)].map((m) => m[0]);
-  const pathCount = (source.match(/^\s*path:\s*"/gm) || []).length;
-  if (blocks.length !== pathCount) {
-    fail(
-      `${label}: matched ${blocks.length} post block(s) but ${POSTS_FILE} holds ${pathCount} path: field(s) — a post block was dropped (its first field is not path:, or it does not end with "},"). A parser that silently sees fewer posts than the file holds cannot guard the quota`
-    );
+// Read the posts the module actually exports, the same object the site
+// ships. `path` tells the posts apart for the diff; `datePublished` is what
+// the quota is judged on. A post without a real date fails loudly — it is
+// not a published post, and no other text in the file may stand in for one.
+function postsFromModule(mod, label) {
+  if (!Array.isArray(mod.posts)) {
+    fail(`${label}: ${POSTS_FILE} does not export a "posts" array — the module no longer matches what the site ships`);
   }
+  const seen = new Set();
   const posts = [];
-  for (const block of blocks) {
-    const match = (name) => block.match(new RegExp(`^\\s*${name}:\\s*"([^"]*)"`, "m"))?.[1];
-    const postPath = match("path");
-    const date = match("datePublished");
-    if (!postPath || !date) {
-      fail(`${label}: a post block lacks path or datePublished — the parser no longer matches ${POSTS_FILE}`);
+  for (const post of mod.posts) {
+    const postPath = post?.path;
+    if (typeof postPath !== "string" || postPath.length === 0) {
+      fail(`${label}: a post in ${POSTS_FILE} has no path — posts cannot be told apart for the diff`);
     }
-    const dateFieldCount = (block.match(/^\s*datePublished:\s*"/gm) || []).length;
-    if (dateFieldCount !== 1) {
-      fail(`${label}: post ${postPath} holds ${dateFieldCount} datePublished field(s) — exactly one per post`);
+    if (seen.has(postPath)) {
+      fail(`${label}: ${POSTS_FILE} contains duplicate path "${postPath}" — posts cannot be told apart for the diff`);
     }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
-      fail(`${label}: post ${postPath} has datePublished "${date}" which is not a real date`);
+    seen.add(postPath);
+    const date = post?.datePublished;
+    if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
+      fail(
+        `${label}: post ${postPath} has no datePublished, or one that is not a real YYYY-MM-DD date — a post without a real published date is not a post the site ships, and reading a date from any other text in the file would fabricate one`
+      );
     }
     posts.push({ path: postPath, date });
   }
   if (posts.length === 0) {
-    fail(`${label}: no posts matched in ${POSTS_FILE} — the parser no longer matches the file`);
-  }
-  if (new Set(posts.map((p) => p.path)).size !== posts.length) {
-    fail(`${label}: posts.js contains duplicate paths — posts cannot be told apart for the diff`);
+    fail(`${label}: ${POSTS_FILE} exports an empty posts array — nothing to enforce the quota against`);
   }
   return posts;
 }
 
-const head = readPosts(fs.readFileSync(path.join(root, POSTS_FILE), "utf8"), "branch");
+let head;
+try {
+  head = postsFromModule(
+    await import(pathToFileURL(path.join(root, POSTS_FILE)).href),
+    "branch"
+  );
+} catch (error) {
+  fail(`could not import ${POSTS_FILE} — ${error.message} (the file must be valid JavaScript the site can ship)`);
+}
 
 let base;
 try {
-  base = readPosts(
-    execFileSync("git", ["show", `${BASE_REF}:${POSTS_FILE}`], { encoding: "utf8" }),
+  const baseSource = execFileSync("git", ["show", `${BASE_REF}:${POSTS_FILE}`], { encoding: "utf8" });
+  base = postsFromModule(
+    await import(`data:text/javascript;base64,${Buffer.from(baseSource).toString("base64")}`),
     BASE_REF
   );
 } catch (error) {
-  fail(`could not read ${BASE_REF}:${POSTS_FILE} — ${error.message} (fetch origin/main and try again)`);
+  fail(`could not import ${BASE_REF}:${POSTS_FILE} — ${error.message} (fetch origin/main and try again)`);
 }
 
 // ISO weeks run Monday to Sunday; group by the Monday of each post's date.
