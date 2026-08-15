@@ -89,6 +89,7 @@ directions and then restored to green. (The brief counted this as round
 main holds 111 dated entries — the 112th `### ` line is the `### YYYY-MM-DD`
 template placeholder — so the parser, which numbers entries positionally,
 assigns this entry round 112. The mapping and this entry follow the code.)
+(PR #68)
 
 **1. The denominator, published**
 - Hypothesis: the changelog contains only rounds that finished, so the
