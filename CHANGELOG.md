@@ -85,7 +85,7 @@ both null"), but the file it cites had moved on — Google was re-verified on
 2026-08-14 by a later round, leaving 10 rows verified 2026-08-14 and only Meta
 null; the item's Done-when boxes are the contract and they held. And
 `policy.yml`'s header comment says "Nothing parses this yet", which stopped
-being true rounds ago (three checks parse it, including this one); the file is
+being true rounds ago (five checks parse it, including this one); the file is
 out of build scope so the comment is reported here rather than fixed.
 
 **1. The check: one mechanism, two files, the Directory's window**
@@ -122,7 +122,8 @@ out of build scope so the comment is reported here rather than fixed.
   `unverifiedSince` record saying why it stays unverified, and that record
   expires on the same 45-day window as a verified date — past it, the build
   fails naming the row and the remedy; while fresh, the check prints a loud
-  warning on every build naming the row and its expiry. A recorded null can
+  warning on every build naming the row, its record date, and the window
+  that will fail it. A recorded null can
   therefore keep the build green for at most one window, never forever, and
   the Meta row now carries `unverifiedSince: "2026-08-15"` — the date this
   round re-checked the page — plus an updated sentence recording that this
