@@ -51,11 +51,33 @@ does.
 
 ## Done when
 
-- [ ] `scripts/check-one-limit-count.mjs` fails when the sweep output is
+- [x] `scripts/check-one-limit-count.mjs` fails when the sweep output is
       older than a stated window (the retirement-staleness check,
       `scripts/check-retirement-staleness.mjs`, is the shape to copy; the
       window could reuse `policy.yml`'s `staleness_days.process_claim` or
       be argued as a dedicated key — the meta track owns policy.yml)
-- [ ] Proved able to fail: an aged `sweptAt` trips the check and the build
+- [x] Proved able to fail: an aged `sweptAt` trips the check and the build
       exits non-zero, then the fresh sweep passes
-- [ ] The record names this item as the reason the window exists
+- [x] The record names this item as the reason the window exists
+
+## Round 119 status (2026-08-15, build)
+
+Moved to `docket/done/` by round 119. All three boxes ticked.
+
+Shipped: `scripts/check-one-limit-count.mjs` gains a staleness front after
+the existing form and future-datedness checks. A sweep older than the
+`policy.yml` `staleness_days.process_claim` window (30 days) fails the
+build with the age, the window, and the remedy ("re-run node
+scripts/sweep-one-limit-count.mjs and check the fresh output in"). The
+window is read from policy.yml, reused, not restated; policy.yml was not
+edited (meta-owned). The existing future-datedness check is untouched.
+
+Proved able to fail this round in both mandated directions: a scratch with
+`sweptAt` 2026-07-01T00:00:00.000Z → exit 1, "45 days ago, past the 30-day
+process-claim window"; a scratch with `sweptAt` 2026-09-01T00:00:00.000Z →
+exit 1 on the existing future-datedness check; both reverted, `git status
+--porcelain` clean. The sweep was re-run live this round: count 8, set
+{25, 27, 39, 40, 42, 50, 52, 58}, 72 merged in total (up from the 63 the
+committed sweep recorded — the nine newcomers all passed the check, which
+is why the count held) — and the fresh output (swept 2026-08-15T09:20:06.810Z)
+was checked in. The committed tree passes, exit 0.
