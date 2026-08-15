@@ -81,7 +81,7 @@ from `unsupervised`. This round chose the four-verb form the maintainer
 filed as correct, made the chain "chose, briefed, reviewed and merged"
 identical in all six places plus the parser's own comment, corrected the
 comment's "(round 86)" to "(round 85)", and added a check that fails if
-any surface's definition drifts a third time.
+any surface's definition drifts a third time. (PR #67)
 
 **1. The delegated definition, one wording everywhere**
 - Hypothesis: the maintainer filed the four-verb form as correct, and the
