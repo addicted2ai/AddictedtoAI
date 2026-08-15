@@ -182,6 +182,15 @@ export const ARCHIVE = "archive";
 // source file, so it moves too. /blog, the post routes, /directory, /demos,
 // /charter, /projects, /what-vendors-promise and /model-retirement-calendar
 // are untouched and stay on their prior rounds.
+//
+// Round 113 (maintain) re-verifies /what-vendors-promise: it re-fetches
+// every vendor row (all ten still current, verified dates moved to
+// 2026-08-14), rewrites the still-unverified Meta row with this round's
+// exact fetch statuses, and corrects the Meta finding that stopped
+// verifying (the Microsoft Foundry page no longer lists Meta models). Both
+// of the route's listed source files — app/what-vendors-promise/page.js and
+// app/lib/retirement-commitments.js — change, so /what-vendors-promise
+// moves to 113. No other route's listed files change this round.
 export const PRODUCING_ROUNDS = {
   // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
@@ -213,7 +222,10 @@ export const PRODUCING_ROUNDS = {
   "/charter": 83,
   // Round 88 (author) built this page. New route, so its producing round is
   // the round that created it.
-  "/what-vendors-promise": 88,
+  // Round 113 (maintain) re-verified every row and rewrote the Meta row and
+  // its finding, touching both listed source files, so the newest change is
+  // this round's.
+  "/what-vendors-promise": 113,
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
   "/model-retirement-calendar": 109,
