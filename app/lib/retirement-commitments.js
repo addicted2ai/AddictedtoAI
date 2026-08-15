@@ -79,7 +79,7 @@ export const RETIREMENT_COMMITMENTS = [
     href: "https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-retirements",
     shape: "earliest",
     sentence:
-      "GA models have their retirement date set programmatically at launch to 18 months out \u2014 there's no separate \u201cannouncement.\u201d",
+      "GA models have their retirement date set programmatically at launch to 18 months out\u2014there's no separate \"announcement.\"",
     sentenceMore:
       "GA model retirement notice is \u201cat least 60 days before retirement\u201d; at 18 months from launch, all inference returns 410 Gone. But the page says the schedule details \u201care subject to change\u201d \u2014 the published date is not a hard commitment.",
     verified: "2026-08-14",
@@ -127,7 +127,7 @@ export const RETIREMENT_COMMITMENTS = [
     href: "https://docs.x.ai/developers/migration/may-15-retirement",
     shape: "ad-hoc",
     sentence:
-      "Effective May 15, 2026 at 12:00 PM PT, the following models will be retired from the xAI API.",
+      "Effective May 15, 2026 at 12:00 PM PT, the following models will be retired from the xAI API:",
     sentenceMore:
       "Retirements are announced as per-event migration guides; the docs have no lifecycle-policy page, so notice is given per event without a standing floor.",
     verified: "2026-08-14",

@@ -247,11 +247,16 @@ export default function WhatVendorsPromise() {
 
       <p className="post-footnote">
         All sentences quoted from the vendors&rsquo; own pages on 2026-08-11,
-        and every row except Meta re-fetched on 2026-08-14: eight quotes
-        confirmed word for word, two corrected that day — Alibaba&rsquo;s
-        sentence re-quoted whole with the qualifying clauses its page carries,
-        and Mistral&rsquo;s quote moved to the lifecycle page where it actually
-        lives.
+        and every row except Meta re-fetched on 2026-08-14: six quotes held
+        word for word as originally published (OpenAI, Anthropic, Bedrock,
+        Google, DeepSeek, Cohere); four were corrected that day —
+        Alibaba&rsquo;s sentence re-quoted whole with the qualifying clauses
+        its page carries, Mistral&rsquo;s quote moved to the lifecycle page
+        where it actually lives, Foundry&rsquo;s quote re-quoted with the
+        page&rsquo;s unspaced em dash, and xAI&rsquo;s quote re-quoted with
+        the page&rsquo;s colon. Every quoted sentence was verified as a
+        contiguous substring of its page&rsquo;s rendered text, fetched this
+        run; all ten now hold word for word.
         The Meta row was re-attempted that day — llama.com/docs now redirects
         to a client-rendered developer.meta.com page with no readable content,
         and the reachable Model API docs still contain no lifecycle page — and

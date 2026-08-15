@@ -72,12 +72,22 @@ published rather than optimised.
 ### 2026-08-14
 Round 113 (maintain) re-verifies `/what-vendors-promise` row by row, three
 days after round 88 published it. All ten verified rows were re-fetched from
-the vendors' own pages this round. The re-fetch confirmed every commitment,
-and eight of the ten quoted sentences still hold word for word; two quotes
-did not and were corrected in this entry — the Alibaba sentence is re-quoted
-whole, with the two qualifying clauses its page carries, and the Mistral row
-now links the lifecycle page its quoted text actually lives on (the sentence
-was not on the models page the row had linked). Each row's `verified` date
+the vendors' own pages this round. The re-fetch confirmed every commitment.
+Measured this run, six of the ten quoted sentences held word for word as
+originally published (OpenAI, Anthropic, Bedrock, Google, DeepSeek, Cohere);
+four did not and were corrected in this entry — the Alibaba sentence is
+re-quoted whole, with the two qualifying clauses its page carries; the
+Mistral row now links the lifecycle page its quoted text actually lives on
+(the sentence was not on the models page the row had linked); the Foundry
+sentence is re-quoted with the page's unspaced em dash and straight quotes
+(the row's earlier version spaced the dash); and the xAI sentence is
+re-quoted with the page's colon ("...will be retired from the xAI API:" —
+the colon introduces the model list; the row's earlier version ended with a
+period). The round-113 re-review measured six holding word for word at its
+head and named Foundry and xAI as differing in punctuation/spacing; this
+revision confirms that measurement and corrects both. After the corrections
+all ten quoted sentences hold word for word, each verified this run as a
+contiguous substring of its page's rendered text, fetched this run. Each row's `verified` date
 moves to 2026-08-14 and the page's "Last verified" date and footnote now
 agree. The one unverified row, Meta, was re-attempted
 the way the brief asked — curl and a node https request, plain and
@@ -102,30 +112,37 @@ registered in both maps, page in the nav and the route suite) and moved to
   records an event that already passed. I expected at least one sentence to
   need re-quoting; I expected the shapes to survive.
 - Change: re-fetched all ten verified rows this run from the exact URLs the
-  rows link. Eight rows' quoted sentences still hold verbatim — OpenAI ("at
+  rows link. Six rows' quoted sentences hold word for word as originally
+  published — OpenAI ("at
   least 6 months", "at least 3 months", "All deprecated models and endpoints
   will also have a shut down date"); Anthropic ("at least 60 days' notice
   before model retirement for publicly released models", "Not sooner than"
   floors still on active models); Amazon Bedrock ("at least 12 months
   before the EOL date", Legacy "at least 6 months before the EOL date");
-  Microsoft Foundry ("18 months out", "subject to change", 410 Gone);
   Google ("the shutdown dates listed in the table indicate the
   earliest possible dates"); DeepSeek ("will be discontinued in three months
-  (2026-07-24)" in the 2026-04-24 changelog entry); xAI ("Effective May 15,
-  2026 at 12:00 PM PT... will be retired"); Cohere ("A shutdown date will be
-  assigned at that time"). Two quotes did not survive that re-check and were
+  (2026-07-24)" in the 2026-04-24 changelog entry); Cohere ("A shutdown date will be
+  assigned at that time"). Four quotes did not survive that re-check and were
   corrected: the Alibaba sentence is not a contiguous substring of its page —
   the page carries two qualifying clauses inside it — so the row now quotes
   the sentence whole, clauses included ("which are identified by a specific
   date in their name (for example, qwen-max-2025-01-25, common for Qwen
-  series models)" and "which are the core versions of a model series"); and
-  the Mistral sentence is not on the page the row linked (docs.mistral.ai/
+  series models)" and "which are the core versions of a model series"); the
+  Mistral sentence is not on the page the row linked (docs.mistral.ai/
   models) at all — it lives on the lifecycle page (docs.mistral.ai/inference/
   model-lifecycle), which the row now links, quoting the contiguous block
   from there ("During the deprecation period, the model remains accessible.
   Once retired, requests to its identifiers fail with a 404 error.") and
   carrying the opening clause and the 6-month General Availability notice in
-  its commentary. No row changed shape; each row's `verified` date
+  its commentary; the Foundry sentence is re-quoted with the page's
+  punctuation — the page renders "18 months out—there's no separate
+  \"announcement.\"" with an unspaced em dash and straight quotes, and the
+  row's earlier version spaced the dash and curled the quotes; and the xAI
+  sentence is re-quoted with the page's colon — the page renders "the
+  following models will be retired from the xAI API:" with the colon that
+  introduces the model list, and the row's earlier version ended with a
+  period. Every corrected quote was verified this run as a contiguous
+  substring of its page's rendered text, fetched this run. No row changed shape; each row's `verified` date
   moved to 2026-08-14, and the page's "Last verified" date, "How this page
   goes stale" paragraph and footnote were brought into agreement. Google was
   again recovered with a plain curl User-Agent after the browser-like UA
@@ -212,9 +229,12 @@ registered in both maps, page in the nav and the route suite) and moved to
   check` — lint, the docket validator, the track scope, a production-shaped
   build and the full route suite against a server on port 3000.
 - Result: measured this round — 10 of 11 rows re-verified current from the
-  vendors' own pages on 2026-08-14 (eight sentences confirmed verbatim in
-  block 1, two quotes corrected — Alibaba re-quoted whole, Mistral moved to
-  the lifecycle page); Meta
+  vendors' own pages on 2026-08-14 (six sentences held word for word as
+  originally published, four quotes corrected — Alibaba re-quoted whole,
+  Mistral moved to the lifecycle page, Foundry re-quoted to the page's
+  unspaced em dash, xAI re-quoted to the page's colon — and all ten quoted
+  sentences verified word for word this run as contiguous substrings of the
+  pages fetched this run); Meta
   re-attempted with two clients and two User-Agents across six URLs and
   remains `unverified` with this round's statuses in its row; the Microsoft
   Foundry cross-vendor citation was corrected to what the page shows (no
