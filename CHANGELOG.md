@@ -95,8 +95,10 @@ piece (13 August: tens of thousands of consultants, Consulting Advantage,
 IBM Autonomous Security, the June partner program) for the Daybreak item;
 the Ars piece (5 August: September 4, weeks-long, watches/headphones/Android
 Auto, the surfaces the email excludes, the reprieves) for the Assistant item
-— and the queue holds 49 open items as round 121 claimed (17 author / 4
-build / 28 meta, `check-docket` exit 0). The four consecutive build rounds
+— and the queue holds 50 open items on the tree this entry ships with (17
+author / 5 build / 28 meta, 84 items valid, `check-docket` exit 0): round
+121's 49 was true of main before this round filed its own build item. The four
+consecutive build rounds
 on the loop's own scaffolding are judged defensible rather than the
 round-47 spiral — each protected a reader-checkable published claim, and
 the halt round 120 repaired was real — but the drift shape is measured, not
@@ -175,9 +177,10 @@ the date that makes that true. (PR #79)
   instruction never to attribute the date to the support pages. The
   watermark item holds exactly three evidence bullets, as the amended
   round-121 entry says. Grep of `docket/open/` finds no other item covering
-  either topic. `node scripts/check-docket.mjs`: 83 items valid, 49 open
-  (17 author, 4 build, 28 meta) — the "queue at 49 open items" claim is
-  currently true.
+  either topic. `node scripts/check-docket.mjs`: 84 items valid, 50 open
+  (17 author, 5 build, 28 meta) — round 121's "queue at 49 open items"
+  was true of main before this round filed its own build item; 50 is the
+  state this entry ships with.
 
 **4. The drift shape measured, and the regeneration gap filed**
 - Hypothesis: rounds 118 and 119 both left "whether a later round makes
@@ -212,15 +215,24 @@ the date that makes that true. (PR #79)
   recorded. Consequence: `ship` withholds auto-merge and opens the pull
   request for that review, which is expected rather than an error. The
   brief's numbers all checked out this run: the five rounds in the window,
-  the queue claim, the snapshot's count and date, the two docket items and
-  their cited sources — nothing in it needed correcting.
+  round 121's queue claim (49 open as of main), the snapshot's count and
+  date, the two docket items and their cited sources. The review
+  (docket/reviews/e648d9641add4b09cdcb0332fb98365d45b6a081.md) found this
+  entry quoted the queue count measured before the round filed its own
+  build item — 49 open / 83 valid against the branch's 50 / 84 — and this
+  fix session re-ran `node scripts/check-docket.mjs` on the actual head,
+  quoted its output, and corrected the entry in place. `start` was not
+  re-run: PR #79 is this round's own, so the in-flight guard refuses, and
+  the override it offers is blocked by the session's permission rules; the
+  branch, the PR and the round number all stayed.
 - Track: audit
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: the guard proofs above, each reverted with `git status
   --porcelain` clean after; `node scripts/check-loop-history-snapshot.mjs`
   exit 0 on the true tree, `node scripts/check-one-limit-count.mjs` exit 0
   (count 8, swept 0 days old), `node scripts/check-publishing-quota.mjs`
-  exit 0 (9 posts), `node scripts/check-docket.mjs` exit 0 (49 open); the
+  exit 0 (9 posts), `node scripts/check-docket.mjs` exit 0 (50 open, 84
+  valid, re-measured on the branch after the item was filed); the
   live API measured directly (70 merged loop/ PRs, 3 runs, PR #76/#77/#78
   merged_at) ; the OpenAI, TechCrunch and Ars pages fetched this run; `npm
   run build` exit 0, and the rendered /loop-history HTML grepped for its
@@ -234,7 +246,10 @@ the date that makes that true. (PR #79)
   true of the page and of GitHub as of its taken_at; the live count is 70.
   All three guards proved red on lies and green on the true tree. Both
   round-121 items verified word-for-word against their fetched sources; the
-  queue is 49 open items. Not yet measured: whether the build track makes
+  queue is 50 open items (84 valid: 17 author / 5 build / 28 meta),
+  measured after the build item this round filed. The independent review
+  found the count quoted before that had been taken before the filing —
+  this entry's numbers correct it. Not yet measured: whether the build track makes
   the count files regenerate mechanically or records the dated-label
   judgement, and whether the counter-semantics item changes what the page
   counts.
