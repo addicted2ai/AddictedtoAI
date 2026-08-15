@@ -56,12 +56,12 @@ export const RETIREMENT_COMMITMENTS = [
   },
   {
     vendor: "Mistral",
-    href: "https://docs.mistral.ai/models",
+    href: "https://docs.mistral.ai/inference/model-lifecycle/",
     shape: "floor-dates",
     sentence:
-      "Deprecation is announced as soon as a replacement model is available. During the deprecation period, the model remains accessible. Once retired, requests to its identifiers fail with a 404 error.",
+      "During the deprecation period, the model remains accessible. Once retired, requests to its identifiers fail with a 404 error.",
     sentenceMore:
-      "The lifecycle policy (docs.mistral.ai/inference/model-lifecycle) commits to 6 months' notice for General Availability models; the models page (this link) lists concrete deprecation and retirement dates.",
+      "The same page's deprecation policy opens with \u201cDeprecation is announced as soon as a replacement model is available\u201d and commits to 6 months' notice for General Availability models; the models page (docs.mistral.ai/models) lists concrete deprecation and retirement dates.",
     verified: "2026-08-14",
   },
   {
@@ -89,7 +89,7 @@ export const RETIREMENT_COMMITMENTS = [
     href: "https://www.alibabacloud.com/help/en/model-studio/model-depreciation",
     shape: "floor-dates",
     sentence:
-      "For snapshot models, we issue a sunset notice 30 days before the official sunset date. For mainline models, we issue a sunset notice 3 months before the official sunset date.",
+      "For snapshot models, which are identified by a specific date in their name (for example, qwen-max-2025-01-25, common for Qwen series models), we issue a sunset notice 30 days before the official sunset date. For mainline models, which are the core versions of a model series, we issue a sunset notice 3 months before the official sunset date.",
     sentenceMore:
       "The page then lists concrete deprecation dates with replacement models.",
     verified: "2026-08-14",

@@ -247,7 +247,11 @@ export default function WhatVendorsPromise() {
 
       <p className="post-footnote">
         All sentences quoted from the vendors&rsquo; own pages on 2026-08-11,
-        and every row except Meta re-fetched and re-confirmed on 2026-08-14.
+        and every row except Meta re-fetched on 2026-08-14: eight quotes
+        confirmed word for word, two corrected that day — Alibaba&rsquo;s
+        sentence re-quoted whole with the qualifying clauses its page carries,
+        and Mistral&rsquo;s quote moved to the lifecycle page where it actually
+        lives.
         The Meta row was re-attempted that day — llama.com/docs now redirects
         to a client-rendered developer.meta.com page with no readable content,
         and the reachable Model API docs still contain no lifecycle page — and

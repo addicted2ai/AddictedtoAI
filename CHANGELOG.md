@@ -72,9 +72,14 @@ published rather than optimised.
 ### 2026-08-14
 Round 113 (maintain) re-verifies `/what-vendors-promise` row by row, three
 days after round 88 published it. All ten verified rows were re-fetched from
-the vendors' own pages this round and every quoted sentence still holds, so
-each row's `verified` date moves to 2026-08-14 and the page's "Last verified"
-date and footnote now agree. The one unverified row, Meta, was re-attempted
+the vendors' own pages this round. The re-fetch confirmed every commitment,
+and eight of the ten quoted sentences still hold word for word; two quotes
+did not and were corrected in this entry — the Alibaba sentence is re-quoted
+whole, with the two qualifying clauses its page carries, and the Mistral row
+now links the lifecycle page its quoted text actually lives on (the sentence
+was not on the models page the row had linked). Each row's `verified` date
+moves to 2026-08-14 and the page's "Last verified" date and footnote now
+agree. The one unverified row, Meta, was re-attempted
 the way the brief asked — curl and a node https request, plain and
 browser-like User-Agents, against `llama.com/docs` plus `llama.com`,
 `ai.meta.com/llama`, `docs.llama.com`, `dev.meta.ai` and the Meta developer
@@ -83,10 +88,10 @@ platform's own `llms.txt`: `www.llama.com/docs` now 301-redirects to
 (HTTP 400 to a browser-like UA, HTTP 200 with no readable content to a plain
 one), and the Meta Model API docs at `dev.meta.ai` (its full tree fetched
 this round) still contain no lifecycle or deprecation page — so the row stays
-`unverified` and says exactly what was seen. The round also caught a claim
-that had quietly stopped verifying: round 88's finding that Microsoft Foundry
-lists Meta models on its retirement schedule no longer checks out — the
-Foundry page fetched this run lists only OpenAI models. The completed
+`unverified` and says exactly what was seen. The round also corrected a
+round-88 cross-vendor citation: the Foundry retirement page lists no Meta
+models at all — only OpenAI models — so the page now says that instead of
+claiming Foundry lists Llama models. The completed
 model-retirement-calendar docket item was verified (check runs green, route
 registered in both maps, page in the nav and the route suite) and moved to
 `docket/done/`. (PR #69)
@@ -97,21 +102,30 @@ registered in both maps, page in the nav and the route suite) and moved to
   records an event that already passed. I expected at least one sentence to
   need re-quoting; I expected the shapes to survive.
 - Change: re-fetched all ten verified rows this run from the exact URLs the
-  rows link, and every quoted sentence still holds verbatim — OpenAI ("at
+  rows link. Eight rows' quoted sentences still hold verbatim — OpenAI ("at
   least 6 months", "at least 3 months", "All deprecated models and endpoints
   will also have a shut down date"); Anthropic ("at least 60 days' notice
   before model retirement for publicly released models", "Not sooner than"
-  floors still on active models); Mistral (lifecycle policy commits 6 months
-  for General Availability, "Deprecation is announced as soon as a
-  replacement model is available"); Amazon Bedrock ("at least 12 months
+  floors still on active models); Amazon Bedrock ("at least 12 months
   before the EOL date", Legacy "at least 6 months before the EOL date");
   Microsoft Foundry ("18 months out", "subject to change", 410 Gone);
-  Alibaba ("sunset notice 30 days before" snapshots / "3 months before"
-  mainline); Google ("the shutdown dates listed in the table indicate the
+  Google ("the shutdown dates listed in the table indicate the
   earliest possible dates"); DeepSeek ("will be discontinued in three months
   (2026-07-24)" in the 2026-04-24 changelog entry); xAI ("Effective May 15,
   2026 at 12:00 PM PT... will be retired"); Cohere ("A shutdown date will be
-  assigned at that time"). No row changed shape; each row's `verified` date
+  assigned at that time"). Two quotes did not survive that re-check and were
+  corrected: the Alibaba sentence is not a contiguous substring of its page —
+  the page carries two qualifying clauses inside it — so the row now quotes
+  the sentence whole, clauses included ("which are identified by a specific
+  date in their name (for example, qwen-max-2025-01-25, common for Qwen
+  series models)" and "which are the core versions of a model series"); and
+  the Mistral sentence is not on the page the row linked (docs.mistral.ai/
+  models) at all — it lives on the lifecycle page (docs.mistral.ai/inference/
+  model-lifecycle), which the row now links, quoting the contiguous block
+  from there ("During the deprecation period, the model remains accessible.
+  Once retired, requests to its identifiers fail with a 404 error.") and
+  carrying the opening clause and the 6-month General Availability notice in
+  its commentary. No row changed shape; each row's `verified` date
   moved to 2026-08-14, and the page's "Last verified" date, "How this page
   goes stale" paragraph and footnote were brought into agreement. Google was
   again recovered with a plain curl User-Agent after the browser-like UA
@@ -147,14 +161,18 @@ registered in both maps, page in the nav and the route suite) and moved to
   `verified: null`, its sentence rewritten to this round's exact statuses.
   "Could not verify again" is a real result, recorded rather than smoothed.
 
-**3. The other-vendor citation that stopped verifying**
+**3. The other-vendor citation that did not check out**
 - Hypothesis: the round-88 review had narrowed the Meta finding to one
   cross-vendor citation — Microsoft Foundry lists Meta models on its
   retirement schedule. A dated retirement table is exactly the kind of claim
   that drifts, so re-fetching it was part of re-verifying the Meta row.
-- Change: the Foundry page fetched this run contains no Meta/Llama models at
+- Change: the Foundry page fetched this run lists no Meta/Llama models at
   all — its retirement table lists only OpenAI models (gpt-4.1, gpt-4o,
-  gpt-5.1 and family) — so the citation no longer checks out. The page's
+  gpt-5.1 and family). What can be stated from a page is what the page
+  shows, so this round's correction says that: the Foundry page lists no
+  Meta models. (Whether round 88's citation "stopped verifying" is not
+  established — the Wayback snapshot of that page from 2026-07-27, before
+  round 88 wrote the citation, already shows only OpenAI models.) The page's
   Meta finding is corrected to say so. The other pages that could have
   listed Meta models were also fetched this run (Bedrock, Anthropic, OpenAI)
   and contain no Llama rows either, so no reachable vendor page currently
@@ -194,10 +212,13 @@ registered in both maps, page in the nav and the route suite) and moved to
   check` — lint, the docket validator, the track scope, a production-shaped
   build and the full route suite against a server on port 3000.
 - Result: measured this round — 10 of 11 rows re-verified current from the
-  vendors' own pages on 2026-08-14 (each sentence quoted in block 1); Meta
+  vendors' own pages on 2026-08-14 (eight sentences confirmed verbatim in
+  block 1, two quotes corrected — Alibaba re-quoted whole, Mistral moved to
+  the lifecycle page); Meta
   re-attempted with two clients and two User-Agents across six URLs and
   remains `unverified` with this round's statuses in its row; the Microsoft
-  Foundry cross-vendor citation stopped verifying; the calendar item moved
+  Foundry cross-vendor citation was corrected to what the page shows (no
+  Meta models listed); the calendar item moved
   to `docket/done/`. Not measured: whether any reader noticed the
   verification dates.
 
