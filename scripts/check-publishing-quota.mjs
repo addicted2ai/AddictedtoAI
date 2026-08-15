@@ -123,15 +123,69 @@ try {
   fail(`could not import ${POSTS_FILE} — ${error.message} (the file must be valid JavaScript the site can ship)`);
 }
 
+// This check is diff-aware, so it needs the base branch in the checkout. Not
+// every checkout has one: a single-branch or shallow clone has no origin/main
+// to diff against, and Vercel's build checkout is exactly that. Between
+// 15 August 06:54Z and the commit carrying this comment, every production
+// deployment failed here — `fatal: invalid object name 'origin/main'` — while
+// CI stayed green, because CI clones the full history. The site published
+// nothing for ten and a half hours and nine merged pull requests, and nothing
+// in the loop noticed, because the loop watches checks and not deployments.
+//
+// A missing base ref is therefore a fact about the checkout, not a defect in
+// the branch, and it degrades to a warning — the same shape as front 3 of
+// check-loop-history-snapshot.mjs when the API is unreachable. A base ref that
+// exists but whose copy of the file cannot be read is still a failure: that is
+// a broken tree, not a partial clone.
+//
+// What the degradation gives up is real and is not hidden: with no base there
+// is no way to tell an added or re-dated post from one that was already there,
+// and treating every post as changed would fail any build where a day or week
+// is already at cap — a state this check exists to record rather than punish.
+// The quota is enforced where the full history is: in CI, on every pull
+// request, before anything can merge.
 let base;
+let baseSource;
 try {
-  const baseSource = execFileSync("git", ["show", `${BASE_REF}:${POSTS_FILE}`], { encoding: "utf8" });
+  baseSource = execFileSync("git", ["show", `${BASE_REF}:${POSTS_FILE}`], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  });
+} catch {
+  let refPresent = true;
+  try {
+    execFileSync("git", ["rev-parse", "--verify", "--quiet", `${BASE_REF}^{commit}`], {
+      stdio: "ignore",
+    });
+  } catch {
+    refPresent = false;
+  }
+  if (refPresent) {
+    fail(
+      `could not read ${BASE_REF}:${POSTS_FILE} — the ref is present, so this is a broken checkout rather than a partial clone`
+    );
+  }
+  console.error(
+    `WARN  ${BASE_REF} is not in this checkout — the diff-aware comparison is skipped this run`
+  );
+  console.error(
+    "      a single-branch or shallow clone has no base to diff against; the quota is"
+  );
+  console.error(
+    "      enforced in CI, which clones the full history, on every pull request"
+  );
+  console.log(
+    `ok    ${head.length} posts; no ${BASE_REF} in this checkout, so no change was compared`
+  );
+  process.exit(0);
+}
+try {
   base = postsFromModule(
     await import(`data:text/javascript;base64,${Buffer.from(baseSource).toString("base64")}`),
     BASE_REF
   );
 } catch (error) {
-  fail(`could not import ${BASE_REF}:${POSTS_FILE} — ${error.message} (fetch origin/main and try again)`);
+  fail(`could not import ${BASE_REF}:${POSTS_FILE} — ${error.message}`);
 }
 
 // ISO weeks run Monday to Sunday; group by the Monday of each post's date.
