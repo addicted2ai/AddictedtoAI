@@ -134,7 +134,7 @@ assigns this entry round 112. The mapping and this entry follow the code.)
   had already completed by `taken_at`, so a run still in progress when the
   snapshot was taken cannot false-fail a later check.
 - Change: `scripts/check-loop-history-snapshot.mjs`, wired into `prebuild`
-  and invoked by the route suite, fails on: a malformed shape (every field
+  (which CI runs before every build), fails on: a malformed shape (every field
   present, attempted = succeeded + failed, the failure rate matching the
   counts, `failed_run_ids` matching `runs_failed`); a `taken_at` missing or
   not a real date; a snapshot older than `staleness_days.process_claim`
@@ -160,12 +160,12 @@ assigns this entry round 112. The mapping and this entry follow the code.)
   outside those loops and nothing measured it; round 109's calendar is the
   pattern to follow.
 - Change: `/loop-history` is registered in `ROUTE_FILES` (page + reader),
-  `PRODUCING_ROUNDS` (round 113, by construction — this round built it),
+  `PRODUCING_ROUNDS` (round 112, by construction — this round built it),
   `app/Nav.js` (as "Failure rate"), `app/sitemap.js` (no lastmod: the page
   changes only when a round regenerates the snapshot), and both
   hardcoded loops in `scripts/check-routes.sh` — the disclosure-marker loop
-  and the document-size budget loop — plus three content assertions, two of
-  them derived from the snapshot file itself so they do not need bumping
+  and the document-size budget loop — plus three content assertions, one of
+  them derived from the snapshot file itself so it does not need bumping
   when a later round regenerates it.
 
 - Origin: delegated

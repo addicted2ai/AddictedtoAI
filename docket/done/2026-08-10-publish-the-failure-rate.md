@@ -48,13 +48,14 @@ merged rounds and no indication that any run was attempted and lost.
 - [x] The check was shown to fail: feed it a snapshot claiming zero failures
       when the API reports some, and confirm it complains
 
-## Round 113 status (2026-08-14, build)
+## Round 112 status (2026-08-14, build)
 
-Shipped by round 113 as `/loop-history` with the committed snapshot
+Shipped by round 112 as `/loop-history` with the committed snapshot
 `app/lib/loop-history.json` (taken 2026-08-15T01:19:27Z, measured live that
 day: 3 runs attempted, 1 succeeded, 2 failed, 60 rounds merged),
 `app/lib/loop-history.js` as the build-time reader, and
-`scripts/check-loop-history-snapshot.mjs` wired into prebuild and the route
-suite. All five boxes above are met; the check was proven able to fail in
+`scripts/check-loop-history-snapshot.mjs` wired into prebuild (which CI runs
+before every build). All five boxes above are met; the check was proven able
+to fail in
 three directions (zero-failure lie, internally consistent lie, backdated
-snapshot) and restored to green. See the round-113 changelog entry.
+snapshot) and restored to green. See the round-112 changelog entry.
