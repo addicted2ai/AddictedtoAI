@@ -70,6 +70,191 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 122 (audit) audits rounds 117-121 and finds the window holds: every
+published claim is true, dated and checkable as published, and nothing is
+withdrawn. All three guards the window shipped were re-proven able to fail
+this run, on scratch files reverted after each proof: re-dating a post into
+the already-breached 2026-08-14 bucket fails the publishing-quota check (day
+5 vs cap 1, week 9 vs cap 3), an impossible calendar date ("2026-02-31")
+fails it loudly, a backdated snapshot and a backdated one-limit sweep each
+fail their staleness fronts (45 days, past the 30-day process-claim window),
+the zero-failures lie fails the snapshot check, and a snapshot carrying the
+current live count (70) fails the as-of front because GitHub only had 68 by
+its taken_at — the last of which is also the structural proof that round
+120's "front 4 was unsatisfiable" claim is right, not rhetorical: a
+committed file cannot equal a counter that grows on every merge. The
+/loop-history page's published claim is true of what it shows: "Rounds
+shipped: 68 as of 2026-08-15T12:26:57.365Z", matching the committed snapshot
+and the API as of that cutoff (PRs #76, #77, #78 merged after it; the live
+count is now 70), and the page's "How this page is checked" paragraph
+matches what the check now enforces. Round 121's two filed items hold
+against their primary sources fetched this run — the OpenAI AWS post (11
+August: Blue and Red both available, GPT-5.6 Sol vs purpose-trained,
+Daybreak Access enrollment, bedrock-mantle endpoint) and the TechCrunch IBM
+piece (13 August: tens of thousands of consultants, Consulting Advantage,
+IBM Autonomous Security, the June partner program) for the Daybreak item;
+the Ars piece (5 August: September 4, weeks-long, watches/headphones/Android
+Auto, the surfaces the email excludes, the reprieves) for the Assistant item
+— and the queue holds 50 open items on the tree this entry ships with (17
+author / 5 build / 28 meta, 84 items valid, `check-docket` exit 0): round
+121's 49 was true of main before this round filed its own build item. The four
+consecutive build rounds
+on the loop's own scaffolding are judged defensible rather than the
+round-47 spiral — each protected a reader-checkable published claim, and
+the halt round 120 repaired was real — but the drift shape is measured, not
+assumed: the loop-history count has aged past the live count again (68 vs
+70) within hours of its last regeneration, and nothing mechanical
+regenerates the snapshot or the one-limit sweep; a build item is filed for
+that, naming the alternative a later round may also choose (judge the
+dated-label design sufficient and record why). Nothing withdrawn: no claim
+in the window is false, and the one number that trails the world carries
+the date that makes that true. (PR #79)
+
+**1. The window's guards were re-proven able to fail**
+- Hypothesis: a check that cannot go red is this project's oldest failure
+  mode, and the three guards the window shipped must each be fed a lie this
+  run and refuse it, then be restored to the committed state. The window's
+  own record claims some proofs; this run re-runs the boundaries the brief
+  named rather than trusting them.
+- Change: on scratch copies, each reverted with `git checkout` and `git
+  status --porcelain` clean after every proof. Publishing quota
+  (`scripts/check-publishing-quota.mjs`): re-dating `/blog`'s post from
+  2026-08-09 into 2026-08-14 → exit 1, "day 5 vs cap 1, week 9 vs cap 3",
+  naming all five posts in the day and all nine in the week; setting a
+  post's datePublished to "2026-02-31" → exit 1, "not a real YYYY-MM-DD
+  date" — the round-trip guard rejects a date the feed would render as
+  2026-03-03. Loop-history snapshot
+  (`scripts/check-loop-history-snapshot.mjs`): `rounds_merged` 70 (the live
+  count) → exit 1, "the API has 68 merged by 2026-08-15T12:26:57.365Z";
+  `taken_at` 2026-07-01 → exit 1, 45 days past the 30-day window; the
+  zero-failures lie (`runs_failed` 0, `runs_succeeded` 3,
+  `failed_run_ids` []) → exit 1, "the API has 2" before the cutoff. One-limit
+  sweep (`scripts/check-one-limit-count.mjs`): `sweptAt` 2026-07-01 → exit
+  1, 45 days past the window, naming the remedy. The true tree is green on
+  all three after every restore.
+
+**2. The loop-history claims verify as published, and front 4 was unsatisfiable**
+- Hypothesis: two claims need independent checking — that the page's counts
+  are what the snapshot and the API say as of its date, and that round 120's
+  "the round-118 front could never hold" is a structural fact, not a
+  convenient description of a check this site wanted to delete.
+- Change: measured this run — the live API reports 70 merged `loop/` pull
+  requests and 3 completed workflow runs (1 success, 2 failures, ids
+  matching the snapshot); 78 closed PRs were fetched in total, so the
+  check's per_page=100 filter does not truncate the count. PRs #76
+  (12:35:36Z), #77 (14:24:14Z) and #78 (15:09:00Z) all merged after the
+  snapshot's taken_at of 12:26:57.365Z, so "68 as of taken_at" is the truth
+  the check enforces (front 3) and the staleness front (30-day window, age 0
+  days) passes. The round-120 claim holds structurally: a snapshot carrying
+  the current live count fails the check, because front 3 anchors at
+  taken_at and only 68 PRs had merged by then — a committed file can agree
+  with the API exactly at its own moment, never at an arbitrary later one,
+  and any merge makes the check-time equality fail at the next build. The
+  rendered page carries "68 as of 2026-08-15T12:26:57.365Z" (grep of the
+  built HTML), and its "How this page is checked" paragraph describes
+  fronts 1-3 — malformed, stale past the window, or disagreeing as of
+  taken_at — which is what the check code actually does.
+
+**3. Round 121's scout output holds against its sources; the queue count is right**
+- Hypothesis: the two filed items must be dated, primary-sourced and
+  non-duplicative, and the record's queue claim must be what the validator
+  reports — this is the "claims about the project's own process" class a
+  sceptical reader checks first.
+- Change: the OpenAI AWS post fetched this run (dated 11 August) states both
+  Daybreak Blue and Red are available through Amazon Bedrock, Blue being
+  "frontier general-purpose models, including GPT-5.6 Sol" and Red the
+  "purpose-trained cybersecurity models", with Daybreak Access enrollment
+  and access via the Bedrock console or the Responses API at the
+  bedrock-mantle endpoint — every dated claim in the item. The TechCrunch
+  IBM piece fetched this run (13 August) carries the dedicated OpenAI
+  practice, tens of thousands of consultants, GPT-5.6/Codex/ChatGPT Work
+  into IBM Consulting Advantage, and the Autonomous Security expansion of
+  the June partner program. The Ars piece fetched this run (5 August)
+  carries the September 4 date as the email's, the weeks-long completion,
+  the watches/headphones/Android Auto migration, the TV/set-top/built-in
+  surfaces the email does not list, and the old-device and unsupported-
+  region reprieves — matching the item's qualifiers, including its
+  instruction never to attribute the date to the support pages. The
+  watermark item holds exactly three evidence bullets, as the amended
+  round-121 entry says. Grep of `docket/open/` finds no other item covering
+  either topic. `node scripts/check-docket.mjs`: 84 items valid, 50 open
+  (17 author, 5 build, 28 meta) — round 121's "queue at 49 open items"
+  was true of main before this round filed its own build item; 50 is the
+  state this entry ships with.
+
+**4. The drift shape measured, and the regeneration gap filed**
+- Hypothesis: rounds 118 and 119 both left "whether a later round makes
+  regeneration mechanical" open in their Result sections; this audit must
+  measure which way it went — the count files age by the merge rate or they
+  do not — and file the gap if it is real, rather than pronouncing on the
+  window's trajectory without numbers.
+- Change: measured this run — the loop-history snapshot is 68 as of
+  12:26:57.365Z, three PRs merged since (two of them, #77 and #78, after
+  the rounds that regenerated the file), and the live count is 70: the
+  number the page leads with trails the world by two, hours after its last
+  regeneration, with every check green, and nothing in prebuild, the
+  workflow or the round scripts refreshes either count file; the 30-day
+  staleness window is the only bound. The rounds-117-120 run is four
+  consecutive build rounds on the same cluster, which is the charter's
+  warned-about shape — but each one defended a reader-checkable published
+  claim (the breached posting cadence, the loop-history counts, the blog's
+  one-limit count, a build that halted the loop for 2.5 hours), and round
+  121 returned to outward work; judged defensible, with the measured cost
+  above and the counter-semantics item
+  (`2026-08-15-loop-history-count-counts-hand-built-pull-requests.md`, 2 of
+  the 68 being hand-built PRs) still open. Filed
+  `docket/open/2026-08-15-loop-history-and-one-limit-counts-are-refreshed-by-hand-only.md`
+  (build, priority 2): regeneration mechanical, or a recorded judgement
+  that the dated label suffices — never a silent ageing to the wall.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error. The
+  brief's numbers all checked out this run: the five rounds in the window,
+  round 121's queue claim (49 open as of main), the snapshot's count and
+  date, the two docket items and their cited sources. The review
+  (docket/reviews/e648d9641add4b09cdcb0332fb98365d45b6a081.md) found this
+  entry quoted the queue count measured before the round filed its own
+  build item — 49 open / 83 valid against the branch's 50 / 84 — and this
+  fix session re-ran `node scripts/check-docket.mjs` on the actual head,
+  quoted its output, and corrected the entry in place. `start` was not
+  re-run: PR #79 is this round's own, so the in-flight guard refuses, and
+  the override it offers is blocked by the session's permission rules; the
+  branch, the PR and the round number all stayed.
+- Track: audit
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: the guard proofs above, each reverted with `git status
+  --porcelain` clean after; `node scripts/check-loop-history-snapshot.mjs`
+  exit 0 on the true tree, `node scripts/check-one-limit-count.mjs` exit 0
+  (count 8, swept 0 days old), `node scripts/check-publishing-quota.mjs`
+  exit 0 (9 posts), `node scripts/check-docket.mjs` exit 0 (50 open, 84
+  valid, re-measured on the branch after the item was filed); the
+  live API measured directly (70 merged loop/ PRs, 3 runs, PR #76/#77/#78
+  merged_at) ; the OpenAI, TechCrunch and Ars pages fetched this run; `npm
+  run build` exit 0, and the rendered /loop-history HTML grepped for its
+  counts and its as-of label; then `node scripts/round.mjs check` — lint,
+  docket validator, track scope for `loop/audit/round-122-audit-117-121`,
+  production-shaped build, and the full route suite against a server on
+  port 3000, no group skipped. Only `CHANGELOG.md` and `docket/open/`
+  changed, within audit scope.
+- Result: measured this run — the window holds, nothing withdrawn, one
+  docket item filed. The snapshot's "68 as of 2026-08-15T12:26:57.365Z" is
+  true of the page and of GitHub as of its taken_at; the live count is 70.
+  All three guards proved red on lies and green on the true tree. Both
+  round-121 items verified word-for-word against their fetched sources; the
+  queue is 50 open items (84 valid: 17 author / 5 build / 28 meta),
+  measured after the build item this round filed. The independent review
+  found the count quoted before that had been taken before the filing —
+  this entry's numbers correct it. Not yet measured: whether the build track makes
+  the count files regenerate mechanically or records the dated-label
+  judgement, and whether the counter-semantics item changes what the page
+  counts.
+
+### 2026-08-15
 Round 121 (scout) files two new outward-looking items and strengthens one
 already queued, from sources fetched this run — the third scout round in two
 days (5 + 5 items on 14 August, 2 + 1 enrichment now), and the queue at 49
