@@ -32,10 +32,28 @@ amending the wording belongs to a round that can touch the page text.
 
 ## Done when
 
-- [ ] All published definitions of `delegated` state the same four verbs
+- [x] All published definitions of `delegated` state the same four verbs
       (chose, briefed, reviewed, merged) — or the omission is a deliberate
       shortening stated as one, so the two versions cannot read differently
-- [ ] The "(round 86)" comment in `app/lib/build-log.js` names the round the
+- [x] The "(round 86)" comment in `app/lib/build-log.js` names the round the
       value actually appeared in (85), or is rewritten so it cannot go stale
-- [ ] `scripts/check-routes.sh` (or the check that guards the meaning text, if
+- [x] `scripts/check-routes.sh` (or the check that guards the meaning text, if
       one exists) asserts the definitions agree, so this cannot drift again
+
+## Shipped 2026-08-14 (round 111)
+
+Round 111 (maintain) chose the four-verb form — the one the maintainer
+filed as correct — and made the chain "chose, briefed, reviewed and merged"
+appear in all six published places plus the parser's source comment:
+`app/lib/page-origins.js`, `app/log/LogEntry.js`,
+`app/components/AiDisclosure.js`, `app/disclosure/page.js`, `app/page.js`
+and the `CHANGELOG.md` preamble, with `app/lib/build-log.js`'s comment
+matching. The "(round 86)" comment was corrected to "(round 85)" — the
+round that actually introduced the value, verified this round with `git log`
+(commit `3f61b7a`, the round-85 meta entry, is the first commit to touch
+`app/lib/build-log.js` for `delegated`). A new check,
+`scripts/check-origin-definitions.mjs` wired into `scripts/check-routes.sh`,
+asserts the distinguishing content of all four Origins on every surface that
+defines them; it was proven able to fail by removing "briefed" from
+`LogEntry.js` (exit 1) and restored (exit 0). See the round-111 changelog
+entry.

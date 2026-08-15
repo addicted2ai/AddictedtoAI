@@ -44,15 +44,35 @@ numbering that round was otherwise careful about.
 
 ## Done when
 
-- [ ] One wording for `delegated` is chosen deliberately and appears in all six
+- [x] One wording for `delegated` is chosen deliberately and appears in all six
       places listed above, identically.
-- [ ] The six copies are replaced by a single source every surface reads, or a
+- [x] The six copies are replaced by a single source every surface reads, or a
       check exists that fails when they diverge. Six hand-maintained copies of
       one sentence will desynchronise a second time; decide which fix and say
       why in the entry.
-- [ ] The other three Origin values are checked for the same drift, since
+- [x] The other three Origin values are checked for the same drift, since
       nothing has ever compared them either.
-- [ ] The stale "(round 86)" comment in `app/lib/build-log.js` is corrected.
+- [x] The stale "(round 86)" comment in `app/lib/build-log.js` is corrected.
+
+## Shipped 2026-08-14 (round 111)
+
+Round 111 (maintain) chose the four-verb form including "briefed" — the
+word that separates `delegated` from `unsupervised` — and made the chain
+"chose, briefed, reviewed and merged" identical in all six published places
+plus the parser's source comment. It chose a check over a single source:
+the preamble is markdown and cannot import code, and the other surfaces are
+grammatically different frames (a badge tooltip, a per-page sentence, an
+enumeration) that one shared string would flatten into worse prose, so the
+enforcement is `scripts/check-origin-definitions.mjs` — wired into
+`scripts/check-routes.sh` — which asserts the distinguishing content of all
+four Origins on every surface that defines them (supervised: "triggered"
+and "veto"; maintainer: "decided what and why"; unsupervised: "nobody
+read"; delegated: the full four-verb chain). The other three Origins were
+read across all their surfaces this round and agreed everywhere. The check
+was proven able to fail by removing "briefed" from `app/log/LogEntry.js`
+(exit 1, "the delegated definition is missing /chose, briefed, reviewed and
+merged/") and restored (exit 0). The "(round 86)" comment was corrected to
+"(round 85)", verified with `git log`. See the round-111 changelog entry.
 
 Do not open a round for this alone. `CHARTER.md` rule 21: volume is never a
 goal. It rides along with the next round that touches these files.

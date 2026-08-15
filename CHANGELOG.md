@@ -70,6 +70,105 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 111 (maintain) makes the published definitions of the `delegated`
+Origin agree. Round 85 introduced the value; by this round three of its
+six copies — `app/lib/page-origins.js`, `app/log/LogEntry.js` and
+`app/components/AiDisclosure.js` — had lost the word "briefed" and said
+"chose, reviewed and merged", while the `CHANGELOG.md` preamble,
+`/disclosure` and the homepage kept it. The omission describes less
+oversight than occurred: "briefed" is the verb that separates `delegated`
+from `unsupervised`. This round chose the four-verb form the maintainer
+filed as correct, made the chain "chose, briefed, reviewed and merged"
+identical in all six places plus the parser's own comment, corrected the
+comment's "(round 86)" to "(round 85)", and added a check that fails if
+any surface's definition drifts a third time.
+
+**1. The delegated definition, one wording everywhere**
+- Hypothesis: the maintainer filed the four-verb form as correct, and the
+  fix that survives is enforcement — six hand-maintained copies of one
+  sentence desynchronise again, which is the second round they have.
+- Change: the chain "chose, briefed, reviewed and merged" now appears
+  identically in `app/lib/page-origins.js` (the ORIGIN_MEANINGS map),
+  `app/log/LogEntry.js` (the `/log` badge tooltip), `app/components/
+  AiDisclosure.js` (the per-page sentence), `app/disclosure/page.js` (the
+  enumeration, previously the longer "chose the work, briefed it, reviewed
+  it and merged it"), `app/page.js` (the homepage, previously "chosen,
+  briefed, reviewed and merged") and the `CHANGELOG.md` preamble (already
+  correct). The decision was a check over a single shared source: the
+  preamble is markdown and cannot import code, and the surfaces are
+  grammatically different frames (a tooltip label, a page sentence, an
+  enumeration) that one shared string would flatten into worse prose — so
+  the invariant lives in the check, not in a constant. The other three
+  Origins were read across every surface that defines them and agreed
+  everywhere (supervised: "triggered" and "veto"; maintainer: "decided
+  what and why"; unsupervised: "nobody read it first"), so no wording
+  changed for them.
+
+**2. The check that cannot let it drift a third time**
+- Hypothesis: a script reading each surface's definition region and
+  asserting its distinguishing content, wired into the route suite, fails
+  on exactly the drift this round corrected.
+- Change: `scripts/check-origin-definitions.mjs`, wired into
+  `scripts/check-routes.sh`, reads the seven surfaces (the six published
+  places plus the parser comment), extracts each definition region, and
+  asserts: `delegated` carries "chose, briefed, reviewed and merged";
+  `supervised` carries "triggered" and "veto"; `maintainer` carries
+  "decided what and why"; `unsupervised` carries "nobody read". It also
+  asserts the parser comment names "(round 85)". Proven able to fail this
+  round: removing "briefed" from `app/log/LogEntry.js`'s delegated label
+  made it exit 1 — "app/log/LogEntry.js (ORIGIN_LABELS): the delegated
+  definition is missing /chose, briefed, reviewed and merged/" — and
+  restoring it made it exit 0.
+
+**3. The stale round number, corrected and pinned**
+- Hypothesis: the parser comment said "(round 86)", but the docket claimed
+  the value appeared in round 85 — verify with `git log`, do not take the
+  item's word for it.
+- Change: `git log -S "delegated" -- app/lib/build-log.js` shows the
+  earliest commit to name the value in that file is `3f61b7a` (the
+  delegation record), and the commit that wrote "(round 86)" into the
+  comment is `8cec1ef` (PR #34) — the build round whose own entry, "This
+  round (build) makes the code accept the Origin value the record now
+  needs. Its own entry is the first to carry `Origin: delegated`", renders
+  as round 85 in the current record (round 86 is the ship-arm build round
+  that followed; the meta delegation round merged as 89). The comment now
+  names (round 85), and the new check pins it there so it cannot go stale
+  again.
+
+**4. The route map follows the files that changed**
+- Hypothesis: changing a route's listed source files moves its producing
+  round, and `scripts/check-ai-disclosure.mjs` fails unless the map
+  follows.
+- Change: `PRODUCING_ROUNDS` moves `/`, `/log`, `/log/early`, `/log/
+  archive`, `/log/rounds/[id]` and `/disclosure` to round 111 — the routes
+  whose listed source files this round touched (`app/page.js`,
+  `app/log/LogEntry.js`, `app/lib/build-log.js`, `app/disclosure/page.js`)
+  — with the map's comments updated.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error.
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/check-origin-definitions.mjs` ran clean (exit
+  0) and was proven able to fail (exit 1 with "the delegated definition is
+  missing /chose, briefed, reviewed and merged/" when "briefed" was removed
+  from `app/log/LogEntry.js`, exit 0 restored); the round number was
+  verified with `git log` rather than taken from the docket;
+  `node scripts/round.mjs check` then ran lint, the docket validator, the
+  track scope, a production-shaped build and the route suite against a
+  server on port 3000.
+- Result: measured this round. All six published `delegated` definitions
+  plus the parser comment now state the same four-verb chain; the check
+  exits 0 on the current tree; the "(round 86)" comment names round 85,
+  which the current record confirms rendered as the build round that first
+  carried `Origin: delegated`.
+
+### 2026-08-14
 Round 110 (audit) audits rounds 102-109 — the first audit in eight shipped
 rounds — and finds the window holding except for one overstated claim about
 this project's own process, which is corrected by filing the fix rather than
