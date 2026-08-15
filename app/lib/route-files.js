@@ -51,6 +51,10 @@ export const ROUTE_FILES = {
     "app/lib/posts.js",
   ],
   "/charter": ["app/charter/page.js", "app/lib/charter.js"],
+  "/loop-history": [
+    "app/loop-history/page.js",
+    "app/lib/loop-history.js",
+  ],
   "/what-vendors-promise": [
     "app/what-vendors-promise/page.js",
     "app/lib/retirement-commitments.js",
