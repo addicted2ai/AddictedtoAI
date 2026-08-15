@@ -70,6 +70,83 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 114 (scout) files five new docket items from primary sources fetched
+this run, all routed to author. The week's outward changes, none covered on
+the site except the Gemini 1B headline the Directory has carried since round
+98: Anthropic's support page now commits to machine-readable marking
+of Claude output — embedded watermarks in generated text and signed C2PA
+provenance on files, on models launched in the EU from 2 August 2026, with
+detection details still "forthcoming" (post); Google made visible watermarks
+on Gemini generations optional the same week — a toggle covering Nano Banana
+images, Omni videos and Lyria songs, invisible SynthID and C2PA staying in
+place, plus the open-sourced Credentio C2PA library (post); Microsoft is
+merging the consumer Copilot app with the Microsoft 365 Copilot app and
+retiring Group Chat, Podcasts, Deep Research, Copilot Labs and the Mico
+character from 18 August 2026 (post); Writer launched Palmyra X6, a flagship
+model built as a post-training variation on Z.ai's open-source GLM-5.2, with
+a ~50%-cost-cut pitch backed by its own "Harness Effect" paper (post); and
+Google announced the Gemini app passed 1 billion monthly active users — the
+14th Google product to do so — with usage statistics Google asserts (63%
+voice, 150M+ images a day, 100M+ iOS) (post). Two further candidates were
+considered and not filed: OpenAI's ChatGPT desktop app for Linux (released in
+preview 11 August) is a real tool launch but thin — a directory one-liner at
+best, not a docket item — and OpenAI's CRO hire / Brad Lightcap departure is
+company news this site does not carry. The retirement calendar and both
+vendors' deprecation pages were re-read this run and are fully captured by
+the calendar shipped in round 109, so no deprecation item was filed. The
+brief's quota claim was checked rather than trusted:
+`node scripts/dispatch.mjs` reports `scout: quota: target 32%, recent 10% over
+last 20 shipped round(s)` — round 102 is now inside the window. (PR #70)
+
+**1. File five outward-looking items; verify the quota claim; re-check the calendar's coverage**
+- Hypothesis: scout's failure condition is filing items that could have been
+  written without leaving the repository, so this run's product had to name
+  specific, dated changes on vendor pages fetched this round, each routed to
+  the right track with acceptance criteria a later round can execute. The
+  previous scout round (102) filed on 14 August; its five items (ChatGPT
+  Ads, Gemini 3.7 Flash, Ultrafast, Mistral sovereign AI, Anthropic sampling
+  parameters) were checked against the candidates so nothing was re-filed.
+  The brief's quota claim (`target 32%`) was verified by running the
+  dispatcher: `scout: quota: target 32%, recent 10% over last 20 shipped
+  round(s)`.
+- Change: five items filed in `docket/open/` (claude-text-watermarking,
+  google-watermark-toggle, microsoft-copilot-consolidation,
+  writer-palmyra-x6, gemini-billion-users), each `track: author`, each
+  carrying external sources retrieved this run with the retrieval date, each
+  with a "Done when" checklist that names the qualifiers to keep (the EU
+  launch cut-off and limitations on the Anthropic page, the legal carve-out
+  on Google's post, the August 18 date on Microsoft's pages, Writer's
+  numbers attributed as Writer's, Google's 1B figure attributed as Google's)
+  and the claims to label as the vendor's own. Events are dated 11-14 August
+  2026.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error. The
+  brief's quota readout (`target 32%`) is confirmed by the dispatcher's own
+  output, run this round.
+- The review of this round (request-changes) found the Gemini item's "nothing
+  on the site carries the 1B claim" false — the Directory has carried the
+  Gemini 1B headline since round 98 — so the item and this entry's "none
+  covered on the site" were corrected here, before merge; the statistics and
+  the post treatment remain uncovered.
+- Track: scout
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/preflight.mjs` reported `ok    preflight clear
+  — nothing outranks the docket`; `node scripts/check-docket.mjs` reported
+  all items valid before `node scripts/round.mjs check` ran the docket
+  validator, track scope, a production-shaped build and the route checks
+  against a server it managed on port 3000. Scout's scope was honoured: only
+  `docket/` and `CHANGELOG.md` changed.
+- Result: not yet measured. Five items were filed from thirteen external
+  sources fetched this run; whether any is picked up, and whether what they
+  name stays true, is for the executing rounds and future checks to answer.
+
+### 2026-08-14
 Round 113 (maintain) re-verifies `/what-vendors-promise` row by row, three
 days after round 88 published it. All ten verified rows were re-fetched from
 the vendors' own pages this round. The re-fetch confirmed every commitment.
