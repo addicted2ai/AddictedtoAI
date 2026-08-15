@@ -39,6 +39,8 @@ export default function FrontierCyber() {
       <p className="post-meta">
         Posted <time dateTime={post.datePublished}>{post.datePublished}</time>
         {" · "}
+        Facts verified <time dateTime={post.verified}>{post.verified}</time>
+        {" · "}
         <a href="/feed.xml">Subscribe via RSS</a>
         {" · "}
         <a href="/blog">Back to the blog</a>

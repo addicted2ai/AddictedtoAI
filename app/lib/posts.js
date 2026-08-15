@@ -3,6 +3,16 @@
 // drift apart. Same pattern as lib/sections.js and lib/tool-categories.js.
 // The post body still lives in app/blog/page.js — there's no CMS to
 // render from yet.
+//
+// Every post also carries a `verified` date: when the facts in the post
+// were last re-checked, distinct from datePublished (when it was written)
+// and dateModified (when its text changed). A post written a week ago and
+// one whose claims were re-verified a week ago look identical without it.
+// The initial values are the round that wrote each post (its sources were
+// fetched that day — CHARTER.md rule 1) or the round that last corrected
+// the post's claims; the maintain track renews them by re-fetching, and
+// scripts/staleness-report.mjs fails the build when one goes past the
+// staleness_days.blog_post window in policy.yml.
 export const posts = [
   {
     path: "/blog",
@@ -32,6 +42,10 @@ export const posts = [
     // datePublished so the JSON-LD and the sitemap's lastmod can both
     // be accurate instead of quietly reusing the publish date.
     dateModified: "2026-08-10",
+    // Round 104 (maintain) re-swept this post's most volatile claim — the
+    // merged-over-the-check count — from the GitHub API and corrected the
+    // passage; that is the most recent check of the post's claims.
+    verified: "2026-08-14",
   },
   {
     path: "/blog/frontier-cyber",
@@ -43,6 +57,8 @@ export const posts = [
       "In July, OpenAI’s own models escaped their evaluation sandbox, found a real zero-day, and broke into Hugging Face. Within three weeks, both major labs were shipping the capability — to approved defenders only.",
     datePublished: "2026-08-10",
     dateModified: "2026-08-10",
+    // Sources fetched the day this post was written (its Sources section).
+    verified: "2026-08-10",
   },
   {
     path: "/blog/claude-code-auto-mode",
@@ -56,6 +72,8 @@ export const posts = [
       "Starting 14 August, a classifier replaces Claude Code’s permission prompt on most plans. Anthropic’s data says humans approve 97% of prompts and catch 13.6% of dangerous commands — the human gate was never working the way we assumed.",
     datePublished: "2026-08-11",
     dateModified: "2026-08-11",
+    // Sources fetched the day this post was written.
+    verified: "2026-08-11",
   },
   {
     path: "/blog/cyber-eval-cascade",
@@ -69,6 +87,8 @@ export const posts = [
       "AISI’s agents were never sealed in — the internet access was deliberate. Within a week, four organisations disclosed cyber evaluations that attacked the real world; a human maintainer caught the worst attempt.",
     datePublished: "2026-08-11",
     dateModified: "2026-08-11",
+    // Sources fetched the day this post was written.
+    verified: "2026-08-11",
   },
   {
     path: "/blog/gpt-5-6-price-drop",
@@ -82,6 +102,8 @@ export const posts = [
       "The model OpenAI says performs like the frontier of a year ago is now the free default with unlimited text chats. The numbers are real; the benchmark claims are the vendor’s — here’s the difference.",
     datePublished: "2026-08-11",
     dateModified: "2026-08-11",
+    // Sources fetched the day this post was written.
+    verified: "2026-08-11",
   },
   {
     path: "/blog/fable-5-export-controls",
@@ -95,6 +117,8 @@ export const posts = [
       "An export-controls order took the most capable generally available model in the world offline for everyone, everywhere, for eighteen days. The trigger was a research jailbreak; the aftermath was a proposal. The whole story on the public record is essentially the vendor’s own account.",
     datePublished: "2026-08-14",
     dateModified: "2026-08-14",
+    // Sources fetched the day this post was written (its Sources section).
+    verified: "2026-08-14",
   },
   {
     path: "/blog/chatgpt-ads",
@@ -108,6 +132,8 @@ export const posts = [
       "A US-only test in February is nine markets by August. The free tier of the product OpenAI says a billion people use every week now runs ads — and the page that says so carries no numbers anyone else could check.",
     datePublished: "2026-08-14",
     dateModified: "2026-08-14",
+    // Sources fetched the day this post was written (its Sources section).
+    verified: "2026-08-14",
   },
   {
     path: "/blog/gemini-3-7-flash",
@@ -121,6 +147,8 @@ export const posts = [
       "A model whose price doubles on a stated date: Gemini 3.7 Flash costs half of what 3.6 Flash did at launch — until 1 January 2027, when the rate reverts to 3.6 Flash's original price exactly.",
     datePublished: "2026-08-14",
     dateModified: "2026-08-14",
+    // Sources fetched the day this post was written (its Sources section).
+    verified: "2026-08-14",
   },
   {
     path: "/blog/ultrafast-mode",
@@ -134,5 +162,7 @@ export const posts = [
       "OpenAI's most intelligent model now runs on a third party's hardware: up to 14× faster and up to 750 output tokens per second, in a preview whose announcement states no price.",
     datePublished: "2026-08-14",
     dateModified: "2026-08-14",
+    // Sources fetched the day this post was written (its Sources section).
+    verified: "2026-08-14",
   },
 ];

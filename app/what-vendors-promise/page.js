@@ -246,10 +246,12 @@ export default function WhatVendorsPromise() {
         only when it is checked. Meta could not be verified when this page was
         written, or when it was re-checked on 2026-08-14, and says so; nothing
         is asserted about it. Staleness is
-        enforced the way the Directory enforces its own verification dates (
-        <code>scripts/check-tool-staleness.mjs</code>); wiring this page into
-        that mechanism, and adding the window to <code>policy.yml</code>, is
-        filed as docket work for the tracks that own those files.
+        enforced the way the Directory enforces its own verification dates, by
+        the same report over both files (
+        <code>scripts/staleness-report.mjs</code>), which judges this
+        page&rsquo;s rows against the Directory&rsquo;s own window; the
+        retirement-calendar window key in <code>policy.yml</code> remains
+        filed as docket work for the track that owns it.
       </p>
 
       <p className="post-footnote">
