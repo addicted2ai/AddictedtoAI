@@ -26,7 +26,7 @@ const STEPS = [
     key: "result",
     label: "Result",
     caption:
-      "Filled in afterwards, honestly. Every round so far reads “not yet measured”: the code that could report analytics exists, but the measurement ID has never been set in production, so nothing has actually been counted yet.",
+      "Filled in afterwards, honestly. The first 47 rounds all read “not yet measured”: the code that could report analytics exists, but the measurement ID has never been set in production, so nothing has actually been counted yet. Rounds since record what they could measure, as this one did.",
   },
 ];
 
