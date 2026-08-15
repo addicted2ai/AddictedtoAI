@@ -170,12 +170,26 @@ export const ARCHIVE = "archive";
 // other route moves this round. app/Nav.js gains a link to it but Nav.js is
 // not a listed source file of any route, so the nav change is invisible to
 // this map.
+//
+// Round 111 (maintain) makes the six published definitions of the
+// `delegated` Origin agree: it adds the missing "briefed" verb to the
+// shared parser's comment (app/lib/build-log.js), to LogEntry.js and to
+// AiDisclosure.js, and aligns the delegated sentence on /disclosure and the
+// homepage's prose. app/page.js is a listed source file of /, so / moves to
+// 111. The shared log machinery — build-log.js and LogEntry.js — is a listed
+// source of /log, /log/early, /log/archive and /log/rounds/[id], so those
+// four move together. app/disclosure/page.js is /disclosure's only listed
+// source file, so it moves too. /blog, the post routes, /directory, /demos,
+// /charter, /projects, /what-vendors-promise and /model-retirement-calendar
+// are untouched and stay on their prior rounds.
 export const PRODUCING_ROUNDS = {
   // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
   // is this round's. (Round 107 before it: posts.js gained the gemini-3-7
   // flash post.)
-  "/": 108,
+  // Round 111 (maintain) moves it: app/page.js gained the corrected
+  // delegated sentence, and it is a listed source file of /.
+  "/": 111,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
@@ -236,21 +250,29 @@ export const PRODUCING_ROUNDS = {
   // rounds permanent pages of their own (/log/rounds/<id>), touching the
   // shared parser, LogEntry and /log's page, and rewrites the homepage's
   // record-partition sentence.
-  "/log": 94,
+  //
+  // Round 111 (maintain) moves them again: it corrects the `delegated`
+  // definition in the shared parser comment (app/lib/build-log.js) and in
+  // LogEntry.js, both listed source files of every log page.
+  "/log": 111,
   // Round 84 (build) built this page, which holds the first era of this
   // repository (rounds 48-70), frozen at a closed boundary. Round 85 moves it
   // with the other two log pages: it changed the same shared parser and
   // LogEntry files. Round 94 moves it again, touching those shared files.
-  "/log/early": 94,
-  "/log/archive": 94,
+  // Round 111 moves it once more: the delegated-definition correction lands
+  // in the same shared files.
+  "/log/early": 111,
+  "/log/archive": 111,
   // Round 94 (build) built this route: one page per older current-era round.
   // New route, so its producing round is the round that created it.
-  "/log/rounds/[id]": 94,
+  // Round 111 moves it with the log machinery it shares.
+  "/log/rounds/[id]": 111,
   "/projects": 54,
   // Round 72 (maintain) rewrote the page's meanings; round 85 (build) adds
   // the fourth Origin value's meaning to the enumeration it publishes, so
-  // the page's current form is round 85's.
-  "/disclosure": 85,
+  // the page's current form is round 85's. Round 111 (maintain) corrects
+  // that enumeration's delegated wording, so the page moves to 111.
+  "/disclosure": 111,
 };
 
 const ORIGIN_MEANINGS = {
@@ -259,7 +281,7 @@ const ORIGIN_MEANINGS = {
   supervised: "a human triggered this run and could veto before merge",
   maintainer: "a human decided what and why; an assistant did the typing",
   delegated:
-    "the orchestrating model chose this work, reviewed it and merged it; no human saw it before it landed",
+    "the orchestrating model chose, briefed, reviewed and merged it; no human saw it before it landed",
 };
 
 export function getPageDisclosure(route) {

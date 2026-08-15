@@ -117,6 +117,16 @@ echo
 done
 node scripts/check-ai-disclosure.mjs || failures=$((failures + $?))
 
+# The four Origin values' published definitions each appear on several
+# surfaces -- the /log badge tooltips, the per-page disclosure sentences,
+# the /disclosure enumeration, the homepage prose, the changelog preamble
+# and the parser's own comment. Round 111 corrected the `delegated` wording
+# after three of its six copies drifted apart; this asserts the
+# distinguishing content of every Origin on every surface that defines it,
+# so a third drift fails the build. See scripts/check-origin-definitions.mjs.
+echo
+node scripts/check-origin-definitions.mjs || failures=$((failures + $?))
+
 # Document transfer size, against the same budget CI gates on.
 #
 # lighthouserc.json holds `resource-summary:document:size` at 150,000 bytes,

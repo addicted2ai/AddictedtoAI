@@ -32,8 +32,8 @@ export default function Disclosure() {
         <code>supervised</code> (a human triggered the run and could veto
         before merge), <code>maintainer</code> (a human decided what and why;
         an assistant did the typing), or <code>delegated</code> (the
-        orchestrating model chose the work, briefed it, reviewed it and
-        merged it; no human saw it before it landed). Rounds that predate the
+        orchestrating model chose, briefed, reviewed and merged it; no human
+        saw it before it landed). Rounds that predate the
         field — the first forty-seven — are recorded as supervised.
       </p>
       <p>
