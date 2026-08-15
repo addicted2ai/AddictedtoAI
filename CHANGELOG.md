@@ -70,6 +70,71 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-14
+Round 115 (scout) files five new docket items from sources fetched this run,
+all routed to author — a second, fresh look outward the same day round 114
+shipped, on different ground: the OpenAI–Anthropic price war, reported by the
+Financial Times on 14 August and verified this run against both vendors' own
+pricing pages — Anthropic's Opus 5 at $5/$25 per MTok, half of Fable 5's
+$10/$50, and the cancelled 1 September Sonnet 5 rise to $3/$15 (post); Twitch
+now trains Amazon's generative AI on streamers' content by default — streams,
+VODs, clips, chat and channel text, per Twitch's own support page — with a new
+opt-out setting and its CPO saying opt-in "would mean nobody" opts in (post);
+SpaceXAI's Grok Bot beta, always-on agents with their own cloud computer, for
+SuperGrok Heavy and Cursor tiers, with Cursor officially becoming part of
+SpaceX the same week (post); Meta's open-weights pivot — Zuckerberg's 10
+August essay committing to resume open-source releases, the promise to open
+Muse Spark 1.2's weights "in the next few weeks", and board-level release
+governance, filed as the strategy behind the already-filed Muse Glimmer item
+(post); and Suno's week of legitimacy — Studio 2.0, the BMG global alliance,
+the 3 September downloads-policy and Terms changes, and the watermark
+commitment, with a Directory-update question attached (post). Considered and
+not filed: Gemini 3.7 Flash's arrival in Search's AI Mode (an extension of a
+post already published), the Gemini billion-users item (round 114), Muse
+Glimmer (already filed 11 August; the Meta item cross-references it instead of
+re-filing the release), OpenAI's fine-tuning wind-down (announced 7 May;
+already captured by
+the retirement calendar re-read 14 August), the Anthropic agents turf-war
+experiment and Claude-in-Chrome-to-Cowork rename (tool-launch news too thin to
+act on), and Apple's China model with Alibaba (company news this site does not
+carry). The retirement calendar was re-read this run and is current to 14
+August. (PR #71)
+
+**1. File five outward-looking items from this week's vendor pages and news**
+- Hypothesis: round 114's five items (watermarks, Copilot consolidation,
+  Palmyra X6, Gemini users) are not a ceiling — a second look the same day
+  must find its own, different ground or say plainly that the week is
+  exhausted. The candidates visible from the week's reporting: a price war
+  confirmed on two vendors' pricing pages, a training-data default change at
+  Twitch, a new agent product and a $60B acquisition completing at
+  SpaceXAI/Cursor, Meta's open-weights strategy document, and Suno's
+  legitimacy push. Each had to survive the same test as round 114's: a
+  specific, dated, checkable change with a source fetched this run, routed to
+  the right track with acceptance criteria.
+- Change: five items filed in `docket/open/` (post-openai-anthropic-price-war,
+  post-twitch-trains-amazon-ai, post-grok-bot-cursor-spacex,
+  post-meta-open-weights-pivot, post-suno-goes-legit), each `track: author`,
+  each citing sources retrieved 2026-08-14 (vendor pricing pages, Twitch's
+  support page via the articles that quote it, x.ai's announcement, the
+  Meta essay, Suno's blog), each with a "Done when" checklist that names the
+  qualifiers to keep (Anthropic's "will not occur" wording; the FT numbers as
+  confirmation of an already-published cut; "if it was opt-in, nobody would
+  opt in" as a quoted reason, not a fact; beta status and tier restrictions
+  on Grok Bot; the $60B figure attributed to reporting; the Spark 1.2 promise
+  as open to verification; Suno's Terms change effective 3 September). The
+  item for Meta cross-references the existing Muse Glimmer item so no round
+  double-publishes the release, and the Suno item flags the Directory
+  question for the executing round. No past entry was touched; nothing was
+  re-filed from round 114 or the dropped pile.
+
+- Origin: delegated
+- Track: scout
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope, production build, route checks; all to be run before ship
+- Result: not yet measured — the queue's value is decided by the rounds that
+  execute these items
+
+### 2026-08-14
 Round 114 (scout) files five new docket items from primary sources fetched
 this run, all routed to author. The week's outward changes, none covered on
 the site except the Gemini 1B headline the Directory has carried since round
