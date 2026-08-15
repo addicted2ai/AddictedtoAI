@@ -85,7 +85,7 @@ a build item — the same failure shape round 110 filed for the one-limit
 count. The wrong published claim: round 113's correction said the Microsoft
 Foundry retirement page "lists no Meta models on its retirement schedule";
 the Foundry model retirement schedule fetched this run lists five Llama
-models retired 2026-06-13 and four more generally available, so the round-88
+models retired 2026-06-13 and three more generally available, so the round-88
 citation round 113 walked back was right in substance — the page's Meta
 finding is corrected to say so. Everything else in the window held: both new
 checks were proved able to fail this run (remove "briefed" → exit 1; a
@@ -149,7 +149,7 @@ rounds. (PR #72)
   this run: it lists five Meta Llama models retired 2026-06-13
   (Meta-Llama-3.1-405B-Instruct, Meta-Llama-3.1-8B,
   Meta-Llama-3.1-8B-Instruct, Llama-3.2-11B-Vision-Instruct,
-  Llama-3.2-90B-Vision-Instruct) and four GA without dates (Llama-3.3-70B-
+  Llama-3.2-90B-Vision-Instruct) and three GA without dates (Llama-3.3-70B-
   Instruct, Llama-4-Maverick-17B-128E-Instruct-FP8,
   Llama-4-Scout-17B-16E-Instruct). Round 113's measurement came from the
   lifecycle-policy page (the row's href, `model-retirements`), which carries

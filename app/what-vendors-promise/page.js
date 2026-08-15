@@ -196,7 +196,7 @@ export default function WhatVendorsPromise() {
           hosted Llama. The other half of that finding, corrected again on
           2026-08-14: the Microsoft Foundry model retirement schedule
           <em>does</em> list Meta models — five Llama models (Meta-Llama-3.1
-          and Llama-3.2 families) retired 2026-06-13, and four more
+          and Llama-3.2 families) retired 2026-06-13, and three more
           (Llama-3.3-70B-Instruct, Llama-4-Maverick-17B-128E-Instruct-FP8,
           Llama-4-Scout-17B-16E-Instruct) listed as generally available with
           no retirement date — so the round-88 citation was right in
@@ -270,7 +270,7 @@ export default function WhatVendorsPromise() {
         re-fetched the same way on 2026-08-14. The Foundry half of the Meta
         finding was re-checked on 2026-08-14 and found the round-113
         correction to have overreached: the Foundry model retirement schedule
-        does list Meta models — five Llama models retired 2026-06-13, four
+        does list Meta models — five Llama models retired 2026-06-13, three
         more GA — so this page now says so instead of claiming no Meta
         models appear on it.
       </p>

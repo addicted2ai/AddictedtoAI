@@ -190,7 +190,7 @@ export const ARCHIVE = "archive";
 // Microsoft Foundry retirement page lists no Meta models. Round 116
 // (audit) re-checks that correction and finds it overstated — the Foundry
 // model retirement schedule does list Meta models (five retired
-// 2026-06-13, four GA) — and fixes the page prose and the Meta row's
+// 2026-06-13, three GA) — and fixes the page prose and the Meta row's
 // commentary accordingly. Both
 // of the route's listed source files — app/what-vendors-promise/page.js and
 // app/lib/retirement-commitments.js — change, so /what-vendors-promise
