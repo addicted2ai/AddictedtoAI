@@ -70,6 +70,164 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 128 (audit) audits rounds 122-127 and finds the window substantially
+holds — every published claim checked out against a command or a source
+fetched this run — with one queue defect found and corrected, one drift filed,
+and nothing withdrawn. Round 127's quota-block claim was re-proved in all
+three directions: the ISO week of 2026-08-10 holds exactly eight posts in
+`app/lib/posts.js` (frontier-cyber on 10 August; claude-code-auto-mode,
+cyber-eval-cascade and gpt-5-6-price-drop on 11 August; fable-5-export-controls,
+chatgpt-ads, gemini-3-7-flash and ultrafast-mode on 14 August), and
+`scripts/check-publishing-quota.mjs` fails a ninth post dated 15 or 16 August
+("would hold 9 posts that week (cap 3)", exit 1) while accepting 17 August
+(10 posts; week 1 of 3, day 1 of 1; exit 0) — the tree restored byte-identical
+after each probe. Round 126's redefinition of `rounds_merged` verifies end to
+end: the shared count script (`scripts/count-changelog-rounds.mjs`) reads 125
+entries as of the snapshot's `taken_at` (2026-08-15T18:46:41.179Z), agreeing
+with the committed `app/lib/loop-history.json`; the checker fails when fed a
+wrong count (124 → exit 1, "snapshot says 124, the changelog has 125 round
+entries"); and the built `/loop-history` page carries the dated figure
+("Rounds shipped 125 as of 2026-08-15T18:46:41.179Z" in the rendered HTML).
+Round 125's Meta (Llama) row is what its entry says it is — `shape:
+"unverified"`, `verified: null`, `unverifiedSince: "2026-08-15"` (today, not
+backdated — the check fails a backdated record: "unverifiedSince 2026-05-01
+... past the 45-day window", exit 1) — and the sentence records this round's
+evidence faithfully. The three round-123 scout items hold against their
+primary sources fetched this run: the Anthropic multiagent paper carries 98%
+truce for Mythos 5 over n=120 episodes per model (figure alt text: "98% of
+Mythos 5 runs ended in truce"), the 266-vs-21 vulnerability split (body:
+"21 vulnerabilities over a 6.5 million token run, while the coordinating
+agent swarm found 266 vulnerabilities over a 27 million token run"), and the
+0.85-vs-0.62 routing accuracy ("Mythos 5 held near 0.85; Sonnet models fell
+to 0.62"); CloudSEK's own page states "2,500+ companies" and "434,000 CI/CD
+pipelines potentially exposed" with the ~40-minute March window and versions
+1.82.7/1.82.8; the ChatGPT Linux claims match OpenAI's 14 August release note
+word for word (Ubuntu 24.04/26.04 LTS, Debian 13, Fedora 43/44, public
+preview, browser actions available, no desktop-app control yet). One defect
+in the queue, not the record: the LiteLLM docket item credited Hudson Rock's
+own blog with "the 195TB file" and "434,000 pipelines", but Hudson Rock's
+blog (fetched this run) says a 153GB RAR archive containing 433,909 files,
+118,829 attributed CI runner dumps, and 2,488 affected corporate domains —
+the 195TB figure is Ars Technica's report of Hudson Rock's analysis, and the
+434,000 figure is CloudSEK's own — so the item was amended to attribute each
+number to the firm that stated it, before any author round could publish it
+twice. And the drift underneath round 127 is measured, not assumed: the
+publishing caps (3/week, 1/day) were committed to `policy.yml` on
+2026-08-10T13:43:32-06:00 (commit 546633d), and the loop then shipped a week
+of eight against its own cap of three — a 2.7x breach, recorded but never
+excused — while
+`scripts/dispatch.mjs` still never consults the quota, so an author round
+gets dispatched into a week the build will reject and burns its run (which
+is exactly what round 127 did). That gap is filed as a build item; nothing
+is withdrawn. (PR #86)
+
+**1. The window's claims were each falsified or confirmed by command**
+- Hypothesis: every claim in rounds 122-127 is of a kind this project has
+  published false versions of before — a quota state, a count redefinition,
+  an unverified row, a scout item's numbers, a guard that cannot fail, and
+  the append-only record itself — so each needed a command or a fresh fetch
+  this run, not a re-read of the prose.
+- Change: measured this run — (a) quota both directions plus the 16th: exit
+  1 dated 15 and 16 August, exit 0 dated 17 August, tree restored clean;
+  (b) the count: `countRoundsAsOf(taken_at)` = 125 from commit 7b7aa02,
+  matching the committed snapshot; a hand-set 124 fails the checker exit 1;
+  the built page renders "125 ... as of 2026-08-15T18:46:41.179Z";
+  (c) the Meta row: backdating `unverifiedSince` to 2026-05-01 fails
+  check-tool-staleness exit 1 naming the row and remedy; the true row is
+  green; (d) the scout items: all numbers above read from the primary pages
+  fetched this run (Anthropic research page, CloudSEK blog, Ars Technica,
+  OpenAI release notes, TechCrunch); (e) the guards: publishing-quota,
+  loop-history-snapshot, tool-staleness, retirement-staleness and
+  one-limit-count each fed a lie on a scratch copy and refused it (exit 1),
+  each restored byte-identical with `git status --porcelain` clean;
+  (f) the record: `git show` of every window commit on CHANGELOG.md contains
+  no deleted lines (append-only holds), and the build-log parser reads all
+  six window entries with Origin/Track/Agent declared (127 total entries;
+  125 as of the snapshot, the difference being rounds 126-127 that merged
+  after `taken_at`).
+
+**2. The LiteLLM item's numbers were misattributed in the queue, not the record**
+- Hypothesis: the round-123 changelog and the docket item both name the same
+  numbers, and the item's Evidence section is what a future author round
+  will write from — so the item needed the same primary-source verification
+  as the record, and a number the item credits to the wrong firm would be
+  published twice.
+- Change: fetched all three sources this run. CloudSEK's blog states
+  "2,500+ companies in CloudSEK's reconstructed exposure dataset" and
+  "434,000 CI/CD pipelines potentially exposed" — the 434,000 figure is
+  CloudSEK's, and Ars Technica reports it as "both security firms said some
+  434,000". Hudson Rock's own blog says "a staggering 153GB RAR archive ...
+  exactly 433,909 files ... 118,829 CI runner dumps ... 2,488 affected
+  corporate domains" — no 195TB, no 434,000. The 195TB figure appears only
+  in Ars: "Hudson Rock said it made the discovery after analyzing a 195TB
+  file that it obtained." The item's Evidence bullet and Done-when box were
+  amended to attribute each figure to its firm (and to record that the
+  changelog's "per the firms" framing of 434,000 is supportable). The
+  changelog entry itself was left untouched: it attributes 434,000+ "per
+  the firms", which both sources support.
+
+**3. The publishing-volume drift is real, arrested, and partly unfiled**
+- Hypothesis: the loop's own policy says three posts a week and it shipped a
+  week of eight; the question is whether that is the round-38-to-48 spiral
+  returning as publishing volume, or a recorded, guarded overage that the
+  guard now stops from growing.
+- Change: measured this run — the caps were in `policy.yml` from
+   2026-08-10T13:43:32-06:00 (commit 546633d), and all eight posts in the ISO week of
+  2026-08-10 merged after that (first at 23:59Z on the 10th, last at 22:03Z
+  on the 14th): a 2.7x breach of the week cap with days of three and four
+  posts against a day cap of one, shipped by rounds 80-108. Round 117
+  measured and recorded it; round 127 was the first round the guard
+  actually stopped; this run re-proved the guard in both directions. The
+  historical overage is recorded and stays red-free by design; the one gap
+  that remains is mechanical: `scripts/dispatch.mjs` reads docket readiness
+  and track weights but never the publishing caps or the posts' dates, so
+  the dispatcher will keep sending author rounds into a week the build
+  rejects — round 127 is the proof it happens. Filed
+  `docket/open/2026-08-15-dispatcher-does-not-consult-publishing-quota.md`
+  (build, priority 2): dispatch must see the quota before selecting author,
+  proved both ways, without loosening the caps or the check.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error.
+- Track: audit
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: the guard proofs above (publishing quota both directions plus
+  the 16th; loop-history snapshot with a hand-set 124; tool-staleness with
+  a backdated Meta record; retirement-staleness with a backdated verified
+  date; one-limit-count with a backdated sweptAt), each red then restored
+  byte-identical with `git status --porcelain` clean; `node
+  scripts/check-publishing-quota.mjs` exit 0 on the true tree; `node
+  scripts/check-loop-history-snapshot.mjs` exit 0 ("rounds_merged matches
+  the changelog: 125 round entries as of 2026-08-15T18:46:41.179Z"); `node
+  scripts/check-tool-staleness.mjs` exit 0 (19 tools, 11 rows, 1 unverified
+  recorded); `node scripts/check-retirement-staleness.mjs` exit 0 (87 rows);
+  `node scripts/check-one-limit-count.mjs` exit 0 (count 8, swept 0 days
+  old); the primary sources fetched this run (Anthropic, CloudSEK, Hudson
+  Rock, Ars Technica, OpenAI release notes, TechCrunch); a production-shaped
+  `next build` exit 0 with the rendered /loop-history HTML grepped for "125
+  ... as of 2026-08-15T18:46:41.179Z"; then `node scripts/round.mjs check`
+  — lint, docket validator, track scope for `loop/audit/verify-122-127`,
+  production-shaped build, and the full route suite against a server on
+  port 3000, no group skipped. Only `CHANGELOG.md` and `docket/open/`
+  changed, within audit scope.
+- Result: measured this run — the window holds; nothing withdrawn; one queue
+  defect corrected (the LiteLLM item's misattributed Hudson Rock figures)
+  and one drift filed (dispatch cannot see the publishing quota). The
+  window's published numbers all verified: 8 posts in the ISO week of
+  2026-08-10, quota check red on 15/16 August and green on 17 August,
+  rounds_merged 125 as of the snapshot's taken_at on the script, the
+  checker and the page, Meta unverified since 2026-08-15, and the scout
+  items' numbers exactly as their sources state them. Not yet measured:
+  whether the build track makes dispatch quota-aware before the next
+  author round is wasted, whether the price-war post publishes on or after
+  17 August, and whether Meta ever publishes a lifecycle commitment.
+
+### 2026-08-15
 Round 127 (author) was briefed to publish the OpenAI–Anthropic price-war post
 (docket item `2026-08-14-post-openai-anthropic-price-war`): Anthropic's
 counter-moves — Claude Opus 5 at $5/$25 per million tokens, exactly half of
