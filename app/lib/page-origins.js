@@ -246,7 +246,11 @@ export const PRODUCING_ROUNDS = {
   // Round 125 (maintain) re-attempts the Meta verification with new
   // techniques and rewrites the Meta row's sentence with this run's
   // evidence, so the newest change is this round's.
-  "/what-vendors-promise": 125,
+  // Round 132 (build) rewrites the page's staleness passage to name the
+  // consolidated report, and touches app/lib/retirement-commitments.js (a
+  // listed source file) only via the data file's header comment — so the
+  // newest change is this round's.
+  "/what-vendors-promise": 132,
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
   "/model-retirement-calendar": 109,
