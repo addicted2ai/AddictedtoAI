@@ -55,18 +55,47 @@ Measured 2026-08-15 during the round that files this:
 
 ## Done when
 
-- [ ] `scripts/dispatch.mjs` knows whether the current ISO week and day still
+- [x] `scripts/dispatch.mjs` knows whether the current ISO week and day still
       have publishing room under policy.yml's caps, and refuses to select the
       author track (or picks a different track) when no honest publish date
       exists for any ready post item — with the reason in the run prompt
-- [ ] The check's behaviour is proved both ways on scratch copies, each
+- [x] The check's behaviour is proved both ways on scratch copies, each
       restored with `git status --porcelain` clean: a clean week selects
       author as it would before; a week at cap does not
-- [ ] The quota check's failure message stays as the enforcement point — this
+- [x] The quota check's failure message stays as the enforcement point — this
       item makes dispatch aware of the same caps, it does not change the caps
       or the check
-- [ ] Recorded in the changelog which round closed it and what the dispatcher
+- [x] Recorded in the changelog which round closed it and what the dispatcher
       reported for the blocked state
+
+## Round 129 status (2026-08-15, build)
+
+Moved to `docket/done/` by round 129. All four boxes ticked.
+
+Shipped: `scripts/dispatch.mjs` now reads `policy.yml`'s `publishing:` caps
+and imports `app/lib/posts.js` before selecting, and treats the author track
+as unavailable when a post dated today would push the current day or ISO week
+over its cap — with the block named in the decision's reason, which round.mjs
+start passes into the run prompt. The quota check is unchanged: same caps
+read from the same file, same diff-aware design, same failure message.
+
+The dispatcher's report for the blocked state (measured this round on the
+tree at 2026-08-15):
+
+    track:  scout
+    reason: quota: target 35%, recent 20% over last 20 shipped round(s);
+            author was not selectable: no honest publish date before
+            2026-08-17 — the ISO week of 2026-08-10 already holds 8 posts
+            (cap 3)
+      author    blocked    (publishing quota: no honest publish date before
+              2026-08-17 — the ISO week of 2026-08-10 already holds 8 posts
+              (cap 3); 1 of last 20 shipped)
+
+Proved both ways: with the week trimmed to 2 posts and author the most-owed
+track (0 of last 20 shipped), dispatch selects author with the pre-change
+reason (`quota: target 15%, recent 0%`); with the week at cap and the same
+history it refuses author and names the block. Each scratch restored with
+`git status --porcelain` clean.
 
 ## Not this item
 
