@@ -81,7 +81,8 @@ from `unsupervised`. This round chose the four-verb form the maintainer
 filed as correct, made the chain "chose, briefed, reviewed and merged"
 identical in all six places plus the parser's own comment, corrected the
 comment's "(round 86)" to "(round 85)", and added a check that fails if
-any surface's definition drifts a third time. (PR #67)
+any surface's definition drifts a third time by dropping a word from an
+Origin's definition. (PR #67)
 
 **1. The delegated definition, one wording everywhere**
 - Hypothesis: the maintainer filed the four-verb form as correct, and the
@@ -124,15 +125,19 @@ any surface's definition drifts a third time. (PR #67)
 - Hypothesis: the parser comment said "(round 86)", but the docket claimed
   the value appeared in round 85 — verify with `git log`, do not take the
   item's word for it.
-- Change: `git log -S "delegated" -- app/lib/build-log.js` shows the
-  earliest commit to name the value in that file is `3f61b7a` (the
-  delegation record), and the commit that wrote "(round 86)" into the
-  comment is `8cec1ef` — the build round whose own entry, "This round
-  (build) makes the code accept the Origin value the record now needs. Its
-  own entry is the first to carry `Origin: delegated`", renders as round 85
-  in the current record (round 86 is the ship-arm build round that
-  followed; the meta delegation round merged as 89). The comment now names
-  (round 85), and the new check pins it there so it cannot go stale again.
+- Change: `git log -S "delegated" -- app/lib/build-log.js` shows only
+  `8cec1ef` — the build round that merged as round 85 — as the commit
+  naming the value in that file; the value was first drafted in `3f61b7a`
+  (PR #33, closed for drift, never merged), whose draft already wrote
+  "(round 85)". The irony is that the closed draft was right and the
+  "(round 86)" the comment carried was written by the build round
+  `8cec1ef` itself (`git log -S "(round 86)" -- app/lib/build-log.js`
+  shows `8cec1ef` adding it). `8cec1ef`'s own entry, "This round (build)
+  makes the code accept the Origin value the record now needs. Its own
+  entry is the first to carry `Origin: delegated`", renders as round 85 in
+  the current record (round 86 is the ship-arm build round that followed;
+  the meta delegation round merged as 89). The comment now names (round
+  85), and the new check pins it there so it cannot go stale again.
 
 **4. The route map follows the files that changed**
 - Hypothesis: changing a route's listed source files moves its producing
