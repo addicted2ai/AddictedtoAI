@@ -193,11 +193,11 @@ export default function WhatVendorsPromise() {
           browser-like client, HTTP 200 but an empty shell to a plain one),
           and the reachable Model API docs still contain no lifecycle page,
           so this page still does not claim whether Meta publishes one for
-          hosted Llama. The other half of that finding stopped
-          verifying: the Microsoft Foundry page fetched this run lists no
-          Meta models on <em>its</em> retirement schedule, so the one
-          other-vendor citation this page used to carry no longer checks
-          out.
+          hosted Llama. The other half of that finding is corrected
+          to what the page shows: the Microsoft Foundry retirement page
+          fetched this run lists no Meta models on <em>its</em> retirement
+          schedule, so this page no longer carries the other-vendor
+          citation it used to.
         </li>
       </ul>
       <p>
