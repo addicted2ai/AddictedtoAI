@@ -202,7 +202,9 @@ export default function WhatVendorsPromise() {
           no retirement date — so the round-88 citation was right in
           substance, and Foundry&rsquo;s schedule is the one reachable page
           recording Llama retirements, even though Meta&rsquo;s own docs
-          still cannot be read.
+          still cannot be read. The count of three was independently
+          verified against the Foundry schedule during the round&rsquo;s
+          review.
         </li>
       </ul>
       <p>
