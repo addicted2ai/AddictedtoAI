@@ -85,3 +85,22 @@ post dated 2026-08-14 → exit 1 (day 5 vs cap 1, week 9 vs cap 3); a scratch
 post dated 2026-08-15 → exit 1 (day clean, week 9 vs cap 3); re-dating an
 existing post into 2026-08-14 → exit 1. Each scratch was reverted; exit 0
 on the true tree (9 posts; day cap 1, week cap 3).
+
+## Round 117 correction (2026-08-15, review of head 1749995)
+
+The independent review of the first head rejected it: a post block whose
+first field is not `path:` was invisible to the parser (block regex
+`\{\s*path:...`), and the check printed `ok 9 posts` exit 0 on a file that
+actually held 10 posts with five on 2026-08-14 — box 1 above was true only
+for blocks the regex matched. The fix head closes it: the parser now fails
+loudly unless the matched-block count equals the file's `path:` count
+(naming both), field extraction is anchored to line starts so a
+`datePublished:` inside another field's string cannot be read as the date,
+and a block holding other than exactly one `datePublished` fails. Re-proved
+in both directions plus the class: reordered-field post (2026-08-14) →
+exit 1 (9 blocks vs 10 `path:` fields); conforming 2026-08-14 post → exit 1
+(day 5 vs cap 1, week 9 vs cap 3); conforming 2026-08-17 post → exit 0;
+block closing without `},` → exit 1; in-string `datePublished` with a real
+08-14 date → exit 1; duplicate `datePublished` → exit 1. Each scratch
+reverted with `git status --porcelain` clean; true tree green (`ok 9
+posts`).

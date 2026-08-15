@@ -94,6 +94,29 @@ trusted, in all three directions: a scratch post dated 2026-08-14 → exit 1
 (day clean, week 9 vs cap 3), re-dating an existing post into 2026-08-14 →
 exit 1; each reverted, exit 0 on the true tree. (PR #73)
 
+The independent review of the first head (1749995) rejected it on a
+demonstrated defect: the block regex `\{\s*path:...` made a post whose first
+field was not `path:` invisible to the parser, and the check printed
+`ok 9 posts` exit 0 on a file that actually held 10 posts with five on
+2026-08-14 and nine in the week — the header's "fails loudly if the file
+stops matching it" held only for a file matching zero blocks. This head
+closes it with the guard the review required: the number of matched blocks
+must equal the file's `path:` count, or the check fails loudly naming both
+counts. The two other silent-drop holes in the same class are closed while
+reading it: field extraction is anchored to line starts so a
+`datePublished:` sitting inside another field's string cannot be read as
+the post's date (the old unanchored extraction read one, proven), and a
+block holding other than exactly one `datePublished` fails instead of
+silently using the first. Proved in both directions plus the class: the
+reordered-field scratch (2026-08-14) → exit 1 (guard: 9 blocks vs 10
+`path:` fields); a conforming scratch dated 2026-08-14 → exit 1 (day 5 vs
+cap 1, week 9 vs cap 3); a conforming scratch dated 2026-08-17 → exit 0
+(clean week, `ok 10 posts`); a block closing without `},` → exit 1 (guard);
+a single-quoted description holding `datePublished: "2026-08-17"` with a
+real 08-14 date → exit 1 (the old parser read the string and went green);
+a block with two `datePublished` fields → exit 1. Each scratch reverted,
+`git status --porcelain` clean after each, exit 0 on the true tree.
+
 **1. The publishing quota stops being a number a prompt is trusted to honour**
 - Hypothesis: the caps in `policy.yml` (`max_posts_per_day: 1`,
   `max_posts_per_week: 3`) had already been breached 2.7x in the week of
@@ -108,8 +131,14 @@ exit 1; each reverted, exit 0 on the true tree. (PR #73)
   `scripts/check-tool-staleness.mjs` / `scripts/check-one-limit-count.mjs`.
   It reads `policy.publishing.max_posts_per_day` and `max_posts_per_week`
   from `policy.yml` (missing or non-integer → fail loudly), parses
-  `app/lib/posts.js` post blocks by regex (a block without a path or
-  `datePublished`, or duplicate paths, → fail loudly), and diffs against
+  `app/lib/posts.js` post blocks by regex — the match must be total: the
+  matched-block count is compared with the file's `path:` count and a
+  mismatch fails loudly naming both (a reordered-field post, or a block
+  closing without `},`, is red, not invisible); field extraction is
+  anchored to line starts so `datePublished:` text inside another field's
+  string cannot be read as the post's date; a block without a path or
+  `datePublished`, more than one `datePublished`, or duplicate paths →
+  fail loudly — and diffs against
   `git show origin/main:app/lib/posts.js`. A post counts as changed when it
   is new or its `datePublished` moved; for each changed post the head's
   day-count and Monday-start ISO-week-count must stay within the caps, with
@@ -136,11 +165,19 @@ exit 1; each reverted, exit 0 on the true tree. (PR #73)
 - Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
   scope for `loop/build/publishing-quota-check`, production-shaped build
   with the new check in prebuild, and the full route suite against a server
-  on port 3000, no group skipped. The new check was proved able to fail in
-  three directions before it was trusted (scratch post on 2026-08-14 →
+  on port 3000, no group skipped. The check was proved able to fail in all
+  three breach directions on the first head (scratch post on 2026-08-14 →
   exit 1; scratch post on 2026-08-15 → exit 1; re-dated existing post into
-  2026-08-14 → exit 1; each reverted, exit 0), then re-ran green on the true
-  tree (`ok 9 posts; day cap 1, week cap 3`).
+  2026-08-14 → exit 1; each reverted, exit 0). The independent review then
+  demonstrated the parser hole, and this head proves the guard in both
+  directions plus the class: a reordered-field post (2026-08-14) → exit 1
+  (9 blocks vs 10 `path:` fields); a conforming 2026-08-14 post → exit 1
+  (day 5 vs cap 1, week 9 vs cap 3); a conforming 2026-08-17 post → exit 0;
+  a block closing without `},` → exit 1; an in-string `datePublished` with a
+  real 08-14 date → exit 1 (the old unanchored parser read the string's
+  08-17 and would have gone green); a duplicate `datePublished` → exit 1.
+  Each scratch was reverted with `git status --porcelain` clean, and the
+  true tree stays green (`ok 9 posts; day cap 1, week cap 3`).
 - Result: measured this round — the breach this check now records: 3 posts
   on 2026-08-11 and 4 on 2026-08-14 (cap 1 per day), 8 in the ISO week of
   2026-08-10 (cap 3 per week, 2.7x), none of it in the changelog before

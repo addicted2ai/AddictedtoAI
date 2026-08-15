@@ -27,9 +27,11 @@
 //
 // posts.js is ESM in a CommonJS project, so instead of importing it this
 // script reads the file and matches post blocks — the same approach
-// check-tool-staleness.mjs takes with tool-categories.js. The regex fails
-// loudly if the file stops matching it, because a parser that silently finds
-// nothing is how a guardrail goes green forever.
+// check-tool-staleness.mjs takes with tool-categories.js. The match must be
+// total, not partial: the parser fails loudly unless the number of matched
+// blocks is exactly the number of `path:` fields the file holds, because a
+// parser that silently finds one post fewer than the file holds is how a
+// guardrail goes green forever.
 
 import fs from "fs";
 import path from "path";
@@ -60,13 +62,23 @@ if (!Number.isInteger(weekCap) || weekCap < 1) {
 // for fields.
 function readPosts(source, label) {
   const blocks = [...source.matchAll(/\{\s*path:[\s\S]*?\n\s*\},/g)].map((m) => m[0]);
+  const pathCount = (source.match(/^\s*path:\s*"/gm) || []).length;
+  if (blocks.length !== pathCount) {
+    fail(
+      `${label}: matched ${blocks.length} post block(s) but ${POSTS_FILE} holds ${pathCount} path: field(s) — a post block was dropped (its first field is not path:, or it does not end with "},"). A parser that silently sees fewer posts than the file holds cannot guard the quota`
+    );
+  }
   const posts = [];
   for (const block of blocks) {
-    const match = (name) => block.match(new RegExp(`${name}:\\s*"([^"]*)"`))?.[1];
+    const match = (name) => block.match(new RegExp(`^\\s*${name}:\\s*"([^"]*)"`, "m"))?.[1];
     const postPath = match("path");
     const date = match("datePublished");
     if (!postPath || !date) {
       fail(`${label}: a post block lacks path or datePublished — the parser no longer matches ${POSTS_FILE}`);
+    }
+    const dateFieldCount = (block.match(/^\s*datePublished:\s*"/gm) || []).length;
+    if (dateFieldCount !== 1) {
+      fail(`${label}: post ${postPath} holds ${dateFieldCount} datePublished field(s) — exactly one per post`);
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date))) {
       fail(`${label}: post ${postPath} has datePublished "${date}" which is not a real date`);
