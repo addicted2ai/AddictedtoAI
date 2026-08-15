@@ -163,13 +163,18 @@ the tree was restored green; a missing date fails too.
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
   track scope for `loop/build/staleness-clocks`, a production-shaped build and
-  the route checks against a server on port 3000; no group skipped.
-  `node scripts/staleness-report.mjs` exit 0 (128 artefacts, 127 within window,
-  1 recorded-unverified within window, 0 stale) with the standing WARN that
-  policy.yml has no `staleness_days.retirement_calendar` key yet;
-  `node scripts/preflight.mjs` reports clear; the backdated states above were
-  each run red and then restored, with `git status --porcelain` clean before
-  this entry was written.
+  the route checks against a server on port 3000; no group skipped. The
+  disclosure check earned its keep on its own PR: it flagged
+  /what-vendors-promise and /model-retirement-calendar — both of whose listed
+  files this round touches — still mapped to earlier rounds, and both moved
+  to 132   before green. One lint pass fixed an unescaped apostrophe in the
+  /what-vendors-promise passage (the file's JSX requires it escaped), and the
+  backdated states above were each run red and then restored, with `git status
+  --porcelain` clean before this entry was written.
+  `node scripts/staleness-report.mjs` exit 0 (128 artefacts, 127 within
+  window, 1 recorded-unverified within window, 0 stale) with the standing
+  WARN that policy.yml has no `staleness_days.retirement_calendar` key yet;
+  `node scripts/preflight.mjs` reports clear.
 - Result: measured this run — 128 published artefacts across five classes, all
   within their policy windows (Directory 45, blog posts 90, demos 30, the
   calendar on its interim 30); the check fails on a post 106 days past its
