@@ -27,14 +27,24 @@
 //
 // The count word comes from app/lib/one-limit-count.js, the same module
 // the page renders from — never a second copy of the number.
+//
+// The sweep output must also be recent, not merely well-formed and honest
+// about its own date: scripts/sweep-one-limit-count.mjs is run by hand and
+// its output checked in by the round that runs it, so nothing mechanical
+// refreshes the file. A sweep older than the process-claim window in
+// policy.yml (staleness_days.process_claim, the same window the
+// loop-history snapshot check reuses) fails the build — the page would
+// otherwise keep rendering its count from a sweep the world has passed.
 
 import fs from "fs";
 import path from "path";
 import { pathToFileURL } from "url";
+import { load as parseYaml } from "js-yaml";
 
 const SWEEP_FILE = path.join(process.cwd(), "scripts", "one-limit-count-sweep.json");
 const PAGE_FILE = path.join(process.cwd(), "app", "blog", "page.js");
 const EXCLUDED_PR = 23;
+const DAY = 24 * 60 * 60 * 1000;
 
 function fail(message) {
   console.error(`FAIL  ${message}`);
@@ -91,6 +101,22 @@ if (typeof sweep.sweptAt !== "string" || Number.isNaN(Date.parse(sweep.sweptAt))
 if (Date.parse(sweep.sweptAt) > Date.now() + 60_000) {
   fail(`sweep output is dated ${sweep.sweptAt}, in the future — the sweep output is not what was run`);
 }
+// Staleness. A real timestamp is not the same as a recent one: the sweep
+// script is run by hand and its output checked in by the round that runs
+// it, so nothing in CI refreshes the file. The window is read from
+// policy.yml rather than copied, because a threshold restated in a second
+// file drifts from the one a run is told to honour — the same shape
+// scripts/check-loop-history-snapshot.mjs uses for its snapshot.
+const policy = parseYaml(fs.readFileSync(path.join(process.cwd(), "policy.yml"), "utf8"));
+const windowDays = policy.staleness_days?.process_claim;
+if (!Number.isInteger(windowDays)) {
+  fail(`policy.yml staleness_days.process_claim is not an integer to enforce`);
+}
+const sweptAtMs = Date.parse(sweep.sweptAt);
+const ageDays = Math.floor((Date.now() - sweptAtMs) / DAY);
+if (ageDays > windowDays) {
+  fail(`sweep output is dated ${sweep.sweptAt} — ${ageDays} days ago, past the ${windowDays}-day process-claim window — re-run node scripts/sweep-one-limit-count.mjs and check the fresh output in`);
+}
 if (!Array.isArray(sweep.rules) || sweep.rules.length < 2 || !sweep.rules.every((r) => typeof r === "string" && r.length > 0)) {
   fail("sweep output does not state its rules — the #23 exclusion and the head-commit rule must be in the output, not just the script");
 }
@@ -105,7 +131,7 @@ if (!readerImport) {
   fail("app/blog/page.js does not import the sweep-output reader — the page must render the count from the checked-in output, not hardcode it");
 }
 
-ok(`sweep output is internally consistent: count ${sweep.count}, ${set.length} set member(s), swept ${sweep.sweptAt}`);
+ok(`sweep output is internally consistent: count ${sweep.count}, ${set.length} set member(s), swept ${sweep.sweptAt}, ${ageDays} day(s) old, within the ${windowDays}-day process-claim window`);
 
 // --- rendered mode --------------------------------------------------------
 //
