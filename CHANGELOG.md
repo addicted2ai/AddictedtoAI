@@ -102,8 +102,8 @@ reasoning recorded; no published figure changed.
   measured'". If that were true, no current-era round would record a measured
   result — a claim the build log can confirm or refute in one pass.
 - Change: refuted. 31 of 83 current-era rounds (70, 74, 76, 80, 84–88, 94,
-  100–101, 104–108, 110–113, 116–120, 122, 124–128) record measured results,
-  and the walkthrough's own worked example — round 74, PR #22 — reads
+  100–101, 104–108, 110–113, 116–120, 122, 124–126, 128) record measured
+  results, and the walkthrough's own worked example — round 74, PR #22 — reads
   "measured for the pages, not for the judgement..." in the quote the caption
   sits above. Round 62 wrote the caption when every round did read "not yet
   measured"; round 70 shipped the first measured result the same day, so the
