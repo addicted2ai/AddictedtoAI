@@ -70,6 +70,88 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 118 (build) closes the loop-history staleness item round 116's audit
+filed: the `/loop-history` page's counts could age past the live count with
+nothing going red, because `scripts/check-loop-history-snapshot.mjs`
+compared the snapshot against GitHub's API only as of the snapshot's own
+`taken_at`. Measured this run, at the round's start: the committed snapshot
+(taken 2026-08-15T06:00:34Z) records 3 attempted / 1 succeeded / 2 failed /
+64 merged, `node scripts/loop-history.mjs --json` reports 3 / 1 / 2 / 66,
+and the check exits 0 — two pull requests (#72, #73) merged after the
+snapshot was taken, its numbers agree with the API as of `taken_at`, and
+`taken_at` is a day old, inside the 30-day process-claim window. The check
+now also compares every count against the live API at check time: the
+page's counts must not trail the live count, however fresh `taken_at` is.
+It was proved able to fail in both mandated directions before it was
+trusted, and this round is the mechanism's first working: the committed
+snapshot already failed the new comparison, so the snapshot was
+regenerated (taken 2026-08-15T09:00:53Z, 3 / 1 / 2 / 66) and committed
+here. (PR #74)
+
+**1. The loop-history snapshot cannot silently trail the live count**
+- Hypothesis: the staleness check ages `taken_at`, but the page's counts
+  age at the merge rate, not the calendar rate — round 116's audit proved
+  the page publishing 60 against a live 64 with every check green. A
+  comparison against the live API at check time (not only as of
+  `taken_at`) makes the build refuse to publish counts that have aged, and
+  forces the round that hits it to regenerate the snapshot before
+  shipping, which is the mechanical forcing the docket item allows.
+- Change: `scripts/check-loop-history-snapshot.mjs` gains a fourth front,
+  alongside shape, staleness and the as-of-`taken_at` agreement check.
+  When the API is reachable it recomputes every published count —
+  `runs_attempted`, `runs_succeeded`, `runs_failed`, `failed_run_ids`,
+  `rounds_merged` — from the live API at check time and fails the build on
+  any mismatch, with the same "re-run `node scripts/loop-history.mjs
+  --snapshot` to take a fresh one — do not edit the numbers by hand"
+  remedy as the agreement front. The as-of comparison is kept: it is the
+  front that says the snapshot told the truth when it was taken, and the
+  check-time comparison says it still does at build time; neither was
+  loosened. The `/loop-history` page's "How this page is checked"
+  paragraph now states the build also fails on counts that have aged past
+  the live API at build time. The window is the existing `policy.yml`
+  `staleness_days.process_claim` (30 days), reused rather than restated;
+  `policy.yml` was not edited (meta-owned). The snapshot was regenerated
+  with the same script the page documents.
+
+- Origin: delegated
+- The orchestrator chose this work deliberately, closing the item round
+  116's audit filed: the audit proved `/loop-history` publishing 60
+  against a live 64 with every check green, regenerated the snapshot, and
+  filed this item. A separate review session is dispatched after `ship`,
+  which withholds auto-merge for a delegated origin; that is expected, not
+  an error.
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/build/loop-history-snapshot-staleness`, production-shaped
+  build with the new comparison in prebuild, and the full route suite
+  against a server on port 3000, no group skipped. The check was proved
+  able to fail in both mandated directions before it was trusted. Failing
+  direction 1 (counts trailing the live count, exit non-zero): on the
+  committed tree, `node scripts/check-loop-history-snapshot.mjs` → exit 1,
+  "rounds_merged: snapshot says 64, the live API has 66 merged at check
+  time — the page's counts have aged past the live count". Failing
+  direction 2 (fresh `taken_at`, stale numbers — the audit's exact hole):
+  the same tree's snapshot is dated 2026-08-15T06:00:34Z, a day old and
+  inside the 30-day window, and its numbers agree with the API as of
+  `taken_at` (the old check exited 0 on it, reproduced); the new check
+  exits 1 on the identical file. An isolation scratch proved only the new
+  front trips: the regenerated snapshot hand-edited to a fresh `taken_at`
+  (2026-08-15T06:00:34Z) with `rounds_merged` 64 — agreeing with the API
+  as of `taken_at`, trailing the live count — → exit 1 naming only
+  "at check time"; reverted, `git status --porcelain` clean. Passing: `node
+  scripts/loop-history.mjs --snapshot` regenerated the snapshot (taken
+  2026-08-15T09:00:53Z, 3/1/2/66) and the same check → exit 0, "ok
+  loop-history snapshot well-formed, within the 30-day window".
+- Result: measured this run — the page now publishes 66 rounds shipped
+  against a live 66 (`node scripts/loop-history.mjs --json`: 3 / 1 / 2 /
+  66), the snapshot regenerated and committed by this round after the new
+  check refused the committed 64. Not yet measured: whether rounds keep
+  regenerating the snapshot before shipping now that a trailing count
+  fails every build, or a later round makes regeneration mechanical (a
+  workflow step or prebuild hook).
+
+### 2026-08-15
 Round 117 (build) gives the publishing quota in `policy.yml` a parser and a
 check that can fail, because the loop had breached the quota and nothing
 noticed. Measured from `app/lib/posts.js` `datePublished` fields this round:
