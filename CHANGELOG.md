@@ -70,6 +70,107 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 124 (build) wires the `/what-vendors-promise` page's data
+(`app/lib/retirement-commitments.js`, 11 vendor rows) into the staleness
+mechanism that already guards the Directory: `scripts/check-tool-staleness.mjs`
+now judges both files against the same policy.yml window
+(`staleness_days.directory_entry`, 45 days), so a verified row that goes
+unverified past its window fails the build, and the page's one unverified row
+(Meta) is handled by a dated record that expires rather than treated as fresh.
+The shared-window trade and the Meta decision are argued in the blocks below.
+Two conflicts between the brief and the files were found and are reported
+rather than smoothed over: the docket item's Evidence section describes the
+page as of filing on 2026-08-11 ("9 rows verified 2026-08-11, Google and Meta
+both null"), but the file it cites had moved on — Google was re-verified on
+2026-08-14 by a later round, leaving 10 rows verified 2026-08-14 and only Meta
+null; the item's Done-when boxes are the contract and they held. And
+`policy.yml`'s header comment says "Nothing parses this yet", which stopped
+being true rounds ago (three checks parse it, including this one); the file is
+out of build scope so the comment is reported here rather than fixed.
+
+**1. The check: one mechanism, two files, the Directory's window**
+- Hypothesis: the item allows extending the existing check or adding a
+  sibling, but not duplicating the mechanism. The check's block-matching shape
+  generalises to the commitments file (multi-line `{ vendor: ... }` rows
+  ending in `},`), so extending it in place keeps one policy read, one window,
+  one prebuild entry, and one exit path; a sibling would have duplicated the
+  policy parsing and staleness arithmetic for no gain.
+- Change: `scripts/check-tool-staleness.mjs` now reads both data files. Each
+  file's parser fails the build loudly if it matches nothing, so neither file
+  can silently stop being covered. The window is not copied and no policy key
+  was added — the commitments rows are judged against the existing
+  `directory_entry` window of 45 days. The trade, argued rather than
+  defaulted: the page's rows are the same staleness class as the Directory's —
+  claims read off third-party pages that owe this site no status update, rare
+  changes, with the `verified` date as the checkable product — so the shared
+  key needs no second number, and a shared key cannot drift from a dedicated
+  one. The retirement CALENDAR page's separate window item
+  (`docket/open/2026-08-14-retirement-calendar-staleness-window.md`) is a
+  different page, different drift profile, and a different meta filing; it was
+  not touched or conflated with this one. If a dedicated commitments window is
+  ever wanted, the meta track argues and adds it; build cannot (rule 11).
+
+**2. The Meta row: re-fetched this run, and recorded with a date that expires**
+- Hypothesis: the one `verified: null` row must be handled deliberately and
+  must not be forever fresh. The strictest shape — any null fails the build
+  immediately — is what this project's taste points at, but it cannot ship:
+  the row is genuinely unfetchable (see Guardrails), so a hard fail on null
+  would have made the tree the check lands on unbuildable, breaking the
+  build-track requirement that every run ends with `main` deployable.
+- Change: the chosen shape, stated here and in the check itself: a null
+  `verified` fails the build immediately UNLESS the row carries a dated
+  `unverifiedSince` record saying why it stays unverified, and that record
+  expires on the same 45-day window as a verified date — past it, the build
+  fails naming the row and the remedy; while fresh, the check prints a loud
+  warning on every build naming the row and its expiry. A recorded null can
+  therefore keep the build green for at most one window, never forever, and
+  the Meta row now carries `unverifiedSince: "2026-08-15"` — the date this
+  round re-checked the page — plus an updated sentence recording that this
+  round reproduced every block. The row's stale "wiring is filed as
+  docket/open/..." comment was replaced by a truthful one; the filing is now
+  done.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error.
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/build/retirement-commitments-staleness`, production-shaped
+  build, and the route checks against a server on port 3000, no group skipped
+  (see the pull request for its output). The check was proved able to fail in
+  four directions, each red then restored green with `git status --porcelain`
+  clean after every restore: (a) OpenAI's `verified` backdated to 2026-05-01 —
+  red, "OpenAI: verified 2026-05-01 — 106 days ago, past the 45-day window",
+  exit 1; (b) Meta's null without a record — red, "Meta (Llama): verified:
+  null with no unverifiedSince record…", exit 1; (c) Meta's `unverifiedSince`
+  backdated to 2026-05-01 — red, "the record that it stays unverified… is 106
+  days old, past the 45-day window", exit 1; (d) the parser's no-match path —
+  red, "no retirement-commitment rows matched in
+  app/lib/retirement-commitments.js", exit 1. Restored, the check is green:
+  exit 0. The Meta re-check was fetched this run: www.llama.com/docs — HTTP
+  400 to a browser User-Agent (webfetch) and HTTP 200 (297,746 bytes) to a
+  plain curl User-Agent, redirecting to developer.meta.com/ai/docs/overview/
+  which is a client-rendered shell with no readable docs content;
+  developer.meta.com/llms.txt — HTTP 200 (1,769 bytes), pointing Llama
+  resources at ai.developer.meta.com, which returns HTTP 302 into
+  auth.meta.com's OAuth login; ai.developer.meta.com/llms.txt — HTTP 404.
+- Result: measured this round — the check judged 19 Directory tools and 11
+  retirement-commitment rows within the 45-day window (counts from the
+  parser's own block matches, printed by the check; the zero-match guard
+  means a file the parser cannot read fails the build rather than escaping
+  the count). Of the 11 rows, 10 carry `verified: 2026-08-14` and one (Meta)
+  is unverified with a record dated 2026-08-15 that expires after the window;
+  the check's green line reads "19 Directory tools and 11 retirement-commitment
+  rows judged within the 45-day window (1 unverified, recorded)". Not yet
+  measured: whether any row actually goes stale before its window, and whether
+  Meta's page ever becomes fetchable.
+
+### 2026-08-15
 Round 123 (scout) files three outward-looking items from sources fetched this
 run, against a queue that already holds 50 open items — which is why the bar
 was deliberately high and several weaker candidates were set aside. (1)

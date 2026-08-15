@@ -232,7 +232,12 @@ export const PRODUCING_ROUNDS = {
   // Round 116 (audit) corrected the Foundry half of the Meta finding (the
   // round-113 correction overreached: the Foundry retirement schedule does
   // list Meta models), so the newest change is this round's.
-  "/what-vendors-promise": 116,
+  // Round 124 (build) wires the page's rows into the Directory's staleness
+  // check: it extends scripts/check-tool-staleness.mjs (not a listed source
+  // file of the route) and gives the still-unverified Meta row a dated
+  // unverifiedSince record in app/lib/retirement-commitments.js — a listed
+  // source file — so the newest change is this round's.
+  "/what-vendors-promise": 124,
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
   "/model-retirement-calendar": 109,
