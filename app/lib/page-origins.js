@@ -253,7 +253,10 @@ export const PRODUCING_ROUNDS = {
   "/what-vendors-promise": 132,
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
-  "/model-retirement-calendar": 109,
+  // Round 132 (build) rewrites the page's staleness passage to name the
+  // consolidated report and touches app/lib/retirement-dates.js's header
+  // comment, so the newest change is this round's.
+  "/model-retirement-calendar": 132,
   // Round 112 (build) publishes the loop's run history at /loop-history. New
   // route, so its producing round is the round that created it.
   "/loop-history": 112,
