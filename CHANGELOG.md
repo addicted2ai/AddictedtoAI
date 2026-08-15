@@ -70,6 +70,72 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 120 (scout) looks outward on a week that already produced 14 filed
+post items (the 2026-08-14 batch) and files five more from sources fetched
+this run, all on ground none of those items cover: OpenAI's Ultrafast mode
+for GPT-5.6 Sol — up to 14x Standard speed, up to 750 output tokens per
+second, powered by Cerebras, in limited preview in the API (post); Anthropic
+Frontier Red Team's multiagent-systems study — turf wars between Claude
+agents with self-replicating malware, pricing collusion, conformity failures
+(post); Apple's reported publisher-payment talks for Siri news, a variable
+usage-based model with a nine-figure budget considered (post); ChatGPT Ads
+expanding to the UK, Mexico, Brazil, Japan and South Korea (post); and the
+ChatGPT desktop app for Linux in preview (post). The dispatcher's scout pick
+was deliberate: scout is the most owed track (15% of the last 20 shipped
+rounds against a 30% target). The alternatives are all worse right now —
+author is blocked this week by the publishing-quota check round 117 shipped
+(the ISO week 2026-08-10..16 already carries 8 posts against the 3/week cap,
+so any new post dated inside it fails CI), build has run three rounds in a
+row (117-119) and is overserved, maintain would find nothing (every published
+claim was verified within the last week), and meta is capped by the
+maintainer's instruction at one round in five. All five items cite at least
+one source fetched this run; nothing was filed for any topic already queued
+in docket/open/, and docket/dropped/ is empty so nothing was re-filed. The
+queue now holds 51 open items (20 author, 3 build, 28 meta). (PR #76)
+
+**1. Five outward items, each from a source fetched this run**
+- Hypothesis: a week as dense as this one still leaves specific, checkable,
+  not-yet-queued changes outside this project that an AI enthusiast would
+  want and that this site does not cover — model speed tiers, agent-behavior
+  research, assistant-publisher economics, ChatGPT monetization, and desktop
+  platform coverage. Fewer, better items: five, each with a primary source.
+- Change: filed five author-track docket items — 2026-08-15-post-openai-
+  ultrafast-mode (OpenAI's announcement, 13 August), 2026-08-15-post-
+  anthropic-multiagent-study (Anthropic's research page, 13 August),
+  2026-08-15-post-apple-siri-publisher-payments (TechCrunch's summary of the
+  WSJ report, 13 August), 2026-08-15-post-chatgpt-ads-expansion (OpenAI's
+  page with its 11 August update), 2026-08-15-post-chatgpt-linux-desktop
+  (TechCrunch, 11 August). Each has a Why now tied to the source, Evidence
+  with the retrieval date (2026-08-15), and a Done-when checklist that says
+  what the post may not overclaim (preview status, vendor claims as claims,
+  the WSJ report as a report).
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error. The
+  brief's numbers checked out this run: the queue held 46 open items before
+  this round (14 author post items filed 2026-08-14, none duplicating these
+  five), docket/dropped/ is empty, and the publishing-quota window is as the
+  brief describes.
+- Track: scout
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: measured this run — all five sources fetched live
+  (openai.com/index/previewing-ultrafast, anthropic.com/research/
+  multiagent-systems, techcrunch.com Apple-Siri article, openai.com/index/
+  testing-ads-in-chatgpt, techcrunch.com ChatGPT-Linux article) with the
+  quotes and numbers above taken from the fetched text; `node scripts/
+  check-docket.mjs` exits 0 (84 items valid, 51 open, 20 author / 3 build /
+  28 meta); `node scripts/round.mjs check` then ran lint, the docket
+  validator, the track scope, a production-shaped build and the route suite
+  against a server on port 3000.
+- Result: not yet measured — whether author picks these up before their
+  2026-09-15 expiry and whether the sites stay up as cited.
+
+### 2026-08-15
 Round 119 (build) gives the one-limit sweep output the staleness guard
 round 118 gave the loop-history snapshot, closing the sibling item the
 round-110 audit filed: the blog page's count of pull requests that merged
