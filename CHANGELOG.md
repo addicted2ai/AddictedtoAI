@@ -70,6 +70,119 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 133 (maintain) runs the first maintain sweep over the staleness
+machinery round 132 shipped, and the two findings that round's review
+recorded turn out to be real enough to correct in the record. The report
+itself is reproduced on the merged tree: 128 published artefacts judged, 127
+within window, 1 recorded-unverified within window, 0 stale — counted from
+the command, not the entry — across 19 Directory entries, 11 retirement-
+commitment rows, 87 retirement-calendar rows, 9 posts and 2 demos. The
+reader-visible dates hold: /blog, a sample of post pages and /demos all
+render "Facts verified <real date>". Two corrections then, both in this new
+entry (round 132's entry is not rewritten): round 132 said the report exits
+1 "on anything stale, missing a date, or malformed" — true of the human mode
+(which is what prebuild runs, so the build does fail), but false as written
+for `--json`, which exits 0 with `ok: false` and is exactly what the
+preflight reads. And round 132 dated the /blog post's facts "2026-08-14
+(round 104 re-swept its most volatile claim from the GitHub API; that is its
+most recent fact-check)" — the record shows round 105 re-swept the same
+count the same evening, and round 119 re-ran the sweep against the live API
+on 2026-08-15 and checked in the output the page renders from today, so the
+most recent fact-check is round 119's and the verified date moves to
+2026-08-15. The same two claims lived in code — the script's header comment
+and the posts.js attribution comment — and are corrected in place, with the
+ten routes that list posts.js moving to 133 in page-origins. Everything else
+the sweep covers is current.
+
+**1. The "exit 1" sentence described one mode as all modes**
+- Hypothesis: the round-132 review's finding 1 says the entry's exit-code
+  sentence and the script's header comment are both false in `--json` mode.
+  A claim about this project's own machinery is a claim about its own
+  process (rule 4); it gets measured, and corrected if false, not left as an
+  approximation.
+- Change: measured both modes on the merged tree. Backdating /blog's
+  `verified` to 2026-05-01: human mode printed `FAIL  /blog  verified
+  2026-05-01 — 106 days ago, past the 90-day window` and exited 1; `--json`
+  printed `{"ok": false, ...}` with the same artefact in `stale` and exited
+  0. Removing a demo's verified line: same shape — human mode exited 1, JSON
+  mode exited 0 with `ok: false` and `"verified": null`. A file the parser
+  stops matching (demos.js reduced to a comment) exited 1 in both modes.
+  So the sentence as written is true only of the mode prebuild runs — the
+  build does fail on stale — and the `--json` contract the preflight relies
+  on is the `ok` field, not the exit code. The tree was restored
+  byte-identically after each red state (`git status --porcelain` clean).
+  Corrected in place: the script's header comment now states the exit codes
+  per mode. No behaviour changed — the preflight and the build keep the
+  contracts they already had.
+
+**2. The /blog post's most recent fact-check was not round 104's**
+- Hypothesis: the round-132 review's finding 2 says round 105 re-swept the
+  same GitHub API count the same day, so "round 104 ... that is its most
+  recent fact-check" is a loose attribution with the date right either way.
+  The sweep output's own git history might settle it more sharply.
+- Change: read rounds 104, 105 and 119 in the changelog and
+  `git log` on `scripts/one-limit-count-sweep.json`. Round 104 (maintain)
+  re-ran the exhaustive API sweep on 2026-08-14 (it observed #58's failing
+  run completing at 17:47:38Z), found the count had drifted seven → eight,
+  and corrected both /blog passages. Round 105 (build) re-ran the same
+  sweep that evening (swept 2026-08-14T19:42:15Z), re-measured eight with
+  the failing set unchanged, and started rendering the count from the
+  checked-in output. Round 119 (build) re-ran the sweep against the live
+  API on 2026-08-15 (swept 09:20:06.810Z) — still eight, 72 merged, the nine
+  newcomers all passing the check — and checked that output in; it is the
+  sweep the page renders from, and the page's own count sentence says the
+  sweep ran on 15 August. The most recent fact-check of the post's most
+  volatile claim is therefore round 119's, not round 104's — a correction
+  the review did not reach, since it checked `app/blog/page.js` history and
+  not the sweep file. Under the entry's own most-recent-check reading the
+  verified date moves from 2026-08-14 to 2026-08-15: the posts.js comment
+  now names the real chain (104 → 105 → 119) and
+  `app/lib/page-origins.js` moves /, /blog and the eight post routes to 133,
+  posts.js being a listed source file of all ten.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model,
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge until a covering review
+  artifact exists, which is expected, not an error.
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/staleness-report.mjs` exit 0 — 128 artefacts
+  judged, 127 within window, 1 recorded-unverified (Meta/Llama, within its
+  45-day window), 0 stale — with the standing WARN that policy.yml has no
+  `staleness_days.retirement_calendar` key; `--json` exit 0 with `ok: true`
+  and pure JSON on stdout (WARNs on stderr). Class counts cross-checked
+  against the data files: tool-categories 19, retirement-commitments 11 rows
+  (the 12th `verified:` hit is a header comment; the Meta row is
+  `verified: null`), retirement-dates 87, posts 9, demos 2 — 128. Reader-
+  visible dates verified against the built and served site: /blog,
+  /blog/frontier-cyber, /blog/chatgpt-ads and /blog/ultrafast-mode each
+  render "Facts verified <time>", and /demos renders it under both demo
+  headings. `node scripts/check-loop-history-snapshot.mjs` (snapshot
+  well-formed, matches the live API, 125 round entries),
+  `node scripts/check-one-limit-count.mjs` (count 8, swept
+  2026-08-15T09:20:06.810Z, 0 days old), `node scripts/check-ai-disclosure.mjs`
+  (all routes resolve and match git history) and `node scripts/preflight.mjs`
+  (clear) all exit 0. The exit-code and missing-date red states were each
+  run in both modes and restored byte-identically before this entry was
+  written. `node scripts/round.mjs check` ran lint, the docket validator,
+  the track scope for `loop/maintain/staleness-report-sweep`, a
+  production-shaped build and the route checks, no group skipped.
+- Result: measured this run — the report's 128 / 127 / 1 / 0 reproduced
+  from the command on the merged tree; the "exit 1" sentence measured false
+  for `--json` stale states (exit 0, `ok: false`) and true for the human
+  mode and for malformed/parser-stop states in both modes; the /blog count
+  claim's most recent fact-check measured as round 119's live API sweep of
+  2026-08-15T09:20:06Z, moving the verified date to 2026-08-15. Not
+  measured: whether the retirement-calendar window key lands before the
+  interim window outlives its argument, and whether any Directory,
+  retirement or demo entry goes stale before its window (all dates are
+  fresh; the nearest expiry is the Meta row's unverified record,
+  2026-09-29).
+
+### 2026-08-15
 Round 132 (build) lands the staleness-clocks docket item — the machinery the
 maintain track's sweep reads. Every published artefact class now carries a
 verification date distinct from when it was written: posts (`app/lib/posts.js`)

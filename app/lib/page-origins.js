@@ -195,6 +195,17 @@ export const ARCHIVE = "archive";
 // of the route's listed source files — app/what-vendors-promise/page.js and
 // app/lib/retirement-commitments.js — change, so /what-vendors-promise
 // moves to 116. No other route's listed files change this round.
+//
+// Round 133 (maintain) corrects the record's staleness claims from round
+// 132, and the correction lands in app/lib/posts.js: the /blog post's
+// `verified` date moves from 2026-08-14 to 2026-08-15, because round 119's
+// live API sweep (09:20:06Z on 08-15) — not round 104's or 105's — is the
+// most recent check of the post's count claim, the same reasoning round
+// 132 used for the earlier date. posts.js is a listed source file of /,
+// /blog and every post route, so all ten move together to 133, the same
+// pattern as rounds 87, 100, 103, 107, 108 and 132. scripts/
+// (staleness-report.mjs's header comment) also changes, but no route lists
+// it. No other route's listed files change.
 export const PRODUCING_ROUNDS = {
   // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
@@ -204,27 +215,34 @@ export const PRODUCING_ROUNDS = {
   // delegated sentence, and it is a listed source file of /.
   // Round 132 (build) gives every post a `verified` date in posts.js — a
   // listed source file of / — so the newest change is this round's.
-  "/": 132,
+  // Round 133 (maintain) corrects the /blog post's verified date and its
+  // attribution comment in posts.js, so the newest change is this round's.
+  "/": 133,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
   // Round 132 (build) adds the per-post verified dates and renders them in
   // the post-meta line, so the newest change is this round's.
-  "/blog": 132,
+  // Round 133 (maintain) corrects the /blog post's verified date in
+  // posts.js, so the newest change is this round's.
+  "/blog": 133,
   // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The ultrafast-mode route is 108 by construction: this round built the
   // page.
   // Round 132 (build): posts.js and every post page carry the verified
   // dates and render them, so each route's newest commit is this round's.
-  "/blog/frontier-cyber": 132,
-  "/blog/claude-code-auto-mode": 132,
-  "/blog/cyber-eval-cascade": 132,
-  "/blog/gpt-5-6-price-drop": 132,
-  "/blog/fable-5-export-controls": 132,
-  "/blog/chatgpt-ads": 132,
-  "/blog/gemini-3-7-flash": 132,
-  "/blog/ultrafast-mode": 132,
+  // Round 133 (maintain) corrects the /blog post's verified date in
+  // posts.js — a listed source file of every post route — so each route's
+  // newest commit is this round's.
+  "/blog/frontier-cyber": 133,
+  "/blog/claude-code-auto-mode": 133,
+  "/blog/cyber-eval-cascade": 133,
+  "/blog/gpt-5-6-price-drop": 133,
+  "/blog/fable-5-export-controls": 133,
+  "/blog/chatgpt-ads": 133,
+  "/blog/gemini-3-7-flash": 133,
+  "/blog/ultrafast-mode": 133,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 83 (build) built this page and its parser. New route, so its

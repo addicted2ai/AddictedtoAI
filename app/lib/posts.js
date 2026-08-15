@@ -42,10 +42,15 @@ export const posts = [
     // datePublished so the JSON-LD and the sitemap's lastmod can both
     // be accurate instead of quietly reusing the publish date.
     dateModified: "2026-08-10",
-    // Round 104 (maintain) re-swept this post's most volatile claim — the
-    // merged-over-the-check count — from the GitHub API and corrected the
-    // passage; that is the most recent check of the post's claims.
-    verified: "2026-08-14",
+    // The merged-over-the-check count is this post's most volatile claim.
+    // Round 104 (maintain) re-swept it from the GitHub API on 2026-08-14
+    // (17:47:38Z) and corrected the passage; round 105 (build) re-swept it
+    // the same evening (19:42:15Z) and found the count unchanged. Round 119
+    // (build) re-ran the sweep against the API on 2026-08-15 (09:20:06Z),
+    // still eight, and checked in the output this page renders from — that
+    // is the most recent check of the post's claims. (Corrected in round
+    // 133: round 132's entry attributed the date to round 104 alone.)
+    verified: "2026-08-15",
   },
   {
     path: "/blog/frontier-cyber",
