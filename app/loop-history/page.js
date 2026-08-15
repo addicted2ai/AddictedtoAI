@@ -126,7 +126,10 @@ export default function LoopHistory() {
         older than the process-claim staleness window in{" "}
         <code>policy.yml</code>, or disagrees with GitHub&rsquo;s live Actions
         API — including a snapshot claiming zero failures while GitHub reports
-        some. Any visitor can re-measure the snapshot against the{" "}
+        some, and including counts that have aged past the live API at build
+        time: a snapshot whose numbers trail the rounds that merged after it
+        fails the build rather than publishing a count the world has already
+        passed. Any visitor can re-measure the snapshot against the{" "}
         <a href={API_RUNS}>workflow&rsquo;s run history</a>.
       </p>
     </article>
