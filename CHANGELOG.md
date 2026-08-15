@@ -95,7 +95,7 @@ vendors' deprecation pages were re-read this run and are fully captured by
 the calendar shipped in round 109, so no deprecation item was filed. The
 brief's quota claim was checked rather than trusted:
 `node scripts/dispatch.mjs` reports `scout: quota: target 32%, recent 10% over
-last 20 shipped round(s)` — round 102 is now inside the window.
+last 20 shipped round(s)` — round 102 is now inside the window. (PR #70)
 
 **1. File five outward-looking items; verify the quota claim; re-check the calendar's coverage**
 - Hypothesis: scout's failure condition is filing items that could have been
