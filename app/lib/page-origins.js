@@ -237,7 +237,10 @@ export const PRODUCING_ROUNDS = {
   // file of the route) and gives the still-unverified Meta row a dated
   // unverifiedSince record in app/lib/retirement-commitments.js — a listed
   // source file — so the newest change is this round's.
-  "/what-vendors-promise": 124,
+  // Round 125 (maintain) re-attempts the Meta verification with new
+  // techniques and rewrites the Meta row's sentence with this run's
+  // evidence, so the newest change is this round's.
+  "/what-vendors-promise": 125,
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
   "/model-retirement-calendar": 109,
@@ -255,7 +258,10 @@ export const PRODUCING_ROUNDS = {
 // change, so the newest change is this round's.
 // Round 106 (author) adds Firefly to tool-categories.js, so the newest
 // change is this round's.
-  "/directory": 106,
+// Round 125 (maintain) re-verifies ten of the Directory's entries against
+// their live pages and renews their verified dates to 2026-08-15, touching
+// tool-categories.js, so the newest change is this round's.
+  "/directory": 125,
   "/demos": 62,
   // Both log pages were produced by round 70, the build round that split the
   // log in two, until round 72 changed the origin badge they both render.
