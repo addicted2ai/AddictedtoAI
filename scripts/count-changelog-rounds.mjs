@@ -42,12 +42,41 @@ export function countRoundEntries(markdown) {
 
 // The commit on origin/main whose CHANGELOG.md is the record as of `takenAt`.
 // An empty string means no commit touched CHANGELOG.md at or before it.
+// `origin/main` is the right anchor wherever it exists, but it does not exist
+// everywhere. Vercel clones a single branch, so a build there has no remote
+// ref at all, and an unguarded `git log origin/main` throws and takes the whole
+// prebuild with it. That is not hypothetical: it froze the site from 06:54Z to
+// 18:33Z on 15 August through the publishing-quota check, and again from 19:14Z
+// through this one — both times with CI green, because CI clones full history.
+//
+// Where the ref is missing, `HEAD` is the honest substitute: a production
+// deployment builds the commit that *is* main. On a round's own branch HEAD
+// would over-count by that round's unmerged entry, which is exactly why
+// origin/main is preferred — so the fallback is used only when there is no
+// choice, and it says so.
+function baseRef() {
+  try {
+    execFileSync("git", ["rev-parse", "--verify", "--quiet", "origin/main^{commit}"], {
+      stdio: "ignore",
+    });
+    return "origin/main";
+  } catch {
+    console.error(
+      "WARN  origin/main is not in this checkout — counting the changelog from HEAD instead"
+    );
+    console.error(
+      "      a single-branch or shallow clone has no remote ref; on a production build HEAD is main"
+    );
+    return "HEAD";
+  }
+}
+
 export function changelogCommitAtOrBefore(takenAt) {
   return execFileSync(
     "git",
     [
       "log",
-      "origin/main",
+      baseRef(),
       `--before=${takenAt}`,
       "--format=%H",
       "-1",
