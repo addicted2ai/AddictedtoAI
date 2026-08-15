@@ -36,18 +36,18 @@
 //    their date — which is the "degrades cleanly when it cannot" clause of
 //    the docket item.
 //
-// 4. Freshness at build time. Front 3 is anchored at taken_at: it proves the
-//    snapshot told the truth when it was taken, and cannot see the world
-//    move afterwards. rounds_merged only ever grows, and the page publishes
-//    it as "Rounds shipped" — a count that reads as current, not as "as of
-//    taken_at". Nothing mechanical regenerates the snapshot
-//    (scripts/loop-history.mjs --snapshot is invoked by hand; no workflow
-//    or prebuild hook calls it), so the build itself must refuse to publish
-//    counts that have aged: every count must equal the live API at check
-//    time, not just as of taken_at. This is the front the round-116 audit
-//    found missing — the page published 60 against a live 64 and stayed
-//    green, because taken_at was fresh and the as-of-cutoff numbers agreed
-//    with GitHub.
+// 4. What front 3 cannot see, the page says. Front 3 is anchored at taken_at:
+//    it proves the snapshot told the truth when it was taken, and it cannot
+//    see the world move afterwards. An earlier front-4 comparison that
+//    required every count to equal the live API at check time was removed
+//    (round 120) because it was unsatisfiable rather than strict:
+//    rounds_merged only grows, so the committed file went stale on the very
+//    merge that shipped it, and the next build — any round, any track —
+//    failed until a round that happened to scope app/ regenerated it by
+//    hand. A committed file cannot equal a monotonically growing live
+//    counter at an arbitrary later time. The page therefore publishes every
+//    count with its taken_at date, and front 2's staleness window bounds
+//    how old that date may be.
 //
 // The comparison is over the live API, never over a second copy of the
 // numbers: a snapshot regenerated with scripts/loop-history.mjs --snapshot
@@ -265,44 +265,13 @@ if (runs === null) {
     );
   }
 
-  // Front 4: the counts must equal the live API at check time, not only as
-  // of taken_at. The comparisons above prove the snapshot agreed with
-  // GitHub when it was taken; they cannot see a run complete or a pull
-  // request merge afterwards, and the page publishes the numbers as
-  // current. A snapshot that trails the live count — however fresh its
-  // taken_at — fails the build, because the page would otherwise render a
-  // count the world has already passed until a round happens to
-  // regenerate it by hand.
-  const completedNow = runs.filter((r) => r.status === "completed");
-  const failedNow = completedNow.filter((r) => r.conclusion !== "success");
-  const liveNow = {
-    runs_attempted: completedNow.length,
-    runs_succeeded: completedNow.length - failedNow.length,
-    runs_failed: failedNow.length,
-    failed_run_ids: failedNow.map((r) => r.id),
-  };
-  for (const field of ["runs_attempted", "runs_succeeded", "runs_failed"]) {
-    if (snapshot[field] !== liveNow[field]) {
-      mismatches.push(
-        `${field}: snapshot says ${snapshot[field]}, the live API has ${liveNow[field]} at check time`
-      );
-    }
-  }
-  const snapshotFailedIdsNow = new Set(snapshot.failed_run_ids);
-  const liveFailedIdsNow = new Set(liveNow.failed_run_ids);
-  if (
-    snapshotFailedIdsNow.size !== liveFailedIdsNow.size ||
-    [...snapshotFailedIdsNow].some((id) => !liveFailedIdsNow.has(id))
-  ) {
-    mismatches.push(
-      `failed_run_ids: snapshot lists ${snapshot.failed_run_ids.join(", ")}, the live API has ${liveNow.failed_run_ids.join(", ")} at check time`
-    );
-  }
-  if (Array.isArray(liveMerged) && snapshot.rounds_merged !== liveMerged.length) {
-    mismatches.push(
-      `rounds_merged: snapshot says ${snapshot.rounds_merged}, the live API has ${liveMerged.length} merged at check time — the page's counts have aged past the live count`
-    );
-  }
+  // Front 4 was removed in round 120: it compared the counts against the live
+  // API at check time, and the comparison was unsatisfiable, not strict. A
+  // committed file cannot equal a live counter that only grows — the snapshot
+  // went stale on the merge that shipped it, so every build after a merge
+  // failed until someone regenerated the file by hand. The page publishes the
+  // counts with their taken_at date, which is the guarantee a committed file
+  // can actually make.
 
   if (mismatches.length > 0) {
     fail(`the snapshot disagrees with GitHub's Actions API: ${mismatches.join("; ")}`);

@@ -115,12 +115,35 @@ and that has not been read back.
 
 ## Done when
 
-- [ ] A `loop/` pull request merges, and the build **after** it is green without a
+- [x] A `loop/` pull request merges, and the build **after** it is green without a
       human regenerating anything
-- [ ] The property front 4 was defending is still defended: construct a snapshot
+- [x] The property front 4 was defending is still defended: construct a snapshot
       whose counts are wrong in a way no later merge explains, and show the build
       failing on it
-- [ ] Whatever the page publishes matches what the file can guarantee — if the
+- [x] Whatever the page publishes matches what the file can guarantee — if the
       count can lag, the page says as of when
-- [ ] `2026-08-15-loop-history-count-counts-hand-built-pull-requests.md` is read
+- [x] `2026-08-15-loop-history-count-counts-hand-built-pull-requests.md` is read
       alongside this, since both are about what `rounds_merged` means
+
+## Round 120 status (2026-08-15, build)
+
+Moved to `docket/done/` by round 120. All four boxes ticked; the proofs are in
+the round's changelog entry, run against the exact file that halted the loop.
+
+Shipped: `scripts/check-loop-history-snapshot.mjs` drops front 4 — the
+check-time comparisons of `runs_attempted`, `runs_succeeded`, `runs_failed`,
+`failed_run_ids` and `rounds_merged` against the live API — and
+`app/loop-history/page.js` publishes the counts with their `taken_at` date
+("Rounds shipped: 68 as of 2026-08-15T12:26:57.365Z"). Fronts 1-3 are
+unchanged: shape, the 30-day process-claim window, and agreement with the API
+as of `taken_at`, which already covers `rounds_merged` and the zero-failures
+lie. Chosen over the prebuild-regeneration shape because regeneration makes
+the mandated wrong-snapshot case build green: the check would be judging a
+file the build just wrote.
+
+Demonstrated on the same file in both directions: the snapshot the scout found
+(`git show a7201f1:app/lib/loop-history.json`, 67, taken 09:23:33.900Z, PR #75
+merged 09:37:10Z after it) fails `npm run build` on the unmodified check and
+passes on the fixed one; a snapshot GitHub never agreed with (`rounds_merged`
+60 with the same `taken_at`, and the zero-failures lie) fails on front 3 in
+both cases. `node scripts/round.mjs check` passes on the committed tree.

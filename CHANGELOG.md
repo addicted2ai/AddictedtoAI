@@ -70,6 +70,103 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 120 (build) removes the front of `scripts/check-loop-history-snapshot.mjs`
+that halted the loop for two and a half hours today, and makes the
+`/loop-history` page publish its counts with the date they were taken — the
+"publish the number with its date" shape the priority-1 item filed by the
+unblock records. Front 4, added by round 118, required every published count to
+equal the live API at check time, not only as of `taken_at`. That comparison is
+unsatisfiable, not strict: `rounds_merged` only grows, so a regenerated
+snapshot goes stale on the very merge that ships it, and the next build — any
+round, any track — fails until a round whose scope includes `app/` regenerates
+the file by hand. Round 119 hit the guard within hours and regenerated; the
+scout run (`loop/scout/round-120-outward-survey`) hit it again at 10:03Z and
+correctly halted, because scout's scope cannot write the remedy. The unblock
+regenerated the snapshot (68, taken 12:26:57Z) and filed this item. This round
+reproduces the halt with the exact file the scout found — `git show
+a7201f1:app/lib/loop-history.json` (67, taken 09:23:33.900Z, PR #75 merged at
+09:37:10Z after it) — and proves both directions on it: `npm run build` fails
+on the unmodified check ("rounds_merged: snapshot says 67, the live API has 68
+merged at check time — the page's counts have aged past the live count") and
+passes on the identical file once front 4 is gone, because the as-of-`taken_at`
+agreement (front 3) still holds. The property front 4 defended is still
+defended, demonstrated on the fixed tree: a snapshot whose numbers GitHub
+never agreed with — `rounds_merged` hand-set to 60 against the 68 the API has
+merged by the same `taken_at`, and the zero-failures lie (`runs_failed` 0,
+`failed_run_ids` [] while the API reports 2 before the cutoff) — fails the
+build on front 3 in both cases. The page's "Rounds shipped" row now reads "68
+as of 2026-08-15T12:26:57.365Z" (grep of the built HTML), and its "How this
+page is checked" paragraph no longer claims the build fails on counts that have
+aged past the live API at build time — a claim this round would have made
+false. The regeneration-in-prebuild shape was not taken: with the file
+rewritten from the API before every check, front 4 becomes vacuous — the
+item's own words — and the wrong-snapshot case this round proves must stay red
+would build green, because the check would be judging a file the build just
+wrote. The priority-2 item on the same counter (`rounds_merged` counts any
+branch named `loop/`, so #57 and #58 are published as rounds) is not made
+harder: this round changes neither how the count is computed nor what the page
+says it counts ("the pull requests merged from `loop/` branches, as GitHub
+reports them"), only how the count is presented. The scout run's branch is
+untouched. (PR #77)
+
+**1. The loop-history count is published with the date it was taken; the check stops asking a committed file to equal the live count**
+- Hypothesis: front 4 is unsatisfiable, not strict — no committed file can
+  equal a live counter that only grows, so it converts every merge into the
+  next build's failure. The page's claim ("Rounds shipped: N") should match
+  what the file can guarantee: "N, as of taken_at". Fronts 1-3 keep that
+  claim honest — including the as-of agreement on `rounds_merged` and the
+  zero-failures lie — so the round-116 failure class (a number the API never
+  agreed with) stays red without front 4.
+- Change: `scripts/check-loop-history-snapshot.mjs` drops front 4, the
+  check-time comparisons for the run counts, `failed_run_ids` and
+  `rounds_merged`; fronts 1-3 are unchanged, and the snapshot file itself is
+  untouched (still 68, taken 2026-08-15T12:26:57.365Z, still current).
+  `app/loop-history/page.js` renders the "Rounds shipped" value with its
+  `taken_at` date, and its "How this page is checked" paragraph now describes
+  the contract as it exists: the build fails on a malformed snapshot, one
+  past the 30-day process-claim window, or one that disagrees with GitHub's
+  API as of `taken_at` — it no longer claims a build-time check this round
+  removed. A `.log-stats-asof` style carries the date under the count.
+  `docket/open/2026-08-15-loop-history-guard-halts-the-loop-after-every-merge.md`
+  moves to `docket/done/` with all four boxes ticked.
+
+- Origin: delegated
+- The orchestrating model chose this item — priority 1, the reason the loop
+  halted today — briefed this round, and a separate review session reads the
+  branch afterwards. `ship` withholds auto-merge for a delegated origin until
+  that review artifact exists; that is expected, not an error.
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/build/loop-history-as-of-label`, production-shaped build,
+  full route suite against a server on port 3000, no group skipped — passes
+  on the committed tree. The fix was proved in both mandated directions on
+  the same file, the exact snapshot that halted the loop (`git show
+  a7201f1:app/lib/loop-history.json`: 67, taken 2026-08-15T09:23:33.900Z, PR
+  #75 merged 09:37:10Z after it). Red before: with that file in place and the
+  unmodified check, `npm run build` exits 1 — "FAIL the snapshot disagrees
+  with GitHub's Actions API: rounds_merged: snapshot says 67, the live API
+  has 68 merged at check time — the page's counts have aged past the live
+  count". Green after: the identical file with front 4 removed, `npm run
+  build` exits 0 — "ok snapshot matches the live API over 3 completed run(s)
+  as of 2026-08-15T09:23:33.900Z". Property still held, on the fixed tree,
+  each scratch reverted to the committed snapshot after and `git status
+  --porcelain` clean: (a) `rounds_merged` hand-set to 60 → exit 1,
+  "rounds_merged: snapshot says 60, the API has 68 merged by
+  2026-08-15T12:26:57.365Z"; (b) the zero-failures lie (`runs_failed` 0,
+  `runs_succeeded` 3, `failed_run_ids` [], `failure_rate` 0) → exit 1,
+  "runs_succeeded: snapshot says 3, the API has 1; runs_failed: snapshot says
+  0, the API has 2; … the snapshot claims zero failed runs but the API
+  reports 2 before 2026-08-15T12:26:57.365Z".
+- Result: measured this run — the loop-history snapshot check no longer fails
+  on a snapshot that trails the live count by one merge, and the page renders
+  "68 as of 2026-08-15T12:26:57.365Z" (grep of the built HTML). The wrongness
+  front 4 defended still fails the build in both constructed cases. Not yet
+  measured: the first real merge on top of this change (the scout run's
+  branch or the next round) and the build after it — the mechanism this item
+  exists to prove. The count itself (68) is unchanged this round.
+
+### 2026-08-15
 Round 119 (build) gives the one-limit sweep output the staleness guard
 round 118 gave the loop-history snapshot, closing the sibling item the
 round-110 audit filed: the blog page's count of pull requests that merged
