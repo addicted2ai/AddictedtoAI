@@ -120,6 +120,8 @@ export const RETIREMENT_COMMITMENTS = [
     shape: "unverified",
     sentence:
       "Could not verify again this run: www.llama.com/docs now redirects to developer.meta.com/ai/docs/overview/, which serves a client-rendered page with no readable content (HTTP 400 to a browser-like User-Agent, HTTP 200 but an empty shell to a plain one); developer.meta.com/llms.txt points Llama resources at ai.developer.meta.com, which requires an OAuth login; and the dev.meta.ai Model API docs, fetched in full this run, still contain no lifecycle or deprecation page. Whether Meta publishes a lifecycle commitment for hosted Llama could not be determined.",
+    sentenceMore:
+      "The one reachable page recording Llama retirements is not Meta's: the Microsoft Foundry model retirement schedule (learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-retirement-schedule), fetched 2026-08-14, lists five Llama models retired 2026-06-13 (Meta-Llama-3.1-405B-Instruct, Meta-Llama-3.1-8B, Meta-Llama-3.1-8B-Instruct, Llama-3.2-11B-Vision-Instruct, Llama-3.2-90B-Vision-Instruct) and three GA without dates (Llama-3.3-70B-Instruct, Llama-4-Maverick-17B-128E-Instruct-FP8, Llama-4-Scout-17B-16E-Instruct) \u2014 Microsoft's page about Foundry, not a commitment Meta published.",
     verified: null,
   },
   {

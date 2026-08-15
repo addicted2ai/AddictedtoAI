@@ -193,11 +193,18 @@ export default function WhatVendorsPromise() {
           browser-like client, HTTP 200 but an empty shell to a plain one),
           and the reachable Model API docs still contain no lifecycle page,
           so this page still does not claim whether Meta publishes one for
-          hosted Llama. The other half of that finding is corrected
-          to what the page shows: the Microsoft Foundry retirement page
-          fetched this run lists no Meta models on <em>its</em> retirement
-          schedule, so this page no longer carries the other-vendor
-          citation it used to.
+          hosted Llama. The other half of that finding, corrected again on
+          2026-08-14: the Microsoft Foundry model retirement schedule
+          <em>does</em> list Meta models — five Llama models (Meta-Llama-3.1
+          and Llama-3.2 families) retired 2026-06-13, and three more
+          (Llama-3.3-70B-Instruct, Llama-4-Maverick-17B-128E-Instruct-FP8,
+          Llama-4-Scout-17B-16E-Instruct) listed as generally available with
+          no retirement date — so the round-88 citation was right in
+          substance, and Foundry&rsquo;s schedule is the one reachable page
+          recording Llama retirements, even though Meta&rsquo;s own docs
+          still cannot be read. The count of three was independently
+          verified against the Foundry schedule during the round&rsquo;s
+          review.
         </li>
       </ul>
       <p>
@@ -262,7 +269,12 @@ export default function WhatVendorsPromise() {
         and the reachable Model API docs still contain no lifecycle page — and
         remains unverified, saying exactly that. Google was recovered on
         2026-08-11 with a plain HTTP client after webfetch failed, and was
-        re-fetched the same way on 2026-08-14.
+        re-fetched the same way on 2026-08-14. The Foundry half of the Meta
+        finding was re-checked on 2026-08-14 and found the round-113
+        correction to have overreached: the Foundry model retirement schedule
+        does list Meta models — five Llama models retired 2026-06-13, three
+        more GA — so this page now says so instead of claiming no Meta
+        models appear on it.
       </p>
     </article>
   );
