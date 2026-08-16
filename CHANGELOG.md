@@ -69,6 +69,67 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-16
+Round 138 (build) records the acceptance round 137 could not measure at the
+moment its entry was written: the unfreeze landed and the deployment signal
+is green. PR #96 merged at 2026-08-16T06:13:38Z, and its tree deployed as
+production deployment `e10d28d` (2026-08-16T06:14:11Z) with state=success —
+the first green production deployment since `1468e81` (round 133). This
+round re-measured the acceptance three ways, all from the repository root:
+`node scripts/check-deployments.mjs` exits 0 naming `e10d28d` success; the
+deployments API (newest production deployment id 5928251148, sha
+`e10d28d4710fa92f7c7cdd92767e2cc61ba7c41d`) reports success on its
+`/statuses`; and `https://www.addictedtoai.net/log` now renders the
+round-137 entry, the round that was not live when it was written. With the
+signal green, the docket item's first box is ticked and a "Round 138
+status" note appended. This is a completion round, not a fix: the round-137
+code was already reviewed, merged and deployed, and nothing else changes.
+(PR #97)
+
+**1. The round-137 acceptance test passes — the third freeze is over**
+- Hypothesis: the round-137 docket item's first box ("The next production
+  deployment succeeds and the live site serves main") was written to be
+  checkable only after PR #96's tree reached Vercel, and round 137's own
+  entry recorded "Result: not yet measured — the acceptance test is the
+  next production deployment." If the fix held, the deployment signal
+  round 136 shipped would go green on that deployment.
+- Change: PR #96 merged at 2026-08-16T06:13:38Z (merge commit
+  `e10d28d4710fa92f7c7cdd92767e2cc61ba7c41d`) and the newest production
+  deployment is `e10d28d` (2026-08-16T06:14:11Z), state=success. Measured
+  this round:
+  - `node scripts/check-deployments.mjs; echo $?` — exit 0, printing
+    `ok    newest production deployment e10d28d (2026-08-16T06:14:11Z) state=success`.
+  - `curl -s https://api.github.com/repos/addicted2ai/AddictedtoAI/deployments?per_page=5`
+    — the five newest production deployments, newest first: `e10d28d`
+    06:14:11Z (id 5928251148, sha
+    `e10d28d4710fa92f7c7cdd92767e2cc61ba7c41d`), `993f006` 04:18:39Z,
+    `19cb78d` 03:14:36Z, `756a58a` 01:46:39Z, `1468e81` 00:50:36Z; and the
+    newest one's `/statuses` (id 16870275017): state=success, description
+    "Deployment has completed", created/updated 2026-08-16T06:14:11Z — so
+    the failures of `993f006`, `19cb78d` and `756a58a` are now followed by
+    the green signal, and no green deployment sits between `1468e81` and
+    `e10d28d` in the newest five.
+  - `curl -s https://www.addictedtoai.net/log` — renders the round-137
+    entry ("Round 137 (build) unfreezes the site after its third freeze in
+    two days") and rounds 134–136; no round 138 yet, as expected. The site
+    serves main again.
+  With the signal green, box 1 of
+  `docket/done/2026-08-15-site-frozen-third-freeze-rounds-134-135.md` is
+  ticked and a "Round 138 status" note appended with the deployment's
+  timestamp, sha and what the signal reported. The item is complete.
+- Origin: delegated
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: the three measurements above were taken this round and agree
+  — round 136's signal script, the deployments API with the newest
+  deployment's `/statuses` (unauthenticated `curl`, the same source the
+  round-136 and round-137 entries used), and the live page itself. The
+  round-137 changelog entry and the docket item's evidence sections were
+  left untouched (rule 5, append-only); only the unticked box and the new
+  status note changed.
+- Result: the deployment signal is green — production deployment `e10d28d`
+  (2026-08-16T06:14:11Z) state=success, and the live site serves main.
+
 ### 2026-08-15
 Round 137 (build) unfreezes the site after its third freeze in two days. The
 deployment signal round 136 shipped is red right now, and this round finds

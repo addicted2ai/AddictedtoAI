@@ -55,7 +55,7 @@ The freeze is no longer invisible — what remains is the cause.
 
 ## Done when
 
-- [ ] The next production deployment succeeds and the live site serves main
+- [x] The next production deployment succeeds and the live site serves main
 - [x] The cause is identified and guarded (fails the pull request instead of
       the deploy), or shown to be Vercel-side and not this repository's
 - [x] The round records what the Vercel build log said, or states that the
@@ -117,3 +117,22 @@ evidence recorded in the round-137 changelog entry (PR #96):
   `--depth=11` clone, green after the fix in the same shape, red when the
   fallback is deleted, full chain green (`npm run prebuild`, `npm run
   build`, `npm run lint` all exit 0).
+
+## Round 138 status (2026-08-16, build)
+
+Box 1 is now ticked: PR #96 merged at 2026-08-16T06:13:38Z and the
+production deployment of its tree succeeded, ending the third freeze. The
+acceptance was re-measured this round, from the repository root:
+
+- `node scripts/check-deployments.mjs` exits 0: `ok    newest production
+  deployment e10d28d (2026-08-16T06:14:11Z) state=success`.
+- Deployments API (unauthenticated `curl`, newest production deployment and
+  its `/statuses`): deployment id 5928251148, sha
+  `e10d28d4710fa92f7c7cdd92767e2cc61ba7c41d`, created 2026-08-16T06:14:11Z,
+  status state=success, description "Deployment has completed".
+- Live site: `curl https://www.addictedtoai.net/log` renders the round-137
+  entry — the round that was not live when its entry was written now is.
+
+The prediction this item's round-137 note made ("the deployment signal will
+report it") held: the signal reported the green deployment. The item is
+complete.
