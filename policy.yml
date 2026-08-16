@@ -5,9 +5,12 @@
 # how much any one run may take down. The loop may change these with a stated
 # reason in the record. It may not change the charter.
 #
-# Nothing parses this yet -- it is read by the run, not by code. Anything that
-# becomes load-bearing should get a parser and a check that can fail, rather
-# than staying a number a prompt is trusted to honour.
+# Parts of this file are now parsed rather than read: scripts/dispatch.mjs
+# loads the track quotas and enforces them, and scripts/check-publishing-quota.mjs
+# enforces the publishing caps. The rest is still prose a run is trusted to
+# honour, and the standard stands -- anything that becomes load-bearing should
+# get a parser and a check that can fail rather than staying a number a prompt
+# is trusted to keep.
 
 # --- Track quotas -----------------------------------------------------------
 #
@@ -22,6 +25,15 @@ tracks:
     weight: 30
     # Scout can always run: its input is the world, not the queue.
     needs_docket_item: false
+    # Hard cap, enforced in scripts/dispatch.mjs. Weights spread runs over a
+    # rolling window and cannot bound a burst: on 16 August scout shipped four
+    # rounds, three of them inside two hours, while sitting at its policy share,
+    # because "most owed" is a ratio and says nothing about when. The world
+    # produces roughly a day's worth of news in a day; scouting it more often
+    # than that fills the queue faster than the tracks that consume it can
+    # empty it. A preflight finding still routes to scout regardless — this
+    # caps routine cadence, not the loop's ability to react.
+    max_runs_per_day: 1
   maintain:
     weight: 25
     needs_docket_item: false   # the staleness report is its queue

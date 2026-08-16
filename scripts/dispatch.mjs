@@ -83,10 +83,36 @@ const ready = open.filter((item) =>
 );
 
 const changelog = readText(path.join(root, "CHANGELOG.md"));
-// Newest first, matching the file's order.
-const history = [...changelog.matchAll(/^- Track:\s*(\S+)/gm)].map((m) =>
-  m[1].toLowerCase()
-);
+// Newest first, matching the file's order. Each `- Track:` is paired with the
+// `### YYYY-MM-DD` heading above it, so a per-day cap can count the rounds that
+// shipped on a given calendar date rather than only their order.
+const dated = [];
+{
+  let date = null;
+  for (const line of changelog.split("\n")) {
+    const heading = /^### (\d{4}-\d{2}-\d{2})/.exec(line);
+    if (heading) {
+      date = heading[1];
+      continue;
+    }
+    const track = /^- Track:\s*(\S+)/.exec(line);
+    if (track) dated.push({ track: track[1].toLowerCase(), date });
+  }
+}
+const history = dated.map((entry) => entry.track);
+
+// A per-day cap counts dates, so it fails open if the pairing ever stops
+// working: entries with no date match nothing, shippedToday() returns 0, and
+// every cap silently stops applying. Say so rather than letting the loop drift
+// back to bursting while the policy file still claims a cap.
+if (dated.length > 0 && dated.every((entry) => entry.date === null)) {
+  console.error(
+    "WARN  no `### YYYY-MM-DD` heading was paired with any `- Track:` line in CHANGELOG.md"
+  );
+  console.error(
+    "      per-day caps in policy.yml cannot be enforced against an undated history"
+  );
+}
 
 const WINDOW = 20;
 const recent = history.slice(0, WINDOW);
@@ -190,9 +216,40 @@ try {
 
 // --- selection --------------------------------------------------------------
 
+// Rounds that shipped today, by the same clock the publishing quota uses. The
+// count is of *shipped* rounds — a round dispatched and not yet merged does not
+// appear — which is safe only because rounds are serial: the in-flight guard
+// stops a second dispatch while one is open, so by the time this is read again
+// the previous round has landed. If rounds ever run concurrently, this becomes
+// a race and the cap will let one extra through.
+function shippedToday(track) {
+  const today = localDate();
+  return dated.filter((entry) => entry.date === today && entry.track === track)
+    .length;
+}
+
 function availability(track) {
   const cfg = tracks[track];
   if (!cfg) return { can: false, why: "not in policy.yml" };
+  // A hard per-day cap, checked before anything else: a track at its cap is not
+  // selectable no matter how owed it is or how much work is queued. Weights
+  // spread runs out over a window and cannot bound a burst — scout shipped four
+  // rounds on 16 August, three of them inside two hours, while sitting at its
+  // policy share, because "most owed" is a ratio and says nothing about when.
+  //
+  // A preflight finding still overrides this: decide() returns the owning track
+  // before availability is consulted, which is intended. A cap on routine
+  // cadence should not stop the loop reacting to something that is wrong now.
+  const perDay = cfg.max_runs_per_day;
+  if (perDay != null) {
+    const n = shippedToday(track);
+    if (n >= perDay) {
+      return {
+        can: false,
+        why: `already shipped ${n} round(s) today (cap ${perDay}/day)`,
+      };
+    }
+  }
   if (cfg.needs_docket_item) {
     const n = ready.filter((item) => item.track === track).length;
     if (n === 0) return { can: false, why: "no ready docket item" };
