@@ -80,7 +80,7 @@ request, so a check that needs a remote ref dies on the pull request instead
 of at the deploy. The new script also re-proves the guard on every run by
 deleting the `origin/main` fallback on purpose and watching the same chain
 go red, and the audit of the prebuild chain finds two git-history
-dependencies, both guarded; the other two checks touch no git at all.
+dependencies, both guarded; the other two checks touch no git at all. (PR #94)
 
 **1. A prebuild check that needs git history cannot merge green anymore**
 - Hypothesis: both failures on 15 August — `scripts/check-publishing-quota.mjs`
