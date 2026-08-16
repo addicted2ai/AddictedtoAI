@@ -16,7 +16,7 @@ The facts, as CNBC states them:
 
 - **The crossing.** "We entered the year at 60-40, but enterprise has accelerated much faster than expected and those lines have now crossed," Friar said, per an unnamed attendee. "The majority of our revenue is now enterprise." Friar had told CNBC earlier this year that parity was expected by the end of 2026.
 - **The numbers.** OpenAI's annualized revenue run rate has hit $40 billion (confirmed by CNBC; Bloomberg first reported). The run rate increased 20% month-over-month in July, and business customers grew 32%.
-- **Advertising.** Friar said OpenAI "made great strides in advertising" — advertising is approaching a $1 billion run rate. OpenAI began testing ads in ChatGPT in February.
+- **Advertising.** Friar said OpenAI "made great strides" in advertising — advertising is approaching a $1 billion run rate. OpenAI began testing ads in ChatGPT in February.
 - **Customer-behavior shift.** Friar said the era of "tokenmaxxing" is gone — "Enterprise customers have moved from tokenmaxxing to focusing on cost per unit of intelligence" — and highlighted the newest model being "54% more efficient" on agentic coding tasks plus recent price reductions.
 - **The framing context.** The meeting came after a week of C-suite departures: revenue chief Denise Dresser stepped down eight months into the job (replaced by Dali Rajic, formerly of Wiz), and longtime executive Brad Lightcap left two days earlier. Greg Brockman joined the meeting and brushed off concerns about open-source competition ("a misunderstanding around open source being cheaper"). Executives would not discuss IPO timing due to the confidential SEC filing.
 

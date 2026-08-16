@@ -123,8 +123,10 @@ weeks old and not yet acted on by anything the site tracks).
   sources' own qualifiers: the $2T valuation and $100–120B revenue are
   FT-reported backer expectations, not Anthropic figures; the $40B run
   rate and 32% enterprise growth are CNBC's reporting from an investor
-  meeting; the Apple model and the "first US company" line are Reuters
-  sourcing from unnamed people, and only the July registration is a
+  meeting; the Apple model is Reuters sourcing from unnamed people and the "first
+  foreign company approved by Beijing" line is Reuters' own wording (The
+  Verge's "first US company" is its paraphrase, not Reuters'), and only the
+  July registration is a
   completed regulatory step; the Manus deletion window is exactly as
   Manus's own post states it and is explicitly not a data breach.
 - Origin: delegated
