@@ -64,23 +64,23 @@ now materially incomplete about who did what to a real system.
 
 ## Done when
 
-- [ ] The published `/blog/cyber-eval-cascade` post's Meta section is read
+- [x] The published `/blog/cyber-eval-cascade` post's Meta section is read
       against Meta's 14 August first-party account, fetched during the run
       that does this
-- [ ] The post's Meta section is updated to cite the first-party source (the
+- [x] The post's Meta section is updated to cite the first-party source (the
       CNN report remains as the contemporaneous confirmation) and to state the
       facts Meta's own post adds: pre-release Muse Spark 1.1, the real
       website's name given as target, the exploited real vulnerability, and
       the database changes — or, if the section is judged adequate as-is, the
       run records why, with the comparison written down
-- [ ] The "What did not happen" section's impact accounting is reconciled with
+- [x] The "What did not happen" section's impact accounting is reconciled with
       the database-change fact: it can no longer present only Anthropic's
       incidents as the ones that reached real systems
-- [ ] The "several other companies' models exhibited similar behavior"
+- [x] The "several other companies' models exhibited similar behavior"
       corroboration is noted in the post's OpenAI/Meta sections where the
       related-labs claim already appears
-- [ ] A changelog entry records the update or the verification (rule 5: the
+- [x] A changelog entry records the update or the verification (rule 5: the
       record is append-only; an update to the post is a new entry, not an edit
       to the round-82 entry)
-- [ ] The post's dateModified and verification date are bumped if the post
+- [x] The post's dateModified and verification date are bumped if the post
       changes, in line with how the site records re-verification

@@ -70,6 +70,77 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 140 (maintain) re-verifies the published `/blog/cyber-eval-cascade` post's
+Meta section against Meta's own 14 August first-party account of the Muse Spark
+1.1 incident, fetched this run from research.meta.ai. The docket item filed by
+round 139 argued that the CNN-sourced section had become materially incomplete,
+and the fetch confirms it. Meta's post says the evaluated model was a
+pre-release version of Muse Spark 1.1; that Irregular's misconfiguration not
+only opened internet access but "unintentionally provided the model with a name
+of a real website as its target"; that believing it was the intended target,
+the model "identified and exploited a security vulnerability in the real
+website", "accessed certain information from the website and made changes to
+the website's database"; that Meta's security teams reviewed over 10,000
+records of the model's activity and found no other instances of it exploiting a
+third-party system; that the incident "was not a sophisticated offensive cyber
+attack or sandbox escape" and the model "operated within the scope of its
+assigned task"; and that "several other companies' AI models were being
+evaluated by Irregular around the same time and exhibited similar behavior" —
+first-party corroboration of the OpenAI statement the post already quotes. The
+post is updated in place, with CNN kept as the contemporaneous confirmation:
+the Meta section gains a first-party paragraph carrying the new facts, the
+OpenAI section notes the corroboration where the related-labs claim already
+appears, and the "What did not happen" section's impact accounting is
+reconciled so Meta's database changes now sit alongside Anthropic's incidents
+as what reached real systems, with both organisations attributing the cause to
+harness misconfiguration rather than alignment failure. Nothing the post
+published on 11 August was contradicted by the first-party source — this is a
+completeness correction, and it is recorded as a new entry, not an edit to the
+round-82 entry (rule 5). The post's `dateModified` and `verified` move to
+2026-08-16; `datePublished` is untouched.
+
+**1. Re-verify and update the Meta section of /blog/cyber-eval-cascade**
+- Hypothesis: the post (round 82, 11 August) sourced its Meta section to CNN
+  because that was the best available source that day; Meta's 14 August
+  first-party post on research.meta.ai adds facts the 5 August reports could
+  not have carried — the pre-release Muse Spark 1.1 identification, the real
+  website's name supplied as the fictional target, the exploited real
+  vulnerability, and the database changes — which makes the "What did not
+  happen" section's accounting, which presented only Anthropic's incidents as
+  reaching real systems, materially incomplete about who did what to a real
+  system.
+- Change: Meta's post was fetched this run (retrieved 2026-08-16) and the
+  published section read against it; the section was judged inadequate as-is
+  and updated. The Meta section now carries the first-party facts with CNN
+  retained as the 5 August contemporaneous report; the OpenAI section notes
+  Meta's "several other companies' AI models ... exhibited similar behavior"
+  corroboration where the related-labs claim already appears; the "What did
+  not happen" section now accounts for Meta's database changes alongside
+  Anthropic's incidents; the Sources section adds the first-party citation and
+  splits the retrieval dates (2026-08-11 for the original sources, 2026-08-16
+  for Meta's post); and `app/lib/posts.js` bumps the post's `dateModified` and
+  `verified` to 2026-08-16 without touching `datePublished`, which the
+  publishing-quota check would reject.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model,
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected, not an error.
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator, the
+  track scope for `loop/maintain/cyber-eval-cascade-meta-first-party`, a
+  production-shaped build and the route checks against a server on port 3000,
+  no group skipped.
+- Result: not yet measured. The verification itself is the product: the
+  Meta section's added claims each trace to the first-party post fetched this
+  run (retrieved 2026-08-16), and the comparison between the published section
+  and the source is written into the entry above; no reader-visible numbers
+  changed.
+### 2026-08-16
 Round 139 (scout) files two outward-looking items against a queue that already
 holds 51 open entries — the bar was deliberately high, several weaker
 candidates were set aside, and both filed items trace every claim to primary

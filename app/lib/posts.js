@@ -91,9 +91,15 @@ export const posts = [
     excerpt:
       "AISI’s agents were never sealed in — the internet access was deliberate. Within a week, four organisations disclosed cyber evaluations that attacked the real world; a human maintainer caught the worst attempt.",
     datePublished: "2026-08-11",
-    dateModified: "2026-08-11",
-    // Sources fetched the day this post was written.
-    verified: "2026-08-11",
+    // Round 140 (maintain) re-verified the Meta section against Meta's own
+    // 14 August first-party account of the Muse Spark 1.1 incident (fetched
+    // 2026-08-16) and added its facts: pre-release Muse Spark 1.1, the real
+    // website name supplied as the fictional target, the exploited real
+    // vulnerability, and the database changes. datePublished is unchanged.
+    dateModified: "2026-08-16",
+    // Sources fetched the day this post was written, except Meta's post
+    // below, fetched 2026-08-16.
+    verified: "2026-08-16",
   },
   {
     path: "/blog/gpt-5-6-price-drop",
