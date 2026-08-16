@@ -70,6 +70,132 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 137 (build) unfreezes the site after its third freeze in two days. The
+deployment signal round 136 shipped is red right now, and this round finds
+out why: the Vercel build log is readable after all — the round-136 item's
+claim that it needs the maintainer's Vercel session is wrong, and the exact
+command its status description quotes (`npx vercel inspect dpl_... --logs`)
+prints the full log without any credential step. The log shows the prebuild
+chain dying in `scripts/check-loop-history-snapshot.mjs` with the same class
+of bug round 135 claimed to have closed: `rounds_merged` counts 0 because
+Vercel's clone is shallow as well as single-branch, the changelog record the
+snapshot is anchored to sits beyond the clone's depth, and the fallback
+turns "the record is not in this checkout" into "the changelog has 0 round
+entries". The round-135 guard could not see it because its shaped checkout
+carried the full history. The fix reads the anchored count from the public
+GitHub API when the checkout's history cannot reach taken_at — the same
+unauthenticated access the check already uses for the Actions API — degrades
+to a loud warning holding only a working-tree bound when even that is
+unreachable, and makes the Vercel-shaped guard clone `--shallow-since
+taken_at` so the count-0 shape fails the pull request instead of the deploy.
+(PR #96)
+
+**1. The count-0 fallback: why a full-history guard missed a shallow-clone freeze**
+- Hypothesis: the four deployments `14dc95d`, `756a58a`, `19cb78d` and
+  `993f006` failed while `npm run build` passes locally, and the log the
+  status description points at might be readable after all — the round-136
+  item asserted it needed the maintainer's Vercel session without trying it.
+  If readable, it would show where the prebuild chain actually dies, and
+  that failure should reproduce in a checkout shaped like Vercel's own.
+- Change: first, the round-136 assumption was wrong and is corrected below
+  (section 2). The log of `993f006` (deployment `dpl_Hnipa5aKBn53KVhAMx1p1bFZS487`)
+  shows `npm run build` exiting 1 on the prebuild chain:
+  `node scripts/staleness-report.mjs && node scripts/check-one-limit-count.mjs
+  && node scripts/check-loop-history-snapshot.mjs && node
+  scripts/check-publishing-quota.mjs`, with:
+  `FAIL  rounds_merged: snapshot says 125, the changelog has 0 round entries as of 2026-08-15T18:46:41.179Z`
+  `FAIL  re-run node scripts/loop-history.mjs --snapshot to take a fresh one — do not edit the numbers by hand`
+  and `756a58a` (deployment `dpl_Cdb3gCcCqJ6WvUjovR4ZfG5WZnDn`) fails with
+  the identical two lines. The 0 comes from `countRoundsAsOf` in
+  `scripts/count-changelog-rounds.mjs`: the anchor is
+  `git log <baseRef> --before=taken_at -1 -- CHANGELOG.md`; in Vercel's
+  clone `baseRef()` falls back from origin/main to HEAD (the fallback round
+  #90 added), and the walk stops at the clone's depth boundary — the
+  pre-taken_at record (commit `7b7aa02`, 18:16:50Z) is beyond it — so the
+  sha is empty and `if (!sha) return 0` reports "0 round entries", which
+  disagrees with the snapshot's 125 and fails the build. The count is
+  time-dependent: the record sat 10 commits below `41809ea` (deployed
+  00:14:02Z, success), 11 below `1468e81` (00:50:36Z, success), 12 below
+  `756a58a` (01:46:39Z, failure), 13 below `19cb78d` (03:14:36Z, failure)
+  and 14 below `993f006` (04:18:40Z, failure) — every observation fits
+  Vercel's clone holding the newest ~11 commits, so the fallback worked
+  while the snapshot was fresh and broke as merges pushed the record out of
+  the window. A count that depends on how much history the clone happened to
+  carry is not a count. Fix: `countRoundsAsOf` keeps the git-history anchor
+  where the history reaches taken_at, and when it does not, reads the same
+  anchored record from the public GitHub API (`commits?path=CHANGELOG.md&until=
+  taken_at`, then `contents/CHANGELOG.md?ref=<sha>` — the repository is
+  public, the endpoints answer unauthenticated, and `curl` is already what
+  front 3 uses); that returned 125, the same count git gives. When neither
+  can answer, it returns null and the checker degrades with loud WARNs —
+  "a build environment must not freeze production", the same clause front 3
+  already has for an unreachable Actions API — while still enforcing the one
+  bound the working tree can prove: a snapshot can never claim more
+  `rounds_merged` than CHANGELOG.md holds. The four fronts (shape,
+  staleness, agreement with GitHub, rounds_merged) are unchanged. The guard
+  round 135 shipped, `scripts/check-prebuild-single-branch.sh`, built its
+  shaped checkout with the full history, so the anchor reached taken_at,
+  counted 125, and went green while Vercel went red — that gap is the second
+  half of the finding. The shaped clone now fetches with
+  `--shallow-since=<taken_at>` read from the committed snapshot, so the
+  record the snapshot claims can never be in the shape whatever the
+  snapshot's age, and the script asserts that shape before testing (no
+  origin/main, and no pre-taken_at CHANGELOG commit visible) and, in the
+  green direction, requires the snapshot check to verify rounds_merged or
+  degrade loudly — a check that silently skips is not a check.
+
+**2. The Vercel build log is readable — correcting the round-136 claim**
+- Hypothesis: the round-136 item's statement that the log needs the
+  maintainer's Vercel session ("the loop cannot read the build log ... which
+  needs the maintainer's Vercel session") was an assumption, not a
+  measurement, and the command its own status description quotes should be
+  tried before believing it.
+- Change: `npx --yes vercel inspect dpl_... --logs` (from the deployment
+  status description of `993f006`) prints the full build log with no
+  credential step; it is the evidence for section 1. This entry is the
+  correction that claim called for (rule 5), naming what it corrects: the
+  round-136 item `docket/open/2026-08-15-site-frozen-third-freeze-rounds-134-135.md`
+  and the round-136 changelog entry. The same command read `756a58a`'s log
+  and `14dc95d`'s class: `14dc95d` is the unguarded origin/main freeze (the
+  `fatal: bad revision 'origin/main'` class round #90 fixed), not the
+  count-0 class; `756a58a`, `19cb78d` and `993f006` are the count-0 class.
+  The failure history was re-measured from the deployments API this round:
+  `d709a7b` 19:14:03Z failure, `bdf5a71` 21:38:04Z failure, `5104a16`
+  23:04:58Z failure, `14dc95d` 23:46:37Z failure, `41809ea` 00:14:02Z
+  success, `1468e81` 00:50:36Z success, `756a58a` 01:46:39Z failure,
+  `19cb78d` 03:14:36Z failure, `993f006` 04:18:40Z failure — so the site has
+  served `1468e81`'s tree (round 133) since 00:50:36Z, and the window
+  between the round-135 guard and this fix contained five failures, not the
+  three the docket item listed.
+- Origin: delegated
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: the failure was reproduced, not assumed: a fresh repo fetched
+  with `git fetch --depth=11` from the round-136 tree — single branch, no
+  remotes, the newest 11 commits — ran `node scripts/check-loop-history-snapshot.mjs`
+  and printed the two FAIL lines from the Vercel log verbatim, and `npm run
+  prebuild` there exits 1 as on Vercel. The fix in that same checkout exits
+  0 with the count verified from the API (`ok    rounds_merged matches the
+  changelog: 125 round entries`); with the API blocked (`HTTPS_PROXY` to a
+  closed port) it exits 0 with the degrade WARNs, and with a lying snapshot
+  (`rounds_merged: 999`) it exits 1 on the working-tree bound ("only 136
+  round entries"). Both guard directions: `bash scripts/check-prebuild-single-branch.sh`
+  exits 0 on the branch (green: prebuild passes in the shallow-since shape
+  with the API path engaged; red: deleting the `return "HEAD"` fallback
+  makes the same chain fail with `fatal: bad revision 'origin/main'`). The
+  full chain measured green: `npm run prebuild` exits 0, `npm run build`
+  exits 0, `npm run lint` exits 0, all in the full checkout. Deployment
+  states, timestamps and the `dpl_` ids above come from
+  `curl https://api.github.com/repos/addicted2ai/AddictedtoAI/deployments`
+  plus each deployment's `/statuses`, fetched this round; the two build logs
+  came from `npx --yes vercel inspect` with no credentials involved.
+- Result: not yet measured — the acceptance test is the next production
+  deployment. This entry is written on a branch that will deploy only after
+  merge, like every round since `41809ea`; if the fix holds, the deployment
+  signal goes green when this round's tree reaches Vercel, and the docket
+  item's first box can be checked then.
+
+### 2026-08-15
 Round 136 (meta) closes the item "nothing watches whether the site deployed"
 by giving the loop a signal nothing could ignore: a check over the GitHub
 deployments API, wired into preflight (so a failed deployment reroutes the
