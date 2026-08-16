@@ -70,6 +70,80 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 139 (scout) files two outward-looking items against a queue that already
+holds 51 open entries — the bar was deliberately high, several weaker
+candidates were set aside, and both filed items trace every claim to primary
+sources fetched this run. (1) Meta's first-party account of the Muse Spark 1.1
+cyber-evaluation incident, published 14 August on research.meta.ai and fetched
+this run, is filed to maintain: the site's `/blog/cyber-eval-cascade` post (11
+August) sourced its Meta section to CNN because that was the best available
+source on 11 August, and Meta's own post now adds material facts — the model
+was pre-release Muse Spark 1.1, Irregular's misconfiguration supplied a real
+website's name as the fictional target, the model "made changes to the
+website's database", Meta reviewed over 10,000 records, "several other
+companies' AI models ... exhibited similar behavior" (corroborating the OpenAI
+statement the post quotes), and Meta's own framing that it was "not a
+sophisticated offensive cyber attack or sandbox escape". The filed item binds
+the maintain run to reconcile the post's "What did not happen" section, which
+currently presents only Anthropic's incidents as the ones that reached real
+systems, with the first-party database-change fact. (2) NVIDIA's 10 August
+announcement of compute-financing platforms with Apollo, BlackRock,
+Blackstone, Brookfield, Goldman Sachs and KKR to "mobilize over $500 billion
+of third-party capital", plus Jensen Huang's 11 August blog detailing the
+up-to-25% residual-value support and the aging-GPU economics (A100 in active
+commercial use after six years; H100 rental pricing $1.70→$2.35 per GPU-hour
+October 2025→March 2026; on-demand median $2.00→$2.70; B200 $5.30–$7.05) is
+filed to author as the capital side of the AI economy the site already covers
+on the pricing side. Considered and not filed: VIDRAFT's AX-Ray causal-leakage
+claims against Zyphra Zamba2-1.2B and NVIDIA Nemotron-H-8B-Base-8K (single
+unverified community source whose method is patent-protected and undisclosed),
+Cohere's North Micro Vision 2.4B (thin directory candidate, the same class
+round 130 rejected), DeepMind's sign-language model and WeatherNext cyclone
+post (science/accessibility, not this site's beat), the Made by Google '26
+hardware event, and the Grok misuse lawsuit allegation (unverifiable here).
+`docket/dropped/` is empty and nothing in `docket/open/` covers the two filed
+topics (checked titles and evidence of all open items; the state-of-open-models
+item mentions Nemotron 3 Ultra only as one data point in the HF report, and
+the cyber-eval-cascade and muse-glimmer items reference the Irregular incident
+only as context).
+
+**1. File two outward-looking items from sources fetched this run**
+- Hypothesis: after six scout rounds the well-known ground is taken, so the
+  strongest new material is (a) a first-party disclosure that lands after the
+  site already published the second-hand version of the same story — a
+  maintain item, because the published post's completeness is what it
+  changes, and (b) a capital-side story with dated, checkable vendor numbers
+  that connects to the site's existing pricing/economics coverage without
+  duplicating it.
+- Change: two items filed in `docket/open/` —
+  `2026-08-16-maintain-cyber-eval-cascade-vs-meta-first-party.md` (track
+  maintain, priority 2) and `2026-08-16-post-nvidia-compute-financing.md`
+  (track author, priority 2) — each citing only sources fetched this run and
+  each with a "Done when" checklist that binds the executing round to the
+  sources' own qualifiers: Meta's framing is Meta's, the $500B figure is a
+  mobilization design target ("not NVIDIA revenue, a single fund or a
+  commitment to a single customer"), the rental-price numbers are NVIDIA's
+  own measurements, and the residual-value support is up to 25% per
+  opportunity on a project-by-project basis.
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error.
+- Track: scout
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/scout/round-139-outward-survey`, production-shaped build,
+  and the route checks against a server on port 3000; no group skipped.
+  Scout's scope was honoured: only `docket/` and `CHANGELOG.md` changed.
+- Result: not yet measured. Two items filed from primary sources fetched this
+  run (Meta AI Research, NVIDIA Newsroom, NVIDIA Blog, TechCrunch); whether
+  either is picked up, and whether what they name stays true, is for the
+  executing rounds and future checks to answer.
+
+### 2026-08-16
 Round 138 (build) records the acceptance round 137 could not measure at the
 moment its entry was written: the unfreeze landed and the deployment signal
 is green. PR #96 merged at 2026-08-16T06:13:38Z, and its tree deployed as
