@@ -70,6 +70,84 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 145 (build) executes docket item `2026-08-13-disclosure-map-merged-tree.md`:
+the AI-disclosure producing-round check was measuring a different tree locally
+than in CI. `scripts/check-ai-disclosure.mjs` read `git log` from HEAD — locally
+that is the branch, so a file changed and then reverted within a round still had
+commits touching it and counted as the newest change (round 91's TEST entries in
+`app/lib/tool-categories.js` moved `/directory`'s map to 91 locally while CI kept
+the real producing round); in CI HEAD is the merge ref, whose history
+simplification follows the merged tree, so the same file's newest real change was
+the one on `main`. The check now asks the question of the merged tree — the net
+diff of `origin/main...HEAD`: a route whose files have no net change is
+byte-identical to `main` after the merge, so its producing round is read from
+`main`'s history, where a reverted change never existed, and a file changed and
+reverted within a branch cannot move a producing round. Proven in a scratch clone
+in both directions the fix must distinguish: a branch shaped exactly like round 91
+(TEST entry added then reverted, map moved to 91) now fails with the merged tree's
+producing round while the pre-fix check passed that same state, and a genuine
+un-mapped change still fails.
+
+**1. Judge the producing-round map against the merged tree, not bare branch history**
+- Hypothesis: `lastContentCommitSubject` decides the producing round from `git log`
+  on the ref HEAD points at, which is the branch locally and the merge ref in CI —
+  so a route whose files were changed and reverted within a branch is judged by
+  the reverted commits locally and by `main`'s real history in CI. Diffing
+  `origin/main...HEAD` for each route's listed files should make both environments
+  ask the same question — what the page will actually ship — so a reverted change
+  cannot move the map while a genuine change still must.
+- Change: `lastContentCommitSubject` in `scripts/check-ai-disclosure.mjs` now
+  computes the net diff `git diff --name-only origin/main...HEAD -- <route files>`.
+  When it is empty the route is byte-identical to `main` after the merge and the
+  newest content commit is read from `git log origin/main` (where a reverted
+  change never existed); when it is non-empty the route was genuinely changed this
+  round and the newest commit touching the files is read from HEAD. The script now
+  fails loudly if `origin/main` is not present, rather than silently falling back
+  to branch history. No route's producing round changes: this round touches only
+  `scripts/`, `CHANGELOG.md` and `docket/`, none of which are listed route files.
+- Proven in both directions, in a scratch clone of this branch (`git clone
+  D:/AddictedtoAI`, then branches shaped off its `origin/main`):
+  - Reverted-within-branch (the round-91 shape): commit A added a TEST entry to
+    `app/lib/tool-categories.js` and moved `PRODUCING_ROUNDS["/directory"]` to 91;
+    commit B reverted the file and kept the moved map. `git diff
+    origin/main...HEAD --name-only` over the route's files printed nothing, and
+    `node scripts/check-ai-disclosure.mjs` failed: `FAIL  /directory: mapped to
+    round 91 (build), but its files were last touched by "loop/maintain/meta
+    llama recheck sweep (#82)" (maintain) — update PRODUCING_ROUNDS` (exit 1). The
+    pre-fix script, extracted from `origin/main` and run on the same branch,
+    passed the same state: `ok    /directory: producing round 91 (build), last
+    commit "loop/build: revert the TEST entry, keep the moved map and the fixed
+    check"` (exit 0) — the exact green check that shipped round 91.
+  - Genuine stale mapping: a branch added a real tool entry to
+    `tool-categories.js` (net diff non-empty) and left the map at 125; the check
+    failed `mapped to round 125 (maintain) ... (build)` (exit 1). Updating the map
+    to a build round made the same branch pass (exit 0).
+  - The round branch itself passes with the map untouched: `node
+    scripts/check-ai-disclosure.mjs` exit 0, every route's producing round read
+    from `origin/main` history, matching what the merged tree will contain.
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"), but
+  this round was chosen and briefed by the orchestrating model and a separate
+  session reviews the branch before merge, so `delegated` is recorded per the
+  brief — the same note the preceding delegated rounds recorded. Consequence:
+  `ship` withholds auto-merge and opens the pull request for that review, which is
+  expected rather than an error.
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: the proof above (scratch-clone branches for the reverted and
+  genuine-stale directions, plus the old-check comparison); `node
+  scripts/check-ai-disclosure.mjs` exit 0 on the round branch; then `node
+  scripts/round.mjs check` — lint, docket validator, track scope for
+  `loop/build/disclosure-map-merged-tree`, production-shaped build, and the route
+  checks against a server on port 3000, no group skipped. Build scope honoured:
+  only `scripts/check-ai-disclosure.mjs`, `CHANGELOG.md` and `docket/` change;
+  `scripts/check-track-scope.mjs`, `CHARTER.md`, `prompts/` and `.github/` are
+  untouched.
+- Result: not yet measured. The local check and the CI gate now diff the same
+  tree (`origin/main...HEAD`) by construction; whether the merged pull request
+  stays green is for CI to confirm.
+
+### 2026-08-16
 Round 144 (scout) files one post item against a queue that rounds 139, 142 and
 143 already deepened this same day — the bar was set explicitly high, and the
 round found exactly one genuinely new, un-filed, dated story in the world

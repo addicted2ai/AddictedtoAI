@@ -48,9 +48,11 @@ the page actually ships.
 
 ## Done when
 
-- [ ] The producing-round map is verified against the merged-tree diff
+- [x] The producing-round map is verified against the merged-tree diff
       (`origin/main...HEAD`) rather than bare branch history, so a file
       changed and reverted within a branch cannot move a producing round
-- [ ] The check still catches a real stale mapping (an author or build round
+- [x] The check still catches a real stale mapping (an author or build round
       that genuinely changes a route's files without updating the map)
-- [ ] `node scripts/round.mjs check` and the CI gate agree on the same branch
+- [x] `node scripts/round.mjs check` and the CI gate agree on the same branch
+
+Done by round 145 (`loop/build/disclosure-map-merged-tree`).
