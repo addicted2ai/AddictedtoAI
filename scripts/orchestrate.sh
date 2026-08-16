@@ -266,6 +266,22 @@ while true; do
   git checkout main --quiet 2>/dev/null || note "warning: could not check out main"
   git pull --ff-only --quiet 2>/dev/null || note "warning: could not fast-forward main"
 
+  # The deployment signal, every iteration. The supervisor is the loop's only
+  # always-on reader, so a failed production deployment must land in its own
+  # log even when no round is running — a frozen site is invisible to the
+  # session API, the CPU probe and this log's own growth (measured 15 August:
+  # ten hours of merges into a void, every signal green). The verdict comes
+  # from scripts/check-deployments.mjs, which reads the GitHub deployments
+  # API through `gh`; preflight.mjs carries the same verdict to the
+  # dispatcher. The supervisor only notes it — a failed deploy is not a
+  # failed iteration, and this loop must keep trying, not stop.
+  depl="$(node scripts/check-deployments.mjs 2>&1 | head -1 || true)"
+  case "$depl" in
+    FAIL*newest*) note "DEPLOYMENT DOWN: $depl" ;;
+    FAIL*) note "DEPLOYMENT UNKNOWN: $depl" ;;
+    *) note "deployment: $depl" ;;
+  esac
+
   stamp="$(date -u +%Y%m%dT%H%M%SZ)"
   marker="$stamp"
   log="$LOG_DIR/orchestrator-$stamp.log"

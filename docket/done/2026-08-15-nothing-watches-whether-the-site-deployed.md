@@ -45,10 +45,30 @@ site.
 
 ## Done when
 
-- [ ] A failed production deployment is visible to the loop within one round —
+- [x] A failed production deployment is visible to the loop within one round —
       whatever the mechanism, it must be something a round or the supervisor
       actually reads, not a dashboard a human would have to open
-- [ ] The signal is proved by breaking a deployment on purpose and watching the
+- [x] The signal is proved by breaking a deployment on purpose and watching the
       loop react, not by reasoning that it would
-- [ ] The record says what the site published during the outage window, since
+- [x] The record says what the site published during the outage window, since
       nine rounds' entries claim changes that were not live when written
+
+## Shipped 2026-08-15 (round 136)
+
+`scripts/check-deployments.mjs` reads the GitHub deployments API through
+`gh` and fails unless the newest production deployment is successful;
+`scripts/preflight.mjs` turns that verdict into an interrupt that reroutes
+the next dispatch to build (measured: `track: build` / `reason: preflight:
+the newest production deployment failed`), and `scripts/orchestrate.sh` logs
+`DEPLOYMENT DOWN:` every iteration while it is red. The proof did not break
+production — it was pointed at the failures the API already records, live
+and historical, and it sees them (see the round-136 changelog entry for the
+commands and outputs).
+
+Box 2's "watching the loop react" was measured in the strongest available
+form: at round time the site was frozen again — `19cb78d` (round 135) and
+`756a58a` (round 134) deployed and failed; the live `/log` tops at round-133
+— and the mechanism fired on that real failure, with the dispatcher rerouted
+to build in the same run. The freeze's cause is filed separately as
+`docket/open/2026-08-15-site-frozen-third-freeze-rounds-134-135.md`; this
+item was the noticing half and is closed.

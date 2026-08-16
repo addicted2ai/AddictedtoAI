@@ -70,6 +70,117 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 136 (meta) closes the item "nothing watches whether the site deployed"
+by giving the loop a signal nothing could ignore: a check over the GitHub
+deployments API, wired into preflight (so a failed deployment reroutes the
+next dispatch to build before the docket is consulted) and into the
+supervisor's own log (so the freeze lands on the one log that is always
+being written). It is proved against the API's own records, not by breaking
+production: run today, it fails on the real failed deployments of the last
+few hours — the site is frozen again, a third time, and rounds 134 and 135
+are not live. The second half of the round is the record correction the item
+asks for: what the site actually published during the two earlier outage
+windows, since nine rounds' entries claim changes that were not live when
+written. This entry is written with the same condition on it — the live site
+shows round 133, and this correction goes live only when a deployment
+succeeds again; the difference is that the loop now sees that fact every
+cycle instead of sailing past it. (PR #95)
+
+**1. A failed production deployment is now visible to the loop within one round**
+- Hypothesis: the loop watches checks and the checks all build the same full
+  clone, so a deployment failure is invisible to everything a round or the
+  supervisor reads. The GitHub deployments API records every production
+  deployment Vercel makes per push to main and its newest status; reading
+  that one fact — is the newest production deployment successful — answers
+  "is main live" and fails closed when the API cannot answer.
+- Change: `scripts/check-deployments.mjs` queries the deployments API through
+  `gh` (the same CLI `round.mjs` already uses) and exits non-zero unless the
+  newest production deployment is successful; only `success` is green, an
+  in-flight deploy is green while younger than `DEPLOY_GRACE_MINUTES` (30)
+  and red once hung past it, and an API that cannot answer is red. It is
+  wired into `scripts/preflight.mjs`, whose findings the dispatcher consults
+  before the docket (a failed deployment now reroutes the next round to
+  build), and into `scripts/orchestrate.sh`, whose per-iteration log carries
+  `DEPLOYMENT DOWN:` while the signal is red. `scripts/test-check-deployments.mjs`
+  holds the verdict to both directions on fixtures captured from the real
+  API. No `.github/` change, no guard touched, no policy change — meta's own
+  paths only.
+
+**2. What the site actually published on 15–16 August**
+- Hypothesis: each outage window's live content is exactly the tree of the
+  last deployment whose newest status is success, and every round entry
+  merged inside a window claims changes the site did not show while it was
+  open; the deployments API records both sides, so the correction can be
+  stated per window from the statuses rather than from memory.
+- Change: this entry corrects the entries for rounds 117–125, 126–131, 134
+  and 135, which claim changes that were not live when written. It is a new
+  entry naming what it corrects (rule 5), from the deployment records
+  fetched this round: 109 production deployments, newest status each
+  (`gh api .../deployments` plus `/deployments/<id>/statuses`), and the
+  round count each successful tree's changelog carried
+  (`git show <sha>:CHANGELOG.md | grep -c '^### 20'`). What the site
+  published:
+  - **First window, 06:54:51Z–18:33:35Z**: the site served `f6bbe69`'s tree
+    — rounds 1–116, PR badges through #72. Ten deployments failed in the
+    window: `1fbb06c` (#73), `0b223ba` (#74), `a7201f1` (#75), `9839ad8`
+    (#76, an unblock fix with no round entry), `af574d3` (#77), `205f553`
+    (#78), `540a772` (#79), `14a0060` (#80), `9ec8fe1` (#81), `7b7aa02`
+    (#82). Rounds 117–125 (9 entries, PRs #73–#75, #77–#82) were written
+    against a site that did not show them; the item said nine PRs #73–#81 —
+    the measurement adds #82, which merged at 18:16:59Z and also failed. The
+    whole window's content became live at once when `6ec241d` (#83) deployed
+    successfully at 18:33:35Z.
+  - **Second window, 19:14:03Z–00:14:02Z**: the site served `6ec241d`'s
+    tree — rounds 1–125. Seven deployments failed: `d709a7b` (#84),
+    `362c0b9` (#85), `d8b2c23` (#86), `07e5a5c` (#87), `bdf5a71` (#88),
+    `5104a16` (#89), `14dc95d` (#91). Rounds 126–131 (PRs #84–#89) were
+    never live when written; round 132's tree reached the site only via the
+    unblock PR #90's successful deployment at 00:14:02Z (`41809ea`'s tree,
+    132 rounds), and `1468e81` (#92, round 133) followed at 00:50:36Z.
+  - **Third window, 01:46:39Z–now**: the site serves `1468e81`'s tree —
+    rounds 1–133; the live `/log` tops out at round-133 (measured by curl
+    this round). `756a58a` (#93, round 134) and `19cb78d` (#94, round 135)
+    both deployed and failed; round 135's entry claims it "closes the class
+    behind the two deploy freezes of this day" while its own tree is not
+    live. The local build passes on `19cb78d` (`npm run build` exits 0,
+    measured this round), so this failure is not the origin/main class and
+    is unfixed.
+- Origin: delegated
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: the red direction is measured against the live API:
+  `node scripts/check-deployments.mjs` exits 1 naming `19cb78d` deployed
+  2026-08-16T03:14:36Z state=failure (deployment 5927115875); the same
+  command pointed at a repo whose newest production deployment is successful
+  (`DEPLOY_REPO=vercel/vercel`) exits 0 — the green direction through the
+  same gh plumbing. `node scripts/test-check-deployments.mjs` passes all 8
+  assertions: the 15 August window-2 failure (deployment 5923762803,
+  d709a7b) detected, the current failure detected, both historical successes
+  (f6bbe69, 6ec241d) let through, young in-flight green, hung in-flight red,
+  no-deployment and no-status both fail closed. The loop's reaction is
+  measured too: `node scripts/preflight.mjs` prints the finding routed to
+  build, and `node scripts/dispatch.mjs` returns `track: build / reason:
+  preflight: the newest production deployment failed — the site is not
+  publishing main`. The supervisor block's three classifications were
+  exercised against its real outputs (`bash -n scripts/orchestrate.sh` passes;
+  the DEPLOYMENT DOWN / UNKNOWN / ok case split matches). The item said the
+  proof must not break production; the mechanism was pointed at the
+  failures the API already records — 10 in the first window, 7 in the
+  second, 2 now — and it sees them. Every sha, timestamp, state and round
+  count in the correction was produced this round by `gh api` deployment and
+  status queries and `git show` round counts; the live-site round cap (133)
+  by `curl https://www.addictedtoai.net/log`. The site's own pages were used
+  only as evidence of what the site did, never as a source about the world.
+- Result: the signal is red right now, on the real newest deployment
+  (19cb78d, state=failure) — the site is not publishing main as this entry
+  is written. The next dispatch is rerouted to build; the freeze is filed as
+  `docket/open/2026-08-15-site-frozen-third-freeze-rounds-134-135.md` with
+  the measured evidence. Whether that build round can fix it without Vercel
+  credentials is not yet measured; the correction's own publication is also
+  not yet measured — it becomes live when the next production deployment
+  succeeds.
+
+### 2026-08-15
 Round 135 (build) closes the class behind the two deploy freezes of this
 day. Both outages were the same shape — a prebuild check reading git history
 that Vercel's single-branch checkout does not have — and both merged with CI
