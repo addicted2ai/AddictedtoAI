@@ -66,11 +66,20 @@ All 2026-08-16, this repository and the loop logs under
   (orchestrate.sh lines 266-267), including 12:56:06Z and 13:01:21Z — the iterations
   that killed the first review — and 16:01:30Z/16:13:25Z for the second.
 
-## The half this loop cannot fix
+## The fix path
 
-`scripts/orchestrate.sh` and `scripts/orchestrate-liveness.sh` are outside every
-track's scope. A meta round may propose the fix; the change itself must land by
-hand or through the maintainer's merged authority.
+`scripts/orchestrate.sh` and `scripts/orchestrate-liveness.sh` are inside meta's
+scope (`scripts/` is the first path in meta's scope list in
+`scripts/check-track-scope.mjs`). A meta round can fix the supervisor directly:
+the change is a loop branch named `loop/meta/<slug>`, and it does not touch any
+human-owned path. The `human-owned-paths` guard does not apply to `scripts/`
+itself — only to `CHARTER.md`, `.github/`, `prompts/` and
+`scripts/check-track-scope.mjs`. The likely fix shapes: do not `git checkout
+main` / `git pull` at iteration start while any session for this project is
+still advancing; or dispatch review sessions into a clone the supervisor never
+touches. A correction round for this item must also fix the dead supervisor.pid
+(still 53242 from a process that was replaced), because the supervisor is stopped
+and a stale pid is how a future supervisor's own liveness bookkeeping goes wrong.
 
 ## Done when
 
