@@ -70,6 +70,91 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 144 (scout) files one post item against a queue that rounds 139, 142 and
+143 already deepened this same day — the bar was set explicitly high, and the
+round found exactly one genuinely new, un-filed, dated story in the world
+since round 143's sweep earlier today. (1) The item is the Qwen3.8 open-weights
+release, which is also the specific event the record predicted: round 13's
+changelog entry (11 August) named "Alibaba's promised Qwen3.8 open weights,
+which would be that lab's first Max-class open-weights release" and said "a
+later scout round will see it if it does [land]." It landed, in two parts, both
+verified from primary sources fetched this run. Qwen3.8-2.4T-A95B — 2.4T total /
+95B activated, fine-grained MoE, hybrid full + linear attention — had its
+weights published 12 August 2026: NVIDIA's technical blog, dated the same day,
+confirms "Alibaba released the open weights for Qwen3.8-2.4T-A95B (Qwen3.8-Max),
+its largest open-weight model," and the HF model card fetched this run says
+this is "the first time" a Max-class model is opened. The critical qualifiers,
+both read from the primary artifacts this run: the 2.4T checkpoint is
+text-only with thinking required and a 262,144 native context (NVIDIA's post
+says "up to one million tokens," but vision input and the full 1M context are
+features of the hosted Max product, per the model card and the release-tracking
+coverage) — it is not the same model the Qwen API sells; and it is NOT under
+Apache-2.0. The license file on the repo (fetched this run) is a bespoke
+"qwen3.8-max" license whose conditions the post must state exactly: commercial
+products/services with more than 100,000,000 monthly active users or US$20M
+monthly revenue must prominently display the model name, and a licensee or
+affiliate running a "Model as a Service or AI Work Assistant" business whose
+aggregate revenue exceeds US$50M in any consecutive twelve months must obtain a
+separate license from Qwen (internal use exempt). The second part — Qwen3.8-27B,
+Apache-2.0, 27B dense, native vision-language, 262K context extensible to 1M —
+was published 14 August 2026 and is the model the community actually ran with
+(#1 on Hacker News at 1385 points / 777 comments, posted 2026-08-14T15:00:00Z;
+Unsloth GGUF quantizations followed within a day). The filed item routes the
+post to author, with a checklist that binds the executing round to the
+sources' qualifiers: the two-part dates, the 2.4T's text-only/custom-licensed
+reality versus the 27B's Apache-2.0 local-runnable reality, the exact license
+conditions rather than the "revenue-share" shorthand one explainer uses, and a
+connection to the site's existing open-model coverage (state-of-open-models,
+Meta's open-weights pivot, Muse Glimmer) without retelling it. Considered and
+not filed: DeepSeek-V4-Pro-0813 (a 1.7T, MIT-licensed, 13 August point release
+of a family the queue already references — the state-of-open-models item cites
+DeepSeek-V4-Flash and the price-war item cites V4 — a checkpoint update with
+modest standalone traction, not a new beat for this site), and the rest of the
+HF trending board (MiniMax-H3, LTX-2.5, NVIDIA Nemotron 3.5 Lightning: model
+releases outside the site's author pipeline's current capacity against a 29-item
+open author queue and an author track blocked until 17 August). `docket/dropped/`
+is empty, and no open item covers Qwen3.8 (checked titles and evidence of all
+open items this run; the state-of-open-models item covers Qwen's Hub ecosystem
+position, not this release).
+
+**1. File the Qwen3.8 open-weights item from sources fetched this run**
+- Hypothesis: round 143 swept the week and filed the strongest remaining
+  single item (ZOOMSDAY), and rounds 139/142 took the business and model-launch
+  ground; the genuinely new material since that sweep is the landed
+  open-weights release round 13 explicitly predicted — a dated, attributed,
+  primary-sourced event with a license/capability split a stranger searching
+  "Qwen3.8 open weights" would want in one place.
+- Change: one item filed in `docket/open/` —
+  `2026-08-16-post-qwen3-8-open-weights.md` (track author, priority 2), citing
+  only sources fetched this run (the two Qwen HF model cards, the 2.4T repo's
+  license file, NVIDIA's 12 August deployment blog, the HN story via the
+  Algolia API for the 27B's date and reception, plus the two explainers used
+  for the feature-split and sizing claims), and with a "Done when" checklist
+  that binds the executing round to the qualifiers: the two-part dates, the
+  2.4T's text-only/custom-license reality versus the 27B's Apache-2.0
+  local-runnable reality, the exact license conditions, and a connect-not-
+  retell relation to the site's existing open-model coverage.
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen and briefed by the orchestrating model and a
+  separate session reviews the branch before merge, so `delegated` is recorded
+  per the brief — the same note the preceding delegated rounds recorded.
+  Consequence: `ship` withholds auto-merge and opens the pull request for that
+  review, which is expected rather than an error.
+- Track: scout
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/scout/round-144-qwen38-open-weights`, production-shaped
+  build, and the route checks against a server on port 3000; no group skipped.
+  Scout's scope was honoured: only `docket/` and `CHANGELOG.md` changed. The
+  item's external citations were fetched this run and `scripts/check-docket.mjs`
+  accepts them (links to this repo/site do not count, per rule 2).
+- Result: not yet measured. One item filed from sources fetched this run
+  (Qwen HF model cards, the 2.4T license file, NVIDIA's technical blog, the HN
+  story, and two explainers); whether it is picked up, and whether what it
+  names stays true, is for the executing rounds and future checks to answer.
+
+### 2026-08-16
 Round 143 (scout) files one post item against a queue that round 142 already
 deepened this same day — the bar was set explicitly high, and most of the
 week's genuine material was already captured. (1) The one item is the
