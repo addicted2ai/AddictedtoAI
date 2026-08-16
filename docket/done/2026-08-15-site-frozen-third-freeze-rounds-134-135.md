@@ -70,12 +70,17 @@ deployment signal will report it. The other two boxes are ticked with the
 evidence recorded in the round-137 changelog entry (PR #96):
 
 - The failure history re-measured this round from the deployments API
-  (`curl` on `/deployments` plus `/deployments/<id>/statuses`, unauthenticated):
-  `d709a7b` 19:14:03Z failure, `bdf5a71` 21:38:04Z failure, `5104a16`
-  23:04:58Z failure, `14dc95d` 23:46:37Z failure, `41809ea` 00:14:02Z
-  success, `1468e81` 00:50:36Z success, `756a58a` 01:46:39Z failure,
-  `19cb78d` 03:14:36Z failure, `993f006` 04:18:40Z failure. The window
-  contained five failures, not the three this item listed.
+  (`curl` on `/deployments` plus `/deployments/<id>/statuses`,
+  unauthenticated, newest status per production deployment): `993f006`
+  04:18:40Z failure, `19cb78d` 03:14:36Z failure, `756a58a` 01:46:39Z
+  failure, `1468e81` 00:50:36Z success, `41809ea` 00:14:02Z success,
+  `14dc95d` 23:46:37Z failure, `5104a16` 23:04:58Z failure, `bdf5a71`
+  21:38:04Z failure, `07e5a5c` 21:14:59Z failure, `d8b2c23` 20:33:04Z
+  failure, `362c0b9` 19:51:36Z failure, `d709a7b` 19:14:03Z failure. The
+  window from `d709a7b` through `993f006` contained ten failures and two
+  successes, not the three this item listed (the round-137 entry's first
+  draft omitted `362c0b9`, `d8b2c23` and `07e5a5c` and said five;
+  corrected on review before merge).
 - This item's claim that "the loop cannot read the build log (the status
   description points at `npx vercel inspect dpl_... --logs`, which needs the
   maintainer's Vercel session)" is **wrong**, and the round-137 changelog
@@ -85,15 +90,23 @@ evidence recorded in the round-137 changelog entry (PR #96):
   (`dpl_Cdb3gCcCqJ6WvUjovR4ZfG5WZnDn`) show the prebuild chain failing in
   `scripts/check-loop-history-snapshot.mjs` with the count-0 fallback of
   `scripts/count-changelog-rounds.mjs` (quoted FAIL lines in the entry).
-- The cause: Vercel's clone is shallow as well as single-branch (every
-  observation fits the newest ~11 commits), so the round-135 fallback's
-  `git log HEAD --before=taken_at` stops at the clone boundary, the
-  pre-taken_at changelog record (`7b7aa02`) sits beyond it, the sha comes
-  back empty, and `countRoundsAsOf` returns 0 — "snapshot says 125, the
-  changelog has 0 round entries". It is time-dependent: the record sat 10
-  and 11 commits below the two successes and 12–14 below the three
-  failures. The round-135 guard (`check-prebuild-single-branch.sh`) could
-  not see this because its shaped checkout carried the full history.
+- The cause: Vercel's clone is shallow as well as single-branch, so the
+  round-135 fallback's `git log HEAD --before=taken_at` stops at the clone
+  boundary, the pre-taken_at changelog record (`7b7aa02`) sits beyond it,
+  the sha comes back empty, and `countRoundsAsOf` returns 0 — "snapshot
+  says 125, the changelog has 0 round entries". It is time-dependent and
+  boundary-sensitive: `git rev-list --count 7b7aa02..X` puts the record
+  9/10/11/12/13 commits below the five deployments (the 10th–14th counting
+  both endpoints), and re-measuring in shallow clones of each deployment's
+  tree with the pre-fix code, depth 10 reproduces every observation (both
+  successes anchor non-empty and count 125, all three failures anchor
+  empty and count 0) while depth 11 breaks the fit — `756a58a`'s depth-11
+  boundary commit `6ec241d` (18:33:00Z, no CHANGELOG.md change) is
+  reported as a pathspec match by the shallow walk and counts 125 where
+  Vercel's log shows the count-0 FAIL. "Every observation fits the newest
+  ~11 commits" was false as written; depth 10 fits. The round-135 guard
+  (`check-prebuild-single-branch.sh`) could not see this because its
+  shaped checkout carried the full history.
 - The fix (PR #96): the anchored count is read from the public GitHub API
   when the checkout's history cannot reach taken_at, degrading to a loud
   WARN with only a working-tree bound when the API cannot answer either;

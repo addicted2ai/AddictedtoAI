@@ -114,13 +114,23 @@ taken_at` so the count-0 shape fails the pull request instead of the deploy.
   pre-taken_at record (commit `7b7aa02`, 18:16:50Z) is beyond it — so the
   sha is empty and `if (!sha) return 0` reports "0 round entries", which
   disagrees with the snapshot's 125 and fails the build. The count is
-  time-dependent: the record sat 10 commits below `41809ea` (deployed
-  00:14:02Z, success), 11 below `1468e81` (00:50:36Z, success), 12 below
-  `756a58a` (01:46:39Z, failure), 13 below `19cb78d` (03:14:36Z, failure)
-  and 14 below `993f006` (04:18:40Z, failure) — every observation fits
-  Vercel's clone holding the newest ~11 commits, so the fallback worked
-  while the snapshot was fresh and broke as merges pushed the record out of
-  the window. A count that depends on how much history the clone happened to
+  time-dependent: `git rev-list --count 7b7aa02..X` puts the record 9, 10,
+  11, 12 and 13 commits below `41809ea`, `1468e81`, `756a58a`, `19cb78d`
+  and `993f006` (the 10th through 14th commit counting both endpoints), and
+  the outcome is boundary-sensitive, re-measured this round in shallow
+  single-branch clones of each deployment's own tree with the pre-fix code.
+  At depth 10 every observation reproduces: the two successes get a
+  non-empty anchor and count 125 (`41809ea` from `7b7aa02`'s own record,
+  `1468e81` from its boundary commit `6ec241d`, reported by the shallow
+  walk's pathspec quirk), and the three failures get an empty anchor and
+  count 0, matching the Vercel FAIL lines. At depth 11 the fit breaks: the
+  shallow walk reports its boundary commit as a pathspec match even when it
+  did not touch CHANGELOG.md, `756a58a`'s depth-11 boundary is `6ec241d`
+  (18:33:00Z), so its anchor comes back non-empty and counts 125 where
+  Vercel's log for `756a58a` shows the count-0 FAIL. Every observation fits
+  depth 10; the "newest ~11 commits" claim was false as written, and the
+  fallback worked while the snapshot was fresh and broke as merges pushed
+  the record out of the window. A count that depends on how much history the clone happened to
   carry is not a count. Fix: `countRoundsAsOf` keeps the git-history anchor
   where the history reaches taken_at, and when it does not, reads the same
   anchored record from the public GitHub API (`commits?path=CHANGELOG.md&until=
@@ -159,14 +169,21 @@ taken_at` so the count-0 shape fails the pull request instead of the deploy.
   and `14dc95d`'s class: `14dc95d` is the unguarded origin/main freeze (the
   `fatal: bad revision 'origin/main'` class round #90 fixed), not the
   count-0 class; `756a58a`, `19cb78d` and `993f006` are the count-0 class.
-  The failure history was re-measured from the deployments API this round:
-  `d709a7b` 19:14:03Z failure, `bdf5a71` 21:38:04Z failure, `5104a16`
-  23:04:58Z failure, `14dc95d` 23:46:37Z failure, `41809ea` 00:14:02Z
-  success, `1468e81` 00:50:36Z success, `756a58a` 01:46:39Z failure,
-  `19cb78d` 03:14:36Z failure, `993f006` 04:18:40Z failure — so the site has
-  served `1468e81`'s tree (round 133) since 00:50:36Z, and the window
-  between the round-135 guard and this fix contained five failures, not the
-  three the docket item listed.
+  The failure history was re-measured from the deployments API this round
+  (newest status per production deployment): `993f006` 04:18:40Z failure,
+  `19cb78d` 03:14:36Z failure, `756a58a` 01:46:39Z failure, `1468e81`
+  00:50:36Z success, `41809ea` 00:14:02Z success, `14dc95d` 23:46:37Z
+  failure, `5104a16` 23:04:58Z failure, `bdf5a71` 21:38:04Z failure,
+  `07e5a5c` 21:14:59Z failure, `d8b2c23` 20:33:04Z failure, `362c0b9`
+  19:51:36Z failure, `d709a7b` 19:14:03Z failure — so the site has
+  served `1468e81`'s tree (round 133) since 00:50:36Z, and the window from
+  `d709a7b` (the first failure after `6ec241d`'s success) through
+  `993f006` (the newest) contained ten failures and two successes, not the
+  three the docket item listed; `7b7aa02`'s own failed deployment
+  (18:16:59Z) sits just before that window, so the last fourteen production
+  deployments hold eleven failures. An earlier draft of this entry omitted
+  `362c0b9`, `d8b2c23` and `07e5a5c` and said five; corrected on review
+  before merge.
 - Origin: delegated
 - Track: build
 - Agent: opencode (deepseek-v4-flash)
