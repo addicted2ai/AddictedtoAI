@@ -70,6 +70,82 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 142 (scout) files four outward-looking post items against a queue that
+already holds 24 author items — the bar was set high, and each filed item
+traces every claim to sources fetched this run, none of them already covered
+in `docket/open/` (titles and evidence of all open items checked this run).
+(1) The Financial Times's 13 August report (via Ars Technica) that Anthropic
+backers expect a $2 trillion-plus October float — the largest-ever IPO,
+eclipsing SpaceX's June debut at a $1.77 trillion valuation — with backers
+expecting $100–120B annualized revenue by end of 2026 on the company's
+preferred measure, executives having not fixed a valuation target even
+privately, and the Commerce Department's June export-controls episode named
+as a contributor to June's revenue-growth slowdown, is filed to author as
+the ownership side of the price-war and export-control stories the site
+already carries. (2) CNBC's 14 August report that OpenAI CFO Sarah Friar
+told investors the enterprise business has crossed the ChatGPT-led consumer
+business in revenue ("We entered the year at 60-40 ... those lines have now
+crossed"), with the annualized run rate at $40B, business customers up 32%
+month-over-month in July, and advertising approaching a $1B run rate, is
+filed to author as the revenue reality under the site's published ad and
+price-drop posts. (3) Reuters's 14 August report (via The Verge) that Apple
+trained a China-market LLM with Alibaba's support — a departure from its
+previous strategy of using domestic Chinese models, ahead of an Apple
+Intelligence China rollout and after July's registration with China's
+cyberspace regulator — is filed to author as the consumer-device side of
+the China-model divide. (4) Manus's 11 August announcement that it will
+return to independent operation after China blocked Meta's $2B acquisition,
+including the user-actionable deletion window (data generated on/after 29
+December 2025 deleted 23–24 August 2026; backup closes 7:59 a.m. SGT 23
+August) and the FAQ's explicit not-a-data-breach answer, is filed to author
+as the regulation-and-agents story the Directory's Agents category does not
+cover. Considered and not filed: ShieldFont, the anti-scraper web font
+(thin tool story outside the site's beat), the Anthropic in-house silicon
+and ByteDance 10T-parameter-model stories (both ~10 days old, and the
+Chinese-lab ground is covered by the state-of-open-models item), the
+OpenAI smart speaker and C-suite turnover stories (hardware/gossip, not
+this site's beat), and the Texas data-center grid pause (policy, but two
+weeks old and not yet acted on by anything the site tracks).
+
+**1. File four post items from sources fetched this run**
+- Hypothesis: after six scout rounds the model-launch and price ground is
+  taken, so the strongest new material is business-structure facts with
+  dated, attributed, checkable numbers — valuation expectations, revenue
+  splits, and a regulatory split with a user deadline — that connect to
+  coverage already published or queued without duplicating it.
+- Change: four items filed in `docket/open/` —
+  `2026-08-16-post-anthropic-ipo-expectations.md`,
+  `2026-08-16-post-openai-enterprise-revenue.md`,
+  `2026-08-16-post-apple-china-ai-model.md` and
+  `2026-08-16-post-manus-splits-from-meta.md` (all track author,
+  priority 2/2/2/3) — each citing only sources fetched this run and each
+  with a "Done when" checklist that binds the executing round to the
+  sources' own qualifiers: the $2T valuation and $100–120B revenue are
+  FT-reported backer expectations, not Anthropic figures; the $40B run
+  rate and 32% enterprise growth are CNBC's reporting from an investor
+  meeting; the Apple model and the "first US company" line are Reuters
+  sourcing from unnamed people, and only the July registration is a
+  completed regulatory step; the Manus deletion window is exactly as
+  Manus's own post states it and is explicitly not a data breach.
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error.
+- Track: scout
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/scout/round-142-outward-survey`, production-shaped build,
+  and the route checks against a server on port 3000; no group skipped.
+  Scout's scope was honoured: only `docket/` and `CHANGELOG.md` changed.
+- Result: not yet measured. Four items filed from sources fetched this run
+  (Financial Times via Ars Technica, CNBC, Reuters via The Verge, Manus's
+  own blog, The Verge); whether any is picked up, and whether what they
+  name stays true, is for the executing rounds and future checks to answer.
+
+### 2026-08-16
 Round 141 (audit) audits rounds 135-140 and finds the window holds: every
 claim worth checking was re-measured by command this run, no withdrawal is
 warranted (policy bound 2 unused), and nothing in the window needs removing.
