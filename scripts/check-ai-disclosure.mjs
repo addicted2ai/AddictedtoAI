@@ -13,8 +13,11 @@
 // 2. A route maps to a round whose track disagrees with the most recent
 //    commit touching that page's files. That means the map went stale: a
 //    later round changed the page and nobody updated PRODUCING_ROUNDS. The
-//    commit's track prefix (e.g. "Maintain:") must be compatible with the
-//    mapped round's origin:
+//    "most recent commit" is read from the merged tree (the net diff of
+//    origin/main...HEAD), never from bare branch history — a file changed
+//    and reverted within a branch (round 91) must not move a producing
+//    round. The commit's track prefix (e.g. "Maintain:") must be compatible
+//    with the mapped round's origin:
 //      - supervised/unsupervised (loop rounds): the commit must carry a
 //        track prefix matching the mapped round's track
 //      - maintainer (human-directed): the commit is expected to predate the
@@ -49,6 +52,34 @@ const { getBuildLog } = await import(
   `file://${path.join(root, "app", "lib", "build-log.js").replace(/\\/g, "/")}`
 );
 
+// The producing-round map is judged against what the merged tree will
+// contain — the net diff of origin/main...HEAD — not against the branch's
+// own commit history. That is the round-91 lesson: a file changed and then
+// reverted within a branch still has commits touching it, so bare `git log`
+// on the branch counts the reverted change as the newest while CI, walking
+// the merge ref, sees the merged tree and does not. The check needs the
+// origin/main ref to ask that question; without it there is no merged tree
+// to judge against, and falling back to the branch's own history would
+// silently reintroduce the exact gap this script exists to close. Fail
+// loud instead.
+try {
+  execFileSync(
+    "git",
+    ["rev-parse", "--verify", "origin/main^{commit}"],
+    { encoding: "utf8", cwd: root }
+  );
+} catch {
+  console.log(
+    "FAIL  origin/main is not available — this check judges the producing-round map"
+  );
+  console.log(
+    "      against the merged-tree diff (origin/main...HEAD) and cannot fall back to"
+  );
+  console.log("      the branch's own history, which is the gap round 91 shipped.");
+  console.log("      Fetch it first: git fetch origin main");
+  process.exit(1);
+}
+
 // A commit that also touched the disclosure machinery is *not* necessarily
 // a chrome commit. The banner round (PR #9) added the disclosure to every
 // page at once and should not rewrite every page's producing round — but
@@ -76,6 +107,27 @@ function isBannerOnlyDiff(sha, files) {
 }
 
 function lastContentCommitSubject(files, route) {
+  // The producing round of a route is decided by what the page ships, which
+  // is the merged tree — the net diff of origin/main...HEAD — not by the
+  // branch's own commit history. `git log` walks the ref HEAD points at:
+  // locally that is the branch, so a file changed and then reverted within
+  // a round still has commits touching it and counts as the newest change;
+  // in CI HEAD is the merge ref, whose history simplification follows the
+  // merged tree, so the same file's newest real change is the one on main.
+  // A route whose files have no net diff against main is byte-identical
+  // after the merge, so its producing round is read from main's history,
+  // where a reverted change never existed; a route whose files do have a
+  // net diff was genuinely changed by this round, and the newest commit
+  // touching them is this round's.
+  const netChanged = execFileSync(
+    "git",
+    ["diff", "--name-only", "origin/main...HEAD", "--", ...files],
+    { encoding: "utf8", cwd: root }
+  )
+    .trim()
+    .split("\n")
+    .filter(Boolean);
+  const range = netChanged.length ? "HEAD" : "origin/main";
   // Walk commits newest-first, skipping banner-only ones (the round that
   // added the banner touched every page at once, and should not rewrite
   // every page's producing round). The /disclosure page is exempt: its own
@@ -83,7 +135,7 @@ function lastContentCommitSubject(files, route) {
   // built it.
   const commits = execFileSync(
     "git",
-    ["log", "-10", "--format=%h|%s", "--", ...files],
+    ["log", "-10", "--format=%h|%s", range, "--", ...files],
     { encoding: "utf8", cwd: root }
   )
     .trim()
