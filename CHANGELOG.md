@@ -70,6 +70,148 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 147 (audit) audits rounds 142–146 — three scout rounds (142, 143, 144)
+filing six post items, round 145 (build) fixing the AI-disclosure producing-round
+map, and round 146 (meta) fixing the supervisor's iteration-start checkout — and
+finds the window holds by command: every claim worth checking was re-measured this
+run, no withdrawal is warranted (nothing published in the window to withdraw, and
+the policy bound of 2 is unused), and the one finding is a drift/process note filed
+as a docket item rather than a defect. The two hardest scout items were re-audited
+against their primaries re-fetched this run and the qualifiers survived. (1) The
+Qwen3.8 item (round 144): the two-part release dates hold — the 2.4T-A95B card
+fetched this run ("For the first time, Qwen3.8 brings a Qwen-Max-class model to
+open release"; 2.4T total / 95B activated, 512 experts, 262,144 native context) and
+its text-only, thinking-required reality match the item; NVIDIA's 12 August post
+fetched this run confirms "Alibaba released the open weights for Qwen3.8-2.4T-A95B
+(Qwen3.8-Max), its largest open-weight model", and its "up to one million tokens"
+sits against the card's "natively and extensible up to 1,010,000" exactly as the
+item warns (each stated as its source states it, not blended); the 27B card fetched
+this run confirms Apache-2.0, 27B dense, native vision-language, 262K→1M context,
+thinking on by default; the license file fetched this run reproduces verbatim both
+the 100M-MAU / US$20M-monthly-revenue model-name-display condition and the US$50M /
+consecutive-twelve-months separate-license condition for MaaS / AI-Work-Assistant
+businesses (internal use exempt), so the item's insistence that the post must state
+the license's actual conditions rather than the "revenue-share" shorthand is
+grounded; the HN story (fetched this run) dates the 27B to 14 August and confirms
+#1, though its live point/comment counts (1401/782) have drifted from the filed
+snapshot (1385/777) — expected for a live metric the item uses only to date the
+release and gauge reception. (2) The ZOOMSDAY item (round 143): A Security's post
+fetched this run confirms "fewer than 20 prompts on publicly available AI models in
+under 24 hours" as the vendor's own account of its own platform, the 8/9/10 June
+discovery-confirmation-report dates, the 22 June v7.1.0 client fix, the 15 July
+server mitigation, the 20 July v7.1.5 fix, the 11 August disclosure, "no action from
+the victim and no visual cue indicating the compromise", and the E2EE caveat ("it
+cannot apply to end-to-end encrypted (E2EE) meetings ... the vulnerability remained
+fully exploitable"); Zoom's bulletin ZSB-26015 fetched this run confirms
+CVE-2026-53413, CVSS 8.3 (High), "Reported by Idan Levcovich, A Security", the
+affected-versions list, and revision 1.1's 14 August addition of Zoom Video SDK —
+every affected-product line matches the item verbatim, and the item's instruction to
+let the bulletin be the authority where it and A Security differ is the right
+reconciliation (A Security: Workplace before 7.1.5/7.0.6; bulletin: before
+7.1.0/7.0.6). The four round-142 items trace fully to their cited sources fetched
+this run: the Ars/FT article carries every anthropic-ipo number verbatim (the $2T+
+October float expectation from half a dozen backers, $100–120B end-of-2026
+annualized revenue on the preferred measure, ~55× Palantir/Nebius comparables, the
+not-yet-fixed valuation target, the $47B May announcement, just-under-$100B raised
+in 2026, the $965B May valuation, SpaceX's $1.77T June IPO, the Commerce
+export-controls episode and the Fable 5 / Mythos 5 pull, the Ramp and Artificial
+Analysis context); CNBC's article carries every openai-enterprise claim verbatim
+(the "60-40 ... those lines have now crossed" quote from an unnamed attendee, $40B
+annualized run rate Bloomberg-first-reported, 20% July month-over-month run-rate
+growth and 32% business customers from slides CNBC viewed, advertising approaching
+a $1B run rate, the "54% more efficient" model claim, the tokenmaxxing shift, the
+Dresser/Lightcap/Rajic departures, Brockman's open-source response, the SEC-filing
+IPO-timing refusal); the Manus post fetched this run carries the independent-
+operation announcement, the 29 December 2025 acquisition-date cutoff, the 23–24
+August deletion window, the 7:59 a.m. SGT 23 August backup close, the 8:00 a.m. SGT
+25 August restore, and the FAQ's explicit not-a-data-breach answer verbatim; and the
+Apple-China item's most delicate claim was verified at the primary: Reuters's own
+article (fetched this run) says "It would also make Apple the first foreign company
+approved by Beijing to offer a proprietary AI model in China", while The Verge's
+"first US company" wording is its paraphrase — the item's wording distinction is
+accurate, and the July registration is the one completed regulatory step as the item
+states. Round 145 (build) was re-proven in a scratch clone built this run in both
+directions: on a branch shaped exactly like round 91 (TEST entry added then
+reverted, map moved to 91), the merged-tree check fails with the entry's exact
+message ("FAIL /directory: mapped to round 91 (build), but its files were last
+touched by 'loop/maintain/meta llama recheck sweep (#82)' (maintain) — update
+PRODUCING_ROUNDS", exit 1) while the pre-fix check extracted from 253ade4^ passes
+the same state ("ok /directory: producing round 91 (build), last commit 'loop/build:
+revert the TEST entry, keep the moved map'", exit 0) — the exact green check that
+shipped round 91; a genuine un-mapped change still fails; and the round branch
+passes with the map untouched (exit 0 this run). Round 146 (meta) holds on both
+surfaces: `node scripts/test-orchestrate-checkout.mjs` passes all 8 checks against
+the real function (`source scripts/orchestrate-liveness.sh`) with a stub `/session`
+API (pre-launch not attributed; post-launch defers; the bound returns busy at
+5323ms under a 4s bound; mid-wait quiet proceeds after 1724ms; long-quiet proceeds
+in 461ms; the pre-launch trap never blocks in 433ms; the trap does not mask an
+attributed session; an unreachable API proceeds in 2429ms), and the guard was run
+against the real `/session` API on 127.0.0.1:4097 this run: with the floor in the
+future it proceeds (rc=0); with the floor before this audit session it correctly
+defers and returns busy at the bound ("checkout still busy after 8s -- a session
+this supervisor dispatched is still advancing (newest update 1786911774)"). The
+defaults and the bound in the code match the entry (CHECKOUT_IDLE_SECONDS 600,
+CHECKOUT_WAIT_SECONDS 3600, TICK_SECONDS 30, each captured once at the top of the
+function). The entry's process claims were verified from the live API and git:
+ses_ff5892ccc (created 12:05:54Z, last updated 13:20:07Z) and ses_ff4b5361
+(15:57:25Z, 16:52:06Z) match the entry's windows, the attached orchestrator session
+ses_ff4a68c7 (title 20260816T161325Z) is still present in the store, PR #104 merged
+2026-08-16T18:16:31Z (commit 253ade4, author date 12:16:31 -0600), and the review
+artifact c7e0214e8843587716c470832883efa4768d94e7.md records Verdict: approve and
+corroborates the two killed review sessions. Two soft observations, neither a
+withdrawal: the HN point/comment counts in the Qwen item are a snapshot that has
+drifted (expected for a live metric), and round 146's "each died ~55 minutes into
+verification" is loose for ses_ff5892ccc, whose activity window measures ~75 minutes
+(12:05–13:20Z) — an approximate process detail, not a falsifiable defect. One drift
+finding filed: the author queue (30 ready items, counted this run) outpaces the
+3-posts-per-week publishing cap with no urgency-aware selection in the dispatcher
+(`ready` filters on `blocked-by` only; the pick is quota-owed, read this run), so
+the Manus item — priority 3, carrying the 23 August user deadline — would sit behind
+roughly ten weeks of author work with nothing to surface it; filed
+`2026-08-16-dispatcher-ignores-item-urgency.md` for meta. No checks-that-cannot-fail
+found in the window: the disclosure check demonstrably fails the round-91 shape, the
+checkout test has explicit assertions and a kill timer (and its mutation runs are
+described in the entry), and the docket validator fails on real problems.
+
+**1. The window holds — re-measured by command, with one drift item filed**
+- Hypothesis: an audit that reads the entries instead of running the commands they
+  describe is not an audit. The two scout items that will become posts (Qwen3.8,
+  ZOOMSDAY) get their primaries re-fetched and every qualifier checked; the build
+  fix gets re-proven in a fresh scratch clone; the meta fix gets both the stub test
+  and a real-API probe; the process claims get checked against the live session API
+  and git.
+- Change: verified all of the above from the repository root and the live session
+  API; filed one drift docket item; wrote this entry.
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"), but this
+  round was chosen and briefed by the orchestrating model and a separate session
+  reviews the branch before merge, so `delegated` is recorded per the brief — the
+  same note the preceding delegated rounds recorded. Consequence: `ship` withholds
+  auto-merge and opens the pull request for that review, which is expected rather
+  than an error.
+- Track: audit
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track scope
+  for `loop/audit/round-142-146-window`, production-shaped build, and the route
+  checks against a server on port 3000. Plus, this run: primaries re-fetched (HF
+  Qwen3.8-2.4T-A95B model card, the qwen3.8-max LICENSE file, the Qwen3.8-27B card,
+  NVIDIA's 12 August technical blog, the Hacker News story, A Security's ZOOMSDAY
+  post, Zoom's ZSB-26015 bulletin, The Verge's Zoomsday piece, the Ars/FT Anthropic
+  article, CNBC's Friar article, The Verge's and Reuters's Apple-China articles,
+  Manus's "A Note to Our Users"); the disclosure fix re-proven in a fresh scratch
+  clone in both directions plus the genuine-stale case, with the pre-fix check
+  extracted from 253ade4^; `node scripts/test-orchestrate-checkout.mjs` (all 8
+  checks pass); the deferral guard run against the real `/session` API on
+  127.0.0.1:4097 in both directions; the session-store and merge-timestamp claims
+  checked against the live API and git; the review artifact read; the queue and
+  publishing-cadence numbers measured this run.
+- Result: measured this run — all six scout items' claims trace to fetched primaries
+  with their qualifiers intact; the round-145 and round-146 fixes behave as their
+  entries claim; zero withdrawals; one drift docket item filed; two soft
+  observations (live HN count drift; a loose "~55 minutes" in round 146) recorded,
+  no published content withdrawn.
+
+### 2026-08-16
 Round 146 (meta) executes docket item
 `2026-08-16-supervisor-checkout-kills-review-sessions.md`: the supervisor's
 per-iteration `git checkout main` / `git pull` switched the branch out from
