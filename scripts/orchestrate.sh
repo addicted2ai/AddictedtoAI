@@ -118,6 +118,35 @@ ABORT_WAIT_SECONDS="${ORCHESTRATE_ABORT_WAIT:-90}"
 # a lost round -- the iteration runs either way.
 SESSION_POLL_TICKS="${ORCHESTRATE_SESSION_POLL:-12}"
 
+# The shared-checkout guard. Sessions dispatched by an iteration can outlive
+# it -- a nested review session keeps working after the supervisor counts the
+# iteration done -- and the next iteration's `git checkout main` used to
+# switch the branch out from under them (measured 16 August: two round-145
+# review sessions died that way). So before every checkout the supervisor
+# waits, bounded, for sessions it can attribute to itself to stop advancing;
+# see wait_for_checkout_free in scripts/orchestrate-liveness.sh.
+#
+# CHECKOUT_FLOOR is this supervisor's launch time, epoch seconds, fixed once
+# at startup. It is the attribution boundary: a session created at or after it
+# is this supervisor's own work (its iteration sessions, and the nested
+# sessions an iteration dispatches); a session created before it is somebody
+# else's -- the maintainer's, the supervising model's, an orchestrator session
+# that outlived its iteration -- and is ignored, because such a session may
+# never stop on its own and must not be able to halt the loop permanently.
+# Overridable (ORCHESTRATE_LAUNCH) so a test can fix it in the past.
+CHECKOUT_FLOOR="${ORCHESTRATE_LAUNCH:-$(date +%s)}"
+# How long the checkout waits for attributed sessions to go quiet before it
+# gives up and proceeds anyway (a bounded wrong tree is better than a
+# permanent halt; the overrun is noted). 3600s covers the longest observed
+# review run (~55 minutes) plus margin.
+CHECKOUT_WAIT_SECONDS="${ORCHESTRATE_CHECKOUT_WAIT:-3600}"
+# How old the newest attributed session update must be before the checkout is
+# treated as free. Generous on purpose: time.updated freezes for the whole
+# duration of a long silent generation or tool call (measured 14 August:
+# frozen ~238s while 16,000 tokens were produced), and a checkout that lands
+# during such a freeze is the failure this wait exists to prevent.
+CHECKOUT_IDLE_SECONDS="${ORCHESTRATE_CHECKOUT_IDLE:-600}"
+
 mkdir -p "$LOG_DIR"
 
 note() { printf '%s  %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" | tee -a "$LOG_DIR/supervisor.log"; }
@@ -262,7 +291,19 @@ while true; do
   clear_orphans
 
   # Always start each iteration from current main. A stale checkout is how two
-  # branches end up computing the same round number.
+  # branches end up computing the same round number. The checkout is shared
+  # with any session still working in it -- an iteration's nested review
+  # sessions outlive the iteration (measured 16 August: the next iteration's
+  # checkout killed two round-145 review sessions by switching the branch out
+  # from under them), so before moving it, wait, bounded, for this
+  # supervisor's own sessions to stop advancing. wait_for_checkout_free
+  # returns 1 only when the bound expired; the checkout happens either way,
+  # and the notes below are what make the guard visible rather than silent.
+  if wait_for_checkout_free; then
+    note "checkout free -- no session from this supervisor is advancing"
+  else
+    note "proceeding with the checkout despite a still-advancing session (bounded deferral)"
+  fi
   git checkout main --quiet 2>/dev/null || note "warning: could not check out main"
   git pull --ff-only --quiet 2>/dev/null || note "warning: could not fast-forward main"
 

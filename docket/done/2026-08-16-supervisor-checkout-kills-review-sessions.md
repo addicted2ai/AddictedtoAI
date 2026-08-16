@@ -83,13 +83,27 @@ and a stale pid is how a future supervisor's own liveness bookkeeping goes wrong
 
 ## Done when
 
-- [ ] A review session can run to completion in the shared checkout without its
+- [x] A review session can run to completion in the shared checkout without its
       branch being switched underneath it — either the supervisor does not check
       out `main` while any session for this project is still advancing, or review
       sessions run in a clone the supervisor never touches
-- [ ] The record shows which review sessions were killed by this and that the
+- [x] The record shows which review sessions were killed by this and that the
       round they were reviewing was eventually reviewed and merged (round 145,
       PR #104, merged 2026-08-16T18:16:31Z, merge commit 253ade4)
-- [ ] A check or convention makes a branch switch while another session is
+- [x] A check or convention makes a branch switch while another session is
       advancing visible rather than silent — the reviewers saw it but had no way
       to stop it, and the supervisor never knew it was the cause
+
+## Closed
+
+Round 146 (meta, PR #107) chose Shape A with launch-time attribution and a hard
+bound: `wait_for_checkout_free` in `scripts/orchestrate-liveness.sh` defers the
+iteration-start checkout while sessions created after the supervisor's own
+launch are still advancing, bounded at 3600s with the overrun noted loudly in
+`supervisor.log`; sessions that predate the launch (the maintainer's, the
+supervising model's, an orchestrator session that outlived its iteration) never
+block it. Proved in both directions and both boundaries against a stub session
+API (`scripts/test-orchestrate-checkout.mjs`), including the two mutation runs
+(attribution removed; bound removed) that made the test fail. The dead
+`supervisor.pid` (53242) mentioned in the fix path lives outside the repository
+in the loop-log directory and was left to the orchestrator, not this round.
