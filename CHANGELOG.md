@@ -70,6 +70,79 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 135 (build) closes the class behind the two deploy freezes of this
+day. Both outages were the same shape — a prebuild check reading git history
+that Vercel's single-branch checkout does not have — and both merged with CI
+green because CI clones the full history. That asymmetry is now visible
+where it can fail: `scripts/check-routes.sh` runs the prebuild chain in a
+checkout shaped like Vercel's — one branch, no remote refs — on every pull
+request, so a check that needs a remote ref dies on the pull request instead
+of at the deploy. The new script also re-proves the guard on every run by
+deleting the `origin/main` fallback on purpose and watching the same chain
+go red, and the audit of the prebuild chain finds two git-history
+dependencies, both guarded; the other two checks touch no git at all.
+
+**1. A prebuild check that needs git history cannot merge green anymore**
+- Hypothesis: both failures on 15 August — `scripts/check-publishing-quota.mjs`
+  reading `origin/main:app/lib/posts.js` (froze the site 06:54Z–18:33Z, fixed
+  in #83) and `scripts/count-changelog-rounds.mjs` running
+  `git log origin/main -- CHANGELOG.md` (from 19:14Z, fixed in #90) — were the
+  same class: a prebuild check that shells out to git for a remote ref passes
+  in a full clone and dies in Vercel's single-branch clone. If CI ran the
+  prebuild once in a checkout shaped like Vercel's, that dependency would fail
+  the pull request before it could merge.
+- Change: `scripts/check-prebuild-single-branch.sh` builds a fresh repository
+  holding the full history of the commit under test and no remote refs at all
+  (`git init`, `git fetch <repo> HEAD`, `git checkout FETCH_HEAD`), runs
+  `npm ci` and `npm run prebuild` there, and fails the check if prebuild
+  fails. `scripts/check-routes.sh` invokes it, so it runs on every pull
+  request in CI (on the merge commit — the tree the deploy would run) and
+  under every local `node scripts/round.mjs check`. It then proves the guard
+  in both directions, every run: the shaped prebuild must pass with the two
+  guards' degradation warnings, and the `return "HEAD"` fallback in
+  `scripts/count-changelog-rounds.mjs` is replaced with
+  `return "origin/main"` in the shaped checkout and the chain re-run, which
+  must fail with the historical `fatal: bad revision 'origin/main'`. A guard
+  whose shape stops matching fails the check loudly instead of going
+  untested.
+- Origin: delegated
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: both directions measured, twice each. Green, shaped checkout
+  of 756a58a: `bash scripts/check-prebuild-single-branch.sh` exits 0, both
+  guards print their degradation WARN lines, and the HEAD fallback returns
+  the same anchored count CI gets — `rounds_merged matches the changelog:
+  125 round entries as of 2026-08-15T18:46:41.179Z`. Red, changelog guard
+  deleted in a shaped clone (`sed` of the fallback): `npm --prefix <dest> run
+  prebuild` exits 1 with `fatal: bad revision 'origin/main'` then
+  `FAIL could not count the changelog as of 2026-08-15T18:46:41.179Z`. Red,
+  publishing-quota guard deleted in a second shaped clone (its
+  `process.exit(0)` on the missing base made `process.exit(1)`): exit 1. The
+  audit (docket box 3): `scripts/staleness-report.mjs` and
+  `scripts/check-one-limit-count.mjs` shell out to no git;
+  `scripts/check-loop-history-snapshot.mjs` reads the changelog count through
+  `scripts/count-changelog-rounds.mjs` (guarded, #90) and the Actions API
+  through curl (degrades to WARN); `scripts/count-changelog-rounds.mjs` runs
+  `git log origin/main|HEAD --before=` (guarded, #90);
+  `scripts/check-publishing-quota.mjs` runs `git show origin/main:` (guarded,
+  #83). Outside the deploy path, noted rather than fixed:
+  `scripts/check-ai-disclosure.mjs` reads `git log` but only from
+  check-routes.sh, and its branch-vs-merged-tree semantics are the separate
+  `docket/open/2026-08-13-disclosure-map-merged-tree.md` item, untouched;
+  `scripts/loop-history.mjs`, the hand-run snapshot producer, guards its own
+  origin/main fetch; `next.config.js` is empty and the app build reads
+  committed files only. Docket box 4: the meta item
+  `2026-08-15-nothing-watches-whether-the-site-deployed.md` was read for
+  context; watching deployments is that item's work, not this round's.
+- Result: the prebuild chain now runs in the Vercel shape on every pull
+  request — measured exit 0 on 756a58a with both guards holding, measured
+  exit 1 with either fallback deleted. The one asymmetry left in the record:
+  the script's permanent red step proves the changelog guard's shape on every
+  run; the publishing-quota guard's red direction was proved live this round
+  and its removal is equally red in the shaped prebuild on every PR, but it
+  is not re-deleted and re-run by the script itself.
+
+### 2026-08-15
 Round 134 (audit) audits rounds 129-133 and finds the window holds: every
 claim worth checking was re-measured by command, the PR #92 review-artifact
 incident is real and is the demonstration the strict-updates docket item

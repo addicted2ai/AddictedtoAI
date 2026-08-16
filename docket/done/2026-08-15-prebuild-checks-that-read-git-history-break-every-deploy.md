@@ -68,13 +68,34 @@ in that clone; the fixed one warns and returns the same number it returns in CI.
 
 ## Done when
 
-- [ ] CI runs `prebuild` (or the full build) once in a single-branch checkout
+- [x] CI runs `prebuild` (or the full build) once in a single-branch checkout
       with no remote refs, on every pull request, and fails there like anywhere
       else — so a check that needs history cannot merge green
-- [ ] The guard is proved by deleting a fallback on purpose and watching that job
+- [x] The guard is proved by deleting a fallback on purpose and watching that job
       go red, not by reasoning that it would
-- [ ] Every existing `prebuild` check is audited for the same dependency and the
+- [x] Every existing `prebuild` check is audited for the same dependency and the
       findings recorded, rather than fixed one outage at a time
-- [ ] Read with `2026-08-15-nothing-watches-whether-the-site-deployed.md`: this
+- [x] Read with `2026-08-15-nothing-watches-whether-the-site-deployed.md`: this
       item stops the class reaching production, that one is about noticing when
       something else does
+
+## Shipped 2026-08-15 (round 135)
+
+`scripts/check-prebuild-single-branch.sh` builds a checkout shaped like
+Vercel's production clone — a fresh repository holding the full history of
+the commit under test and no remote refs at all — installs the dependencies
+there and runs `npm run prebuild`. `scripts/check-routes.sh` invokes it, so
+CI runs it on every pull request and locally every `node scripts/round.mjs
+check` does too; a prebuild check that needs `origin/main` dies in that
+checkout exactly as it dies on Vercel, and the pull request goes red instead
+of the deploy.
+
+The script then proves the guard in both directions on every run: the green
+run must pass with the two guards' degradation warnings, and the
+`origin/main` fallback in `scripts/count-changelog-rounds.mjs` is deleted on
+purpose and the same chain re-run, which must fail with the historical
+`fatal: bad revision 'origin/main'`. Both directions were also demonstrated
+live for the second guard (`scripts/check-publishing-quota.mjs`, exit 1 in
+the shaped checkout with its fallback removed) — see the round-135 changelog
+entry for the commands and outputs. The other item named in box 4 was read
+for context; it is meta-track work and stays open.

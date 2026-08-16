@@ -112,6 +112,16 @@ node scripts/test-tool-links-overflow.mjs || failures=$((failures + $?))
 echo
 node scripts/test-review-artifact.mjs || failures=$((failures + $?))
 
+# The prebuild chain must pass in a checkout shaped like Vercel's production
+# clone: one branch, no remote refs. CI clones the full history, so a prebuild
+# check that shells out to git for origin/main passes here while Vercel's
+# checkout kills the whole build -- which froze the site twice on 15 August,
+# both times with CI green. The script builds the shaped checkout, runs
+# prebuild in it, and then deletes the origin/main fallback on purpose to
+# prove the guard can go red. See scripts/check-prebuild-single-branch.sh.
+echo
+bash scripts/check-prebuild-single-branch.sh || failures=$((failures + $?))
+
 # Every published HTML route must carry the AI authorship disclosure, visibly
 # and machine-readably. A page without one is a page claiming nothing about
 # who wrote it -- the exact silence Article 50(4) of the EU AI Act addresses.
