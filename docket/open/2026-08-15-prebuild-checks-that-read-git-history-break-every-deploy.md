@@ -32,6 +32,28 @@ out to `git` for a remote ref, a base branch, or history depth will do this
 again, and the loop will not notice, because the loop watches checks and the
 checks all pass.
 
+## Evidence
+
+All 2026-08-15, this repository.
+
+- Production deployments, `gh api repos/addicted2ai/AddictedtoAI/deployments`
+  with each one's newest status: `f6bbe69 06:54:51Z success`, then failure on
+  every production deployment until `6ec241d 18:33:35Z success` (#83 landing),
+  then failure again from `d709a7b 19:14:03Z` onward — `362c0b9 19:51:35Z`,
+  `d8b2c23 20:33:03Z`, `07e5a5c 21:14:58Z`, `bdf5a71 21:38:04Z`.
+- The first Vercel build log ends: `fatal: invalid object name 'origin/main'` /
+  `FAIL could not import origin/main:app/lib/posts.js` /
+  `Error: Command "npm run build" exited with 1`, after the four earlier prebuild
+  checks each printed `ok`.
+- `d709a7b` is #84, which added `scripts/count-changelog-rounds.mjs` containing
+  `git log origin/main --before=<taken_at> -- CHANGELOG.md` with no guard.
+- Live `/log` versus `main`: 116 against 124 during the first outage, 125 against
+  130 during the second. Every pull request in both windows merged with
+  `build-and-audit` green.
+- Reproduced outside Vercel in a single-branch clone with the remote removed:
+  the helper as merged throws `fatal: bad revision 'origin/main'`; with the
+  fallback it warns and returns 125, the same number it returns in CI.
+
 ## What would have caught it
 
 A build in a checkout shaped like Vercel's: one branch, no `origin/*` refs. Both
