@@ -72,8 +72,14 @@
 // thing on stdout (in both the pass and the fail state), and every
 // human-readable line goes to stderr, so the preflight can read one
 // without parsing the other. Without --json the report is human-readable
-// on stdout. Exit code 0 when nothing is past its window, 1 otherwise and
-// whenever the report cannot be produced at all.
+// on stdout. Exit codes, by mode: the human mode (which is what prebuild
+// runs, so a stale artefact fails the build) exits 1 on anything stale,
+// missing a date, or malformed, and on a file the parser stops matching;
+// the --json mode (what the preflight reads) exits 0 even with stale
+// artefacts, carrying ok: false for the reader to test — only a report
+// that cannot be produced at all (malformed policy, a file the parser
+// stops matching) exits 1 there. Round 132's entry stated the exit code
+// without qualifying the mode; round 133 corrects it.
 
 import fs from "fs";
 import path from "path";
