@@ -46,7 +46,12 @@
 //    the round-126 changelog entry). The anchored count is fixed by
 //    taken_at, so it never goes stale the way a check-time comparison
 //    would; it is also the same computation the producer used, from the one
-//    shared definition in scripts/count-changelog-rounds.mjs.
+//    shared definition in scripts/count-changelog-rounds.mjs. Where the
+//    checkout's history does not reach taken_at — Vercel's single-branch
+//    shallow clone — the same record is read from the public GitHub API,
+//    and where neither can answer, the comparison degrades to a loud
+//    warning (round 137 changed both); a count that depends on clone depth
+//    is not a count, and a build environment must not freeze production.
 //
 // 4. What front 3 cannot see, the page says. Front 3 is anchored at taken_at:
 //    it proves the snapshot told the truth when it was taken, and it cannot
@@ -70,7 +75,7 @@ import { execFileSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import { load as parseYaml } from "js-yaml";
-import { countRoundsAsOf } from "./count-changelog-rounds.mjs";
+import { countRoundEntries, countRoundsAsOf } from "./count-changelog-rounds.mjs";
 
 const root = process.cwd();
 const REPO = "addicted2ai/AddictedtoAI";
@@ -274,10 +279,15 @@ if (runs === null) {
 // definition, shared with the producer). The git history is local, so this
 // runs whether or not the Actions API was reachable, and it can only go red
 // when the snapshot disagrees with the record — never because the world
-// moved after taken_at.
+// moved after taken_at. Where the checkout's history does not reach taken_at
+// (Vercel's single-branch shallow clone), the count is read from the public
+// GitHub API instead (same record, no depth); where neither can answer, this
+// degrades to a loud warning like the API front below, holding only the
+// working tree's bound — a snapshot can never claim more rounds than
+// CHANGELOG.md holds.
 const cutoff = Number.isNaN(takenAt.getTime()) ? null : takenAt.toISOString();
+let changelogRounds = null;
 if (cutoff !== null) {
-  let changelogRounds = null;
   try {
     changelogRounds = countRoundsAsOf(cutoff);
   } catch (error) {
@@ -285,13 +295,36 @@ if (cutoff !== null) {
       `could not count the changelog as of ${cutoff}: ${String(error.message).split("\n")[0]}`
     );
   }
-  if (changelogRounds !== null && snapshot.rounds_merged !== changelogRounds) {
-    fail(
-      `rounds_merged: snapshot says ${snapshot.rounds_merged}, the changelog has ${changelogRounds} round entries as of ${cutoff}`
+  if (changelogRounds !== null) {
+    if (snapshot.rounds_merged !== changelogRounds) {
+      fail(
+        `rounds_merged: snapshot says ${snapshot.rounds_merged}, the changelog has ${changelogRounds} round entries as of ${cutoff}`
+      );
+      fail(
+        `re-run node scripts/loop-history.mjs --snapshot to take a fresh one — do not edit the numbers by hand`
+      );
+    }
+  } else {
+    console.error(
+      `WARN  rounds_merged not verified this build — the count as of ${cutoff} could not be anchored`
     );
-    fail(
-      `re-run node scripts/loop-history.mjs --snapshot to take a fresh one — do not edit the numbers by hand`
+    console.error(
+      "      neither this checkout's history nor the GitHub API could produce it; this is a"
     );
+    console.error(
+      "      build-environment failure, not evidence about the snapshot — degrading like the"
+    );
+    console.error(
+      "      Actions-API front, because a build environment must not freeze production"
+    );
+    const treeRounds = countRoundEntries(
+      fs.readFileSync(path.join(root, "CHANGELOG.md"), "utf8")
+    );
+    if (snapshot.rounds_merged > treeRounds) {
+      fail(
+        `rounds_merged: snapshot says ${snapshot.rounds_merged}, but the working tree's CHANGELOG.md has only ${treeRounds} round entries — a snapshot cannot claim more rounds than the changelog ever held`
+      );
+    }
   }
 }
 
@@ -309,8 +342,7 @@ if (runs !== null) {
     `ok    snapshot matches the live API over ${snapshot.runs_attempted} completed run(s) as of ${snapshot.taken_at}`
   );
 }
-if (cutoff !== null) {
-  const changelogRounds = countRoundsAsOf(cutoff);
+if (cutoff !== null && changelogRounds !== null) {
   console.log(
     `ok    rounds_merged matches the changelog: ${changelogRounds} round entries as of ${snapshot.taken_at}`
   );

@@ -102,6 +102,10 @@ try {
   console.error("(needs `git` with origin/main present — this is a report, not a gate)");
   process.exit(1);
 }
+if (roundsMerged === null) {
+  console.error(`could not count the changelog as of ${takenAt.toISOString()}: neither the local history nor the GitHub API could anchor it`);
+  process.exit(1);
+}
 
 const report = {
   runs_attempted: finished.length,

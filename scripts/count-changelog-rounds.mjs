@@ -26,6 +26,9 @@
 
 import { execFileSync } from "child_process";
 
+const REPO = "addicted2ai/AddictedtoAI";
+const API_BASE = `https://api.github.com/repos/${REPO}`;
+
 // Mirrors app/lib/build-log.js's section split: the log runs from "## Log"
 // and each "### date" heading opens a round. Comments are stripped first, as
 // the build-log parser does, so a template placeholder never parses as a
@@ -87,12 +90,72 @@ export function changelogCommitAtOrBefore(takenAt) {
   ).trim();
 }
 
+// The same anchored count asked of the public GitHub API instead of the
+// local clone: the newest commit that touched CHANGELOG.md at or before
+// takenAt (`commits?path=CHANGELOG.md&until=`), then the file's content at
+// that commit (`contents/CHANGELOG.md?ref=`). This is the same record
+// `git log --before=` reads, from the same unauthenticated endpoints the
+// snapshot checker's front 3 already uses for the Actions API — no remote
+// ref, no history depth, no credentials. The site is a public repository,
+// so the API answers unauthenticated requests.
+//
+// Returns the count, or null when the API cannot answer. An empty commits
+// list is a real answer: nothing touched CHANGELOG.md at or before takenAt,
+// so the count is 0.
+function countRoundsViaApi(takenAt) {
+  function fetchJson(url) {
+    try {
+      return JSON.parse(
+        execFileSync("curl", ["-sf", url], { encoding: "utf8", maxBuffer: 8e6 })
+      );
+    } catch {
+      return null;
+    }
+  }
+  const commits = fetchJson(
+    `${API_BASE}/commits?path=CHANGELOG.md&until=${encodeURIComponent(takenAt)}&per_page=1`
+  );
+  if (commits === null) return null;
+  if (!Array.isArray(commits) || commits.length === 0) return 0;
+  const sha = commits[0].sha;
+  const file = fetchJson(
+    `${API_BASE}/contents/CHANGELOG.md?ref=${encodeURIComponent(sha)}`
+  );
+  if (file === null || typeof file.content !== "string") return null;
+  return countRoundEntries(Buffer.from(file.content, "base64").toString("utf8"));
+}
+
 export function countRoundsAsOf(takenAt) {
   const sha = changelogCommitAtOrBefore(takenAt);
-  if (!sha) return 0;
-  const blob = execFileSync("git", ["show", `${sha}:CHANGELOG.md`], {
-    encoding: "utf8",
-    maxBuffer: 64e6,
-  });
-  return countRoundEntries(blob);
+  if (sha) {
+    const blob = execFileSync("git", ["show", `${sha}:CHANGELOG.md`], {
+      encoding: "utf8",
+      maxBuffer: 64e6,
+    });
+    return countRoundEntries(blob);
+  }
+  // No commit at or before takenAt is visible in this checkout's history.
+  // In a full clone that can only mean the changelog did not exist yet; in
+  // Vercel's single-branch clone it means the record predates the clone's
+  // depth. Returning 0 for the second case froze the site a third time on
+  // 15-16 August 2026 (`756a58a`, `19cb78d`, `993f006`): the clone carried
+  // only the newest ~11 commits, the changelog record at taken_at had been
+  // pushed past that window by the merges in between, and a count that
+  // depends on clone depth is not a count. The record is on the public
+  // GitHub API, so the anchored count is read from there instead; the
+  // git-history anchor stays where it exists.
+  console.error(
+    `WARN  this checkout's history cannot see the changelog record at or before ${takenAt}`
+  );
+  console.error(
+    "      reading the record from the public GitHub API instead — this count never needs a remote ref or depth"
+  );
+  const viaApi = countRoundsViaApi(takenAt);
+  if (viaApi === null) {
+    console.error(
+      "WARN  the GitHub API did not answer — the changelog count as of taken_at is not verifiable in this checkout"
+    );
+    return null;
+  }
+  return viaApi;
 }
