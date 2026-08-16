@@ -12,9 +12,13 @@
 // The staleness half is no longer thin: scripts/staleness-report.mjs covers
 // every published artefact class against the windows in policy.yml, and
 // anything it flags past its threshold becomes an interrupt here, outranking
-// the docket (the `staleness-clocks` docket item, landed round 132). What is
-// still absent — demo health checks, production not matching main — is filed
-// as docket work when it has a shape this file can read.
+// the docket (the `staleness-clocks` docket item, landed round 132). The
+// deployment half is the same shape: scripts/check-deployments.mjs reads the
+// GitHub deployments API, and a failed newest production deployment becomes
+// an interrupt here, outranking the docket — production not matching main is
+// now a signal this file can read (round 136). What is still absent — demo
+// health checks — is filed as docket work when it has a shape this file can
+// read.
 //
 // Findings are ordered most urgent first. Each names the track that should
 // handle it, because an interrupt that does not say who fixes it is a to-do
@@ -168,6 +172,51 @@ if (staleness.ok === false) {
       why: "Without the report, nothing knows whether published content is past its staleness window.",
     });
   }
+}
+
+// 5. Production not matching main. The GitHub deployments API records a
+//    production deployment per push to main and its newest status, so a
+//    failed newest deployment is a frozen site — the condition that let ten
+//    hours of merges vanish on 15 August while every check stayed green.
+//    scripts/check-deployments.mjs reads it through `gh` and prints JSON on
+//    stdout in both the pass and the fail state — but exits 1 on a failed
+//    deploy, so execFileSync throws and the JSON is in the error's stdout,
+//    not a parseable child result. Both paths are read below: a non-zero
+//    exit with JSON on stdout is a verdict, and only an exit with no JSON is
+//    machinery failure. A real failed deploy routes to build (get the deploy
+//    green again); a signal that cannot be read at all routes to meta (fix
+//    the signal) — the same split the staleness report uses, so a dead probe
+//    is never mistaken for a healthy site.
+let deployments;
+try {
+  const out = execFileSync("node", ["scripts/check-deployments.mjs", "--json"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  deployments = JSON.parse(out);
+} catch (error) {
+  try {
+    deployments = JSON.parse(String(error.stdout || ""));
+  } catch {
+    deployments = {
+      ok: false,
+      state: null,
+      what: "the deployment signal could not be read",
+      detail: String(error.stderr || error.message || "").trim(),
+    };
+  }
+}
+if (deployments.ok !== true) {
+  const brokenSignal = deployments.state === null;
+  findings.push({
+    urgency: 0,
+    track: brokenSignal ? "meta" : "build",
+    what: deployments.what || "the deployment signal could not be read",
+    detail: [deployments.detail || deployments.what],
+    why: brokenSignal
+      ? "Without the signal nothing knows whether the site is publishing main — the silence that let 15 August's merges vanish."
+      : "Production not matching main outranks the docket. The build track must get the deploy green again; until it is, the record is not being published.",
+  });
 }
 
 findings.sort((a, b) => a.urgency - b.urgency);
