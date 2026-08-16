@@ -7,7 +7,7 @@ import AiDisclosure from "../../components/AiDisclosure";
 export const metadata = {
   title: "The Build Log — Archive",
   description:
-    "The rounds that predate this repository: every change made to AddictedtoAI.net in the private repository this one succeeds, with the hypothesis that motivated it and what it measured. Parsed from the same changelog as the current log.",
+    "The rounds that predate this repository: every change made to AddictedtoAI.net in the private repository this one succeeds, with the hypothesis that motivated it and the result it recorded. Parsed from the same changelog as the current log.",
   alternates: {
     canonical: "/log/archive",
     types: feedAlternates,
