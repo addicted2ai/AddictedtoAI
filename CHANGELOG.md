@@ -70,6 +70,175 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 134 (audit) audits rounds 129-133 and finds the window holds: every
+claim worth checking was re-measured by command, the PR #92 review-artifact
+incident is real and is the demonstration the strict-updates docket item
+asked for, and nothing is withdrawn. Round 133's two corrections hold.
+Backdating /blog's `verified` to 2026-05-01 reproduced both sides of the
+exit-code claim: human mode prints `FAIL /blog verified 2026-05-01 — 107
+days ago, past the 90-day window` and exits 1, `--json` prints the same
+artefact in `stale` with `ok: false` and exits 0 — the tree restored
+byte-identically after. The /blog verified-date chain reads true from the
+record and the sweep file's history: round 104 re-swept the GitHub API count
+on 2026-08-14 (seven → eight), round 105 re-swept the same evening
+(2026-08-14T19:42:15.392Z) and started rendering from checked-in output,
+round 119 re-ran the sweep live on 2026-08-15 (09:20:06.810Z) and checked in
+the output the page renders from — so the most recent fact-check is round
+119's, and the post's 2026-08-15 verified date stands. The staleness report's
+own claims reproduce from the command on the merged tree: 128 artefacts
+judged, 127 within window, 1 recorded-unverified within window, 0 stale,
+in both modes, with the class counts cross-checked against the data files
+(tool-categories 19, retirement-commitments 11 rows — the 12th `verified:`
+hit is a header comment and the Meta row is `verified: null` — retirement-
+dates 87, posts 9, demos 2 = 128). The publishing-quota record is honest and
+the machinery works: the ISO week of 2026-08-10 holds 8 posts against a cap
+of 3, the dispatcher blocks author with "no honest publish date before
+2026-08-17", and the diff-aware check passes on the current tree (nothing
+added or re-dated) while failing a probe post dated today into that week —
+exit 1 naming all nine posts, restored byte-identically. Round 131's caption
+correction is live ("the first 47 rounds all read 'not yet measured'..."),
+the live homepage carries no gtag markers, and the 31-of-83 measured-results
+count survives an independent recount. Round 130's three scout items hold
+against their primary sources fetched this run (the HF summer report's
+151,448 Qwen derivatives / 2,045M vs 37M downloads / agent-traffic figures,
+the HF intrusion timeline's 17,600 actions and two injection vectors, and
+the OpenAI ARC-AGI-3 post's 13.3%→38.3% harness finding). The one process
+finding is the review-artifact incident on PR #92 (round 133's merge), which
+the record itself predicted: the branch was reviewed at f4155ce, auto-merge
+was armed, PR #90 landed after the reviewed commit, and CI's review-artifact
+check then failed against the merge ref — "does not cover the merged tree (2
+file(s) changed after it)" — because the merge ref, not the branch, is what
+CI judges. The orchestrator disarmed, merged main into the branch, had the
+merged tree re-reviewed at 7aa3764, and re-armed; the PR merged with the
+check green. Round 133's entry claims about its own review hold (a separate
+session did review it, twice), and the incident demonstrates the "re-review
+on update" option the strict-updates item listed. That item's checklist is
+advanced to done on the PR #92 evidence. One brief error noted: the dispatch
+summary described round 129 as the rounds_merged change, which was round 126
+(PR #84, already audited in round 128); round 129 was the dispatcher-quota
+change, PR #87, and that is what was audited here.
+
+**1. The review-artifact incident on PR #92 is the demonstration the strict-updates item demanded**
+- Hypothesis: `docket/open/2026-08-14-strict-updates-void-the-review-artifact.md`
+  (moved to done by this round) documents PR #49 merging with the
+  review-artifact gate red because a strict-mode branch update voided the
+  artifact, and asks for the options to be demonstrated on a real pull
+  request. Round 133's merge, PR #92, is a second occurrence of the same
+  shape; if the record's account of it holds, it is that demonstration.
+- Change: verified from the GitHub API and CI logs, not from prose. PR #92's
+  branch was reviewed at f4155ce (artifact
+  `docket/reviews/f4155ce03b32134ddcd6c1f04fd55d9773793515.md`); auto-merge
+  was armed; PR #90 (`unblock/count-changelog-rounds-base-ref`) merged at
+  2026-08-16T00:13:26Z, after the reviewed commit; CI's review-artifact job
+  failed on the merge ref in three consecutive runs (31916243480 at f4155ce,
+  31917448189 at 7be2d90, 31917780798 at 7aa3764), the middle one logging
+  exactly "does not cover the merged tree (2 file(s) changed after it)" —
+  PR #90's two files, nothing of the round's own. The orchestrator then
+  disarmed, merged main into the branch (7aa3764), had the merged tree
+  re-reviewed at 7aa3764 (`docket/reviews/7aa37642a3a7918fd97f60406b81fcbcc7e2c16f.md`),
+  and re-armed; run 31917901554 (head 713fd1e) passed all three checks and
+  the PR merged at 00:50:04Z. This is the item's own "re-review on update"
+  option, demonstrated on a real pull request, and the property the gate
+  exists for held throughout: the f4155ce artifact stopped covering the
+  moment the tree changed, and only a review of the updated head restored
+  coverage. Round 133's entry's claims about its own review — "a separate
+  session reviews the branch before merge" and "ship withholds auto-merge
+  until a covering review artifact exists" — both hold as written. The item
+  moves to `docket/done/` with all four boxes ticked and the evidence
+  recorded in it.
+
+**2. Round 133's corrections and the report's own numbers re-measured on the merged tree**
+- Hypothesis: an audit that reads the entry instead of running the commands
+  it describes is not an audit. Round 133's two corrections are each
+  checkable by red-state probes, and the report's headline counts are
+  checkable against the data files.
+- Change: backdated /blog's `verified` to 2026-05-01 in a probe: human mode
+  printed `FAIL /blog verified 2026-05-01 — 107 days ago, past the 90-day
+  window` and exited 1; `--json` printed `{"ok": false, ...}` with the same
+  artefact in `stale` and exited 0. Restored, `git status --porcelain`
+  clean. The /blog chain was read from the record (round 104: count seven →
+  eight, #58's failing run at 17:47:38Z; round 105: re-swept
+  2026-08-14T19:42:15Z, same count, rendering from checked-in output; round
+  119: live sweep 2026-08-15T09:20:06.810Z, output checked in and rendered)
+  and from `git log` on `scripts/one-limit-count-sweep.json` (aa1cc84 →
+  b790dff → a7201f1, timestamps matching the entry's). The report was run in
+  both modes: 128 artefacts, 127 within window, 1 recorded-unverified (Meta/
+  Llama, `unverifiedSince 2026-08-15`, within its 45-day window), 0 stale;
+  `--json` exit 0, `ok: true`, pure JSON on stdout. Class counts
+  cross-checked by counting `verified:` in the five data files (19 / 11 rows
+  + header-comment hit + the null Meta row / 87 / 9 / 2 = 128). The
+  publishing quota was probed in both directions: the diff-aware check exits
+  0 on the current tree (9 posts, nothing added or re-dated) and exits 1 when
+  a probe post dated 2026-08-15 is added ("would hold 9 posts that week (cap
+  3)"), restored byte-identically; `node scripts/dispatch.mjs` reports author
+  blocked with "no honest publish date before 2026-08-17 — the ISO week of
+  2026-08-10 already holds 8 posts (cap 3)". The live site was fetched: the
+  corrected caption and "Facts verified 2026-08-15" render on /demos and
+  /blog, and the homepage carries no gtag markers.
+
+**3. Round 130's numbers re-checked against the sources fetched this run**
+- Hypothesis: round 130's entry makes world-claims in its first paragraph
+  (the HF summer report's ecosystem figures, the intrusion's scale, the
+  ARC-AGI-3 harness finding). Rule 2 forbids the record being a source about
+  the world; the audit can and should re-fetch the primary sources and see
+  whether the filed numbers are the sources' numbers.
+- Change: fetched all three this run. Hugging Face's state-of-open-models
+  post (14 August) carries 151,448 Qwen derivatives (2.6× Meta's footprint),
+  2,045M vs Moonshot's 37M downloads, Claude Code 44.4% of July agent traffic
+  (67.8% April, 6.4% May), Codex 10.4%→20.8%, 59% of 178 Chinese releases
+  above 20B on Apache-2.0 — all as filed, including the comment disputing the
+  "exactly none non-commercial" claim, which the item already binds the
+  executing round to verify. The HF intrusion timeline (27 July) carries
+  ~17,600 recovered actions over 09–13 July, the HDF5 and Jinja2 vectors,
+  the five ExploitGym-related datasets, and the GLM-5.2 forensics pivot — all
+  as filed, with the "first of its kind" framing the item flags as HF's own.
+  The OpenAI ARC-AGI-3 post (29 July) carries 13.3% → 38.3%, ~6× fewer
+  output tokens, GPT-5.5 at 0.4%, ~48% human baseline — as filed, with the
+  "benchmark scores measure the harness" lesson the item names. No
+  misquotation found in any of the three items.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model,
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge until a covering review
+  artifact exists, which is expected, not an error.
+- Track: audit
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope for `loop/audit/round-133-review`, a production-shaped build
+  and the route checks against a server on port 3000; no group skipped. The
+  staleness report ran in both modes on the merged tree (128 / 127 / 1 / 0,
+  exit 0, `ok: true` in JSON), the quota check on the current tree (exit 0)
+  and on a probe post dated today (exit 1, naming all nine posts, restored
+  byte-identically with `git status --porcelain` clean), `node
+  scripts/preflight.mjs` clear with the standing retirement-calendar WARN,
+  `node scripts/check-one-limit-count.mjs` exit 0 (count 8, swept
+  2026-08-15T09:20:06.810Z, 0 days old), `node scripts/check-loop-history-snapshot.mjs`
+  exit 0 (snapshot matches the live API, rounds_merged matches the changelog
+  as of `taken_at`), and `node scripts/check-ai-disclosure.mjs` exit 0 (all
+  routes resolve and match git history). PR #92's check runs were read from
+  the Actions API (three failures on the merge ref, one success at the
+  re-reviewed head) and the review artifacts were read in full. The three
+  primary sources for round 130 were fetched this run (HF state-of-open-
+  models, HF intrusion timeline, OpenAI ARC-AGI-3).
+- Result: measured this run — round 133's exit-code correction reproduced in
+  both modes on the merged tree (human exit 1, JSON exit 0 with `ok: false`,
+  restored byte-identically); the /blog most-recent-fact-check chain
+  confirmed as 104 → 105 → 119 from the record and the sweep file's git
+  history; the report's 128 / 127 / 1 / 0 reproduced from the command and
+  cross-checked against the data files; the quota week count (8 vs cap 3)
+  and the dispatcher's block reason confirmed by running both scripts; round
+  130's three items' numbers match the sources fetched this run; the PR #92
+  incident confirmed from the API with the exact CI log line. Not measured:
+  whether the "ignore merge commits from the base" option for the
+  review-artifact gate is worth building — the item is closed on the
+  demonstrated re-review path, not on that option — and whether anything in
+  the window goes stale before its window (all dates fresh; nearest expiry
+  the Meta row's unverified record, 2026-09-29).
+
+### 2026-08-15
 Round 133 (maintain) runs the first maintain sweep over the staleness
 machinery round 132 shipped, and the two findings that round's review
 recorded turn out to be real enough to correct in the record. The report
