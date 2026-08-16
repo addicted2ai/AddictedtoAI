@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Run the prebuild chain in a checkout shaped like Vercel's production clone:
-# one branch, no remote refs, full history. Run from anywhere; the repository
-# root is derived from this script's own location:
+# one branch, no remote refs, and only the recent history the clone actually
+# carries. Run from anywhere; the repository root is derived from this
+# script's own location:
 #
 #   bash scripts/check-prebuild-single-branch.sh
 #
@@ -20,17 +21,34 @@
 # from prebuild that shells out to git for a remote ref, a base branch, or
 # history depth will do it again, and a full clone will not catch it.
 #
+# Round 135 built this script and it still did not catch the third freeze
+# (round 137, PR #96): its shaped checkout carried the *full* history, and
+# Vercel's clone does not. The 0-count fallback in
+# scripts/count-changelog-rounds.mjs worked in the full-history shape and
+# returned 0 on Vercel, where the clone holds only the newest ~11 commits —
+# by 04:18Z on 16 August the changelog record the snapshot is anchored to
+# (taken_at 2026-08-15T18:46:41.179Z) had been pushed past that window by the
+# merges in between, so the fallback counted "0 round entries" and froze the
+# site a third time across `756a58a`, `19cb78d` and `993f006`.
+#
 # This script is the shape difference made visible in CI. It builds a fresh
-# repository containing the full history of the commit under test and nothing
-# else -- no remotes, so no refs/remotes/* at all -- installs the dependencies
-# there, and runs `npm run prebuild`. A check that needs origin/main dies in
-# that checkout exactly as it dies on Vercel, and CI goes red on the pull
-# request instead of finding out at the deploy.
+# repository containing the history of the commit under test back to the
+# snapshot's own taken_at and nothing earlier -- `--shallow-since` takes the
+# boundary from the committed snapshot, so the shaped checkout can *never*
+# see the changelog record the snapshot claims, whatever the snapshot's age
+# -- and no remotes at all. It installs the dependencies there and runs
+# `npm run prebuild`. A check that needs origin/main, or that returns 0 when
+# the record predates the clone's depth, dies in that checkout exactly as it
+# dies on Vercel, and CI goes red on the pull request instead of finding out
+# at the deploy.
 #
 # It then proves the guard in both directions, on every run:
 #
-#   green  - the prebuild chain passes in the shaped checkout, with the two
-#            guards printing their degradation warnings
+#   green  - the prebuild chain passes in the shaped checkout, with the
+#            guards printing their degradation warnings; the snapshot check
+#            must have verified rounds_merged (from git or the public GitHub
+#            API) or degraded loudly — a check that silently skips is not a
+#            check
 #   red    - the origin/main fallback in count-changelog-rounds.mjs is deleted
 #            on purpose and the same chain is re-run; it must fail with the
 #            exact historical failure (`fatal: bad revision 'origin/main'`).
@@ -51,16 +69,26 @@ green=""
 red=""
 trap 'rm -rf "$dest" "$green" "$red"' EXIT
 
-# --- Build the Vercel shape: a fresh repo, full history, no remote refs. ---
+# --- Build the Vercel shape: a fresh repo, shallow history, no remote refs. ---
 dest=$(mktemp -d "${TMPDIR:-/tmp}/prebuild-single-branch.XXXXXX") || exit 1
+takenAt=$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).taken_at)" "$ROOT/app/lib/loop-history.json") || exit 1
 git -C "$dest" init -q || exit 1
-git -C "$dest" fetch -q "$ROOT" HEAD || exit 1
+git -C "$dest" fetch -q --shallow-since="$takenAt" "$ROOT" HEAD || exit 1
 git -C "$dest" checkout -q FETCH_HEAD || exit 1
 
 # The shape must hold before it is tested: if the test checkout somehow has
-# origin/main, every run below is vacuous and the check is lying.
+# origin/main, or can still see the changelog record at taken_at, every run
+# below is vacuous and the check is lying. The second is the half round 135's
+# full-history shape missed — it is the exact precondition of the count-0
+# freeze that round's green run did not exercise.
 if git -C "$dest" rev-parse --verify --quiet "origin/main^{commit}" >/dev/null 2>&1; then
   echo "FAIL  the single-branch test checkout still has origin/main — the shape did not hold"
+  exit 1
+fi
+if [ -n "$(git -C "$dest" log --before="$takenAt" --format=%H -1 -- CHANGELOG.md 2>/dev/null)" ]; then
+  echo "FAIL  the single-branch test checkout can still see the changelog record at taken_at"
+  echo "      ($takenAt) — the shape is not as shallow as Vercel's, and the count-0 fallback"
+  echo "      cannot be exercised. The shape must hold before the shape is tested."
   exit 1
 fi
 
@@ -72,15 +100,21 @@ fi
 
 green=$(mktemp "${TMPDIR:-/tmp}/prebuild-green.XXXXXX") || exit 1
 if npm --prefix "$dest" run prebuild >"$green" 2>&1; then
-  # The only interesting part of a passing run is the degradation warnings:
-  # they are the guards saying "no origin/main here, degrading as designed".
+  # The interesting parts of a passing run are the degradation warnings: the
+  # guards saying "no origin/main here, no record at taken_at here, degrading
+  # as designed".
   grep -E "^WARN|^FAIL" "$green" | sort -u | sed 's/^/      /' || true
-  echo "ok    prebuild passes in a single-branch checkout with no remote refs (head ${sha:0:7})"
+  if ! grep -Eq "rounds_merged matches the changelog|rounds_merged not verified this build" "$green"; then
+    echo "FAIL  prebuild passed in the shaped checkout but the snapshot check neither verified"
+    echo "      rounds_merged nor degraded loudly — a check that silently skips is not a check"
+    exit 1
+  fi
+  echo "ok    prebuild passes in a single-branch shallow checkout with no remote refs (head ${sha:0:7})"
 else
-  echo "FAIL  prebuild fails in a single-branch checkout with no remote refs"
+  echo "FAIL  prebuild fails in a single-branch shallow checkout with no remote refs"
   echo "      this is the exact checkout Vercel builds from. A prebuild check that"
-  echo "      needs a remote ref or history depth passes in a full clone and freezes"
-  echo "      production; the full output is:"
+  echo "      needs a remote ref, or that depends on history depth, passes in a full"
+  echo "      clone and freezes production; the full output is:"
   cat "$green"
   exit 1
 fi
