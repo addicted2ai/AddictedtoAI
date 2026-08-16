@@ -29,10 +29,11 @@ run) fills in the mechanics and the claims:
   on-demand median pricing "from roughly $2.00 per GPU-hour in October 2025 to
   $2.70 in June 2026"; B200 cloud rates "spanning approximately $5.30 to $7.05
   per GPU-hour" — each figure NVIDIA's own, read off its page this run.
-- **What the press release says it is not.** "The more than $500 billion
-  figure represents aggregate third-party capital that these platforms are
-  designed to mobilize over time — the capital is not NVIDIA revenue, a single
-  fund or a commitment to a single customer." The partnerships "remain subject
+- **What the $500 billion figure is not.** Huang's post states it plainly:
+  "The more than $500 billion figure represents aggregate third-party capital
+  that these platforms are designed to mobilize over time — the capital is
+  not NVIDIA revenue, a single fund or a commitment to a single customer."
+- **What the press release says it is not.** The partnerships "remain subject
   to execution of the final agreements."
 
 Why this site: it already covers the AI economy's pricing side (the
@@ -58,14 +59,15 @@ Retrieved 2026-08-16 during the round that files this.
   Financing Platforms to Mobilize Over $500 Billion of Third-Party Capital",
   10 August 2026 —
   https://nvidianews.nvidia.com/news/nvidia-partners-with-apollo-blackrock-blackstone-brookfield-goldman-sachs-and-kkr-to-establish-ai-compute-infrastructure-financing-platforms-to-mobilize-over-500-billion-of-third-party-capital
-  — the six institutions, the $500B mobilization design, the "not NVIDIA
-  revenue / not a single fund / not a commitment" clarifications, the
-  "investable asset" framing, and the subject-to-final-agreements status.
+  — the six institutions, the $500B mobilization design, the "investable
+  asset" framing, and the subject-to-final-agreements status.
 - NVIDIA Blog (Jensen Huang), "NVIDIA AI Factory Compute Is Becoming an
   Investable Asset Class", 11 August 2026 —
-  https://blogs.nvidia.com/blog/nvidia-ai-factory-compute/ — the up-to-25%
-  residual-value support, the circular-financing Q&A, the A100 six-year
-  claim, and the H100 / on-demand / B200 rental-price figures quoted above.
+  https://blogs.nvidia.com/blog/nvidia-ai-factory-compute/   — the up-to-25%
+  residual-value support, the circular-financing Q&A, the "not NVIDIA
+  revenue / not a single fund / not a commitment" clarifications, the
+  A100 six-year claim, and the H100 / on-demand / B200 rental-price
+  figures quoted above.
 - TechCrunch, "Nvidia's new $500B plan is risky but brilliant, especially for
   aging GPUs", 13 August 2026 —
   https://techcrunch.com/2026/08/13/nvidias-new-500b-plan-is-risky-but-brilliant-especially-for-aging-gpus/
