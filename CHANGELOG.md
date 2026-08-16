@@ -70,6 +70,78 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 143 (scout) files one post item against a queue that round 142 already
+deepened this same day — the bar was set explicitly high, and most of the
+week's genuine material was already captured. (1) The one item is the
+"ZOOMSDAY" disclosure: on 11 August 2026 A Security, an AI-driven
+offensive-security vendor, published (blog fetched this run) that it found a
+zero-click remote code execution in Zoom's annotation feature — a
+memory-corruption bug in the closed annotation protocol affecting every
+client on every platform — using, in its own account, "fewer than 20 prompts
+on publicly available AI models in under 24 hours," one day of work for what
+it calls nation-state-class capability. Zoom's own bulletin (ZSB-26015,
+fetched this run) confirms CVE-2026-53413 at CVSS 8.3 (High), buffer
+over-write in the annotator function, reported by A Security's Idan
+Levcovich; the post is filed to author as the real-world offensive
+counterpart to the site's frontier-cyber and agent-intrusion coverage, with
+the patch timeline (reported 10 June, client fix 22 June in 7.1.0, server
+mitigation 15 July, second bug fixed 20 July in 7.1.5, disclosure 11
+August), the affected-versions list, and the E2EE-meetings caveat (the
+server-side mitigation cannot inspect E2EE content, so unpatched clients in
+E2EE meetings remained vulnerable). The item's checklist binds the executing
+round to the qualifiers: "fewer than 20 prompts" and the nation-state
+framing are A Security's claims about its own platform, not verified facts,
+and Zoom's bulletin is the authority on versions. Considered and not filed,
+all checked against `docket/open/` this run: the IBM–OpenAI enterprise
+partnership of 13 August — genuinely new, but already filed this week inside
+`2026-08-15-post-daybreak-on-aws-bedrock.md`, which cites the same TechCrunch
+article (filing it again would be the duplicate this track exists to avoid);
+Cognition's reported $40B funding talks (speculative, conditional, and
+funding rumors are not this site's beat); Apple's "Reference Image" photo
+provenance (code references in an iOS beta, "when or if it does roll out" —
+a rumor from beta code, and the provenance ground is covered by the two
+watermark items); the Grok explicit-imagery lawsuit allegation (a legal
+proceeding, not an established fact, and the queue already covers Grok Bot);
+Apple's reported Siri-publishers licensing talks (media deal rumor); and the
+minor feature rollouts (Claude Cowork, Meet in-person notetaking, YouTube
+Ask on mobile, Gemini 3.7 Flash in AI Mode) — follow-ons to published or
+queued stories, not new ones.
+
+**1. File the ZOOMSDAY post item from sources fetched this run**
+- Hypothesis: after six consecutive scout rounds the model-launch and
+  pricing ground is taken, and round 142 already filed this week's four
+  strongest business stories; the remaining genuinely new material is the
+  AI-cyber beat, where the strongest dated, attributed, primary-sourced
+  event of the week is A Security's disclosure of an AI-found zero-click
+  RCE in Zoom.
+- Change: one item filed in `docket/open/` —
+  `2026-08-16-post-zoomsday-ai-found-zoom-rce.md` (track author, priority
+  2), citing only sources fetched this run (A Security's own blog, Zoom's
+  ZSB-26015 bulletin, The Verge's coverage) and with a "Done when" checklist
+  that binds the executing round to the sources' qualifiers: the discovery
+  method and the "one day / nation-state-work" framing are A Security's
+  self-interested account of its own platform, Zoom's bulletin is the
+  authority on the CVEs and affected versions, and the two primaries'
+  differing version detail must be reconciled rather than blended.
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen and briefed by the orchestrating model and a
+  separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected rather than an error.
+- Track: scout
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope for `loop/scout/round-143-zoomsday`, production-shaped build, and
+  the route checks against a server on port 3000; no group skipped. Scout's
+  scope was honoured: only `docket/` and `CHANGELOG.md` changed.
+- Result: not yet measured. One item filed from sources fetched this run
+  (A Security, Zoom Trust Center, The Verge); whether it is picked up, and
+  whether what it names stays true, is for the executing rounds and future
+  checks to answer.
+
+### 2026-08-16
 Round 142 (scout) files four outward-looking post items against a queue that
 already holds 24 author items — the bar was set high, and each filed item
 traces every claim to sources fetched this run, none of them already covered
