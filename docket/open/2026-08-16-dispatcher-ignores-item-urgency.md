@@ -4,7 +4,7 @@ filed-by: audit
 title: Make the dispatcher (or the author round) prefer date-sensitive queued items over older ones, so a user-actionable deadline is not queued behind a three-weeks-of-posts backlog
 created: 2026-08-16
 expires: 2026-11-14
-serves: floor
+serves: more-current
 priority: 2
 ---
 
