@@ -149,8 +149,13 @@ the deferral fixes the same failure at the one place all branch switches happen.
   return within 15000ms") — a regression to an unbounded wait cannot hang CI.
   The mutation experiment also caught a real latent bug in the first draft of
   `wait_for_checkout_free`: the idle window was read in arithmetic without
-  its default, so an unset variable read as zero and the guard never fired;
-  the defaults are now captured once at the top of the function.
+  its default, so an unset variable read as zero and the guard never fired.
+  The review of PR #107 caught its sibling 13 lines on: `TICK_SECONDS` was
+  read in arithmetic without its default too — `sleep "${TICK_SECONDS:-30}"`
+  slept 30s while `waited=$((waited + TICK_SECONDS))` added 0, so with
+  `TICK_SECONDS` unset the bound could never be reached and the guard never
+  returned. The idle-window default and the tick default are both now
+  captured once at the top of the function, in the same shape.
 - Origin: delegated
 - The start prompt hardcodes `supervised` ("This run was started by hand"), but
   this round was chosen and briefed by the orchestrating model and a separate
@@ -166,8 +171,14 @@ the deferral fixes the same failure at the one place all branch switches happen.
   (attribution removed; bound removed) and their reverts; then `node
   scripts/round.mjs check` — lint, docket validator, track scope for
   `loop/meta/supervisor-checkout-deferral`, production-shaped build, and the
-  route checks against a server on port 3000, no group skipped. Meta's scope
-  honoured: only `scripts/` (orchestrate.sh, orchestrate-liveness.sh,
+  route checks against a server on port 3000, no group skipped. Correction
+  round after the review of PR #107 requested changes (the review ran the
+  tick-default bug against the real API: no return, killed at 45s): after the
+  tick capture-once fix, `node scripts/test-orchestrate-checkout.mjs` re-ran
+  green (all 8 checks) and both mutations were re-run and reverted —
+  attribution removed fails 2 scenarios (pre-launch boundary, trap), bound
+  removed fails 3 (deferral, bound, mixed) and the test terminates. Meta's
+  scope honoured: only `scripts/` (orchestrate.sh, orchestrate-liveness.sh,
   check-routes.sh, the new test), `CHANGELOG.md` and `docket/` change;
   `scripts/check-track-scope.mjs`, `CHARTER.md`, `prompts/` and `.github/` are
   untouched.

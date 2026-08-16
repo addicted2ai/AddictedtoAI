@@ -109,6 +109,7 @@ wait_for_checkout_free() {
   local newest now busy
   local wait_bound="${CHECKOUT_WAIT_SECONDS:-3600}"
   local idle="${CHECKOUT_IDLE_SECONDS:-600}"
+  local tick="${TICK_SECONDS:-30}"
   while [ "$waited" -lt "$wait_bound" ]; do
     newest=$(api_attributed_newest "${CHECKOUT_FLOOR:-0}")
     now=$(date +%s)
@@ -120,8 +121,8 @@ wait_for_checkout_free() {
       [ "$waited" -gt 0 ] && note "checkout free after ${waited}s -- no session from this supervisor has advanced in ${idle}s"
       return 0
     fi
-    sleep "${TICK_SECONDS:-30}"
-    waited=$((waited + TICK_SECONDS))
+    sleep "$tick"
+    waited=$((waited + tick))
   done
   note "checkout still busy after ${wait_bound}s -- a session this supervisor dispatched is still advancing (newest update ${newest:-unknown}); proceeding anyway, bounded deferral"
   return 1
