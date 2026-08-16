@@ -133,8 +133,10 @@ round-82 entry (rule 5). The post's `dateModified` and `verified` move to
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — lint, the docket validator, the
   track scope for `loop/maintain/cyber-eval-cascade-meta-first-party`, a
-  production-shaped build and the route checks against a server on port 3000,
-  no group skipped.
+  production-shaped build and the route checks against a server on port 3000 —
+  all four groups reported ok, none skipped (the report printed "ok" for lint,
+  docket, track scope and the route suite; a SKIPPED group counts as a failure
+  and none appeared).
 - Result: not yet measured. The verification itself is the product: the
   Meta section's added claims each trace to the first-party post fetched this
   run (retrieved 2026-08-16), and the comparison between the published section
