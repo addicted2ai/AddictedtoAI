@@ -70,6 +70,124 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 146 (meta) executes docket item
+`2026-08-16-supervisor-checkout-kills-review-sessions.md`: the supervisor's
+per-iteration `git checkout main` / `git pull` switched the branch out from
+under review sessions that outlive the iteration that dispatched them — two
+round-145 review sessions (`ses_ff5892ccc`, 12:05–13:20Z, and `ses_ff4b5361`,
+15:57–16:52Z, both 16 August) each recorded "HEAD moved to main — a concurrent
+process is active", each died ~55 minutes into verification without writing its
+artifact, and round 145 was only reviewed because the supervisor was stopped by
+hand first. That round was eventually reviewed and merged regardless: PR #104,
+merge commit 253ade4, merged 2026-08-16T18:16:31Z, its review artifact
+`docket/reviews/c7e0214e8843587716c470832883efa4768d94e7.md` recording approve —
+the record the item's acceptance list asks to see. The fix is Shape A: the
+supervisor now waits, bounded, for sessions it can attribute to itself to stop
+advancing before it moves the shared checkout. Shape B (review sessions in a
+clone the supervisor never touches) was considered and not chosen: it changes
+the orchestrator's dispatch instructions rather than just the supervisor, and
+the deferral fixes the same failure at the one place all branch switches happen.
+
+**1. Defer the iteration-start checkout while this supervisor's own sessions are still advancing**
+- Hypothesis: the failure is structural — nothing stops the supervisor's next
+  iteration from checking out `main` while a nested review session still works
+  in the shared checkout, and the supervisor watches session liveness, not who
+  is using the checkout. Asking the session API (the same source the
+  supervisor's liveness model already trusts) whether a session it could have
+  launched is still advancing, and waiting for it to stop, should make the
+  checkout respect the same signal. The trap is the shared store itself: it
+  holds sessions this supervisor did not start — the maintainer's, the
+  supervising model's, an orchestrator session that outlived its iteration
+  (the current one, `ses_ff4a68c7affeRhguOOTUJCpGLq`, title `20260816T161325Z`,
+  is attached and advancing and never stops on its own) — so the deferral
+  cannot be "any session is advancing → wait". Of the three allowed shapes I
+  chose option 1 (defer only for sessions created after this supervisor's own
+  launch) combined with option 2 (a hard bound, then proceed anyway and note
+  it). Attribution by launch time is what keeps the never-stopping foreign
+  session from deadlocking the loop; the bound is the backstop for a session
+  that passes attribution and still never stops. I did not choose option 3
+  (defer only for sessions created after the previous iteration started): it
+  has the same restart hole as the launch floor and additionally misses a
+  review that survives across a short iteration, so it protects strictly less
+  for no gain. The boundary is recorded: a session that predates the
+  supervisor's launch is ignored entirely — closing that hole would mean
+  deferring on the attached orchestrator session, which is the permanent halt
+  the brief names.
+- Change: `scripts/orchestrate-liveness.sh` gains `api_attributed_newest`
+  (newest `time.updated` among sessions whose directory is this project and
+  whose `time.created` is at or after the launch floor) and
+  `wait_for_checkout_free` (polls that probe every tick until the newest
+  attributed update is `CHECKOUT_IDLE_SECONDS` old — 600s default, generous
+  because `time.updated` freezes up to ~238s during a long generation —
+  bounded by `CHECKOUT_WAIT_SECONDS`, 3600s default, returning 1 when the
+  bound expires). `scripts/orchestrate.sh` records `CHECKOUT_FLOOR` once at
+  startup (`ORCHESTRATE_LAUNCH` overridable), calls `wait_for_checkout_free`
+  before the `git checkout main` / `git pull` at each iteration start, and
+  notes both outcomes — the free case, the wait, and (loudest) the bounded
+  overrun, which is what makes a branch switch over a live session visible
+  rather than silent. A probe that fails (API down) yields no signal and
+  proceeds, matching the file's liveness philosophy. The docket item's prose
+  also asked a correction round to fix the dead `supervisor.pid` (53242); that
+  file lives outside the repository in the loop-log directory, which this
+  brief forbids touching, so it is left to the orchestrator — the item's
+  "Done when" checklist (this round's acceptance criteria) does not include
+  it.
+- Proven in both directions and both boundaries, against a stub `/session`
+  API the test controls (`node scripts/test-orchestrate-checkout.mjs`,
+  wired into `scripts/check-routes.sh`): a session created after the launch
+  floor with a fresh `time.updated` defers the checkout (returns busy, rc=1);
+  the same session going quiet mid-wait lets it proceed (rc=0 after ~2s); a
+  session quiet for longer than the idle window does not delay it (rc=0,
+  <1s); a session created before the floor — the trap shape, still advancing —
+  never blocks it (rc=0, <1s); the trap does not mask an attributed session
+  (busy); an unreachable API proceeds (rc=0, no signal). The bound was proven
+  by feeding the function a never-stopping session: it returns busy after the
+  bound rather than hanging (4s bound, ~5.3s wall). Both mutations fail the
+  test: with the attribution filter removed the trap scenario fails ("the
+  attached-session trap deadlocked the loop", rc=1), and with the bound
+  removed the test kills the wait at 15s and fails ("KILLED: wait did not
+  return within 15000ms") — a regression to an unbounded wait cannot hang CI.
+  The mutation experiment also caught a real latent bug in the first draft of
+  `wait_for_checkout_free`: the idle window was read in arithmetic without
+  its default, so an unset variable read as zero and the guard never fired.
+  The review of PR #107 caught its sibling 13 lines on: `TICK_SECONDS` was
+  read in arithmetic without its default too — `sleep "${TICK_SECONDS:-30}"`
+  slept 30s while `waited=$((waited + TICK_SECONDS))` added 0, so with
+  `TICK_SECONDS` unset the bound could never be reached and the guard never
+  returned. The idle-window default and the tick default are both now
+  captured once at the top of the function, in the same shape.
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"), but
+  this round was chosen and briefed by the orchestrating model and a separate
+  session reviews the branch before merge, so `delegated` is recorded per the
+  brief — the same note the preceding delegated rounds recorded. Consequence:
+  `ship` withholds auto-merge and opens the pull request for that review, which is
+  expected rather than an error.
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/preflight.mjs` (clear, nothing outranks the
+  docket); the proof above via `node scripts/test-orchestrate-checkout.mjs`
+  with the stub API, plus the two mutation runs against the real function
+  (attribution removed; bound removed) and their reverts; then `node
+  scripts/round.mjs check` — lint, docket validator, track scope for
+  `loop/meta/supervisor-checkout-deferral`, production-shaped build, and the
+  route checks against a server on port 3000, no group skipped. Correction
+  round after the review of PR #107 requested changes (the review ran the
+  tick-default bug against the real API: no return, killed at 45s): after the
+  tick capture-once fix, `node scripts/test-orchestrate-checkout.mjs` re-ran
+  green (all 8 checks) and both mutations were re-run and reverted —
+  attribution removed fails 2 scenarios (pre-launch boundary, trap), bound
+  removed fails 3 (deferral, bound, mixed) and the test terminates. Meta's
+  scope honoured: only `scripts/` (orchestrate.sh, orchestrate-liveness.sh,
+  check-routes.sh, the new test), `CHANGELOG.md` and `docket/` change;
+  `scripts/check-track-scope.mjs`, `CHARTER.md`, `prompts/` and `.github/` are
+  untouched.
+- Result: not yet measured. The deferral is exercised against a stub API this
+  round; whether the supervisor now survives a review session that outlives
+  its iteration in the shared checkout, and whether the 3600s bound is the
+  right one for real review runs, is for the running loop to show.
+
+### 2026-08-16
 Round 145 (build) executes docket item `2026-08-13-disclosure-map-merged-tree.md`:
 the AI-disclosure producing-round check was measuring a different tree locally
 than in CI. `scripts/check-ai-disclosure.mjs` read `git log` from HEAD — locally

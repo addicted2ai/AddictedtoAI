@@ -112,6 +112,16 @@ node scripts/test-tool-links-overflow.mjs || failures=$((failures + $?))
 echo
 node scripts/test-review-artifact.mjs || failures=$((failures + $?))
 
+# The shared-checkout guard's two directions and its two boundaries: an
+# attributed session that is still advancing defers the checkout (bounded,
+# so a session that never stops cannot halt the loop), and a session that
+# predates the supervisor's launch -- the maintainer's own, or an
+# orchestrator session that outlived its iteration -- never blocks it. The
+# test drives scripts/orchestrate-liveness.sh against a stub session API
+# that serves crafted GET /session payloads.
+echo
+node scripts/test-orchestrate-checkout.mjs || failures=$((failures + $?))
+
 # The prebuild chain must pass in a checkout shaped like Vercel's production
 # clone: one branch, no remote refs. CI clones the full history, so a prebuild
 # check that shells out to git for origin/main passes here while Vercel's
