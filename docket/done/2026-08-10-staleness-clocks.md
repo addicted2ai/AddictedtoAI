@@ -33,10 +33,26 @@ not when anything was last verified.
 
 ## Done when
 
-- [ ] Published artefacts — directory entries, posts, demos — carry a
+- [x] Published artefacts — directory entries, posts, demos — carry a
       `last-verified` date distinct from when they were written
-- [ ] The threshold for "stale" lives in the policy file, not in code
-- [ ] A script reports everything past its threshold, and the preflight reads it
-- [ ] Verification dates are visible to readers, not just to the loop
-- [ ] The check was shown to fail: backdate one artefact and confirm it is
+- [x] The threshold for "stale" lives in the policy file, not in code
+- [x] A script reports everything past its threshold, and the preflight reads it
+- [x] Verification dates are visible to readers, not just to the loop
+- [x] The check was shown to fail: backdate one artefact and confirm it is
       reported before trusting it
+
+## Round 132 status (2026-08-15, build)
+
+Moved to `docket/done/` by round 132. All five boxes ticked.
+
+Shipped: `scripts/staleness-report.mjs`, the consolidation of
+`scripts/check-tool-staleness.mjs` and `scripts/check-retirement-staleness.mjs`
+(both deleted) extended to every published artefact class — Directory entries,
+retirement-commitment rows, retirement-calendar rows, blog posts and demos —
+all judged against the windows in `policy.yml`. Posts (`app/lib/posts.js`) and
+demos (new `app/lib/demos.js`) gained `verified` dates distinct from when they
+were written; every post page and /demos renders them; the preflight reads the
+report and routes anything past its threshold to maintain. Proved able to fail:
+a backdated post and a backdated demo each tripped it (red, then restored
+green), a missing date trips it, and the preflight surfaces the finding. See
+the round's changelog entry for the numbers and both states.

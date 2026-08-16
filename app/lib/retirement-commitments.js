@@ -28,11 +28,11 @@
 // plus Google (verified this run from the page: "earliest possible dates"), so
 // a vendor can publish a notice floor AND dates it reserves the right to move.
 //
-// Staleness is enforced by the same check as the Directory:
-// scripts/check-tool-staleness.mjs reads policy.yml's
+// Staleness is enforced by the same report that guards the Directory:
+// scripts/staleness-report.mjs reads policy.yml's
 // staleness_days.directory_entry window over the `verified` dates in this
 // file too. A row whose page was unreachable carries `verified: null` plus a
-// dated `unverifiedSince` record; the check fails once that record is past
+// dated `unverifiedSince` record; the report fails once that record is past
 // the window, so an unverified row is never treated as fresh (round 124 wired
 // this; its changelog entry argues the shared window).
 export const RETIREMENT_COMMITMENTS = [

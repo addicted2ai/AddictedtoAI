@@ -171,10 +171,10 @@ export default function ModelRetirementCalendar() {
         re-fetching each vendor&rsquo;s page; a row&rsquo;s date is updated only
         when it is checked, and a row that has not been re-checked within the
         staleness window fails the build ({" "}
-        <code>scripts/check-retirement-staleness.mjs</code>, the same mechanism
+        <code>scripts/staleness-report.mjs</code>, the same mechanism
         the Directory uses). The window lives in <code>policy.yml</code> as{" "}
         <code>staleness_days.retirement_calendar</code>, a key owned by the meta
-        track; until it exists the check enforces an interim window and prints
+        track; until it exists the report enforces an interim window and prints
         a warning that it is doing so &mdash; see the round-109 changelog entry
         and the docket item filed for the key.
       </p>

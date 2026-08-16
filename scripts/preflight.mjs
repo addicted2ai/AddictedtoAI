@@ -9,11 +9,12 @@
 // something that is broken now. Anything reported here becomes the run,
 // whatever track was otherwise due.
 //
-// This is currently thin, and honestly so. Most of what belongs here -- demo
-// health checks, published claims past their staleness window, production not
-// matching main -- needs per-artefact verification dates that do not exist
-// yet. That is the `staleness-clocks` docket item, and until it lands the
-// preflight can only see what the repository already knows.
+// The staleness half is no longer thin: scripts/staleness-report.mjs covers
+// every published artefact class against the windows in policy.yml, and
+// anything it flags past its threshold becomes an interrupt here, outranking
+// the docket (the `staleness-clocks` docket item, landed round 132). What is
+// still absent — demo health checks, production not matching main — is filed
+// as docket work when it has a shape this file can read.
 //
 // Findings are ordered most urgent first. Each names the track that should
 // handle it, because an interrupt that does not say who fixes it is a to-do
@@ -21,6 +22,7 @@
 
 import fs from "fs";
 import path from "path";
+import { execFileSync } from "child_process";
 import { load as parseYaml } from "js-yaml";
 
 // See the note in check-docket.mjs: CRLF makes the frontmatter regex match
@@ -122,6 +124,50 @@ if (starved.length === needsQueue.length && needsQueue.length > 0) {
     detail: starved,
     why: "The queue is empty. Refill it by looking outward, not by tidying.",
   });
+}
+
+// 4. Published artefacts past their staleness window — the clock the
+//    `staleness-clocks` item was filed to build. The report reads every
+//    class's window from policy.yml, and anything it flags is an interrupt:
+//    published content past its staleness threshold outranks the docket, and
+//    the maintain track re-verifies it. The report prints its JSON on stdout
+//    in both the pass and the fail state, so an exit-1 is read as a finding
+//    rather than as a broken preflight; only a report that cannot produce
+//    JSON at all (a missing window key, a file the parser no longer matches)
+//    is machinery failure and routes to meta.
+let staleness;
+try {
+  staleness = JSON.parse(
+    execFileSync("node", ["scripts/staleness-report.mjs", "--json"], { encoding: "utf8" })
+  );
+} catch (error) {
+  staleness = {
+    ok: false,
+    stale: null,
+    broken: String(error.stdout || error.message || "").trim(),
+  };
+}
+if (staleness.ok === false) {
+  if (Array.isArray(staleness.stale) && staleness.stale.length > 0) {
+    findings.push({
+      urgency: 0.5,
+      track: "maintain",
+      what: `${staleness.stale.length} published artefact(s) past their staleness window`,
+      detail: staleness.stale.map(
+        (s) =>
+          `${s.class} ${s.name}: verified ${s.verified} — ${s.ageDays} days ago, window ${s.windowDays} days`
+      ),
+      why: "Published content past its staleness threshold outranks the docket. Re-verify the facts and renew the dates.",
+    });
+  } else {
+    findings.push({
+      urgency: 0,
+      track: "meta",
+      what: "the staleness report failed to run",
+      detail: [staleness.broken || "no output"],
+      why: "Without the report, nothing knows whether published content is past its staleness window.",
+    });
+  }
 }
 
 findings.sort((a, b) => a.urgency - b.urgency);

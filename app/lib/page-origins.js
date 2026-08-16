@@ -202,23 +202,29 @@ export const PRODUCING_ROUNDS = {
   // flash post.)
   // Round 111 (maintain) moves it: app/page.js gained the corrected
   // delegated sentence, and it is a listed source file of /.
-  "/": 111,
+  // Round 132 (build) gives every post a `verified` date in posts.js — a
+  // listed source file of / — so the newest change is this round's.
+  "/": 132,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
-  "/blog": 108,
+  // Round 132 (build) adds the per-post verified dates and renders them in
+  // the post-meta line, so the newest change is this round's.
+  "/blog": 132,
   // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The ultrafast-mode route is 108 by construction: this round built the
   // page.
-  "/blog/frontier-cyber": 108,
-  "/blog/claude-code-auto-mode": 108,
-  "/blog/cyber-eval-cascade": 108,
-  "/blog/gpt-5-6-price-drop": 108,
-  "/blog/fable-5-export-controls": 108,
-  "/blog/chatgpt-ads": 108,
-  "/blog/gemini-3-7-flash": 108,
-  "/blog/ultrafast-mode": 108,
+  // Round 132 (build): posts.js and every post page carry the verified
+  // dates and render them, so each route's newest commit is this round's.
+  "/blog/frontier-cyber": 132,
+  "/blog/claude-code-auto-mode": 132,
+  "/blog/cyber-eval-cascade": 132,
+  "/blog/gpt-5-6-price-drop": 132,
+  "/blog/fable-5-export-controls": 132,
+  "/blog/chatgpt-ads": 132,
+  "/blog/gemini-3-7-flash": 132,
+  "/blog/ultrafast-mode": 132,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 83 (build) built this page and its parser. New route, so its
@@ -240,10 +246,17 @@ export const PRODUCING_ROUNDS = {
   // Round 125 (maintain) re-attempts the Meta verification with new
   // techniques and rewrites the Meta row's sentence with this run's
   // evidence, so the newest change is this round's.
-  "/what-vendors-promise": 125,
+  // Round 132 (build) rewrites the page's staleness passage to name the
+  // consolidated report, and touches app/lib/retirement-commitments.js (a
+  // listed source file) only via the data file's header comment — so the
+  // newest change is this round's.
+  "/what-vendors-promise": 132,
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
-  "/model-retirement-calendar": 109,
+  // Round 132 (build) rewrites the page's staleness passage to name the
+  // consolidated report and touches app/lib/retirement-dates.js's header
+  // comment, so the newest change is this round's.
+  "/model-retirement-calendar": 132,
   // Round 112 (build) publishes the loop's run history at /loop-history. New
   // route, so its producing round is the round that created it.
   "/loop-history": 112,
@@ -266,8 +279,21 @@ export const PRODUCING_ROUNDS = {
 // has falsified since round 70 (31 current-era rounds record measured
 // results, and the demo's own example round 74 reads one). RoundWalkthrough.js
 // is a listed source file of /demos, so the route moves to 131.
+//
+// Round 132 (build) lands the staleness-clocks item: every post gains a
+// `verified` date in app/lib/posts.js — a listed source file of /, /blog and
+// every post route — and every post page renders it in its post-meta line,
+// so /, /blog and all eight post routes move to 132 together, the same
+// pattern as rounds 87, 100, 103, 107 and 108. The /demos page gains
+// verification dates rendered from the new app/lib/demos.js (added to its
+// listed files), so /demos moves too. No other route's listed files change.
   "/directory": 125,
-  "/demos": 131,
+  // Round 131 (maintain) corrected the walkthrough's "Result" caption, which
+  // the record had disproved.
+  // Round 132 (build) renders per-demo verification dates from the new
+  // app/lib/demos.js and app/demos/page.js, so the newest change is this
+  // round's.
+  "/demos": 132,
   // Both log pages were produced by round 70, the build round that split the
   // log in two, until round 72 changed the origin badge they both render.
   // /log was mapped to 53 until 70; leaving it there would have had the page

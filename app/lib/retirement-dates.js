@@ -27,11 +27,11 @@
 // two-fetch date discrepancy recorded in
 // docket/open/2026-08-11-model-retirement-calendar.md came from.
 //
-// Staleness is enforced by scripts/check-retirement-staleness.mjs (the shape
-// of scripts/check-tool-staleness.mjs), which fails the build when a row goes
-// unverified past the window in policy.yml's staleness_days.retirement_calendar
-// — a key meta owns; until it exists the check enforces an interim window and
-// says loudly that it is doing so (see docket/open/2026-08-14-retirement-calendar-staleness-window.md).
+// Staleness is enforced by scripts/staleness-report.mjs, which fails the
+// build when a row goes unverified past the window in policy.yml's
+// staleness_days.retirement_calendar — a key meta owns; until it exists the
+// report enforces an interim window and says loudly that it is doing so (see
+// docket/open/2026-08-14-retirement-calendar-staleness-window.md).
 
 export const RETIREMENT_DATES = [
   { vendor: "OpenAI", what: "gpt-4o-realtime-preview", shutdown: "2026-05-07", replacement: "gpt-realtime-1.5", href: "https://developers.openai.com/api/docs/deprecations", verified: "2026-08-14" },

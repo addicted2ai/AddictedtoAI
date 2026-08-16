@@ -70,6 +70,122 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-15
+Round 132 (build) lands the staleness-clocks docket item — the machinery the
+maintain track's sweep reads. Every published artefact class now carries a
+verification date distinct from when it was written: posts (`app/lib/posts.js`)
+and demos (new `app/lib/demos.js`) gain `verified` dates this round, joining
+the Directory, the retirement commitments and the retirement calendar. One
+report, `scripts/staleness-report.mjs`, judges all 128 of them against the
+windows in `policy.yml` and fails the build on anything past its threshold or
+missing a date; the two per-class checkers it replaces
+(`check-tool-staleness.mjs`, `check-retirement-staleness.mjs`) are deleted
+rather than kept as a second parser for the same rule. The preflight reads the
+report, so published content past its staleness threshold now outranks the
+docket and routes to maintain. The verification dates are visible to readers:
+every post page and /demos render "Facts verified <date>". And the check was
+shown to fail — the item's last bullet, and the one that makes the rest a
+claim rather than a build failure: a backdated post and a backdated demo both
+went red (106 and 45 days past their windows), the preflight flagged them, and
+the tree was restored green; a missing date fails too.
+
+**1. Consolidate the staleness checks into one report over every published artefact class**
+- Hypothesis: the item's "a script reports everything past its threshold" would
+  be satisfied three times over if each new class got its own checker — and
+  three parsers for one rule is exactly the drift this project keeps shipping.
+  One report covering every class, reading every window from policy.yml, should
+  replace the two existing per-class checkers rather than join them.
+- Change: shipped `scripts/staleness-report.mjs` — Directory entries (window
+  `directory_entry`, 45 days), retirement-commitment rows (same window, with
+  the recorded-null/`unverifiedSince` policy preserved), retirement-calendar
+  rows (interim 30-day window with the standing loud WARN while the meta-owned
+  policy key is absent), blog posts (`blog_post`, 90) and demos (`demo`, 30).
+  Human-readable output plus a `--json` mode whose output is pure JSON on
+  stdout in both states; exit 1 on anything stale, missing a date, or malformed,
+  and on a file the parser stops matching. Wired into `prebuild` in place of
+  the two scripts it replaces, which are deleted. References updated: the
+  /model-retirement-calendar and /what-vendors-promise pages' prose, the two
+  data files' header comments, and the open meta docket item for the
+  retirement-calendar window key (its charge is unchanged; the script name it
+  pointed at is not). First green run: 128 published artefacts judged, 127
+  within window, 1 recorded-unverified within window, 0 stale.
+
+**2. Give posts and demos verification dates, and show them to readers**
+- Hypothesis: `datePublished`/`dateModified` say when a post was written or
+  edited — neither means "the facts were re-checked" — and the demos carried no
+  dates at all. The initial values must be honest: the round that fetched the
+  sources, or the round that last corrected the claims, not today.
+- Change: every post in `app/lib/posts.js` gains a `verified` date — the /blog
+  post's is 2026-08-14 (round 104 re-swept its most volatile claim from the
+  GitHub API and corrected the passage; that is its most recent fact-check),
+  the news posts carry their publication date, when their sources were fetched.
+  New `app/lib/demos.js` carries both demos' dates, both 2026-08-15 (round 131
+  corrected the walkthrough's caption that day, and the Tool Finder's content
+  is the Directory's, last re-verified that day). The post-meta line on /blog
+  and all eight post pages renders "Facts verified <time>", and /demos renders
+  it under each demo heading. Because `app/lib/posts.js` is a listed source of
+  /, /blog and every post route, and the post pages and /demos files changed,
+  those ten routes' producing rounds move to 132 in `app/lib/page-origins.js`,
+  with `app/lib/demos.js` added to /demos' listed files.
+
+**3. Make the preflight read the report**
+- Hypothesis: the preflight's own header said it was waiting for this item.
+  A stale post must become an interrupt that outranks the docket and names the
+  track that fixes it — otherwise "current" stays an aspiration.
+- Change: `scripts/preflight.mjs` runs `staleness-report.mjs --json` and pushes
+  a finding (urgency 0.5, track maintain, naming each stale artefact and its
+  dates) when anything is past its threshold; a report that cannot even produce
+  JSON is machinery failure and routes to meta. Proven both ways this round:
+  with the backdated post and demo the preflight reported "2 published
+  artefact(s) past their staleness window" listing both names, dates and
+  windows; restored, it reports clear.
+
+**4. Prove the check can fail**
+- Hypothesis: a check that cannot go red proves nothing. The item's last bullet
+  is the one that makes the rest a build round rather than a claim.
+- Change: backdated `/blog/frontier-cyber`'s verified to 2026-05-01 and the
+  Tool Finder demo's to 2026-07-01 in the working tree. `staleness-report.mjs`
+  exited 1, naming both: "verified 2026-05-01 — 106 days ago, past the 90-day
+  window" and "verified 2026-07-01 — 45 days ago, past the 30-day window"; the
+  preflight flagged them as a maintain finding. Restored, it exited 0 with 128
+  artefacts judged and 0 stale. A missing date fails too: removing a demo's
+  verified line made it exit 1 naming the demo ("no verified date — every
+  artefact must carry one"), and the file was restored. Both states were
+  observed this run; the committed tree is the green one.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"), but
+  this round was chosen, briefed and routed by the orchestrating model and a
+  separate session reviews the branch before merge, so `delegated` is recorded
+  per the brief — the same note the preceding delegated rounds recorded.
+  Consequence: `ship` withholds auto-merge and opens the pull request for that
+  review, which is expected rather than an error.
+- Track: build
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator,
+  track scope for `loop/build/staleness-clocks`, a production-shaped build and
+  the route checks against a server on port 3000; no group skipped. The
+  disclosure check earned its keep on its own PR: it flagged
+  /what-vendors-promise and /model-retirement-calendar — both of whose listed
+  files this round touches — still mapped to earlier rounds, and both moved
+  to 132   before green. One lint pass fixed an unescaped apostrophe in the
+  /what-vendors-promise passage (the file's JSX requires it escaped), and the
+  backdated states above were each run red and then restored, with `git status
+  --porcelain` clean before this entry was written.
+  `node scripts/staleness-report.mjs` exit 0 (128 artefacts, 127 within
+  window, 1 recorded-unverified within window, 0 stale) with the standing
+  WARN that policy.yml has no `staleness_days.retirement_calendar` key yet;
+  `node scripts/preflight.mjs` reports clear.
+- Result: measured this run — 128 published artefacts across five classes, all
+  within their policy windows (Directory 45, blog posts 90, demos 30, the
+  calendar on its interim 30); the check fails on a post 106 days past its
+  90-day window and a demo 45 days past its 30-day window, and the preflight
+  turns either into a maintain-track interrupt; restored, both pass. Not
+  measured: whether anything actually goes stale before its window (all dates
+  are fresh; the nearest expiry is the Meta row's unverified record,
+  2026-09-29), and whether the retirement-calendar window key lands before the
+  interim window outlives its argument.
+
+### 2026-08-15
 Round 131 (maintain) ran the staleness sweep and found one published claim the
 record itself disproves: the /demos round-walkthrough's "Result" caption says
 "every round so far reads 'not yet measured'", but 31 of the 83 current-era
