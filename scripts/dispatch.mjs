@@ -17,6 +17,16 @@
 //   3. Quota      — the track most owed a run, among those that can run
 //   4. Nothing    — no track has work; the run stops, which is rule 20
 //
+// The quota step does not compare fixed policy weights. A track's weight is
+// scaled by measured demand first: a consuming track's `queue_budget` turns
+// its weight into a servo on its own queue depth (a full queue doubles it, an
+// empty one halves it), and scout's `feeds` reads the same measurement with
+// the opposite sign (a full fed queue demotes it toward a floor that is never
+// zero). Tracks with neither keep their policy weight. The mechanism, the two
+// load-bearing constants and the reason the human-readable output prints ready
+// counts and budgets are in the "demand" section below — a rotation this file
+// no longer runs.
+//
 // Track history comes from CHANGELOG.md `- Track:` fields, so it counts
 // *shipped* work. That is the right denominator: a meta run that found nothing
 // to do did not consume meta's share of the site's changes.
@@ -83,36 +93,16 @@ const ready = open.filter((item) =>
 );
 
 const changelog = readText(path.join(root, "CHANGELOG.md"));
-// Newest first, matching the file's order. Each `- Track:` is paired with the
-// `### YYYY-MM-DD` heading above it, so a per-day cap can count the rounds that
-// shipped on a given calendar date rather than only their order.
-const dated = [];
-{
-  let date = null;
-  for (const line of changelog.split("\n")) {
-    const heading = /^### (\d{4}-\d{2}-\d{2})/.exec(line);
-    if (heading) {
-      date = heading[1];
-      continue;
-    }
-    const track = /^- Track:\s*(\S+)/.exec(line);
-    if (track) dated.push({ track: track[1].toLowerCase(), date });
-  }
-}
-const history = dated.map((entry) => entry.track);
-
-// A per-day cap counts dates, so it fails open if the pairing ever stops
-// working: entries with no date match nothing, shippedToday() returns 0, and
-// every cap silently stops applying. Say so rather than letting the loop drift
-// back to bursting while the policy file still claims a cap.
-if (dated.length > 0 && dated.every((entry) => entry.date === null)) {
-  console.error(
-    "WARN  no `### YYYY-MM-DD` heading was paired with any `- Track:` line in CHANGELOG.md"
-  );
-  console.error(
-    "      per-day caps in policy.yml cannot be enforced against an undated history"
-  );
-}
+// Newest first, matching the file's order. Each `- Track:` records which track
+// shipped the round it belongs to; the ordered list is the history the
+// most-owed window and the audit floor read. Only *shipped* work counts: a meta
+// run that found nothing to do did not consume meta's share of the site's
+// changes.
+const history = changelog
+  .split("\n")
+  .map((line) => /^- Track:\s*(\S+)/.exec(line)?.[1])
+  .filter(Boolean)
+  .map((track) => track.toLowerCase());
 
 const WINDOW = 20;
 const recent = history.slice(0, WINDOW);
@@ -214,42 +204,69 @@ try {
   };
 }
 
-// --- selection --------------------------------------------------------------
+// --- demand ------------------------------------------------------------------
+//
+// A track's weight becomes a function of measured demand rather than a
+// constant. The single measurement is queue pressure, ready stock over what the
+// track can actually spend:
+//
+//     pressure(track) = readyCount(track) / queue_budget(track)      // 1.0 = at budget
+//
+// A **consuming** track (one with a `queue_budget`) reads it directly — the
+// fuller its queue, the more it is owed:
+//
+//     effectiveWeight = weight * min(pressure, 2)
+//
+// The **supplying** track (one with `feeds`) reads the same number with the
+// opposite sign — the more stock it has already delivered, the less it is owed:
+//
+//     fill  = sum(readyCount(f) for f in feeds with a budget)
+//           / sum(queue_budget(f) for f in feeds with a budget)
+//     effectiveWeight = weight * clamp(1 - fill, 0.1, 1)
+//
+// A track with neither a budget nor `feeds` keeps its weight unchanged. `target`
+// is effectiveWeight over the candidates, and the most-owed comparison is the
+// same one that has always run.
+//
+// Two constants are load-bearing and must not be tuned casually:
+//   - **The 2x ceiling** is what makes a hard share cap on meta unnecessary:
+//     a queue that runs away can at most double its track's weight; it can
+//     never take the rotation.
+//   - **The 0.1 floor on scout is deliberate and must never be zero.** External
+//     input is the one thing this loop cannot generate for itself, and a scout
+//     that can be switched off completely is the rounds-38-48 spiral with a new
+//     switch.
 
-// Rounds that shipped today, by the same clock the publishing quota uses. The
-// count is of *shipped* rounds — a round dispatched and not yet merged does not
-// appear — which is safe only because rounds are serial: the in-flight guard
-// stops a second dispatch while one is open, so by the time this is read again
-// the previous round has landed. If rounds ever run concurrently, this becomes
-// a race and the cap will let one extra through.
-function shippedToday(track) {
-  const today = localDate();
-  return dated.filter((entry) => entry.date === today && entry.track === track)
-    .length;
+function readyCount(track) {
+  return ready.filter((item) => item.track === track).length;
 }
+
+function effectiveWeight(track) {
+  const cfg = tracks[track];
+  const weight = cfg?.weight || 0;
+  const budget = cfg?.queue_budget;
+  if (budget != null) {
+    const pressure = readyCount(track) / budget;
+    return weight * Math.min(pressure, 2);
+  }
+  const fed = (cfg?.feeds || []).filter((f) => tracks[f]?.queue_budget != null);
+  if (fed.length > 0) {
+    const readyTotal = fed.reduce((n, f) => n + readyCount(f), 0);
+    const budgetTotal = fed.reduce((n, f) => n + tracks[f].queue_budget, 0);
+    const fill = budgetTotal > 0 ? readyTotal / budgetTotal : 0;
+    return weight * Math.min(1, Math.max(0.1, 1 - fill));
+  }
+  return weight;
+}
+
+// --- selection --------------------------------------------------------------
 
 function availability(track) {
   const cfg = tracks[track];
   if (!cfg) return { can: false, why: "not in policy.yml" };
-  // A hard per-day cap, checked before anything else: a track at its cap is not
-  // selectable no matter how owed it is or how much work is queued. Weights
-  // spread runs out over a window and cannot bound a burst — scout shipped four
-  // rounds on 16 August, three of them inside two hours, while sitting at its
-  // policy share, because "most owed" is a ratio and says nothing about when.
-  //
-  // A preflight finding still overrides this: decide() returns the owning track
-  // before availability is consulted, which is intended. A cap on routine
-  // cadence should not stop the loop reacting to something that is wrong now.
-  const perDay = cfg.max_runs_per_day;
-  if (perDay != null) {
-    const n = shippedToday(track);
-    if (n >= perDay) {
-      return {
-        can: false,
-        why: `already shipped ${n} round(s) today (cap ${perDay}/day)`,
-      };
-    }
-  }
+  // A preflight finding overrides this whole function: decide() returns the
+  // owning track before availability is consulted, so an interrupt is never
+  // held back by a track's ordinary selectability.
   if (cfg.needs_docket_item) {
     const n = ready.filter((item) => item.track === track).length;
     if (n === 0) return { can: false, why: "no ready docket item" };
@@ -297,18 +314,9 @@ function decide() {
     }
   }
 
-  // Meta is capped by share of recent shipped rounds. It is the only track with
-  // infinite available work, which is why it won for ten straight rounds.
-  const metaCap = tracks.meta?.max_share_of_runs;
-  const metaShare = recent.length
-    ? recent.filter((t) => t === "meta").length / recent.length
-    : 0;
-
-  const candidates = Object.keys(tracks).filter((track) => {
-    if (!availability(track).can) return false;
-    if (track === "meta" && metaCap != null && metaShare >= metaCap) return false;
-    return true;
-  });
+  const candidates = Object.keys(tracks).filter(
+    (track) => availability(track).can
+  );
 
   if (candidates.length === 0) {
     return {
@@ -317,13 +325,14 @@ function decide() {
     };
   }
 
-  // Most owed: largest gap between the share the policy asks for and the share
-  // recently delivered. With no history every track is equally owed, so the
-  // heaviest weight wins, which is the intended cold start.
-  const totalWeight = candidates.reduce((n, t) => n + (tracks[t].weight || 0), 0);
+  // Most owed: largest gap between the share the policy asks for — after demand
+  // weighting — and the share recently delivered. With no history every track
+  // is equally owed, so the heaviest effective weight wins, which is the
+  // intended cold start.
+  const totalWeight = candidates.reduce((n, t) => n + effectiveWeight(t), 0);
   let best = null;
   for (const track of candidates) {
-    const target = (tracks[track].weight || 0) / (totalWeight || 1);
+    const target = effectiveWeight(track) / (totalWeight || 1);
     const actual = recent.length
       ? recent.filter((t) => t === track).length / recent.length
       : 0;
@@ -358,6 +367,37 @@ if (asGithub) {
   console.log(`reason: ${decision.reason}`);
   console.log();
   console.log(`ready docket items: ${ready.length} of ${open.length} open`);
+  console.log();
+  console.log("demand by track (ready / budget = pressure -> effective weight):");
+  for (const track of Object.keys(tracks)) {
+    const cfg = tracks[track];
+    const eff = effectiveWeight(track);
+    const mult = eff / (cfg.weight || 0);
+    const budget = cfg.queue_budget;
+    if (budget != null) {
+      console.log(
+        `  ${track.padEnd(9)} ${String(readyCount(track)).padStart(3)}/${budget} = ` +
+          `${(readyCount(track) / budget).toFixed(2)}  ->  weight ${eff.toFixed(2)} ` +
+          `(x${mult.toFixed(2)} of ${cfg.weight})`
+      );
+    } else if ((cfg.feeds || []).length > 0) {
+      const fed = cfg.feeds.filter((f) => tracks[f]?.queue_budget != null);
+      const readyTotal = fed.reduce((n, f) => n + readyCount(f), 0);
+      const budgetTotal = fed.reduce((n, f) => n + tracks[f].queue_budget, 0);
+      const fill = budgetTotal > 0 ? readyTotal / budgetTotal : 0;
+      console.log(
+        `  ${track.padEnd(9)} feeds ${fed.join(",")}: ${readyTotal}/${budgetTotal} = ` +
+          `${fill.toFixed(2)} fill  ->  weight ${eff.toFixed(2)} ` +
+          `(x${mult.toFixed(2)} of ${cfg.weight})`
+      );
+    } else {
+      console.log(
+        `  ${track.padEnd(9)} no budget, no feeds  ->  weight ${eff.toFixed(2)} ` +
+          `(x${mult.toFixed(2)} of ${cfg.weight})`
+      );
+    }
+  }
+  console.log();
   for (const track of Object.keys(tracks)) {
     const a = availability(track);
     const n = recent.filter((t) => t === track).length;
