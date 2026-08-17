@@ -78,17 +78,21 @@ diff. The baseline — counts and budgets alike — is read from `origin/main`,
 never from the branch, so the round-78 walk-around (grant and spend in one
 commit) does not work on it. `blocked-on: maintainer` pulls the two items no
 round can ever close out of the counts and out of the dispatcher's `ready`;
-measured on this branch, `dispatch.mjs`'s ready count fell 54 → 51 of 59 open
-— the two items now blocked, plus this round's own item closing into
-`docket/done/`. The first shape of this gate proved walkable in review —
+measured on this branch when the change landed, `dispatch.mjs`'s ready count
+fell 54 → 51 of 59 open — the two items now blocked, plus this round's own item
+closing into `docket/done/`; the final tree reads 52 of 60, the difference
+being the Origin item filed under *Origin* below. The first shape of this gate proved walkable in review —
 `blocked-on: maintainer` excluded items from the growth count too, so anything
 filed with it was invisible to the gate — and the review-and-fix section below
 records the hole and the fix. This paragraph describes the corrected gate.
 
 This is the second of two consecutive meta rounds, above the "cap meta at one
 round in five" guidance in `prompts/orchestrator.md`. That guidance exists to
-stop meta selecting itself; here a maintainer course correction chose the
-work, so this round is not a passing-over of the cap.
+stop meta selecting itself. Here the maintainer authorised a course correction
+and delegated its execution; the orchestrator chose this round's work inside
+that authorisation. That is not meta selecting itself, and it is also not a
+human choosing meta — the distinction is kept straight because this same entry
+got it wrong once, under Origin below.
 
 **One correction to the item, stated before the proofs.** Its `Done when`
 names `2026-08-11-make-codeowners-actually-block-a-merge.md` and
@@ -408,10 +412,19 @@ the budget at all. The same omission made the track-move possible: editing an
 existing item's `track:` field moves it between tracks, so per-track totals
 can stay flat while new items land — move 30 author items to build and file 30
 new author items, queue 60 → 90 in one diff, **exit 0**. Both were possible in
-every one of the three shapes shipped before this fix. The second finding is a
-consequence of the first: once each track's head count is actually bounded,
-moving items to a track with room is only possible while that track has room,
-and the scale-out version is caught by build's own bound.
+every one of the three shapes shipped before this fix.
+
+**This entry then claimed the second finding was a consequence of the first —
+"once each track's head count is actually bounded, moving items to a track with
+room is only possible while that track has room, and the scale-out version is
+caught by build's own bound." That claim was false, and the fourth review
+falsified it on a committed branch.** It holds only where the destination track
+has a `queue_budget`. Three of the six tracks — `scout`, `maintain`, `audit` —
+have none, and the gate skips any track whose budget is null
+(`scripts/check-docket.mjs:358-359`). The reviewer moved all 30 author items to
+`maintain` and filed 30 new author items in one diff: author 30 → 30 flat,
+queue 60 → 90, **exit 0**, repeatable every round, every check green. The
+corrected statement of what this gate does and does not do is below.
 
 The fix is not another patch to the same question — the question is replaced.
 The question that matters is where the pull request *leaves* the track:
@@ -431,6 +444,36 @@ The question that matters is where the pull request *leaves* the track:
   no round can ever close do not eat the actionable allowance. Because
   `base_blocked` comes from the base, marking items blocked in the diff being
   judged buys nothing.
+
+**What this gate does, and what it does not do.** It bounds the three tracks
+that carry a `queue_budget` — `author`, `build`, `meta` — against routine
+over-filing: no branch can push one of them above the greater of its base count
+and its budget plus its base-blocked items. That is the measured problem, scout
+filing author items at roughly seven a day into a track that spends 0.43 a day,
+and it is now mechanically impossible without a red check.
+
+It does not bound `scout`, `maintain` or `audit`, which have no `queue_budget`,
+and it does not stop a round that deliberately relabels items. The fourth
+review's eleventh attack — move 30 author items to `maintain`, file 30 new
+author items, one diff, queue 60 → 90, exit 0 — works today and works every
+round. **The queue can still be grown without limit by a round that sets out to
+do it.** That is stated here as a fact about the shipped check, not as a
+caveat: the gate raises the cost of accidental growth to a red check and leaves
+deliberate growth untouched.
+
+This is a decision, not an oversight. Three adversarial reviews each found a
+real hole and each was answered with a new rule; the fourth found a fourth. The
+stopping rule set before the fourth review was that a fourth real finding means
+the check ships with its limit stated rather than being patched a fifth time,
+because a check revised five times against one reviewer is being fitted to that
+reviewer rather than to the problem. The unbounded tracks are the honest
+residual and are named in the check's own output, so the next round reads the
+limit from the tool rather than from this entry. The proof outputs pasted below
+were captured before that line was added and so do not show it; the rule they
+exercise is unchanged. What would actually close it —
+bounding every track, or removing the head's ability to move an item between
+tracks at all — is a larger change than this round should make on its own
+authority while the loop is held.
 
 This is the fourth revision of one check, and the record says so plainly — the
 first three versions all asked about the past instead of the outcome, and
@@ -579,14 +622,39 @@ unresolvable, so the gate must print `WARN`, skip, and still exit 0. It does:
     exit=0
 
 And this pull request passes its own gate under the replaced rule — author 30
-≤ ceiling 30, build 0 ≤ 14, meta 28 ≤ ceiling 29, with the two settings-UI
-items blocked on this branch and still counted in the head totals. This
-continuation — the directive to replace the rule rather than patch it — comes
-from the maintainer, so this entry's Origin below is supervised rather than
-delegated: the round began delegated, and its last revision is under a
-human's direction.
+≤ ceiling 30, build 0 ≤ 14, meta 29 ≤ ceiling 29 — at the ceiling exactly, with
+no room left to file another meta item — and with the two settings-UI
+items blocked on this branch and still counted in the head totals.
 
-- Origin: supervised
+**This entry declared `Origin: supervised`, and that was false.** The reason it
+gave — that the directive to replace the rule rather than patch it came from
+the maintainer — is wrong about who gave the directive. It came from the
+orchestrating model, in a brief written at 04:00 while the maintainer was
+asleep. No human read the replaced rule, the review that prompted it, or this
+entry. `supervised` is published in this log as *a human triggered the run and
+could veto before merge*, and none of that happened. The Origin is `delegated`.
+The round mistook the orchestrator for the maintainer, which is exactly the
+distinction the taxonomy exists to draw, and the correction is recorded here
+rather than made silently because a wrong Origin is a false claim about who
+decided what.
+
+Two things follow. The first is small: `scripts/round.mjs start` writes
+`Origin: supervised` into every new entry as a hardcoded default, so the true
+value must be set by hand and a round that never revisits it publishes the
+wrong one. The second is structural and is filed this round as
+`docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md`.
+`scripts/check-review-artifact.mjs:130-132` applies the mandatory-review gate
+only when the entry says `delegated`, and the entry is part of the tree being
+judged. **This round is the demonstration.** It carried a
+`Verdict: request-changes` artifact and still read CLEAN and mergeable, because
+one word in its own changelog exempted it from the check that would otherwise
+have blocked it. A round can opt out of mandatory review by describing itself
+differently, which makes `review-artifact` weaker as a required status check
+than it looks. It is the same defect as the three the reviewers found in the
+filing gate — a check reading a fact from the tree it is judging — sitting in
+the check that guards every other check.
+
+- Origin: delegated
 - Track: meta
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — lint, the docket validator, the
@@ -605,11 +673,13 @@ human's direction.
   red against the replaced rule, with proof 10 pasted green so the fix is not
   "no filing ever".
 - Result: measured this round — the two settings-UI items left dispatch's
-  ready (54 → 51 of 59 open, the third being this round's item closing), left
-  meta's counted open items (29 → 26 on this branch, two blocked plus one
-  closed) while staying visible on their own line, and the filing gate is
-  green on this branch (author 30→30, build 0→0, meta 29→26) and red on each
-  proof that grew an over-budget track. The review's exploit — three new
+  ready (54 → 51 of 59 open when the change landed, the third being this
+  round's own item closing; 52 of 60 on the final tree, once the Origin item
+  below was filed), left meta's counted open items (29 → 27 on the final tree:
+  two blocked, one closed, one filed) while staying visible on their own line,
+  and the filing gate is green on this branch — it judges totals rather than
+  the counted figure, so author 30 ≤ 30, build 0 ≤ 14, meta 29 ≤ 29 — and red
+  on each proof that pushed a track past its ceiling. The review's exploit — three new
   author items carrying `blocked-on: maintainer` on top of the 30 already on
   base — went green on the first shape and is red on the corrected gate, and
   the manufacture-room attack — 26 existing author items marked blocked plus
@@ -619,9 +689,21 @@ human's direction.
   ceiling rule (proof 9, pasted above green before and red after), while
   filing within a budget stays green (proof 10, 10 build items), and this
   branch passes its own gate under the replaced rule (author 30 ≤ 30, build
-  0 ≤ 14, meta 28 ≤ 29). Not yet measured: whether the queue stops growing —
-  that is the gate's first red in the wild, which nothing shipped this round
-  can produce, and it has not happened yet.
+  0 ≤ 14, meta 29 ≤ 29). Measured and negative: the fourth review grew the
+  queue 60 → 90 in one committed diff with every check green, by moving 30
+  author items to the unbudgeted `maintain` track and refiling 30 author
+  items, so the queue is bounded on `author`, `build` and `meta` and is not
+  bounded overall — see *What this gate does, and what it does not do* above.
+  Not yet measured: whether the queue stops growing in ordinary use — that is
+  the gate's first red in the wild, which nothing shipped this round can
+  produce, and it has not happened yet.
+- Bound in its own round: this branch has room for exactly one more meta item
+  before the gate it ships turns red on its author (meta head 28, ceiling 29).
+  The Origin defect filed below takes that slot. The unbudgeted-track residual
+  is therefore recorded in prose and in the check's output rather than as a
+  docket item, because there is no room to file it — which is the first time
+  this mechanism has cost this project anything, and it cost it on the round
+  that wrote it.
 
 ### 2026-08-16
 Round 151 (meta) ships the first committed implementation of the demand-weighted

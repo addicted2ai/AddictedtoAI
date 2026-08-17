@@ -350,6 +350,20 @@ if (base) {
         ` -> head ${String(headTotals[track] || 0).padStart(2)}  (queue budget ${budget})`
     );
   }
+  // Name the residual in the tool's own output rather than only in the
+  // changelog. Tracks without a queue_budget are skipped by the rule below, so
+  // relabelling an item's `track:` into one of them moves it out of a bounded
+  // count entirely: round 152's fourth review grew the queue 60 -> 90 in one
+  // green diff that way. Shipped with the limit stated instead of patched a
+  // fifth time; closing it means bounding every track or removing the head's
+  // ability to move an item between tracks.
+  const unbounded = TRACKS.filter((t) => (baseBudgets[t] ?? headBudgets[t]) == null);
+  if (unbounded.length > 0) {
+    lines.push(
+      `      not bounded: ${unbounded.join(", ")} (no queue_budget) — an item` +
+        ` relabelled into one of these leaves the counts above`
+    );
+  }
   base.gateLines = lines;
 
   for (const track of gated) {
