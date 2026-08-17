@@ -140,9 +140,21 @@ Add `queue_budget` to the tracks that consume a queue:
   this figure was measured while meta's weight suppressed its own drain, so it
   must be re-measured after this change rather than trusted.
 
-Add `feeds: [author, build]` to scout, naming the tracks whose stock it
-supplies. Historically scout filed 41 author items, 3 build and 3 maintain, and
-0 meta; maintain is excluded because it carries no queue to fill.
+Add `feeds: [author]` to scout, naming the track whose stock it supplies.
+
+`[author]` and not `[author, build]`, which is the first shape this design took
+and is wrong. Measured: of scout's 47 filed items, **41 are author**, 3 build,
+3 maintain and 0 meta. Scout is 87% an author feeder. Giving build's empty
+14-slot budget a vote would pull scout hard toward filing work it has almost
+never filed — the signal would say "there is room" while the room is in a track
+scout does not stock. Scout may still file build and maintain items and should;
+they are simply not what triggers it.
+
+With `[author]` alone the pair becomes a servo. Author at 6 of 6 drives scout's
+weight to its 0.1 floor; author publishes and falls to 3 of 6, scout's weight
+returns to about half; scout refills author to 6 and switches itself back off.
+Nothing has to decide that — it falls out of one measurement read with two
+signs.
 
 Remove `scout.max_runs_per_day` and `meta.max_share_of_runs`, and say in the
 file why each is going:
