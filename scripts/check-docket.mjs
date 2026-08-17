@@ -18,6 +18,8 @@
 
 import fs from "fs";
 import path from "path";
+import { execFileSync } from "child_process";
+import { load as parseYaml } from "js-yaml";
 
 // Every regex below anchors on a bare newline. `.gitattributes` now forces LF
 // on checkout, but a working copy created before that attribute existed still
@@ -130,6 +132,13 @@ function checkItem(status, file, text) {
   if (fields.priority && !["1", "2", "3"].includes(fields.priority)) {
     fail(label, `priority "${fields.priority}" must be 1, 2 or 3`);
   }
+  // blocked-on is an optional escape from the budget counts and from `ready`
+  // in the dispatcher. Its only accepted value is `maintainer`, which means:
+  // this item is real, and no round can close it. Rejecting every other value
+  // stops the field from becoming a free-text hatch that empties the queue.
+  if (fields["blocked-on"] && fields["blocked-on"] !== "maintainer") {
+    fail(label, `blocked-on "${fields["blocked-on"]}" — the only accepted value is "maintainer"`);
+  }
 
   for (const heading of SECTIONS) {
     const body = sectionBody(text, heading);
@@ -189,9 +198,141 @@ for (const { status, file, fields } of items) {
 }
 
 const open = items.filter((i) => i.status === "open");
-const expired = open.filter(
+// Items blocked on the maintainer are real, open, and uncountable: no round
+// can close them, so including them in budget counts would consume budget the
+// loop can never free. They are excluded from the counts below and from the
+// filing gate, and reported on their own line so they stay visible.
+const counted = open.filter((i) => !i.fields["blocked-on"]);
+const blocked = open.filter((i) => i.fields["blocked-on"]);
+const expired = counted.filter(
   (i) => isDate(i.fields.expires) && Date.parse(i.fields.expires) < Date.now()
 );
+
+// --- the filing gate ----------------------------------------------------------
+//
+// Nothing here is about the shape of an item: it is about the capacity of the
+// track receiving it. A track's budget is `queue_budget` in policy.yml — the
+// stock it can actually spend — and the gate forbids *growth* on top of it:
+//
+//     FAIL if head > base AND head > budget
+//
+// The overage that already exists on main is tolerated (author holds ~30
+// against a budget of 6); only the next item is impossible.
+//
+// The base is read from origin/main, never from the working copy, and the
+// budgets are read from policy.yml on origin/main as well as from the branch.
+// A gate that read only the branch's own tree could be walked around in one
+// commit — raise the budget, file against the new number, every check green.
+// That is the round-78 hole check-track-scope.mjs records in its own header,
+// and it is closed here twice: the filing gate judges head against the base
+// budget, and the budget-raise rule below fails any branch that raises a
+// budget AND grows that track's count in the same diff — CHARTER.md rule 11
+// made mechanical for this gate.
+//
+// Where origin/main cannot be resolved the gate is skipped with a WARN and the
+// check still exits 0 for it — a single-branch clone has no remote ref, and a
+// check that cannot read its baseline must not invent one or take the build
+// down with it. This is the guard count-changelog-rounds.mjs carries after
+// PR #90: two production outages on 15 August came from prebuild checks that
+// shelled out to git for a ref the deployment clone did not have.
+
+function countRef(list) {
+  const out = {};
+  for (const item of list) {
+    const track = item.fields.track;
+    if (track) out[track] = (out[track] || 0) + 1;
+  }
+  return out;
+}
+
+function budgetsFrom(policy) {
+  const out = {};
+  for (const [track, cfg] of Object.entries(policy.tracks || {})) {
+    if (cfg && typeof cfg.queue_budget === "number" && cfg.queue_budget >= 0) {
+      out[track] = cfg.queue_budget;
+    }
+  }
+  return out;
+}
+
+function readBase() {
+  const ls = execFileSync(
+    "git",
+    ["ls-tree", "-r", "--name-only", "origin/main", "--", "docket/open"],
+    { encoding: "utf8" }
+  );
+  const baseItems = [];
+  for (const file of ls.split("\n").map((s) => s.trim()).filter(Boolean)) {
+    if (!file.endsWith(".md")) continue;
+    const text = execFileSync("git", ["show", `origin/main:${file}`], {
+      encoding: "utf8",
+    }).replace(/\r\n/g, "\n");
+    const fields = parseFrontmatter(text);
+    if (fields) baseItems.push({ file, fields });
+  }
+  const policy = parseYaml(
+    execFileSync("git", ["show", "origin/main:policy.yml"], { encoding: "utf8" })
+  );
+  return { baseItems, policy };
+}
+
+const gateFailures = [];
+
+let base = null;
+try {
+  execFileSync("git", ["rev-parse", "--verify", "--quiet", "origin/main^{commit}"], {
+    stdio: "ignore",
+  });
+  base = readBase();
+} catch (error) {
+  console.error(
+    "WARN  origin/main is not in this checkout — the filing gate cannot read its baseline and is skipped"
+  );
+  console.error(
+    "      a single-branch or shallow clone has no remote ref; the docket is still validated, only the gate is off"
+  );
+}
+
+const headPolicy = parseYaml(fs.readFileSync(path.join(root, "policy.yml"), "utf8"));
+const headCounts = countRef(counted);
+const headBudgets = budgetsFrom(headPolicy);
+
+if (base) {
+  const baseCounts = countRef(base.baseItems.filter((i) => !i.fields["blocked-on"]));
+  const baseBudgets = budgetsFrom(base.policy);
+  const gated = new Set([...Object.keys(baseBudgets), ...Object.keys(headBudgets)]);
+
+  const lines = [];
+  for (const track of TRACKS) {
+    const budget = baseBudgets[track] ?? headBudgets[track];
+    if (budget == null) continue;
+    lines.push(
+      `      ${track.padEnd(9)} base ${String(baseCounts[track] || 0).padStart(2)}` +
+        ` -> head ${String(headCounts[track] || 0).padStart(2)}  (queue budget ${budget})`
+    );
+  }
+  base.gateLines = lines;
+
+  for (const track of gated) {
+    const baseCount = baseCounts[track] || 0;
+    const headCount = headCounts[track] || 0;
+    const budget = baseBudgets[track] ?? headBudgets[track];
+    if (budget == null) continue;
+    if (headCount > baseCount && headCount > budget) {
+      gateFailures.push(
+        `filing gate: ${track} open count grew ${baseCount} -> ${headCount}` +
+          ` while over its queue budget (${budget})`
+      );
+    }
+    if ((headBudgets[track] ?? 0) > (baseBudgets[track] ?? 0) && headCount > baseCount) {
+      gateFailures.push(
+        `budget-raise rule: ${track}'s queue_budget was raised` +
+          ` ${baseBudgets[track] ?? "none"} -> ${headBudgets[track]}` +
+          ` and its open count grew ${baseCount} -> ${headCount} in the same diff`
+      );
+    }
+  }
+}
 
 if (problems.length > 0) {
   for (const problem of problems) console.log(`FAIL  ${problem}`);
@@ -201,12 +342,30 @@ if (problems.length > 0) {
 
 console.log(`ok    ${items.length} docket item(s) valid (${open.length} open)`);
 for (const track of TRACKS) {
-  const n = open.filter((i) => i.fields.track === track).length;
+  const n = counted.filter((i) => i.fields.track === track).length;
   if (n > 0) console.log(`      ${track}: ${n} open`);
+}
+if (blocked.length > 0) {
+  console.log("      blocked on maintainer (excluded from counts and the filing gate):");
+  for (const { file, fields } of blocked) {
+    console.log(`        ${file}  (${fields.track})`);
+  }
 }
 // Expiry is a prompt to prune, not a build failure: an item going stale is
 // normal, and failing CI over it would mean the queue could break the site.
 if (expired.length > 0) {
   console.log(`\nnote  ${expired.length} open item(s) past their expiry — prune or renew:`);
   for (const item of expired) console.log(`      ${item.file} (expired ${item.fields.expires})`);
+}
+
+if (base && base.gateLines.length > 0) {
+  console.log("gate  filing gate — base read from origin/main, head from this tree");
+  for (const line of base.gateLines) console.log(line);
+}
+
+if (gateFailures.length > 0) {
+  console.log();
+  for (const failure of gateFailures) console.log(`FAIL  ${failure}`);
+  console.log(`\n${gateFailures.length} filing-gate failure(s)`);
+  process.exit(1);
 }
