@@ -112,14 +112,28 @@ an empty track is legal. The entry contradicted itself, with the dead rule at
 the top where it is read first and rendered on the site, and the live rule five
 hundred lines down.
 
-**Six adversarial review passes did not catch it.** They were not careless —
-every one of them was pointed at the rule, the exploits, the invariant or the
-corrections, and every one of them found something real there. Not one was
-asked to check whether the entry's own summary matched the code it summarised,
-so not one did. It was found by an unprompted re-read after the sixth pass had
-already approved. The lesson is about the briefs rather than the reviewers: a
-reviewer checks what it is aimed at, and aiming six reviews at the mechanism
-left the sentence most readers will actually read unexamined the whole time.
+**Six adversarial review passes did not catch it, and the account of why has
+already been corrected once.** This paragraph first said the reviewers were not
+careless, that none had been asked to check the entry's summary against the
+code, and that the lesson therefore belonged to the briefs. The seventh review
+refused that. Its own brief for the fifth pass, it pointed out, had said *"audit
+whether every claim now made is true"* — and the opening paragraph is a claim in
+the entry. Pass five was asked, did not check, and should have caught this. That
+correction came from the reviewer, unprompted, against its own interest, and it
+is worth more than the finding it corrects.
+
+The briefs are not innocent either. That fifth brief followed its general
+instruction with an enumerated list of eight claims to check, and the reviewer
+checked the eight. **A list inside a general instruction works as a replacement
+for it, not as an example of it** — which is the practical lesson for every
+brief written here afterwards. Passes one to four were aimed squarely at the
+mechanism, and each found something real there.
+
+None of that moves where the defect came from. The orchestrator wrote a
+paragraph describing a rule three reviews had already killed, and wrote "This
+paragraph describes the corrected gate" underneath it. No reviewer created that
+sentence, and it survived six passes because it was never the thing being
+looked at — by anyone, including the model that wrote it.
 
 This is the second of two consecutive meta rounds, above the "cap meta at one
 round in five" guidance in `prompts/orchestrator.md`. That guidance exists to
