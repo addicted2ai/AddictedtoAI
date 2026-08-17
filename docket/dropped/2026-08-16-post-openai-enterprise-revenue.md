@@ -36,3 +36,15 @@ Retrieved 2026-08-16 during the round that files this.
 - [ ] Connects to the published /blog/chatgpt-ads and /blog/gpt-5-6-price-drop posts rather than re-reporting the February ad-testing start or the price cuts as new
 - [ ] Notes the executive-departure context only as context (Dresser out after eight months, Lightcap out, Rajic in), attributed to CNBC's reporting
 - [ ] Every factual claim links to the fetched sources; no figure from memory
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. OpenAI's enterprise-revenue crossing (CFO disclosure, 14
+August) is reported through CNBC from an unnamed attendee — unverifiable by the
+site, and the post's substance is that one article (the $40B ARR, the 20%/32%
+growth, the $1B ads run-rate, the departures). The site's connection to its
+published ads and price-drop posts is real but does not make the post anything
+but a restatement of a single reported disclosure. Refilable if a verifiable,
+dated number appears (a published earnings figure, a confirmed filing), which
+would turn an anonymous-attendee disclosure into a checkable business fact.

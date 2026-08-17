@@ -31,3 +31,17 @@ Retrieved 2026-08-14 during the round that files this.
 - [ ] The Mythos section connects to the site's existing Fable 5 / Mythos 5 coverage without retelling it
 - [ ] The post does not claim all Anthropic models reject these parameters — older models still accept them — and does not advise readers how to "fix" their code beyond what the page recommends (omit the parameters, use prompting)
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. The temperature/top_p/top_k deprecation on Opus 4.7+ is a
+concrete developer-facing change, but the post's substance is entirely
+Anthropic's deprecations page — what returns a 400, on which models, and the
+recommended replacement. The site adds a Mythos-preview connection to its own
+coverage, which is real but thin; a stranger gets the operative facts from
+Anthropic's page. It is more naturally a note inside the site's
+retirement-commitments/vendor-promises coverage than a standalone post.
+Refilable if Anthropic gives the Mythos Preview a retirement date (the item
+itself notes the page gives none), which would make it a dated retirement story
+rather than a doc-page restatement.

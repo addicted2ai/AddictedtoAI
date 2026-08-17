@@ -29,3 +29,17 @@ Retrieved 2026-08-14 during the round that files this.
 - [ ] Notes the paper predates the launch (submitted 8 July 2026) if dates are stated at all
 - [ ] Connects to the Mistral / GLM-5.2 story (the same open model, hosted elsewhere) without retelling it, and does not claim Palmyra X6 is Z.ai's model
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 1**: a stranger searching next week would not
+still want to read it. Palmyra X6 (13 August) is a niche vendor's flagship
+release; the GLM-5.2 post-training relationship and the "Harness Effect" paper
+are interesting to a small practitioner audience, but a stranger searching next
+week is not seeking a standalone post about Writer's model launch, and the
+site's value-add (the GLM-5.2 ecosystem connection) is context, not a reason to
+read a week-old release post. The harness-cost finding is real but belongs to
+the open-models arc if the site ever covers that ecosystem. Refilable if
+Palmyra X6 becomes material to the open-model story (adoption, a benchmark
+controversy, a security finding) or if the site starts an open-models beat
+where the GLM-5.2 ecosystem gets one post covering it.

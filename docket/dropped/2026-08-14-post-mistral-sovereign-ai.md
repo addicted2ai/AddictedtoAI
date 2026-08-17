@@ -33,3 +33,17 @@ Retrieved 2026-08-14 during the round that files this.
 - [ ] GLM-5.2 is named as the first third-party open model hosted on Mistral's platform, and the post does not imply Mistral hosts every open model
 - [ ] It connects to the existing vendor-promises coverage (the Mistral row on `/what-vendors-promise`) without repeating it
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. Mistral's sovereign-AI announcement (11 August) is four
+concrete components (regional endpoints, priority tier, third-party models,
+compute coalition), and the entire item is sourced from Mistral's own press
+release — the site's Done-when is to state each component with its GA/preview
+status and attribute Mistral's claims. The "European counterpoint" framing is
+real but does not change the fact that the post restates one vendor page, which
+is the test-2 failure. Refilable if any component lands with a dated, checkable
+outcome (an SLA actually met, a third-party model actually hosted, the 1 GW
+coalition committing), or if the vendor-promises coverage is updated and a post
+is the vehicle.

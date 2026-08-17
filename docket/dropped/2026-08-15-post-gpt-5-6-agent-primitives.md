@@ -36,3 +36,16 @@ Why this site: the "scores measure the harness, not just the model" point is exa
 ## Cross-refs
 
 The frontier-cyber post and the open Daybreak items cover OpenAI's cyber models; this item is about the API/harness side and should not retread them.
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. The GPT-5.6 builder's guide (13 August) re-states the
+ARC-AGI-3 harness finding (13.3% → 38.3%) and lists the new API primitives; the
+post's substance is OpenAI's own two posts with the numbers attributed as
+OpenAI's. The "scores measure the harness" lesson is a good one and the site is
+positioned to tell it, but the guide itself tells it — a stranger gets the same
+lesson, numbers and caveats from OpenAI's posts and the ARC-AGI-3 coverage.
+Refilable if the site wants the harness-dependence lesson as a permanent
+reference piece (not a news peg), which is an author decision about a different
+kind of post.

@@ -37,3 +37,15 @@ Retrieved 2026-08-14 during the round that files this.
 - [ ] Notes the Terms change takes effect 3 September 2026 and says what changes if it can be stated from the sources above
 - [ ] If the Directory's Suno entry is updated (description or verified date), it cites the same sources and is verified before shipping
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. Suno's move to legitimacy (Studio 2.0, BMG alliance,
+downloads-policy change, watermark commitment) is a cluster of Suno's own blog
+posts plus The Verge and Ars coverage; the post would assemble and attribute
+them, which is a restatement. The Directory update for Suno is the real
+increment, and it is a Directory edit, not a post. Refilable if the 3 September
+Terms change actually takes effect and materially changes the product (then a
+dated, actionable story exists), or if the BMG partnership produces a concrete
+cleared-legal outcome.

@@ -91,17 +91,17 @@ queue.
 
 ## Done when
 
-- [ ] At most 6 author items remain in `docket/open/`
-- [ ] Every removed item is in `docket/dropped/` with a `## Dropped` section
+- [x] At most 6 author items remain in `docket/open/`
+- [x] Every removed item is in `docket/dropped/` with a `## Dropped` section
       naming which of the two tests it failed and what would make it refilable
-- [ ] Any consolidation is a real new item citing every source its predecessors
+- [x] Any consolidation is a real new item citing every source its predecessors
       carried, and each predecessor's `## Dropped` section names it
-- [ ] `node scripts/check-docket.mjs` passes, which proves every `## Dropped`
+- [x] `node scripts/check-docket.mjs` passes, which proves every `## Dropped`
       section is present and every `blocked-by` still resolves
-- [ ] No item is dropped for being stale without a stated judgment — the entry
+- [x] No item is dropped for being stale without a stated judgment — the entry
       states how many were dropped for test 1, how many for test 2, and how
       many by consolidation
-- [ ] The changelog entry records that this is the first use of
+- [x] The changelog entry records that this is the first use of
       `docket/dropped/` in the project's history, and says plainly that the
       absence of any prior drop was itself the finding
-- [ ] Nothing outside `docket/` and `CHANGELOG.md` is touched
+- [x] Nothing outside `docket/` and `CHANGELOG.md` is touched

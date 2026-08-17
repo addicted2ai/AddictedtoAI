@@ -29,3 +29,17 @@ Retrieved 2026-08-14 during the round that files this.
 - [ ] Carries the supporting statistics as Google's own claims with the same attribution, or omits any it won't attribute
 - [ ] Connects to the Directory's Gemini entry (and the ChatGPT user-count coverage) without repeating either
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: this site can add nothing beyond restating
+the announcement. The Gemini-app-1-billion-MAU figure is a vendor metric claim
+(11 August) that the site cannot verify and the Directory already carries the
+headline number. A post would be "Google announced a big number, attributed to
+Google, here are the caveats" — a scrupulously careful restatement of Google's
+own claim, which is exactly the test-2 failure the spec names ("summarise the
+vendor's blog post"). It is current and checkable, but it fails the "worth a
+stranger's attention" bar on its own. Refilable if the figure becomes
+independently measurable or controversial (a rival, an analyst, a regulator
+disputing it), or if the Directory entry's verification is the vehicle rather
+than a post.

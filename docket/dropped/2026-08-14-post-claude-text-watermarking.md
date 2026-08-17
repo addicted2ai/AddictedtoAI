@@ -39,3 +39,17 @@ Retrieved 2026-08-14 during the round that files this.
 - [ ] Carries the limitations section: a detected mark is a signal, not conclusive; an absent mark does not prove the content wasn't AI-generated, with the page's examples
 - [ ] Attributes the EU AI Act Article 50(2) Code of Practice commitments to Anthropic's page and does not assert what the code itself requires beyond what the page states
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. Anthropic's text-watermark commitment (14 August) is a big
+provenance change and it is priority-1 current, but the post's substance — the
+EU-launch cut-off, the C2PA metadata, the surfaces, the limitations list — is
+exactly Anthropic's own support page and newsroom post. The site's increments
+(EU AI Act tie-in, vendor-promises connection) are context, not facts a
+stranger lacks. The item's own Done-when is a checklist of "state what the page
+says", which is the test-2 signature. Refilable if the watermark detection API
+Anthropic promises actually ships (then "here is the mechanism" becomes
+checkable and new), or if the EU Code of Practice obligations change the
+picture.

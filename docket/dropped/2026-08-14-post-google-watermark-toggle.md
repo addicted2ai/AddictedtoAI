@@ -33,3 +33,15 @@ Retrieved 2026-08-14 during the round that files this.
 - [ ] Attributes Google's Credentio scale claims ("nearly 40 conformant products", "tens of billions of assets") to Google's blog post, not to measurement
 - [ ] Connects to the Anthropic watermark item without retelling it: same week, opposite directions — one adds a persistent marker to text, the other makes visible markers optional while keeping invisible ones
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. Google making visible watermarks toggleable (14 August) is
+the counterpoint to Anthropic's watermark commitment, and that contrast is the
+only thing that would make it a post — but the Anthropic item is also dropped
+(test 2), so the counterpoint has no other half to stand against. On its own the
+item is a settings toggle announced on an X post plus an open-source library
+announcement; the site restates both. Refilable if the toggle's rollout
+completes and the provenance picture (Anthropic text marks + Google media
+toggle) is covered as one post, or if Credentio's adoption is measurable.

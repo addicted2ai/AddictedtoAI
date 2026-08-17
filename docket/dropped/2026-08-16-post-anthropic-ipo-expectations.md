@@ -35,3 +35,15 @@ Retrieved 2026-08-16 during the round that files this.
 - [ ] Carries the qualifiers that keep it checkable: executives had not fixed the valuation target even privately; Anthropic declined to comment; the company is in an SEC quiet period
 - [ ] Connects without repeating: the June export-controls episode and the Fable 5/Mythos 5 pull are context from this article (the Fable 5 story is already published on this site), and the price-war item in the queue covers the pricing side
 - [ ] Every factual claim links to the fetched article (or an additional source fetched during the publishing round); no figure from memory
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. The Anthropic $2T IPO expectation (FT, 13 August) is backers'
+expectations reported through one article — unverifiable by this site, and the
+post's substance is the FT piece (revenue ranges, multiples, quiet-period
+context). The site's connection to its price-war and export-controls coverage is
+real but does not make a forward-looking speculation post anything but a careful
+restatement of one article. Refilable when there is a dated, checkable event —
+an actual IPO filing with a valuation, or a public offering — which turns
+backer speculation into a verifiable business story.

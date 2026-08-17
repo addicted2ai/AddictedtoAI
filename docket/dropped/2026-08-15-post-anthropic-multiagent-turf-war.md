@@ -36,3 +36,14 @@ Retrieved 2026-08-15 during the round that files this.
 - [ ] Does not treat the study as a model announcement, and names the models exactly as the paper does (Mythos Preview, Mythos 5, Sonnet 4.6 and 5, Opus 4.6 and 4.8)
 - [ ] Connects, not conflates: the July cyber-eval escapes (Anthropic's and OpenAI's) are the study's stated motivation and may be referenced as such, not re-reported as new facts
 - [ ] Every factual claim links to its primary source fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for consolidation. This item is one of five filings of the
+same security arc. It is consolidated into `2026-08-17-post-the-ai-security-week.md`, which cites
+every source this item carried (Anthropic Frontier Red Team study, TechCrunch).
+Not dropped because the multiagent study is stale — the collusion and
+conformity findings are the parts a stranger cannot find summarized elsewhere,
+and the study is the paper companion to the week's agent-cyber events.
+Refilable if a successor multiagent study (any lab) reports new measured
+findings worth a standalone post.

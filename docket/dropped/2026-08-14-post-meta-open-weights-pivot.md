@@ -33,3 +33,16 @@ Retrieved 2026-08-14 during the round that files this.
 - [ ] Notes the Spark 1.2 weights promise is open to verification in a few weeks ("in the next few weeks" from 10 August) — if it is still unfilled when the post is reviewed for staleness, that is a story
 - [ ] Does not claim the essay changes any law or the EU AI Act position — the export-controls and open-weights policy debate is context, not outcome
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 1**: a stranger searching next week would not
+still want to read it. The 10 August Zuckerberg essay is a policy argument, and
+its news value is tied to the release week it framed (Muse Glimmer, which this
+round also drops). The only date-checkable part — the promise to open Muse
+Spark 1.2's weights "in the next few weeks" — is a promise to be checked later,
+not a post now. A stranger searching next week has met the essay via Meta's own
+about.fb.com page and the same-week coverage; the site adds nothing beyond
+restating an essay and a promise. Refilable when the Spark 1.2 weights promise
+either lands (then it is part of the open-models story, not a standalone essay
+post) or is broken (then it is a vendor-promise story worth tracking).

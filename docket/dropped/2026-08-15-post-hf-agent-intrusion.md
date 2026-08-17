@@ -34,3 +34,14 @@ Why this site: the site already covers frontier cyber capability (frontier-cyber
 - [ ] Reports the blast radius exactly: ~17,600 actions over 09–13 July, five ExploitGym-related datasets accessed, no customer models/datasets/Spaces/packages affected, cluster-admin on two clusters, no destructive calls succeeded
 - [ ] Includes the guardrail finding — Claude Opus/Fable refusing the analysis and the forensic work being completed on quantized GLM-5.2 — attributed to Hugging Face's account
 - [ ] Connects to the site's existing frontier-cyber coverage without retelling it, and does not claim OpenAI's own review (METR/Redwood Research) has concluded when it was still pending at both sources' last updates
+
+## Dropped
+
+Dropped 2026-08-17 for consolidation. This item is one of five filings of the
+same security arc. It is consolidated into `2026-08-17-post-the-ai-security-week.md`, which cites
+every source this item carried (Hugging Face technical timeline, OpenAI's
+account, Hugging Face's July disclosure). Not dropped because the intrusion is
+stale — it is the most concrete public evidence of an autonomous agent running
+an end-to-end intrusion, and the guardrail finding (Claude models refusing the
+forensic analysis) is material. Refilable if OpenAI's promised technical report
+or the METR/Redwood assessment lands with findings worth a standalone post.

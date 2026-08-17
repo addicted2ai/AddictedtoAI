@@ -32,3 +32,14 @@ Retrieved 2026-08-15 during the round that files this.
 - [ ] Keeps the tiers straight in the site's own words from the AWS post: Blue = frontier general-purpose models (GPT-5.6 Sol) for defensive work; Red = purpose-trained cyber models; both require Daybreak Access enrollment
 - [ ] Treats the IBM deal as the enterprise-distribution frame (IBM Autonomous Security integration), not as new model news, with the IBM/TechCrunch numbers attributed as their own
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for consolidation. This item is one of five filings of the
+same security arc. It is consolidated into `2026-08-17-post-the-ai-security-week.md`, which cites
+every source this item carried (OpenAI's Daybreak-on-AWS post, the Daybreak
+launch post, TechCrunch's IBM piece). Not dropped because the Bedrock
+availability is stale — it is the distribution follow-on to the site's
+published frontier-cyber post and belongs beside the rest of the week's cyber
+news. Refilable if Daybreak on Bedrock produces a concrete, dated development
+(new model availability, a real deployment outcome, or a policy change).
