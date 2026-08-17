@@ -112,26 +112,45 @@ supposed to meet.
 
 ## Done when
 
-- [ ] `scripts/check-docket.mjs` accepts `blocked-on: maintainer`, rejects any
+- [x] `scripts/check-docket.mjs` accepts `blocked-on: maintainer`, rejects any
       other value, excludes those items from budget counts, and reports them on
       their own line
-- [ ] `scripts/dispatch.mjs` excludes `blocked-on` items from `ready`
-- [ ] `blocked-on: maintainer` is set on
-      `2026-08-11-make-codeowners-actually-block-a-merge.md` and
-      `2026-08-13-add-review-artifact-to-required-checks.md`
-- [ ] The filing gate fails a branch that increases the open count of an
-      over-budget track, and passes one that decreases it
-- [ ] The budget-raise rule fails a branch that raises a `queue_budget` and adds
-      an item to that track in the same diff
-- [ ] `origin/main` being unresolvable produces a `WARN` and exit 0, not a
+- [x] `scripts/dispatch.mjs` excludes `blocked-on` items from `ready`
+- [x] `blocked-on: maintainer` is set on the two settings-UI items — named in
+      this item as `2026-08-11-make-codeowners-actually-block-a-merge.md` and
+      `2026-08-13-add-review-artifact-to-required-checks.md`; neither file
+      exists, and the items the description points at are
+      `2026-08-11-branch-protection-does-not-require-review.md` and
+      `2026-08-13-promote-review-artifact-to-required-check.md`, which carry
+      the field. The naming drift is recorded in round 152's changelog entry.
+- [x] The filing gate fails a branch that increases the open count of an
+      over-budget track, and passes one that decreases it — proved on
+      `scratch/add-author-item` (red) and `scratch/delete-author-item` (green),
+      outputs pasted in the entry
+- [x] The budget-raise rule fails a branch that raises a `queue_budget` and adds
+      an item to that track in the same diff — proved on
+      `scratch/raise-budget-and-file` (red, both rules fire), output pasted
+- [x] `origin/main` being unresolvable produces a `WARN` and exit 0, not a
       failure — proved by running the check in a clone made with
-      `git clone --single-branch --branch main` and `git remote remove origin`
-- [ ] **Prove each rule can fail.** Three scratch branches, each committed and
+      `git clone --single-branch --branch main` and `git remote remove origin`,
+      output pasted
+- [x] **Prove each rule can fail.** Three scratch branches, each committed and
       run against, with the output recorded in the entry:
       (a) add one author item → red;
       (b) delete one author item → green;
       (c) raise `meta.queue_budget` and add a meta item in one diff → red
-- [ ] **Negative control:** a branch that raises a budget and adds *no* item is
-      green, and a branch that adds an item to a track that is under budget is
-      green — so the gate is proved to be about capacity, not about touching
-      the docket at all
+- [x] **Negative control:** a branch that raises a budget and adds *no* item is
+      green (`scratch/raise-budget-only`), and a branch that adds an item to a
+      track that is under budget is green (`scratch/file-under-budget`) — so
+      the gate is proved to be about capacity, not about touching the docket
+      at all
+
+## Correction recorded
+
+The two settings-UI items this item names in `Done when` do not exist under
+those filenames. The items it describes — the two open meta items asking for
+GitHub settings-UI changes that no round can close — are
+`2026-08-11-branch-protection-does-not-require-review.md` and
+`2026-08-13-promote-review-artifact-to-required-check.md`, and those carry
+`blocked-on: maintainer` as of round 152. Round 152's changelog entry records
+the same discrepancy.
