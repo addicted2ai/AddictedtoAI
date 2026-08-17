@@ -69,6 +69,175 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-17
+Round 152 (meta) ships the docket filing gate, executing
+`docket/open/2026-08-16-docket-filing-gate.md`: `scripts/check-docket.mjs` now
+fails any branch that grows a track's open count while that track is over its
+`queue_budget`, and any branch that raises a budget and spends it in the same
+diff. The baseline — counts and budgets alike — is read from `origin/main`,
+never from the branch, so the round-78 walk-around (grant and spend in one
+commit) does not work on it. `blocked-on: maintainer` pulls the two items no
+round can ever close out of the counts and out of the dispatcher's `ready`;
+measured on this branch, `dispatch.mjs`'s ready count fell 54 → 51 of 59 open
+— the two items now blocked, plus this round's own item closing into
+`docket/done/`.
+
+This is the second of two consecutive meta rounds, above the "cap meta at one
+round in five" guidance in `prompts/orchestrator.md`. That guidance exists to
+stop meta selecting itself; here a maintainer course correction chose the
+work, so this round is not a passing-over of the cap.
+
+**One correction to the item, stated before the proofs.** Its `Done when`
+names `2026-08-11-make-codeowners-actually-block-a-merge.md` and
+`2026-08-13-add-review-artifact-to-required-checks.md`; neither file exists in
+`docket/open/`. The items the item describes — the two open meta items asking
+for GitHub settings-UI changes, which the item itself says no round can ever
+close — are `2026-08-11-branch-protection-does-not-require-review.md` and
+`2026-08-13-promote-review-artifact-to-required-check.md`, and those are what
+carry `blocked-on: maintainer` now. The intent was unambiguous, so the round
+applied the change to the real items and records the naming drift rather than
+stopping on it.
+
+**1. Gate docket filing on the receiving track's capacity**
+- Hypothesis: the demand-weighted dispatcher (round 151) makes the rotation
+  respond to a full queue, but nothing stops the queue filling — scout files
+  author items at roughly seven a day into a track that can spend 0.43 a day,
+  and `check-docket.mjs` validated item shape and never counted. A check that
+  fails only when a branch *grows* an over-budget track's open count, with the
+  baseline read from `origin/main`, should make the 31st author item
+  impossible without turning every branch red over the overage that already
+  exists. The budget-raise rule exists because a branch that could raise its
+  own budget would walk around the gate in one commit.
+- Change: `scripts/check-docket.mjs` accepts `blocked-on: maintainer` and
+  rejects any other value; excludes blocked items from the open counts and
+  prints them on their own line; reads `docket/open/` and `policy.yml` from
+  `origin/main` via `git ls-tree`/`git show`; fails when
+  `head > base AND head > base budget` (the filing gate) and when a budget was
+  raised on the branch and that track's count grew in the same diff (the
+  budget-raise rule — CHARTER.md rule 11 made mechanical); and prints a `WARN`
+  and exits 0, after still validating the docket, when `origin/main` cannot be
+  resolved. `scripts/dispatch.mjs` excludes `blocked-on` items from `ready`
+  (one condition added to the filter).
+
+**Measured 2026-08-17, each rule on a real branch committed and run against,
+base `origin/main` @ `7791639`** — open counts on base: author 30 (budget 6),
+meta 29 (budget 14), build 0 (budget 14).
+
+(a) PROOF-ADD-OVER-BUDGET — one author item added on
+`scratch/add-author-item` @ `f9105b2` → **red, exit 1**:
+
+    ok    108 docket item(s) valid (61 open)
+          author: 31 open
+          maintain: 1 open
+          meta: 29 open
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 31  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+
+    FAIL  filing gate: author open count grew 30 -> 31 while over its queue budget (6)
+
+    1 filing-gate failure(s)
+    exit=1
+
+(b) PROOF-REMOVE — one author item deleted on
+`scratch/delete-author-item` @ `13f0177` → **green, exit 0**:
+
+    ok    106 docket item(s) valid (59 open)
+          author: 29 open
+          maintain: 1 open
+          meta: 29 open
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 29  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+    exit=0
+
+(c) PROOF-RAISE-AND-SPEND — `meta.queue_budget` raised 14 → 15 and one meta
+item added in the same diff on `scratch/raise-budget-and-file` @ `756ecdd`
+→ **red, exit 1, both rules fire**:
+
+    ok    108 docket item(s) valid (61 open)
+          author: 30 open
+          maintain: 1 open
+          meta: 30 open
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 30  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 30  (queue budget 14)
+
+    FAIL  filing gate: meta open count grew 29 -> 30 while over its queue budget (14)
+    FAIL  budget-raise rule: meta's queue_budget was raised 14 -> 15 and its open count grew 29 -> 30 in the same diff
+
+    2 filing-gate failure(s)
+    exit=1
+
+(d) CONTROL-RAISE-ONLY — `meta.queue_budget` raised 14 → 15, no item added,
+on `scratch/raise-budget-only` @ `dc22e4d` → **green, exit 0** — a budget
+raise alone is legal; only raising *and spending* in one diff is not:
+
+    ok    107 docket item(s) valid (60 open)
+          author: 30 open
+          maintain: 1 open
+          meta: 29 open
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 30  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+    exit=0
+
+(e) CONTROL-UNDER-BUDGET — one build item added to a track holding zero
+against a budget of 14 on `scratch/file-under-budget` @ `8854588` → **green,
+exit 0** — the gate is about capacity, not about touching the docket at all:
+
+    ok    108 docket item(s) valid (61 open)
+          author: 30 open
+          build: 1 open
+          maintain: 1 open
+          meta: 29 open
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 30  (queue budget 6)
+          build     base  0 -> head  1  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+    exit=0
+
+SINGLE-BRANCH-CLONE — the guard, run where it matters: a clone made with
+`git clone --single-branch --branch main`, then `git remote remove origin`
+(the deployment shape that froze the site twice on 15 August — no remote ref
+to read), with this branch's `check-docket.mjs` copied in and `npm ci` run.
+The ref is unresolvable, so the gate must print `WARN`, skip, and still exit
+0. It does:
+
+    WARN  origin/main is not in this checkout — the filing gate cannot read its baseline and is skipped
+    ok    107 docket item(s) valid (60 open)
+          author: 30 open
+          maintain: 1 open
+          meta: 29 open
+    exit=0
+
+Also verified: `blocked-on: <anything else>` is rejected —
+`blocked-on: nobody` on a scratch item fails with "the only accepted value is
+'maintainer'" and exit 1, and the item was deleted again. `blocked-on:
+maintainer` accepts, excludes from counts and prints on its own line, as the
+outputs above show.
+
+- Origin: delegated
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator, the
+  track scope for `loop/meta/docket-filing-gate`, a production-shaped build
+  and the route checks against a server on port 3000, no group skipped. The
+  five proof runs and the single-branch-clone run above are each a committed
+  branch run against and pasted, not described.
+- Result: measured this round — the two settings-UI items left dispatch's
+  ready (54 → 51 of 59 open, the third being this round's item closing), left
+  meta's counted open items (29 → 26 on this branch, two blocked plus one
+  closed) while staying visible on their own line, and the filing gate is
+  green on this branch (author 30→30, build 0→0, meta 29→26) and red on each
+  proof that grew an over-budget track. Not yet measured: whether the queue
+  stops growing — that is the gate's first red in the wild, which nothing
+  shipped this round can produce, and it has not happened yet.
+
 ### 2026-08-16
 Round 151 (meta) ships the first committed implementation of the demand-weighted
 dispatcher, executing docket item `2026-08-16-demand-weighted-dispatch.md` — the
