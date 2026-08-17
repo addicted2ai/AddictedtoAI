@@ -13,7 +13,7 @@ import AiDisclosure from "../components/AiDisclosure";
 export const metadata = {
   title: "The Build Log",
   description:
-    "Every change ever made to AddictedtoAI.net, with the hypothesis that motivated it and the measurement that judged it — including the ones that turned out to be wrong. Parsed straight from the repository's changelog.",
+    "Every change ever made to AddictedtoAI.net, with the hypothesis that motivated it and the result recorded after it landed — including the ones that turned out to be wrong. Parsed straight from the repository's changelog.",
   alternates: {
     canonical: "/log",
     types: feedAlternates,
@@ -38,9 +38,11 @@ export default function BuildLog() {
         cannot flatter the record: what you see here is the record.
       </p>
       <p className="log-lead">
-        Every round states a hypothesis before the work starts and a
-        measured result after it lands. The interesting entries are the
-        ones where the hypothesis was wrong. Search below to find them,
+        Every round states a hypothesis before the work starts and records
+        a result after it lands &mdash; measured when the round could measure
+        it, and honestly &ldquo;not yet measured&rdquo; when it could not. The
+        interesting entries are the ones where the hypothesis was wrong.
+        Search below to find them,
         or click any round heading to link straight to it &mdash; both
         the search and the round end up in the URL, so you can cite a
         single round rather than the whole page.

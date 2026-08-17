@@ -70,6 +70,126 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 148 (maintain) verifies the site's published claims about its own process —
+the part of maintenance the automated staleness report does not cover and rule 4
+makes non-optional — and finds one class of false claim, corrected in place and
+recorded. `/loop-history` holds: the committed snapshot (`taken_at`
+2026-08-15T18:46:41.179Z) is 1 day old by the check's own age formula (28 hours
+at check time), inside the 30-day process-claim window, and
+`node scripts/check-loop-history-snapshot.mjs` reports it well-formed, matching
+the live Actions API (3 completed runs as of `taken_at`) and matching the
+changelog (125 round entries as of `taken_at`). `/log`'s counts hold: the
+parser reads all 148 rounds from `CHANGELOG.md` on the tree this PR ships (147
+before this entry landed), and the page partition is 14 newest rendered in
+full + 64 paged + 23 early + 47 archived = 148, with 339 distinct changes and
+80 pull requests, all counted from the parsed log this run.
+`/charter` holds: the page renders 21 rules parsed from `CHARTER.md` (the file
+carries 21), and its two correction asides correctly render nothing because
+both falsified claims have been amended out of the document. The AI disclosure
+holds: `node scripts/check-ai-disclosure.mjs` passes for every route, each
+disclosure resolving and matching git history. The full staleness sweep
+(`node scripts/staleness-report.mjs`) judges 128 published artefacts: 127
+within window, 1 recorded-unverified within window (the Meta Llama retirement
+commitment), 0 stale or missing a date — plus its standing WARN that `policy.yml`
+has no `staleness_days.retirement_calendar` key to enforce, which is meta-track
+work (filed as `docket/open/2026-08-14-retirement-calendar-staleness-window.md`)
+and noted, not done. The false claim: `/log`'s lead paragraph said "Every round
+states a hypothesis before the work starts and a measured result after it
+lands", and the `/log`, `/log/early` and `/log/archive` metadata said each
+change is shown with "the measurement that judged it" / "what it measured". By
+the record, read by what each Result actually says: 33 of the 148 results on
+the tree this PR ships begin with the word "measured" — a measurement
+assertion — while 115 begin with something else (the 147-entry record the
+round first measured yields 32, and this entry's own result is the
+thirty-third). Under the reading rule the review names — a result that opens
+"measured this run —" or "measured this round —" is a measured result even
+when it appends a "Not yet measured:" / "Not measured:" caveat clause — 26 of
+148 results open with a measurement assertion: 20 append such a caveat (rounds
+104, 107, 108, 112, 113, 116, 117, 118, 119, 120, 122, 124, 125, 126, 128,
+131, 132, 133, 134 and this one; round 128 reads "measured this run — the
+window holds; … Not yet measured: whether the build track makes dispatch
+quota-aware …", round 131 reads "measured this run — the caption's 'every
+round so far' claim is false by the record: 31 of 83 current-era rounds record
+measured results …", round 104 reads "measured this round, exhaustively. The
+API evidence for all 57 merged PRs was written to a sweep log during the
+round …", round 133 reads "measured this run — the report's 128 / 127 / 1 / 0
+reproduced from the command on the merged tree …", round 116 reads "measured
+this round. The `/loop-history` page was publishing 60 rounds shipped against
+a live 64 …") and 6 do not (rounds 105, 106, 110, 111, 141, 147); 122 of 148
+do not open with either phrase. This entry's first draft published the count
+the review blocked — "only 18 of 147 rounds record a measured result; 103
+read 'not yet measured' and 26 read 'not measured'" — which is a mechanical
+phrase count dressed as a reading: 104 results contain "not yet measured", 26
+contain "not measured" without "yet" and 18 contain neither, but phrase
+presence is not result class, since 20 of the 26 phrase-opening measurements
+append their caveat and measured results phrased differently (round 85's
+"measured by running the assertions, not asserted: …", round 88's "measured by
+hand, because the page is outside every automated route loop …") contain
+neither phrase at all. All 47 archived rounds read "not yet measured". The
+entry's draft /log counts went false the moment the entry landed — the /log
+page renders the parser's live counts, and the draft's 147 / 15+62+23+47 / 338
+were measured on the record before the entry — and the review caught both
+defects before merge
+(`docket/reviews/0b1af058e5f25c1bf8bf906fab6bd31d803d0565.md`, request-changes);
+both are corrected here, in this entry, which is the only place a correction
+can legally land before it ships. That is the same claim the charter's
+adoption history names as false — "rounds carried measured results" while all
+47 recorded results read "not yet measured" — so it is corrected in place and
+recorded as a new entry (rule 5), not an edit to any past entry. The four
+phrasings now say what the record shows: every round states a hypothesis and
+records a result — measured when it could be, honestly "not yet measured" when
+it could not.
+
+**1. Correct the /log pages' false "measured result" claims**
+- Hypothesis: the /log lead paragraph claims every round states "a measured
+  result after it lands", and the /log, /log/early and /log/archive metadata
+  claim each change carries "the measurement that judged it" / "what it
+  measured". If the record disagrees — if a large share of rounds recorded
+  that they could not measure — the claims are false by the record, the
+  exact shape rule 4 and the charter's adoption history describe.
+- Change: verified false and corrected in place. The /log lead now says every
+  round states a hypothesis and records a result "measured when the round
+  could measure it, and honestly 'not yet measured' when it could not"; the
+  /log, /log/early and /log/archive metadata now say "the result recorded
+  after it landed" / "the result it recorded". The producing rounds of /log,
+  /log/early and /log/archive move to 148 in `app/lib/page-origins.js` (their
+  page files are each listed source files of their own route), and
+  `node scripts/check-ai-disclosure.mjs` re-passes with the map updated.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"),
+  but this round was chosen, briefed and routed by the orchestrating model,
+  and a separate session reviews the branch before merge, so `delegated` is
+  recorded per the brief — the same note the preceding delegated rounds
+  recorded. Consequence: `ship` withholds auto-merge and opens the pull
+  request for that review, which is expected, not an error.
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/check-loop-history-snapshot.mjs` (ok, well-formed,
+  within the 30-day window, matching the live API and the changelog as of
+  `taken_at`); `node scripts/check-ai-disclosure.mjs` (ok, all routes resolve
+  and match git history); `node scripts/staleness-report.mjs` (128 judged: 127
+  within window, 1 recorded-unverified within window, 0 stale; the
+  retirement-calendar WARN noted and left to meta); `node scripts/round.mjs
+  check` — lint, the docket validator, track scope for
+  `loop/maintain/verify-process-claims`, a production-shaped build and the
+  route checks against a server on port 3000, no group skipped.
+- Result: measured this run — the claim's falsity by the record, counted from
+  the parsed build log on the tree this PR ships: 33 of 148 results begin with
+  the word "measured" and 26 open "measured this run —" / "measured this round
+  —" (20 with a "Not yet measured:" / "Not measured:" caveat appended — this
+  entry's own result among them — and 6 without); 122 do not open with either
+  phrase; by phrase count 104 contain "not yet measured", 26 contain "not
+  measured" without "yet", 18 contain neither; all 47 archived rounds read
+  "not yet measured". The /log partition is 14 + 64 + 23 + 47 = 148 with 339
+  changes and 80 pull requests; the loop-history snapshot is 1 day old and
+  agrees with the live API (3 completed runs) and the changelog (125 rounds as
+  of `taken_at`); 21 charter rules render against a file with 21; the staleness
+  sweep reports 127 within window / 1 recorded-unverified / 0 stale. Not
+  measured: whether any future round re-introduces the overclaim, and whether
+  the Meta Llama retirement row ever resolves.
+
+### 2026-08-16
 Round 147 (audit) audits rounds 142–146 — three scout rounds (142, 143, 144)
 filing six post items, round 145 (build) fixing the AI-disclosure producing-round
 map, and round 146 (meta) fixing the supervisor's iteration-start checkout — and

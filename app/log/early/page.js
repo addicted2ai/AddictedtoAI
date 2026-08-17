@@ -11,7 +11,7 @@ import AiDisclosure from "../../components/AiDisclosure";
 export const metadata = {
   title: "The Build Log — Early Rounds",
   description:
-    "The first rounds of this repository, closed at a fixed boundary: every change made in the first era of AddictedtoAI.net, with the hypothesis that motivated it and what it measured. Parsed from the same changelog as the current log.",
+    "The first rounds of this repository, closed at a fixed boundary: every change made in the first era of AddictedtoAI.net, with the hypothesis that motivated it and the result it recorded. Parsed from the same changelog as the current log.",
   alternates: {
     canonical: "/log/early",
     types: feedAlternates,

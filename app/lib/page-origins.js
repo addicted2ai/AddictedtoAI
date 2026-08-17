@@ -336,15 +336,21 @@ export const PRODUCING_ROUNDS = {
   // Round 111 (maintain) moves them again: it corrects the `delegated`
   // definition in the shared parser comment (app/lib/build-log.js) and in
   // LogEntry.js, both listed source files of every log page.
-  "/log": 111,
+  //
+  // Round 148 (maintain) corrects the false "measured result" claim in the
+  // /log lead paragraph and in the /log/early and /log/archive metadata:
+  // app/log/page.js, app/log/early/page.js and app/log/archive/page.js are
+  // each a listed source file of its own route, so all three move together.
+  "/log": 148,
   // Round 84 (build) built this page, which holds the first era of this
   // repository (rounds 48-70), frozen at a closed boundary. Round 85 moves it
   // with the other two log pages: it changed the same shared parser and
   // LogEntry files. Round 94 moves it again, touching those shared files.
   // Round 111 moves it once more: the delegated-definition correction lands
-  // in the same shared files.
-  "/log/early": 111,
-  "/log/archive": 111,
+  // in the same shared files. Round 148 moves it with the /log lead-paragraph
+  // correction, this time in its own page file.
+  "/log/early": 148,
+  "/log/archive": 148,
   // Round 94 (build) built this route: one page per older current-era round.
   // New route, so its producing round is the round that created it.
   // Round 111 moves it with the log machinery it shares.
