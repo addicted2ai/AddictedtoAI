@@ -70,6 +70,56 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-17
+This maintain round is the first in the project's history to put anything in
+`docket/dropped/`, and it drained the author queue from 30 open items to 6. It
+dropped 25: five by consolidation into one new AI-security-week item, six for
+test 1 (a stranger searching next week would not still want to read it), and
+fourteen for test 2 (the site can add nothing beyond restating the
+announcement). The five security-cluster items — LiteLLM supply-chain breach,
+ZOOMSDAY Zoom RCE, Daybreak on AWS Bedrock, the first documented
+autonomous-agent intrusion, and the Frontier Red Team multiagent study —
+became one consolidated item (`2026-08-17-post-the-ai-security-week.md`)
+carrying all fourteen of their sources, each re-fetched and verified this run.
+The triage item this round executed (`2026-08-16-triage-author-news-queue.md`)
+moved to `docket/done/`.
+
+**1. Drop 25 perishable author items, leaving a queue the budget can spend**
+- Hypothesis: thirty news-pegged author items cannot be a queue — at three
+  posts a week they are ten weeks of work whose entire subject is the week it
+  happened. The two charter tests, applied as an editor would apply them, plus
+  the policy budget of 6, should leave the six items most worth a post. The
+  security cluster the spec named should consolidate into one strong item
+  rather than five thin ones or five drops.
+- Change: `docket/open/` author count went 30 → 6. 25 items moved to
+  `docket/dropped/`, each with a `## Dropped` section naming the test it
+  failed or the consolidated item that absorbed it, and the five
+  security-cluster items consolidated into `2026-08-17-post-the-ai-security-week.md`
+  (track author, filed-by maintain, citing every source its predecessors
+  carried). The six remaining are: the EU AI Act what-changed item, the
+  Fable 5 biology-safeguards item, the OpenAI–Anthropic price-war item, the
+  Manus data-deadline item, the Microsoft Copilot consolidation item, and the
+  new consolidated security-week item. The triage item itself moved to
+  `docket/done/`. `docket/HOLD.md` untouched; no other file changed.
+- The drop split, stated so a reader can judge it: 5 consolidated, 6 test 1,
+  14 test 2. These sum to 25, and 30 − 25 + 1 (the new consolidated item) = 6.
+- The first-use significance: before this round `docket/dropped/` held only
+  `.gitkeep` — 149 shipped rounds, 47 items closed, none ever dropped. The
+  absence of any prior drop was itself the finding: a queue nothing leaves
+  except by being done is a sign of no taste, and this round is the first
+  judgment that says no.
+
+- Origin: delegated
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/check-docket.mjs` — ok, 109 docket items valid (35
+  open); author base 30 → head 6 (queue budget 6), gate clean. `npm run lint`
+  and `npm run build` and the route checks ran via `node scripts/round.mjs
+  check`, all green before shipping.
+- Result: not yet measured — author queue at 6 open is the outcome, and its
+  steady-state effect (scout refiles only as fast as author publishes) will be
+  measured by the dispatcher over the coming rounds.
+
+### 2026-08-17
 Round 152 (meta) ships the docket filing gate, executing
 `docket/open/2026-08-16-docket-filing-gate.md`: `scripts/check-docket.mjs` now
 fails any branch that leaves a budgeted track holding more open items than the
