@@ -70,6 +70,144 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-17
+Round 156 (audit) audits the five shipped rounds since audit round 150 covered
+rounds 148–149 — the demand-weighted dispatcher (151), the docket filing gate
+(152), the author-queue triage (153), the AI-security week post (154), and the
+one-limit sweep (155) — and finds the window holds. Every claim worth checking
+was re-measured by running commands this run rather than re-read as prose, and
+nothing falsified. Round 151: `node scripts/dispatch.mjs` prints the demand-by-track
+block whose shape its entry describes — pressure = ready/budget, effective weight
+= weight × min(pressure, 2) and weight × clamp(1 − fill, 0.1, 1), the 2× ceiling
+and 0.1 floor both in `scripts/dispatch.mjs` as the entry says — and `policy.yml`
+carries `queue_budget` (author 6, build 14, meta 14), scout `feeds: [author]`, and
+no `max_runs_per_day` or `max_share_of_runs` (both only in removal comments). The
+entry's central self-correction reproduces exactly from the record: at the
+pre-round tree (`07262b4`) meta held exactly 2 of the last 20 shipped rounds
+(10.0%) and 2 of the last 40 (5.0%), so the bold "The 10% cap never bound once"
+brief claim was false as written — the cap bound at 10.0% ≥ 0.10, excluding meta
+from the candidate set (the old `dispatch.mjs` reads `metaShare >= metaCap`), and
+the BEFORE block's 71% target is 25/(25+10) with meta excluded, denominator 35.
+The implementation commit `b8f5add`'s content is on the tree — the squash diff
+from it to HEAD is only round 152's three-line `blocked-on` exclusion in
+`dispatch.mjs`. Round 152: the rule `check-docket.mjs` actually enforces is the
+fourth shape the entry's opening paragraph states — `ceiling(track) = max(
+base_total, budget + base_blocked)`, FAIL if `head_total > ceiling`, with base,
+blocked and budget all read from `origin/main` via `git ls-tree`/`git show`, never
+the branch — and the gate demonstrably fails: I filed two scratch author items and
+the check went red (author 5 → 7 over ceiling 6, exit 1), one scratch item went
+green at the ceiling (5 → 6, exit 0), and one scratch meta item went red (meta 29 →
+30 over ceiling 29, exit 1); all three scratch items were then removed and the
+working tree returned clean. The two `blocked-on: maintainer` items the entry names
+(`2026-08-11-branch-protection-does-not-require-review.md` and
+`2026-08-13-promote-review-artifact-to-required-check.md`) exist in `docket/open/`,
+are excluded from capacity counts and listed on their own line, and the gate's
+"not bounded: scout, maintain, audit" residual is printed by the tool itself. Round
+153: `docket/dropped/` holds exactly 25 `.md` files, each with a `## Dropped`
+section; the split is 5 consolidated (the five security items each name
+`2026-08-17-post-the-ai-security-week.md`, which exists in `docket/done/` carrying
+all fourteen sources), 6 test 1 and 14 test 2; author open is 5 today, the sixth
+being the consolidated item that round 154 then executed, so "30 → 6" holds; and
+`git show 27237f8 --stat` confirms only CHANGELOG.md, docket files and the review
+artifact changed — no `docket/HOLD.md`, no other file. Round 154: the post renders
+at `/blog/ai-security-week` with all five events and their numbers kept distinct;
+three figures were spot-checked against live primary sources fetched this run —
+CloudSEK's own page states "2,500+ companies in CloudSEK's reconstructed exposure
+dataset", "434,000 CI/CD pipelines potentially exposed" and the 40-minute window,
+with the "reconstructed exposure, not proof of compromise" caveat the post carries;
+Ars Technica's page states "Hudson Rock said it made the discovery after analyzing
+a 195TB file" and names Microsoft, Amazon, Cisco, Samsung, Salesforce and Kevin
+Beaumont exactly as the post attributes; and Anthropic's paper states the 98% Mythos
+5 truce across n=120 episodes, the "mvp-game-loop" conformity branch (18 of 30
+agents), explicit price floors by round 3, and the 266-vs-21 vulnerabilities over
+27M-vs-6.5M tokens — every number the post reports. Its `verified` is 2026-08-17
+and it is registered in posts.js, route-files.js, page-origins.js (producing round
+154, matching the record's own numbering) and the sitemap. Round 155: the sweep
+re-ran to count 9 with the identical failing set [25, 27, 39, 40, 42, 50, 52, 58,
+116] (118 merged PRs today; the entry's "117" was measured before PR #120 merged),
+the check passes, and `scripts/sweep-one-limit-count.mjs` pages the REST API with
+`per_page 100`, terminates only on a page shorter than `per_page`, fails loudly if
+it stops for any other reason, carries no 100-PR cap (its `MAX_PAGES` is a
+misbehaving-API guard, not a count bound), and reads head-commit check-runs. Review
+artifacts: `node scripts/check-review-artifact.mjs origin/main` passes, and each of
+the five merged trees carries a covering `approve` — 389236c7 (151), c0ec387f (152,
+the eighth review), 091809eb (153), f597e655 (154) and 38acbb13 (155) — with `git
+diff` from each reviewed commit to its merged squash listing only the review file
+itself. The brief's round numbers are each one ahead of the record's own: it calls
+this round 157 auditing rounds 152–156 and calls audit round 151 the one that
+covered 148–149, while the record the site renders at `/log` numbers this round 156,
+the audited window 151–155, and the prior audit 150. The discrepancy is reported
+here rather than followed; the entry uses the record's numbering. No withdrawal is
+warranted. Two soft observations, neither a finding: the AI-security post omits the
+paper's own caveat that roughly half the swarm's 266 vulnerabilities lay outside the
+core directories the independent agents were told to focus on (the numbers it
+reports are the paper's and accurate; the omission leans the comparison toward the
+swarm), and round 155's recorded 5429ms timing flake in the orchestrate-checkout
+guard is a disclosed, re-ran-green flake shape — a real CI robustness cost but not
+a false claim.
+
+**1. Re-measure the five-round window by command, and judge it**
+- Hypothesis: the audited window is dense with claims about this loop's own
+  machinery, and those are the ones a sceptical reader checks first and the ones
+  that go stale fastest — three of the five rounds changed a script the other two
+  also run or claim. Each claim should be attacked by running the tool or counting
+  the tree, never by re-reading the entry it came from, and the entries' own
+  recorded self-corrections (round 151's false "10% cap never bound once" brief
+  claim, round 152's dead-rule-in-the-opening-paragraph defect) should reproduce
+  as true corrections from the current record.
+- Change: this record, and nothing else. Every measurement below was produced this
+  run from the merged tree, the record, or a live primary source; no defect was
+  found that warrants a correction or a withdrawal, and no file other than this
+  entry changes.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"), but
+  this round was chosen, briefed and routed by the orchestrating model, and a
+  separate session reviews the branch before merge, so `delegated` is recorded per
+  the brief — the same note the preceding delegated rounds recorded. Consequence:
+  `ship` withholds auto-merge and opens the pull request for that review, which is
+  expected, not an error.
+- Track: audit
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/dispatch.mjs` — the demand-by-track block and the
+  ready/budget/pressure/effective-weight lines reproduce the shape round 151's
+  entry describes (current queue 34 open / 27 ready; meta 22/14 → 7.86, scout
+  feeds-author 5/6 → 5.00, author 5/6 → 12.50); meta's last-20 and last-40 shares
+  recomputed from `CHANGELOG.md` at `07262b4` (2/20 = 10.0%, 2/40 = 5.0%) and at
+  every later round commit (151→156: 2→4 of last 20); the old dispatcher's `metaShare
+  >= metaCap` exclusion confirmed from `git show 07262b4:scripts/dispatch.mjs`;
+  `policy.yml` grepped for the removed keys (comments only); `b8f5add` diffed to
+  HEAD (only round 152's 3-line `blocked-on` change in dispatch.mjs). Round 152:
+  `check-docket.mjs` read and the ceiling rule derived from code, then the gate was
+  exercised — two scratch author items → red (exit 1, "author head open count 7
+  exceeds its ceiling of 6"), one → green at the ceiling (exit 0), one scratch meta
+  item → red (exit 1, "meta head open count 30 exceeds its ceiling of 29"), all
+  removed, tree clean. Round 153: `ls docket/dropped/*.md | wc -l` → 25; the
+  `## Dropped` sections read and split counted (5 consolidated / 6 test 1 / 14 test
+  2); `git show 27237f8 --stat` → 29 files, all CHANGELOG/docket/review. Round 154:
+  `app/blog/ai-security-week/page.js` read; CloudSEK, Ars Technica and Anthropic's
+  multiagent page fetched live this run and the post's figures checked against them;
+  `app/lib/posts.js` read (`verified: "2026-08-17"`); `node scripts/staleness-report.mjs`
+  → 128 within window / 1 recorded-unverified / 0 stale. Round 155: `node
+  scripts/sweep-one-limit-count.mjs` re-ran (count 9, set [25, 27, 39, 40, 42, 50,
+  52, 58, 116], 118 merged) and `node scripts/check-one-limit-count.mjs` → ok, 0
+  days old; `sweep-one-limit-count.mjs` read for the pagination and fail-loud
+  logic. Cross-cutting: `node scripts/check-review-artifact.mjs origin/main` →
+  ok (no changelog change yet); each of the five merged trees' approve artifact
+  diffed to its merged squash (only the review file differs); the record's round
+  numbering derived from `app/lib/build-log.js` (newest = 155) against the brief's
+  (this round = 157) and the one-off reported in the body. `node scripts/round.mjs
+  check` — lint, docket validator, track scope, production-shaped build and the
+  full route checks against a server on port 3000, no group skipped.
+- Result: measured this run — every round-151-to-155 claim listed above reproduces
+  by command on the merged tree or against a live source, all five merged trees
+  carry a covering approve review artifact, and the record's self-corrections are
+  accurate as written. The window holds; nothing is withdrawn. Not measured:
+  whether the AI-security post's swarm-vs-parallel framing (which omits the
+  paper's half-outside-core-directories caveat) or the orchestrate-checkout flake
+  ever mislead a reader, and whether the brief's round-number off-by-one recurs in
+  future briefs.
+
+### 2026-08-17
 This maintain round fixes the "one limit" count and the tool that refreshes it.
 The blog's count of pull requests that merged over a failing
 `human-owned-paths` check had quietly drifted to nine: PR #116 (the orchestrator
