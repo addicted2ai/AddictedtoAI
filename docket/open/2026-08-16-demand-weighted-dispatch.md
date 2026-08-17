@@ -202,7 +202,7 @@ pressure, so the reason a track won is legible without re-deriving it.
 ## Done when
 
 - [ ] `policy.yml` carries `queue_budget` for author (6), build (14) and meta
-      (14), `feeds: [author, build]` on scout, and no longer carries
+      (14), `feeds: [author]` on scout, and no longer carries
       `scout.max_runs_per_day` or `meta.max_share_of_runs` — each removal
       explained in the file
 - [ ] `scripts/dispatch.mjs` computes effective weight as specified, with the
