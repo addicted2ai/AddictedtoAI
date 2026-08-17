@@ -63,7 +63,13 @@ export const posts = [
     datePublished: "2026-08-10",
     dateModified: "2026-08-10",
     // Sources fetched the day this post was written (its Sources section).
-    verified: "2026-08-10",
+    // Round 149 (maintain) re-fetched all four primary sources plus the
+    // Hugging Face disclosure on 2026-08-16 and re-checked every claim:
+    // the 21 July OpenAI disclosure (incl. the 28 July pre-release-model
+    // clarification), Google's Gemini 3.5 Flash Cyber launch, the 10 August
+    // Daybreak/GPT-5.6-Cyber launch, and the 7 August Astra Preparedness
+    // post. All claims still hold; only the verified date changes.
+    verified: "2026-08-16",
   },
   {
     path: "/blog/claude-code-auto-mode",
@@ -78,7 +84,14 @@ export const posts = [
     datePublished: "2026-08-11",
     dateModified: "2026-08-11",
     // Sources fetched the day this post was written.
-    verified: "2026-08-11",
+    // Round 149 (maintain) re-fetched both Anthropic announcements on
+    // 2026-08-16 and re-checked the post's figures: the 97%/39%/3% approval
+    // data, the telemetry (49.5%/5%/43%/62%/25%), the 1,053-tester study
+    // (13.6%, 89%, 800-vs-6), the severity analysis (6.3% vs 2.4%), the
+    // Apollo engagement (12% → 7%), the Trajectory evaluation (0/720,
+    // 5.83%, 19.03%, Codex v0.144.5), the 9x claim, and the Nuro/Gusto/
+    // Garner case studies. All still hold; only the verified date changes.
+    verified: "2026-08-16",
   },
   {
     path: "/blog/cyber-eval-cascade",
@@ -114,7 +127,15 @@ export const posts = [
     datePublished: "2026-08-11",
     dateModified: "2026-08-11",
     // Sources fetched the day this post was written.
-    verified: "2026-08-11",
+    // Round 149 (maintain) re-fetched the three OpenAI announcements on
+    // 2026-08-16 and re-checked the post's figures: the 80%/20% cuts, the
+    // $0.20/$1.20 and $2/$12 prices, the launch prices ($5/$30, $2.50/$15,
+    // $1/$6), the 6-August free-default/unlimited-chats/Think-button
+    // rollout, and the benchmark claims. The live OpenAI pricing page
+    // (fetched same day) still shows gpt-5.6-sol $5/$30, gpt-5.6-terra
+    // $2/$12, gpt-5.6-luna $0.20/$1.20. All still hold; only the verified
+    // date changes.
+    verified: "2026-08-16",
   },
   {
     path: "/blog/fable-5-export-controls",
