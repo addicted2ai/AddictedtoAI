@@ -216,42 +216,56 @@ const expired = counted.filter(
 //
 // Nothing here is about the shape of an item: it is about the capacity of the
 // track receiving it. A track's budget is `queue_budget` in policy.yml — the
-// stock it can actually spend. The gate forbids *growth* on top of it, and the
-// two questions are measured separately on purpose:
+// stock it can actually spend. The gate asks where this pull request *leaves*
+// the track, not where the track started:
 //
-//     FAIL if head_total > base_total AND base_counted >= budget
+//     ceiling(track) = max( base_total(track), budget(track) + base_blocked(track) )
+//     FAIL if head_total(track) > ceiling(track)
 //
-// Growth is the total open count for the track, including items carrying
-// `blocked-on` — filing anything into an over-budget track fails, whatever
-// frontmatter it carries. Capacity (whether the track is over budget at all)
-// is the base's counted total, excluding `blocked-on` items — that is the
-// field's whole purpose: two items no round can ever close should not consume
-// budget the loop cannot free. Review found the first shipped shape walkable
-// because it measured growth on the counted total too: a new item carrying
-// `blocked-on` changed no count, so the hatch was open to anything. The second
-// review found the first fix walkable for the same reason the round-78 gate
-// was: it took `head_counted` from the branch's own tree, and a branch can set
-// that number itself by applying `blocked-on` to items that plainly do not
-// need a maintainer. The invariant is general — every number the gate tests
-// against is read from origin/main; the head supplies exactly one fact, what
-// it is trying to add — so capacity is the base's counted total
-// (`baseCounted`), which the branch cannot touch. `>=` not `>`, so a track
-// sitting exactly at budget cannot be pushed to budget+1; a pull request that
-// closes one and files one leaves head_total flat and still passes, which is
-// the correct behaviour.
+// This is the fourth revision of this check, and the three earlier shapes all
+// asked a question about the past — "was this track already over budget?" —
+// and all three could be overshot by one diff:
 //
-// The overage that already exists on main is tolerated (author holds ~30
-// against a budget of 6); only the next item is impossible.
+//   1. `head_total > base_total AND head_counted > budget` — measured growth
+//      on the counted total, so anything filed with `blocked-on` was
+//      invisible to the gate, and `head_counted` was a number the branch sets
+//      itself by applying the field to existing items.
+//   2. `head_total > base_total AND base_counted >= budget` — measured
+//      capacity on the base's counted total, which closed both blocked-on
+//      escapes, but still never compared the head count to the budget: a
+//      track at 0 against a budget of 14 could take 30 items in one diff
+//      (the build-flood), and relabelling existing items' `track:` field
+//      moved them into tracks with room without growing anything (the
+//      track-move). Both were possible in every one of the three shapes.
+//
+// The question that matters is the outcome, and every input except the head
+// total is read from origin/main, so the branch cannot move the numbers the
+// gate tests against:
+//
+// - `head_total` — every open item for the track on this branch, including
+//   those carrying `blocked-on`. It is the only head-derived number, and it
+//   can only ever push toward failing; there is no longer a head-derived
+//   number that can push toward passing.
+// - `base_total`, `base_blocked`, `budget` — read from origin/main:
+//   `base_total` is every open item on the base; `base_blocked` is the base's
+//   `blocked-on` items; `budget` is the base's `queue_budget`.
+// - `max(...)` is what tolerates the historical overage: a track sitting at
+//   30 against a budget of 6 may not grow past 30, but is not required to
+//   shrink.
+// - `budget + base_blocked` is what preserves the point of `blocked-on`:
+//   items no round can ever close do not eat the actionable allowance.
+//   Because `base_blocked` comes from the base, marking items blocked in the
+//   diff being judged buys nothing — the branch cannot move it.
 //
 // The base is read from origin/main, never from the working copy, and the
 // budgets are read from policy.yml on origin/main as well as from the branch.
 // A gate that read only the branch's own tree could be walked around in one
 // commit — raise the budget, file against the new number, every check green.
 // That is the round-78 hole check-track-scope.mjs records in its own header,
-// and it is closed here twice: the filing gate judges head against the base
-// budget, and the budget-raise rule below fails any branch that raises a
-// budget AND grows that track's count in the same diff — CHARTER.md rule 11
-// made mechanical for this gate.
+// and it is closed here twice: the filing gate's budget is the base's, and the
+// budget-raise rule below fails any branch that raises a budget AND grows that
+// track's count in the same diff — CHARTER.md rule 11 made mechanical for this
+// gate.
 //
 // Where origin/main cannot be resolved the gate is skipped with a WARN and the
 // check still exits 0 for it — a single-branch clone has no remote ref, and a
@@ -322,8 +336,8 @@ const headTotals = countRef(open);
 const headBudgets = budgetsFrom(headPolicy);
 
 if (base) {
-  const baseCounted = countRef(base.baseItems.filter((i) => !i.fields["blocked-on"]));
   const baseTotals = countRef(base.baseItems);
+  const baseBlocked = countRef(base.baseItems.filter((i) => i.fields["blocked-on"]));
   const baseBudgets = budgetsFrom(base.policy);
   const gated = new Set([...Object.keys(baseBudgets), ...Object.keys(headBudgets)]);
 
@@ -341,12 +355,14 @@ if (base) {
   for (const track of gated) {
     const baseTotal = baseTotals[track] || 0;
     const headTotal = headTotals[track] || 0;
-    const budget = baseBudgets[track] ?? headBudgets[track];
+    const budget = baseBudgets[track];
     if (budget == null) continue;
-    if (headTotal > baseTotal && (baseCounted[track] || 0) >= budget) {
+    const blockedOnBase = baseBlocked[track] || 0;
+    const ceiling = Math.max(baseTotal, budget + blockedOnBase);
+    if (headTotal > ceiling) {
       gateFailures.push(
-        `filing gate: ${track} open count grew ${baseTotal} -> ${headTotal}` +
-          ` while over its queue budget (${budget})`
+        `filing gate: ${track} head open count ${headTotal} exceeds its ceiling of ${ceiling}` +
+          ` (base ${baseTotal}; queue budget ${budget} + ${blockedOnBase} blocked on base)`
       );
     }
     if ((headBudgets[track] ?? 0) > (baseBudgets[track] ?? 0) && headTotal > baseTotal) {
@@ -371,7 +387,7 @@ for (const track of TRACKS) {
   if (n > 0) console.log(`      ${track}: ${n} open`);
 }
 if (blocked.length > 0) {
-  console.log("      blocked on maintainer (excluded from capacity counts; still counted for growth):");
+  console.log("      blocked on maintainer (excluded from capacity counts; still counted in the head total the gate judges):");
   for (const { file, fields } of blocked) {
     console.log(`        ${file}  (${fields.track})`);
   }
