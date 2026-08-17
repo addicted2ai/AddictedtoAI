@@ -87,8 +87,11 @@ not"), /log's metadata ("the result recorded after it landed"), and /log/early a
 `/log/rounds/<id>` — one page per paged-era round — still carried the identical false
 claim in its metadata ("the measurement that judged it"), which round 148's own entry
 names as the wording it corrected on the other three pages. Of the 64 paged-era rounds it
-renders, 24 record "not yet measured" results, so the claim was false for at least those
-pages and is the exact overclaim class the charter names. Corrected here (rule 5: a new
+renders, 23 open their Result with "not yet measured", and that metadata ("the measurement
+that judged it") was therefore false for at least 41 of them — every paged round whose
+Result does not open with a measurement assertion. Both counts reproduce by the command in
+the Guardrails below; no reading of the record produces the 24 this entry first asserted.
+Corrected here (rule 5: a new
 entry naming what it corrects, not an edit to round 148's) — the per-round metadata now
 says "the result it recorded", matching the early and archive pages — and
 `/log/rounds/[id]`'s producing round moves to 150. Round 149's claims re-measured: the
@@ -130,13 +133,24 @@ models in more trusted hands") not among them, a gap the round's own reviewer no
 did not find falsifying (every post claim traces to the four re-fetched sources plus the
 Hugging Face disclosure).
 
+The review of PR #111 (`docket/reviews/c316ef83430d7813cba1c31133475f3cd38d11af.md`)
+returned request-changes on this entry's "24 of 64 paged rounds" claim, and the finding is
+correct: re-running `app/lib/build-log.js` against the same 148-round record, it found 23
+of the 64 paged rounds open their Result with "not yet measured" — 29 under the looser
+"not measured" reading, 37 by phrase presence, 41 by absence of a measurement assertion —
+and no reading produces 24. The number was written from what the change was meant to show,
+not measured from what it shows, which is exactly the defect class this project rejects.
+This correction states the counts the record supports, names the framing each answers, and
+gives the command that reproduces them (Guardrails below), recording the failure the
+review caught rather than burying it.
+
 **1. Correct the per-round log pages' residual "measured result" overclaim, missed by round 148**
 - Hypothesis: round 148's entry names the false wording — each /log change is shown with
   "the measurement that judged it" — and says it corrected the /log lead and the /log,
   /log/early and /log/archive metadata. The per-round pages at /log/rounds/<id> exist for
   every paged-era round and share the same metadata style; if round 148 missed one of the
   four locations carrying the phrase, a reader landing on a per-round page for a round
-  whose Result reads "not yet measured" (24 of 64 paged rounds) would still be told the
+  whose Result opens "not yet measured" (23 of 64 paged rounds) would still be told the
   round is shown "with the measurement that judged it".
 - Change: verified by grep — `app/log/rounds/[id]/page.js` was the only file left in
   `app/` carrying "the measurement that judged it" (its metadata was untouched since round
@@ -158,7 +172,10 @@ Hugging Face disclosure).
   `loop/audit/round-148-149-window`, production-shaped build, and route checks against a
   server on port 3000, no group skipped; plus, this run: the 33/26/20/6/122/104/26/18/47
   counts and the 14+64+23+47=148 partition with 339 changes and 80 PRs re-derived from
-  `app/lib/build-log.js` on the 148-round record; the four renewed dates and the
+  `app/lib/build-log.js` on the 148-round record — including the paged-round result counts
+  this round's review forced, re-derived by:
+  `tmp=$(mktemp -d) && git archive a2a3a7e CHANGELOG.md lighthouserc.json app/lib/build-log.js | tar -x -C "$tmp" && cd "$tmp" && node --input-type=module -e 'import { getPagedLog } from "./app/lib/build-log.js"; const p = getPagedLog(); const o = (e, s) => e.result.trim().toLowerCase().startsWith(s); console.log(p.filter(e => o(e, "not yet measured")).length + " of " + p.length + " paged rounds open their Result with \"not yet measured\""); console.log(p.filter(e => !o(e, "measured this run") && !o(e, "measured this round")).length + " of " + p.length + " paged rounds do not open with a measurement assertion");'`
+  → prints "23 of 64" and "41 of 64" for the two counts; the four renewed dates and the
   no-text-changed claim re-derived from `git diff a2a3a7e c492961`; the OpenAI pricing
   page, the Daybreak announcement and the Anthropic auto-mode post fetched live this run;
   `node scripts/check-ai-disclosure.mjs`, `node scripts/staleness-report.mjs`, `node
@@ -169,8 +186,10 @@ Hugging Face disclosure).
   merged tree (the counts above; the four dates; the empty non-comment diff; the three
   live-source spot-checks; both approving review artifacts covering exactly the merged
   trees). One defect found and corrected: the residual "the measurement that judged it"
-  metadata on the 64 per-round pages, false for at least the 24 paged rounds recording
-  "not yet measured". Not measured: whether the phrase-count looseness in round 148's
+  metadata on the 64 per-round pages, false for at least the 23 paged rounds whose Result
+  opens "not yet measured" (in fact all 41 that do not open with a measurement assertion —
+  both by the command in the Guardrails). Not measured: whether the phrase-count looseness
+  in round 148's
   reading rule or the fifth-source gap in round 149's fetch list ever mislead a reader,
   and whether the retirement-calendar WARN or the Meta Llama row resolve.
 
