@@ -5,7 +5,7 @@ title: A lost session id silently disables the abort, and the supervisor logs it
 created: 2026-08-14
 expires: 2026-11-14
 serves: more-checkable
-priority: 1
+priority: 2
 ---
 
 ## Why now
@@ -97,3 +97,25 @@ occurrence will be just as unexplainable as this one.
       shown reaching `HARD_TIMEOUT` and leaving a live session behind. The
       claim in this item is derived from the code's own comment and has not
       been observed end to end
+
+## 2026-08-17 — rewritten around, not fixed; one occurrence in the whole log
+
+The function this item names has been rewritten since. `api_session_id()` in
+`scripts/orchestrate-liveness.sh` now floors candidates at the iteration's own
+launch time and **fails closed on ambiguity**: more than one match prints no id
+and writes `ambiguous session title ... -- aborting nothing` to the supervisor
+log. A second function, `api_attributed_newest()`, answers the different
+question of whether any session this supervisor can attribute to itself is still
+advancing, and the checkout wait is built on that.
+
+The defect this item is about survives the rewrite. The final
+`catch (e) { /* not JSON, or no matching session: no signal */ }` still collapses
+a curl timeout, an unparseable body and a genuine absence into the same empty
+answer, so the first box is unticked and correct.
+
+What has changed is how much it matters. `session not found` appears exactly
+once in `~/.addictedtoai-loop-logs/supervisor.log` — the 2026-08-14 incident
+this item records. Every iteration since has resolved its session in 5 to 11
+seconds, 63 of them in the four days to 2026-08-17. A silent failure mode that
+has fired once in 63 attempts, behind a hard timeout that stops the iteration
+anyway, is a 2 rather than a 1.

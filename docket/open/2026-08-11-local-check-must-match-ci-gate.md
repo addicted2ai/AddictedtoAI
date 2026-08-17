@@ -102,7 +102,7 @@ loosen the guardrail while appearing to obey it.
       alternative. A check that is wired up but silently skipped is worse than a
       missing one, because `round.mjs check` treats SKIPPED as failure precisely
       to stop that
-- [ ] `node scripts/round.mjs check` also asserts the page-weight budget for
+- [x] `node scripts/round.mjs check` also asserts the page-weight budget for
       every URL the workflow measures, reading the threshold from
       `lighthouserc.json` rather than restating it, and reporting the measured
       bytes rather than only pass or fail — a round that can see `/log` at
@@ -117,3 +117,24 @@ loosen the guardrail while appearing to obey it.
       this failure, and claiming more than was built is the failure mode
 - [ ] The rule is written where a round will read it: whatever CI blocks a merge
       on, the local check runs first
+
+## 2026-08-17 — the page-weight half is built, and built better than asked
+
+`scripts/check-routes.sh` reads the budget out of `lighthouserc.json` at line
+182, fails loudly if that assertion is missing rather than falling back to a
+number, and walks fourteen routes — a superset of the seven CI measures —
+printing each page's gzipped size and its headroom. It also subtracts a MARGIN
+so the local ceiling is deliberately *tighter* than CI's, which this item did
+not ask for and which is the right shape: the local gate goes red before the one
+that blocks the merge does.
+
+The note this item left for whoever executed it — that the threshold must be
+read, never restated, because a blocked round could otherwise loosen its own
+copy — was followed.
+
+The link half is not built. `round.mjs check` still runs
+`scripts/check-tool-links.mjs`, which resolves Directory hrefs with Node's
+`fetch`; CI still runs lychee over seven URLs with its own exclude list. Two
+different tools, different network behaviour, different subject lists — which is
+the disagreement that made PR #15 unmergeable in the first place. Those boxes
+stand as written.

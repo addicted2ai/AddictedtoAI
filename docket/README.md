@@ -40,12 +40,21 @@ a status field.
 ## Reviews
 
 A round that declares `Origin: delegated` claims an AI reviewed it before
-merge. That claim is enforced, not asserted — but at the arming step, not by
-CI. The `review-artifact` job in `.github/workflows/pr-checks.yml` is a
-*visible* check, not a required one: it is not on the branch-protection
-required list, so GitHub's auto-merge would ignore it. The gate is
-`scripts/round.mjs ship`, which runs the same checker (`scripts/check-review-artifact.mjs`)
-before it will arm auto-merge for a delegated round. A delegated round arms
+merge. That claim is enforced, not asserted, and since 2026-08-17 it is
+enforced twice. The `review-artifact` job in `.github/workflows/pr-checks.yml` is on the
+branch-protection required list: the required contexts on `main` are
+`["build-and-audit","human-owned-paths","review-artifact"]`, read from the API
+on 2026-08-17. GitHub's auto-merge waits on it, so a delegated pull request
+without a covering approval cannot land on green. `scripts/round.mjs ship` runs
+the same checker (`scripts/check-review-artifact.mjs`) before it will arm
+auto-merge at all, which stops the sanctioned shipping path one step earlier.
+
+Two things the required check does not do. `enforce_admins` is false, so the
+account the loop operates as can still merge past it
+(`docket/open/2026-08-11-branch-protection-does-not-require-review.md`). And it
+reads the Origin it applies to out of the branch it is judging, so a round
+declaring anything other than `delegated` exempts itself from it
+(`docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md`). A delegated round arms
 only with a review file at `docket/reviews/<full-40-char-sha>.md`, where the
 SHA is the commit the reviewer actually read.
 

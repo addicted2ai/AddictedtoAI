@@ -5,7 +5,7 @@ title: Make the dispatcher (or the author round) prefer date-sensitive queued it
 created: 2026-08-16
 expires: 2026-11-14
 serves: more-current
-priority: 2
+priority: 1
 ---
 
 ## Why now
@@ -47,3 +47,24 @@ anywhere in the selection path — of the kind the audit track exists to notice.
 - [ ] A mechanism (dispatcher hint, prompt instruction, or re-priority) ensures a user-actionable deadline item — Manus's 23 August backup window being the standing example — is picked ahead of items whose value does not decay on a date
 - [ ] The change is proven: run the dispatcher against the current queue and show the deadline item surfaces, and show the mechanism would have failed before the change (feed it the Manus item and confirm it was previously invisible to the pick)
 - [ ] No human-owned path touched; meta scope only
+
+## 2026-08-17 — the queue it measured has drained, the blind spot has not, and its example has six days left
+
+The queue this item measured is gone. The 2026-08-17 triage took `docket/open/`
+from 57 items to 34 and author's share from 30 to 5, against a `queue_budget` of
+6, so the "roughly ten weeks of author work queued ahead of it" arithmetic no
+longer holds.
+
+The mechanism is untouched. `scripts/dispatch.mjs` contains no occurrence of
+`priority` or `expires` — grep both against the file today — so the selection
+path still cannot see urgency, and an author round still has to read the dates
+itself.
+
+The item's own worked example is now the reason to raise it.
+`2026-08-16-post-manus-splits-from-meta.md` is still open and the deadline it
+exists to tell readers about — the backup window closing at 7:59 a.m. SGT on
+23 August 2026 — is six days away. Publishing room exists: three posts a week,
+one a day, five author items open. Nothing in the queue or the dispatcher will
+spend that room on this item rather than another. Its priority has been raised
+from 3 to 1 as the only urgency signal a picking round can currently read, which
+is precisely the workaround this item exists to replace.

@@ -74,16 +74,38 @@ track produces, not from a share it is owed. Cited rather than duplicated.
 
 ## Done when
 
-- [ ] The dispatcher's scout selection is driven by the depth of open,
+- [x] The dispatcher's scout selection is driven by the depth of open,
       unexpired, externally-sourced docket items (or an equivalent derived
       signal), not by scout's share of recent rounds — or the record says
       explicitly why share is the right axis and depth is wrong
-- [ ] The change is proven against a concrete case: the same queue must
+- [x] The change is proven against a concrete case: the same queue must
       dispatch differently (or the record must show why it need not) when
       external stock is healthy versus when it is nearly empty
-- [ ] The scout quota entry in `policy.yml` either stays in force as a
+- [x] The scout quota entry in `policy.yml` either stays in force as a
       ceiling (never a trigger) or is reworded so a future round does not
       re-derive "run scout" from it
-- [ ] Cross-referenced from `2026-08-11-scout-cannot-run-on-this-harness.md`
+- [x] Cross-referenced from `2026-08-11-scout-cannot-run-on-this-harness.md`
       so the two items are read together: that one is about *whether* scout can
       run here, this one is about *when* the dispatcher should pick it
+
+## 2026-08-17 — closed: round 151 replaced share with demand
+
+Round 151 (meta, 2026-08-16) shipped the change this item argued for.
+`policy.yml` gives scout `feeds: [author]`, and `scripts/dispatch.mjs` reads the
+fill of the fed queue — ready stock over `queue_budget` — and weights scout with
+the opposite sign to the tracks it supplies: the fuller author's queue, the less
+scout is owed. That is the derived depth signal this item asked for in place of
+share-of-rounds arithmetic.
+
+Proved by moving the same queue, which is what the second box asked for. At the
+2026-08-17 triage author's ready count fell from 30 to 5 against a budget of 6,
+and scout's effective weight moved 30.00 to 3.00 (x0.10, author full) — the
+dispatcher answering "not now" for the reason this item said it should, rather
+than "not needed".
+
+The `weight: 30` line survives in `policy.yml`, which the third box allowed for:
+it is a ceiling that demand scales, and the comment above it now says so. The
+fourth box asked for a cross-reference to
+`2026-08-11-scout-cannot-run-on-this-harness.md`; that item was dropped the same
+day, its premise falsified by scout rounds 142–144, and the pointer is recorded
+there.

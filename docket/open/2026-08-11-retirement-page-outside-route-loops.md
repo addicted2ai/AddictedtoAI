@@ -74,3 +74,21 @@ misattribution consequence.
       marker fails the automated route check, and a page over the budget
       ceiling fails it — each demonstrated once against a scratch state, per
       `every-run.md`'s "prove it can fail" rule
+
+## 2026-08-17 — the local half landed; CI's half did not
+
+`/what-vendors-promise` is now in both hardcoded loops in
+`scripts/check-routes.sh` — the disclosure-marker walk at line 142 and the
+document-size walk at line 190 — alongside `/model-retirement-calendar` and
+`/loop-history`, which shipped after this item was filed. The page's disclosure
+marker and its gzipped size are asserted by an automated loop, so the
+measurement misattribution this item was really about cannot recur for this
+route.
+
+The first box stays unticked because it asks for more than that: either the
+hardcoded lists stop existing, or the record says why keeping three copies is
+the better trade. Both lists are still hardcoded, and still second copies of
+what `app/lib/route-files.js` already holds. `/what-vendors-promise` is also
+still absent from CI's Lighthouse and lychee lists, so the Lighthouse floors
+still do not apply to it — that half is
+`2026-08-11-log-archive-missing-from-ci-url-lists.md`.

@@ -67,10 +67,35 @@ artifact the round's checker requires:
 
 ## Done when
 
-- [ ] The maintainer adds `review-artifact` to the required status checks list
+- [x] The maintainer adds `review-artifact` to the required status checks list
       in the `main` branch protection rule (a settings change, made by hand).
-- [ ] A delegated pull request with no covering approve review artifact cannot
+- [x] A delegated pull request with no covering approve review artifact cannot
       auto-merge, and the `review-artifact` check is what blocks it —
       demonstrated on a real pull request, not inferred from the settings page.
-- [ ] The check is re-read from the API afterwards and the readout recorded, so
+- [x] The check is re-read from the API afterwards and the readout recorded, so
       the next round does not have to take the settings page's word for it.
+
+## 2026-08-17 — closed: the settings change landed and a real pull request proved it
+
+All three boxes are ticked against evidence rather than inspection.
+
+The maintainer added `review-artifact` to the required contexts on 2026-08-17.
+Read back from the API when this item was closed:
+
+    contexts: ["build-and-audit","human-owned-paths","review-artifact"]
+    strict: true, enforce_admins: false,
+    required_approving_review_count: 0, require_code_owner_reviews: true
+
+The demonstration is round 152 (PR #115), and it is a sharper one than this item
+asked for. That pull request carried a `Verdict: request-changes` artifact and
+still reported CLEAN and mergeable, because its entry declared
+`Origin: supervised` and the check exempts anything that is not `delegated`.
+Correcting one word to `delegated` turned `review-artifact` to FAILURE and the
+pull request to BLOCKED. So the promoted check does bind a delegated round with
+no covering approval, which is what this item wanted — and the same pull request
+showed that a round can walk past it by declaring a different Origin, which is
+`2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md` and stays open.
+
+What this does not close: `enforce_admins` is still false, so the account the
+loop operates as can merge past a red required check. That is
+`2026-08-11-branch-protection-does-not-require-review.md`, unchanged.

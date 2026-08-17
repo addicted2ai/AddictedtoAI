@@ -97,10 +97,26 @@ All 2026-08-14, this repository and the OpenCode server on 127.0.0.1:4097.
       human-owned-path guard, having been shown this item first. The guard was
       red at the moment of merge and that is recorded in the pull request rather
       than worked around
-- [ ] The remedy is stated as a property, not as a blocklist of exact commands.
+- [x] The remedy is stated as a property, not as a blocklist of exact commands.
       A hazard written as specific strings has already failed once in this
       repository: a brief warning against `/proc/<pid>/winpid` did not stop the
       next session running `ls /proc/`
 - [ ] Some check or convention makes a self-referential wait visible while it is
       happening rather than after it has spent the iteration. A round that has
       run two `sleep`s and produced no commit is the observable shape
+
+## 2026-08-17 — the remedy reads as a property; the observability box is open
+
+`prompts/orchestrator.md` now says that the session list contains the reading
+session, that `opencode run` is synchronous so a dispatched round returns rather
+than needing to be watched, and that a second `sleep` in one iteration means the
+round has stopped working and started waiting. That is stated as a property of
+the situation rather than as a list of commands not to run, which is what the
+second box asked for, so it is ticked.
+
+The third box is untouched. Nothing makes a self-referential wait visible while
+it is happening; a round that has run two sleeps and produced no commit is still
+only findable by reading the session afterwards. The supervisor has since gained
+a hard timeout and a working abort path, so such a round now ends within 90
+minutes instead of consuming the whole iteration — a bound on the cost, not a
+signal.
