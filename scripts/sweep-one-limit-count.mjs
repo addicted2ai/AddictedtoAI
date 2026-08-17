@@ -21,6 +21,11 @@
 //   - Exclude #23: it created the check and was merged before
 //     `human-owned-paths` was in the required list, so its failing run is
 //     the exception that makes the claim true, not a step over the gate.
+//   - Enumerate every merged PR by paging the REST API, never by one
+//     oversized list call: `gh pr list --limit N` caps its result at N,
+//     and a bigger N would silently truncate at the next round's count.
+//     A page shorter than per_page is the last page, and the sweep fails
+//     loudly if it ever stops for any other reason.
 //
 // Fails loudly when it cannot classify a pull request: a changed API shape,
 // a missing field, an incomplete run, or a head commit that shows no run
@@ -41,7 +46,14 @@ const OUT = path.join(process.cwd(), "scripts", "one-limit-count-sweep.json");
 
 function runGh(args) {
   try {
-    const out = execFileSync("gh", args, { encoding: "utf8", stdio: "pipe" });
+    const out = execFileSync("gh", args, {
+      encoding: "utf8",
+      stdio: "pipe",
+      // A raw page of pull requests is ~1.8 MB, far beyond Node's 1 MB
+      // execFileSync default; a sweep that cannot read a full page whole
+      // would fail on every run once the list outgrew the default.
+      maxBuffer: 64 * 1024 * 1024,
+    });
     return { ok: true, out };
   } catch (error) {
     return { ok: false, out: `${error.stdout || ""}${error.stderr || ""}` || error.message };
@@ -53,26 +65,58 @@ function fail(message) {
   process.exit(1);
 }
 
-const list = runGh(["pr", "list", "--state", "merged", "--limit", "100", "--json", "number,headRefOid,mergedAt"]);
-if (!list.ok) {
-  fail(`could not list merged pull requests (${REPO}): ${list.out.trim()}`);
+// Enumerate every merged pull request by paging the REST API, never by
+// asking for a big list in one call. `gh pr list --limit N` caps the
+// result at N — the old 100 here — and the CLI's internal pagination is
+// not something this script can observe, so a bigger limit would only
+// move the ceiling to the next round's bug. Paging the API ourselves
+// makes completeness assertable: a page shorter than per_page is the
+// last page, and if the loop ever stops for any other reason it has
+// truncated the list and must fail, not count.
+const PER_PAGE = 100; // the API's documented maximum page size
+const MAX_PAGES = 100; // a safety bound against a misbehaving API, not a count cap
+
+function listMergedPullRequests() {
+  const all = [];
+  let page = 1;
+  for (;;) {
+    if (page > MAX_PAGES) {
+      fail(
+        `pagination reached ${MAX_PAGES} pages without a page shorter than ${PER_PAGE} — the list is truncated and cannot be trusted`
+      );
+    }
+    const batch = runGh(["api", `repos/${REPO}/pulls?state=closed&per_page=${PER_PAGE}&page=${page}`]);
+    if (!batch.ok) {
+      fail(`could not page merged pull requests (${REPO}, page ${page}): ${batch.out.trim()}`);
+    }
+    let pageData;
+    try {
+      pageData = JSON.parse(batch.out);
+    } catch {
+      fail(`page ${page} of pull requests returned unparseable JSON — the CLI or API shape changed`);
+    }
+    if (!Array.isArray(pageData)) {
+      fail(`page ${page} of pull requests did not return an array — the CLI or API shape changed`);
+    }
+    // The page is measured raw, before filtering: a full API page can
+    // contain closed-but-unmerged pull requests, so a completeness check
+    // against the merged-only count would stop early on a page that was
+    // actually full. The exit condition is the raw page size, the same way
+    // any REST client walks a list to its end.
+    for (const pr of pageData) {
+      if (pr.merged_at == null) continue;
+      all.push({ number: pr.number, headRefOid: pr.head?.sha, mergedAt: pr.merged_at });
+    }
+    if (pageData.length < PER_PAGE) break;
+    page++;
+  }
+  if (all.length === 0) {
+    fail(`no merged pull requests found — the sweep has measured nothing`);
+  }
+  return all;
 }
 
-let prs;
-try {
-  prs = JSON.parse(list.out);
-} catch {
-  fail("gh pr list returned unparseable JSON — the CLI or API shape changed");
-}
-if (!Array.isArray(prs)) {
-  fail("gh pr list did not return an array — the CLI or API shape changed");
-}
-
-// 100 is the documented ceiling, not a guess: a sweep that silently capped
-// the list would quietly drop the oldest pull requests from the count.
-if (prs.length >= 100) {
-  fail(`sweep hit the 100-pull-request limit — the script must be paginated before it can trust its count`);
-}
+const prs = listMergedPullRequests();
 
 const reads = new Map();
 let apiFailures = 0;

@@ -70,6 +70,62 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-17
+This maintain round fixes the "one limit" count and the tool that refreshes it.
+The blog's count of pull requests that merged over a failing
+`human-owned-paths` check had quietly drifted to nine: PR #116 (the orchestrator
+prompts change) merged 2026-08-17T15:44:40Z over that failing check — its head
+commit `0cc5f3529d3c4b8fad89953fc5f3d6e9db345070` carries
+`human-owned-paths: failure`, read from the GitHub API this run — after the last
+sweep on 2026-08-15 had recorded eight, so the page still rendered "eight". The
+tool that should have caught it could not run at all:
+`scripts/sweep-one-limit-count.mjs` listed merged PRs with `--limit 100`, and
+once the repo passed 100 merged pull requests (117 today, verified by fetching
+all of them) it exited with "sweep hit the 100-pull-request limit" on every
+run. The script's premise that 100 was the CLI's ceiling was wrong — `gh pr
+list --limit N` caps its result at N and paginates internally — so the fix
+pages the REST API explicitly, terminating only on a page shorter than the
+API's maximum page size and failing loudly if the walk stops for any other
+reason. A test that temporarily capped the walk at one page caught a real bug
+in the first implementation (a completeness check measured against the
+merged-only count after filtering, which stopped early on a page that held
+closed-but-unmerged PRs) before the fixed version was trusted. The fresh sweep
+reports count 9, failing set [25, 27, 39, 40, 42, 50, 52, 58, 116], across all
+117 merged PRs. The blog now renders "nine" with #116 in the set; the prose's
+"eight by nightfall" is the 14 August history and stays as written (rule 5).
+No docket item existed for this finding, so none was invented.
+
+**1. Paginate the one-limit sweep and re-run it**
+- Hypothesis: the count had drifted to nine because the sweep could not run
+  past 100 merged PRs, and a check that cannot run catches nothing.
+- Change: `scripts/sweep-one-limit-count.mjs` now pages the REST pulls
+  endpoint (per_page 100, terminating on the raw page size, a fail-loud page
+  bound) instead of one `gh pr list --limit 100` call; `runGh` gained a 64 MB
+  buffer because a raw page of pull requests is ~1.8 MB, past Node's 1 MB
+  execFileSync default. `scripts/one-limit-count-sweep.json` re-swept: count 9,
+  failing set [25, 27, 39, 40, 42, 50, 52, 58, 116], swept 2026-08-17. No
+  `app/blog/page.js` change: the live count already renders from the sweep
+  output, and the prose's "eight by nightfall" is history, not the current
+  count.
+
+- Origin: delegated
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/sweep-one-limit-count.mjs` run twice (both count 9
+  over all 117 merged PRs; the second run succeeded too, and the output file
+  held no stale leftovers); truncation-cap test — with the page bound set to 1
+  the sweep failed loudly (exit 1) instead of silently truncating, and the
+  bound was restored; `node scripts/check-one-limit-count.mjs` — ok, count 9, 9
+  set member(s), swept 2026-08-17, 0 days old; `node
+  scripts/check-one-limit-count.mjs --rendered http://localhost:3000/blog` —
+  rendered page carries the sweep sentence; `node scripts/staleness-report.mjs`
+  — 129 artefacts, 0 stale; `node scripts/round.mjs check` — lint, docket
+  validator, track scope, production-shaped build and route checks all green on
+  port 3000.
+- Result: not yet measured — count 9 renders and the sweep can now walk the
+  full list; whether the fix holds is measured by the next drift the sweep
+  catches.
+
+### 2026-08-17
 This author round publishes the AI-security week of 10–15 August 2026 as one
 post (`/blog/ai-security-week`): the LiteLLM supply-chain breach, the ZOOMSDAY
 Zoom RCE, Daybreak reaching AWS Bedrock, the first documented autonomous-agent
