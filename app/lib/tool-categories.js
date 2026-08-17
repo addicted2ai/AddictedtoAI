@@ -7,7 +7,10 @@ export const toolCategories = [
         name: "ChatGPT",
         description:
           "OpenAI's assistant — the free tier now runs GPT-5.6 Luna by default, with unlimited text chats and a Think button for harder questions.",
-        verified: "2026-08-11",
+        // Round 149 (maintain) re-checked 2026-08-16: the 6 August OpenAI
+        // announcement (Luna default, unlimited text chats, Think button)
+        // and the live chatgpt.com page both still match this description.
+        verified: "2026-08-16",
       },
       {
         href: "https://claude.com",

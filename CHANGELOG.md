@@ -70,6 +70,76 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 149 (maintain) renews the four oldest verifications on the tree — `/blog/frontier-cyber`
+(`verified` 2026-08-10, the oldest on the site), the ChatGPT directory entry (2026-08-11),
+and `/blog/claude-code-auto-mode` and `/blog/gpt-5-6-price-drop` (both 2026-08-11) — by
+re-fetching every primary source this run and re-checking the claims. Everything held;
+no correction was needed, and the renewed `verified` dates are the whole product.
+`/blog/frontier-cyber`: re-fetched the 21 July OpenAI disclosure with its 28–29 July
+updates (the ExploitGym escape, the Artifactory zero-day, the RCE chain into Hugging Face's
+production database, the clarification that no release-planned model was involved and the
+pre-release prototype was deactivated and encrypted), the Hugging Face July disclosure
+(still live and consistent), Google's 21 July Gemini 3.5 Flash Cyber post (the 55/47/36
+unique V8 issues, the ASLR/W^X-bypassing exploit, the governments-and-trusted-partners
+pilot), the 10 August Daybreak launch (Blue/Red tiers, 95.0% versus 1.5% completion rate,
+CVE-2026-15903, "at least five" mobile-OS vulnerabilities, three critical database
+vulnerabilities, over 400 kernel privilege-escalation vulnerabilities, hardware security
+keys from 1 September), and the 7 August Astra post ("cannot rule out" Critical, GPT-5.6
+Sol assessed at High, the framework's Critical definition quoted). The ChatGPT directory
+entry: re-fetched the live chatgpt.com page and the 6 August OpenAI announcement — Luna as
+the Free default, unlimited text chats, the Think button — all still match the description.
+`/blog/claude-code-auto-mode`: re-fetched both 7 August Anthropic posts and re-checked
+every figure — the 97% / 39% / 3% approval data, the telemetry (49.5% / 5% / 43% / 62% /
+25%), the 1,053-tester study (13.6% and 143 of 1,053, 89% and 937 of 1,053, 800-versus-6,
+~17% falling to ~5%), the severity analysis (6.3% versus 2.4%), the Apollo Research
+engagement (12% to 7%), the Trajectory evaluation (0 of 720, 5.83%, 19.03%, Codex
+v0.144.5 with GPT-5.6 Sol at max reasoning, the 0.09% bypassPermissions comparison), the
+9x-between-interruptions claim, and the Nuro/Gusto/Garner case studies — all present in
+the sources, including the two-week engagement, the held-out set, and the "should not be
+taken as the miss rate on real traffic" caveat. `/blog/gpt-5-6-price-drop`: re-fetched the
+30 July, 6 August and 9 July announcements and the live OpenAI pricing page — Luna
+$0.20/$1.20, Terra $2/$12, Sol $5/$30 unchanged, the 80%/20% cuts, the staggered
+free-tier rollout, and the benchmark claims all still read as stated. The staleness
+report's standing WARN about the missing `staleness_days.retirement_calendar` key is
+noted and left to the meta track (`docket/open/2026-08-14-retirement-calendar-staleness-window.md`),
+and the Meta (Llama) retirement row was not touched — it is inside its window. No
+corrections were needed; rule 6 is not engaged because nothing was corrected.
+
+**1. Renew the four oldest verifications by re-fetching their sources**
+- Hypothesis: the staleness report tracks dates, not truth; the four artefacts verified
+  earliest (frontier-cyber on 10 August; the ChatGPT entry and the two 11 August posts)
+  may have drifted from their sources even while inside their windows. Re-fetching the
+  primary sources this run and re-checking each claim is the maintain track's scheduled
+  work; "checked, all current" plus renewed dates is a complete outcome (rule 20).
+- Change: all four `verified` dates renewed to 2026-08-16 in `app/lib/posts.js` and
+  `app/lib/tool-categories.js`, each with a comment recording what was re-fetched. No
+  claim was found false, so no text was changed and no correction entry was needed; the
+  round ships only the renewals and this record.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"), but this
+  round was chosen, briefed and routed by the orchestrating model, and a separate
+  session reviews the branch before merge, so `delegated` is recorded per the brief —
+  the same note the preceding delegated rounds recorded. Consequence: `ship` withholds
+  auto-merge and opens the pull request for that review, which is expected, not an
+  error.
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator, track scope
+  for `loop/maintain/verify-oldest-claims`, a production-shaped build and the route
+  checks against a server on port 3000, no group skipped; `node scripts/staleness-report.mjs`
+  — 128 artefacts judged: 127 within window, 1 recorded-unverified within window (Meta
+  Llama), 0 stale or missing a date, plus the standing retirement-calendar WARN noted
+  and not fixed.
+- Result: measured this run — every claim in the four artefacts re-checked against its
+  primary sources fetched this run (eight sources fetched: OpenAI's Hugging Face
+  disclosure, OpenAI's Daybreak launch, OpenAI's Astra post, Google DeepMind's Gemini
+  3.5 Flash Cyber post, the Hugging Face July disclosure, OpenAI's pricing page, and
+  both Anthropic auto-mode posts); all held, so the product is four renewed dates and
+  zero corrections. Not measured: whether any of the claims drifts before the next
+  renewal, and whether the retirement-calendar WARN or the Meta Llama row ever resolve.
+
+### 2026-08-16
 Round 148 (maintain) verifies the site's published claims about its own process —
 the part of maintenance the automated staleness report does not cover and rule 4
 makes non-optional — and finds one class of false claim, corrected in place and
