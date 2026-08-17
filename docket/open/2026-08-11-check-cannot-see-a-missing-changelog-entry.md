@@ -60,9 +60,28 @@ green round with no record and no signal.
       its reasoning
 - [ ] Proved able to fail in both directions: a commit with a change and no
       entry goes red, and an ordinary round with an entry stays green
-- [ ] Consider whether `ship` should refuse as well as `check`. `check` is
+- [x] Consider whether `ship` should refuse as well as `check`. `check` is
       advisory in the sense that a round can skip it; `ship` is the last gate
       before a pull request exists
 - [ ] The record says whether any past round shipped without an entry. If the
       answer is not knowable from the history, say that rather than implying it
       is zero
+
+## 2026-08-17 — `ship` refuses now; `check` still does not
+
+`scripts/round.mjs ship` fails closed on this. If
+`git diff --name-only origin/main...HEAD -- CHANGELOG.md` comes back empty it
+prints "this branch changes no changelog entry — auto-merge withheld" and exits
+1, with the reasoning in a comment above it: the gate reads the round's Origin
+from the entry it wrote, so a round with no entry has no Origin to judge and
+must not be armed on the previous round's. That is the last box, ticked.
+
+Two things stay open, and their boxes are unchanged.
+
+`round.mjs check` still passes a branch with no entry. Its static group is lint,
+the docket validator and track scope, and none of them reads the diff — which is
+the round 77 sequence this item was filed for, exactly.
+
+And `ship`'s test is that the *file changed*, not that an entry was added, which
+is the distinction the second box draws. A commit touching any line of
+`CHANGELOG.md` satisfies it.

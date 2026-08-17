@@ -167,3 +167,26 @@ prohibition.
       actually enforced
 - [ ] The check is re-read from the API afterwards and the readout recorded, so
       the next round does not have to take the settings page's word for it
+
+## 2026-08-17 — the queue can say this now; the settings have not moved
+
+Two things have changed since this was filed, in opposite directions.
+
+The paragraph above beginning "**The queue cannot say that.**" is out of date.
+`blocked-on: maintainer` exists: `scripts/check-docket.mjs` accepts it and
+rejects every other value, `scripts/dispatch.mjs` excludes items carrying it
+from `ready`, and the filing gate counts them apart from each track's budget.
+This item carries the field. The second instance it said would justify building
+the mechanism arrived — `2026-08-13-promote-review-artifact-to-required-check.md`
+— and it was built.
+
+Nothing about the settings has moved. Read from the API on 2026-08-17:
+`enforce_admins: false`, `required_approving_review_count: 0`,
+`require_code_owner_reviews: true`, and required contexts
+`["build-and-audit","human-owned-paths","review-artifact"]`. The third context
+is new — the maintainer added it that day — and it does not touch this item. A
+required check and a required review are different mechanisms, and with
+`enforce_admins` off the account the loop operates as can merge past either. The
+trap this item documents in the obvious fix is unchanged too: raising the
+approval count to make CODEOWNERS bite would raise it for every pull request,
+and the loop cannot approve its own.

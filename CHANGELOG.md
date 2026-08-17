@@ -70,6 +70,134 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-17
+The maintainer asked whether the twenty-nine open `meta` items in the docket were
+still valid and actionable, several being a week old in a queue that has moved
+fast. Each was re-verified against the code at `origin/main` rather than against
+what the item says about the code, and the answer was no for thirteen of them:
+three are finished or falsified, and ten describe a repository that has changed
+underneath them. This entry records the re-verification, the three closures and
+the ten corrections, one new item filed by the maintainer about DeepSeek's new
+peak-hour pricing, and one false claim about this project's own review gate
+found in `docket/README.md` while checking something else.
+
+The correction that matters most is the last one. `docket/README.md` said the
+`review-artifact` job "is a *visible* check, not a required one: it is not on
+the branch-protection required list, so GitHub's auto-merge would ignore it."
+That stopped being true on 2026-08-17, when the maintainer added it to the
+required contexts. A document describing this project's own gate as weaker than
+it is, is the same class of error as one describing it as stronger — both are
+the record disagreeing with the mechanism, which is the thing this site exists
+to not do. The identical sentence is still in `.github/workflows/pr-checks.yml`,
+a human-owned path this change cannot touch; it is named here and goes to the
+maintainer separately.
+
+**1. Re-verify all twenty-nine open meta items against the code**
+- Hypothesis: items filed against a fast-moving repository go stale in a
+  specific way — the gap they name gets half-closed, and the item keeps
+  claiming the whole of it — so the queue misdirects the rounds that read it.
+- Change: no code. Every item's central claim was checked against
+  `origin/main` at `a19bda0` by reading the file it names: `SCOPES` in
+  `check-track-scope.mjs`, the route lists in `check-routes.sh` and
+  `pr-checks.yml`, `portFree` and the `ship` guards in `round.mjs`, the finding
+  list in `preflight.mjs`, the selection path in `dispatch.mjs`, the rate-card
+  keys in `policy.yml`, the reviewer instructions in `prompts/orchestrator.md`,
+  and the branch protection itself from the GitHub API. Sixteen items are valid
+  exactly as written and were left alone.
+
+**2. Close three items: one finished, one delivered, one falsified**
+- Hypothesis: an item whose premise events have overtaken costs more than it
+  saves, because a round that picks it up spends its time discovering that.
+- Change: `2026-08-13-promote-review-artifact-to-required-check.md` moves to
+  `done/` — the settings change landed, and round 152 is the demonstration its
+  second box asked for: PR #115 went from CLEAN to BLOCKED when its Origin was
+  corrected to `delegated`. `2026-08-11-dispatcher-measures-scout-by-share-not-stock.md`
+  moves to `done/` — round 151 replaced share-of-rounds with the demand signal
+  it argued for, and scout's weight moving 30.00 to 3.00 as author filled is the
+  proof it wanted. `2026-08-11-scout-cannot-run-on-this-harness.md` moves to
+  `dropped/`, premise falsified: it says no scout round on this harness can
+  bring back externally-sourced work, and scout rounds 142, 143 and 144 filed
+  six externally-cited post items on 2026-08-16, five still queued.
+
+**3. Correct ten items that describe a repository that has changed**
+- Hypothesis: the honest repair for a half-closed gap is a dated section saying
+  what landed and what did not, not a rewrite — the item's original reasoning is
+  evidence and rule 5's spirit applies to it.
+- Change: each of the ten gained a dated `2026-08-17` section and, where a box
+  is genuinely satisfied, a ticked box. `/log/archive` is now in both CI lists
+  (two boxes) but nine blog posts and five other routes are not; the page-weight
+  half of the local-versus-CI gate is built and reads its threshold from
+  `lighthouserc.json` with a tighter local margin (one box), the link half is
+  not; `ship` now refuses a branch with no changelog entry (one box) while
+  `check` still passes it; `prompts/orchestrator.md` now states the
+  self-watching remedy as a property (one box). Four priorities moved with
+  reasons stated in the item: the `loop.yml` direct-arm item 1 to 3 because its
+  schedule is commented out and nothing takes that path; the lost-session-id
+  item 1 to 2 because the failure has fired once in 63 iterations behind a hard
+  timeout; the dispatcher-urgency item 2 to 1; and, in the author queue,
+  `2026-08-16-post-manus-splits-from-meta.md` 3 to 1, because the backup window
+  it tells readers about closes on 23 August and priority is the only urgency
+  signal a picking round can read. One box was folded from the Origin
+  vocabulary item into `2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md`,
+  where the evidence for it already lives, rather than tracked twice.
+
+**4. File the DeepSeek peak-hour pricing item**
+- Hypothesis: a cost that varies by the clock is invisible to a loop that runs
+  by the clock and never looks at it.
+- Change: `docket/open/2026-08-17-deepseek-peak-hour-pricing.md`, filed by the
+  maintainer. DeepSeek now prices `deepseek-v4-flash` at double rate in two
+  daily windows — 01:00–04:00 and 06:00–10:00 UTC, $0.44/$1.32 against
+  $0.22/$0.66 per million tokens on the OpenCode Go card the loop runs on, which
+  meters dollar allowances of $12 per five hours, $30 per week and $60 per
+  month. Measured from the supervisor's own log, 33.9% of the loop's running
+  time over 63 iterations in the four days to 2026-08-17 falls inside those
+  windows: 1,415 of 4,168 minutes. The maintainer's decision, recorded in the
+  item, is that the supervisor pauses inside a peak window unless explicitly
+  authorised, that a round already running when a window opens finishes, and
+  that a round requested during peak is confirmed with the maintainer first. The
+  item states plainly that 33.9% is time-weighted rather than token-weighted,
+  and that DeepSeek's own pricing page could not be read this run.
+
+**5. Correct `docket/README.md` about the review gate**
+- Hypothesis: a document that understates a live guardrail is as much a defect
+  as one that overstates it, and it is likelier to survive because nobody
+  audits a claim that flatters nothing.
+- Change: the paragraph now says `review-artifact` is on the required list, with
+  the API readout and the date, and names the two things being required does not
+  buy: `enforce_admins` is false, and the check reads the Origin it applies to
+  out of the branch it is judging. The identical stale sentence in
+  `.github/workflows/pr-checks.yml` is human-owned and untouched here.
+
+- Origin: maintainer
+- Track: maintain
+- Agent: claude-opus-5 (orchestrating model)
+- Guardrails: every claim above was re-derived this session rather than carried
+  from memory — `git show origin/main:<file>` for each file named,
+  `gh api repos/addicted2ai/AddictedtoAI/branches/main/protection` for the
+  contexts, and a committed-in-scratch parse of `supervisor.log` for the 33.9%.
+  The edits were applied by a script that fails if an anchor does not match
+  exactly once; all nineteen matched once. **The local `round.mjs check` was not
+  run:** a round was in flight in the shared working tree for the whole of this
+  change, and starting a build there would have collided with it, so this change
+  was built with git plumbing off `origin/main` and its first full check is CI's
+  `build-and-audit`. That is a real gap in this entry's evidence and is stated
+  rather than papered over.
+- Result: not yet measured — the open queue goes from 34 items to 32, and ten of
+  the remaining meta items now say what is actually left of them. Whether that
+  changes what a meta round picks up, and whether it stops rounds rediscovering
+  half-closed gaps, is measured by the next few meta rounds rather than asserted
+  here.
+
+**On this entry's Origin.** It says `maintainer`, which exempts it from the
+`review-artifact` gate, and that exemption is the defect filed this same day in
+`2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md`. It is named here
+so the record shows the exemption being used rather than hiding it. The claim
+itself is accurate: the maintainer asked for the audit, read its findings, chose
+the actions ("I trust your judgement. Proceed as you outlined"), filed the
+DeepSeek item as their own, and decided the pause-at-peak rule when asked. The
+orchestrating model did the verification and the typing. A reader who thinks
+that is the wrong label has the facts here to say so, which is the point.
+
+### 2026-08-17
 Round 156 (audit) audits the five shipped rounds since audit round 150 covered
 rounds 148–149 — the demand-weighted dispatcher (151), the docket filing gate
 (152), the author-queue triage (153), the AI-security week post (154), and the

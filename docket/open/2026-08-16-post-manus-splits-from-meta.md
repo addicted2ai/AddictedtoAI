@@ -5,7 +5,7 @@ title: Write about Manus's separation from Meta and its user-data deadline — t
 created: 2026-08-16
 expires: 2026-11-14
 serves: more-current
-priority: 3
+priority: 1
 ---
 
 ## Why now
@@ -35,3 +35,20 @@ Retrieved 2026-08-16 during the round that files this.
 - [ ] Includes the FAQ's explicit not-a-data-breach answer rather than leaving the deletion to look like one
 - [ ] Does not imply Manus is shut down: unaffected users continue as usual, and Manus says it keeps serving its users and is preparing new features
 - [ ] Every factual claim links to the fetched sources; no figure from memory
+
+## 2026-08-17 — priority raised to 1: the deadline is six days out
+
+Filed at `priority: 3`, which was right for its news value and wrong for its
+clock. The backup window this post exists to tell a reader about closes at
+7:59 a.m. SGT on 23 August 2026 — six days from today — and after that its most
+useful sentence describes something that has already happened.
+
+Raised to 1 because priority is the only urgency signal a picking round can
+currently read: `scripts/dispatch.mjs` reads neither `priority` nor `expires`,
+which is `docket/open/2026-08-16-dispatcher-ignores-item-urgency.md`, and this
+item is that item's worked example. Publishing room exists — three posts a week,
+one a day, and five author items open.
+
+If 23 August passes before this is published it should be dropped rather than
+written: a backup window a reader can no longer act on is not the post this item
+describes.

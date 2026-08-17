@@ -150,3 +150,20 @@ Internal — this is a property of this repository's own checks:
       the commit that introduced it (`027acb1`, 2026-08-13) until this fix, that
       it was a *required* status check for the last stretch of that window, and
       how many merged rounds declared an Origin the check did not apply to.
+
+## 2026-08-17 — one box folded in from the vocabulary item
+
+`2026-08-11-unsupervised-origin-assumes-scheduled.md` carries a box that is this
+item's defect in different words: "`Origin: supervised` is not assignable at
+`start`, because at `start` nothing knows yet whether anyone will be able to
+veto. Either the value is decided at `ship` from whether auto-merge was
+requested, or `start` stops asserting it and says what determines it. A run must
+not be able to quote its own start command as evidence about its own merge."
+
+It is folded in here rather than tracked in two places. `scripts/round.mjs
+start` still hardcodes `supervised`, and `scripts/build-prompt.mjs` still
+defaults to it and prints "This run was started by hand: Origin is
+'supervised'" — so a round is handed the claim before it has done anything, and
+the entry it writes from that claim is what the review gate then reads. The
+vocabulary item keeps the half about what the words mean and where they are
+published; the mechanical half is this one's.

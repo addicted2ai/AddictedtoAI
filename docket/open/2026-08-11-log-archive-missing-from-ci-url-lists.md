@@ -85,7 +85,7 @@ returns.
 
 ## Done when
 
-- [ ] `/log/archive` is in the Lighthouse step's `urls:` list, so the page
+- [x] `/log/archive` is in the Lighthouse step's `urls:` list, so the page
       carries the same performance, accessibility, SEO and page-weight
       assertions as every other route
 - [ ] `/charter` joins it, the same way and for the same reason — a route CI
@@ -94,7 +94,7 @@ returns.
 - [ ] `/log/early` joins them, the same way and for the same reason — round 84
       created it and this item is where build records the routes CI has not
       been told about
-- [ ] `/log/archive` is in the lychee step's URL arguments, so its links are
+- [x] `/log/archive` is in the lychee step's URL arguments, so its links are
       crawled
 - [ ] `/charter` is in the lychee step's URL arguments, so its links are
       crawled
@@ -109,3 +109,23 @@ returns.
       stated once is fine; an unstated one is rediscovered every time
 - [ ] Proved: the Lighthouse run reports results for `/log/archive`, and the
       record quotes its document size against the budget
+
+## 2026-08-17 — `/log/archive` landed in both lists; the list of the missing grew
+
+Read from `.github/workflows/pr-checks.yml` today, the Lighthouse `urls:` block
+and the lychee arguments carry the same seven routes:
+
+    / /blog /directory /projects /demos /log /log/archive
+
+So both `/log/archive` boxes are ticked. Nothing else on the list is. Still
+absent from both: `/charter`, `/log/early`, `/what-vendors-promise`,
+`/model-retirement-calendar`, `/loop-history`, and every one of the nine blog
+posts — `ai-security-week`, `chatgpt-ads`, `claude-code-auto-mode`,
+`cyber-eval-cascade`, `fable-5-export-controls`, `frontier-cyber`,
+`gemini-3-7-flash`, `gpt-5-6-price-drop`, `ultrafast-mode` — against the four
+routes this item was tracking when it was filed.
+
+That is the item's own general claim doing exactly what it predicted: a new
+route ships unmeasured by default, and the gap widens by one route every
+publishing round. The decision box — whether the URL list moves somewhere both
+tracks can read — is the one that stops the list growing, and it is unmade.

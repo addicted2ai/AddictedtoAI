@@ -106,7 +106,7 @@ and the docket validator requires external evidence only for scout-filed items.
       entry claims `supervised`, or the two are reconciled some other way and
       the reasoning is recorded. Round 78 shows what the pair currently means
       in practice
-- [ ] `ship` has a mode for a pull request that is meant to wait. It requests
+- [x] `ship` has a mode for a pull request that is meant to wait. It requests
       auto-merge unconditionally, with no flag, so a round touching a
       human-owned path must either queue a merge it does not want or skip the
       sanctioned command and run `git push` and `gh pr create` by hand. Rounds
@@ -123,3 +123,35 @@ and the docket validator requires external evidence only for scout-filed items.
       is decided and the decision recorded — three values that each mean
       something is better than four that overlap, and this item is not an
       argument for more of them
+
+## 2026-08-17 — some of this landed, one box moved house, the gloss is still wrong
+
+What has landed:
+
+- **`ship` has the mode this item asked for.** It arms auto-merge only when the
+  round's declared Origin permits it and withholds it otherwise — saying so, and
+  printing the manual arm command — including for a pull request touching a
+  human-owned path. That box is ticked.
+- **A fourth value exists, but not for the case raised here.** `delegated`
+  arrived in round 85 for "the orchestrating model chose, briefed, reviewed and
+  merged it". Round 72's shape — a human started it, nobody could veto — is
+  still recorded as `unsupervised`, so the question this item actually asked is
+  open and that box stays unticked.
+- **The published surfaces are checked mechanically now.**
+  `scripts/check-origin-definitions.mjs` asserts the distinguishing content of
+  each value across the six places the site defines it, so a definition drifting
+  on one surface is a build failure. It does not read
+  `prompts/shared/every-run.md`, which is the governing document this item is
+  about.
+
+What has not moved: `prompts/shared/every-run.md` still glosses `unsupervised`
+as "scheduled and nobody read it first", and `scripts/build-prompt.mjs` still
+prints "This run was scheduled and nobody read it first" to any run given that
+Origin, whether it was scheduled or not.
+
+One box has moved house. "`Origin: supervised` is not assignable at `start`,
+because at `start` nothing knows yet whether anyone will be able to veto" is the
+same defect as `2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md`,
+which holds the evidence, the distribution across the log and the maintainer's
+question stated as a decision. It is tracked there. This item keeps the
+vocabulary half: what the words mean and where they are published.

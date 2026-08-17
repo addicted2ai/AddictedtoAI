@@ -53,3 +53,17 @@ Internal — this is a property of this repository's own record:
       acceptable, including the per-round cost the gate pays.
 - [ ] Either way, the resolution does not weaken the review-artifact gate: a
       delegated round still requires a covering `approve` artifact.
+
+## 2026-08-17 — four files became a hundred and eight
+
+`git ls-tree --name-only origin/main docket/reviews/` counted **109** files on
+2026-08-17, at `5022a58`. This item was filed against four, on 2026-08-13. That
+is roughly 26 a day, because a round can carry several review passes — PR #115
+alone produced eight — and nothing ever moves any of them. Re-derive the number
+rather than trusting this line: it was 108 an hour before this note was written,
+and one audit round moved it.
+
+So the per-round cost this item names is real and growing:
+`scripts/check-review-artifact.mjs` enumerates the whole directory on every
+delegated round, and all but a handful of those files record a tree that a
+squash merge destroyed. The archivist question is unchanged; only its scale is.

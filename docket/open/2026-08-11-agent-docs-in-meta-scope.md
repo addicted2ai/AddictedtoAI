@@ -46,3 +46,24 @@ requires external evidence for items filed by scout.
 - [ ] Whether `.claude/` belongs to meta or is deliberately left human-owned is
       decided and written down, not left implicit — it configures the agent
       rather than the site, so the answer is not obvious
+
+## 2026-08-17 — half the scope question is answered, in the file itself
+
+`AGENTS.md` is in `SCOPES.meta` in `scripts/check-track-scope.mjs`, added by
+round 88, with a comment above it giving this item's own argument as the reason
+— the round that grew `round.mjs` with `--force` and two start-time guards could
+change the behaviour and not the document describing it. The comment also
+records that the granting pull request did not spend the grant, which is rule 11
+working.
+
+`.claude/` is still in no track's scope, and the decision this item asks for —
+whether it belongs to meta or is deliberately human-owned, given that it
+configures the agent rather than the site — is still unwritten. The first box
+needs both halves, so it stays unticked.
+
+The second box is untouched: neither `AGENTS.md` nor
+`.claude/skills/local-loop/SKILL.md` documents `--force`, the in-flight guard or
+the origin/main base guard. `AGENTS.md` is now a file meta may edit, so that
+half no longer waits on anyone — see
+`2026-08-11-stale-ship-descriptions-outside-any-scope.md`, which is blocked on
+the same question and names the same three files.

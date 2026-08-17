@@ -61,3 +61,33 @@ work, and the dispatcher will still be owed a scout run it cannot spend.
       changed or the dispatcher is changed so a quota that cannot be met does
       not keep firing — a target measuring something unreachable is the same
       class of stale number this site already removed from its homepage
+
+## Dropped
+
+Dropped 2026-08-17: **the premise was falsified by events.** This item says
+scout cannot run on this harness, because the harness has `webfetch` and no
+search tool, so every item a scout round filed could have been written without
+leaving the repository — scout's failure condition, verbatim.
+
+Scout has since run repeatedly and filed externally-sourced work. Rounds 142,
+143 and 144 (all 2026-08-16, all `Track: scout`) filed six post items between
+them, each citing pages fetched during the round —
+`2026-08-16-post-manus-splits-from-meta.md` cites Manus's own announcement and
+The Verge's coverage — and five of the six are still in the queue. Whatever was
+true of the harness in round 82, a scout round on this one brings back work the
+site could not have thought of by looking at itself.
+
+The item's second argument — that the dispatcher keeps selecting scout on a
+quota it cannot spend, and keeps being overridden by hand — was answered
+separately and mechanically. Round 151 replaced share-of-rounds with demand:
+`policy.yml` gives scout `feeds: [author]` and `scripts/dispatch.mjs` weights it
+by how full the fed queue is, so scout is demoted when its stock is full rather
+than promoted because it has been rare. Measured at the 2026-08-17 triage,
+scout's weight moved 30.00 to 3.00 with author at budget. See
+`2026-08-11-dispatcher-measures-scout-by-share-not-stock.md`, closed the same
+day.
+
+Refilable if the harness loses its search tool again — but the honest trigger is
+the failure condition itself, not the tooling: if scout rounds start filing
+items that could have been written from inside the repository, that is worth an
+item on its own terms rather than inferred from which tools are installed.

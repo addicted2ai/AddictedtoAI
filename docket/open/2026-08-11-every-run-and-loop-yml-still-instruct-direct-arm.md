@@ -5,7 +5,7 @@ title: every-run.md and loop.yml still tell rounds to arm auto-merge directly, b
 created: 2026-08-11
 expires: 2026-11-11
 serves: more-checkable
-priority: 1
+priority: 3
 blocked-by: 2026-08-11-delegated-origin-definitions-disagree.md
 ---
 
@@ -69,3 +69,24 @@ edit them, and the meta round's pull request will wait on a human by design.
       human-owned paths waits on a human by design, and the changelog preamble
       describing auto-merge does not contradict the gate round 86 built — done
       in round 88's entry.
+
+## 2026-08-17 — the blocker is done and the remaining half is a dormant path
+
+`2026-08-11-delegated-origin-definitions-disagree.md`, the `blocked-by` on this
+item, is in `docket/done/`. Nothing holds it back.
+
+The open box asks that `.github/workflows/loop.yml` invoke `ship`. Read today,
+that workflow builds its prompt from `scripts/build-prompt.mjs` — which since
+round 86 tells the round to run `ship` — and it invokes no merge command of its
+own, so the direct-arm instruction this item was filed about is gone from that
+path. What remains is that the workflow does not call `ship` itself.
+
+It also does not run. `on.schedule` is commented out; the workflow fires only on
+`workflow_dispatch`, and the loop that actually ships rounds is
+`scripts/orchestrate.sh` on the maintainer's machine. Priority drops from 1 to 3
+for that reason: the gap is real, but it is on a path nothing currently takes,
+and round 88's reasoning still holds — wiring the scheduled loop correctly needs
+an end-to-end test of the scheduled loop, which a round cannot do, and a broken
+scheduled loop is worse than an ungated one.
+
+If the schedule is ever uncommented, this is priority 1 again the same day.
