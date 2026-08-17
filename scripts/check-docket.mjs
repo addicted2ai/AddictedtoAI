@@ -18,6 +18,8 @@
 
 import fs from "fs";
 import path from "path";
+import { execFileSync } from "child_process";
+import { load as parseYaml } from "js-yaml";
 
 // Every regex below anchors on a bare newline. `.gitattributes` now forces LF
 // on checkout, but a working copy created before that attribute existed still
@@ -130,6 +132,15 @@ function checkItem(status, file, text) {
   if (fields.priority && !["1", "2", "3"].includes(fields.priority)) {
     fail(label, `priority "${fields.priority}" must be 1, 2 or 3`);
   }
+  // blocked-on is an optional escape from the capacity counts and from `ready`
+  // in the dispatcher. Its only accepted value is `maintainer`, which means:
+  // this item is real, and no round can close it. Rejecting every other value
+  // stops the field from becoming a free-text hatch that empties the queue.
+  // The field escapes capacity, not growth — the filing gate still counts a
+  // blocked item when measuring whether the track's total grew.
+  if (fields["blocked-on"] && fields["blocked-on"] !== "maintainer") {
+    fail(label, `blocked-on "${fields["blocked-on"]}" — the only accepted value is "maintainer"`);
+  }
 
   for (const heading of SECTIONS) {
     const body = sectionBody(text, heading);
@@ -189,9 +200,194 @@ for (const { status, file, fields } of items) {
 }
 
 const open = items.filter((i) => i.status === "open");
-const expired = open.filter(
+// Items blocked on the maintainer are real, open, and uncountable: no round
+// can close them, so including them in capacity counts would consume budget
+// the loop can never free. They are excluded from the capacity counts below
+// and reported on their own line so they stay visible. They are NOT excluded
+// from growth: an item nobody counts is an item anyone can add, so the filing
+// gate measures growth on the total including them (see below).
+const counted = open.filter((i) => !i.fields["blocked-on"]);
+const blocked = open.filter((i) => i.fields["blocked-on"]);
+const expired = counted.filter(
   (i) => isDate(i.fields.expires) && Date.parse(i.fields.expires) < Date.now()
 );
+
+// --- the filing gate ----------------------------------------------------------
+//
+// Nothing here is about the shape of an item: it is about the capacity of the
+// track receiving it. A track's budget is `queue_budget` in policy.yml — the
+// stock it can actually spend. The gate asks where this pull request *leaves*
+// the track, not where the track started:
+//
+//     ceiling(track) = max( base_total(track), budget(track) + base_blocked(track) )
+//     FAIL if head_total(track) > ceiling(track)
+//
+// This is the fourth revision of this check, and the three earlier shapes all
+// asked a question about the past — "was this track already over budget?" —
+// and all three could be overshot by one diff:
+//
+//   1. `head_total > base_total AND head_counted > budget` — measured growth
+//      on the counted total, so anything filed with `blocked-on` was
+//      invisible to the gate, and `head_counted` was a number the branch sets
+//      itself by applying the field to existing items.
+//   2. `head_total > base_total AND base_counted >= budget` — measured
+//      capacity on the base's counted total, which closed both blocked-on
+//      escapes, but still never compared the head count to the budget: a
+//      track at 0 against a budget of 14 could take 30 items in one diff
+//      (the build-flood), and relabelling existing items' `track:` field
+//      moved them into tracks with room without growing anything (the
+//      track-move). Both were possible in every one of the three shapes.
+//
+// The question that matters is the outcome, and every input except the head
+// total is read from origin/main, so the branch cannot move the numbers the
+// gate tests against:
+//
+// - `head_total` — every open item for the track on this branch, including
+//   those carrying `blocked-on`. It is the only head-derived number, and it
+//   can only ever push toward failing; there is no longer a head-derived
+//   number that can push toward passing.
+// - `base_total`, `base_blocked`, `budget` — read from origin/main:
+//   `base_total` is every open item on the base; `base_blocked` is the base's
+//   `blocked-on` items; `budget` is the base's `queue_budget`.
+// - `max(...)` is what tolerates the historical overage: a track sitting at
+//   30 against a budget of 6 may not grow past 30, but is not required to
+//   shrink.
+// - `budget + base_blocked` is what preserves the point of `blocked-on`:
+//   items no round can ever close do not eat the actionable allowance.
+//   Because `base_blocked` comes from the base, marking items blocked in the
+//   diff being judged buys nothing — the branch cannot move it.
+//
+// The base is read from origin/main, never from the working copy, and the
+// budgets are read from policy.yml on origin/main as well as from the branch.
+// A gate that read only the branch's own tree could be walked around in one
+// commit — raise the budget, file against the new number, every check green.
+// That is the round-78 hole check-track-scope.mjs records in its own header,
+// and it is closed here twice: the filing gate's budget is the base's, and the
+// budget-raise rule below fails any branch that raises a budget AND grows that
+// track's count in the same diff — CHARTER.md rule 11 made mechanical for this
+// gate.
+//
+// Where origin/main cannot be resolved the gate is skipped with a WARN and the
+// check still exits 0 for it — a single-branch clone has no remote ref, and a
+// check that cannot read its baseline must not invent one or take the build
+// down with it. This is the guard count-changelog-rounds.mjs carries after
+// PR #90: two production outages on 15 August came from prebuild checks that
+// shelled out to git for a ref the deployment clone did not have.
+
+function countRef(list) {
+  const out = {};
+  for (const item of list) {
+    const track = item.fields.track;
+    if (track) out[track] = (out[track] || 0) + 1;
+  }
+  return out;
+}
+
+function budgetsFrom(policy) {
+  const out = {};
+  for (const [track, cfg] of Object.entries(policy.tracks || {})) {
+    if (cfg && typeof cfg.queue_budget === "number" && cfg.queue_budget >= 0) {
+      out[track] = cfg.queue_budget;
+    }
+  }
+  return out;
+}
+
+function readBase() {
+  const ls = execFileSync(
+    "git",
+    ["ls-tree", "-r", "--name-only", "origin/main", "--", "docket/open"],
+    { encoding: "utf8" }
+  );
+  const baseItems = [];
+  for (const file of ls.split("\n").map((s) => s.trim()).filter(Boolean)) {
+    if (!file.endsWith(".md")) continue;
+    const text = execFileSync("git", ["show", `origin/main:${file}`], {
+      encoding: "utf8",
+    }).replace(/\r\n/g, "\n");
+    const fields = parseFrontmatter(text);
+    if (fields) baseItems.push({ file, fields });
+  }
+  const policy = parseYaml(
+    execFileSync("git", ["show", "origin/main:policy.yml"], { encoding: "utf8" })
+  );
+  return { baseItems, policy };
+}
+
+const gateFailures = [];
+
+let base = null;
+try {
+  execFileSync("git", ["rev-parse", "--verify", "--quiet", "origin/main^{commit}"], {
+    stdio: "ignore",
+  });
+  base = readBase();
+} catch (error) {
+  console.error(
+    "WARN  origin/main is not in this checkout — the filing gate cannot read its baseline and is skipped"
+  );
+  console.error(
+    "      a single-branch or shallow clone has no remote ref; the docket is still validated, only the gate is off"
+  );
+}
+
+const headPolicy = parseYaml(fs.readFileSync(path.join(root, "policy.yml"), "utf8"));
+const headTotals = countRef(open);
+const headBudgets = budgetsFrom(headPolicy);
+
+if (base) {
+  const baseTotals = countRef(base.baseItems);
+  const baseBlocked = countRef(base.baseItems.filter((i) => i.fields["blocked-on"]));
+  const baseBudgets = budgetsFrom(base.policy);
+  const gated = new Set([...Object.keys(baseBudgets), ...Object.keys(headBudgets)]);
+
+  const lines = [];
+  for (const track of TRACKS) {
+    const budget = baseBudgets[track] ?? headBudgets[track];
+    if (budget == null) continue;
+    lines.push(
+      `      ${track.padEnd(9)} base ${String(baseTotals[track] || 0).padStart(2)}` +
+        ` -> head ${String(headTotals[track] || 0).padStart(2)}  (queue budget ${budget})`
+    );
+  }
+  // Name the residual in the tool's own output rather than only in the
+  // changelog. Tracks without a queue_budget are skipped by the rule below, so
+  // relabelling an item's `track:` into one of them moves it out of a bounded
+  // count entirely: round 152's fourth review grew the queue 60 -> 90 in one
+  // green diff that way. Shipped with the limit stated instead of patched a
+  // fifth time; closing it means bounding every track or removing the head's
+  // ability to move an item between tracks.
+  const unbounded = TRACKS.filter((t) => (baseBudgets[t] ?? headBudgets[t]) == null);
+  if (unbounded.length > 0) {
+    lines.push(
+      `      not bounded: ${unbounded.join(", ")} (no queue_budget) — an item` +
+        ` relabelled into one of these leaves the counts above`
+    );
+  }
+  base.gateLines = lines;
+
+  for (const track of gated) {
+    const baseTotal = baseTotals[track] || 0;
+    const headTotal = headTotals[track] || 0;
+    const budget = baseBudgets[track];
+    if (budget == null) continue;
+    const blockedOnBase = baseBlocked[track] || 0;
+    const ceiling = Math.max(baseTotal, budget + blockedOnBase);
+    if (headTotal > ceiling) {
+      gateFailures.push(
+        `filing gate: ${track} head open count ${headTotal} exceeds its ceiling of ${ceiling}` +
+          ` (base ${baseTotal}; queue budget ${budget} + ${blockedOnBase} blocked on base)`
+      );
+    }
+    if ((headBudgets[track] ?? 0) > (baseBudgets[track] ?? 0) && headTotal > baseTotal) {
+      gateFailures.push(
+        `budget-raise rule: ${track}'s queue_budget was raised` +
+          ` ${baseBudgets[track] ?? "none"} -> ${headBudgets[track]}` +
+          ` and its open count grew ${baseTotal} -> ${headTotal} in the same diff`
+      );
+    }
+  }
+}
 
 if (problems.length > 0) {
   for (const problem of problems) console.log(`FAIL  ${problem}`);
@@ -201,12 +397,30 @@ if (problems.length > 0) {
 
 console.log(`ok    ${items.length} docket item(s) valid (${open.length} open)`);
 for (const track of TRACKS) {
-  const n = open.filter((i) => i.fields.track === track).length;
+  const n = counted.filter((i) => i.fields.track === track).length;
   if (n > 0) console.log(`      ${track}: ${n} open`);
+}
+if (blocked.length > 0) {
+  console.log("      blocked on maintainer (excluded from capacity counts; still counted in the head total the gate judges):");
+  for (const { file, fields } of blocked) {
+    console.log(`        ${file}  (${fields.track})`);
+  }
 }
 // Expiry is a prompt to prune, not a build failure: an item going stale is
 // normal, and failing CI over it would mean the queue could break the site.
 if (expired.length > 0) {
   console.log(`\nnote  ${expired.length} open item(s) past their expiry — prune or renew:`);
   for (const item of expired) console.log(`      ${item.file} (expired ${item.fields.expires})`);
+}
+
+if (base && base.gateLines.length > 0) {
+  console.log("gate  filing gate — base read from origin/main, head from this tree");
+  for (const line of base.gateLines) console.log(line);
+}
+
+if (gateFailures.length > 0) {
+  console.log();
+  for (const failure of gateFailures) console.log(`FAIL  ${failure}`);
+  console.log(`\n${gateFailures.length} filing-gate failure(s)`);
+  process.exit(1);
 }

@@ -85,6 +85,9 @@ const done = new Set(
   fs.existsSync(doneDir) ? fs.readdirSync(doneDir).filter((f) => f.endsWith(".md")) : []
 );
 const ready = open.filter((item) =>
+  // An item blocked on the maintainer is real but no round can close it, so
+  // it is not available work; check-docket.mjs admits only `maintainer` here.
+  !item["blocked-on"] &&
   (item["blocked-by"] || "")
     .split(",")
     .map((s) => s.trim())
