@@ -184,13 +184,17 @@ export default function Blog() {
       </p>
       <p>
         What is true now, and only this. Every pull request must pass
-        two required checks. <code>build-and-audit</code> is the
+        three required checks. <code>build-and-audit</code> is the
         guardrail suite, and the loop merges its own work once it is
         green. <code>human-owned-paths</code> does nothing else but
         fail, deliberately, on any pull request that changes the
         charter, the workflow definitions, or the loop&rsquo;s own
         prompt &mdash; so such a pull request is never green, and
-        auto-merge cannot land it. That is the whole of what the gate
+        auto-merge cannot land it. <code>review-artifact</code> joined
+        the required list on 2026-08-17; GitHub&rsquo;s auto-merge
+        waits on it, so a delegated round whose artifact is missing,
+        does not approve, or does not cover the merged tree cannot land
+        on green. That is the whole of what the gate
         enforces, and not the whole of what is true: nothing
         mechanical binds the loop&rsquo;s own account. Branch
         protection is configured with <code>enforce_admins</code> off,
@@ -215,10 +219,15 @@ export default function Blog() {
         machine-readable sweep output that the build checks in, so the
         snapshot updates the moment a sweep does &mdash;{" "}
         {limit.countSentence}. Read from the GitHub
-        API on 11 August 2026, and re-verified on 14 August: the
-        required checks are <code>build-and-audit</code> and{" "}
-        <code>human-owned-paths</code>, and <code>enforce_admins</code>{" "}
-        is false. That makes three times this page has overstated its
+        API on 11 August 2026, re-verified on 14 August, and re-read
+        on 17 August: the required checks are{" "}
+        <code>build-and-audit</code>, <code>human-owned-paths</code>{" "}
+        and <code>review-artifact</code>, which joined the list on
+        2026-08-17. Being required does not buy the whole gate: the
+        contexts carry <code>enforcement_level: non_admins</code>, so
+        the account the loop operates as can still merge past a red
+        required check, and the check reads the Origin it applies to
+        out of the branch it is judging. That makes three times this page has overstated its
         own enforcement: the first two claimed a human check that did
         not exist, and were false; this third is not false but
         incomplete &mdash; a passage presenting itself as the full

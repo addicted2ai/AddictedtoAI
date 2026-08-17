@@ -70,6 +70,62 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-17
+Two published claims about this project's own process had quietly gone false,
+and neither was surfaced by any check — the same defect class as the fix in
+PR #123, which is why both survived. The blog page still said every pull
+request must pass two required checks and named exactly two, and the committed
+sweep count of pull requests that merged over a failing `human-owned-paths`
+check was a stale nine. Both are corrected here: the blog page now names all
+three required contexts and the count is re-swept at ten.
+
+**1. The blog page says three required checks, not two**
+- Hypothesis: a process claim that names fewer checks than branch protection
+  enforces understates a live guardrail, and it survives because nothing reads
+  the settings and compares them to what the repository says about itself.
+- Change: the present-tense claim in `app/blog/page.js` is corrected in place.
+  It previously said every pull request must pass two required checks and that
+  "the required checks are `build-and-audit` and `human-owned-paths`", last
+  re-verified on 14 August. It now says three, names all three contexts —
+  `build-and-audit`, `human-owned-paths` and `review-artifact` — and says that
+  `review-artifact` joined the required list on 2026-08-17, the same day the
+  workflow comment and `docket/README.md` were corrected (this page was the
+  third, untouched copy of the claim). It also says what being required does
+  not buy: the contexts carry `enforcement_level: non_admins`, so the account
+  the loop operates as can still merge past a red required check, and the check
+  reads the Origin it applies to out of the branch it is judging. The wording
+  follows the two earlier corrections rather than inventing a fourth phrasing.
+  The historical "was two on 11 August … eight by nightfall" sentences are
+  untouched. The required contexts were re-read from the GitHub API this round,
+  not taken from any brief: `gh api repos/addicted2ai/AddictedtoAI/branches/main`
+  returns `["build-and-audit","human-owned-paths","review-artifact"]` with
+  `enforcement_level: non_admins` (the branch endpoint carries no
+  `enforce_admins` field; the earlier "is false" claim in the same paragraph is
+  a separate, older sentence and was left as written).
+
+**2. Re-swept the one-limit count: nine is now ten**
+- Hypothesis: PR #123 merged over a failing `human-owned-paths` check on
+  2026-08-17, so the committed sweep output — count 9, set [25, 27, 39, 40, 42,
+  50, 52, 58, 116] — is one behind the API.
+- Change: re-ran `node scripts/sweep-one-limit-count.mjs` and committed the
+  fresh output. It reports count 10 with #123 joining the failing set. The blog
+  renders its count sentence from that file, so the page now shows "ten"; no
+  prose changed for this half of the round.
+
+- Origin: delegated
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/check-one-limit-count.mjs` — ok, sweep output
+  internally consistent (count 10, 10 set members, swept 2026-08-17T23:42:47Z,
+  0 days old, within the 30-day process-claim window). The rendered-page check
+  runs under `node scripts/round.mjs check`, which also runs lint, the docket
+  validator, the track-scope check, the production-shaped build and the route
+  checks on port 3000.
+- Result: not yet measured — the corrections match the API and the fresh sweep
+  as of this round; nothing keeps them matching, which is the honest residual:
+  no check reads the branch protection and compares it to what the site says
+  about it.
+
+### 2026-08-17
 A one-comment correction to `.github/workflows/pr-checks.yml`, which still told
 every reader that the `review-artifact` job "is a *visible* check, not a gate"
 and is "not on that list". The maintainer added it to the required contexts on
