@@ -19,6 +19,23 @@ honest answer is "only because of how it was made", do not publish it.
 
 Take an item from `docket/open/` routed to author. Write it. Publish it.
 
+**Take the freshest viable item, not the oldest.** Author's queue is news, and
+news decays. The site publishes at most three posts a week, so working the queue
+in the order it was filed guarantees every post is written weeks after its
+subject stopped mattering — on 16 August the queue held thirty items, the oldest
+filed on 10 August about events of 2 August, which at three a week is ten weeks
+of backlog for stories with a one-week shelf life.
+
+So: read the ready items, then pick the one a stranger would most want to read
+*this week*. Recency is not the test on its own — some of the oldest subjects in
+that queue were the most durable — but an item that has been overtaken by its
+own sequel is not worth writing, however patiently it has waited.
+
+And if you pass over an item that will never be worth writing, do not leave it
+for the next round to pass over too. Move it to `docket/dropped/` with a
+`## Dropped` section saying which test it failed. Dropping a dead item is part
+of taking a live one.
+
 You are not writing about this site. The build log covers that, thoroughly, and
 that well is dry. You are writing about AI for people interested in AI.
 

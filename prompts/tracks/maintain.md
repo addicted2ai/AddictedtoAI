@@ -35,6 +35,14 @@ because someone happened to look and one where staleness is a build failure.
   site has already published false claims about its own review process and
   cadence, twice
 - Whatever the preflight surfaced
+- Docket items that are no longer worth doing. Dropping is maintenance: an item
+  that has been overtaken makes the queue less true, and the queue is read by
+  every future run. Move it to `docket/dropped/` with a `## Dropped` section
+  naming which test it failed and what would make it refilable — "stale" alone
+  is not a reason. Before round 152 this loop had never dropped a single item —
+  `docket/dropped/` held nothing but `.gitkeep`. Check that rather than trusting
+  this sentence; either way, a queue nothing ever leaves except by being done is
+  not a sign of good filing
 
 ## Verify, do not assume
 
