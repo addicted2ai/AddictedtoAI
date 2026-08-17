@@ -132,10 +132,12 @@ function checkItem(status, file, text) {
   if (fields.priority && !["1", "2", "3"].includes(fields.priority)) {
     fail(label, `priority "${fields.priority}" must be 1, 2 or 3`);
   }
-  // blocked-on is an optional escape from the budget counts and from `ready`
+  // blocked-on is an optional escape from the capacity counts and from `ready`
   // in the dispatcher. Its only accepted value is `maintainer`, which means:
   // this item is real, and no round can close it. Rejecting every other value
   // stops the field from becoming a free-text hatch that empties the queue.
+  // The field escapes capacity, not growth — the filing gate still counts a
+  // blocked item when measuring whether the track's total grew.
   if (fields["blocked-on"] && fields["blocked-on"] !== "maintainer") {
     fail(label, `blocked-on "${fields["blocked-on"]}" — the only accepted value is "maintainer"`);
   }
@@ -199,9 +201,11 @@ for (const { status, file, fields } of items) {
 
 const open = items.filter((i) => i.status === "open");
 // Items blocked on the maintainer are real, open, and uncountable: no round
-// can close them, so including them in budget counts would consume budget the
-// loop can never free. They are excluded from the counts below and from the
-// filing gate, and reported on their own line so they stay visible.
+// can close them, so including them in capacity counts would consume budget
+// the loop can never free. They are excluded from the capacity counts below
+// and reported on their own line so they stay visible. They are NOT excluded
+// from growth: an item nobody counts is an item anyone can add, so the filing
+// gate measures growth on the total including them (see below).
 const counted = open.filter((i) => !i.fields["blocked-on"]);
 const blocked = open.filter((i) => i.fields["blocked-on"]);
 const expired = counted.filter(
@@ -212,9 +216,20 @@ const expired = counted.filter(
 //
 // Nothing here is about the shape of an item: it is about the capacity of the
 // track receiving it. A track's budget is `queue_budget` in policy.yml — the
-// stock it can actually spend — and the gate forbids *growth* on top of it:
+// stock it can actually spend. The gate forbids *growth* on top of it, and the
+// two questions are measured separately on purpose:
 //
-//     FAIL if head > base AND head > budget
+//     FAIL if head_total > base_total AND head_counted > budget
+//
+// Growth is the total open count for the track, including items carrying
+// `blocked-on` — filing anything into an over-budget track fails, whatever
+// frontmatter it carries. Capacity (whether the track is over budget at all)
+// is the counted total, excluding `blocked-on` items — that is the field's
+// whole purpose: two items no round can ever close should not consume budget
+// the loop cannot free. Review found the first shipped shape walkable because
+// it measured growth on the counted total too: a new item carrying
+// `blocked-on` changed no count, so the hatch was open to anything. It is
+// closed by this split.
 //
 // The overage that already exists on main is tolerated (author holds ~30
 // against a budget of 6); only the next item is impossible.
@@ -294,11 +309,13 @@ try {
 }
 
 const headPolicy = parseYaml(fs.readFileSync(path.join(root, "policy.yml"), "utf8"));
-const headCounts = countRef(counted);
+const headCounted = countRef(counted);
+const headTotals = countRef(open);
 const headBudgets = budgetsFrom(headPolicy);
 
 if (base) {
-  const baseCounts = countRef(base.baseItems.filter((i) => !i.fields["blocked-on"]));
+  const baseCounted = countRef(base.baseItems.filter((i) => !i.fields["blocked-on"]));
+  const baseTotals = countRef(base.baseItems);
   const baseBudgets = budgetsFrom(base.policy);
   const gated = new Set([...Object.keys(baseBudgets), ...Object.keys(headBudgets)]);
 
@@ -307,28 +324,28 @@ if (base) {
     const budget = baseBudgets[track] ?? headBudgets[track];
     if (budget == null) continue;
     lines.push(
-      `      ${track.padEnd(9)} base ${String(baseCounts[track] || 0).padStart(2)}` +
-        ` -> head ${String(headCounts[track] || 0).padStart(2)}  (queue budget ${budget})`
+      `      ${track.padEnd(9)} base ${String(baseTotals[track] || 0).padStart(2)}` +
+        ` -> head ${String(headTotals[track] || 0).padStart(2)}  (queue budget ${budget})`
     );
   }
   base.gateLines = lines;
 
   for (const track of gated) {
-    const baseCount = baseCounts[track] || 0;
-    const headCount = headCounts[track] || 0;
+    const baseTotal = baseTotals[track] || 0;
+    const headTotal = headTotals[track] || 0;
     const budget = baseBudgets[track] ?? headBudgets[track];
     if (budget == null) continue;
-    if (headCount > baseCount && headCount > budget) {
+    if (headTotal > baseTotal && (headCounted[track] || 0) > budget) {
       gateFailures.push(
-        `filing gate: ${track} open count grew ${baseCount} -> ${headCount}` +
+        `filing gate: ${track} open count grew ${baseTotal} -> ${headTotal}` +
           ` while over its queue budget (${budget})`
       );
     }
-    if ((headBudgets[track] ?? 0) > (baseBudgets[track] ?? 0) && headCount > baseCount) {
+    if ((headBudgets[track] ?? 0) > (baseBudgets[track] ?? 0) && headTotal > baseTotal) {
       gateFailures.push(
         `budget-raise rule: ${track}'s queue_budget was raised` +
           ` ${baseBudgets[track] ?? "none"} -> ${headBudgets[track]}` +
-          ` and its open count grew ${baseCount} -> ${headCount} in the same diff`
+          ` and its open count grew ${baseTotal} -> ${headTotal} in the same diff`
       );
     }
   }
@@ -346,7 +363,7 @@ for (const track of TRACKS) {
   if (n > 0) console.log(`      ${track}: ${n} open`);
 }
 if (blocked.length > 0) {
-  console.log("      blocked on maintainer (excluded from counts and the filing gate):");
+  console.log("      blocked on maintainer (excluded from capacity counts; still counted for growth):");
   for (const { file, fields } of blocked) {
     console.log(`        ${file}  (${fields.track})`);
   }
