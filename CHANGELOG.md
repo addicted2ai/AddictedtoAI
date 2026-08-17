@@ -79,9 +79,10 @@ at check time), inside the 30-day process-claim window, and
 `node scripts/check-loop-history-snapshot.mjs` reports it well-formed, matching
 the live Actions API (3 completed runs as of `taken_at`) and matching the
 changelog (125 round entries as of `taken_at`). `/log`'s counts hold: the
-parser reads all 147 rounds from `CHANGELOG.md`, and the page partition is 15
-newest rendered in full + 62 paged + 23 early + 47 archived = 147, with 338
-distinct changes and 80 pull requests, all counted from the parsed log this run.
+parser reads all 148 rounds from `CHANGELOG.md` on the tree this PR ships (147
+before this entry landed), and the page partition is 14 newest rendered in
+full + 64 paged + 23 early + 47 archived = 148, with 339 distinct changes and
+80 pull requests, all counted from the parsed log this run.
 `/charter` holds: the page renders 21 rules parsed from `CHARTER.md` (the file
 carries 21), and its two correction asides correctly render nothing because
 both falsified claims have been amended out of the document. The AI disclosure
@@ -96,9 +97,42 @@ and noted, not done. The false claim: `/log`'s lead paragraph said "Every round
 states a hypothesis before the work starts and a measured result after it
 lands", and the `/log`, `/log/early` and `/log/archive` metadata said each
 change is shown with "the measurement that judged it" / "what it measured". By
-the record, only 18 of 147 rounds record a measured result; 103 read "not yet
-measured" and 26 read "not measured" (129 of 147 unmeasured), and all 47
-archived rounds read "not yet measured". That is the same claim the charter's
+the record, read by what each Result actually says: 33 of the 148 results on
+the tree this PR ships begin with the word "measured" — a measurement
+assertion — while 115 begin with something else (the 147-entry record the
+round first measured yields 32, and this entry's own result is the
+thirty-third). Under the reading rule the review names — a result that opens
+"measured this run —" or "measured this round —" is a measured result even
+when it appends a "Not yet measured:" / "Not measured:" caveat clause — 26 of
+148 results open with a measurement assertion: 20 append such a caveat (rounds
+104, 107, 108, 112, 113, 116, 117, 118, 119, 120, 122, 124, 125, 126, 128,
+131, 132, 133, 134 and this one; round 128 reads "measured this run — the
+window holds; … Not yet measured: whether the build track makes dispatch
+quota-aware …", round 131 reads "measured this run — the caption's 'every
+round so far' claim is false by the record: 31 of 83 current-era rounds record
+measured results …", round 104 reads "measured this round, exhaustively. The
+API evidence for all 57 merged PRs was written to a sweep log during the
+round …", round 133 reads "measured this run — the report's 128 / 127 / 1 / 0
+reproduced from the command on the merged tree …", round 116 reads "measured
+this round. The `/loop-history` page was publishing 60 rounds shipped against
+a live 64 …") and 6 do not (rounds 105, 106, 110, 111, 141, 147); 122 of 148
+do not open with either phrase. This entry's first draft published the count
+the review blocked — "only 18 of 147 rounds record a measured result; 103
+read 'not yet measured' and 26 read 'not measured'" — which is a mechanical
+phrase count dressed as a reading: 104 results contain "not yet measured", 26
+contain "not measured" without "yet" and 18 contain neither, but phrase
+presence is not result class, since 20 of the 26 phrase-opening measurements
+append their caveat and measured results phrased differently (round 85's
+"measured by running the assertions, not asserted: …", round 88's "measured by
+hand, because the page is outside every automated route loop …") contain
+neither phrase at all. All 47 archived rounds read "not yet measured". The
+entry's draft /log counts went false the moment the entry landed — the /log
+page renders the parser's live counts, and the draft's 147 / 15+62+23+47 / 338
+were measured on the record before the entry — and the review caught both
+defects before merge
+(`docket/reviews/0b1af058e5f25c1bf8bf906fab6bd31d803d0565.md`, request-changes);
+both are corrected here, in this entry, which is the only place a correction
+can legally land before it ships. That is the same claim the charter's
 adoption history names as false — "rounds carried measured results" while all
 47 recorded results read "not yet measured" — so it is corrected in place and
 recorded as a new entry (rule 5), not an edit to any past entry. The four
@@ -140,16 +174,20 @@ it could not.
   check` — lint, the docket validator, track scope for
   `loop/maintain/verify-process-claims`, a production-shaped build and the
   route checks against a server on port 3000, no group skipped.
-- Result: measured this run — the claim's falsity by the record: 18 of 147
-  rounds record a measured result, 103 read "not yet measured", 26 read
-  "not measured", and all 47 archived rounds read "not yet measured", counted
-  from the parsed build log this round; the /log partition is 15 + 62 + 23 +
-  47 = 147 with 338 changes and 80 pull requests; the loop-history snapshot is
-  1 day old and agrees with the live API (3 completed runs) and the changelog
-  (125 rounds as of `taken_at`); 21 charter rules render against a file with
-  21; the staleness sweep reports 127 within window / 1 recorded-unverified /
-  0 stale. Not measured: whether any future round re-introduces the overclaim,
-  and whether the Meta Llama retirement row ever resolves.
+- Result: measured this run — the claim's falsity by the record, counted from
+  the parsed build log on the tree this PR ships: 33 of 148 results begin with
+  the word "measured" and 26 open "measured this run —" / "measured this round
+  —" (20 with a "Not yet measured:" / "Not measured:" caveat appended — this
+  entry's own result among them — and 6 without); 122 do not open with either
+  phrase; by phrase count 104 contain "not yet measured", 26 contain "not
+  measured" without "yet", 18 contain neither; all 47 archived rounds read
+  "not yet measured". The /log partition is 14 + 64 + 23 + 47 = 148 with 339
+  changes and 80 pull requests; the loop-history snapshot is 1 day old and
+  agrees with the live API (3 completed runs) and the changelog (125 rounds as
+  of `taken_at`); 21 charter rules render against a file with 21; the staleness
+  sweep reports 127 within window / 1 recorded-unverified / 0 stale. Not
+  measured: whether any future round re-introduces the overclaim, and whether
+  the Meta Llama retirement row ever resolves.
 
 ### 2026-08-16
 Round 147 (audit) audits rounds 142–146 — three scout rounds (142, 143, 144)
