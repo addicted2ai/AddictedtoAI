@@ -80,7 +80,10 @@ commit) does not work on it. `blocked-on: maintainer` pulls the two items no
 round can ever close out of the counts and out of the dispatcher's `ready`;
 measured on this branch, `dispatch.mjs`'s ready count fell 54 → 51 of 59 open
 — the two items now blocked, plus this round's own item closing into
-`docket/done/`.
+`docket/done/`. The first shape of this gate proved walkable in review —
+`blocked-on: maintainer` excluded items from the growth count too, so anything
+filed with it was invisible to the gate — and the review-and-fix section below
+records the hole and the fix. This paragraph describes the corrected gate.
 
 This is the second of two consecutive meta rounds, above the "cap meta at one
 round in five" guidance in `prompts/orchestrator.md`. That guidance exists to
@@ -218,8 +221,109 @@ The ref is unresolvable, so the gate must print `WARN`, skip, and still exit
 Also verified: `blocked-on: <anything else>` is rejected —
 `blocked-on: nobody` on a scratch item fails with "the only accepted value is
 'maintainer'" and exit 1, and the item was deleted again. `blocked-on:
-maintainer` accepts, excludes from counts and prints on its own line, as the
-outputs above show.
+maintainer` accepts, excludes the item from the capacity counts and prints it
+on its own line, as the outputs above show. The first shipped shape also
+excluded it from the gate's growth count — the escape hatch the review-and-fix
+section below closes.
+
+**The review found the gate walkable — the headline promise was false as shipped.**
+
+The hole was in the orchestrator's specification, not in this implementation —
+this is recorded before the detail, because a gate that was published as
+airtight and was not is exactly the class of failure this record exists for. PR
+#115 was reviewed at
+`docket/reviews/e6a662f30f31068e612b87c2ce3e6c3d77d96321.md` and returned
+**request-changes** with one blocking finding: `blocked-on: maintainer` is the
+escape hatch the first shape claimed it was not. The review filed three new
+author items carrying the field on top of a queue already 30 deep against a
+budget of 6, and every check stayed green — author counted 30 → 30,
+`ok 110 docket item(s) valid (63 open)`, **exit 0**. The open queue physically
+grew 60 → 63, past every budget, and nothing went red. The changelog's
+headline promise — that the gate "makes the 31st author item impossible" —
+was false as shipped.
+
+The rule as written excluded blocked items from the count without saying who
+may add the field or when; the implementation implemented that spec
+faithfully, and the spec was wrong. An item nobody counts is an item anyone
+can add.
+
+The corrected rule splits the two questions the first shape conflated. Growth
+is measured on the **total** open count for the track, including items
+carrying `blocked-on` — filing anything into an over-budget track fails,
+whatever frontmatter it carries. Capacity — whether the track is over budget
+at all — stays measured on the **counted** total, excluding `blocked-on`
+items; that was the field's whole purpose, and two items no round can ever
+close should not consume budget the loop cannot free. So:
+
+    FAIL if head_total > base_total AND head_counted > budget
+
+against the same `origin/main` baseline, with the same `WARN` + exit 0 when
+the ref is unresolvable.
+
+(f) PROOF-6-BLOCKED-ON-NEW-ITEMS — the reviewer's exact exploit: three new
+author items carrying `blocked-on: maintainer` on top of the 30 already on
+base. First against the shipped code on `scratch/proof6-blocked-before` —
+**green, exit 0; this is the hole**:
+
+    ok    110 docket item(s) valid (63 open)
+          author: 30 open
+          maintain: 1 open
+          meta: 29 open
+          blocked on maintainer (excluded from counts and the filing gate):
+            2026-08-17-proof6-exploit-a.md  (author)
+            2026-08-17-proof6-exploit-b.md  (author)
+            2026-08-17-proof6-exploit-c.md  (author)
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 30  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+    exit=0
+
+Then against the fixed gate on `scratch/fix-p6-blocked-new` — **red, exit 1**:
+
+    ok    110 docket item(s) valid (63 open)
+          author: 30 open
+          maintain: 1 open
+          meta: 29 open
+          blocked on maintainer (excluded from capacity counts; still counted for growth):
+            2026-08-17-fix-proof-6-exploit-a.md  (author)
+            2026-08-17-fix-proof-6-exploit-b.md  (author)
+            2026-08-17-fix-proof-6-exploit-c.md  (author)
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 33  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+
+    FAIL  filing gate: author open count grew 30 -> 33 while over its queue budget (6)
+
+    1 filing-gate failure(s)
+    exit=1
+
+(g) CONTROL-7-MARK-EXISTING — `blocked-on: maintainer` added to an item that
+already exists on `origin/main` (`2026-08-15-post-chatgpt-linux-desktop.md`),
+changing no totals, on `scratch/fix-p7-blocked-existing` → **green, exit 0** —
+the fix is not a ban on the field, and the two settings-UI items stay
+uncloseable budget, which is the field's actual purpose:
+
+    ok    107 docket item(s) valid (60 open)
+          author: 29 open
+          maintain: 1 open
+          meta: 29 open
+          blocked on maintainer (excluded from capacity counts; still counted for growth):
+            2026-08-15-post-chatgpt-linux-desktop.md  (author)
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 30  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+    exit=0
+
+Proofs (a)–(e) were re-run against the fixed gate on committed branches and
+come out unchanged — red / green / red / green / green — because with no
+blocked items in play, total and counted are the same number. The two
+settings-UI items keep their `blocked-on: maintainer` on this branch; under
+the corrected gate they leave meta's counted capacity (29 → 26) while still
+counting toward the total, which on this branch grew nothing (29 → 28, the
+third being this round's item closing).
 
 - Origin: delegated
 - Track: meta
@@ -227,16 +331,20 @@ outputs above show.
 - Guardrails: `node scripts/round.mjs check` — lint, the docket validator, the
   track scope for `loop/meta/docket-filing-gate`, a production-shaped build
   and the route checks against a server on port 3000, no group skipped. The
-  five proof runs and the single-branch-clone run above are each a committed
-  branch run against and pasted, not described.
+  seven proof runs — the five originals, the reviewer's exploit, the negative
+  control — and the single-branch-clone run above are each a committed branch
+  run against and pasted, not described.
 - Result: measured this round — the two settings-UI items left dispatch's
   ready (54 → 51 of 59 open, the third being this round's item closing), left
   meta's counted open items (29 → 26 on this branch, two blocked plus one
   closed) while staying visible on their own line, and the filing gate is
   green on this branch (author 30→30, build 0→0, meta 29→26) and red on each
-  proof that grew an over-budget track. Not yet measured: whether the queue
-  stops growing — that is the gate's first red in the wild, which nothing
-  shipped this round can produce, and it has not happened yet.
+  proof that grew an over-budget track. The review's exploit — three new
+  author items carrying `blocked-on: maintainer` on top of the 30 already on
+  base — went green on the first shape and is red on the corrected gate.
+  Not yet measured: whether the queue stops growing — that is the gate's first
+  red in the wild, which nothing shipped this round can produce, and it has
+  not happened yet.
 
 ### 2026-08-16
 Round 151 (meta) ships the first committed implementation of the demand-weighted
