@@ -70,6 +70,124 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 151 (meta) ships the first committed implementation of the demand-weighted
+dispatcher, executing docket item `2026-08-16-demand-weighted-dispatch.md` — the
+maintainer course correction whose brief merged in PR #112 — and this record
+carries a correction to that brief, stated here before the measurements. The
+implementation itself (`policy.yml` `queue_budget`/`feeds`, `scripts/dispatch.mjs`'s
+effective-weight computation) was written and committed by the orchestrating
+model as commit `b8f5add` after the round session that designed it died
+mid-measurement to an OpenCode `doom_loop` auto-reject; this round's work is the
+record and the ship: the entry, the docket close, and the committed tree as-is.
+
+**The brief's bold claim "The 10% cap never bound once" is false, and the BEFORE
+measurement below is what falsifies it.** `docket/open/2026-08-16-demand-weighted-dispatch.md`,
+filed by the maintainer and merged in PR #112, asserts in bold: "**The 10% cap
+never bound once.**" In the before run, `maintain`'s target reads 71%. With
+candidates maintain (25), audit (10) and meta (5) the arithmetic would be
+25/40 = 62.5%; it reads 71% because the denominator is 35 — meta was excluded
+from the candidate list entirely by `max_share_of_runs`. Meta sat at exactly 2
+of the last 20 shipped rounds, 10.0%, which is `>= 0.10`, so the cap was
+excluding meta from every dispatch decision while meta held 25 ready items. The
+error came from measuring meta's share over the last **forty** rounds (5%) when
+the dispatcher's window is **twenty** (10%) — same track, same history,
+different window, opposite conclusion. This does not weaken the change; it
+strengthens the case for it, because the cap was not a dead letter but an active
+exclusion. The record said something untrue, and the record has to say so.
+
+**1. Weight the dispatcher by measured demand**
+- Hypothesis: a weight table written when the queue was empty cannot tell a full
+  queue from an empty one, and it mispriced both ends of the loop — meta starved
+  at a 5% share while holding 25 ready items, and scout shipped at a full weight
+  into a queue it had filled. Making weight a function of measured pressure (a
+  consuming track's ready/budget; a supplying track's fill) should let demand
+  drive the rotation, with the 2× ceiling and the 0.1 floor bounding it.
+- Change: `policy.yml` adds `queue_budget` (author 6, build 14, meta 14) and
+  scout `feeds: [author]`, removes `scout.max_runs_per_day` and
+  `meta.max_share_of_runs` (each removal explained in the file), and
+  `scripts/dispatch.mjs` computes `effectiveWeight` per the item — pressure and
+  fill, the 2× ceiling and the 0.1 floor both commented as load-bearing — prints
+  each track's ready/budget/pressure line so a win is legible, and its header
+  comment no longer claims a fixed-weight rotation. Committed as `b8f5add`.
+
+**Measured by the orchestrator on 2026-08-16, on the same tree with a queue of
+61 open items (55 ready) — pasted here, not re-run, per the brief.**
+
+BEFORE — fixed weights, `origin/main`'s `dispatch.mjs` and `policy.yml`:
+
+    track:  maintain
+    reason: quota: target 71%, recent 25% over last 20 shipped round(s)
+
+      scout     blocked    (already shipped 4 round(s) today (cap 1/day); 4 of last 20 shipped)
+      maintain  available  (does not need a queued item; 5 of last 20 shipped)
+      author    blocked    (publishing quota; 0 of last 20 shipped)
+      build     blocked    (no ready docket item; 5 of last 20 shipped)
+      audit     available  (does not need a queued item; 4 of last 20 shipped)
+      meta      available  (25 ready item(s); 2 of last 20 shipped)
+
+AFTER — this branch:
+
+    track:  maintain
+    reason: quota: target 53%, recent 25% over last 20 shipped round(s)
+
+    demand by track (ready / budget = pressure -> effective weight):
+      scout     feeds author: 29/6 = 4.83 fill  ->  weight 3.00 (x0.10 of 30)
+      maintain  no budget, no feeds  ->  weight 25.00 (x1.00 of 25)
+      author     29/6 = 4.83  ->  weight 30.00 (x2.00 of 15)
+      build       0/14 = 0.00  ->  weight 0.00 (x0.00 of 15)
+      audit     no budget, no feeds  ->  weight 10.00 (x1.00 of 10)
+      meta       25/14 = 1.79  ->  weight 8.93 (x1.79 of 5)
+
+NEGATIVE CONTROL 1 — author's 30 items deleted from the tree, then restored:
+
+    demand by track (ready / budget = pressure -> effective weight):
+      scout     feeds author: 0/6 = 0.00 fill  ->  weight 30.00 (x1.00 of 30)
+      author      0/6 = 0.00  ->  weight 0.00 (x0.00 of 15)
+      meta       25/14 = 1.79  ->  weight 8.93 (x1.79 of 5)
+
+    reason: quota: target 41%, recent 20% over last 20 shipped round(s)   [track: scout]
+
+Scout's weight returns to its full 30 and scout becomes the selected track — the
+demotion tracks the queue; it is not hardcoded.
+
+NEGATIVE CONTROL 2 — meta's `queue_budget` raised 14 → 100, then restored:
+
+    meta       25/100 = 0.25  ->  weight 1.25 (x0.25 of 5)
+
+    reason: quota: target 64%, recent 25%   [maintain's target rises from 53% to 64%]
+
+Meta's weight tracks the *budget*, not merely the item count.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"), but
+  this round was chosen, briefed and will be merged by the orchestrating model,
+  so `delegated` is recorded per the brief — the same note the preceding
+  delegated rounds recorded. Two things specific to this round: the orchestrator
+  committed the implementation (`b8f5add`) after the round session died
+  mid-measurement to an OpenCode `doom_loop` auto-reject, and ran the
+  measurements by hand; and this is the first of two consecutive meta rounds,
+  above the "cap meta at one round in five" guidance in
+  `prompts/orchestrator.md` — the work was chosen by a maintainer course
+  correction, not by meta selecting itself. Consequence: `ship` withholds
+  auto-merge and opens the pull request for that review, which is expected, not
+  an error.
+- Track: meta
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, the docket validator, track
+  scope for `loop/meta/demand-weighted-dispatch`, a production-shaped build and
+  the route checks against a server on port 3000, no group skipped. The four
+  measurements in the body (BEFORE, AFTER, negative control 1, negative control
+  2) were produced by the orchestrator on 2026-08-16 and are pasted, not re-run,
+  per the brief.
+- Result: measured by the orchestrator on 2026-08-16 (pasted above, not re-run):
+  meta's dispatch target went from *excluded* — a candidate in neither the
+  arithmetic nor the decision — to 19% (8.93/46.93 of the candidates' effective
+  weight) and scout's from blocked-by-clock to 6% by demand (3.00/46.93), on a
+  real queue of 61 open items (55 ready). Not measured: whether this actually
+  drains the queue — that is the prediction in PR #112's body (58 open to under
+  20 in a week) and it is not yet scored.
+
+### 2026-08-16
 Round 150 (audit) audits rounds 148 and 149 — the two maintain rounds shipped since audit
 round 147 covered 142–146 — and finds the window holds except for one residual of the
 round-148 correction, corrected here and recorded. Round 148's claims re-measured on the
