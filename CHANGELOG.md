@@ -654,6 +654,40 @@ than it looks. It is the same defect as the three the reviewers found in the
 filing gate — a check reading a fact from the tree it is judging — sitting in
 the check that guards every other check.
 
+**The fifth review found three false claims, all of them in that new item, and
+all of them the orchestrator's.** The gate itself came through untouched and
+verified: the rule unchanged, the three exploits still red, the four controls
+still green, the invariant holding, rule 5 clean. What did not survive was the
+prose written around it.
+
+- The item claimed *"every round in the log is `delegated` except the one that
+  got it wrong"*, and used that to argue the fix was nearly a no-op. The real
+  distribution is **66 `delegated`, 18 `supervised`, 11 `unsupervised`, 10
+  `maintainer`** — 39 of 105 declared entries are outside the check's reach. The
+  claim came from reading the first twelve lines of a `grep` and calling it a
+  distribution, which is the same failure as measuring a 40-round window and
+  reporting it against a dispatcher that reads 20.
+- It said `scripts/check-track-scope.mjs` "already carries the lesson: read the
+  rule from `main`". Its header says the opposite — that checker reads `SCOPES`
+  from the branch it judges, and round 78's mitigation was to make the file
+  human-owned, not to move the read. Inverted, not merely imprecise.
+- It said the maintainer's settings change *closed*
+  `2026-08-13-promote-review-artifact-to-required-check.md`. That item is still
+  open in `docket/open/`. Its `Done when` is now satisfiable — this round is the
+  demonstration it asks for — but nothing has closed it, and a round may not
+  describe work as done because it believes it deserves to be.
+
+The correction is worth more than the item was. The exemption is **deliberate**:
+`unsupervised` is defined at the top of this log as "scheduled, merged itself,
+nobody read it first", and `scripts/round.mjs` arms auto-merge for
+`unsupervised`, `supervised` and `maintainer`, withholding it only for
+`delegated`. So the review artifact is required exactly where a reviewer is
+already claimed, and not required for the category that states outright that
+nobody read the work. The cheapest route past the gate is to claim *less*
+oversight, not more. That is a question about what this loop is, and it is the
+maintainer's to answer — which is why the item now asks for a decision rather
+than proposing a patch.
+
 - Origin: delegated
 - Track: meta
 - Agent: opencode (deepseek-v4-flash)

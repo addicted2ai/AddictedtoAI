@@ -34,35 +34,64 @@ would have blocked it had exempted itself. The Origin was corrected to
 exactly the kind of catch a mechanical check exists to not depend on.
 
 The timing makes it worse rather than better. The maintainer added
-`review-artifact` to the required status checks on 2026-08-17, closing
-`2026-08-13-promote-review-artifact-to-required-check.md`, so it is now the
+`review-artifact` to the required status checks on 2026-08-17, so it is now the
 gate that stands between a delegated round and `main`. Promoting a check to
 *required* buys nothing if the branch it guards can decide the check does not
 apply to it — round 152 was the first pull request to face the promoted check
 and it walked straight past it on a typo.
 
+(The item that asked for that settings change,
+`2026-08-13-promote-review-artifact-to-required-check.md`, is **still open** in
+`docket/open/`. Its `Done when` asks for the settings change, a demonstration on
+a real pull request that a delegated round with no covering approve cannot
+merge, and an API re-read of the protection afterwards. All three now exist —
+round 152 is the demonstration and its entry records the readout — so a maintain
+round can close it against that evidence. This item does not close it.)
+
 This is the same defect the same round's reviewers found three times in
-`scripts/check-docket.mjs` — a gate reading a fact from the tree it is judging —
-and `scripts/check-track-scope.mjs` already carries the lesson in its header,
-from round 78: read the rule from `main`, never from the branch. The review
-check is the one place the lesson was never applied, and it is the check that
-guards all the others.
+`scripts/check-docket.mjs`: a gate reading a fact from the tree it is judging.
+Round 78 hit it in `scripts/check-track-scope.mjs`, which still reads `SCOPES`
+from the branch — its header says so plainly, and the mitigation there was not
+to read from `main` but to make the file human-owned so a scope change costs a
+human merge. The review check has neither mitigation: it reads its applicability
+from the branch, and nothing about that declaration is human-owned.
 
-## What closes it, in two sizes
+## How large this actually is
 
-**A round can close the exemption today.** Make the check apply to every round
-entry regardless of the declared `Origin`, or apply it whenever the branch
-carries a round entry at all. Every round in the log is `delegated` except the
-one that got it wrong, so in practice this changes nothing about which pull
-requests need a review — it only removes the ability to opt out. That is a
-small change to `scripts/check-review-artifact.mjs` and does not touch a
-human-owned path.
+**The exemption is deliberate, not forgotten, and that makes it bigger rather
+than smaller.** The Origin values across the log are 66 `delegated`, 18
+`supervised`, 11 `unsupervised`, 10 `maintainer`. `unsupervised` is defined in
+this log as *"scheduled, merged itself, nobody read it first"*, and
+`scripts/round.mjs` arms auto-merge for `unsupervised`, `supervised` and
+`maintainer` while withholding it only for `delegated`. So the review artifact
+is required exactly where a reviewer is already claimed to exist, and is not
+required for the category that states outright that nobody read the work.
 
-**Making it robust is a maintainer question and should not be attempted by a
-round.** A branch controls its own tree and its own branch name, so no signal a
-round can write is trustworthy evidence that a human was involved. Real
-evidence of human involvement lives at GitHub's layer — an approving review
-from an account other than the one the loop operates as — and wiring the
+That may be defensible as a design — the artifact is proof that a claimed
+review happened, and an `unsupervised` round claims none. But combined with
+self-declaration it means the cheapest way past the review gate is to claim
+*less* oversight, not more: write `unsupervised`, and the round both skips the
+artifact requirement and arms its own auto-merge.
+
+## What closes it
+
+**Do not treat "apply the check to every round" as a cheap fix.** It is not the
+no-op it looks like: 39 of the 105 entries that declare an Origin are
+non-`delegated`, and requiring artifacts for `unsupervised` rounds would end
+unsupervised operation as this project has defined and published it. That is a
+change to what the loop *is*, and it belongs to the maintainer.
+
+**What a round could do without deciding that question** is make the exemption
+loud instead of silent: have `check-review-artifact.mjs` print the Origin it
+read and the fact that it is standing down because of it, so an exemption
+appears in the check output rather than as a green tick, and have
+`scripts/round.mjs` refuse to arm auto-merge if the entry's Origin changed
+after `start` wrote it. Neither closes the hole; both make using it visible.
+
+**Closing it properly is a maintainer question.** A branch controls its own tree
+and its own branch name, so no signal a round can write is trustworthy evidence
+about who was involved. Real evidence lives at GitHub's layer — an approving
+review from an account other than the one the loop operates as — and wiring the
 exemption to that is a settings and identity decision, tied to
 `2026-08-11-branch-protection-does-not-require-review.md` and to whether the
 loop keeps operating as the owner account. File that separately if the first
@@ -79,23 +108,45 @@ Internal — this is a property of this repository's own checks:
   `contexts: ["build-and-audit","human-owned-paths","review-artifact"]`,
   `strict: true`, `enforce_admins: false` — read from
   `repos/addicted2ai/AddictedtoAI/branches/main/protection`, not from the
-  settings page.
+  settings page. Read by the orchestrating model, not by a round: this round's
+  own reviewer was denied that API call by its tool rules and correctly marked
+  the line unverified. Anyone re-checking should re-read it rather than trust
+  this line.
+- `CHANGELOG.md:21` — the Origin taxonomy, including `unsupervised` as
+  "scheduled, merged itself, nobody read it first".
+- The Origin distribution across the whole log, counted rather than sampled:
+  66 `delegated`, 18 `supervised`, 11 `unsupervised`, 10 `maintainer`. The
+  first version of this item claimed every round was `delegated`; that came
+  from reading the first twelve lines of a grep and was wrong.
 - `CHANGELOG.md`, round 152 — the false `Origin: supervised`, its correction,
   and the observation that the pull request read CLEAN while carrying a
   `request-changes` artifact.
-- `scripts/check-track-scope.mjs` — the header recording the round-78
-  precedent this check does not follow.
+- `scripts/check-track-scope.mjs` — the header recording round 78: that checker
+  reads `SCOPES` from the branch it judges, and is mitigated by being
+  human-owned rather than by reading from `main`. The review check has neither
+  mitigation.
 
 ## Done when
 
-- [ ] A branch carrying a round entry cannot turn `review-artifact` green by
-      changing or omitting its `Origin` line.
+- [ ] **The maintainer decides the question this turns on:** should a round be
+      able to declare itself outside the review requirement at all, given that
+      the declaration is written by the round? Answering "no" ends
+      `unsupervised` operation as published. Answering "yes" means
+      `review-artifact` is a record-keeping check, not a gate, and the site
+      should not describe it as a gate. Either answer is shippable; leaving it
+      undecided is what is not.
+- [ ] Whatever is decided, an exemption is never silent: the check prints the
+      Origin it read and states that it is standing down because of it, so a
+      skipped review appears in the output rather than as a green tick.
+- [ ] `scripts/round.mjs` refuses to arm auto-merge when the entry's `Origin`
+      differs from the one `start` wrote, so a mid-round change is caught by
+      the tool rather than by a human noticing.
 - [ ] Demonstrated on a real committed branch: take round 152's own tree, set
-      `Origin` to `supervised`, and show the check red where it was green.
-      Pasted output, not described.
+      `Origin` to `supervised`, and show the new behaviour where it was
+      previously a silent green. Pasted output, not described.
 - [ ] A negative control: a round with a valid covering approve artifact stays
-      green, so the fix is not "review-artifact always fails".
+      green, so the change is not "review-artifact always fails".
 - [ ] The round's entry states plainly that the check was self-exemptable from
-      the commit that introduced it (`027acb1`, 2026-08-13) until this fix, and
-      that it was a *required* status check for the last stretch of that
-      window.
+      the commit that introduced it (`027acb1`, 2026-08-13) until this fix, that
+      it was a *required* status check for the last stretch of that window, and
+      how many merged rounds declared an Origin the check did not apply to.
