@@ -325,15 +325,87 @@ the corrected gate they leave meta's counted capacity (29 → 26) while still
 counting toward the total, which on this branch grew nothing (29 → 28, the
 third being this round's item closing).
 
+**The second review found the fix walkable the same way the first found the
+original: a gate whose inputs come from the tree it is judging is not a gate.**
+
+The first fix measured growth on the total (which closed the first hole) but
+capacity on the head's *counted* total — a number the filing run itself can
+set, by applying `blocked-on: maintainer` to existing items that plainly do
+not need a maintainer. The reviewer did exactly that: marked 26 of the 30
+existing author items blocked in one commit, then filed two new author items
+in a second, and every check stayed green — author went 30 → 32 open,
+**exit 0**. The 31st and 32nd author items landed with every check green, and
+the changelog's headline promise — "the 31st author item is impossible" — was
+false a second time. The same error was made twice in the same function, and
+the general invariant is the fix: **every number a gate tests against is read
+from the base; the head supplies exactly one fact, what it is trying to add.**
+`head_counted` was that error — a number the branch sets — and it is gone.
+
+(h) PROOF-8-MANUFACTURE-ROOM — the reviewer's second exploit: 26 of the 30
+existing author items marked `blocked-on: maintainer` plus two new author
+items, one diff. First against the shipped gate on
+`scratch/proof8-manufacture-before` — **green, exit 0; this is the hole**:
+
+    ok    109 docket item(s) valid (62 open)
+          author: 6 open
+          maintain: 1 open
+          meta: 29 open
+          blocked on maintainer (excluded from capacity counts; still counted for growth):
+            2026-08-10-post-fable-5-biology-safeguards.md  (author)
+            ... 24 more ordinary post items ...
+            2026-08-16-post-manus-splits-from-meta.md  (author)
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 32  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+    exit=0
+
+Then against the gate as it is on this branch — capacity read from the
+base's counted total, which the branch cannot touch — on
+`scratch/proof8-manufacture-after` — **red, exit 1**:
+
+    ok    109 docket item(s) valid (62 open)
+          author: 6 open
+          maintain: 1 open
+          meta: 29 open
+          blocked on maintainer (excluded from capacity counts; still counted for growth):
+            2026-08-10-post-fable-5-biology-safeguards.md  (author)
+            ... 24 more ordinary post items ...
+            2026-08-16-post-manus-splits-from-meta.md  (author)
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 32  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+
+    FAIL  filing gate: author open count grew 30 -> 32 while over its queue budget (6)
+
+    1 filing-gate failure(s)
+    exit=1
+
+The rule on this branch is
+
+    FAIL if head_total > base_total AND base_counted >= budget
+
+with `>=` not `>` — a track sitting exactly at budget cannot be pushed to
+budget+1, while a pull request that closes one and files one leaves
+`head_total` flat and still passes, which is the correct tolerance for churn.
+Proof 6 (the first exploit) and control 7 were re-run against this shape on
+committed branches and come out unchanged — proof 6 red (author 30 → 33,
+`base_counted` 30 ≥ 6), control 7 green (author 30 → 30) — and the
+single-branch-clone guard still prints WARN and exits 0.
+
 - Origin: delegated
 - Track: meta
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — lint, the docket validator, the
   track scope for `loop/meta/docket-filing-gate`, a production-shaped build
   and the route checks against a server on port 3000, no group skipped. The
-  seven proof runs — the five originals, the reviewer's exploit, the negative
-  control — and the single-branch-clone run above are each a committed branch
-  run against and pasted, not described.
+  eight proof runs — the five originals, the reviewer's first exploit, the
+  negative control, the reviewer's second exploit — and the single-branch-clone
+  run above are each a committed branch run against and pasted, not described.
+  This round's second review found the
+  first fix walkable and its manufacture-room exploit is recorded above as
+  proof 8, pasted green against the shipped gate and red against this branch's.
 - Result: measured this round — the two settings-UI items left dispatch's
   ready (54 → 51 of 59 open, the third being this round's item closing), left
   meta's counted open items (29 → 26 on this branch, two blocked plus one
@@ -341,10 +413,12 @@ third being this round's item closing).
   green on this branch (author 30→30, build 0→0, meta 29→26) and red on each
   proof that grew an over-budget track. The review's exploit — three new
   author items carrying `blocked-on: maintainer` on top of the 30 already on
-  base — went green on the first shape and is red on the corrected gate.
-  Not yet measured: whether the queue stops growing — that is the gate's first
-  red in the wild, which nothing shipped this round can produce, and it has
-  not happened yet.
+  base — went green on the first shape and is red on the corrected gate, and
+  the manufacture-room attack — 26 existing author items marked blocked plus
+  two new ones — went green on the first fix and is red on the gate as it is
+  on this branch. Not yet measured: whether the queue stops growing — that is
+  the gate's first red in the wild, which nothing shipped this round can
+  produce, and it has not happened yet.
 
 ### 2026-08-16
 Round 151 (meta) ships the first committed implementation of the demand-weighted

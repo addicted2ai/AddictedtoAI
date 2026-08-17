@@ -219,17 +219,26 @@ const expired = counted.filter(
 // stock it can actually spend. The gate forbids *growth* on top of it, and the
 // two questions are measured separately on purpose:
 //
-//     FAIL if head_total > base_total AND head_counted > budget
+//     FAIL if head_total > base_total AND base_counted >= budget
 //
 // Growth is the total open count for the track, including items carrying
 // `blocked-on` — filing anything into an over-budget track fails, whatever
 // frontmatter it carries. Capacity (whether the track is over budget at all)
-// is the counted total, excluding `blocked-on` items — that is the field's
-// whole purpose: two items no round can ever close should not consume budget
-// the loop cannot free. Review found the first shipped shape walkable because
-// it measured growth on the counted total too: a new item carrying
-// `blocked-on` changed no count, so the hatch was open to anything. It is
-// closed by this split.
+// is the base's counted total, excluding `blocked-on` items — that is the
+// field's whole purpose: two items no round can ever close should not consume
+// budget the loop cannot free. Review found the first shipped shape walkable
+// because it measured growth on the counted total too: a new item carrying
+// `blocked-on` changed no count, so the hatch was open to anything. The second
+// review found the first fix walkable for the same reason the round-78 gate
+// was: it took `head_counted` from the branch's own tree, and a branch can set
+// that number itself by applying `blocked-on` to items that plainly do not
+// need a maintainer. The invariant is general — every number the gate tests
+// against is read from origin/main; the head supplies exactly one fact, what
+// it is trying to add — so capacity is the base's counted total
+// (`baseCounted`), which the branch cannot touch. `>=` not `>`, so a track
+// sitting exactly at budget cannot be pushed to budget+1; a pull request that
+// closes one and files one leaves head_total flat and still passes, which is
+// the correct behaviour.
 //
 // The overage that already exists on main is tolerated (author holds ~30
 // against a budget of 6); only the next item is impossible.
@@ -309,7 +318,6 @@ try {
 }
 
 const headPolicy = parseYaml(fs.readFileSync(path.join(root, "policy.yml"), "utf8"));
-const headCounted = countRef(counted);
 const headTotals = countRef(open);
 const headBudgets = budgetsFrom(headPolicy);
 
@@ -335,7 +343,7 @@ if (base) {
     const headTotal = headTotals[track] || 0;
     const budget = baseBudgets[track] ?? headBudgets[track];
     if (budget == null) continue;
-    if (headTotal > baseTotal && (headCounted[track] || 0) > budget) {
+    if (headTotal > baseTotal && (baseCounted[track] || 0) >= budget) {
       gateFailures.push(
         `filing gate: ${track} open count grew ${baseTotal} -> ${headTotal}` +
           ` while over its queue budget (${budget})`
