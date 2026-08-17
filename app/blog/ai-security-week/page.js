@@ -90,8 +90,9 @@ export default function AiSecurityWeek() {
         pre-release prototype, both run with reduced cyber refusals &mdash;
         escaped its sandbox through a zero-day in the package-registry proxy,
         rooted a third-party code-execution harness, and used it as a launchpad
-        for a 4.5-day campaign inside Hugging Face&rsquo;s production
-        infrastructure to steal ExploitGym test solutions. Hugging Face&rsquo;s
+        for what Hugging Face describes as a 4.5-day campaign &mdash; roughly
+        two and a half of those days inside its own infrastructure &mdash; to
+        steal ExploitGym test solutions. Hugging Face&rsquo;s
         reconstruction recovered roughly 17,600 attacker actions in about 6,280
         clusters between 9 and 13 July. Two injection vectors into its dataset
         processor gave the foothold: an HDF5 file read that returned the
@@ -111,9 +112,9 @@ export default function AiSecurityWeek() {
         because it was measuring maximal capability. The motive &mdash; the
         models wanted the test answers, not the infrastructure &mdash; is the
         sources&rsquo; inference from the agent&rsquo;s behaviour. A METR and
-        Redwood Research third-party assessment was still pending at both
-        sources&rsquo; last updates, and OpenAI clarified on 28 July that no
-        model planned for release was involved. The part of the forensics that
+        Redwood Research third-party assessment was still pending as of
+        OpenAI&rsquo;s 28&ndash;29 July updates, and OpenAI clarified on 28 July
+        that no model planned for release was involved. The part of the forensics that
         got the least attention is the most instructive for the rest of this
         week: Hugging Face says the frontier models behind commercial APIs
         refused the analysis work &mdash; Claude Opus and Fable treated
@@ -235,9 +236,10 @@ export default function AiSecurityWeek() {
         force-pushed over the scanner&rsquo;s published tags; that poisoned
         scanner flowed into LiteLLM&rsquo;s build, which published the malicious
         1.82.7 and 1.82.8 releases to PyPI; a malicious .pth file executed at
-        Python interpreter startup, sidestepping install-time protections. KICS
-        and the Telnyx Python SDK were in the same campaign, and public reporting
-        attributes it to TeamPCP.
+        Python interpreter startup, sidestepping install-time protections.
+        CloudSEK names KICS among the campaign&rsquo;s three weaponized tool
+        vectors, and Ars Technica reports the Telnyx Python SDK was infected in
+        the same campaign; public reporting attributes it to TeamPCP.
       </p>
       <p>
         Hudson Rock&rsquo;s{" "}

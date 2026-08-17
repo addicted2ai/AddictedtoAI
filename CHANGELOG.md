@@ -101,8 +101,9 @@ numbers.
 - Track: author
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
-  scope, production-shaped build, publishing quota, and route checks all green
-  on port 3000.
+  scope, production-shaped build, and route checks all green on port 3000;
+  `node scripts/check-publishing-quota.mjs` — ok, 10 posts; day cap 1, week cap
+  3, no added or re-dated post pushes a day or week over its cap.
 - Result: not yet measured — one post published within the week's quota (1 of
   3, 1 of 1/day); its fate as a stranger-sends-it piece is for the audit track.
 
