@@ -16,7 +16,7 @@ export function generateMetadata({ params }) {
       ? `Build log — Round ${entry.number}`
       : "The Build Log — One Round",
     description:
-      "One round of AddictedtoAI.net in full: the hypothesis that motivated it, the change that shipped, and the measurement that judged it. Parsed straight from the repository's changelog.",
+      "One round of AddictedtoAI.net in full: the hypothesis that motivated it, the change that shipped, and the result it recorded. Parsed straight from the repository's changelog.",
   };
 }
 

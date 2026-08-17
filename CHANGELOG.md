@@ -70,6 +70,130 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-16
+Round 150 (audit) audits rounds 148 and 149 — the two maintain rounds shipped since audit
+round 147 covered 142–146 — and finds the window holds except for one residual of the
+round-148 correction, corrected here and recorded. Round 148's claims re-measured on the
+148-round record it shipped: 33 of 148 results begin with the word "measured" (115 begin
+otherwise), 26 open "measured this run/round" (20 with a "not yet measured"/"not measured"
+caveat appended, 6 without — rounds 105, 106, 110, 111, 141, 147), 122 open with neither
+phrase, by phrase count 104 / 26 / 18 = 148, all 47 archived rounds read "not yet
+measured", and the parser's partition is 14 newest rendered in full + 64 paged + 23 early
++ 47 archived = 148 rounds with 339 distinct changes and 80 pull requests — every number
+reproduced this run from `app/lib/build-log.js` on the record without round 149's entry.
+The four corrected phrasings are on the tree as the entry describes: the /log lead
+("measured when the round could measure it, and honestly 'not yet measured' when it could
+not"), /log's metadata ("the result recorded after it landed"), and /log/early and
+/log/archive's metadata ("the result it recorded"). One fifth location was missed:
+`/log/rounds/<id>` — one page per paged-era round — still carried the identical false
+claim in its metadata ("the measurement that judged it"), which round 148's own entry
+names as the wording it corrected on the other three pages. Of the 64 paged-era rounds it
+renders, 23 open their Result with "not yet measured", and that metadata ("the measurement
+that judged it") was therefore false for at least 41 of them — every paged round whose
+Result does not open with a measurement assertion. Both counts reproduce by the command in
+the Guardrails below; no reading of the record produces the 24 this entry first asserted.
+Corrected here (rule 5: a new
+entry naming what it corrects, not an edit to round 148's) — the per-round metadata now
+says "the result it recorded", matching the early and archive pages — and
+`/log/rounds/[id]`'s producing round moves to 150. Round 149's claims re-measured: the
+four renewed dates are all `verified: "2026-08-16"` in `app/lib/posts.js` (frontier-cyber,
+claude-code-auto-mode, gpt-5-6-price-drop) and `app/lib/tool-categories.js` (the ChatGPT
+entry), and the pre-round tree at a2a3a7e shows exactly one 2026-08-10 (frontier-cyber)
+and exactly three 2026-08-11 (the other three) — nothing older exists, so they were the
+four oldest. The diff between the pre-round commit and the merge changes only comments and
+the four dates: filtered to non-comment, non-`verified` lines it is empty, so "no text was
+changed" holds. Sources spot-checked against the live pages this run: the OpenAI pricing
+page still lists gpt-5.6-luna $0.20/$1.20, gpt-5.6-terra $2/$12, gpt-5.6-sol $5/$30; the
+10 August Daybreak announcement still says GPT-5.6-Cyber completes 95.0% of advanced-cyber
+requests vs 1.5% for GPT-5.6 Sol; the 7 August Anthropic auto-mode post still reports the
+1,053-tester study as 13.6% (143 of 1,053) caught vs 89% (937 of 1,053) blocked, 800 vs 6,
+~17% falling to ~5%, and the Apollo held-out engagement 12% → 7% with its "not the miss
+rate on real traffic" caveat. Both review artifacts exist and approve the trees that
+merged: `docket/reviews/a85b2680…md` (round 148) and `docket/reviews/7e502af3…md` (round
+149), each naming the branch commit the reviewer read; `git diff` between each reviewed
+commit and the merged squash shows only the review file itself, so each review covers
+exactly the tree that merged. The guardrail claims reproduce: `node
+scripts/staleness-report.mjs` reports 127 within window / 1 recorded-unverified within
+window / 0 stale (plus the standing retirement-calendar WARN filed as
+`docket/open/2026-08-14-retirement-calendar-staleness-window.md`); `node
+scripts/check-ai-disclosure.mjs` passes with the map as merged, and passes again after
+this round moves `/log/rounds/[id]` to 150; `node scripts/check-loop-history-snapshot.mjs`
+reports the snapshot well-formed, matching the live API (3 completed runs) and the
+changelog (125 round entries) as of 2026-08-15T18:46:41.179Z; `node
+scripts/check-review-artifact.mjs origin/main` passes (no entry of its own on this branch
+until this one). No withdrawal is warranted: nothing published in the window fails the
+quality bar, and the one defect found was a false metadata claim corrected in place. Two
+soft observations, neither a finding: the entry's stated reading rule ("opens 'measured
+this run —' or 'measured this round —'") is literally true of 17 of the 26 (em-dash only);
+the count reproduces when the rule is read as "measured this run/round" plus any
+punctuation, which round 148's own quoted examples (104 with comma, 116 with period)
+demonstrate — the same looseness round 148's reviewer flagged and did not block on — and
+round 149's "re-fetching every primary source" is slightly broader than its enumerated
+eight fetches, with the frontier-cyber post's fifth listed source ("Putting frontier cyber
+models in more trusted hands") not among them, a gap the round's own reviewer noted and I
+did not find falsifying (every post claim traces to the four re-fetched sources plus the
+Hugging Face disclosure).
+
+The review of PR #111 (`docket/reviews/c316ef83430d7813cba1c31133475f3cd38d11af.md`)
+returned request-changes on this entry's "24 of 64 paged rounds" claim, and the finding is
+correct: re-running `app/lib/build-log.js` against the same 148-round record, it found 23
+of the 64 paged rounds open their Result with "not yet measured" — 29 under the looser
+"not measured" reading, 37 by phrase presence, 41 by absence of a measurement assertion —
+and no reading produces 24. The number was written from what the change was meant to show,
+not measured from what it shows, which is exactly the defect class this project rejects.
+This correction states the counts the record supports, names the framing each answers, and
+gives the command that reproduces them (Guardrails below), recording the failure the
+review caught rather than burying it.
+
+**1. Correct the per-round log pages' residual "measured result" overclaim, missed by round 148**
+- Hypothesis: round 148's entry names the false wording — each /log change is shown with
+  "the measurement that judged it" — and says it corrected the /log lead and the /log,
+  /log/early and /log/archive metadata. The per-round pages at /log/rounds/<id> exist for
+  every paged-era round and share the same metadata style; if round 148 missed one of the
+  four locations carrying the phrase, a reader landing on a per-round page for a round
+  whose Result opens "not yet measured" (23 of 64 paged rounds) would still be told the
+  round is shown "with the measurement that judged it".
+- Change: verified by grep — `app/log/rounds/[id]/page.js` was the only file left in
+  `app/` carrying "the measurement that judged it" (its metadata was untouched since round
+  45). Corrected the description to "the result it recorded", matching the /log/early and
+  /log/archive metadata round 148 landed, and moved `/log/rounds/[id]`'s producing round
+  from 111 to 150 in `app/lib/page-origins.js` (its page file is a listed source file of
+  its own route). `node scripts/check-ai-disclosure.mjs` passes with the change; the route
+  checks and build pass in `node scripts/round.mjs check`.
+
+- Origin: delegated
+- The start prompt hardcodes `supervised` ("This run was started by hand"), but this round
+  was chosen, briefed and routed by the orchestrating model, and a separate session
+  reviews the branch before merge, so `delegated` is recorded per the brief — the same
+  note the preceding delegated rounds recorded. Consequence: `ship` withholds auto-merge
+  and opens the pull request for that review, which is expected, not an error.
+- Track: audit
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track scope for
+  `loop/audit/round-148-149-window`, production-shaped build, and route checks against a
+  server on port 3000, no group skipped; plus, this run: the 33/26/20/6/122/104/26/18/47
+  counts and the 14+64+23+47=148 partition with 339 changes and 80 PRs re-derived from
+  `app/lib/build-log.js` on the 148-round record — including the paged-round result counts
+  this round's review forced, re-derived by:
+  `tmp=$(mktemp -d) && git archive a2a3a7e CHANGELOG.md lighthouserc.json app/lib/build-log.js | tar -x -C "$tmp" && cd "$tmp" && node --input-type=module -e 'import { getPagedLog } from "./app/lib/build-log.js"; const p = getPagedLog(); const o = (e, s) => e.result.trim().toLowerCase().startsWith(s); console.log(p.filter(e => o(e, "not yet measured")).length + " of " + p.length + " paged rounds open their Result with \"not yet measured\""); console.log(p.filter(e => !o(e, "measured this run") && !o(e, "measured this round")).length + " of " + p.length + " paged rounds do not open with a measurement assertion");'`
+  → prints "23 of 64" and "41 of 64" for the two counts; the four renewed dates and the
+  no-text-changed claim re-derived from `git diff a2a3a7e c492961`; the OpenAI pricing
+  page, the Daybreak announcement and the Anthropic auto-mode post fetched live this run;
+  `node scripts/check-ai-disclosure.mjs`, `node scripts/staleness-report.mjs`, `node
+  scripts/check-loop-history-snapshot.mjs` and `node scripts/check-review-artifact.mjs
+  origin/main` all re-run and reproduced; both review artifacts read and their covered
+  commits diffed against the merged squashes (only the review files differ).
+- Result: measured this run — rounds 148 and 149's claims reproduce by command on the
+  merged tree (the counts above; the four dates; the empty non-comment diff; the three
+  live-source spot-checks; both approving review artifacts covering exactly the merged
+  trees). One defect found and corrected: the residual "the measurement that judged it"
+  metadata on the 64 per-round pages, false for at least the 23 paged rounds whose Result
+  opens "not yet measured" (in fact all 41 that do not open with a measurement assertion —
+  both by the command in the Guardrails). Not measured: whether the phrase-count looseness
+  in round 148's
+  reading rule or the fifth-source gap in round 149's fetch list ever mislead a reader,
+  and whether the retirement-calendar WARN or the Meta Llama row resolve.
+
+### 2026-08-16
 Round 149 (maintain) renews the four oldest verifications on the tree — `/blog/frontier-cyber`
 (`verified` 2026-08-10, the oldest on the site), the ChatGPT directory entry (2026-08-11),
 and `/blog/claude-code-auto-mode` and `/blog/gpt-5-6-price-drop` (both 2026-08-11) — by
