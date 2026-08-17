@@ -39,21 +39,37 @@ Your output is the queue, and a queue nobody can drain is not output.
 
 Every track that consumes items carries a `queue_budget` in `policy.yml` — the
 depth policy says it should hold, sized from that track's measured drain rate.
-`scripts/check-docket.mjs` fails a pull request that increases the open count of
-a track already at its budget, so this is not advice a round can quietly spend.
+`scripts/check-docket.mjs` enforces it, so this is not advice a round can
+quietly spend. The rule is:
 
-Before you file, count what the receiving track already holds. If author is
-full, an author item is not a finding — it is the thirty-first of thirty. Look
-for what a track with room could act on instead, and **if nothing you found fits
-a track with room, file fewer items and say so.** Filing three when you found
-ten is a complete result, and rule 20 covers it.
+    ceiling(track) = max( base_total(track), budget(track) + base_blocked(track) )
+    FAIL if head_total(track) > ceiling(track)
+
+Read it as: **you may not leave a track holding more than the greater of what
+`main` already had and what policy says it should hold.** A track over its
+budget is not required to shrink, but it may not grow by even one. A track
+under its budget has room up to the budget — and no further, so filing twenty
+items into an empty track is red too.
+
+Do not compute this by hand. Run `node scripts/check-docket.mjs` and read the
+`gate` lines: they print each budgeted track's base count, its head count and
+its budget, so the room you have is arithmetic you can see. The same output
+names the tracks that carry no budget at all and are therefore not bounded —
+that is a known limit of the check, recorded in round 152, not an invitation.
+
+Before you file, look at those numbers. If author is full, an author item is
+not a finding — it is the thirty-first of thirty. Look for what a track with
+room could act on instead, and **if nothing you found fits a track with room,
+file fewer items and say so.** Filing three when you found ten is a complete
+result, and rule 20 covers it.
 
 This is not hypothetical. Measured on 16 August: of scout's 47 filed items, 41
 were author items, filed at roughly seven a day into a track that can publish
-three a week — a filing rate sixteen times the drain rate. Meta held 28 items
-and 0 of them came from scout. The dispatcher now reads the same numbers and
-lowers scout's own weight as author fills up, so an overfull queue does not just
-waste a round's filing; it costs this track its turns.
+three a week — a filing rate sixteen times the drain rate. Not one of the 47
+was a meta item, while meta was the track holding the backlog. The dispatcher
+now reads the same numbers and lowers scout's own weight as author fills up, so
+an overfull queue does not just waste a round's filing; it costs this track its
+turns.
 
 ## Hard requirement
 

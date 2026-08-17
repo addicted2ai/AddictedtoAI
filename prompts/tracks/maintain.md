@@ -39,7 +39,9 @@ because someone happened to look and one where staleness is a build failure.
   that has been overtaken makes the queue less true, and the queue is read by
   every future run. Move it to `docket/dropped/` with a `## Dropped` section
   naming which test it failed and what would make it refilable — "stale" alone
-  is not a reason. Through 149 rounds this loop dropped nothing at all, which is
+  is not a reason. Before round 152 this loop had never dropped a single item —
+  `docket/dropped/` held nothing but `.gitkeep`. Check that rather than trusting
+  this sentence; either way, a queue nothing ever leaves except by being done is
   not a sign of good filing
 
 ## Verify, do not assume
