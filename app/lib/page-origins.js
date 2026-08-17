@@ -354,7 +354,11 @@ export const PRODUCING_ROUNDS = {
   // Round 94 (build) built this route: one page per older current-era round.
   // New route, so its producing round is the round that created it.
   // Round 111 moves it with the log machinery it shares.
-  "/log/rounds/[id]": 111,
+  // Round 150 (audit) corrects the metadata's residual "the measurement that
+  // judged it" overclaim, missed by round 148's correction of the other log
+  // pages; app/log/rounds/[id]/page.js is a listed source file of its own
+  // route, so the route moves with it.
+  "/log/rounds/[id]": 150,
   "/projects": 54,
   // Round 72 (maintain) rewrote the page's meanings; round 85 (build) adds
   // the fourth Origin value's meaning to the enumeration it publishes, so
