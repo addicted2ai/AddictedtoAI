@@ -72,19 +72,54 @@ published rather than optimised.
 ### 2026-08-17
 Round 152 (meta) ships the docket filing gate, executing
 `docket/open/2026-08-16-docket-filing-gate.md`: `scripts/check-docket.mjs` now
-fails any branch that grows a track's open count while that track is over its
-`queue_budget`, and any branch that raises a budget and spends it in the same
-diff. The baseline — counts and budgets alike — is read from `origin/main`,
+fails any branch that leaves a budgeted track holding more open items than the
+greater of what `origin/main` already held and what `policy.yml` says the track
+should hold, and any branch that raises a budget and spends it in the same diff.
+
+    ceiling(track) = max( base_total(track), budget(track) + base_blocked(track) )
+    FAIL if head_total(track) > ceiling(track)
+
+The baseline — counts and budgets alike — is read from `origin/main`,
 never from the branch, so the round-78 walk-around (grant and spend in one
 commit) does not work on it. `blocked-on: maintainer` pulls the two items no
 round can ever close out of the counts and out of the dispatcher's `ready`;
 measured on this branch when the change landed, `dispatch.mjs`'s ready count
 fell 54 → 51 of 59 open — the two items now blocked, plus this round's own item
 closing into `docket/done/`; the final tree reads 52 of 60, the difference
-being the Origin item filed under *Origin* below. The first shape of this gate proved walkable in review —
-`blocked-on: maintainer` excluded items from the growth count too, so anything
-filed with it was invisible to the gate — and the review-and-fix section below
-records the hole and the fix. This paragraph describes the corrected gate.
+being the Origin item filed under *Origin* below.
+
+That rule is the **fourth** shape of this check. The three before it each asked
+whether a track was *already* over its budget — a question about the past — and
+three adversarial review passes walked each one in turn: items filed with
+`blocked-on: maintainer` were invisible to the count; existing items could be
+marked blocked to manufacture room; and thirty items could be filed into an
+empty track, because a rule that only fires on an already-full track never
+compares the head count to the budget at all. A fourth pass then walked the
+rule above, by relabelling items into a track that carries no budget. The
+review-and-fix sections below record all four findings with the output of each.
+**This paragraph describes the rule as shipped; what it still does not bound is
+stated under *What this gate does, and what it does not do*, and it is not
+small.**
+
+That correction to this opening paragraph is worth recording on its own,
+because of how late it was made. Until it was rewritten, this paragraph
+described the **first** shape of the check — "fails any branch that grows a
+track's open count while that track is over its `queue_budget`" — and closed
+with the sentence "This paragraph describes the corrected gate." That is the
+exact formulation the third review killed: a track at 0 of 14 is not over its
+budget, so under the rule as this paragraph stated it, filing thirty items into
+an empty track is legal. The entry contradicted itself, with the dead rule at
+the top where it is read first and rendered on the site, and the live rule five
+hundred lines down.
+
+**Six adversarial review passes did not catch it.** They were not careless —
+every one of them was pointed at the rule, the exploits, the invariant or the
+corrections, and every one of them found something real there. Not one was
+asked to check whether the entry's own summary matched the code it summarised,
+so not one did. It was found by an unprompted re-read after the sixth pass had
+already approved. The lesson is about the briefs rather than the reviewers: a
+reviewer checks what it is aimed at, and aiming six reviews at the mechanism
+left the sentence most readers will actually read unexamined the whole time.
 
 This is the second of two consecutive meta rounds, above the "cap meta at one
 round in five" guidance in `prompts/orchestrator.md`. That guidance exists to
