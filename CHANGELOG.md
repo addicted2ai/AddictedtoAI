@@ -394,18 +394,216 @@ committed branches and come out unchanged — proof 6 red (author 30 → 33,
 `base_counted` 30 ≥ 6), control 7 green (author 30 → 30) — and the
 single-branch-clone guard still prints WARN and exits 0.
 
-- Origin: delegated
+**The third review found the second fix walkable the same way the first two
+were: the gate still asked about the past, not about the outcome.**
+
+Every version of this check so far asked *"was this track already over
+budget?"* — a question about the past — and in every version the answer was a
+floor below which growth was free, never a cap on the head. The reviewer filed
+30 build items directly — build base 0 → head 30 against a budget of 14, under
+the rule `FAIL if head_total > base_total AND base_counted >= budget` — and
+every check stayed green, **exit 0**: the 15th through 30th build items were
+all possible in one diff, because that rule never compared the head count to
+the budget at all. The same omission made the track-move possible: editing an
+existing item's `track:` field moves it between tracks, so per-track totals
+can stay flat while new items land — move 30 author items to build and file 30
+new author items, queue 60 → 90 in one diff, **exit 0**. Both were possible in
+every one of the three shapes shipped before this fix. The second finding is a
+consequence of the first: once each track's head count is actually bounded,
+moving items to a track with room is only possible while that track has room,
+and the scale-out version is caught by build's own bound.
+
+The fix is not another patch to the same question — the question is replaced.
+The question that matters is where the pull request *leaves* the track:
+
+    ceiling(track) = max( base_total(track), budget(track) + base_blocked(track) )
+    FAIL if head_total(track) > ceiling(track)
+
+- `head_total` — every open item for the track on this branch, **including**
+  those carrying `blocked-on`. The only head-derived number, and it can only
+  ever push toward failing; there is no longer any head-derived number that
+  can push toward passing.
+- `base_total`, `base_blocked`, `budget` — all read from `origin/main`. The
+  branch cannot move any of them.
+- `max(...)` is what tolerates the historical overage: a track sitting at 30
+  against a budget of 6 may not grow past 30, but is not required to shrink.
+- `budget + base_blocked` is what preserves the point of `blocked-on`: items
+  no round can ever close do not eat the actionable allowance. Because
+  `base_blocked` comes from the base, marking items blocked in the diff being
+  judged buys nothing.
+
+This is the fourth revision of one check, and the record says so plainly — the
+first three versions all asked about the past instead of the outcome, and
+build-flood was possible in every one of them. Before writing the code, the
+rule was checked against every known case, the ten rows of the review's
+table: file 1 author item on a track at 30 against a budget of 6 → red (head
+31 > ceiling 30); 3 new `blocked-on` author items → red (33 > 30); mark 26
+existing blocked and file 2 → red (32 > 30; `base_blocked` is still 0); file
+30 build items → red (30 > 14); file 10 build items → green (10 ≤ 14); delete
+1 author item → green (29 ≤ 30); mark existing blocked, file none → green
+(30 ≤ 30); close 1 and file 1 → green (30 ≤ 30); author at its budget after
+triage (base 6), file 1 → red (7 > 6); author base 8 of which 2 blocked, file
+1 → red (9 > 8). Every row came out exactly as computed; there were no
+disagreements.
+
+Then every proof was re-run on real committed branches against the replaced
+rule, base `origin/main` @ `7791639`.
+
+(i) PROOF-9-BUILD-FLOOD — the new finding. First against the gate as it was
+before this fix on `scratch/r4-p9-buildflood-before` — **green, exit 0; this
+is the hole**:
+
+    ok    137 docket item(s) valid (90 open)
+          author: 30 open
+          build: 30 open
+          maintain: 1 open
+          meta: 29 open
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 30  (queue budget 6)
+          build     base  0 -> head 30  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+    exit=0
+
+Then against the replaced rule on `scratch/r4-p9-buildflood-after` — **red,
+exit 1**:
+
+    ok    137 docket item(s) valid (90 open)
+          author: 30 open
+          build: 30 open
+          maintain: 1 open
+          meta: 29 open
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 30  (queue budget 6)
+          build     base  0 -> head 30  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+
+    FAIL  filing gate: build head open count 30 exceeds its ceiling of 14 (base 0; queue budget 14 + 0 blocked on base)
+
+    1 filing-gate failure(s)
+    exit=1
+
+(j) PROOF-10-BUILD-10-ITEMS — the negative control that matters most now: a
+rule that reddens build-flood by reddening all filing is not a fix. 10 build
+items filed on `scratch/r4-p10-build-10` — **green, exit 0**:
+
+    ok    117 docket item(s) valid (70 open)
+          author: 30 open
+          build: 10 open
+          maintain: 1 open
+          meta: 29 open
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 30  (queue budget 6)
+          build     base  0 -> head 10  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+    exit=0
+
+(k) PROOF-6-BLOCKED-ON-NEW-ITEMS re-run on `scratch/r4-p6-blocked-new` —
+**red, exit 1** — the three blocked-on items still count toward the head
+total, and the base carries no blocked items, so the ceiling stays 30:
+
+    ok    110 docket item(s) valid (63 open)
+          author: 30 open
+          maintain: 1 open
+          meta: 29 open
+          blocked on maintainer (excluded from capacity counts; still counted in the head total the gate judges):
+            2026-08-17-r4-p6-01.md  (author)
+            2026-08-17-r4-p6-02.md  (author)
+            2026-08-17-r4-p6-03.md  (author)
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 33  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+
+    FAIL  filing gate: author head open count 33 exceeds its ceiling of 30 (base 30; queue budget 6 + 0 blocked on base)
+
+    1 filing-gate failure(s)
+    exit=1
+
+(l) CONTROL-7-MARK-EXISTING re-run on `scratch/r4-p7-mark-existing` — **green,
+exit 0** — marking an existing item blocked changes no total, and the replaced
+rule is not a ban on the field:
+
+    ok    107 docket item(s) valid (60 open)
+          author: 29 open
+          maintain: 1 open
+          meta: 29 open
+          blocked on maintainer (excluded from capacity counts; still counted in the head total the gate judges):
+            2026-08-15-post-chatgpt-linux-desktop.md  (author)
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 30  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+    exit=0
+
+(m) PROOF-8-MANUFACTURE-ROOM re-run on `scratch/r4-p8-manufacture-room` —
+**red, exit 1** — the 26 blocked marks are on the branch, not on the base, so
+`base_blocked` is still 0 and they move nothing:
+
+    ok    109 docket item(s) valid (62 open)
+          author: 6 open
+          maintain: 1 open
+          meta: 29 open
+          blocked on maintainer (excluded from capacity counts; still counted in the head total the gate judges):
+            2026-08-10-post-fable-5-biology-safeguards.md  (author)
+            ... 24 more ordinary post items ...
+            2026-08-16-post-manus-splits-from-meta.md  (author)
+    gate  filing gate — base read from origin/main, head from this tree
+          author    base 30 -> head 32  (queue budget 6)
+          build     base  0 -> head  0  (queue budget 14)
+          meta      base 29 -> head 29  (queue budget 14)
+
+    FAIL  filing gate: author head open count 32 exceeds its ceiling of 30 (base 30; queue budget 6 + 0 blocked on base)
+
+    1 filing-gate failure(s)
+    exit=1
+
+Proofs (a)–(e) were re-run against the replaced rule on committed branches —
+`scratch/r4-p1-file-author`, `scratch/r4-p2-delete-author`,
+`scratch/r4-p3-raise-and-file`, `scratch/r4-p4-raise-only`,
+`scratch/r4-p5-file-build-1` — and come out red / green / red (both rules
+fire) / green / green, unchanged: with the base carrying no blocked items,
+`ceiling` is `max(base_total, budget)`, and the five verdicts are decided by
+the same arithmetic as before.
+
+The single-branch clone was re-run — a clone made with `git clone
+--single-branch --branch main`, then `git remote remove origin`, with this
+branch's `check-docket.mjs` copied in and `npm ci` run. The ref is
+unresolvable, so the gate must print `WARN`, skip, and still exit 0. It does:
+
+    WARN  origin/main is not in this checkout — the filing gate cannot read its baseline and is skipped
+          a single-branch or shallow clone has no remote ref; the docket is still validated, only the gate is off
+    ok    107 docket item(s) valid (60 open)
+          author: 30 open
+          maintain: 1 open
+          meta: 29 open
+    exit=0
+
+And this pull request passes its own gate under the replaced rule — author 30
+≤ ceiling 30, build 0 ≤ 14, meta 28 ≤ ceiling 29, with the two settings-UI
+items blocked on this branch and still counted in the head totals. This
+continuation — the directive to replace the rule rather than patch it — comes
+from the maintainer, so this entry's Origin below is supervised rather than
+delegated: the round began delegated, and its last revision is under a
+human's direction.
+
+- Origin: supervised
 - Track: meta
 - Agent: opencode (deepseek-v4-flash)
 - Guardrails: `node scripts/round.mjs check` — lint, the docket validator, the
   track scope for `loop/meta/docket-filing-gate`, a production-shaped build
   and the route checks against a server on port 3000, no group skipped. The
-  eight proof runs — the five originals, the reviewer's first exploit, the
-  negative control, the reviewer's second exploit — and the single-branch-clone
+  proof runs — the five originals, the reviewer's first exploit, the negative
+  control, the reviewer's second exploit, and the build-flood pair (proof 9,
+  green before the rule replacement and red after) with proof 10 as the
+  under-budget negative control — and the single-branch-clone
   run above are each a committed branch run against and pasted, not described.
   This round's second review found the
   first fix walkable and its manufacture-room exploit is recorded above as
   proof 8, pasted green against the shipped gate and red against this branch's.
+  The third review found the second fix walkable and its build-flood exploit
+  is recorded above as proof 9, pasted green against the gate as it was and
+  red against the replaced rule, with proof 10 pasted green so the fix is not
+  "no filing ever".
 - Result: measured this round — the two settings-UI items left dispatch's
   ready (54 → 51 of 59 open, the third being this round's item closing), left
   meta's counted open items (29 → 26 on this branch, two blocked plus one
@@ -416,9 +614,14 @@ single-branch-clone guard still prints WARN and exits 0.
   base — went green on the first shape and is red on the corrected gate, and
   the manufacture-room attack — 26 existing author items marked blocked plus
   two new ones — went green on the first fix and is red on the gate as it is
-  on this branch. Not yet measured: whether the queue stops growing — that is
-  the gate's first red in the wild, which nothing shipped this round can
-  produce, and it has not happened yet.
+  on this branch. The build-flood that was possible against every earlier
+  shape — 30 build items against a budget of 14, exit 0 — is red against the
+  ceiling rule (proof 9, pasted above green before and red after), while
+  filing within a budget stays green (proof 10, 10 build items), and this
+  branch passes its own gate under the replaced rule (author 30 ≤ 30, build
+  0 ≤ 14, meta 28 ≤ 29). Not yet measured: whether the queue stops growing —
+  that is the gate's first red in the wild, which nothing shipped this round
+  can produce, and it has not happened yet.
 
 ### 2026-08-16
 Round 151 (meta) ships the first committed implementation of the demand-weighted
