@@ -103,10 +103,10 @@ moved to `docket/done/`.
 - The drop split, stated so a reader can judge it: 5 consolidated, 6 test 1,
   14 test 2. These sum to 25, and 30 − 25 + 1 (the new consolidated item) = 6.
 - The first-use significance: before this round `docket/dropped/` held only
-  `.gitkeep` — 149 shipped rounds, 47 items closed, none ever dropped. The
-  absence of any prior drop was itself the finding: a queue nothing leaves
-  except by being done is a sign of no taste, and this round is the first
-  judgment that says no.
+  `.gitkeep` — the triage item recorded 149 shipped rounds and 47 items closed
+  as of 2026-08-16, and not one ever dropped. The absence of any prior drop
+  was itself the finding: a queue nothing leaves except by being done is a sign
+  of no taste, and this round is the first judgment that says no.
 
 - Origin: delegated
 - Track: maintain
