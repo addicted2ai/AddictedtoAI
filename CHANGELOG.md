@@ -120,7 +120,9 @@ No docket item existed for this finding, so none was invented.
   rendered page carries the sweep sentence; `node scripts/staleness-report.mjs`
   — 129 artefacts, 0 stale; `node scripts/round.mjs check` — lint, docket
   validator, track scope, production-shaped build and route checks all green on
-  port 3000.
+  port 3000. (The first route-check pass tripped the timing-sensitive
+  orchestrate-checkout guard at 5429ms under load, its known flake shape; it
+  passed standalone at 405ms and green on the re-run.)
 - Result: not yet measured — count 9 renders and the sweep can now walk the
   full list; whether the fix holds is measured by the next drift the sweep
   catches.
