@@ -25,24 +25,41 @@ tracks:
     weight: 30
     # Scout can always run: its input is the world, not the queue.
     needs_docket_item: false
-    # Hard cap, enforced in scripts/dispatch.mjs. Weights spread runs over a
-    # rolling window and cannot bound a burst: on 16 August scout shipped four
-    # rounds, three of them inside two hours, while sitting at its policy share,
-    # because "most owed" is a ratio and says nothing about when. The world
-    # produces roughly a day's worth of news in a day; scouting it more often
-    # than that fills the queue faster than the tracks that consume it can
-    # empty it. A preflight finding still routes to scout regardless — this
-    # caps routine cadence, not the loop's ability to react.
-    max_runs_per_day: 1
+    # The track whose stock scout supplies. The dispatcher reads this to weight
+    # scout by demand: the fuller the fed queue, the less scout is owed.
+    # [author] and not [author, build], which was the first shape this design
+    # took and is wrong: of scout's 47 filed items the measured split is 41
+    # author, 3 build, 3 maintain, 0 meta — scout is 87% an author feeder, and
+    # giving build's empty 14-slot budget a vote would pull scout toward filing
+    # work it has almost never filed, the signal saying "there is room" while
+    # the room is in a track scout does not stock.
+    feeds: [author]
+    # max_runs_per_day: 1 was removed 2026-08-16. It was the right diagnosis
+    # with the wrong instrument: a clock cap bounds a burst but cannot tell a
+    # full queue from an empty one, and it kept scout off on the day the queue
+    # finally drained. The feeds/fill measurement replaces it — scout is
+    # demoted when its stock is full and promoted when author drains, which is
+    # demand doing the job a clock could not.
   maintain:
     weight: 25
     needs_docket_item: false   # the staleness report is its queue
   author:
     weight: 15
     needs_docket_item: true
+    # queue_budget: how much ready stock this track can actually spend, in the
+    # units of its own drain rate — 3 posts/week x 2 weeks = 6. Two weeks of
+    # measured drain is the only sizing rule used, and a queue deeper than a
+    # fortnight of work is a wishlist. The dispatcher reads this to weight the
+    # track by pressure (ready/budget): a full queue doubles its weight, an
+    # empty one halves it.
+    queue_budget: 6
   build:
     weight: 15
     needs_docket_item: true
+    # 20 build items closed in the seven days 08-10..08-16 is 40 in 14; 14 is
+    # the ceiling applied to every budget, because a queue deeper than a
+    # fortnight of work is a wishlist.
+    queue_budget: 14
   audit:
     weight: 10
     needs_docket_item: false
@@ -54,9 +71,15 @@ tracks:
   meta:
     weight: 5
     needs_docket_item: true
-    # Hard cap. Meta is the only track with infinite available work, which is
-    # why it won for ten straight rounds. See prompts/tracks/meta.md.
-    max_share_of_runs: 0.10
+    # 7 meta items closed in the seven days 08-10..08-16 is 14 in 14. Note
+    # honestly: this was measured while meta's weight suppressed its own drain,
+    # so it must be re-measured after this change rather than trusted.
+    queue_budget: 14
+    # max_share_of_runs: 0.10 was removed 2026-08-16. Over the last forty
+    # shipped rounds meta's measured share was 5% against the 10% cap, so the
+    # cap never bound that measurement — and the dispatcher's 2x ceiling on
+    # pressure bounds meta by construction, which is a stronger guarantee than
+    # a cap that was never binding.
 
 # --- Publishing -------------------------------------------------------------
 #

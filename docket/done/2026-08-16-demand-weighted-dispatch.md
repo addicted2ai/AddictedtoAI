@@ -201,23 +201,34 @@ pressure, so the reason a track won is legible without re-deriving it.
 
 ## Done when
 
-- [ ] `policy.yml` carries `queue_budget` for author (6), build (14) and meta
+- [x] `policy.yml` carries `queue_budget` for author (6), build (14) and meta
       (14), `feeds: [author]` on scout, and no longer carries
       `scout.max_runs_per_day` or `meta.max_share_of_runs` — each removal
       explained in the file
-- [ ] `scripts/dispatch.mjs` computes effective weight as specified, with the
+- [x] `scripts/dispatch.mjs` computes effective weight as specified, with the
       2× ceiling and the 0.1 floor both commented as load-bearing
-- [ ] The `dispatch.mjs` header comment describes demand weighting, so the file
+- [x] The `dispatch.mjs` header comment describes demand weighting, so the file
       does not go on claiming a fixed-weight rotation it no longer runs
-- [ ] **Measured, not reasoned:** the round records `node scripts/dispatch.mjs`
+- [x] **Measured, not reasoned:** the round records `node scripts/dispatch.mjs`
       output before and after on the same tree, with meta's target rising from
       7% and scout's falling from its fixed share
-- [ ] **Negative control 1:** with author's ready items removed from a scratch
+- [x] **Negative control 1:** with author's ready items removed from a scratch
       copy of the tree, scout's effective weight returns to its full 30 —
       proving the demotion tracks the queue and is not hardcoded
-- [ ] **Negative control 2:** with meta's `queue_budget` raised to 100, meta's
+- [x] **Negative control 2:** with meta's `queue_budget` raised to 100, meta's
       target falls back to roughly its old share — proving the weight tracks
       the budget and not merely the item count
-- [ ] The changelog entry records the division of decisions stated in
+- [x] The changelog entry records the division of decisions stated in
       "Why now": a human chose the direction, the orchestrating model chose the
       design
+
+## Correction recorded
+
+Round 151's changelog entry corrects this item's bold claim — "**The 10% cap
+never bound once.**" — as false. Measured over the dispatcher's actual 20-round
+window meta was at exactly 10% (2 of 20), so `max_share_of_runs` was excluding
+meta from every dispatch decision while meta held 25 ready items; the 5% figure
+the claim rests on was measured over 40 rounds, a different window. The
+correction strengthens the case for this change rather than weakening it: the
+cap was not a dead letter but an active exclusion. Measurements pasted in the
+round's entry were run by the orchestrator on 2026-08-16 (61 open, 55 ready).
