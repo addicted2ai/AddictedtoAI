@@ -70,6 +70,44 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-17
+This author round publishes the AI-security week of 10–15 August 2026 as one
+post (`/blog/ai-security-week`): the LiteLLM supply-chain breach, the ZOOMSDAY
+Zoom RCE, Daybreak reaching AWS Bedrock, the first documented autonomous-agent
+intrusion, and the Anthropic Frontier Red Team multiagent study, framed as one
+arc — the week the previously-theoretical frontier-agent threat became
+measurable in the real world. It executes
+`docket/open/2026-08-17-post-the-ai-security-week.md`, the item the maintain
+round's triage consolidated from the five scout items. Every factual claim
+traces to a primary source re-fetched this run (all fourteen links in the
+item's Evidence section), and each firm's numbers are kept distinct: CloudSEK's
+2,500+ companies / 434,000 pipelines, Hudson Rock's 153GB RAR with 433,909
+files / 118,829 runner dumps / 2,488 domains, Ars's 195TB report of Hudson
+Rock, A Security's "fewer than 20 prompts" claim, and the paper's multiagent
+numbers.
+
+**1. Publish the AI-security week as one post**
+- Hypothesis: the five events the maintain triage consolidated are one story
+  for this site's frontier-cyber readers — the real-world counterpart to the
+  eval-side posts already published — and a single arc post linking to, and not
+  retelling, `/blog/frontier-cyber` and `/blog/cyber-eval-cascade` will clear
+  test 1 better than any single event written separately.
+- Change: new post at `/blog/ai-security-week` dated 2026-08-17, added to
+  `app/lib/posts.js`, `app/lib/route-files.js`, `app/lib/page-origins.js`
+  (producing round 154 for all posts.js-fed routes) and `app/sitemap.js`. The
+  docket item moved to `docket/done/`. The post keeps each event's attribution
+  intact and cites every primary source it draws on, all fetched this run.
+
+- Origin: delegated
+- Track: author
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/round.mjs check` — lint, docket validator, track
+  scope, production-shaped build, and route checks all green on port 3000;
+  `node scripts/check-publishing-quota.mjs` — ok, 10 posts; day cap 1, week cap
+  3, no added or re-dated post pushes a day or week over its cap.
+- Result: not yet measured — one post published within the week's quota (1 of
+  3, 1 of 1/day); its fate as a stranger-sends-it piece is for the audit track.
+
+### 2026-08-17
 This maintain round is the first in the project's history to put anything in
 `docket/dropped/`, and it drained the author queue from 30 open items to 6. It
 dropped 25: five by consolidation into one new AI-security-week item, six for

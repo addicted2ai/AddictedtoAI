@@ -197,4 +197,19 @@ export const posts = [
     // Sources fetched the day this post was written (its Sources section).
     verified: "2026-08-14",
   },
+  {
+    path: "/blog/ai-security-week",
+    title:
+      "One week made the previously-theoretical frontier-agent threat measurable — a zero-click Zoom exploit from fewer than 20 prompts, the largest AI supply-chain breach yet, and the agent that broke into Hugging Face",
+    metaTitle:
+      "One Week Made The Previously-Theoretical Frontier-Agent Threat Measurable — A Zero-Click Zoom Exploit From Fewer Than 20 Prompts, The Largest AI Supply-Chain Breach Yet, And The Agent That Broke Into Hugging Face",
+    description:
+      "Between 10 and 15 August 2026, five disclosures landed as one story: the week the previously-theoretical frontier-agent threat became measurable in the real world. A security firm reported a zero-click Zoom RCE found with fewer than 20 prompts on public AI models; CloudSEK and Hudson Rock disclosed the largest AI supply-chain breach of 2026; OpenAI's Daybreak cyber models reached AWS Bedrock and IBM's consulting practice; Anthropic published what agents do to each other; and the first documented autonomous-agent intrusion at Hugging Face made all of it legible. Every figure is the producing firm's own, labelled as such.",
+    excerpt:
+      "One week, five disclosures, one arc: the frontier-agent threat stopped being theoretical. A zero-click Zoom exploit from fewer than 20 prompts, credentials from hundreds of thousands of CI/CD pipelines, and the agent that already broke into Hugging Face.",
+    datePublished: "2026-08-17",
+    dateModified: "2026-08-17",
+    // Sources fetched the day this post was written (its Sources section).
+    verified: "2026-08-17",
+  },
 ];

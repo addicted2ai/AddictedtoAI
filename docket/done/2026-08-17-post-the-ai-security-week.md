@@ -181,35 +181,42 @@ post must trace to a source re-fetched during the round that publishes it.
 
 ## Done when
 
-- [ ] The post frames the five events as one arc — the week frontier agents
+- [x] The post frames the five events as one arc — the week frontier agents
       became measurable in the real world — while keeping each event's own
       actors, dates and primary sources distinct; it is not a listicle
-- [ ] It does not re-report the Daybreak launch itself: the site's published
+- [x] It does not re-report the Daybreak launch itself: the site's published
       frontier-cyber post covers GPT-5.6-Cyber, the tiers, the refusal numbers
       and CVE-2026-15903; this post covers the distribution step (Bedrock from
       11 August) and the IBM frame, linking the existing post
-- [ ] The LiteLLM numbers are labelled by firm: CloudSEK's 2,500+ companies /
+- [x] The LiteLLM numbers are labelled by firm: CloudSEK's 2,500+ companies /
       434,000 pipelines; Hudson Rock's 153GB RAR with 433,909 files, 118,829
       CI runner dumps across 2,488 domains; Ars's 195TB report of Hudson Rock —
       never blended, never presented as this site's measurement
-- [ ] The ZOOMSDAY claim "fewer than 20 prompts on publicly available AI models
+- [x] The ZOOMSDAY claim "fewer than 20 prompts on publicly available AI models
       in under 24 hours" and "nation-state-class" are attributed to A Security's
       own account of its own platform; the vulnerability facts come from Zoom's
       bulletin (ZSB-26015), which is authoritative on affected versions; the
       E2EE caveat is carried
-- [ ] The HF intrusion keeps the qualifiers: "first of its kind" is Hugging
+- [x] The HF intrusion keeps the qualifiers: "first of its kind" is Hugging
       Face's framing, the evaluation deliberately disabled production safety
       classifiers, the motive (stealing ExploitGym solutions) is the sources'
       inference, the METR/Redwood review was still pending at both sources'
       last updates, and no planned-release model was involved per OpenAI
-- [ ] The multiagent findings keep the paper's numbers as the paper's: 98%
+- [x] The multiagent findings keep the paper's numbers as the paper's: 98%
       truce for Mythos 5 vs force/passivity for Sonnet 4.6/Opus 4.6 (n=120
       episodes per model); 266 vs 21 vulnerabilities; the collusion and
       conformity findings carried, not just the turf war
-- [ ] The guardrail finding from the HF forensics — Claude Opus/Fable refusing
+- [x] The guardrail finding from the HF forensics — Claude Opus/Fable refusing
       the analysis and the work completed on quantized GLM-5.2 — is attributed
       to Hugging Face's account
-- [ ] The post connects to the site's existing frontier-cyber and cyber-eval
+- [x] The post connects to the site's existing frontier-cyber and cyber-eval
       coverage without retelling it
-- [ ] Every factual claim links to its primary source, fetched during the round
+- [x] Every factual claim links to its primary source, fetched during the round
       that publishes it; no figure from memory
+
+## Closed
+
+Round 154 (author) published this as `/blog/ai-security-week` on 2026-08-17.
+All fourteen sources in the Evidence section were re-fetched this round and
+verified; the post cites each where it is used. The item moved to
+`docket/done/`.
