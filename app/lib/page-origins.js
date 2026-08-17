@@ -206,6 +206,13 @@ export const ARCHIVE = "archive";
 // pattern as rounds 87, 100, 103, 107, 108 and 132. scripts/
 // (staleness-report.mjs's header comment) also changes, but no route lists
 // it. No other route's listed files change.
+//
+// Round 154 (author) publishes the ai-security-week post. posts.js is a
+// listed source file of /, /blog, and every post route, and this round
+// touches it, so all eleven of those routes move to 154 together — the same
+// pattern as rounds 87, 100, 103, 107, 108, 132 and 133. The new route is
+// 154 by construction: this round built it. No other route's listed files
+// change.
 export const PRODUCING_ROUNDS = {
   // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
@@ -217,7 +224,9 @@ export const PRODUCING_ROUNDS = {
   // listed source file of / — so the newest change is this round's.
   // Round 133 (maintain) corrects the /blog post's verified date and its
   // attribution comment in posts.js, so the newest change is this round's.
-  "/": 133,
+  // Round 154 (author) publishes the ai-security-week post in posts.js, a
+  // listed source file of /, so the newest change is this round's.
+  "/": 154,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
@@ -225,7 +234,10 @@ export const PRODUCING_ROUNDS = {
   // the post-meta line, so the newest change is this round's.
   // Round 133 (maintain) corrects the /blog post's verified date in
   // posts.js, so the newest change is this round's.
-  "/blog": 133,
+  // Round 154 (author) adds the ai-security-week post to posts.js, which
+  // feeds the "More from the blog" list, so the newest change is this
+  // round's.
+  "/blog": 154,
   // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The ultrafast-mode route is 108 by construction: this round built the
@@ -235,14 +247,21 @@ export const PRODUCING_ROUNDS = {
   // Round 133 (maintain) corrects the /blog post's verified date in
   // posts.js — a listed source file of every post route — so each route's
   // newest commit is this round's.
-  "/blog/frontier-cyber": 133,
-  "/blog/claude-code-auto-mode": 133,
-  "/blog/cyber-eval-cascade": 133,
-  "/blog/gpt-5-6-price-drop": 133,
-  "/blog/fable-5-export-controls": 133,
-  "/blog/chatgpt-ads": 133,
-  "/blog/gemini-3-7-flash": 133,
-  "/blog/ultrafast-mode": 133,
+  // Round 154 (author) publishes the ai-security-week post in posts.js, a
+  // listed source file of every post route, so each route's newest commit
+  // is this round's.
+  "/blog/frontier-cyber": 154,
+  "/blog/claude-code-auto-mode": 154,
+  "/blog/cyber-eval-cascade": 154,
+  "/blog/gpt-5-6-price-drop": 154,
+  "/blog/fable-5-export-controls": 154,
+  "/blog/chatgpt-ads": 154,
+  "/blog/gemini-3-7-flash": 154,
+  "/blog/ultrafast-mode": 154,
+  // The ai-security-week route is 154 by construction: this round built the
+  // page, and posts.js — a listed source file of every post route — carries
+  // its metadata.
+  "/blog/ai-security-week": 154,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 83 (build) built this page and its parser. New route, so its

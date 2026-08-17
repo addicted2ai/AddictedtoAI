@@ -50,6 +50,10 @@ export const ROUTE_FILES = {
     "app/blog/ultrafast-mode/page.js",
     "app/lib/posts.js",
   ],
+  "/blog/ai-security-week": [
+    "app/blog/ai-security-week/page.js",
+    "app/lib/posts.js",
+  ],
   "/charter": ["app/charter/page.js", "app/lib/charter.js"],
   "/loop-history": [
     "app/loop-history/page.js",

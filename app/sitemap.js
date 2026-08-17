@@ -78,6 +78,12 @@ const routes = [
     changeFrequency: "weekly",
   },
   {
+    path: "/blog/ai-security-week",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[9].dateModified,
+    changeFrequency: "weekly",
+  },
+  {
     path: "/disclosure",
     priority: 0.7,
     lastModified: latestBuildLogDate,
