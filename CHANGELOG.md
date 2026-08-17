@@ -70,6 +70,51 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-17
+A one-comment correction to `.github/workflows/pr-checks.yml`, which still told
+every reader that the `review-artifact` job "is a *visible* check, not a gate"
+and is "not on that list". The maintainer added it to the required contexts on
+2026-08-17, so the file has been describing this project's own gate as weaker
+than it is. The matching sentence in `docket/README.md` was corrected in the
+change immediately before this one; this is the copy that lives in a human-owned
+path, which is why it is a separate pull request that a human merges.
+
+Found while re-verifying the docket rather than by any check. Nothing reads the
+branch protection and compares it to what the repository says about itself,
+which is why both copies of this claim went stale quietly and why the fix is two
+pull requests rather than one.
+
+**1. Say that review-artifact is required, and what being required does not buy**
+- Hypothesis: a comment that understates a live guardrail survives longer than
+  one that overstates it, because nobody audits a claim that flatters nothing.
+- Change: the block above the `review-artifact` job now says it is on the
+  branch-protection required list as of 2026-08-17 and quotes the contexts read
+  from the API; says plainly that the comment previously claimed the opposite;
+  and names the two holes being required does not close — `enforce_admins` is
+  false, and the check reads its own applicability out of the branch it judges,
+  with round 152 as the worked example.
+
+- Origin: maintainer
+- Track: meta
+- Agent: claude-opus-5 (orchestrating model)
+- Guardrails: the required contexts were re-read from
+  `repos/addicted2ai/AddictedtoAI/branches/main/protection` rather than taken
+  from the settings page or from the previous entry. `human-owned-paths` fails
+  on this pull request by design, because it touches `.github/`; it is merged
+  through the API under the maintainer's standing authorisation, which is
+  recorded in the pull request, and the red check is left in the record rather
+  than worked around.
+- Result: not yet measured — the workflow now agrees with the branch protection
+  it describes. Nothing keeps them agreeing, which is the honest residual: this
+  is a comment, and no check reads the settings.
+
+**A one-byte repair, disclosed.** This change also restores the trailing newline
+on `CHANGELOG.md`. The previous change stripped it: the script that built it
+read blobs through a helper that trimmed its output, which is fine for a command
+result and wrong for a file. It passed every check, was caught by reading the
+diff rather than by any gate, and is recorded here because a silent whitespace
+change in the file that *is* the record is worth one sentence.
+
+### 2026-08-17
 The maintainer asked whether the twenty-nine open `meta` items in the docket were
 still valid and actionable, several being a week old in a queue that has moved
 fast. Each was re-verified against the code at `origin/main` rather than against
