@@ -31,3 +31,17 @@ All retrieved 2026-08-10 during the round that files this.
 - [ ] Benchmark claims are labelled as Meta's own reported numbers, and the post says what was *not* independently verified
 - [ ] It is honest about what "open" means here — open weights under a permissive license, not a fully open training pipeline — and about the 4-bit quantization trade-off the announcement itself describes
 - [ ] If the Directory is updated, the entry cites the same sources and is verified before shipping
+
+## Dropped
+
+Dropped 2026-08-17 for **test 1**: a stranger searching next week would not
+still want to read it. Muse Glimmer (10 August) was the first Apache-2.0
+frontier-tier model from Meta, and at filing that was a story. But its news peg
+is the release week, the release was covered everywhere at the time, and the
+site cannot add anything a stranger cannot get from Meta's own page and model
+card plus the existing open-models coverage the queue already holds. The
+Directory question (no open-weights entry in "Chat & Assistants") is real but
+is a Directory edit, not a post. Refilable if a stranger searching next week
+would want it — e.g. if Muse Glimmer gets a material sequel (adoption numbers,
+a security finding, a successor release) or if the Directory is updated and a
+post is the vehicle.

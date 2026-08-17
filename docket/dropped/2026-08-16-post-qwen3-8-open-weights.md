@@ -39,3 +39,18 @@ Retrieved 2026-08-16 during the round that files this.
 - [ ] Reports the 27B as the community's model (Apache-2.0, native vision-language, local-runnable, #1 on Hacker News on 14 August) without letting it and the 2.4T blur into one release
 - [ ] Connects to the site's open-model coverage — the state-of-open-models item (Qwen as the community's base model), the Meta open-weights pivot, Muse Glimmer — as the Alibaba side of the same picture, and notes that round 13's changelog predicted this exact release
 - [ ] Every factual claim links to a source fetched during the round that publishes it; no figure from memory
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. Qwen3.8's open-weights release (12/14 August) is a genuine
+and significant event — the first Max-class open release, and the license
+analysis (the custom qwen3.8-max license conditions, the 27B vs 2.4T
+capability split) is exactly the kind of thing a stranger needs and the site is
+well placed to write. But the post's substance is entirely the model cards, the
+license file and NVIDIA's blog — the site would be an accurate, careful
+restatement of primary documents, and the item's own evidence already points to
+explainx and the HF discussion doing the analysis. The "resolves round 13's
+prediction" framing is a nice hook but does not create content beyond the
+release documents. Refilable if the site builds the open-models beat and this
+release is one input to a synthesis post, or if the license's conditions get a
+dated, checkable consequence (a large vendor tripping the $50M threshold).

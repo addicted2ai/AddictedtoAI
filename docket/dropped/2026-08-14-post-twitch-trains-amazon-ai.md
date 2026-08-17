@@ -35,3 +35,17 @@ Retrieved 2026-08-14 during the round that files this.
 - [ ] Quotes the "If it was opt-in, nobody would opt in" reason attributed to Twitch's CPO Mike Minton, 2026 reporting
 - [ ] Carries the qualifiers: the page says content "may be used for future" improvements; the speech-to-text example is Twitch's own; "almost every content service" is Minton's claim, not a fact
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 1**: a stranger searching next week would not
+still want to read it. The Twitch training-data disclosure (12 August) is a
+real story — the CPO's "If it was opt-in, nobody would opt in" is the kind of
+quote a reader shares — but its news peg is the disclosure week, the story was
+covered fully by Ars and The Verge that week, and the policy state it describes
+(opt-out default, new setting) is not going to change next week. A stranger
+searching "Twitch AI training opt out" next week meets the same support page
+and the same reporting; the site adds assembly but no fact they cannot get.
+Refilable if the policy changes (opt-in default, a regulator acting, Amazon
+disclosing how long training ran), because then the "what changed" becomes a
+new peg.

@@ -29,3 +29,15 @@ Retrieved 2026-08-15 during the round that files this.
 - [ ] Attributes the date honestly: TechCrunch reported the launch on 11 August; OpenAI's release note dates the global public preview 14 August — the post should not claim a GA date either source asserts
 - [ ] Raises (and may answer, at the executing round's judgment) whether the Directory's ChatGPT entry should mention the Linux surface — it is a one-line description entry, so this is a call the author run makes, not a mandate
 - [ ] Every factual claim links to its source fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. ChatGPT desktop on Linux (public preview, 14 August) is a
+real availability change, but the post's entire substance is OpenAI's release
+note (which distros, which features, what is not supported), and the site adds
+no fact, analysis or context a reader does not get from the release note and
+TechCrunch. The Directory question (should the ChatGPT entry mention Linux) is
+a one-line-description judgment the author run can make without a post.
+Refilable if the Linux client reaches GA with material changes, or if the
+Directory entry is the right vehicle and a post is not.

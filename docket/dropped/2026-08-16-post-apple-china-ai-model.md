@@ -36,3 +36,16 @@ Retrieved 2026-08-16 during the round that files this.
 - [ ] Attributes the "first foreign company approved by Beijing to offer a proprietary AI model in China" line to Reuters as an expectation — The Verge's "first US company" wording is its paraphrase, not Reuters'
 - [ ] Connects to the site's China coverage (open-model landscape, export controls) without re-reporting it
 - [ ] Every factual claim links to the fetched sources; no figure from memory
+
+## Dropped
+
+Dropped 2026-08-17 for **test 1**: a stranger searching next week would not
+still want to read it. The Apple-Alibaba China model (14 August) is reported,
+not announced — three unnamed people per Reuters — and its news value is tied
+to the reporting week. A stranger searching next week has met the story via the
+Reuters/Verge coverage, and the site's only increment (China-registration-regime
+context) is thin for a post when the underlying fact is still unconfirmed. It is
+a market-structure story the site's China coverage would care about once it
+crystallises. Refilable if Apple Intelligence's China rollout actually lands
+(dated, confirmed), or if Apple announces the model — then the regulatory
+"first foreign company" question becomes checkable and current.

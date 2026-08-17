@@ -51,3 +51,17 @@ attributing roughly 434,000 to both firms. Every other claim in the item
 verified against the fetched sources: the 40-minute March window, versions
 1.82.7/1.82.8, the Trivy/KICS/Telnyx chain, TeamPCP, the high-confidence
 victim list, and the remediation guidance.
+
+## Dropped
+
+Dropped 2026-08-17 for consolidation. This item is one of five filings of the
+same security arc (LiteLLM supply-chain compromise, ZOOMSDAY Zoom RCE, Daybreak
+on AWS Bedrock, the first documented autonomous-agent intrusion, and the
+Frontier Red Team multiagent study). It is consolidated into
+`2026-08-17-post-the-ai-security-week.md`, which cites every source this item carried (CloudSEK,
+Hudson Rock, Ars Technica). Not dropped for staleness: the LiteLLM story is
+still actionable, but a reader wants it in the one post covering the arc, not
+as a standalone week-old item beside four siblings covering the same week.
+Refilable if the LiteLLM breach gets a material sequel — a confirmed
+compromise traced to the leaked credentials, an arrest, or new victim
+disclosures — that a standalone post would cover.

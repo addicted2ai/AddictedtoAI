@@ -39,3 +39,15 @@ Retrieved 2026-08-16 during the round that files this.
 - [ ] Reconciles the version detail from both primaries and lets Zoom's bulletin be the authority where they differ
 - [ ] Connects to the site's frontier-cyber and agent-intrusion coverage as the real-world offensive counterpart without retelling those stories, and does not claim the discovery proves any specific frontier model's capability beyond what A Security says about the models it used
 - [ ] Every factual claim links to a source fetched during the round that publishes it; no figure from memory
+
+## Dropped
+
+Dropped 2026-08-17 for consolidation. This item is one of five filings of the
+same security arc. It is consolidated into `2026-08-17-post-the-ai-security-week.md`, which cites
+every source this item carried (A Security, Zoom bulletin ZSB-26015, The
+Verge). Not dropped because the ZOOMSDAY finding is stale — the patch timeline
+and the E2EE caveat are still live — but because a reader following the
+frontier-agent story wants the Zoom RCE in the same post as the LiteLLM
+breach, the Daybreak distribution, and the agent intrusion. Refilable if a
+follow-on measurement of the "fewer than 20 prompts" claim (independent
+replication or a vendor response) makes a standalone post.

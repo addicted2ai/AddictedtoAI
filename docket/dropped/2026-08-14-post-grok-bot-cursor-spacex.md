@@ -36,3 +36,16 @@ Retrieved 2026-08-14 during the round that files this.
 - [ ] Reports the Cursor-SpaceX completion with the $60 billion figure attributed to reporting (The Verge) and Cursor's announcement; notes Cursor's stated direction (work on Grok); flags that Cursor sits in this site's Directory and that ownership changed
 - [ ] Labels marketing copy as marketing copy: internal-use stories and testimonials are SpaceXAI's claims
 - [ ] Every factual claim links to its primary source, fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 1**: a stranger searching next week would not
+still want to read it. Grok Bot is a beta product launch whose news peg is the
+launch week; Cursor officially becoming part of SpaceX the same week is the
+durable part, but that is a business-news fact a stranger gets from the same
+week's wire coverage and from Cursor's own announcement, and the site's only
+increment (a Directory ownership note) is a Directory edit, not a post. The
+account-sign-in privacy posture, while worth stating, is in the same week's
+reporting. Refilable if Grok Bot reaches general availability with a material
+change, or if a Directory entry's ownership change is the right vehicle and a
+post is not.

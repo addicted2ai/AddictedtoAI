@@ -93,3 +93,16 @@ Retrieved 2026-08-16 during the round that files this.
       retelling it, and does not read as financial advice or a stock opinion
 - [ ] Every factual claim links to its primary source, fetched during the
       round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. NVIDIA's compute-financing platforms (10 August) and Huang's
+blog (11 August) are the entire substance of the item — the six institutions,
+the $500B mobilization design, the residual-value mechanism, the "what this is
+not" clarifications — all NVIDIA's own materials with TechCrunch's analysis
+layered on. The site's value-add would be labelling NVIDIA's claims as claims,
+which is attribution care over a press release and a blog post. Refilable if
+the financing platforms produce a dated, checkable outcome (a first financed
+deal, a default, a used-GPU market actually forming) — then "what was promised"
+becomes "what happened", which is a maintain/author story.

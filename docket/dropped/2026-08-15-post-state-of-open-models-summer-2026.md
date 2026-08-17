@@ -35,3 +35,16 @@ Why this site: the site's queue already tracks the GLM-5.2 ecosystem (Writer Pal
 ## Cross-refs
 
 Relates to the open items on the GLM-5.2 ecosystem (2026-08-14-post-writer-palmyra-x6.md, 2026-08-14-post-mistral-sovereign-ai.md) and Meta's open-weights pivot (2026-08-14-post-meta-open-weights-pivot.md) — the post may connect to them without retelling them.
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. The Hugging Face State of Open Models report (14 August) is a
+primary data source, and the post would restate its figures (Qwen derivatives,
+agent traffic shares, license split) with attribution — a restatement of a
+vendor report. The one genuinely checkable increment the item names — verifying
+the disputed "no non-commercial restriction" claim against Kimi's licence terms
+— is a verification note, not a post; the report's own comments already raise
+it. Refilable if the site builds the open-models beat and this report becomes
+one input to a synthesis post, or if the Kimi-licence dispute resolves into a
+checkable fact worth stating.

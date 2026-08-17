@@ -37,3 +37,16 @@ Retrieved 2026-08-15 during the round that files this.
 - [ ] Attributes the history correctly: Assistant retirement was first planned for late 2025 and delayed into 2026 per Google's own thread — the September 4 date is the current plan, not the first
 - [ ] Does not claim Assistant is dead outright — the shutdown is the phone-surface migration; Google Assistant remains on devices and platforms outside the email's list
 - [ ] Raises the Directory question (whether the Gemini entry should note the Assistant shutdown) for the executing round to decide, and every factual claim links to its primary source fetched during the round that publishes it
+
+## Dropped
+
+Dropped 2026-08-17 for **test 2**: the site can add nothing beyond restating
+the announcement. Google Assistant's phone shutdown (4 September) is a
+consumer-facing, dated event and it is a legitimate "tools shut down" story for
+this site — but the post's substance is Google's user-facing email as reported
+by Ars plus Google's own support pages, and the site adds only a Directory
+question. The site cannot verify the email beyond the reporting; it restates a
+dated announcement. Refilable when the shutdown actually happens (4 September)
+and the outcome is checkable — how many devices migrated, what broke, the
+Gemini-only transition date — which turns a dated announcement into a measured
+aftermath.
