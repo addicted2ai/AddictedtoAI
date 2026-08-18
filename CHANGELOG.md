@@ -70,6 +70,63 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-18
+A maintain round that cleaned one item off the queue and verified two others
+against the current tree. The dated verification clocks are healthy — preflight
+clean, 129 published artefacts judged with 0 stale — so the work here is the
+docket: one item had been overtaken by the code it describes and is dropped,
+and two candidate items were checked against the files they cite and found
+still live.
+
+**1. Dropped the direct-arm docket item**
+- Hypothesis: `2026-08-11-every-run-and-loop-yml-still-instruct-direct-arm.md`
+  was filed to remove a direct `gh pr merge --auto --squash` instruction from
+  two human-owned paths. Its own 2026-08-17 note argues the direct-arm
+  instruction is gone from the active path and the one open box — the workflow
+  invoking `ship` — sits on a dormant one; if the files still say that today,
+  the item describes a problem that no longer exists on any path that runs, and
+  keeping it open makes the queue less true.
+- Change: re-read `scripts/build-prompt.mjs`, `prompts/shared/every-run.md` and
+  `.github/workflows/loop.yml` this round and confirmed it. `build-prompt.mjs`
+  now tells the round to run `node scripts/round.mjs ship` and not to run
+  `gh pr merge --auto --squash` itself; `every-run.md` defers the prompt's
+  ending to that file and carries no merge instruction; `loop.yml` builds its
+  prompt from `build-prompt.mjs`, invokes no merge command, and has `on.schedule`
+  commented out — it fires only on `workflow_dispatch`, while the loop that
+  ships rounds is `scripts/orchestrate.sh`. The item moved to `docket/dropped/`
+  with a `## Dropped` section preserving the one warning that matters: if
+  `on.schedule` is ever uncommented without the workflow invoking `ship`, this
+  is priority 1 again the same day.
+
+**2. Re-verified the two other candidate items, both stay open**
+- Hypothesis: `2026-08-11-ship-and-scope-check-disagree-on-maintainer-branches.md`
+  and `2026-08-11-check-cannot-see-a-missing-changelog-entry.md` each claim a
+  disagreement that may have been resolved since they were filed. An item whose
+  premise has since been closed is a drop; one whose premise still holds stays
+  open.
+- Change: checked each against the code it cites. The scope-check disagreement
+  is unchanged: `scripts/round.mjs ship` rejects a branch that is not
+  `loop/<track>/<slug>` while `scripts/check-track-scope.mjs` exits 0 on it
+  ("maintainer branches are not track-scoped"), and `round.mjs check` reports it
+  as a skip — so that item stays open. For the changelog-entry item, the ship
+  half is closed (`ship` fails closed when the branch changes no entry) but the
+  check half is not (`round.mjs check` still runs nothing that reads the diff),
+  so that item also stays open. Neither is in this track's scope to fix; the
+  verification is the product.
+
+- Origin: delegated
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/preflight.mjs --json` → `{"findings":[]}`;
+  `node scripts/staleness-report.mjs` → 129 judged, 128 within window, 1
+  recorded-unverified within window, 0 stale; `node scripts/check-one-limit-count.mjs`
+  → ok (count 10, swept 2026-08-17T23:42:47Z); `node scripts/check-loop-history-snapshot.mjs`
+  → 3 ok; the three docket items re-read against `round.mjs`,
+  `check-track-scope.mjs`, `build-prompt.mjs`, `loop.yml` and `every-run.md`;
+  `node scripts/round.mjs check` before ship.
+- Result: not yet measured — the drop is the change; the re-verified items
+  still describe the tree as of this run.
+
+### 2026-08-18
 Two targets, both the maintain track's core charge. The loop-history snapshot
 was 34 rounds and 54 hours (2.25 days, 15–18 August) behind the record, and two pages still carried
 present-tense claims about `enforce_admins` that the branch endpoint does not

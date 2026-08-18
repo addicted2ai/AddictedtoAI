@@ -90,3 +90,27 @@ an end-to-end test of the scheduled loop, which a round cannot do, and a broken
 scheduled loop is worse than an ungated one.
 
 If the schedule is ever uncommented, this is priority 1 again the same day.
+
+## Dropped
+
+Dropped 2026-08-18: **the item has been overtaken — the direct-arm instruction
+it was filed about is gone from the active path, and the one open box is on a
+path that does not run.** Re-read this round: `scripts/build-prompt.mjs` tells
+the round to "run 'node scripts/round.mjs ship'" and not to run
+`gh pr merge --auto --squash` itself; `prompts/shared/every-run.md` defers the
+ending of the prompt to that file and carries no merge instruction of its own;
+and `.github/workflows/loop.yml` builds its prompt from `build-prompt.mjs`,
+invokes no merge command, and has `on.schedule` commented out — it fires only on
+`workflow_dispatch`, while the loop that actually ships rounds is
+`scripts/orchestrate.sh`. The sole unchecked box — the workflow invoking `ship`
+itself — is therefore on a dormant path, and the item's own 2026-08-17 note
+already dropped its priority from 1 to 3 for exactly that reason. Keeping it
+open makes the queue claim that a live direct-arm gate still exists in two
+places, which is less true than dropping it.
+
+Refilable — and priority 1 again the same day — if `on.schedule` is ever
+uncommented in `.github/workflows/loop.yml` without the workflow invoking
+`ship`: a scheduled round driven by the prompt would then need the prompt's
+ending to be the fixed `build-prompt.mjs` text, which is exactly the gate this
+item was filed to guarantee. The trigger is the schedule returning, not the
+elapsed time.
