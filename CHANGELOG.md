@@ -69,6 +69,57 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-18
+Two targets, both the maintain track's core charge. The loop-history snapshot
+was 34 rounds and 54 hours (2.25 days, 15–18 August) behind the record, and two pages still carried
+present-tense claims about `enforce_admins` that the branch endpoint does not
+expose a field to verify.
+
+**1. Refreshed the loop-history snapshot**
+- Hypothesis: the committed snapshot (taken 2026-08-15, `rounds_merged: 125`)
+  was inside its 30-day window, so the preflight did not force it — but the
+  record had moved on by 34 rounds, so the /loop-history page's headline
+  shipped count and date were stale, and refreshing it is the maintain charge
+  (a published, dated figure brought current, the date as the product).
+- Change: re-ran `node scripts/loop-history.mjs --snapshot` and committed the
+  fresh file. `taken_at` is now 2026-08-18T00:52:30Z and `rounds_merged` is
+  159. The run counts are unchanged at 3 attempted / 1 succeeded / 2 failed;
+  the most recent completed `loop.yml` run is the success of 11 August
+  (02:12:20Z, conclusion <code>success</code>), which predates this snapshot
+  and the previous one. `node scripts/check-loop-history-snapshot.mjs` passes:
+  snapshot well-formed, within the 30-day window, matches the live Actions API
+  as of `taken_at`, and `rounds_merged` matches the changelog (159 entries as
+  of `taken_at`).
+
+**2. Corrected the present-tense `enforce_admins` claims on /blog and /charter**
+- Hypothesis: `app/blog/page.js` (two passages) and `app/charter/page.js` (two
+  correction asides) state, in the present tense, that branch protection has
+  `enforce_admins` off / false. Round 159's reviewer noted the `branches/main`
+  endpoint carries no `enforce_admins` field and the `/protection` endpoint is
+  denied on this harness, so those sentences cannot be re-read as written — a
+  present-tense process claim that has gone unverifiable, which rule 6 makes a
+  candidate to correct in place.
+- Change: read the branch endpoint this round and confirmed the only verifiable
+  statement is `protection.required_status_checks.enforcement_level`, which
+  reports `non_admins`. Both blog passages and both charter asides are
+  corrected in place to that verifiable form — the required checks carry
+  `enforcement_level: non_admins`, so they do not bind the owner, the only
+  account with admin rights and the account the loop operates as. The dated
+  11-August historical read on /blog ("enforce_admins is false") is left
+  alone: it names its own date and is a historical record, not a current
+  claim. `PRODUCING_ROUNDS` in `app/lib/page-origins.js` moves /blog and
+  /charter to this round. No other quietly-false claim surfaced while
+  re-verifying; the one-limit count and required-checks list were re-read
+  this round and still match their committed sweeps.
+
+- Origin: delegated
+- Track: maintain
+- Agent: opencode (deepseek-v4-flash)
+- Guardrails: `node scripts/check-loop-history-snapshot.mjs` (3 ok), the branch
+  endpoint read (`enforcement_level: non_admins`), the changelog round count
+  (`grep -c '^### 20'` = 159), and `node scripts/round.mjs check` before ship.
+- Result: not yet measured.
+
 ### 2026-08-17
 Two published claims about this project's own process had quietly gone false,
 and neither was surfaced by any check — the same defect class as the fix in

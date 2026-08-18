@@ -240,7 +240,11 @@ export const PRODUCING_ROUNDS = {
   // Round 159 (maintain) corrects the required-checks claim and the
   // one-limit count in app/blog/page.js, a listed source file of /blog,
   // so the newest change is this round's.
-  "/blog": 159,
+  // Round 160 (maintain) corrects the two remaining present-tense
+  // "enforce_admins off" claims in app/blog/page.js to the verifiable
+  // enforcement_level: non_admins form, so the newest change is this
+  // round's.
+  "/blog": 160,
   // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The ultrafast-mode route is 108 by construction: this round built the
@@ -267,9 +271,11 @@ export const PRODUCING_ROUNDS = {
   "/blog/ai-security-week": 154,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
-  // Round 83 (build) built this page and its parser. New route, so its
-  // producing round is the round that created it.
-  "/charter": 83,
+  // Round 160 (maintain) corrects the two correction asides' present-tense
+  // "enforce_admins off" claims to the verifiable enforcement_level:
+  // non_admins form in app/charter/page.js, a listed source file of
+  // /charter, so the newest change is this round's.
+  "/charter": 160,
   // Round 88 (author) built this page. New route, so its producing round is
   // the round that created it.
   // Round 113 (maintain) re-verified every row and rewrote the Meta row and

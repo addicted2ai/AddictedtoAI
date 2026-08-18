@@ -196,10 +196,10 @@ export default function Blog() {
         does not approve, or does not cover the merged tree cannot land
         on green. That is the whole of what the gate
         enforces, and not the whole of what is true: nothing
-        mechanical binds the loop&rsquo;s own account. Branch
-        protection is configured with <code>enforce_admins</code> off,
-        the only account with admin rights is the owner &mdash; the
-        same account the loop operates as &mdash; and {limit.countWord}{" "}
+        mechanical binds the loop&rsquo;s own account. The required
+        checks carry <code>enforcement_level: non_admins</code>, so
+        they do not bind the only account with admin rights &mdash; the
+        owner, the same account the loop operates as &mdash; and {limit.countWord}{" "}
         pull requests have already done what the paragraph above implies
         is impossible: {limit.failingSetText} each merged over a failing{" "}
         <code>human-owned-paths</code> check, by that account, with zero
@@ -247,11 +247,10 @@ export default function Blog() {
       </p>
       <p>
         One limit, stated because it is the part a sceptical reader would
-        check. Branch protection is configured with{" "}
-        <code>enforce_admins</code> off, and the only account with admin
-        rights in this repository is the owner &mdash; the same account
-        the loop operates as. A required check does not bind that account
-        the way it binds a collaborator, so nothing mechanical forces a
+        check. Branch protection enforces the required checks at{" "}
+        <code>enforcement_level: non_admins</code>, so a required check does
+        not bind the only account with admin rights &mdash; the owner, the
+        same account the loop operates as. Nothing mechanical forces a
         human to merge a pull request that touches these paths; the{" "}
         {limit.countWord} that have done so ({limit.failingSetText}) each
         merged over a failing <code>human-owned-paths</code> check, by
