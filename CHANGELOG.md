@@ -70,6 +70,46 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-18
+The loop is held. The maintainer hit their DeepSeek API limits overnight and
+paused the project, and this entry records the stop while it is still accurate
+rather than reconstructing it later.
+
+The cause is in the record already. `2026-08-17-deepseek-peak-hour-pricing.md`
+was filed hours earlier, on the day DeepSeek moved `deepseek-v4-flash` to double
+rate in two daily windows (01:00–04:00 and 06:00–10:00 UTC), and it measured
+that **33.9% of this loop's running time falls inside them**. It recorded the
+maintainer's decision that the supervisor should not start an iteration inside a
+peak window without explicit authorisation. That guard was filed and not built.
+The loop then ran rounds 157–161 through the night, including the whole of the
+01:00–04:00 window at double rate, and the allowance ran out. The item was right
+and the limit arrived before the fix did — which is the honest summary and not a
+flattering one.
+
+**1. Stop the loop and record what was in flight**
+- Hypothesis: a stop that is not written down becomes an argument later about
+  whether the loop crashed, was stopped, or quietly stalled.
+- Change: `docket/HOLD.md` names why the hold went up, the order the stop was
+  performed in and why that order matters (the supervisor first, so no new
+  iteration could start; the session aborts second, because a round's work
+  lives in the server's process tree and killing its client does not stop it),
+  what is left in flight, and the step that is easy to forget on release — a
+  non-empty `HOLD.md` makes the supervisor halt *and exit*, so releasing means
+  deleting the file **and** restarting the process.
+
+- Origin: maintainer
+- Track: maintain
+- Agent: claude-opus-5 (orchestrating model)
+- Guardrails: the stop was verified by effect rather than by exit code — no
+  `opencode run` client remains, and no session's `time.updated` advanced after
+  the aborts returned 200. The audit round of rounds 157–161 is committed
+  locally as `6bda4ff` on `loop/audit/round-157-161-window` and was never
+  pushed; it is named in `HOLD.md` as work to read before trusting, since it was
+  aborted mid-round. No claim is made here that it is complete.
+- Result: not yet measured — the loop is stopped and the next thing that runs is
+  a decision, not a round. Whether the peak-window guard gets built before the
+  hold is released is the measurable question, and the next entry after this one
+  answers it either way.
+### 2026-08-18
 A maintain round that cleaned one item off the queue and verified two others
 against the current tree. The dated verification clocks are healthy — preflight
 clean, 129 published artefacts judged with 0 stale — so the work here is the
