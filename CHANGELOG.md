@@ -98,9 +98,13 @@ three required contexts and the count is re-swept at ten.
   untouched. The required contexts were re-read from the GitHub API this round,
   not taken from any brief: `gh api repos/addicted2ai/AddictedtoAI/branches/main`
   returns `["build-and-audit","human-owned-paths","review-artifact"]` with
-  `enforcement_level: non_admins` (the branch endpoint carries no
-  `enforce_admins` field; the earlier "is false" claim in the same paragraph is
-  a separate, older sentence and was left as written).
+  `enforcement_level: non_admins` (the corrected passage's own "and
+  `enforce_admins` is false" sentence was removed and replaced with this
+  phrasing; a separate, older sentence elsewhere on the page — the 11 August
+  read in the "did not go far enough" paragraph — still says "`enforce_admins`
+  is false", which the branch endpoint carries no field to verify; the
+  `/protection` endpoint is denied on this harness, so `enforce_admins` itself
+  could not be re-read).
 
 **2. Re-swept the one-limit count: nine is now ten**
 - Hypothesis: PR #123 merged over a failing `human-owned-paths` check on

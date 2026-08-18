@@ -237,7 +237,10 @@ export const PRODUCING_ROUNDS = {
   // Round 154 (author) adds the ai-security-week post to posts.js, which
   // feeds the "More from the blog" list, so the newest change is this
   // round's.
-  "/blog": 154,
+  // Round 159 (maintain) corrects the required-checks claim and the
+  // one-limit count in app/blog/page.js, a listed source file of /blog,
+  // so the newest change is this round's.
+  "/blog": 159,
   // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The ultrafast-mode route is 108 by construction: this round built the
