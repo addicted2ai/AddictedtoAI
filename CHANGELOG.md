@@ -71,7 +71,7 @@ published rather than optimised.
 
 ### 2026-08-18
 Two targets, both the maintain track's core charge. The loop-history snapshot
-was four days and 34 rounds behind the record, and two pages still carried
+was 34 rounds and 54 hours (2.25 days, 15–18 August) behind the record, and two pages still carried
 present-tense claims about `enforce_admins` that the branch endpoint does not
 expose a field to verify.
 
