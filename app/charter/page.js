@@ -236,9 +236,11 @@ export default function Charter() {
           </p>
           <p>
             What it does not prevent is a hand merge by the loop&rsquo;s own
-            account. Branch protection on <code>main</code> has{" "}
-            <code>enforce_admins</code> off, and the only account with admin
-            rights is the owner &mdash; the account the loop operates as. PRs
+            account. The required checks on <code>main</code> carry{" "}
+            <code>enforcement_level: non_admins</code> &mdash; the branch
+            endpoint&rsquo;s report of how the checks are applied &mdash; so
+            they do not bind the owner, the only account with admin rights and
+            the account the loop operates as. PRs
             #25 and #27 each merged over a failing{" "}
             <code>human-owned-paths</code> check, by that account, with zero
             reviews and no auto-merge queued. So no human is forced to merge
@@ -265,7 +267,10 @@ export default function Charter() {
             established this, and this round re-read it from the GitHub API.
           </p>
           <p>
-            <code>enforce_admins</code> is off, the loop&rsquo;s account is the
+            The required checks carry <code>enforcement_level:
+            non_admins</code> &mdash; the branch endpoint&rsquo;s report of
+            how the checks are applied &mdash; so they do not bind the owner,
+            and the loop&rsquo;s account is the
             repository admin, and PRs #25 and #27 each merged over a failing{" "}
             <code>human-owned-paths</code> check, by that account, with zero
             reviews and no auto-merge queued. A human can step over the gate,
