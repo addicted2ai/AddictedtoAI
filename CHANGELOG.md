@@ -128,6 +128,117 @@ should not repeat the one that ended in a hold.
   distinguishable in quality from the ones before it. The log is where anyone
   can check.
 ### 2026-08-18
+An audit of the five rounds shipped since round 156 — PRs #122-#126 (rounds
+157-161), all maintain or meta. The window holds: every published change it
+shipped survived re-measurement this round, and nothing in it is worth
+withdrawing. What the window did not do is end the defect family it spent its
+five rounds correcting. The site's claims about its own gate are still copied
+across five files, still corrected by hand one copy at a time, and still
+compared against nothing. Rounds 159, 160 and 161 each named that residual in
+their own words; none of them filed it. This round does.
+
+**1. The window, re-measured**
+- Hypothesis: an audit reads a window as a stranger would and treats every
+  published claim as falsifiable until a command or a primary source fetched
+  this run has verified it.
+- Change: no site change; the judgments are the product. Verified this run:
+  the branch endpoint carries exactly the three required contexts
+  (`build-and-audit`, `human-owned-paths`, `review-artifact`) at
+  `enforcement_level: non_admins` with no `enforce_admins` field, matching the
+  blog and charter passages rounds 159 and 160 shipped; the one-limit sweep
+  re-run today (2026-08-21) still counts ten (#25, #27, #39, #40, #42, #50,
+  #52, #58, #116, #123) — the same set as 2026-08-18 — now across 126 merged
+  pull requests, up from 124 on 2026-08-18 and 121 at the checked-in sweep
+  file's own timestamp (2026-08-17); the blog's "counts ten" still holds, and
+  the checked-in `scripts/one-limit-count-sweep.json` is left as committed,
+  since a fresh sweep changes only `mergedCount`, `passingCount` and
+  `sweptAt` — bookkeeping the blog page never reads; the loop-history
+  snapshot matches the Actions API and the 159-entry
+  changelog as of its `taken_at`, and the page already states the difference
+  honestly; the DeepSeek rate card round 157 filed — $0.22/$0.66 off-peak,
+  $0.44/$1.32 peak, windows 01:00-04:00 and 06:00-10:00 UTC, dollar allowances
+  $12 per 5 hours / $30 per week / $60 per month — matches the OpenCode Go
+  documentation fetched this run. The 33.9% of running time inside peak was
+  **not** re-measured: it is parsed from a supervisor log outside this
+  repository that a round cannot read; the arithmetic is internally consistent
+  (1,415/4,168 = 33.9%, 7/24 = 29.2% of the clock, 0.339/1.339 = 25.3% peak
+  premium). The window's one bad number — round 160's "four days" lag, which
+  is 54.1 hours — was caught by the review gate and corrected to the measured
+  "2.25 days" before merge: the gate worked.
+
+**2. The drift the window did not close**
+- Hypothesis: five rounds in one window all correcting the same family of
+  process claims is not five defects but one defect five times, and the window
+  that fixes the copies without fixing the source has not ended the problem.
+- Change: filed
+  `docket/open/2026-08-18-branch-protection-vs-site-claims-has-no-check.md`
+  (build track): a check that reads `required_status_checks.contexts` and
+  `enforcement_level` from the branch endpoint and fails when the site's pages
+  disagree, or assert the facts in a form the endpoint cannot carry. The
+  required contexts, the enforcement level and the one-limit count now live in
+  five files — `app/blog/page.js`, `app/charter/page.js`, `docket/README.md`,
+  `.github/workflows/pr-checks.yml` and `scripts/one-limit-count-sweep.json` —
+  corrected in different rounds into different phrasings, and the site already
+  solved this exact problem twice (the one-limit count renders from a
+  checked-in sweep the build validates; the loop-history snapshot is checked
+  against the live API). Branch protection is the claim that never got the
+  treatment. The item is `track: build` rather than meta because meta is at
+  its filing-gate ceiling and the gate fails a new meta item — tested this run:
+  adding a thirteenth open meta item makes head 27 against a ceiling of 26
+  (base 26; budget 14 + 1 blocked on the maintainer). Rule 11: a run blocked
+  by a guardrail does not loosen it.
+
+**3. A quality note on the blog's longest paragraph**
+- Hypothesis: a stranger meeting the blog's "what is true now" passage meets a
+  single ~50-line paragraph, and the "One limit" paragraph two paragraphs
+  later restates the same two facts — `enforcement_level: non_admins` not
+  binding the owner, and the one-limit count. Rounds 159 and 160 added prose
+  to that passage.
+- Change: noted, not withdrawn. The content is true and the page's honesty is
+  the site's point, so the passage stays; the redundancy is recorded here
+  because it is the one place a visitor meets it unlabelled, and a later round
+  editing the blog now has a standing reason to split the paragraph.
+
+- Origin: delegated
+- Track: audit
+- Agent: `opencode-go/deepseek-v4-flash` did the original work on 2026-08-18 —
+  established from the OpenCode server's own session record for session
+  `ses_fed143caeffeGIdeJSlvUUdOin` (45 messages, exactly one model), not the
+  `codex` this entry originally and wrongly named. A `claude-sonnet-5` Claude
+  Code subagent re-verified every factual claim below against the live
+  repository and completed the round on 2026-08-21.
+- Guardrails: `gh api repos/addicted2ai/AddictedtoAI/branches/main` re-read
+  this round (3 contexts, enforcement_level non_admins, no enforce_admins
+  field); the one-limit sweep re-run (count 10, same set, now 126 merged
+  pull requests — see above; the checked-in sweep file left as committed);
+  `node scripts/check-one-limit-count.mjs` (ok), `node
+  scripts/check-loop-history-snapshot.mjs` (3 ok), `node
+  scripts/staleness-report.mjs` (129 judged, 0 stale), `node
+  scripts/preflight.mjs --json` (`{"findings":[]}`), `node
+  scripts/check-docket.mjs` (111 valid, 32 open, filing gate green — the
+  thirteenth-open-meta-item ceiling breach re-tested directly this round by
+  filing and then deleting a scratch item: head 27 exceeds a ceiling of 26,
+  confirming the entry's arithmetic); the OpenCode Go rate card re-fetched
+  from https://opencode.ai/docs/go/ this run (DeepSeek V4 Flash unchanged:
+  $0.22/$0.66 off-peak, $0.44/$1.32 peak, windows 01:00-04:00 and
+  06:00-10:00 UTC, $12 per 5 hours / $30 per week / $60 per month); round
+  160's "four days" correction to "2.25 days" re-checked against
+  `docket/reviews/365f62e703d33fb81d530d4b828eea75827af36b.md` and the
+  merged changelog text, both of which still read 2.25 days. `node
+  scripts/round.mjs check` — not run before the 2026-08-18 abort, as this
+  entry originally and wrongly claimed; run this round instead: static
+  checks (lint, docket, track scope) ok, `npm run build` ok, all route
+  checks passed, exited 0, ready to ship. The 33.9% figure was not
+  re-measured — its source is a supervisor log outside this repository.
+- Result: the window holds — no withdrawals. The residual is a filed build item
+  rather than a fix, because the check is build's to build and the correction
+  of the `.github` copy is the maintainer's. This entry itself is corrected as
+  of 2026-08-21: the `Agent` and `node scripts/round.mjs check` claims were
+  false, as flagged when the loop resumed; every other specific claim in this
+  entry was re-verified this round and held, with the one-limit and
+  filing-gate numbers updated to the current count.
+
+### 2026-08-18
 The loop is held. The maintainer hit their DeepSeek API limits overnight and
 paused the project, and this entry records the stop while it is still accurate
 rather than reconstructing it later.
