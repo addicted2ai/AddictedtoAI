@@ -70,6 +70,240 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-22
+This meta round was briefed on the maintainer's judgement, in their own words
+tonight, that the site "has become a blog site that essentially talks and
+argues with itself, no one is going to care about a site like that," and on a
+diagnosis that the cause was structural, not a matter of priorities: the
+docket vocabulary had no value naming CHARTER.md's test 1 at all. The brief
+said to verify that before building on it rather than trust it, because the
+same session had already been wrong twice that night on written claims that
+were not measured. It held.
+
+**1. Verifying the diagnosis before building on it**
+- Hypothesis: `scripts/check-docket.mjs`'s `SERVES` list names only test 2
+  ("true, checkable, current") and the defending-track exemption, never test
+  1 ("worth a stranger's attention") — so an advancing-track item arguing
+  test 1 would fail CI before a reviewer read it, and the open queue's
+  composition is an artifact of that gate rather than of choice.
+- Change: nothing in the tree yet — this step only measured. Read
+  `scripts/check-docket.mjs` line 36: `const SERVES = ["more-true",
+  "more-checkable", "more-current", "floor"]`, and lines 112-113, which
+  `fail()`s any `serves:` value outside that list. Read `CHARTER.md` "The two
+  tests": test 1 is "would this be worth a stranger's attention if they never
+  learned an AI made it?", test 2 is "is it true, checkable, and current?".
+  `more-true`/`more-checkable`/`more-current` all read as test 2; `floor` is
+  the defending-track exemption. Counted the open queue directly —
+  `grep -h "^serves:" docket/open/*.md | sort | uniq -c` — before filing
+  anything: 31 open items, 21 `more-checkable`, 6 `more-true`, 4
+  `more-current`, **0 anything else**. `git log --oneline -- scripts/check-docket.mjs`
+  and `git log -1 --format=%ad --date=iso-strict <sha>` on each commit showed
+  the gap is not recent drift: `SERVES` has held exactly those four values
+  since the file's first commit (`a3901ee`, 2026-08-10T13:20:16-06:00), under
+  40 minutes after this document's two tests were added (`38c0cc9`,
+  2026-08-10T12:41:32-06:00). The brief's diagnosis held on measurement, not
+  on trust, so the round proceeded to build on it.
+
+**2. `worth-a-visit`: the vocabulary that names test 1**
+- Hypothesis: adding `worth-a-visit` to `SERVES`, restricted to advancing
+  tracks the same way `floor` is restricted to defending ones, is the whole
+  fix at the mechanism level — no new field, no new track, no restructuring.
+- Change: `scripts/check-docket.mjs` gains `worth-a-visit` in `SERVES`, with
+  the naming comment above `DEFENDING` rewritten to say what each value
+  means instead of only gesturing at "which test", so the code no longer
+  implies a test-1 value exists when (until this round) it did not. A second,
+  explicit check mirrors the existing floor rule: a defending track
+  (`maintain`, `audit`) using `worth-a-visit` fails with its own message,
+  the way any non-`floor` value already failed there, rather than only
+  failing incidentally through the generic rule.
+
+  Proved able to fail, then proved able to pass, both pasted rather than
+  described. `docket/open/2026-08-22-model-deprecation-checker.md` (the item
+  filed in change 5) was written first; `scripts/check-docket.mjs` was then
+  stashed back to its pre-round state (`git stash push --keep-index --
+  scripts/check-docket.mjs`) to run the checker against the *old* vocabulary
+  with the *new* item present:
+
+  ```
+  FAIL  docket/open/2026-08-22-model-deprecation-checker.md: serves "worth-a-visit" is not one of: more-true, more-checkable, more-current, floor
+  1 docket problem(s)
+  ```
+
+  `git stash pop` restored the fix, and the same item passed:
+
+  ```
+  ok    112 docket item(s) valid (32 open)
+        author: 4 open
+        build: 2 open
+        meta: 25 open
+        ...
+  gate  filing gate — base read from origin/main, head from this tree
+        author    base  4 -> head  4  (queue budget 6)
+        build     base  1 -> head  2  (queue budget 14)
+        meta      base 26 -> head 26  (queue budget 14)
+  ```
+
+  The mirror rule was proved the same way, with a scratch item deleted
+  before this round committed (`track: maintain`, `serves: worth-a-visit`):
+
+  ```
+  FAIL  docket/open/2026-08-22-zzz-scratch-mirror-check.md: maintain is a defending track and worth-a-visit is for advancing tracks only
+  ```
+
+**3. `CHARTER.md` records the gap; `build` absorbs generative work rather than a new track**
+- Hypothesis: the gap belongs in the amendment history the way this project
+  records every other correction — what was wrong, for how long, what it
+  caused — and `build`'s existing charge can be widened to cover improving
+  visitor-facing work without inventing a seventh track, since it already
+  owns `app/` and `public/`, already requires a docket item, and sits at 1
+  open item against a `queue_budget` of 14.
+- Change: `CHARTER.md`'s track table widens Build's charge from "make the
+  site *do* something it could not before" to "build and improve things
+  visitors use — a new demo and a better one both count — and keep them
+  alive", and a new 2026-08-22 amendment-history entry records the gap found
+  in change 1: what was wrong (no `serves` value ever named test 1), for how
+  long (the vocabulary's entire life, twelve days as of this entry), and what
+  it caused (a queue that could not have filed the work test 1 asks for and
+  stayed green) — including that this document's own line, "Passing 2 but
+  not 1 is a scrupulously honest site nobody visits — which is what
+  forty-seven rounds of this project actually produced," turns out to
+  describe a gate this project itself built after that sentence was written.
+  `prompts/tracks/build.md`'s charge and "What you do" section are widened to
+  match, adding one sentence that an item improving an existing demo is as
+  legitimate as one shipping a new one and the item argues which is worth
+  more, so the prompt does not silently keep steering toward "new" once the
+  charter stops requiring it.
+
+**4. The decaying push, anchored to shipped work rather than to the clock**
+- Hypothesis: a clock-based decay on the initial weight the maintainer asked
+  for would expire whether or not anything generative had shipped, silently
+  returning the loop to today's composition on a slow week; anchoring to
+  closed `worth-a-visit` items is a real measurement instead, and scaling by
+  the track's own generative share stops the boost firing where there is
+  nothing generative to pick.
+- Change: `policy.yml` gains a `generative_push` block — `serves:
+  worth-a-visit`, `start_multiplier: 3.0`, `floor_multiplier: 1.0`,
+  `decay_per_shipped: 0.25` — the single source for every number in the
+  mechanism, matching the single-source-of-truth pattern this project's own
+  peak-window guard adopted after round 3's rate-card duplication was caught
+  by review. The arithmetic (`M = max(floor, start - decay * closedCount)`,
+  `applied = 1 + (M-1) * generativeShare`) lives in one new file,
+  `scripts/generative-push.mjs`, as pure functions taking `policy.yml`'s
+  block as a parameter rather than reading it themselves — `scripts/dispatch.mjs`
+  imports the same functions it is tested with, so the running loop and the
+  test can never drift into two copies of the formula. `dispatch.mjs` counts
+  closed `docket/done/` items carrying `serves: worth-a-visit`, applies the
+  result to a `queue_budget` track's effective weight, and prints the
+  multiplier, the shipped count and each track's share/applied figure in its
+  existing demand table.
+
+  `scripts/test-dispatch-generative-push.mjs` unit-tests the pure functions
+  at the boundaries the item asked for — zero generative stock (share 0, so
+  applied is always 1 no matter how high the multiplier), the shipped count
+  landing exactly on the floor, and a count high enough that the *unclamped*
+  value would go negative (proving `max()` actually clamps rather than
+  merely never having been tested past the floor) — plus a round-trip against
+  the real `policy.yml` so a future retune stays exercised. Wired into
+  `scripts/check-routes.sh` next to `test-peak-window.mjs`. Full output:
+
+  ```
+  --- pushMultiplier: zero shipped -> the start multiplier, unclamped ---
+  ok    0 closed -> M = 3 (== start_multiplier)
+
+  --- pushMultiplier: the exact count where decay lands precisely on the floor ---
+  ok    8 closed -> M = 1 (lands exactly on floor_multiplier)
+
+  --- pushMultiplier: a count high enough that the unclamped value goes below the floor ---
+  ok    20 closed -> M = 1 (raw would be -2.0; clamped to floor_multiplier)
+
+  --- generativeShare: zero generative stock on the track -> 0, no boost can fire ---
+  ok    build track has 2 ready items, none worth-a-visit -> share 0
+
+  --- pushApplied: share 0 means no boost regardless of how high M is ---
+  ok    M=3.0, share=0 -> applied 1 (the "boost cannot fire" guarantee)
+
+  all generative-push checks passed
+  ```
+
+  (20 checks passed in total; the full transcript covers `closedGenerativeCount`,
+  malformed-config fallback to neutral, and the real `policy.yml` round-trip
+  too — trimmed here to the boundary cases the item named.) And the live
+  table, `node scripts/dispatch.mjs`, run against the state this round leaves
+  the tree in (1 `worth-a-visit` item ready in `build`, 0 closed yet):
+
+  ```
+  generative push (policy.yml generative_push, serves: worth-a-visit): 0 closed -> multiplier 3.00 (start 3, floor 1, decay 0.25/shipped)
+
+  demand by track (ready / budget = pressure -> effective weight):
+    author      4/6 = 0.67  ->  weight 10.00 (x0.67 of 15; push share 0.00 -> applied x1.00)
+    build       2/14 = 0.14  ->  weight 4.29 (x0.29 of 15; push share 0.50 -> applied x2.00)
+    meta       21/14 = 1.50  ->  weight 7.50 (x1.50 of 5; push share 0.00 -> applied x1.00)
+  ```
+
+  Build's ready stock is half generative right now (the new item plus the one
+  already open), so the push is already visibly live rather than dormant —
+  not because anything shipped, but because the demonstration is exactly what
+  the "0 closed" line says: the multiplier starts at full strength and has
+  nothing yet to decay against.
+
+**5. Seeding the queue's first `worth-a-visit` item**
+- Hypothesis: a single, well-argued item can prove the vocabulary works
+  without this round also building the demo, which the brief reserved for
+  round 5.
+- Change: filed `docket/open/2026-08-22-model-deprecation-checker.md`,
+  `track: build`, `serves: worth-a-visit` — a client-side checker that
+  matches pasted config or code against `app/lib/retirement-dates.js`'s
+  existing `RETIREMENT_DATES` (the data already behind
+  `/model-retirement-calendar`) and reports which identifiers are retired,
+  retiring, or unaffected. The item argues its own case for test 1 in full
+  (no API key, no server inference, no abuse surface, and the shape of thing
+  linked when a colleague's API call breaks on a retired model) rather than
+  asserting it. Not built this round, by design; its own Done-when says so
+  explicitly and asks the round that builds it to re-examine the argument
+  rather than take this filing on faith.
+
+This entry's own opening claim was checked against the diff last, per the
+brief's own rule: every numbered change above did land, `worth-a-visit` is in
+`SERVES`, the mirror rule is in `check-docket.mjs`, `CHARTER.md` and
+`prompts/tracks/build.md` both changed, `policy.yml` carries `generative_push`
+with every number the arithmetic uses, `scripts/generative-push.mjs` and
+`scripts/dispatch.mjs` both read it rather than a second copy, and exactly
+one docket item was filed. `CHARTER.md` and `prompts/tracks/build.md` are
+human-owned paths (rule 13); `human-owned-paths` is expected to fail red on
+this branch's pull request by design, and the maintainer handles the merge.
+This round does not push, open a pull request, or run `round.mjs ship` —
+commit only, per the brief.
+
+- Origin: delegated
+- Track: meta
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `node scripts/round.mjs check`, run against a freshly built and
+  served instance on a port confirmed free beforehand (`netstat -ano | grep
+  ":3000"` reported free before the server started) — lint, docket validity,
+  track scope for `loop/meta/serves-worth-a-visit` against `origin/main`,
+  build, and all route checks (including the new
+  `test-dispatch-generative-push.mjs`) passed. All output pasted above rather
+  than summarised: the pre-fix rejection, the post-fix acceptance, the
+  mirror-rule rejection, the unit-test transcript, and the live
+  `dispatch.mjs` demand table. No guardrail was loosened; this round adds a
+  new value to a validation list and a new check on top of an existing rule,
+  not the reverse, so rule 11 is not implicated.
+- Result: the root-cause claim was verified, not assumed — the queue's
+  composition (21/6/4/0) and the vocabulary's four-value, gap-since-day-one
+  history are both measured, not asserted. `worth-a-visit` is live in
+  `check-docket.mjs`, proved able to reject the seed item before the change
+  and accept it after, and proved to reject the same value on a defending
+  track. `CHARTER.md` records the gap in its amendment history without
+  softening it. `build`'s charge covers creating and improving visitor-facing
+  work in both the charter and the prompt. The generative-push multiplier,
+  its decay and its share-scaling read every number from `policy.yml`,
+  appear in `dispatch.mjs`'s demand table, and are unit-tested at the
+  boundaries the item named. One `worth-a-visit` item is filed and passes
+  `check-docket.mjs`. Not done: the demo itself, by design — round 5 builds
+  it. Not measured: how the push multiplier behaves once a `worth-a-visit`
+  item actually closes, since none has yet; the "0 closed" state pasted above
+  is what a true cold start looks like, not a stand-in for the decayed case.
+
+### 2026-08-22
 This meta round builds the guard `docket/open/2026-08-17-deepseek-peak-hour-pricing.md`
 asks for, and it is written as a fix for something that already happened, not
 a precaution.

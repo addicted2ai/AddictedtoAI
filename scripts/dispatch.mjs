@@ -45,6 +45,12 @@ import path from "path";
 import { pathToFileURL } from "url";
 import { execFileSync } from "child_process";
 import { load as parseYaml } from "js-yaml";
+import {
+  closedGenerativeCount,
+  pushMultiplier,
+  generativeShare,
+  pushApplied,
+} from "./generative-push.mjs";
 
 // See the note in check-docket.mjs: CRLF makes the frontmatter regex match
 // nothing, and the `- Track:` history scan below is line-anchored too.
@@ -81,9 +87,14 @@ const open = fs.existsSync(openDir)
 
 // An item blocked on something not yet done is not available work.
 const doneDir = path.join(root, "docket", "done");
-const done = new Set(
-  fs.existsSync(doneDir) ? fs.readdirSync(doneDir).filter((f) => f.endsWith(".md")) : []
-);
+const doneFiles = fs.existsSync(doneDir)
+  ? fs.readdirSync(doneDir).filter((f) => f.endsWith(".md"))
+  : [];
+const done = new Set(doneFiles);
+// Fields of every closed item -- the generative-push multiplier below is the
+// only other reader of docket/done/ in this file, so it reuses this list
+// rather than re-scanning the directory.
+const doneItems = doneFiles.map((file) => frontmatter(readText(path.join(doneDir, file))));
 const ready = open.filter((item) =>
   // An item blocked on the maintainer is real but no round can close it, so
   // it is not available work; check-docket.mjs admits only `maintainer` here.
@@ -244,13 +255,28 @@ function readyCount(track) {
   return ready.filter((item) => item.track === track).length;
 }
 
+// --- generative push ---------------------------------------------------------
+//
+// docket/open/2026-08-22-model-deprecation-checker.md: an initial high weight
+// on shipped `worth-a-visit` work (CHARTER.md test 1) that decays to a
+// balanced one as it actually ships, not on a clock -- see policy.yml's
+// `generative_push` block, the single source for every number here, and
+// scripts/generative-push.mjs, the single source for the arithmetic.
+const push = policy.generative_push;
+const CLOSED_GENERATIVE = closedGenerativeCount(push, doneItems);
+const PUSH_MULTIPLIER = pushMultiplier(push, CLOSED_GENERATIVE);
+
+function pushAppliedFor(track) {
+  return pushApplied(PUSH_MULTIPLIER, generativeShare(push, ready, track));
+}
+
 function effectiveWeight(track) {
   const cfg = tracks[track];
   const weight = cfg?.weight || 0;
   const budget = cfg?.queue_budget;
   if (budget != null) {
     const pressure = readyCount(track) / budget;
-    return weight * Math.min(pressure, 2);
+    return weight * Math.min(pressure, 2) * pushAppliedFor(track);
   }
   const fed = (cfg?.feeds || []).filter((f) => tracks[f]?.queue_budget != null);
   if (fed.length > 0) {
@@ -371,6 +397,15 @@ if (asGithub) {
   console.log();
   console.log(`ready docket items: ${ready.length} of ${open.length} open`);
   console.log();
+  if (push?.serves) {
+    console.log(
+      `generative push (policy.yml generative_push, serves: ${push.serves}): ` +
+        `${CLOSED_GENERATIVE} closed -> multiplier ${PUSH_MULTIPLIER.toFixed(2)} ` +
+        `(start ${push.start_multiplier}, floor ${push.floor_multiplier}, ` +
+        `decay ${push.decay_per_shipped}/shipped)`
+    );
+    console.log();
+  }
   console.log("demand by track (ready / budget = pressure -> effective weight):");
   for (const track of Object.keys(tracks)) {
     const cfg = tracks[track];
@@ -378,10 +413,15 @@ if (asGithub) {
     const mult = eff / (cfg.weight || 0);
     const budget = cfg.queue_budget;
     if (budget != null) {
+      const share = generativeShare(push, ready, track);
+      const applied = pushApplied(PUSH_MULTIPLIER, share);
+      const pushSuffix = push?.serves
+        ? `; push share ${share.toFixed(2)} -> applied x${applied.toFixed(2)}`
+        : "";
       console.log(
         `  ${track.padEnd(9)} ${String(readyCount(track)).padStart(3)}/${budget} = ` +
           `${(readyCount(track) / budget).toFixed(2)}  ->  weight ${eff.toFixed(2)} ` +
-          `(x${mult.toFixed(2)} of ${cfg.weight})`
+          `(x${mult.toFixed(2)} of ${cfg.weight}${pushSuffix})`
       );
     } else if ((cfg.feeds || []).length > 0) {
       const fed = cfg.feeds.filter((f) => tracks[f]?.queue_budget != null);

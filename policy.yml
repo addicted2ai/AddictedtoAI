@@ -127,6 +127,42 @@ docket:
   # must not be able to break the site.
   prune_after_expiry_days: 14
 
+# --- Generative push ----------------------------------------------------------
+#
+# docket/open/2026-08-22-model-deprecation-checker.md is the first item filed
+# under `serves: worth-a-visit` (CHARTER.md test 1 -- "worth a stranger's
+# attention"), which CHARTER.md's 2026-08-22 amendment records the docket
+# vocabulary never encoded before this. The maintainer asked for an initial
+# high weight on that kind of work that decays to a balanced one as it
+# actually ships.
+#
+# Anchored to shipped generative work, not to elapsed time: a clock-based
+# decay expires whether or not anything shipped, so a slow week would
+# silently return the loop to today's composition regardless of whether it
+# had produced anything. scripts/dispatch.mjs (via scripts/generative-push.mjs,
+# the one place this arithmetic lives) counts closed docket items in
+# docket/done/ carrying `serves: worth-a-visit` and computes:
+#
+#     M = max(floor_multiplier, start_multiplier - decay_per_shipped * closedCount)
+#
+# applied to a track's effective weight scaled by the share of that track's
+# own ready stock which is itself `worth-a-visit` work, so the boost cannot
+# fire on a track holding no generative work to pick:
+#
+#     applied = 1 + (M - 1) * generativeShare
+#     effectiveWeight = weight * min(pressure, 2) * applied
+#
+# scripts/dispatch.mjs prints the multiplier, the shipped count and the share
+# in its demand table every run, so this is never an invisible thumb on the
+# scale. scripts/test-dispatch-generative-push.mjs unit-tests the arithmetic
+# at its boundaries: zero generative stock, the floor reached exactly, and a
+# shipped count large enough that the unclamped value would go below it.
+generative_push:
+  serves: worth-a-visit
+  start_multiplier: 3.0
+  floor_multiplier: 1.0
+  decay_per_shipped: 0.25
+
 # --- DeepSeek peak-hour pricing -----------------------------------------------
 #
 # docket/open/2026-08-17-deepseek-peak-hour-pricing.md. deepseek-v4-flash --

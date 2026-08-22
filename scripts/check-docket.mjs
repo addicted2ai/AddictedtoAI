@@ -33,7 +33,15 @@ function readText(file) {
 
 const TRACKS = ["scout", "author", "build", "maintain", "audit", "meta"];
 const FILERS = [...TRACKS, "maintainer"];
-const SERVES = ["more-true", "more-checkable", "more-current", "floor"];
+// Advancing tracks must name which charter test they serve. `more-true`,
+// `more-checkable` and `more-current` all name test 2 ("is it true,
+// checkable, and current?"); `worth-a-visit` names test 1 ("would this be
+// worth a stranger's attention?"). Until this list carried `worth-a-visit`
+// (added 2026-08-22 -- see CHARTER.md's amendment history), no value here
+// named test 1 at all, so no advancing-track item could file work toward it
+// without failing this check. `floor` is the defending-track exemption from
+// test 1, not a value advancing tracks may use.
+const SERVES = ["more-true", "more-checkable", "more-current", "worth-a-visit", "floor"];
 const SECTIONS = ["Why now", "Evidence", "Done when"];
 const REQUIRED = ["track", "filed-by", "title", "created", "expires", "serves", "priority"];
 
@@ -114,7 +122,14 @@ function checkItem(status, file, text) {
   }
   if (fields.track && fields.serves) {
     const defending = DEFENDING.includes(fields.track);
-    if (defending && fields.serves !== "floor") {
+    // The mirror of the floor rule below: `worth-a-visit` names test 1, which
+    // defending tracks are exempt from on purpose (CHARTER.md: "maintenance
+    // that had to justify itself as exciting would never happen"). Checked
+    // and reported separately from the generic floor rule so the two ends of
+    // the same exemption each fail with a message naming what was wrong.
+    if (defending && fields.serves === "worth-a-visit") {
+      fail(label, `${fields.track} is a defending track and worth-a-visit is for advancing tracks only`);
+    } else if (defending && fields.serves !== "floor") {
       fail(label, `${fields.track} is a defending track and must use serves: floor`);
     }
     if (!defending && fields.serves === "floor") {

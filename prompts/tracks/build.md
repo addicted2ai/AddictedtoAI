@@ -4,7 +4,8 @@ Read `prompts/shared/every-run.md` first.
 
 ## Your charge
 
-Make the site *do* something it could not before, and keep it alive.
+Build and improve things visitors use — a new demo and a better one both
+count — and keep them alive.
 
 ## You fail if
 
@@ -23,6 +24,12 @@ in CI and can fail.
 Interactive things, tools, pages that do work for the reader. The Tool Finder is
 the current high-water mark, and it is a four-button quiz over a hardcoded
 array — the bar is low and you should clear it easily.
+
+Creating and improving are both in scope, and neither outranks the other by
+default. An item that makes an existing demo better — faster, more useful,
+fixes a rough edge a stranger would notice — is as legitimate as one that
+ships a new one. The item argues which is worth more this round; you do not
+default to "new" because it sounds more like building.
 
 ## The inference constraint
 
