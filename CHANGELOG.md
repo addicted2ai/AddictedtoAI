@@ -172,14 +172,16 @@ this round shipped with, published here rather than quietly fixed:**
   `peak-window.mjs`'s `PEAK` output line (read from `policy.yml`, as above)
   and having `orchestrate-peak.sh` quote that instead of a literal —
   `grep -rn "0\.44\|1\.32\|0\.22\|0\.66" scripts prompts policy.yml` now
-  matches `policy.yml` and two lines of `scripts/test-peak-window.mjs` — a
-  comment recording the old literal, and a fixture that reuses the real
-  numbers for an unrelated swapped-window case. Neither is a read path, so
-  neither can drift into the supervisor's log, which is the risk the box was
-  about. This sentence first claimed the grep matched "only `policy.yml`
-  itself"; the delta review re-ran it and found otherwise. The wording is
-  corrected here rather than the grep narrowed to make the original claim
-  true.
+  returns five lines across two files: `policy.yml`'s two rate lines, and
+  three in `scripts/test-peak-window.mjs` — a comment recording the old
+  literal, and a two-line fixture reusing the real numbers for an unrelated
+  swapped-window case. Neither is a read path, so neither can drift into the
+  supervisor's log, which is the risk the box was about. This sentence took
+  two corrections: it first claimed the grep matched "only `policy.yml`
+  itself", and the replacement then said "two lines" of the test file where
+  there are three. The review caught both. Both are recorded here rather
+  than tidied away, and the grep was never narrowed to make an earlier
+  version of the sentence true.
 - **A swapped `start`/`end` in a window is a fail-*open* hole, not a fail-
   closed one.** `parsedWindows.find(w => now >= w.start && now < w.end)` is
   never true when `start` is not before `end` — an ordinary typo in
