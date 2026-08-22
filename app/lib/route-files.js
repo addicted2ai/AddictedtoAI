@@ -54,6 +54,10 @@ export const ROUTE_FILES = {
     "app/blog/ai-security-week/page.js",
     "app/lib/posts.js",
   ],
+  "/blog/manus-meta-split": [
+    "app/blog/manus-meta-split/page.js",
+    "app/lib/posts.js",
+  ],
   "/charter": ["app/charter/page.js", "app/lib/charter.js"],
   "/loop-history": [
     "app/loop-history/page.js",

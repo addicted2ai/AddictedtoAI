@@ -84,6 +84,12 @@ const routes = [
     changeFrequency: "weekly",
   },
   {
+    path: "/blog/manus-meta-split",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[10].dateModified,
+    changeFrequency: "weekly",
+  },
+  {
     path: "/disclosure",
     priority: 0.7,
     lastModified: latestBuildLogDate,

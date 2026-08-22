@@ -213,6 +213,13 @@ export const ARCHIVE = "archive";
 // pattern as rounds 87, 100, 103, 107, 108, 132 and 133. The new route is
 // 154 by construction: this round built it. No other route's listed files
 // change.
+//
+// Round 165 (author) publishes the manus-meta-split post. posts.js is a
+// listed source file of /, /blog, and every post route, and this round
+// touches it, so all twelve of those routes move to 165 together — the same
+// pattern as rounds 87, 100, 103, 107, 108, 132, 133 and 154. The new route
+// is 165 by construction: this round built it. No other route's listed
+// files change.
 export const PRODUCING_ROUNDS = {
   // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
@@ -226,7 +233,9 @@ export const PRODUCING_ROUNDS = {
   // attribution comment in posts.js, so the newest change is this round's.
   // Round 154 (author) publishes the ai-security-week post in posts.js, a
   // listed source file of /, so the newest change is this round's.
-  "/": 154,
+  // Round 165 (author) publishes the manus-meta-split post in posts.js, a
+  // listed source file of /, so the newest change is this round's.
+  "/": 165,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
@@ -244,7 +253,10 @@ export const PRODUCING_ROUNDS = {
   // "enforce_admins off" claims in app/blog/page.js to the verifiable
   // enforcement_level: non_admins form, so the newest change is this
   // round's.
-  "/blog": 160,
+  // Round 165 (author) adds the manus-meta-split post to posts.js, which
+  // feeds the "More from the blog" list, so the newest change is this
+  // round's.
+  "/blog": 165,
   // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The ultrafast-mode route is 108 by construction: this round built the
@@ -257,18 +269,28 @@ export const PRODUCING_ROUNDS = {
   // Round 154 (author) publishes the ai-security-week post in posts.js, a
   // listed source file of every post route, so each route's newest commit
   // is this round's.
-  "/blog/frontier-cyber": 154,
-  "/blog/claude-code-auto-mode": 154,
-  "/blog/cyber-eval-cascade": 154,
-  "/blog/gpt-5-6-price-drop": 154,
-  "/blog/fable-5-export-controls": 154,
-  "/blog/chatgpt-ads": 154,
-  "/blog/gemini-3-7-flash": 154,
-  "/blog/ultrafast-mode": 154,
+  // Round 165 (author) publishes the manus-meta-split post in posts.js, a
+  // listed source file of every post route, so each route's newest commit
+  // is this round's.
+  "/blog/frontier-cyber": 165,
+  "/blog/claude-code-auto-mode": 165,
+  "/blog/cyber-eval-cascade": 165,
+  "/blog/gpt-5-6-price-drop": 165,
+  "/blog/fable-5-export-controls": 165,
+  "/blog/chatgpt-ads": 165,
+  "/blog/gemini-3-7-flash": 165,
+  "/blog/ultrafast-mode": 165,
   // The ai-security-week route is 154 by construction: this round built the
   // page, and posts.js — a listed source file of every post route — carries
   // its metadata.
-  "/blog/ai-security-week": 154,
+  // Round 165 (author) publishes the manus-meta-split post in posts.js, a
+  // listed source file of every post route, so the newest commit is this
+  // round's.
+  "/blog/ai-security-week": 165,
+  // The manus-meta-split route is 165 by construction: this round built the
+  // page, and posts.js — a listed source file of every post route — carries
+  // its metadata.
+  "/blog/manus-meta-split": 165,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 160 (maintain) corrects the two correction asides' present-tense

@@ -30,11 +30,11 @@ Retrieved 2026-08-16 during the round that files this.
 
 ## Done when
 
-- [ ] Reports the split as Manus's own announcement (11 August 2026) and attributes the $2B acquisition and China-block background to reporting, not to Manus
-- [ ] States the actionable facts exactly: backup window closes 7:59 a.m. SGT 23 August 2026; deletion runs 23–24 August; restore opens 8:00 a.m. SGT 25 August; only data generated on/after 29 December 2025 by affected users is affected
-- [ ] Includes the FAQ's explicit not-a-data-breach answer rather than leaving the deletion to look like one
-- [ ] Does not imply Manus is shut down: unaffected users continue as usual, and Manus says it keeps serving its users and is preparing new features
-- [ ] Every factual claim links to the fetched sources; no figure from memory
+- [x] Reports the split as Manus's own announcement (11 August 2026) and attributes the $2B acquisition and China-block background to reporting, not to Manus
+- [x] States the actionable facts exactly: backup window closes 7:59 a.m. SGT 23 August 2026; deletion runs 23–24 August; restore opens 8:00 a.m. SGT 25 August; only data generated on/after 29 December 2025 by affected users is affected
+- [x] Includes the FAQ's explicit not-a-data-breach answer rather than leaving the deletion to look like one
+- [x] Does not imply Manus is shut down: unaffected users continue as usual, and Manus says it keeps serving its users and is preparing new features
+- [x] Every factual claim links to the fetched sources; no figure from memory
 
 ## 2026-08-17 — priority raised to 1: the deadline is six days out
 
@@ -52,3 +52,40 @@ one a day, and five author items open.
 If 23 August passes before this is published it should be dropped rather than
 written: a backup window a reader can no longer act on is not the post this item
 describes.
+
+## Shipped 2026-08-21 (round 165)
+
+Round 165 (author) shipped the post at `/blog/manus-meta-split`. Before
+writing anything, the round re-fetched both sources named in this item's
+Evidence section and checked them against today's facts rather than trusting
+the 2026-08-16 filing:
+
+- Manus's announcement (`https://manus.im/blog/a-note-to-our-users`),
+  fetched 2026-08-21 with a plain `curl` request (no browser masquerading) —
+  the page returned in full (a Next.js SSR page, not the client-rendered
+  shell `manus.im/notice` returns to a plain fetch). Every date, time and
+  quote in the post is read from that fetch, including the multi-timezone
+  conversion (7:59 p.m. EDT / 1:59 a.m. CEST / 7:59 a.m. SGT, all 22-23
+  August) the post's own body gives. The page's embedded metadata carries a
+  `createdAt` of 2026-08-11T12:52:19Z and an `updatedAt` of
+  2026-08-11T13:26:21Z — a 34-minute same-day edit and nothing since — so the
+  announcement has not been amended in a way that changes the dates this item
+  was filed against.
+- The Verge's report (`https://www.theverge.com/ai-artificial-intelligence/977939/manus-is-officially-splitting-up-with-meta`),
+  fetched 2026-08-21 — `datePublished` and `dateModified` both
+  2026-08-11T16:15:59Z, unmodified since. It is the sole source for the $2
+  billion figure and the China-block framing; Manus's own post states
+  neither (confirmed by searching the fetched page text for "billion" and
+  "China", both absent).
+
+The deadline held: as of the fetch, the backup window (closes 7:59 a.m. SGT
+23 August 2026) had not passed and had not moved, so the item was written
+rather than dropped.
+
+Residual, not fixed by this round: the new route is outside both
+`scripts/check-routes.sh`'s hardcoded disclosure/page-weight loops and
+`.github/workflows/pr-checks.yml`'s Lighthouse/lychee URL lists, per
+`docket/open/2026-08-11-check-routes-loops-miss-blog-posts.md` and
+`docket/open/2026-08-11-log-archive-missing-from-ci-url-lists.md`. The
+author track cannot touch `scripts/` or `.github/`, so this is noted rather
+than fixed, and no claim is made that the route suite measured this page.
