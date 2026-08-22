@@ -53,8 +53,9 @@ export default function ManusMetaSplit() {
         independent company&rdquo; after Meta&rsquo;s acquisition of it. Part
         of that transition deletes some users&rsquo; data, and the window to
         back it up closes at <strong>7:59 a.m. SGT on 23 August 2026</strong>{" "}
-        &mdash; that is 7:59 p.m. EDT on 22 August, or 1:59 a.m. CEST on 23
-        August, per Manus&rsquo;s own conversion. Only data generated on or
+        &mdash; that is 7:59 p.m. EDT on 22 August 2026, or 1:59 a.m. CEST on
+        23 August 2026, per Manus&rsquo;s own conversion. Only data generated
+        on or
         after 29 December 2025, by accounts Manus has identified as affected,
         is in scope; unaffected accounts get an in-app notice and do nothing.
         Manus says it will not charge affected users during the backup period

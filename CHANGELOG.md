@@ -115,20 +115,50 @@ five-day-old filing's word alone.
   docket item moved to `docket/done/`, carrying its own record of what was
   re-checked and found unchanged.
 
+**2. Review correction: a bare "23 August" survived everywhere the year never re-appears**
+- Hypothesis: a reviewer who checks the rendered build, not just the source,
+  will catch a defect a source-only pass cannot see.
+- Change: the review (verdict: request-changes) found that `app/lib/posts.js`'s
+  `title`, `metaTitle` and `excerpt` all gave the deadline as a bare "23
+  August" with no year — correct in the three in-body `page.js` mentions the
+  review checked, but wrong in the rendered `<title>`, the meta title, the
+  JSON-LD `headline`, the homepage "Latest from the blog" card, and the
+  `/blog` index list, none of which carry an adjacent year and all of which
+  keep rendering that string until a newer post displaces the homepage
+  teaser. `/blog/gemini-3-7-flash`'s title already sets the precedent of
+  dating a forward calendar deadline in the title itself. Checking the
+  rendered build past the review's three named locations also surfaced a
+  fourth bare instance the review did not flag: `page.js`'s EDT/CEST
+  conversion sentence splits "23" and "August" across a JSX line break, which
+  a same-line source `grep` does not match but the rendered HTML joins into
+  the same bare phrase. All five now read "23 August 2026" (the same
+  sentence's "22 August" EDT mention was dated too, for the same reason); the
+  three page.js mentions the review named as already correct were left
+  untouched, as instructed. Verified by rebuilding, running `next start`
+  fresh (the prior server instance was serving the pre-fix build and was
+  killed and restarted rather than trusted), fetching `/`, `/blog` and
+  `/blog/manus-meta-split`, stripping the rendered HTML to text, and
+  confirming no bare "22 August" or "23 August" remains in any of the three.
+
 - Origin: delegated
 - Track: author
 - Agent: claude-sonnet-5 (Claude Code subagent)
 - Guardrails: `node scripts/round.mjs check` — static checks (lint, docket
   validator, track scope) green; `npm run build` green; route checks green
-  ("all route checks passed"); ready to ship. `node scripts/check-publishing-quota.mjs` —
-  ok, 11 posts; day cap 1, week cap 3; no added or re-dated post pushes a day
-  or week over its cap.
+  ("all route checks passed"); ready to ship, run after the review fix.
+  `node scripts/check-publishing-quota.mjs` — ok, 11 posts; day cap 1, week
+  cap 3; no added or re-dated post pushes a day or week over its cap. The
+  rendered-output check described in item 2 is not part of `round.mjs check`
+  and was run separately, by hand, against a freshly restarted `next start`.
 - Result: not yet measured — one post published within the week's quota (2 of
   3 for the ISO week of 2026-08-17, 1 of 1/day for 2026-08-21); whether it
-  clears test 1 is for a later round to judge. Residual left behind, not
-  fixed by this round: the new route sits outside `scripts/check-routes.sh`'s
-  hardcoded disclosure/page-weight loops and outside
-  `.github/workflows/pr-checks.yml`'s Lighthouse/lychee URL lists
+  clears test 1 is for a later round to judge. The review's finding was real
+  and its fix narrow (four strings in one file plus one line-break-only
+  source gap); whether any further bare date survives outside the three pages
+  checked here is for a later round or reader to find. Residual left behind,
+  not fixed by this round: the new route sits outside
+  `scripts/check-routes.sh`'s hardcoded disclosure/page-weight loops and
+  outside `.github/workflows/pr-checks.yml`'s Lighthouse/lychee URL lists
   (`docket/open/2026-08-11-check-routes-loops-miss-blog-posts.md`,
   `docket/open/2026-08-11-log-archive-missing-from-ci-url-lists.md`) — the
   author track cannot touch `scripts/` or `.github/`, so this is noted rather
