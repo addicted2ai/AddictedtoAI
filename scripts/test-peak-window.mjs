@@ -17,6 +17,9 @@
 //   node scripts/test-peak-window.mjs
 
 import { spawnSync } from "child_process";
+import fs from "fs";
+import os from "os";
+import path from "path";
 
 let failures = 0;
 const ok = (m) => console.log(`ok    ${m}`);
@@ -44,10 +47,16 @@ for (const [hhmm, want] of boundaries) {
   const iso = `${DATE}T${hhmm}:00Z`;
   const r = spawnSync("node", ["scripts/peak-window.mjs", iso], { encoding: "utf8" });
   const line = (r.stdout || "").trim();
-  if (r.status === 0 && line.startsWith(want + " ")) {
+  // A PEAK line must also carry this repository's real rate figures, read
+  // from policy.yml rather than a literal in peak-window.mjs -- the
+  // rate-passthrough test below proves the "read, not hardcoded" half with a
+  // scratch policy.yml; this just confirms the real one renders correctly.
+  const wantsRate = want === "PEAK";
+  const hasRate = /peakRate=0\.44\/1\.32 offPeakRate=0\.22\/0\.66/.test(line);
+  if (r.status === 0 && line.startsWith(want + " ") && (!wantsRate || hasRate)) {
     ok(`${iso} -> ${line}`);
   } else {
-    bad(`${iso} -> expected ${want}, got "${line}" (exit ${r.status}, stderr: ${r.stderr.trim()})`);
+    bad(`${iso} -> expected ${want}${wantsRate ? " with rate figures from policy.yml" : ""}, got "${line}" (exit ${r.status}, stderr: ${r.stderr.trim()})`);
   }
 }
 
@@ -58,6 +67,95 @@ if (badTs.status !== 0 && badLine.startsWith("ERROR ")) {
   ok(`an unparseable timestamp reports an error rather than a verdict: "${badLine}"`);
 } else {
   bad(`an unparseable timestamp did not fail cleanly (exit ${badTs.status}): "${badLine}"`);
+}
+
+// --- scratch policy.yml helpers ----------------------------------------------
+//
+// Never touch the real repository policy.yml: write a scratch copy into a
+// temp directory and run peak-window.mjs with that directory as its cwd,
+// since it resolves policy.yml from process.cwd(). This is what lets the
+// next two sections prove things the real policy.yml can't -- that the rate
+// figures are actually read, not hardcoded, and that a backwards window is
+// rejected rather than silently read as OFFPEAK forever.
+
+const SCRIPT_ABS = path.resolve("scripts/peak-window.mjs");
+
+function runWithScratchPolicy(yamlText, args) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "peak-window-test-"));
+  try {
+    fs.writeFileSync(path.join(dir, "policy.yml"), yamlText);
+    return spawnSync("node", [SCRIPT_ABS, ...args], { encoding: "utf8", cwd: dir });
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// --- rates are read from policy.yml, not hardcoded ---------------------------
+//
+// scripts/orchestrate-peak.sh used to log a literal "$0.44/$1.32" -- a second
+// copy of the rate card, in the one file the item requires have exactly one.
+// The fix makes peak-window.mjs carry the rate on the PEAK line, read from
+// policy.yml, and orchestrate-peak.sh only ever quotes that. Proof it is
+// actually *read* rather than still hardcoded somewhere: point the script at
+// a scratch policy.yml with rate figures that appear nowhere in this
+// repository's real config or code, and confirm they come back unchanged.
+
+console.log("\n--- rates come from policy.yml, not a literal in the script ---");
+const scratchRates = runWithScratchPolicy(
+  `deepseek_peak_pricing:
+  windows:
+    - start: "01:00"
+      end: "04:00"
+  rate_per_1m_usd:
+    off_peak: { input: 9.99, output: 8.88 }
+    peak: { input: 7.77, output: 6.66 }
+`,
+  ["2026-08-22T01:30:00Z"]
+);
+const scratchLine = (scratchRates.stdout || "").trim();
+if (
+  scratchRates.status === 0 &&
+  scratchLine.startsWith("PEAK ") &&
+  /peakRate=7\.77\/6\.66 offPeakRate=9\.99\/8\.88/.test(scratchLine)
+) {
+  ok(`a scratch policy.yml's made-up rates round-trip unchanged: ${scratchLine}`);
+} else {
+  bad(`rates did not round-trip from a scratch policy.yml: "${scratchLine}" (exit ${scratchRates.status})`);
+}
+
+// --- a backwards or empty window fails closed, not OFFPEAK forever -----------
+//
+// window.find(w => now >= start && now < end) is never true when start is
+// not before end -- read naively, a swapped-fields typo in policy.yml makes
+// that window permanently unreachable, so the guard would report OFFPEAK and
+// exit 0 forever: a fail-*open* hole in code whose entire design principle is
+// failing closed. peak-window.mjs now validates start < end while parsing,
+// before any timestamp comparison, so this is rejected regardless of what
+// "now" is asked about.
+
+console.log("\n--- a backwards or empty window is rejected, not silently OFFPEAK ---");
+const badWindowCases = [
+  { label: "start after end (swapped)", start: "04:00", end: "01:00" },
+  { label: "start equals end (empty)", start: "01:00", end: "01:00" },
+];
+for (const { label, start, end } of badWindowCases) {
+  const r = runWithScratchPolicy(
+    `deepseek_peak_pricing:
+  windows:
+    - start: "${start}"
+      end: "${end}"
+  rate_per_1m_usd:
+    off_peak: { input: 0.22, output: 0.66 }
+    peak: { input: 0.44, output: 1.32 }
+`,
+    ["2026-08-22T02:00:00Z"]
+  );
+  const line = (r.stdout || "").trim();
+  if (r.status !== 0 && line.startsWith("ERROR ") && !line.startsWith("OFFPEAK")) {
+    ok(`${label}: rejected with an error, not read as OFFPEAK -- "${line}"`);
+  } else {
+    bad(`${label}: fail-open hole reopened -- exit ${r.status}, "${line}"`);
+  }
 }
 
 // --- 2. peak_guard(): the real decision scripts/orchestrate.sh calls ---------
@@ -86,9 +184,10 @@ if (
   rc(skipped) === 1 &&
   /PEAK WINDOW 01:00-04:00 UTC/.test(skipped) &&
   /no matching authorisation is set/.test(skipped) &&
-  /resuming automatically at 2026-08-22T04:00:00\.000Z UTC/.test(skipped)
+  /resuming automatically at 2026-08-22T04:00:00\.000Z UTC/.test(skipped) &&
+  /\$0\.44\/1\.32 per 1M vs \$0\.22\/0\.66 off-peak, from policy\.yml/.test(skipped)
 ) {
-  ok("iteration skipped at the 01:00 boundary: window, reason and resume time are all logged");
+  ok("iteration skipped at the 01:00 boundary: window, reason, resume time and the policy.yml-sourced rates are all logged");
 } else {
   bad(`expected a logged skip with window/reason/resume; got: ${skipped.trim()}`);
 }
@@ -103,9 +202,10 @@ console.log(authorised.trim());
 if (
   rc(authorised) === 0 &&
   /authorised/.test(authorised) &&
-  /demonstration for docket/.test(authorised)
+  /demonstration for docket/.test(authorised) &&
+  /\$0\.44\/1\.32 per 1M vs \$0\.22\/0\.66 off-peak, from policy\.yml/.test(authorised)
 ) {
-  ok("iteration authorised inside the same 01:00 window: the reason is logged and the guard proceeds");
+  ok("iteration authorised inside the same 01:00 window: the reason and the policy.yml-sourced rates are logged and the guard proceeds");
 } else {
   bad(`expected a logged, authorised proceed; got: ${authorised.trim()}`);
 }

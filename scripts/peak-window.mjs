@@ -11,16 +11,28 @@
 //
 // Run from the repository root (reads ./policy.yml).
 //
-// Prints exactly one line to stdout and exits 0 on success:
+// Prints exactly one line to stdout and exits 0 on success (example shapes,
+// not real figures -- the real windows and rates live only in policy.yml):
 //
-//   PEAK now=<iso> window=01:00-04:00 windowStart=<iso> resumesAt=<iso>
+//   PEAK now=<iso> window=<HH:MM-HH:MM> windowStart=<iso> resumesAt=<iso> peakRate=<input>/<output> offPeakRate=<input>/<output>
 //   OFFPEAK now=<iso>
+//
+// peakRate/offPeakRate (USD per 1M tokens, input/output) are read from
+// policy.yml's rate_per_1m_usd and carried on the PEAK line so a caller that
+// wants to log the rate difference -- scripts/orchestrate-peak.sh does --
+// never has to hardcode a second copy of the numbers. A rate log line built
+// from a literal dollar figure is exactly the kind of second copy the item
+// this guard implements warns drifts the first time a vendor moves one.
 //
 // On a bad timestamp or an unparseable/missing policy, prints one line
 // starting "ERROR " to stdout and exits 1. This script does not decide what a
 // caller should do about an error -- that is a policy question (see the
 // fail-closed note in scripts/orchestrate-peak.sh) -- it only ever reports
-// what it found, cleanly parseable either way.
+// what it found, cleanly parseable either way. A window whose start does not
+// come before its end (a swapped-fields typo) is one such error: read
+// literally it is never satisfied, which would make this script report
+// OFFPEAK forever and exit 0 -- a fail-*open* hole in a guard whose entire
+// point is failing closed -- so it is validated and rejected here instead.
 
 import fs from "fs";
 import path from "path";
@@ -54,11 +66,20 @@ function parseHHMM(value, label) {
   return h * 60 + m;
 }
 
-const parsedWindows = windows.map((w, i) => ({
-  startMin: parseHHMM(w.start, `[${i}].start`),
-  endMin: parseHHMM(w.end, `[${i}].end`),
-  label: `${w.start}-${w.end}`,
-}));
+const parsedWindows = windows.map((w, i) => {
+  const startMin = parseHHMM(w.start, `[${i}].start`);
+  const endMin = parseHHMM(w.end, `[${i}].end`);
+  // Half-open [start, end) requires start strictly before end. A swapped
+  // start/end (or an equal pair) describes an empty interval that can never
+  // be entered -- read naively that is silent OFFPEAK forever, never an
+  // error, which is the fail-open hole this guard exists to not have.
+  if (!(startMin < endMin)) {
+    fail(
+      `policy.yml window [${i}] start "${w.start}" is not before end "${w.end}" -- an empty or backwards window would silently never be peak`
+    );
+  }
+  return { startMin, endMin, label: `${w.start}-${w.end}` };
+});
 
 const rawNow = process.argv[2];
 let now;
@@ -95,8 +116,11 @@ const atUTC = (minutes) =>
 const hit = parsedWindows.find((w) => nowMin >= w.startMin && nowMin < w.endMin);
 
 if (hit) {
+  const rates = config.rate_per_1m_usd || {};
+  const fmtRate = (r) =>
+    r && Number.isFinite(r.input) && Number.isFinite(r.output) ? `${r.input}/${r.output}` : "unknown";
   console.log(
-    `PEAK now=${now.toISOString()} window=${hit.label} windowStart=${atUTC(hit.startMin)} resumesAt=${atUTC(hit.endMin)}`
+    `PEAK now=${now.toISOString()} window=${hit.label} windowStart=${atUTC(hit.startMin)} resumesAt=${atUTC(hit.endMin)} peakRate=${fmtRate(rates.peak)} offPeakRate=${fmtRate(rates.off_peak)}`
   );
 } else {
   console.log(`OFFPEAK now=${now.toISOString()}`);

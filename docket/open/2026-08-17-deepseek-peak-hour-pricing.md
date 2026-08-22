@@ -163,15 +163,33 @@ believed.
 
 Built on `loop/meta/peak-window-guard`: `policy.yml`'s new
 `deepseek_peak_pricing` block (the single source), `scripts/peak-window.mjs`
-(timestamp -> peak/off-peak verdict), `scripts/orchestrate-peak.sh`
-(`peak_guard()`, the decision `scripts/orchestrate.sh` now calls before every
-iteration start), `scripts/test-peak-window.mjs` (boundary and guard proof,
-wired into `scripts/check-routes.sh`), and the `prompts/orchestrator.md`
-section. Every box above is checked against what was built and demonstrated
-this round — see `CHANGELOG.md`'s 2026-08-22 entry for the pasted evidence and
-what remains explicitly untested (a live `scripts/orchestrate.sh` supervisor
-process was not run tonight; the guard is proved at the decision-function
-level, sourced and called directly with a fixed clock, not observed end to
-end). Left open rather than moved to `docket/done/`: this round does not ship,
-push, or open a pull request, so there is no merge or PR to cite as the round
-that closed it. Whoever merges this branch should move the item then.
+(timestamp -> peak/off-peak verdict, and the only code that reads the rate
+figures), `scripts/orchestrate-peak.sh` (`peak_guard()`, the decision
+`scripts/orchestrate.sh` now calls before every iteration start, quoting
+`peak-window.mjs`'s output rather than holding its own copy of the rates),
+`scripts/test-peak-window.mjs` (boundary, rate-passthrough and fail-closed
+proof, wired into `scripts/check-routes.sh`), and the `prompts/orchestrator.md`
+section. Reviewed once (request-changes: a hardcoded rate-figure duplicate,
+a fail-open hole on a swapped `start`/`end` window, and a wrong "three days"
+figure in the round's own changelog prose, all fixed and re-tested — see
+`CHANGELOG.md`'s 2026-08-22 entry for the full account and the pasted
+evidence). Every box above is checked against what was built and demonstrated
+after that fix. What remains explicitly untested: a live
+`scripts/orchestrate.sh` supervisor process was not run tonight; the guard is
+proved at the decision-function level, sourced and called directly with a
+fixed clock, not observed end to end.
+
+**Why this stays in `docket/open/` with every box ticked, so a later round
+does not read the ticks and redo the work:** two independent reasons, not
+one. First, this round does not ship, push, or open a pull request under its
+own instructions, so nothing here has landed on `main` yet — there is no
+merge or PR to cite as the round that closed it. Second, and more durable:
+even once a pull request is opened, the `prompts/orchestrator.md` box in this
+same item is a human-owned path under rule 13, and `human-owned-paths` fails
+that pull request by design — no autonomous round can ever merge it, only a
+human (or the supervising model, using its standing authorisation) reading it
+by hand. So this item cannot be closed by a later round shipping it in the
+ordinary auto-merge way even if one tried; it is done only once a human's
+merge has actually landed every file the boxes above describe. Whoever
+performs that merge should move the item to `docket/done/` then, citing the
+PR and merge commit.
