@@ -48,6 +48,18 @@ const REQUIRED = ["track", "filed-by", "title", "created", "expires", "serves", 
 // Advancing tracks must name which charter test they serve; defending tracks
 // use `floor` and are exempt from the first test on purpose.
 const DEFENDING = ["maintain", "audit"];
+// `worth-a-visit` is further narrowed to the tracks that actually ship
+// visitor-facing work: `author` publishes and `build` ships things in `app/`
+// and `public/`. `scout` only files items for other tracks to act on and
+// `meta` only fixes the machinery those tracks run on -- neither produces
+// anything a stranger sees, so neither can claim the value that names test 1,
+// even though both are advancing (not defending) tracks. Narrowed here after
+// review on round dbd4fd1: `meta` filing a `worth-a-visit` item would let it
+// claim `policy.yml`'s generative-push weight boost, re-entrenching the exact
+// self-referential dominance this vocabulary exists to end, and would also
+// have reopened the 2x dispatcher ceiling that meta's dropped
+// `max_share_of_runs` cap relies on (see policy.yml and scripts/dispatch.mjs).
+const VISITOR_FACING = ["author", "build"];
 
 const root = process.cwd();
 const dir = path.join(root, "docket");
@@ -131,6 +143,18 @@ function checkItem(status, file, text) {
       fail(label, `${fields.track} is a defending track and worth-a-visit is for advancing tracks only`);
     } else if (defending && fields.serves !== "floor") {
       fail(label, `${fields.track} is a defending track and must use serves: floor`);
+    } else if (
+      !defending &&
+      fields.serves === "worth-a-visit" &&
+      !VISITOR_FACING.includes(fields.track)
+    ) {
+      // scout and meta are advancing tracks but ship nothing a visitor sees
+      // (scout files items, meta fixes machinery), so neither can claim the
+      // test-1 value even though they are not defending tracks.
+      fail(
+        label,
+        `${fields.track} does not ship visitor-facing work and cannot claim worth-a-visit — only ${VISITOR_FACING.join(" and ")} can`
+      );
     }
     if (!defending && fields.serves === "floor") {
       fail(label, `${fields.track} advances the site and must name which test it serves`);

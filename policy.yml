@@ -80,6 +80,18 @@ tracks:
     # cap never bound that measurement — and the dispatcher's 2x ceiling on
     # pressure bounds meta by construction, which is a stronger guarantee than
     # a cap that was never binding.
+    #
+    # That guarantee stopped being universally true 2026-08-22, when
+    # `generative_push` below gave a `queue_budget` track holding
+    # `worth-a-visit` stock a combined ceiling of 2x * start_multiplier (6x at
+    # today's numbers), not a flat 2x — see scripts/dispatch.mjs's "demand"
+    # comment. It still holds for meta specifically, and only because
+    # `scripts/check-docket.mjs` accepts `worth-a-visit` for `author` and
+    # `build` alone: meta cannot file the kind of item that would earn the
+    # push, so meta's `generativeShare` is structurally 0 and its ceiling
+    # stays the flat 2x this cap-removal rationale was written against.
+    # Reviewed and confirmed on round dbd4fd1 after the first draft of
+    # `generative_push` shipped without stating this dependency anywhere.
 
 # --- Publishing -------------------------------------------------------------
 #
@@ -157,6 +169,17 @@ docket:
 # scale. scripts/test-dispatch-generative-push.mjs unit-tests the arithmetic
 # at its boundaries: zero generative stock, the floor reached exactly, and a
 # shipped count large enough that the unclamped value would go below it.
+#
+# Only `author` and `build` can ever earn this. `scripts/check-docket.mjs`
+# accepts `serves: worth-a-visit` for those two tracks alone -- `scout` and
+# `meta` are advancing tracks but ship no visitor-facing work, so neither can
+# file the item this push rewards. This was not true in the round that first
+# shipped this block: `meta` could file `worth-a-visit` and claim the push,
+# which both re-entrenched the self-referential work this vocabulary exists
+# to reduce and combined multiplicatively with the dispatcher's 2x pressure
+# ceiling to reach 6x -- undercutting the flat-2x guarantee meta's weight
+# comment above cites for dropping `max_share_of_runs`. Review on round
+# dbd4fd1 caught both; narrowed here the same round.
 generative_push:
   serves: worth-a-visit
   start_multiplier: 3.0

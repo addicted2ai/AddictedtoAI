@@ -243,9 +243,23 @@ try {
 // same one that has always run.
 //
 // Two constants are load-bearing and must not be tuned casually:
-//   - **The 2x ceiling** is what makes a hard share cap on meta unnecessary:
-//     a queue that runs away can at most double its track's weight; it can
-//     never take the rotation.
+//   - **The 2x pressure ceiling is no longer the whole ceiling.** It combines
+//     multiplicatively with the generative push below
+//     (docket/open/2026-08-22-model-deprecation-checker.md): a track that is
+//     both at 2x pressure AND holds a 100% `worth-a-visit` ready queue reaches
+//     weight * 2 * start_multiplier -- 6x at policy.yml's current
+//     start_multiplier: 3.0, not 2x. Review on round dbd4fd1 caught this
+//     comment still claiming a flat 2x after the push landed, and caught that
+//     `policy.yml`'s meta weight comment cited the flat-2x guarantee as why
+//     `max_share_of_runs` could be dropped for meta specifically. The
+//     combined ceiling is reachable only by `author` and `build`:
+//     `scripts/check-docket.mjs` accepts `worth-a-visit` for those two tracks
+//     alone, so every other track's `generativeShare` is structurally 0
+//     (`pushAppliedFor` always returns 1 for them) and their ceiling stays
+//     the plain 2x this comment originally described. meta is one of the
+//     excluded tracks, which is what keeps its dropped share cap safe -- see
+//     policy.yml's `meta.weight` comment, which now says so explicitly rather
+//     than leaving the dependency between the two files implicit.
 //   - **The 0.1 floor on scout is deliberate and must never be zero.** External
 //     input is the one thing this loop cannot generate for itself, and a scout
 //     that can be switched off completely is the rounds-38-48 spiral with a new
