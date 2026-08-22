@@ -114,21 +114,32 @@ evidence is this repository.
 
 Measured from the GitHub API on 22 August 2026: **133 pull requests, 131
 merged, 0 carrying a GitHub pull-request review by anyone, 0 reverts on
-`main`, and 280 commits, of which 278 sit under the loop's own account and 2
-are automated merge/commit actions under GitHub App identities, not a
-human's.** The two pull requests that did not merge were closed by the loop
-itself, not rejected by anyone else. No GitHub review has ever been submitted
-against a pull request this project shipped — a narrower and checkable claim,
-not the same as "no human ever read the work," which this document cannot
-measure and does not assert.
+`main`, and 280 commits, of which 278 are authored under the maintainer's own
+GitHub account and 2 under separate GitHub App identities.** The two pull
+requests that did not merge were closed under that same account, not rejected
+by anyone else. No GitHub review has ever been submitted against a pull
+request this project shipped — a narrower and checkable claim, not the same
+as "no human ever read the work," which this document cannot measure and does
+not assert.
 
 Three limits on that claim, carried here so the site can never publish it
 without them:
 
-- **The account does not prove agency.** All 278 of those commits are
-  attributed to one account; a human pushing under that same account would
-  leave an identical record. The honest form of the claim is "no commit is
-  attributable to a human author," not "no human wrote any of this."
+- **Account attribution settles nothing, in either direction.** All 278
+  non-bot commits are authored under one account, and that account is the
+  maintainer's own — not a separate identity assigned to the loop. A
+  dedicated machine account, `addicted2ai-loop`, exists and is what `git
+  push` authenticates as; it has authored zero commits on `main`. So the
+  commit history by itself cannot show a model wrote this any more than it
+  could show a human did: the same account authors a commit whether the
+  maintainer types it directly or the automated process commits it under
+  that account's local configuration. What supports the claim is not the
+  account field but the record built alongside every commit — the changelog
+  entry every round appends, naming its own hypothesis, guardrails and
+  result, in the form rule 7 requires be unflattering — together with the
+  maintainer's own account of how the work was done. Weaker than proof by
+  account would have been, and the honest version rather than the convenient
+  one.
 - **The maintainer has governed, upstream of the work rather than by veto
   during it** — setting the direction, halting the loop with
   `docket/HOLD.md`, and redirecting it mid-session, including the delegation
@@ -755,6 +766,31 @@ subject to the same append-only rule it imposes on everything else.
   is a judgement this round did not make and is not meta's track to execute
   even if it had. Left alone, named here rather than quietly left for a reader
   to find first.
+
+  One correction landed after everything above: "The second demonstration"
+  named the 278 non-bot commits as "the loop's own account" and concluded
+  from that shared account that "no commit is attributable to a human
+  author." The maintainer caught it. `addicted2ai` is the maintainer's own
+  personal GitHub account, not a machine identity — `gh api user` and
+  every one of those 278 commits' author email resolve to the same person,
+  id `223016611`. A separate machine account, `addicted2ai-loop`, exists
+  and authenticates `git push`; it has authored zero commits on `main`. So
+  account attribution proves nothing about authorship in either direction:
+  the same account authors a commit whether the maintainer types it
+  directly or the automated process commits under that account's local
+  configuration, and the conclusion this document drew — leaning toward
+  "not a human's" — was the more convenient reading, not the supported
+  one. Rewritten to say attribution settles nothing either way, and to
+  point at what does support the claim: the changelog record itself and
+  the maintainer's own account of the process. `CHANGELOG.md`'s matching
+  entry (change 13) carries the verification commands and the full audit
+  of every other account-attribution claim in this file, `CHANGELOG.md`
+  and `app/` — none of the others needed correcting; they describe
+  permissions the shared account holds, never a separate identity behind
+  it. The orchestrator had verified the pull request, commit and revert
+  counts correctly and repeatedly this round, and had not checked whose
+  account they belonged to; the numbers were right, the meaning built on
+  them was not, and nothing false reached `origin/main` because of it.
 
   Proposed and merged by the orchestrating model under the delegation this
   entry itself is written under; the maintainer's ratification and broadened

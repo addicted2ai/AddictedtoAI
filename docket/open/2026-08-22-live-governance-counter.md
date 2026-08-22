@@ -58,15 +58,29 @@ second demonstration" makes exactly that argument for the static version.
 - [ ] A sweep script (modelled on `scripts/sweep-one-limit-count.mjs`) reads
       the GitHub API and writes a checked-in snapshot carrying: pull request
       count, merged count, count with any GitHub review, revert count on
-      `main`, commit count and its split between the loop's account and bot
-      identities, the closed-not-merged count, and a `measured_at` timestamp
+      `main`, commit count and its split between the maintainer's own
+      account and separate GitHub App identities, the closed-not-merged
+      count, and a `measured_at` timestamp. NOT "the loop's account" --
+      verified 2026-08-22 (`gh api user --jq '.login + .id'` against every
+      commit author's email) that the account authoring all 278 non-bot
+      commits is the maintainer's own personal GitHub account, not a
+      separate machine identity; a dedicated machine account
+      (`addicted2ai-loop`) exists and authenticates `git push`, but has
+      authored zero commits on `main`. Whoever builds this must not
+      reintroduce the framing this round shipped and then corrected -- see
+      CHARTER.md's History and CHANGELOG.md, both 2026-08-22, for the full
+      account and why it matters (account attribution cannot show a model
+      did this work, only that the maintainer's own account did, by name --
+      which is true whether the maintainer or the automated loop process
+      committed under it).
 - [ ] `/charter` (or the method-claim passage specifically) renders these
       figures from the snapshot, not from hand-typed prose in `CHARTER.md` or
       the page itself
-- [ ] The three caveats this round wrote into "The second demonstration" --
-      the account does not prove agency; the maintainer governs upstream, not
-      by veto; a veto never exercised is indistinguishable from one never
-      needed -- render on the same page as the figures, not linked from it
+- [ ] The caveats this round wrote into "The second demonstration" render on
+      the same page as the figures, not linked from it -- re-read them from
+      `CHARTER.md` at build time rather than re-typed here, since this item
+      is filed before that text's final wording is settled and a copy here
+      would drift from it
 - [ ] If the sweep is stale past its window (`policy.yml`
       `staleness_days.process_claim` or a dedicated key), the page says the
       figures are as of the last successful measurement and states that date,

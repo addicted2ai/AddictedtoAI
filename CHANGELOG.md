@@ -150,7 +150,7 @@ not the reviewer's — about what the loop can and cannot reach.
   ```
 
   Published: 133 pull requests, 131 merged, 0 carrying a GitHub review, 0
-  reverts, 280 commits (278 the loop's own account, 2 bot-identity commits).
+  reverts, 280 commits (278 under one account, 2 bot-identity commits).
   The draft's figures (132/130/279/277) were correct when measured and stale
   within hours — the drift this repository's self-count has already shipped
   once ("124 merged PRs" when it was 126) and exactly why the brief asked for
@@ -159,11 +159,10 @@ not the reviewer's — about what the loop can and cannot reach.
   are from *two different* bot identities (the Claude GitHub App that merged
   PR #10, and a commit whose local author name reads "claude[bot]" but whose
   numeric ID GitHub resolves to `github-actions[bot]`), not the same bot
-  twice. Carried the brief's three caveats, one strengthened with evidence
-  found rather than asserted: the account does not prove agency, and 94 of
-  the 278 "loop account" commits carry the local git author name "Andrew" —
-  the maintainer's own name — under the identical account email, which is
-  itself evidence *for* the caveat, not against it.
+  twice. Carried the brief's three caveats, and misread the evidence behind
+  one of them — see change 13, filed after the maintainer caught it, for the
+  correction: the 278 "loop account" commits are not the loop's account.
+  They are the maintainer's own.
 
 **3. Rule 22 — the absence of visitor-facing work is reportable**
 - Hypothesis: rules 20/21 (producing nothing is fine; volume is never a
@@ -600,6 +599,93 @@ not the reviewer's — about what the loop can and cannot reach.
   Not touched, per instruction: `docket/reviews/`, which is the reviewer's
   own record, including the artifact that no longer covers `HEAD` now that
   this round has committed further changes on top of it.
+
+**13. The account is the maintainer's, not the loop's — numbers right, conclusion inverted**
+- Hypothesis: none stated in advance — the maintainer, not a review
+  artifact, caught that change 2's own evidence had already shown the
+  answer and this round drew the opposite conclusion from it.
+- Change: verified directly, independent of the maintainer's own commands:
+
+  ```
+  gh api user --jq '.login + " id=" + (.id|tostring)'
+  addicted2ai id=223016611
+
+  gh api users/addicted2ai-loop --jq '.login + " id=" + (.id|tostring)'
+  addicted2ai-loop id=315944683
+
+  git log origin/main --format='%ae' | sort -u
+  209825114+claude[bot]@users.noreply.github.com
+  223016611+addicted2ai@users.noreply.github.com
+  41898282+claude[bot]@users.noreply.github.com
+
+  git log origin/main --format='%an <%ae>' | grep -ic "addicted2ai-loop"
+  0
+  ```
+
+  `addicted2ai`, id `223016611`, is the maintainer's own personal GitHub
+  account — not a machine identity assigned to the loop. A separate
+  machine account, `addicted2ai-loop` (id `315944683`), exists and
+  authenticates `git push` via the credential helper reading
+  `~/.addictedtoai-loop-token` (`public_repo` scope only, which is exactly
+  why this branch cannot push its own workflow change) — but it has
+  authored zero commits on `main`. Every one of the 278 non-bot commits
+  carries the identical author email `223016611+addicted2ai@users.noreply.github.com`,
+  whether the local git author name reads "addicted2ai" (184 commits) or
+  "Andrew" (94) — change 2 printed exactly this breakdown and read the
+  match as support for "no commit is attributable to a human author." It
+  is the opposite: that email is the maintainer's, verifiably, so naive
+  account attribution says every commit belongs to a named human, not that
+  none does. The caveat's own premise — the account does not prove
+  agency — was correct throughout; change 2 (and `CHARTER.md`'s first
+  draft of "The second demonstration") drew a conclusion the premise does
+  not support, in the direction that happened to flatter the claim, which
+  is exactly what rule 7 exists to catch and did not, here, until the
+  maintainer read it.
+
+  `CHARTER.md`'s "The second demonstration" rewritten: "the loop's own
+  account" becomes "the maintainer's own GitHub account" in the published
+  figures, and the first caveat rewritten from "the account does not prove
+  agency" (concluding no commit is attributable to a human) to "account
+  attribution settles nothing, in either direction" — the same account
+  authors a commit whether the maintainer types it directly or the
+  automated process commits it under that account's local configuration,
+  so the field cannot show a model did this any more than it could show a
+  human did. What the entry now points to instead is the record built
+  alongside the commits — the changelog itself, and the maintainer's own
+  account of the process — rather than a field that was never evidence for
+  either side. `docket/open/2026-08-22-live-governance-counter.md`
+  re-specified to carry the same correction forward: its Done-when no
+  longer asks for a "loop account vs. bot" split and names this finding
+  directly, so a future `build` round does not reintroduce the framing
+  this round shipped and then corrected.
+
+  Audited, per instruction, rather than assumed clean: every
+  account-attribution phrase in `CHARTER.md`, `CHANGELOG.md` and `app/`,
+  not only what this round wrote. The pattern "the account the loop
+  operates as" / "the loop's account holds admin" recurs in several places
+  — `CHARTER.md`'s own 11 August History entry, several pre-existing
+  `CHANGELOG.md` entries, `app/blog/page.js`, `app/charter/page.js` — and
+  every instance checked describes *permissions* (that account holds
+  admin, that account's push can land past a red check), never *identity*
+  (never claims the account is a separate, non-human machine identity).
+  None of those needed correcting; the defect was specific to this round's
+  new claim about what the shared account does or does not prove about
+  authorship, not to the existing, narrower claims about what it can do.
+  `CHARTER.md`'s 11 August entry's "the machine account governs `git push`
+  ... it does not govern `gh`" is, independently, exactly right: it names
+  a real, separate account (`addicted2ai-loop`) for push, distinct from
+  the owner account (`addicted2ai`) for `gh` and merging — the split the
+  maintainer's message re-confirmed tonight — and needed no correction.
+  `origin/main` does not carry the "no commit is attributable to a human
+  author" line this round drafted; nothing false is published as a result
+  of this finding, and this correction keeps it that way rather than
+  shipping it first and fixing it after.
+
+  Recorded as a finding from the maintainer, not from a review artifact:
+  the orchestrator had verified the pull request, commit and revert counts
+  correctly, independently, more than once this round, and never checked
+  whose account the commits belonged to. The numbers were right. The
+  meaning built on top of them was not.
 
 - Origin: delegated
 - Track: meta
