@@ -59,11 +59,73 @@ export function buildIndex(rows) {
 // resolves. Keeping `/` inside the token class would instead swallow the
 // whole "vendor/model" string as one token that matches nothing -- silently
 // missing one of the most common ways people actually paste a model ID.
-const TOKEN_CHARS = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+// Exported (not just module-local) so scripts/check-model-deprecation-parser.mjs
+// can classify an identifier as token- or phrase-shaped the same way
+// findMatches does, rather than re-implementing the distinction to test it.
+export const TOKEN_CHARS = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const TOKEN_PATTERN = /[A-Za-z0-9][A-Za-z0-9._-]*/g;
 
+// `.` is the one character in TOKEN_PATTERN that is genuinely ambiguous: it
+// has to stay in the class for a dotted version number (`gpt-4.1-nano`), but
+// it is also the single most common way a sentence actually ends, with no
+// space before the next token starts ("...gpt-4-0613."). The regex above is
+// greedy, so a sentence-final period -- or an ellipsis's several -- gets
+// absorbed into the token, and the extracted string no longer equals the
+// stored identifier. Found by review (round 168's own health check never
+// placed an identifier before a bare period, so it never saw this): 86 of
+// 92 matchable identifiers in RETIREMENT_DATES are token-shaped and were
+// exposed by this whenever a paste ended the identifier's mention with a
+// period and no trailing word -- the single most natural way to reference a
+// model in prose.
+//
+// No identifier in RETIREMENT_DATES ends in ".", so trailing dots are
+// stripped from every extracted token -- repeatedly, so an ellipsis strips
+// clean too. Only a dot at the very end of a token is touched; a dot
+// separating two digits in the middle of a token (the version-number case)
+// is never adjacent to the end and is left alone. Stripping can only ever
+// *reveal* an identifier that trailing punctuation was hiding -- it cannot
+// merge two different tokens into a false one, so it cannot introduce a new
+// false positive the way loosening a boundary check could.
 function tokensOf(text) {
-  return text.match(TOKEN_PATTERN) || [];
+  const raw = text.match(TOKEN_PATTERN) || [];
+  return raw.map((t) => t.replace(/\.+$/, "")).filter(Boolean);
+}
+
+// A phrase identifier ("Assistants API", "Agent Builder") gets none of the
+// token-set protection above, because it is not made only of token
+// characters -- it has a space. A bare `haystack.includes(needle)` matches
+// inside a longer word or a different compound term: "Videos API" fires
+// inside "our videos apis are custom-built" (needle is a prefix of "apis"),
+// and "Agent Builder" fires inside "the agent builder-pattern used here"
+// (found by review; neither is hypothetical, both are ordinary English a
+// visitor might actually paste describing their own, unrelated product).
+//
+// The fix mirrors the token-set guarantee for phrases: a match only counts
+// if the character immediately before and immediately after it, when one
+// exists, is not a character that would make it part of a larger word or
+// hyphenated compound. Sentence punctuation (".", ",", "!", "?", ":", ";",
+// closing brackets/quotes) and a possessive apostrophe are NOT connectors,
+// so "the Assistants API." and "the Assistants API's endpoint" still match
+// -- only a letter, digit, underscore or hyphen immediately touching the
+// phrase disqualifies it, which is exactly what "apis", "apiece" and
+// "builder-pattern" have and a real, separate mention of the phrase does
+// not. Every occurrence in the text is checked, not just the first, so an
+// unrelated compound earlier in the paste cannot hide a real, validly
+// bounded mention later in it.
+const PHRASE_CONNECTOR = /[A-Za-z0-9_-]/;
+
+function phraseMatches(haystack, needle) {
+  let idx = haystack.indexOf(needle);
+  while (idx !== -1) {
+    const before = idx > 0 ? haystack[idx - 1] : null;
+    const after =
+      idx + needle.length < haystack.length ? haystack[idx + needle.length] : null;
+    const boundedBefore = !before || !PHRASE_CONNECTOR.test(before);
+    const boundedAfter = !after || !PHRASE_CONNECTOR.test(after);
+    if (boundedBefore && boundedAfter) return true;
+    idx = haystack.indexOf(needle, idx + 1);
+  }
+  return false;
 }
 
 // Find every RETIREMENT_DATES row that appears in `text`, at most once per
@@ -84,7 +146,7 @@ export function findMatches(text, rows) {
     const needle = identifier.toLowerCase();
     const hit = TOKEN_CHARS.test(identifier)
       ? tokenSet.has(needle)
-      : haystack.includes(needle);
+      : phraseMatches(haystack, needle);
     if (hit) {
       matches.push({ matchedAs: identifier, row });
       seen.add(row);

@@ -275,50 +275,218 @@ almost-empty queue is still almost nothing.
   on both raw weight and momentum, but did not beat scout on this specific
   call, and scout is not the composition the brief's complaint was about.
 
+  **Reproducibility correction, found by review:** the `track: scout` output
+  quoted above was captured before this round's own commit existed — after
+  the `docket/` changes had landed in the working copy, but before
+  `CHANGELOG.md`'s own entry (which `dispatch.mjs` reads as `- Track:`
+  history) did. A reader checking out this branch and running the same
+  command sees a different track, because the shipped-round window changed
+  the moment this entry itself became history. Re-run against `HEAD`
+  (`acd4de5`, this branch's tip before the review-fix commit below) so the
+  number is reproducible by anyone who runs it against what actually
+  merged:
+
+  ```
+  track:  audit
+  reason: audit due: 5 shipped round(s) since the last audit (max 5)
+  ```
+
+  The audit-gap preflight condition (`policy.yml`'s
+  `audit.max_rounds_between_runs: 5`), which `dispatch.mjs`'s `decide()`
+  checks before the quota comparison at all, now fires and outranks track
+  selection entirely — a different mechanism than the one this change is
+  about, not a correction to it. The finding this change draws from the
+  demand table is unchanged and *is* reproducible on the merged tree: the
+  `build`/`meta` weight figures above (9.91 / 7.50, push share 0.75) match
+  exactly. What was not reproducible was which track the specific call
+  picked; that line is corrected here rather than left standing as an
+  unreproducible pre-commit snapshot.
+
+**Two findings from independent review at `d45a8c9`
+(`docket/reviews/d45a8c9a01c97f877004429cc4160de3c5e382f5.md`), fixed here
+rather than left in a clean draft:**
+
+**Finding 1 — trailing punctuation silently defeated nearly every token
+match, and change 1 above did not say so.** Review reproduced, against the
+exact shipped module, that a sentence ending in an identifier with no
+trailing space — `"We are still on gpt-4-0613."`, `"We still use gpt-4."` —
+matched nothing: `TOKEN_PATTERN`'s greedy `.` (kept for dotted versions like
+`gpt-4.1-nano`) absorbed the sentence-final period into the token, and the
+resulting string no longer equalled the stored identifier. Quantified: 86 of
+the 92 matchable identifiers in `RETIREMENT_DATES` are token-shaped and
+exposed to this whenever a paste ends the identifier's mention with a period
+and no following word — the single most natural way to reference a model in
+prose. Round 168's own 103-check health suite never caught it, because every
+sweep sentence placed the identifier mid-sentence with a space after it,
+never immediately before a bare period.
+
+Fixed in `app/lib/model-deprecation-checker.js`'s `tokensOf()`: every
+extracted token now has trailing `.` stripped, repeatedly (so an ellipsis
+strips clean), before it enters the token set. No identifier in the data
+ends in `.`, so this can only ever *reveal* an identifier trailing
+punctuation was hiding — it cannot merge two different tokens into a false
+one. Verified in both directions rather than assumed: all five of review's
+repro sentences now resolve correctly, the internal-dot case (`gpt-4.1-nano`,
+bare and with a trailing period) still resolves correctly, and three
+deliberate near-miss probes — a decoy, an identifier one digit off, an
+identifier one letter off, each with a trailing period — still resolve to
+nothing, proving the loosening did not manufacture a new false positive.
+
+**Finding 2 — the six phrase-shaped identifiers had no boundary check at
+all, and fired inside ordinary English.** "Assistants API," "Agent
+Builder," "Videos API" and three others are not made of pure token
+characters and were matched with a raw, case-insensitive
+`haystack.includes(needle)` — none of the token-set protection built to
+stop `"gpt-4"` matching inside `"gpt-4o-mini"` applied to them. Review
+reproduced three false positives against the shipped module:
+`"Our videos apis are all custom-built."` and
+`"The agent builder-pattern used here is different from OpenAI's."` and
+`"We split the cost of the assistants apiece, five bucks each."` each
+returned a confident, dated, vendor-linked "this is retiring" verdict for
+ordinary sentences about something else entirely — the failure mode the
+brief that shaped this round named as worse than not shipping the tool at
+all.
+
+Fixed with a new `phraseMatches()`: a substring only counts as a match if
+the character immediately before and after it, when one exists, is not a
+letter, digit, underscore or hyphen — the same shape of guarantee the token
+set already gave the majority of identifiers, extended to the phrase-shaped
+minority. Every occurrence in the text is checked, not just the first, so
+an unrelated compound earlier in a paste cannot hide a real, validly
+bounded mention later in it. Verified in both directions: all three of
+review's false-positive sentences, plus two more built the same way, now
+correctly match nothing; genuine mentions — including with trailing
+punctuation and a possessive, the same requirement the token fix had to
+meet — still match (`"We rely on the Assistants API."`,
+`"the Assistants API's endpoint changed"`,
+`"OpenAI's Agent Builder retires soon."`).
+
+**The health check gained permanent coverage for both shapes, proved red
+against the pre-fix code before being trusted, not merely asserted able
+to fail.** `scripts/check-model-deprecation-parser.mjs` grew from 103
+checks to 264: the existing per-row sweep now also tests every primary and
+alias with a bare trailing period (all 92, not a sample); a punctuation
+matrix wraps four representative identifiers — including the dotted-version
+control — in eleven real paste shapes (comma, `!`, `?`, `:`, closing
+paren/bracket, a quoted-JSON close, ellipsis, possessive, end of line,
+sentence-final period); three near-miss probes assert the period fix cannot
+manufacture a false positive; five hardcoded fixtures reproduce review's
+exact false-positive sentences and assert they now resolve to nothing; five
+more assert genuine phrase mentions still resolve; and a generic structural
+sweep applies the glued-suffix / trailing-period pair to every phrase
+identifier currently in the data, so one added later is covered without
+anyone remembering to hand-write a fixture for it.
+
+Proved red against the exact pre-fix code: the matcher fix was set aside
+with `git stash push --keep-index -- app/lib/model-deprecation-checker.js`
+(keeping only the new health-check assertions), which also surfaced a real
+robustness gap of its own — the check crashed with an uncaught `TypeError`
+on first run, because the pre-fix module does not export `TOKEN_CHARS`
+either, so the new phrase-boundary sweep couldn't classify anything and
+died mid-run, silently skipping every assertion queued after it. Guarded so
+the check fails loudly and completely instead:
+
+```
+FAIL  primary "gpt-4o-realtime-preview." (sentence-final, trailing period) does not match its own row
+FAIL  primary "gpt-4o-realtime-preview-2025-06-03." (sentence-final, trailing period) does not match its own row
+  ... (92 of 92 token identifiers fail the same way — every primary and alias in the data)
+FAIL  "gpt-4.1-nano" (ellipsis: "still calling gpt-4.1-nano...") should match and did not
+FAIL  "gpt-4.1-nano" (sentence-final period: "We are still on gpt-4.1-nano.") should match and did not
+FAIL  fixture "Our videos apis are all custom-built." incorrectly matched "Videos API" — phrase boundary broken
+FAIL  fixture "The agent builder-pattern used here is different from OpenAI's." incorrectly matched "Agent Builder" — phrase boundary broken
+FAIL  fixture "We split the cost of the assistants apiece, five bucks each." incorrectly matched "Assistants API" — phrase boundary broken
+FAIL  fixture "OpenAI-Beta: realtime=v15 is a typo some clients send." incorrectly matched "OpenAI-Beta: realtime=v1" — phrase boundary broken
+FAIL  fixture "The evals platform (dashboard and API)s summary looked fine." incorrectly matched "Evals platform (dashboard and API)" — phrase boundary broken
+FAIL  app/lib/model-deprecation-checker.js does not export a usable TOKEN_CHARS — cannot run the phrase-boundary structural sweep
+
+100 of 253 check(s) failed
+```
+
+(`grep -c "sentence-final, trailing period" ` on the full log: exactly 92 —
+every matchable identifier in the data, not a sample.) `git stash pop`
+restored the fix; re-ran clean:
+
+```
+all 264 checks passed — the parser matches every current identifier and alias in 77 row(s), rejects a decoy, and holds its token boundary
+```
+
 ## Round 168 re-examination of `docket/open/2026-08-22-model-deprecation-checker.md`'s `worth-a-visit` argument
 
-Not taken on faith. Having built it: the argument holds, with one
-qualification. It is a real utility (paste, five-second answer, vendor
-link, no setup), zero-cost, and forwardable in the way the item claimed. The
-qualification is scope: it only knows the 77 OpenAI/Anthropic identifiers in
-`RETIREMENT_DATES` — a config referencing Gemini, Mistral, Bedrock, or any
-other vendor in `app/lib/retirement-commitments.js`'s wider survey gets no
-match, which could read as false reassurance rather than "not covered." The
-shipped page states this explicitly in its "nothing found" state and its
-footnote rather than leaving it implicit, but the underlying limitation is
-real and is not fixed by wording.
+Revised after review, not left as first written. The first version of this
+section said the argument "holds, with one qualification" — scope, not
+correctness — because the checker had not yet been shown to give a
+confidently wrong answer on an input shape a real visitor would use. It had
+not been re-examined hard enough. Review found it does, twice: a sentence
+ending in a period (the single most natural way to mention a model) and a
+sentence describing an unrelated "video API" or "agent builder." For a tool
+whose entire pitch is "trust this instead of scanning the table yourself,"
+a confident wrong answer is not a rough edge, it is the one failure mode
+that specific pitch cannot survive — worse than the tool not existing,
+because a visitor who trusts it and is wrong has no way to know.
+
+With both fixed and permanently regression-tested (above), the argument
+now holds on the terms review set: the concept is real, the discoverability
+and health-check wiring were already careful, and the tool gives an
+accurate answer on the input shapes a visitor actually pastes — clean JSON,
+a config value, and now also an ordinary sentence. The scope qualification
+from the first version still stands and is not new: it only knows the 77
+OpenAI/Anthropic identifiers in `RETIREMENT_DATES` — a config referencing
+Gemini, Mistral, Bedrock, or any other vendor in
+`app/lib/retirement-commitments.js`'s wider survey gets no match, which
+could read as false reassurance rather than "not covered." The shipped
+page states this explicitly in its "nothing found" state and its footnote
+rather than leaving it implicit; the underlying limitation is real and is
+not fixed by wording.
 
 - Origin: delegated
 - Track: build
 - Agent: claude-sonnet-5 (Claude Code subagent)
-- Guardrails: `npm run lint` clean. `node scripts/check-docket.mjs`: 115
-  items valid, 34 open, `build` base 2 → head 4 against `queue_budget: 14`
-  (well inside; no filing-gate failure). `node scripts/check-track-scope.mjs
-  origin/main loop/build/model-deprecation-checker` — build-scoped paths
-  only (`app/`, `public/`, `scripts/`, `docket/`, `CHANGELOG.md`); no
+- Guardrails: this entry covers the original commit (`d45a8c9`), the review
+  that requested changes on it (artifact committed at `acd4de5`,
+  `docket/reviews/d45a8c9a01c97f877004429cc4160de3c5e382f5.md`), and the
+  fix commit on top of it — one shared block, not three entries. Both
+  findings were re-verified independently rather than trusted from the
+  artifact: the trailing-period repro sentences and the phrase-substring
+  false positives were re-run against the shipped module before the fix and
+  again after, matching the artifact's own transcripts exactly. `npm run
+  lint` clean. `node scripts/check-docket.mjs`: 115 items valid, 34 open,
+  `build` base 2 → head 4 against `queue_budget: 14` (well inside; no
+  filing-gate failure) — unchanged by this fix, since neither
+  `app/lib/model-deprecation-checker.js` nor
+  `scripts/check-model-deprecation-parser.mjs` touches `docket/`. `node
+  scripts/check-track-scope.mjs origin/main
+  loop/build/model-deprecation-checker` — every changed file across both
+  commits (the original build and this fix) falls within `app/`,
+  `scripts/`, `docket/` and `CHANGELOG.md`, all build-scoped; no
   `.github/`, `CHARTER.md` or `prompts/` touched. `node scripts/round.mjs
-  check` — lint, docket validity, track scope, `npm run build`, and the
-  full route-check suite including the new
-  `scripts/check-model-deprecation-parser.mjs` — run against a freshly
-  built and served instance on a port confirmed free beforehand, per the
-  brief's own note that a stale `next start` has silently validated the
-  wrong build twice before. The health check was demonstrated red then
-  green twice — once mid-build against an earlier matcher version, once
-  against the exact shipped script — both pasted in change 2, and the
-  data file (`app/lib/retirement-dates.js`) carries no residual diff after
-  either demonstration (`git diff --stat` empty both times). No guardrail
-  was loosened; this round adds a route, a data module, a health check and
-  three docket items, none of which relaxes an existing check.
+  check` — lint, docket validity, track
+  scope, `npm run build`, and the full route-check suite (now including
+  the expanded 264-check `scripts/check-model-deprecation-parser.mjs`) —
+  run against a freshly built and served instance on a port confirmed free
+  beforehand. The health check was demonstrated red then green three times
+  in total across this round's full arc: twice in change 2 (against an
+  earlier matcher version, then against the version shipped in `d45a8c9`),
+  and once more here against review's two findings — the pre-fix module
+  crashing outright on the new phrase-boundary sweep (guarded so it fails
+  loudly instead), then 100 of 253 checks red, then all 264 green. No
+  guardrail was loosened; this round adds a route, a data module, an
+  expanded health check and three docket items, and tightens two matching
+  rules — nothing here relaxes an existing check.
 - Result: not yet measured — the checker is live and its record is
   internally consistent (docket item moved to done, CHANGELOG entry, route
   registered everywhere the disclosure/sitemap/budget machinery requires),
-  but nothing here observes real visitor behaviour. The two things this
-  round can state as measured rather than hoped: the parser check does
-  fail when broken (shown twice) and passes when correct, and `build`'s
-  dispatcher weight now exceeds `meta`'s for the first time since the push
-  landed (9.91 vs 7.50) — whether that translates into `build` actually
-  running before `meta` again is a question the next several rounds'
-  dispatcher output answers, not this entry.
+  but nothing here observes real visitor behaviour. What this round can
+  state as measured rather than hoped: the parser check does fail when
+  broken and passes when correct (shown three times, at increasing
+  coverage); the specific defects independent review found — a false
+  negative exposing 86 of 92 identifiers to a common sentence shape, and a
+  false positive on three of six phrase identifiers — are fixed and now
+  permanently regression-tested, in both directions, so neither can return
+  silently; and `build`'s dispatcher weight now exceeds `meta`'s for the
+  first time since the push landed (9.91 vs 7.50, reproducible on the
+  merged tree) — whether that translates into `build` actually running
+  before `meta` again is a question the next several rounds' dispatcher
+  output answers, not this entry.
 
 ### 2026-08-22
 This meta round was briefed on the maintainer's judgement, in their own words
