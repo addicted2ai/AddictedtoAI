@@ -165,6 +165,64 @@ function dotCandidatesOf(run) {
   return candidates;
 }
 
+// A fifth round of review found a defect older and broader than anything
+// findings 3-5 touched, present unchanged since the very first commit: any
+// character outside TOKEN_PATTERN's class -- not just a dot -- acts as a
+// hard delimiter, so one landing INSIDE an identifier's own characters
+// (not between words) silently splits it into two runs, and one of the
+// halves can be a real, wrong, differently-dated alias.
+// "gpt-4​o-realtime-preview" (a zero-width space glued between "gpt-4"
+// and "o-realtime-preview" -- a real Slack/PDF/CJK-editor copy-paste
+// artifact) tokenized as two runs, and the first, "gpt-4", matched the
+// unrelated gpt-4-0613 row. Proved present on the tool's original commit,
+// before any review or fix in this chain existed -- this is not something
+// dotCandidatesOf or hasLongerDottedSibling introduced or can be reached
+// through; it is the base tokenizer.
+//
+// Two different characters classes, two different treatments, per the
+// same invariant as above (a fragment produced by a split the input did
+// not clearly intend must not resolve):
+//
+// Unicode "format" characters (category Cf: zero-width space/joiner/
+// non-joiner, soft hyphen, BOM, and the category generally) carry no
+// textual meaning and are invisible to whoever typed or pasted them --
+// nobody "intends" one as a separator, because nobody can see it. Text
+// tools normally strip these before tokenizing rather than treat them as
+// boundaries, so they are removed from the input entirely, unconditionally,
+// before anything else in this file runs.
+const FORMAT_CHARS = /\p{Cf}/gu;
+
+function stripFormatChars(text) {
+  return text.replace(FORMAT_CHARS, "");
+}
+
+// NBSP, en dash, em dash, and the curly single/double quote marks are
+// different: they are visible, and a person may genuinely have typed one
+// as punctuation ("gpt-4-0613—it's retiring soon"). They are NOT
+// stripped unconditionally -- that would risk gluing two genuinely
+// separate words together elsewhere in a paste. Instead: wherever one of
+// these sits directly between two ordinary token characters, with nothing
+// else around it, that whole stretch is tried FIRST as a single glued
+// candidate (the character removed) before falling back to today's
+// ordinary splitting. "gpt-4—o-realtime-preview" glues to
+// "gpt-4o-realtime-preview", which IS the real, correct identifier, so it
+// resolves correctly on the first try and the dangerous shorter split is
+// never reached. "gpt-4-0613—retiring soon" glues to
+// "gpt-4-0613retiring", which is not a real identifier, so gluing fails
+// and the run falls back to ordinary splitting -- "gpt-4-0613" alone,
+// which already resolves correctly today and is untouched by any of this.
+const AMBIGUOUS_SEPARATOR = /[ –—‘’“”]/g;
+const LOOSE_PATTERN =
+  /[A-Za-z0-9](?:[A-Za-z0-9._-]|[ –—‘’“”])*/g;
+
+function looseRunsOf(text) {
+  return text.match(LOOSE_PATTERN) || [];
+}
+
+function deglue(looseRun) {
+  return looseRun.replace(AMBIGUOUS_SEPARATOR, "");
+}
+
 // A phrase identifier ("Assistants API", "Agent Builder") gets none of the
 // token-set protection above, because it is not made only of token
 // characters -- it has a space. A bare `haystack.includes(needle)` matches
@@ -254,18 +312,28 @@ export function hasLongerDottedSibling(identifier, rows) {
 // scope, so the health check can pass a deliberately mutated copy without a
 // second implementation of this function.
 //
-// Token-shaped identifiers are resolved per glued run of the text (in the
-// order the runs appear), trying each run's candidates from dotCandidatesOf
-// in order and stopping at the first one present in the data that is not
-// disqualified by hasLongerDottedSibling -- see each function's own comment
-// for why the ordering and the sibling guard, not just the candidate set,
-// are what keep this safe. If every candidate for a run is either absent
-// from the data or disqualified as ambiguous, the run resolves to nothing,
-// on purpose. Phrase-shaped identifiers are unaffected by any of this and
-// are still checked by substring in a separate pass.
+// Token-shaped identifiers are resolved per LOOSE run of the text (in the
+// order the loose runs appear -- see looseRunsOf's comment for what that
+// widened boundary buys). Within each loose run, the glued (ambiguous
+// separators removed) reading is tried first; only if nothing in it
+// resolves does this fall back to the loose run's ordinary, narrower
+// sub-runs, processed exactly as before this round's fifth finding. Each
+// run or sub-run's candidates come from dotCandidatesOf, tried in order,
+// stopping at the first one present in the data that is not disqualified
+// by hasLongerDottedSibling -- see each function's own comment for why the
+// ordering and the sibling guard, not just the candidate set, are what
+// keep this safe. If nothing for a loose run resolves at all, it produces
+// no match, on purpose. Phrase-shaped identifiers are unaffected by any of
+// this and are still checked by substring in a separate pass.
 export function findMatches(text, rows) {
   if (!text || !text.trim()) return [];
-  const haystack = text.toLowerCase();
+  // Format characters (zero-width space/joiner/non-joiner, soft hyphen,
+  // BOM, the Unicode Cf category generally) are removed unconditionally,
+  // before anything else -- see stripFormatChars's comment. Everything
+  // below operates on the stripped text; nothing in this function ever
+  // sees the original invisible characters again.
+  const stripped = stripFormatChars(text);
+  const haystack = stripped.toLowerCase();
   const index = buildIndex(rows);
 
   const tokenLookup = new Map();
@@ -278,23 +346,53 @@ export function findMatches(text, rows) {
   const matches = [];
   const seen = new Set();
 
-  for (const run of rawRunsOf(text)) {
-    for (const candidate of dotCandidatesOf(run)) {
-      const found = tokenLookup.get(candidate.toLowerCase());
-      if (!found) continue;
-      if (candidate !== run && hasLongerDottedSibling(found.identifier, rows)) {
-        // This candidate only exists because something was removed from
-        // what was actually typed, and the result is a real identifier
-        // that a different, longer real identifier also begins with --
-        // genuinely ambiguous. Refuse it, and refuse the whole run rather
-        // than falling through to anything shorter still.
-        break;
+  // Try one candidate string against the data. `run` is the raw text this
+  // candidate was derived from -- unchanged, that raw text is passed
+  // straight through to tokenLookup; transformed (trailing dots stripped,
+  // sentence-boundary truncated, or ambiguous separators removed to glue
+  // a loose run into one candidate), it is subject to hasLongerDottedSibling
+  // the same way regardless of which transformation produced it. Returns
+  // true when this run is settled -- either a match was recorded (or one
+  // for this row already was, from an earlier loose run), or the only
+  // candidate that matched was disqualified as ambiguous -- so the caller
+  // knows not to fall back to anything narrower.
+  function tryCandidate(candidate, run) {
+    const found = tokenLookup.get(candidate.toLowerCase());
+    if (!found) return false;
+    if (candidate !== run && hasLongerDottedSibling(found.identifier, rows)) {
+      // This candidate only exists because something was removed from
+      // what was actually typed, and the result is a real identifier that
+      // a different, longer real identifier also begins with -- genuinely
+      // ambiguous. Refuse it, and refuse the whole run rather than
+      // falling through to anything shorter still.
+      return true;
+    }
+    if (!seen.has(found.row)) {
+      matches.push({ matchedAs: found.identifier, row: found.row });
+      seen.add(found.row);
+    }
+    return true; // longest-match-first: a shorter candidate is never tried once one resolves
+  }
+
+  for (const looseRun of looseRunsOf(stripped)) {
+    const glued = deglue(looseRun);
+    let settled = false;
+    if (glued !== looseRun) {
+      for (const candidate of dotCandidatesOf(glued)) {
+        if (tryCandidate(candidate, glued)) {
+          settled = true;
+          break;
+        }
       }
-      if (!seen.has(found.row)) {
-        matches.push({ matchedAs: found.identifier, row: found.row });
-        seen.add(found.row);
+    }
+    if (settled) continue;
+    // Gluing this loose run either found nothing or wasn't applicable
+    // (no ambiguous separator inside it) -- fall back to the ordinary,
+    // narrower runs within it, exactly as findMatches has always done.
+    for (const run of rawRunsOf(looseRun)) {
+      for (const candidate of dotCandidatesOf(run)) {
+        if (tryCandidate(candidate, run)) break;
       }
-      break; // longest-match-first: a shorter candidate is never tried once one resolves
     }
   }
 

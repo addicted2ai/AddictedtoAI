@@ -514,6 +514,79 @@ if (typoWrongRowFailures === 0) {
   );
 }
 
+// A FIFTH round of review found a defect older and broader than anything
+// findings 3-5 touched: a non-token character landing INSIDE an
+// identifier's own characters (not between words) silently splits it into
+// two runs via the base tokenizer, and one half can be a real, wrong,
+// differently-dated alias -- present unchanged since the tool's very
+// first commit (`d45a8c9`), reproduced directly against it, so it
+// predates every review pass in this chain rather than being introduced
+// by any of the fixes findings 3-5 made.
+//
+// Swept every interior position of every token-shaped identifier's
+// primary and every alias with 14 non-token characters: the seven the
+// coordinator named (ZWSP, ZWJ, soft hyphen, NBSP, em dash, en dash,
+// smart apostrophe) plus ZWNJ, BOM, the two directional marks (LRM, RLM),
+// and curly double quotes -- broader than the reported set on purpose, to
+// test that the fix's actual mechanism (strip the Unicode "format"
+// category; glue-then-fallback for visible ambiguous separators) closes
+// the class, not just the specific characters review happened to try.
+const INTERIOR_SPLIT_CHARS = {
+  "zero-width space (U+200B)": "​",
+  "zero-width joiner (U+200D)": "‍",
+  "zero-width non-joiner (U+200C)": "‌",
+  "soft hyphen (U+00AD)": "­",
+  "byte-order mark (U+FEFF)": "﻿",
+  "left-to-right mark (U+200E)": "‎",
+  "right-to-left mark (U+200F)": "‏",
+  "non-breaking space (U+00A0)": " ",
+  "em dash (U+2014)": "—",
+  "en dash (U+2013)": "–",
+  "left single quote (U+2018)": "‘",
+  "right single quote / apostrophe (U+2019)": "’",
+  "left double quote (U+201C)": "“",
+  "right double quote (U+201D)": "”",
+};
+
+const interiorSplitIdentifiers = [];
+for (const row of RETIREMENT_DATES) {
+  const { primary, aliases } = parseIdentifiers(row.what);
+  for (const id of [primary, ...aliases]) {
+    if (id && TOKEN_CHARS.test(id)) interiorSplitIdentifiers.push({ id, row });
+  }
+}
+
+let interiorSplitProbes = 0;
+let interiorSplitWrongRow = 0;
+let interiorSplitOwnRow = 0;
+for (const [label, ch] of Object.entries(INTERIOR_SPLIT_CHARS)) {
+  for (const { id, row } of interiorSplitIdentifiers) {
+    for (let i = 1; i < id.length; i++) {
+      const variant = id.slice(0, i) + ch + id.slice(i);
+      interiorSplitProbes++;
+      const hits = findMatches(`We reference ${variant} in the config.`, RETIREMENT_DATES);
+      const wrongRow = hits.filter((m) => m.row !== row);
+      if (wrongRow.length > 0) {
+        interiorSplitWrongRow++;
+        bad(
+          `${label} inserted inside "${id}" at position ${i} wrongly resolved to a DIFFERENT row: ` +
+            `${wrongRow.map((m) => `${m.matchedAs} -> ${m.row.what}`).join(", ")} (variant: ${JSON.stringify(variant)})`
+        );
+      } else if (hits.some((m) => m.row === row)) {
+        interiorSplitOwnRow++;
+      }
+    }
+  }
+}
+if (interiorSplitWrongRow === 0) {
+  ok(
+    `mid-identifier Unicode-split sweep: ${interiorSplitProbes} probes across ${interiorSplitIdentifiers.length} ` +
+      `identifiers x ${Object.keys(INTERIOR_SPLIT_CHARS).length} non-token characters — zero resolved to a ` +
+      `different row (${interiorSplitOwnRow} correctly recovered their own row via gluing, ` +
+      `${interiorSplitProbes - interiorSplitOwnRow} safely missed)`
+  );
+}
+
 // The rest of the token-character family, enumerated rather than assumed
 // safe: TOKEN_CHARS also includes `-` and `_`. Gluing a word onto either
 // currently produces a MISS, not a wrong answer -- confirmed here, not
