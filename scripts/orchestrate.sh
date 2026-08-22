@@ -273,6 +273,7 @@ stop_iteration() {
 }
 
 source "$REPO/scripts/orchestrate-liveness.sh"
+source "$REPO/scripts/orchestrate-peak.sh"
 
 failures=0
 
@@ -282,6 +283,17 @@ while true; do
   # signal is worse than one that stops.
   if [ -s docket/HOLD.md ]; then
     halt "docket/HOLD.md is present -- the loop stopped itself and is waiting on a decision"
+  fi
+
+  # DeepSeek peak-hour guard (docket/open/2026-08-17-deepseek-peak-hour-pricing.md).
+  # Checked before every iteration start, never against one already running --
+  # see scripts/orchestrate-peak.sh for why that ordering is what makes "an
+  # in-flight iteration finishes" true rather than merely claimed. A skip here
+  # pauses this pass and retries after GAP_SECONDS; it does not halt the loop
+  # the way docket/HOLD.md does.
+  if ! peak_guard; then
+    sleep "$GAP_SECONDS"
+    continue
   fi
 
   if [ "$failures" -ge "$MAX_CONSECUTIVE_FAILURES" ]; then
