@@ -88,20 +88,39 @@ jobs:
           # over-matches costs a human one unnecessary merge; a guard that
           # under-matches is a bypass. So check-track-scope.mjs.orig is
           # guarded too, and that is the right direction to be wrong in.
+          #
+          # Three more files joined 2026-08-22, same round as rule 13a
+          # itself: scripts/check-13a-unchanged.mjs, scripts/check-hold-
+          # mechanism.mjs and scripts/test-orchestrate-hold.mjs are the
+          # enforcement logic for two of rule 13a's own reservations (its own
+          # text, and the stop mechanism). None of the three is a workflow
+          # file, so none was in .github/ or otherwise reserved -- meaning a
+          # pull request could weaken or gut any of them in the same diff
+          # that violates what they check, and every job here would still
+          # report green, because the job definitions in .github/ (protected)
+          # only say "run this script," not what the script does. The exact
+          # round-78 shape check-track-scope.mjs was guarded for in 2026-08-11,
+          # recurring in new code the same round it shipped. Not a complete
+          # fix -- scripts/check-routes.sh, which wires
+          # test-orchestrate-hold.mjs into build-and-audit, is not guarded
+          # here, and gating it would freeze a file every track edits often
+          # for unrelated route checks; CHARTER.md's History (2026-08-22)
+          # names this residual rather than leaving it implicit.
           owned=$(printf '%s\n' "$changed" \
-            | grep -E '^(\.github/|scripts/check-track-scope\.mjs)' \
+            | grep -E '^(\.github/|scripts/check-track-scope\.mjs|scripts/check-13a-unchanged\.mjs|scripts/check-hold-mechanism\.mjs|scripts/test-orchestrate-hold\.mjs)' \
             || true)
           if [ -n "$owned" ]; then
             echo "This pull request changes paths CHARTER.md rule 13a reserves:"
             printf '%s\n' "$owned" | sed 's/^/    /'
             echo ""
             echo "rule 13a reserves the enforcement mechanism -- .github/ (the checks"
-            echo "and their required-status wiring) and scripts/check-track-scope.mjs"
-            echo "(the map of which paths each track may write, guarded here since"
-            echo "round 79: it reads that map from the branch it is judging, so a round"
-            echo "can otherwise grant itself a path and spend it in the same pull"
-            echo "request -- round 78 did). Rule 11: the run a guardrail blocks is not"
-            echo "the run that loosens it."
+            echo "and their required-status wiring), scripts/check-track-scope.mjs"
+            echo "(the map of which paths each track may write, guarded since round 79:"
+            echo "it reads that map from the branch it is judging, so a round can"
+            echo "otherwise grant itself a path and spend it in the same pull request --"
+            echo "round 78 did), and the three checking scripts rule 13a's own text and"
+            echo "the stop mechanism depend on, guarded for the identical reason. Rule"
+            echo "11: the run a guardrail blocks is not the run that loosens it."
             echo ""
             echo "This check fails so auto-merge cannot land it. A maintainer merges"
             echo "it by hand, and that act is the review."
@@ -158,30 +177,49 @@ jobs:
 
   # CHARTER.md rule 13a also reserves "the stop mechanism -- docket/HOLD.md
   # and the code paths that honour it, so a brake the loop can teach itself
-  # to ignore is no brake." Two different risks, guarded two different ways
-  # in scripts/check-hold-mechanism.mjs (its own header has the full
-  # reasoning, including why a symmetric "any touch to HOLD.md fails" guard
-  # would be wrong): clearing an active hold is the reserved act, creating
-  # one is not (this project's own history holds several legitimate
-  # self-merged pauses and releases); and the `if [ -s docket/HOLD.md ];
-  # then halt ...; fi` fragment in scripts/orchestrate.sh is frozen byte for
-  # byte, because editing the code that honours the file is exactly as
-  # effective as clearing the file itself, and the supervisor being dead
-  # since 2026-08-18 makes that code dormant, not safe -- it is what a
-  # restart runs. Proved able to fail on a clearing diff and on a tampered
-  # honouring fragment, and to pass on a diff that only creates a hold or
-  # edits an active one's stated reason, before this job shipped.
+  # to ignore is no brake." This job covers only the half a PR diff can
+  # actually answer: whether THIS pull request's own change to
+  # docket/HOLD.md clears an active hold (creating one, or editing an active
+  # hold's stated reason, is not the reserved act -- this project's own
+  # history holds several legitimate self-merged pauses and releases).
   #
-  # !! NOT YET A REQUIRED CHECK. !! Same gap, same reason, same "not filed
-  # either -- meta's queue is over budget" note as rule-13a-text above; see
-  # that job's banner and CHARTER.md's History, 2026-08-22.
+  # THIS JOB USED TO ALSO FREEZE the `if [ -s docket/HOLD.md ]; then halt
+  # ...; fi` fragment in scripts/orchestrate.sh byte for byte. Adversarial
+  # review defeated that in one pass, two ways, neither touching the frozen
+  # text: (1) truncating docket/HOLD.md every iteration, above the frozen
+  # block, so `-s` never sees content; (2) gutting halt() (defined
+  # elsewhere in the same file), so the frozen block's call to it does
+  # nothing. Freezing a span of text cannot protect a behaviour that
+  # depends on the code around the span and the function it calls, both
+  # unbounded -- scripts/check-hold-mechanism.mjs's own header has the full
+  # account, including why a symmetric "any touch to HOLD.md fails" guard
+  # would also be wrong.
+  #
+  # THE BEHAVIOURAL HALF now lives in scripts/test-orchestrate-hold.mjs,
+  # which does not diff text at all: it actually runs the real
+  # scripts/orchestrate.sh in an isolated sandbox against a controlled
+  # docket/HOLD.md and reads what it did, including two permanent
+  # regression cases that reproduce the review's two bypasses and assert
+  # the harness still catches both. It is wired into
+  # scripts/check-routes.sh, which `build-and-audit` below already runs --
+  # a required check today, unlike this job. That job's own limit is stated
+  # in the test's header rather than implied: it proves this repository's
+  # code halts when actually run; it cannot prove the orchestrate.sh
+  # process running on whatever machine the maintainer started it on, at
+  # any given moment, is this code, unmodified -- that process runs outside
+  # CI, on a machine CI never sees.
+  #
+  # !! NOT YET A REQUIRED CHECK (this job only). !! Same gap, same reason,
+  # same "not filed either -- meta's queue is over budget" note as
+  # rule-13a-text above; see that job's banner and CHARTER.md's History,
+  # 2026-08-22.
   stop-mechanism:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Verify the docket/HOLD.md stop mechanism is intact
+      - name: Verify this pull request's diff does not clear an active hold
         run: node scripts/check-hold-mechanism.mjs "origin/${{ github.base_ref }}"
 
   # A round that declares `Origin: delegated` claims the orchestrating model

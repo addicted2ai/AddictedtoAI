@@ -305,6 +305,96 @@ claims that outran what was true.
   done — the same adversarial-review habit `docket/reviews/` exists for,
   run here by the session's supervisor rather than a separate round.
 
+**8. Adversarial review defeated the stop-mechanism guard; replaced, not patched**
+- Hypothesis: none stated in advance — a second review pass, this one an
+  independent artifact in `docket/reviews/` rather than the orchestrator's
+  own read of the WIP commits, constructed two working bypasses of change
+  4's honouring-code check and judged the approach unsound, not merely
+  buggy.
+- Change: the review reproduced `scripts/orchestrate.sh`'s HOLD-honouring
+  structure and constructed two bypasses, both leaving the frozen `if [ -s
+  docket/HOLD.md ]; then halt ...; fi` fragment byte-identical: (1)
+  `: > docket/HOLD.md` inserted immediately above the frozen block truncates
+  the file every iteration before `-s` ever tests it; (2) gutting `halt()`
+  — defined elsewhere in the same file, outside the frozen span — so the
+  frozen block's call to it does nothing. Reproduced independently against
+  real copies of the file before accepting the finding.
+
+  Freezing text cannot bound a behaviour that depends on unbounded
+  surrounding code and the function it calls; the next bypass is always
+  another line outside whatever got frozen this time. Widening the frozen
+  span was rejected for that reason. `scripts/test-orchestrate-hold.mjs`
+  (new) tests the actual claim — "a present, non-empty docket/HOLD.md stops
+  the loop" — by copying the real `orchestrate.sh`, `orchestrate-liveness.sh`
+  and `orchestrate-peak.sh` into an isolated sandbox, deliberately without
+  `peak-window.mjs` or `policy.yml` so the next guard stays closed and
+  retries rather than ever reaching git or a real launch, and actually
+  running the script against a controlled `docket/HOLD.md`:
+
+  ```
+  ok    a present, non-empty docket/HOLD.md halts the loop (exited on its own, 522ms)
+  ok    an absent docket/HOLD.md does not halt the loop -- it reaches the next guard (634ms)
+  ok    an empty (0-byte) docket/HOLD.md does not halt the loop, matching bash's own -s test (635ms)
+  ok    bypass-1 regression guard: a copy with the file-truncation line inserted does NOT
+        halt on a held docket/HOLD.md -- this harness catches it (the frozen-text check
+        would not have)
+  ok    bypass-2 regression guard: a copy with halt() gutted logs HALT but keeps running
+        past it -- this harness catches it (the frozen-text check would not have)
+  all stop-mechanism behavioural checks passed
+  ```
+
+  The last two scenarios are permanent, not one-off proofs: they mutate a
+  fresh copy of the real file the same two ways on every run and assert
+  this harness still catches both, so a future edit that reintroduces
+  either shape is caught here rather than shipping quietly. Wired into
+  `scripts/check-routes.sh`, confirmed running by starting the production
+  server and invoking that script directly rather than trusting
+  `round.mjs check`'s condensed summary — `build-and-audit` already runs it,
+  a required check today, unlike either PR-diff job.
+
+  `scripts/check-hold-mechanism.mjs` is narrowed to only what a diff can
+  honestly answer: whether this pull request's own change to
+  `docket/HOLD.md` clears an already-held file. It no longer claims
+  anything about the honouring code, and its header says so plainly.
+
+  A related gap this same review implied, closed without being asked a
+  second time: the three checking scripts (`check-13a-unchanged.mjs`,
+  `check-hold-mechanism.mjs`, `test-orchestrate-hold.mjs`) were not
+  themselves in `human-owned-paths`' gated path list, so a pull request
+  could have weakened any of them in the same diff that violates what they
+  check — the identical shape `check-track-scope.mjs` was gated for after
+  round 78. All three are now gated the same way; `.github/CODEOWNERS`
+  updated to match. Not gated, named as a residual rather than fixed:
+  `scripts/check-routes.sh`, which wires `test-orchestrate-hold.mjs` into
+  `build-and-audit` — gating the whole file would freeze something every
+  track edits often for unrelated route checks.
+
+  Stated plainly rather than left implied: `test-orchestrate-hold.mjs`
+  proves this repository's code halts when actually run, here, now. It
+  cannot prove the `orchestrate.sh` process running at any given moment, on
+  whatever machine the maintainer started it on, is this code — that
+  process runs outside CI, on a machine CI never sees, and nothing in this
+  repository can attest to what is currently executing there.
+
+**9. Rule 13a's seven reserved items, enumerated by mechanism**
+- Hypothesis: rule 13a named four things under "the integrity of the
+  record" as reserved without saying which of them a mechanism actually
+  holds — the same defect this round's own History argues a path-based
+  rule commits (claiming more than it enforces), found by the second
+  review inside the rule meant to fix it.
+- Change: `CHARTER.md` rule 13a gained a paragraph naming, for all seven
+  reserved items, whether a mechanism exists. Four do not, stated as such
+  rather than left for a reader to assume otherwise: the append-only
+  changelog (`docket/open/2026-08-13-changelog-append-only-unenforced.md`,
+  open since before this rule existed, not new tonight); the review
+  artifacts in `docket/reviews/` (nothing stops a later commit editing or
+  deleting one); the disclosure page (no mechanism of its own); the public
+  log (inherits the changelog's gap, being rendered from it, and adds
+  none). Repository settings, credentials, spending, installs and history
+  destruction are exactly as unmechanised as rule 13 already said. Two have
+  a real mechanism: the stop mechanism (change 8, with its own stated
+  limit) and rule 13a's own text (`check-13a-unchanged.mjs`).
+
 - Origin: delegated
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent)
@@ -314,18 +404,27 @@ claims that outran what was true.
   a fourth `track: meta` item and being correctly refused both times — see
   changes 6 and 7). `node scripts/check-13a-unchanged.mjs origin/main` — ok,
   rule 13a does not exist at `origin/main` yet, nothing to protect (correct:
-  this round adds it). `node scripts/check-hold-mechanism.mjs origin/main` —
-  ok on both halves against the real base, in addition to the four
-  constructed pass/fail cases against real commits in change 4. `node
-  scripts/preflight.mjs` — clear at baseline, proved able to fire both
-  branches of the rule-22 finding (change 3), each reverted and `git status
-  --short` confirmed empty after. The charter rule count checked two
-  independent ways — the same regex `scripts/check-routes.sh` runs, and a
-  dynamic import of the real `app/lib/charter.js` parser — both report 22,
-  matching, with rule 13a absent from both by design. `npm run lint` clean.
-  `node scripts/round.mjs check`, run last, against a freshly restarted
-  server on a port confirmed free beforehand (`netstat -ano | grep LISTENING
-  | grep ":3000"` reported free):
+  this round adds it), re-run clean after the rule-13a text changed again in
+  change 9. `node scripts/check-hold-mechanism.mjs origin/main` — ok
+  (narrowed scope, change 8) against the real base, plus the three
+  constructed clearing/creating/editing cases against real commits. `node
+  scripts/test-orchestrate-hold.mjs` — all five scenarios pasted in change 8,
+  including the two permanent bypass-regression guards, re-run three times
+  for flakiness (none observed, ~500-750ms per scenario each run), and
+  confirmed actually wired in by starting the production server and running
+  `bash scripts/check-routes.sh` directly rather than trusting
+  `round.mjs check`'s condensed summary. `node scripts/preflight.mjs` —
+  clear at baseline, proved able to fire both branches of the rule-22
+  finding (change 3), each reverted and `git status --short` confirmed
+  empty after. The charter rule count checked two independent ways — the
+  same regex `scripts/check-routes.sh` runs, and a dynamic import of the
+  real `app/lib/charter.js` parser — both report 22 after every edit to
+  rule 13a including change 9's, matching, with rule 13a absent from both
+  by design. `npm run lint` clean. `node scripts/round.mjs check`, run
+  repeatedly through this round rather than once at the end -- after change
+  7's wording fix, and again after changes 8-9 landed -- against a freshly
+  restarted server on a port confirmed free beforehand each time. The run
+  below is the last of those:
 
   ```
   === Static checks ===
@@ -343,44 +442,74 @@ claims that outran what was true.
     node scripts/round.mjs ship
   ```
 
-  This is the second run, not the first: the first run of `round.mjs check`
-  against this entry's earlier draft did not clear the route checks —
-  `check-routes.sh`'s search-preset assertion caught this entry's own prose
-  repeating three particular self-critical words (this project's own
-  vocabulary for a mistake, an omission, and a red check) often enough that,
-  combined with rounds 167 and 168 (already large, already repeating the
-  same three), every round `/log`'s derived page then showed used all
-  three, leaving those `/log` search presets nothing left to filter. Not a
-  pre-existing site defect this round happened to trip — this entry's own
-  word choice was the proximate cause, confirmed by rerunning the same check
-  against this entry with the three words reworded out and nothing else
-  changed: clean. Recorded rather than smoothed over, per rule 7. Not run:
-  `round.mjs ship` itself, and no pull request was opened — this round
-  commits only, per the brief. No guardrail was loosened: this round narrows
-  one required check's path pattern while adding two new, currently-advisory
-  checks and a preflight finding, none of which relaxes an existing
-  assertion, so rule 11 is not implicated.
+  Two failures happened along the way, both diagnosed rather than rerun
+  until green and forgotten. Before change 7's wording fix, `round.mjs
+  check` did not clear the search-preset issue described below. After changes
+  8-9 landed, one run reported a different, unrelated failure —
+  `test-orchestrate-checkout.mjs`'s "attached-session trap" scenario at
+  5438ms against its 3000ms bound — that an immediate re-run did not
+  reproduce, and running that test alone (not back to back with the new
+  `test-orchestrate-hold.mjs`, which spawns several bash/node children
+  right before it in `check-routes.sh`'s order) passed at 429ms. Read as
+  contention this round's own new test adds, not a regression in the
+  checkout guard, and recorded as a real, if narrow, risk of the ordering
+  chosen rather than dismissed as noise; the run pasted above is a later,
+  clean one. Not run: `round.mjs ship` itself, and no pull request was
+  opened -- this round commits only, per the brief. No guardrail was
+  loosened: this
+  round narrows one required check's path pattern (twice — once for
+  `CHARTER.md`/`prompts/`, again to add the three checking scripts) while
+  adding new, currently-advisory checks, a preflight finding, and a
+  required behavioural test, none of which relaxes an existing assertion,
+  so rule 11 is not implicated.
+
+  The first run of `round.mjs check`, against an earlier draft of this
+  entry, did not clear the route checks: `check-routes.sh`'s search-preset
+  assertion caught this entry's own prose repeating three particular
+  self-critical words (this project's own vocabulary for a mistake, an
+  omission, and a red check) often enough that, combined with rounds 167
+  and 168 (already large, already repeating the same three), every round
+  `/log`'s derived page then showed used all three, leaving those `/log`
+  search presets nothing left to filter. Not a pre-existing site defect
+  this round happened to trip — this entry's own word choice was the
+  proximate cause, confirmed by rerunning the same check with the three
+  words reworded out and nothing else changed: clean. Recorded rather than
+  smoothed over, per rule 7.
 - Result: not yet measured — this round changes governance text and CI
   machinery, not a metric-bearing page, and CHARTER.md rule 3 makes "not
   measured" the honest answer rather than inventing one. What is verified,
   each with a command behind it and pasted above: the rule-22 preflight
   finding fires and clears on both its branches; the narrowed
-  `human-owned-paths` pattern still fails on `.github/` and
-  `check-track-scope.mjs` and no longer fails on `CHARTER.md`/`prompts/`;
-  `check-13a-unchanged.mjs` rejects a decoy-marker attack and a plain text
-  edit, and accepts an unmodified tree; `check-hold-mechanism.mjs` rejects
-  clearing a hold and rejects tampering with the honouring code, while
-  accepting creating a hold and editing an active hold's stated reason. Not
-  done, both disclosed rather than left unmentioned: arming `rule-13a-text`
-  and `stop-mechanism` as required checks (a maintainer settings action,
-  disclosed via banner — `meta`'s queue is at its filing-gate ceiling, so it
-  could not be filed as a docket item either) and the live governance
-  counter itself (filed, not built — a `build` item, `serves:
-  worth-a-visit`). `app/charter/page.js:203` is left false on production
-  until a `build` round picks up the priority-1 item filed for it; that gap
-  is real between this merge and that round, and is named rather than
-  hidden behind the fact that this round could not touch `app/` to close it
-  itself.
+  `human-owned-paths` pattern still fails on `.github/`,
+  `check-track-scope.mjs` and the three checking scripts, and no longer
+  fails on `CHARTER.md`/`prompts/`; `check-13a-unchanged.mjs` rejects a
+  decoy-marker attack and a plain text edit, and accepts an unmodified
+  tree; `check-hold-mechanism.mjs` rejects a diff that clears an active
+  hold and accepts one that creates a hold or edits an active hold's stated
+  reason — and, after change 8, claims nothing more than that;
+  `test-orchestrate-hold.mjs` actually halts the real script on a held
+  `docket/HOLD.md`, actually lets it continue on an absent or empty one,
+  and actually catches both bypasses adversarial review constructed against
+  the approach this round shipped first. That review is the reason this
+  entry describes a guard that was built, defeated, and replaced within one
+  round rather than a guard that simply worked — CHARTER.md rule 7 is why
+  that stays in the record rather than being edited into a clean first
+  draft. Its own honestly-stated limit: it proves this repository's code
+  halts when actually run, not that the process running on whatever
+  machine the maintainer started it on, at any given moment, is this code.
+  Not done, all disclosed rather than left unmentioned: arming
+  `rule-13a-text` and `stop-mechanism` as required checks (a maintainer
+  settings action, disclosed via banner — `meta`'s queue is at its
+  filing-gate ceiling, so it could not be filed as a docket item either);
+  gating `scripts/check-routes.sh` itself (named as a residual in change 8,
+  not fixed, because it would freeze a file every track edits often); a
+  mechanism for three of rule 13a's four record-integrity items (change 9);
+  and the live governance counter (filed, not built — a `build` item,
+  `serves: worth-a-visit`). `app/charter/page.js:203` is left false on
+  production until a `build` round picks up the priority-1 item filed for
+  it; that gap is real between this merge and that round, and is named
+  rather than hidden behind the fact that this round could not touch
+  `app/` to close it itself.
 
 ### 2026-08-22
 This build round was briefed as the last of a five-round session: the round

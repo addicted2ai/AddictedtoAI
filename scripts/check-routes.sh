@@ -138,6 +138,18 @@ node scripts/test-review-artifact.mjs || failures=$((failures + $?))
 echo
 node scripts/test-orchestrate-checkout.mjs || failures=$((failures + $?))
 
+# CHARTER.md rule 13a's stop-mechanism reservation: "a present, non-empty
+# docket/HOLD.md stops the loop." scripts/check-hold-mechanism.mjs (the
+# PR-diff check, not required yet -- see .github/workflows/pr-checks.yml)
+# only checks the shape of a diff; this is the behavioural half, and it runs
+# here because it needs no diff at all -- it actually runs the real
+# scripts/orchestrate.sh in an isolated sandbox and reads what it did.
+# Landing it in build-and-audit (a required check today) gives the
+# behavioural half of rule 13a's stop-mechanism reservation real enforcement
+# immediately, unlike the two new PR-diff checks alongside it.
+echo
+node scripts/test-orchestrate-hold.mjs || failures=$((failures + $?))
+
 # The DeepSeek peak-hour guard (docket/open/2026-08-17-deepseek-peak-hour-pricing.md):
 # scripts/peak-window.mjs at every boundary the two half-open UTC windows
 # define, and scripts/orchestrate-peak.sh's peak_guard() -- the function

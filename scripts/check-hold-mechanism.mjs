@@ -1,45 +1,50 @@
 #!/usr/bin/env node
-// Protect CHARTER.md rule 13a's stop-mechanism reservation: "docket/HOLD.md
-// and the code paths that honour it, so a brake the loop can teach itself to
-// ignore is no brake." Run from the repository root:
+// Protect CHARTER.md rule 13a's stop-mechanism reservation, the narrow half
+// a PR diff can actually answer: has THIS pull request's own diff cleared an
+// active hold. Run from the repository root:
 //
 //   node scripts/check-hold-mechanism.mjs [base-ref]   # default origin/main
 //
-// Two different things are guarded here, because they are two different
-// risks and conflating them would make this check either useless or
-// unusable:
+// CLEARING A HOLD, not creating one. A round halting itself when it hits
+// something a human must answer is legitimate and already happens --
+// scripts/orchestrate.sh's own comment records exactly that ("The
+// orchestrator writes HOLD.md when it hits something a human must answer"),
+// and `git log --all --oneline -- docket/HOLD.md` shows ten prior commits
+// doing it, all self-merged by the loop's own account, all legitimate. The
+// reserved act is the opposite one: a diff that makes docket/HOLD.md go from
+// held to not held. "Held" is bash's own `-s` test -- exists and is
+// non-empty, the exact condition scripts/orchestrate.sh checks -- so this
+// check answers the same question the loop itself answers, not a stricter or
+// looser one. Creating a hold, or editing an active hold's stated reason
+// while it stays a hold, is not blocked; a symmetric guard on any touch to
+// the file would fail every legitimate pause and teach people to merge past
+// it, which is exactly the failure `human-owned-paths` was narrowed away
+// from on 2026-08-22 (see CHARTER.md's History, same date).
 //
-// 1. CLEARING A HOLD, not creating one. A round halting itself when it hits
-//    something a human must answer is legitimate and already happens --
-//    scripts/orchestrate.sh's own comment records exactly that ("The
-//    orchestrator writes HOLD.md when it hits something a human must
-//    answer"), and `git log --all --oneline -- docket/HOLD.md` shows ten
-//    prior commits doing it, all self-merged by the loop's own account, all
-//    legitimate. The reserved act is the opposite one: a diff that makes
-//    docket/HOLD.md go from held to not held. "Held" is bash's own `-s`
-//    test -- exists and is non-empty, the exact condition
-//    scripts/orchestrate.sh checks -- so this check answers the same
-//    question the loop itself answers, not a stricter or looser one.
-//    Creating a hold, or editing an active hold's stated reason while it
-//    stays a hold, is not blocked; a symmetric guard on any touch to the
-//    file would fail every legitimate pause and teach people to merge past
-//    it, which is exactly the failure `human-owned-paths` was narrowed away
-//    from on 2026-08-22 (see CHARTER.md's History, same date).
+// WHAT THIS CHECK USED TO ALSO DO, AND WHY IT DOES NOT ANY MORE: the first
+// version also froze the `if [ -s docket/HOLD.md ]; then ... fi` fragment in
+// scripts/orchestrate.sh byte for byte, the same narrow-fragment approach
+// scripts/check-13a-unchanged.mjs takes for CHARTER.md rule 13a. Adversarial
+// review defeated that half two ways in one pass, neither touching the
+// frozen text: (1) `: > docket/HOLD.md` inserted in the loop, above the
+// frozen block, truncates the file before `-s` ever tests it; (2) gutting
+// halt() (defined elsewhere in the same file, out of the frozen span) --
+// the frozen block still calls it, byte for byte, and halting does nothing.
+// Freezing a span of text cannot protect a behaviour that depends on the
+// code around the span and the function it calls, both unbounded -- the
+// defect was in the instrument, not a bug to patch by widening the frozen
+// span, since the next bypass is just another line outside whatever got
+// frozen this time. The behavioural half now lives in
+// scripts/test-orchestrate-hold.mjs, which actually runs the real
+// scripts/orchestrate.sh in an isolated sandbox rather than diffing its
+// text, wired into scripts/check-routes.sh (and so into `build-and-audit`, a
+// required check today -- stronger enforcement than this PR-diff job, which
+// is not required yet; see .github/workflows/pr-checks.yml). This file keeps
+// only the half a diff can actually answer honestly: whether this pull
+// request's own change to docket/HOLD.md clears an active hold. It does not
+// and cannot speak to the honouring code at all, and no longer tries to.
 //
-// 2. THE HONOURING CODE ITSELF. Deleting or editing the lines in
-//    scripts/orchestrate.sh that read docket/HOLD.md and halt is exactly as
-//    effective as clearing the file, and the supervisor having been dead
-//    since 2026-08-18 does not make that code safe to weaken -- it makes it
-//    dormant, and it is what a restart runs. This does not freeze the whole
-//    file, which is ordinary, frequently and legitimately improved
-//    scripts/: it freezes the specific `if [ -s docket/HOLD.md ]; then ...
-//    fi` fragment, byte for byte, the same narrow-fragment approach
-//    scripts/check-13a-unchanged.mjs takes for CHARTER.md rule 13a.
-//    scripts/orchestrate-peak.sh mentions docket/HOLD.md only in a comment
-//    contrasting its own, separate peak-pricing pause -- it does not itself
-//    read the file, so it carries no fragment to protect here.
-//
-// Both checks fail the same way `human-owned-paths` does: a human merges by
+// This check fails the same way `human-owned-paths` does: a human merges by
 // hand, and that act is the review.
 
 import fs from "fs";
@@ -89,10 +94,6 @@ function isHeld(content) {
   return content !== null && content.length > 0;
 }
 
-let failures = 0;
-
-// --- 1. No silent clearing --------------------------------------------------
-
 const baseHold = readAt(baseRef, "docket/HOLD.md");
 const headHold = readWorking("docket/HOLD.md");
 const baseHeld = isHeld(baseHold);
@@ -104,8 +105,17 @@ if (baseHeld && !headHeld) {
     "      Clearing an active hold is the reserved act under CHARTER.md rule 13a --"
   );
   console.log("      creating one is not. A maintainer merges this by hand.");
-  failures++;
-} else if (baseHeld && headHeld) {
+  console.log(
+    "      This check only sees this pull request's own diff to the file; it says"
+  );
+  console.log(
+    "      nothing about whether the code that reads it still does -- see"
+  );
+  console.log("      scripts/test-orchestrate-hold.mjs for that.");
+  process.exit(1);
+}
+
+if (baseHeld && headHeld) {
   console.log(
     "ok    docket/HOLD.md was held and is still held (editing the stated reason is not the reserved act)"
   );
@@ -113,56 +123,4 @@ if (baseHeld && !headHeld) {
   console.log("ok    docket/HOLD.md was not held and is now held -- creating a hold is not reserved");
 } else {
   console.log("ok    docket/HOLD.md was not held at either point");
-}
-
-// --- 2. The honouring code itself -------------------------------------------
-
-const FRAGMENT_START = /^\s*if \[ -s docket\/HOLD\.md \]; then\s*$/;
-const FRAGMENT_END = /^\s*fi\s*$/;
-
-function extractFragment(text) {
-  if (text === null) return null;
-  const lines = text.replace(/\r\n/g, "\n").split("\n");
-  const startIdx = lines.findIndex((l) => FRAGMENT_START.test(l));
-  if (startIdx === -1) return null;
-  for (let i = startIdx + 1; i < lines.length; i++) {
-    if (FRAGMENT_END.test(lines[i])) {
-      return lines.slice(startIdx, i + 1).join("\n");
-    }
-  }
-  return null; // opened but never closed within the file -- treated as missing
-}
-
-const baseOrchestrate = readAt(baseRef, "scripts/orchestrate.sh");
-const headOrchestrate = readWorking("scripts/orchestrate.sh");
-const baseFragment = extractFragment(baseOrchestrate);
-const headFragment = extractFragment(headOrchestrate);
-
-if (baseFragment === null) {
-  console.log(
-    `WARN  could not find the docket/HOLD.md honouring block in scripts/orchestrate.sh at ${baseRef} -- skipping that half (nothing to compare against)`
-  );
-} else if (headFragment === null) {
-  console.log(
-    "FAIL  scripts/orchestrate.sh no longer carries the docket/HOLD.md honouring block in its expected shape."
-  );
-  console.log(`      expected (from ${baseRef}):`);
-  console.log(baseFragment.split("\n").map((l) => "        " + l).join("\n"));
-  failures++;
-} else if (headFragment !== baseFragment) {
-  console.log(
-    `FAIL  scripts/orchestrate.sh's docket/HOLD.md honouring block differs from ${baseRef}.`
-  );
-  console.log(`      ${baseRef}:`);
-  console.log(baseFragment.split("\n").map((l) => "        " + l).join("\n"));
-  console.log("      this branch:");
-  console.log(headFragment.split("\n").map((l) => "        " + l).join("\n"));
-  failures++;
-} else {
-  console.log("ok    scripts/orchestrate.sh's docket/HOLD.md honouring block is unchanged");
-}
-
-if (failures > 0) {
-  console.log(`\n${failures} stop-mechanism guardrail failure(s)`);
-  process.exit(1);
 }

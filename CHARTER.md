@@ -9,39 +9,49 @@ recorded per round rather than asserted here.
 It is owned by the human maintainer, who on 11 August 2026 delegated decision
 authority over this project to the model orchestrating the loop, and broadened
 that delegation on 22 August 2026. What the maintainer retains is named in
-rule 13a and the History. Enforcement is mechanical where it can be, and this
-document does not claim more than it is: `.github/` and
-`scripts/check-track-scope.mjs` — the enforcement mechanism itself, not the
-content rule 13 delegates — are guarded by the `human-owned-paths` job in
-`.github/workflows/pr-checks.yml`, a required status check that fails on any
-pull request touching them, so such a request cannot merge on green. That
-check binds absolutely against merging while it is red, and overriding it
-requires admin. `enforce_admins` is off on `main`, so that override exists. A
-locally-started round's `gh` CLI — the one `round.mjs ship` invokes —
-authenticates as the repository owner, which is an admin, so such a round
-could merge past the check today. What prevents it is that `round.mjs` never
-performs a merge itself and that the procedure which launches local rounds
-tells the round to run `ship` and not to merge by hand — a script and a habit,
-not a credential. A round run through the workflow action is different: the
-one that has done so, PR #10 (`loop/maintain/fix-disclosure-check-and-analytics-claim`),
-was authored and merged by `app/claude`, the action's app, not the owner.
-`.github/CODEOWNERS` names the same two paths and routes review requests, but
-it is documentation, not the gate.
+rule 13a and the History, which also names what rule 13a reserves without a
+working mechanism behind it yet — four items, stated as such rather than left
+for a reader to assume otherwise. Enforcement is mechanical where it exists,
+and this document does not claim more than that: `.github/`,
+`scripts/check-track-scope.mjs`, and three checking scripts rule 13a's own
+reservations depend on (`scripts/check-13a-unchanged.mjs`,
+`scripts/check-hold-mechanism.mjs`, `scripts/test-orchestrate-hold.mjs`) —
+the enforcement mechanism itself, not the content rule 13 delegates — are
+guarded by the `human-owned-paths` job in `.github/workflows/pr-checks.yml`,
+a required status check that fails on any pull request touching them, so
+such a request cannot merge on green. That check binds absolutely against
+merging while it is red, and overriding it requires admin. `enforce_admins`
+is off on `main`, so that override exists. A locally-started round's `gh`
+CLI — the one `round.mjs ship` invokes — authenticates as the repository
+owner, which is an admin, so such a round could merge past the check today.
+What prevents it is that `round.mjs` never performs a merge itself and that
+the procedure which launches local rounds tells the round to run `ship` and
+not to merge by hand — a script and a habit, not a credential. A round run
+through the workflow action is different: the one that has done so, PR #10
+(`loop/maintain/fix-disclosure-check-and-analytics-claim`), was authored and
+merged by `app/claude`, the action's app, not the owner. `.github/CODEOWNERS`
+names the same paths and routes review requests, but it is documentation,
+not the gate.
 
-Two more jobs in the same workflow guard what rule 13a reserves inside this
-file and outside the path list altogether: `rule-13a-text`
-(`scripts/check-13a-unchanged.mjs`) fails if rule 13a's own text below
-differs from `origin/main`'s, and `stop-mechanism`
-(`scripts/check-hold-mechanism.mjs`) fails if an active `docket/HOLD.md` hold
-is cleared rather than created, or if the code in `scripts/orchestrate.sh`
-that honours it is altered. Neither is a required check yet — read live from
-the GitHub API, branch protection's required contexts are
-`build-and-audit`, `human-owned-paths` and `review-artifact`, not these two —
-so today both can report a real violation and watch the merge happen anyway.
-Arming them is a settings change, which this rule reserves to the maintainer
-the same as it reserves everything else in this paragraph; the jobs' own
-comments carry this same disclosure rather than assert an enforcement that
-is not yet real.
+Two more jobs in the same workflow answer narrower questions a path cannot:
+`rule-13a-text` (`scripts/check-13a-unchanged.mjs`) fails if rule 13a's own
+text below differs from `origin/main`'s, and `stop-mechanism`
+(`scripts/check-hold-mechanism.mjs`) fails if a pull request's own diff
+clears an active `docket/HOLD.md` hold. Neither is a required check yet —
+read live from the GitHub API, branch protection's required contexts are
+`build-and-audit`, `human-owned-paths` and `review-artifact`, not these two
+— so today both can report a real violation and watch the merge happen
+anyway. Arming them is a settings change, which this rule reserves to the
+maintainer the same as it reserves everything else in this paragraph; the
+jobs' own comments carry this same disclosure rather than assert an
+enforcement that is not yet real. A stronger, behavioural check for the
+stop mechanism — `scripts/test-orchestrate-hold.mjs`, which actually runs
+`scripts/orchestrate.sh` in an isolated sandbox rather than diffing its text
+— is wired into `scripts/check-routes.sh`, which `build-and-audit` already
+runs; that part is required today, even though the two jobs above are not.
+Its own stated limit: it proves this repository's code halts when actually
+run, not that the process running on whatever machine the maintainer
+started it on, at any given moment, is this code, unmodified.
 
 This file and `prompts/` are otherwise the loop's to edit under rule 13, the
 same as the rest of this repository — `.github/` is not; it is part of what
@@ -274,6 +284,28 @@ never this charter, never the workflows. See rules 9 and 12.
     brake; repository settings, credentials, spending money, installing
     anything, and destroying history, unchanged from what rule 13 named
     before; and this rule itself — only the maintainer may amend rule 13a.
+    Seven items, and this rule states plainly which of them a mechanism
+    actually holds rather than let a reader assume the list is uniformly
+    enforced because it reads as one list.
+
+    Four have none today. The append-only changelog has an open, unfixed
+    gap (`docket/open/2026-08-13-changelog-append-only-unenforced.md`,
+    filed before this rule existed — nothing tonight added it). The review
+    artifacts in `docket/reviews/` have nothing stopping a later commit from
+    editing or deleting one after it was written. The disclosure page has no
+    mechanism of its own. The public log inherits the changelog's gap,
+    being rendered from it, and adds none. Repository settings, credentials,
+    spending, installs and history destruction are exactly as unmechanised
+    as rule 13 already said they are — the loop's account holds admin, and
+    what stops it is a commitment, not a wall. Only the stop mechanism and
+    this rule's own text have a working check behind them
+    (`scripts/check-hold-mechanism.mjs` and `scripts/test-orchestrate-hold.mjs`;
+    `scripts/check-13a-unchanged.mjs`), and even that pair proves only that
+    this repository's code behaves correctly when actually run — never that
+    the process running on whatever machine the maintainer started it on, at
+    any given moment, is this code, unmodified. A path-based rule claiming
+    more than it enforces is the defect this document's own History
+    (2026-08-22) argues against; this rule does not repeat it.
 
     That last reservation is different in kind from the other three, and is
     named separately because of it. Every other constraint in this document is
