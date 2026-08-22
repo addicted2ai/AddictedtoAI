@@ -76,6 +76,22 @@ check /model-retirement-calendar 200 "text/html" 'data-retirement-table="upcomin
 check /model-retirement-calendar 200 "text/html" 'data-retirement-table="past"'
 check /model-retirement-calendar 200 "text/html" 'gpt-5.2-chat-latest'
 
+# The deprecation checker (docket/open/2026-08-22-model-deprecation-checker.md)
+# is entirely client-side, but its input control and its discoverability link
+# from the calendar it reuses must render in the server HTML so a crawler --
+# and this check -- can see them without executing JS.
+check /model-retirement-calendar 200 "text/html" 'href="/model-deprecation-checker"'
+check /model-deprecation-checker 200 "text/html" 'id="checker-input"'
+check /model-deprecation-checker 200 "text/html" 'Paste an example'
+
+# The parser's own health check: assert it still matches every `what` string
+# (and every parenthetical alias) in the live RETIREMENT_DATES export, so a
+# future edit to that data cannot silently break matching without a red
+# build -- prompts/tracks/build.md's "you fail if you ship a demo with no
+# health check", made concrete. See scripts/check-model-deprecation-parser.mjs.
+echo
+node scripts/check-model-deprecation-parser.mjs || failures=$((failures + $?))
+
 # The loop-history page is data-driven: its figures come from the committed
 # snapshot, and the snapshot's own timestamp must be visible so a stale figure
 # reads as stale. The page's claim to checkability is the snapshot date and
@@ -158,7 +174,7 @@ bash scripts/check-prebuild-single-branch.sh || failures=$((failures + $?))
 # scripts/check-ai-disclosure.mjs separately verifies the producing-round map
 # against the build log and git history.
 echo
-  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /loop-history; do
+  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /model-deprecation-checker /loop-history; do
   body=$(curl -s "$BASE$route")
   case "$body" in
     *'data-ai-disclosure'*) echo "ok    $route carries the AI disclosure" ;;
@@ -206,7 +222,7 @@ else
   MARGIN=3000
   ceiling=$((budget - MARGIN))
   echo "      document budget $budget bytes; local ceiling $ceiling (margin $MARGIN)"
-for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /loop-history; do
+for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /model-deprecation-checker /loop-history; do
     bytes=$(curl -s -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}' "$BASE$route")
     if [ "$bytes" -gt "$ceiling" ]; then
       echo "FAIL  $route is $bytes bytes gzipped, over the local ceiling of $ceiling"

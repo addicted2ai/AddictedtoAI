@@ -71,6 +71,12 @@ export const ROUTE_FILES = {
     "app/model-retirement-calendar/page.js",
     "app/lib/retirement-dates.js",
   ],
+  "/model-deprecation-checker": [
+    "app/model-deprecation-checker/page.js",
+    "app/model-deprecation-checker/ModelDeprecationChecker.js",
+    "app/lib/model-deprecation-checker.js",
+    "app/lib/retirement-dates.js",
+  ],
   "/directory": [
     "app/directory/page.js",
     "app/directory/DirectorySearch.js",

@@ -1191,3 +1191,83 @@ h2.latest-post-label {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+/* ---- Model deprecation checker ---------------------------------------- */
+
+.checker {
+  margin-top: 1.5rem;
+}
+
+.checker-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.checker-input {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-interactive);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.checker-input::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.checker-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.checker-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.checker-hint {
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  max-width: 62ch;
+}
+
+.checker-results {
+  margin-top: 1.5rem;
+}
+
+.checker-results section + section {
+  margin-top: 1.75rem;
+}
+
+.checker-section-label {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+/* The pointer from /model-retirement-calendar to the checker that reuses
+   its data. */
+.checker-callout {
+  margin: 1.25rem 0;
+  padding: 0.9rem 1.1rem;
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  background: rgba(94, 234, 212, 0.04);
+  font-size: 0.95rem;
+  max-width: 62ch;
+}
+
+.checker-callout a {
+  color: var(--accent);
+}

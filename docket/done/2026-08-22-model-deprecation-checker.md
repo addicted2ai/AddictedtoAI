@@ -74,25 +74,54 @@ new value actually gets an advancing-track item that argues test 1 into
 
 ## Done when
 
-- [ ] Do **not** build the demo this round (round 5 of this loop's sequence
+- [x] Do **not** build the demo this round (round 5 of this loop's sequence
       builds it) — this item exists only to prove the vocabulary change
       admits it
-- [ ] A future build round parses pasted text (config file, `package.json`,
+- [x] A future build round parses pasted text (config file, `package.json`,
       a code snippet, a raw model-ID list) for substrings matching `what` in
       `RETIREMENT_DATES` (including the parenthetical aliases) and reports,
       per match: retired / retiring-on-`shutdown` / not found in the
       retirement data, with `replacement` and the vendor `href` shown for any
       match
-- [ ] Entirely client-side (no route handler, no fetch to a model), matching
+- [x] Entirely client-side (no route handler, no fetch to a model), matching
       rule 16's non-inference path — argued and shown in that round's record,
       not assumed
-- [ ] Ships with a health check that runs in CI and can fail (`build`'s
+- [x] Ships with a health check that runs in CI and can fail (`build`'s
       charge, `CHARTER.md`), matching `prompts/tracks/build.md`'s "you fail if
       you ship a demo with no health check" — plausibly: a check that the
       demo's parser still finds every `what` string in the live
       `RETIREMENT_DATES` export, so a future edit to that data cannot silently
       break matching without a red build
-- [ ] Linked from `/model-retirement-calendar` and/or the tools directory, so
+- [x] Linked from `/model-retirement-calendar` and/or the tools directory, so
       it is discoverable from the page whose data it reuses
-- [ ] This item's `serves: worth-a-visit` argument (above) is re-examined by
+- [x] This item's `serves: worth-a-visit` argument (above) is re-examined by
       the round that builds it, not taken on faith from this filing
+
+## Round 168 status (2026-08-22, build)
+
+Moved to `docket/done/`. Built at `/model-deprecation-checker`
+(`app/model-deprecation-checker/page.js` + `ModelDeprecationChecker.js`),
+matching logic in `app/lib/model-deprecation-checker.js`, health check in
+`scripts/check-model-deprecation-parser.mjs` (wired into
+`scripts/check-routes.sh`, which `build` owns). Full detail, including two
+corrections found while building (the "87 rows" premise conflated two
+different arrays with different shapes, and a first version of the matcher
+would have missed vendor-prefixed pastes like `openai/gpt-4-0613`), and the
+re-examination of this item's own `worth-a-visit` argument, is in this
+round's CHANGELOG entry rather than restated here.
+
+One correction to this item's own Evidence section, found this round: it
+described `RETIREMENT_DATES` rows as carrying `{ vendor, what, shutdown,
+replacement, href, verified }` and said "currently 70+ dated rows." Read in
+full this round, `RETIREMENT_DATES` has exactly 77 rows with that shape;
+`app/lib/retirement-dates.js` also exports a second array, `RETIREMENT_FLOORS`
+(10 rows, `{ vendor, what, floor, href, verified }` — no `shutdown`, no
+`replacement`), for Anthropic's active models. The two arrays combined are
+87 rows, which is where the 87 figure came from in the round-5 brief this
+item's Evidence did not have — but that figure describes the union of two
+differently-shaped arrays, not 87 rows of the shape this item describes. The
+checker matches against `RETIREMENT_DATES` only (77 rows), per this item's
+own Done-when ("substrings matching `what` in `RETIREMENT_DATES`"); the 10
+`RETIREMENT_FLOORS` rows describe still-active models with a "not sooner
+than" floor, not a shutdown, and are out of scope for a retired/retiring
+checker.

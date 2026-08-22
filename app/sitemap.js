@@ -105,6 +105,10 @@ const routes = [
   // The retirement calendar changes only when a round re-verifies it, so it
   // gets no lastmod either.
   { path: "/model-retirement-calendar", priority: 0.7, changeFrequency: "monthly" },
+  // The checker's own page copy changes only when a round revises it — the
+  // matching itself runs against RETIREMENT_DATES at request time, so
+  // nothing here substantiates a lastmod either.
+  { path: "/model-deprecation-checker", priority: 0.7, changeFrequency: "monthly" },
   // The loop-history snapshot is regenerated only when a round re-runs
   // scripts/loop-history.mjs --snapshot, so it gets no lastmod either.
   { path: "/loop-history", priority: 0.7, changeFrequency: "monthly" },

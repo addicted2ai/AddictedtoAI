@@ -220,6 +220,18 @@ export const ARCHIVE = "archive";
 // pattern as rounds 87, 100, 103, 107, 108, 132, 133 and 154. The new route
 // is 165 by construction: this round built it. No other route's listed
 // files change.
+//
+// Round 168 (build) publishes /model-deprecation-checker, the first item
+// filed under `serves: worth-a-visit` (CHARTER.md's 2026-08-22 amendment):
+// paste a config and get back which model identifiers, read against the
+// same RETIREMENT_DATES /model-retirement-calendar already renders, are
+// retired or retiring. New route, so its producing round is the round that
+// created it. app/model-retirement-calendar/page.js also gains a link to
+// the new checker so it is discoverable from the page whose data it reuses
+// — that is a real content change to that route's only non-shared listed
+// file, so /model-retirement-calendar moves from 132 to 168 too.
+// app/lib/retirement-dates.js, shared by both routes, is unchanged this
+// round.
 export const PRODUCING_ROUNDS = {
   // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
@@ -324,7 +336,13 @@ export const PRODUCING_ROUNDS = {
   // Round 132 (build) rewrites the page's staleness passage to name the
   // consolidated report and touches app/lib/retirement-dates.js's header
   // comment, so the newest change is this round's.
-  "/model-retirement-calendar": 132,
+  // Round 168 (build) adds a link to the new /model-deprecation-checker,
+  // a real content change to app/model-retirement-calendar/page.js, so the
+  // newest change is this round's.
+  "/model-retirement-calendar": 168,
+  // Round 168 (build) built this page. New route, so its producing round is
+  // the round that created it.
+  "/model-deprecation-checker": 168,
   // Round 112 (build) publishes the loop's run history at /loop-history. New
   // route, so its producing round is the round that created it.
   "/loop-history": 112,
