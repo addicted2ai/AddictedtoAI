@@ -75,12 +75,24 @@ self-contradiction — a "must not merge them itself" prohibition sitting four
 sentences from the delegation clause that had already overtaken it — after
 the orchestrator merged round 167's charter edit under that delegation while
 disclosing doubt about a different, adjacent rule (the Amendment section), a
-disclosure the brief itself said was half mistaken. The brief was
-deliberately bounded — a document, a config value, a CI check, and two
-docket items — and asked every governance figure in its own draft to be
-re-derived from the GitHub API rather than trusted, because the orchestrator
-had already been mistaken five times that night in exactly one way: prose
+disclosure the brief itself said was half mistaken. The brief described a
+bounded scope — a document, a config value, a CI check, and two docket
+items — and asked every governance figure in its own draft to be re-derived
+from the GitHub API rather than trusted, because the orchestrator had
+already been mistaken five times that night in exactly one way: prose
 claims that outran what was true.
+
+What shipped is bigger than that description, and this paragraph is
+rewritten to say so rather than left describing the round's opening brief
+after the round outgrew it. New rule 13a needed a mechanism for the stop
+mechanism it reserves; three separate adversarial review passes defeated
+three different shapes of that mechanism before change 8 landed as a
+behavioural test that raises the cost of a bypass and states, in its own
+text and in rule 13a, that it cannot close the general class — a ceiling
+recognised and stated rather than chased with a fourth patch. The same
+third review pass then found rule 13a's own count of what it enforces did
+not add up (change 9): a rule written to stop this project claiming more
+than it enforces was, for one draft, doing exactly that about itself.
 
 **1. Rewrote rule 13; added rule 13a**
 - Hypothesis: rule 13's prohibition and its own delegation clause had stood
@@ -306,11 +318,11 @@ claims that outran what was true.
   run here by the session's supervisor rather than a separate round.
 
 **8. Adversarial review defeated the stop-mechanism guard; replaced, not patched**
-- Hypothesis: none stated in advance — a second review pass, this one an
-  independent artifact in `docket/reviews/` rather than the orchestrator's
-  own read of the WIP commits, constructed two working bypasses of change
-  4's honouring-code check and judged the approach unsound, not merely
-  buggy.
+- Hypothesis: none stated in advance — the first formal adversarial review
+  of this round, an independent artifact in `docket/reviews/` rather than
+  the orchestrator's own read of the WIP commits (change 7), constructed
+  two working bypasses of change 4's honouring-code check and judged the
+  approach unsound, not merely buggy.
 - Change: the review reproduced `scripts/orchestrate.sh`'s HOLD-honouring
   structure and constructed two bypasses, both leaving the frozen `if [ -s
   docket/HOLD.md ]; then halt ...; fi` fragment byte-identical: (1)
@@ -383,17 +395,134 @@ claims that outran what was true.
   rule commits (claiming more than it enforces), found by the second
   review inside the rule meant to fix it.
 - Change: `CHARTER.md` rule 13a gained a paragraph naming, for all seven
-  reserved items, whether a mechanism exists. Four do not, stated as such
+  reserved items, whether a mechanism exists. Five do not, stated as such
   rather than left for a reader to assume otherwise: the append-only
   changelog (`docket/open/2026-08-13-changelog-append-only-unenforced.md`,
   open since before this rule existed, not new tonight); the review
   artifacts in `docket/reviews/` (nothing stops a later commit editing or
   deleting one); the disclosure page (no mechanism of its own); the public
   log (inherits the changelog's gap, being rendered from it, and adds
-  none). Repository settings, credentials, spending, installs and history
-  destruction are exactly as unmechanised as rule 13 already said. Two have
-  a real mechanism: the stop mechanism (change 8, with its own stated
-  limit) and rule 13a's own text (`check-13a-unchanged.mjs`).
+  none); and repository settings, credentials, spending, installs and
+  history destruction, exactly as unmechanised as rule 13 already said.
+  Two have a real mechanism: rule 13a's own text
+  (`check-13a-unchanged.mjs`) and the stop mechanism (change 8, with its
+  own stated limit) — five plus two is seven, checked directly rather than
+  assumed, because the first draft of this paragraph said "four" and
+  "two" while its own list named five things with no mechanism, an
+  arithmetic error caught by the second formal review pass (change 10),
+  inside the very rule meant to stop this project claiming more than it
+  enforces.
+
+**10. A third bypass, an arithmetic error, a stale opening paragraph**
+- Hypothesis: none stated in advance — a second formal adversarial review
+  pass, a new artifact in `docket/reviews/` alongside the first, confirmed
+  the required-check wiring change 8 built was genuine, then found three
+  more problems: a third bypass of the behavioural guard itself, the
+  arithmetic error in change 9 above, and this entry's own opening
+  paragraph going stale under the round it was describing.
+- Change: **the third bypass.** `( sleep 2; : > docket/HOLD.md ) &`
+  inserted before the hold check. The main loop still sees the file held
+  at the instant it checks, still halts, still logs the correct line —
+  `scripts/test-orchestrate-hold.mjs`'s entire original success condition
+  — and the orphaned background job clears the hold two seconds later,
+  after the observation had already passed. The review also found a real,
+  independent bug this exposed: the test's `child.on("close")` waits for
+  every process holding the child's inherited stdio to finish, so with the
+  background job still alive, `close` did not fire for two seconds either
+  — read as "still executing," not as "exited already holding a lie."
+  Reproduced independently, including checking `docket/HOLD.md`'s size at
+  the exact moment the old logic would have decided success: 0 bytes,
+  already cleared, confirming the old logic would have reported `ok`
+  regardless of timing luck, not fooled by a close call.
+
+  **Asked directly whether this is convergent before fixing anything, per
+  the brief.** First answer, posed against an adversarial threat model
+  (can a reviewer trying to defeat this always construct a way to): no --
+  any bounded-time observation of code the loop can edit can be defeated
+  by code timed to behave correctly for exactly the length of the
+  observation, and that is not a bug three more patches closes. The
+  `close`-vs-exit bug is a separate, genuine, narrow, fixable defect
+  either way -- fixed by listening for `exit` instead, which fires on the
+  direct child's own end regardless of what an orphaned descendant is
+  still holding -- and a `GRACE_MS` post-halt recheck plus a sixth
+  permanent regression scenario were built on top of that fix, proved
+  working against the real bypass, and committed.
+
+  That answer, and that machinery, did not survive the next message. See
+  change 11.
+
+  **The arithmetic error.** Change 9's first draft named seven items,
+  listed five with no mechanism, and then wrote "four" and "two". Fixed in
+  place in both `CHARTER.md` and this entry (change 9, above) to "five"
+  and "two", with the sum stated so a reader can check it rather than
+  trust it.
+
+  **The stale opening paragraph.** This entry's own lead, three review
+  passes ago, still summarised the round as "a document, a config value, a
+  CI check, and two docket items" — the brief's original bounded scope,
+  not what the round became. Rewritten in place at the top of this entry
+  rather than left for a reader to discover the gap between the summary
+  and the changes below it.
+
+**11. The threat model was mistaken; corrected mid-round, by the maintainer**
+- Hypothesis: none stated in advance — a third message, arriving after
+  change 10 shipped the `GRACE_MS` machinery, told this round that its own
+  premise for the whole stop-mechanism saga was false.
+- Change: `docket/HOLD.md` is not the maintainer's means of stopping a
+  running loop. `git log --all --format="%h %an %s" -- docket/HOLD.md`:
+  ten commits, five hold/release pairs, every one the orchestrator or a
+  round halting itself, never a human reaching into a live one.
+  `scripts/orchestrate.sh`'s own comment already said as much ("The
+  orchestrator writes HOLD.md when it hits something a human must
+  answer"), unread as evidence against the framing change 8 through 10
+  had been building on. The maintainer's actual intervention today is
+  starting each session by hand — the supervisor has been dead since
+  2026-08-18, so nothing runs unattended for a human to need to reach
+  into at all. The maintainer corrected this, the record was checked, and
+  it held.
+
+  Re-answered against the model the evidence supports rather than the one
+  three review passes had assumed: an adversary evading a live human
+  command is not a shape this project's history shows even once. The
+  realistic failure is a future round accidentally breaking the mechanism
+  while refactoring something else — moving `halt()`, dropping the check,
+  a rewrite that looks harmless. Against that model, the answer to change
+  10's convergence question flips: yes. A behavioural test that actually
+  runs the real script and watches it halt is the right instrument and
+  converges, because an accidental bug does not construct a bypass tuned
+  to a test's own observation window the way a reviewer trying on purpose
+  does. Change 10's `GRACE_MS` recheck and sixth regression scenario were
+  built against the mistaken model and are removed, not kept as unused
+  defence in depth: `scripts/test-orchestrate-hold.mjs` now carries five
+  scenarios (the three real-file cases plus regression guards for bypasses
+  1 and 2, both plausible as accidental regressions), listens for `exit`
+  rather than `close` (the one piece of change 10 that was a genuine bug
+  independent of threat model, and stays fixed), and states bypass 3 as a
+  known, deliberately unguarded case rather than defending against it —
+  building machinery against a threat this project's own record does not
+  show would be complexity for its own sake, CHARTER.md rule 21's concern
+  one level down.
+
+  `CHARTER.md` rule 13a rewritten to match: its lead no longer implies
+  `docket/HOLD.md` is how the maintainer's "ability to intervene and
+  revert" works today. Three things that ability actually rests on are
+  named instead — the maintainer starts every session, can revert any
+  commit, and holds the credentials the loop operates under, none of
+  which needed reserving because the loop was never given access to any
+  of them — and the stop-mechanism reservation is reframed as protecting
+  the loop's own self-halt signal now, worth reserving today because it
+  becomes a genuine remote brake the day scheduled runs resume, which
+  this document's own preamble already names as the intent. "So a brake
+  the loop can teach itself to ignore is no brake" is removed from the
+  present-tense claim; that reasoning applies to a role this file does
+  not play yet. `.github/workflows/pr-checks.yml`'s `stop-mechanism` job
+  comment and this entry's own change 8 (via cross-reference here rather
+  than edited in place) carry the same correction.
+
+  Re-verified after all of this: `node scripts/test-orchestrate-hold.mjs`
+  passes five scenarios; the charter rule count and the single-`"13a."`-
+  marker invariant both hold, checked the same two independent ways as
+  every other edit to this rule this round.
 
 - Origin: delegated
 - Track: meta

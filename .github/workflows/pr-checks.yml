@@ -176,8 +176,11 @@ jobs:
         run: node scripts/check-13a-unchanged.mjs "origin/${{ github.base_ref }}"
 
   # CHARTER.md rule 13a also reserves "the stop mechanism -- docket/HOLD.md
-  # and the code paths that honour it, so a brake the loop can teach itself
-  # to ignore is no brake." This job covers only the half a PR diff can
+  # and the code paths that honour it" -- today the loop's own signal to
+  # itself, not a channel the maintainer currently uses to intervene (every
+  # prior use was the loop halting itself; see CHARTER.md's History,
+  # 2026-08-22), reserved because it becomes a genuine remote brake once
+  # scheduled runs resume. This job covers only the half a PR diff can
   # actually answer: whether THIS pull request's own change to
   # docket/HOLD.md clears an active hold (creating one, or editing an active
   # hold's stated reason, is not the reserved act -- this project's own
@@ -185,29 +188,37 @@ jobs:
   #
   # THIS JOB USED TO ALSO FREEZE the `if [ -s docket/HOLD.md ]; then halt
   # ...; fi` fragment in scripts/orchestrate.sh byte for byte. Adversarial
-  # review defeated that in one pass, two ways, neither touching the frozen
-  # text: (1) truncating docket/HOLD.md every iteration, above the frozen
+  # review defeated that, then defeated its replacement, across three
+  # passes: (1) truncating docket/HOLD.md every iteration, above the frozen
   # block, so `-s` never sees content; (2) gutting halt() (defined
   # elsewhere in the same file), so the frozen block's call to it does
-  # nothing. Freezing a span of text cannot protect a behaviour that
-  # depends on the code around the span and the function it calls, both
-  # unbounded -- scripts/check-hold-mechanism.mjs's own header has the full
-  # account, including why a symmetric "any touch to HOLD.md fails" guard
-  # would also be wrong.
+  # nothing; (3) clearing the file from a detached background job after the
+  # script had already halted and logged correctly -- defeating the
+  # behavioural replacement scripts/test-orchestrate-hold.mjs shipped for
+  # (1) and (2), and exposing that the first two review passes had posed
+  # the question against the wrong threat model: `git log --all -- docket/
+  # HOLD.md` shows every use of this file was the loop halting itself, never
+  # a human reaching into a live one, because nothing has run unattended
+  # since 2026-08-18 -- so an adversary evading a live human command is not
+  # a shape this project's history shows, and the third bypass is left
+  # undefended on purpose rather than patched a fourth time.
+  # scripts/check-hold-mechanism.mjs's own header has the full account.
   #
-  # THE BEHAVIOURAL HALF now lives in scripts/test-orchestrate-hold.mjs,
-  # which does not diff text at all: it actually runs the real
+  # THE BEHAVIOURAL HALF lives in scripts/test-orchestrate-hold.mjs, which
+  # does not diff text at all: it actually runs the real
   # scripts/orchestrate.sh in an isolated sandbox against a controlled
   # docket/HOLD.md and reads what it did, including two permanent
-  # regression cases that reproduce the review's two bypasses and assert
-  # the harness still catches both. It is wired into
-  # scripts/check-routes.sh, which `build-and-audit` below already runs --
-  # a required check today, unlike this job. That job's own limit is stated
-  # in the test's header rather than implied: it proves this repository's
-  # code halts when actually run; it cannot prove the orchestrate.sh
-  # process running on whatever machine the maintainer started it on, at
-  # any given moment, is this code, unmodified -- that process runs outside
-  # CI, on a machine CI never sees.
+  # regression cases (bypasses 1 and 2, both plausible as accidental
+  # regressions) that assert the harness still catches both. It is wired
+  # into scripts/check-routes.sh, which `build-and-audit` below already
+  # runs -- a required check today, unlike this job. That test's own limit
+  # is stated in its header rather than implied: it proves this
+  # repository's code halts when actually run, which is what it needs to
+  # prove against the threat it actually defends against (accidental
+  # regression, not adversarial evasion); it does not prove the
+  # orchestrate.sh process running on whatever machine the maintainer
+  # started it on, at any given moment, is this code, unmodified, and it
+  # does not defend against bypass 3 at all, by choice.
   #
   # !! NOT YET A REQUIRED CHECK (this job only). !! Same gap, same reason,
   # same "not filed either -- meta's queue is over budget" note as

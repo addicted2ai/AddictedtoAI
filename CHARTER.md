@@ -273,39 +273,63 @@ never this charter, never the workflows. See rules 9 and 12.
 
 13a. **The loop may change what it does. It may not change what makes its
     actions visible and reversible.** The maintainer's stated requirement is
-    the ability to intervene and revert. That ability rests on specific
-    properties, not on trust alone, and those properties are reserved here
-    regardless of what else in this document is delegated.
+    the ability to intervene and revert. Today that rests on three things
+    outside anything this document could delegate away: the maintainer
+    starts every session — nothing has run unattended since the supervisor
+    died on 2026-08-18, so the loop takes no action at all without a human
+    beginning it — the maintainer can revert any commit, and the maintainer
+    holds the credentials the loop operates under. None of the three needs
+    reserving below; the loop was never given access to touch any of them.
+
+    What follows is different: properties the loop *can* reach, reserved
+    here regardless of what else in this document is delegated.
 
     Reserved: the integrity of the record — the append-only changelog (rule
     5), the review artifacts in `docket/reviews/`, the disclosure page, and
     the public log; the stop mechanism — `docket/HOLD.md` and the code paths
-    that honour it, so a brake the loop can teach itself to ignore is no
-    brake; repository settings, credentials, spending money, installing
-    anything, and destroying history, unchanged from what rule 13 named
-    before; and this rule itself — only the maintainer may amend rule 13a.
-    Seven items, and this rule states plainly which of them a mechanism
-    actually holds rather than let a reader assume the list is uniformly
-    enforced because it reads as one list.
+    that honour it, today the loop's own signal to itself that it hit
+    something a human must decide, not a channel the maintainer currently
+    uses to intervene (see the History, 2026-08-22) — reserved now because it
+    becomes a genuine remote brake the day scheduled runs resume, which this
+    document's preamble already names as the intent, and a brake fitted
+    after the car needs one is late; repository settings, credentials,
+    spending money, installing anything, and destroying history, unchanged
+    from what rule 13 named before; and this rule itself — only the
+    maintainer may amend rule 13a. Seven items, and this rule states plainly
+    which of them a mechanism actually holds rather than let a reader assume
+    the list is uniformly enforced because it reads as one list.
 
-    Four have none today. The append-only changelog has an open, unfixed
+    Five have none today. The append-only changelog has an open, unfixed
     gap (`docket/open/2026-08-13-changelog-append-only-unenforced.md`,
     filed before this rule existed — nothing tonight added it). The review
     artifacts in `docket/reviews/` have nothing stopping a later commit from
     editing or deleting one after it was written. The disclosure page has no
     mechanism of its own. The public log inherits the changelog's gap,
-    being rendered from it, and adds none. Repository settings, credentials,
-    spending, installs and history destruction are exactly as unmechanised
-    as rule 13 already said they are — the loop's account holds admin, and
-    what stops it is a commitment, not a wall. Only the stop mechanism and
-    this rule's own text have a working check behind them
-    (`scripts/check-hold-mechanism.mjs` and `scripts/test-orchestrate-hold.mjs`;
-    `scripts/check-13a-unchanged.mjs`), and even that pair proves only that
-    this repository's code behaves correctly when actually run — never that
-    the process running on whatever machine the maintainer started it on, at
-    any given moment, is this code, unmodified. A path-based rule claiming
-    more than it enforces is the defect this document's own History
-    (2026-08-22) argues against; this rule does not repeat it.
+    being rendered from it, and adds none. And repository settings,
+    credentials, spending, installs and history destruction are exactly as
+    unmechanised as rule 13 already said they are — the loop's account
+    holds admin, and what stops it is a commitment, not a wall. Two have a
+    working check: this rule's own text (`scripts/check-13a-unchanged.mjs`)
+    and the stop mechanism (`scripts/check-hold-mechanism.mjs` and
+    `scripts/test-orchestrate-hold.mjs`) — five plus two is seven, and this
+    sentence is checked against that arithmetic each time either count
+    changes, because a clause that names what it enforces and miscounts its
+    own list is the same defect stated one level down.
+
+    The stop mechanism's check was built once, then re-scoped mid-round once
+    the record above was actually read: what it needs to answer to is
+    accidental regression — a refactor that drops the check, moves the
+    function that halts, or rewrites past it — not a reviewer deliberately
+    evading a live human command, a shape this project's own history has
+    never shown, since every recorded use of this file was the loop stopping
+    itself. Against accidental regression, actually running the script and
+    watching it halt converges: a mistake does not construct a bypass tuned
+    to a test's own observation window. Against a deliberately delayed or
+    externally-triggered clearing it does not, and `test-orchestrate-hold.mjs`
+    names that gap as a choice made from the evidence above, not a limit
+    nobody noticed. A path-based rule claiming more than it enforces is the defect
+    this document's own History (2026-08-22) argues against; this rule does
+    not repeat it, in either direction.
 
     That last reservation is different in kind from the other three, and is
     named separately because of it. Every other constraint in this document is
@@ -635,25 +659,49 @@ subject to the same append-only rule it imposes on everything else.
   round's own first draft — fails on more than one `"13a."` marker too, not
   only on a text mismatch: a decoy marker carrying the base's exact text
   would otherwise extract clean while the real clause below it was edited
-  freely. `scripts/check-hold-mechanism.mjs` covers the stop mechanism rule
-  13a also reserves, added after the first draft of this entry said the gap
-  would be left for a docket item to carry: clearing an active
-  `docket/HOLD.md` hold is the reserved act, distinct from creating one or
-  editing an active hold's stated reason, which this project's own history
-  holds several legitimate, self-merged instances of; and the `if [ -s
+  freely. `scripts/check-hold-mechanism.mjs` covers the narrower half of the
+  stop mechanism a diff can honestly answer — whether this pull request's
+  own change clears an already-held `docket/HOLD.md`, distinct from creating
+  one or editing an active hold's stated reason, which this project's own
+  history holds several legitimate, self-merged instances of. Both new
+  checks were proved able to fail before they shipped, not only asserted to
+  guard, and both are read live from the GitHub API to not yet be in branch
+  protection's required list — read 2026-08-22:
+  `["build-and-audit","human-owned-paths","review-artifact"]` — so today
+  they can report a real violation and watch auto-merge land it anyway, a
+  bootstrapping gap `human-owned-paths` itself had for a few hours on
+  2026-08-11. Both are commented with the same loud disclosure the two older
+  jobs already carry for their own required/not-required state, rather than
+  left to look armed.
+
+  A behavioural check, `scripts/test-orchestrate-hold.mjs`, went through
+  three review-driven revisions before landing, and the last one corrected a
+  premise the first two were built on. The first version froze the `if [ -s
   docket/HOLD.md ]; then halt ...; fi` fragment in `scripts/orchestrate.sh`
-  is frozen byte for byte, because editing the code that honours the file is
-  exactly as effective as clearing the file, and the supervisor's having
-  been dead since 2026-08-18 makes that code dormant rather than safe — it
-  is what a restart runs. Both new checks were proved able to fail before
-  they shipped, not only asserted to guard, and both are read live from the
-  GitHub API to not yet be in branch protection's required list — read
-  2026-08-22: `["build-and-audit","human-owned-paths","review-artifact"]` —
-  so today they can report a real violation and watch auto-merge land it
-  anyway, a bootstrapping gap `human-owned-paths` itself had for a few hours
-  on 2026-08-11. Both are commented with the same loud disclosure the two
-  older jobs already carry for their own required/not-required state, rather
-  than left to look armed.
+  byte for byte, on the belief that `docket/HOLD.md` is how the maintainer
+  intervenes in a running loop; adversarial review defeated that framing by
+  actually running the script (truncating the file above the frozen block,
+  and separately gutting `halt()`, both leaving the frozen text untouched),
+  and a second version replaced the text-freeze with a test that actually
+  executes `scripts/orchestrate.sh` in a sandbox. A third bypass — a
+  detached background job that clears the hold two seconds after the script
+  already halted and logged correctly — was defeated in turn, and answering
+  it honestly meant first checking the premise: `git log --all --format="%h
+  %an %s" -- docket/HOLD.md` shows ten commits, five hold/release pairs,
+  every one the orchestrator or a round halting itself, never a human
+  reaching into a live one, because nothing has run unattended since the
+  supervisor died on 2026-08-18. The maintainer corrected this mid-round,
+  after the third review pass had already posed the bypass against an
+  adversarial threat model on the strength of that same wrong premise. Read
+  against the model the record actually supports — an ordinary future round
+  breaking the mechanism by accident, not a reviewer deliberately evading a
+  live human command — a test that actually runs the script and watches it
+  halt is the right instrument and converges, and the third bypass is left
+  undefended on purpose: building machinery against a threat this project's
+  history does not show would be complexity for its own sake, rule 21's
+  concern one level down. `scripts/test-orchestrate-hold.mjs`'s own header
+  carries this account in full, including the corrected premise and who
+  corrected it.
 
   Neither gap is tracked as a new docket item. Arming the required-checks
   list is a settings change rule 13a reserves to the maintainer, the same
