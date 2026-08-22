@@ -9,6 +9,7 @@ const links = [
   { href: "/demos", label: "Demos" },
   { href: "/what-vendors-promise", label: "Retirement promises" },
   { href: "/model-retirement-calendar", label: "Retirement calendar" },
+  { href: "/model-deprecation-checker", label: "Deprecation checker" },
   { href: "/loop-history", label: "Failure rate" },
   { href: "/log", label: "Build log" },
 ];

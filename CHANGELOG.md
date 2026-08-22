@@ -70,6 +70,257 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-22
+This build round was briefed as the last of a five-round session: the round
+before it added `worth-a-visit` to `scripts/check-docket.mjs`'s `SERVES`
+list (CHARTER.md's 2026-08-22 amendment) and filed
+`docket/open/2026-08-22-model-deprecation-checker.md` as the queue's first
+test of it, explicitly reserving the build for this round and asking this
+round to re-examine that item's own argument rather than take it on faith.
+The brief also asked this round to restock `build`'s queue with three more
+`worth-a-visit` items, because a 2x pressure multiplier on an
+almost-empty queue is still almost nothing.
+
+**1. The model deprecation checker, entirely client-side, alias-aware**
+- Hypothesis: `app/lib/retirement-dates.js`'s `RETIREMENT_DATES` already
+  carries everything a paste-and-match checker needs — `what` (including
+  parenthetical aliases), `shutdown`, `replacement`, `href` — so this is
+  string matching over data already shipped to `/model-retirement-calendar`,
+  not a new data source, and the alias handling the item's Done-when names
+  has to treat aliases as whole tokens rather than substrings or it will
+  both miss real pastes and produce false positives.
+- Change: `app/lib/model-deprecation-checker.js` (new) exports
+  `parseIdentifiers` (splits a `what` string into its primary identifier and
+  any `(also X, Y)` alias list — and only that exact marker; `"Evals
+  platform (dashboard and API)"` has parentheses that are description, not
+  an alias, and is left whole) and `findMatches` (matches a pasted string
+  against `RETIREMENT_DATES`). Identifiers made only of token characters
+  (letters, digits, `.`, `-`, `_`) are matched as whole tokens via a token
+  set built from the paste, never a substring — `"gpt-4"` (an alias of the
+  `gpt-4-0613` row) must not match inside `"gpt-4o-mini"` or
+  `"gpt-4-turbo-2024-04-09"`, both different, current identifiers that share
+  the prefix. The handful of product/API names (`"Assistants API"`,
+  `"OpenAI-Beta: realtime=v1"`) are phrases, not tokens, and are matched as a
+  literal substring instead. `/` is deliberately *not* a token character,
+  found necessary partway through building this: `text.match()` with `/` in
+  the token class swallowed a LiteLLM/OpenRouter-style `"openai/gpt-4-0613"`
+  paste as one opaque string that matched nothing, where excluding `/`
+  splits it into `"openai"` and `"gpt-4-0613"` the same as any other
+  delimiter, so the bare identifier still resolves — confirmed both ways:
+
+  ```
+  # with `/` in the token class
+  model: openai/gpt-4-0613 -> []
+
+  # with `/` excluded (shipped)
+  model: openai/gpt-4-0613 -> [ 'gpt-4-0613 (also gpt-4, gpt-4-0613-completions, gpt-4-completions)' ]
+  anthropic/claude-opus-4-1-20250805 -> [ 'claude-opus-4-1-20250805' ]
+  ```
+
+  `app/model-deprecation-checker/ModelDeprecationChecker.js` (new, `"use
+  client"`) is a labelled `<textarea>`, live-matched (debounced 500ms,
+  matching the Directory search's pattern for not talking over a screen
+  reader mid-paste), split into "Retired" and "Retiring" tables mirroring
+  `/model-retirement-calendar`'s own upcoming/past split, a "Paste an
+  example" button, and an explicit "nothing found" state naming that the
+  checker only knows about the 77 OpenAI/Anthropic identifiers in the data
+  (`RETIREMENT_DATES.length`, rendered inline on the page, never restated),
+  not that an unmatched paste is necessarily safe.
+  `app/model-deprecation-checker/page.js` (new) wraps it with the AI
+  disclosure and metadata. Proved against the site's own example paste
+  (`node -e` against the shipped modules, not eyeballed):
+
+  ```
+  today: 2026-08-22
+  retired:  gpt-5-chat-latest -> gpt-5-chat-latest (shutdown 2026-07-23)
+  retiring: gpt-3.5-turbo -> gpt-3.5-turbo-0125 (also gpt-3.5-turbo, gpt-3.5-turbo-completions) (shutdown 2026-10-23)
+  text-embedding-3-large flagged? false
+  ```
+
+  One matched via its primary form and already past its shutdown (retired);
+  one matched via its *alias*, not its dated primary form, and still ahead
+  of its shutdown (retiring-with-date) — the alias case this item's
+  Done-when specifically asked to be demonstrated; and one string absent
+  from the data, correctly unflagged rather than a false positive. No route
+  handler, no fetch, no model call — everything above ran against the
+  modules the browser loads, with no server in between, which is the
+  argument rule 16 asks for shown rather than asserted.
+
+  Discoverable: `app/model-retirement-calendar/page.js` gains a callout
+  linking to the checker before its tables, `app/Nav.js` gains a
+  "Deprecation checker" link (global, every page), `app/sitemap.js` gains
+  the route, and `app/lib/route-files.js` / `app/lib/page-origins.js` map it
+  and re-map `/model-retirement-calendar` (its callout is a real content
+  change to that route's own listed file) to this round.
+
+**2. A health check that runs in CI and can fail — proved red, then green**
+- Hypothesis: `prompts/tracks/build.md`'s "you fail if you ship a demo with
+  no health check" needs a check that would actually go red if
+  `RETIREMENT_DATES` changed shape under the parser, not a check that only
+  ever exercises today's data.
+- Change: `scripts/check-model-deprecation-parser.mjs` (new) sweeps every
+  row's primary identifier and every alias, pasting each into a sentence and
+  asserting it resolves to its own row; checks a decoy identifier matches
+  nothing; checks the token-boundary guarantee explicitly (`"gpt-4"` must
+  not spuriously match inside `"gpt-4o-mini"`/`"gpt-4-turbo-2024-04-09"`);
+  and — because the sweep is tautological in one respect, feeding each row's
+  *own extracted* output back into itself, which cannot catch a break in
+  extraction that changes what a real alias parses into — a fixed set of
+  hardcoded fixtures (real pastes like `"still on gpt-3.5-turbo in prod"`,
+  `"openai/gpt-4-0613"`) checked against a hardcoded expectation independent
+  of what the parser currently believes an alias is. Wired into
+  `scripts/check-routes.sh` (build's own file, not `.github/`), which is
+  what makes it run in CI.
+
+  Proved able to fail, then fixed, then proved green, against the exact
+  shipped script — not asserted:
+
+  ```
+  # app/lib/retirement-dates.js's alias marker changed "(also X)" -> "(aka X)" for one row
+  FAIL  fixture "still on gpt-3.5-turbo in prod" should resolve to "gpt-3.5-turbo-0125" and did not (got: nothing)
+  1 of 101 check(s) failed
+
+  # reverted (git diff --stat afterward: empty — byte-identical to before)
+  all 103 checks passed — the parser matches every current identifier and alias in 77 row(s), rejects a decoy, and holds its token boundary
+  ```
+
+  This is the second such demonstration this round: the first ran against
+  an earlier version of the matcher, before the `/`-token fix in change 1
+  was found and made; this one re-runs the same break/fix cycle against the
+  script actually being committed, so the pasted output describes the
+  shipped state rather than an intermediate one.
+
+**3. Restocking `build`'s queue — three items filed, one corrected before filing**
+- Hypothesis: the brief's three suggested items (an `.ics` feed, a vendor
+  notice-period comparator, migration-path chains) are each buildable from
+  data already in the repository with no new fetch, matching rule 16 the
+  same way change 1's record does — but that has to be checked against the
+  actual shape of the data, not assumed from the brief's description of it.
+- Change: filed three `track: build`, `serves: worth-a-visit` items:
+  `docket/open/2026-08-22-model-shutdown-ics-feed.md`,
+  `docket/open/2026-08-22-vendor-notice-period-vs-practice.md`, and
+  `docket/open/2026-08-22-model-migration-chains.md`. All three passed
+  `node scripts/check-docket.mjs` on first write.
+
+  The second item is a **corrected version** of the brief's suggestion, not
+  a straight filing of it, found by reading the data before writing the
+  item rather than after. The brief characterised it as computing "the real
+  interval between announcement and shutdown per vendor" from data "this
+  site already has" — read in full this round, `RETIREMENT_DATES`'s 77 rows
+  carry `shutdown`, never an `announced` date, and no other file in the
+  repository records per-event announcement dates for more than the two
+  events named in one docket item's prose
+  (`docket/done/2026-08-11-model-retirement-calendar.md`), which CHARTER.md
+  rule 2 forbids treating as a source about the world regardless. Filing the
+  comparator as the brief described it would have meant a `build` item
+  quietly depending on a `scout`-shaped research pass across 77 rows to ever
+  become closeable, or shipping arithmetic the data cannot support — the
+  "claim that outran what the code guaranteed" failure this round's own
+  rules section warns about, moved one level up into the docket itself. The
+  filed item instead compares each vendor's *promised minimum-notice floor*
+  (already in `app/lib/retirement-commitments.js`'s prose — OpenAI "at least
+  6 months," Anthropic "at least 60 days") against the runway remaining on
+  today's live shutdown dates — answerable now, from data already present,
+  without inventing an announcement date for anything. The item's own "Why
+  now" states the correction and cites both files read to find it.
+
+  The third item's Evidence also went through one correction before filing:
+  a first hand-traced draft claimed `gpt-4-turbo`'s replacement chain looped
+  back to its own alias. Resolving every row's `replacement` against every
+  other row's `what`/aliases in code rather than trusting the hand trace
+  found that claim false (`gpt-4-turbo`'s `replacement` is `gpt-5.6-sol`,
+  not the alias) and surfaced three real two/three-hop chains instead —
+  `gpt-4o-mini-realtime-preview` → `gpt-realtime-mini` (itself a dated row) →
+  `gpt-realtime-2.1-mini` (a clean landing); the same shape for
+  `gpt-4o-mini-audio-preview` → `gpt-audio-mini`; and `dall-e-2`/`dall-e-3`'s
+  three-option replacement string, two of whose three options are themselves
+  dated rows. The item's Evidence section states the correction rather than
+  silently swapping in the right examples.
+
+**4. `node scripts/dispatch.mjs`, re-run after filing**
+- Hypothesis: moving one `worth-a-visit` item from open to done and filing
+  three more should move `build`'s pressure and weight, and the demand table
+  is the place to read whether it moved enough to change what the dispatcher
+  would pick next.
+- Change: nothing in the tree — this step only measured, after the
+  `docket/` changes above landed in the working copy. `node
+  scripts/check-docket.mjs`: `115 docket item(s) valid (34 open)`, `build: 4
+  open` (base 2 → head 4 against `queue_budget: 14`). `node
+  scripts/dispatch.mjs`:
+
+  ```
+  track:  scout
+  reason: quota: target 14%, recent 0% over last 20 shipped round(s)
+
+  generative push (policy.yml generative_push, serves: worth-a-visit): 1 closed -> multiplier 2.75 (start 3, floor 1, decay 0.25/shipped)
+
+  demand by track (ready / budget = pressure -> effective weight):
+    build       4/14 = 0.29  ->  weight 9.91 (x0.66 of 15; push share 0.75 -> applied x2.31)
+    meta       21/14 = 1.50  ->  weight 7.50 (x1.50 of 5; push share 0.00 -> applied x1.00)
+  ```
+
+  Before this round: `build` weight 4.29 against `meta` weight 7.50 — meta
+  ahead by 3.21. After: `build` weight 9.91 against `meta` weight 7.50 —
+  **build now outweighs meta**, a reversal, because closing one
+  `worth-a-visit` item nudged the decaying multiplier down (3.00 → 2.75) but
+  three of `build`'s four ready items are now `worth-a-visit` (push share
+  0.50 → 0.75), and that share increase outweighs the multiplier's decay.
+  On the scheduler's actual "most owed" metric — effective weight against
+  share of the last 20 shipped rounds — `meta` (25% ready weight is now the
+  6th of 6 candidates listed and is *deeply* over-served at 21% of the
+  chart above vs its 5/20 = 25% recent share) is far less likely to be
+  picked soon than `build` (0/20 recent, positive owed share); this
+  particular call went to `scout` instead, whose own recent share is also
+  0/20 and whose weight (10.00, fed by `author`'s 0.67 fill) is marginally
+  higher than `build`'s 9.91 — so the honest answer is: build now beats meta
+  on both raw weight and momentum, but did not beat scout on this specific
+  call, and scout is not the composition the brief's complaint was about.
+
+## Round 168 re-examination of `docket/open/2026-08-22-model-deprecation-checker.md`'s `worth-a-visit` argument
+
+Not taken on faith. Having built it: the argument holds, with one
+qualification. It is a real utility (paste, five-second answer, vendor
+link, no setup), zero-cost, and forwardable in the way the item claimed. The
+qualification is scope: it only knows the 77 OpenAI/Anthropic identifiers in
+`RETIREMENT_DATES` — a config referencing Gemini, Mistral, Bedrock, or any
+other vendor in `app/lib/retirement-commitments.js`'s wider survey gets no
+match, which could read as false reassurance rather than "not covered." The
+shipped page states this explicitly in its "nothing found" state and its
+footnote rather than leaving it implicit, but the underlying limitation is
+real and is not fixed by wording.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `npm run lint` clean. `node scripts/check-docket.mjs`: 115
+  items valid, 34 open, `build` base 2 → head 4 against `queue_budget: 14`
+  (well inside; no filing-gate failure). `node scripts/check-track-scope.mjs
+  origin/main loop/build/model-deprecation-checker` — build-scoped paths
+  only (`app/`, `public/`, `scripts/`, `docket/`, `CHANGELOG.md`); no
+  `.github/`, `CHARTER.md` or `prompts/` touched. `node scripts/round.mjs
+  check` — lint, docket validity, track scope, `npm run build`, and the
+  full route-check suite including the new
+  `scripts/check-model-deprecation-parser.mjs` — run against a freshly
+  built and served instance on a port confirmed free beforehand, per the
+  brief's own note that a stale `next start` has silently validated the
+  wrong build twice before. The health check was demonstrated red then
+  green twice — once mid-build against an earlier matcher version, once
+  against the exact shipped script — both pasted in change 2, and the
+  data file (`app/lib/retirement-dates.js`) carries no residual diff after
+  either demonstration (`git diff --stat` empty both times). No guardrail
+  was loosened; this round adds a route, a data module, a health check and
+  three docket items, none of which relaxes an existing check.
+- Result: not yet measured — the checker is live and its record is
+  internally consistent (docket item moved to done, CHANGELOG entry, route
+  registered everywhere the disclosure/sitemap/budget machinery requires),
+  but nothing here observes real visitor behaviour. The two things this
+  round can state as measured rather than hoped: the parser check does
+  fail when broken (shown twice) and passes when correct, and `build`'s
+  dispatcher weight now exceeds `meta`'s for the first time since the push
+  landed (9.91 vs 7.50) — whether that translates into `build` actually
+  running before `meta` again is a question the next several rounds'
+  dispatcher output answers, not this entry.
+
+### 2026-08-22
 This meta round was briefed on the maintainer's judgement, in their own words
 tonight, that the site "has become a blog site that essentially talks and
 argues with itself, no one is going to care about a site like that," and on a

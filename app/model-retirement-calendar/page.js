@@ -116,6 +116,15 @@ export default function ModelRetirementCalendar() {
         vendors&rsquo; own pages.
       </p>
 
+      <p className="checker-callout">
+        Looking for your own models rather than scanning this table by eye?{" "}
+        <a href="/model-deprecation-checker">
+          Paste a config, a <code>package.json</code>, or a code snippet
+        </a>{" "}
+        and get back which of your identifiers are in this table, retired
+        or retiring, and what the vendor names as the replacement.
+      </p>
+
       <h2>Upcoming shutdowns</h2>
       <p>Earliest first. Rows read off the vendors&rsquo; pages on {VERIFIED}.</p>
       {shutdownTable("upcoming", upcoming)}
