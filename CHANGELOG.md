@@ -578,6 +578,135 @@ restored the fix; re-ran clean:
 all 382 checks passed — the parser matches every current identifier and alias in 77 row(s), rejects a decoy, and holds its token boundary
 ```
 
+**Finding 5 — the truncation fix itself had no floor, and the defect
+originated in the design the orchestrator specified for it, not in this
+round's implementation of that design.** Said plainly, first, because the
+record should not read as though the round invented a flawed fix on its
+own: the coordinator's instruction after finding 4 prescribed the
+mechanism — "generate candidates longest-first... a shorter prefix is only
+ever considered when that longer candidate resolved to nothing" — and this
+round built exactly that. A delta re-review of the resulting commit
+(`30980c9`, artifact `docket/reviews/30980c94f36c45e2ac91c42e52c13f3889cfd923.md`)
+found the specified design was itself unsound: `dotCandidatesOf` truncated
+at every remaining internal dot in an unbounded loop, with no check that
+the surviving candidate was related to what was actually typed. The single
+most ordinary double-keystroke typo — `"gpt-4..1-nano"` instead of
+`"gpt-4.1-nano"`, no glued word involved at all — made the full string and
+its first truncation both fail, and the loop kept peeling past them until
+it hit `"gpt-4"`, a real alias, but of the unrelated, differently-dated
+`gpt-4-0613` row:
+
+```
+text: "I think gpt-4..1-nano is what we use."
+hits: matchedAs="gpt-4" row.what="gpt-4-0613 (also gpt-4, ...)" shutdown=2026-10-23 replacement=gpt-5.6-sol
+correct answer: gpt-4.1-nano, shutdown 2026-10-23, replacement gpt-5.6-luna
+```
+
+4 of the data's 17 dotted identifiers were exploitable this way (all live
+rows), three of the four also misreporting the replacement model, not only
+the date — confirmed a regression this specific commit introduced, since
+before the unbounded truncation existed the same typo produced a safe
+miss.
+
+The coordinator's follow-up did not prescribe a replacement mechanism —
+"I am not prescribing the mechanism this time" — and instead stated the
+property directly: **the matcher must never return a row the input does
+not unambiguously name; any transformation that could yield a different
+identifier than what was typed must produce no match, not a guess.**
+Designed to that property rather than patched at the reported case:
+`dotCandidatesOf` now returns at most two candidates, never a chain — the
+whole run (trailing dots stripped), and, only if that fails, a single
+second candidate cut immediately before a dot (or run of dots) that is
+followed by an uppercase letter, the shape of an actual sentence boundary
+in ordinary English. A dot followed by a digit or lowercase letter — the
+shape of an identifier's own internal structure — is never treated as a
+boundary. `"gpt-4..1-nano"` has no uppercase anywhere in it, so no second
+candidate is ever generated, and the whole malformed run correctly
+resolves to nothing.
+
+**A second, distinct ambiguity, found only because the coordinator's
+brute-force instruction was run honestly rather than scoped down to the
+reported mechanism.** Generating typo variants (doubled character,
+transposed pair, dropped character, inserted dot) across every token
+identifier in the data and checking each for a wrong-row match — exactly
+the sweep asked for, not a narrower one — surfaced that the ORIGINAL
+trailing-period fix (two review rounds old, never previously challenged)
+carries the same shape of risk through a different door: `"gpt-4"`,
+`"gpt-image-1"` and `"ft-gpt-4"` are each a complete, real row that is
+*also* an exact dot-prefix of a different, longer real row. Dropping the
+trailing `"5"` from `"gpt-image-1.5"` produces `"gpt-image-1."` — which is
+simultaneously the correct trailing-punctuation form of the shorter row
+(shutdown 2026-10-23) and a one-character-dropped typo of the longer one
+(shutdown 2026-12-01, six weeks later) — genuinely, irreducibly ambiguous
+as text, not resolvable by any cleverness. This was not named by either
+review; it was found by running the requested brute force to its full
+extent rather than only against the specific mechanism under complaint.
+
+Fixed with `hasLongerDottedSibling`: any candidate `dotCandidatesOf`
+reaches by removing characters from what was actually typed is rejected
+if a different, longer real identifier begins with that candidate plus a
+literal `"."`. A run typed bare, with nothing stripped to reach it, is
+unaffected — `"gpt-image-1 is retiring"` still resolves normally, because
+nothing was removed to produce it. Three identifiers now correctly
+produce no match when reached only via trailing-punctuation-stripping or
+sentence-boundary truncation (`"gpt-4."`, `"gpt-image-1."`, `"ft-gpt-4."`,
+each alone or glued to a following word); the same three still resolve
+normally when typed bare or with non-period punctuation, and their longer
+siblings (`"gpt-4.1-nano"`, `"gpt-image-1.5"`,
+`"ft-gpt-4.1-nano-2025-04-14"`) are entirely unaffected.
+
+**Proved by brute force, not by cases, per the coordinator's explicit
+instruction — and made permanent.** `scripts/check-model-deprecation-parser.mjs`
+gained: a named, isolated assertion for the exact reported case
+(`"gpt-4.1-nano"` glued to a word must never degrade to `"gpt-4"`); a
+systematic sweep duplicating the first internal dot of all 17 dotted
+identifiers, asserting each resolves to nothing; and the mandatory
+brute-force sweep itself — every token-shaped identifier's primary and
+every alias (86 identifiers), four typo generators (doubled character,
+transposed pair, dropped character, inserted dot) applied at every
+character position, each variant tested both bare and glued to a
+capitalized word: 11,784 variants total, asserting each resolves to
+nothing or to the row it was derived from, and failing by name on any
+match to a different row. Grew the suite from 382 to 400 checks (most of
+the 11,784 variants collapse into one summary assertion rather than one
+line each; every individual wrong-row match, had one occurred, would have
+printed by name).
+
+Proved red against the pre-fix (`30980c9`) code before being trusted, not
+asserted: the fix was set aside with `git stash push --keep-index --
+app/lib/model-deprecation-checker.js`, and — the same robustness gap as
+before, found again — the check crashed outright on its first run,
+because the pre-fix module exports neither `hasLongerDottedSibling` (new
+this round). Guarded the same way the earlier `TOKEN_CHARS` gap was
+guarded, so the check fails loudly and completely instead of crashing
+partway through:
+
+```
+415 of 810 check(s) failed
+```
+
+Categorized precisely, not trusted as a round number: 4 failures from the
+consecutive-dot-typo sweep (all 4 of the identifiers review's own manual
+testing had found); 410 from the brute-force sweep — a materially LARGER
+blast radius than either review discovered by hand, because an inserted
+dot immediately after `"gpt-4"` in unrelated, longer identifiers
+(`"gpt-4o-realtime-preview"`, `"gpt-4o-audio-preview"`, and others sharing
+the prefix) was ALSO exploitable under the pre-fix unbounded design, not
+only the 4 dotted identifiers named by hand; and 1 from the missing-export
+guard. `git stash pop` restored the fix; re-ran clean:
+
+```
+all 400 checks passed — the parser matches every current identifier and alias in 77 row(s), rejects a decoy, and holds its token boundary
+```
+
+**A smaller correction, per review's note.** The Guardrails/Result block
+below previously read "...are fixed and now permanently regression-tested,
+in both directions each time, so none can return silently" — true about
+each specific repro case reviewed, but readable more broadly than what was
+actually guaranteed, and this round's own finding above is exactly the
+kind of broader claim that sentence should not have implied. Narrowed
+below to state only what each fix actually covers.
+
 ## Round 168 re-examination of `docket/open/2026-08-22-model-deprecation-checker.md`'s `worth-a-visit` argument
 
 Revised after review, not left as first written. The first version of this
@@ -593,28 +722,37 @@ that specific pitch cannot survive — worse than the tool not existing,
 because a visitor who trusts it and is wrong has no way to know.
 
 A delta re-review after both fixes landed found a third, narrower shape of
-the same false-negative family (finding 4 above: a period with no
-following space) and held the line at `request-changes` again rather than
-accept "closer" as "done." That is the correct standard for this
-particular tool and this entry does not soften it: three consecutive
-independent passes each found a real, reproduced way to make the checker
-silently wrong before one found none. With finding 4 also fixed and
-brute-forced in both directions (above), the argument holds on the terms
-review set for the shapes tested so far: the concept is real, the
-discoverability and health-check wiring were already careful, and the tool
-gives an accurate answer on clean JSON, a config value, an ordinary
-sentence ending in a period, and now a run-on sentence with no space after
-it either. What this entry will not claim is that the search is finished —
-each of the four defects found tonight was found by *not* assuming the
-previous fix's coverage was complete, and the record should not now assume
-its own coverage is either. The scope qualification from the first version
-still stands and is not new: it only knows the 77 OpenAI/Anthropic
-identifiers in `RETIREMENT_DATES` — a config referencing Gemini, Mistral,
-Bedrock, or any other vendor in `app/lib/retirement-commitments.js`'s wider
-survey gets no match, which could read as false reassurance rather than
-"not covered." The shipped page states this explicitly in its "nothing
-found" state and its footnote rather than leaving it implicit; the
-underlying limitation is real and is not fixed by wording.
+the same false-negative family (finding 4: a period with no following
+space) and held the line at `request-changes` again rather than accept
+"closer" as "done." A second delta re-review of *that* fix found a fourth:
+the specific mechanism finding 4's fix used — an unbounded, longest-first
+truncation — was itself unsafe, on data already live in the table, from an
+ordinary typo with no glued word required (finding 5). That defect
+originated in the design the coordinator specified for the fix, not in
+this round's own invention; the record above says so plainly rather than
+implying otherwise. Four consecutive independent passes — three review,
+one the round's own coordinator-directed brute force going beyond what
+either review had reported — each found a real, reproduced way to make the
+checker silently or confidently wrong before one found none. With finding
+5 also fixed and brute-forced (11,784 typo variants, zero wrong-row
+matches), the argument holds on the terms review set for the shapes tested
+so far: the concept is real, the discoverability and health-check wiring
+were already careful, and the tool gives an accurate answer on clean JSON,
+a config value, an ordinary sentence ending in a period, a run-on sentence
+with no space after it, and now an ordinary consecutive-dot or
+dropped-character typo too. What this entry will not claim, again, is that
+the search is finished — each defect found tonight was found by *not*
+assuming the previous fix's coverage was complete, and the record should
+not now assume its own coverage is either; the brute-force sweep tests
+four typo shapes the coordinator named, not every shape a keyboard can
+produce. The scope qualification from the first version still stands and
+is not new: it only knows the 77 OpenAI/Anthropic identifiers in
+`RETIREMENT_DATES` — a config referencing Gemini, Mistral, Bedrock, or any
+other vendor in `app/lib/retirement-commitments.js`'s wider survey gets no
+match, which could read as false reassurance rather than "not covered."
+The shipped page states this explicitly in its "nothing found" state and
+its footnote rather than leaving it implicit; the underlying limitation is
+real and is not fixed by wording.
 
 - Origin: delegated
 - Track: build
@@ -625,55 +763,74 @@ underlying limitation is real and is not fixed by wording.
   for both of that review's findings plus the coordinator's own comment
   correction (`d762669`), a delta re-review that requested changes again
   (artifact at `bf7724f`, `docket/reviews/d7626698448c86486a9d3c0418115b191a36613d.md`),
-  and the fix for that finding — one shared block, not five entries. Every
-  finding was re-verified independently rather than trusted from its
-  source: the first reviewer's trailing-period and phrase-substring repro
-  sentences, the coordinator's `gpt-4-turbo-2024-04-09` claim, and the
-  delta reviewer's no-space run-on repro were each re-run against the
-  shipped module directly, not read and believed. `npm run lint` clean.
-  `node scripts/check-docket.mjs`: 115 items valid, 34 open, `build` base
-  2 → head 4 against `queue_budget: 14` (well inside; no filing-gate
-  failure) — unchanged throughout every fix commit, since none of them
-  touch `docket/` except the review artifacts, which are `docket/`-scoped
-  by design. `node scripts/check-track-scope.mjs origin/main
-  loop/build/model-deprecation-checker` — every changed file across all
-  commits falls within `app/`, `scripts/`, `docket/` and `CHANGELOG.md`,
-  all build-scoped; no `.github/`, `CHARTER.md` or `prompts/` touched.
-  `node scripts/round.mjs check` — lint, docket validity, track scope,
-  `npm run build`, and the full route-check suite (including the health
-  check, now at 382 checks) — run against a freshly built and served
-  instance on a port confirmed free beforehand, re-run after every fix
-  commit, not only once. The health check was demonstrated red then green
-  five times in total across this round's full arc, at increasing
-  coverage each time (95 → 103 → 264 → 382 assertions): twice in change 2
-  (an earlier matcher version, then the version shipped in `d45a8c9`);
-  once against the first review's two findings (100 of 253 red, then all
-  264 green); once for the coordinator's comment finding (verification
-  rather than a fix, since the underlying behaviour was already correct);
-  and once for the delta review's run-on finding (104 of 382 red, then all
-  382 green). No guardrail was loosened; this round adds a route, a data
-  module, an expanded health check and three docket items, tightens
-  matching rules across three separate defects, and corrects comment
-  prose — nothing here relaxes an existing check.
+  the fix for that finding (`30980c9`), a second delta re-review that
+  requested changes on *that* fix (artifact at `c21c31b`,
+  `docket/reviews/30980c94f36c45e2ac91c42e52c13f3889cfd923.md`), and the
+  fix for that finding plus one further ambiguity this round's own
+  brute-force sweep surfaced beyond what any review reported — one shared
+  block, not seven entries. Every finding was re-verified independently
+  rather than trusted from its source: the first reviewer's trailing-period
+  and phrase-substring repro sentences, the coordinator's
+  `gpt-4-turbo-2024-04-09` claim, the delta reviewer's no-space run-on
+  repro, and the second delta reviewer's consecutive-dot-typo repro were
+  each re-run against the shipped module directly, not read and believed.
+  `npm run lint` clean. `node scripts/check-docket.mjs`: 115 items valid,
+  34 open, `build` base 2 → head 4 against `queue_budget: 14` (well
+  inside; no filing-gate failure) — unchanged throughout every fix commit,
+  since none of them touch `docket/` except the review artifacts, which
+  are `docket/`-scoped by design. `node scripts/check-track-scope.mjs
+  origin/main loop/build/model-deprecation-checker` — every changed file
+  across all commits falls within `app/`, `scripts/`, `docket/` and
+  `CHANGELOG.md`, all build-scoped; no `.github/`, `CHARTER.md` or
+  `prompts/` touched. `node scripts/round.mjs check` — lint, docket
+  validity, track scope, `npm run build`, and the full route-check suite
+  (including the health check, now at 400 checks) — run against a freshly
+  built and served instance on a port confirmed free beforehand, re-run
+  after every fix commit, not only once. The health check was demonstrated
+  red then green six times in total across this round's full arc, at
+  increasing coverage each time (95 → 103 → 264 → 382 → 400 assertions):
+  twice in change 2 (an earlier matcher version, then the version shipped
+  in `d45a8c9`); once against the first review's two findings (100 of 253
+  red, then all 264 green); once for the coordinator's comment finding
+  (verification rather than a fix, since the underlying behaviour was
+  already correct); once for the first delta review's run-on finding (104
+  of 382 red, then all 382 green); and once for the second delta review's
+  consecutive-dot-typo finding plus this round's own sibling-ambiguity
+  finding together (415 of 810 red, then all 400 green). No guardrail was
+  loosened; this round adds a route, a data module, an expanded health
+  check and three docket items, tightens matching rules across four
+  separate defects, and corrects comment prose — nothing here relaxes an
+  existing check.
 - Result: not yet measured — the checker is live and its record is
   internally consistent (docket item moved to done, CHANGELOG entry, route
   registered everywhere the disclosure/sitemap/budget machinery requires),
   but nothing here observes real visitor behaviour. What this round can
-  state as measured rather than hoped: the parser check does fail when
-  broken and passes when correct (shown five times, at increasing
-  coverage each time); three independently-found defects — a false
-  negative exposing 86 of 92 identifiers to a sentence-final period, a
-  false positive on three of six phrase identifiers, and a narrower false
-  negative on a period glued to the next word with no space — are fixed
-  and now permanently regression-tested, in both directions each time, so
-  none can return silently; a mischaracterisation in the fix's own
-  explanatory comment, found by the coordinator's direct probe rather than
-  by reading the prose, is corrected and given its own isolated,
-  previously-missing test; the token-character family the run-on fix
-  belongs to was enumerated rather than assumed closed after one shape
-  (hyphen- and underscore-glued words checked and confirmed to remain safe
-  misses, with the reasoning for leaving them unfixed recorded rather than
-  asserted); and `build`'s dispatcher weight now exceeds `meta`'s for the
+  state as measured rather than hoped, narrowed from an earlier version of
+  this sentence that review flagged as readable more broadly than what was
+  actually guaranteed: the parser check does fail when broken and passes
+  when correct (shown six times, at increasing coverage each time); four
+  independently-found defects — a false negative exposing 86 of 92
+  identifiers to a sentence-final period, a false positive on three of six
+  phrase identifiers, a narrower false negative on a period glued to the
+  next word with no space, and an unbounded truncation that could degrade
+  a real identifier to a shorter, wrongly-dated one — are each fixed and
+  each covered by its own specific regression test, so each *specific
+  repro case* cannot return silently; this entry does not claim the
+  false-negative/false-positive class itself is closed, and the record
+  above says so explicitly rather than leaving the broader reading
+  standing. The truncation fix's own defect originated in a design the
+  coordinator specified, not in this round's departure from it — recorded
+  as such rather than left to read as an error the round introduced on its
+  own. A mischaracterisation in an earlier fix's explanatory comment,
+  found by the coordinator's direct probe rather than by reading the
+  prose, is corrected and given its own isolated, previously-missing test;
+  the token-character family the run-on fix belongs to was enumerated
+  rather than assumed closed after one shape; a second, distinct
+  ambiguity in the two-review-old trailing-period fix was found only
+  because this round's own brute-force sweep was run to its full extent
+  rather than scoped to the reported mechanism, and is now fixed and
+  covered by 11,784 brute-forced typo variants with zero wrong-row
+  matches; and `build`'s dispatcher weight now exceeds `meta`'s for the
   first time since the push landed (9.91 vs 7.50, reproducible on the
   merged tree) — whether that translates into `build` actually running
   before `meta` again is a question the next several rounds' dispatcher

@@ -28,9 +28,10 @@ const root = process.cwd();
 const { RETIREMENT_DATES } = await import(
   pathToFileURL(path.join(root, "app", "lib", "retirement-dates.js")).href
 );
-const { parseIdentifiers, findMatches, TOKEN_CHARS } = await import(
+const imported = await import(
   pathToFileURL(path.join(root, "app", "lib", "model-deprecation-checker.js")).href
 );
+const { parseIdentifiers, findMatches, TOKEN_CHARS } = imported;
 
 let failures = 0;
 let checks = 0;
@@ -43,6 +44,21 @@ const bad = (m) => {
   failures++;
   console.log(`FAIL  ${m}`);
 };
+
+// Guarded the same way TOKEN_CHARS was guarded earlier: a missing export
+// must fail this check loudly and let every other assertion in the file
+// still run, not crash the whole script with an uncaught TypeError
+// partway through and hide everything queued after it. Falls back to
+// "nothing is sibling-risky," which exercises the pre-fix code's actual
+// (unguarded) behavior rather than skipping those assertions.
+let hasLongerDottedSibling = imported.hasLongerDottedSibling;
+if (typeof hasLongerDottedSibling !== "function") {
+  bad(
+    "app/lib/model-deprecation-checker.js does not export a usable hasLongerDottedSibling " +
+      "— cannot verify the dot-prefix sibling ambiguity guard; treating nothing as sibling-risky"
+  );
+  hasLongerDottedSibling = () => false;
+}
 
 console.log(`checking ${RETIREMENT_DATES.length} RETIREMENT_DATES row(s) against the parser\n`);
 
@@ -73,26 +89,50 @@ for (const row of RETIREMENT_DATES) {
   // own health check never once placed an identifier there. This closes
   // that gap permanently, for every row, not just the ones review happened
   // to try.
+  //
+  // Three identifiers are a deliberate exception, found by a later
+  // brute-force sweep: "gpt-4", "gpt-image-1" and "ft-gpt-4" are each a
+  // real, complete row that is ALSO an exact dot-prefix of a different,
+  // longer real row -- stripping the trailing period from "gpt-image-1."
+  // is genuinely ambiguous with a one-character-dropped typo of
+  // "gpt-image-1.5", a different row with a different shutdown date. For
+  // these three, and only these three, the correct, safe behavior is NO
+  // match once punctuation has been stripped -- asserted here as the
+  // positive expectation, not silently skipped, so a future change that
+  // accidentally makes them match again (reopening the wrong-date risk) is
+  // caught rather than read as new coverage.
+  const primaryHasSibling = hasLongerDottedSibling(primary, RETIREMENT_DATES);
   const primaryPeriodHits = findMatches(`${primary}.`, RETIREMENT_DATES);
-  if (primaryPeriodHits.some((m) => m.row === row)) {
+  if (primaryHasSibling) {
+    if (primaryPeriodHits.length === 0) {
+      ok(`primary "${primary}." correctly matches NOTHING (ambiguous with a longer dotted sibling)`);
+    } else {
+      bad(`primary "${primary}." should be ambiguous (longer dotted sibling exists) and matched ${primaryPeriodHits.map((m) => m.row.what).join(", ")} instead`);
+    }
+  } else if (primaryPeriodHits.some((m) => m.row === row)) {
     ok(`primary "${primary}." (sentence-final, trailing period, nothing after) matches its own row`);
   } else {
     bad(`primary "${primary}." (sentence-final, trailing period) does not match its own row`);
   }
 
   // The run-on case, at the same full scale as the trailing-period sweep
-  // above: a second, narrower round of review found that fix only reached
-  // a dot at the literal end of an extracted run -- glue the next word
-  // straight onto the period with no space ("gpt-4-0613.Then we switched
-  // vendors.") and the dot becomes internal, so the earlier fix's own rule
-  // ("only a dot at the very end is touched") does not reach it by its own
-  // logic. Every identifier, not a sample, so this specific regression
-  // cannot return silently for any row.
+  // above: a second round of review found that fix only reached a dot at
+  // the literal end of an extracted run -- glue the next word straight
+  // onto the period with no space ("gpt-4-0613.Then we switched vendors.")
+  // and the dot becomes internal. Every identifier, not a sample, so this
+  // specific regression cannot return silently for any row. Same three
+  // sibling exceptions as above, for the same reason.
   const primaryGluedHits = findMatches(
     `We used ${primary}.Then we switched vendors.`,
     RETIREMENT_DATES
   );
-  if (primaryGluedHits.some((m) => m.row === row)) {
+  if (primaryHasSibling) {
+    if (primaryGluedHits.length === 0) {
+      ok(`primary "${primary}.Then..." correctly matches NOTHING (ambiguous with a longer dotted sibling)`);
+    } else {
+      bad(`primary "${primary}.Then..." should be ambiguous (longer dotted sibling exists) and matched ${primaryGluedHits.map((m) => m.row.what).join(", ")} instead`);
+    }
+  } else if (primaryGluedHits.some((m) => m.row === row)) {
     ok(`primary "${primary}.Then..." (period glued to the next word, no space) matches its own row`);
   } else {
     bad(`primary "${primary}.Then..." (period glued to the next word, no space) does not match its own row`);
@@ -109,8 +149,15 @@ for (const row of RETIREMENT_DATES) {
       bad(`alias "${alias}" (of "${primary}", from "${row.what}") does not match its own row when pasted`);
     }
 
+    const aliasHasSibling = hasLongerDottedSibling(alias, RETIREMENT_DATES);
     const aliasPeriodHits = findMatches(`${alias}.`, RETIREMENT_DATES);
-    if (aliasPeriodHits.some((m) => m.row === row)) {
+    if (aliasHasSibling) {
+      if (aliasPeriodHits.length === 0) {
+        ok(`alias "${alias}." correctly matches NOTHING (ambiguous with a longer dotted sibling)`);
+      } else {
+        bad(`alias "${alias}." should be ambiguous (longer dotted sibling exists) and matched ${aliasPeriodHits.map((m) => m.row.what).join(", ")} instead`);
+      }
+    } else if (aliasPeriodHits.some((m) => m.row === row)) {
       ok(`alias "${alias}." (sentence-final, trailing period) matches its own row`);
     } else {
       bad(`alias "${alias}." (sentence-final, trailing period) does not match its own row`);
@@ -120,7 +167,13 @@ for (const row of RETIREMENT_DATES) {
       `We used ${alias}.Then we switched vendors.`,
       RETIREMENT_DATES
     );
-    if (aliasGluedHits.some((m) => m.row === row)) {
+    if (aliasHasSibling) {
+      if (aliasGluedHits.length === 0) {
+        ok(`alias "${alias}.Then..." correctly matches NOTHING (ambiguous with a longer dotted sibling)`);
+      } else {
+        bad(`alias "${alias}.Then..." should be ambiguous (longer dotted sibling exists) and matched ${aliasGluedHits.map((m) => m.row.what).join(", ")} instead`);
+      }
+    } else if (aliasGluedHits.some((m) => m.row === row)) {
       ok(`alias "${alias}.Then..." (period glued to the next word, no space) matches its own row`);
     } else {
       bad(`alias "${alias}.Then..." (period glued to the next word, no space) does not match its own row`);
@@ -296,21 +349,25 @@ for (const text of GLUED_FALSE_POSITIVE_PROBES) {
 }
 
 // The dangerous direction, named explicitly rather than left to the sweep
-// above to catch incidentally: a naive fix for the glued-word case would
-// try the substring before every internal dot, and `gpt-4.1-nano`'s own
-// internal dot means its prefix "gpt-4" is *itself* a real alias -- of the
-// unrelated, separately-dated gpt-4-0613 row. Getting this wrong would not
-// be a miss, it would be a confident, specific, sourced wrong answer:
-// exactly the failure mode this whole round exists to close, reproduced
-// inside the fix meant to close it. Asserted on its own, by name, so this
-// exact case can never silently start failing again even if every more
-// general sweep below it were deleted.
+// above to catch incidentally: `gpt-4.1-nano`'s own internal dot means its
+// prefix "gpt-4" is *itself* a real alias -- of the unrelated,
+// separately-dated gpt-4-0613 row. Getting this wrong would not be a miss,
+// it would be a confident, specific, sourced wrong answer -- the exact
+// failure mode this whole round exists to close. This specific case has
+// stayed safe across two different implementations of the fix: a
+// longest-match-first unbounded truncation (round 168's second attempt,
+// which review found unsafe for a DIFFERENT input shape -- see the
+// consecutive-dot-typo sweep below) and the bounded, sentence-boundary
+// design that replaced it. Kept as its own named assertion, independent of
+// which mechanism is behind it, so this exact case can never silently
+// start failing again even if every more general sweep below it were
+// deleted or the mechanism changes again.
 const dangerousText = "We migrated off gpt-4.1-nano.Then we moved on.";
 const dangerousHits = findMatches(dangerousText, RETIREMENT_DATES);
 if (dangerousHits.some((m) => m.row.what.startsWith("gpt-4-0613"))) {
   bad(
     `"${dangerousText}" incorrectly degraded "gpt-4.1-nano" to the shorter "gpt-4" alias of the ` +
-      "unrelated gpt-4-0613 row — this is the specific wrong-answer risk the longest-match-first rule exists to prevent"
+      "unrelated gpt-4-0613 row — a confident, specific, sourced wrong answer"
   );
 } else if (dangerousHits.some((m) => m.row.what.startsWith("gpt-4.1-nano (also"))) {
   ok(`"gpt-4.1-nano", glued to a following word, resolves to its own row and never degrades to the shorter "gpt-4"`);
@@ -345,6 +402,116 @@ for (const { id, row } of dottedIdentifiers) {
         `(got: ${hits.map((m) => m.row.what).join(", ") || "nothing"})`
     );
   }
+}
+
+// A THIRD round of review found a real defect in the shape of fix directly
+// above: an earlier version of dotCandidatesOf truncated at every
+// remaining internal dot in an unbounded loop, and a plain consecutive-dot
+// typo -- "gpt-4..1-nano" instead of "gpt-4.1-nano", the single most
+// ordinary double-keystroke slip, with NO glued word involved at all --
+// made the full string and its first truncation both fail, and the loop
+// kept peeling past them until it hit "gpt-4", a real alias of the
+// unrelated, differently-dated gpt-4-0613 row. That unbounded design was
+// specified by the orchestrator directing the round, not invented by this
+// file's own implementation of it; the fix replaced it with the bounded,
+// sentence-boundary rule documented in
+// app/lib/model-deprecation-checker.js. Asserted here, permanently, for
+// every one of the 17 dotted identifiers -- not just the one the typo
+// happened to land on -- duplicating each one's first internal dot and
+// requiring the result to resolve to NOTHING (a duplicated dot is not
+// followed by an uppercase letter, so the bounded design never generates
+// a second candidate for it at all).
+for (const { id, row } of dottedIdentifiers) {
+  const firstDot = id.indexOf(".");
+  const typo = id.slice(0, firstDot) + "." + id.slice(firstDot); // duplicate the first dot
+  const hits = findMatches(`I think ${typo} is what we use.`, RETIREMENT_DATES);
+  if (hits.length === 0) {
+    ok(`consecutive-dot typo of "${id}" ("${typo}") correctly matches nothing`);
+  } else if (hits.some((m) => m.row === row)) {
+    ok(`consecutive-dot typo of "${id}" ("${typo}") happens to still resolve to its own row (lucky, not required, not a failure)`);
+  } else {
+    bad(
+      `consecutive-dot typo of "${id}" ("${typo}") incorrectly resolved to a DIFFERENT row: ` +
+        `${hits.map((m) => m.row.what).join(", ")} (expected nothing, or its own row)`
+    );
+  }
+}
+
+// The mandatory brute-force sweep review's verdict asked for: generate
+// realistic typo variants of every token-shaped identifier's primary AND
+// every alias across all 77 rows -- a doubled character, a transposed
+// adjacent pair, a dropped character, an inserted dot -- one variant per
+// character position per generator, both bare and glued to a following
+// capitalized word (the shape that exercises the risky candidate path at
+// all). The pass condition is exact, not fuzzy: every single variant must
+// resolve to NOTHING, or to the SAME row the un-typo'd identifier belongs
+// to. A match to any OTHER row is a wrong answer and fails immediately,
+// by name, not folded into a silent count. This is deliberately not a
+// sampled check -- every row, every character position, every generator,
+// every run.
+function withDoubledChar(s) {
+  const out = [];
+  for (let i = 0; i < s.length; i++) out.push(s.slice(0, i + 1) + s[i] + s.slice(i + 1));
+  return out;
+}
+function withTransposedChars(s) {
+  const out = [];
+  for (let i = 0; i < s.length - 1; i++) {
+    if (s[i] === s[i + 1]) continue;
+    out.push(s.slice(0, i) + s[i + 1] + s[i] + s.slice(i + 2));
+  }
+  return out;
+}
+function withDroppedChar(s) {
+  const out = [];
+  for (let i = 0; i < s.length; i++) out.push(s.slice(0, i) + s.slice(i + 1));
+  return out;
+}
+function withInsertedDot(s) {
+  const out = [];
+  for (let i = 1; i < s.length; i++) out.push(s.slice(0, i) + "." + s.slice(i));
+  return out;
+}
+
+const typoIdentifiers = [];
+for (const row of RETIREMENT_DATES) {
+  const { primary, aliases } = parseIdentifiers(row.what);
+  for (const id of [primary, ...aliases]) {
+    if (id && TOKEN_CHARS.test(id)) typoIdentifiers.push({ id, row });
+  }
+}
+
+let typoVariantsTested = 0;
+let typoWrongRowFailures = 0;
+for (const { id, row } of typoIdentifiers) {
+  const variants = new Set([
+    ...withDoubledChar(id),
+    ...withTransposedChars(id),
+    ...withDroppedChar(id),
+    ...withInsertedDot(id),
+  ]);
+  variants.delete(id); // a no-op mutation is not a typo
+  for (const variant of variants) {
+    for (const text of [variant, `${variant}.Then we moved on.`]) {
+      typoVariantsTested++;
+      const hits = findMatches(text, RETIREMENT_DATES);
+      const wrongRow = hits.filter((m) => m.row !== row);
+      if (wrongRow.length > 0) {
+        typoWrongRowFailures++;
+        bad(
+          `typo variant "${variant}" of "${id}" (row: ${row.what}) wrongly resolved to a DIFFERENT row: ` +
+            `${wrongRow.map((m) => `${m.matchedAs} -> ${m.row.what}`).join(", ")} (text: ${JSON.stringify(text)})`
+        );
+      }
+    }
+  }
+}
+if (typoWrongRowFailures === 0) {
+  ok(
+    `brute-force typo sweep: ${typoVariantsTested} variants across ${typoIdentifiers.length} identifiers ` +
+      `(doubled/transposed/dropped/dot-inserted characters, bare and glued to a capitalized word) — ` +
+      `zero resolved to a different row than the one they were derived from`
+  );
 }
 
 // The rest of the token-character family, enumerated rather than assumed

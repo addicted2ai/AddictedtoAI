@@ -93,58 +93,74 @@ const TOKEN_PATTERN = /[A-Za-z0-9][A-Za-z0-9._-]*/g;
 // space before the next token starts ("...gpt-4-0613."). The regex above is
 // greedy, so a sentence-final period -- or an ellipsis's several -- gets
 // absorbed into the token, and the extracted string no longer equals the
-// stored identifier. Found by review (round 168's own health check never
-// placed an identifier before a bare period, so it never saw this): 86 of
-// 92 matchable identifiers in RETIREMENT_DATES are token-shaped and were
-// exposed by this whenever a paste ended the identifier's mention with a
-// period and no trailing word -- the single most natural way to reference a
-// model in prose.
+// stored identifier. Found by review: 86 of 92 matchable identifiers in
+// RETIREMENT_DATES are token-shaped and were exposed by this whenever a
+// paste ended the identifier's mention with a period and no trailing word
+// -- the single most natural way to reference a model in prose.
 //
-// A second, narrower round of review found that fix only reached a dot at
-// the literal end of an extracted run. Glue the next word straight onto the
-// period with no space -- "gpt-4-0613.Then we switched vendors." -- and the
-// dot is no longer trailing, it is internal, so the same regex greedily
-// extracts "gpt-4-0613.Then" as one continuous, unmatchable run and the
-// fix's own rule ("only a dot at the very end is touched") does not reach
-// it by its own logic. A genuine, common shape: fast typing, some
-// PDF-to-text extraction, and casually punctuated chat all produce a
-// sentence-ending period with no following space.
+// A second round of review found that fix only reached a dot at the
+// literal end of an extracted run. Glue the next word straight onto the
+// period with no space -- "gpt-4-0613.Then we switched vendors." -- and
+// the dot becomes internal, so the same regex greedily extracts
+// "gpt-4-0613.Then" as one continuous, unmatchable run.
 //
-// The obvious fix -- also try the substring before each internal dot -- is
-// dangerous on its own: `gpt-4.1-nano`'s own internal dot means its prefix
-// `gpt-4` is *itself* a real alias, of the unrelated, separately-dated
-// `gpt-4-0613` row. A matcher that tried dot-split substrings without an
-// ordering rule could report "gpt-4.1-nano" is retiring under the wrong
-// vendor's wrong shutdown date -- a confident, specific, sourced wrong
-// answer, strictly worse than the miss being fixed.
+// THE INVARIANT THIS CODE MUST HOLD, stated explicitly rather than left as
+// an emergent property of how the loop happens to be shaped: the matcher
+// must never return a row the input does not unambiguously name. Any
+// transformation applied here -- stripping, truncating, de-gluing -- that
+// could yield an identifier different from the one actually typed must
+// produce NO match rather than a guess. A miss is an acceptable outcome; a
+// confident wrong answer with a date and a vendor link is not.
 //
-// So candidates are generated longest-first and the caller (findMatches)
-// stops at the first one that resolves: the whole run, trailing dots
-// stripped, is always tried first, and a shorter, dot-truncated prefix is
-// only ever considered when that longer candidate resolved to nothing.
-// "gpt-4.1-nano" therefore never even generates its "gpt-4" candidate,
-// because the full run already resolves on the first try; a genuinely
-// glued run like "gpt-4.1-nano.Then" tries "gpt-4.1-nano.Then" (fails),
-// then "gpt-4.1-nano" (its own row -- stop here), never reaching "gpt-4".
-// No identifier in RETIREMENT_DATES ends in ".", so the longest candidate
-// this ever generates can only *reveal* an identifier trailing or internal
-// punctuation was hiding -- it still cannot merge two different tokens
-// into a false one on its own, and the ordering rule is what keeps a real
-// but *shorter* different identifier from ever outranking a real longer
-// one that also resolves.
+// A third round of review found that an EARLIER version of this fix
+// violated that invariant, because the orchestrator's own specified design
+// for it did: `dotCandidatesOf` truncated at every remaining internal dot
+// in an unbounded loop, with no check that the surviving candidate was
+// related to what was typed. The single most ordinary double-keystroke
+// typo -- "gpt-4..1-nano" instead of "gpt-4.1-nano" -- made the full string
+// and its first truncation both fail, and the loop kept peeling past them
+// until it hit "gpt-4", a real alias, but of the unrelated,
+// differently-dated gpt-4-0613 row. 4 of the data's 17 dotted identifiers
+// were exploitable this way; three of the four also misreported the
+// replacement model, not only the date. That earlier design was specified
+// by the orchestrator directing this round and reproduced faithfully by
+// this file; the defect was in the specification, not introduced by
+// departing from it.
+//
+// The fix actually adopted here is narrower than "truncate until
+// something matches," on purpose, per the direction that a rule handling
+// only the provably safe case is better than a clever one with a hole in
+// it: dotCandidatesOf returns AT MOST TWO candidates, never a chain. The
+// whole run (trailing dots stripped) is always tried first. A second,
+// shorter candidate is generated ONLY when the run contains a dot (or run
+// of dots) immediately followed by an uppercase letter -- the shape of an
+// actual sentence boundary in ordinary English ("gpt-4-0613.Then") -- and
+// the candidate is everything before that boundary. A dot followed by a
+// digit or a lowercase letter is never treated as a boundary, because
+// that is exactly the shape of an identifier's own internal structure (a
+// version number, a continuation), not of prose -- checked directly
+// against the data: no dotted identifier in RETIREMENT_DATES has an
+// uppercase character immediately after its own internal dot.
+// "gpt-4..1-nano" has no uppercase anywhere in it, so this generates no
+// second candidate at all, and the whole malformed run fails to resolve --
+// a safe miss, not a guess. "gpt-4.1-nano.Then..." generates exactly one
+// second candidate, "gpt-4.1-nano" (cut before ".Then", never before
+// ".1"), because that is the only dot in the run followed by an uppercase
+// letter. There is no third candidate for either case: if the two
+// candidates here both fail, the run resolves to nothing, on purpose.
 function rawRunsOf(text) {
   return text.match(TOKEN_PATTERN) || [];
 }
 
 function dotCandidatesOf(run) {
   const candidates = [];
-  let current = run;
-  while (true) {
-    const stripped = current.replace(/\.+$/, "");
-    if (stripped) candidates.push(stripped);
-    const lastDot = stripped.lastIndexOf(".");
-    if (lastDot === -1) break;
-    current = stripped.slice(0, lastDot);
+  const whole = run.replace(/\.+$/, "");
+  if (whole) candidates.push(whole);
+
+  const boundary = run.search(/\.+[A-Z]/);
+  if (boundary !== -1) {
+    const truncated = run.slice(0, boundary);
+    if (truncated && truncated !== whole) candidates.push(truncated);
   }
   return candidates;
 }
@@ -186,6 +202,52 @@ function phraseMatches(haystack, needle) {
   return false;
 }
 
+// A second, narrower ambiguity, found by brute-forcing typo variants
+// across the real data (not reported by any review -- surfaced by running
+// the exact sweep the coordinator asked for, applied honestly rather than
+// scoped down to only the reported mechanism): three identifiers --
+// "gpt-4", "gpt-image-1", "ft-gpt-4" -- are themselves complete, real
+// rows, AND are also an exact dot-prefix of a DIFFERENT, longer real row
+// ("gpt-4.1-nano", "gpt-image-1.5", "ft-gpt-4.1-nano-2025-04-14"
+// respectively). Dropping the single trailing character from
+// "gpt-image-1.5" produces "gpt-image-1." -- and that string is
+// genuinely, irreducibly ambiguous: it is simultaneously the exact,
+// correct trailing-punctuation form of the *shorter* row (gpt-image-1,
+// shutdown 2026-10-23) and a one-character-dropped typo of the *longer*
+// row (gpt-image-1.5, shutdown 2026-12-01, six weeks later). The two
+// interpretations are indistinguishable as text, so a plain
+// `${primary}.` sentence produced a wrong shutdown date even with the
+// bounded, two-candidate design above and no unbounded truncation
+// involved at all.
+//
+// hasLongerDottedSibling answers this precisely: a candidate this file
+// PRODUCES BY REMOVING CHARACTERS (trailing-punctuation stripped, or
+// sentence-boundary truncated -- anything where candidate !== the raw run
+// the visitor actually typed) is rejected outright if some OTHER real
+// identifier in the data begins with that candidate plus a literal ".".
+// A run typed bare, with nothing stripped to reach it, carries none of
+// this risk and is never affected: "gpt-image-1 is retiring" still
+// resolves normally, because nothing was removed to produce "gpt-image-1"
+// -- the ambiguity exists only when this file's own transformations are
+// what produced the shorter string.
+//
+// Exported (not just module-local) so scripts/check-model-deprecation-parser.mjs
+// can determine which identifiers carry this risk and assert the correct
+// (safe-miss) expectation for them specifically, rather than re-deriving
+// the relationship with a second implementation.
+export function hasLongerDottedSibling(identifier, rows) {
+  const prefix = identifier.toLowerCase() + ".";
+  for (const entry of buildIndex(rows)) {
+    if (
+      TOKEN_CHARS.test(entry.identifier) &&
+      entry.identifier.toLowerCase().startsWith(prefix)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Find every RETIREMENT_DATES row that appears in `text`, at most once per
 // row even if several of its identifiers (primary and aliases) are present.
 // `rows` is threaded through explicitly, rather than imported at module
@@ -193,11 +255,14 @@ function phraseMatches(haystack, needle) {
 // second implementation of this function.
 //
 // Token-shaped identifiers are resolved per glued run of the text (in the
-// order the runs appear), trying each run's longest-first dot candidate in
-// turn and stopping at the first one present in the data -- see
-// dotCandidatesOf's comment for why the ordering, not just the candidate
-// set, is what keeps this safe. Phrase-shaped identifiers are unaffected by
-// any of this and are still checked by substring in a separate pass.
+// order the runs appear), trying each run's candidates from dotCandidatesOf
+// in order and stopping at the first one present in the data that is not
+// disqualified by hasLongerDottedSibling -- see each function's own comment
+// for why the ordering and the sibling guard, not just the candidate set,
+// are what keep this safe. If every candidate for a run is either absent
+// from the data or disqualified as ambiguous, the run resolves to nothing,
+// on purpose. Phrase-shaped identifiers are unaffected by any of this and
+// are still checked by substring in a separate pass.
 export function findMatches(text, rows) {
   if (!text || !text.trim()) return [];
   const haystack = text.toLowerCase();
@@ -216,13 +281,20 @@ export function findMatches(text, rows) {
   for (const run of rawRunsOf(text)) {
     for (const candidate of dotCandidatesOf(run)) {
       const found = tokenLookup.get(candidate.toLowerCase());
-      if (found) {
-        if (!seen.has(found.row)) {
-          matches.push({ matchedAs: found.identifier, row: found.row });
-          seen.add(found.row);
-        }
-        break; // longest-match-first: a shorter candidate is never tried once one resolves
+      if (!found) continue;
+      if (candidate !== run && hasLongerDottedSibling(found.identifier, rows)) {
+        // This candidate only exists because something was removed from
+        // what was actually typed, and the result is a real identifier
+        // that a different, longer real identifier also begins with --
+        // genuinely ambiguous. Refuse it, and refuse the whole run rather
+        // than falling through to anything shorter still.
+        break;
       }
+      if (!seen.has(found.row)) {
+        matches.push({ matchedAs: found.identifier, row: found.row });
+        seen.add(found.row);
+      }
+      break; // longest-match-first: a shorter candidate is never tried once one resolves
     }
   }
 
