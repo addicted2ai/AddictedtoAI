@@ -12,12 +12,32 @@ permissions:
   pull-requests: write
 
 jobs:
-  # CHARTER.md rule 13: the charter, the workflow definitions and the loop's
-  # own prompt are human-owned. The loop may propose changes to them and must
-  # not merge them.
+  # CHARTER.md rule 13a: the record's integrity, the stop mechanism, and 13a
+  # itself stay reserved regardless of the delegation rule 13 records. This
+  # job guards the part of that surface a path prefix can express: the
+  # workflow definitions in `.github/` (the enforcement mechanism, not the
+  # content rule 13 delegates) and `scripts/check-track-scope.mjs` (the
+  # scope-boundary definition, guarded here since round 79 for the reason
+  # below). Rule 13a's own text inside CHARTER.md is a third, narrower thing
+  # this job also guards -- not by path, since CHARTER.md as a whole is no
+  # longer reserved, but by content -- see the `rule-13a-text` job below.
   #
-  # CODEOWNERS was supposed to be what made that true. It was not. Branch
-  # protection on main sets `require_code_owner_reviews: true` alongside
+  # UNTIL 2026-08-22 this job also failed on any pull request touching
+  # CHARTER.md and prompts/, full stop, because rule 13 called both
+  # human-owned outright. It no longer does: the 11 August delegation, and
+  # its 22 August broadening, cover ordinary edits to both, and CHARTER.md's
+  # own History (2026-08-22) records why the old blanket gate was withdrawn
+  # rather than kept as an extra margin of safety -- a required check that
+  # fails on every legitimate change trains people to merge past it, and the
+  # last two merges that touched these paths did exactly that
+  # (`enforce_admins: false`, documented below). A red `human-owned-paths`
+  # should mean something is genuinely wrong; failing on ordinary charter and
+  # prompt edits stopped meaning that a long time before this comment was
+  # rewritten to say so.
+  #
+  # CODEOWNERS was supposed to be what made the old, broader version of this
+  # true. It was not. Branch protection on main sets
+  # `require_code_owner_reviews: true` alongside
   # `required_approving_review_count: 0`, and with no approval required there
   # is nothing for the code-owner rule to demand -- so PR #16 changed this
   # very file and merged with zero reviews on 2026-08-11. A required status
@@ -38,16 +58,15 @@ jobs:
   # is the point. It was added to that list on 2026-08-11 and PR #25 is the
   # first pull request it actually stopped.
   #
-  # A FOURTH PATH, ADDED ROUND 79: scripts/check-track-scope.mjs.
-  # Rule 13 names three paths and this job now guards four, because the fourth
-  # is where a round can rewrite what every other path check means.
-  # check-track-scope.mjs runs from the branch it is judging, so a run can add
-  # a path to its own track's SCOPES and spend that path in the same pull
-  # request -- the checker consults the branch's copy of the rules and agrees
-  # with it. Round 78 did this: it granted meta `app/lib/route-files.js` and
-  # created that file in one pull request, and every check was green. Rule 11
-  # says a run blocked by a guardrail may not be the run that loosens it, and
-  # nothing mechanical was enforcing that.
+  # scripts/check-track-scope.mjs, ADDED ROUND 79: it is where a round can
+  # rewrite what every other path check means. check-track-scope.mjs runs
+  # from the branch it is judging, so a run can add a path to its own track's
+  # SCOPES and spend that path in the same pull request -- the checker
+  # consults the branch's copy of the rules and agrees with it. Round 78 did
+  # this: it granted meta `app/lib/route-files.js` and created that file in
+  # one pull request, and every check was green. Rule 11 says a run blocked
+  # by a guardrail may not be the run that loosens it, and nothing mechanical
+  # was enforcing that.
   #
   # This does not close that hole -- the checker still reads its rules from the
   # branch, and 2026-08-11-track-scope-judges-itself.md stays open for the fix
@@ -62,37 +81,53 @@ jobs:
           # Needs the merge base to diff against, like check-track-scope.
           fetch-depth: 0
 
-      - name: Fail if this pull request changes human-owned paths
+      - name: Fail if this pull request changes the enforcement mechanism
         run: |
           changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
           # Prefix match, deliberately not anchored at the end. A guard that
           # over-matches costs a human one unnecessary merge; a guard that
-          # under-matches is a bypass. So CHARTER.md.bak and
-          # check-track-scope.mjs.orig are guarded too, and that is the right
-          # direction to be wrong in.
+          # under-matches is a bypass. So check-track-scope.mjs.orig is
+          # guarded too, and that is the right direction to be wrong in.
           owned=$(printf '%s\n' "$changed" \
-            | grep -E '^(CHARTER\.md|\.github/|prompts/|scripts/check-track-scope\.mjs)' \
+            | grep -E '^(\.github/|scripts/check-track-scope\.mjs)' \
             || true)
           if [ -n "$owned" ]; then
-            echo "This pull request changes paths the maintainer owns:"
+            echo "This pull request changes paths CHARTER.md rule 13a reserves:"
             printf '%s\n' "$owned" | sed 's/^/    /'
             echo ""
-            echo "CHARTER.md rule 13 makes the charter, the workflow definitions and"
-            echo "the loop's own prompt human-owned: the loop may propose changes to"
-            echo "them and must not merge them."
-            echo ""
-            echo "scripts/check-track-scope.mjs is guarded here as well, though rule 13"
-            echo "does not name it. It is the file that says which paths each track may"
-            echo "write, and it reads that map from the branch it is judging -- so a"
-            echo "round can grant itself a path and use it in the same pull request"
-            echo "(round 78 did). Rule 11: the run a guardrail blocks is not the run"
-            echo "that loosens it."
+            echo "rule 13a reserves the enforcement mechanism -- .github/ (the checks"
+            echo "and their required-status wiring) and scripts/check-track-scope.mjs"
+            echo "(the map of which paths each track may write, guarded here since"
+            echo "round 79: it reads that map from the branch it is judging, so a round"
+            echo "can otherwise grant itself a path and spend it in the same pull"
+            echo "request -- round 78 did). Rule 11: the run a guardrail blocks is not"
+            echo "the run that loosens it."
             echo ""
             echo "This check fails so auto-merge cannot land it. A maintainer merges"
             echo "it by hand, and that act is the review."
             exit 1
           fi
-          echo "ok  no human-owned paths touched"
+          echo "ok  no reserved enforcement paths touched"
+
+  # CHARTER.md rule 13a: "this rule itself -- only the maintainer may amend
+  # rule 13a." Path-based guarding cannot express that on its own, because
+  # CHARTER.md as a whole is no longer reserved (the job above stopped
+  # failing on it 2026-08-22) -- a content check is what enforces the one
+  # clause inside that file which stays reserved. Reads rule 13a's own text
+  # out of CHARTER.md by its "13a." marker (the same one
+  # scripts/check-13a-unchanged.mjs's header explains app/lib/charter.js's
+  # renderer does not recognise as a numbered rule) and fails if it differs
+  # from the base ref's by so much as a byte. Passes, deliberately, if the
+  # base ref has no rule 13a at all -- so the pull request that first adds it
+  # is never blocked by a check protecting text that isn't there yet.
+  rule-13a-text:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify rule 13a's own text is unchanged from the base ref
+        run: node scripts/check-13a-unchanged.mjs "origin/${{ github.base_ref }}"
 
   # A round that declares `Origin: delegated` claims the orchestrating model
   # reviewed it before merge. A review asserted in the changelog is not a

@@ -257,6 +257,19 @@ if (typeof gapLimit === "number") {
     } else {
       // The newest closure: the commit that ADDED the file under docket/done/,
       // by commit date, across every worth-a-visit item that has ever closed.
+      //
+      // Sorted on `%ct` (committer date, Unix seconds -- git's own instant,
+      // already normalised across whatever offset each commit carries), not
+      // on the `%cI` ISO string: this repository's commits mix `+00:00`
+      // (GitHub's squash merges) and `-06:00` (the local machine), and
+      // comparing those strings lexicographically does not sort by instant
+      // -- `2026-08-22T01:00:00+00:00` (01:00 UTC) would sort *above*
+      // `2026-08-21T23:00:00-06:00` (05:00 UTC, later) as a bare string
+      // comparison, because the digit "2" in "...-22T" outweighs the offset.
+      // Found in review against this repository's own `git log --format=%cI`
+      // output before it shipped, not assumed. `%cI` is kept only for the
+      // human-readable stamp in `detail` below -- the sort key and the
+      // display do not have to be the same value.
       let newest = null;
       for (const file of generative) {
         const sha = execFileSync(
@@ -265,10 +278,13 @@ if (typeof gapLimit === "number") {
           { encoding: "utf8" }
         ).trim();
         if (!sha) continue;
-        const date = execFileSync("git", ["show", "-s", "--format=%cI", sha], {
+        const [epoch, iso] = execFileSync("git", ["show", "-s", "--format=%ct%x09%cI", sha], {
           encoding: "utf8",
-        }).trim();
-        if (!newest || date > newest.date) newest = { sha, date, file };
+        })
+          .trim()
+          .split("\t");
+        const instant = Number(epoch);
+        if (!newest || instant > newest.instant) newest = { sha, instant, iso, file };
       }
       if (!newest) throw new Error("no docket/done/ file resolved to an add commit");
       sinceRounds = execFileSync(
@@ -278,7 +294,7 @@ if (typeof gapLimit === "number") {
       )
         .split("\n")
         .filter(Boolean).length;
-      detail = `last closed: ${newest.file} (${newest.sha.slice(0, 8)}, ${newest.date})`;
+      detail = `last closed: ${newest.file} (${newest.sha.slice(0, 8)}, ${newest.iso})`;
     }
 
     if (sinceRounds > gapLimit) {
