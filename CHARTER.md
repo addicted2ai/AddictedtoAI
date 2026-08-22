@@ -589,7 +589,13 @@ subject to the same append-only rule it imposes on everything else.
   mechanical check would need to distinguish a legitimate pause or release
   (this project's own history holds several, all self-merged, all legitimate)
   from an edit that removes the honouring logic, and this round did not build
-  that distinction; filed as a docket item rather than guessed at.
+  that distinction. It tried to file the gap rather than guess at a
+  mechanism, and could not: `meta`'s open queue was already 26 items against
+  a `queue_budget` of 14 in `policy.yml`, so `check-docket.mjs`'s filing gate
+  correctly refused to let a `track: meta` item grow it further, exactly as
+  designed. Recorded here in place of the item it could not file, rather than
+  relabelling it into a track it does not belong to just to get past the
+  gate.
 
   What this entry could not fix: `app/charter/page.js:203` reads "The document
   is human-owned, so only the maintainer can amend it" — false as of this
