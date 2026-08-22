@@ -14,25 +14,38 @@ document does not claim more than it is: `.github/` and
 `scripts/check-track-scope.mjs` — the enforcement mechanism itself, not the
 content rule 13 delegates — are guarded by the `human-owned-paths` job in
 `.github/workflows/pr-checks.yml`, a required status check that fails on any
-pull request touching them, so such a request cannot merge on green. The same
-job also runs `scripts/check-13a-unchanged.mjs`, which fails only if rule
-13a's own text below differs from `origin/main`'s — the one clause in this
-file the loop may not amend under any authorisation. Both checks bind
-absolutely against merging while they are red, and overriding either requires
-admin. `enforce_admins` is off on `main`, so that override exists. A
+pull request touching them, so such a request cannot merge on green. That
+check binds absolutely against merging while it is red, and overriding it
+requires admin. `enforce_admins` is off on `main`, so that override exists. A
 locally-started round's `gh` CLI — the one `round.mjs ship` invokes —
 authenticates as the repository owner, which is an admin, so such a round
-could merge past either check today. What prevents it is that `round.mjs`
-never performs a merge itself and that the procedure which launches local
-rounds tells the round to run `ship` and not to merge by hand — a script and
-a habit, not a credential. A round run through the workflow action is
-different: the one that has done so, PR #10
-(`loop/maintain/fix-disclosure-check-and-analytics-claim`), was authored and
-merged by `app/claude`, the action's app, not the owner. `.github/CODEOWNERS`
-names the same two paths and routes review requests, but it is documentation,
-not the gate. This file and `prompts/` are otherwise the loop's to edit under
-rule 13, the same as the rest of this repository — `.github/` is not; it is
-part of what rule 13a reserves. No mode excuses the loop from any rule below.
+could merge past the check today. What prevents it is that `round.mjs` never
+performs a merge itself and that the procedure which launches local rounds
+tells the round to run `ship` and not to merge by hand — a script and a habit,
+not a credential. A round run through the workflow action is different: the
+one that has done so, PR #10 (`loop/maintain/fix-disclosure-check-and-analytics-claim`),
+was authored and merged by `app/claude`, the action's app, not the owner.
+`.github/CODEOWNERS` names the same two paths and routes review requests, but
+it is documentation, not the gate.
+
+Two more jobs in the same workflow guard what rule 13a reserves inside this
+file and outside the path list altogether: `rule-13a-text`
+(`scripts/check-13a-unchanged.mjs`) fails if rule 13a's own text below
+differs from `origin/main`'s, and `stop-mechanism`
+(`scripts/check-hold-mechanism.mjs`) fails if an active `docket/HOLD.md` hold
+is cleared rather than created, or if the code in `scripts/orchestrate.sh`
+that honours it is altered. Neither is a required check yet — read live from
+the GitHub API, branch protection's required contexts are
+`build-and-audit`, `human-owned-paths` and `review-artifact`, not these two —
+so today both can report a real violation and watch the merge happen anyway.
+Arming them is a settings change, which this rule reserves to the maintainer
+the same as it reserves everything else in this paragraph; the jobs' own
+comments carry this same disclosure rather than assert an enforcement that
+is not yet real.
+
+This file and `prompts/` are otherwise the loop's to edit under rule 13, the
+same as the rest of this repository — `.github/` is not; it is part of what
+rule 13a reserves. No mode excuses the loop from any rule below.
 
 The direction, the tests, and the track charges in this document are fixed.
 Everything else is the loop's to decide — which metrics to keep, what the
