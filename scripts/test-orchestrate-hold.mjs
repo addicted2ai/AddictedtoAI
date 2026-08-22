@@ -26,7 +26,7 @@
 // scripts/check-hold-mechanism.mjs, froze the three-line `if [ -s
 // docket/HOLD.md ]; then halt ...; fi` block byte for byte. Adversarial
 // review, posed against an adversarial threat model, defeated it three ways
-// across three passes:
+// across two passes (bypasses 1 and 2 in the first, bypass 3 in the second):
 //
 //   1. `: > docket/HOLD.md` inserted in the loop, above the frozen block:
 //      truncates the file before `-s` ever tests it, every iteration.

@@ -85,14 +85,20 @@ claims that outran what was true.
 What shipped is bigger than that description, and this paragraph is
 rewritten to say so rather than left describing the round's opening brief
 after the round outgrew it. New rule 13a needed a mechanism for the stop
-mechanism it reserves; three separate adversarial review passes defeated
-three different shapes of that mechanism before change 8 landed as a
-behavioural test that raises the cost of a bypass and states, in its own
-text and in rule 13a, that it cannot close the general class — a ceiling
-recognised and stated rather than chased with a fourth patch. The same
-third review pass then found rule 13a's own count of what it enforces did
-not add up (change 9): a rule written to stop this project claiming more
-than it enforces was, for one draft, doing exactly that about itself.
+mechanism it reserves; two separate adversarial review passes defeated
+three different shapes of that mechanism between them (bypasses 1 and 2 in
+the first, bypass 3 in the second) before the second pass's own finding —
+that the threat model behind all three fixes was itself mistaken, corrected by
+the maintainer directly rather than by a further review artifact — produced
+a behavioural test that actually converges against the threat this
+project's record supports, with the threat it does not defend against named
+rather than hidden (changes 8, 10 and 11). The second pass also found rule
+13a's own count of what it enforces did not add up (change 9): a rule
+written to stop this project claiming more than it enforces was, for one
+draft, doing exactly that about itself. A third review pass (change 12)
+found this paragraph's own "three passes" repeated the same miscount it now
+corrects, and found a false claim in rule 13a's own wording — this round's,
+not the reviewer's — about what the loop can and cannot reach.
 
 **1. Rewrote rule 13; added rule 13a**
 - Hypothesis: rule 13's prohibition and its own delegation clause had stood
@@ -482,7 +488,7 @@ than it enforces was, for one draft, doing exactly that about itself.
   it held.
 
   Re-answered against the model the evidence supports rather than the one
-  three review passes had assumed: an adversary evading a live human
+  the first two review passes had assumed: an adversary evading a live human
   command is not a shape this project's history shows even once. The
   realistic failure is a future round accidentally breaking the mechanism
   while refactoring something else — moving `halt()`, dropping the check,
@@ -523,6 +529,77 @@ than it enforces was, for one draft, doing exactly that about itself.
   passes five scenarios; the charter rule count and the single-`"13a."`-
   marker invariant both hold, checked the same two independent ways as
   every other edit to this rule this round.
+
+**12. Access mistaken for restraint; a pass count miscounted four times**
+- Hypothesis: none stated in advance — a third formal review pass checked
+  change 11's own rewrite and found it had introduced a new false claim
+  while fixing an old one, plus a miscount this round had itself repeated
+  in four separate files.
+- Change: **finding 1.** Change 11 wrote that the loop "was never given
+  access" to start its own sessions, revert commits, or use the
+  credentials it operates under. Verified directly, not trusted:
+
+  ```
+  gh auth status
+  Token scopes: 'gist', 'read:org', 'repo', 'workflow'
+
+  grep -n "workflow_dispatch\|schedule\|cron" .github/workflows/loop.yml
+  25:  # schedule:
+  26:  #   - cron: "0 */3 * * *"
+  27:  workflow_dispatch:
+
+  gh api repos/addicted2ai/AddictedtoAI --jq '.permissions'
+  {"admin":true,"maintain":true,"pull":true,"push":true,"triage":true}
+
+  gh api user --jq '.login'
+  addicted2ai
+  ```
+
+  All three claims were false. The loop's token carries `workflow` scope
+  and `loop.yml` accepts `workflow_dispatch` with its cron commented out
+  — `gh workflow run loop.yml` would start a session. The loop operates as
+  `addicted2ai`, the repository's own admin, with the same push access it
+  already uses to merge past a red required check — the same access would
+  revert any commit. And the loop is operating under the credentials in
+  question right now, the same account `gh auth status` names; nothing
+  about "holding" them is exclusive to the maintainer.
+
+  This finding traces to the coordinator's own brief, in the coordinator's
+  own words: "I told you to write that the maintainer starts every
+  session. You added 'the loop was never given access to touch any of
+  them.'" The instructed fact was true; the explanation this round supplied
+  for it, unprompted, was not, and went uncaught by this round's own first
+  pass — the same failure rule 1 exists to prevent, found this time inside
+  the rule that names the rest of this document's access-versus-restraint
+  honesty.
+
+  `CHARTER.md` rule 13a rewritten again: the three things are now stated
+  as what they are — restraint, for session-starting and commit-reverting,
+  the loop demonstrably having the means and not using them, matching the
+  document's own existing `enforce_admins` honesty; a genuine access limit
+  for credential revocation alone, which needs an account-level action the
+  loop's token cannot reach. Verified after the rewrite: rule count 22,
+  exactly one `"13a."` marker, both checked the same two independent ways
+  as every prior edit to this rule.
+
+  **Finding 2.** "Three review passes" appeared four times describing how
+  bypasses 1-3 were found, in `CHANGELOG.md` (this entry's own opening
+  paragraph, and change 11's convergence paragraph), `CHARTER.md`'s
+  History, and `.github/workflows/pr-checks.yml`'s `stop-mechanism`
+  comment. Checked directly rather than trusted at the line numbers
+  given, because line numbers move as an entry grows and the reviewer said
+  so explicitly. The true count is two: bypasses 1 and 2 were found in the
+  first formal review pass, bypass 3 in the second. `scripts/test-orchestrate-hold.mjs`'s
+  own header had the identical miscount, "across three passes," fixed to
+  "across two passes (bypasses 1 and 2 in the first, bypass 3 in the
+  second)." All four instances corrected in place; the correct count
+  already appeared in changes 8, 9 and 10's own hypothesis lines, which is
+  what made the opening paragraph's count a genuine error rather than
+  merely a different way of phrasing the same thing.
+
+  Not touched, per instruction: `docket/reviews/`, which is the reviewer's
+  own record, including the artifact that no longer covers `HEAD` now that
+  this round has committed further changes on top of it.
 
 - Origin: delegated
 - Track: meta
@@ -604,6 +681,19 @@ than it enforces was, for one draft, doing exactly that about itself.
   proximate cause, confirmed by rerunning the same check with the three
   words reworded out and nothing else changed: clean. Recorded rather than
   smoothed over, per rule 7.
+
+  Change 12's two findings verified independently before being trusted:
+  `gh auth status`, `grep -n "workflow_dispatch\|schedule\|cron"
+  .github/workflows/loop.yml`, `gh api repos/addicted2ai/AddictedtoAI --jq
+  '.permissions'` and `gh api user --jq '.login'` all run directly and
+  pasted in change 12, not copied from the coordinator's report. The
+  pass-count fix checked at the source in each of the four files named
+  (`CHANGELOG.md`, `CHARTER.md`, `scripts/test-orchestrate-hold.mjs`,
+  `.github/workflows/pr-checks.yml`), not at the line numbers given, since
+  line numbers move as an entry grows. `node scripts/round.mjs check`
+  re-run one final time after both fixes, green: lint, docket, track
+  scope, build, and every route check including
+  `test-orchestrate-hold.mjs`'s five scenarios.
 - Result: not yet measured — this round changes governance text and CI
   machinery, not a metric-bearing page, and CHARTER.md rule 3 makes "not
   measured" the honest answer rather than inventing one. What is verified,

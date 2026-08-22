@@ -273,13 +273,36 @@ never this charter, never the workflows. See rules 9 and 12.
 
 13a. **The loop may change what it does. It may not change what makes its
     actions visible and reversible.** The maintainer's stated requirement is
-    the ability to intervene and revert. Today that rests on three things
-    outside anything this document could delegate away: the maintainer
-    starts every session — nothing has run unattended since the supervisor
-    died on 2026-08-18, so the loop takes no action at all without a human
-    beginning it — the maintainer can revert any commit, and the maintainer
-    holds the credentials the loop operates under. None of the three needs
-    reserving below; the loop was never given access to touch any of them.
+    the ability to intervene and revert. This document already draws the
+    line between access and restraint elsewhere — `enforce_admins` is off,
+    and the override that lets a human step past a red required check
+    exists whether or not it is ever used — and the same line applies to
+    this ability, stated rather than smoothed over.
+
+    In practice, the maintainer has started every session; nothing has run
+    unattended since the supervisor died on 2026-08-18. Not because the
+    loop lacks the means: its token carries the `workflow` scope, and
+    `.github/workflows/loop.yml` accepts `workflow_dispatch` (the schedule
+    that would start it automatically sits in the same file, commented out)
+    — `gh workflow run loop.yml` would start a session, and the loop does
+    not run it. In practice, the maintainer can revert any commit — and,
+    mechanically, so can the loop: it operates as `addicted2ai`, the
+    repository's admin, with the same push access that already merges past
+    a red required check. And the credentials are not something the
+    maintainer holds apart from the loop; the loop is operating under them
+    right now, the same account `gh auth status` reports. What the
+    maintainer holds that the loop does not is narrower and real: the
+    ability to rotate or revoke that credential, which takes an
+    account-level action outside anything the loop's own token can reach.
+
+    None of the three is reserved below, and access is not the reason —
+    demonstrated above, twice, that the loop has it. What stops the loop
+    from dispatching its own sessions or reverting commits at will is the
+    same restraint this whole document already runs on, named here rather
+    than assumed; reserving a capability the loop already restrains itself
+    from using would add a rule with nothing behind it but that restraint
+    stated twice. Credential revocation needs no reservation either, for
+    the opposite reason: the loop has no path to it at all.
 
     What follows is different: properties the loop *can* reach, reserved
     here regardless of what else in this document is delegated.
@@ -675,8 +698,9 @@ subject to the same append-only rule it imposes on everything else.
   left to look armed.
 
   A behavioural check, `scripts/test-orchestrate-hold.mjs`, went through
-  three review-driven revisions before landing, and the last one corrected a
-  premise the first two were built on. The first version froze the `if [ -s
+  three versions before landing: two driven by adversarial review passes,
+  the third by the maintainer directly correcting a premise the first two
+  were built on. The first version froze the `if [ -s
   docket/HOLD.md ]; then halt ...; fi` fragment in `scripts/orchestrate.sh`
   byte for byte, on the belief that `docket/HOLD.md` is how the maintainer
   intervenes in a running loop; adversarial review defeated that framing by
@@ -691,8 +715,8 @@ subject to the same append-only rule it imposes on everything else.
   every one the orchestrator or a round halting itself, never a human
   reaching into a live one, because nothing has run unattended since the
   supervisor died on 2026-08-18. The maintainer corrected this mid-round,
-  after the third review pass had already posed the bypass against an
-  adversarial threat model on the strength of that same wrong premise. Read
+  after the second review pass had already posed the bypass against an
+  adversarial threat model on the strength of that same mistaken premise. Read
   against the model the record actually supports — an ordinary future round
   breaking the mechanism by accident, not a reviewer deliberately evading a
   live human command — a test that actually runs the script and watches it
