@@ -101,6 +101,28 @@ tracks:
     # version proven insufficient by a hand-placed bypass item, fixed with the
     # second enforcement).
 
+# --- Visitor-facing gap ------------------------------------------------------
+#
+# CHARTER.md rule 22: the loop fails when the site stops changing for the
+# people who visit it. Expressed as a round count, the same shape as
+# `audit.max_rounds_between_runs` above and for the same reason -- rounds
+# ship several times in some sessions and not at all for stretches of others,
+# so a calendar duration would say nothing without also stating the cadence,
+# and a round count is what scripts/preflight.mjs can read directly from
+# CHANGELOG.md and git history without a second clock.
+#
+# No historical base rate exists for this specifically. `serves:
+# worth-a-visit` (CHARTER.md's 2026-08-22 amendment) has closed exactly once,
+# the same day it was introduced, so there is one data point, measured on the
+# day the vocabulary was invented, which is not a rate. 15 is a starting
+# estimate, not a derived one: roughly three times `audit`'s gap of 5, on the
+# reasoning that a worth-a-visit closure (a shipped demo or a post a stranger
+# would forward) is a materially bigger lift than an audit pass, while still
+# far short of the 167-round span this rule exists to prevent a repeat of --
+# see CHARTER.md's History, 2026-08-22. Re-measure once a handful of closures
+# exist and this stops being a guess.
+max_rounds_between_visitor_facing: 15
+
 # --- Publishing -------------------------------------------------------------
 #
 # Deliberately decoupled from run cadence. Running often is how the site stays

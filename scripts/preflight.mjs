@@ -28,6 +28,7 @@ import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { load as parseYaml } from "js-yaml";
+import { VISITOR_FACING } from "./visitor-facing-tracks.mjs";
 
 // See the note in check-docket.mjs: CRLF makes the frontmatter regex match
 // nothing, and `.gitattributes` only helps working copies created after it.
@@ -217,6 +218,87 @@ if (deployments.ok !== true) {
       ? "Without the signal nothing knows whether the site is publishing main — the silence that let 15 August's merges vanish."
       : "Production not matching main outranks the docket. The build track must get the deploy green again; until it is, the record is not being published.",
   });
+}
+
+// 6. CHARTER.md rule 22: the site stops demonstrating anything when it stops
+//    changing for the people who visit it. Reads git history directly rather
+//    than adding a second parser of CHANGELOG.md: every file under
+//    `docket/done/` carrying `serves: worth-a-visit` under a VISITOR_FACING
+//    track (scripts/visitor-facing-tracks.mjs -- the same list check-docket.mjs
+//    and generative-push.mjs already trust) has a real commit that added it,
+//    and every shipped round touches CHANGELOG.md (rule 8), so "shipped
+//    rounds since the newest one closed" is the count of commits after that
+//    one which touch CHANGELOG.md -- no round-number bookkeeping to keep in
+//    sync, no dependency on CHANGELOG.md's prose shape.
+const gapLimit = policy.max_rounds_between_visitor_facing;
+if (typeof gapLimit === "number") {
+  try {
+    const doneDir = path.join(root, "docket", "done");
+    const doneFiles = fs.existsSync(doneDir)
+      ? fs.readdirSync(doneDir).filter((f) => f.endsWith(".md"))
+      : [];
+    const generative = doneFiles.filter((file) => {
+      const fields = frontmatter(readText(path.join(doneDir, file)));
+      return fields.serves === "worth-a-visit" && VISITOR_FACING.includes(fields.track);
+    });
+
+    let sinceRounds;
+    let detail;
+    if (generative.length === 0) {
+      // Nothing has ever closed -- every shipped round there has been counts.
+      sinceRounds = execFileSync(
+        "git",
+        ["log", "--oneline", "HEAD", "--", "CHANGELOG.md"],
+        { encoding: "utf8" }
+      )
+        .split("\n")
+        .filter(Boolean).length;
+      detail = "no worth-a-visit item has ever closed";
+    } else {
+      // The newest closure: the commit that ADDED the file under docket/done/,
+      // by commit date, across every worth-a-visit item that has ever closed.
+      let newest = null;
+      for (const file of generative) {
+        const sha = execFileSync(
+          "git",
+          ["log", "--diff-filter=A", "--format=%H", "-1", "--", `docket/done/${file}`],
+          { encoding: "utf8" }
+        ).trim();
+        if (!sha) continue;
+        const date = execFileSync("git", ["show", "-s", "--format=%cI", sha], {
+          encoding: "utf8",
+        }).trim();
+        if (!newest || date > newest.date) newest = { sha, date, file };
+      }
+      if (!newest) throw new Error("no docket/done/ file resolved to an add commit");
+      sinceRounds = execFileSync(
+        "git",
+        ["log", "--oneline", `${newest.sha}..HEAD`, "--", "CHANGELOG.md"],
+        { encoding: "utf8" }
+      )
+        .split("\n")
+        .filter(Boolean).length;
+      detail = `last closed: ${newest.file} (${newest.sha.slice(0, 8)}, ${newest.date})`;
+    }
+
+    if (sinceRounds > gapLimit) {
+      findings.push({
+        urgency: 4,
+        track: "build",
+        what: `${sinceRounds} shipped round(s) since a worth-a-visit item last closed (limit ${gapLimit})`,
+        detail: [detail],
+        why: "CHARTER.md rule 22: not a merge blocker -- ship what is actually broken first -- but never silent.",
+      });
+    }
+  } catch (error) {
+    findings.push({
+      urgency: 0,
+      track: "meta",
+      what: "the visitor-facing gap could not be measured",
+      detail: [String(error.message || error).split("\n")[0]],
+      why: "Without this signal nothing knows whether the site has stopped changing for visitors (CHARTER.md rule 22).",
+    });
+  }
 }
 
 findings.sort((a, b) => a.urgency - b.urgency);
