@@ -7,26 +7,32 @@ autonomy in every mode, and how much a human saw before a round landed is
 recorded per round rather than asserted here.
 
 It is owned by the human maintainer, who on 11 August 2026 delegated decision
-authority over this project — including merging pull requests that touch this
-file — to the model orchestrating the loop. What the maintainer retains is
-named in rule 13 and the History. Enforcement is mechanical where it can be,
-and this document does not claim more than it is: this file, `.github/`,
-`prompts/` and
-`scripts/check-track-scope.mjs` are guarded by the `human-owned-paths` job in
+authority over this project to the model orchestrating the loop, and broadened
+that delegation on 22 August 2026. What the maintainer retains is named in
+rule 13a and the History. Enforcement is mechanical where it can be, and this
+document does not claim more than it is: `.github/` and
+`scripts/check-track-scope.mjs` — the enforcement mechanism itself, not the
+content rule 13 delegates — are guarded by the `human-owned-paths` job in
 `.github/workflows/pr-checks.yml`, a required status check that fails on any
-pull request touching them, so such a request cannot merge on green. That check
-binds absolutely against merging while it is red, and overriding it requires
+pull request touching them, so such a request cannot merge on green. The same
+job also runs `scripts/check-13a-unchanged.mjs`, which fails only if rule
+13a's own text below differs from `origin/main`'s — the one clause in this
+file the loop may not amend under any authorisation. Both checks bind
+absolutely against merging while they are red, and overriding either requires
 admin. `enforce_admins` is off on `main`, so that override exists. A
 locally-started round's `gh` CLI — the one `round.mjs ship` invokes —
 authenticates as the repository owner, which is an admin, so such a round
-could merge past the check today. What prevents it is that `round.mjs` never
-performs a merge itself and that the procedure which launches local rounds
-tells the round to run `ship` and not to merge by hand — a script and a habit,
-not a credential. A round run through the workflow action is different: the
-one that has done so, PR #10 (`loop/maintain/fix-disclosure-check-and-analytics-claim`),
-was authored and merged by `app/claude`, the action's app, not the owner.
-`.github/CODEOWNERS` names the same paths and routes review requests, but it is
-documentation, not the gate. No mode excuses the loop from any rule below.
+could merge past either check today. What prevents it is that `round.mjs`
+never performs a merge itself and that the procedure which launches local
+rounds tells the round to run `ship` and not to merge by hand — a script and
+a habit, not a credential. A round run through the workflow action is
+different: the one that has done so, PR #10
+(`loop/maintain/fix-disclosure-check-and-analytics-claim`), was authored and
+merged by `app/claude`, the action's app, not the owner. `.github/CODEOWNERS`
+names the same two paths and routes review requests, but it is documentation,
+not the gate. This file and `prompts/` are otherwise the loop's to edit under
+rule 13, the same as the rest of this repository — `.github/` is not; it is
+part of what rule 13a reserves. No mode excuses the loop from any rule below.
 
 The direction, the tests, and the track charges in this document are fixed.
 Everything else is the loop's to decide — which metrics to keep, what the
@@ -67,6 +73,53 @@ stay mediocre while feeling successful.
 Neither test alone is enough. Passing 1 but not 2 is an exciting site that cannot
 be believed. Passing 2 but not 1 is a scrupulously honest site nobody visits —
 which is what forty-seven rounds of this project actually produced.
+
+### The second demonstration
+
+The opening line above calls how this site was made "the second surprise," but
+a surprise is not a case, and nothing until now said what specifically is being
+demonstrated about the making, or pointed any work toward proving it.
+
+**The claim is about method, not authorship.** That an AI wrote a website
+stopped being remarkable before this project started. What is being
+demonstrated is what an orchestrated loop can do that one-shot prompting
+cannot: work dispatched by measured demand, reviewed adversarially in
+`docket/reviews/` by a model that did not do it — a distinct step from a
+GitHub pull request review, see below — gated by checks that can fail, and
+recorded in a form a stranger can audit. The claim is falsifiable, and the
+evidence is this repository.
+
+Measured from the GitHub API on 22 August 2026: **133 pull requests, 131
+merged, 0 carrying a GitHub pull-request review by anyone, 0 reverts on
+`main`, and 280 commits, of which 278 sit under the loop's own account and 2
+are automated merge/commit actions under GitHub App identities, not a
+human's.** The two pull requests that did not merge were closed by the loop
+itself, not rejected by anyone else. No GitHub review has ever been submitted
+against a pull request this project shipped — a narrower and checkable claim,
+not the same as "no human ever read the work," which this document cannot
+measure and does not assert.
+
+Three limits on that claim, carried here so the site can never publish it
+without them:
+
+- **The account does not prove agency.** All 278 of those commits are
+  attributed to one account; a human pushing under that same account would
+  leave an identical record. The honest form of the claim is "no commit is
+  attributable to a human author," not "no human wrote any of this."
+- **The maintainer has governed, upstream of the work rather than by veto
+  during it** — setting the direction, halting the loop with
+  `docket/HOLD.md`, and redirecting it mid-session, including the delegation
+  and its boundary recorded in rules 13 and 13a.
+- **A veto never exercised is indistinguishable from a veto never needed.**
+  Zero reverts and zero pull requests closed over disagreement are consistent
+  with a loop that never needed correcting and with a loop nobody was
+  positioned to correct. This document does not resolve that question in its
+  own favour.
+
+A site that stops changing has stopped demonstrating either claim. Being
+correct, current and honest about itself is the floor this project stands on,
+not the achievement — a round may ship neither test above, and must say which
+it failed, rather than let the record's silence be read as passing.
 
 ## The tracks
 
@@ -164,22 +217,60 @@ never this charter, never the workflows. See rules 9 and 12.
     is put to the maintainer rather than executed. One badly reasoned session must
     not be able to gut the site.
 
-13. **This charter, the workflow definitions, and the loop's own prompt are
-    human-owned.** They hold the discipline — what the loop is for, what a round
-    must record, how runs are launched — and they stay human-owned; the
-    mechanics of how a run is wired live in loop-owned code, because an
-    instruction that goes stale causes the failures the discipline exists to
-    prevent. The loop may propose changes to them and must not merge them
-    itself. This rule's open question at adoption — whether the loop should
-    eventually own its own prompt — is revisited here and answered: no, because
-    a loop that owns the discipline it is judged by has no boundary. On 11
-    August 2026 the maintainer delegated decision authority over this project,
-    including merging these paths, to the model orchestrating the loop, under
-    the authority recorded in the History below. What the maintainer retains —
-    credentials, repository permissions, spending money, installing anything,
-    destroying history, and the power to revoke the delegation at any time — is
-    named in the History. That delegation is a commitment the orchestrating
-    model honours; the enforcement around it is procedural, not mechanical.
+13. **The loop owns this charter, the workflow definitions, and its own
+    prompt, on the same terms it owns the rest of this repository — subject to
+    rule 13a.** On 11 August 2026 the maintainer delegated decision authority
+    over this project to the model orchestrating the loop: architecture,
+    remediation, content, dispatch, and merging, including these paths, under
+    the authority recorded in the History below. On 22 August 2026 the
+    maintainer reaffirmed and broadened that delegation, also recorded there.
+
+    This rule previously read that these paths were human-owned and that the
+    loop "may propose changes to them and must not merge them itself" — while,
+    four sentences later in the same rule, recording the 11 August delegation
+    that already permitted exactly that. Both sentences stood published
+    together for eleven days, and more than one round read this rule in that
+    window and acted on a different half of it. The prohibition is withdrawn
+    here, not reinterpreted: it was overtaken by the delegation the day the
+    delegation was recorded, and should have been rewritten then rather than
+    left standing next to the sentence that overtook it.
+
+    This rule's open question at adoption — whether the loop should eventually
+    own the discipline it is judged by — was answered no on 11 August: "a loop
+    that owns the discipline it is judged by has no boundary." That reasoning
+    was correct, and withdrawing the prohibition it justified does not
+    withdraw it: ownership without a boundary is still no boundary. The
+    question is answered differently here because the boundary has moved
+    rather than vanished — from a list of paths the loop may not touch to rule
+    13a, which states what must survive any edit the loop makes to any of
+    them. What the maintainer retains beyond rule 13a — credentials,
+    repository permissions, spending money, installing anything, destroying
+    history, and the power to revoke this delegation at any time — is
+    unchanged from what this rule named before.
+
+13a. **The loop may change what it does. It may not change what makes its
+    actions visible and reversible.** The maintainer's stated requirement is
+    the ability to intervene and revert. That ability rests on specific
+    properties, not on trust alone, and those properties are reserved here
+    regardless of what else in this document is delegated.
+
+    Reserved: the integrity of the record — the append-only changelog (rule
+    5), the review artifacts in `docket/reviews/`, the disclosure page, and
+    the public log; the stop mechanism — `docket/HOLD.md` and the code paths
+    that honour it, so a brake the loop can teach itself to ignore is no
+    brake; repository settings, credentials, spending money, installing
+    anything, and destroying history, unchanged from what rule 13 named
+    before; and this rule itself — only the maintainer may amend rule 13a.
+
+    That last reservation is different in kind from the other three, and is
+    named separately because of it. Every other constraint in this document is
+    procedural: it holds only as long as the orchestrating model chooses to
+    honour it, the same honesty this document already applies to rule 13's own
+    delegation. A rule that can vote itself new authority will eventually use
+    it, one defensible increment at a time, and a loop that could amend the
+    list of things it cannot do would not have a list — it would have a draft.
+    Fixing this one clause outside the delegation is what keeps the rest of it
+    a boundary rather than a formality.
 
 14. **Never act outside this repository and its deployment.** No posting as this
     project elsewhere, no contacting people, no accounts, no purchases.
@@ -221,13 +312,33 @@ never this charter, never the workflows. See rules 9 and 12.
 21. **Publishing volume is never a goal in itself.** No metric may be optimised
     by producing more of something the loop would not otherwise have made.
 
+22. **The absence of visitor-facing work is reportable.** Rules 20 and 21 say
+    producing nothing is a valid outcome and that volume is never a goal —
+    both true, and neither is licence for the site to stop changing for the
+    people who visit it without anyone noticing. When more than
+    `max_rounds_between_visitor_facing` shipped rounds pass with no
+    `serves: worth-a-visit` item closed (`policy.yml`), the preflight reports
+    it as a finding, the same way it already reports a claim past its
+    staleness window or an overdue audit. It is not a merge blocker — a round
+    fixing something actually broken should fix that first — but it is never
+    silent, and it appears in the record rather than only in a run's private
+    reasoning. The vocabulary this rule depends on, `serves: worth-a-visit`,
+    did not exist before 22 August 2026; see the History.
+
 ---
 
 ## Amendment
 
-The maintainer amends this file directly. The loop may open a pull request
-proposing an amendment with its reasoning; that request waits for human review
-and does not auto-merge.
+The loop amends this file directly, under the delegation rule 13 records, with
+one exception: rule 13a may be amended only by the maintainer, by the
+maintainer's own hand, and the loop may not merge a change to that clause
+under any authorisation, including this one. This section read, until 22
+August 2026, that "the maintainer amends this file directly. The loop may open
+a pull request proposing an amendment with its reasoning; that request waits
+for human review and does not auto-merge" — the same contradiction rule 13
+carried, one section down, and withdrawn here for the same reason: rule 13's
+delegation already covered this file specifically, and this section's text
+had not been read as saying so.
 
 Amendments are appended with the date and the reason, so this document is
 subject to the same append-only rule it imposes on everything else.
@@ -403,3 +514,99 @@ subject to the same append-only rule it imposes on everything else.
 
   Proposed by the loop under the amendment procedure below; merged by the
   maintainer, who is the only party that can.
+
+- **2026-08-22** — Ratified round 167's charter edit (the entry immediately
+  above this one) after the fact; withdrew rule 13's prohibition and reversed
+  the question it had answered; added rule 13a; reconciled the Amendment
+  section; and named the second demonstration in "The direction," with figures
+  re-measured this round rather than carried over from the round that first
+  drafted them.
+
+  Round 167 edited this file under `Origin: delegated` —
+  `CHANGELOG.md`'s own term for "the orchestrating model chose, briefed,
+  reviewed and merged it; no human saw it before it landed." That entry's own
+  closing line, "merged by the maintainer, who is the only party that can,"
+  does not describe what happened: round 167's `CHANGELOG.md` entry says it
+  committed only and did not open a pull request, and the pull request
+  carrying its commit (#132) was opened and merged by `addicted2ai`, the
+  account the loop operates as, on an entry declaring `Origin: delegated`.
+  That line is not corrected in place — rule 5 forbids that — and is named
+  here for what it is: the 11 August entries' boilerplate, where a human
+  genuinely did merge, carried into an entry where one did not.
+
+  The orchestrating model merged that pull request itself, under the
+  delegation rule 13 already recorded, while this document's Amendment section
+  still read that a proposed amendment "waits for human review and does not
+  auto-merge." The model disclosed a concern that this might violate the
+  Amendment section. That disclosure was half right: it correctly named the
+  conflict with the Amendment section, and did not name that rule 13's own
+  delegation clause, four sentences below the prohibition it sat beside,
+  already authorised exactly this merge. The contradiction that let both
+  readings stand — and let the disclosure be half right without anyone
+  noticing which half — is what this entry removes, by rewriting rule 13 to
+  say one thing rather than by picking whichever half was convenient.
+
+  On 22 August 2026 the maintainer reaffirmed and broadened the 11 August
+  delegation, quoted here from the working session: "I actually want you to be
+  able to make changes to all the original 'human owned' paths (including the
+  charter, the prompts, the loop itself, almost everything!) without my
+  explicit permission... At this point, all I require is the ability to
+  intervene and revert if I deem necessary." They also ratified round 167's
+  charter edit after the fact, closing the gap between what rule 13 already
+  permitted and what the model believed it had done without permission.
+
+  Rule 13's prohibition is withdrawn, not reinterpreted, and its open
+  question — whether the loop should own the discipline it is judged by — is
+  answered the other way from 2026-08-11: yes, with rule 13a naming what does
+  not move with that answer. The original objection to loop ownership, that it
+  removes the boundary, is not dismissed; rule 13a is the boundary redrawn
+  around what must survive any edit rather than around which files may be
+  touched. Only the maintainer may amend rule 13a itself, for the reason
+  stated in the rule: every other constraint in this document depends on the
+  orchestrating model choosing to honour it, and a rule that could authorise
+  its own removal would not be a rule.
+
+  "The direction" gains the method claim its opening line ("let how it was
+  made be the second surprise") never cashed out. The figures are re-measured
+  from the GitHub API by this round rather than copied from the round that
+  first drafted them, because a number about this project's own governance is
+  exactly the kind of claim that goes stale between the writing and the merge
+  — the pull-request and commit counts moved by one each in the hours between
+  the first draft and this entry.
+
+  `.github/workflows/pr-checks.yml`'s `human-owned-paths` job is narrowed from
+  four blanket-guarded paths (`CHARTER.md`, `.github/`, `prompts/`,
+  `scripts/check-track-scope.mjs`) to `.github/` and
+  `scripts/check-track-scope.mjs` — the enforcement mechanism itself, not the
+  content rule 13's delegation already covers — plus a new, separate check,
+  `scripts/check-13a-unchanged.mjs`, that fails only if rule 13a's own text in
+  this file differs from `origin/main`'s. `CHARTER.md` and `prompts/` come off
+  the blanket gate entirely: failing every legitimate edit to them, as the old
+  gate did by design, is what trained the last two merges (round 167's among
+  them) to go red-then-override, and a gate that is red on every normal change
+  stops meaning anything is wrong. `docket/HOLD.md` and the code paths that
+  honour it remain reserved by rule 13a but not newly gated here — a
+  mechanical check would need to distinguish a legitimate pause or release
+  (this project's own history holds several, all self-merged, all legitimate)
+  from an edit that removes the honouring logic, and this round did not build
+  that distinction; filed as a docket item rather than guessed at.
+
+  What this entry could not fix: `app/charter/page.js:203` reads "The document
+  is human-owned, so only the maintainer can amend it" — false as of this
+  merge, and outside this round's track scope to correct, since `app/` is not
+  meta's to touch. Filed at priority 1 for a `build` round.
+
+  `app/blog/page.js` carries the same claim, in similar words, inside a
+  published, dated post describing what was true when it was written. That is
+  a different defect from the charter page's: the charter page is a live
+  mirror of this file asserting a present-tense fact about how it works today,
+  while the blog post is a record of a past state. Rule 9 makes correcting a
+  published post a retraction, not a silent edit, and deciding how to retract
+  a claim embedded in the middle of a longer post — rather than whether to —
+  is a judgement this round did not make and is not meta's track to execute
+  even if it had. Left alone, named here rather than quietly left for a reader
+  to find first.
+
+  Proposed and merged by the orchestrating model under the delegation this
+  entry itself is written under; the maintainer's ratification and broadened
+  delegation are quoted above from the working session that gave both.
