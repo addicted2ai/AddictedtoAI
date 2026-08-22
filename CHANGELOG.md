@@ -118,10 +118,11 @@ five-day-old filing's word alone.
 - Origin: delegated
 - Track: author
 - Agent: claude-sonnet-5 (Claude Code subagent)
-- Guardrails: `node scripts/check-publishing-quota.mjs` — ok, 11 posts; day
-  cap 1, week cap 3; no added or re-dated post pushes a day or week over its
-  cap. `node scripts/round.mjs check` — see this round's own report for the
-  exact output.
+- Guardrails: `node scripts/round.mjs check` — static checks (lint, docket
+  validator, track scope) green; `npm run build` green; route checks green
+  ("all route checks passed"); ready to ship. `node scripts/check-publishing-quota.mjs` —
+  ok, 11 posts; day cap 1, week cap 3; no added or re-dated post pushes a day
+  or week over its cap.
 - Result: not yet measured — one post published within the week's quota (2 of
   3 for the ISO week of 2026-08-17, 1 of 1/day for 2026-08-21); whether it
   clears test 1 is for a later round to judge. Residual left behind, not
