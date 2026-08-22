@@ -612,7 +612,16 @@ The coordinator's follow-up did not prescribe a replacement mechanism —
 "I am not prescribing the mechanism this time" — and instead stated the
 property directly: **the matcher must never return a row the input does
 not unambiguously name; any transformation that could yield a different
-identifier than what was typed must produce no match, not a guess.**
+identifier than what was typed must produce no match, not a guess.** The
+coordinator explicitly offered reverting the run-on fix entirely — back to
+a safe miss on any glued period — as a legitimate answer, better than a
+clever rule with a hole in it. That was considered rather than skipped:
+the run-on fix was kept, in narrowed form, because a design exists that is
+provably bounded (at most two candidates, never a chain) and testable by
+brute force rather than merely argued for — the same standard the
+coordinator's own instruction set. Had no such bounded design been
+findable, reverting to a safe miss would have been the correct call
+instead, per the coordinator's own stated preference, not a compromise.
 Designed to that property rather than patched at the reported case:
 `dotCandidatesOf` now returns at most two candidates, never a chain — the
 whole run (trailing dots stripped), and, only if that fails, a single
