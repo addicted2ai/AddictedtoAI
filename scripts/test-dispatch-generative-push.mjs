@@ -31,14 +31,17 @@ const PUSH = { serves: "worth-a-visit", start_multiplier: 3.0, floor_multiplier:
 
 // --- closedGenerativeCount ---------------------------------------------------
 
-console.log("--- closedGenerativeCount: counts only the configured serves value ---");
+console.log("--- closedGenerativeCount: counts only the configured serves value, on a visitor-facing track ---");
 {
+  // All on `build` (visitor-facing) here on purpose, to isolate this test's
+  // point (filtering by `serves`) from the track filter, which has its own
+  // dedicated regression test below (docket/reviews/8d0098e...).
   const doneItems = [
-    { serves: "worth-a-visit" },
-    { serves: "more-checkable" },
-    { serves: "worth-a-visit" },
-    { serves: "floor" },
-    {}, // an item with no serves field at all must not throw or miscount
+    { track: "build", serves: "worth-a-visit" },
+    { track: "build", serves: "more-checkable" },
+    { track: "build", serves: "worth-a-visit" },
+    { track: "build", serves: "floor" },
+    { track: "build" }, // an item with no serves field at all must not throw or miscount
   ];
   const n = closedGenerativeCount(PUSH, doneItems);
   if (n === 2) ok(`2 of 5 done items counted (worth-a-visit only), got ${n}`);
@@ -138,6 +141,72 @@ console.log("\n--- generativeShare: partial and full share ---");
   const full = generativeShare(PUSH, [{ track: "build", serves: "worth-a-visit" }], "build");
   if (full === 1) ok(`1 of 1 ready build items worth-a-visit -> share ${full}`);
   else bad(`expected 1, got ${full}`);
+}
+
+// --- regression: a non-visitor-facing track's worth-a-visit item must move nothing ---
+//
+// docket/reviews/8d0098e624837a93b15fdb743b32dfcd161e2ff1.md: the version of
+// generativeShare/closedGenerativeCount that only filtered by `track ===
+// track` (not by VISITOR_FACING) let a hand-placed `track: meta, serves:
+// worth-a-visit` item -- filed straight into docket/open/, bypassing
+// scripts/check-docket.mjs entirely -- move meta's share to 0.05 and its
+// applied multiplier to 1.09 against the real repository's queue. The claim
+// that check-docket.mjs alone made meta's exposure "structurally 0" was
+// false: the filing gate is a required CI check, but this repository has
+// documented (docket/open/2026-08-11-branch-protection-does-not-require-review.md)
+// that `enforce_admins` is false on `main` and the account this loop merges
+// as can merge past a red required check, so a gate-only guarantee is not
+// unconditional. This test reproduces the exact shape of the counter-example
+// with crafted data (no live docket file needed) and must hold regardless of
+// what filed the item or how it got past the gate -- track alone decides,
+// nothing else.
+
+console.log("\n--- regression: a worth-a-visit item under a non-visitor-facing track moves nothing (docket/reviews/8d0098e...) ---");
+{
+  // Mirrors the reviewer's live counter-example: a meta item sitting among
+  // other ready meta work, most of which is ordinary (non-generative) meta
+  // work, the way a real bypassed item would arrive in a real queue.
+  const readyWithBypass = [
+    { track: "meta", serves: "worth-a-visit" }, // the bypass item itself
+    { track: "meta", serves: "more-checkable" },
+    { track: "meta", serves: "more-checkable" },
+    { track: "build", serves: "worth-a-visit" }, // a legitimate item on a different track must be unaffected
+  ];
+
+  const metaShare = generativeShare(PUSH, readyWithBypass, "meta");
+  if (metaShare === 0) {
+    ok(`a meta item carrying worth-a-visit contributes 0 to meta's own share (got ${metaShare}), not the 1-of-3 = 0.33 the unfiltered arithmetic would compute`);
+  } else {
+    bad(`meta's share moved to ${metaShare} -- the non-visitor-facing filter regressed`);
+  }
+
+  const metaApplied = pushApplied(3.0, metaShare);
+  if (metaApplied === 1) {
+    ok(`meta's applied multiplier stays 1 (got ${metaApplied}) even with a bypassed worth-a-visit item present`);
+  } else {
+    bad(`meta's applied multiplier moved to ${metaApplied} -- expected 1`);
+  }
+
+  const buildShare = generativeShare(PUSH, readyWithBypass, "build");
+  if (buildShare === 1) {
+    ok(`build's own legitimate worth-a-visit item is unaffected by meta's bypass item -> share ${buildShare}`);
+  } else {
+    bad(`build's share was ${buildShare}, expected 1 -- the filter over-blocked a legitimate track`);
+  }
+
+  // The same shape, for closedGenerativeCount: a bypassed meta item in
+  // docket/done/ must not decay the multiplier meta itself can never earn.
+  const doneWithBypass = [
+    { track: "meta", serves: "worth-a-visit" }, // the bypass item, now closed
+    { track: "build", serves: "worth-a-visit" }, // a legitimate closed item
+    { track: "build", serves: "more-true" },
+  ];
+  const closedCount = closedGenerativeCount(PUSH, doneWithBypass);
+  if (closedCount === 1) {
+    ok(`closedGenerativeCount counts only the build item (1), not the bypassed meta one too (got ${closedCount})`);
+  } else {
+    bad(`closedGenerativeCount was ${closedCount}, expected 1 -- a non-visitor-facing closed item was counted`);
+  }
 }
 
 // --- pushApplied: the composition, at the boundaries that matter -------------

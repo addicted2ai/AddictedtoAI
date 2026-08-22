@@ -85,13 +85,21 @@ tracks:
     # `generative_push` below gave a `queue_budget` track holding
     # `worth-a-visit` stock a combined ceiling of 2x * start_multiplier (6x at
     # today's numbers), not a flat 2x — see scripts/dispatch.mjs's "demand"
-    # comment. It still holds for meta specifically, and only because
-    # `scripts/check-docket.mjs` accepts `worth-a-visit` for `author` and
-    # `build` alone: meta cannot file the kind of item that would earn the
-    # push, so meta's `generativeShare` is structurally 0 and its ceiling
-    # stays the flat 2x this cap-removal rationale was written against.
-    # Reviewed and confirmed on round dbd4fd1 after the first draft of
-    # `generative_push` shipped without stating this dependency anywhere.
+    # comment. It still holds for meta specifically, and is enforced twice
+    # over so it holds even if one enforcement is bypassed: `scripts/check-docket.mjs`
+    # rejects `worth-a-visit` filed under `meta` at filing time (a required CI
+    # check — not unconditional in this repository; `enforce_admins` is
+    # `false` on `main` and the account this loop merges as has documented,
+    # merged-PR proof that it can merge past a red required check, see
+    # docket/open/2026-08-11-branch-protection-does-not-require-review.md),
+    # and `scripts/generative-push.mjs`'s counting functions filter to
+    # `VISITOR_FACING` (scripts/visitor-facing-tracks.mjs) themselves, so
+    # meta's `generativeShare` is genuinely structurally 0 in the arithmetic
+    # even if a `worth-a-visit` item under `meta` reaches `docket/open/`
+    # or `docket/done/` some other way. Reviewed and confirmed on round
+    # dbd4fd1 (dependency first stated) and round 8d0098e (the filing-gate-only
+    # version proven insufficient by a hand-placed bypass item, fixed with the
+    # second enforcement).
 
 # --- Publishing -------------------------------------------------------------
 #
@@ -170,16 +178,32 @@ docket:
 # at its boundaries: zero generative stock, the floor reached exactly, and a
 # shipped count large enough that the unclamped value would go below it.
 #
-# Only `author` and `build` can ever earn this. `scripts/check-docket.mjs`
+# Only `author` and `build` can ever earn this, enforced twice over so the
+# guarantee does not rest on one mechanism alone. `scripts/check-docket.mjs`
 # accepts `serves: worth-a-visit` for those two tracks alone -- `scout` and
 # `meta` are advancing tracks but ship no visitor-facing work, so neither can
-# file the item this push rewards. This was not true in the round that first
-# shipped this block: `meta` could file `worth-a-visit` and claim the push,
-# which both re-entrenched the self-referential work this vocabulary exists
-# to reduce and combined multiplicatively with the dispatcher's 2x pressure
-# ceiling to reach 6x -- undercutting the flat-2x guarantee meta's weight
-# comment above cites for dropping `max_share_of_runs`. Review on round
-# dbd4fd1 caught both; narrowed here the same round.
+# *file* the item this push rewards, at filing time, via a required CI check.
+# `scripts/generative-push.mjs`'s `closedGenerativeCount`/`generativeShare`
+# additionally filter to the same `VISITOR_FACING` list
+# (scripts/visitor-facing-tracks.mjs, the one definition both files import)
+# themselves, so an item that reaches `docket/open/`/`docket/done/` some
+# other way still contributes nothing -- the guarantee lives in the
+# arithmetic, not only upstream of it.
+#
+# This was not true in the round that first shipped this block: `meta` could
+# file `worth-a-visit` and claim the push, which both re-entrenched the
+# self-referential work this vocabulary exists to reduce and combined
+# multiplicatively with the dispatcher's 2x pressure ceiling to reach 6x --
+# undercutting the flat-2x guarantee meta's weight comment above cites for
+# dropping `max_share_of_runs`. Review on round dbd4fd1 caught both; narrowed
+# to `author`/`build` at the filing gate the same round. That fix was itself
+# incomplete: review on round 8d0098e proved the filing-gate-only version
+# insufficient by hand-placing a `track: meta, serves: worth-a-visit` item
+# straight into `docket/open/` (bypassing `check-docket.mjs` entirely -- the
+# same class of gap `enforce_admins: false` already documents for this
+# repository's merges, see docket/open/2026-08-11-branch-protection-does-not-require-review.md)
+# and getting a nonzero `generativeShare` out of the pre-fix counting code.
+# The second enforcement above closes that.
 generative_push:
   serves: worth-a-visit
   start_multiplier: 3.0

@@ -20,6 +20,7 @@ import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { load as parseYaml } from "js-yaml";
+import { VISITOR_FACING } from "./visitor-facing-tracks.mjs";
 
 // Every regex below anchors on a bare newline. `.gitattributes` now forces LF
 // on checkout, but a working copy created before that attribute existed still
@@ -48,18 +49,18 @@ const REQUIRED = ["track", "filed-by", "title", "created", "expires", "serves", 
 // Advancing tracks must name which charter test they serve; defending tracks
 // use `floor` and are exempt from the first test on purpose.
 const DEFENDING = ["maintain", "audit"];
-// `worth-a-visit` is further narrowed to the tracks that actually ship
-// visitor-facing work: `author` publishes and `build` ships things in `app/`
-// and `public/`. `scout` only files items for other tracks to act on and
-// `meta` only fixes the machinery those tracks run on -- neither produces
-// anything a stranger sees, so neither can claim the value that names test 1,
-// even though both are advancing (not defending) tracks. Narrowed here after
-// review on round dbd4fd1: `meta` filing a `worth-a-visit` item would let it
-// claim `policy.yml`'s generative-push weight boost, re-entrenching the exact
-// self-referential dominance this vocabulary exists to end, and would also
-// have reopened the 2x dispatcher ceiling that meta's dropped
-// `max_share_of_runs` cap relies on (see policy.yml and scripts/dispatch.mjs).
-const VISITOR_FACING = ["author", "build"];
+// `worth-a-visit` is further narrowed to `VISITOR_FACING` tracks
+// (scripts/visitor-facing-tracks.mjs -- the single definition, also imported
+// by scripts/generative-push.mjs so this filing-time rejection and the
+// generative-push counting code can never drift apart). `scout` and `meta`
+// are advancing (not defending) tracks but ship nothing a visitor sees, so
+// neither can claim the value that names test 1. Narrowed here after review
+// on round dbd4fd1: `meta` filing a `worth-a-visit` item would let it claim
+// `policy.yml`'s generative-push weight boost, re-entrenching the exact
+// self-referential dominance this vocabulary exists to end. This check is
+// the filing gate half of the guarantee -- a required CI check, not the
+// whole of it; see scripts/visitor-facing-tracks.mjs for why a second,
+// code-level enforcement also exists in scripts/generative-push.mjs.
 
 const root = process.cwd();
 const dir = path.join(root, "docket");

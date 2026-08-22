@@ -252,13 +252,26 @@ try {
 //     comment still claiming a flat 2x after the push landed, and caught that
 //     `policy.yml`'s meta weight comment cited the flat-2x guarantee as why
 //     `max_share_of_runs` could be dropped for meta specifically. The
-//     combined ceiling is reachable only by `author` and `build`:
-//     `scripts/check-docket.mjs` accepts `worth-a-visit` for those two tracks
-//     alone, so every other track's `generativeShare` is structurally 0
-//     (`pushAppliedFor` always returns 1 for them) and their ceiling stays
-//     the plain 2x this comment originally described. meta is one of the
+//     combined ceiling is reachable only by `author` and `build`, enforced in
+//     two independent places on purpose (defence in depth, not redundancy):
+//     `scripts/check-docket.mjs` rejects `worth-a-visit` for every other
+//     track at filing time (a required CI check), and
+//     `scripts/generative-push.mjs`'s `generativeShare`/`closedGenerativeCount`
+//     filter to `VISITOR_FACING` (scripts/visitor-facing-tracks.mjs, the one
+//     definition both import) themselves, so every other track's
+//     `generativeShare` is genuinely structurally 0 (`pushAppliedFor` always
+//     returns 1 for them) *in this function's own arithmetic*, not only
+//     because a different script rejected the item earlier. The second layer
+//     exists because the first alone is not unconditional: `enforce_admins`
+//     is `false` on `main`, and this repository has documented, with real
+//     merged pull requests (docket/open/2026-08-11-branch-protection-does-not-require-review.md),
+//     that the account this loop merges as can merge past a red required
+//     check -- review on round 8d0098e proved this reachable by hand-placing
+//     a `track: meta, serves: worth-a-visit` item straight into
+//     `docket/open/`, bypassing `check-docket.mjs` entirely, and getting a
+//     nonzero share out of the pre-fix counting code. meta is one of the
 //     excluded tracks, which is what keeps its dropped share cap safe -- see
-//     policy.yml's `meta.weight` comment, which now says so explicitly rather
+//     policy.yml's `meta.weight` comment, which says so explicitly rather
 //     than leaving the dependency between the two files implicit.
 //   - **The 0.1 floor on scout is deliberate and must never be zero.** External
 //     input is the one thing this loop cannot generate for itself, and a scout
