@@ -20,6 +20,7 @@ import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { load as parseYaml } from "js-yaml";
+import { VISITOR_FACING } from "./visitor-facing-tracks.mjs";
 
 // Every regex below anchors on a bare newline. `.gitattributes` now forces LF
 // on checkout, but a working copy created before that attribute existed still
@@ -33,13 +34,33 @@ function readText(file) {
 
 const TRACKS = ["scout", "author", "build", "maintain", "audit", "meta"];
 const FILERS = [...TRACKS, "maintainer"];
-const SERVES = ["more-true", "more-checkable", "more-current", "floor"];
+// Advancing tracks must name which charter test they serve. `more-true`,
+// `more-checkable` and `more-current` all name test 2 ("is it true,
+// checkable, and current?"); `worth-a-visit` names test 1 ("would this be
+// worth a stranger's attention?"). Until this list carried `worth-a-visit`
+// (added 2026-08-22 -- see CHARTER.md's amendment history), no value here
+// named test 1 at all, so no advancing-track item could file work toward it
+// without failing this check. `floor` is the defending-track exemption from
+// test 1, not a value advancing tracks may use.
+const SERVES = ["more-true", "more-checkable", "more-current", "worth-a-visit", "floor"];
 const SECTIONS = ["Why now", "Evidence", "Done when"];
 const REQUIRED = ["track", "filed-by", "title", "created", "expires", "serves", "priority"];
 
 // Advancing tracks must name which charter test they serve; defending tracks
 // use `floor` and are exempt from the first test on purpose.
 const DEFENDING = ["maintain", "audit"];
+// `worth-a-visit` is further narrowed to `VISITOR_FACING` tracks
+// (scripts/visitor-facing-tracks.mjs -- the single definition, also imported
+// by scripts/generative-push.mjs so this filing-time rejection and the
+// generative-push counting code can never drift apart). `scout` and `meta`
+// are advancing (not defending) tracks but ship nothing a visitor sees, so
+// neither can claim the value that names test 1. Narrowed here after review
+// on round dbd4fd1: `meta` filing a `worth-a-visit` item would let it claim
+// `policy.yml`'s generative-push weight boost, re-entrenching the exact
+// self-referential dominance this vocabulary exists to end. This check is
+// the filing gate half of the guarantee -- a required CI check, not the
+// whole of it; see scripts/visitor-facing-tracks.mjs for why a second,
+// code-level enforcement also exists in scripts/generative-push.mjs.
 
 const root = process.cwd();
 const dir = path.join(root, "docket");
@@ -114,8 +135,27 @@ function checkItem(status, file, text) {
   }
   if (fields.track && fields.serves) {
     const defending = DEFENDING.includes(fields.track);
-    if (defending && fields.serves !== "floor") {
+    // The mirror of the floor rule below: `worth-a-visit` names test 1, which
+    // defending tracks are exempt from on purpose (CHARTER.md: "maintenance
+    // that had to justify itself as exciting would never happen"). Checked
+    // and reported separately from the generic floor rule so the two ends of
+    // the same exemption each fail with a message naming what was wrong.
+    if (defending && fields.serves === "worth-a-visit") {
+      fail(label, `${fields.track} is a defending track and worth-a-visit is for advancing tracks only`);
+    } else if (defending && fields.serves !== "floor") {
       fail(label, `${fields.track} is a defending track and must use serves: floor`);
+    } else if (
+      !defending &&
+      fields.serves === "worth-a-visit" &&
+      !VISITOR_FACING.includes(fields.track)
+    ) {
+      // scout and meta are advancing tracks but ship nothing a visitor sees
+      // (scout files items, meta fixes machinery), so neither can claim the
+      // test-1 value even though they are not defending tracks.
+      fail(
+        label,
+        `${fields.track} does not ship visitor-facing work and cannot claim worth-a-visit — only ${VISITOR_FACING.join(" and ")} can`
+      );
     }
     if (!defending && fields.serves === "floor") {
       fail(label, `${fields.track} advances the site and must name which test it serves`);

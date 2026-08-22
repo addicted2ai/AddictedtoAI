@@ -80,7 +80,7 @@ others and is capped.
 | --- | --- | --- | --- |
 | Scout | advance | Bring back work the site could not have thought of by looking at itself | Every item could have been written without leaving the repository |
 | Author | advance | Publish something a stranger would send to someone else | Correct, sourced, and forgettable |
-| Build | advance | Make the site *do* something it could not before, and keep it alive | Ships a demo with no health check |
+| Build | advance | Build and improve things visitors use — a new demo and a better one both count — and keep them alive | Ships a demo with no health check |
 | Maintain | defend | Make sure nothing published has quietly become false | Cosmetic fixes dressed as maintenance |
 | Audit | defend | Judge whether what shipped was actually good, and remove what was not | Finds only correctness bugs, never quality problems |
 | Meta | enable | Fix what is stopping the other tracks from doing their jobs | Improves the machine for the machine's sake |
@@ -356,3 +356,50 @@ subject to the same append-only rule it imposes on everything else.
 
   Decided by the maintainer; typed by the orchestrating model under the
   delegated authority above.
+
+- **2026-08-22** — Recorded a gap between the direction's two tests and the
+  docket vocabulary meant to enforce them, and widened Build's charge to close
+  the opening it left.
+
+  The direction names two tests. Every advancing-track docket item must name
+  which one it serves, via a `serves:` field `scripts/check-docket.mjs`
+  validates against a fixed list. That list — `more-true`, `more-checkable`,
+  `more-current`, `floor` — has held exactly those four values since the
+  file's first commit (`a3901ee`, 2026-08-10T13:20:16-06:00), under 40 minutes
+  after this document's two tests were added (`38c0cc9`,
+  2026-08-10T12:41:32-06:00). The first three all name test 2 ("is it true,
+  checkable, and current?"); `floor` names the defending-track exemption from
+  test 1. No value has ever named test 1 itself — "would this be worth a
+  stranger's attention?" — so no advancing-track item arguing that could have
+  been filed without failing `check-docket.mjs`'s frontmatter check before a
+  reviewer read a word of it. The gap is the vocabulary's entire life:
+  twelve days, as of this entry, of every docket item this project has ever
+  filed.
+
+  Measured on the open queue the round that found this counted (before
+  filing anything): 31 open items, 21 `more-checkable`, 6 `more-true`,
+  4 `more-current`, 0 anything else. That is not a queue that chose
+  correctness over ambition. It is a queue that could not have filed the
+  other kind of work and stayed green. This document's own line under "The
+  two tests" — "Passing 2 but not 1 is a scrupulously honest site nobody
+  visits — which is what forty-seven rounds of this project actually
+  produced" — turns out to describe a gate this project built after that
+  sentence was written, and never closed. The prior 47-round failure this
+  document exists to prevent was a lack of external input; this one was
+  narrower and self-inflicted — the vocabulary itself excluded the value
+  needed to file the kind of work the direction asks for, and nothing
+  measured that until a round went looking.
+
+  `worth-a-visit` is added to `check-docket.mjs`'s `SERVES` list, for
+  advancing tracks only — a defending track (`maintain`, `audit`) using it
+  fails the same way one fails for using anything but `floor`. Build's charge
+  above is widened from "make the site do something it could not before" to
+  also cover making something it already does better; the original wording
+  named creation only, and an item proposing to improve an existing demo had
+  no charter language to file against either, independent of the `serves`
+  gap. Neither change ships anything a stranger would visit — it removes the
+  mechanical reason nothing arguing test 1 could have reached the queue, and
+  the docket item filed the same round is the first proof the removal holds.
+
+  Proposed by the loop under the amendment procedure below; merged by the
+  maintainer, who is the only party that can.

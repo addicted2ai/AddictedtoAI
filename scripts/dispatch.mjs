@@ -45,6 +45,12 @@ import path from "path";
 import { pathToFileURL } from "url";
 import { execFileSync } from "child_process";
 import { load as parseYaml } from "js-yaml";
+import {
+  closedGenerativeCount,
+  pushMultiplier,
+  generativeShare,
+  pushApplied,
+} from "./generative-push.mjs";
 
 // See the note in check-docket.mjs: CRLF makes the frontmatter regex match
 // nothing, and the `- Track:` history scan below is line-anchored too.
@@ -81,9 +87,14 @@ const open = fs.existsSync(openDir)
 
 // An item blocked on something not yet done is not available work.
 const doneDir = path.join(root, "docket", "done");
-const done = new Set(
-  fs.existsSync(doneDir) ? fs.readdirSync(doneDir).filter((f) => f.endsWith(".md")) : []
-);
+const doneFiles = fs.existsSync(doneDir)
+  ? fs.readdirSync(doneDir).filter((f) => f.endsWith(".md"))
+  : [];
+const done = new Set(doneFiles);
+// Fields of every closed item -- the generative-push multiplier below is the
+// only other reader of docket/done/ in this file, so it reuses this list
+// rather than re-scanning the directory.
+const doneItems = doneFiles.map((file) => frontmatter(readText(path.join(doneDir, file))));
 const ready = open.filter((item) =>
   // An item blocked on the maintainer is real but no round can close it, so
   // it is not available work; check-docket.mjs admits only `maintainer` here.
@@ -232,9 +243,36 @@ try {
 // same one that has always run.
 //
 // Two constants are load-bearing and must not be tuned casually:
-//   - **The 2x ceiling** is what makes a hard share cap on meta unnecessary:
-//     a queue that runs away can at most double its track's weight; it can
-//     never take the rotation.
+//   - **The 2x pressure ceiling is no longer the whole ceiling.** It combines
+//     multiplicatively with the generative push below
+//     (docket/open/2026-08-22-model-deprecation-checker.md): a track that is
+//     both at 2x pressure AND holds a 100% `worth-a-visit` ready queue reaches
+//     weight * 2 * start_multiplier -- 6x at policy.yml's current
+//     start_multiplier: 3.0, not 2x. Review on round dbd4fd1 caught this
+//     comment still claiming a flat 2x after the push landed, and caught that
+//     `policy.yml`'s meta weight comment cited the flat-2x guarantee as why
+//     `max_share_of_runs` could be dropped for meta specifically. The
+//     combined ceiling is reachable only by `author` and `build`, enforced in
+//     two independent places on purpose (defence in depth, not redundancy):
+//     `scripts/check-docket.mjs` rejects `worth-a-visit` for every other
+//     track at filing time (a required CI check), and
+//     `scripts/generative-push.mjs`'s `generativeShare`/`closedGenerativeCount`
+//     filter to `VISITOR_FACING` (scripts/visitor-facing-tracks.mjs, the one
+//     definition both import) themselves, so every other track's
+//     `generativeShare` is genuinely structurally 0 (`pushAppliedFor` always
+//     returns 1 for them) *in this function's own arithmetic*, not only
+//     because a different script rejected the item earlier. The second layer
+//     exists because the first alone is not unconditional: `enforce_admins`
+//     is `false` on `main`, and this repository has documented, with real
+//     merged pull requests (docket/open/2026-08-11-branch-protection-does-not-require-review.md),
+//     that the account this loop merges as can merge past a red required
+//     check -- review on round 8d0098e proved this reachable by hand-placing
+//     a `track: meta, serves: worth-a-visit` item straight into
+//     `docket/open/`, bypassing `check-docket.mjs` entirely, and getting a
+//     nonzero share out of the pre-fix counting code. meta is one of the
+//     excluded tracks, which is what keeps its dropped share cap safe -- see
+//     policy.yml's `meta.weight` comment, which says so explicitly rather
+//     than leaving the dependency between the two files implicit.
 //   - **The 0.1 floor on scout is deliberate and must never be zero.** External
 //     input is the one thing this loop cannot generate for itself, and a scout
 //     that can be switched off completely is the rounds-38-48 spiral with a new
@@ -244,13 +282,28 @@ function readyCount(track) {
   return ready.filter((item) => item.track === track).length;
 }
 
+// --- generative push ---------------------------------------------------------
+//
+// docket/open/2026-08-22-model-deprecation-checker.md: an initial high weight
+// on shipped `worth-a-visit` work (CHARTER.md test 1) that decays to a
+// balanced one as it actually ships, not on a clock -- see policy.yml's
+// `generative_push` block, the single source for every number here, and
+// scripts/generative-push.mjs, the single source for the arithmetic.
+const push = policy.generative_push;
+const CLOSED_GENERATIVE = closedGenerativeCount(push, doneItems);
+const PUSH_MULTIPLIER = pushMultiplier(push, CLOSED_GENERATIVE);
+
+function pushAppliedFor(track) {
+  return pushApplied(PUSH_MULTIPLIER, generativeShare(push, ready, track));
+}
+
 function effectiveWeight(track) {
   const cfg = tracks[track];
   const weight = cfg?.weight || 0;
   const budget = cfg?.queue_budget;
   if (budget != null) {
     const pressure = readyCount(track) / budget;
-    return weight * Math.min(pressure, 2);
+    return weight * Math.min(pressure, 2) * pushAppliedFor(track);
   }
   const fed = (cfg?.feeds || []).filter((f) => tracks[f]?.queue_budget != null);
   if (fed.length > 0) {
@@ -371,6 +424,15 @@ if (asGithub) {
   console.log();
   console.log(`ready docket items: ${ready.length} of ${open.length} open`);
   console.log();
+  if (push?.serves) {
+    console.log(
+      `generative push (policy.yml generative_push, serves: ${push.serves}): ` +
+        `${CLOSED_GENERATIVE} closed -> multiplier ${PUSH_MULTIPLIER.toFixed(2)} ` +
+        `(start ${push.start_multiplier}, floor ${push.floor_multiplier}, ` +
+        `decay ${push.decay_per_shipped}/shipped)`
+    );
+    console.log();
+  }
   console.log("demand by track (ready / budget = pressure -> effective weight):");
   for (const track of Object.keys(tracks)) {
     const cfg = tracks[track];
@@ -378,10 +440,15 @@ if (asGithub) {
     const mult = eff / (cfg.weight || 0);
     const budget = cfg.queue_budget;
     if (budget != null) {
+      const share = generativeShare(push, ready, track);
+      const applied = pushApplied(PUSH_MULTIPLIER, share);
+      const pushSuffix = push?.serves
+        ? `; push share ${share.toFixed(2)} -> applied x${applied.toFixed(2)}`
+        : "";
       console.log(
         `  ${track.padEnd(9)} ${String(readyCount(track)).padStart(3)}/${budget} = ` +
           `${(readyCount(track) / budget).toFixed(2)}  ->  weight ${eff.toFixed(2)} ` +
-          `(x${mult.toFixed(2)} of ${cfg.weight})`
+          `(x${mult.toFixed(2)} of ${cfg.weight}${pushSuffix})`
       );
     } else if ((cfg.feeds || []).length > 0) {
       const fed = cfg.feeds.filter((f) => tracks[f]?.queue_budget != null);

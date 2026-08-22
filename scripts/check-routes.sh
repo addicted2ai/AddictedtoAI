@@ -131,6 +131,16 @@ node scripts/test-orchestrate-checkout.mjs || failures=$((failures + $?))
 echo
 node scripts/test-peak-window.mjs || failures=$((failures + $?))
 
+# The generative-push multiplier (docket/open/2026-08-22-model-deprecation-checker.md,
+# CHARTER.md's 2026-08-22 amendment): scripts/generative-push.mjs's pure
+# functions at the boundaries that matter -- zero generative stock (no boost
+# can fire), the decay landing exactly on the floor, and a shipped count high
+# enough that the unclamped value would go below it -- plus a round-trip
+# against the real policy.yml so a future retune of its numbers stays
+# exercised.
+echo
+node scripts/test-dispatch-generative-push.mjs || failures=$((failures + $?))
+
 # The prebuild chain must pass in a checkout shaped like Vercel's production
 # clone: one branch, no remote refs. CI clones the full history, so a prebuild
 # check that shells out to git for origin/main passes here while Vercel's
