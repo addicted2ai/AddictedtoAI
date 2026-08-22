@@ -132,29 +132,64 @@ believed.
 
 ## Done when
 
-- [ ] `scripts/orchestrate.sh` does not start an iteration whose start time
+- [x] `scripts/orchestrate.sh` does not start an iteration whose start time
       falls inside 01:00–04:00 or 06:00–10:00 UTC, unless an explicit
       authorisation is present, and it logs the window, the reason and when it
       will resume rather than going quiet
-- [ ] The authorisation is explicit, visible and hard to leave on by accident:
+- [x] The authorisation is explicit, visible and hard to leave on by accident:
       whatever form it takes, the log says on every skipped and every
       authorised iteration which one happened and why
-- [ ] An iteration already in flight when a window opens is allowed to finish,
+- [x] An iteration already in flight when a window opens is allowed to finish,
       and the record says that is deliberate
-- [ ] `prompts/orchestrator.md` states the windows, the rate difference, and
+- [x] `prompts/orchestrator.md` states the windows, the rate difference, and
       that a round requested during peak is confirmed with the maintainer
       first — a `prompts/` change, human-owned under rule 13, so it waits for
       the maintainer's merge by design
-- [ ] The windows and the rates are defined in exactly one place that both the
+- [x] The windows and the rates are defined in exactly one place that both the
       supervisor and the prompt read. Two copies of a time window drift the
       first time a vendor moves one, and this repository has shipped that bug
       more than once
-- [ ] Proved able to act, not just to exist: demonstrate a skipped iteration at
+- [x] Proved able to act, not just to exist: demonstrate a skipped iteration at
       a peak boundary and an authorised one inside the same window, with the
       log output pasted rather than described
-- [ ] Which rate card actually bills `opencode-go/deepseek-v4-flash` is
+- [x] Which rate card actually bills `opencode-go/deepseek-v4-flash` is
       established from the provider, and the answer is recorded — including the
       case where it turns out peak pricing does not reach this account at all,
       which would make the pause unnecessary and is a perfectly good outcome
-- [ ] The record states that the 33.9% figure is time-weighted, and either
+- [x] The record states that the 33.9% figure is time-weighted, and either
       measures the token-weighted share or says plainly that it did not
+
+## Note, 2026-08-22
+
+Built on `loop/meta/peak-window-guard`: `policy.yml`'s new
+`deepseek_peak_pricing` block (the single source), `scripts/peak-window.mjs`
+(timestamp -> peak/off-peak verdict, and the only code that reads the rate
+figures), `scripts/orchestrate-peak.sh` (`peak_guard()`, the decision
+`scripts/orchestrate.sh` now calls before every iteration start, quoting
+`peak-window.mjs`'s output rather than holding its own copy of the rates),
+`scripts/test-peak-window.mjs` (boundary, rate-passthrough and fail-closed
+proof, wired into `scripts/check-routes.sh`), and the `prompts/orchestrator.md`
+section. Reviewed once (request-changes: a hardcoded rate-figure duplicate,
+a fail-open hole on a swapped `start`/`end` window, and a wrong "three days"
+figure in the round's own changelog prose, all fixed and re-tested — see
+`CHANGELOG.md`'s 2026-08-22 entry for the full account and the pasted
+evidence). Every box above is checked against what was built and demonstrated
+after that fix. What remains explicitly untested: a live
+`scripts/orchestrate.sh` supervisor process was not run tonight; the guard is
+proved at the decision-function level, sourced and called directly with a
+fixed clock, not observed end to end.
+
+**Why this stays in `docket/open/` with every box ticked, so a later round
+does not read the ticks and redo the work:** two independent reasons, not
+one. First, this round does not ship, push, or open a pull request under its
+own instructions, so nothing here has landed on `main` yet — there is no
+merge or PR to cite as the round that closed it. Second, and more durable:
+even once a pull request is opened, the `prompts/orchestrator.md` box in this
+same item is a human-owned path under rule 13, and `human-owned-paths` fails
+that pull request by design — no autonomous round can ever merge it, only a
+human (or the supervising model, using its standing authorisation) reading it
+by hand. So this item cannot be closed by a later round shipping it in the
+ordinary auto-merge way even if one tried; it is done only once a human's
+merge has actually landed every file the boxes above describe. Whoever
+performs that merge should move the item to `docket/done/` then, citing the
+PR and merge commit.

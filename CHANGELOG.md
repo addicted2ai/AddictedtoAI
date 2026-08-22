@@ -69,6 +69,278 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-22
+This meta round builds the guard `docket/open/2026-08-17-deepseek-peak-hour-pricing.md`
+asks for, and it is written as a fix for something that already happened, not
+a precaution.
+
+**Correction to this entry, caught by review rather than by this round
+checking first:** an earlier version of this sentence said the loop hit the
+hold "three days after that item was filed." That figure came from this
+round's own orchestrator brief and was carried over on trust; it is wrong,
+and folds two different intervals into one number. Verified directly against
+the commits (not the brief, and not simply trusting the reviewer's corrected
+figure either — both checked independently): the item was filed at
+2026-08-17T23:17:57Z (merge commit `e5088a0`) and the hold was declared at
+2026-08-18T03:56:17Z (merge commit `0c3dab0`) — about four and a half hours
+later, not three days. Three days is the separate *hold-to-release* interval
+(2026-08-18 to 2026-08-21), which the brief's sentence conflated with it. So:
+about four and a half hours after the item was filed, with the guard still
+unbuilt, the loop ran the whole of the 01:00–04:00 UTC window at double rate
+and the maintainer's DeepSeek allowance ran out mid-round — the 2026-08-18
+hold, released three days later on 2026-08-21. A record that shows an
+orchestrator brief injecting a false figure and a review catching it is worth
+more here than one that quietly read correctly the first time.
+
+The supervisor was not running tonight (rounds are being dispatched directly,
+per the 2026-08-21 entry), so this round could edit `scripts/orchestrate.sh`
+freely but could not watch it run a real iteration. Everything below is
+demonstrated at the decision-function level, with pasted output, and the
+end-to-end gap is stated rather than smoothed over.
+
+**1. The guard, and where the single source of truth lives**
+- Hypothesis: a guard keyed to "now" cannot be demonstrated unless "now" can
+  be supplied, so the window decision has to be a small, timestamp-in
+  function both the supervisor and a test can call — the pattern
+  `scripts/check-routes.sh` already uses for `scripts/test-*.mjs` files —
+  rather than logic inlined in `orchestrate.sh`'s loop where only a live
+  supervisor could exercise it.
+- Change: `policy.yml` gets a new `deepseek_peak_pricing` block — the windows
+  (`01:00`–`04:00` and `06:00`–`10:00` UTC, half-open), the rate card
+  (`$0.22`/`$0.66` off-peak, `$0.44`/`$1.32` peak per 1M tokens), and the
+  dollar allowances — and it is the only place these numbers are written.
+  `scripts/peak-window.mjs` reads that block and turns a timestamp into one
+  line, `PEAK ... peakRate=<i>/<o> offPeakRate=<i>/<o>` or `OFFPEAK ...`, with
+  nothing else in the repository parsing policy.yml's windows or rates —
+  `scripts/orchestrate-peak.sh` quotes the rate figures straight off that
+  line rather than holding its own copy. `scripts/orchestrate-peak.sh` adds
+  `peak_guard()`, called at the top of `orchestrate.sh`'s loop — after the
+  `docket/HOLD.md` check, before anything else — which returns 1 (skip this
+  pass, sleep `GAP_SECONDS`, retry) or 0 (proceed). `prompts/orchestrator.md`
+  gets a new "DeepSeek peak-hour pricing" section stating the windows exist,
+  that the model is billed double inside them, and that a round requested
+  during peak — by the maintainer or by the orchestrating model itself, mid-
+  session — is confirmed with the maintainer first; it deliberately does not
+  restate the HH:MM values or the dollar figures, pointing at `policy.yml`
+  instead, because a second copy of a time window is exactly how this
+  repository's guardrails have drifted before (the item names this pattern by
+  itself). That prompt change is a `prompts/` edit — human-owned under rule 13
+  — so `human-owned-paths` will fail on this branch's pull request by design;
+  that is expected, not something to route around, and the merge waits on the
+  maintainer.
+- Three design choices, stated so a later round does not "fix" them:
+  - **An iteration already running is never touched.** `peak_guard()` is
+    called once per loop pass, before `opencode run` is launched, and has no
+    code path that reaches a live child, a session id, or an abort. The
+    guard's only lever is whether the *next* iteration starts — the same
+    ordering property `wait_for_checkout_free` already relies on elsewhere in
+    this file — so "in flight finishes" is true by construction, not by a
+    conditional that could be gotten wrong.
+  - **Fail-closed, not fail-open.** Every liveness probe in
+    `scripts/orchestrate-liveness.sh` treats a failed probe as "no signal,
+    proceed," because their job is to avoid killing a healthy round on a noisy
+    signal. `peak_guard()` inverts that on purpose: if `peak-window.mjs`
+    cannot be read (broken `policy.yml`, `node` missing, anything), it is
+    treated the same as an unauthorised peak window — skip this pass and
+    retry — because this guard's job is the opposite one, and the failure
+    mode of silently proceeding is the exact behaviour that produced the
+    2026-08-18 hold.
+  - **Authorisation is `ORCHESTRATE_PEAK_AUTH`, an environment variable that
+    must equal the exact `windowStart` timestamp of the window in progress**
+    (e.g. `2026-08-22T01:00:00.000Z`), not a bare on/off flag, and not the
+    `docket/PEAK_OK`-style file the item also offered. A flag file living in
+    `docket/` would need the supervisor to commit its own creation and
+    deletion to stay "in the same spirit as `docket/HOLD.md`," which
+    `orchestrate.sh` has no mechanism for (it never commits); a plain env var
+    left set, on the other hand, would silently authorise every future peak
+    window for the rest of the supervisor's run, which can be days — precisely
+    the "hard to leave on by accident" failure the item warns against. Binding
+    the value to one window's exact start makes it self-expiring: the test
+    below proves an authorisation for the 06:00 window does not carry over to
+    01:00, and the same reasoning means it does not carry over to tomorrow's
+    01:00 either.
+
+**Two things review found by adversarial testing that the first version of
+this round shipped with, published here rather than quietly fixed:**
+
+- **The single-source-of-truth box was ticked while it was still false.**
+  `peak_guard()`'s first version logged `$0.44/$1.32` and `$0.22/$0.66` as
+  literal strings in its two `note` calls — a second, hardcoded copy of the
+  exact rate card `policy.yml` was supposed to be the only holder of, in the
+  one file whose whole job is not having a second copy. Review's own words:
+  "this falsifies a box you ticked." Fixed by moving the rates onto
+  `peak-window.mjs`'s `PEAK` output line (read from `policy.yml`, as above)
+  and having `orchestrate-peak.sh` quote that instead of a literal —
+  `grep -rn "0\.44\|1\.32\|0\.22\|0\.66" scripts prompts policy.yml` now
+  returns five lines across two files: `policy.yml`'s two rate lines, and
+  three in `scripts/test-peak-window.mjs` — a comment recording the old
+  literal, and a two-line fixture reusing the real numbers for an unrelated
+  swapped-window case. Neither is a read path, so neither can drift into the
+  supervisor's log, which is the risk the box was about. This sentence took
+  two corrections: it first claimed the grep matched "only `policy.yml`
+  itself", and the replacement then said "two lines" of the test file where
+  there are three. The review caught both. Both are recorded here rather
+  than tidied away, and the grep was never narrowed to make an earlier
+  version of the sentence true.
+- **A swapped `start`/`end` in a window is a fail-*open* hole, not a fail-
+  closed one.** `parsedWindows.find(w => now >= w.start && now < w.end)` is
+  never true when `start` is not before `end` — an ordinary typo in
+  `policy.yml` (or `end` before `start` by any other mistake) describes an
+  interval that can never be entered, so the guard would report `OFFPEAK`
+  forever and exit 0: the exact silent-proceed failure this guard's fail-
+  closed design principle exists to rule out, reachable through the one file
+  a config mistake would actually land in. Review found this by fuzzing nine
+  corrupted `policy.yml` variants. Fixed: `peak-window.mjs` now validates
+  every window's `start < end` while parsing, before any timestamp is
+  compared, and fails with `ERROR ...` (exit 1) rather than a verdict —
+  which `peak_guard()`'s existing fail-closed handling already treats as an
+  unauthorised peak window, so no change was needed on the shell side once
+  the script itself stopped lying about it.
+
+Boundary proof, `node scripts/test-peak-window.mjs`, pasted rather than
+described (both windows are half-open `[start, end)`, so the boundary minute
+itself is off-peak):
+
+```
+--- peak-window.mjs boundaries ---
+ok    2026-08-22T00:59:00Z -> OFFPEAK now=2026-08-22T00:59:00.000Z
+ok    2026-08-22T01:00:00Z -> PEAK now=2026-08-22T01:00:00.000Z window=01:00-04:00 windowStart=2026-08-22T01:00:00.000Z resumesAt=2026-08-22T04:00:00.000Z peakRate=0.44/1.32 offPeakRate=0.22/0.66
+ok    2026-08-22T03:59:00Z -> PEAK now=2026-08-22T03:59:00.000Z window=01:00-04:00 windowStart=2026-08-22T01:00:00.000Z resumesAt=2026-08-22T04:00:00.000Z peakRate=0.44/1.32 offPeakRate=0.22/0.66
+ok    2026-08-22T04:00:00Z -> OFFPEAK now=2026-08-22T04:00:00.000Z
+ok    2026-08-22T05:59:00Z -> OFFPEAK now=2026-08-22T05:59:00.000Z
+ok    2026-08-22T06:00:00Z -> PEAK now=2026-08-22T06:00:00.000Z window=06:00-10:00 windowStart=2026-08-22T06:00:00.000Z resumesAt=2026-08-22T10:00:00.000Z peakRate=0.44/1.32 offPeakRate=0.22/0.66
+ok    2026-08-22T09:59:00Z -> PEAK now=2026-08-22T09:59:00.000Z window=06:00-10:00 windowStart=2026-08-22T06:00:00.000Z resumesAt=2026-08-22T10:00:00.000Z peakRate=0.44/1.32 offPeakRate=0.22/0.66
+ok    2026-08-22T10:00:00Z -> OFFPEAK now=2026-08-22T10:00:00.000Z
+ok    an unparseable timestamp reports an error rather than a verdict: "ERROR "not-a-timestamp" is not a valid timestamp (want ISO-8601 or epoch seconds)"
+
+--- rates come from policy.yml, not a literal in the script ---
+ok    a scratch policy.yml's made-up rates round-trip unchanged: PEAK now=2026-08-22T01:30:00.000Z window=01:00-04:00 windowStart=2026-08-22T01:00:00.000Z resumesAt=2026-08-22T04:00:00.000Z peakRate=7.77/6.66 offPeakRate=9.99/8.88
+
+--- a backwards or empty window is rejected, not silently OFFPEAK ---
+ok    start after end (swapped): rejected with an error, not read as OFFPEAK -- "ERROR policy.yml window [0] start "04:00" is not before end "01:00" -- an empty or backwards window would silently never be peak"
+ok    start equals end (empty): rejected with an error, not read as OFFPEAK -- "ERROR policy.yml window [0] start "01:00" is not before end "01:00" -- an empty or backwards window would silently never be peak"
+
+--- peak_guard(): skipped at a peak boundary, unauthorised ---
+note: PEAK WINDOW 01:00-04:00 UTC -- deepseek-v4-flash is double rate here ($0.44/1.32 per 1M vs $0.22/0.66 off-peak, from policy.yml) and no matching authorisation is set (ORCHESTRATE_PEAK_AUTH must equal 2026-08-22T01:00:00.000Z to start a new iteration now). Not starting a new iteration; resuming automatically at 2026-08-22T04:00:00.000Z UTC. This pauses the loop, it does not stop it, and does not touch an iteration already in flight.
+rc=1
+ok    iteration skipped at the 01:00 boundary: window, reason, resume time and the policy.yml-sourced rates are all logged
+
+--- peak_guard(): authorised inside the same window ---
+note: PEAK WINDOW 01:00-04:00 UTC -- authorised (ORCHESTRATE_PEAK_AUTH matches this window's start 2026-08-22T01:00:00.000Z; reason: demonstration for docket/open/2026-08-17-deepseek-peak-hour-pricing.md) -- starting this iteration at double rate (deepseek-v4-flash $0.44/1.32 per 1M vs $0.22/0.66 off-peak, from policy.yml)
+rc=0
+ok    iteration authorised inside the same 01:00 window: the reason and the policy.yml-sourced rates are logged and the guard proceeds
+
+--- peak_guard(): a mismatched authorisation does not carry over ---
+ok    an authorisation scoped to the 06:00 window does not authorise the 01:00 window
+
+--- peak_guard(): off-peak proceeds quietly ---
+ok    off-peak (04:00, the boundary minute) proceeds with no pause and no note
+
+--- peak_guard(): fails closed when the verdict cannot be read ---
+ok    an unreadable verdict is treated as an unauthorised peak window, not as a silent proceed
+
+all peak-window checks passed
+```
+
+This is `peak_guard()` itself, sourced from `scripts/orchestrate-peak.sh` and
+called directly with a fixed clock (`ORCHESTRATE_PEAK_NOW`) — the same
+function `scripts/orchestrate.sh` calls in its real loop, not a
+reimplementation of it. What it does **not** prove: that a live
+`scripts/orchestrate.sh` process, run for real against the real clock over
+hours, actually pauses and resumes as designed. The supervisor was not
+running tonight and this round did not start one — that remains untested, and
+is recorded as untested rather than implied.
+
+**2. Which rate card bills this account, and the figure that stayed unmeasured**
+- Hypothesis: the item asks this to be settled before any number is written
+  into the supervisor's output, because OpenCode publishes two cards for this
+  model and a cost warning quoting the wrong one is worse than none.
+- Change: the maintainer answered this directly on 2026-08-17 — "Primarily
+  OpenCode Go subscription, but I also have the option to use my Zen credits
+  if I hit my rate limits. So, both technically. I also would not be
+  surprised if the Zen pricing just has not been updated, given that the
+  change was from the model provider side." Recorded here as the maintainer's
+  statement, not as something this round measured: OpenCode Go is the billing
+  path, its card is the one this guard reads, and the separate
+  `opencode.ai/data/deepseek/deepseek-v4-flash` flat-rate page is not
+  consulted anywhere in `policy.yml` or the code. The Go documentation itself
+  was re-fetched from `https://opencode.ai/docs/go/` on 2026-08-22 (this
+  round) and reports the same numbers rounds 157 and the 2026-08-21 audit
+  found: `$0.22`/`$0.66` off-peak, `$0.44`/`$1.32` peak per 1M tokens, windows
+  01:00–04:00 and 06:00–10:00 UTC, allowances $12/5h, $30/week, $60/month —
+  unchanged across four fetches on four different days. The flat-rate model-
+  data page was not re-checked this round; the maintainer's answer already
+  settles which card applies regardless of whether that second page was ever
+  updated.
+- The 33.9%-of-running-time figure the item measured is time-weighted, not
+  token-weighted, and this round did not measure the token-weighted share —
+  its source is a supervisor log outside this repository, as the 2026-08-18
+  audit entry already noted, and a round cannot read it any more than that one
+  could. Recorded plainly rather than left ambiguous, per the item's own
+  checklist.
+
+Guardrails run this round, output pasted rather than summarised —
+`node scripts/round.mjs check`, against a freshly built server on a port
+confirmed free beforehand (no stale `next start` from an earlier session was
+trusted):
+
+```
+=== Static checks ===
+  ok    npm run lint
+  ok    docket valid
+  ok    track scope for loop/meta/peak-window-guard
+
+=== Build and serve ===
+  ok    npm run build
+
+=== Route checks ===
+  ok    all route checks passed
+
+=== Ready to ship ===
+  node scripts/round.mjs ship
+```
+
+`scripts/test-peak-window.mjs` runs inside that "Route checks" line via
+`scripts/check-routes.sh`; its full output is pasted above rather than left to
+the summary. `docket/open/2026-08-17-deepseek-peak-hour-pricing.md` has every
+box checked against what is built and demonstrated here, and stays in
+`docket/open/` rather than moving to `docket/done/`, for two reasons named in
+full in the item's own 2026-08-22 note: this round neither ships nor opens a
+pull request, and the item's `prompts/orchestrator.md` box is a human-owned
+path that no autonomous round can ever merge regardless.
+
+This round was reviewed once and came back **request-changes**: the two code
+findings and the timestamp-arithmetic finding above, all three fixed and
+re-tested against a freshly restarted server before this entry was written,
+none smoothed into the record as if the first version had been correct.
+
+- Origin: delegated
+- Track: meta
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `node scripts/round.mjs check` — lint, docket, track scope
+  (`loop/meta/peak-window-guard` against `origin/main`), build, and all route
+  checks (including `scripts/test-peak-window.mjs`, now also asserting the
+  rate-passthrough and the swapped-window rejection) passed on a freshly
+  built-and-started server, port checked free first — pasted above.
+  `node scripts/test-peak-window.mjs` run standalone first, also pasted above.
+  `grep -rn "0\.44\|1\.32\|0\.22\|0\.66" scripts prompts policy.yml` confirmed
+  only `policy.yml` carries the rate figures after the fix. The OpenCode Go
+  rate card re-fetched from `https://opencode.ai/docs/go/` this round:
+  unchanged. No guardrail was loosened; this round adds a restriction, not
+  the reverse, so rule 11 is not implicated.
+- Result: the guard is built, boundary-proven at every half-open edge the
+  windows define, proven to read its rate figures rather than hardcode them,
+  proven to fail closed on a swapped-window `policy.yml` rather than report
+  `OFFPEAK` forever, and proven to skip an unauthorised peak start and
+  proceed on a matching authorisation, with a self-expiring authorisation
+  shown not to carry over between the two daily windows. Not measured:
+  whether a live `scripts/orchestrate.sh` supervisor, run unattended over
+  real hours, behaves the same way outside a test harness — the supervisor
+  was not running tonight, and this entry does not claim otherwise.
+  `prompts/orchestrator.md` is changed and waits on the maintainer's merge by
+  design (rule 13); the docket item stays open for that reason and because
+  this round does not ship.
+
 ### 2026-08-21
 This author round executes `docket/open/2026-08-16-post-manus-splits-from-meta.md`:
 Manus's 11 August announcement that it is returning to independent operation

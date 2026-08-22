@@ -122,6 +122,15 @@ node scripts/test-review-artifact.mjs || failures=$((failures + $?))
 echo
 node scripts/test-orchestrate-checkout.mjs || failures=$((failures + $?))
 
+# The DeepSeek peak-hour guard (docket/open/2026-08-17-deepseek-peak-hour-pricing.md):
+# scripts/peak-window.mjs at every boundary the two half-open UTC windows
+# define, and scripts/orchestrate-peak.sh's peak_guard() -- the function
+# scripts/orchestrate.sh calls before every iteration start -- exercised
+# directly for both a skipped and an authorised iteration inside the same
+# window, plus the fail-closed and self-expiring-authorisation cases.
+echo
+node scripts/test-peak-window.mjs || failures=$((failures + $?))
+
 # The prebuild chain must pass in a checkout shaped like Vercel's production
 # clone: one branch, no remote refs. CI clones the full history, so a prebuild
 # check that shells out to git for origin/main passes here while Vercel's

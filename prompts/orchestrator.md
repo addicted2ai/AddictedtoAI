@@ -45,6 +45,34 @@ reasoning gets you past them. If a task appears to require one, the task is wron
 6. **No social media.** No accounts, no platform-specific integrations. Generic
    Open Graph metadata is fine; anything naming a platform is not.
 
+## DeepSeek peak-hour pricing
+
+`opencode-go/deepseek-v4-flash` — the model every round in this loop runs on,
+including this session — is billed at double rate during two daily UTC
+windows. The exact windows and the rate card are not restated here on
+purpose: they live in exactly one place, `policy.yml`'s
+`deepseek_peak_pricing` block, and a second copy of a time window is how this
+repository's guardrails have drifted before. Read it there.
+
+`scripts/orchestrate.sh` will not start a new iteration inside a peak window
+without an explicit authorisation scoped to that specific window
+(`scripts/orchestrate-peak.sh`), so ordinarily you will simply not be
+invoked during an unauthorised peak window at all. The case this section is
+for is the one the shell-level guard cannot see: you were dispatched before
+a window opened and are still working when the clock crosses into one, and
+are about to dispatch a nested round yourself. Do not treat that as routine.
+**A round requested during a peak window — whether the maintainer asked for
+it or you are the one about to dispatch it — is confirmed with the
+maintainer first**, not started on your own judgment. If you cannot reach
+the maintainer, the safe default is to stop dispatching new work for the
+rest of this iteration and let the loop's own pause-and-resume handle it,
+the same way `scripts/orchestrate-peak.sh` would have.
+
+This is not a hypothetical: the loop ran the whole of the 01:00–04:00 window
+at double rate on 2026-08-18, with this guard filed and not yet built, and
+the maintainer's allowance ran out mid-round. See `CHANGELOG.md`'s
+2026-08-18 and 2026-08-21 entries.
+
 ## What you must not change
 
 You have wide latitude to build. These specific things are load-bearing and

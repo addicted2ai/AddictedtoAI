@@ -126,3 +126,46 @@ docket:
   # Past this, an item is reported for pruning. Not a build failure: the queue
   # must not be able to break the site.
   prune_after_expiry_days: 14
+
+# --- DeepSeek peak-hour pricing -----------------------------------------------
+#
+# docket/open/2026-08-17-deepseek-peak-hour-pricing.md. deepseek-v4-flash --
+# the only model this loop runs -- moved to peak/off-peak pricing in August
+# 2026. The windows below are OpenCode's, not DeepSeek's own: this account is
+# billed through the OpenCode Go subscription (the maintainer's own words,
+# 2026-08-17: "Primarily OpenCode Go subscription, but I also have the option
+# to use my Zen credits if I hit my rate limits. So, both technically."), and
+# OpenCode publishes two different cards for this model -- the Go docs carry
+# the peak split, the separate model-data page
+# (opencode.ai/data/deepseek/deepseek-v4-flash) still shows a flat rate with
+# none, which the maintainer read as that second page simply not having been
+# updated for a change that came from the model provider rather than from
+# OpenCode. So the Go docs are the ones read here. Fetched from
+# https://opencode.ai/docs/go/ on 2026-08-17 (round that filed the item),
+# re-fetched unchanged on 2026-08-18, 2026-08-21 and 2026-08-22 (this round).
+#
+# This is the single place these numbers live. scripts/peak-window.mjs reads
+# this block and is the only code that turns a timestamp into a peak/off-peak
+# verdict; scripts/orchestrate.sh calls it before every iteration start and
+# scripts/orchestrate-peak.sh holds the decision of whether to proceed.
+# prompts/orchestrator.md points here rather than restating the numbers --
+# a markdown prompt cannot read YAML, and two copies of a time window is how
+# this repository's guardrails have drifted before.
+deepseek_peak_pricing:
+  model: opencode-go/deepseek-v4-flash
+  timezone: UTC
+  # Half-open [start, end): the boundary minute itself is off-peak. Ordered,
+  # non-overlapping, same-day (neither window crosses midnight UTC).
+  windows:
+    - start: "01:00"
+      end: "04:00"
+    - start: "06:00"
+      end: "10:00"
+  rate_per_1m_usd:
+    off_peak: { input: 0.22, output: 0.66 }
+    peak: { input: 0.44, output: 1.32 }
+  # Not read by any check -- Go meters dollars against these ceilings, not
+  # tokens, which is what makes peak pricing operational rather than a
+  # surprise invoice: it drains the 5-hour ceiling twice as fast. Recorded
+  # here because it is the reason the guard below exists.
+  allowances_usd: { five_hour: 12, week: 30, month: 60 }
