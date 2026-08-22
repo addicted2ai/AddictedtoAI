@@ -100,17 +100,53 @@ const TOKEN_PATTERN = /[A-Za-z0-9][A-Za-z0-9._-]*/g;
 // period and no trailing word -- the single most natural way to reference a
 // model in prose.
 //
-// No identifier in RETIREMENT_DATES ends in ".", so trailing dots are
-// stripped from every extracted token -- repeatedly, so an ellipsis strips
-// clean too. Only a dot at the very end of a token is touched; a dot
-// separating two digits in the middle of a token (the version-number case)
-// is never adjacent to the end and is left alone. Stripping can only ever
-// *reveal* an identifier that trailing punctuation was hiding -- it cannot
-// merge two different tokens into a false one, so it cannot introduce a new
-// false positive the way loosening a boundary check could.
-function tokensOf(text) {
-  const raw = text.match(TOKEN_PATTERN) || [];
-  return raw.map((t) => t.replace(/\.+$/, "")).filter(Boolean);
+// A second, narrower round of review found that fix only reached a dot at
+// the literal end of an extracted run. Glue the next word straight onto the
+// period with no space -- "gpt-4-0613.Then we switched vendors." -- and the
+// dot is no longer trailing, it is internal, so the same regex greedily
+// extracts "gpt-4-0613.Then" as one continuous, unmatchable run and the
+// fix's own rule ("only a dot at the very end is touched") does not reach
+// it by its own logic. A genuine, common shape: fast typing, some
+// PDF-to-text extraction, and casually punctuated chat all produce a
+// sentence-ending period with no following space.
+//
+// The obvious fix -- also try the substring before each internal dot -- is
+// dangerous on its own: `gpt-4.1-nano`'s own internal dot means its prefix
+// `gpt-4` is *itself* a real alias, of the unrelated, separately-dated
+// `gpt-4-0613` row. A matcher that tried dot-split substrings without an
+// ordering rule could report "gpt-4.1-nano" is retiring under the wrong
+// vendor's wrong shutdown date -- a confident, specific, sourced wrong
+// answer, strictly worse than the miss being fixed.
+//
+// So candidates are generated longest-first and the caller (findMatches)
+// stops at the first one that resolves: the whole run, trailing dots
+// stripped, is always tried first, and a shorter, dot-truncated prefix is
+// only ever considered when that longer candidate resolved to nothing.
+// "gpt-4.1-nano" therefore never even generates its "gpt-4" candidate,
+// because the full run already resolves on the first try; a genuinely
+// glued run like "gpt-4.1-nano.Then" tries "gpt-4.1-nano.Then" (fails),
+// then "gpt-4.1-nano" (its own row -- stop here), never reaching "gpt-4".
+// No identifier in RETIREMENT_DATES ends in ".", so the longest candidate
+// this ever generates can only *reveal* an identifier trailing or internal
+// punctuation was hiding -- it still cannot merge two different tokens
+// into a false one on its own, and the ordering rule is what keeps a real
+// but *shorter* different identifier from ever outranking a real longer
+// one that also resolves.
+function rawRunsOf(text) {
+  return text.match(TOKEN_PATTERN) || [];
+}
+
+function dotCandidatesOf(run) {
+  const candidates = [];
+  let current = run;
+  while (true) {
+    const stripped = current.replace(/\.+$/, "");
+    if (stripped) candidates.push(stripped);
+    const lastDot = stripped.lastIndexOf(".");
+    if (lastDot === -1) break;
+    current = stripped.slice(0, lastDot);
+  }
+  return candidates;
 }
 
 // A phrase identifier ("Assistants API", "Agent Builder") gets none of the
@@ -155,25 +191,50 @@ function phraseMatches(haystack, needle) {
 // `rows` is threaded through explicitly, rather than imported at module
 // scope, so the health check can pass a deliberately mutated copy without a
 // second implementation of this function.
+//
+// Token-shaped identifiers are resolved per glued run of the text (in the
+// order the runs appear), trying each run's longest-first dot candidate in
+// turn and stopping at the first one present in the data -- see
+// dotCandidatesOf's comment for why the ordering, not just the candidate
+// set, is what keeps this safe. Phrase-shaped identifiers are unaffected by
+// any of this and are still checked by substring in a separate pass.
 export function findMatches(text, rows) {
   if (!text || !text.trim()) return [];
   const haystack = text.toLowerCase();
-  const tokenSet = new Set(tokensOf(text).map((t) => t.toLowerCase()));
   const index = buildIndex(rows);
+
+  const tokenLookup = new Map();
+  for (const entry of index) {
+    if (TOKEN_CHARS.test(entry.identifier)) {
+      tokenLookup.set(entry.identifier.toLowerCase(), entry);
+    }
+  }
 
   const matches = [];
   const seen = new Set();
-  for (const { identifier, row } of index) {
-    if (seen.has(row)) continue;
-    const needle = identifier.toLowerCase();
-    const hit = TOKEN_CHARS.test(identifier)
-      ? tokenSet.has(needle)
-      : phraseMatches(haystack, needle);
-    if (hit) {
-      matches.push({ matchedAs: identifier, row });
-      seen.add(row);
+
+  for (const run of rawRunsOf(text)) {
+    for (const candidate of dotCandidatesOf(run)) {
+      const found = tokenLookup.get(candidate.toLowerCase());
+      if (found) {
+        if (!seen.has(found.row)) {
+          matches.push({ matchedAs: found.identifier, row: found.row });
+          seen.add(found.row);
+        }
+        break; // longest-match-first: a shorter candidate is never tried once one resolves
+      }
     }
   }
+
+  for (const entry of index) {
+    if (TOKEN_CHARS.test(entry.identifier)) continue; // handled above
+    if (seen.has(entry.row)) continue;
+    if (phraseMatches(haystack, entry.identifier.toLowerCase())) {
+      matches.push({ matchedAs: entry.identifier, row: entry.row });
+      seen.add(entry.row);
+    }
+  }
+
   return matches;
 }
 

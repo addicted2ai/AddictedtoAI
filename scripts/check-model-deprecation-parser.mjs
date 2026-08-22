@@ -80,6 +80,24 @@ for (const row of RETIREMENT_DATES) {
     bad(`primary "${primary}." (sentence-final, trailing period) does not match its own row`);
   }
 
+  // The run-on case, at the same full scale as the trailing-period sweep
+  // above: a second, narrower round of review found that fix only reached
+  // a dot at the literal end of an extracted run -- glue the next word
+  // straight onto the period with no space ("gpt-4-0613.Then we switched
+  // vendors.") and the dot becomes internal, so the earlier fix's own rule
+  // ("only a dot at the very end is touched") does not reach it by its own
+  // logic. Every identifier, not a sample, so this specific regression
+  // cannot return silently for any row.
+  const primaryGluedHits = findMatches(
+    `We used ${primary}.Then we switched vendors.`,
+    RETIREMENT_DATES
+  );
+  if (primaryGluedHits.some((m) => m.row === row)) {
+    ok(`primary "${primary}.Then..." (period glued to the next word, no space) matches its own row`);
+  } else {
+    bad(`primary "${primary}.Then..." (period glued to the next word, no space) does not match its own row`);
+  }
+
   for (const alias of aliases) {
     const aliasHits = findMatches(
       `Our deployment still references ${alias} in the pipeline.`,
@@ -96,6 +114,16 @@ for (const row of RETIREMENT_DATES) {
       ok(`alias "${alias}." (sentence-final, trailing period) matches its own row`);
     } else {
       bad(`alias "${alias}." (sentence-final, trailing period) does not match its own row`);
+    }
+
+    const aliasGluedHits = findMatches(
+      `We used ${alias}.Then we switched vendors.`,
+      RETIREMENT_DATES
+    );
+    if (aliasGluedHits.some((m) => m.row === row)) {
+      ok(`alias "${alias}.Then..." (period glued to the next word, no space) matches its own row`);
+    } else {
+      bad(`alias "${alias}.Then..." (period glued to the next word, no space) does not match its own row`);
     }
   }
 }
@@ -245,6 +273,110 @@ for (const text of PERIOD_FALSE_POSITIVE_PROBES) {
     ok(`period-stripping does not turn "${text}" into a false match`);
   } else {
     bad(`"${text}" incorrectly matched ${hits.map((m) => m.row.what).join(", ")} — trailing-period fix is too loose`);
+  }
+}
+
+// Near-miss probes for the *glued* case specifically (a decoy, an
+// off-by-digit, an off-by-letter identifier, each glued to a following
+// word with no space) -- the same "the fix can only reveal, never
+// manufacture" guarantee as PERIOD_FALSE_POSITIVE_PROBES above, checked
+// again for the run-on shape rather than assumed to carry over.
+const GLUED_FALSE_POSITIVE_PROBES = [
+  "This is not-a-real-model-9000.Then something else happened.",
+  "gpt-4-06133.Then something else happened.", // one digit off gpt-4-0613
+  "gpt-4-0613x.Then something else happened.", // one letter off
+];
+for (const text of GLUED_FALSE_POSITIVE_PROBES) {
+  const hits = findMatches(text, RETIREMENT_DATES);
+  if (hits.length === 0) {
+    ok(`gluing a word onto "${text.split(".")[0]}." does not turn it into a false match`);
+  } else {
+    bad(`"${text}" incorrectly matched ${hits.map((m) => m.row.what).join(", ")} — the glued-word fix is too loose`);
+  }
+}
+
+// The dangerous direction, named explicitly rather than left to the sweep
+// above to catch incidentally: a naive fix for the glued-word case would
+// try the substring before every internal dot, and `gpt-4.1-nano`'s own
+// internal dot means its prefix "gpt-4" is *itself* a real alias -- of the
+// unrelated, separately-dated gpt-4-0613 row. Getting this wrong would not
+// be a miss, it would be a confident, specific, sourced wrong answer:
+// exactly the failure mode this whole round exists to close, reproduced
+// inside the fix meant to close it. Asserted on its own, by name, so this
+// exact case can never silently start failing again even if every more
+// general sweep below it were deleted.
+const dangerousText = "We migrated off gpt-4.1-nano.Then we moved on.";
+const dangerousHits = findMatches(dangerousText, RETIREMENT_DATES);
+if (dangerousHits.some((m) => m.row.what.startsWith("gpt-4-0613"))) {
+  bad(
+    `"${dangerousText}" incorrectly degraded "gpt-4.1-nano" to the shorter "gpt-4" alias of the ` +
+      "unrelated gpt-4-0613 row — this is the specific wrong-answer risk the longest-match-first rule exists to prevent"
+  );
+} else if (dangerousHits.some((m) => m.row.what.startsWith("gpt-4.1-nano (also"))) {
+  ok(`"gpt-4.1-nano", glued to a following word, resolves to its own row and never degrades to the shorter "gpt-4"`);
+} else {
+  bad(`"${dangerousText}" should resolve to the gpt-4.1-nano row and did not (got: ${dangerousHits.map((m) => m.row.what).join(", ") || "nothing"})`);
+}
+
+// The same guarantee, generalized: every identifier in the data that
+// itself contains an internal dot (derived from the data, not hardcoded,
+// so a future dotted identifier is covered automatically) must resolve to
+// ITSELF when glued to a following word, never to a shorter real prefix
+// belonging to a different row. This is the systematic version of the
+// single named case above.
+const dottedIdentifiers = [];
+for (const row of RETIREMENT_DATES) {
+  const { primary, aliases } = parseIdentifiers(row.what);
+  for (const id of [primary, ...aliases]) {
+    if (id && !id.includes(" ") && id.includes(".")) dottedIdentifiers.push({ id, row });
+  }
+}
+if (dottedIdentifiers.length === 0) {
+  bad("no dotted token-shaped identifiers found in RETIREMENT_DATES — the longest-match-first sweep is not exercising anything");
+}
+for (const { id, row } of dottedIdentifiers) {
+  const text = `config references ${id}.Deprecated soon.`;
+  const hits = findMatches(text, RETIREMENT_DATES);
+  if (hits.length === 1 && hits[0].row === row) {
+    ok(`dotted identifier "${id}", glued to a following word, resolves to its own row and only its own row`);
+  } else {
+    bad(
+      `dotted identifier "${id}", glued to a following word, should resolve to exactly its own row and did not ` +
+        `(got: ${hits.map((m) => m.row.what).join(", ") || "nothing"})`
+    );
+  }
+}
+
+// The rest of the token-character family, enumerated rather than assumed
+// safe: TOKEN_CHARS also includes `-` and `_`. Gluing a word onto either
+// currently produces a MISS, not a wrong answer -- confirmed here, not
+// merely believed -- because both characters are already meaningful *inside*
+// most identifiers in this data (nearly every one contains a hyphen), so a
+// hyphen- or underscore-glued word reads as part of a different, longer
+// token rather than as punctuation abutting the real one; a fix that tried
+// to peel off a hyphen-glued suffix the way the dot fix does would be far
+// more dangerous, not less, given how load-bearing `-` already is inside
+// real identifiers ("gpt-4-turbo" is not "gpt-4" plus a glued "-turbo").
+// These assertions exist so a future change to TOKEN_CHARS or to this
+// reasoning is caught rather than silently assumed to still hold, and so
+// the record can say this family was actually enumerated rather than only
+// the period being fixed and everything else left unexamined.
+const OTHER_TOKEN_CHAR_GLUE_PROBES = [
+  { label: "hyphen glued after", text: "we run gpt-4-0613-ish in staging" },
+  { label: "hyphen glued before", text: "our pre-gpt-4-0613-migration branch" },
+  { label: "underscore glued after", text: "the gpt-4-0613_legacy flag" },
+  { label: "digit glued directly, no punctuation at all", text: "still using gpt-4-06132 somehow" },
+  { label: "letter glued directly, no punctuation at all", text: "calling gpt-4-0613next in code" },
+];
+for (const { label, text } of OTHER_TOKEN_CHAR_GLUE_PROBES) {
+  const hits = findMatches(text, RETIREMENT_DATES);
+  if (hits.length === 0) {
+    ok(`${label} ("${text}") remains a miss, not a wrong answer -- unchanged, not a new gap`);
+  } else {
+    bad(
+      `${label} ("${text}") unexpectedly matched ${hits.map((m) => m.row.what).join(", ")} -- ` +
+        "this family's behavior changed and the reasoning above needs re-checking"
+    );
   }
 }
 
