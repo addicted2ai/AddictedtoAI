@@ -117,9 +117,36 @@ jobs:
   # out of CHARTER.md by its "13a." marker (the same one
   # scripts/check-13a-unchanged.mjs's header explains app/lib/charter.js's
   # renderer does not recognise as a numbered rule) and fails if it differs
-  # from the base ref's by so much as a byte. Passes, deliberately, if the
-  # base ref has no rule 13a at all -- so the pull request that first adds it
-  # is never blocked by a check protecting text that isn't there yet.
+  # from the base ref's by so much as a byte, or if either ref carries more
+  # than one "13a." marker -- a second, decoy marker with the base's exact
+  # text would otherwise extract clean while the real clause below it was
+  # edited freely, which is exactly the kind of gap this file exists to
+  # close, not reproduce. Passes, deliberately, if the base ref has no rule
+  # 13a at all -- so the pull request that first adds it is never blocked by
+  # a check protecting text that isn't there yet.
+  #
+  # !! NOT YET A REQUIRED CHECK. !!
+  # Read live from the GitHub API on 2026-08-22, the same day this job was
+  # added: `gh api repos/addicted2ai/AddictedtoAI/branches/main/protection/
+  # required_status_checks --jq '.contexts'` returns exactly
+  # ["build-and-audit","human-owned-paths","review-artifact"]. This job's
+  # name is not in that list. Auto-merge waits only on required checks
+  # (see the two banners on the jobs beside this one), so today this job can
+  # report a violation of the one clause in CHARTER.md the loop may never
+  # amend, and auto-merge will land the pull request anyway. Adding a job to
+  # the required list is a branch-protection settings change, and rule 13a
+  # itself reserves repository settings -- so the loop that just wrote this
+  # job cannot be the one that arms it, the same bootstrapping gap
+  # `human-owned-paths` had between 2026-08-11 (created) and 2026-08-11
+  # (added to the required list, PR #25 the first pull request it actually
+  # stopped) -- neither of which was tracked as a docket item either; the
+  # loud banner is the disclosure mechanism this repository already used
+  # twice. Not filed as a new docket item here either: `meta`'s open queue
+  # was already 26 items against a `queue_budget` of 14 in `policy.yml` when
+  # this job was written, and `check-docket.mjs`'s filing gate correctly
+  # refuses to let a `track: meta` item grow it further -- the same wall
+  # CHARTER.md's History (2026-08-22) already records for the stop-mechanism
+  # gap this file's next job closed. See that History entry for both.
   rule-13a-text:
     runs-on: ubuntu-latest
     steps:
@@ -128,6 +155,34 @@ jobs:
           fetch-depth: 0
       - name: Verify rule 13a's own text is unchanged from the base ref
         run: node scripts/check-13a-unchanged.mjs "origin/${{ github.base_ref }}"
+
+  # CHARTER.md rule 13a also reserves "the stop mechanism -- docket/HOLD.md
+  # and the code paths that honour it, so a brake the loop can teach itself
+  # to ignore is no brake." Two different risks, guarded two different ways
+  # in scripts/check-hold-mechanism.mjs (its own header has the full
+  # reasoning, including why a symmetric "any touch to HOLD.md fails" guard
+  # would be wrong): clearing an active hold is the reserved act, creating
+  # one is not (this project's own history holds several legitimate
+  # self-merged pauses and releases); and the `if [ -s docket/HOLD.md ];
+  # then halt ...; fi` fragment in scripts/orchestrate.sh is frozen byte for
+  # byte, because editing the code that honours the file is exactly as
+  # effective as clearing the file itself, and the supervisor being dead
+  # since 2026-08-18 makes that code dormant, not safe -- it is what a
+  # restart runs. Proved able to fail on a clearing diff and on a tampered
+  # honouring fragment, and to pass on a diff that only creates a hold or
+  # edits an active one's stated reason, before this job shipped.
+  #
+  # !! NOT YET A REQUIRED CHECK. !! Same gap, same reason, same "not filed
+  # either -- meta's queue is over budget" note as rule-13a-text above; see
+  # that job's banner and CHARTER.md's History, 2026-08-22.
+  stop-mechanism:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify the docket/HOLD.md stop mechanism is intact
+        run: node scripts/check-hold-mechanism.mjs "origin/${{ github.base_ref }}"
 
   # A round that declares `Origin: delegated` claims the orchestrating model
   # reviewed it before merge. A review asserted in the changelog is not a

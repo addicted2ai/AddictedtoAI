@@ -578,24 +578,50 @@ subject to the same append-only rule it imposes on everything else.
   four blanket-guarded paths (`CHARTER.md`, `.github/`, `prompts/`,
   `scripts/check-track-scope.mjs`) to `.github/` and
   `scripts/check-track-scope.mjs` — the enforcement mechanism itself, not the
-  content rule 13's delegation already covers — plus a new, separate check,
-  `scripts/check-13a-unchanged.mjs`, that fails only if rule 13a's own text in
-  this file differs from `origin/main`'s. `CHARTER.md` and `prompts/` come off
-  the blanket gate entirely: failing every legitimate edit to them, as the old
-  gate did by design, is what trained the last two merges (round 167's among
-  them) to go red-then-override, and a gate that is red on every normal change
-  stops meaning anything is wrong. `docket/HOLD.md` and the code paths that
-  honour it remain reserved by rule 13a but not newly gated here — a
-  mechanical check would need to distinguish a legitimate pause or release
-  (this project's own history holds several, all self-merged, all legitimate)
-  from an edit that removes the honouring logic, and this round did not build
-  that distinction. It tried to file the gap rather than guess at a
-  mechanism, and could not: `meta`'s open queue was already 26 items against
-  a `queue_budget` of 14 in `policy.yml`, so `check-docket.mjs`'s filing gate
-  correctly refused to let a `track: meta` item grow it further, exactly as
-  designed. Recorded here in place of the item it could not file, rather than
-  relabelling it into a track it does not belong to just to get past the
-  gate.
+  content rule 13's delegation already covers. `CHARTER.md` and `prompts/`
+  come off the blanket gate entirely: failing every legitimate edit to them,
+  as the old gate did by design, is what trained the last two merges (round
+  167's among them) to go red-then-override, and a gate that is red on every
+  normal change stops meaning anything is wrong.
+
+  Two new checks cover what the path gate can no longer reach by being
+  narrower. `scripts/check-13a-unchanged.mjs` fails if rule 13a's own text in
+  this file differs from `origin/main`'s, and — after a finding against this
+  round's own first draft — fails on more than one `"13a."` marker too, not
+  only on a text mismatch: a decoy marker carrying the base's exact text
+  would otherwise extract clean while the real clause below it was edited
+  freely. `scripts/check-hold-mechanism.mjs` covers the stop mechanism rule
+  13a also reserves, added after the first draft of this entry said the gap
+  would be left for a docket item to carry: clearing an active
+  `docket/HOLD.md` hold is the reserved act, distinct from creating one or
+  editing an active hold's stated reason, which this project's own history
+  holds several legitimate, self-merged instances of; and the `if [ -s
+  docket/HOLD.md ]; then halt ...; fi` fragment in `scripts/orchestrate.sh`
+  is frozen byte for byte, because editing the code that honours the file is
+  exactly as effective as clearing the file, and the supervisor's having
+  been dead since 2026-08-18 makes that code dormant rather than safe — it
+  is what a restart runs. Both new checks were proved able to fail before
+  they shipped, not only asserted to guard, and both are read live from the
+  GitHub API to not yet be in branch protection's required list — read
+  2026-08-22: `["build-and-audit","human-owned-paths","review-artifact"]` —
+  so today they can report a real violation and watch auto-merge land it
+  anyway, a bootstrapping gap `human-owned-paths` itself had for a few hours
+  on 2026-08-11. Both are commented with the same loud disclosure the two
+  older jobs already carry for their own required/not-required state, rather
+  than left to look armed.
+
+  Neither gap is tracked as a new docket item. Arming the required-checks
+  list is a settings change rule 13a reserves to the maintainer, the same
+  reason `human-owned-paths`' own bootstrapping gap was never filed as one
+  either — the loud banner is the disclosure mechanism this repository
+  already used twice, and is used a third time here. This is also, this
+  time, not a choice: `meta`'s open queue was already 26 items against a
+  `queue_budget` of 14 in `policy.yml`, and `check-docket.mjs`'s filing gate
+  correctly refuses to let a `track: meta` item grow it further. Recorded
+  here rather than relabelled into a track it does not belong to just to get
+  past the gate — the same call this entry's own draft made once already,
+  for the stop-mechanism gap two paragraphs above, before that gap had a
+  mechanism at all.
 
   What this entry could not fix: `app/charter/page.js:203` reads "The document
   is human-owned, so only the maintainer can amend it" — false as of this

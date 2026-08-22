@@ -19,6 +19,24 @@
 // so "13a." renders as plain prose, not a styled rule (see CHARTER.md's
 // History, 2026-08-22). This check reads the same "13a." marker by regex
 // directly against the file text, independent of that renderer.
+//
+// EXACTLY ONE MARKER IS REQUIRED, deliberately, not just "at least one". The
+// first version of this check took the first `/^13a\.\s/` match with
+// `Array.prototype.findIndex` and stopped there. That is a real hole, not a
+// hypothetical one: a pull request could insert a second, decoy `13a.` line
+// -- carrying the base's exact text, so it extracts clean and this check
+// passes -- anywhere above the genuine one, and edit the real clause below
+// it freely; the span terminator (the next `\d+\.` or `## ` line) does not
+// save this, because the decoy's own span simply ends at whatever numbered
+// line follows it. Found in review before this shipped, not after.
+// `countMarkers` below makes the check fail on zero or more than one marker
+// rather than silently taking the first. This is the one rule in the whole
+// document that is supposed to survive every other constraint eroding one
+// defensible increment at a time (rule 13a's own text: "every other
+// constraint here is procedural... a loop that can amend the list of things
+// it cannot do would not have a list"), so it is the one place in this
+// repository where assuming good faith in a pull request's diff is exactly
+// the wrong default.
 
 import fs from "fs";
 import path from "path";
@@ -33,8 +51,13 @@ function normalize(text) {
   return text.replace(/\r\n/g, "\n");
 }
 
+function countMarkers(charterText) {
+  return normalize(charterText).split("\n").filter((l) => /^13a\.\s/.test(l)).length;
+}
+
 // Rule 13a runs from its own numbered line up to the next numbered rule line
-// (14.) or a `## ` section heading, whichever comes first.
+// (14.) or a `## ` section heading, whichever comes first. Only meaningful
+// once the caller has confirmed there is exactly one marker to start from.
 function extract13a(charterText) {
   const lines = normalize(charterText).split("\n");
   const startIdx = lines.findIndex((l) => /^13a\.\s/.test(l));
@@ -68,22 +91,47 @@ if (baseText === null) {
   process.exit(0);
 }
 
-const base13a = extract13a(baseText);
-if (base13a === null) {
+const baseCount = countMarkers(baseText);
+if (baseCount === 0) {
   console.log(`ok    rule 13a does not exist at ${baseRef} -- nothing to protect yet`);
   process.exit(0);
 }
+if (baseCount > 1) {
+  // The base itself is already ambiguous. Not this pull request's doing, and
+  // there is no correct one of several to protect -- fail loudly rather than
+  // silently pick the first, the same failure mode this check exists to
+  // close on the head side.
+  console.log(
+    `FAIL  ${baseRef}'s CHARTER.md already has ${baseCount} "13a." markers -- ambiguous, cannot establish which is the real rule 13a to protect`
+  );
+  process.exit(1);
+}
+const base13a = extract13a(baseText);
 
 const headText = fs.readFileSync(path.join(root, "CHARTER.md"), "utf8");
-const head13a = extract13a(headText);
+const headCount = countMarkers(headText);
 
-if (head13a === null) {
+if (headCount === 0) {
   console.log(
     `FAIL  rule 13a existed at ${baseRef} and is missing from this branch's CHARTER.md`
   );
   console.log("      Only the maintainer may amend rule 13a (CHARTER.md's Amendment section).");
   process.exit(1);
 }
+if (headCount > 1) {
+  console.log(
+    `FAIL  this branch's CHARTER.md has ${headCount} "13a." markers; ${baseRef} has exactly 1.`
+  );
+  console.log(
+    "      A decoy marker extracts clean and lets the real clause be edited freely below it --"
+  );
+  console.log(
+    "      exactly one \"13a.\" line is required. Only the maintainer may amend rule 13a."
+  );
+  process.exit(1);
+}
+
+const head13a = extract13a(headText);
 
 if (head13a !== base13a) {
   console.log(
