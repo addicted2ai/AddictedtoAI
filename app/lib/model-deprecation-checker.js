@@ -11,9 +11,11 @@
 // "gpt-3.5-turbo-0125 (also gpt-3.5-turbo, gpt-3.5-turbo-completions)" --
 // which is how OpenAI's own deprecations page writes a snapshot alongside
 // the rolling alias that actually 404s for most callers. Only a
-// parenthetical that begins "(also " is an alias list; a handful of rows use
-// parentheses as plain description -- "Evals platform (dashboard and API)"
-// -- and must not be split.
+// parenthetical that begins "(also " is an alias list. Counted directly
+// against the data (12 rows carry any paren in `what`; 11 are a real "(also
+// "-anchored alias list): exactly one row uses parentheses as plain
+// description instead -- "Evals platform (dashboard and API)" -- and must
+// not be split.
 export function parseIdentifiers(what) {
   const match = (what || "").match(/^(.*?)\s*\(also\s+([^)]+)\)\s*$/);
   if (!match) return { primary: (what || "").trim(), aliases: [] };
@@ -40,18 +42,38 @@ export function buildIndex(rows) {
 }
 
 // An identifier made only of token characters (letters, digits, `.`, `-`,
-// `_`) is matched as a whole token, never a substring: "gpt-4" (an alias of
-// the gpt-4-0613 row) must not match inside "gpt-4o-mini" or
-// "gpt-4-turbo-2024-04-09" -- both different, current identifiers that
-// happen to share the prefix. A naive `text.includes(identifier)` check
-// gets this wrong on exactly the rows most likely to appear in a real
-// paste. Identifiers that are not made only of token characters -- the
-// handful of product/API names such as "Assistants API" or
-// "OpenAI-Beta: realtime=v1" -- are names, not tokens a delimiter would
-// isolate, and are matched as a literal substring instead.
+// `_`) is matched as a whole token, never a substring, which guarantees two
+// different things at once, checked against the data rather than assumed:
 //
-// `/` is deliberately NOT a token character, even though no current
-// identifier needs it drawn as a boundary: LiteLLM- and OpenRouter-style
+// First: "gpt-4" (an alias of the gpt-4-0613 row) must not match inside
+// "gpt-4o-mini" -- a real, current OpenAI identifier that is absent from
+// RETIREMENT_DATES entirely and just happens to share the "gpt-4" prefix.
+//
+// Second, and easy to get backwards: a LONGER identifier that happens to
+// start with a SHORTER alias belonging to a DIFFERENT row must still
+// resolve to its own row rather than being swallowed by the shorter one.
+// "gpt-4-turbo-2024-04-09" is not a bystander here the way "gpt-4o-mini"
+// is -- it is itself an alias of the gpt-4-turbo row
+// (`"gpt-4-turbo (also gpt-4-turbo-2024-04-09, gpt-4-turbo-completions)"`,
+// a row unrelated to gpt-4-0613/"gpt-4"), and it must match THAT row, not
+// be mistaken for the shorter "gpt-4" alias it happens to start with. An
+// earlier version of this comment called both examples "different, current
+// identifiers," which was false about the second one: found by a second
+// independent review that re-derived the claim against the data rather
+// than trusting the comment (round 168's CHANGELOG entry records both
+// reviews). A naive `text.includes(identifier)` check gets both directions
+// wrong on exactly the rows most likely to appear in a real paste.
+// Identifiers that are not made only of token characters -- the handful of
+// product/API names such as "Assistants API" or "OpenAI-Beta: realtime=v1"
+// -- are names, not tokens a delimiter would isolate, and are matched as a
+// literal substring instead.
+//
+// `/` is deliberately NOT a token character, even though no TOKEN-shaped
+// identifier needs it drawn as a boundary (one PHRASE identifier,
+// "v1/prompts API and reusable prompt objects", does contain a literal `/`,
+// but phrase identifiers are matched by substring rather than tokenized, so
+// this class of identifier is unaffected either way -- checked directly
+// against RETIREMENT_DATES, not assumed): LiteLLM- and OpenRouter-style
 // configs write a model as "openai/gpt-4-0613" or "anthropic/claude-sonnet-4-20250514",
 // and treating `/` as ordinary text (splitting the token there, the same as
 // whitespace or a quote) means the vendor-prefixed form tokenizes into

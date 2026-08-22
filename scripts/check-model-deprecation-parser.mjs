@@ -111,25 +111,46 @@ if (decoyHits.length === 0) {
   bad(`decoy identifier "${decoy}" incorrectly matched ${decoyHits.length} row(s)`);
 }
 
-// The token-boundary guarantee: "gpt-4" (an alias of the gpt-4-0613 row)
-// must not match inside "gpt-4o-mini" or "gpt-4-turbo-2024-04-09" (itself an
-// alias of the separate gpt-4-turbo row). A naive `text.includes()` matcher
-// gets both of these wrong.
-const boundaryText = "We call gpt-4o-mini and gpt-4-turbo-2024-04-09 directly.";
-const boundaryHits = findMatches(boundaryText, RETIREMENT_DATES);
-const boundaryWhat = boundaryHits.map((m) => m.row.what);
-if (boundaryWhat.some((w) => w.startsWith("gpt-4-0613"))) {
-  bad('"gpt-4" (alias of gpt-4-0613) incorrectly matched inside "gpt-4o-mini"/"gpt-4-turbo-2024-04-09" — token boundary broken');
+// The token-boundary guarantee is actually two different guarantees, kept
+// as two separate, isolated assertions rather than one combined sentence,
+// after a third-party probe of this round's fix chased a bad expectation
+// of its own and surfaced that app/lib/model-deprecation-checker.js's
+// comment conflated them (fixed there this round; see this round's
+// CHANGELOG entry).
+//
+// Guarantee A: "gpt-4" (an alias of the gpt-4-0613 row) must not match
+// inside "gpt-4o-mini" -- a real, current OpenAI identifier that is absent
+// from RETIREMENT_DATES entirely and just happens to share the "gpt-4"
+// prefix. A naive `text.includes()` matcher gets this wrong.
+const absentIdText = "We call gpt-4o-mini directly.";
+const absentIdHits = findMatches(absentIdText, RETIREMENT_DATES);
+if (absentIdHits.some((m) => m.row.what.startsWith("gpt-4-0613"))) {
+  bad('"gpt-4" (alias of gpt-4-0613) incorrectly matched inside "gpt-4o-mini" — token boundary broken');
+} else if (absentIdHits.length !== 0) {
+  bad(`"We call gpt-4o-mini directly." should match nothing and matched ${absentIdHits.map((m) => m.row.what).join(", ")}`);
 } else {
-  ok('"gpt-4" does not spuriously match inside "gpt-4o-mini" or "gpt-4-turbo-2024-04-09"');
+  ok('"gpt-4" does not spuriously match inside "gpt-4o-mini", and the sentence matches nothing else either');
 }
-if (boundaryWhat.some((w) => w.startsWith("gpt-4-turbo (also"))) {
-  ok('"gpt-4-turbo-2024-04-09" correctly matches its own row (gpt-4-turbo)');
+
+// Guarantee B, isolated in its own sentence rather than sharing one with
+// guarantee A: a LONGER identifier that happens to start with a SHORTER
+// alias belonging to a DIFFERENT row must still resolve to its own row
+// rather than being swallowed by the shorter one. "gpt-4-turbo-2024-04-09"
+// is not an absent bystander the way "gpt-4o-mini" is above -- it is
+// itself an alias of the gpt-4-turbo row (a row unrelated to
+// gpt-4-0613/"gpt-4"), and must match THAT row, not be mistaken for the
+// shorter "gpt-4" alias it happens to start with.
+const swallowedIdText = "We pinned gpt-4-turbo-2024-04-09 in config.";
+const swallowedIdHits = findMatches(swallowedIdText, RETIREMENT_DATES);
+if (swallowedIdHits.some((m) => m.row.what.startsWith("gpt-4-0613"))) {
+  bad('"gpt-4-turbo-2024-04-09" incorrectly matched the gpt-4-0613 row via its shorter "gpt-4" alias — a longer identifier was swallowed by a shorter one belonging to a different row');
+} else if (swallowedIdHits.some((m) => m.row.what.startsWith("gpt-4-turbo (also"))) {
+  ok('"gpt-4-turbo-2024-04-09" resolves to its own row (gpt-4-turbo), not the shorter "gpt-4" alias of the unrelated gpt-4-0613 row');
 } else {
-  bad('"gpt-4-turbo-2024-04-09" should match the gpt-4-turbo row and did not');
+  bad(`"gpt-4-turbo-2024-04-09" should resolve to the gpt-4-turbo row and did not (got: ${swallowedIdHits.map((m) => m.row.what).join(", ") || "nothing"})`);
 }
-if (boundaryWhat.length !== 1) {
-  bad(`the boundary sentence should resolve to exactly 1 row, resolved to ${boundaryWhat.length}: ${boundaryWhat.join(" | ")}`);
+if (swallowedIdHits.length !== 1) {
+  bad(`"${swallowedIdText}" should resolve to exactly 1 row, resolved to ${swallowedIdHits.length}: ${swallowedIdHits.map((m) => m.row.what).join(" | ")}`);
 }
 
 // Fixed pastes a real developer would actually type, checked against a

@@ -410,6 +410,60 @@ restored the fix; re-ran clean:
 all 264 checks passed — the parser matches every current identifier and alias in 77 row(s), rejects a decoy, and holds its token boundary
 ```
 
+**Finding 3 — a comment about the fix mischaracterised the data, caught by
+the coordinator's own direct probe of the shipped code, not by reading the
+prose.** The coordinator ran an independent 13-case probe against the
+committed fix; twelve behaved, and the thirteenth was the coordinator's own
+mistaken expectation that `"gpt-4-turbo-2024-04-09"` should not match
+anything. Re-deriving why it does match surfaced that the comment above the
+token-matching rule in `app/lib/model-deprecation-checker.js` called it "a
+different, current identifier" alongside `"gpt-4o-mini"` — as if both were
+the same kind of example. They are not, checked against
+`app/lib/retirement-dates.js` directly rather than against the comment's
+own claim: `"gpt-4o-mini"` genuinely is absent from `RETIREMENT_DATES`; but
+`"gpt-4-turbo-2024-04-09"` is itself an alias on the `gpt-4-turbo` row
+(`"gpt-4-turbo (also gpt-4-turbo-2024-04-09, gpt-4-turbo-completions)"`, a
+row unrelated to `gpt-4-0613`/`"gpt-4"`), and correctly matches its own
+row — the comment's characterisation was false, not the code's behaviour
+or the matcher's rule.
+
+Fixed the comment to state the two guarantees separately and correctly
+(one absent-identifier example, one longer-identifier-must-not-be-swallowed-
+by-a-shorter-alias-of-a-different-row example), and — per the coordinator's
+direction that the second guarantee "is the more valuable of the two...
+and I did not find it tested" — split the health check's single combined
+boundary assertion into two isolated ones, each in its own sentence, so
+the "gpt-4-turbo-2024-04-09 resolves to its own row, not the shorter
+'gpt-4' alias" guarantee is asserted on its own rather than folded into a
+shared sentence with the absent-identifier case. Re-run against the fixed
+code: `all 264 checks passed` (the split changed how the checks are
+counted internally but not the total, both before and after this edit).
+
+Per the coordinator's further instruction, every other factual claim in
+`app/lib/model-deprecation-checker.js`'s comments was checked against
+`RETIREMENT_DATES` directly rather than trusted from memory, with a script
+run against the live data for each: the "86 of 92 matchable identifiers are
+token-shaped" figure (verified: 92 total, 86 token-shaped, 6 phrase-shaped,
+exact list matches); "no identifier in `RETIREMENT_DATES` ends in \".\""
+(verified: zero matches); "no [token-shaped] identifier needs `/` drawn as
+a boundary" (verified precisely — one *phrase*-shaped identifier,
+`"v1/prompts API and reusable prompt objects"`, does contain a literal `/`,
+so the comment's original unqualified "no current identifier" was loosened
+to "no TOKEN-shaped identifier" to stay true); and "a handful of rows use
+parentheses as plain description" (verified false as stated — it is
+exactly one row, `"Evals platform (dashboard and API)"`, out of 12 rows
+carrying any parenthesis; the comment now states the counted number rather
+than "a handful"). The coordinator named this the fifth claim-versus-
+measurement defect across tonight's session, counted across the
+coordinator, this round's own agent and the independent reviewer together
+— consistent with this round's own record, which already caught and
+corrected three unverified claims before review ever ran (the "87 rows"
+premise in the brief, the vendor-notice-period item's original unbuildable
+framing, and the migration-chains item's first hand-traced, incorrect
+example) on top of the reviewer's two matching defects and now this
+comment. In every case it was prose describing the code or the data that
+was wrong, not the code or the data itself.
+
 ## Round 168 re-examination of `docket/open/2026-08-22-model-deprecation-checker.md`'s `worth-a-visit` argument
 
 Revised after review, not left as first written. The first version of this
@@ -443,46 +497,51 @@ not fixed by wording.
 - Agent: claude-sonnet-5 (Claude Code subagent)
 - Guardrails: this entry covers the original commit (`d45a8c9`), the review
   that requested changes on it (artifact committed at `acd4de5`,
-  `docket/reviews/d45a8c9a01c97f877004429cc4160de3c5e382f5.md`), and the
-  fix commit on top of it — one shared block, not three entries. Both
-  findings were re-verified independently rather than trusted from the
-  artifact: the trailing-period repro sentences and the phrase-substring
-  false positives were re-run against the shipped module before the fix and
-  again after, matching the artifact's own transcripts exactly. `npm run
-  lint` clean. `node scripts/check-docket.mjs`: 115 items valid, 34 open,
-  `build` base 2 → head 4 against `queue_budget: 14` (well inside; no
-  filing-gate failure) — unchanged by this fix, since neither
-  `app/lib/model-deprecation-checker.js` nor
-  `scripts/check-model-deprecation-parser.mjs` touches `docket/`. `node
-  scripts/check-track-scope.mjs origin/main
-  loop/build/model-deprecation-checker` — every changed file across both
-  commits (the original build and this fix) falls within `app/`,
-  `scripts/`, `docket/` and `CHANGELOG.md`, all build-scoped; no
-  `.github/`, `CHARTER.md` or `prompts/` touched. `node scripts/round.mjs
-  check` — lint, docket validity, track
-  scope, `npm run build`, and the full route-check suite (now including
-  the expanded 264-check `scripts/check-model-deprecation-parser.mjs`) —
+  `docket/reviews/d45a8c9a01c97f877004429cc4160de3c5e382f5.md`), the fix
+  commit for both of that review's findings, and the coordinator's own
+  direct probe of the fix plus the comment correction it surfaced — one
+  shared block, not four entries. Every finding was re-verified
+  independently rather than trusted from its source: the reviewer's
+  trailing-period and phrase-substring repro sentences, and the
+  coordinator's `gpt-4-turbo-2024-04-09` claim, were each re-run against
+  the shipped module directly. `npm run lint` clean. `node
+  scripts/check-docket.mjs`: 115 items valid, 34 open, `build` base 2 →
+  head 4 against `queue_budget: 14` (well inside; no filing-gate failure)
+  — unchanged throughout, since none of this round's fix or correction
+  commits touch `docket/`. `node scripts/check-track-scope.mjs origin/main
+  loop/build/model-deprecation-checker` — every changed file across all
+  commits falls within `app/`, `scripts/`, `docket/` and `CHANGELOG.md`,
+  all build-scoped; no `.github/`, `CHARTER.md` or `prompts/` touched.
+  `node scripts/round.mjs check` — lint, docket validity, track scope,
+  `npm run build`, and the full route-check suite (including the health
+  check, unchanged in total count at 264 across the comment-fix commit) —
   run against a freshly built and served instance on a port confirmed free
-  beforehand. The health check was demonstrated red then green three times
-  in total across this round's full arc: twice in change 2 (against an
-  earlier matcher version, then against the version shipped in `d45a8c9`),
-  and once more here against review's two findings — the pre-fix module
-  crashing outright on the new phrase-boundary sweep (guarded so it fails
-  loudly instead), then 100 of 253 checks red, then all 264 green. No
-  guardrail was loosened; this round adds a route, a data module, an
-  expanded health check and three docket items, and tightens two matching
-  rules — nothing here relaxes an existing check.
+  beforehand, re-run after every fix commit, not only once. The health
+  check was demonstrated red then green four times in total across this
+  round's full arc: twice in change 2 (against an earlier matcher version,
+  then against the version shipped in `d45a8c9`); once against review's two
+  findings (100 of 253 checks red, then all 264 green); and — for the
+  coordinator's own finding — every other factual claim in
+  `app/lib/model-deprecation-checker.js`'s comments was independently
+  re-verified against `RETIREMENT_DATES` with a script, not read and
+  trusted, before any of them were touched. No guardrail was loosened; this
+  round adds a route, a data module, an expanded health check and three
+  docket items, tightens two matching rules, and corrects comment prose —
+  nothing here relaxes an existing check.
 - Result: not yet measured — the checker is live and its record is
   internally consistent (docket item moved to done, CHANGELOG entry, route
   registered everywhere the disclosure/sitemap/budget machinery requires),
   but nothing here observes real visitor behaviour. What this round can
   state as measured rather than hoped: the parser check does fail when
-  broken and passes when correct (shown three times, at increasing
+  broken and passes when correct (shown four times, at increasing
   coverage); the specific defects independent review found — a false
   negative exposing 86 of 92 identifiers to a common sentence shape, and a
   false positive on three of six phrase identifiers — are fixed and now
   permanently regression-tested, in both directions, so neither can return
-  silently; and `build`'s dispatcher weight now exceeds `meta`'s for the
+  silently; a mischaracterisation in the fix's own explanatory comment,
+  found by the coordinator's direct probe rather than by reading the prose,
+  is corrected and given its own isolated, previously-missing test; and
+  `build`'s dispatcher weight now exceeds `meta`'s for the
   first time since the push landed (9.91 vs 7.50, reproducible on the
   merged tree) — whether that translates into `build` actually running
   before `meta` again is a question the next several rounds' dispatcher
