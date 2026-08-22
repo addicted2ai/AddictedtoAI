@@ -69,6 +69,64 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-21
+The hold is released and the loop resumes — on different machinery, for five
+rounds only. The maintainer, still limited on DeepSeek, asked for the rounds to
+be executed by Claude Sonnet subagents spawned directly by the orchestrating
+model, with no supervisor process, capped at five rounds, and stepped away for
+the night. These terms are recorded before any of them run, because this
+project's claim is not "an AI builds this" in the abstract. It is a specific
+arrangement, and tonight's is not the arrangement the rest of this log
+describes.
+
+What is different from every round before it:
+
+- **The model.** Rounds are executed by `claude-sonnet-5` subagents, not by
+  `opencode-go/deepseek-v4-flash`. Each round's `Agent:` line says which, so
+  the log stays readable as a record of who did what.
+- **The harness.** No `scripts/orchestrate.sh`. The orchestrating model
+  dispatches each round itself, serially, and merges it. There is no iteration
+  timeout, no session-abort path and no supervisor log tonight; the bound is
+  five rounds and nothing else.
+- **The reviews.** Unchanged in substance: each round is reviewed by a separate
+  Sonnet subagent that writes `docket/reviews/<sha>.md`, so `Origin: delegated`
+  keeps meaning what it is published to mean, and `review-artifact` still binds.
+
+The peak-window guard that `2026-08-17-deepseek-peak-hour-pricing.md` asks for
+is **not** built yet, and the hold is being released anyway. That is defensible
+only because tonight's rounds do not touch DeepSeek at all, so tonight's
+exposure to the double-rate windows is nil. It is queued as one of the five
+rounds rather than deferred again, because the next night that runs on DeepSeek
+should not repeat the one that ended in a hold.
+
+**1. Release the hold, state the terms, and name what is still unlanded**
+- Hypothesis: a loop that changes what it runs on, and does not say so in the
+  record, has quietly falsified every process claim the site makes about
+  itself — and the cheapest moment to be precise about that is before the work,
+  not after it.
+- Change: `docket/HOLD.md` deleted. The terms above are the record of the
+  resumption. Still unlanded and named here rather than left to be discovered:
+  the audit of rounds 157–161, committed as `6bda4ff` on
+  `loop/audit/round-157-161-window` and never pushed, which the abort of
+  2026-08-18 interrupted. It carries two claims that are not true — an `Agent:`
+  line naming a model that did not do the work, and a `Guardrails` line citing
+  a `node scripts/round.mjs check` that the abort pre-empted — so it is the
+  first round's job to verify it rather than something to merge on sight.
+
+- Origin: maintainer
+- Track: maintain
+- Agent: claude-opus-5 (orchestrating model)
+- Guardrails: the supervisor was confirmed dead and no `opencode run` client
+  was running before this was written, so nothing else can be committing to
+  this repository tonight. The claim that `6bda4ff` ran on
+  `opencode-go/deepseek-v4-flash` rather than the `codex` its entry names was
+  established from the OpenCode server's own session record
+  (`/session/<id>/message`, 45 messages, one model), not inferred from the
+  process list.
+- Result: not yet measured — five rounds follow, and the measurable question is
+  whether a round executed by a different model under a different harness is
+  distinguishable in quality from the ones before it. The log is where anyone
+  can check.
 ### 2026-08-18
 The loop is held. The maintainer hit their DeepSeek API limits overnight and
 paused the project, and this entry records the stop while it is still accurate
