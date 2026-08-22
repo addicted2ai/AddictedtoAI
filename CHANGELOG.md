@@ -70,6 +70,102 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-21
+This author round executes `docket/open/2026-08-16-post-manus-splits-from-meta.md`:
+Manus's 11 August announcement that it is returning to independent operation
+after Meta's acquisition of it, and the user-data backup window the item
+exists to tell readers about, which closes at 7:59 a.m. SGT on 23 August
+2026. The item's own 2026-08-17 amendment said to drop it rather than write
+it if that date passed before publication — it had not, but an item filed
+five days earlier is not evidence about today, so this round re-verified
+both of the item's sources against their live state before writing a word,
+per this project's standing rule that a claim is never published on a
+five-day-old filing's word alone.
+
+**1. Verify Manus's split from Meta and its 23 August deadline, then publish**
+- Hypothesis: a post whose entire value to a reader is a deadline they can
+  still act on is only honest if the deadline is checked at publish time, not
+  assumed from the docket item that proposed it; and a vendor page that
+  fails a plain fetch is not necessarily unreachable — it may simply reject
+  browser-shaped requests, the trap `docket/open/2026-08-11-vendor-pages-reject-browser-user-agents.md`
+  already named — so the right first move is a plain `curl` before concluding
+  anything is unverifiable.
+- Change: re-fetched Manus's announcement (`https://manus.im/blog/a-note-to-our-users`)
+  with a plain, unmodified `curl` request — it returned the full page (a
+  server-rendered Next.js page, unlike the client-rendered shell
+  `https://manus.im/notice` returns to any fetch). The page's own embedded
+  metadata gives a `createdAt` of 2026-08-11T12:52:19Z and an `updatedAt` of
+  2026-08-11T13:26:21Z — a 34-minute same-day edit and nothing since — so the
+  announcement has not been amended in a way that changes the item's facts.
+  Confirmed unchanged: the backup window (closes 7:59 a.m. SGT 23 August
+  2026, still ahead as of this fetch), the deletion window (23-24 August SGT),
+  the restore time (from 25 August SGT), the 29 December 2025 cutoff for
+  affected data, the FAQ's explicit "It is not the result of any security
+  incident" answer, and the no-charge / welcome-back-bonus commitment for
+  affected users. Also confirmed a detail the filed item did not carry: the
+  page states its own multi-timezone conversion (7:59 p.m. EDT 22 August /
+  1:59 a.m. CEST 23 August / 7:59 a.m. SGT 23 August), now quoted in the post.
+  Re-fetched The Verge's report too (`datePublished`/`dateModified` both
+  2026-08-11T16:15:59Z, unmodified) — it is the sole source for the $2
+  billion acquisition figure and the China-block framing; a text search of
+  Manus's own fetched page confirms neither "billion" nor "China" appears on
+  it, so the post attributes both to The Verge, not to Manus, as the item
+  instructed. New post at `/blog/manus-meta-split`, added to
+  `app/lib/posts.js`, `app/lib/route-files.js`, `app/lib/page-origins.js`
+  (producing round 165 for all posts.js-fed routes) and `app/sitemap.js`. The
+  docket item moved to `docket/done/`, carrying its own record of what was
+  re-checked and found unchanged.
+
+**2. Review correction: a bare "23 August" survived everywhere the year never re-appears**
+- Hypothesis: a reviewer who checks the rendered build, not just the source,
+  will catch a defect a source-only pass cannot see.
+- Change: the review (verdict: request-changes) found that `app/lib/posts.js`'s
+  `title`, `metaTitle` and `excerpt` all gave the deadline as a bare "23
+  August" with no year — correct in the three in-body `page.js` mentions the
+  review checked, but wrong in the rendered `<title>`, the meta title, the
+  JSON-LD `headline`, the homepage "Latest from the blog" card, and the
+  `/blog` index list, none of which carry an adjacent year and all of which
+  keep rendering that string until a newer post displaces the homepage
+  teaser. `/blog/gemini-3-7-flash`'s title already sets the precedent of
+  dating a forward calendar deadline in the title itself. Checking the
+  rendered build past the review's three named locations also surfaced a
+  fourth bare instance the review did not flag: `page.js`'s EDT/CEST
+  conversion sentence splits "23" and "August" across a JSX line break, which
+  a same-line source `grep` does not match but the rendered HTML joins into
+  the same bare phrase. All five now read "23 August 2026" (the same
+  sentence's "22 August" EDT mention was dated too, for the same reason); the
+  three page.js mentions the review named as already correct were left
+  untouched, as instructed. Verified by rebuilding, running `next start`
+  fresh (the prior server instance was serving the pre-fix build and was
+  killed and restarted rather than trusted), fetching `/`, `/blog` and
+  `/blog/manus-meta-split`, stripping the rendered HTML to text, and
+  confirming no bare "22 August" or "23 August" remains in any of the three.
+
+- Origin: delegated
+- Track: author
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `node scripts/round.mjs check` — static checks (lint, docket
+  validator, track scope) green; `npm run build` green; route checks green
+  ("all route checks passed"); ready to ship, run after the review fix.
+  `node scripts/check-publishing-quota.mjs` — ok, 11 posts; day cap 1, week
+  cap 3; no added or re-dated post pushes a day or week over its cap. The
+  rendered-output check described in item 2 is not part of `round.mjs check`
+  and was run separately, by hand, against a freshly restarted `next start`.
+- Result: not yet measured — one post published within the week's quota (2 of
+  3 for the ISO week of 2026-08-17, 1 of 1/day for 2026-08-21); whether it
+  clears test 1 is for a later round to judge. The review's finding was real
+  and its fix narrow (four strings in one file plus one line-break-only
+  source gap); whether any further bare date survives outside the three pages
+  checked here is for a later round or reader to find. Residual left behind,
+  not fixed by this round: the new route sits outside
+  `scripts/check-routes.sh`'s hardcoded disclosure/page-weight loops and
+  outside `.github/workflows/pr-checks.yml`'s Lighthouse/lychee URL lists
+  (`docket/open/2026-08-11-check-routes-loops-miss-blog-posts.md`,
+  `docket/open/2026-08-11-log-archive-missing-from-ci-url-lists.md`) — the
+  author track cannot touch `scripts/` or `.github/`, so this is noted rather
+  than fixed, and no claim is made here that the route suite measured this
+  page.
+
+### 2026-08-21
 The hold is released and the loop resumes — on different machinery, for five
 rounds only. The maintainer, still limited on DeepSeek, asked for the rounds to
 be executed by Claude Sonnet subagents spawned directly by the orchestrating
