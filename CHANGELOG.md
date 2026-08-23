@@ -216,13 +216,26 @@ re-verified this round (`head -20` on both docket items, `grep` against
 - `80ch` was chosen over the docket item's narrower candidates (`68ch`,
   `62ch`) because it is the cheapest candidate that still moves the median
   meaningfully below the site's 100-103 baseline (down to 87-94) -- every
-  page's cost stays under 5% -- and over the site's existing `62ch`/`68ch`
-  family (`.hero-lead`, `.log-lead`, `.log-field`, `.log-note`,
-  `.walkthrough-caption`) deliberately: those cap secondary, supporting
-  text (leads, captions, per-entry fields); `article p` is the primary
-  long-form reading column and was given more room on purpose, not capped
-  to match them by default. `90ch` was confirmed still a no-op (`main`'s
-  content box is 732px = 84.9ch; `90ch` computes to 776.25px, wider than
+  page's cost stays under 5%. It was also chosen wider than the site's
+  existing `62ch`/`68ch` family (`.hero-lead`, `.log-lead`, `.log-field`,
+  `.log-note`, `.walkthrough-caption`) on the claim that those cap
+  secondary, supporting text while `article p` is the primary reading
+  column -- **a claim adversarial review found does not hold evenly**:
+  `.log-lead` is the entire freeform prose of `/log`, `/log/early` and
+  `/log/archive` (none of the three has an `<article>` wrapper -- checked
+  directly, `grep -rn "<article" app/log/`, no matches), the same role
+  `article p` fills on pages built from one, yet it stays at `62ch`,
+  narrower than this round's own rule. Corrected here rather than left
+  standing: the rationale narrows to the pages `article p` actually
+  appears on -- most of the `62ch`/`68ch` family caps text sitting
+  alongside other content on an `<article>` page (a homepage intro line, a
+  caption, a per-entry field), and `article p` was given more room there
+  deliberately -- and `.log-lead`'s narrower cap on its three primary-prose
+  routes is named as a real, unresolved inconsistency: the docket item
+  this closes named only `article p`, and widening `.log-lead` to match
+  was neither asked for nor measured this round. `90ch` was confirmed
+  still a no-op (`main`'s content box is 732px = 84.9ch; `90ch` computes
+  to 776.25px, wider than
   the container it sits inside).
 - `scripts/check-article-line-length.mjs`, wired into
   `scripts/check-routes.sh`, guards the `80ch` cap on the same five routes:

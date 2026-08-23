@@ -30,6 +30,17 @@
 // choosing a deliberately wider or narrower value should update this
 // number and say why, the same as app/globals.css's own comment on the
 // rule does for the choice of 80ch itself.
+//
+// THE MARGIN IS NARROW, NAMED HERE RATHER THAN LEFT IMPLICIT. 107 is only
+// 2 characters above the tightest page's post-fix max (105, /blog) and
+// only 1 below the loosest pre-fix max (108, /model-retirement-calendar).
+// Adversarial review flagged this as fragile against an unrelated future
+// content edit on /blog specifically -- a longer word or a new inline
+// link there could push its max past 107 with the 80ch rule still fully
+// intact, which would read as a regression this check did not cause. That
+// is a real limit of a ceiling reverse-engineered from one round's content
+// rather than derived from the rule itself, and is not something this
+// check can distinguish from an actual loosening of the `80ch` cap.
 import {
   launchBrowser,
   stopBrowser,

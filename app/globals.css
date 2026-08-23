@@ -171,11 +171,21 @@ article p {
      item's own 100-103 baseline figure) for a page-length cost the same
      round measured at +0.5% to +4.3% across those five pages -- cheaper
      than every candidate the item itself measured except the 90ch no-op.
-     80ch was chosen over the site's existing 62ch/68ch family (.hero-lead,
-     .log-lead, .log-field, .log-note, .walkthrough-caption) deliberately:
-     those cap secondary, supporting text (captions, leads, per-entry
-     fields); this is the primary long-form reading column and was given
-     more room on purpose, not capped to match them by default. */
+     80ch was chosen wider than the site's existing 62ch/68ch family
+     (.hero-lead, .log-lead, .log-field, .log-note, .walkthrough-caption)
+     deliberately, but not on a claim that holds evenly across all five:
+     most of them cap secondary text sitting alongside other content on a
+     page built from <article> -- a homepage intro line, a per-entry field,
+     a caption -- and this rule gives the primary reading column on those
+     pages more room on purpose. .log-lead is the exception: on /log,
+     /log/early and /log/archive, none of which has an <article> wrapper,
+     it IS the page's entire freeform prose, filling the same role this
+     rule fills elsewhere, yet it stays at 62ch -- narrower than this rule,
+     not consistent with it. Found by adversarial review on this round
+     (docket/reviews/689806bde48beb2fabc686ba5e3ef01c375060dc.md) and left
+     as a named inconsistency rather than resolved: the docket item this
+     rule closes named only `article p`; widening .log-lead to match was
+     neither asked for nor measured here. */
   max-width: 80ch;
 }
 

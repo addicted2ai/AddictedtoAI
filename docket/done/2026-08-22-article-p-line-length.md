@@ -89,11 +89,21 @@ Closed by this round. `article p { max-width: 80ch; }` added to
 `app/globals.css`. Chosen over `scratchpad/site-survey.md`'s own reasoning:
 `90ch` is confirmed still a no-op against `main`'s 780px container; `68ch`
 and `62ch` cost more (+13%, +24% page length on `/blog/chatgpt-ads`) for a
-narrower column than the site's existing secondary-text family
-(`.hero-lead`, `.log-lead`, `.log-field`, `.log-note`,
-`.walkthrough-caption`, all 62-68ch) already occupies -- `article p` is the
-primary reading column and was deliberately given more room than those,
-not capped to match them.
+narrower column than most of the site's existing `62ch`/`68ch` family
+(`.hero-lead`, `.log-field`, `.log-note`, `.walkthrough-caption`) already
+occupies -- those cap secondary text sitting alongside other content on an
+`<article>` page, and `article p` was deliberately given more room than
+them.
+
+**Correction, found by adversarial review on this round, before merge:**
+the sentence above originally listed `.log-lead` in that same "secondary
+text" group. It doesn't belong there. `.log-lead` is the entire freeform
+prose of `/log`, `/log/early` and `/log/archive` -- none of the three has
+an `<article>` wrapper (`grep -rn "<article" app/log/`: no matches) -- the
+same role `article p` fills on pages built from one, yet it stays at
+`62ch`, narrower than this round's own rule. Left as a named, unresolved
+inconsistency: this item named only `article p`, and widening `.log-lead`
+to match was neither asked for nor measured this round.
 
 This round independently re-measured the baseline on a real render (not
 carried over from the closed item's own figures) and reproduced it: 96-103
