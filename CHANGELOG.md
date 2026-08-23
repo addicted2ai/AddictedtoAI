@@ -70,6 +70,268 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-23
+This build round (`loop/build/nav-cue-and-line-length`) closes two filed
+items from the same design survey that closed round 174's:
+`docket/open/2026-08-22-nav-active-colour-only-indicator.md` (the current
+page in the nav distinguished by colour alone, at 2.20:1, failing SC 1.4.1
+and SC 1.4.11) and `docket/open/2026-08-22-article-p-line-length.md`
+(`article p` running 100-103 characters per line at the median, up to 122
+at the max, deliberately filed with no fix width). Files a third item
+rather than resolving it: whether `CHARTER.md` rule 5's append-only
+requirement reaches `docket/` items, an ambiguity round 174's own
+adversarial review surfaced and explicitly left for the maintainer. Brief
+committed at `docket/briefs/loop-build-nav-cue-and-line-length.md`; all
+seven numbered premises reproduced exactly as written, re-verified this
+round (`head -20` on both docket items, `grep` against `app/globals.css`,
+`scripts/check-first-screenful.mjs`, `CHARTER.md` and `scripts/round.mjs`,
+and the `frame:4` citation checked against `FRAME.md`) -- its unnumbered
+body prose did carry an error, covered below.
+
+**1. `.nav-active` -- a non-colour cue, and SC 1.4.11 satisfied at the locus this repository already uses**
+- Hypothesis: the docket item's own two "Done when" boxes ask for a
+  non-colour cue and 3:1 contrast, and its Evidence already gives the
+  active/inactive text colours (`--accent` `#5eead4`, `--muted` `#8a8f98`)
+  at 2.20:1 -- the same pair a naive fix would try to push to 3:1. Check
+  whether that specific pairing can actually reach 3:1 before writing any
+  CSS, rather than assume it can.
+- Change: `app/globals.css` -- `.nav a` now carries `border-bottom: 2px
+  solid transparent`, reserved on every link so nothing shifts when it
+  becomes visible (`* { box-sizing: border-box }` already in the file means
+  the reserved border eats into the existing `min-height: 44px` rather than
+  growing the box). `.nav a.nav-active` sets `border-bottom-color:
+  var(--accent)`. Text colours are unchanged.
+- Measured, this round, real render over CDP (`scripts/lib/cdp-browser.mjs`)
+  against a local production build, 1280x800 viewport:
+  ```
+  before: active #5eead4 vs inactive #8a8f98 text contrast: 2.1965:1
+          (matches the docket item's own 2.20:1 exactly)
+          active text vs body bg #0b0d0f: 13.1601:1
+          both links: border-bottom-width 0px -- no non-colour cue exists
+  after:  active border-bottom: 2px solid #5eead4, contrast vs body bg
+          13.1601:1; inactive border-bottom: 2px solid transparent
+          (reserved, invisible); active/inactive text contrast: still
+          2.1965:1, unchanged -- see below for why
+  ```
+- The item's second checkbox, taken literally ("colour contrast between the
+  active and inactive nav link states ... raised to at least 3:1"), is
+  **not** met by the text-colour pair, and this round found by direct
+  computation (`node scratchpad/verify-contrast-math.mjs`, same
+  relative-luminance formula the shipped check uses) that it cannot be
+  without a tradeoff declined: pushing `--muted` down to exactly the SC
+  1.4.3 floor for body text (4.5:1 against `--bg`; `--muted` is at
+  5.9915:1 today) only reaches a relative luminance of 0.1927, whose
+  contrast against `--accent` is **2.9245:1** -- still short of 3:1.
+  Reaching 3:1 against the *current* `--muted` from the light side needs a
+  relative luminance of about **0.9195**; pure white (`#ffffff`, relative
+  luminance 1.0) only reaches **3.2492:1** against it -- the nearest colour
+  that clears 3:1 is functionally white, not a variant of the brand teal.
+  So SC 1.4.11 is satisfied at the locus this repository's own
+  `--border-interactive` token already documents (`app/globals.css`'s
+  comment on that variable: "WCAG 1.4.11 asks for 3:1 there ... measured"
+  against `--bg`) -- the indicator's own contrast against the page
+  background, 13.16:1, not the two states' text colours against each
+  other. This is an explicit, reasoned substitution for the checkbox's
+  literal wording, recorded in both the closed docket item and here, not a
+  silent one.
+- `scripts/check-nav-active-cue.mjs`, wired into `scripts/check-routes.sh`,
+  asserts SC 1.4.1 (every inactive link differs from the active one by a
+  real, rendered non-colour cue) and SC 1.4.11 (that cue's own contrast
+  against the page background >= 3:1). Its first version compared
+  `border-bottom-width`/`-style` as raw strings and false-failed: both
+  links reserve the identical `2px solid` border, only its colour toggles
+  between transparent and `--accent`, so a literal string diff saw no
+  difference at all. Fixed to compare rendered *visibility* -- non-zero
+  width, non-transparent colour, real contrast against the background --
+  which is what a viewer, sighted or not, actually perceives.
+- **Proved able to fail before it was trusted**, against the tree this
+  round ships, not an earlier one: backed up the fixed `app/globals.css`,
+  then `git checkout -- app/globals.css` to restore the committed pre-round
+  file, rebuilt, restarted the server, re-ran the check:
+  ```
+  $ node scripts/check-nav-active-cue.mjs http://localhost:3050
+  FAIL  SC 1.4.1: 8 inactive link(s) differ from the active one by colour only: /blog, /directory, /demos, ...
+  FAIL  SC 1.4.11: no coloured border indicator found to measure (active border-bottom-width 0px) -- cannot verify 3:1
+  2 nav-active-cue problem(s)
+  ```
+  Restored the fixed file from the backup, rebuilt, re-ran clean:
+  ```
+  $ node scripts/check-nav-active-cue.mjs http://localhost:3050
+  ok    SC 1.4.1: every inactive nav link differs from the active one by a non-colour cue (border-bottom (visible/not))
+  ok    SC 1.4.11: border-bottom-color vs body background contrast 13.16:1 (>= 3:1)
+  nav-active-cue check passed
+  ```
+  `git status --short` after restoring: only the intended files differed
+  from the pre-round tree.
+
+**2. `article p` -- capped at `80ch`, independently re-measured on a real render, not carried over from the docket item's own figures**
+- Hypothesis: the docket item's own trap -- a design rubric computed two
+  numbers wrong from `ch` units instead of rendering them -- means this
+  round has to re-measure the baseline itself before trusting it, and has
+  to re-derive any candidate width the same way before shipping it.
+- Change: `app/globals.css` -- `article p` gains `max-width: 80ch` (690px
+  computed), on top of the unchanged `margin: 0 0 1rem`.
+- Measured, this round, same CDP technique, walking every character of
+  every `article p` text node and grouping by rendered line
+  (`Range.getClientRects()[0].top`), on the five pages the docket item
+  names, 1280x800 viewport, local production build. Counting every
+  rendered line, including each paragraph's shorter final line, gave:
+  ```
+  /model-retirement-calendar   median 77  max 108
+  /what-vendors-promise        median 99  max 119
+  /blog                        median 97  max 116
+  /blog/chatgpt-ads            median 98  max 119
+  /model-deprecation-checker   median 85  max 124
+  ```
+  well under the docket item's own 100-103 median. Excluding each
+  paragraph's last (non-wrapped) line -- the convention that reproduces the
+  item's own figures -- gives:
+  ```
+  /model-retirement-calendar   median 96  max 108   document height 8720px
+  /what-vendors-promise        median 103 max 119   document height 4743px
+  /blog                        median 98  max 116   document height 4267px
+  /blog/chatgpt-ads            median 100 max 119   document height 2740px  (matches the item's own cited 2,740px exactly)
+  /model-deprecation-checker   median 96  max 124   document height 1032px
+  ```
+  This round also re-measured the item's own `68ch` candidate on this same
+  render, as a cross-check on the item's cited cost figures rather than
+  trusting them: `/blog/chatgpt-ads` came out median 80 chars, document
+  height 3038px, a **+10.88%** page-length cost -- the same order of
+  magnitude as the item's own cited +13%, not an exact match (small
+  rendering/methodology differences), same conclusion. After `80ch`:
+  ```
+  /model-retirement-calendar   median 90  max 101   document height 8764px  (+0.50%)
+  /what-vendors-promise        median 92  max 101   document height 4852px  (+2.30%)
+  /blog                        median 93  max 105   document height 4435px  (+3.94%)
+  /blog/chatgpt-ads            median 94  max 102   document height 2785px  (+1.64%)
+  /model-deprecation-checker   median 87  max 96    document height 1076px  (+4.26%)
+  ```
+  This item's own font-advance figure predicts `80ch` renders as roughly
+  `80 x 1.18 = 94.4` characters; the measured median lands exactly there on
+  one page (`/blog/chatgpt-ads`, 94) but ranges **87-94** across the other
+  four, average ~91 -- lower than the single-number prediction on four of
+  five pages, because the 1.18x figure is a mean character-advance ratio
+  and actual wrapping depends on each page's own word lengths and
+  punctuation, which vary. Stated as a spread, not a single figure, because
+  that is what was actually measured.
+- `80ch` was chosen over the docket item's narrower candidates (`68ch`,
+  `62ch`) because it is the cheapest candidate that still moves the median
+  meaningfully below the site's 100-103 baseline (down to 87-94) -- every
+  page's cost stays under 5%, cheaper than every narrower candidate
+  measured (`68ch`: +10.88% on `/blog/chatgpt-ads`). The item's `90ch` cap
+  is a confirmed no-op: `main`'s content box is 732px = 84.9ch, and `90ch`
+  computes to 776.25px, wider than the container it sits inside.
+- This rule's stated rationale was wrong twice and revised in place --
+  this entry, `app/globals.css`'s comment on the rule, and
+  `docket/done/2026-08-22-article-p-line-length.md`'s status note all
+  carried both versions and are all fixed together. Each version attempted
+  to characterise how `80ch` relates to the site's other `ch`-capped
+  rules; adversarial review found each one false (`docket/reviews/` holds
+  the sequence). Both traced to a count of "five" other `ch`-capped rules,
+  from `docket/briefs/loop-build-nav-cue-and-line-length.md`'s own
+  enumeration ("`62ch` at lines 507, 813 and 1002, `68ch` at 745 and
+  774"). The orchestrator has since said, in conversation, that this came
+  from a truncated `grep -n "max-width" app/globals.css | head -6` -- that
+  command is not itself in the brief document, only its five-line output;
+  this round verified the command reproduces the brief's exact enumeration
+  when run against `ddffff7`, not that the brief states the command. The
+  true count is twelve (`grep -c "max-width: 6[28]ch" app/globals.css`).
+  Neither characterisation is restated here or in the other two places;
+  `80ch`'s own justification above is unaffected by any of this and was
+  never in question.
+- A fourth finding from the same investigation: the false "five" count
+  above sat in the brief's unnumbered prose, not one of its seven numbered
+  `## Premises` -- `scripts/check-briefs.mjs` reads only that section, so
+  nothing in this repository checked the claim that derailed three drafts,
+  by construction. Drafted a `track: meta` docket item stating the gap,
+  with this instance as evidence and no fix proposed. Could not file it:
+  `meta` sits at 26 open items against a `queue_budget` of 14 (`node
+  scripts/check-docket.mjs`'s filing gate: `meta head open count 27
+  exceeds its ceiling of 26`), and `CHARTER.md`'s own History records
+  hitting this identical wall at this identical number on 2026-08-22 -- the
+  backlog has not moved in a day of work. Not a defect in the gate, which
+  behaved correctly; a finding about the state of the queue it guards. The
+  drafted item is preserved outside this branch for a future round to file
+  once `meta` has room.
+- `scripts/check-article-line-length.mjs`, wired into
+  `scripts/check-routes.sh`, guards the `80ch` cap on the same five routes:
+  ceiling 107 characters/line, chosen because it sits strictly between the
+  highest post-fix max measured (105, `/blog`) and the lowest pre-fix max
+  measured (108, `/model-retirement-calendar`) -- see the script's own
+  header for the full derivation.
+- **Proved able to fail before it was trusted**, against the tree this
+  round ships: with `app/globals.css` reverted (same revert as item 1,
+  same commit under test), rebuilt, re-ran:
+  ```
+  $ node scripts/check-article-line-length.mjs http://localhost:3050
+  FAIL  /model-retirement-calendar  max 108 chars/line exceeds 107 (median 96 over 38 full line(s))
+  FAIL  /what-vendors-promise  max 119 chars/line exceeds 107 (median 103 over 36 full line(s))
+  FAIL  /blog  max 116 chars/line exceeds 107 (median 98 over 104 full line(s))
+  FAIL  /blog/chatgpt-ads  max 119 chars/line exceeds 107 (median 100 over 42 full line(s))
+  FAIL  /model-deprecation-checker  max 124 chars/line exceeds 107 (median 96 over 15 full line(s))
+  5 article-line-length problem(s)
+  ```
+  Restored, rebuilt, re-ran clean (all five `ok`, `article-line-length
+  check passed`).
+
+**3. Filed the rule 5 / `docket/` scope ambiguity, did not resolve it**
+- Hypothesis: none -- the brief instructed this explicitly, on guardrail
+  grounds (rule 11: a run should not be the one settling a question about
+  the boundaries of its own record-keeping authority).
+- Change: `docket/open/2026-08-23-rule-5-docket-scope-ambiguity.md` asks
+  the maintainer to rule on whether `CHARTER.md` rule 5's append-only
+  requirement reaches `docket/open/`/`docket/done/` items, or is scoped to
+  `CHANGELOG.md` and the other three surfaces rule 13a's Reserved list
+  names. It cites rule 5's own text, rule 13a's Reserved list, round 174's
+  adversarial review (`docket/reviews/29199487f4e02d502d4d66636883eb552b7deb97.md`,
+  which read the narrower scoping and called it "a matter for the
+  maintainer to settle"), and `docket/README.md`'s own stated position
+  ("rule 5 governs CHANGELOG.md, not this directory") as the loop's own
+  unreviewed prose disagreeing with a live, disclosed case. Does not amend
+  `CHARTER.md` or `docket/README.md`, and does not correct the wrong "1"
+  standing in `docket/done/2026-08-22-first-screenful-density.md`.
+- Filed at `priority: 3` -- round 174's own review found "no downstream
+  consumer (check, page, or claim)" depends on the standing wrong number,
+  so this is not urgent, only unresolved.
+
+**4. `PRODUCING_ROUNDS` checked, not touched**
+- Hypothesis: this round's changes are entirely in `app/globals.css` and
+  `scripts/`, neither of which any route lists as a source file
+  (`app/lib/route-files.js`; round 109's own comment on `Nav.js` already
+  established that nav changes are invisible to this map for the same
+  reason) -- so no `PRODUCING_ROUNDS` entry should need updating, but that
+  is a claim to check, not assume, given round 174 left two stale.
+- Change: none. `grep -c "globals.css\|Nav.js" app/lib/route-files.js`
+  returns 0 matches; `node scripts/check-ai-disclosure.mjs` (full run,
+  this round) reports `ok` on all 24 routes and `all page disclosures
+  resolve and match git history`.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `npm run lint`: `No ESLint warnings or errors`. `npm run
+  build`: succeeded four times this round (baseline, both fixes, the
+  deliberate revert, the restore). `node scripts/check-docket.mjs`: `ok
+  125 docket item(s) valid (40 open)`, `build` track 10 -> 9 open (two
+  closed, one filed; queue budget 14). `node scripts/check-briefs.mjs`:
+  `ok all current briefs declare their premises`, `4 current brief(s) ...
+  27 premise(s) checked`. `node scripts/check-ai-disclosure.mjs`: `ok` on
+  all 24 routes. `node scripts/check-nav-active-cue.mjs` and `node
+  scripts/check-article-line-length.mjs`: both `ok`/passed on the shipped
+  tree, both proved able to `FAIL` on the pre-round tree and restored
+  clean (items 1-2 above have the full output). `.github/` untouched this
+  round (`git diff --stat origin/main...HEAD -- .github/`: empty).
+- Result: `.nav-active` now carries a non-colour cue (a reserved
+  border-bottom, invisible when inactive) satisfying SC 1.4.1, and its own
+  contrast against the page background measures 13.16:1 satisfying SC
+  1.4.11 -- the active/inactive text-colour pair itself stays at 2.20:1,
+  unchanged, for the reasons in item 1. `article p` capped at `80ch`,
+  cutting the measured median from 96-103 to 87-94 characters/line across
+  five pages at a page-length cost of +0.5% to +4.3%. Both docket items'
+  checkboxes satisfied (one explicitly reinterpreted, not silently) and
+  moved to `docket/done/`. A third item filed, not resolved, asking the
+  maintainer to settle whether rule 5 reaches `docket/`.
+
+### 2026-08-23
 This build round (`loop/build/first-screenful-density`) closes
 `docket/open/2026-08-22-first-screenful-density.md`: the finding that this
 site shows zero enumerable content (`tr`/`li`) above an 800px fold on five
