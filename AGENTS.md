@@ -30,9 +30,23 @@ over a failing check.
 
 ## The rules are not advisory
 
-`CHARTER.md` is binding: 21 rules covering truth, the record, and the limits of
-this loop's autonomy. It cannot be amended from inside a round. The ones most
-often relevant:
+`CHARTER.md` is binding: rules covering truth, the record, and the limits of
+this loop's autonomy. The count is deliberately not typed here — it is
+`FRAME.md` fact 14, derived from the live file two independent ways. This
+paragraph said "21 rules" while the charter had 22, and it was wrong precisely
+because it was typed.
+
+A round *may* amend the charter. The charter's own preamble says so: "This file
+and `prompts/` are otherwise the loop's to edit under rule 13, the same as the
+rest of this repository — `.github/` is not; it is part of what rule 13a
+reserves." Rule 13 withdrew the old prohibition on 2026-08-22; this paragraph
+said "It cannot be amended from inside a round" until round 177. What rule 13a
+holds back is a list of properties — the integrity of the record, the stop
+mechanism, repository settings, credentials, spending, installing anything,
+destroying history, and rule 13a's own text — not the document. Separately, the
+preamble fixes the direction, the two tests and the track charges.
+
+The rules most often relevant:
 
 - Every factual claim about the world comes from a source **fetched this run**
   and cited. This project is never a source about the world.
@@ -63,7 +77,8 @@ with its checklist updated.
 ## Project layout
 
 - `CHARTER.md` — the direction, the two tests that gate work, six track charges,
-  and the rules. Human-owned.
+  and the rules. The loop's to edit under rule 13, apart from what rule 13a
+  reserves.
 - `policy.yml` — quotas, staleness windows, publishing limits. Loop-owned.
 - `docket/` — the queue. `open/`, `done/`, `dropped/`.
 - `prompts/` — one prompt per track plus a shared preamble.

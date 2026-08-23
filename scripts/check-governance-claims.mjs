@@ -213,6 +213,49 @@ function fileMakesNoCall(file, fn) {
   });
 }
 
+// The charter's live rule count, derived the way FRAME.md fact 14's first
+// method derives it: numbered top-level items between the first rule section
+// and the Amendment heading. Never typed.
+function charterRuleCount() {
+  const raw = read("CHARTER.md");
+  const from = raw.indexOf("\n## I. Truth");
+  const to = raw.indexOf("\n## Amendment");
+  if (from === -1 || to === -1 || to <= from) return null;
+  return (raw.slice(from, to).match(/^[0-9]+\. /gm) || []).length;
+}
+
+// FRAME.md fact 14's heading is the one place this repository deliberately
+// types the rule count, and every other document is told to point at it
+// instead of retyping it. Nothing checked the heading itself: fact 14's own
+// check compares its two derivations to each other and requires they agree
+// and are non-zero -- never that either equals the number in the heading. So
+// the heading could go stale while `check-frame.mjs` still reported
+// `verified`, which is the shape that let AGENTS.md, every-run.md and
+// README.md all sit on 21 against a charter with 22. Read from the heading
+// line alone, because fact 14's body quotes "21 rules" as a past error and a
+// whole-file scan would trip over the correction.
+function frameFact14StatesRuleCount() {
+  const n = charterRuleCount();
+  if (n === null || n < 1) {
+    return { ok: false, detail: "CHARTER.md's rule sections did not parse" };
+  }
+  const heading = read("FRAME.md").match(/^## 14\. .*$/m);
+  if (!heading) {
+    return { ok: false, detail: "FRAME.md has no fact 14 heading to read a count from" };
+  }
+  const typed = heading[0].match(/\b(\d+) rules\b/);
+  if (!typed) {
+    return { ok: false, detail: `FRAME.md fact 14's heading states no rule count: ${heading[0]}` };
+  }
+  const same = Number(typed[1]) === n;
+  return {
+    ok: same,
+    detail: `FRAME.md fact 14's heading types the live CHARTER.md rule count (${n})${
+      same ? "" : ` -- it says ${typed[1]}`
+    }`,
+  };
+}
+
 function attested(who, when, what) {
   return () => ({
     attested: true,
@@ -233,7 +276,7 @@ function attested(who, when, what) {
 // CHARTER.md is a red build here even before anyone works out which pages
 // it falsifies.
 
-const CLAIMS_DECLARED = 16;
+const CLAIMS_DECLARED = 22;
 
 const CLAIMS = [
   {
@@ -370,6 +413,55 @@ const CLAIMS = [
       "in conversation, 2026-08-23",
       "The maintainer has written no code on this project at any point, including the initial scaffold"
     ),
+  },
+  {
+    file: "AGENTS.md",
+    needle:
+      "This file and `prompts/` are otherwise the loop's to edit under rule 13, the same as the rest of this repository — `.github/` is not; it is part of what rule 13a reserves.",
+    why: "AGENTS.md said 'It cannot be amended from inside a round' until 2026-08-23, four days after rule 13 withdrew that prohibition. It now quotes the charter's own preamble rather than paraphrasing it, and this pins the quote to the sentence it is quoting.",
+    source: charterHas(
+      "This file and `prompts/` are otherwise the loop's to edit under rule 13, the same as the rest of this repository — `.github/` is not; it is part of what rule 13a reserves."
+    ),
+  },
+  {
+    file: "AGENTS.md",
+    needle: "The loop's to edit under rule 13, apart from what rule 13a reserves.",
+    why: "The project-layout entry for CHARTER.md read 'Human-owned.' until 2026-08-23 -- the same withdrawn claim, in the section a round skims for orientation rather than reads.",
+    source: gateExcludes(["CHARTER.md"]),
+  },
+  {
+    file: "prompts/shared/every-run.md",
+    needle:
+      "rule 13 makes the charter the loop's to edit, apart from what rule 13a reserves",
+    why: "Instruction 1, the first thing every round reads, said '21 rules you cannot change' until 2026-08-23. Both halves were false: the count and the prohibition.",
+    source: charterHas(
+      "The loop owns this charter, the workflow definitions, and its own prompt, on the same terms it owns the rest of this repository — subject to rule 13a."
+    ),
+  },
+  {
+    file: "prompts/shared/every-run.md",
+    needle:
+      "it fails on any pull request touching `.github/`, `scripts/check-track-scope.mjs`, `scripts/check-13a-unchanged.mjs`, `scripts/check-hold-mechanism.mjs` or `scripts/test-orchestrate-hold.mjs`",
+    why: "The shipping section named CHARTER.md, .github/, prompts/ and check-track-scope.mjs as the guarded set until 2026-08-23; two of the four were wrong, and it attributed the gate to `ship`, which withholds auto-merge by Origin and never by path. Pinned to the workflow's own filter, like /blog's copy of the same list.",
+    source: gateGuardsExactly([
+      ".github/",
+      "scripts/check-track-scope.mjs",
+      "scripts/check-13a-unchanged.mjs",
+      "scripts/check-hold-mechanism.mjs",
+      "scripts/test-orchestrate-hold.mjs",
+    ]),
+  },
+  {
+    file: "prompts/shared/every-run.md",
+    needle: "`CHARTER.md` and `prompts/` are not on that list",
+    why: "If either goes back on the gate this sentence is wrong in the other direction -- the same pairing /blog carries for the same two paths.",
+    source: gateExcludes(["CHARTER.md", "prompts/"]),
+  },
+  {
+    sourceOnly: true,
+    file: "FRAME.md fact 14 (canary)",
+    why: "No page carries this. FRAME.md fact 14's heading is the one place the rule count is deliberately typed, and every other document is told to point at it instead of retyping it -- but nothing checked the heading. Fact 14's own check compares its two derivations to each other, never to the heading, so the number could go stale while check-frame.mjs still printed `verified`. That is the gap AGENTS.md, every-run.md and README.md all fell into.",
+    source: frameFact14StatesRuleCount,
   },
   {
     file: "CHANGELOG.md (preamble)",
@@ -549,8 +641,17 @@ const logIndex = changelog.indexOf("\n## Log");
 if (logIndex === -1) {
   fail("CHANGELOG.md", 'no "## Log" heading -- cannot tell the preamble from the record');
 }
+// The agent-facing documents. Nothing serves these to a visitor, which is
+// why they were outside this sweep -- and why they were the worst place for
+// this defect to sit: a visitor misled by the site is misinformed, but a
+// round misled by AGENTS.md acts on it. Both told every round for eleven days
+// that the charter had 21 rules and could not be amended from inside a round.
+// Neither was true, and nothing looked.
+const AGENT_DOCS = ["AGENTS.md", "prompts/shared/every-run.md"];
+
 const SCANNED = [
   ...appFiles.map((f) => ({ file: f, text: read(f) })),
+  ...AGENT_DOCS.map((f) => ({ file: f, text: read(f) })),
   { file: "CHANGELOG.md (preamble)", text: logIndex === -1 ? "" : changelog.slice(0, logIndex) },
 ];
 const normalized = new Map(SCANNED.map((s) => [s.file, normalize(s.text)]));

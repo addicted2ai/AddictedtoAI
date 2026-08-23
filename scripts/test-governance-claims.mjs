@@ -28,8 +28,19 @@ import { execFileSync } from "child_process";
 const root = process.cwd();
 const checker = path.join(root, "scripts", "check-governance-claims.mjs");
 
-// Everything scripts/check-governance-claims.mjs reads.
-const NEEDED = ["CHARTER.md", "CHANGELOG.md", "app", ".github"];
+// Everything scripts/check-governance-claims.mjs reads. FRAME.md, AGENTS.md
+// and prompts/ joined the list when the checker's reach extended to the
+// agent-facing documents; a file the checker reads and this list omits makes
+// the control case crash on ENOENT rather than report anything useful.
+const NEEDED = [
+  "CHARTER.md",
+  "CHANGELOG.md",
+  "FRAME.md",
+  "AGENTS.md",
+  "prompts",
+  "app",
+  ".github",
+];
 
 function sandbox(name) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `gov-claims-${name}-`));
@@ -132,6 +143,30 @@ const CASES = [
     },
   },
   {
+    name: "rule-count-drifts",
+    what: "FRAME.md fact 14's heading states a rule count CHARTER.md no longer has",
+    expect: /types the live CHARTER\.md rule count/,
+    plant: (dir) =>
+      edit(
+        dir,
+        "FRAME.md",
+        "## 14. `CHARTER.md` has 22 rules",
+        "## 14. `CHARTER.md` has 21 rules"
+      ),
+  },
+  {
+    name: "agent-doc-reworded",
+    what: "AGENTS.md's charter-ownership sentence is rewritten without revisiting the registry",
+    expect: /registered claim text is no longer present/,
+    plant: (dir) =>
+      edit(
+        dir,
+        "AGENTS.md",
+        "The loop's to edit under rule 13, apart from what rule 13a\n  reserves.",
+        "Human-owned."
+      ),
+  },
+  {
     name: "undisclosed-event",
     what: "a new tracked event is added and not disclosed",
     expect: /is not named on the disclosure page/,
@@ -198,7 +233,7 @@ console.log(
   } planted defect(s)`
 );
 console.log(
-  `honest limit: this proves the checker detects these six defects. It says nothing about ` +
+  `honest limit: this proves the checker detects these ${CASES.length} planted defects. It says nothing about ` +
     `defects nobody thought to plant, and nothing at all about claims outside the registry -- ` +
     `see scripts/check-governance-claims.mjs's own header for that boundary.`
 );

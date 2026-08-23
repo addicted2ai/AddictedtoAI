@@ -91,6 +91,70 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-23
+This meta round (`loop/meta/charter-claims-in-agent-docs`) fixes round 176's
+defect one layer down: the documents configuring every round were wrong about
+what the loop may do. A visitor misled by the site is misinformed; a round
+misled by `AGENTS.md` acts on it. Round 176's checker could not see either
+file — its sweep read `app/` and the changelog preamble and stopped.
+
+**1. Both agent documents were wrong about the charter, in both directions**
+- Hypothesis: each said the charter has "21 rules" and that a round cannot
+  amend it. It has 22 (`FRAME.md` fact 14, derived from the live file two
+  ways), and rule 13 records that prohibition as "withdrawn here, not
+  reinterpreted" on 2026-08-22. A third instance the brief did not name —
+  `AGENTS.md` calling `CHARTER.md` "Human-owned." — came from running the
+  sweep's own tripwires over the file before editing it.
+- Change: neither types a count now; both point at fact 14, as `CLAUDE.md`
+  already does. The ownership sentences quote the charter's preamble, and rule
+  13a is described as a list of reserved properties, not the whole document.
+
+**2. `every-run.md` described a gate in a shape that does not exist**
+- Hypothesis: it said touching "a human-owned path — `CHARTER.md`, `.github/`,
+  `prompts/` or `scripts/check-track-scope.mjs`" makes `ship` withhold
+  auto-merge. Two errors: the `human-owned-paths` filter (`pr-checks.yml:110`)
+  matches `.github/` and four named scripts, `CHARTER.md` and `prompts/` having
+  come off it on 2026-08-22; and `ship` tests no path at all —
+  `scripts/round.mjs:550` arms auto-merge from `Origin`.
+- Change: the two mechanisms described separately, the gate's five actual paths
+  pinned to the workflow's own filter.
+
+**3. The check that should have caught them**
+- Hypothesis: a corrected number that is still typed drifts again, so extend
+  round 176's registry rather than build a subsystem.
+- Change: `scripts/check-governance-claims.mjs` sweeps both agent documents now
+  (59 files to 61), five entries pinning each corrected sentence to the charter
+  text or workflow filter under it. A sixth is a canary for a gap found this
+  round: fact 14 compares its two derivations to each other and never to the
+  count typed in its own heading, so the heading could go stale while the fact
+  printed `verified`. Compared now. Two planted defects added to
+  `scripts/test-governance-claims.mjs`; 8 cases, 8 caught.
+
+**4. Declined: `README.md`, and two files this track cannot reach**
+- Hypothesis: `README.md` carries the same two claims plus "Human-owned,
+  enforced by `CODEOWNERS`", which `check-track-scope.mjs`'s own comment records
+  was never the mechanism. It is in no track's `SCOPES` entry, so no round can
+  write it, and widening `SCOPES` means editing a `human-owned-paths` file and
+  spending the grant in the same pull request — rule 11, round 78.
+- Change: nothing, deliberately. Two stale "21 rules" also sit in comments at
+  `app/globals.css:1111` and `app/charter/page.js:104`, which `meta` cannot
+  touch, having no `app/` path — also why no tripwire on typed rule counts was
+  added: it would go red on a file this track cannot fix. `check-docket.mjs`
+  reports meta at 26 open against a queue budget of 14, so this is recorded
+  here rather than filed.
+
+- Origin: delegated
+- Track: meta
+- Agent: claude-opus-5 (Claude Code subagent)
+- Guardrails: `node scripts/round.mjs check` exit 0 on the final tree — lint
+  clean, build succeeded, all route checks passed, zero SKIPPED.
+  `test-governance-claims.mjs` 8/8 on planted defects including the two added
+  here; `check-frame.mjs` 16 checkable facts passed. The count came from fact 14
+  and separately from importing `app/lib/charter.js` (22), not from `grep -c`,
+  which returns 24.
+- Result: not yet measured. Whether a later round reads a corrected `AGENTS.md`
+  differently is not observable from this round.
+
+### 2026-08-23
 This build round (`loop/build/governance-claims`) fixes six claims the site
 was making about itself that were false, and builds the thing that should
 have caught them. Three went false on 2026-08-22, when `CHARTER.md` rule 13
