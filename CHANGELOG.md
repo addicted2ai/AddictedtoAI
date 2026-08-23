@@ -319,6 +319,25 @@ are recorded in item 8 below.
   page can derive a list correctly and then fail to render it, which
   reading source files cannot show -- this repository has already shipped a
   check that "passed while measuring the wrong build entirely".
+- Change: that `--rendered` half then produced exactly the failure this
+  project keeps having, and is recorded rather than quietly fixed. Its
+  first version ended in `process.exit(0)` while undici's sockets from
+  `fetch` were still closing; on Windows that aborts the process
+  (`Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)`), and
+  `check-routes.sh` adds `$?` to its failure count, so the run reported
+  `127 check(s) failed` with not one `FAIL` line anywhere in 1,473 lines of
+  output -- every assertion had passed. A check whose *exit code* can
+  disagree with its own verdict is the same defect one level down. Fixed by
+  setting `process.exitCode` and letting the loop drain, with the reason in
+  the file so it is not reintroduced.
+- Change: the local `.env.local` sets no measurement ID, so the green route
+  run only ever exercised `/disclosure`'s "analytics off" branch -- and
+  production will render the other one. Rebuilt once with
+  `NEXT_PUBLIC_GA_MEASUREMENT_ID` set and confirmed against the served
+  HTML: the "loads Google Analytics 4" sentence renders, the "no
+  measurement ID configured" sentence renders zero times, the measurement
+  ID appears in `/`'s HTML, and `--rendered` reports "analytics on in this
+  build". Both branches observed, rather than one observed and one assumed.
 
 **8. Three errors in this round's own brief, and one in a system reminder**
 - Hypothesis: `check-briefs.mjs` reads a brief's numbered premises and
@@ -385,8 +404,36 @@ are recorded in item 8 below.
 - Origin: delegated
 - Track: build
 - Agent: claude-opus-5 (Claude Code subagent)
-- Guardrails: PENDING
-- Result: PENDING
+- Guardrails: `node scripts/round.mjs check`: green end to end, exit 0,
+  observed -- `npm run lint` `No ESLint warnings or errors`, `npm run
+  build` succeeded, `all route checks passed` with no group SKIPPED. `node
+  scripts/check-docket.mjs`: `ok 127 docket item(s) valid (42 open)`,
+  `build` 9 -> 11 open (two filed, none closed; queue budget 14); `meta`
+  refused a third item at 26 against a budget of 14, which is why the
+  `AGENTS.md`/`prompts/`/`README.md` staleness in item 9 is recorded here
+  instead of filed. `node scripts/check-briefs.mjs`: `ok all current briefs
+  declare their premises`, 5 current briefs, 36 premises. `node
+  scripts/check-governance-claims.mjs`: 16 registered claims (4 attested,
+  not executed), 18 allowances, 11 tripwire phrases swept over 59 files,
+  26 hits, 0 unregistered; `--rendered` `ok /blog names all 5 path(s) the
+  human-owned-paths gate guards` and `ok /disclosure states what this build
+  collects`. `node scripts/test-governance-claims.mjs`: 6/6 planted defects
+  caught with a green control. `node scripts/check-ai-disclosure.mjs`: ok
+  on all 24 routes, the 16 moved ones all reporting round 176 (build).
+  `git diff --stat origin/main...HEAD -- CHARTER.md .github/`: empty.
+- Result: six false published claims corrected, and two more found by this
+  round that the brief had not listed (`app/demos/RoundWalkthrough.js` and
+  `CHANGELOG.md`'s preamble both denying analytics that was about to start)
+  -- eight in total. Two of the six are now generated rather than written,
+  so they cannot recur: `/charter`'s correction count comes from the same
+  booleans that decide whether each correction renders, and `/blog`'s
+  guarded-path list comes from the CI job's own filter. The other four are
+  registered in a check that fails when either the claim or the fact under
+  it moves, proved able to go red on six planted defects. Its reach is
+  narrow and stated on every run: a false governance claim in words no
+  tripwire matches, on a page with no registry entry, still passes it
+  silently. Not measured, and not measurable this round: whether that reach
+  is wide enough, which only the next amendment will show.
 
 ### 2026-08-23
 This build round (`loop/build/nav-cue-and-line-length`) closes two filed
