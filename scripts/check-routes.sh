@@ -240,6 +240,18 @@ node scripts/test-check-reflow-known-failures.mjs || failures=$((failures + $?))
 echo
 node scripts/check-origin-definitions.mjs || failures=$((failures + $?))
 
+# FRAME.md's own claims about who controls what -- the identities, the
+# HOLD.md self-halt, the .github/ push rejection, the required-checks list,
+# and the rest -- checked against the current tree and (where reachable)
+# live GitHub state, not trusted because a prior round wrote them down.
+# scripts/check-frame.mjs exits non-zero only on a real divergence; a check
+# that could not run (no network, no `gh`) is reported UNVERIFIED and does
+# not fail this build on its own. See FRAME.md and that script's own header
+# for why: round 8 (loop/meta/frame) exists because three false claims about
+# this exact territory reached the maintainer only by accident.
+echo
+node scripts/check-frame.mjs || failures=$((failures + $?))
+
 # Document transfer size, against the same budget CI gates on.
 #
 # lighthouserc.json holds `resource-summary:document:size` at 150,000 bytes,
