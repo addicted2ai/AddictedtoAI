@@ -205,6 +205,14 @@ re-verified this round (`head -20` on both docket items, `grep` against
   /blog/chatgpt-ads            median 94  max 102   document height 2785px  (+1.64%)
   /model-deprecation-checker   median 87  max 96    document height 1076px  (+4.26%)
   ```
+  This item's own font-advance figure predicts `80ch` renders as roughly
+  `80 x 1.18 = 94.4` characters; the measured median lands exactly there on
+  one page (`/blog/chatgpt-ads`, 94) but ranges **87-94** across the other
+  four, average ~91 -- lower than the single-number prediction on four of
+  five pages, because the 1.18x figure is a mean character-advance ratio
+  and actual wrapping depends on each page's own word lengths and
+  punctuation, which vary. Stated as a spread, not a single figure, because
+  that is what was actually measured.
 - `80ch` was chosen over the docket item's narrower candidates (`68ch`,
   `62ch`) because it is the cheapest candidate that still moves the median
   meaningfully below the site's 100-103 baseline (down to 87-94) -- every
