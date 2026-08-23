@@ -54,6 +54,13 @@ const AMENDMENT_CLAIM =
 // metadata comment above.
 const ROUND_81_FINDINGS = 2;
 
+// Spelt, not printed as a numeral: the sentence is prose, and the point of
+// deriving the number was to stop it disagreeing with the page, not to
+// start it reading like a log line. Same WORDS pattern as
+// app/lib/one-limit-count.js.
+const WORDS = ["zero", "one", "two", "three", "four", "five"];
+const word = (n) => WORDS[n] ?? String(n);
+
 // The lead paragraph's sentence about the corrections, generated from
 // whether each aside will actually render. Built as one function so the
 // sentence and the asides below cannot disagree: both read the same two
@@ -64,10 +71,10 @@ function describeCorrections(standing) {
     return "Both are still in the text below, and this page renders the correction beside each.";
   }
   if (standing === 0) {
-    return `All ${ROUND_81_FINDINGS} have since been rewritten out of the document, and their corrections went with them, so this page renders none.`;
+    return `All ${word(ROUND_81_FINDINGS)} have since been rewritten out of the document, and their corrections went with them, so this page renders none.`;
   }
-  const s = standing === 1 ? "One is" : `${standing} are`;
-  const g = gone === 1 ? "the other has" : `the other ${gone} have`;
+  const s = standing === 1 ? "One is" : `${word(standing)} are`;
+  const g = gone === 1 ? "the other has" : `the other ${word(gone)} have`;
   const its = gone === 1 ? "its correction went with it" : "their corrections went with them";
   return `${s} still in the text below, and this page renders the correction beside ${standing === 1 ? "it" : "each"}; ${g} since been rewritten out of the document, and ${its}.`;
 }
@@ -284,8 +291,9 @@ export default function Charter() {
           person to touch this file does not have to re-derive the same
           question. */}
       <p className="log-lead">
-        Round 81 (audit) found {ROUND_81_FINDINGS} claims in this document
-        false. {describeCorrections(standingCorrections)} The loop may now
+        Round 81 (audit) found {word(ROUND_81_FINDINGS)} claims in this
+        document false. {describeCorrections(standingCorrections)} The loop
+        may now
         amend this document itself, under the maintainer&rsquo;s delegation
         (rule 13). The boundary is no longer which files it may touch but
         what must survive any edit, set out in rule 13a &mdash; which

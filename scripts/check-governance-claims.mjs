@@ -307,7 +307,7 @@ const CLAIMS = [
   {
     file: "app/charter/page.js",
     needle:
-      "Round 81 (audit) found {ROUND_81_FINDINGS} claims in this document false. {describeCorrections(standingCorrections)}",
+      "Round 81 (audit) found {word(ROUND_81_FINDINGS)} claims in this document false. {describeCorrections(standingCorrections)}",
     why: "Said 'Two claims ... marks each falsified claim with the correction beside it' from 2026-08-11 to 2026-08-23 while rendering one. The count is now computed from the same booleans that decide whether each aside renders, so the sentence and the page cannot disagree. Pinned so it cannot be turned back into a literal.",
     source: fileLacks("app/charter/page.js", "Two claims in this document"),
   },
