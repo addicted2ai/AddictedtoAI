@@ -12,12 +12,32 @@ permissions:
   pull-requests: write
 
 jobs:
-  # CHARTER.md rule 13: the charter, the workflow definitions and the loop's
-  # own prompt are human-owned. The loop may propose changes to them and must
-  # not merge them.
+  # CHARTER.md rule 13a: the record's integrity, the stop mechanism, and 13a
+  # itself stay reserved regardless of the delegation rule 13 records. This
+  # job guards the part of that surface a path prefix can express: the
+  # workflow definitions in `.github/` (the enforcement mechanism, not the
+  # content rule 13 delegates) and `scripts/check-track-scope.mjs` (the
+  # scope-boundary definition, guarded here since round 79 for the reason
+  # below). Rule 13a's own text inside CHARTER.md is a third, narrower thing
+  # this job also guards -- not by path, since CHARTER.md as a whole is no
+  # longer reserved, but by content -- see the `rule-13a-text` job below.
   #
-  # CODEOWNERS was supposed to be what made that true. It was not. Branch
-  # protection on main sets `require_code_owner_reviews: true` alongside
+  # UNTIL 2026-08-22 this job also failed on any pull request touching
+  # CHARTER.md and prompts/, full stop, because rule 13 called both
+  # human-owned outright. It no longer does: the 11 August delegation, and
+  # its 22 August broadening, cover ordinary edits to both, and CHARTER.md's
+  # own History (2026-08-22) records why the old blanket gate was withdrawn
+  # rather than kept as an extra margin of safety -- a required check that
+  # fails on every legitimate change trains people to merge past it, and the
+  # last two merges that touched these paths did exactly that
+  # (`enforce_admins: false`, documented below). A red `human-owned-paths`
+  # should mean something is genuinely wrong; failing on ordinary charter and
+  # prompt edits stopped meaning that a long time before this comment was
+  # rewritten to say so.
+  #
+  # CODEOWNERS was supposed to be what made the old, broader version of this
+  # true. It was not. Branch protection on main sets
+  # `require_code_owner_reviews: true` alongside
   # `required_approving_review_count: 0`, and with no approval required there
   # is nothing for the code-owner rule to demand -- so PR #16 changed this
   # very file and merged with zero reviews on 2026-08-11. A required status
@@ -38,16 +58,15 @@ jobs:
   # is the point. It was added to that list on 2026-08-11 and PR #25 is the
   # first pull request it actually stopped.
   #
-  # A FOURTH PATH, ADDED ROUND 79: scripts/check-track-scope.mjs.
-  # Rule 13 names three paths and this job now guards four, because the fourth
-  # is where a round can rewrite what every other path check means.
-  # check-track-scope.mjs runs from the branch it is judging, so a run can add
-  # a path to its own track's SCOPES and spend that path in the same pull
-  # request -- the checker consults the branch's copy of the rules and agrees
-  # with it. Round 78 did this: it granted meta `app/lib/route-files.js` and
-  # created that file in one pull request, and every check was green. Rule 11
-  # says a run blocked by a guardrail may not be the run that loosens it, and
-  # nothing mechanical was enforcing that.
+  # scripts/check-track-scope.mjs, ADDED ROUND 79: it is where a round can
+  # rewrite what every other path check means. check-track-scope.mjs runs
+  # from the branch it is judging, so a run can add a path to its own track's
+  # SCOPES and spend that path in the same pull request -- the checker
+  # consults the branch's copy of the rules and agrees with it. Round 78 did
+  # this: it granted meta `app/lib/route-files.js` and created that file in
+  # one pull request, and every check was green. Rule 11 says a run blocked
+  # by a guardrail may not be the run that loosens it, and nothing mechanical
+  # was enforcing that.
   #
   # This does not close that hole -- the checker still reads its rules from the
   # branch, and 2026-08-11-track-scope-judges-itself.md stays open for the fix
@@ -62,37 +81,157 @@ jobs:
           # Needs the merge base to diff against, like check-track-scope.
           fetch-depth: 0
 
-      - name: Fail if this pull request changes human-owned paths
+      - name: Fail if this pull request changes the enforcement mechanism
         run: |
           changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
           # Prefix match, deliberately not anchored at the end. A guard that
           # over-matches costs a human one unnecessary merge; a guard that
-          # under-matches is a bypass. So CHARTER.md.bak and
-          # check-track-scope.mjs.orig are guarded too, and that is the right
-          # direction to be wrong in.
+          # under-matches is a bypass. So check-track-scope.mjs.orig is
+          # guarded too, and that is the right direction to be wrong in.
+          #
+          # Three more files joined 2026-08-22, same round as rule 13a
+          # itself: scripts/check-13a-unchanged.mjs, scripts/check-hold-
+          # mechanism.mjs and scripts/test-orchestrate-hold.mjs are the
+          # enforcement logic for two of rule 13a's own reservations (its own
+          # text, and the stop mechanism). None of the three is a workflow
+          # file, so none was in .github/ or otherwise reserved -- meaning a
+          # pull request could weaken or gut any of them in the same diff
+          # that violates what they check, and every job here would still
+          # report green, because the job definitions in .github/ (protected)
+          # only say "run this script," not what the script does. The exact
+          # round-78 shape check-track-scope.mjs was guarded for in 2026-08-11,
+          # recurring in new code the same round it shipped. Not a complete
+          # fix -- scripts/check-routes.sh, which wires
+          # test-orchestrate-hold.mjs into build-and-audit, is not guarded
+          # here, and gating it would freeze a file every track edits often
+          # for unrelated route checks; CHARTER.md's History (2026-08-22)
+          # names this residual rather than leaving it implicit.
           owned=$(printf '%s\n' "$changed" \
-            | grep -E '^(CHARTER\.md|\.github/|prompts/|scripts/check-track-scope\.mjs)' \
+            | grep -E '^(\.github/|scripts/check-track-scope\.mjs|scripts/check-13a-unchanged\.mjs|scripts/check-hold-mechanism\.mjs|scripts/test-orchestrate-hold\.mjs)' \
             || true)
           if [ -n "$owned" ]; then
-            echo "This pull request changes paths the maintainer owns:"
+            echo "This pull request changes paths CHARTER.md rule 13a reserves:"
             printf '%s\n' "$owned" | sed 's/^/    /'
             echo ""
-            echo "CHARTER.md rule 13 makes the charter, the workflow definitions and"
-            echo "the loop's own prompt human-owned: the loop may propose changes to"
-            echo "them and must not merge them."
-            echo ""
-            echo "scripts/check-track-scope.mjs is guarded here as well, though rule 13"
-            echo "does not name it. It is the file that says which paths each track may"
-            echo "write, and it reads that map from the branch it is judging -- so a"
-            echo "round can grant itself a path and use it in the same pull request"
-            echo "(round 78 did). Rule 11: the run a guardrail blocks is not the run"
-            echo "that loosens it."
+            echo "rule 13a reserves the enforcement mechanism -- .github/ (the checks"
+            echo "and their required-status wiring), scripts/check-track-scope.mjs"
+            echo "(the map of which paths each track may write, guarded since round 79:"
+            echo "it reads that map from the branch it is judging, so a round can"
+            echo "otherwise grant itself a path and spend it in the same pull request --"
+            echo "round 78 did), and the three checking scripts rule 13a's own text and"
+            echo "the stop mechanism depend on, guarded for the identical reason. Rule"
+            echo "11: the run a guardrail blocks is not the run that loosens it."
             echo ""
             echo "This check fails so auto-merge cannot land it. A maintainer merges"
             echo "it by hand, and that act is the review."
             exit 1
           fi
-          echo "ok  no human-owned paths touched"
+          echo "ok  no reserved enforcement paths touched"
+
+  # CHARTER.md rule 13a: "this rule itself -- only the maintainer may amend
+  # rule 13a." Path-based guarding cannot express that on its own, because
+  # CHARTER.md as a whole is no longer reserved (the job above stopped
+  # failing on it 2026-08-22) -- a content check is what enforces the one
+  # clause inside that file which stays reserved. Reads rule 13a's own text
+  # out of CHARTER.md by its "13a." marker (the same one
+  # scripts/check-13a-unchanged.mjs's header explains app/lib/charter.js's
+  # renderer does not recognise as a numbered rule) and fails if it differs
+  # from the base ref's by so much as a byte, or if either ref carries more
+  # than one "13a." marker -- a second, decoy marker with the base's exact
+  # text would otherwise extract clean while the real clause below it was
+  # edited freely, which is exactly the kind of gap this file exists to
+  # close, not reproduce. Passes, deliberately, if the base ref has no rule
+  # 13a at all -- so the pull request that first adds it is never blocked by
+  # a check protecting text that isn't there yet.
+  #
+  # !! NOT YET A REQUIRED CHECK. !!
+  # Read live from the GitHub API on 2026-08-22, the same day this job was
+  # added: `gh api repos/addicted2ai/AddictedtoAI/branches/main/protection/
+  # required_status_checks --jq '.contexts'` returns exactly
+  # ["build-and-audit","human-owned-paths","review-artifact"]. This job's
+  # name is not in that list. Auto-merge waits only on required checks
+  # (see the two banners on the jobs beside this one), so today this job can
+  # report a violation of the one clause in CHARTER.md the loop may never
+  # amend, and auto-merge will land the pull request anyway. Adding a job to
+  # the required list is a branch-protection settings change, and rule 13a
+  # itself reserves repository settings -- so the loop that just wrote this
+  # job cannot be the one that arms it, the same bootstrapping gap
+  # `human-owned-paths` had between 2026-08-11 (created) and 2026-08-11
+  # (added to the required list, PR #25 the first pull request it actually
+  # stopped) -- neither of which was tracked as a docket item either; the
+  # loud banner is the disclosure mechanism this repository already used
+  # twice. Not filed as a new docket item here either: `meta`'s open queue
+  # was already 26 items against a `queue_budget` of 14 in `policy.yml` when
+  # this job was written, and `check-docket.mjs`'s filing gate correctly
+  # refuses to let a `track: meta` item grow it further -- the same wall
+  # CHARTER.md's History (2026-08-22) already records for the stop-mechanism
+  # gap this file's next job closed. See that History entry for both.
+  rule-13a-text:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify rule 13a's own text is unchanged from the base ref
+        run: node scripts/check-13a-unchanged.mjs "origin/${{ github.base_ref }}"
+
+  # CHARTER.md rule 13a also reserves "the stop mechanism -- docket/HOLD.md
+  # and the code paths that honour it" -- today the loop's own signal to
+  # itself, not a channel the maintainer currently uses to intervene (every
+  # prior use was the loop halting itself; see CHARTER.md's History,
+  # 2026-08-22), reserved because it becomes a genuine remote brake once
+  # scheduled runs resume. This job covers only the half a PR diff can
+  # actually answer: whether THIS pull request's own change to
+  # docket/HOLD.md clears an active hold (creating one, or editing an active
+  # hold's stated reason, is not the reserved act -- this project's own
+  # history holds several legitimate self-merged pauses and releases).
+  #
+  # THIS JOB USED TO ALSO FREEZE the `if [ -s docket/HOLD.md ]; then halt
+  # ...; fi` fragment in scripts/orchestrate.sh byte for byte. Adversarial
+  # review defeated that, then defeated its replacement, across two
+  # passes: (1) truncating docket/HOLD.md every iteration, above the frozen
+  # block, so `-s` never sees content; (2) gutting halt() (defined
+  # elsewhere in the same file), so the frozen block's call to it does
+  # nothing; (3) clearing the file from a detached background job after the
+  # script had already halted and logged correctly -- defeating the
+  # behavioural replacement scripts/test-orchestrate-hold.mjs shipped for
+  # (1) and (2), and exposing that the first two review passes had posed
+  # the question against the wrong threat model: `git log --all -- docket/
+  # HOLD.md` shows every use of this file was the loop halting itself, never
+  # a human reaching into a live one, because nothing has run unattended
+  # since 2026-08-18 -- so an adversary evading a live human command is not
+  # a shape this project's history shows, and the third bypass is left
+  # undefended on purpose rather than patched a fourth time.
+  # scripts/check-hold-mechanism.mjs's own header has the full account.
+  #
+  # THE BEHAVIOURAL HALF lives in scripts/test-orchestrate-hold.mjs, which
+  # does not diff text at all: it actually runs the real
+  # scripts/orchestrate.sh in an isolated sandbox against a controlled
+  # docket/HOLD.md and reads what it did, including two permanent
+  # regression cases (bypasses 1 and 2, both plausible as accidental
+  # regressions) that assert the harness still catches both. It is wired
+  # into scripts/check-routes.sh, which `build-and-audit` below already
+  # runs -- a required check today, unlike this job. That test's own limit
+  # is stated in its header rather than implied: it proves this
+  # repository's code halts when actually run, which is what it needs to
+  # prove against the threat it actually defends against (accidental
+  # regression, not adversarial evasion); it does not prove the
+  # orchestrate.sh process running on whatever machine the maintainer
+  # started it on, at any given moment, is this code, unmodified, and it
+  # does not defend against bypass 3 at all, by choice.
+  #
+  # !! NOT YET A REQUIRED CHECK (this job only). !! Same gap, same reason,
+  # same "not filed either -- meta's queue is over budget" note as
+  # rule-13a-text above; see that job's banner and CHARTER.md's History,
+  # 2026-08-22.
+  stop-mechanism:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify this pull request's diff does not clear an active hold
+        run: node scripts/check-hold-mechanism.mjs "origin/${{ github.base_ref }}"
 
   # A round that declares `Origin: delegated` claims the orchestrating model
   # reviewed it before merge. A review asserted in the changelog is not a

@@ -1,9 +1,14 @@
 # Paths the loop may propose changes to but must not merge.
 #
-# CHARTER.md rule 13 says the charter, the workflow definitions, and the
-# loop's own prompt are human-owned.
+# CHARTER.md rule 13a reserves the enforcement mechanism itself -- not the
+# charter or the prompts, which rule 13's 22 August 2026 delegation put back
+# in the loop's hands, the same as the rest of this repository. This file
+# used to list CHARTER.md and prompts/ too, from when rule 13 called both
+# human-owned outright; narrowed to match rule 13a's actual surface the same
+# round that rewrote rule 13, so this list does not go on asserting an
+# ownership boundary the charter no longer draws.
 #
-# THIS FILE DOES NOT ENFORCE THAT, and the comment here used to claim it
+# THIS FILE DOES NOT ENFORCE ANYTHING, and the comment here used to claim it
 # did: "with branch protection requiring code-owner review on these paths,
 # a pull request touching any of them will not auto-merge however green its
 # checks are." That was conditional on a setting that was never made. Read
@@ -20,7 +25,11 @@
 # workflows/pr-checks.yml, which fails on any pull request touching them so
 # that auto-merge cannot land one -- and that job only bites once it is added
 # to branch protection's required checks, because auto-merge waits on
-# required checks alone.
+# required checks alone. Two more jobs in the same workflow,
+# `rule-13a-text` and `stop-mechanism`, are not path-based and so have no
+# entry here: they fail on a change to specific *content* (rule 13a's own
+# text; a diff that clears an active docket/HOLD.md) regardless of what
+# paths a pull request otherwise touches.
 #
 # The ownership below is still worth stating: it routes review requests and
 # says who owns these paths. It is documentation, not a gate.
@@ -28,14 +37,30 @@
 # This file is itself covered by the /.github/ rule below, so the loop
 # cannot remove its own constraints by editing this list.
 #
-# The fourth entry is not a rule 13 path. `check-track-scope.mjs` holds the
-# map of which files each track may write, and CI runs the branch's copy of
-# it -- so a round can grant itself a path and use it in the same pull
-# request, which round 78 did. It is guarded here and in the workflow so a
-# scope change costs a human merge. Rule 11's remedy in mechanical form:
-# propose the widening, let someone else decide it.
+# check-track-scope.mjs is not a rule 13a path by name, but the same
+# reasoning: it holds the map of which files each track may write, and CI
+# runs the branch's copy of it -- so a round can grant itself a path and use
+# it in the same pull request, which round 78 did. Guarded here and in the
+# workflow so a scope change costs a human merge. Rule 11's remedy in
+# mechanical form: propose the widening, let someone else decide it.
+#
+# The three checking scripts joined 2026-08-22, same round as rule 13a
+# itself, for the identical reason as check-track-scope.mjs: each is the
+# enforcement logic behind a rule 13a reservation (its own text;
+# docket/HOLD.md not being cleared in a pull request's diff; the behavioural
+# guard that actually runs scripts/orchestrate.sh), and none of the three
+# is a workflow file, so none was otherwise reserved -- a pull request could
+# have weakened or gutted any of them in the same diff that violates what it
+# checks, and every job in .github/ would still report green, since a job
+# definition there only says which script to run, not what the script does.
+# Not gated: scripts/check-routes.sh, which wires
+# scripts/test-orchestrate-hold.mjs into the required `build-and-audit` job.
+# Gating it would freeze a file every track edits often for unrelated route
+# checks; named as a residual in CHARTER.md's History (2026-08-22) rather
+# than fixed by widening this list past the point it stays legible.
 
-/CHARTER.md                       @addicted2ai
-/.github/                         @addicted2ai
-/prompts/                         @addicted2ai
-/scripts/check-track-scope.mjs    @addicted2ai
+/.github/                              @addicted2ai
+/scripts/check-track-scope.mjs         @addicted2ai
+/scripts/check-13a-unchanged.mjs       @addicted2ai
+/scripts/check-hold-mechanism.mjs      @addicted2ai
+/scripts/test-orchestrate-hold.mjs     @addicted2ai

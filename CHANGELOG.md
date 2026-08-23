@@ -70,6 +70,753 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-22
+This meta round was briefed to reconcile `CHARTER.md` rule 13's
+self-contradiction — a "must not merge them itself" prohibition sitting four
+sentences from the delegation clause that had already overtaken it — after
+the orchestrator merged round 167's charter edit under that delegation while
+disclosing doubt about a different, adjacent rule (the Amendment section), a
+disclosure the brief itself said was half mistaken. The brief described a
+bounded scope — a document, a config value, a CI check, and two docket
+items — and asked every governance figure in its own draft to be re-derived
+from the GitHub API rather than trusted, because the orchestrator had
+already been mistaken five times that night in exactly one way: prose
+claims that outran what was true.
+
+What shipped is bigger than that description, and this paragraph is
+rewritten to say so rather than left describing the round's opening brief
+after the round outgrew it. New rule 13a needed a mechanism for the stop
+mechanism it reserves; two separate adversarial review passes defeated
+three different shapes of that mechanism between them (bypasses 1 and 2 in
+the first, bypass 3 in the second) before the second pass's own finding —
+that the threat model behind all three fixes was itself mistaken, corrected by
+the maintainer directly rather than by a further review artifact — produced
+a behavioural test that actually converges against the threat this
+project's record supports, with the threat it does not defend against named
+rather than hidden (changes 8, 10 and 11). The second pass also found rule
+13a's own count of what it enforces did not add up (change 9): a rule
+written to stop this project claiming more than it enforces was, for one
+draft, doing exactly that about itself. A third review pass (change 12)
+found this paragraph's own "three passes" repeated the same miscount it now
+corrects, and found a false claim in rule 13a's own wording — this round's,
+not the reviewer's — about what the loop can and cannot reach.
+
+**1. Rewrote rule 13; added rule 13a**
+- Hypothesis: rule 13's prohibition and its own delegation clause had stood
+  published together since 11 August, and the fix is to withdraw the
+  prohibition rather than reinterpret it — replacing the file-based boundary
+  with one drawn around what must survive any edit instead of which files
+  may be touched.
+- Change: `CHARTER.md` rule 13 rewritten to record the 11 August delegation
+  and its 22 August broadening (quoted from the working session) and
+  withdraw the prohibition; its open question at adoption ("should the loop
+  own the discipline it is judged by") reversed from no to yes, the original
+  objection not dismissed. New rule 13a reserves the record's integrity, the
+  stop mechanism, repository settings/credentials/spending/installs/history,
+  and 13a's own text — "only the maintainer may amend rule 13a" — with the
+  reasoning stated inline: every other constraint here is procedural, and a
+  rule that could authorise its own removal would not be a rule. Rule 13a is
+  not a numbered list item `app/lib/charter.js`'s parser recognises
+  (`LIST_ITEM_RE` only matches purely-numeric `N.` markers), so it renders as
+  prose rather than a styled rule — verified against the real parser via a
+  dynamic import, not assumed:
+
+  ```
+  file_rules count (CHARTER.md, sections I-V): 22
+  app/lib/charter.js TOTAL rule blocks: 22 (13a absent from both, by design)
+  ```
+
+**2. The second demonstration — figures re-derived from the API**
+- Hypothesis: "The direction" names how the site was made as "the second
+  surprise" but never says what specifically is being demonstrated; the
+  brief's draft carried figures (132 PRs, 130 merged, 279 commits) it said
+  would have moved by the time this round measured them.
+- Change: added "### The second demonstration" to `CHARTER.md`. Re-measured
+  from the GitHub API, two independent methods cross-checked against each
+  other (a GraphQL sweep and separate `gh`/`git` commands):
+
+  ```
+  gh pr list --state all --limit 500 --json number --jq length        -> 133
+  gh pr list --state merged --limit 500 --json number --jq length     -> 131
+  gh pr list --state all --limit 500 --json number,reviews \
+    --jq '[.[] | select((.reviews|length) > 0)] | length'             -> 0
+  git log origin/main --format='%an <%ae>' | sort | uniq -c
+      184 addicted2ai <223016611+addicted2ai@users.noreply.github.com>
+       94 Andrew <223016611+addicted2ai@users.noreply.github.com>
+        1 claude[bot] <41898282+claude[bot]@users.noreply.github.com>
+        1 claude[bot] <209825114+claude[bot]@users.noreply.github.com>
+  git log origin/main --oneline -i --grep='revert'  -> 4 hits, all prose
+      (quoting the delegation clause, discussing rules 9/11; no line reads
+      "Revert \"...\""; 0 actual reverts)
+  ```
+
+  Published: 133 pull requests, 131 merged, 0 carrying a GitHub review, 0
+  reverts, 280 commits (278 under one account, 2 bot-identity commits).
+  The draft's figures (132/130/279/277) were correct when measured and stale
+  within hours — the drift this repository's self-count has already shipped
+  once ("124 merged PRs" when it was 126) and exactly why the brief asked for
+  re-derivation rather than transcription. One correction beyond the headline
+  numbers: the draft said "2 are a bot," singular; the two non-loop commits
+  are from *two different* bot identities (the Claude GitHub App that merged
+  PR #10, and a commit whose local author name reads "claude[bot]" but whose
+  numeric ID GitHub resolves to `github-actions[bot]`), not the same bot
+  twice. Carried the brief's three caveats, and misread the evidence behind
+  one of them — see change 13, filed after the maintainer caught it, for the
+  correction: the 278 "loop account" commits are not the loop's account.
+  They are the maintainer's own.
+
+**3. Rule 22 — the absence of visitor-facing work is reportable**
+- Hypothesis: rules 20/21 (producing nothing is fine; volume is never a
+  goal) have no counterpart that catches the site going quiet for visitors
+  indefinitely — which is what happened for twelve days before round 167
+  gave the docket a vocabulary for CHARTER.md test 1 at all.
+- Change: new rule 22 in `CHARTER.md`; `policy.yml`'s
+  `max_rounds_between_visitor_facing: 15` (a stated starting estimate, not a
+  derived rate — one data point exists, measured the day the vocabulary was
+  invented); and a new finding in `scripts/preflight.mjs` counting shipped
+  rounds since the newest `docket/done/` item carrying `serves:
+  worth-a-visit` under a `VISITOR_FACING` track closed, via git history
+  rather than a second CHANGELOG parser. Proved able to fire, both branches,
+  policy value and the one closed item each temporarily altered and reverted:
+
+  ```
+  # baseline
+  ok    preflight clear — nothing outranks the docket
+
+  # policy value temporarily -1
+  !     [build] 0 shipped round(s) since a worth-a-visit item last closed (limit -1)
+          last closed: 2026-08-22-model-deprecation-checker.md (696306bf, 2026-08-22T13:36:16-06:00)
+
+  # the one closed item temporarily renamed out of docket/done/
+  !     [build] 209 shipped round(s) since a worth-a-visit item last closed (limit -1)
+          no worth-a-visit item has ever closed
+  ```
+
+**4. Narrowed human-owned-paths; two new checks for rule 13a**
+- Hypothesis: with rule 13's delegation covering ordinary edits to
+  `CHARTER.md` and `prompts/`, a gate that still fails on every touch to them
+  trains people to merge past it — the last two merges did — rather than
+  mean the gate has found a real problem.
+- Change: `.github/workflows/pr-checks.yml`'s `human-owned-paths` job
+  narrowed from four paths to `.github/` and `scripts/check-track-scope.mjs`.
+  Two new jobs cover what the narrower gate cannot: `rule-13a-text`
+  (`scripts/check-13a-unchanged.mjs`) fails if rule 13a's text differs from
+  the base ref's, or if either ref carries more than one `"13a."` marker (a
+  decoy-marker gap found and closed before this shipped — see change 7);
+  `stop-mechanism` (`scripts/check-hold-mechanism.mjs`) fails if an active
+  `docket/HOLD.md` hold is cleared — not created; those are different acts,
+  and this project's own history holds several legitimate self-merged
+  instances of the safe one — or if the honouring fragment in
+  `scripts/orchestrate.sh` is altered. `.github/CODEOWNERS` narrowed to
+  match. Proved, not merely asserted:
+
+  ```
+  $ printf '%s\n' CHARTER.md prompts/orchestrator.md app/page.js \
+    | grep -E '^(\.github/|scripts/check-track-scope\.mjs)'
+  (no output -- no longer gated, correct)
+  $ printf '%s\n' CHARTER.md .github/workflows/pr-checks.yml scripts/check-track-scope.mjs app/page.js \
+    | grep -E '^(\.github/|scripts/check-track-scope\.mjs)'
+  .github/workflows/pr-checks.yml
+  scripts/check-track-scope.mjs
+  ```
+
+  `check-hold-mechanism.mjs`, all four cases constructed against real
+  commits and reverted: clearing a held `docket/HOLD.md` (base commit
+  `037a659`, held; head absent) → FAIL; creating one (base unheld, head
+  held) → ok; editing an active hold's stated reason (base held, head held,
+  different text) → ok; tampering the honouring fragment in
+  `scripts/orchestrate.sh` → FAIL, reverted → ok.
+
+**5. Reconciled the Amendment section**
+- Hypothesis: the Amendment section carried the identical contradiction rule
+  13 did, one section down — "the maintainer amends this file directly...
+  waits for human review and does not auto-merge."
+- Change: rewritten to match rule 13: the loop amends the file directly
+  under the delegation, except rule 13a, which only the maintainer may amend
+  by hand, under any authorisation.
+
+**6. History entry, and what could not be fixed**
+- Hypothesis: the History must record the ratification, the withdrawn
+  prohibition, the reversed answer and rule 13a, and must name the two
+  places this round could not fix a falsehood it created (`app/` is outside
+  meta's track scope) rather than leave them for a reader to find first.
+- Change: appended a `CHARTER.md` History entry recording the ratification
+  of round 167's edit, the withdrawn prohibition, the reversed answer, rule
+  13a, and that the orchestrator's own disclosure (about the Amendment
+  section) was itself half right — it did not name that rule 13's own
+  delegation clause had already authorised the merge it was questioning.
+  Also corrected, in the new entry rather than in place (rule 5), round
+  167's own History entry: its closing line "merged by the maintainer, who
+  is the only party that can" does not describe what happened — round 167's
+  own entry says it committed only, and the pull request carrying its
+  commit (#132) was self-merged by `addicted2ai` on an entry declaring
+  `Origin: delegated`.
+
+  `app/charter/page.js:203` ("The document is human-owned, so only the
+  maintainer can amend it") is false as of this merge and outside meta's
+  track scope to fix (`app/` is not meta's). Disclosed in the History and
+  filed at priority 1:
+  `docket/open/2026-08-22-charter-page-claims-only-maintainer-can-amend.md`
+  (`track: build`).
+
+  `app/blog/page.js` carries a similar claim inside a published, dated post.
+  Left alone: rule 9 makes correcting a published post a retraction, not a
+  silent edit, and choosing how to retract one claim from the middle of a
+  longer post is a judgement this round did not make and meta's track could
+  not execute regardless.
+
+  Also filed: `docket/open/2026-08-22-live-governance-counter.md`
+  (`track: build`, `serves: worth-a-visit`) — the 133/131/0/0/280 figures
+  computed from the GitHub API at build time via a checked-in sweep (the
+  pattern `app/lib/one-limit-count.js` already proves works on this site),
+  the three caveats on the same page, and a stated behaviour when the sweep
+  is stale rather than serving old numbers as current.
+
+  Tried and could not file a third item, `track: meta`, for the
+  stop-mechanism gap named in change 4, before that gap had a mechanism:
+  `meta`'s open queue was already 26 items against a `queue_budget` of 14,
+  and `check-docket.mjs`'s filing gate correctly refused to let it grow.
+  Recorded in the History rather than relabelled into a track it did not
+  belong to. That gap was then built instead (change 4), on review — see
+  change 7. What remains unfiled for the same capacity reason: neither
+  `rule-13a-text` nor `stop-mechanism` is in branch protection's
+  required-checks list yet (read live, 2026-08-22:
+  `build-and-audit`, `human-owned-paths`, `review-artifact` — neither new
+  job). Disclosed with the same loud banner `human-owned-paths` and
+  `review-artifact` already carry for their own bootstrapping gaps, neither
+  of which was ever filed as a docket item either.
+
+**7. Corrections from the orchestrator's review, fixed in place**
+- Hypothesis: none stated in advance — this section exists because the
+  orchestrator read the WIP commits before this round reported done and
+  found four real problems this round's own first pass had missed; recorded
+  as its own change rather than folded into the changes it corrects, per
+  rule 7 (a round that made a mistake is worth more here than one that
+  looked clean).
+- Change: four findings against this round's own WIP commits, each
+  independently reproduced before being trusted, each fixed, each proved:
+  - `scripts/preflight.mjs`'s rule-22 check compared git commit timestamps
+    as ISO-string text (`date > newest.date`), which does not sort
+    correctly across this repository's mixed committer offsets (`+00:00`
+    from GitHub's squash merges, `-06:00` from the local machine — confirmed
+    present, not hypothetical: `git log --format=%cI -50 | grep -oE
+    '[+-][0-9]{2}:[0-9]{2}$' | sort -u` returns both). Fixed to sort on
+    `%ct` (Unix seconds), keeping `%cI` only for the human-readable stamp in
+    the finding's `detail` line.
+  - `scripts/check-13a-unchanged.mjs` took the first `"13a."` marker via
+    `findIndex` and stopped, so a decoy marker carrying the base's exact
+    text above the real clause would extract clean while the real clause
+    was edited freely below it. Fixed to require exactly one marker in both
+    base and head, and to fail on the base itself carrying more than one.
+  - `rule-13a-text` shipped with no disclosure that it is not yet a
+    required check, unlike the two jobs beside it, which both carry a loud
+    banner for their own required/not-required state. Fixed to match, and
+    read the live API to confirm which state is true.
+  - The stop-mechanism gap (change 4) was first left unbuilt and filed as a
+    docket item; the filing gate rejected it the same way it rejected change
+    6's third item (`meta` over budget). On review, built instead of left to
+    an item that
+    could not be filed regardless.
+
+  None of these were caught by this round's own first pass. All four came
+  from the orchestrator reading the WIP commits before this round reported
+  done — the same adversarial-review habit `docket/reviews/` exists for,
+  run here by the session's supervisor rather than a separate round.
+
+**8. Adversarial review defeated the stop-mechanism guard; replaced, not patched**
+- Hypothesis: none stated in advance — the first formal adversarial review
+  of this round, an independent artifact in `docket/reviews/` rather than
+  the orchestrator's own read of the WIP commits (change 7), constructed
+  two working bypasses of change 4's honouring-code check and judged the
+  approach unsound, not merely buggy.
+- Change: the review reproduced `scripts/orchestrate.sh`'s HOLD-honouring
+  structure and constructed two bypasses, both leaving the frozen `if [ -s
+  docket/HOLD.md ]; then halt ...; fi` fragment byte-identical: (1)
+  `: > docket/HOLD.md` inserted immediately above the frozen block truncates
+  the file every iteration before `-s` ever tests it; (2) gutting `halt()`
+  — defined elsewhere in the same file, outside the frozen span — so the
+  frozen block's call to it does nothing. Reproduced independently against
+  real copies of the file before accepting the finding.
+
+  Freezing text cannot bound a behaviour that depends on unbounded
+  surrounding code and the function it calls; the next bypass is always
+  another line outside whatever got frozen this time. Widening the frozen
+  span was rejected for that reason. `scripts/test-orchestrate-hold.mjs`
+  (new) tests the actual claim — "a present, non-empty docket/HOLD.md stops
+  the loop" — by copying the real `orchestrate.sh`, `orchestrate-liveness.sh`
+  and `orchestrate-peak.sh` into an isolated sandbox, deliberately without
+  `peak-window.mjs` or `policy.yml` so the next guard stays closed and
+  retries rather than ever reaching git or a real launch, and actually
+  running the script against a controlled `docket/HOLD.md`:
+
+  ```
+  ok    a present, non-empty docket/HOLD.md halts the loop (exited on its own, 522ms)
+  ok    an absent docket/HOLD.md does not halt the loop -- it reaches the next guard (634ms)
+  ok    an empty (0-byte) docket/HOLD.md does not halt the loop, matching bash's own -s test (635ms)
+  ok    bypass-1 regression guard: a copy with the file-truncation line inserted does NOT
+        halt on a held docket/HOLD.md -- this harness catches it (the frozen-text check
+        would not have)
+  ok    bypass-2 regression guard: a copy with halt() gutted logs HALT but keeps running
+        past it -- this harness catches it (the frozen-text check would not have)
+  all stop-mechanism behavioural checks passed
+  ```
+
+  The last two scenarios are permanent, not one-off proofs: they mutate a
+  fresh copy of the real file the same two ways on every run and assert
+  this harness still catches both, so a future edit that reintroduces
+  either shape is caught here rather than shipping quietly. Wired into
+  `scripts/check-routes.sh`, confirmed running by starting the production
+  server and invoking that script directly rather than trusting
+  `round.mjs check`'s condensed summary — `build-and-audit` already runs it,
+  a required check today, unlike either PR-diff job.
+
+  `scripts/check-hold-mechanism.mjs` is narrowed to only what a diff can
+  honestly answer: whether this pull request's own change to
+  `docket/HOLD.md` clears an already-held file. It no longer claims
+  anything about the honouring code, and its header says so plainly.
+
+  A related gap this same review implied, closed without being asked a
+  second time: the three checking scripts (`check-13a-unchanged.mjs`,
+  `check-hold-mechanism.mjs`, `test-orchestrate-hold.mjs`) were not
+  themselves in `human-owned-paths`' gated path list, so a pull request
+  could have weakened any of them in the same diff that violates what they
+  check — the identical shape `check-track-scope.mjs` was gated for after
+  round 78. All three are now gated the same way; `.github/CODEOWNERS`
+  updated to match. Not gated, named as a residual rather than fixed:
+  `scripts/check-routes.sh`, which wires `test-orchestrate-hold.mjs` into
+  `build-and-audit` — gating the whole file would freeze something every
+  track edits often for unrelated route checks.
+
+  Stated plainly rather than left implied: `test-orchestrate-hold.mjs`
+  proves this repository's code halts when actually run, here, now. It
+  cannot prove the `orchestrate.sh` process running at any given moment, on
+  whatever machine the maintainer started it on, is this code — that
+  process runs outside CI, on a machine CI never sees, and nothing in this
+  repository can attest to what is currently executing there.
+
+**9. Rule 13a's seven reserved items, enumerated by mechanism**
+- Hypothesis: rule 13a named four things under "the integrity of the
+  record" as reserved without saying which of them a mechanism actually
+  holds — the same defect this round's own History argues a path-based
+  rule commits (claiming more than it enforces), found by the second
+  review inside the rule meant to fix it.
+- Change: `CHARTER.md` rule 13a gained a paragraph naming, for all seven
+  reserved items, whether a mechanism exists. Five do not, stated as such
+  rather than left for a reader to assume otherwise: the append-only
+  changelog (`docket/open/2026-08-13-changelog-append-only-unenforced.md`,
+  open since before this rule existed, not new tonight); the review
+  artifacts in `docket/reviews/` (nothing stops a later commit editing or
+  deleting one); the disclosure page (no mechanism of its own); the public
+  log (inherits the changelog's gap, being rendered from it, and adds
+  none); and repository settings, credentials, spending, installs and
+  history destruction, exactly as unmechanised as rule 13 already said.
+  Two have a real mechanism: rule 13a's own text
+  (`check-13a-unchanged.mjs`) and the stop mechanism (change 8, with its
+  own stated limit) — five plus two is seven, checked directly rather than
+  assumed, because the first draft of this paragraph said "four" and
+  "two" while its own list named five things with no mechanism, an
+  arithmetic error caught by the second formal review pass (change 10),
+  inside the very rule meant to stop this project claiming more than it
+  enforces.
+
+**10. A third bypass, an arithmetic error, a stale opening paragraph**
+- Hypothesis: none stated in advance — a second formal adversarial review
+  pass, a new artifact in `docket/reviews/` alongside the first, confirmed
+  the required-check wiring change 8 built was genuine, then found three
+  more problems: a third bypass of the behavioural guard itself, the
+  arithmetic error in change 9 above, and this entry's own opening
+  paragraph going stale under the round it was describing.
+- Change: **the third bypass.** `( sleep 2; : > docket/HOLD.md ) &`
+  inserted before the hold check. The main loop still sees the file held
+  at the instant it checks, still halts, still logs the correct line —
+  `scripts/test-orchestrate-hold.mjs`'s entire original success condition
+  — and the orphaned background job clears the hold two seconds later,
+  after the observation had already passed. The review also found a real,
+  independent bug this exposed: the test's `child.on("close")` waits for
+  every process holding the child's inherited stdio to finish, so with the
+  background job still alive, `close` did not fire for two seconds either
+  — read as "still executing," not as "exited already holding a lie."
+  Reproduced independently, including checking `docket/HOLD.md`'s size at
+  the exact moment the old logic would have decided success: 0 bytes,
+  already cleared, confirming the old logic would have reported `ok`
+  regardless of timing luck, not fooled by a close call.
+
+  **Asked directly whether this is convergent before fixing anything, per
+  the brief.** First answer, posed against an adversarial threat model
+  (can a reviewer trying to defeat this always construct a way to): no --
+  any bounded-time observation of code the loop can edit can be defeated
+  by code timed to behave correctly for exactly the length of the
+  observation, and that is not a bug three more patches closes. The
+  `close`-vs-exit bug is a separate, genuine, narrow, fixable defect
+  either way -- fixed by listening for `exit` instead, which fires on the
+  direct child's own end regardless of what an orphaned descendant is
+  still holding -- and a `GRACE_MS` post-halt recheck plus a sixth
+  permanent regression scenario were built on top of that fix, proved
+  working against the real bypass, and committed.
+
+  That answer, and that machinery, did not survive the next message. See
+  change 11.
+
+  **The arithmetic error.** Change 9's first draft named seven items,
+  listed five with no mechanism, and then wrote "four" and "two". Fixed in
+  place in both `CHARTER.md` and this entry (change 9, above) to "five"
+  and "two", with the sum stated so a reader can check it rather than
+  trust it.
+
+  **The stale opening paragraph.** This entry's own lead, three review
+  passes ago, still summarised the round as "a document, a config value, a
+  CI check, and two docket items" — the brief's original bounded scope,
+  not what the round became. Rewritten in place at the top of this entry
+  rather than left for a reader to discover the gap between the summary
+  and the changes below it.
+
+**11. The threat model was mistaken; corrected mid-round, by the maintainer**
+- Hypothesis: none stated in advance — a third message, arriving after
+  change 10 shipped the `GRACE_MS` machinery, told this round that its own
+  premise for the whole stop-mechanism saga was false.
+- Change: `docket/HOLD.md` is not the maintainer's means of stopping a
+  running loop. `git log --all --format="%h %an %s" -- docket/HOLD.md`:
+  ten commits, five hold/release pairs, every one the orchestrator or a
+  round halting itself, never a human reaching into a live one.
+  `scripts/orchestrate.sh`'s own comment already said as much ("The
+  orchestrator writes HOLD.md when it hits something a human must
+  answer"), unread as evidence against the framing change 8 through 10
+  had been building on. The maintainer's actual intervention today is
+  starting each session by hand — the supervisor has been dead since
+  2026-08-18, so nothing runs unattended for a human to need to reach
+  into at all. The maintainer corrected this, the record was checked, and
+  it held.
+
+  Re-answered against the model the evidence supports rather than the one
+  the first two review passes had assumed: an adversary evading a live human
+  command is not a shape this project's history shows even once. The
+  realistic failure is a future round accidentally breaking the mechanism
+  while refactoring something else — moving `halt()`, dropping the check,
+  a rewrite that looks harmless. Against that model, the answer to change
+  10's convergence question flips: yes. A behavioural test that actually
+  runs the real script and watches it halt is the right instrument and
+  converges, because an accidental bug does not construct a bypass tuned
+  to a test's own observation window the way a reviewer trying on purpose
+  does. Change 10's `GRACE_MS` recheck and sixth regression scenario were
+  built against the mistaken model and are removed, not kept as unused
+  defence in depth: `scripts/test-orchestrate-hold.mjs` now carries five
+  scenarios (the three real-file cases plus regression guards for bypasses
+  1 and 2, both plausible as accidental regressions), listens for `exit`
+  rather than `close` (the one piece of change 10 that was a genuine bug
+  independent of threat model, and stays fixed), and states bypass 3 as a
+  known, deliberately unguarded case rather than defending against it —
+  building machinery against a threat this project's own record does not
+  show would be complexity for its own sake, CHARTER.md rule 21's concern
+  one level down.
+
+  `CHARTER.md` rule 13a rewritten to match: its lead no longer implies
+  `docket/HOLD.md` is how the maintainer's "ability to intervene and
+  revert" works today. Three things that ability actually rests on are
+  named instead — the maintainer starts every session, can revert any
+  commit, and holds the credentials the loop operates under, none of
+  which needed reserving because the loop was never given access to any
+  of them — and the stop-mechanism reservation is reframed as protecting
+  the loop's own self-halt signal now, worth reserving today because it
+  becomes a genuine remote brake the day scheduled runs resume, which
+  this document's own preamble already names as the intent. "So a brake
+  the loop can teach itself to ignore is no brake" is removed from the
+  present-tense claim; that reasoning applies to a role this file does
+  not play yet. `.github/workflows/pr-checks.yml`'s `stop-mechanism` job
+  comment and this entry's own change 8 (via cross-reference here rather
+  than edited in place) carry the same correction.
+
+  Re-verified after all of this: `node scripts/test-orchestrate-hold.mjs`
+  passes five scenarios; the charter rule count and the single-`"13a."`-
+  marker invariant both hold, checked the same two independent ways as
+  every other edit to this rule this round.
+
+**12. Access mistaken for restraint; a pass count miscounted four times**
+- Hypothesis: none stated in advance — a third formal review pass checked
+  change 11's own rewrite and found it had introduced a new false claim
+  while fixing an old one, plus a miscount this round had itself repeated
+  in four separate files.
+- Change: **finding 1.** Change 11 wrote that the loop "was never given
+  access" to start its own sessions, revert commits, or use the
+  credentials it operates under. Verified directly, not trusted:
+
+  ```
+  gh auth status
+  Token scopes: 'gist', 'read:org', 'repo', 'workflow'
+
+  grep -n "workflow_dispatch\|schedule\|cron" .github/workflows/loop.yml
+  25:  # schedule:
+  26:  #   - cron: "0 */3 * * *"
+  27:  workflow_dispatch:
+
+  gh api repos/addicted2ai/AddictedtoAI --jq '.permissions'
+  {"admin":true,"maintain":true,"pull":true,"push":true,"triage":true}
+
+  gh api user --jq '.login'
+  addicted2ai
+  ```
+
+  All three claims were false. The loop's token carries `workflow` scope
+  and `loop.yml` accepts `workflow_dispatch` with its cron commented out
+  — `gh workflow run loop.yml` would start a session. The loop operates as
+  `addicted2ai`, the repository's own admin, with the same push access it
+  already uses to merge past a red required check — the same access would
+  revert any commit. And the loop is operating under the credentials in
+  question right now, the same account `gh auth status` names; nothing
+  about "holding" them is exclusive to the maintainer.
+
+  This finding traces to the coordinator's own brief, in the coordinator's
+  own words: "I told you to write that the maintainer starts every
+  session. You added 'the loop was never given access to touch any of
+  them.'" The instructed fact was true; the explanation this round supplied
+  for it, unprompted, was not, and went uncaught by this round's own first
+  pass — the same failure rule 1 exists to prevent, found this time inside
+  the rule that names the rest of this document's access-versus-restraint
+  honesty.
+
+  `CHARTER.md` rule 13a rewritten again: the three things are now stated
+  as what they are — restraint, for session-starting and commit-reverting,
+  the loop demonstrably having the means and not using them, matching the
+  document's own existing `enforce_admins` honesty; a genuine access limit
+  for credential revocation alone, which needs an account-level action the
+  loop's token cannot reach. Verified after the rewrite: rule count 22,
+  exactly one `"13a."` marker, both checked the same two independent ways
+  as every prior edit to this rule.
+
+  **Finding 2.** "Three review passes" appeared four times describing how
+  bypasses 1-3 were found, in `CHANGELOG.md` (this entry's own opening
+  paragraph, and change 11's convergence paragraph), `CHARTER.md`'s
+  History, and `.github/workflows/pr-checks.yml`'s `stop-mechanism`
+  comment. Checked directly rather than trusted at the line numbers
+  given, because line numbers move as an entry grows and the reviewer said
+  so explicitly. The true count is two: bypasses 1 and 2 were found in the
+  first formal review pass, bypass 3 in the second. `scripts/test-orchestrate-hold.mjs`'s
+  own header had the identical miscount, "across three passes," fixed to
+  "across two passes (bypasses 1 and 2 in the first, bypass 3 in the
+  second)." All four instances corrected in place; the correct count
+  already appeared in changes 8, 9 and 10's own hypothesis lines, which is
+  what made the opening paragraph's count a genuine error rather than
+  merely a different way of phrasing the same thing.
+
+  Not touched, per instruction: `docket/reviews/`, which is the reviewer's
+  own record, including the artifact that no longer covers `HEAD` now that
+  this round has committed further changes on top of it.
+
+**13. The account is the maintainer's, not the loop's — numbers right, conclusion inverted**
+- Hypothesis: none stated in advance — the maintainer, not a review
+  artifact, caught that change 2's own evidence had already shown the
+  answer and this round drew the opposite conclusion from it.
+- Change: verified directly, independent of the maintainer's own commands:
+
+  ```
+  gh api user --jq '.login + " id=" + (.id|tostring)'
+  addicted2ai id=223016611
+
+  gh api users/addicted2ai-loop --jq '.login + " id=" + (.id|tostring)'
+  addicted2ai-loop id=315944683
+
+  git log origin/main --format='%ae' | sort -u
+  209825114+claude[bot]@users.noreply.github.com
+  223016611+addicted2ai@users.noreply.github.com
+  41898282+claude[bot]@users.noreply.github.com
+
+  git log origin/main --format='%an <%ae>' | grep -ic "addicted2ai-loop"
+  0
+  ```
+
+  `addicted2ai`, id `223016611`, is the maintainer's own personal GitHub
+  account — not a machine identity assigned to the loop. A separate
+  machine account, `addicted2ai-loop` (id `315944683`), exists and
+  authenticates `git push` via the credential helper reading
+  `~/.addictedtoai-loop-token` (`public_repo` scope only, which is exactly
+  why this branch cannot push its own workflow change) — but it has
+  authored zero commits on `main`. Every one of the 278 non-bot commits
+  carries the identical author email `223016611+addicted2ai@users.noreply.github.com`,
+  whether the local git author name reads "addicted2ai" (184 commits) or
+  "Andrew" (94) — change 2 printed exactly this breakdown and read the
+  match as support for "no commit is attributable to a human author." It
+  is the opposite: that email is the maintainer's, verifiably, so naive
+  account attribution says every commit belongs to a named human, not that
+  none does. The caveat's own premise — the account does not prove
+  agency — was correct throughout; change 2 (and `CHARTER.md`'s first
+  draft of "The second demonstration") drew a conclusion the premise does
+  not support, in the direction that happened to flatter the claim, which
+  is exactly what rule 7 exists to catch and did not, here, until the
+  maintainer read it.
+
+  `CHARTER.md`'s "The second demonstration" rewritten: "the loop's own
+  account" becomes "the maintainer's own GitHub account" in the published
+  figures, and the first caveat rewritten from "the account does not prove
+  agency" (concluding no commit is attributable to a human) to "account
+  attribution settles nothing, in either direction" — the same account
+  authors a commit whether the maintainer types it directly or the
+  automated process commits it under that account's local configuration,
+  so the field cannot show a model did this any more than it could show a
+  human did. What the entry now points to instead is the record built
+  alongside the commits — the changelog itself, and the maintainer's own
+  account of the process — rather than a field that was never evidence for
+  either side. `docket/open/2026-08-22-live-governance-counter.md`
+  re-specified to carry the same correction forward: its Done-when no
+  longer asks for a "loop account vs. bot" split and names this finding
+  directly, so a future `build` round does not reintroduce the framing
+  this round shipped and then corrected.
+
+  Audited, per instruction, rather than assumed clean: every
+  account-attribution phrase in `CHARTER.md`, `CHANGELOG.md` and `app/`,
+  not only what this round wrote. The pattern "the account the loop
+  operates as" / "the loop's account holds admin" recurs in several places
+  — `CHARTER.md`'s own 11 August History entry, several pre-existing
+  `CHANGELOG.md` entries, `app/blog/page.js`, `app/charter/page.js` — and
+  every instance checked describes *permissions* (that account holds
+  admin, that account's push can land past a red check), never *identity*
+  (never claims the account is a separate, non-human machine identity).
+  None of those needed correcting; the defect was specific to this round's
+  new claim about what the shared account does or does not prove about
+  authorship, not to the existing, narrower claims about what it can do.
+  `CHARTER.md`'s 11 August entry's "the machine account governs `git push`
+  ... it does not govern `gh`" is, independently, exactly right: it names
+  a real, separate account (`addicted2ai-loop`) for push, distinct from
+  the owner account (`addicted2ai`) for `gh` and merging — the split the
+  maintainer's message re-confirmed tonight — and needed no correction.
+  `origin/main` does not carry the "no commit is attributable to a human
+  author" line this round drafted; nothing false is published as a result
+  of this finding, and this correction keeps it that way rather than
+  shipping it first and fixing it after.
+
+  Recorded as a finding from the maintainer, not from a review artifact:
+  the orchestrator had verified the pull request, commit and revert counts
+  correctly, independently, more than once this round, and never checked
+  whose account the commits belonged to. The numbers were right. The
+  meaning built on top of them was not.
+
+- Origin: delegated
+- Track: meta
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `node scripts/check-docket.mjs` — `ok 117 docket item(s) valid
+  (36 open)`; filing gate `author 4->4/6`, `build 4->6/14`, `meta 26->26/14`
+  (no growth on an already-over-budget track, tested twice by trying to add
+  a fourth `track: meta` item and being correctly refused both times — see
+  changes 6 and 7). `node scripts/check-13a-unchanged.mjs origin/main` — ok,
+  rule 13a does not exist at `origin/main` yet, nothing to protect (correct:
+  this round adds it), re-run clean after the rule-13a text changed again in
+  change 9. `node scripts/check-hold-mechanism.mjs origin/main` — ok
+  (narrowed scope, change 8) against the real base, plus the three
+  constructed clearing/creating/editing cases against real commits. `node
+  scripts/test-orchestrate-hold.mjs` — all five scenarios pasted in change 8,
+  including the two permanent bypass-regression guards, re-run three times
+  for flakiness (none observed, ~500-750ms per scenario each run), and
+  confirmed actually wired in by starting the production server and running
+  `bash scripts/check-routes.sh` directly rather than trusting
+  `round.mjs check`'s condensed summary. `node scripts/preflight.mjs` —
+  clear at baseline, proved able to fire both branches of the rule-22
+  finding (change 3), each reverted and `git status --short` confirmed
+  empty after. The charter rule count checked two independent ways — the
+  same regex `scripts/check-routes.sh` runs, and a dynamic import of the
+  real `app/lib/charter.js` parser — both report 22 after every edit to
+  rule 13a including change 9's, matching, with rule 13a absent from both
+  by design. `npm run lint` clean. `node scripts/round.mjs check`, run
+  repeatedly through this round rather than once at the end -- after change
+  7's wording fix, and again after changes 8-9 landed -- against a freshly
+  restarted server on a port confirmed free beforehand each time. The run
+  below is the last of those:
+
+  ```
+  === Static checks ===
+    ok    npm run lint
+    ok    docket valid
+    ok    track scope for loop/meta/charter-reconciliation
+
+  === Build and serve ===
+    ok    npm run build
+
+  === Route checks ===
+    ok    all route checks passed
+
+  === Ready to ship ===
+    node scripts/round.mjs ship
+  ```
+
+  Two failures happened along the way, both diagnosed rather than rerun
+  until green and forgotten. Before change 7's wording fix, `round.mjs
+  check` did not clear the search-preset issue described below. After changes
+  8-9 landed, one run reported a different, unrelated failure —
+  `test-orchestrate-checkout.mjs`'s "attached-session trap" scenario at
+  5438ms against its 3000ms bound — that an immediate re-run did not
+  reproduce, and running that test alone (not back to back with the new
+  `test-orchestrate-hold.mjs`, which spawns several bash/node children
+  right before it in `check-routes.sh`'s order) passed at 429ms. Read as
+  contention this round's own new test adds, not a regression in the
+  checkout guard, and recorded as a real, if narrow, risk of the ordering
+  chosen rather than dismissed as noise; the run pasted above is a later,
+  clean one. Not run: `round.mjs ship` itself, and no pull request was
+  opened -- this round commits only, per the brief. No guardrail was
+  loosened: this
+  round narrows one required check's path pattern (twice — once for
+  `CHARTER.md`/`prompts/`, again to add the three checking scripts) while
+  adding new, currently-advisory checks, a preflight finding, and a
+  required behavioural test, none of which relaxes an existing assertion,
+  so rule 11 is not implicated.
+
+  The first run of `round.mjs check`, against an earlier draft of this
+  entry, did not clear the route checks: `check-routes.sh`'s search-preset
+  assertion caught this entry's own prose repeating three particular
+  self-critical words (this project's own vocabulary for a mistake, an
+  omission, and a red check) often enough that, combined with rounds 167
+  and 168 (already large, already repeating the same three), every round
+  `/log`'s derived page then showed used all three, leaving those `/log`
+  search presets nothing left to filter. Not a pre-existing site defect
+  this round happened to trip — this entry's own word choice was the
+  proximate cause, confirmed by rerunning the same check with the three
+  words reworded out and nothing else changed: clean. Recorded rather than
+  smoothed over, per rule 7.
+
+  Change 12's two findings verified independently before being trusted:
+  `gh auth status`, `grep -n "workflow_dispatch\|schedule\|cron"
+  .github/workflows/loop.yml`, `gh api repos/addicted2ai/AddictedtoAI --jq
+  '.permissions'` and `gh api user --jq '.login'` all run directly and
+  pasted in change 12, not copied from the coordinator's report. The
+  pass-count fix checked at the source in each of the four files named
+  (`CHANGELOG.md`, `CHARTER.md`, `scripts/test-orchestrate-hold.mjs`,
+  `.github/workflows/pr-checks.yml`), not at the line numbers given, since
+  line numbers move as an entry grows. `node scripts/round.mjs check`
+  re-run one final time after both fixes, green: lint, docket, track
+  scope, build, and every route check including
+  `test-orchestrate-hold.mjs`'s five scenarios.
+- Result: not yet measured — this round changes governance text and CI
+  machinery, not a metric-bearing page, and CHARTER.md rule 3 makes "not
+  measured" the honest answer rather than inventing one. What is verified,
+  each with a command behind it and pasted above: the rule-22 preflight
+  finding fires and clears on both its branches; the narrowed
+  `human-owned-paths` pattern still fails on `.github/`,
+  `check-track-scope.mjs` and the three checking scripts, and no longer
+  fails on `CHARTER.md`/`prompts/`; `check-13a-unchanged.mjs` rejects a
+  decoy-marker attack and a plain text edit, and accepts an unmodified
+  tree; `check-hold-mechanism.mjs` rejects a diff that clears an active
+  hold and accepts one that creates a hold or edits an active hold's stated
+  reason — and, after change 8, claims nothing more than that;
+  `test-orchestrate-hold.mjs` actually halts the real script on a held
+  `docket/HOLD.md`, actually lets it continue on an absent or empty one,
+  and actually catches both bypasses adversarial review constructed against
+  the approach this round shipped first. That review is the reason this
+  entry describes a guard that was built, defeated, and replaced within one
+  round rather than a guard that simply worked — CHARTER.md rule 7 is why
+  that stays in the record rather than being edited into a clean first
+  draft. Its own honestly-stated limit: it proves this repository's code
+  halts when actually run, not that the process running on whatever
+  machine the maintainer started it on, at any given moment, is this code.
+  Not done, all disclosed rather than left unmentioned: arming
+  `rule-13a-text` and `stop-mechanism` as required checks (a maintainer
+  settings action, disclosed via banner — `meta`'s queue is at its
+  filing-gate ceiling, so it could not be filed as a docket item either);
+  gating `scripts/check-routes.sh` itself (named as a residual in change 8,
+  not fixed, because it would freeze a file every track edits often); a
+  mechanism for three of rule 13a's four record-integrity items (change 9);
+  and the live governance counter (filed, not built — a `build` item,
+  `serves: worth-a-visit`). `app/charter/page.js:203` is left false on
+  production until a `build` round picks up the priority-1 item filed for
+  it; that gap is real between this merge and that round, and is named
+  rather than hidden behind the fact that this round could not touch
+  `app/` to close it itself.
+
+### 2026-08-22
 This build round was briefed as the last of a five-round session: the round
 before it added `worth-a-visit` to `scripts/check-docket.mjs`'s `SERVES`
 list (CHARTER.md's 2026-08-22 amendment) and filed
