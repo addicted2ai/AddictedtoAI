@@ -281,6 +281,60 @@ temporary scratchpad directory nobody but the orchestrator ever reads.
   1 open` (unbounded, no `queue_budget`), `build base 10 -> head 11 (queue
   budget 14)`.
 
+**6. Adversarial review found two real defects; both fixed here**
+- Hypothesis: none — review, not anticipation, found both.
+- Change (finding 1 — `legacy/` was a hole, not an exemption): the review
+  demonstrated three ways past `scripts/check-briefs.mjs`'s original
+  `legacy/` handling, which validated nothing about what could enter that
+  directory beyond its own existence: an arbitrary new file; a file placed
+  under a real legacy filename with different content; and — the sharpest —
+  a copy of this round's own real, committed brief with its entire
+  `## Premises` section stripped out, placed in `legacy/` under an
+  unclaimed name. All three passed with exit 0 before this fix, each
+  reverted with a clean tree afterward. This is round 170's route-keyed
+  `KNOWN_FAILURES` defect one directory up: an exemption that cannot tell
+  what it is exempting is not an exemption. Fixed by pinning `legacy/` to a
+  closed, fixed manifest in `scripts/check-briefs.mjs` (`LEGACY_MANIFEST`):
+  the exact six filenames established at this convention's founding,
+  each with the SHA-256 of its content as committed then. A file in
+  `legacy/` absent from the manifest fails; a manifest entry missing from
+  disk fails; a manifest entry whose on-disk content no longer matches its
+  pinned hash fails. Re-ran all three of the reviewer's attacks after the
+  fix: all three now print `FAIL` and exit 1, each reverted, tree confirmed
+  clean by empty `git status --short` afterward.
+- Change (finding 2 — premise 5 of this round's own brief cited a real
+  command that did not support its claim): premise 5 said
+  `scripts/check-frame.mjs` went through *three* narrower fixes before *a
+  fourth* replaced shape-recognition with a declared total. The actual
+  commit sequence has two fixes that stayed inside shape-recognition (the
+  colon fix; the widened matcher plus the independent scan) before the
+  *third* replaced the approach itself, and a *fourth* that then closed a
+  remaining flaw in that new approach (a count could match while the
+  recognised numbers were not the required set) — an overcount written into the
+  brief itself and carried faithfully rather than checked. The cited
+  command (`grep -c "COMPLETENESS DOES NOT COME FROM RECOGNISING HEADING
+  SHAPES" scripts/check-frame.mjs` returning 1) is real and was really run,
+  and still does not establish the count — it confirms a phrase exists, not
+  how many fixes preceded it or which one changed the approach. That gap is
+  exactly what `scripts/check-briefs.mjs`'s own stated honest limit says
+  out loud: a `[command: ...]` tag is checked for being *declared*, never
+  for whether its output *supports* the specific claim built on it. This is
+  the first time a premise from an orchestrator brief has been caught by
+  this project's own process rather than by the maintainer noticing it in
+  conversation by accident — every prior instance (`docket/HOLD.md`,
+  OpenCode's websearch, the `addicted2ai` account identity) reached the
+  maintainer that way. `scripts/check-briefs.mjs` cannot catch this class
+  by design and does not claim to; a reviewer instructed to run the cited
+  commands did. That is the argument for keeping that instruction in the
+  reviewer brief template, not a reason to believe the checker covers more
+  than it does. Corrected the premise's text to the accurate sequence, and
+  the same overcounted phrasing where it had leaked into
+  `scripts/check-briefs.mjs`'s own header comment (`docket/briefs/README.md`
+  was checked too and found already accurate on a close reading — it
+  states only that the technique was "converged on after" three fixes,
+  which holds under the corrected count without needing the change).
+  `docket/reviews/` untouched, per instruction.
+
 - Origin: delegated
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent)
