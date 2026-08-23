@@ -88,22 +88,36 @@ settled answer either way.
 Closed by this round. `article p { max-width: 80ch; }` added to
 `app/globals.css`. Chosen over `scratchpad/site-survey.md`'s own reasoning:
 `90ch` is confirmed still a no-op against `main`'s 780px container; `68ch`
-and `62ch` cost more (+13%, +24% page length on `/blog/chatgpt-ads`) for a
-narrower column than most of the site's existing `62ch`/`68ch` family
-(`.hero-lead`, `.log-field`, `.log-note`, `.walkthrough-caption`) already
-occupies -- those cap secondary text sitting alongside other content on an
-`<article>` page, and `article p` was deliberately given more room than
-them.
+and `62ch` cost more (+13%/+10.88% independently re-measured, +24% not
+re-measured, page length on `/blog/chatgpt-ads`) for a narrower column.
+This rule makes no claim about how it relates to the site's other,
+narrower `ch`-capped rules -- see the two corrections below for why.
 
-**Correction, found by adversarial review on this round, before merge:**
-the sentence above originally listed `.log-lead` in that same "secondary
-text" group. It doesn't belong there. `.log-lead` is the entire freeform
-prose of `/log`, `/log/early` and `/log/archive` -- none of the three has
-an `<article>` wrapper (`grep -rn "<article" app/log/`: no matches) -- the
-same role `article p` fills on pages built from one, yet it stays at
-`62ch`, narrower than this round's own rule. Left as a named, unresolved
-inconsistency: this item named only `article p`, and widening `.log-lead`
-to match was neither asked for nor measured this round.
+**Two corrections, found by adversarial review on this round, before
+merge, both left visible rather than smoothed into a clean final
+paragraph:**
+
+1. The first version of this status note said the site's other
+   `62ch`/`68ch` rules "cap secondary, supporting text" while `article p`
+   is "the primary reading column." False: `.log-lead` is the entire
+   freeform prose of `/log`, `/log/early` and `/log/archive` (`grep -rn
+   "<article" app/log/`: no matches), the same role `article p` fills
+   elsewhere.
+2. The fix for #1 replaced it with an `<article>`-wrapper-vs-not
+   distinction, claiming `.log-lead` was the one exception. Also false,
+   and backwards: none of `.hero-lead`, `.log-field`, `.log-note` or
+   `.walkthrough-caption`'s own files (`app/page.js`, `app/log/LogEntry.js`,
+   `app/demos/RoundWalkthrough.js`) has an `<article>` wrapper either, and
+   `.log-lead` is the *only* one of the five that ever appears on an
+   `<article>` page (`app/model-retirement-calendar/page.js`,
+   `app/charter/page.js`).
+
+Both attempts asserted a relationship between selectors without checking
+every file each one renders in. This round stopped trying to characterise
+that relationship rather than risk a third wrong theory: `article p`'s
+`80ch` is justified above on its own measured terms only, and the site's
+other `ch` caps (12 of them, `grep -c "max-width: 6[28]ch" app/globals.css`)
+are left uncharacterised, not silently resolved.
 
 This round independently re-measured the baseline on a real render (not
 carried over from the closed item's own figures) and reproduced it: 96-103

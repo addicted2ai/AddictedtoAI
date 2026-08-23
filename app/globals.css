@@ -171,21 +171,29 @@ article p {
      item's own 100-103 baseline figure) for a page-length cost the same
      round measured at +0.5% to +4.3% across those five pages -- cheaper
      than every candidate the item itself measured except the 90ch no-op.
-     80ch was chosen wider than the site's existing 62ch/68ch family
-     (.hero-lead, .log-lead, .log-field, .log-note, .walkthrough-caption)
-     deliberately, but not on a claim that holds evenly across all five:
-     most of them cap secondary text sitting alongside other content on a
-     page built from <article> -- a homepage intro line, a per-entry field,
-     a caption -- and this rule gives the primary reading column on those
-     pages more room on purpose. .log-lead is the exception: on /log,
-     /log/early and /log/archive, none of which has an <article> wrapper,
-     it IS the page's entire freeform prose, filling the same role this
-     rule fills elsewhere, yet it stays at 62ch -- narrower than this rule,
-     not consistent with it. Found by adversarial review on this round
-     (docket/reviews/689806bde48beb2fabc686ba5e3ef01c375060dc.md) and left
-     as a named inconsistency rather than resolved: the docket item this
-     rule closes named only `article p`; widening .log-lead to match was
-     neither asked for nor measured here. */
+     This file caps several other elements narrower than 80ch, at 62ch and
+     68ch. This comment does not characterise what relates any of them to
+     this rule or to each other -- two attempts this round to do exactly
+     that (first "those cap secondary text, article p is primary", then an
+     <article>-wrapper-vs-not distinction) were each asserted without
+     checking every file the classes involved actually render in, and each
+     turned out false on inspection: `.log-lead` alone appears on an
+     <article> page (app/model-retirement-calendar/page.js,
+     app/charter/page.js) and on three pages with no <article> wrapper at
+     all (/log, /log/early, /log/archive), which fits neither story, and a
+     third attempt at re-counting "the other rules" for this same comment
+     first came out at five when the true count (by grep) is twelve. All
+     three mistakes were caught before this text shipped -- the first two
+     by adversarial review, not by this round's own verification before
+     publishing either claim (CHANGELOG.md's entry for this round has the
+     full account). The relationship between this rule and the site's other
+     ch caps is not a clean hierarchy and this round did not establish one.
+     What this round did verify: 80ch is the cheapest candidate that still
+     moves article p's own measured median meaningfully below the site's
+     100-103 baseline (to 87-94 across the five pages the docket item
+     names), at a page-length cost under 5% on every one of them --
+     cheaper than every narrower candidate measured (68ch: +10.88% on
+     /blog/chatgpt-ads) and the only one narrower than the 90ch no-op. */
   max-width: 80ch;
 }
 
