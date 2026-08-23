@@ -170,8 +170,8 @@ article p {
      each paragraph's shorter final line, the convention that reproduces the
      item's own 100-103 baseline figure) for a page-length cost the same
      round measured at +0.5% to +4.3% across those five pages -- cheaper
-     than every candidate the item itself measured except the 90ch no-op,
-     and the only one narrower than that no-op. This rule's stated
+     than every candidate the item itself measured except the 90ch no-op.
+     This rule's stated
      rationale was revised twice after it first shipped, over claims about
      how it relates to the site's other `ch`-capped rules; none of those
      claims held up and none is restated here -- CHANGELOG.md's entry for

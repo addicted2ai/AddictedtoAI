@@ -217,10 +217,9 @@ body prose did carry an error, covered below.
   `62ch`) because it is the cheapest candidate that still moves the median
   meaningfully below the site's 100-103 baseline (down to 87-94) -- every
   page's cost stays under 5%, cheaper than every narrower candidate
-  measured (`68ch`: +10.88% on `/blog/chatgpt-ads`) -- and it is the only
-  candidate narrower than the confirmed-no-op `90ch` (`main`'s content box
-  is 732px = 84.9ch; `90ch` computes to 776.25px, wider than the container
-  it sits inside).
+  measured (`68ch`: +10.88% on `/blog/chatgpt-ads`). The item's `90ch` cap
+  is a confirmed no-op: `main`'s content box is 732px = 84.9ch, and `90ch`
+  computes to 776.25px, wider than the container it sits inside.
 - This rule's stated rationale was wrong twice and revised in place --
   this entry, `app/globals.css`'s comment on the rule, and
   `docket/done/2026-08-22-article-p-line-length.md`'s status note all
