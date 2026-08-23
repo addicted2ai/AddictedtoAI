@@ -463,7 +463,7 @@ const CLAIMS = [
   {
     sourceOnly: true,
     file: "FRAME.md fact 14 (canary)",
-    why: "No page carries this. Fact 14's heading is where this repository deliberately types the rule count, and every other document points at it. Nothing checked the heading: fact 14's own command compared its two derivations to each other, never to the heading above them, so it printed `verified` on a heading reading '999 rules'. Round 177 made the heading that command's third derivation; this is the second lock, from the other side.",
+    why: "No page carries this. Fact 14's heading is where this repository deliberately types the rule count, and every other document points at it. Nothing checked the heading: fact 14's own command compared its two derivations to each other, never to the heading above them, so it printed `verified` on a heading reading '999 rules'. Round 177 made that command compare the typed heading against both of its derivations -- the heading is the value under test, not a derivation of its own; this is the second lock, from the other side.",
     source: statesLiveRuleCount(
       "FRAME.md",
       /^## 14\. [^\n]*?\b(\d+) rules\b/m,

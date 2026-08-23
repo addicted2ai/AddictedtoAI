@@ -100,9 +100,8 @@ checker could not see the file — its sweep read `app/` and the log preamble.
 - Hypothesis: each said the charter has "21 rules" and that a round cannot amend
   it. It has 22 (`FRAME.md` fact 14), and rule 13 records that prohibition as
   "withdrawn here, not reinterpreted" on 2026-08-22. A third instance the brief
-  did not name —
-  `AGENTS.md` calling `CHARTER.md` "Human-owned." — came from running the
-  sweep's own tripwires over the file before editing it.
+  did not name — `AGENTS.md` calling `CHARTER.md` "Human-owned." — came from
+  running the sweep's own tripwires over the file before editing it.
 - Change: both state 22, each pinned to the live charter by a new predicate —
   typing a number is not the defect, leaving it unchecked is. A first attempt
   said "the count is not typed here" two lines above a typed count; review caught
@@ -130,9 +129,10 @@ checker could not see the file — its sweep read `app/` and the log preamble.
   and never to the count typed in its own heading, so `check-frame.mjs` exited 0
   on a heading reading "999 rules". Fixed in FRAME.md's own check block, where
   that command reads its checks from, so the standalone command `CLAUDE.md`
-  points readers at is no longer the one with the hole. 9 planted, 9 caught. It
-  reads `FRAME.md` by name, so a fixture-argument re-verification returns a false
-  green — it fires correctly the documented way, which is the one that matters.
+  points readers at is no longer the one with the hole. 9 planted, 9 caught; it
+  reads `FRAME.md` by name, so a fixture re-verification false-greens while
+  firing correctly the documented way. Review caught this fact's prose twice:
+  "three independent ways" overstated it, then the fix left the claim behind.
 
 **4. Declined: `README.md`, and two files this track cannot reach**
 - Hypothesis: `README.md` carries the same two claims plus "Human-owned,

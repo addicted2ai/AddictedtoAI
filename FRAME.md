@@ -441,8 +441,9 @@ this repository is told to point at this fact instead of retyping the count,
 which makes this heading the one place the number is deliberately typed — and
 it was the one number nothing checked. Edited to "999 rules" it still printed
 `verified` and exited 0, reproduced by that round's adversarial review. The
-heading is now the third derivation, so the command this file and `CLAUDE.md`
-both tell a reader to run is no longer the one with the hole in it.
+heading is now compared against both derivations — checked, not promoted to a
+derivation of its own — so the command this file and `CLAUDE.md` both tell a
+reader to run is no longer the one with the hole in it.
 
 **Adversarial review (round 171) found this fact missing and `CLAUDE.md`
 asserting "21 rules" unchecked — stale by one, and copied from this
