@@ -296,9 +296,12 @@ temporary scratchpad directory nobody but the orchestrator ever reads.
   rather than a defect hunt, and it reported identically. `node
   scripts/check-docket.mjs`: `ok 124 docket item(s) valid (42 open)`. `git
   diff --name-only origin/main...HEAD -- .github/`: empty. `git diff --stat
-  origin/main...HEAD`: 13 files changed, 2361 insertions(+), 0 deletions(-)
-  — every changed path under `docket/`, `scripts/` or `CHANGELOG.md`, all
-  already in `meta`'s scope (`scripts/check-track-scope.mjs:66-101`). `node
+  origin/main...HEAD`: 13 files changed, 0 deletions(-) (insertion count
+  not restated as a fixed number here — editing this sentence to record it
+  exactly changes it again, the same self-reference `app/lib/build-log.js`
+  names for `(PR #N)`; run the command for the live figure) — every changed
+  path under `docket/`, `scripts/` or `CHANGELOG.md`, all already in
+  `meta`'s scope (`scripts/check-track-scope.mjs:66-101`). `node
   scripts/round.mjs check`, last run against a freshly restarted server:
 
   ```
