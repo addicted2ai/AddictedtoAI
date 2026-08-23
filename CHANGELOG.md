@@ -70,6 +70,419 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-23
+This meta round (`loop/meta/runner-config`) makes the loop model, provider
+and harness agnostic. The maintainer's own words, from the brief: "the loop
+kind of needs to be model, provider, and harness agnostic, with the
+exception of how the harness is monitored and managed... and whether or not
+the supervisor needs to be running." Before this round none of that was
+expressible: `scripts/orchestrate.sh` hardcoded
+`MODEL="opencode-go/deepseek-v4-flash"` and invoked `opencode run` directly
+at its launch line, fusing harness, provider and model into one string in
+one launcher, with a second, independently-typed copy of that model string
+in `policy.yml`. The record already shows this project running on three
+harnesses (`CHANGELOG.md`'s `Agent:` field carries `opencode`, `codex` and
+`claude-code`); what was missing was a way to *say which* and a preflight
+that can tell the loop a chosen runner is unavailable before it spends
+anything finding out the hard way. Brief committed at
+`docket/briefs/loop-meta-runner-config.md`; no error found in it — all four
+command-backed premises (1, 2, 3, 5) reproduced exactly as written, and both
+`frame:` citations (premises 7 and 9, facts 18 and 17) resolve.
+
+**1. `scripts/runners.yml` — harness, provider, model and variant as independent data, plus the adapter boundary**
+- Hypothesis: the brief's own test for the data shape — "start the loop
+  using model X through provider Y inside harness Z" should resolve from one
+  file — and its own test for the mechanism boundary: everything the loop
+  does (briefs, docket, changelog, review artifacts, git) is already
+  harness-agnostic text, so an adapter only needs to cover what is narrow
+  and enumerable — how to launch a round and how to tell it is alive.
+- Change: `scripts/runners.yml` declares four runners as flat records
+  (harness/provider/model/variant), an `excluded_model_patterns` list
+  (`-free$`, citing FRAME.md fact 18), and a `harnesses:` block naming each
+  harness's adapter file, its `presence_check`, whether it `needs_server`,
+  and — the design's actual answer to "supervisor is a property of the
+  launcher, not the harness" — a `supervisor:` field per harness that
+  records what is *already true in practice* rather than deciding it:
+  `opencode: true` (the only harness `scripts/orchestrate.sh`'s supervisor
+  loop launches today) and `claude-code: false` / `codex: false` (both have
+  run real rounds, both always dispatched directly by an orchestrator
+  session, needing no supervisor because the orchestrator already is one).
+  `scripts/harness-adapters/opencode.sh` defines the one function every
+  adapter shares — `launch(provider, model, variant, marker, prompt_file,
+  log)`, backgrounded, leaving `child=$!` in the caller — moved verbatim out
+  of `scripts/orchestrate.sh`'s old inline launch line, parameterised
+  instead of reading module-level `$MODEL`/`$VARIANT`.
+  `scripts/harness-adapters/claude-code.sh` and `codex.sh` exist and are
+  syntactically real (`bash -n`, both pass) but are explicitly marked
+  **unexercised this round**: writing and actually invoking either would
+  start a real, billed session, which this round's own working rules forbid
+  spending without being asked to — the design proves the boundary is real
+  by using it for opencode, not by pretending the other two were tested.
+  Liveness (`scripts/orchestrate-liveness.sh`) is reframed in comments as
+  "the opencode adapter's liveness half" but not moved: it is
+  OpenCode-session-API-specific by nature, and
+  `scripts/test-orchestrate-checkout.mjs` sources it by its exact current
+  path — moving already-tested code for this round's sake would be risk with
+  no behaviour change.
+
+**2. `scripts/runner-preflight.mjs` — the preflight capability check, proved able to fail seven ways**
+- Hypothesis: "before a round starts, verify the chosen runner can actually
+  run" decomposes into checks this repository can actually make: the harness
+  binary is on PATH (a filesystem lookup, never an execution — this round's
+  hard rule against running `opencode` at all ruled out even a `--version`
+  probe), the model does not match an excluded pattern, and — the piece that
+  needed a real design decision — whether the provider is authenticated and
+  the model is in that provider's catalogue. Read-only `GET
+  http://127.0.0.1:4097/provider` this round (never a session call) turned
+  out to answer both at once: `{connected: [...], all: [{id, models: {...}},
+  ...]}`, real `application/json`, distinct from the SPA-shell paths the
+  brief warned about (checked: `/provider` and `/doc` both return
+  `application/json`; `/app` returns `text/html`).
+- Change: `node scripts/runner-preflight.mjs [runner-id]` resolves
+  `$ORCHESTRATE_RUNNER` (or `runners.yml`'s `default_runner`), runs every
+  check regardless of an earlier failure (so a broken runner is reported
+  fully, not one fault at a time), and prints exactly one machine-parsable
+  verdict line — `RUNNER_OK harness=... provider=... model=... variant=...`
+  or `RUNNER_FAIL <id>: <failed-check-names>` — that `scripts/orchestrate.sh`
+  greps for and nothing else. On success, PASS/UNVERIFIED lines only; on any
+  FAIL, the RUNNER_OK line is never printed — there is no code path that
+  emits a resolved runner alongside a failed check.
+- **Proved able to fail, seven ways, against the real local server and the
+  real `scripts/runners.yml`, red output pasted, each reverted, `git status
+  --short scripts/runners.yml` empty afterward**:
+  ```
+  $ node scripts/runner-preflight.mjs opencode-zen-deepseek-max
+  FAIL        model in catalogue: 'deepseek-v4-flash' is not among the 7 models 'opencode' lists
+  RUNNER_FAIL opencode-zen-deepseek-max: model in catalogue
+  ```
+  ```
+  $ node scripts/runner-preflight.mjs TEMP-exclusion-proof   # model: deepseek-v4-flash-free
+  FAIL        model not excluded: model 'deepseek-v4-flash-free' matches excluded pattern '-free$' -- ...
+  RUNNER_FAIL TEMP-exclusion-proof: model not excluded
+  ```
+  ```
+  $ node scripts/runner-preflight.mjs opencode-go-deepseek-max   # presence_check + server_url both broken
+  FAIL        harness present: 'TEMP-not-a-real-binary-xyz' not found on PATH
+  FAIL        harness server reachable: http://127.0.0.1:1/provider did not answer JSON within timeout
+  RUNNER_FAIL opencode-go-deepseek-max: harness present; harness server reachable
+  ```
+  ```
+  $ node scripts/runner-preflight.mjs TEMP-auth-proof   # provider: openai
+  FAIL        provider authenticated: 'openai' is not in the server's connected list (openrouter, ollama-cloud, opencode-go, opencode)
+  FAIL        model in catalogue: 'deepseek-v4-flash' is not among the 58 models 'openai' lists
+  RUNNER_FAIL TEMP-auth-proof: provider authenticated; model in catalogue
+  ```
+  ```
+  $ node scripts/runner-preflight.mjs not-a-real-runner-id
+  FAIL        runner known: 'not-a-real-runner-id' is not a key under runners: in scripts/runners.yml
+  RUNNER_FAIL not-a-real-runner-id: runner known
+  ```
+  Seven distinct failed checks across five constructed runs (unknown runner;
+  harness absent from PATH; unreachable harness server, in the same run;
+  excluded model; unauthenticated provider; model absent from catalogue,
+  twice over — once for a real provider mismatch, once for the real Zen
+  catalogue). `scripts/test-runner-preflight.mjs` is the CI-safe version of
+  the same seven proofs plus two more (the SPA-shell content-type guard, and
+  "a harness with no local catalogue endpoint reports UNVERIFIED and still
+  passes" — `needs_server: false`), against a stub `/provider` server and
+  synthetic fixtures — never the real server, never a real binary beyond
+  `node`. `node scripts/test-runner-preflight.mjs`: 10/10 `ok`.
+
+**3. Never silently substitute — stated where a reader sees it, and enforced structurally**
+- Hypothesis: the property that matters more than the mechanism, per the
+  brief. A caller ignoring the exit code is the only way a substitution
+  could happen, so the guarantee has to live at both the check and the call
+  site.
+- Change: `scripts/runner-preflight.mjs`'s header states it in its own
+  first section; `scripts/runners.yml`'s header states it before a single
+  runner is declared; `scripts/orchestrate.sh`'s new preflight block states
+  it at the call site itself. Mechanically: a failed preflight is logged as
+  `"runner unavailable -- not starting an iteration this pass: ..."` and the
+  pass is skipped (`sleep "$GAP_SECONDS"; continue`) — mirroring
+  `peak_guard`'s existing skip-and-retry shape immediately above it in the
+  loop — and is **not** added to `$failures`, because a runner being
+  unavailable and a launched round going wrong are different facts (the
+  brief's own second property). `ORCHESTRATE_COMMAND` (the existing
+  stub-testing override) bypasses the whole runner system unconditionally,
+  including against a broken `runners.yml` — proved in
+  `scripts/test-orchestrate-runner-launch.mjs`'s third case — because that
+  override exists specifically to decouple the supervisor's own stall/kill
+  logic from any real runner, and gating it behind a check it was built to
+  avoid would defeat the point.
+- `policy.yml`'s `deepseek_peak_pricing.model` — the second copy the brief's
+  premise 2 named — is now a `runner:` reference into `scripts/runners.yml`
+  rather than a second literal (nothing read `.model` programmatically:
+  `grep '\.model' scripts/peak-window.mjs` matches nothing, so it was
+  documentation, not wiring — kept as a checked reference rather than
+  deleted, since a reader opening the block still deserves to see which
+  runner it prices without a second lookup).
+  `scripts/check-runner-config.mjs` fails the build if that reference names
+  a runner that no longer exists or is no longer the `opencode` harness this
+  pricing card applies to. `node scripts/check-runner-config.mjs`: `ok
+  policy.yml's deepseek_peak_pricing applies to scripts/runners.yml's
+  'opencode-go-deepseek-max' (opencode-go/deepseek-v4-flash, variant max)`.
+  Two more stale copies of the same model string, not named in the brief,
+  found by `grep -rln "opencode-go/deepseek-v4-flash"` and corrected: a
+  false universal claim in `prompts/orchestrator.md` ("the model every round
+  in this loop runs on, including this session" — false as of this round's
+  own premise 3) now points at `scripts/runners.yml`; its literal
+  `opencode run --model ... --variant max` dispatch example is kept (still a
+  legitimate copy-paste line for a human or model dispatching a nested
+  OpenCode round) but annotated as an example, not a second configuration
+  source.
+
+**4. Found by this round's own verification: a new test was silently killing the real dev server**
+- Hypothesis: none — not anticipated. `node scripts/round.mjs check` came
+  back red the first time this round ran it clean, on checks this round's
+  diff never touches: every route-check assertion failed with an empty body
+  or `ECONNREFUSED` (`/feed.xml contains 0 build-log rounds, CHANGELOG.md
+  has 172`; `/log renders 0 origin badges, expected 172`), even though
+  `npm run build` and the first ~430 lines of route checks had just passed
+  against the same server.
+- Change: traced to `scripts/test-orchestrate-runner-launch.mjs` (this
+  round's own new integration test), now wired into
+  `scripts/check-routes.sh` alongside the checks it broke. That test needs a
+  **working** `peak_guard` so its sandboxed `scripts/orchestrate.sh` reaches
+  the code being tested — unlike `scripts/test-orchestrate-hold.mjs`'s
+  sandbox, which deliberately keeps `peak_guard` failing closed forever so
+  it never reaches anything past the HOLD check. A working `peak_guard`
+  means the sandboxed loop also reaches `clear_orphans()`, the very next
+  line in the real script — which kills whatever is **actually** listening
+  on ports 3000/3250/3260/8101 on the real machine, by design (it exists to
+  clear a stale server left by a previous round), with no way to know the
+  orchestrate.sh calling it is a sandboxed copy. Running this test as part
+  of `scripts/check-routes.sh`'s own suite killed the real `next start`
+  server that suite was mid-way through testing, on the same shared port
+  3000. Fixed by neutralising `clear_orphans()` in the sandboxed copy only —
+  `clear_orphans() { :; }` — the same "mutate the copy for a stated reason,
+  run the real code otherwise" technique
+  `scripts/test-orchestrate-hold.mjs` already uses for its own two bypass
+  regression guards, with a self-check that throws if the function's shape
+  in the real file ever stops matching the mutation. Reproduced twice before
+  the fix (`node scripts/round.mjs check`, both runs, identical failure
+  list), confirmed gone after
+  (`bash scripts/check-routes.sh` standalone: `all route checks passed`,
+  `node scripts/round.mjs check`: fully green, twice more).
+
+**5. Found by this round's own verification: `runners.yml` at the repository root was outside `meta`'s track scope**
+- Hypothesis: none — not anticipated. `node scripts/round.mjs check`'s
+  static checks reported `FAIL meta may not modify runners.yml` against
+  `scripts/check-track-scope.mjs` (maintainer-owned, self-blind by design —
+  FRAME.md fact 6): meta's allowed paths are `scripts/, .github/, prompts/,
+  CHARTER.md, policy.yml, AGENTS.md, .gitattributes, .eslintrc.json,
+  lighthouserc.json, lighthouserc.analytics.json, vercel.json, docket/,
+  CHANGELOG.md, FRAME.md, CLAUDE.md` — a new top-level `runners.yml` is none
+  of those.
+- Change: `git mv runners.yml scripts/runners.yml` — inside `scripts/`,
+  already allowed — rather than widening `check-track-scope.mjs`'s allowed
+  list to reach a file this round introduces, which is precisely the round
+  78 pattern `prompts/orchestrator.md` warns against ("do not widen a
+  track's scope to reach a file; choose the track that already owns the
+  file instead") and which that file is itself a required, maintainer-owned
+  guard against a round doing quietly. Every reader
+  (`scripts/runner-preflight.mjs`, `scripts/check-runner-config.mjs`, both
+  sandboxed test fixture writers) and every comment naming the old path
+  updated in the same commit. `node scripts/check-track-scope.mjs
+  origin/main loop/meta/runner-config`: `ok all 14 changed file(s) within
+  meta's scope`.
+
+**6. A pre-existing bug in `scripts/check-briefs.mjs`, found trying to commit this round's own brief — flagged, fixed narrowly, twin left for later**
+- Hypothesis: none — not anticipated, and not this round's own code.
+  Committing this brief the way round 9's convention requires
+  (`node scripts/check-briefs.mjs`) reported `## Premises does not declare
+  its count` against a file that, at its actual `## Premises` heading, does.
+- Change: `sectionBody()`'s `text.indexOf("## Premises")` is unanchored — it
+  matches the first occurrence of that literal substring anywhere in the
+  file, including inside a sentence. This brief's own Rules section (written
+  by the orchestrator before this round, prose kept verbatim per
+  `docket/briefs/README.md`) says "Its `` `## Premises` `` section below is
+  part of it" — a legitimate, backticked, mid-sentence mention, earlier in
+  the file than the real heading. The unanchored search matched that
+  mention instead, sliced from the wrong offset, and reported a false
+  negative. Fixed by anchoring to a line that *is* the heading (`^## Foo` at
+  start of line, multiline flag) instead of a substring anywhere.
+  `node scripts/check-briefs.mjs` after: `ok all current briefs declare
+  their premises`, `14 premise(s) checked` (9 this round's, 5 round 9's).
+  `check-docket.mjs`'s `sectionBody()` has the byte-identical shape and is
+  **not** fixed here: this round's charge is runner config, not a
+  docket-parsing audit, and that function's blast radius — every docket item
+  filing — warrants a look on its own rather than a drive-by edit inside an
+  unrelated round. Left as a known, named gap rather than silently
+  unmentioned.
+
+**7. Adversarial review (`request-changes`): "absolute" was enforced by a pattern matching one of (at least) three live conventions**
+- Hypothesis: none — the reviewer's finding, not anticipated by this round's
+  own verification. `docket/reviews/763e38042088dd96bb853b5ac371c351b2565256.md`
+  (not edited by this round, per instruction) has the full account; this
+  entry records what the finding was, what it covered and missed, and the
+  fix — the coordinator's own instruction for how to close a `request-changes`
+  verdict without touching the review artifact itself.
+- What the pattern covered: item 2's `excluded_model_patterns` shipped as one
+  rule, `pattern: "-free$"` — a hyphen anchored to the end of the model id.
+  This round's own proof-by-construction caught exactly what it was built to
+  catch: OpenCode Zen's `deepseek-v4-flash-free`, one of the seven "proved
+  able to fail" demonstrations.
+- What it missed, and how many: the live `/provider` catalogue this same
+  round already queried for the "model in catalogue" check uses at least
+  three separator conventions for free-tier models across this account's 4
+  connected providers (`openrouter`, `ollama-cloud`, `opencode-go`,
+  `opencode`) — re-derived directly from the catalogue this round, not
+  estimated: 395 models are reachable through a connected provider, 23 of
+  those carry "free" as a word in their id, and `-free$` matched only 6 of
+  them. The other 17: 16 colon-suffixed (`nvidia/nemotron-3-super-120b-a12b:free`
+  and 15 more, all on `openrouter`, which is already in this account's
+  `connected` list — not a hypothetical provider), and 1 bare slash-suffixed
+  id (`openrouter/free`). The reviewer's own live reproduction,
+  `openai/gpt-oss-20b:free`, is inside that 16 — confirmed directly:
+  reverting the pattern to `-free$` and running the new drift-detector
+  (below) lists it by name among the 17 missed. So the sentence "excluded
+  absolutely, by standing instruction" described a mechanism that, before
+  this fix, actually excluded 6 of 23 reachable free-tier models — the exact
+  "guarantee stated stronger than the code" pattern the coordinator named as
+  round 171's recurring failure, and the sixth instance of it in three
+  rounds.
+- Change: `excluded_model_patterns`'s pattern is no longer anchored to one
+  separator character. It is now `(^|[^a-z0-9])free([^a-z0-9]|$)`,
+  case-insensitive (`flags: "i"`, a field `scripts/runner-preflight.mjs`
+  now reads and passes to `new RegExp()`) — "free" as its own token anywhere
+  in the id, not glued to other letters, so a hyphen, colon, slash, or any
+  future separator all match without being enumerated individually. This is
+  not a novel idea invented under review pressure: FRAME.md fact 18's own
+  check (`/free/i` against a live session's id/variant/providerID,
+  unanchored, written round 8) already used this exact shape — this round's
+  `-free$` was narrower than the precedent already sitting in the same
+  repository. Verified live against the reviewer's own reproduction and a
+  second case this round found independently while investigating the scale
+  of the miss:
+  ```
+  $ node scripts/runner-preflight.mjs TEMP-colon-free-proof   # openrouter/nvidia/nemotron-3-super-120b-a12b:free
+  FAIL        model not excluded: model 'nvidia/nemotron-3-super-120b-a12b:free' matches excluded pattern '(^|[^a-z0-9])free([^a-z0-9]|$)' -- ...
+  RUNNER_FAIL TEMP-colon-free-proof: model not excluded
+  ```
+  ```
+  $ node scripts/runner-preflight.mjs TEMP-slash-free-proof   # openrouter/openrouter/free
+  FAIL        model not excluded: model 'openrouter/free' matches excluded pattern '(^|[^a-z0-9])free([^a-z0-9]|$)' -- ...
+  RUNNER_FAIL TEMP-slash-free-proof: model not excluded
+  ```
+  Both temporary entries reverted; `grep -c TEMP scripts/runners.yml` → `0`
+  after. A word-boundary false-positive guard was checked in the same pass
+  (`freeform-assistant`, `wildfreedom-7b` — neither excluded; "free" glued to
+  other letters is a different word) so the broader pattern does not trade
+  one wrong answer for another.
+- A cost-based alternative was considered and rejected, recorded rather than
+  silently discarded: every model object in the live catalogue carries a
+  real `cost.input`/`cost.output` field, and cost 0 is a stronger,
+  convention-independent signal than any name pattern. Checked directly: it
+  is not adopted as the primary mechanism because it does not mean the same
+  thing as this instruction — every `ollama-cloud` model among this
+  account's connected providers reports cost 0 across its entire catalogue
+  (most likely a pricing-data gap for that subscription-based provider, not
+  a genuine free-tier claim), and excluding on cost alone would have
+  disabled a legitimate connected provider this instruction was never stated
+  to reach.
+- The residue, stated where a reader will see it (in `scripts/runners.yml`'s
+  own header, not only here): this is still a name-based check, not a
+  provable one. A free-tier model whose id contains no form of the word
+  "free" at all would not be caught — none exists in the current catalogue
+  (checked directly, not assumed: see below), but the mechanism cannot rule
+  one out appearing later. "Absolute" describes the maintainer's standing
+  instruction (FRAME.md fact 18, `attested`); it does not describe what a
+  name-pattern check can mathematically guarantee, and `scripts/runners.yml`
+  now says so in those terms instead of asserting completeness it cannot
+  prove.
+- Two checks added so this is a re-derived guarantee, not a point-in-time
+  claim: `scripts/check-free-model-exclusion.mjs` re-queries the live
+  `/provider` endpoint every time it runs, independently re-derives which
+  reachable models on connected providers carry "free" as a word, and fails
+  if any is not covered by the current pattern(s) — PASS/FAIL/UNVERIFIED,
+  never a silent pass when no server is reachable, the same convention
+  FRAME.md's own checks use. **Proved able to fail**: reverted the pattern to
+  `-free$` and ran it —
+  ```
+  checked 395 reachable model(s) across 4 connected provider(s); 23 carry "free" as a word in their id
+  FAIL 17 "free"-named reachable model(s) are NOT excluded by scripts/runners.yml's current pattern(s):
+    openrouter/nvidia/nemotron-3-super-120b-a12b:free
+    ...
+    openrouter/openai/gpt-oss-20b:free
+    ...
+  ```
+  (17 lines total; the reviewer's own example is among them) — restored the
+  fix, reran: `PASS every reachable, name-flagged-free model is excluded by
+  the current pattern(s)`. `scripts/test-free-model-pattern.mjs` is the
+  CI-safe counterpart, pinning the real `scripts/runners.yml` pattern
+  against a fixed table built from this exact finding (all three live
+  conventions, the reviewer's own model name, plus the false-positive
+  guard): `node scripts/test-free-model-pattern.mjs`: 9/9 `ok`. Both wired
+  into `scripts/check-routes.sh`.
+- `node scripts/round.mjs check`, rerun fully after this fix: static checks,
+  build, and route checks (now including both new checks) all green again.
+  `git status --short`: empty after this entry's own commit.
+
+`node scripts/round.mjs check`, last run against a freshly restarted
+server, fully green:
+
+```
+=== Static checks ===
+  ok    npm run lint
+  ok    docket valid
+  ok    track scope for loop/meta/runner-config
+
+=== Build and serve ===
+  ok    npm run build
+
+=== Route checks ===
+  ok    all route checks passed
+
+=== Ready to ship ===
+  node scripts/round.mjs ship
+```
+
+None of the new or modified checks read git refs or history
+(`grep -l 'execFileSync("git\|spawn("git\|\["git"' scripts/runner-preflight.mjs
+scripts/check-runner-config.mjs scripts/test-runner-preflight.mjs
+scripts/test-orchestrate-runner-launch.mjs` returns nothing), so the CI-shape
+risk round 171 warned about does not apply the same way — confirmed rather
+than assumed. `git diff --name-only origin/main...HEAD -- .github/`: empty.
+Not run by this round: `round.mjs ship`, `git push`, `gh pr create`, `gh pr
+merge`, per the brief. `git status --short`: empty after this entry's own
+commit.
+
+- Origin: delegated
+- Track: meta
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `node scripts/round.mjs check` fully green (above), run
+  several times more across this entry's own history — after item 4's fix,
+  after item 5's fix, and again after item 7's fix (the adversarial review
+  finding). `node scripts/check-briefs.mjs`: `ok all current briefs declare
+  their premises`, `14 premise(s) checked: 4 cite FRAME.md, 6 cite a
+  command, 4 cite an attestation`. `node scripts/check-runner-config.mjs`:
+  `ok`. `node scripts/check-track-scope.mjs origin/main
+  loop/meta/runner-config`: `ok`, every changed file (including this
+  entry's own review-response commit) within `meta`'s scope. `node
+  scripts/check-docket.mjs`: `ok 124 docket item(s) valid (42 open)`. `node
+  scripts/test-runner-preflight.mjs`: 10/10 `ok`. `node
+  scripts/test-orchestrate-runner-launch.mjs`: 3/3 `ok`. `node
+  scripts/test-free-model-pattern.mjs`: 9/9 `ok` (item 7). `node
+  scripts/check-free-model-exclusion.mjs`: `PASS` against the live
+  catalogue, and separately proved able to `FAIL` (item 7). `node
+  scripts/test-orchestrate-hold.mjs` and `node
+  scripts/test-orchestrate-checkout.mjs` (both touch
+  `scripts/orchestrate.sh`/`scripts/orchestrate-liveness.sh`, unchanged
+  behaviourally by this round): still 5/5 and 8/8 `ok`. `node
+  scripts/test-peak-window.mjs` and `node
+  scripts/test-dispatch-generative-push.mjs` (exercising the
+  `policy.yml`/`scripts/runners.yml` reconciliation indirectly): unchanged,
+  still green. `git diff --stat origin/main...HEAD` (not restated as a
+  fixed number here for the same self-reference reason round 9's entry
+  gives — run the command for the live figure, which now also includes
+  `docket/reviews/763e38042088dd96bb853b5ac371c351b2565256.md`, committed by
+  the reviewer, not by this round, and left untouched per instruction).
+- Result: not yet measured — this round adds configuration and a check, not
+  a metric the site publishes. The first observable test is whether a
+  future round that adds a second harness does it by editing
+  `scripts/runners.yml` and adding one adapter file, never by touching
+  `scripts/orchestrate.sh`'s own control flow again.
+
+### 2026-08-23
 This meta round (`loop/meta/briefs-and-premises`) makes briefs part of the
 record and their premises checkable. Round 8 (`loop/meta/frame`) built
 `FRAME.md` so a premise has something to be checked against; on 22 August

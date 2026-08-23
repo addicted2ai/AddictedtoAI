@@ -47,12 +47,16 @@ reasoning gets you past them. If a task appears to require one, the task is wron
 
 ## DeepSeek peak-hour pricing
 
-`opencode-go/deepseek-v4-flash` — the model every round in this loop runs on,
-including this session — is billed at double rate during two daily UTC
-windows. The exact windows and the rate card are not restated here on
-purpose: they live in exactly one place, `policy.yml`'s
-`deepseek_peak_pricing` block, and a second copy of a time window is how this
-repository's guardrails have drifted before. Read it there.
+`opencode-go/deepseek-v4-flash` — `scripts/runners.yml`'s current default runner,
+and the one most rounds in this loop run on (not every round: `CHANGELOG.md`'s
+`Agent:` field also shows `codex` and `claude-code` rounds, on harnesses this
+pricing does not apply to at all — see `scripts/runners.yml`, built round
+`loop/meta/runner-config`) — is billed at double rate during two daily UTC
+windows when that runner is the one in use. The exact windows and the rate
+card are not restated here on purpose: they live in exactly one place,
+`policy.yml`'s `deepseek_peak_pricing` block, and a second copy of a time
+window is how this repository's guardrails have drifted before. Read it
+there.
 
 `scripts/orchestrate.sh` will not start a new iteration inside a peak window
 without an explicit authorisation scoped to that specific window
@@ -132,6 +136,16 @@ Dispatch the work to a **separate session**. You brief; you do not implement. Wr
 the brief to a file, then:
 
     opencode run --model opencode-go/deepseek-v4-flash --variant max "$(cat <brieffile>)"
+
+The provider, model and variant above are `scripts/runners.yml`'s default runner as
+of this file's last edit — a literal, copy-pasteable example for a human or
+model dispatching a nested OpenCode round, not a second place that value is
+configured. If it may have changed, `scripts/runners.yml` is the source to read, not
+this line: a duplicated model string in two files is exactly the shape
+`scripts/runners.yml`'s own header exists to stop happening again (round
+`loop/meta/runner-config` found and fixed the first two copies, in
+`scripts/orchestrate.sh` and `policy.yml`; this one is a third, corrected the
+same round it was found).
 
 `--variant max` is not optional. This model exposes `low`, `high` and `max`
 reasoning effort, and omitting the flag silently runs at neither — a full day of

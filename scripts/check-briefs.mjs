@@ -68,12 +68,24 @@ function readText(file) {
   return fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n");
 }
 
-// Same shape as check-docket.mjs's sectionBody: a "## Heading" and everything
-// up to the next "## " heading (or end of file).
+// Same shape as check-docket.mjs's sectionBody -- with one fix, found this
+// round (loop/meta/runner-config) and not backported there, since that
+// script's own required-check scope is docket items, not briefs, and this
+// round's charge does not extend to it: check-docket.mjs's version anchors
+// nothing, so `text.indexOf("## Heading")` matches the FIRST occurrence of
+// that literal substring anywhere in the file, including inside a sentence.
+// This round's own brief has exactly that shape in its Rules section --
+// "Its `## Premises` section below is part of it." -- prose that legitimately
+// mentions the heading by name, in backticks, mid-sentence, BEFORE the real
+// "## Premises" heading later in the file. The unanchored version matched
+// that mention instead of the heading, sliced from the wrong offset, and
+// this script reported "does not declare its count" against a file that, at
+// the real heading, does. Anchored to a line that IS the heading (`^## Foo`
+// at start of line, `m` flag) rather than a substring anywhere.
 function sectionBody(text, heading) {
-  const start = text.indexOf(`## ${heading}`);
-  if (start === -1) return null;
-  const after = text.slice(start + heading.length + 3);
+  const match = new RegExp(`^## ${heading}\\s*$`, "m").exec(text);
+  if (!match) return null;
+  const after = text.slice(match.index + match[0].length);
   const next = after.search(/\n## /);
   return next === -1 ? after : after.slice(0, next);
 }

@@ -15,13 +15,21 @@ set -uo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO" || exit 1
 
-MODEL="opencode-go/deepseek-v4-flash"
-
-# Reasoning effort. This model exposes low/high/max and defaults to neither of
-# them when the flag is omitted -- rounds launched without it ran at the default
-# for a full day before anyone noticed. `max` is the maintainer's standing
-# instruction and it costs a fraction of a cent more per round.
-VARIANT="${ORCHESTRATE_VARIANT:-max}"
+# Harness, provider, model and variant no longer live here as a hardcoded
+# string (they did, until round loop/meta/runner-config: MODEL was literally
+# "opencode-go/deepseek-v4-flash" and the launch line below invoked
+# `opencode run` directly). They live in scripts/runners.yml now, as independent
+# fields -- see that file's header for why, and for what "never silently
+# substitute" means. RUNNER selects WHICH entry; empty means scripts/runners.yml's
+# own default_runner. scripts/runner-preflight.mjs resolves and CHECKS it,
+# by name, once per iteration below, before anything is launched -- this
+# variable alone never determines what actually runs, only what is asked
+# for. (Reasoning effort -- `max`, the maintainer's standing instruction --
+# is now part of the resolved runner too, not a separate env-var default:
+# keeping a second independent override here is exactly the "two places to
+# configure one fact" shape this round exists to remove. A one-off local
+# test can still pass a different runner via ORCHESTRATE_RUNNER.)
+RUNNER="${ORCHESTRATE_RUNNER:-}"
 LOG_DIR="${ORCHESTRATE_LOG_DIR:-$HOME/.addictedtoai-loop-logs}"
 GAP_SECONDS="${ORCHESTRATE_GAP:-90}"
 MAX_CONSECUTIVE_FAILURES="${ORCHESTRATE_MAX_FAILURES:-3}"
@@ -300,6 +308,40 @@ while true; do
     halt "$failures consecutive failed iterations -- something is wrong that retrying will not fix" 1
   fi
 
+  # Runner preflight, before anything else this pass touches git or logs an
+  # "iteration starting" line: verify the chosen runner (RUNNER, or
+  # scripts/runners.yml's default_runner) can actually run -- harness present,
+  # provider authenticated, model in that provider's live catalogue, model
+  # not excluded -- and read back exactly what it resolved to. Skipped
+  # entirely when ORCHESTRATE_COMMAND overrides the launch line: that path
+  # exists specifically to test this supervisor's stall/kill logic against a
+  # stub, decoupled from any real runner, and gating it behind a runner
+  # check it was built to avoid would defeat the point.
+  #
+  # NEVER SILENTLY SUBSTITUTE. A failed preflight is reported by name and
+  # this pass is skipped -- not counted in $failures (a runner being
+  # unavailable is not the same fact as a launched round going wrong; see
+  # scripts/runners.yml and scripts/runner-preflight.mjs), and never a reason to
+  # launch a different runner than the one that was asked for. This mirrors
+  # peak_guard's own skip-and-retry shape immediately above.
+  if [ -z "$ORCHESTRATE_COMMAND" ]; then
+    runner_report="$(node scripts/runner-preflight.mjs "$RUNNER" 2>&1)"
+    runner_verdict="$(printf '%s\n' "$runner_report" | grep -E '^RUNNER_(OK|FAIL) ' | tail -1)"
+    case "$runner_verdict" in
+      "RUNNER_OK "*) ;;
+      *)
+        note "runner unavailable -- not starting an iteration this pass: ${runner_verdict:-$runner_report}"
+        sleep "$GAP_SECONDS"
+        continue
+        ;;
+    esac
+    HARNESS="$(printf '%s\n' "$runner_verdict" | grep -o 'harness=[^ ]*' | cut -d= -f2-)"
+    PROVIDER="$(printf '%s\n' "$runner_verdict" | grep -o 'provider=[^ ]*' | cut -d= -f2-)"
+    MODEL="$(printf '%s\n' "$runner_verdict" | grep -o 'model=[^ ]*' | cut -d= -f2-)"
+    VARIANT="$(printf '%s\n' "$runner_verdict" | grep -o 'variant=[^ ]*' | cut -d= -f2-)"
+    note "runner preflight ok: $runner_verdict"
+  fi
+
   clear_orphans
 
   # Always start each iteration from current main. A stale checkout is how two
@@ -348,11 +390,17 @@ while true; do
     # shellcheck disable=SC2086
     $ORCHESTRATE_COMMAND > "$log" 2>&1 &
   else
-    # The prompt argument must be "$(cat file)" alone. Appending anything after
-    # it breaks OpenCode startup silently: no session, no error, a zero-byte
-    # log. `--attach` makes the round appear in the maintainer's web UI and
-    # `--title` carries the per-iteration marker into the session's title.
-    opencode run --attach "$ORCHESTRATE_SERVER" --title "$marker" --model "$MODEL" --variant "$VARIANT" "$(cat "$PROMPT")" > "$log" 2>&1 &
+    # The harness-specific launch line lives in scripts/harness-adapters/,
+    # not here -- HARNESS/PROVIDER/MODEL/VARIANT were resolved and checked
+    # by scripts/runner-preflight.mjs above, and `launch` is the one
+    # function every adapter defines with the same signature regardless of
+    # harness (see scripts/harness-adapters/opencode.sh for the contract).
+    # This `source` re-reads the adapter file every iteration; that is a
+    # function redefinition, not meaningful cost, and it means a runner
+    # switch takes effect on the very next iteration with no supervisor
+    # restart.
+    source "$REPO/scripts/harness-adapters/$HARNESS.sh"
+    launch "$PROVIDER" "$MODEL" "$VARIANT" "$marker" "$PROMPT" "$log"
   fi
   child=$!
   started=$(date +%s)
