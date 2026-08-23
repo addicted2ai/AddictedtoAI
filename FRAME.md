@@ -27,6 +27,14 @@ does not belong in this file. This file stays short on purpose — a long frame
 is one nobody reads, which is the failure this round exists to prevent, not
 a lesser version of succeeding at it.
 
+**This file declares 18 facts below.** `scripts/check-frame.mjs` treats that
+number as ground truth and fails if the count it can recognize and classify
+does not match it, whatever the reason — malformed punctuation, wrong
+spacing, the wrong heading level, indentation, no heading at all, or a form
+nobody has found yet. Recognizing every way a heading can go wrong is not a
+bounded problem; noticing that a count is wrong is. Bump this number in the
+same edit that adds or removes a fact below.
+
 ---
 
 ## 1. The three identities
