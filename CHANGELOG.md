@@ -309,6 +309,114 @@ command-backed premises (1, 2, 3, 5) reproduced exactly as written, and both
   unrelated round. Left as a known, named gap rather than silently
   unmentioned.
 
+**7. Adversarial review (`request-changes`): "absolute" was enforced by a pattern matching one of (at least) three live conventions**
+- Hypothesis: none — the reviewer's finding, not anticipated by this round's
+  own verification. `docket/reviews/763e38042088dd96bb853b5ac371c351b2565256.md`
+  (not edited by this round, per instruction) has the full account; this
+  entry records what the finding was, what it covered and missed, and the
+  fix — the coordinator's own instruction for how to close a `request-changes`
+  verdict without touching the review artifact itself.
+- What the pattern covered: item 2's `excluded_model_patterns` shipped as one
+  rule, `pattern: "-free$"` — a hyphen anchored to the end of the model id.
+  This round's own proof-by-construction caught exactly what it was built to
+  catch: OpenCode Zen's `deepseek-v4-flash-free`, one of the seven "proved
+  able to fail" demonstrations.
+- What it missed, and how many: the live `/provider` catalogue this same
+  round already queried for the "model in catalogue" check uses at least
+  three separator conventions for free-tier models across this account's 4
+  connected providers (`openrouter`, `ollama-cloud`, `opencode-go`,
+  `opencode`) — re-derived directly from the catalogue this round, not
+  estimated: 395 models are reachable through a connected provider, 23 of
+  those carry "free" as a word in their id, and `-free$` matched only 6 of
+  them. The other 17: 16 colon-suffixed (`nvidia/nemotron-3-super-120b-a12b:free`
+  and 15 more, all on `openrouter`, which is already in this account's
+  `connected` list — not a hypothetical provider), and 1 bare slash-suffixed
+  id (`openrouter/free`). The reviewer's own live reproduction,
+  `openai/gpt-oss-20b:free`, is inside that 16 — confirmed directly:
+  reverting the pattern to `-free$` and running the new drift-detector
+  (below) lists it by name among the 17 missed. So the sentence "excluded
+  absolutely, by standing instruction" described a mechanism that, before
+  this fix, actually excluded 6 of 23 reachable free-tier models — the exact
+  "guarantee stated stronger than the code" pattern the coordinator named as
+  round 171's recurring failure, and the sixth instance of it in three
+  rounds.
+- Change: `excluded_model_patterns`'s pattern is no longer anchored to one
+  separator character. It is now `(^|[^a-z0-9])free([^a-z0-9]|$)`,
+  case-insensitive (`flags: "i"`, a field `scripts/runner-preflight.mjs`
+  now reads and passes to `new RegExp()`) — "free" as its own token anywhere
+  in the id, not glued to other letters, so a hyphen, colon, slash, or any
+  future separator all match without being enumerated individually. This is
+  not a novel idea invented under review pressure: FRAME.md fact 18's own
+  check (`/free/i` against a live session's id/variant/providerID,
+  unanchored, written round 8) already used this exact shape — this round's
+  `-free$` was narrower than the precedent already sitting in the same
+  repository. Verified live against the reviewer's own reproduction and a
+  second case this round found independently while investigating the scale
+  of the miss:
+  ```
+  $ node scripts/runner-preflight.mjs TEMP-colon-free-proof   # openrouter/nvidia/nemotron-3-super-120b-a12b:free
+  FAIL        model not excluded: model 'nvidia/nemotron-3-super-120b-a12b:free' matches excluded pattern '(^|[^a-z0-9])free([^a-z0-9]|$)' -- ...
+  RUNNER_FAIL TEMP-colon-free-proof: model not excluded
+  ```
+  ```
+  $ node scripts/runner-preflight.mjs TEMP-slash-free-proof   # openrouter/openrouter/free
+  FAIL        model not excluded: model 'openrouter/free' matches excluded pattern '(^|[^a-z0-9])free([^a-z0-9]|$)' -- ...
+  RUNNER_FAIL TEMP-slash-free-proof: model not excluded
+  ```
+  Both temporary entries reverted; `grep -c TEMP scripts/runners.yml` → `0`
+  after. A word-boundary false-positive guard was checked in the same pass
+  (`freeform-assistant`, `wildfreedom-7b` — neither excluded; "free" glued to
+  other letters is a different word) so the broader pattern does not trade
+  one wrong answer for another.
+- A cost-based alternative was considered and rejected, recorded rather than
+  silently discarded: every model object in the live catalogue carries a
+  real `cost.input`/`cost.output` field, and cost 0 is a stronger,
+  convention-independent signal than any name pattern. Checked directly: it
+  is not adopted as the primary mechanism because it does not mean the same
+  thing as this instruction — every `ollama-cloud` model among this
+  account's connected providers reports cost 0 across its entire catalogue
+  (most likely a pricing-data gap for that subscription-based provider, not
+  a genuine free-tier claim), and excluding on cost alone would have
+  disabled a legitimate connected provider this instruction was never stated
+  to reach.
+- The residue, stated where a reader will see it (in `scripts/runners.yml`'s
+  own header, not only here): this is still a name-based check, not a
+  provable one. A free-tier model whose id contains no form of the word
+  "free" at all would not be caught — none exists in the current catalogue
+  (checked directly, not assumed: see below), but the mechanism cannot rule
+  one out appearing later. "Absolute" describes the maintainer's standing
+  instruction (FRAME.md fact 18, `attested`); it does not describe what a
+  name-pattern check can mathematically guarantee, and `scripts/runners.yml`
+  now says so in those terms instead of asserting completeness it cannot
+  prove.
+- Two checks added so this is a re-derived guarantee, not a point-in-time
+  claim: `scripts/check-free-model-exclusion.mjs` re-queries the live
+  `/provider` endpoint every time it runs, independently re-derives which
+  reachable models on connected providers carry "free" as a word, and fails
+  if any is not covered by the current pattern(s) — PASS/FAIL/UNVERIFIED,
+  never a silent pass when no server is reachable, the same convention
+  FRAME.md's own checks use. **Proved able to fail**: reverted the pattern to
+  `-free$` and ran it —
+  ```
+  checked 395 reachable model(s) across 4 connected provider(s); 23 carry "free" as a word in their id
+  FAIL 17 "free"-named reachable model(s) are NOT excluded by scripts/runners.yml's current pattern(s):
+    openrouter/nvidia/nemotron-3-super-120b-a12b:free
+    ...
+    openrouter/openai/gpt-oss-20b:free
+    ...
+  ```
+  (17 lines total; the reviewer's own example is among them) — restored the
+  fix, reran: `PASS every reachable, name-flagged-free model is excluded by
+  the current pattern(s)`. `scripts/test-free-model-pattern.mjs` is the
+  CI-safe counterpart, pinning the real `scripts/runners.yml` pattern
+  against a fixed table built from this exact finding (all three live
+  conventions, the reviewer's own model name, plus the false-positive
+  guard): `node scripts/test-free-model-pattern.mjs`: 9/9 `ok`. Both wired
+  into `scripts/check-routes.sh`.
+- `node scripts/round.mjs check`, rerun fully after this fix: static checks,
+  build, and route checks (now including both new checks) all green again.
+  `git status --short`: empty after this entry's own commit.
+
 `node scripts/round.mjs check`, last run against a freshly restarted
 server, fully green:
 
@@ -341,27 +449,33 @@ commit.
 - Origin: delegated
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent)
-- Guardrails: `node scripts/round.mjs check` fully green (above), run twice
-  more after item 4's fix landed. `node scripts/check-briefs.mjs`: `ok all
-  current briefs declare their premises`, `14 premise(s) checked: 4 cite
-  FRAME.md, 6 cite a command, 4 cite an attestation`. `node
-  scripts/check-runner-config.mjs`: `ok`. `node
-  scripts/check-track-scope.mjs origin/main loop/meta/runner-config`: `ok
-  all 14 changed file(s) within meta's scope`. `node
+- Guardrails: `node scripts/round.mjs check` fully green (above), run
+  several times more across this entry's own history — after item 4's fix,
+  after item 5's fix, and again after item 7's fix (the adversarial review
+  finding). `node scripts/check-briefs.mjs`: `ok all current briefs declare
+  their premises`, `14 premise(s) checked: 4 cite FRAME.md, 6 cite a
+  command, 4 cite an attestation`. `node scripts/check-runner-config.mjs`:
+  `ok`. `node scripts/check-track-scope.mjs origin/main
+  loop/meta/runner-config`: `ok`, every changed file (including this
+  entry's own review-response commit) within `meta`'s scope. `node
   scripts/check-docket.mjs`: `ok 124 docket item(s) valid (42 open)`. `node
   scripts/test-runner-preflight.mjs`: 10/10 `ok`. `node
-  scripts/test-orchestrate-runner-launch.mjs`: 3/3 `ok`.
-  `node scripts/test-orchestrate-hold.mjs` and `node
+  scripts/test-orchestrate-runner-launch.mjs`: 3/3 `ok`. `node
+  scripts/test-free-model-pattern.mjs`: 9/9 `ok` (item 7). `node
+  scripts/check-free-model-exclusion.mjs`: `PASS` against the live
+  catalogue, and separately proved able to `FAIL` (item 7). `node
+  scripts/test-orchestrate-hold.mjs` and `node
   scripts/test-orchestrate-checkout.mjs` (both touch
   `scripts/orchestrate.sh`/`scripts/orchestrate-liveness.sh`, unchanged
   behaviourally by this round): still 5/5 and 8/8 `ok`. `node
   scripts/test-peak-window.mjs` and `node
   scripts/test-dispatch-generative-push.mjs` (exercising the
   `policy.yml`/`scripts/runners.yml` reconciliation indirectly): unchanged,
-  still green. `git diff --stat origin/main...HEAD`: 14 files changed, 1463
-  insertions(+), 32 deletions(-) (not restated as a fixed number here for
-  the same self-reference reason round 9's entry gives — run the command for
-  the live figure).
+  still green. `git diff --stat origin/main...HEAD` (not restated as a
+  fixed number here for the same self-reference reason round 9's entry
+  gives — run the command for the live figure, which now also includes
+  `docket/reviews/763e38042088dd96bb853b5ac371c351b2565256.md`, committed by
+  the reviewer, not by this round, and left untouched per instruction).
 - Result: not yet measured — this round adds configuration and a check, not
   a metric the site publishes. The first observable test is whether a
   future round that adds a second harness does it by editing
