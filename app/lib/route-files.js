@@ -20,7 +20,17 @@ export const ROUTE_FILES = {
   // and left, and round 81 did not touch. Registering the new post honestly
   // requires this file to be counted, so /blog moves to round 82 with the
   // other posts.js-fed routes.
-  "/blog": ["app/blog/page.js", "app/lib/posts.js", "app/lib/one-limit-count.js"],
+  // Round 176 (build) adds app/lib/human-owned-paths.js: /blog renders the
+  // set of paths the human-owned-paths CI job guards, read out of the
+  // workflow file at build time rather than typed into the post. A change
+  // to that reader changes what the page says, so it is a source file of
+  // this route in exactly the sense one-limit-count.js already is.
+  "/blog": [
+    "app/blog/page.js",
+    "app/lib/posts.js",
+    "app/lib/one-limit-count.js",
+    "app/lib/human-owned-paths.js",
+  ],
   "/blog/frontier-cyber": [
     "app/blog/frontier-cyber/page.js",
     "app/lib/posts.js",

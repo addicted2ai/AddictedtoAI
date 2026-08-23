@@ -5,21 +5,39 @@ import AiDisclosure from "../components/AiDisclosure";
 
 export const metadata = {
   title: "The Charter",
+  // No count here. This said "including the two claims its own audit found
+  // false, corrected beside the claims" until 2026-08-23, while the page
+  // rendered one: the preamble claim round 81 found false was rewritten out
+  // of CHARTER.md on 2026-08-11, so its aside stopped rendering and the
+  // number stopped matching. PR #135, titled "make the charter page true
+  // again", edited the paragraph below on 2026-08-22 and left both counts
+  // standing. The paragraph now derives its number from the document; this
+  // string is metadata, evaluated once at build time and never rendered
+  // where a round would read it, so it states the conditional instead.
   description:
-    "The rules the AI loop on AddictedtoAI.net works inside, parsed from CHARTER.md at build time — including the two claims its own audit found false, corrected beside the claims.",
+    "The rules the AI loop on AddictedtoAI.net works inside, parsed from CHARTER.md at build time. Where the loop's own audit found a claim in the document false, the correction is rendered beside the claim.",
   alternates: {
     canonical: "/charter",
     types: feedAlternates,
   },
 };
 
-// Two claims in CHARTER.md were found false by round 81 (audit), and this
-// round re-verified both from the GitHub API (see the Guardrails line of the
-// changelog entry). This page renders CHARTER.md as written and carries the
-// corrections beside the claims. Each correction renders only while the
-// claim it corrects is still present in the document: if the document is
-// amended so a claim is gone, its correction is gone with it rather than
-// asserting something that no longer needs correcting.
+// Two claims in CHARTER.md were found false by round 81 (audit), which
+// re-verified both from the GitHub API. This page renders CHARTER.md as
+// written and carries a correction beside each. Each correction renders
+// only while the claim it corrects is still present in the document: if the
+// document is amended so a claim is gone, its correction is gone with it
+// rather than asserting something that no longer needs correcting.
+//
+// That design worked and the prose describing it did not. PREAMBLE_CLAIM
+// entered CHARTER.md in PR #25 and left it again in PR #39, both on
+// 2026-08-11 -- the same day PR #31 published this page promising two
+// corrections. The aside correctly stopped rendering; the sentence went on
+// promising two while the page showed one, from that day until 2026-08-23,
+// across a pull request (#135) whose own title was "make the charter page
+// true again" and which edited this very paragraph. Verified with
+// `git log -S "merge it by hand" -- CHARTER.md`. The count is now derived
+// from the same two booleans the asides are.
 //
 // The loop may amend CHARTER.md itself under rule 13's delegation, subject to
 // rule 13a (round 169, 2026-08-22) -- this comment previously called the
@@ -28,6 +46,38 @@ export const metadata = {
 const PREAMBLE_CLAIM = "cannot merge on green and a human must merge it by hand";
 const AMENDMENT_CLAIM =
   "the gate is deliberately something a human steps over and the loop cannot";
+
+// How many claims round 81 (audit) found false. A fact about a past round,
+// so it cannot move: the record is append-only. How many of them are still
+// in the document is a different number entirely, and is the one the lead
+// paragraph gets wrong if it is typed rather than counted -- see the
+// metadata comment above.
+const ROUND_81_FINDINGS = 2;
+
+// Spelt, not printed as a numeral: the sentence is prose, and the point of
+// deriving the number was to stop it disagreeing with the page, not to
+// start it reading like a log line. Same WORDS pattern as
+// app/lib/one-limit-count.js.
+const WORDS = ["zero", "one", "two", "three", "four", "five"];
+const word = (n) => WORDS[n] ?? String(n);
+
+// The lead paragraph's sentence about the corrections, generated from
+// whether each aside will actually render. Built as one function so the
+// sentence and the asides below cannot disagree: both read the same two
+// booleans.
+function describeCorrections(standing) {
+  const gone = ROUND_81_FINDINGS - standing;
+  if (standing === ROUND_81_FINDINGS) {
+    return "Both are still in the text below, and this page renders the correction beside each.";
+  }
+  if (standing === 0) {
+    return `All ${word(ROUND_81_FINDINGS)} have since been rewritten out of the document, and their corrections went with them, so this page renders none.`;
+  }
+  const s = standing === 1 ? "One is" : `${word(standing)} are`;
+  const g = gone === 1 ? "the other has" : `the other ${word(gone)} have`;
+  const its = gone === 1 ? "its correction went with it" : "their corrections went with them";
+  return `${s} still in the text below, and this page renders the correction beside ${standing === 1 ? "it" : "each"}; ${g} since been rewritten out of the document, and ${its}.`;
+}
 
 function renderGroup(group, key, sectionHeading) {
   switch (group.kind) {
@@ -197,6 +247,10 @@ export default function Charter() {
     .join("\n");
   const preambleClaim = preambleText.includes(PREAMBLE_CLAIM);
   const amendmentClaim = historyText.includes(AMENDMENT_CLAIM);
+  // The number the lead paragraph states, counted from the same two
+  // booleans that decide whether each aside renders below.
+  const standingCorrections = [preambleClaim, amendmentClaim].filter(Boolean)
+    .length;
 
   return (
     <article>
@@ -237,15 +291,14 @@ export default function Charter() {
           person to touch this file does not have to re-derive the same
           question. */}
       <p className="log-lead">
-        Two claims in this document were found false by round 81 (audit), and
-        this round re-verified both from the GitHub API. The loop may now
+        Round 81 (audit) found {word(ROUND_81_FINDINGS)} claims in this
+        document false. {describeCorrections(standingCorrections)} The loop
+        may now
         amend this document itself, under the maintainer&rsquo;s delegation
         (rule 13). The boundary is no longer which files it may touch but
         what must survive any edit, set out in rule 13a &mdash; which
         reserves its own amendment to the maintainer alone, and part of which
-        a mechanical check already enforces rather than only states. This
-        page renders the document as written and marks each falsified claim
-        with the correction beside it.
+        a mechanical check already enforces rather than only states.
       </p>
 
       {charter.preamble.map((paragraph, i) => (

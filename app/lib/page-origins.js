@@ -232,6 +232,26 @@ export const ARCHIVE = "archive";
 // file, so /model-retirement-calendar moves from 132 to 168 too.
 // app/lib/retirement-dates.js, shared by both routes, is unchanged this
 // round.
+//
+// Round 176 (build, loop/build/governance-claims) corrects six false
+// self-claims and moves sixteen routes -- /, /blog, the ten post routes,
+// /charter, /demos, /disclosure and /model-deprecation-checker, counted
+// off the diff rather than estimated. app/lib/posts.js -- a listed
+// source file of /, /blog and every post route -- carries the /blog post's
+// metadata description and excerpt, both of which said the loop works
+// "inside a charter it cannot amend" after CHARTER.md rule 13 withdrew
+// exactly that prohibition on 2026-08-22. app/page.js carries the same
+// defect in the hero and the origin story in the paragraph above it;
+// app/blog/page.js carries the origin story and the human-owned-paths
+// passage, which now renders the guarded paths from the workflow file via
+// the new app/lib/human-owned-paths.js; app/charter/page.js derives its
+// correction count instead of typing it; app/disclosure/page.js gains the
+// analytics disclosure; app/demos/RoundWalkthrough.js loses a caption that
+// said no measurement ID had ever been set; and both
+// /model-deprecation-checker files lose their trackEvent calls. /directory,
+// the three log pages, /log/rounds/[id], /projects, /what-vendors-promise,
+// /model-retirement-calendar and /loop-history have no listed source file
+// in this diff and do not move.
 export const PRODUCING_ROUNDS = {
   // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
@@ -247,7 +267,7 @@ export const PRODUCING_ROUNDS = {
   // listed source file of /, so the newest change is this round's.
   // Round 165 (author) publishes the manus-meta-split post in posts.js, a
   // listed source file of /, so the newest change is this round's.
-  "/": 165,
+  "/": 176,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
@@ -268,7 +288,7 @@ export const PRODUCING_ROUNDS = {
   // Round 165 (author) adds the manus-meta-split post to posts.js, which
   // feeds the "More from the blog" list, so the newest change is this
   // round's.
-  "/blog": 165,
+  "/blog": 176,
   // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The ultrafast-mode route is 108 by construction: this round built the
@@ -284,25 +304,25 @@ export const PRODUCING_ROUNDS = {
   // Round 165 (author) publishes the manus-meta-split post in posts.js, a
   // listed source file of every post route, so each route's newest commit
   // is this round's.
-  "/blog/frontier-cyber": 165,
-  "/blog/claude-code-auto-mode": 165,
-  "/blog/cyber-eval-cascade": 165,
-  "/blog/gpt-5-6-price-drop": 165,
-  "/blog/fable-5-export-controls": 165,
-  "/blog/chatgpt-ads": 165,
-  "/blog/gemini-3-7-flash": 165,
-  "/blog/ultrafast-mode": 165,
+  "/blog/frontier-cyber": 176,
+  "/blog/claude-code-auto-mode": 176,
+  "/blog/cyber-eval-cascade": 176,
+  "/blog/gpt-5-6-price-drop": 176,
+  "/blog/fable-5-export-controls": 176,
+  "/blog/chatgpt-ads": 176,
+  "/blog/gemini-3-7-flash": 176,
+  "/blog/ultrafast-mode": 176,
   // The ai-security-week route is 154 by construction: this round built the
   // page, and posts.js — a listed source file of every post route — carries
   // its metadata.
   // Round 165 (author) publishes the manus-meta-split post in posts.js, a
   // listed source file of every post route, so the newest commit is this
   // round's.
-  "/blog/ai-security-week": 165,
+  "/blog/ai-security-week": 176,
   // The manus-meta-split route is 165 by construction: this round built the
   // page, and posts.js — a listed source file of every post route — carries
   // its metadata.
-  "/blog/manus-meta-split": 165,
+  "/blog/manus-meta-split": 176,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 160 (maintain) corrects the two correction asides' present-tense
@@ -314,7 +334,7 @@ export const PRODUCING_ROUNDS = {
   // rule 13/13a) and wraps the tracks table in an accessible scroll region,
   // both in app/charter/page.js, a listed source file, so the newest change
   // is this round's.
-  "/charter": 170,
+  "/charter": 176,
   // Round 88 (author) built this page. New route, so its producing round is
   // the round that created it.
   // Round 113 (maintain) re-verified every row and rewrote the Meta row and
@@ -363,7 +383,7 @@ export const PRODUCING_ROUNDS = {
   "/model-retirement-calendar": 174,
   // Round 168 (build) built this page. New route, so its producing round is
   // the round that created it.
-  "/model-deprecation-checker": 168,
+  "/model-deprecation-checker": 176,
   // Round 112 (build) publishes the loop's run history at /loop-history. New
   // route, so its producing round is the round that created it.
   "/loop-history": 112,
@@ -408,7 +428,7 @@ export const PRODUCING_ROUNDS = {
   // Round 132 (build) renders per-demo verification dates from the new
   // app/lib/demos.js and app/demos/page.js, so the newest change is this
   // round's.
-  "/demos": 132,
+  "/demos": 176,
   // Both log pages were produced by round 70, the build round that split the
   // log in two, until round 72 changed the origin badge they both render.
   // /log was mapped to 53 until 70; leaving it there would have had the page
@@ -461,7 +481,7 @@ export const PRODUCING_ROUNDS = {
   // the fourth Origin value's meaning to the enumeration it publishes, so
   // the page's current form is round 85's. Round 111 (maintain) corrects
   // that enumeration's delegated wording, so the page moves to 111.
-  "/disclosure": 111,
+  "/disclosure": 176,
 };
 
 const ORIGIN_MEANINGS = {

@@ -3,7 +3,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RETIREMENT_DATES } from "../lib/retirement-dates";
 import { findMatches, classifyMatches } from "../lib/model-deprecation-checker";
-import { trackEvent } from "../lib/analytics";
+
+// NO ANALYTICS IN THIS COMPONENT, DELIBERATELY. It used to call trackEvent
+// twice -- once with match_count / retired_count / retiring_count when a
+// paste resolved, once when the example button was used. Neither ever sent
+// the pasted text, so "matching happens in your browser" was true; but this
+// component and its page both promise "nothing sent anywhere", and on
+// 2026-08-23 a measurement ID was configured in production, which would
+// have made those two calls the first thing this tool ever sent about a
+// visitor's paste. Three integers are not worth breaking the one promise
+// that makes this tool safe to paste an .env into. Site-wide pageview
+// analytics is unaffected and is disclosed at /disclosure; the other two
+// interactive demos (app/directory/DirectorySearch.js,
+// app/demos/ToolFinder.js) still send interaction events and make no such
+// promise. Do not re-add trackEvent here without first removing the
+// promise from BOTH this file and app/model-deprecation-checker/page.js --
+// scripts/check-governance-claims.mjs fails the build if the promise is
+// still standing when this import comes back.
 
 // A sample paste with one already-retired identifier (gpt-5-chat-latest,
 // shutdown 2026-07-23), one retiring identifier matched via its
@@ -56,7 +72,6 @@ export default function ModelDeprecationChecker() {
   const [text, setText] = useState("");
   const textareaRef = useRef(null);
   const [announcement, setAnnouncement] = useState("");
-  const lastTrackedCount = useRef(-1);
 
   const matches = useMemo(() => findMatches(text, RETIREMENT_DATES), [text]);
   const { retired, retiring } = useMemo(
@@ -76,27 +91,17 @@ export default function ModelDeprecationChecker() {
         ? "No identifiers in the retirement data found in what you pasted."
         : `Found ${matches.length} identifier${matches.length === 1 ? "" : "s"} in the retirement data: ${retired.length} retired, ${retiring.length} retiring.`;
       setAnnouncement(summary);
-      if (hasText && matches.length !== lastTrackedCount.current) {
-        trackEvent("model_deprecation_checker_result", {
-          match_count: matches.length,
-          retired_count: retired.length,
-          retiring_count: retiring.length,
-        });
-        lastTrackedCount.current = matches.length;
-      }
     }, 500);
     return () => clearTimeout(timer);
   }, [text, hasText, matches.length, retired.length, retiring.length]);
 
   function useExample() {
     setText(EXAMPLE);
-    trackEvent("model_deprecation_checker_example");
     textareaRef.current?.focus();
   }
 
   function clear() {
     setText("");
-    lastTrackedCount.current = -1;
     textareaRef.current?.focus();
   }
 
@@ -142,9 +147,12 @@ export default function ModelDeprecationChecker() {
 
       {!hasText ? (
         <p className="checker-hint">
-          Nothing is sent anywhere — matching happens in your browser against
-          the {RETIREMENT_DATES.length} rows behind{" "}
+          Nothing you paste is sent anywhere, and this tool reports nothing
+          about it — not even how many matches it found. Matching happens in
+          your browser against the {RETIREMENT_DATES.length} rows behind{" "}
           <a href="/model-retirement-calendar">the retirement calendar</a>.
+          The site does count page views; that and everything else it
+          collects is on <a href="/disclosure">the disclosure page</a>.
           Paste something above, or try the example.
         </p>
       ) : matches.length === 0 ? (

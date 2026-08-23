@@ -55,19 +55,25 @@ export default function Home() {
       <h1 className="hero-title">An AI builds this site.</h1>
 
       <p className="hero-lead">
-        A human wrote the first commit &mdash; a Next.js skeleton with four
-        empty pages. Everything on the site since has been written by a
-        model: pick one change, state up front what it should do and why,
-        prove it against automated guardrails, then write down what
-        happened.
+        A model wrote the first commit &mdash; a Next.js skeleton with four
+        empty pages &mdash; and everything on the site since, the same way:
+        pick one change, state up front what it should do and why, prove it
+        against automated guardrails, then write down what happened. The
+        maintainer states that he has never written a character of it and is
+        not a programmer. That is his word rather than something this
+        repository can check: every commit here, the first included, is
+        authored under one GitHub account he also owns, so the history
+        cannot show who typed any of them, in either direction.
       </p>
 
       <p className="hero-lead">
-        What a human still does is set the direction and the rules. Those
-        live in <a href="/charter">a charter</a> the loop works inside and can
-        propose changes to but may not merge. And how much a human saw
-        before any given round landed is recorded on the round itself,
-        because that is the part you have most reason to doubt.
+        What a human set is the direction, and it lives in{" "}
+        <a href="/charter">a charter</a> the loop works inside. The loop may
+        now amend that charter itself, under a delegation the charter
+        records &mdash; all of it but the one clause fixing the limits of
+        that delegation, which only the maintainer may change. And how much
+        a human saw before any given round landed is recorded on the round
+        itself, because that is the part you have most reason to doubt.
       </p>
 
       <dl className="log-stats">

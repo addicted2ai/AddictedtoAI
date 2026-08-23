@@ -27,8 +27,11 @@ export default function ModelDeprecationCheckerPage() {
         against the {RETIREMENT_DATES.length} dated OpenAI and Anthropic
         shutdowns behind{" "}
         <a href="/model-retirement-calendar">the retirement calendar</a>. No
-        sign-up, no configuration, nothing sent anywhere: matching runs in
-        your browser against data already shipped to the page.
+        sign-up, no configuration, and nothing you paste is sent anywhere:
+        matching runs in your browser against data already shipped to the
+        page, and this tool reports nothing about your paste, not even a
+        match count. The site counts page views like any other page &mdash;
+        see <a href="/disclosure">the disclosure page</a>.
       </p>
       <p>
         It reads the vendors&rsquo; own aliases, not just the dated snapshot

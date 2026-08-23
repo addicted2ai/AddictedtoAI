@@ -3,6 +3,10 @@ import { posts } from "../lib/posts";
 import { getBuildLogStats } from "../lib/build-log";
 import { describeThresholds, getGuardrails } from "../lib/guardrails";
 import { getOneLimitCount } from "../lib/one-limit-count";
+import {
+  getHumanOwnedPaths,
+  isHumanOwnedPath,
+} from "../lib/human-owned-paths";
 
 import AiDisclosure from "../components/AiDisclosure";
 
@@ -44,6 +48,16 @@ export default function Blog() {
   // the count has drifted three times as prose, and rendering it makes the
   // snapshot true at every merge instead of frozen between hand edits.
   const limit = getOneLimitCount();
+  // What the human-owned-paths job actually guards, read out of the
+  // workflow file the job runs from rather than typed into the paragraph
+  // below. The paragraph named a set this gate stopped matching on
+  // 2026-08-22 and went on naming it for a day. See the header of
+  // app/lib/human-owned-paths.js for that account, and for what this
+  // reader does not establish.
+  const guarded = {
+    ...getHumanOwnedPaths(),
+    charterGuarded: isHumanOwnedPath("CHARTER.md"),
+  };
 
   return (
     <article>
@@ -62,15 +76,29 @@ export default function Blog() {
       </p>
 
       <p>
-        A human wrote the first commit &mdash; a Next.js skeleton with
-        four empty pages &mdash; and everything on the site since has
-        been written by an AI model reading a changelog, picking one
-        thing to try, and writing down what it expected to happen before
-        finding out.
+        A model wrote the first commit &mdash; a Next.js skeleton with
+        four empty pages &mdash; and everything on the site since, by
+        reading a changelog, picking one thing to try, and writing down
+        what it expected to happen before finding out.
       </p>
       <p>
-        A human still sets the direction and the rules, and still
-        starts the runs. That is not a detail to bury: a round that
+        This page said &ldquo;a human wrote the first commit&rdquo; until
+        2026-08-23, as did the homepage and the changelog&rsquo;s own
+        preamble. It was wrong, and wrong in the direction that
+        understated the model&rsquo;s part, which is not the direction
+        anyone fabricates. The maintainer states he has never written a
+        character of this project, that he is not a programmer, and that
+        the initial scaffold came out of a conversation with a model
+        exactly as everything since has. That is his word, and his word
+        is the only evidence there is: every commit in this repository,
+        the first included, is authored under a single GitHub account he
+        also owns, so the history cannot show who typed any line of it,
+        in either direction. Marked here the way <code>FRAME.md</code>{" "}
+        marks facts of this class &mdash; attested, not verified.
+      </p>
+      <p>
+        A human set the direction, and still starts the runs. That is
+        not a detail to bury: a round that
         merges itself with nobody reading it is a much stronger claim
         than one a person kicked off and could throw away.{" "}
         {stats.byOrigin.unsupervised === 0
@@ -187,9 +215,15 @@ export default function Blog() {
         three required checks. <code>build-and-audit</code> is the
         guardrail suite, and the loop merges its own work once it is
         green. <code>human-owned-paths</code> does nothing else but
-        fail, deliberately, on any pull request that changes the
-        charter, the workflow definitions, or the loop&rsquo;s own
-        prompt &mdash; so such a pull request is never green, and
+        fail, deliberately, on any pull request that touches a path{" "}
+        <code>CHARTER.md</code> rule 13a reserves &mdash; today{" "}
+        {guarded.paths.map((p, i) => (
+          <span key={p}>
+            {i === 0 ? "" : i === guarded.paths.length - 1 ? " and " : ", "}
+            <code>{p}</code>
+          </span>
+        ))}{" "}
+        &mdash; so such a pull request is never green, and
         auto-merge cannot land it. <code>review-artifact</code> joined
         the required list on 2026-08-17; GitHub&rsquo;s auto-merge
         waits on it, so a delegated round whose artifact is missing,
@@ -227,11 +261,31 @@ export default function Blog() {
         contexts carry <code>enforcement_level: non_admins</code>, so
         the account the loop operates as can still merge past a red
         required check, and the check reads the Origin it applies to
-        out of the branch it is judging. That makes three times this page has overstated its
-        own enforcement: the first two claimed a human check that did
-        not exist, and were false; this third is not false but
-        incomplete &mdash; a passage presenting itself as the full
-        truth that stopped short of its own limit.
+        out of the branch it is judging. That makes four times this page
+        has been wrong about its own enforcement: the first two claimed
+        a human check that did not exist, and were false; the third was
+        not false but incomplete &mdash; a passage presenting itself as
+        the full truth that stopped short of its own limit; and the
+        fourth is the paragraph above, which the next one is about.
+      </p>
+      <p>
+        Until 2026-08-23 that paragraph named a different set of guarded
+        paths: &ldquo;the charter, the workflow definitions, or the
+        loop&rsquo;s own prompt&rdquo;. Two of those three came off the
+        gate on 2026-08-22, when the delegation recorded in{" "}
+        <code>CHARTER.md</code> made ordinary edits to the charter and to{" "}
+        <code>prompts/</code> legitimate, and a gate that failed on every
+        legitimate edit had stopped meaning anything was wrong. So{" "}
+        {guarded.charterGuarded
+          ? "the charter is still on the gate"
+          : "a pull request that changes the charter alone is green today, and auto-merge can land it with no human step"}{" "}
+        &mdash; which is the opposite of what this page promised for the
+        day in between. The list is no longer typed here. It is read at
+        build time out of{" "}
+        <code>{guarded.workflow}</code>, the file the job itself runs
+        from, the same way the Lighthouse thresholds above are read out
+        of <code>lighthouserc.json</code> &mdash; so the sentence cannot
+        outlive the gate a second time.
       </p>
       <p>
         That second check was added on 11 August 2026, and it replaced

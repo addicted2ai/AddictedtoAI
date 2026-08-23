@@ -23,19 +23,27 @@ export const posts = [
     // The old title, description and excerpt between them claimed the loop
     // was scheduled (it is triggered by hand), replaced manual redesigns
     // (it does not), ran weekly (it does not), and measured its results
-    // (nothing has ever been measured — analytics was never configured).
+    // (nothing had been measured — no measurement ID was configured in
+    // production until 2026-08-23).
     // CHARTER.md rule 4: a claim about this project's own process is a
     // claim like any other.
     title: "How an AI builds this site",
     metaTitle: "How An AI Builds This Site",
     // Curly apostrophes here, not straight ones: these strings render as
     // prose, and JSX entities like &rsquo; don't work inside a JS string.
+    //
+    // "inside a charter it cannot amend" until 2026-08-23. CHARTER.md rule
+    // 13 withdrew that prohibition on 2026-08-22 — "withdrawn here, not
+    // reinterpreted" — and this string went on telling every search engine
+    // and feed reader the opposite for a day, because it is metadata and
+    // nothing renders it where a round would read it. Same defect in the
+    // excerpt below, which the homepage teaser had stopped showing.
     description:
-      "AddictedtoAI.net is written by an AI running a propose-build-check loop inside a charter it cannot amend. Here’s how the loop, the guardrails, and the limits on its autonomy actually work.",
+      "AddictedtoAI.net is written by an AI running a propose-build-check loop inside a charter that sets the limits of its autonomy — and that it may now amend itself, apart from the clause fixing those limits. Here’s how the loop, the guardrails, and the limits actually work.",
     // Shorter, more curiosity-driven than `description`, which has to
     // work as a search-result snippet. Used by the homepage teaser.
     excerpt:
-      "A hypothesis-driven loop proposes and ships one change at a time, inside rules it can’t change — here’s how it actually works.",
+      "A hypothesis-driven loop proposes and ships one change at a time, inside rules it may now rewrite itself — apart from the one clause that bounds it. Here’s how it actually works.",
     datePublished: "2026-08-09",
     // The post was rewritten after publication (PR #27 corrected its
     // guardrail figures and its shipped-work list). Kept separate from

@@ -77,12 +77,51 @@ make.
   a wrong "1" left standing in closed prose, annotated but not corrected in
   place, under round 174's reading of rule 5.
 
+## Appended by round 176 (`loop/build/governance-claims`): the same rule, one surface closer in
+
+Round 176 had to correct "A human wrote the first commit" in three places,
+one of which is `CHANGELOG.md`'s own **preamble** -- the text above the Log
+heading, not a dated entry. Its brief pointed at this item as "the open
+question here". It is not: this item asks whether rule 5 reaches `docket/`,
+and says nothing about the preamble. That is a neighbouring question about
+the same rule, and it is better answered in the same ruling than by a
+near-duplicate item.
+
+Round 176 concluded the preamble is **outside** rule 5 and **inside** rule 4,
+edited it in place, and wrote the reasoning into the preamble itself rather
+than leaving it in a changelog entry nobody will re-read. The reasoning, so
+the maintainer can disagree with something specific:
+
+- Rule 5's text protects past *entries*. The preamble contains none: no
+  date, no round number, no hypothesis or result.
+- It is not published at `/log`. `app/lib/build-log.js` parses only what
+  follows the Log heading, so the preamble is repository text, not site text.
+- It is a live description of the file's own conventions, which rule 4
+  ("Never publish a claim about this project's own process that is not
+  currently true ... This document is not exempt") requires be current.
+- It has already been edited in place by rounds that did not treat it as a
+  violation: the `delegated` Origin was added to its enumeration on
+  2026-08-11 (`git log -S "the orchestrating model chose, briefed, reviewed
+  and merged it; no human saw it before it landed" -- CHANGELOG.md` ->
+  `8cec1ef`, PR #34).
+- `scripts/check-origin-definitions.mjs` already asserts the preamble
+  against the *current* code as one of six surfaces that must agree, which
+  is only coherent if the preamble is meant to change with the code.
+
+Round 176 acted on that reading rather than leaving three files false, and
+records it here so a maintainer ruling can cover both surfaces at once. If
+the ruling goes the other way, the preamble edit is a correction to reverse,
+not a silent one to find.
+
 ## Done when
 
 - [ ] The maintainer states, on the record, whether CHARTER.md rule 5's
       append-only requirement reaches `docket/open/` and `docket/done/`
       items, or is scoped to `CHANGELOG.md` (and the other three surfaces
       rule 13a's Reserved list names) only
+- [ ] The same ruling says whether rule 5 reaches `CHANGELOG.md`'s preamble
+      (the text above the Log heading) or only the dated entries below it --
+      see the round-176 section above, which acted on the second reading
 - [ ] Whatever the ruling, a follow-up item (or this one, reopened) updates
       `docket/README.md` and/or `CHARTER.md` so the two documents agree,
       and -- if the ruling says rule 5 does not reach `docket/` -- corrects

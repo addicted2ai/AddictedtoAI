@@ -360,6 +360,41 @@ node scripts/check-frame.mjs || failures=$((failures + $?))
 echo
 node scripts/check-briefs.mjs || failures=$((failures + $?))
 
+# The site's hand-written claims about its own governance, pinned to the
+# facts in the tree that make them true. Round 176 exists because six of
+# them were false at once: three went false on 2026-08-22 when CHARTER.md
+# rule 13 withdrew the loop's merge prohibition and the human-owned-paths
+# job was narrowed underneath the sentences describing it, one was the
+# project's own origin story in three files, one was a metadata constant
+# search engines were being shown, and one was a privacy promise the next
+# deploy's analytics would have falsified.
+#
+# /charter and /log cannot drift -- they are parsed from CHARTER.md and
+# CHANGELOG.md. Every one of the six lived in the places that are not
+# generated. This registry is the substitute for generation where prose
+# genuinely has to be prose: it fails when a registered claim's supporting
+# fact moves, when a registered claim is silently reworded, when a phrase
+# with a history of being wrong here turns up somewhere new, or when a
+# tracked analytics event exists that /disclosure does not name.
+#
+# READ ITS OWN HONEST-LIMIT LINE. Its reach is its registry and its phrase
+# list and nothing wider; a false governance claim in unfamiliar words on
+# an unregistered page passes it silently, and that is most of them.
+#
+# --rendered adds the other direction: /blog must actually serve the paths
+# the gate guards, and /disclosure must serve exactly one of its two
+# analytics branches. A page can derive a list correctly and then fail to
+# render it, which no amount of reading source files would show.
+echo
+node scripts/check-governance-claims.mjs --rendered "$BASE" || failures=$((failures + $?))
+
+# ...and the proof that the check above can go red, against six planted
+# defects in a sandbox copy of this tree. A registry check is unusually
+# easy to ship broken -- a needle that matches nothing and a predicate that
+# is accidentally true both look exactly like a pass.
+echo
+node scripts/test-governance-claims.mjs || failures=$((failures + $?))
+
 # Document transfer size, against the same budget CI gates on.
 #
 # lighthouserc.json holds `resource-summary:document:size` at 150,000 bytes,
