@@ -402,12 +402,14 @@ are recorded in item 8 below.
   publishing an unchecked list, which is the direction to be wrong in.
 
 **10. Two required checks that failed on a green tree**
-- Hypothesis: `node scripts/round.mjs check` was run ten times on this
-  branch. Two of the failures were real and are fixed above (the
-  producing-round map, and the `process.exit` abort). Of the eight runs
-  after that, six were green and two failed on trees identical to a green
-  run either side of them. Expected real defects; found a timer and a
-  browser launch.
+- Hypothesis: `node scripts/round.mjs check` was run repeatedly through this
+  round. Two of its failures were real and are fixed above (the
+  producing-round map, and the `process.exit` abort). Two more failed on
+  trees byte-identical to a green run either side of them. Expected real
+  defects; found a timer and a browser launch. (No total is given here: the
+  first draft of this bullet said "ten times", and the number moved before
+  the entry was committed -- which is the failure mode this whole round is
+  about, arriving inside the round's own write-up.)
 - Change: `scripts/test-orchestrate-runner-launch.mjs` spawns
   `scripts/orchestrate.sh` in a sandbox, kills it after a fixed 6000 ms,
   and then asserts the captured output matched `/iteration starting/`. On a
@@ -438,8 +440,8 @@ are recorded in item 8 below.
 - Guardrails: `node scripts/round.mjs check`: green end to end, exit 0,
   observed on the final tree -- `npm run lint` `No ESLint warnings or
   errors`, `npm run build` succeeded, `all route checks passed` with no
-  group SKIPPED. Run ten times in all: two real failures, both fixed above,
-  and two failures on trees identical to a green run either side of them,
+  group SKIPPED. Run repeatedly: two real failures, both fixed above, and
+  two failures on trees byte-identical to a green run either side of them,
   both written up in item 10 rather than passed over as noise. `node
   scripts/check-docket.mjs`: `ok 128 docket item(s) valid (43 open)`,
   `build` 9 -> 12 open (three filed, none closed; queue budget 14); `meta`
