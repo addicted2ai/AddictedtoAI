@@ -145,13 +145,25 @@ const CASES = [
   {
     name: "rule-count-drifts",
     what: "FRAME.md fact 14's heading states a rule count CHARTER.md no longer has",
-    expect: /types the live CHARTER\.md rule count/,
+    expect: /states the live CHARTER\.md rule count/,
     plant: (dir) =>
       edit(
         dir,
         "FRAME.md",
         "## 14. `CHARTER.md` has 22 rules",
         "## 14. `CHARTER.md` has 21 rules"
+      ),
+  },
+  {
+    name: "agent-doc-count-drifts",
+    what: "AGENTS.md keeps saying 22 rules after the charter's count moves",
+    expect: /states the live CHARTER\.md rule count/,
+    plant: (dir) =>
+      edit(
+        dir,
+        "AGENTS.md",
+        "binding: 22 rules covering truth",
+        "binding: 23 rules covering truth"
       ),
   },
   {

@@ -424,13 +424,22 @@ if [ "$undeclared" -eq 47 ]; then echo PASS; else echo "FAIL undeclared=$undecla
 
 **Claim.** The rule count is a live property of `CHARTER.md`'s own text —
 sections I through V, numbered top-level items — not a figure to memorise or
-copy into another file. Checked two independent ways: the same line-range
+copy into another file. Checked three independent ways: the same line-range
 regex `scripts/check-routes.sh` already asserts the `/charter` page against,
-and a dynamic import of the real production parser (`app/lib/charter.js`)
-counting the rule blocks it actually produces from the live file. Both must
-agree, and both must be non-zero — a parser that silently stopped
-recognising every rule heading at once would otherwise pass a 0 = 0
-comparison.
+a dynamic import of the real production parser (`app/lib/charter.js`)
+counting the rule blocks it actually produces from the live file, and the
+number typed in this fact's own heading. All three must agree, and the first
+two must be non-zero — a parser that silently stopped recognising every rule
+heading at once would otherwise pass a 0 = 0 comparison.
+
+**Round 177 finding: this check compared its two derivations to each other
+and never to the number in the heading above them.** Every other document in
+this repository is told to point at this fact instead of retyping the count,
+which makes this heading the one place the number is deliberately typed — and
+it was the one number nothing checked. Edited to "999 rules" it still printed
+`verified` and exited 0, reproduced by that round's adversarial review. The
+heading is now the third derivation, so the command this file and `CLAUDE.md`
+both tell a reader to run is no longer the one with the hole in it.
 
 **Adversarial review (round 171) found this fact missing and `CLAUDE.md`
 asserting "21 rules" unchecked — stale by one, and copied from this
@@ -453,10 +462,11 @@ import('./app/lib/charter.js').then((m) => {
   console.log(n);
 });
 " 2>/dev/null)
-if [ "$file_count" -ge 1 ] && [ "$parsed_count" -ge 1 ] && [ "$file_count" = "$parsed_count" ]; then
+heading_count=$(grep -m1 '^## 14\. ' FRAME.md | sed -n 's/.*has \([0-9][0-9]*\) rules.*/\1/p')
+if [ "$file_count" -ge 1 ] && [ "$parsed_count" -ge 1 ] && [ "$file_count" = "$parsed_count" ] && [ "$heading_count" = "$file_count" ]; then
   echo "PASS ($file_count rules)"
 else
-  echo "FAIL file-regex-count=$file_count parser-count=$parsed_count"
+  echo "FAIL file-regex-count=$file_count parser-count=$parsed_count heading-count=$heading_count"
 fi
 ```
 

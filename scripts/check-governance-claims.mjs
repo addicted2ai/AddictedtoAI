@@ -224,35 +224,38 @@ function charterRuleCount() {
   return (raw.slice(from, to).match(/^[0-9]+\. /gm) || []).length;
 }
 
-// FRAME.md fact 14's heading is the one place this repository deliberately
-// types the rule count, and every other document is told to point at it
-// instead of retyping it. Nothing checked the heading itself: fact 14's own
-// check compares its two derivations to each other and requires they agree
-// and are non-zero -- never that either equals the number in the heading. So
-// the heading could go stale while `check-frame.mjs` still reported
-// `verified`, which is the shape that let AGENTS.md, every-run.md and
-// README.md all sit on 21 against a charter with 22. Read from the heading
-// line alone, because fact 14's body quotes "21 rules" as a past error and a
-// whole-file scan would trip over the correction.
-function frameFact14StatesRuleCount() {
-  const n = charterRuleCount();
-  if (n === null || n < 1) {
-    return { ok: false, detail: "CHARTER.md's rule sections did not parse" };
-  }
-  const heading = read("FRAME.md").match(/^## 14\. .*$/m);
-  if (!heading) {
-    return { ok: false, detail: "FRAME.md has no fact 14 heading to read a count from" };
-  }
-  const typed = heading[0].match(/\b(\d+) rules\b/);
-  if (!typed) {
-    return { ok: false, detail: `FRAME.md fact 14's heading states no rule count: ${heading[0]}` };
-  }
-  const same = Number(typed[1]) === n;
-  return {
-    ok: same,
-    detail: `FRAME.md fact 14's heading types the live CHARTER.md rule count (${n})${
-      same ? "" : ` -- it says ${typed[1]}`
-    }`,
+// A typed rule count, pinned to the live charter. Typing the number is not
+// the defect -- round 177 first tried to fix this by refusing to state a
+// count anywhere, and shipped documents that said "the count is not typed
+// here" two lines above a typed count, which its own review caught. An
+// unguarded number is the defect. So each document that states one names the
+// sentence carrying it here, and that sentence's number must equal the live
+// count.
+//
+// `re` must capture the number from one specific sentence rather than
+// scanning the file: every one of these documents also quotes "21 rules" as
+// the past error it is correcting, and a whole-file scan would trip over the
+// correction instead of the claim.
+function statesLiveRuleCount(file, re, where) {
+  return () => {
+    const n = charterRuleCount();
+    if (n === null || n < 1) {
+      return { ok: false, detail: "CHARTER.md's rule sections did not parse" };
+    }
+    const m = read(file).match(re);
+    if (!m) {
+      return {
+        ok: false,
+        detail: `${file}: ${where} no longer matches ${re} -- the sentence carrying the rule count was edited, so nothing is pinning the number any more`,
+      };
+    }
+    const same = Number(m[1]) === n;
+    return {
+      ok: same,
+      detail: `${where} states the live CHARTER.md rule count (${n})${
+        same ? "" : ` -- it says ${m[1]}`
+      }`,
+    };
   };
 }
 
@@ -276,7 +279,7 @@ function attested(who, when, what) {
 // CHARTER.md is a red build here even before anyone works out which pages
 // it falsifies.
 
-const CLAIMS_DECLARED = 22;
+const CLAIMS_DECLARED = 24;
 
 const CLAIMS = [
   {
@@ -460,8 +463,32 @@ const CLAIMS = [
   {
     sourceOnly: true,
     file: "FRAME.md fact 14 (canary)",
-    why: "No page carries this. FRAME.md fact 14's heading is the one place the rule count is deliberately typed, and every other document is told to point at it instead of retyping it -- but nothing checked the heading. Fact 14's own check compares its two derivations to each other, never to the heading, so the number could go stale while check-frame.mjs still printed `verified`. That is the gap AGENTS.md, every-run.md and README.md all fell into.",
-    source: frameFact14StatesRuleCount,
+    why: "No page carries this. Fact 14's heading is where this repository deliberately types the rule count, and every other document points at it. Nothing checked the heading: fact 14's own command compared its two derivations to each other, never to the heading above them, so it printed `verified` on a heading reading '999 rules'. Round 177 made the heading that command's third derivation; this is the second lock, from the other side.",
+    source: statesLiveRuleCount(
+      "FRAME.md",
+      /^## 14\. [^\n]*?\b(\d+) rules\b/m,
+      "fact 14's heading"
+    ),
+  },
+  {
+    file: "AGENTS.md",
+    needle: "That number is typed, but it is not unguarded",
+    why: "AGENTS.md states the rule count in prose. It said 21 against a charter with 22 until round 177, then briefly claimed the count was 'not typed here' two lines above typing it. It now says the number is guarded, which is only true while this entry exists.",
+    source: statesLiveRuleCount(
+      "AGENTS.md",
+      /binding: (\d+) rules covering truth/,
+      "the 'rules are not advisory' paragraph"
+    ),
+  },
+  {
+    file: "prompts/shared/every-run.md",
+    needle: "That count is typed but guarded",
+    why: "Instruction 1 states the rule count to every round that reads it. Same defect, same correction, same claim to keep honest.",
+    source: statesLiveRuleCount(
+      "prompts/shared/every-run.md",
+      /track charges, and (\d+)\s+rules/,
+      "instruction 1"
+    ),
   },
   {
     file: "CHANGELOG.md (preamble)",

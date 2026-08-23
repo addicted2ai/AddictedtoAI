@@ -30,11 +30,12 @@ over a failing check.
 
 ## The rules are not advisory
 
-`CHARTER.md` is binding: rules covering truth, the record, and the limits of
-this loop's autonomy. The count is deliberately not typed here — it is
-`FRAME.md` fact 14, derived from the live file two independent ways. This
-paragraph said "21 rules" while the charter had 22, and it was wrong precisely
-because it was typed.
+`CHARTER.md` is binding: 22 rules covering truth, the record, and the limits of
+this loop's autonomy. That number is typed, but it is not unguarded —
+`scripts/check-governance-claims.mjs` compares it against the live file on every
+run, and `FRAME.md` fact 14 derives it three independent ways. This paragraph
+said "21 rules" while the charter had 22. The defect was never that a number was
+typed; it was that nothing checked the one that was.
 
 A round *may* amend the charter. The charter's own preamble says so: "This file
 and `prompts/` are otherwise the loop's to edit under rule 13, the same as the

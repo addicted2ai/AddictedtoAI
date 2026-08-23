@@ -5,14 +5,16 @@ this file, then your track's prompt in `prompts/tracks/`.
 
 ## Read before doing anything
 
-1. **`CHARTER.md`** — the direction, the two tests, the track charges, and the
-   rules. The count is not typed here on purpose: it is `FRAME.md` fact 14,
-   derived from the live file two ways. This line said "21 rules you cannot
-   change" until round 177 and both halves were wrong — the charter had 22, and
-   rule 13 makes the charter the loop's to edit, apart from what rule 13a
-   reserves. It is not advisory: if your work would breach a rule, the work is
-   wrong, not the rule. If the rule itself is wrong, amending it is an available
-   move under rule 13, held to the same standard as anything else you ship.
+1. **`CHARTER.md`** — the direction, the two tests, the track charges, and 22
+   rules. That count is typed but guarded: `scripts/check-governance-claims.mjs`
+   compares it against the live file on every run, and `FRAME.md` fact 14
+   derives it three independent ways. This line said "21 rules you cannot
+   change" until round 177 and both halves were wrong — the count was stale
+   because nothing checked it, and rule 13 makes the charter the loop's to edit,
+   apart from what rule 13a reserves. It is not advisory: if your work would
+   breach a rule, the work is wrong, not the rule. If the rule itself is wrong,
+   amending it is an available move under rule 13, held to the same standard as
+   anything else you ship.
 2. **`policy.yml`** — thresholds, quotas, staleness windows. Loop-owned; you may
    change it with justification.
 3. **`docket/open/`** — the queue. `docket/README.md` explains the format.
@@ -124,11 +126,14 @@ auto-merges past it and the maintainer merges it by hand. `CHARTER.md` and
 delegation made ordinary edits to both legitimate. This paragraph named them
 anyway, along with a mechanism that does not work this way.
 
-The second is `scripts/round.mjs ship`, which decides whether to arm auto-merge
-from your entry's `Origin` and not from the paths you touched: an Origin
-claiming that something read the work before merge does not arm it, and
-`delegated` arms only when a covering artifact exists in `docket/reviews/`.
-Either way, say so in the pull request and leave it waiting.
+The second is `scripts/round.mjs ship`, which has no reserved-path rule at all —
+it never asks whether a path you touched is protected. It does test one path: if
+your branch changed no `CHANGELOG.md` entry it withholds auto-merge and stops
+(`round.mjs:509`), because the round would have no `Origin` of its own to judge.
+Given an entry, it arms from that entry's `Origin` (`round.mjs:550`): an Origin
+claiming that something read the work before merge does not arm, and `delegated`
+arms only when a covering artifact exists in `docket/reviews/`. Either way, say
+so in the pull request and leave it waiting.
 
 Update the docket item you worked from: move it to `docket/done/` if it is
 finished, leave it open if it is not.
