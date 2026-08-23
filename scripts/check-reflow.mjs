@@ -54,6 +54,7 @@ import http from "node:http";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const VIEWPORT_WIDTH = 320;
 const VIEWPORT_HEIGHT = 800;
@@ -85,15 +86,142 @@ const ROUTES = [
 // rather than silently dropped from ROUTES: check-routes.sh's own header
 // warns that a skip nobody sees is how a run comes to believe it verified
 // something it never looked at, and the same is true of a route quietly
-// removed from a list. /log overflows by 180px (a `<strong>` containing a
+// removed from a list. /log overflows (a `<strong>` containing a
 // backtick-quoted path that a bold/italic span swallows before the
 // tokeniser can turn it into `<code>` -- app/lib/inline-markdown.js does
 // not recurse into a matched span). That is a parser fix affecting both
 // CHANGELOG.md and CHARTER.md rendering, not the two CSS defects this
 // check exists to catch; filed as its own item rather than folded in here.
-const KNOWN_FAILURES = {
-  "/log": "docket/open/2026-08-22-log-note-nested-code-overflows-320px.md",
-};
+//
+// REVIEW FINDING, fixed here (see the round's changelog entry for the full
+// account): the first version of this table keyed on the route name alone
+// -- `{"/log": "docket/open/....md"}` -- so ANY overflow on that route
+// printed KNOWN and did not fail the build, not only the one documented.
+// Adversarial review demonstrated this live: it injected an unrelated
+// overflow on /log and the un-pinned check reported the resulting +580px
+// failure as KNOWN, when the documented bug was the ~180px `<strong>`
+// above. A route-keyed exemption is not a documented exception; it is a
+// standing bypass for that route.
+//
+// The fix pins each entry to the actual offending content, not the route
+// or a magnitude: `snippets` are substrings that must appear in the text of
+// EVERY element the probe finds overflowing the viewport (see `offenders`
+// in REFLOW_PROBE below, not just the single widest one -- a second,
+// smaller, unrelated overflow hiding under a larger documented one would
+// not appear as "the widest" and needs its own check). A magnitude
+// tolerance band was considered and rejected in favour of this: content
+// identity survives the "harmless reflow of the same bug" case the review
+// asked to weigh (the string's own rendered width does not change unless
+// the string itself does, and CHANGELOG.md's append-only rule means it
+// never will) without needing an arbitrary +/-Npx band, and it cannot be
+// fooled by an unrelated failure that happens to land in-band the way a
+// magnitude-only check could.
+//
+// What this does NOT solve, stated rather than quietly overfit -- two
+// gaps, one anticipated and one found while verifying the fix:
+//
+// 1. If a second, unrelated overflow appears on a route that already
+//    carries a KNOWN entry, and that second overflow's widest point is
+//    narrower than an *already-explained* offender's,
+//    `document.documentElement.scrollWidth` -- the single page-level
+//    number this whole check gates on -- is unaffected, because it
+//    already reflects the wider of the two. A new failure that never
+//    pushes the page wider than the existing one produces no new offender
+//    to check against, known or not, and passes unnoticed either way.
+//
+// 2. `offenders` finds elements by their own `getBoundingClientRect().right`
+//    exceeding the viewport, which misses block-level overflow entirely: a
+//    block element's own box respects its assigned CSS width even when its
+//    content does not (`overflow-x: visible`, the default), so its
+//    `scrollWidth` can exceed its `clientWidth` -- and cascade all the way
+//    up to inflate `document.documentElement.scrollWidth` -- without that
+//    element's, or any ancestor's, bounding rect ever showing it. Not
+//    hypothetical: verifying this fix found exactly this shape on `/log`
+//    (`.log-field`/`.log-note` paragraphs with `overflow-x: visible` and no
+//    `overflow-wrap`, fixed separately -- see the round's changelog entry).
+//    The classifier still fails closed when this happens (`offenders`
+//    comes back empty, which `classifyKnownFailure` treats as NOT known,
+//    never as known), so this gap costs diagnostic detail, not safety --
+//    but it does mean "no offender found" can mean either "the page is
+//    fine" or "the cause is a block-level element this scan cannot see,"
+//    and only `overflow: true` tells them apart.
+//
+// Bookkeeping, checked once per entry regardless of whether the route
+// currently overflows (see checkKnownFailureBookkeeping): the cited docket
+// path must still exist under docket/open/ -- an entry whose docket item
+// was closed (fixed, or moved to dropped/) without this table being
+// updated is exactly the "outlives its bug" case the review asked to be
+// noticed, not silently perpetual. `expires` mirrors the docket item's own
+// field and is a printed note (not a build failure) once past, the same
+// non-blocking treatment scripts/check-docket.mjs already gives a stale
+// docket item, for the same reason: time alone failing CI would make the
+// queue able to break the site.
+// Empty as of this round, and that is the honest state, not a placeholder:
+// /log's only overflow was fixed (app/globals.css's .log-field/.log-note,
+// same round -- see the changelog entry) before this file shipped, so
+// there is currently nothing real to document here. The shape stays ready
+// for the next one; adding an entry back is `checkRoute`'s FAIL diagnostic
+// pasted in, not a redesign.
+export const KNOWN_FAILURES = {};
+
+// Pure and synchronous on purpose -- no I/O, so it can be unit-tested with
+// synthetic inputs rather than only exercised end-to-end through a browser.
+// See scripts/test-check-reflow-known-failures.mjs, which does exactly
+// that: the real /log entry against a captured-shaped match, and a
+// synthetic /log result modelled on the review's own demonstration (a
+// different offender, unrelated text, +580px) to prove the mismatch FAILs
+// rather than reporting KNOWN.
+export function classifyKnownFailure(entry, result) {
+  const offenders = result.offenders || [];
+  if (result.truncated) {
+    return {
+      known: false,
+      reason: `offender list was truncated at ${offenders.length} -- too many overflowing elements to verify each is documented`,
+    };
+  }
+  if (offenders.length === 0) {
+    return {
+      known: false,
+      reason: "page overflows but no individual element was identified as the cause -- nothing to match against the documented signature",
+    };
+  }
+  const unexplained = offenders.filter(
+    (o) => !entry.snippets.some((snippet) => (o.text || "").includes(snippet))
+  );
+  if (unexplained.length > 0) {
+    return {
+      known: false,
+      reason:
+        `${unexplained.length} overflowing element(s) do not match this route's documented signature: ` +
+        unexplained
+          .map((o) => `<${o.tag.toLowerCase()}> "${(o.text || "").slice(0, 50)}"`)
+          .join(", "),
+    };
+  }
+  return { known: true };
+}
+
+// The other half of "must excuse only the failure it documents": an entry
+// whose citation has gone stale. Talks to the filesystem, so kept separate
+// from the pure classifier above; still trivially testable by pointing it
+// at a real repo checkout, which the test script does.
+export function checkKnownFailureBookkeeping(route, entry, { repoRoot = process.cwd(), now = new Date() } = {}) {
+  const problems = [];
+  const docketPath = path.join(repoRoot, entry.docket);
+  if (!fs.existsSync(docketPath) || !entry.docket.startsWith("docket/open/")) {
+    problems.push(
+      `FAIL  ${route}'s KNOWN_FAILURES entry cites "${entry.docket}", which is not an open docket item ` +
+        `-- closed, dropped, or renamed without this table being updated. Remove the entry if fixed, or point it at the item's replacement.`
+    );
+  }
+  const notes = [];
+  if (entry.expires && Date.parse(entry.expires) < now.getTime()) {
+    notes.push(
+      `note  ${route}'s KNOWN_FAILURES entry (${entry.docket}) is past its expires date (${entry.expires}) -- worth re-examining, not a build failure`
+    );
+  }
+  return { problems, notes };
+}
 
 const BASE = process.argv[2] || process.env.BASE || "http://localhost:3000";
 
@@ -280,9 +408,9 @@ class Session {
   }
 }
 
-async function evaluate(session, fnSource) {
+async function evaluate(session, fnSource, argsLiteral = "") {
   const r = await session.send("Runtime.evaluate", {
-    expression: `(${fnSource})()`,
+    expression: `(${fnSource})(${argsLiteral})`,
     returnByValue: true,
     awaitPromise: true,
   });
@@ -444,26 +572,42 @@ async function stopBrowser(browser) {
 // ---------------------------------------------------------------------------
 // The in-page probe. Deliberately measures `documentElement.clientWidth`,
 // not `window.innerWidth` -- see the file header.
+//
+// `offenders` is every element (plus `document.body` itself) whose own
+// right edge exceeds the viewport -- not just the single widest one. A
+// KNOWN_FAILURES match has to explain all of them (see
+// classifyKnownFailure above): the review's finding was that keying on the
+// route alone let an unrelated second overflow hide behind a documented
+// one, and checking only the widest element would have left exactly that
+// gap open one level down -- a smaller unrelated offender sitting beside a
+// larger known one. Capped at 25 with `truncated` set past that, because a
+// page broken badly enough to produce more than 25 independently
+// overflowing elements is not "a contained, documented failure" under any
+// signature this file could reasonably hold, known or not.
+export const OFFENDER_CAP = 25;
 
-function REFLOW_PROBE() {
+export function REFLOW_PROBE(offenderCap) {
   const de = document.documentElement;
   const clientWidth = de.clientWidth;
   const scrollWidth = de.scrollWidth;
   const overflow = scrollWidth > clientWidth + 1;
-  let widest = null;
+  let offenders = null;
+  let truncated = false;
   if (overflow) {
-    const els = Array.from(document.querySelectorAll("body *"));
-    const byRight = els
+    const candidates = [document.body, ...document.querySelectorAll("body *")];
+    const over = candidates
+      .filter((e) => e.getBoundingClientRect().right > clientWidth + 1)
       .map((e) => ({
         tag: e.tagName,
         cls: (e.className || "").toString().slice(0, 40),
         right: Math.round(e.getBoundingClientRect().right),
+        text: (e.textContent || "").trim().slice(0, 200),
       }))
-      .sort((a, b) => b.right - a.right)
-      .slice(0, 3);
-    widest = byRight;
+      .sort((a, b) => b.right - a.right);
+    truncated = over.length > offenderCap;
+    offenders = over.slice(0, offenderCap);
   }
-  return { clientWidth, scrollWidth, overflow, widest };
+  return { clientWidth, scrollWidth, overflow, offenders, truncated };
 }
 
 async function checkRoute(port, route) {
@@ -496,7 +640,7 @@ async function checkRoute(port, route) {
     while (!loaded && Date.now() < deadline) await new Promise((r) => setTimeout(r, 100));
     await new Promise((r) => setTimeout(r, 400));
 
-    const result = await evaluate(session, REFLOW_PROBE.toString());
+    const result = await evaluate(session, REFLOW_PROBE.toString(), String(OFFENDER_CAP));
     return result;
   } finally {
     session.close();
@@ -507,6 +651,21 @@ async function checkRoute(port, route) {
 }
 
 async function main() {
+  let failures = 0;
+
+  // Bookkeeping first, once per entry, independent of whether the route
+  // currently overflows -- a stale citation is a problem even on a route
+  // that happens to render clean this run.
+  for (const [route, entry] of Object.entries(KNOWN_FAILURES)) {
+    const { problems, notes } = checkKnownFailureBookkeeping(route, entry);
+    for (const p of problems) {
+      console.log(p);
+      failures++;
+    }
+    for (const n of notes) console.log(n);
+  }
+  if (failures > 0) console.log();
+
   let browser;
   try {
     browser = await launchBrowser();
@@ -516,7 +675,6 @@ async function main() {
   }
   console.log(`      using ${browser.bin}`);
 
-  let failures = 0;
   try {
     for (const route of ROUTES) {
       let result;
@@ -529,23 +687,35 @@ async function main() {
       }
       const known = KNOWN_FAILURES[route];
       if (result.overflow && known) {
-        console.log(
-          `KNOWN ${route}  scrollWidth ${result.scrollWidth} > clientWidth ${result.clientWidth} ` +
-            `(+${result.scrollWidth - result.clientWidth}px at ${VIEWPORT_WIDTH}px) -- filed: ${known}`
-        );
+        const verdict = classifyKnownFailure(known, result);
+        if (verdict.known) {
+          console.log(
+            `KNOWN ${route}  scrollWidth ${result.scrollWidth} > clientWidth ${result.clientWidth} ` +
+              `(+${result.scrollWidth - result.clientWidth}px at ${VIEWPORT_WIDTH}px) -- filed: ${known.docket}`
+          );
+        } else {
+          console.log(
+            `FAIL  ${route}  overflows (+${result.scrollWidth - result.clientWidth}px), but NOT the documented ` +
+              `failure -- ${verdict.reason} (docket: ${known.docket})`
+          );
+          for (const o of result.offenders || []) {
+            console.log(`        offender: <${o.tag.toLowerCase()} class="${o.cls}"> right edge ${o.right}px "${o.text.slice(0, 50)}"`);
+          }
+          failures++;
+        }
       } else if (result.overflow) {
         console.log(
           `FAIL  ${route}  scrollWidth ${result.scrollWidth} > clientWidth ${result.clientWidth} ` +
             `(+${result.scrollWidth - result.clientWidth}px at ${VIEWPORT_WIDTH}px)`
         );
-        for (const w of result.widest || []) {
-          console.log(`        widest: <${w.tag.toLowerCase()} class="${w.cls}"> right edge ${w.right}px`);
+        for (const o of result.offenders || []) {
+          console.log(`        offender: <${o.tag.toLowerCase()} class="${o.cls}"> right edge ${o.right}px "${o.text.slice(0, 50)}"`);
         }
         failures++;
       } else if (known) {
         console.log(
           `FAIL  ${route}  no longer overflows, but is still listed in KNOWN_FAILURES -- ` +
-            `close ${known} and remove this entry so the route is a real assertion again`
+            `close ${known.docket} and remove this entry so the route is a real assertion again`
         );
         failures++;
       } else {
@@ -557,10 +727,19 @@ async function main() {
   }
 
   if (failures > 0) {
-    console.log(`${failures} route(s) overflow a ${VIEWPORT_WIDTH}px viewport (SC 1.4.10)`);
+    console.log(`${failures} problem(s) at a ${VIEWPORT_WIDTH}px viewport (SC 1.4.10)`);
     process.exit(1);
   }
   console.log(`all routes fit a ${VIEWPORT_WIDTH}px viewport (documentElement.clientWidth denominator)`);
 }
 
-main();
+// Guarded so `scripts/test-check-reflow-known-failures.mjs` can import the
+// pure functions above (classifyKnownFailure, checkKnownFailureBookkeeping)
+// without also launching a browser as a side effect of the import -- ESM
+// runs a module's top-level code once, on first import, same as on direct
+// execution.
+const isMain =
+  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMain) {
+  main();
+}

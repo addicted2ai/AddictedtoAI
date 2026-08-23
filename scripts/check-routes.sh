@@ -218,6 +218,18 @@ node scripts/check-ai-disclosure.mjs || failures=$((failures + $?))
 echo
 node scripts/check-reflow.mjs "$BASE" || failures=$((failures + $?))
 
+# KNOWN_FAILURES's own regression test. Adversarial review demonstrated
+# live that the first version keyed an exemption on the route name alone,
+# so an injected, unrelated +580px overflow on /log -- a route already
+# excused for a documented ~180px bug -- printed KNOWN instead of FAIL. The
+# fix pins each entry to the offending content, not the route; this test
+# exercises that pinning directly with synthetic inputs modelled on the
+# review's own demonstration, so the defect cannot come back silently. See
+# scripts/test-check-reflow-known-failures.mjs and the KNOWN_FAILURES
+# comment in scripts/check-reflow.mjs for the full account.
+echo
+node scripts/test-check-reflow-known-failures.mjs || failures=$((failures + $?))
+
 # The four Origin values' published definitions each appear on several
 # surfaces -- the /log badge tooltips, the per-page disclosure sentences,
 # the /disclosure enumeration, the homepage prose, the changelog preamble

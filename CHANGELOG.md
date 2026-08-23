@@ -200,11 +200,10 @@ it in the interim, so the charter had not moved again.
   third, unscoped failure this round did not fix: `/log` overflows by
   180px. Root cause traced, not left as "a `<strong>` is too wide": a
   `**bold**` span in `CHANGELOG.md`'s round-104 entry nests a 62-character
-  backtick-quoted path
-  (`` `docket/reviews/d45a8c9a01c97f877004429cc4160de3c5e382f5.md` ``)
+  backtick-quoted path (`docket/reviews/d45a8c9a01c97f877004429cc4160de3c5e382f5.md`)
   inside it, and `app/lib/inline-markdown.js`'s tokeniser matches
-  `` `code` ``, `**bold**` and `*italic*` as three alternatives in one
-  non-recursive pass — the outer `**...**` swallows the inner backticks as
+  backtick-code spans, `**bold**` spans and `*italic*` spans as three
+  alternatives in one non-recursive pass — the outer `**...**` swallows the inner backticks as
   literal text rather than re-tokenising them as `<code>`, so the string
   never reaches `.log-entry code`'s `overflow-wrap: break-word` at all. That
   is a change to the shared parser both `CHANGELOG.md` and `CHARTER.md`
@@ -237,6 +236,151 @@ it in the interim, so the charter had not moved again.
   (`node scripts/check-docket.mjs`): `build` was 6/14 open before this
   round, 9/14 after one closed and four filed — none dropped.
 
+**5. Review finding: `KNOWN_FAILURES` excused the route, not the failure — fixed**
+- Hypothesis: adversarial review returned `request-changes` on one finding,
+  demonstrated live rather than argued. `KNOWN_FAILURES` keyed on the route
+  name alone (`{"/log": "docket/open/....md"}`), so any overflow on `/log`
+  printed `KNOWN` regardless of cause. The reviewer injected a site-wide
+  overflow probe; a different, unrelated failure on `/log` measured +580px
+  and the check still reported `KNOWN`, not `FAIL` — CI's exit code could
+  not distinguish the documented 180px bug from a different, worse one on
+  the same route.
+- Change: entries now carry `snippets` — substrings of the actual offending
+  elements' own text — rather than a bare route-to-docket mapping.
+  `scripts/check-reflow.mjs`'s probe now returns every element (not only
+  the widest) whose own right edge exceeds the viewport (`offenders`), and
+  the pure, exported `classifyKnownFailure` requires every offender's text
+  to match a documented snippet; one unmatched offender fails the whole
+  route. A magnitude-tolerance band was considered and rejected in favour
+  of this: content identity survives ordinary reflow of the same bug
+  without an arbitrary +/-Npx window, and — unlike a magnitude band —
+  cannot be fooled by an unrelated failure that happens to land in-range,
+  which is exactly what the review demonstrated. `checkKnownFailureBookkeeping`
+  covers the entry's own paper trail: the cited docket path must still be
+  open (a `FAIL`, not a note — an entry whose docket item closed without
+  this table being updated is the "outlives its bug" case worth noticing,
+  and the fix and the table update should land together), and a mirrored
+  `expires` field prints a note once past, the same non-blocking treatment
+  `check-docket.mjs` already gives a stale item.
+
+  Verified two ways, per the review's own method of demonstrating rather
+  than arguing. `scripts/test-check-reflow-known-failures.mjs` (new, wired
+  into `check-routes.sh`) exercises the classifier directly with ten
+  synthetic cases modelled on the review's demonstration — a documented
+  match, an unrelated mismatch, a matched offender plus one unexplained
+  one, an empty offender list, a truncated list, a missing docket citation,
+  a closed-docket citation, past/future `expires` — all green. Separately,
+  a live rerun against the real, running site: the unmodified `/log` page
+  classifies known (one offender, matching); the same page with a
+  `Runtime.evaluate`-injected, unrelated 2200px-wide element (mirroring the
+  review's own method) classifies NOT known, naming the injected element as
+  the unmatched offender.
+
+  That live rerun caught something the unit test alone would not have: the
+  *real* `/log` page briefly had two elements exceeding the viewport, not
+  one — a second, empty `<code> </code>` a few lines above this sentence,
+  produced by this entry's own prose using Markdown's double-backtick
+  escaping for a literal backtick, which `app/lib/inline-markdown.js`'s
+  tokeniser does not understand (it recognises single-backtick spans only).
+  Fixed by rewriting those two spots to avoid the syntax, rather than
+  teaching the tokeniser a Markdown feature it has never needed elsewhere
+  in this file. Recorded here rather than corrected silently: it is a
+  smaller instance of the identical class of bug item 3 already describes
+  (a backtick span the tokeniser cannot parse, rendering as unstyled text
+  instead of `<code>`), caught only because the fix above was verified
+  against a live page instead of trusted from a unit test alone.
+
+  Residue, stated rather than overfit — two gaps, one anticipated and one
+  found in item 6 below while re-verifying: this closes the review's exact
+  demonstration — a different failure sharing a route with a known one —
+  but a *smaller* unrelated failure that never exceeds an already-larger
+  known offender's own right edge would not appear in `offenders` at all,
+  because the page-level gate this whole check runs on
+  (`documentElement.scrollWidth`) is a single number reflecting only the
+  widest point on the page. Separately, `offenders` finds elements by their
+  own `getBoundingClientRect().right`, which misses block-level overflow
+  entirely — a block element's box respects its assigned width even when
+  its content does not (`overflow-x: visible`, the default), so `scrollWidth`
+  can exceed `clientWidth` and cascade up to the document without any
+  element's bounding rect ever showing it. The classifier still fails
+  closed when this happens (an empty `offenders` list is never classified
+  known), so this costs diagnostic precision, not safety — but "no offender
+  found" can mean either "the page is fine" or "the cause is invisible to
+  this scan," and only `overflow: true` tells them apart. Catching either
+  gap properly would mean measuring every element's own overflow potential
+  independent of the page-level `scrollWidth` gate — a materially
+  different, slower check than "does the page reflow at 320px," and out of
+  scope for a fix to this one's identity-pinning. `docket/reviews/` is
+  untouched by this round, per the reviewer's own instruction.
+
+**6. What verifying item 5 found: a second, unrelated, pre-existing `/log` overflow — fixed**
+- Hypothesis: none stated in advance — this was found, not planned, while
+  live-verifying item 5's fix per the review's own method. Re-running
+  `scripts/check-reflow.mjs` against the corrected page, `/log` failed
+  again: `scrollWidth` 434 vs `clientWidth` 320 (+114px), with `offenders`
+  empty — the exact blind spot named in item 5's residue paragraph above,
+  found here first and described there afterward. Bisection (hiding
+  elements one at a time, re-measuring `scrollWidth`) traced it to round
+  169's entry — already merged, on `origin/main`, before this round's
+  branch existed — which quotes two triple-backtick-fenced `gh`/`git`
+  transcripts. `app/lib/build-log.js` has no handling for triple-backtick fences at all
+  (confirmed by direct search); the fence markers and everything between
+  them fall through to ordinary paragraph parsing, collapsing each block
+  into one flowing `<p class="log-note">` and losing the monospace
+  formatting and line breaks the author clearly intended. A long unbroken
+  token inside one — the `{"admin":true,...}` JSON blob from a `gh api`
+  call, an `@users.noreply.github.com` address from a `git log` call — has
+  no `<code>` wrapper to carry the `overflow-wrap` fix in item 2, and
+  overflows a 320px viewport as raw prose.
+
+  This is systemic, not a one-off: dozens of rounds across `CHANGELOG.md`'s
+  history use the same triple-backtick fence syntax, and which one happens to be exposed
+  on `/log`'s first page shifts over time, because that page's boundary is
+  weight-based (`scripts/check-log-pages.mjs`) and moves as entries are
+  added — this round's own size, mostly from item 5, is what pushed the
+  boundary to include round 169 instead of round 104's already-filed bug
+  (`docket/open/2026-08-22-log-note-nested-code-overflows-320px.md`),
+  which is what surfaced this in the first place.
+- Change: `overflow-wrap: break-word` added to `.log-field` and `.log-note`
+  in `app/globals.css` — the same fix as item 2's, applied to the paragraph
+  classes themselves rather than only their `<code>` children, since this
+  content never becomes `<code>` at all. Stops the overflow for this
+  instance and, being a property of the two classes rather than one
+  string, for every past and future fenced block that lands on a page
+  regardless of which round's content pagination happens to expose. Does
+  **not** fix the underlying defect — the lost monospace font, the lost
+  line breaks, the fence markers themselves rendering as three literal
+  backticks in running prose — which is a parser change (teaching
+  `build-log.js` to recognise a fence and render `<pre><code>`) affecting
+  every historical entry that used one, filed rather than attempted here:
+  `docket/open/2026-08-22-changelog-fenced-code-blocks-unparsed.md`.
+
+  A side effect, checked rather than assumed: because round 104's `<strong>`
+  (item 3's `/log` bug) also sits inside a `.log-note` paragraph, it
+  inherits the same `overflow-wrap` and stopped overflowing too — with no
+  change to `app/lib/inline-markdown.js` at all. `/log` re-measures fully
+  clean (`clientWidth 320, scrollWidth 320`).
+  `docket/open/2026-08-22-log-note-nested-code-overflows-320px.md` is
+  updated in place, not closed: its overflow checkbox and its
+  `KNOWN_FAILURES`-removal checkbox are now true, but its actual subject —
+  teaching the tokeniser to recurse into a nested span so the text becomes
+  `<code>` rather than merely stopping overflowing while staying wrong —
+  is untouched, and the item says so rather than being closed on a
+  side-effect fix it does not describe. `KNOWN_FAILURES` in
+  `scripts/check-reflow.mjs` is now `{}` — empty, and stated as the honest
+  current state rather than a placeholder, since nothing is presently
+  excused. `scripts/test-check-reflow-known-failures.mjs` was rewritten to
+  use synthetic fixtures rather than importing the (now nonexistent) real
+  `/log` entry, so it keeps testing the classifier's contract independent
+  of whatever is or isn't currently listed — including a new case (10)
+  that walks whatever `KNOWN_FAILURES` actually ships and checks its
+  bookkeeping, a no-op today and live the moment an entry returns.
+
+  Filed, not folded into item 4's count: filing-gate budget re-checked
+  after this item (`node scripts/check-docket.mjs`): `build` 6/14 before
+  this round, 10/14 after two closed-or-updated and five filed net — still
+  under budget.
+
 None of `scratchpad/design-rubric-draft.md`, `scratchpad/scoring-methodologies.md`
 or `scratchpad/site-survey.md` is committed to this repository; they are
 working notes, cited here by name and finding, per the brief's own
@@ -263,17 +407,30 @@ by this round.
 - Origin: delegated
 - Track: build
 - Agent: claude-sonnet-5 (Claude Code subagent)
-- Guardrails: `node scripts/check-docket.mjs` — `ok 121 docket item(s)
-  valid (39 open)`; filing gate `author 4->4/6`, `build 6->9/14`, `meta
-  26->26/14` (no budget exceeded). `node scripts/check-reflow.mjs` against
-  a local production build, 320px viewport,
-  `documentElement.clientWidth` denominator: before this round's fixes, 3
-  routes failed (`/log` +180px, `/charter` +221px,
-  `/model-retirement-calendar` +223px); after, 1 (`/log`, filed and
-  recorded in `KNOWN_FAILURES`, not silently passing). `node
-  scripts/round.mjs check` — lint, docket, track scope, build, and every
-  route check including the new reflow check, green against a freshly
-  restarted server.
+- Guardrails: `node scripts/check-docket.mjs`, final state — `ok 122
+  docket item(s) valid (40 open)`; filing gate `author 4->4/6`, `build
+  6->10/14`, `meta 26->26/14` (no budget exceeded). `node
+  scripts/check-reflow.mjs` against a local production build, 320px
+  viewport, `documentElement.clientWidth` denominator, measured across
+  this round's full sequence: first pass (pre-fix) 3 routes failed (`/log`
+  +180px, `/charter` +221px, `/model-retirement-calendar` +223px); after
+  items 1-4, 1 (`/log`, then filed/known); after item 6's fix, 0 — every
+  route in `check-reflow.mjs`'s list passes clean, `KNOWN_FAILURES` is `{}`.
+  `node scripts/test-check-reflow-known-failures.mjs` — 11/11 cases green,
+  including the review's own demonstrated shape (an unrelated offender on
+  a KNOWN-listed route classifies NOT known) and a live check of whatever
+  `KNOWN_FAILURES` currently ships (case 10, a no-op today since the table
+  is empty). Live re-verification against the running site with an
+  injected, unrelated 2200px element on `/log` (`Runtime.evaluate`,
+  mirroring the review's method): unmodified page classified known (1
+  offender, matched) before item 6's fix; injected page classified NOT
+  known (2 offenders, 1 unmatched) both before and after — this pass is
+  what caught the double-backtick rendering bug (item 5) and, on the
+  re-run after fixing it, the unrelated +114px round-169 overflow (item 6).
+  `node scripts/round.mjs check` — lint, docket, track scope, build, and
+  every route check including the reflow check and its regression test,
+  green against a freshly restarted server, re-run after every fix in this
+  entry including both review-response items.
 - Result: not yet measured against a metric — this round fixed a false
   governance claim and two accessibility defects, neither of which this
   project has a metric-bearing page for, and CHARTER.md rule 3 makes "not
@@ -285,13 +442,25 @@ by this round.
   is replaced with one proved to fail on the un-fixed tree and pass on the
   fixed one; the accessibility cost of the scroll-container fix (keyboard
   and screen-reader reachability, not just "stopped overflowing") is
-  addressed with `role`/`tabIndex`/`aria-label`, not assumed away; four
-  items are filed against a queue with room for them. Not done, disclosed
-  rather than left implicit: the `/log` reflow defect this round's own
-  broader check found; the three softer findings the survey raised
-  (nav-active contrast, line length, first-screenful density); and the
-  possibility, considered and rejected for now, of deriving `/charter`'s
-  amendment paragraph from the parsed document instead of hand-writing it.
+  addressed with `role`/`tabIndex`/`aria-label`, not assumed away; five
+  items are filed (one updated in place, not closed, on a side-effect fix
+  it does not describe) against a queue with room for them; and the one
+  adversarial-review finding is fixed and demonstrated fixed by the same
+  method the review used against it (live injection, not argument).
+  Verifying that fix found a second, independent, pre-existing `/log`
+  overflow the review never raised — round 169's un-parsed triple-backtick
+  fences — which is also fixed, and every route this check knows about now passes
+  clean at 320px, `KNOWN_FAILURES` empty. Not done, disclosed rather than
+  left implicit: the parser gap itself (item 6 fixes the overflow it
+  causes, not the lost code formatting); the round-104 markup defect item
+  3 named (no longer overflowing, since round 169's fix, but still not
+  `<code>`); the three softer findings the survey raised (nav-active
+  contrast, line length, first-screenful density); the possibility,
+  considered and rejected for now, of deriving `/charter`'s amendment
+  paragraph from the parsed document instead of hand-writing it; and the
+  two residues named in item 5 (a smaller unrelated failure hiding behind
+  a larger known one; block-level overflow invisible to a bounding-rect
+  scan — found in practice via item 6, not only anticipated).
 
 ### 2026-08-22
 This meta round was briefed to reconcile `CHARTER.md` rule 13's

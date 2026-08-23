@@ -1,12 +1,36 @@
 ---
 track: build
 filed-by: build
-title: A backtick span nested inside **bold** changelog prose renders as an unbroken literal string and overflows /log at 320px
+title: A backtick span nested inside **bold** changelog prose renders as an unbroken literal string, not <code> -- no longer overflows, but still wrong
 created: 2026-08-22
 expires: 2026-11-20
 serves: more-checkable
-priority: 2
+priority: 3
 ---
+
+## Update, same round (2026-08-22, adversarial-review response)
+
+The overflow this item was filed for is fixed, as a side effect of a
+different fix, not of anything below. Verifying a separate change
+(`scripts/check-reflow.mjs`'s `KNOWN_FAILURES` identity-pinning, requested
+by adversarial review) surfaced a second, unrelated overflow on `/log`
+(`docket/open/2026-08-22-changelog-fenced-code-blocks-unparsed.md`), fixed
+by adding `overflow-wrap: break-word` to `.log-field` and `.log-note`
+directly (matching `.log-entry code`'s existing treatment). Because the
+`<strong>` this item is about sits inside a `.log-note` paragraph, it
+inherits that same `overflow-wrap` from its parent — `/log` re-measured
+clean (`clientWidth 320, scrollWidth 320`) with no changes to
+`app/lib/inline-markdown.js` at all. The `KNOWN_FAILURES` entry citing this
+item is removed from `scripts/check-reflow.mjs` accordingly (checkbox 3).
+
+**This does not close the item.** The markup defect itself is untouched:
+the text below still renders as plain text, not `<code>` — it merely no
+longer overflows while doing so. Checkbox 1 (teach the tokeniser to
+recurse into a matched span) is the actual fix and remains open; a cosmetic
+defect that happens not to break layout is still a defect CHARTER.md rule 4
+would call a claim rendered incorrectly, and the render *looks* like plain
+prose making no code claim at all rather than looking broken, which makes
+it easy to miss precisely because it no longer visibly fails anything.
 
 ## Why now
 
@@ -26,8 +50,8 @@ The cause is a real markup-correctness bug, not a missing CSS rule. `CHANGELOG.m
     (`docket/reviews/d45a8c9a01c97f877004429cc4160de3c5e382f5.md`), fixed here
     rather than left in a clean draft:**
 
-`app/lib/inline-markdown.js`'s tokeniser matches `` `code` ``, `**bold**` and
-`*italic*` as three alternatives in one non-recursive regex pass
+`app/lib/inline-markdown.js`'s tokeniser matches backtick-code spans,
+`**bold**` spans and `*italic*` spans as three alternatives in one non-recursive regex pass
 (`TOKEN = /`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*/g`). The outer `**...**` here
 matches first and swallows everything between the delimiters — including the
 two backtick-quoted spans — as one literal string; the backticks inside are
@@ -68,10 +92,14 @@ silently dropped) but does not fail the build until this item closes it.
 ## Done when
 
 - [ ] `inlineMarkdown` (or an equivalent fix) recurses into a matched
-      `**bold**`/`*italic*` span so a nested `` `backtick span` `` still
+      `**bold**`/`*italic*` span so a nested backtick-code span still
       becomes a `<code>` element, on both `/log` (via `CHANGELOG.md`) and
       `/charter` (via `CHARTER.md`), which share the same renderer
-- [ ] `/log` passes `scripts/check-reflow.mjs` at a 320px viewport
-- [ ] The `/log` entry in `scripts/check-reflow.mjs`'s `KNOWN_FAILURES` is
+- [x] `/log` passes `scripts/check-reflow.mjs` at a 320px viewport --
+      true as of 2026-08-22, via the unrelated `.log-field`/`.log-note` fix
+      above, not via anything this item's own checkbox 1 still requires
+- [x] The `/log` entry in `scripts/check-reflow.mjs`'s `KNOWN_FAILURES` is
       removed, restoring `/log` to a real (not merely reported) assertion
-- [ ] `node scripts/round.mjs check` green
+- [ ] `node scripts/round.mjs check` green -- true today; re-check when
+      checkbox 1 lands, since a tokeniser change could move or remove this
+      exact text
