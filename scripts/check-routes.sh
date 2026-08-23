@@ -252,6 +252,22 @@ node scripts/check-origin-definitions.mjs || failures=$((failures + $?))
 echo
 node scripts/check-frame.mjs || failures=$((failures + $?))
 
+# Briefs committed under docket/briefs/ -- the instructions the orchestrator
+# wrote before each round ran. Round 9 (loop/meta/briefs-and-premises) exists
+# because three false premises reached this project through briefs on 22
+# August 2026, and nothing validated a brief before it was built on: not
+# review (review checks work against a brief, and the brief carried the
+# error), not a check (none existed), not the maintainer (briefs lived only
+# in a temporary scratchpad directory nobody reads). This checks that every
+# current brief (docket/briefs/legacy/ is archive and exempt, see its own
+# README) declares each factual premise's source -- a FRAME.md fact, a
+# command, or a maintainer attestation -- and that a declared FRAME.md
+# citation still resolves. It runs after a brief is already committed and
+# cannot gate one in advance; see scripts/check-briefs.mjs's own header for
+# exactly what it does and does not verify.
+echo
+node scripts/check-briefs.mjs || failures=$((failures + $?))
+
 # Document transfer size, against the same budget CI gates on.
 #
 # lighthouserc.json holds `resource-summary:document:size` at 150,000 bytes,

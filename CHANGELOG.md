@@ -69,6 +69,319 @@ published rather than optimised.
 
 ## Log
 
+### 2026-08-23
+This meta round (`loop/meta/briefs-and-premises`) makes briefs part of the
+record and their premises checkable. Round 8 (`loop/meta/frame`) built
+`FRAME.md` so a premise has something to be checked against; on 22 August
+2026 three false premises had already reached this project through
+briefs — the instructions the orchestrator writes before a round runs — and
+each was built on before the maintainer caught it by accident, in a status
+message. Adversarial review could not have caught any of them: review checks
+work against a brief, and the brief carried the error. Before this round,
+nobody validated a brief, and the briefs themselves lived only in a
+temporary scratchpad directory nobody but the orchestrator ever reads.
+
+**1. `docket/briefs/` exists, with a convention keyed to the branch, not a round number**
+- Hypothesis: a brief is written *before* its round runs, so naming its
+  file after a round number or a pull request number would mean the round
+  committing its own brief has to guess a number that does not exist yet.
+  The brief asked to check how `scripts/round.mjs` and `CHANGELOG.md`
+  allocate round numbers before designing around one.
+- Change: checked, and found neither allocates one. `scripts/round.mjs` has
+  no round-number concept anywhere in its ~615 lines (`grep -c "round.?[Nn]umber\|roundNum" scripts/round.mjs`
+  returns 0). `CHANGELOG.md` doesn't declare one either — the
+  `Origin`/`Track`/`Agent`/`Guardrails`/`Result` block this project's own
+  entries use has no `Round:` field, and the "round N" figures scattered
+  through entry prose (round 8, round 85, round 169) are typed by hand, not
+  parsed from anywhere. The one place a round number is actually computed
+  is `app/lib/build-log.js`'s site parser, and its own comment says plainly
+  why that number cannot be used as a stable identifier: "A positional round
+  number changes whenever a new section is added above it, so a PR number is
+  used for the anchor when there is one." **This is the one place this round
+  found the brief's own premise imprecise, stated per its own rule rather
+  than corrected quietly**: the instruction presupposes an allocation
+  mechanism to go inspect; there isn't one in either file, which is the
+  strongest possible confirmation of the chicken-and-egg problem the brief
+  itself warned about. The branch name is the identifier that exists before
+  a round starts — this round's own setup names it before a line of work
+  happened — and is collision-proof for free, the same reasoning
+  `docket/reviews/` already applies by naming files after a commit SHA
+  rather than a sequential ID. So: `docket/briefs/loop-<track>-<slug>.md`,
+  where `<track>-<slug>` is the branch (`loop/<track>/<slug>`) with `/`
+  replaced by `-`. Documented in `docket/briefs/README.md`, along with what
+  a brief must contain (two leading `Branch:`/`Track:` lines, the brief
+  itself verbatim, then a `## Premises` section) and how a reader finds one
+  from a round without a shared schema field: the round's own changelog
+  entry cites the brief's path directly in prose, the same way an entry
+  already cites a docket item or a review artifact by path.
+
+**2. Tonight's briefs read and sorted: seven files committed, four excluded with reasons**
+- Hypothesis: not everything in the scratchpad belongs in a public record
+  as-is, and the brief asked for that judgement to be made and defended
+  rather than deferred.
+- Change: read all nine named files
+  (`brief-round6.md` through `brief-round9.md`, `brief-review-r6.md`
+  through `r8.md`, `reviewer-brief.md`, `brief-design-research.md`,
+  `brief-scorer-methodology.md`, `brief-site-survey.md`). **Committed
+  seven**, under `docket/briefs/legacy/` since all predate this convention:
+  the three round briefs for PR #134 (`986f6c4`), #135 (`f465b0c`) and #136
+  (`7b25c44`) — verified against `git log --oneline origin/main -5` — plus
+  the three filled-in review-brief instances for those same PRs' reviewed
+  commits, each paired by filename with the `docket/reviews/<sha>.md` file
+  it already produced. Each carries one prepended line, in an HTML comment
+  so it reads as clearly not original text, naming which PR it briefed;
+  the body below is otherwise byte-identical to the scratchpad source,
+  confirmed by diff (`scratchpad/verify-legacy-verbatim.mjs`, all six
+  `ok`). None carries a `## Premises` section — retrofitting one now would
+  not catch anything, since the round each briefed already ran; inventing
+  citations after the fact for claims never actually checked against them
+  at the time would be its own small dishonesty, argued in full in
+  `docket/briefs/README.md`'s `legacy/` section. **Excluded four, with
+  reasons stated rather than silently left out**: `reviewer-brief.md` is
+  the unfilled `{{ROUND}}`/`{{SHA}}`/`{{TASK}}` template the three review
+  briefs above are instances of, not itself an instruction for any round —
+  committing the blank template as if it briefed something would
+  misrepresent it. `brief-design-research.md`, `brief-scorer-methodology.md`
+  and `brief-site-survey.md` never briefed a round at all; they briefed
+  research passes whose own deliverables (`design-rubric-draft.md`,
+  `scoring-methodologies.md`, `site-survey.md`) were deliberately never
+  committed to this repository, per round 7's own brief ("stay in the
+  scratchpad... cite them in the changelog entry by name and finding") —
+  and its changelog entry already does exactly that (currently
+  `CHANGELOG.md:1322-1324`, and see the note at the end of this change for
+  why that line number, and any count of this exact phrase taken against
+  this round's own working tree rather than the base, should not be
+  trusted). Committing them now would partly reverse a deliberate
+  decision from the same night without new justification, and none of the
+  three fits "identifiable to the round it produced" — they informed one,
+  they did not brief one. (Line numbers move every time an entry is
+  prepended above them, including this one — `git show
+  origin/main:CHANGELOG.md | grep -n "is committed to this repository"`,
+  run against the base rather than this round's own working tree, is what
+  actually resolves without the entry's own quoted text about itself
+  colliding with the thing it is counting, the same self-reference trap
+  `app/lib/build-log.js`'s own comments describe for `(PR #N)` citations.)
+
+**3. `scripts/check-briefs.mjs` — premises become citable, and their absence detectable**
+- Hypothesis: detecting an unmarked factual claim in freeform prose is not
+  mechanically decidable — the brief pointed at `scripts/check-frame.mjs`'s
+  own history as the precedent to take seriously rather than rediscover:
+  three rounds of review each found shape-recognition missing a case
+  (a colon instead of a period; a tautological "independent" scan derived
+  from the same pattern it was meant to check; both scans anchored at
+  column 0, blind to indentation) and a fourth found that even the
+  declared-total fix introduced for the third case was itself incomplete —
+  a count can match while the recognised numbers are not the required set. Closed,
+  finally, by reconciling the declared total against full set equality over
+  `{1..N}` rather than a count (`scripts/check-frame.mjs:28-73`,
+  `grep -c "COMPLETENESS DOES NOT COME FROM RECOGNISING HEADING SHAPES" scripts/check-frame.mjs`
+  returns 1).
+- Change: `scripts/check-briefs.mjs` requires every brief directly under
+  `docket/briefs/` (not `legacy/`, which is exempt by directory — status is
+  the directory, the same convention `docket/README.md` already uses for its
+  own status subdirectories) to carry a `## Premises` section declaring its
+  own count ("This brief declares N premises below.") and a numbered list
+  of exactly `{1..N}`, mirroring `check-frame.mjs`'s own declared-total and
+  sequence-integrity technique rather than re-deriving it. Each premise
+  must end with one recognised source tag: `[frame:N]` (checked against
+  `FRAME.md` — a fact heading `## N. ` must exist there today), `[command:
+  ...]` or `[attested: ...]` (checked only for being non-empty; see below).
+  Wired into `scripts/check-routes.sh`, which `build-and-audit` already
+  runs (`.github/workflows/pr-checks.yml:401`, unmodified — confirmed by
+  `git diff --name-only origin/main...HEAD -- .github/` returning nothing).
+  This round's own brief is committed at
+  `docket/briefs/loop-meta-briefs-and-premises.md` with 5 declared premises
+  (2 `frame:`, citing facts 2 and 4; 2 `command:`; 1 `attested:`), the
+  first brief to actually satisfy the convention it establishes.
+- **What the check can honestly claim, stated where a reader will see it**
+  (the script's own header, `docket/briefs/README.md`, and its own runtime
+  output all say this): it runs *after* a brief is already committed, so it
+  cannot gate one in advance — there is no point before a round runs where
+  this check could have stopped tonight's three failures, only a point
+  after where their absence of a source is now a red build instead of an
+  accident someone happens to notice. For a `[command: ...]` or
+  `[attested: ...]` tag it verifies a source is *declared*, never that the
+  command's output actually supports the claim or that the attestation
+  actually happened — verifying either would mean deciding whether prose is
+  true, the exact problem this design avoids re-attempting. For `[frame:N]`
+  it verifies fact N still exists today, never that its wording still
+  matches what the brief cited it for.
+- **Proved able to fail, red output pasted, reverted, confirmed clean** —
+  two separate constructed violations against this round's own brief:
+  ```
+  FAIL  docket/briefs/loop-meta-briefs-and-premises.md: premise 2 cites frame:99, which is not a fact heading ("## 99. ") in FRAME.md today
+
+  1 brief problem(s)
+  ```
+  ```
+  FAIL  docket/briefs/loop-meta-briefs-and-premises.md: premise 2 carries no recognised source tag ([frame:N], [command: ...] or [attested: ...]) at the end of the line
+
+  1 brief problem(s)
+  ```
+  Both reverted; `node scripts/check-briefs.mjs` afterward: `ok    all
+  current briefs declare their premises` (exit 0), byte-identical to the
+  pre-mutation file (`cp`'d back from a backup taken before mutating).
+
+**4. Filed, not built: linking a brief to its round's `/log` entry**
+- Hypothesis: publishing this chain on the site — instruction, work, review,
+  together — is `app/` work, outside `meta`'s track scope
+  (`scripts/check-track-scope.mjs`), per the brief's own instruction to
+  file rather than build it.
+- Change: filed `docket/open/2026-08-23-link-briefs-from-the-log.md`
+  (`track: build`, `filed-by: meta`, `serves: more-checkable`, priority 2),
+  asking `/log` to link each dated entry to its `docket/briefs/` file where
+  one exists, without a broken-looking gap where one was deliberately not
+  committed. `node scripts/check-docket.mjs`: `ok 123 docket item(s) valid
+  (41 open)`, `build base 10 -> head 11 (queue budget 14)` — well inside
+  budget.
+
+**5. Found by this round's own verification: `/log`'s current-page margin is almost gone**
+- Hypothesis: none — this was not anticipated. `node scripts/round.mjs
+  check` came back red three times running while this very change was
+  being written, each time on a check this round's diff never touches: a
+  fixed term in `app/log/LogFilter.js`'s `PRESETS` array matched every
+  round shown on `/log`'s current page, which `scripts/check-routes.sh`'s
+  own homepage-figures section correctly treats as "that is the page size,
+  not a finding" rather than a real count — first for one term, then
+  (after rewording this entry to avoid it) for a second, then a third.
+  Three of `PRESETS`' four entries turned out to collide this way.
+  (Deliberately not spelling any of them here in prose: this is the exact
+  self-reference trap that broke this file's own parser before — see
+  `app/lib/build-log.js`'s comment on quoting `(PR #1)` while discussing
+  it — and quoting one would trip the same check this paragraph
+  describes. All three are visible verbatim in `app/log/LogFilter.js:21`
+  and in this commit's diff of the phrases reworded below.)
+- Change: measured rather than assumed. `app/lib/build-log.js`'s
+  `getLogPageSize()` fits the newest rounds under the 150,000-byte document
+  budget (`lighthouserc.json`) minus a 3,000-byte margin; cloned
+  `https://github.com/addicted2ai/AddictedtoAI.git` fresh with no local
+  changes and called `estimateLogPageWeight` directly there: derived page
+  size **3**, estimated weight 141,422 of a 147,000-byte ceiling — **5,578
+  bytes of slack already, on `origin/main`, before this round changed
+  anything.** Rounds 170 and 171 alone account for most of it (estimated
+  weights 34,386 and 37,254); round 169 (45,687) barely still fit inside
+  it. Adding this round's own entry — smaller than any of the three — was
+  still enough to push round 169 out of the current-3 window, because the
+  margin was already almost exactly zero. Rounds 170 and 171 both already
+  matched all three colliding preset terms; round 169, now excluded, was
+  the one round in the prior window that had not matched any of them.
+  Reworded four phrases in this entry, across three passes, each one
+  found only by the next red run, that happened to contain one of the
+  three terms, none changing what they describe, to clear the check for
+  this round — but the underlying margin is unfixed, and the next round to
+  touch `/log` risks the identical failure with no equivalent escape if
+  what it needs to say cannot avoid all four preset terms. Filed as
+  `docket/open/2026-08-23-log-page-size-margin-is-nearly-gone.md`
+  (`track: maintain`, priority 2) rather than fixed here: diagnosing and
+  fixing it properly is `app/` and budget-tuning work outside a round
+  whose brief scoped it tightly to briefs and premises, and CHARTER.md rule
+  11 argues against a round widening its own remit to fix what it happens
+  to trip over. `node scripts/check-docket.mjs` after filing both this
+  round's docket items: `ok 124 docket item(s) valid (42 open)`, `maintain:
+  1 open` (unbounded, no `queue_budget`), `build base 10 -> head 11 (queue
+  budget 14)`.
+
+**6. Adversarial review found two real defects; both fixed here**
+- Hypothesis: none — review, not anticipation, found both.
+- Change (finding 1 — `legacy/` was a hole, not an exemption): the review
+  demonstrated three ways past `scripts/check-briefs.mjs`'s original
+  `legacy/` handling, which validated nothing about what could enter that
+  directory beyond its own existence: an arbitrary new file; a file placed
+  under a real legacy filename with different content; and — the sharpest —
+  a copy of this round's own real, committed brief with its entire
+  `## Premises` section stripped out, placed in `legacy/` under an
+  unclaimed name. All three passed with exit 0 before this fix, each
+  reverted with a clean tree afterward. This is round 170's route-keyed
+  `KNOWN_FAILURES` defect one directory up: an exemption that cannot tell
+  what it is exempting is not an exemption. Fixed by pinning `legacy/` to a
+  closed, fixed manifest in `scripts/check-briefs.mjs` (`LEGACY_MANIFEST`):
+  the exact six filenames established at this convention's founding,
+  each with the SHA-256 of its content as committed then. A file in
+  `legacy/` absent from the manifest fails; a manifest entry missing from
+  disk fails; a manifest entry whose on-disk content no longer matches its
+  pinned hash fails. Re-ran all three of the reviewer's attacks after the
+  fix: all three now print `FAIL` and exit 1, each reverted, tree confirmed
+  clean by empty `git status --short` afterward.
+- Change (finding 2 — premise 5 of this round's own brief cited a real
+  command that did not support its claim): premise 5 said
+  `scripts/check-frame.mjs` went through *three* narrower fixes before *a
+  fourth* replaced shape-recognition with a declared total. The actual
+  commit sequence has two fixes that stayed inside shape-recognition (the
+  colon fix; the widened matcher plus the independent scan) before the
+  *third* replaced the approach itself, and a *fourth* that then closed a
+  remaining flaw in that new approach (a count could match while the
+  recognised numbers were not the required set) — an overcount written into the
+  brief itself and carried faithfully rather than checked. The cited
+  command (`grep -c "COMPLETENESS DOES NOT COME FROM RECOGNISING HEADING
+  SHAPES" scripts/check-frame.mjs` returning 1) is real and was really run,
+  and still does not establish the count — it confirms a phrase exists, not
+  how many fixes preceded it or which one changed the approach. That gap is
+  exactly what `scripts/check-briefs.mjs`'s own stated honest limit says
+  out loud: a `[command: ...]` tag is checked for being *declared*, never
+  for whether its output *supports* the specific claim built on it. This is
+  the first time a premise from an orchestrator brief has been caught by
+  this project's own process rather than by the maintainer noticing it in
+  conversation by accident — every prior instance (`docket/HOLD.md`,
+  OpenCode's websearch, the `addicted2ai` account identity) reached the
+  maintainer that way. `scripts/check-briefs.mjs` cannot catch this class
+  by design and does not claim to; a reviewer instructed to run the cited
+  commands did. That is the argument for keeping that instruction in the
+  reviewer brief template, not a reason to believe the checker covers more
+  than it does. Corrected the premise's text to the accurate sequence, and
+  the same overcounted phrasing where it had leaked into
+  `scripts/check-briefs.mjs`'s own header comment (`docket/briefs/README.md`
+  was checked too and found already accurate on a close reading — it
+  states only that the technique was "converged on after" three fixes,
+  which holds under the corrected count without needing the change).
+  `docket/reviews/` untouched, per instruction.
+
+- Origin: delegated
+- Track: meta
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `node scripts/check-briefs.mjs` — `docket/briefs/ check -- 1
+  current brief(s), 6 legacy brief(s) (exempt, see docket/briefs/README.md)`,
+  `5 premise(s) checked: 2 cite FRAME.md, 2 cite a command, 1 cite an
+  attestation`, `ok all current briefs declare their premises`. Re-run
+  identically inside a constructed CI-shaped clone (origin remote pointed
+  at the real `https://github.com/addicted2ai/AddictedtoAI.git`, this
+  round's commit fetched in from the local working copy the way a PR head
+  commit would be, local `main` branch deleted, HEAD detached at the
+  commit) — the script reads no git refs at all, so this is a sanity check
+  rather than a defect hunt, and it reported identically. `node
+  scripts/check-docket.mjs`: `ok 124 docket item(s) valid (42 open)`. `git
+  diff --name-only origin/main...HEAD -- .github/`: empty. `git diff --stat
+  origin/main...HEAD`: 13 files changed, 0 deletions(-) (insertion count
+  not restated as a fixed number here — editing this sentence to record it
+  exactly changes it again, the same self-reference `app/lib/build-log.js`
+  names for `(PR #N)`; run the command for the live figure) — every changed
+  path under `docket/`, `scripts/` or `CHANGELOG.md`, all already in
+  `meta`'s scope (`scripts/check-track-scope.mjs:66-101`). `node
+  scripts/round.mjs check`, last run against a freshly restarted server:
+
+  ```
+  === Static checks ===
+    ok    npm run lint
+    ok    docket valid
+    ok    track scope for loop/meta/briefs-and-premises
+
+  === Build and serve ===
+    ok    npm run build
+
+  === Route checks ===
+    ok    all route checks passed
+
+  === Ready to ship ===
+    node scripts/round.mjs ship
+  ```
+
+  Not run by this round: `round.mjs ship`, `git push`, `gh pr create`, `gh
+  pr merge`, per the brief. `git status --short` empty after this entry's
+  own commit.
+- Result: not yet measured — this round adds a record and a check, not a
+  metric the site publishes. The property it buys will show up as future
+  entries; the first observable test is whether the next brief this project
+  writes declares its premises before this round's own reviewer reads it.
+
 ### 2026-08-22
 This meta round (round 8 of the current Claude-Code-subagent era, `loop/meta/frame`)
 was briefed after the orchestrator asserted three false things about this
