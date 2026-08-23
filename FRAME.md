@@ -62,10 +62,22 @@ fi
 **Claim.** `scripts/orchestrate.sh` gates its own iteration loop on
 `docket/HOLD.md` and halts itself when the file is present and non-empty.
 CHARTER.md rule 13a states plainly that this is "today the loop's own signal
-to itself... not a channel the maintainer currently uses to intervene." Every
-commit to this file in this repository's history (at least ten, as of this
-round) was written by the orchestrator or a round halting itself, not a
-maintainer reaching into a session already running.
+to itself... not a channel the maintainer currently uses to intervene." The
+file's commit history has not been deleted (at least ten commits, as of this
+round). What this check does **not** and cannot establish: who typed any one
+of those commits. `addicted2ai` is a shared account (fact 1) — commit
+authorship on it cannot distinguish the loop from the maintainer typing by
+hand, in either direction. CHARTER.md's History (2026-08-22) records a
+one-time human reading of the ten commit messages, concluding each reads as
+the loop halting itself rather than a maintainer intervening live; that
+characterization is not re-derived by this check and is not part of what
+"verified" claims below.
+
+**Adversarial review (round 171, `docket/reviews/9980ade895f69b88bc25fcac08256736bd931902.md`)
+found the first version of this fact claimed the commit-authorship reading as
+verified when the check only ever counted commits and grepped text — unable,
+by fact 1's own logic, to see who typed anything. Narrowed above rather than
+padded with a check that cannot exist.**
 
 **Status:** verified
 
@@ -356,20 +368,90 @@ if [ "$undeclared" -eq 47 ]; then echo PASS; else echo "FAIL undeclared=$undecla
 
 ---
 
-## 14. OpenCode has websearch, via Exa
+## 14. `CHARTER.md` has 22 rules, not a number typed into prose
 
-**Claim.** Scout rounds run on OpenCode specifically because it has web
-search (Exa) and Claude Code's track scoping deliberately withholds
-`WebSearch`/`WebFetch` from `meta`. This has been asserted false twice on
-this project by an orchestrator carrying a stale session summary over a
-correct memory. No command run from inside this git checkout can query
-OpenCode's own tool configuration.
+**Claim.** The rule count is a live property of `CHARTER.md`'s own text —
+sections I through V, numbered top-level items — not a figure to memorise or
+copy into another file. Checked two independent ways: the same line-range
+regex `scripts/check-routes.sh` already asserts the `/charter` page against,
+and a dynamic import of the real production parser (`app/lib/charter.js`)
+counting the rule blocks it actually produces from the live file. Both must
+agree, and both must be non-zero — a parser that silently stopped
+recognising every rule heading at once would otherwise pass a 0 = 0
+comparison.
 
-**Status:** attested — the orchestrator's own record of its tooling; not provable from this repository.
+**Adversarial review (round 171) found this fact missing and `CLAUDE.md`
+asserting "21 rules" unchecked — stale by one, and copied from this
+repository's own already-stale `README.md`/`AGENTS.md` rather than verified
+against either method above. `CLAUDE.md` no longer states the number at all;
+this is the checked source a reader (or a future `CLAUDE.md`) should point at
+instead of retyping it.**
+
+**Status:** verified
+
+**Check:**
+```sh
+file_count=$(sed -n '/^## I\. Truth/,/^## Amendment/p' CHARTER.md | grep -c '^[0-9][0-9]*\. ')
+parsed_count=$(node --input-type=module -e "
+import('./app/lib/charter.js').then((m) => {
+  const charter = m.getCharter();
+  const n = charter.sections
+    .filter((s) => s.ruleSection)
+    .reduce((total, s) => total + s.blocks.filter((b) => b.type === 'rule').length, 0);
+  console.log(n);
+});
+" 2>/dev/null)
+if [ "$file_count" -ge 1 ] && [ "$parsed_count" -ge 1 ] && [ "$file_count" = "$parsed_count" ]; then
+  echo "PASS ($file_count rules)"
+else
+  echo "FAIL file-regex-count=$file_count parser-count=$parsed_count"
+fi
+```
+
+**Expect:** `PASS`
 
 ---
 
-## 15. The supervisor is dead since 2026-08-18
+## 15. `meta` has no web access — checkable, not just documented
+
+**Claim.** `.github/workflows/loop.yml` hard-codes the tool list a
+scheduled `meta` round launches with: `Read,Write,Edit,Glob,Grep,Bash`,
+omitting `WebSearch` and `WebFetch`. This is the real enforcement
+mechanism, not `prompts/README.md`'s table describing it — reading that file
+does not touch `.github/`, which this round does not modify.
+
+**Adversarial review (round 171) found the checkable half of what was fact
+14 folded into an `attested` marker alongside a genuinely unprovable claim
+(OpenCode's own websearch support) — the exact "true attested fact beside a
+checkable one, collapsed into a single sentence" shape fact 12 warns against,
+applied to fact 14 itself. Split out here.**
+
+**Status:** verified
+
+**Check:**
+```sh
+n=$(grep -Fc 'tools="Read,Write,Edit,Glob,Grep,Bash"' .github/workflows/loop.yml)
+if [ "$n" -ge 1 ]; then echo PASS; else echo "FAIL meta's tool string not found or changed in .github/workflows/loop.yml"; fi
+```
+
+**Expect:** `PASS`
+
+---
+
+## 16. OpenCode has websearch, via Exa
+
+**Claim.** Scout rounds run on OpenCode specifically because it has web
+search (Exa). This has been asserted false twice on this project by an
+orchestrator carrying a stale session summary over a correct memory. No
+command run from inside this git checkout can query OpenCode's own tool
+configuration — unlike `meta`'s own tool withholding (fact 15), which is
+Claude Code's side of the pairing and lives in this checkout.
+
+**Status:** attested — the orchestrator's own record of OpenCode's tooling; not provable from this repository.
+
+---
+
+## 17. The supervisor is dead since 2026-08-18
 
 **Claim.** In practice, the maintainer has started every session; nothing
 has run unattended since the supervisor died on 2026-08-18, and it must not
@@ -382,7 +464,7 @@ itself.
 
 ---
 
-## 16. OpenCode's `-free` model variants are excluded absolutely
+## 18. OpenCode's `-free` model variants are excluded absolutely
 
 **Claim.** By standing instruction, no round runs on a `-free` OpenCode model
 variant. This is spot-checkable, not provable once and for all: it can be
