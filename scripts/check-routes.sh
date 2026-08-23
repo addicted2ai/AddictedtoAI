@@ -150,6 +150,43 @@ node scripts/test-orchestrate-checkout.mjs || failures=$((failures + $?))
 echo
 node scripts/test-orchestrate-hold.mjs || failures=$((failures + $?))
 
+# Round loop/meta/runner-config: harness/provider/model/variant are now
+# runners.yml's job, not a hardcoded string in scripts/orchestrate.sh, and
+# policy.yml's former second copy is now a `runner:` reference into that
+# file. scripts/check-runner-config.mjs asserts the reference still resolves
+# and still names an `opencode` harness -- the only harness this pricing
+# card applies to.
+echo
+node scripts/check-runner-config.mjs || failures=$((failures + $?))
+
+# scripts/runner-preflight.mjs's own seven preconditions -- unknown runner,
+# unknown harness, harness absent from PATH, an excluded model, an
+# unreachable harness server, the SPA-shell content-type guard, an
+# unauthenticated provider, a model absent from the provider's live
+# catalogue, and the "UNVERIFIED is not a guessed PASS" case for a harness
+# with no local catalogue endpoint -- proved able to fail against a stub
+# /provider server and synthetic runners.yml fixtures, never the real
+# OpenCode server or a real binary beyond `node`. These same failures were
+# also constructed by hand against the real local server this round;
+# CHANGELOG.md and docket/briefs/loop-meta-runner-config.md record that
+# proof, which is not repeatable in CI (no server, no credentials there) --
+# this is the CI-safe version.
+echo
+node scripts/test-runner-preflight.mjs || failures=$((failures + $?))
+
+# The wiring between scripts/orchestrate.sh and the runner system, not just
+# scripts/runner-preflight.mjs in isolation: that the supervisor actually
+# calls it, actually reads HARNESS/PROVIDER/MODEL/VARIANT off its RUNNER_OK
+# line, actually sources the named harness adapter and calls its `launch`,
+# and that a failed preflight skips the pass -- logged, never counted as a
+# failed iteration, never launching anything -- rather than falling back to
+# a different runner. Drives the real scripts/orchestrate.sh in an isolated
+# sandbox, the same technique scripts/test-orchestrate-hold.mjs uses for the
+# HOLD.md stop mechanism, against a synthetic test-only harness adapter --
+# never opencode, codex or claude, and never a real session.
+echo
+node scripts/test-orchestrate-runner-launch.mjs || failures=$((failures + $?))
+
 # The DeepSeek peak-hour guard (docket/open/2026-08-17-deepseek-peak-hour-pricing.md):
 # scripts/peak-window.mjs at every boundary the two half-open UTC windows
 # define, and scripts/orchestrate-peak.sh's peak_guard() -- the function

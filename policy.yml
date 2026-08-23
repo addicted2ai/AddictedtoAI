@@ -235,19 +235,23 @@ generative_push:
 # --- DeepSeek peak-hour pricing -----------------------------------------------
 #
 # docket/open/2026-08-17-deepseek-peak-hour-pricing.md. deepseek-v4-flash --
-# the only model this loop runs -- moved to peak/off-peak pricing in August
-# 2026. The windows below are OpenCode's, not DeepSeek's own: this account is
-# billed through the OpenCode Go subscription (the maintainer's own words,
-# 2026-08-17: "Primarily OpenCode Go subscription, but I also have the option
-# to use my Zen credits if I hit my rate limits. So, both technically."), and
-# OpenCode publishes two different cards for this model -- the Go docs carry
-# the peak split, the separate model-data page
+# the model runners.yml's `runner:` reference below currently names -- moved
+# to peak/off-peak pricing in August 2026. (Not "the only model this loop
+# runs": round loop/meta/runner-config found CHANGELOG.md's own `Agent:`
+# field also carries `codex` and `claude-code`, on harnesses this pricing
+# does not apply to at all -- see runners.yml.) The windows below are
+# OpenCode's, not DeepSeek's own: this account is billed through the
+# OpenCode Go subscription (the maintainer's own words, 2026-08-17:
+# "Primarily OpenCode Go subscription, but I also have the option to use my
+# Zen credits if I hit my rate limits. So, both technically."), and OpenCode
+# publishes two different cards for this model -- the Go docs carry the peak
+# split, the separate model-data page
 # (opencode.ai/data/deepseek/deepseek-v4-flash) still shows a flat rate with
 # none, which the maintainer read as that second page simply not having been
 # updated for a change that came from the model provider rather than from
 # OpenCode. So the Go docs are the ones read here. Fetched from
 # https://opencode.ai/docs/go/ on 2026-08-17 (round that filed the item),
-# re-fetched unchanged on 2026-08-18, 2026-08-21 and 2026-08-22 (this round).
+# re-fetched unchanged on 2026-08-18, 2026-08-21, 2026-08-22 and 2026-08-23.
 #
 # This is the single place these numbers live. scripts/peak-window.mjs reads
 # this block and is the only code that turns a timestamp into a peak/off-peak
@@ -256,8 +260,20 @@ generative_push:
 # prompts/orchestrator.md points here rather than restating the numbers --
 # a markdown prompt cannot read YAML, and two copies of a time window is how
 # this repository's guardrails have drifted before.
+#
+# `runner:` names which runners.yml entry this pricing applies to, rather
+# than restating its provider/model as a second literal -- runners.yml is
+# the single source of truth for that fact as of round loop/meta/runner-config,
+# and scripts/check-runner-config.mjs (wired into scripts/check-routes.sh)
+# fails the build if this reference goes stale: pointed at a runner that no
+# longer exists, or repointed at a runner whose harness is not `opencode`
+# (this pricing card does not apply to any other harness). Nothing here
+# reads .model programmatically -- grep '\.model' scripts/peak-window.mjs
+# matches nothing -- so this was always documentation, not wiring; it is
+# checked now rather than deleted because a reader opening this block still
+# deserves to see which runner it is talking about without a second lookup.
 deepseek_peak_pricing:
-  model: opencode-go/deepseek-v4-flash
+  runner: opencode-go-deepseek-max
   timezone: UTC
   # Half-open [start, end): the boundary minute itself is off-peak. Ordered,
   # non-overlapping, same-day (neither window crosses midnight UTC).
