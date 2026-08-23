@@ -15,17 +15,21 @@ export const metadata = {
 
 // Two claims in CHARTER.md were found false by round 81 (audit), and this
 // round re-verified both from the GitHub API (see the Guardrails line of the
-// changelog entry). The document is human-owned — rule 13 — so this page
-// renders it as written and carries the corrections beside the claims. Each
-// correction renders only while the claim it corrects is still present in
-// the document: if the maintainer amends the text so a claim is gone, its
-// correction is gone with it rather than asserting something that no longer
-// needs correcting.
+// changelog entry). This page renders CHARTER.md as written and carries the
+// corrections beside the claims. Each correction renders only while the
+// claim it corrects is still present in the document: if the document is
+// amended so a claim is gone, its correction is gone with it rather than
+// asserting something that no longer needs correcting.
+//
+// The loop may amend CHARTER.md itself under rule 13's delegation, subject to
+// rule 13a (round 169, 2026-08-22) -- this comment previously called the
+// document "human-owned — rule 13", which rule 169's rewrite made false the
+// same way the lead paragraph below was; see that paragraph's own comment.
 const PREAMBLE_CLAIM = "cannot merge on green and a human must merge it by hand";
 const AMENDMENT_CLAIM =
   "the gate is deliberately something a human steps over and the loop cannot";
 
-function renderGroup(group, key) {
+function renderGroup(group, key, sectionHeading) {
   switch (group.kind) {
     case "h3":
       return <h3 key={key}>{group.block.text}</h3>;
@@ -74,25 +78,40 @@ function renderGroup(group, key) {
       const rows = group.items.filter(
         (row) => !row.cells.every((c) => /^-+$/.test(c))
       );
+      // Wrapped in an accessible scroll region rather than left to overflow
+      // the page: this table (four columns, under "The tracks") measured
+      // 43px wider than a 320px viewport on its own, before the unbreakable
+      // `article code` string added the rest of /charter's 221px overflow.
+      // See the .table-scroll comment in globals.css for why a scroll
+      // container, not a layout change, is the right call for a table, and
+      // why it needs role/tabIndex/aria-label rather than just overflow-x.
       return (
-        <table key={key} className="charter-table">
-          <thead>
-            <tr>
-              {rows[0].cells.map((c, i) => (
-                <th key={i}>{inlineMarkdown(c)}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.slice(1).map((row, i) => (
-              <tr key={i}>
-                {row.cells.map((c, j) => (
-                  <td key={j}>{inlineMarkdown(c)}</td>
+        <div
+          key={key}
+          className="table-scroll"
+          role="region"
+          tabIndex={0}
+          aria-label={`${sectionHeading} table`}
+        >
+          <table className="charter-table">
+            <thead>
+              <tr>
+                {rows[0].cells.map((c, i) => (
+                  <th key={i}>{inlineMarkdown(c)}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.slice(1).map((row, i) => (
+                <tr key={i}>
+                  {row.cells.map((c, j) => (
+                    <td key={j}>{inlineMarkdown(c)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
     }
     // Dated amendment entries, one per change, newest last — the document's
@@ -158,7 +177,9 @@ function CharterSection({ section }) {
   return (
     <section className="charter-section">
       <h2>{section.heading}</h2>
-      {groupBlocks(section.blocks).map((group, i) => renderGroup(group, i))}
+      {groupBlocks(section.blocks).map((group, i) =>
+        renderGroup(group, i, section.heading)
+      )}
     </section>
   );
 }
@@ -197,12 +218,34 @@ export default function Charter() {
           </a>
         ) : null}
       </p>
+      {/* Hand-written, not derived from the parsed document below, the same
+          way the rest of this paragraph is. Considered deriving this
+          specific sentence from parsed CHARTER.md text the way the two
+          correction asides below are (PREAMBLE_CLAIM / AMENDMENT_CLAIM,
+          matched against the document itself so a correction disappears the
+          moment the claim it corrects does) -- not done here: those two
+          asides correct a claim that still exists verbatim *inside*
+          CHARTER.md, matched by substring. This sentence summarises what
+          rules 13, 13a and the Amendment section say across several
+          paragraphs; there is no single string in the document to match
+          against, and generating prose from the rule structure instead would
+          be a small parser of its own, not a one-line fix -- and this round's
+          scope is the one-line fix. Not filed as a docket item: it is a
+          speculative architecture improvement, not a known defect, and this
+          round already has higher-value findings competing for the same
+          filing budget (see the changelog entry). Recorded here so the next
+          person to touch this file does not have to re-derive the same
+          question. */}
       <p className="log-lead">
         Two claims in this document were found false by round 81 (audit), and
-        this round re-verified both from the GitHub API. The document is
-        human-owned, so only the maintainer can amend it; this page renders it
-        as written and marks each falsified claim with the correction beside
-        it.
+        this round re-verified both from the GitHub API. The loop may now
+        amend this document itself, under the maintainer&rsquo;s delegation
+        (rule 13). The boundary is no longer which files it may touch but
+        what must survive any edit, set out in rule 13a &mdash; which
+        reserves its own amendment to the maintainer alone, and part of which
+        a mechanical check already enforces rather than only states. This
+        page renders the document as written and marks each falsified claim
+        with the correction beside it.
       </p>
 
       {charter.preamble.map((paragraph, i) => (

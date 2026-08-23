@@ -145,6 +145,16 @@ article code {
   padding: 0.15rem 0.35rem;
   border-radius: 4px;
   font-size: 0.9em;
+  /* Without this, a long unbroken token -- a quoted API response, a file
+     path -- pushes the whole document wider than its viewport rather than
+     wrapping. CHARTER.md's History quotes
+     `{"admin":true,"maintain":true,"pull":true,"push":true,"triage":true}`,
+     489px wide with no spaces to break on: the exact string that overflowed
+     /charter by 221px at a 320px viewport (measured with
+     scripts/check-reflow.mjs). `.log-entry code` and `.charter-correction
+     code` already carried this; this is the rule the rest of `article`'s
+     prose renders through and the one that was missing it. */
+  overflow-wrap: break-word;
 }
 
 article a {
@@ -715,6 +725,17 @@ article a:hover {
   font-size: 0.9rem;
   line-height: 1.65;
   max-width: 68ch;
+  /* app/lib/build-log.js does not recognise ``` fenced code blocks as a
+     distinct structure -- their content (multi-line `gh`/`git` command
+     transcripts) renders as ordinary paragraph text, so a long unbroken
+     token inside one (a JSON blob, an email address) has no `<code>`
+     wrapper to carry the overflow-wrap fix above and overflows a 320px
+     viewport directly as prose. Found verifying this round's KNOWN_FAILURES
+     fix: /log's pagination shifted to include round 169's entry, which
+     contains exactly this. Filed as its own item -- teaching the parser to
+     render fenced blocks properly (monospace, preserved line breaks) is a
+     bigger change than this safety net, which only stops the overflow. */
+  overflow-wrap: break-word;
 }
 
 .log-field-label {
@@ -733,6 +754,8 @@ article a:hover {
   line-height: 1.65;
   color: var(--muted);
   max-width: 68ch;
+  /* Same gap as .log-field above -- see that comment. */
+  overflow-wrap: break-word;
 }
 
 .log-outcome {
@@ -1048,6 +1071,34 @@ h2.latest-post-label {
 .charter-tests li p {
   margin: 0;
   max-width: 62ch;
+}
+
+/* An accessible horizontal-scroll region for a table too wide to reflow at
+   320px. WCAG SC 1.4.10 (Reflow) names its own exception for "content which
+   requires two-dimensional layout for usage or meaning" and gives a data
+   table as the example, so letting a wide table scroll on its own axis is
+   the criterion's sanctioned response, not a workaround for it -- provided
+   the region itself is reachable without a pointer: WAI-ARIA's
+   scrollable-region-focusable pattern (role="region", tabindex="0", an
+   accessible name), because "it stopped overflowing the page" is not the
+   same as "a keyboard or screen-reader user can reach the columns past the
+   fold." Measured before this existed (scripts/check-reflow.mjs, 320px
+   viewport): /model-retirement-calendar's 5-column table overflowed by
+   223px with no scroll container at all; /charter's 4-column table
+   overflowed by 43px of its own 221px total, the rest being the unbreakable
+   `article code` string fixed above. */
+.table-scroll {
+  overflow-x: auto;
+  margin: 1rem 0 1.25rem;
+}
+
+.table-scroll .charter-table {
+  margin: 0;
+}
+
+.table-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* The tracks table. */

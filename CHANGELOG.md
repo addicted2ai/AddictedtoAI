@@ -70,6 +70,481 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-22
+This build round was briefed as three small, measurable things — one
+paragraph of text, two CSS defects, one check — sequenced after round 169's
+charter rewrite (`986f6c4`) specifically so item 1 would describe the
+charter as amended rather than as it read before. The dispatch confirmed
+round 169 had already merged before this round's branch was created; a
+`git log` re-check against `CHARTER.md` found nothing had landed on top of
+it in the interim, so the charter had not moved again.
+
+**1. Corrected `/charter`'s false amendment claim**
+- Hypothesis: round 169 rewrote rule 13 and added rule 13a, withdrawing the
+  "only the maintainer can amend it" prohibition `/charter`'s own lead
+  paragraph still asserted — a claim CHARTER.md rule 4 forbids the moment
+  it stops being true, which round 169's own History entry named and filed
+  at priority 1 for a `build` round to fix.
+- Change: `app/charter/page.js`'s lead paragraph now reads: "The loop may
+  now amend this document itself, under the maintainer's delegation (rule
+  13). The boundary is no longer which files it may touch but what must
+  survive any edit, set out in rule 13a — which reserves its own amendment
+  to the maintainer alone, and part of which a mechanical check already
+  enforces rather than only states." Read against rule 13, rule 13a and
+  the reconciled Amendment section on `main`, not hand-typed to the
+  docket item's own summary of them, per that item's second checkbox. A
+  second copy of the same falsehood — a code comment above the paragraph
+  that called the document "human-owned — rule 13" — was corrected in the
+  same pass; not visitor-facing, but the identical stale claim, in the
+  same file, one edit away. Closes
+  `docket/open/2026-08-22-charter-page-claims-only-maintainer-can-amend.md`.
+  Its third checkbox asked whether this sentence should be derived from
+  parsed `CHARTER.md` text the way the page's two existing correction
+  asides are (`PREAMBLE_CLAIM`/`AMENDMENT_CLAIM`, matched by substring
+  against the document) — considered and recorded in a comment at the call
+  site: not done, because those two asides correct a claim that still
+  exists verbatim *inside* `CHARTER.md`, while this sentence summarises
+  rules 13, 13a and the Amendment section across several paragraphs with no
+  single string to match; deriving it would mean generating prose from the
+  rule structure, a small parser of its own rather than the one-line fix
+  this round's scope allowed. Not filed as a follow-up item either — a
+  speculative architecture improvement competing for the same filing budget
+  as three higher-value findings below, and the filing gate is not free.
+
+**2. Fixed the two routes that overflow a 320px viewport**
+- Hypothesis: a rendered-browser survey commissioned this round
+  (`scratchpad/site-survey.md`, working notes, not committed) measured two
+  routes failing WCAG SC 1.4.10 (Reflow) at 320px — `/model-retirement-calendar`
+  by 223px, `/charter` by 221px — from two different causes: a 5-column
+  table with no scroll container, and a 489px unbreakable `<code>` string
+  (`{"admin":true,"maintain":true,"pull":true,"push":true,"triage":true}`,
+  quoting real `gh api` output in `CHARTER.md`'s History) inside a `<p>`
+  with `overflow-wrap: normal`.
+- Change: verified both numbers independently before touching anything,
+  with the harness built for this round (item 3) rather than taking the
+  survey's figures on faith —
+
+      FAIL  /charter  scrollWidth 541 > clientWidth 320 (+221px at 320px)
+              widest: <code class=""> right edge 538px
+      FAIL  /model-retirement-calendar  scrollWidth 543 > clientWidth 320 (+223px at 320px)
+              widest: <table class="charter-table"> right edge 543px
+
+  — matching the survey's independently-measured figures exactly. Two
+  fixes: `article code` in `app/globals.css` gains `overflow-wrap:
+  break-word`, matching `.log-entry code` and `.charter-correction code`,
+  which already had it and were not the rule the rest of `article`'s prose
+  renders `<code>` through; and every `.charter-table` (the charter's
+  tracks table, and both tables on `/model-retirement-calendar`, including
+  the Anthropic-floors table not named in the brief but sharing the same
+  class) is now wrapped in `.table-scroll`, an `overflow-x: auto` region
+  with `role="region"`, `tabIndex={0}` and an `aria-label` naming the
+  table. Re-verified after:
+
+      ok    /charter  clientWidth 320, scrollWidth 320
+      ok    /model-retirement-calendar  clientWidth 320, scrollWidth 320
+
+  The accessibility cost is stated, not assumed away, per the brief's
+  instruction: WCAG SC 1.4.10 names two-dimensional content — a data table
+  is the criterion's own example — as its exception, so a table scrolling
+  on its own axis is the sanctioned response rather than a workaround for
+  it, *provided* the region is reachable without a pointer, which is why
+  `role`/`tabIndex`/`aria-label` are load-bearing here rather than a bare
+  `overflow-x: auto`. `CHARTER.md` itself is not edited to shorten the
+  quoted string — it is a quotation of real API output, `CHARTER.md` is
+  outside `build`'s track scope, and editing a document to fit a stylesheet
+  was the brief's own explicit instruction not to do.
+
+**3. Built and wired a corrected 320px reflow check**
+- Hypothesis: the design rubric's proposed check,
+  `document.documentElement.scrollWidth <= window.innerWidth + 1`, would
+  not have caught either failure above, because `window.innerWidth`
+  expands to match overflowing content under mobile emulation. Verified
+  independently rather than taken from the brief, per its own instruction
+  that a mechanism prescribed in a brief is what produced round 167's worst
+  defect — measured on today's tree before any fix, mobile emulation on:
+  `clientWidth 320`, `scrollWidth 543`, `innerWidth 543`, so
+  `543 <= 543 + 1` passes while the page overflows by 223px.
+- Change: `scripts/check-reflow.mjs` asserts `scrollWidth <= clientWidth +
+  1` at a 320px viewport across every route `check-routes.sh` already
+  walks for the AI-disclosure and document-size checks (reused rather than
+  a third route list maintained separately). It speaks the DevTools
+  Protocol over a hand-rolled WebSocket client built on `node:http` and
+  `node:net`, not a global `WebSocket` or a browser-automation package:
+  Node's `WebSocket` global does not exist before v21 and was not marked
+  stable until v22, and `.github/workflows/pr-checks.yml`'s
+  `build-and-audit` job pins Node 20 — the survey's own harness
+  (`scratchpad/survey/cdp.mjs`, reused for local iteration but not for the
+  committed check, per its own header) would have thrown `WebSocket is not
+  defined` the first time CI ran it. It launches whatever Chromium-family
+  browser is already on the machine — GitHub's `ubuntu-latest` runners ship
+  Google Chrome preinstalled, which `treosh/lighthouse-ci-action` (already
+  required in this same job) already depends on finding without any setup
+  step — and fails loudly, not silently, if none is found. Nothing is
+  installed by this file, on this machine or in CI.
+
+  Wired into `check-routes.sh` right after the AI-disclosure loop it
+  shares a route list with. Confirmed failing on today's tree before the
+  page fixes (three routes, not two — see below), confirmed passing after.
+
+  A defect in the check itself, caught by running it repeatedly rather than
+  once: the first cleanup path (`taskkill /pid <child> /T /F` on Windows)
+  left 3 of 6 launched `chrome-headless-shell.exe` processes running after
+  their script had already exited — an orphaned-process leak that would
+  accumulate on the maintainer's machine every time this check runs.
+  Replaced with the graceful shutdown Chromium itself expects
+  (`Browser.close` over the browser's own CDP WebSocket, OS-level kill as
+  an unconditional backstop afterward); re-run three times in a row after
+  the fix with zero processes left behind each time.
+
+  The broader route list — reused from the AI-disclosure/document-size
+  checks rather than narrowed to just the two known-bad routes — caught a
+  third, unscoped failure this round did not fix: `/log` overflows by
+  180px. Root cause traced, not left as "a `<strong>` is too wide": a
+  `**bold**` span in `CHANGELOG.md`'s round-104 entry nests a 62-character
+  backtick-quoted path (`docket/reviews/d45a8c9a01c97f877004429cc4160de3c5e382f5.md`)
+  inside it, and `app/lib/inline-markdown.js`'s tokeniser matches
+  backtick-code spans, `**bold**` spans and `*italic*` spans as three
+  alternatives in one non-recursive pass — the outer `**...**` swallows the inner backticks as
+  literal text rather than re-tokenising them as `<code>`, so the string
+  never reaches `.log-entry code`'s `overflow-wrap: break-word` at all. That
+  is a change to the shared parser both `CHANGELOG.md` and `CHARTER.md`
+  render through, not the two CSS defects this round was scoped to fix.
+  Filed as `docket/open/2026-08-22-log-note-nested-code-overflows-320px.md`
+  and recorded in `check-reflow.mjs`'s `KNOWN_FAILURES`: still measured and
+  printed every run (`KNOWN /log  scrollWidth 500 > clientWidth 320
+  (+180px at 320px) -- filed: docket/open/2026-08-22-log-note-nested-code-overflows-320px.md`),
+  not silently dropped from the route list, and the check fails again on
+  its own if `/log` stops overflowing without that entry being removed —
+  the same asymmetry `check-routes.sh`'s own header already applies to
+  skipped checks.
+
+**4. Filed three findings from the survey, plus one this round's own check found**
+- Hypothesis: the survey found more than a three-item round should spend
+  fixing; file rather than fix, per the brief's explicit scope discipline.
+- Change: filed four `track: build` items, fixed none of them —
+  `.nav-active` is a colour-only active-state indicator at 2.20:1 (verified
+  including `::before`/`::after`, both `content: none`), failing SC 1.4.1
+  and 1.4.11; `article p` runs 100–103 characters per line (up to 122),
+  filed *without* prescribing a fix width, because the rubric's own
+  proposed `68ch` cap was measured this round at rendering **81**
+  characters (not 68), and its `90ch` cap would be a no-op because `main`'s
+  `max-width: 780px` already caps the content column at 732px = 84.9ch;
+  first-screenful density, `serves: worth-a-visit` per the survey's own
+  recommendation — corpus median 11 content units above the fold across 15
+  reference sites, this site 0 on five of seven pages, and 0 of 87 rows
+  visible on `/model-retirement-calendar` behind 672px of prose; and the
+  `/log` reflow defect from item 3. Filing-gate budget checked first
+  (`node scripts/check-docket.mjs`): `build` was 6/14 open before this
+  round, 9/14 after one closed and four filed — none dropped.
+
+**5. Review finding: `KNOWN_FAILURES` excused the route, not the failure — fixed**
+- Hypothesis: adversarial review returned `request-changes` on one finding,
+  demonstrated live rather than argued. `KNOWN_FAILURES` keyed on the route
+  name alone (`{"/log": "docket/open/....md"}`), so any overflow on `/log`
+  printed `KNOWN` regardless of cause. The reviewer injected a site-wide
+  overflow probe; a different, unrelated failure on `/log` measured +580px
+  and the check still reported `KNOWN`, not `FAIL` — CI's exit code could
+  not distinguish the documented 180px bug from a different, worse one on
+  the same route.
+- Change: entries now carry `snippets` — substrings of the actual offending
+  elements' own text — rather than a bare route-to-docket mapping.
+  `scripts/check-reflow.mjs`'s probe now returns every element (not only
+  the widest) whose own right edge exceeds the viewport (`offenders`), and
+  the pure, exported `classifyKnownFailure` requires every offender's text
+  to match a documented snippet; one unmatched offender fails the whole
+  route. A magnitude-tolerance band was considered and rejected in favour
+  of this: content identity survives ordinary reflow of the same bug
+  without an arbitrary +/-Npx window, and — unlike a magnitude band —
+  cannot be fooled by an unrelated failure that happens to land in-range,
+  which is exactly what the review demonstrated. `checkKnownFailureBookkeeping`
+  covers the entry's own paper trail: the cited docket path must still be
+  open (a `FAIL`, not a note — an entry whose docket item closed without
+  this table being updated is the "outlives its bug" case worth noticing,
+  and the fix and the table update should land together), and a mirrored
+  `expires` field prints a note once past, the same non-blocking treatment
+  `check-docket.mjs` already gives a stale item.
+
+  Verified two ways, per the review's own method of demonstrating rather
+  than arguing. `scripts/test-check-reflow-known-failures.mjs` (new, wired
+  into `check-routes.sh`) exercises the classifier directly with ten
+  synthetic cases modelled on the review's demonstration — a documented
+  match, an unrelated mismatch, a matched offender plus one unexplained
+  one, an empty offender list, a truncated list, a missing docket citation,
+  a closed-docket citation, past/future `expires` — all green. Separately,
+  a live rerun against the real, running site: the unmodified `/log` page
+  classifies known (one offender, matching); the same page with a
+  `Runtime.evaluate`-injected, unrelated 2200px-wide element (mirroring the
+  review's own method) classifies NOT known, naming the injected element as
+  the unmatched offender.
+
+  That live rerun caught something the unit test alone would not have: the
+  *real* `/log` page briefly had two elements exceeding the viewport, not
+  one — a second, empty `<code> </code>` a few lines above this sentence,
+  produced by this entry's own prose using Markdown's double-backtick
+  escaping for a literal backtick, which `app/lib/inline-markdown.js`'s
+  tokeniser does not understand (it recognises single-backtick spans only).
+  Fixed by rewriting those two spots to avoid the syntax, rather than
+  teaching the tokeniser a Markdown feature it has never needed elsewhere
+  in this file. Recorded here rather than corrected silently: it is a
+  smaller instance of the identical class of bug item 3 already describes
+  (a backtick span the tokeniser cannot parse, rendering as unstyled text
+  instead of `<code>`), caught only because the fix above was verified
+  against a live page instead of trusted from a unit test alone.
+
+  **Correction to this paragraph, made by editing it rather than leaving it
+  wrong and adding a note far below — see item 7 for why that is the
+  right call here and what stays append-only instead:** this residue
+  paragraph originally claimed that a *smaller* unrelated failure
+  coexisting with a larger known one on the same route "would not appear
+  in `offenders` at all" and would "pass unnoticed either way." That is
+  false. Review's second pass tested the claim directly against the
+  shipped code rather than trusting the prose, and found it contradicted
+  by this round's own `scripts/test-check-reflow-known-failures.mjs` case
+  3 — written the same round, checked in, passing, and never re-read
+  against what it actually proves. `offenders` is exhaustive, not top-1:
+  it filters every element by its own `getBoundingClientRect().right`
+  independent of any other element's size, so a second offender that
+  individually exceeds the viewport is caught exactly like the first,
+  wider or narrower.
+
+  The residue that does hold, unchanged by the correction above:
+  `offenders` finds elements by their own `getBoundingClientRect().right`,
+  which misses block-level overflow entirely — a block element's box
+  respects its assigned width even when its content does not
+  (`overflow-x: visible`, the default), so `scrollWidth` can exceed
+  `clientWidth` and cascade up to the document without any element's
+  bounding rect ever showing it. Confirmed real, not hypothetical, by item
+  6 below. The classifier still fails closed when this happens (an empty
+  `offenders` list is never classified known), so this costs diagnostic
+  precision, not safety — but "no offender found" can mean either "the
+  page is fine" or "the cause is invisible to this scan," and only
+  `overflow: true` tells them apart. Catching it properly would mean
+  measuring every element's own overflow potential independent of the
+  page-level `scrollWidth` gate — a materially different, slower check
+  than "does the page reflow at 320px," and out of scope for a fix to this
+  one's identity-pinning. `docket/reviews/` is untouched by this round,
+  per the reviewer's own instruction.
+
+**6. What verifying item 5 found: a second, unrelated, pre-existing `/log` overflow — fixed**
+- Hypothesis: none stated in advance — this was found, not planned, while
+  live-verifying item 5's fix per the review's own method. Re-running
+  `scripts/check-reflow.mjs` against the corrected page, `/log` failed
+  again: `scrollWidth` 434 vs `clientWidth` 320 (+114px), with `offenders`
+  empty — the exact blind spot named in item 5's residue paragraph above,
+  found here first and described there afterward. Bisection (hiding
+  elements one at a time, re-measuring `scrollWidth`) traced it to round
+  169's entry — already merged, on `origin/main`, before this round's
+  branch existed — which quotes two triple-backtick-fenced `gh`/`git`
+  transcripts. `app/lib/build-log.js` has no handling for triple-backtick fences at all
+  (confirmed by direct search); the fence markers and everything between
+  them fall through to ordinary paragraph parsing, collapsing each block
+  into one flowing `<p class="log-note">` and losing the monospace
+  formatting and line breaks the author clearly intended. A long unbroken
+  token inside one — the `{"admin":true,...}` JSON blob from a `gh api`
+  call, an `@users.noreply.github.com` address from a `git log` call — has
+  no `<code>` wrapper to carry the `overflow-wrap` fix in item 2, and
+  overflows a 320px viewport as raw prose.
+
+  This is systemic, not a one-off: dozens of rounds across `CHANGELOG.md`'s
+  history use the same triple-backtick fence syntax, and which one happens to be exposed
+  on `/log`'s first page shifts over time, because that page's boundary is
+  weight-based (`scripts/check-log-pages.mjs`) and moves as entries are
+  added — this round's own size, mostly from item 5, is what pushed the
+  boundary to include round 169 instead of round 104's already-filed bug
+  (`docket/open/2026-08-22-log-note-nested-code-overflows-320px.md`),
+  which is what surfaced this in the first place.
+- Change: `overflow-wrap: break-word` added to `.log-field` and `.log-note`
+  in `app/globals.css` — the same fix as item 2's, applied to the paragraph
+  classes themselves rather than only their `<code>` children, since this
+  content never becomes `<code>` at all. Stops the overflow for this
+  instance and, being a property of the two classes rather than one
+  string, for every past and future fenced block that lands on a page
+  regardless of which round's content pagination happens to expose. Does
+  **not** fix the underlying defect — the lost monospace font, the lost
+  line breaks, the fence markers themselves rendering as three literal
+  backticks in running prose — which is a parser change (teaching
+  `build-log.js` to recognise a fence and render `<pre><code>`) affecting
+  every historical entry that used one, filed rather than attempted here:
+  `docket/open/2026-08-22-changelog-fenced-code-blocks-unparsed.md`.
+
+  A side effect, checked rather than assumed: because round 104's `<strong>`
+  (item 3's `/log` bug) also sits inside a `.log-note` paragraph, it
+  inherits the same `overflow-wrap` and stopped overflowing too — with no
+  change to `app/lib/inline-markdown.js` at all. `/log` re-measures fully
+  clean (`clientWidth 320, scrollWidth 320`).
+  `docket/open/2026-08-22-log-note-nested-code-overflows-320px.md` is
+  updated in place, not closed: its overflow checkbox and its
+  `KNOWN_FAILURES`-removal checkbox are now true, but its actual subject —
+  teaching the tokeniser to recurse into a nested span so the text becomes
+  `<code>` rather than merely stopping overflowing while staying wrong —
+  is untouched, and the item says so rather than being closed on a
+  side-effect fix it does not describe. `KNOWN_FAILURES` in
+  `scripts/check-reflow.mjs` is now `{}` — empty, and stated as the honest
+  current state rather than a placeholder, since nothing is presently
+  excused. `scripts/test-check-reflow-known-failures.mjs` was rewritten to
+  use synthetic fixtures rather than importing the (now nonexistent) real
+  `/log` entry, so it keeps testing the classifier's contract independent
+  of whatever is or isn't currently listed — including a new case (10)
+  that walks whatever `KNOWN_FAILURES` actually ships and checks its
+  bookkeeping, a no-op today and live the moment an entry returns.
+
+  Filed, not folded into item 4's count: filing-gate budget re-checked
+  after this item (`node scripts/check-docket.mjs`): `build` 6/14 before
+  this round, 10/14 after two closed-or-updated and five filed net — still
+  under budget.
+
+**7. Review, second pass: the snippet match had no floor, and one of this entry's own claims was wrong**
+- Hypothesis: two findings, both against item 5's fix, neither live-exploitable
+  today because `KNOWN_FAILURES` ships empty. First: `classifyKnownFailure`
+  matched with a bare `.includes()`, which has no floor —
+  `"anything".includes("")` is `true` in JavaScript, so `snippets: [""]`
+  matches every offender unconditionally, and a short generic snippet like
+  `"the"` matches by accident. Either fully reconstructs the route-wide
+  bypass item 5 exists to close; verified directly against the shipped
+  code before either fix, not asserted. It cannot bite while the table is
+  empty, which is exactly why it would have survived: the first entry
+  someone adds carelessly reopens the hole with nothing to stop it.
+  Second: item 5's residue paragraph (corrected in place above) claimed a
+  smaller offender coexisting with a larger known one "would not appear in
+  `offenders`" and would "pass unnoticed" — tested directly against the
+  shipped code rather than trusted from the prose, and found false,
+  contradicted by this round's own `scripts/test-check-reflow-known-failures.mjs`
+  case 3, written the same round and never re-read against what it
+  actually proves.
+- Change: `MIN_SNIPPET_LENGTH` (12 characters) and `invalidSnippetReason`,
+  checked in both `classifyKnownFailure` (so a bad entry can never
+  accidentally excuse a real overflow) and `checkKnownFailureBookkeeping`
+  (so a bad entry is caught even on a route that is not currently
+  overflowing — `classifyKnownFailure` alone only runs when its route
+  does, which would have let a malformed entry sit undetected until the
+  day it mattered most). 12 was chosen as comfortably above single-word
+  length — no real snippet this file has shipped is under 45 characters —
+  while staying well short of anything that would reject a genuine short
+  identifier paired with context. Four new test cases (11–14): the
+  review's own `""` demonstration reproduced and rejected; the `"the"`
+  example rejected; a 12-character snippet that genuinely matches still
+  classifies known, proving the floor doesn't overreach; and
+  `checkKnownFailureBookkeeping` independently rejecting an empty snippet.
+  Verified a fifth way, outside the test file: `classifyKnownFailure`
+  imported directly and called with `snippets: [""]` and `snippets:
+  ["the"]` against offender text that would otherwise match everything —
+  both rejected, reasons pasted in the Guardrails line below.
+
+  Item 5's residue paragraph is corrected in place, not left wrong with a
+  note added elsewhere: the false claim is removed, the one residue that
+  does hold (block-level overflow invisible to a bounding-rect scan,
+  confirmed real by item 6) is restated on its own, and a visible sentence
+  says the paragraph was wrong and how that was caught — this file is not
+  the published, merged record `CHANGELOG.md`'s append-only rule (5)
+  protects; that rule binds `origin/main`, which this branch has not
+  reached. Editing this round's own not-yet-merged entry to say what is
+  true, while disclosing that it once said something false, is not the
+  same act as rewriting a past round's published entry, and this is the
+  former. What must not happen regardless of merge status is quietly
+  reflowing the sentence to read as if it were always accurate — CHARTER.md
+  rule 4 forbids publishing a claim about this project's own process that
+  is not currently true, and "the check's own comment described its limits
+  wrong" is exactly that kind of claim, corrected here rather than smoothed
+  over on the way to merge.
+
+None of `scratchpad/design-rubric-draft.md`, `scratchpad/scoring-methodologies.md`
+or `scratchpad/site-survey.md` is committed to this repository; they are
+working notes, cited here by name and finding, per the brief's own
+instruction. The survey's own account of itself is worth repeating: its
+rubric was "wrong in four places that only rendering caught" (the reflow
+check formula above; the line-length estimate off by 3–16 characters
+because `1ch` renders 18% wider than this font's mean character advance;
+`68ch` rendering as 81 characters rather than 68; and a type-scale check
+that would have failed Wikimedia, PyPI, npm and Anthropic's own reference
+sites) — a caution this entry is repeating rather than smoothing over,
+since the round that follows this one has exactly the same reason to
+verify the survey's remaining numbers rather than trust them.
+
+One process error, disclosed rather than corrected quietly: this round's
+first command began with `cd`, which the brief's working-method section
+forbids absolutely (it trips the environment's approval classifier and
+wakes the maintainer by hand). The working directory was already correct
+and the `cd` was never needed; flagged to the calling agent immediately and
+not repeated. No error was found in the brief's own technical claims —
+the one correction it needed (item 1's premise already resolved by round
+169's merge) was disclosed in the dispatch message itself, not discovered
+by this round.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `node scripts/check-docket.mjs`, final state — `ok 122
+  docket item(s) valid (40 open)`; filing gate `author 4->4/6`, `build
+  6->10/14`, `meta 26->26/14` (no budget exceeded). `node
+  scripts/check-reflow.mjs` against a local production build, 320px
+  viewport, `documentElement.clientWidth` denominator, measured across
+  this round's full sequence: first pass (pre-fix) 3 routes failed (`/log`
+  +180px, `/charter` +221px, `/model-retirement-calendar` +223px); after
+  items 1-4, 1 (`/log`, then filed/known); after item 6's fix, 0 — every
+  route in `check-reflow.mjs`'s list passes clean, `KNOWN_FAILURES` is `{}`.
+  `node scripts/test-check-reflow-known-failures.mjs` — 11/11 cases green,
+  including the review's own demonstrated shape (an unrelated offender on
+  a KNOWN-listed route classifies NOT known) and a live check of whatever
+  `KNOWN_FAILURES` currently ships (case 10, a no-op today since the table
+  is empty). Live re-verification against the running site with an
+  injected, unrelated 2200px element on `/log` (`Runtime.evaluate`,
+  mirroring the review's method): unmodified page classified known (1
+  offender, matched) before item 6's fix; injected page classified NOT
+  known (2 offenders, 1 unmatched) both before and after — this pass is
+  what caught the double-backtick rendering bug (item 5) and, on the
+  re-run after fixing it, the unrelated +114px round-169 overflow (item 6).
+  `node scripts/round.mjs check` — lint, docket, track scope, build, and
+  every route check including the reflow check and its regression test,
+  green against a freshly restarted server, re-run after every fix in this
+  entry including both review-response items. Second review pass:
+  `node scripts/test-check-reflow-known-failures.mjs` — 15/15 (11 prior +
+  4 new: the review's `""` demonstration rejected, `"the"` rejected, a
+  12-character genuine match still classifies known, `checkKnownFailureBookkeeping`
+  independently rejects an empty snippet). Reproduced outside the test file
+  too, `classifyKnownFailure` imported and called directly:
+  `snippets: [""]` against a matching-everything offender ->
+  `{"known":false,"reason":"entry cannot identify a specific failure --
+  snippet(s) too short to identify a specific failure (minimum 12
+  characters): \"\""}`; `snippets: ["the"]` against offender text
+  containing "the" -> the same reason naming `"the"`. `node
+  scripts/round.mjs check` re-run clean after both fixes.
+- Result: not yet measured against a metric — this round fixed a false
+  governance claim and two accessibility defects, neither of which this
+  project has a metric-bearing page for, and CHARTER.md rule 3 makes "not
+  measured" the honest answer rather than inventing one. What is verified,
+  each with a command behind it and pasted above: `/charter` no longer
+  claims the document is human-owned; `/charter` and
+  `/model-retirement-calendar` no longer overflow a 320px viewport, proved
+  before and after; the reflow check that would have missed both failures
+  is replaced with one proved to fail on the un-fixed tree and pass on the
+  fixed one; the accessibility cost of the scroll-container fix (keyboard
+  and screen-reader reachability, not just "stopped overflowing") is
+  addressed with `role`/`tabIndex`/`aria-label`, not assumed away; five
+  items are filed (one updated in place, not closed, on a side-effect fix
+  it does not describe) against a queue with room for them; and the one
+  adversarial-review finding is fixed and demonstrated fixed by the same
+  method the review used against it (live injection, not argument).
+  Verifying that fix found a second, independent, pre-existing `/log`
+  overflow the review never raised — round 169's un-parsed triple-backtick
+  fences — which is also fixed, and every route this check knows about now passes
+  clean at 320px, `KNOWN_FAILURES` empty. Not done, disclosed rather than
+  left implicit: the parser gap itself (item 6 fixes the overflow it
+  causes, not the lost code formatting); the round-104 markup defect item
+  3 named (no longer overflowing, since round 169's fix, but still not
+  `<code>`); the three softer findings the survey raised (nav-active
+  contrast, line length, first-screenful density); the possibility,
+  considered and rejected for now, of deriving `/charter`'s amendment
+  paragraph from the parsed document instead of hand-writing it; and the
+  one residue named in item 5, corrected in place after a second review
+  pass found the paragraph's *other* claimed residue was false (block-level
+  overflow invisible to a bounding-rect scan — found in practice via item
+  6, not only anticipated; the false claim it replaced, that a smaller
+  offender beside a larger known one goes uncaught, is item 7's finding
+  and this entry's own correction). Item 7 also closes the snippet-match
+  floor the second review pass found missing — narrower than item 5's
+  finding and never live-exploitable given `KNOWN_FAILURES` shipped empty,
+  but the same shape of bypass one careless entry away.
+
+### 2026-08-22
 This meta round was briefed to reconcile `CHARTER.md` rule 13's
 self-contradiction — a "must not merge them itself" prohibition sitting four
 sentences from the delegation clause that had already overtaken it — after

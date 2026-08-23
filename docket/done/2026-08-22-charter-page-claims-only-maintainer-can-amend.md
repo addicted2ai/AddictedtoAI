@@ -58,17 +58,52 @@ nothing in the parsed document for it to match against.
 
 ## Done when
 
-- [ ] `app/charter/page.js`'s lead paragraph no longer claims the document is
+- [x] `app/charter/page.js`'s lead paragraph no longer claims the document is
       "human-owned, so only the maintainer can amend it" in present tense --
       replaced with what rule 13 and rule 13a actually say, checked against
       the merged text rather than against this item's summary of it
-- [ ] The fix is read against the live `CHARTER.md` at merge time, not
+- [x] The fix is read against the live `CHARTER.md` at merge time, not
       hand-typed to match this item, in case the charter has moved again by
       the time a build round picks this up (`git log -- CHARTER.md` since
       this item's `created` date)
-- [ ] Considered and recorded: whether this specific sentence should be
+- [x] Considered and recorded: whether this specific sentence should be
       derived from the parsed document (like the existing correction asides)
       rather than hand-written, so a future charter amendment cannot produce
       the same gap a second time -- fixing this instance without addressing
       that is treating the symptom
-- [ ] `node scripts/round.mjs check` green
+- [x] `node scripts/round.mjs check` green
+
+## Shipped 2026-08-22 (round 170)
+
+`git log --format="%ad %h %s" --date=short -- CHARTER.md` showed
+`CHARTER.md`'s most recent commit was `986f6c4` (round 169) at the time this
+round's branch was created, and nothing landed on top of it before this item
+was picked up -- the charter had not moved again.
+
+`app/charter/page.js`'s lead paragraph now reads: "The loop may now amend
+this document itself, under the maintainer's delegation (rule 13). The
+boundary is no longer which files it may touch but what must survive any
+edit, set out in rule 13a -- which reserves its own amendment to the
+maintainer alone, and part of which a mechanical check already enforces
+rather than only states." Read against rule 13, rule 13a and the reconciled
+Amendment section on `main`, not hand-typed to match this item's own summary
+of them. A second false claim in the same file -- the top-of-file comment
+that called the document "human-owned — rule 13" -- was corrected in the
+same pass; it was not visitor-facing but was the same falsehood, in the same
+file, one edit away.
+
+Considered and recorded (checkbox 3), in a comment at the paragraph's call
+site in `app/charter/page.js`: deriving this sentence from parsed
+`CHARTER.md` text the way `PREAMBLE_CLAIM`/`AMENDMENT_CLAIM` already do was
+not done here, because those two correct a claim that still exists verbatim
+*inside* `CHARTER.md`, matched by substring -- this sentence summarises
+rules 13, 13a and the Amendment section across several paragraphs, with no
+single string to match against. Deriving it would mean generating prose from
+the rule structure, which is a small parser of its own, not the one-line fix
+this round's scope allowed. Not filed as a follow-up docket item: it is a
+speculative architecture improvement rather than a known defect, and this
+round's filing budget went to three higher-value findings from the same
+round's reflow work instead (see the changelog entry).
+
+See the round's changelog entry for the full diff and the two other items
+(the 320px reflow fix and its check) shipped alongside this one.

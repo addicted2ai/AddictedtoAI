@@ -309,7 +309,12 @@ export const PRODUCING_ROUNDS = {
   // "enforce_admins off" claims to the verifiable enforcement_level:
   // non_admins form in app/charter/page.js, a listed source file of
   // /charter, so the newest change is this round's.
-  "/charter": 160,
+  // Round 170 (build) corrects the lead paragraph's "human-owned, so only
+  // the maintainer can amend it" claim (false since round 169's rewrite of
+  // rule 13/13a) and wraps the tracks table in an accessible scroll region,
+  // both in app/charter/page.js, a listed source file, so the newest change
+  // is this round's.
+  "/charter": 170,
   // Round 88 (author) built this page. New route, so its producing round is
   // the round that created it.
   // Round 113 (maintain) re-verified every row and rewrote the Meta row and
@@ -339,7 +344,11 @@ export const PRODUCING_ROUNDS = {
   // Round 168 (build) adds a link to the new /model-deprecation-checker,
   // a real content change to app/model-retirement-calendar/page.js, so the
   // newest change is this round's.
-  "/model-retirement-calendar": 168,
+  // Round 170 (build) fixes a 223px overflow at a 320px viewport by wrapping
+  // both of the page's tables in an accessible scroll region, in
+  // app/model-retirement-calendar/page.js, a listed source file, so the
+  // newest change is this round's.
+  "/model-retirement-calendar": 170,
   // Round 168 (build) built this page. New route, so its producing round is
   // the round that created it.
   "/model-deprecation-checker": 168,

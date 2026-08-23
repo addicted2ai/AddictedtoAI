@@ -195,6 +195,41 @@ echo
 done
 node scripts/check-ai-disclosure.mjs || failures=$((failures + $?))
 
+# WCAG SC 1.4.10 (Reflow): no route may need horizontal scrolling of the
+# page itself at a 320px viewport. Walks the same route list as the AI
+# disclosure loop above.
+#
+# This exists because a check the design rubric proposed for exactly this --
+# `document.documentElement.scrollWidth <= window.innerWidth + 1` -- would
+# have shipped green on the two routes that were failing it:
+# `window.innerWidth` expands to match overflowing content under mobile
+# emulation, so it never disagrees with `scrollWidth`. Measured on
+# /model-retirement-calendar before this round's fix: clientWidth 320,
+# scrollWidth 543, innerWidth 543 -- `543 <= 543 + 1` passes while the page
+# overflows by 223px. scripts/check-reflow.mjs uses
+# `documentElement.clientWidth` instead, which stayed pinned to 320
+# regardless of the mobile-emulation flag in every measurement this round
+# took. See that script's own header for why it speaks WebSocket by hand
+# rather than importing a browser-automation package (Node's global
+# `WebSocket` does not exist before v21, and this workflow's Node is pinned
+# to 20) and for KNOWN_FAILURES, a route that is measured and printed every
+# run but does not fail the build because it is a real, separately filed
+# defect this check found rather than one it exists to fix.
+echo
+node scripts/check-reflow.mjs "$BASE" || failures=$((failures + $?))
+
+# KNOWN_FAILURES's own regression test. Adversarial review demonstrated
+# live that the first version keyed an exemption on the route name alone,
+# so an injected, unrelated +580px overflow on /log -- a route already
+# excused for a documented ~180px bug -- printed KNOWN instead of FAIL. The
+# fix pins each entry to the offending content, not the route; this test
+# exercises that pinning directly with synthetic inputs modelled on the
+# review's own demonstration, so the defect cannot come back silently. See
+# scripts/test-check-reflow-known-failures.mjs and the KNOWN_FAILURES
+# comment in scripts/check-reflow.mjs for the full account.
+echo
+node scripts/test-check-reflow-known-failures.mjs || failures=$((failures + $?))
+
 # The four Origin values' published definitions each appear on several
 # surfaces -- the /log badge tooltips, the per-page disclosure sentences,
 # the /disclosure enumeration, the homepage prose, the changelog preamble
