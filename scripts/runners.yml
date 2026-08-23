@@ -85,15 +85,64 @@ runners:
     model: gpt-5-codex
     variant: null
 
-# Absolute exclusions, checked against whichever runner is selected -- a
-# runner entry above cannot exempt itself from a standing instruction by
-# being the one picked. FRAME.md fact 18: OpenCode's `-free` model variants
-# are excluded absolutely, by standing instruction.
+# Exclusions, checked against whichever runner is selected -- a runner
+# entry above cannot exempt itself from a standing instruction by being the
+# one picked. FRAME.md fact 18: OpenCode's free-tier model variants are
+# excluded absolutely, by standing instruction.
+#
+# WHAT "ABSOLUTE" ACTUALLY MEANS HERE, STATED PLAINLY: this is a name-based
+# check, not a provable one, and adversarial review (this round) demonstrated
+# exactly why that gap matters, not just that it exists in theory. The first
+# version of this pattern was `-free$` -- true of every free-tier model
+# example anyone had looked at when it was written, and wrong: the live
+# catalogue (GET http://127.0.0.1:4097/provider, read-only, checked this
+# round) uses at least three separator conventions across the 395 models
+# reachable through this account's 4 connected providers --
+# `nvidia/...:free` (16 models, openrouter), `...gpt-oss-20b:free` (the
+# reviewer's own live reproduction), `deepseek/...-free` (6 models), and
+# `openrouter/free` (1 model, a bare slash-suffixed id) -- 23 in total, all
+# caught by a plain case-insensitive substring test for "free", zero caught
+# by `-free$` alone beyond its own 6. FRAME.md fact 18's own check
+# (`/free/i` against a live session's id/variant/providerID, unanchored) was
+# already less wrong than this file's `-free$` was -- this pattern now
+# matches that precedent instead of a narrower one this file invented
+# independently.
+#
+# So: word-boundary, case-insensitive, unanchored to any one separator --
+# `free` as its own token anywhere in the id, which is what actually
+# generalises past "the conventions currently known" rather than
+# re-enumerating them (a fourth separator character would still match; a
+# provider naming a free tier without the word "free" at all -- "trial",
+# "oss", a bare model name with no marker -- would not, and nothing here
+# claims otherwise). scripts/check-free-model-exclusion.mjs re-derives this
+# exact set from the live catalogue every time it can reach one and fails
+# the build if a "free"-named reachable model is not excluded by this
+# pattern -- verified drift detection, not a one-time claim -- and reports
+# UNVERIFIED, never a silent PASS, when no server is reachable (the same
+# convention FRAME.md's own checks use).
+#
+# A cost-based check was considered and rejected as the primary mechanism:
+# every model object in the live catalogue carries a real `cost.input`/
+# `cost.output` field, and cost 0 is a stronger, convention-independent
+# signal for "this specific model is free to call" than any name pattern
+# could ever be. It was not adopted because it does not mean the same thing
+# as this instruction: among this account's connected providers, every
+# `ollama-cloud` model reports cost 0 across its entire catalogue (a
+# subscription/quota-based provider, most likely a pricing-data gap in that
+# catalogue entry rather than a genuine free-tier claim) and would have been
+# excluded wholesale under a pure cost-0 rule -- disabling a legitimate
+# connected provider this instruction was never stated to reach. Recorded
+# here rather than silently discarded: this is the residue a future round
+# should resolve with the maintainer, not guess at.
 excluded_model_patterns:
-  - pattern: "-free$"
+  - pattern: "(^|[^a-z0-9])free([^a-z0-9]|$)"
+    flags: "i"
     reason: >-
-      OpenCode -free model variants are excluded absolutely, by standing
-      instruction (FRAME.md fact 18).
+      OpenCode free-tier model variants are excluded absolutely, by standing
+      instruction (FRAME.md fact 18). Matches "free" as its own token
+      anywhere in the model id, case-insensitively -- not anchored to one
+      separator convention; see the header above for what this can and
+      cannot catch.
 
 # What differs by harness, and only by harness: how a round is launched, and
 # how it is known to be alive. Everything else the loop does -- briefs,

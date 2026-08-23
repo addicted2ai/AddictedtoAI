@@ -149,7 +149,9 @@ if (config) {
       }
 
       const patterns = config.excluded_model_patterns || [];
-      const excludedHit = patterns.find((rule) => new RegExp(rule.pattern).test(runner.model));
+      const excludedHit = patterns.find((rule) =>
+        new RegExp(rule.pattern, rule.flags || "").test(runner.model)
+      );
       if (excludedHit) {
         record(
           "model not excluded",

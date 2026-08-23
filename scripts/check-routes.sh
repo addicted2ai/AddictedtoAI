@@ -187,6 +187,22 @@ node scripts/test-runner-preflight.mjs || failures=$((failures + $?))
 echo
 node scripts/test-orchestrate-runner-launch.mjs || failures=$((failures + $?))
 
+# Adversarial review on this same round found scripts/runners.yml's
+# excluded_model_patterns (`-free$`) missed every `:free`- and
+# `/free`-suffixed model reachable on this account's connected providers --
+# 17 of 23, including a live reproduction with `openai/gpt-oss-20b:free` --
+# while the file's own comment called the exclusion "absolute". Two checks,
+# not one: a fixed-table regression guard against the real pattern data
+# (works anywhere, no live server needed) and a live re-derivation against
+# the actual catalogue whenever one is reachable (PASS/FAIL/UNVERIFIED, the
+# same convention FRAME.md's own checks use -- never a silent PASS when it
+# cannot be evaluated). See scripts/runners.yml's own header for the fix and
+# the residue it does not close.
+echo
+node scripts/test-free-model-pattern.mjs || failures=$((failures + $?))
+echo
+node scripts/check-free-model-exclusion.mjs || failures=$((failures + $?))
+
 # The DeepSeek peak-hour guard (docket/open/2026-08-17-deepseek-peak-hour-pricing.md):
 # scripts/peak-window.mjs at every boundary the two half-open UTC windows
 # define, and scripts/orchestrate-peak.sh's peak_guard() -- the function
