@@ -180,13 +180,20 @@ article p {
      turned out false on inspection: `.log-lead` alone appears on an
      <article> page (app/model-retirement-calendar/page.js,
      app/charter/page.js) and on three pages with no <article> wrapper at
-     all (/log, /log/early, /log/archive), which fits neither story, and a
-     third attempt at re-counting "the other rules" for this same comment
-     first came out at five when the true count (by grep) is twelve. All
-     three mistakes were caught before this text shipped -- the first two
-     by adversarial review, not by this round's own verification before
-     publishing either claim (CHANGELOG.md's entry for this round has the
-     full account). The relationship between this rule and the site's other
+     all (/log, /log/early, /log/archive), which fits neither story. Both
+     were built on a third error this round did not originate but did
+     carry forward unverified: this round's own brief stated the family as
+     "62ch at lines 507, 813 and 1002, 68ch at 745 and 774" -- five lines,
+     produced by the brief's own `grep -n "max-width" app/globals.css |
+     head -6`, a truncated read published as if it were the complete list.
+     This comment repeated "five" without re-deriving it until the count
+     was actually run for this text: `grep -c "max-width: 6[28]ch"
+     app/globals.css` returns twelve. All three errors were caught before
+     shipping -- the first two by adversarial review, the truncated count
+     by this round running the command itself rather than trusting the
+     brief's enumeration (CHANGELOG.md's entry for this round has the
+     full account, including the brief's own role in the third one). The
+     relationship between this rule and the site's other
      ch caps is not a clean hierarchy and this round did not establish one.
      What this round did verify: 80ch is the cheapest candidate that still
      moves article p's own measured median meaningfully below the site's

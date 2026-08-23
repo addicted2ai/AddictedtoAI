@@ -241,13 +241,24 @@ re-verified this round (`head -20` on both docket items, `grep` against
   five that ever appears on an `<article>` page at all
   (`app/model-retirement-calendar/page.js`, `app/charter/page.js`) --
   the opposite of what the correction claimed. Fixing that second mistake
-  surfaced a third, self-caught this time: the fix's own count of "the
-  other `ch`-capped rules" came out at five; `grep -c "max-width: 6[28]ch"
-  app/globals.css` (run before publishing this version, not after) gives
-  **twelve**. The rule now in `app/globals.css` and quoted in the docket
-  item makes no claim about what relates these rules to each other --
-  stated plainly as something this round did not establish, not
-  something it hid.
+  surfaced a third, self-caught this time, and **not this round's own
+  arithmetic**: both false characterisations above were built on a count
+  of "five" other `ch`-capped rules that traces to
+  `docket/briefs/loop-build-nav-cue-and-line-length.md` itself, which
+  states as fact "`app/globals.css` already caps several elements in `ch`
+  -- `62ch` at lines 507, 813 and 1002, `68ch` at 745 and 774" -- five
+  lines. The orchestrator produced that sentence with `grep -n "max-width"
+  app/globals.css | head -6` and read the truncated output as complete;
+  this round then carried "five" forward across two drafts without
+  re-deriving it. `grep -c "max-width: 6[28]ch" app/globals.css` (run
+  while writing this correction, not the ones before it) gives **twelve**.
+  Caught by this round running the count itself rather than trusting the
+  brief's enumeration -- the discipline the brief itself asked for
+  ("find out what those rules apply to before you add another") and that
+  its own preceding sentence did not follow. The rule now in
+  `app/globals.css` and quoted in the docket item makes no claim about
+  what relates these rules to each other -- stated plainly as something
+  this round did not establish, not something it hid.
 - `scripts/check-article-line-length.mjs`, wired into
   `scripts/check-routes.sh`, guards the `80ch` cap on the same five routes:
   ceiling 107 characters/line, chosen because it sits strictly between the

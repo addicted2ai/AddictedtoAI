@@ -91,33 +91,41 @@ Closed by this round. `article p { max-width: 80ch; }` added to
 and `62ch` cost more (+13%/+10.88% independently re-measured, +24% not
 re-measured, page length on `/blog/chatgpt-ads`) for a narrower column.
 This rule makes no claim about how it relates to the site's other,
-narrower `ch`-capped rules -- see the two corrections below for why.
+narrower `ch`-capped rules -- see the three corrections below for why.
 
-**Two corrections, found by adversarial review on this round, before
-merge, both left visible rather than smoothed into a clean final
+**Three corrections, left visible rather than smoothed into a clean final
 paragraph:**
 
 1. The first version of this status note said the site's other
    `62ch`/`68ch` rules "cap secondary, supporting text" while `article p`
-   is "the primary reading column." False: `.log-lead` is the entire
-   freeform prose of `/log`, `/log/early` and `/log/archive` (`grep -rn
-   "<article" app/log/`: no matches), the same role `article p` fills
-   elsewhere.
+   is "the primary reading column." Found false by adversarial review:
+   `.log-lead` is the entire freeform prose of `/log`, `/log/early` and
+   `/log/archive` (`grep -rn "<article" app/log/`: no matches), the same
+   role `article p` fills elsewhere.
 2. The fix for #1 replaced it with an `<article>`-wrapper-vs-not
-   distinction, claiming `.log-lead` was the one exception. Also false,
-   and backwards: none of `.hero-lead`, `.log-field`, `.log-note` or
-   `.walkthrough-caption`'s own files (`app/page.js`, `app/log/LogEntry.js`,
-   `app/demos/RoundWalkthrough.js`) has an `<article>` wrapper either, and
-   `.log-lead` is the *only* one of the five that ever appears on an
-   `<article>` page (`app/model-retirement-calendar/page.js`,
-   `app/charter/page.js`).
+   distinction, claiming `.log-lead` was the one exception. Found false by
+   adversarial review too, and backwards: none of `.hero-lead`,
+   `.log-field`, `.log-note` or `.walkthrough-caption`'s own files
+   (`app/page.js`, `app/log/LogEntry.js`, `app/demos/RoundWalkthrough.js`)
+   has an `<article>` wrapper either, and `.log-lead` is the *only* one of
+   the five named that ever appears on an `<article>` page
+   (`app/model-retirement-calendar/page.js`, `app/charter/page.js`).
+3. Both #1 and #2 were built on a count of "five" other `ch`-capped rules
+   that neither this round nor either review invented: it traces to
+   `docket/briefs/loop-build-nav-cue-and-line-length.md`, which states as
+   fact "`app/globals.css` already caps several elements in `ch` -- `62ch`
+   at lines 507, 813 and 1002, `68ch` at 745 and 774" -- five lines, from
+   `grep -n "max-width" app/globals.css | head -6` read as complete when
+   it was truncated. This round carried "five" forward across two drafts
+   before running `grep -c "max-width: 6[28]ch" app/globals.css` itself,
+   which gives **twelve**. Self-caught, not found by review, and the only
+   one of the three not attributable to this round's own drafting.
 
-Both attempts asserted a relationship between selectors without checking
-every file each one renders in. This round stopped trying to characterise
-that relationship rather than risk a third wrong theory: `article p`'s
-`80ch` is justified above on its own measured terms only, and the site's
-other `ch` caps (12 of them, `grep -c "max-width: 6[28]ch" app/globals.css`)
-are left uncharacterised, not silently resolved.
+`article p`'s `80ch` is justified above on its own measured terms only.
+The site's other `ch` caps -- twelve of them, not five -- are left
+uncharacterised on purpose: three attempts at describing what relates them
+were each wrong in a different way, and this round stopped rather than
+risk a fourth.
 
 This round independently re-measured the baseline on a real render (not
 carried over from the closed item's own figures) and reproduced it: 96-103
