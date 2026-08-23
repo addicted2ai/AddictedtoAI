@@ -27,6 +27,20 @@ does not belong in this file. This file stays short on purpose — a long frame
 is one nobody reads, which is the failure this round exists to prevent, not
 a lesser version of succeeding at it.
 
+**Verified does not mean enforced everywhere `scripts/check-frame.mjs` runs.**
+It runs in two places — a developer's own clone, and `build-and-audit` in CI
+on every pull request — and they do not offer the same resources. Facts 8, 9
+and part of 12 call `gh api`; fact 18 reaches a local OpenCode server. All
+depend on things `build-and-audit`'s job does not provide: no `gh`
+authentication is configured for it (confirmed by reading
+`.github/workflows/pr-checks.yml`, not by assuming), and nothing in a
+GitHub-hosted runner serves OpenCode locally. Those checks correctly report
+`UNVERIFIED` there, not `PASS` — CI genuinely cannot evaluate them, and this
+file does not pretend otherwise. The other 12 verified facts, including 1
+and 2 after PR #136's finding below, are required, enforced checks on every
+pull request. Where a fact is enforced only locally, this is the record of that,
+not a footnote a reader has to rediscover by running the check themselves.
+
 **This file declares 18 facts below.** `scripts/check-frame.mjs` treats that
 number as ground truth and fails if the count it can recognize and classify
 does not match it, whatever the reason — malformed punctuation, wrong
@@ -48,12 +62,24 @@ and commit-author identity cannot evidence authorship in either direction —
 the account is shared with the maintainer, not proof either of them wrote a
 given line.
 
+**CI finding (PR #136, `build-and-audit`): this check used bare `main` as the
+ref, which does not exist in GitHub's PR checkout — only `origin/main` does,
+even with `fetch-depth: 0`. The command failed with "unknown revision",
+`$emails` came back empty, and the check reported `FAIL` for a claim that
+was never actually false — a check must distinguish "this is false" from "I
+could not evaluate this", and this one did not. Fixed below by resolving
+`origin/main` instead of `main`; verified by constructing the exact ref
+state a PR checkout has (a fresh clone, local `main` branch deleted, HEAD
+detached at the PR branch's tip) and confirming the fixed command passes
+there. Five review passes and a local green did not catch this; only CI, the
+one place this check is actually a required, enforced gate, did.**
+
 **Status:** verified
 
 **Check:**
 ```sh
-emails=$(git log --format=%ae main | grep -v '\[bot\]' | sort -u)
-loop_count=$(git log --format=%ae main | grep -c 'addicted2ai-loop' || true)
+emails=$(git log --format=%ae origin/main | grep -v '\[bot\]' | sort -u)
+loop_count=$(git log --format=%ae origin/main | grep -c 'addicted2ai-loop' || true)
 if [ "$emails" = "223016611+addicted2ai@users.noreply.github.com" ] && [ "$loop_count" = "0" ]; then
   echo PASS
 else
@@ -71,15 +97,15 @@ fi
 `docket/HOLD.md` and halts itself when the file is present and non-empty.
 CHARTER.md rule 13a states plainly that this is "today the loop's own signal
 to itself... not a channel the maintainer currently uses to intervene." The
-file's commit history has not been deleted (at least ten commits, as of this
-round). What this check does **not** and cannot establish: who typed any one
-of those commits. `addicted2ai` is a shared account (fact 1) — commit
-authorship on it cannot distinguish the loop from the maintainer typing by
-hand, in either direction. CHARTER.md's History (2026-08-22) records a
-one-time human reading of the ten commit messages, concluding each reads as
-the loop halting itself rather than a maintainer intervening live; that
-characterization is not re-derived by this check and is not part of what
-"verified" claims below.
+file's commit history, as merged into `main`, has not been deleted. What
+this check does **not** and cannot establish: who typed any one of those
+commits. `addicted2ai` is a shared account (fact 1) — commit authorship on
+it cannot distinguish the loop from the maintainer typing by hand, in either
+direction. CHARTER.md's History (2026-08-22) records a one-time human
+reading of the commit messages, concluding each reads as the loop halting
+itself rather than a maintainer intervening live; that characterization is
+not re-derived by this check and is not part of what "verified" claims
+below.
 
 **Adversarial review (round 171, `docket/reviews/9980ade895f69b88bc25fcac08256736bd931902.md`)
 found the first version of this fact claimed the commit-authorship reading as
@@ -87,14 +113,32 @@ verified when the check only ever counted commits and grepped text — unable,
 by fact 1's own logic, to see who typed anything. Narrowed above rather than
 padded with a check that cannot exist.**
 
+**CI finding (PR #136): this check used `git log --all` and reported `FAIL
+gate=1 phrase=1 hold-commits=4` in CI against 10 found locally — read at
+first glance as a real divergence. It wasn't: `--all` walks every ref a
+clone happens to have, and a long-lived local clone retains pre-squash
+commits from feature branches GitHub deletes after merge — the same PR's
+"hold" commit exists twice, once authored `Andrew` on the now-gone branch,
+once authored `addicted2ai` on `main` after squashing. A fresh CI clone only
+ever has currently-live branches, so it only ever sees the second copy. Ten
+was never a stable count to assert — it was an artifact of this developer's
+own git history, not a property of the record. `main`'s own history is
+stable in any clone, fresh or old, because squash-merging guarantees exactly
+one commit per merged change regardless of how many existed on the source
+branch — confirmed by constructing a fresh clone with the same ref shape a
+PR checkout has and finding the identical count there. Fixed by scoping the
+count to `origin/main` and lowering the floor from an artifact-inflated 10
+to 1 — the check's only real job, per the narrowing above, is confirming the
+file's history has not been deleted, not tracking an exact evolving count.**
+
 **Status:** verified
 
 **Check:**
 ```sh
-count=$(git log --all --oneline -- docket/HOLD.md | wc -l | tr -d ' ')
+count=$(git log --oneline origin/main -- docket/HOLD.md | wc -l | tr -d ' ')
 gate=$(grep -c 'if \[ -s docket/HOLD.md \]; then' scripts/orchestrate.sh)
 phrase=$(grep -c 'not a channel the maintainer currently' CHARTER.md)
-if [ "$gate" -ge 1 ] && [ "$phrase" -ge 1 ] && [ "$count" -ge 10 ]; then
+if [ "$gate" -ge 1 ] && [ "$phrase" -ge 1 ] && [ "$count" -ge 1 ]; then
   echo PASS
 else
   echo "FAIL gate=$gate phrase=$phrase hold-commits=$count"
