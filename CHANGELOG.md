@@ -259,6 +259,20 @@ re-verified this round (`head -20` on both docket items, `grep` against
   `app/globals.css` and quoted in the docket item makes no claim about
   what relates these rules to each other -- stated plainly as something
   this round did not establish, not something it hid.
+- A fourth finding from the same investigation: the false "five" count
+  above sat in the brief's unnumbered prose, not one of its seven numbered
+  `## Premises` -- `scripts/check-briefs.mjs` reads only that section, so
+  nothing in this repository checked the claim that derailed three drafts,
+  by construction. Drafted a `track: meta` docket item stating the gap,
+  with this instance as evidence and no fix proposed. Could not file it:
+  `meta` sits at 26 open items against a `queue_budget` of 14 (`node
+  scripts/check-docket.mjs`'s filing gate: `meta head open count 27
+  exceeds its ceiling of 26`), and `CHARTER.md`'s own History records
+  hitting this identical wall at this identical number on 2026-08-22 -- the
+  backlog has not moved in a day of work. Not a defect in the gate, which
+  behaved correctly; a finding about the state of the queue it guards. The
+  drafted item is preserved outside this branch for a future round to file
+  once `meta` has room.
 - `scripts/check-article-line-length.mjs`, wired into
   `scripts/check-routes.sh`, guards the `80ch` cap on the same five routes:
   ceiling 107 characters/line, chosen because it sits strictly between the
