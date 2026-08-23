@@ -7,11 +7,16 @@ rely on a prior session's summary or memory for it, however confident it
 sounds. Run `node scripts/check-frame.mjs` to check any of its claims
 against the current tree.
 
-`AGENTS.md` covers how to run a round. `CHARTER.md` is the binding ruleset —
-21 rules, human-owned. This file is the one Claude Code's own approval
-classifier reads alongside everything else here, so the rules below reach
-every session automatically, not only the ones that remember to look for
-them.
+`AGENTS.md` covers how to run a round. `CHARTER.md` is the binding ruleset the
+loop operates under — its current rule count is `FRAME.md` fact 14, checked
+two independent ways rather than retyped here, because a number in this
+sentence would be exactly the kind of unchecked claim this file exists to
+stop. The loop may amend `CHARTER.md` itself under the delegation (rule 13);
+rule 13a reserves specific properties — not the whole file — to the
+maintainer alone (`FRAME.md` fact 7). This file is the one Claude Code's own
+approval classifier reads alongside everything else here, so the rules below
+reach every session automatically, not only the ones that remember to look
+for them.
 
 ## Working rules
 
