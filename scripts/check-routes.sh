@@ -271,6 +271,21 @@ node scripts/check-ai-disclosure.mjs || failures=$((failures + $?))
 echo
 node scripts/check-reflow.mjs "$BASE" || failures=$((failures + $?))
 
+# First-screenful content density (docket/open/2026-08-22-first-screenful-density.md,
+# closed by round loop/build/first-screenful-density): how many <tr>/<li>
+# content units intersect the first 800px of a 1280-wide viewport, on a real
+# CDP render -- not a computation from CSS, the specific trap the docket item
+# names as the reason a previous design rubric got two numbers wrong. Only
+# /model-retirement-calendar carries a blocking minimum (this round moved its
+# intro prose below both tables so >=1 row is visible instead of 0 of 87);
+# the other six routes it measured are printed every run but not asserted
+# against a floor, because four of them (/, /blog, /blog/*, /charter) were a
+# deliberate editorial decision to leave as prose-first pages, not a defect
+# pending a fix -- see scripts/check-first-screenful.mjs's own header and
+# this round's CHANGELOG.md entry for why.
+echo
+node scripts/check-first-screenful.mjs "$BASE" || failures=$((failures + $?))
+
 # KNOWN_FAILURES's own regression test. Adversarial review demonstrated
 # live that the first version keyed an exemption on the route name alone,
 # so an injected, unrelated +580px overflow on /log -- a route already
