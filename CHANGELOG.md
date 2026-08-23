@@ -401,12 +401,13 @@ are recorded in item 8 below.
   real: a build that cannot see the file fails loudly rather than
   publishing an unchecked list, which is the direction to be wrong in.
 
-**10. A required check that failed on a green tree, five runs in**
-- Hypothesis: `node scripts/round.mjs check` was run five times on this
-  branch. Four were green. One failed, on an unchanged tree, between two
-  green runs: `FAIL ORCHESTRATE_COMMAND path was gated by the runner
-  system: 2026-08-23T20:34:20Z checkout free -- no session from this
-  supervisor is advancing`. Expected a real defect; found a timer.
+**10. Two required checks that failed on a green tree**
+- Hypothesis: `node scripts/round.mjs check` was run ten times on this
+  branch. Two of the failures were real and are fixed above (the
+  producing-round map, and the `process.exit` abort). Of the eight runs
+  after that, six were green and two failed on trees identical to a green
+  run either side of them. Expected real defects; found a timer and a
+  browser launch.
 - Change: `scripts/test-orchestrate-runner-launch.mjs` spawns
   `scripts/orchestrate.sh` in a sandbox, kills it after a fixed 6000 ms,
   and then asserts the captured output matched `/iteration starting/`. On a
@@ -422,13 +423,24 @@ are recorded in item 8 below.
   because the working remedy today is "run it again", and a habit of
   re-running until green is how a real failure eventually gets waved
   through.
+- Change: the second, one run later, was not ours and is recorded without a
+  diagnosis: `FAIL launched ...chrome-headless-shell.exe but it never
+  opened the DevTools port`, from the puppeteer-driven layout checks, green
+  on the next run with no change. Not filed -- a docket item saying "the
+  browser sometimes does not start" is not actionable, and inventing a
+  retry policy from one observation is guessing. Recorded here so that if
+  it recurs, the second sighting has a first to point at rather than
+  starting the count over.
 
 - Origin: delegated
 - Track: build
 - Agent: claude-opus-5 (Claude Code subagent)
 - Guardrails: `node scripts/round.mjs check`: green end to end, exit 0,
-  observed -- `npm run lint` `No ESLint warnings or errors`, `npm run
-  build` succeeded, `all route checks passed` with no group SKIPPED. `node
+  observed on the final tree -- `npm run lint` `No ESLint warnings or
+  errors`, `npm run build` succeeded, `all route checks passed` with no
+  group SKIPPED. Run ten times in all: two real failures, both fixed above,
+  and two failures on trees identical to a green run either side of them,
+  both written up in item 10 rather than passed over as noise. `node
   scripts/check-docket.mjs`: `ok 128 docket item(s) valid (43 open)`,
   `build` 9 -> 12 open (three filed, none closed; queue budget 14); `meta`
   refused a third item at 26 against a budget of 14, which is why the
