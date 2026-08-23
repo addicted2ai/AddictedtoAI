@@ -348,7 +348,19 @@ export const PRODUCING_ROUNDS = {
   // both of the page's tables in an accessible scroll region, in
   // app/model-retirement-calendar/page.js, a listed source file, so the
   // newest change is this round's.
-  "/model-retirement-calendar": 170,
+  //
+  // Round 174 (build, loop/build/first-screenful-density) moves the page's
+  // intro paragraphs and the deprecation-checker callout from between <h1>
+  // and the first table to a new "About this page" section after both
+  // tables (docket/open/2026-08-22-first-screenful-density.md) --
+  // app/model-retirement-calendar/page.js, a listed source file, so the
+  // newest change is this round's. scripts/check-ai-disclosure.mjs did not
+  // itself flag this one stale (both round 170 and round 174 are `build`,
+  // and the check only compares track, not round recency -- a real gap
+  // this entry closes without waiting for the check to catch it) -- found
+  // and fixed alongside the /directory mismatch the check did report, for
+  // the same underlying reason.
+  "/model-retirement-calendar": 174,
   // Round 168 (build) built this page. New route, so its producing round is
   // the round that created it.
   "/model-deprecation-checker": 168,
@@ -382,7 +394,15 @@ export const PRODUCING_ROUNDS = {
 // pattern as rounds 87, 100, 103, 107 and 108. The /demos page gains
 // verification dates rendered from the new app/lib/demos.js (added to its
 // listed files), so /demos moves too. No other route's listed files change.
-  "/directory": 125,
+  //
+  // Round 174 (build, loop/build/first-screenful-density) marks up the
+  // tool-card grid as a real <ul>/<li> list instead of bare <a> siblings of
+  // a <div> (docket/open/2026-08-22-first-screenful-density.md) --
+  // app/directory/DirectorySearch.js, a listed source file, so the newest
+  // change is this round's. Found by scripts/check-ai-disclosure.mjs
+  // itself: "mapped to round 125 (maintain), but its files were last
+  // touched by ... (build) — update PRODUCING_ROUNDS".
+  "/directory": 174,
   // Round 131 (maintain) corrected the walkthrough's "Result" caption, which
   // the record had disproved.
   // Round 132 (build) renders per-demo verification dates from the new

@@ -70,6 +70,265 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-23
+This build round (`loop/build/first-screenful-density`) closes
+`docket/open/2026-08-22-first-screenful-density.md`: the finding that this
+site shows zero enumerable content (`tr`/`li`) above an 800px fold on five
+of seven pages, against a 15-site reference corpus that showed a median of
+11, and that `/model-retirement-calendar` put 672px of prose between its
+`h1` and its first of 87 table rows -- 0 visible before scrolling. Brief
+committed at `docket/briefs/loop-build-first-screenful-density.md`; no
+error found in it -- all six premises reproduced exactly as written,
+re-verified this round (`head -20` on the docket item, `grep` against
+`app/model-retirement-calendar/page.js`, `scripts/check-reflow.mjs`,
+`CHARTER.md`, and both `frame:`/`attested:` citations). One thing the
+*docket item itself* does not agree with itself on, found while verifying
+its premises rather than in the brief: its "Why now" section states "0
+content units above the fold on five of seven pages ... **1** on
+`/model-retirement-calendar`", but its own band-by-band breakdown two lines
+later shows the first data row at 958px, 158px below the fold -- 0 visible,
+not 1. This round's own re-measurement (below) found 0, agreeing with the
+detailed breakdown and not the summary line. Left uncorrected in the
+now-closed item under rule 5 (the docket is a plan and may be edited
+freely while open, but this item is closing this round, not staying open
+for a retype); recorded here because CHARTER.md rule 4 forbids letting an
+inconsistency like this pass unremarked once noticed, wherever it's found.
+
+Measurement method for every number below: a real render over CDP against
+a local production build (`npm run build && npm run start`), 1280px
+viewport, 800px emulated height, counting `<li>`/`<tr>` elements whose
+`getBoundingClientRect()` intersects `[0, 800)` and whose own box is larger
+than a few pixels (excludes this site's `.visually-hidden` trick, which is
+a real 1x1px element in the DOM). `node
+scripts/check-first-screenful.mjs http://localhost:3000`, restated per
+change below with the exact before/after output.
+
+**1. `/model-retirement-calendar` — move the 672px intro below the tables, not out of the page**
+- Hypothesis: the docket item's own framing — a reader arriving at a table
+  of dates and a reader arriving to understand what the table means are
+  different readers — means the fix is reordering, not deleting. Every word
+  of the three paragraphs and the deprecation-checker callout that used to
+  sit between `<h1>` and the first table should survive, just after the
+  tables instead of before them, under a new "About this page" heading a
+  short lead paragraph now points to.
+- Change: `app/model-retirement-calendar/page.js` replaces the three
+  `<p>` elements and the checker callout between `<h1>` and `<h2>Upcoming
+  shutdowns</h2>` with one `.log-lead` sentence naming what the page is and
+  where the explanation now lives (`#about-this-page`). Both tables
+  (`data-retirement-table="upcoming"` and `="past"`) now render
+  immediately after that one sentence. The moved paragraphs, unchanged in
+  wording, and the checker callout now sit under a new `<h2
+  id="about-this-page">About this page</h2>` directly below the "Past
+  shutdowns" table, before "Anthropic publishes floors, not dates". Nothing
+  was shortened, removed, or reworded.
+- Measured:
+  ```
+  $ npm run build && npm run start &
+  $ node scripts/check-first-screenful.mjs http://localhost:3000
+  before: FAIL  /model-retirement-calendar  0 content unit(s) above 800px, need >= 1
+  after:  ok    /model-retirement-calendar  4 content unit(s) above 800px (>= 1 required)
+          -- <tr> top 528px "Shutdown…"; <tr> top 564px "2026-08-26 OpenAI Assistants API…";
+             <tr> top 646px "2026-09-24 OpenAI Videos API…"; <tr> top 727px "2026-09-24 OpenAI sora-2…"
+  ```
+  0 of 87 rows visible before scrolling &rarr; the header row plus 3 data
+  rows visible without scrolling (the header row appears at 528px, not
+  0px, because the AI-disclosure aside, `<h1>`, the last-verified line and
+  the one-sentence lead still precede it — this round moved the *context*,
+  not the disclosure or the heading).
+
+**2. `/directory` — tool cards become a real `<ul>`/`<li>` list**
+- Hypothesis: this page's zero count was not a content problem — the
+  `.tool-grid` of `.tool-card` links is exactly the kind of scannable,
+  enumerable content the docket item is about — it was a markup problem:
+  `app/directory/DirectorySearch.js` rendered each category's tools as bare
+  `<a>` siblings of a `<div>`, not a list. Marking the existing content up
+  correctly should both register as content units under this item's own
+  definition and fix a real, independent accessibility gap (a screen reader
+  had no way to announce "list of N tools" here before).
+- Change: `DirectorySearch.js`'s `.tool-grid` is now a `<ul>`; each
+  `.tool-card` anchor is wrapped in an `<li>`. `app/globals.css`'s
+  `.tool-grid` gains `list-style: none; margin: 0; padding: 0` (undoing
+  default `<ul>` styling; CSS Grid lays out any direct child as a grid item
+  regardless of tag) and a new `.tool-grid > li { display: flex }` plus
+  `.tool-card { flex: 1 }` so the anchor still stretches to fill the row
+  height the grid previously gave it directly. `app/demos/ToolFinder.js`
+  uses the same two class names on a `<div>`/`<a>` structure it does not
+  share this change with (out of this item's five named pages) — checked
+  that the added CSS is inert there (no default list/`<ul>` styling on a
+  `<div>`, and `flex: 1` has no effect without a flex parent) rather than
+  assumed safe.
+- Measured: 0 &rarr; 5 content units above the fold (`<li>` elements at
+  491px and 699px — two rows of tool cards in the first category). Same
+  command as above, route `/directory`.
+
+**3. `scripts/check-first-screenful.mjs` — the measurement, wired into `check-routes.sh`, proved able to fail**
+- Hypothesis: the docket item's own trap ("the design rubric that preceded
+  this work got two separate numbers wrong by computing them from CSS
+  instead of rendering them") means the check has to be a real render, and
+  `scripts/check-reflow.mjs` already proves that technique works in this
+  repository over CDP without a new devDependency (CHARTER.md rule 15).
+  Rather than risk that file's own tests and comments for one more caller,
+  its WebSocket/CDP plumbing is extracted fresh into
+  `scripts/lib/cdp-browser.mjs` (untouched, still self-contained,
+  `check-reflow.mjs` does not import it this round) and reused by the new
+  check.
+- Change: `scripts/check-first-screenful.mjs` measures `<li>`/`<tr>` units
+  above an 800px fold at 1280px width on seven routes. Only
+  `/model-retirement-calendar` carries a blocking minimum (`>= 1`) — the
+  one page this round actually restructured; the other six are measured
+  and printed every run (the same non-silent convention
+  `check-reflow.mjs`'s `KNOWN_FAILURES` table uses) but not asserted,
+  because four of them were a deliberate editorial decision to leave
+  unchanged (item 4 below), not a defect pending a fix — baking today's
+  count in as a floor everywhere would fail a future legitimate content
+  edit for a reason nobody reading the blocking list would understand.
+  Wired into `scripts/check-routes.sh` (which `build`'s track scope owns
+  and `build-and-audit` already runs).
+- **Proved able to fail before it was trusted.** With the item-1 fix in
+  place, `app/model-retirement-calendar/page.js` was temporarily rewritten
+  back to its pre-round paragraph order (`git diff --stat` after: only that
+  one file touched), rebuilt, and re-measured:
+  ```
+  $ node scripts/check-first-screenful.mjs http://localhost:3000
+  FAIL  /model-retirement-calendar  0 content unit(s) above 800px, need >= 1
+  measured /directory  5 content unit(s) above 800px …   <- unaffected, confirms the FAIL is specific
+  1 first-screenful problem(s)
+  ```
+  Reverted to the item-1 fix, rebuilt, and re-measured clean:
+  ```
+  $ node scripts/check-first-screenful.mjs http://localhost:3000
+  ok    /model-retirement-calendar  4 content unit(s) above 800px (>= 1 required) …
+  first-screenful check passed
+  ```
+  `git status --short` after the revert: only the intended three files
+  changed (`app/directory/DirectorySearch.js`, `app/globals.css`,
+  `app/model-retirement-calendar/page.js`) plus the two new script files.
+
+**4. Explicit decisions, not silence, on the four pages left unchanged**
+- Hypothesis: the docket item does not ask for all seven pages to be
+  fixed, only for a decision recorded on each — and three of the four
+  remaining zero-unit pages have a real editorial reason the docket item's
+  own framing anticipated ("an explicit decision to keep the current
+  ordering and say why").
+- Change: none — no code changed for `/`, `/blog`, `/blog/*` or `/charter`.
+  This item records the decision and its reasoning for each, in place of a
+  code change, per the docket item's own "Done when" #1 ("or an explicit
+  decision to keep the current ordering and say why").
+- `/` (homepage): decision is to leave it unchanged. A diagnostic pass
+  (scratchpad, not shipped — same CDP technique, no fold cutoff) found
+  **no `<li>` or `<tr>` element anywhere in the rendered page**, not just
+  above the fold: the homepage's scannable content (the three-stat `<dl>`,
+  the "What it has built" section cards, "Latest from the blog") is real
+  and above the fold today, just not built from list/table tags. This is
+  the site's narrative landing page, not a reference page the 15-site
+  corpus was selected to resemble; turning its stat panel or section grid
+  into `<li>`s to satisfy this item's specific vocabulary, with nothing
+  else changing, would be gaming the metric rather than serving the reader
+  it measures. Left alone; the site's own homepage design language (cards,
+  not lists) is treated as the reason, not an oversight.
+- `/blog` and `/blog/*` (sampled `/blog/frontier-cyber`): decision is to
+  leave both unchanged. `/blog`'s first `<li>` (same diagnostic pass) is at
+  **2923px**, in the "What's shipped so far" bullet list deep into the
+  post; `/blog/frontier-cyber` already has one `<li>` at 724px, inside its
+  own narrative, incidentally within the fold. These are long-form,
+  narrative posts — the founding `/blog` post's whole point is the order
+  loop &rarr; guardrails &rarr; what shipped &rarr; follow along, not a
+  quick-reference table, and the docket item's own "Why now" says
+  explicitly this is not a claim the prose is bad. Not every post was
+  individually re-measured; the decision is made for the class (long-form
+  editorial pieces), not verified post-by-post, and that limit is stated
+  rather than implied by silence.
+- `/charter`: decision is to leave it unchanged. Its first `<li>` (the two
+  tests under "The direction") sits at **2158px**, deep below the fold,
+  because of the length of `CHARTER.md`'s own preamble and rule 13a. This
+  page's entire stated purpose (`app/charter/page.js`'s own lead paragraph)
+  is that it is "parsed at build time from `CHARTER.md` ... so it cannot
+  drift from the document it describes" — reordering its content ahead of
+  the source document's own order would break that specific promise for
+  the sake of this item's metric. The honest fix, if this page's density is
+  ever worth revisiting, is a shorter `CHARTER.md` preamble decided by
+  whoever owns that document's content, not a rendering reorder in
+  `app/charter/page.js` — filed nowhere this round, because CHARTER.md's
+  own content is not this item's or this track's to shorten on a
+  first-screenful argument alone.
+- `/what-vendors-promise` was already at 4 units (unchanged, no work
+  needed) — re-measured this round to confirm, not assumed from the docket
+  item's own number.
+
+**5. Two real build defects found running `round.mjs check`, both fixed — recorded rather than smoothed over**
+- Hypothesis: none — these were found running the checks this item's own
+  "Done when" requires, not anticipated.
+- Change: fixed both. Defect one (self-found): the first attempt at this
+  entry's item 4 wrote `- Hypothesis:` for the "decisions, not silence"
+  change block but never a matching `- Change:` bullet. `app/lib/build-log.js`'s
+  parser requires both on every `**N.**` block; the omission made it throw
+  `CHANGELOG.md contains incomplete build-log entries: round 174`, which
+  failed `npm run build` (`Failed to collect page data for
+  /log/rounds/[id]`, since that route's `generateStaticParams` reads the
+  parsed log). Found by reproducing the failure with full output, fixed by
+  adding the missing `- Change:` bullet to item 4 above, verified against
+  the parser directly (not a full rebuild) before committing: `getBuildLog()`
+  returned 174 entries with round 174's four changes all complete.
+- Defect two (found by the coordinator's own run of `round.mjs check`, not
+  by this session): `app/lib/page-origins.js`'s `PRODUCING_ROUNDS` map
+  still read `"/directory": 125`, so the AI disclosure this route renders
+  would have cited a 2026-08-15 maintain round for content this round's
+  own `build` commit had just changed. `scripts/check-ai-disclosure.mjs`
+  caught it: `mapped to round 125 (maintain), but its files were last
+  touched by "build: mark up the directory tool grid as a real list"
+  (build) — update PRODUCING_ROUNDS`. Fixed by updating the entry to
+  `174`. Checking for the same defect elsewhere in this round's own
+  changes (not requested, done because the check that caught it only
+  compares *track*, not round recency, and would stay silent on a second
+  instance in the same track) found `/model-retirement-calendar` mapped to
+  `170` — also `build`, so the check's track-only comparison would never
+  have flagged it — while `app/model-retirement-calendar/page.js`, its
+  listed source file, is exactly what item 1 above changed. Fixed the same
+  way, to `174`. Verified both resolve cleanly against the live parser
+  (`getPageDisclosure("/directory")` and `getPageDisclosure(
+  "/model-retirement-calendar")` both return `{ origin: "delegated", round:
+  174 }`, no throw) before committing — not by running the full check
+  again, which this round did not do; see the Guardrails line below for
+  exactly what was and was not re-verified after this fix.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `npm run lint`: `No ESLint warnings or errors`. `npm run
+  build`: succeeded standalone four times during this entry's own
+  first-screenful measurement work (baseline, both fixes, deliberate
+  regression, revert) — all before item 4's missing-`Change:`-bullet defect
+  existed. `node scripts/check-first-screenful.mjs http://localhost:3000`:
+  full output quoted per item above; `ok` on `/model-retirement-calendar`
+  and `/directory`, measured (non-blocking) on the other five, proved able
+  to `FAIL` and reverted clean (item 3) — all captured before item 5's
+  defects existed, so unaffected by either. `node scripts/check-briefs.mjs`:
+  `ok all current briefs declare their premises`, `3 current brief(s) ...
+  20 premise(s) checked`. `node scripts/check-track-scope.mjs origin/main
+  loop/build/first-screenful-density`: `ok`, all 10 changed files within
+  `build`'s scope (re-run after every commit, including this one). `.github/`
+  untouched this round (`git diff --stat origin/main...HEAD -- .github/`:
+  empty, checked repeatedly). **`node scripts/round.mjs check` itself: two
+  runs this round, neither self-confirmed green by this session.** The
+  first failed at the build step on item 5's first defect (fixed, verified
+  against the parser directly). A second attempt was invalidated by this
+  session leaving a `next start` server running on port 3000 from its own
+  manual measurement work, which the round's own port-in-use guard refuses
+  to build alongside — the coordinator diagnosed and cleared it, then ran
+  `round.mjs check` directly and found item 5's second defect (the
+  `/directory` mapping), now fixed. **This session did not itself run
+  `round.mjs check` to a self-observed green result** — the coordinator's
+  own run is the one pending re-verification after this fix, and that
+  result is not yet in this entry.
+- Result: `/model-retirement-calendar` 0 &rarr; 4 content units above the
+  fold, `/directory` 0 &rarr; 5; `/`, `/blog`, `/blog/*`, `/charter` left
+  at 0 by explicit, recorded decision; `/what-vendors-promise` unchanged at
+  4. Two real defects found running the checks this item requires (item 5),
+  both fixed; `round.mjs check` green is not yet self-confirmed by this
+  session — pending the coordinator's re-run. All four
+  `docket/open/2026-08-22-first-screenful-density.md`
+  checkboxes satisfied; item moved to `docket/done/`.
+
+### 2026-08-23
 This meta round (`loop/meta/runner-config`) makes the loop model, provider
 and harness agnostic. The maintainer's own words, from the brief: "the loop
 kind of needs to be model, provider, and harness agnostic, with the

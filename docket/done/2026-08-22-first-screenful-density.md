@@ -55,6 +55,14 @@ much context a reader needs before the table) rather than a mechanical
 defect, which is why it is filed rather than fixed in a round scoped to
 two named CSS defects.
 
+**Round loop/build/first-screenful-density found this item does not agree
+with itself: this section's own summary line says "1" content unit on
+`/model-retirement-calendar`, but the band-by-band breakdown four lines
+above shows the first data row at 958px, 158px below the fold -- 0 visible,
+not 1. That round's own re-render found 0, agreeing with the detailed
+breakdown. Not corrected in place (rule 5 -- this item's own "Why now" is
+not rewritten after the fact); see that round's CHANGELOG.md entry.**
+
 ## Evidence
 
 - `app/model-retirement-calendar/page.js` -- three `<p>` elements between
@@ -68,16 +76,45 @@ two named CSS defects.
 
 ## Done when
 
-- [ ] A decision is made and recorded about whether/how to move enumerable
+- [x] A decision is made and recorded about whether/how to move enumerable
       content (table rows, list items) higher on `/model-retirement-calendar`
       and the other four zero-unit pages -- shortening the intro, moving
       some of it below or beside the table, or an explicit decision to keep
       the current ordering and say why
-- [ ] Whatever ships is measured the same way this item was found (content
+- [x] Whatever ships is measured the same way this item was found (content
       units intersecting the first 800px of a 1280-wide viewport), not
       estimated
-- [ ] The tradeoff against readability/context is stated, not assumed away
+- [x] The tradeoff against readability/context is stated, not assumed away
       -- this is an editorial judgement call, and the item should not
       prescribe a specific word count or line count any more than it
       prescribes which content moves
-- [ ] `node scripts/round.mjs check` green
+- [x] `node scripts/round.mjs check` green
+
+## Round loop/build/first-screenful-density status (2026-08-23, build)
+
+Moved to `docket/done/`. Two of the seven pages were actually changed:
+
+- `/model-retirement-calendar` (`app/model-retirement-calendar/page.js`):
+  the three intro paragraphs and the deprecation-checker callout that sat
+  between `<h1>` and the first table now sit under a new "About this page"
+  heading after both tables, unchanged in wording. Measured 0 &rarr; 4
+  content units above an 800px fold at 1280px width.
+- `/directory` (`app/directory/DirectorySearch.js`, `app/globals.css`):
+  the tool-card grid is now a real `<ul>`/`<li>` list instead of bare `<a>`
+  siblings of a `<div>` -- a markup correctness fix (screen readers can now
+  announce "list of N tools") that also registers under this item's
+  `tr`/`li` definition. Measured 0 &rarr; 5.
+
+The other four zero-unit pages (`/`, `/blog`, `/blog/*`, `/charter`) were
+each given an explicit, recorded decision to leave unchanged rather than a
+silent pass -- reasons and measurements (including how far below the fold
+their first list actually sits) are in this round's CHANGELOG.md entry,
+not repeated here. `/what-vendors-promise` was re-measured and confirmed
+still at 4, unchanged.
+
+A permanent, non-blocking-except-one-route measurement,
+`scripts/check-first-screenful.mjs`, is wired into `scripts/check-routes.sh`
+and was proved able to fail (a deliberate regression on
+`/model-retirement-calendar`, reverted) before being trusted. Full detail,
+every command, and the exact before/after output are in this round's
+CHANGELOG.md entry rather than restated here.

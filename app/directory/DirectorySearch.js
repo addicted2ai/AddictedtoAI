@@ -163,31 +163,41 @@ export default function DirectorySearch() {
           <section key={category.name} className="tool-category">
             <h2>{category.name}</h2>
             {category.note ? <p className="tool-category-note">{category.note}</p> : null}
-            <div className="tool-grid">
+            {/* docket/open/2026-08-22-first-screenful-density.md measured
+                zero <tr>/<li> content units above the fold on this page --
+                not because it lacks scannable content (a card grid of tools
+                is exactly that) but because the cards were bare <a> siblings
+                of a <div>, not a list. A collection of tool cards is a list
+                of tools; marking it up as one is a correctness fix, not a
+                cosmetic one -- a screen reader now announces "list of N
+                items" here, which it could not before. See globals.css's
+                .tool-grid comment for the layout change this required. */}
+            <ul className="tool-grid">
               {category.tools.map((tool) => (
-                <a
-                  key={tool.href}
-                  href={tool.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="tool-card"
-                  onClick={() =>
-                    trackEvent("directory_tool_click", {
-                      tool_name: tool.name,
-                      category: category.name,
-                    })
-                  }
-                >
-                  <h3>{tool.name}</h3>
-                  <p>{tool.description}</p>
-                  <p className="tool-verified">
-                    Verified{" "}
-                    <time dateTime={tool.verified}>{tool.verified}</time>
-                  </p>
-                  <span className="visually-hidden"> (opens in a new tab)</span>
-                </a>
+                <li key={tool.href}>
+                  <a
+                    href={tool.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tool-card"
+                    onClick={() =>
+                      trackEvent("directory_tool_click", {
+                        tool_name: tool.name,
+                        category: category.name,
+                      })
+                    }
+                  >
+                    <h3>{tool.name}</h3>
+                    <p>{tool.description}</p>
+                    <p className="tool-verified">
+                      Verified{" "}
+                      <time dateTime={tool.verified}>{tool.verified}</time>
+                    </p>
+                    <span className="visually-hidden"> (opens in a new tab)</span>
+                  </a>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         ))}
       </section>

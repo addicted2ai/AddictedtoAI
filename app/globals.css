@@ -350,14 +350,32 @@ article a:hover {
   font-size: 0.85rem;
 }
 
+/* A <ul> as of docket/open/2026-08-22-first-screenful-density.md (round
+   loop/build/first-screenful-density) -- was a bare <div> of <a> cards, so
+   list-style/margin/padding here undo the browser's default <ul>/<li>
+   styling rather than add anything visual. The grid itself is unaffected:
+   CSS Grid lays out any direct child as a grid item regardless of its tag,
+   list-item included. */
 .tool-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The <li> is the grid cell now; without this it sizes to its content
+   instead of stretching to the row height grid's default `align-items:
+   stretch` gives it, which previously applied to .tool-card directly when
+   it was the grid item itself. */
+.tool-grid > li {
+  display: flex;
 }
 
 .tool-card {
   display: block;
+  flex: 1;
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 8px;
