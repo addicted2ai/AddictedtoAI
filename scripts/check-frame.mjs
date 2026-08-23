@@ -6,7 +6,7 @@
 //
 // The optional argument defaults to FRAME.md and exists so this parser can
 // be tested against a scratch fixture without touching the real file --
-// exactly how three rounds of adversarial review found the defects this
+// exactly how four rounds of adversarial review found the defects this
 // section's comments describe.
 //
 // FRAME.md exists because round 8 (loop/meta/frame) found the orchestrator
@@ -25,9 +25,9 @@
 // repository's other drift bugs happened (see CHANGELOG.md on
 // scripts/check-log-pages.mjs and the homepage figure checks).
 //
-// COMPLETENESS IS NOT GUARANTEED BY RECOGNISING HEADING SHAPES. It took
-// three rounds of review to learn this, and the header now says so plainly
-// rather than repeating a fourth version of the same overclaim:
+// COMPLETENESS DOES NOT COME FROM RECOGNISING HEADING SHAPES. It took three
+// rounds of review to learn that, and a fourth to learn the fix for it was
+// itself incomplete. Stated plainly rather than repeating a fifth overclaim:
 //
 // (1) v1 split the document on the strict pattern "## N. " (period, space)
 //     alone, so "## 17: Title" (colon) opened no chunk boundary and the
@@ -45,26 +45,43 @@
 // (3) v3's two scans -- candidate matcher and the "independent" completeness
 //     scan alike -- both anchor at column 0. A heading indented by one to
 //     three spaces or a tab is a valid CommonMark ATX heading, not a typo,
-//     and it evades both scans identically, because they share the blind
-//     spot instead of disagreeing. A fact hidden this way still reported
-//     "0 missed".
+//     and it evades both scans identically. Fixed by replacing shape
+//     recognition with a declared total in FRAME.md, reconciled against
+//     whatever any scan recognises -- a mismatch fails regardless of why a
+//     fact went unrecognised, closing every heading-shape defect at once
+//     instead of the one reproduced this time.
 //
-// Three fixes, three classes, each one closing exactly the reproduced case
-// and nothing upstream of it. Recognising every way a Markdown heading can
+// (4) v4 checked a COUNT, not a SET. `## 1.`, `## 2.`, `## 47.` with a
+//     declared total of 3 -- three well-formed, column-0 headings, no shape
+//     defect anywhere -- passes the count check cleanly while standing in
+//     for a deleted fact 3. Nothing required the recognised numbers to be
+//     `{1, ..., declaredTotal}` rather than merely `declaredTotal` numbers.
+//     Fixed below with an explicit set check: every integer from 1 to the
+//     declared total must appear exactly once among the recognised IDs.
+//
+// Fixes (1) through (3) each closed exactly the reproduced case and left a
+// narrower one behind, because recognising every way a heading's SHAPE can
 // be malformed is not a bounded problem by incremental rediscovery -- and
-// even a fully spec-compliant recogniser would not cover the harder case:
-// a fact expressed with no heading markup at all. So this script does not
-// keep chasing heading shapes for completeness. It still runs the shape
-// scans above, because they give a useful, specific diagnosis when they DO
-// catch something malformed -- but the actual completeness guarantee below
-// is a declared total, stated in FRAME.md itself and checked against
-// whatever the shape scans manage to recognise. That comparison does not
-// care why a fact went unrecognised; any mismatch, for any reason, known or
-// not yet discovered, fails the build. The bound on this: it holds exactly
-// as long as the declared number in FRAME.md is kept in sync with the facts
-// actually there, which is a single, human-auditable edit rather than a
-// syntax-recognition problem, and if that declaration is itself missing or
-// unparseable, this script fails rather than skipping the check silently.
+// even a fully spec-compliant recogniser would not cover a fact with no
+// heading markup at all. Fix (4) is different in kind, not degree: set
+// equality over a finite range of integers is a closed, total comparison.
+// Once the recognised IDs must equal {1, ..., declaredTotal} exactly, a
+// missing fact changes the set, a duplicate changes the set, a renumber
+// changes the set -- there is no narrower shape of "wrong set" left to find
+// the way there was always a narrower shape of "malformed heading" to find.
+// This is where that chase stops, and what makes this fix different is
+// exactly that it does not depend on recognising a shape at all.
+//
+// THE ACTUAL BOUND, stated precisely rather than left at "keep one number in
+// sync" (which was itself an incomplete statement of it, found by the same
+// review that found (4)): this guarantee holds as long as the declared
+// total in FRAME.md is bumped whenever a fact is truly added or removed.
+// Sequence integrity -- that the recognised numbers form {1, ..., declared
+// total} exactly, no gaps, no duplicates, no renumbering -- is now checked
+// mechanically below, not requested of an editor by convention. What is
+// still not verified, and is not claimed to be: a fact heading written with
+// no leading "#" at all never becomes a candidate in the first place, and no
+// check here can see it.
 //
 // SELF-VERDICT CONVENTION. Every verified fact's check command is written to
 // print exactly one of three tokens as the first word of its output:
@@ -99,13 +116,8 @@ try {
   process.exit(1);
 }
 
-// The completeness guarantee. Independent of every scan below on purpose:
-// it does not matter whether a fact went unrecognised because of a
-// punctuation typo, wrong spacing, the wrong heading level, indentation, no
-// heading at all, or a form nobody has found yet -- if the declared count
-// and the recognised count disagree, something is wrong, and this does not
-// need to know what. `null` if the sentence is missing or does not parse,
-// which fails the check below rather than skipping it.
+// The declared total. `null` if the sentence is missing or does not parse,
+// which fails the checks below rather than skipping them.
 const declaredMatch = text.match(/declares\s+\*{0,2}(\d+)\*{0,2}\s+facts?\s+below/i);
 const declaredTotal = declaredMatch ? Number(declaredMatch[1]) : null;
 
@@ -135,7 +147,7 @@ if (boundaries.length === 0) {
 // deliberately more permissive: any number of leading "#" (any heading
 // level, not just two), then any whitespace, then a digit -- still anchored
 // at column 0, which is exactly the blind spot the declared-total check
-// above exists to catch regardless. Useful for a specific diagnosis
+// below exists to catch regardless. Useful for a specific diagnosis
 // ("## Maintenance" does not match; "### 4." does) even though it is not
 // what completeness rests on any more.
 function looksLikeNumberedHeading(line) {
@@ -158,7 +170,7 @@ lines.forEach((line, i) => {
 // matcher -- and therefore every check below -- never even considered. This
 // is a diagnostic, not the completeness guarantee: both scans share the
 // column-0 anchor, so an indented heading is invisible to this comparison
-// too, and only the declared-total check above catches that case.
+// too, and only the declared-total checks below catch that case.
 const boundarySet = new Set(boundaries);
 const missedLines = independentHits.filter((i) => !boundarySet.has(i));
 
@@ -193,7 +205,8 @@ const facts = chunks.map((chunk) => {
 // (didn't even parse), a malformed body (parsed, but missing Status or, for
 // a verified fact, a check block), or a fact this script actually runs.
 // This partition is an accounting of what the candidate matcher found --
-// it is not proof that nothing was missed; the declared-total check is.
+// it is not proof that nothing was missed or renumbered; the declared-total
+// and sequence checks below are.
 const malformedHeadings = facts.filter((f) => f.malformedHeading);
 const parsed = facts.filter((f) => !f.malformedHeading);
 const malformedBody = parsed.filter((f) => !f.status || (f.status === "verified" && !f.checkCmd));
@@ -209,6 +222,29 @@ for (const f of parsed) {
 }
 const duplicateIds = [...seenIds.entries()].filter(([, n]) => n > 1).map(([id]) => id);
 
+// Sequence integrity: every ID the candidate matcher recognised (well-formed
+// or malformed-heading alike -- a malformed heading still claims a number),
+// as a set, must equal {1, ..., declaredTotal} exactly. This is what a pure
+// count comparison cannot see: `## 1.`, `## 2.`, `## 47.` against a declared
+// total of 3 has the right COUNT and the wrong SET, standing in for a
+// deleted fact 3 with nothing to notice. Unlike the shape scans above, this
+// comparison is total -- there is no narrower "wrong set" shape a future
+// review would find, because any missing, duplicated, or renumbered fact
+// changes the set against a fully specified expected range.
+const recognisedIds = facts
+  .map((f) => Number(f.id))
+  .filter((n) => Number.isInteger(n));
+const recognisedIdSet = new Set(recognisedIds);
+let missingIds = [];
+let unexpectedIds = [];
+if (declaredTotal !== null) {
+  const expected = new Set(
+    Array.from({ length: Math.max(declaredTotal, 0) }, (_, i) => i + 1)
+  );
+  missingIds = [...expected].filter((n) => !recognisedIdSet.has(n)).sort((a, b) => a - b);
+  unexpectedIds = [...recognisedIdSet].filter((n) => !expected.has(n)).sort((a, b) => a - b);
+}
+
 console.log(
   `${FRAME_PATH} check -- ${boundaries.length} candidate heading(s): ` +
     `${wellFormed.length} well-formed, ${malformedHeadings.length} malformed heading(s), ` +
@@ -219,22 +255,30 @@ let failures = 0;
 let unverified = 0;
 const attested = [];
 
-// The completeness gate. Checked first and reported loudest: this is the
-// one comparison in this script that does not depend on any scan above
-// having recognised the right shape.
+// The completeness gates. Checked first and reported loudest: neither
+// depends on any scan above having recognised the right heading shape.
 if (declaredTotal === null) {
   console.log(
     `FAIL        completeness: ${FRAME_PATH} does not declare its fact count ` +
       `("This file declares **N** facts below.") -- cannot verify nothing is missing`
   );
   failures++;
-} else if (declaredTotal !== independentHits.length) {
-  console.log(
-    `FAIL        completeness: ${FRAME_PATH} declares ${declaredTotal} fact(s), but only ` +
-      `${independentHits.length} heading-like line(s) were found by any scan -- ` +
-      `a fact may be hidden by a heading form no scan here recognises`
-  );
-  failures++;
+} else {
+  if (declaredTotal !== independentHits.length) {
+    console.log(
+      `FAIL        completeness: ${FRAME_PATH} declares ${declaredTotal} fact(s), but only ` +
+        `${independentHits.length} heading-like line(s) were found by any scan -- ` +
+        `a fact may be hidden by a heading form no scan here recognises`
+    );
+    failures++;
+  }
+  if (missingIds.length > 0 || unexpectedIds.length > 0) {
+    console.log(
+      `FAIL        sequence: recognised IDs do not form {1, ..., ${declaredTotal}} -- ` +
+        `missing ${JSON.stringify(missingIds)}, unexpected ${JSON.stringify(unexpectedIds)}`
+    );
+    failures++;
+  }
 }
 
 if (missedLines.length > 0) {
@@ -315,8 +359,12 @@ console.log(
     `${missedLines.length} missed by the candidate matcher`
 );
 console.log(
-  `completeness (declared): ${declaredTotal === null ? "not declared" : declaredTotal} declared vs ` +
+  `completeness (declared): ${declaredTotal === null ? "not declared" : `${declaredTotal} declared`} vs ` +
     `${independentHits.length} recognised by any scan`
+);
+console.log(
+  `sequence (declared): recognised IDs ${JSON.stringify([...recognisedIdSet].sort((a, b) => a - b))} vs ` +
+    `expected {1..${declaredTotal === null ? "?" : declaredTotal}}`
 );
 
 const executed = wellFormed.length - attested.length;
