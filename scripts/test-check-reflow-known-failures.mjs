@@ -1,15 +1,26 @@
 #!/usr/bin/env node
-// Adversarial review (round 170) demonstrated live that scripts/check-reflow.mjs's
-// first KNOWN_FAILURES shape keyed on the route name alone: it injected an
-// unrelated +580px overflow on /log -- a route this file already excused a
-// documented ~180px bug on -- and the check reported KNOWN rather than FAIL.
-// A route-keyed exemption is not a documented exception; it is a standing
-// bypass for that route.
+// Adversarial review (round 170, first pass) demonstrated live that
+// scripts/check-reflow.mjs's first KNOWN_FAILURES shape keyed on the route
+// name alone: it injected an unrelated +580px overflow on /log -- a route
+// this file already excused a documented ~180px bug on -- and the check
+// reported KNOWN rather than FAIL. A route-keyed exemption is not a
+// documented exception; it is a standing bypass for that route.
 //
-// This is the regression test for the fix: classifyKnownFailure and
+// Second pass, against the fix for that: `.includes()` has no floor, so
+// `snippets: [""]` (the empty string is a substring of everything in
+// JavaScript) or a short, generic snippet reconstructs the same route-wide
+// bypass -- verified directly against the shipped code. Cases 11-14 below
+// are that regression test.
+//
+// This file is the regression test for both: classifyKnownFailure and
 // checkKnownFailureBookkeeping, exercised directly with synthetic inputs
-// modelled on the review's own demonstration, so this exact defect cannot
-// come back silently.
+// modelled on the review's own demonstrations, so neither defect can come
+// back silently. Case 3 in particular is cited by name in this round's
+// changelog entry: a first draft of check-reflow.mjs's own comments claimed
+// a smaller offender coexisting with a larger known one "would not appear
+// as the widest" and "pass unnoticed" -- review's second pass tested that
+// claim directly against this shipped code and found it false, contradicted
+// by this exact case. Kept here, unchanged in substance, as the proof.
 //
 // Fixtures here are synthetic on purpose, not a copy of whatever
 // KNOWN_FAILURES currently holds: round 170 shipped with the table empty
@@ -160,7 +171,7 @@ const fixture = {
   } else {
     const { problems } = checkKnownFailureBookkeeping(
       "/fictional-route",
-      { docket: openItem, expires: "2099-01-01", snippets: ["irrelevant"] },
+      { docket: openItem, expires: "2099-01-01", snippets: ["a-fixture-snippet-for-this-test"] },
       { repoRoot: ROOT }
     );
     if (problems.length === 0) ok(`a citation to a real, open docket item passes bookkeeping (${openItem})`);
@@ -175,7 +186,7 @@ const fixture = {
   const staleEntry = {
     docket: "docket/open/1970-01-01-this-item-does-not-exist.md",
     expires: "2099-01-01",
-    snippets: ["irrelevant"],
+    snippets: ["a-fixture-snippet-for-this-test"],
   };
   const { problems } = checkKnownFailureBookkeeping("/fictional-route", staleEntry, { repoRoot: ROOT });
   if (problems.length > 0) ok("a KNOWN_FAILURES entry citing a non-open docket item is caught");
@@ -189,7 +200,7 @@ const fixture = {
   const doneEntry = {
     docket: "docket/done/2026-08-14-render-one-limit-count-from-sweep-output.md",
     expires: "2099-01-01",
-    snippets: ["irrelevant"],
+    snippets: ["a-fixture-snippet-for-this-test"],
   };
   const { problems } = checkKnownFailureBookkeeping("/fictional-route", doneEntry, { repoRoot: ROOT });
   if (problems.length > 0) ok("a KNOWN_FAILURES entry citing a docket/done/ item (not open/) is caught");
@@ -201,12 +212,12 @@ const fixture = {
 //    empty and only the expires behaviour is under test.
 {
   const anchor = "docket/open/2026-08-22-changelog-fenced-code-blocks-unparsed.md";
-  const past = { docket: anchor, expires: "2020-01-01", snippets: ["irrelevant"] };
+  const past = { docket: anchor, expires: "2020-01-01", snippets: ["a-fixture-snippet-for-this-test"] };
   const { problems, notes } = checkKnownFailureBookkeeping("/fictional-route", past, { repoRoot: ROOT });
   if (problems.length === 0 && notes.length > 0) ok("a past expires date produces a note, not a failure");
   else bad(`a past expires date should note (not fail): problems=${problems.length} notes=${notes.length}`);
 
-  const future = { docket: anchor, expires: "2099-01-01", snippets: ["irrelevant"] };
+  const future = { docket: anchor, expires: "2099-01-01", snippets: ["a-fixture-snippet-for-this-test"] };
   const { notes: futureNotes } = checkKnownFailureBookkeeping("/fictional-route", future, { repoRoot: ROOT });
   if (futureNotes.length === 0) ok("a future expires date produces no note");
   else bad("a future expires date incorrectly produced a note");
@@ -228,6 +239,73 @@ const fixture = {
       else bad(`shipped entry for ${route} failed bookkeeping: ${problems.join("; ")}`);
     }
   }
+}
+
+// --- the snippet floor (review, second pass) --------------------------------
+
+// 11. Review's second-pass demonstration, reproduced directly: `snippets: [""]`
+//     against ANY offender text. `.includes("")` is true for every string in
+//     JavaScript, so before the length floor this matched unconditionally --
+//     the exact route-wide bypass the whole fix exists to close, just moved
+//     one level down into a single careless entry. Must be rejected.
+{
+  const degenerateEntry = { ...fixture, snippets: [""] };
+  const result = {
+    overflow: true,
+    truncated: false,
+    offenders: [{ tag: "DIV", cls: "anything-at-all", right: 9999, text: "absolutely anything, this must not match" }],
+  };
+  const verdict = classifyKnownFailure(degenerateEntry, result);
+  if (!verdict.known) ok('an empty-string snippet ("") does not match unconditionally -- rejected, not a wildcard');
+  else bad('an empty-string snippet ("") matched an unrelated offender -- the route-wide bypass is back');
+}
+
+// 12. A short, generic snippet ("the") matching by accident -- the review's
+//     other named example. Also must be rejected, even though it is not
+//     technically empty.
+{
+  const genericEntry = { ...fixture, snippets: ["the"] };
+  const result = {
+    overflow: true,
+    truncated: false,
+    offenders: [{ tag: "DIV", cls: "", right: 9999, text: "the quick brown fox, nothing to do with the documented bug" }],
+  };
+  const verdict = classifyKnownFailure(genericEntry, result);
+  if (!verdict.known) ok('a short, generic snippet ("the") is rejected rather than matching by accident');
+  else bad('a short, generic snippet ("the") matched an unrelated offender');
+}
+
+// 13. The floor is a length, not a blanket rejection of short-looking
+//     entries: a snippet at exactly MIN_SNIPPET_LENGTH (12 characters) that
+//     genuinely matches the offender must still classify known. Proves 11
+//     and 12 fail because they are too short/degenerate, not because
+//     classifyKnownFailure rejects every entry now.
+{
+  const boundaryEntry = { ...fixture, snippets: ["twelve-chars"] }; // exactly 12
+  const result = {
+    overflow: true,
+    truncated: false,
+    offenders: [{ tag: "STRONG", cls: "", right: 500, text: "some prose containing twelve-chars right in the middle" }],
+  };
+  const verdict = classifyKnownFailure(boundaryEntry, result);
+  if (verdict.known) ok("a 12-character snippet that genuinely matches still classifies known -- the floor doesn't overreach");
+  else bad(`a 12-character genuine match was rejected -- ${verdict.reason}`);
+}
+
+// 14. checkKnownFailureBookkeeping enforces the same floor, independent of
+//     classifyKnownFailure -- it runs on every entry unconditionally (see
+//     that function's own comment for why: classifyKnownFailure only runs
+//     when its route is actually overflowing, so a bad entry on a currently
+//     clean route needs its own check).
+{
+  const emptySnippetEntry = {
+    docket: "docket/open/2026-08-22-changelog-fenced-code-blocks-unparsed.md",
+    expires: "2099-01-01",
+    snippets: [""],
+  };
+  const { problems } = checkKnownFailureBookkeeping("/fictional-route", emptySnippetEntry, { repoRoot: ROOT });
+  if (problems.length > 0) ok("checkKnownFailureBookkeeping also rejects an empty-string snippet, not only classifyKnownFailure");
+  else bad("checkKnownFailureBookkeeping did not catch an empty-string snippet");
 }
 
 if (failures > 0) {

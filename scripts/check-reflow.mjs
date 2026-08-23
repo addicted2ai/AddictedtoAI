@@ -117,34 +117,38 @@ const ROUTES = [
 // fooled by an unrelated failure that happens to land in-band the way a
 // magnitude-only check could.
 //
-// What this does NOT solve, stated rather than quietly overfit -- two
-// gaps, one anticipated and one found while verifying the fix:
+// What this does NOT solve, and a claim about it that was wrong:
 //
-// 1. If a second, unrelated overflow appears on a route that already
-//    carries a KNOWN entry, and that second overflow's widest point is
-//    narrower than an *already-explained* offender's,
-//    `document.documentElement.scrollWidth` -- the single page-level
-//    number this whole check gates on -- is unaffected, because it
-//    already reflects the wider of the two. A new failure that never
-//    pushes the page wider than the existing one produces no new offender
-//    to check against, known or not, and passes unnoticed either way.
+// An earlier version of this comment claimed a second, smaller, unrelated
+// overflow coexisting with a larger documented one on the same route would
+// "not appear as the widest" and "pass unnoticed either way." That is
+// false, and adversarial review's second pass found it by testing the
+// claim directly against this shipped code rather than trusting the prose
+// -- contradicted by this file's own scripts/test-check-reflow-known-failures.mjs
+// case 3, which proves the opposite. The offenders scan below is
+// exhaustive, not top-1: it filters every element by its own
+// `getBoundingClientRect().right`, independent of any other element's
+// size, so a second offender that individually exceeds the viewport is
+// captured and checked exactly like the first, whether it is wider or
+// narrower. Corrected here rather than reworded quietly -- see the round's
+// changelog entry for the full account of the error and how it was caught.
 //
-// 2. `offenders` finds elements by their own `getBoundingClientRect().right`
-//    exceeding the viewport, which misses block-level overflow entirely: a
-//    block element's own box respects its assigned CSS width even when its
-//    content does not (`overflow-x: visible`, the default), so its
-//    `scrollWidth` can exceed its `clientWidth` -- and cascade all the way
-//    up to inflate `document.documentElement.scrollWidth` -- without that
-//    element's, or any ancestor's, bounding rect ever showing it. Not
-//    hypothetical: verifying this fix found exactly this shape on `/log`
-//    (`.log-field`/`.log-note` paragraphs with `overflow-x: visible` and no
-//    `overflow-wrap`, fixed separately -- see the round's changelog entry).
-//    The classifier still fails closed when this happens (`offenders`
-//    comes back empty, which `classifyKnownFailure` treats as NOT known,
-//    never as known), so this gap costs diagnostic detail, not safety --
-//    but it does mean "no offender found" can mean either "the page is
-//    fine" or "the cause is a block-level element this scan cannot see,"
-//    and only `overflow: true` tells them apart.
+// The real, narrower gap: `offenders` finds elements by their own
+// `getBoundingClientRect().right` exceeding the viewport, which misses
+// block-level overflow entirely -- a block element's own box respects its
+// assigned CSS width even when its content does not (`overflow-x: visible`,
+// the default), so its `scrollWidth` can exceed its `clientWidth` -- and
+// cascade all the way up to inflate `document.documentElement.scrollWidth`
+// -- without that element's, or any ancestor's, bounding rect ever showing
+// it. Not hypothetical: verifying this fix found exactly this shape on
+// `/log` (`.log-field`/`.log-note` paragraphs with `overflow-x: visible`
+// and no `overflow-wrap`, fixed separately -- see the round's changelog
+// entry). The classifier still fails closed when this happens (`offenders`
+// comes back empty, which `classifyKnownFailure` treats as NOT known,
+// never as known), so this gap costs diagnostic detail, not safety -- but
+// it does mean "no offender found" can mean either "the page is fine" or
+// "the cause is a block-level element this scan cannot see," and only
+// `overflow: true` tells them apart.
 //
 // Bookkeeping, checked once per entry regardless of whether the route
 // currently overflows (see checkKnownFailureBookkeeping): the cited docket
@@ -164,14 +168,57 @@ const ROUTES = [
 // pasted in, not a redesign.
 export const KNOWN_FAILURES = {};
 
+// REVIEW FINDING, second pass, fixed here (see the round's changelog entry):
+// `.includes()` has no floor. A snippet of `""` matches every string in
+// JavaScript (the empty string is a substring of anything), and a short,
+// generic snippet like `"the"` matches by accident -- either fully
+// reconstructs the route-wide bypass this file exists to close, verified
+// directly against the shipped code before this fix. It could not bite
+// while KNOWN_FAILURES was empty, which is exactly why it would have
+// survived: the first entry added carelessly would have reopened the hole
+// with nothing here to stop it.
+//
+// The property: a snippet must be specific enough to identify a failure,
+// and an entry that cannot must be rejected rather than matching
+// everything. Enforced as a length floor -- specificity has no exact
+// measure, but every real snippet this file has ever needed (a 62-character
+// docket path, file paths, hashes) is far longer than any plausible
+// generic word or phrase, so a floor well above single-word length rejects
+// the degenerate cases without ever being close to a real one. 12 was
+// chosen as comfortably above common short-but-real identifiers (a 7-char
+// git SHA fragment would still fail it and would need pairing with more
+// context, which is the right failure mode -- a bare SHA is exactly the
+// kind of snippet that could coincidentally recur) while staying far below
+// the shortest snippet this file has actually shipped.
+const MIN_SNIPPET_LENGTH = 12;
+
+function invalidSnippetReason(snippets) {
+  if (!Array.isArray(snippets) || snippets.length === 0) {
+    return "snippets must be a non-empty array -- an entry with none can never identify a specific failure";
+  }
+  const bad = snippets.filter(
+    (s) => typeof s !== "string" || s.trim().length < MIN_SNIPPET_LENGTH
+  );
+  if (bad.length > 0) {
+    return (
+      `snippet(s) too short to identify a specific failure (minimum ${MIN_SNIPPET_LENGTH} ` +
+      `characters): ${bad.map((s) => JSON.stringify(s)).join(", ")}`
+    );
+  }
+  return null;
+}
+
 // Pure and synchronous on purpose -- no I/O, so it can be unit-tested with
 // synthetic inputs rather than only exercised end-to-end through a browser.
 // See scripts/test-check-reflow-known-failures.mjs, which does exactly
-// that: the real /log entry against a captured-shaped match, and a
-// synthetic /log result modelled on the review's own demonstration (a
-// different offender, unrelated text, +580px) to prove the mismatch FAILs
-// rather than reporting KNOWN.
+// that with fixtures modelled on the review's demonstrations (a
+// documented match, an unrelated mismatch, a degenerate/empty snippet) to
+// prove each fails the way it must rather than reporting KNOWN.
 export function classifyKnownFailure(entry, result) {
+  const invalidReason = invalidSnippetReason(entry.snippets);
+  if (invalidReason) {
+    return { known: false, reason: `entry cannot identify a specific failure -- ${invalidReason}` };
+  }
   const offenders = result.offenders || [];
   if (result.truncated) {
     return {
@@ -213,6 +260,15 @@ export function checkKnownFailureBookkeeping(route, entry, { repoRoot = process.
       `FAIL  ${route}'s KNOWN_FAILURES entry cites "${entry.docket}", which is not an open docket item ` +
         `-- closed, dropped, or renamed without this table being updated. Remove the entry if fixed, or point it at the item's replacement.`
     );
+  }
+  // Checked here too, not only in classifyKnownFailure: that function only
+  // runs when its route is actually overflowing, so a malformed entry on a
+  // route that currently renders clean would otherwise go uncaught until
+  // the day it doesn't -- exactly the wrong moment to first discover a
+  // snippet that matches everything.
+  const invalidReason = invalidSnippetReason(entry.snippets);
+  if (invalidReason) {
+    problems.push(`FAIL  ${route}'s KNOWN_FAILURES entry cannot identify a specific failure -- ${invalidReason}`);
   }
   const notes = [];
   if (entry.expires && Date.parse(entry.expires) < now.getTime()) {

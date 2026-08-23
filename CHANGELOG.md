@@ -290,28 +290,39 @@ it in the interim, so the charter had not moved again.
   instead of `<code>`), caught only because the fix above was verified
   against a live page instead of trusted from a unit test alone.
 
-  Residue, stated rather than overfit — two gaps, one anticipated and one
-  found in item 6 below while re-verifying: this closes the review's exact
-  demonstration — a different failure sharing a route with a known one —
-  but a *smaller* unrelated failure that never exceeds an already-larger
-  known offender's own right edge would not appear in `offenders` at all,
-  because the page-level gate this whole check runs on
-  (`documentElement.scrollWidth`) is a single number reflecting only the
-  widest point on the page. Separately, `offenders` finds elements by their
-  own `getBoundingClientRect().right`, which misses block-level overflow
-  entirely — a block element's box respects its assigned width even when
-  its content does not (`overflow-x: visible`, the default), so `scrollWidth`
-  can exceed `clientWidth` and cascade up to the document without any
-  element's bounding rect ever showing it. The classifier still fails
-  closed when this happens (an empty `offenders` list is never classified
-  known), so this costs diagnostic precision, not safety — but "no offender
-  found" can mean either "the page is fine" or "the cause is invisible to
-  this scan," and only `overflow: true` tells them apart. Catching either
-  gap properly would mean measuring every element's own overflow potential
-  independent of the page-level `scrollWidth` gate — a materially
-  different, slower check than "does the page reflow at 320px," and out of
-  scope for a fix to this one's identity-pinning. `docket/reviews/` is
-  untouched by this round, per the reviewer's own instruction.
+  **Correction to this paragraph, made by editing it rather than leaving it
+  wrong and adding a note far below — see item 7 for why that is the
+  right call here and what stays append-only instead:** this residue
+  paragraph originally claimed that a *smaller* unrelated failure
+  coexisting with a larger known one on the same route "would not appear
+  in `offenders` at all" and would "pass unnoticed either way." That is
+  false. Review's second pass tested the claim directly against the
+  shipped code rather than trusting the prose, and found it contradicted
+  by this round's own `scripts/test-check-reflow-known-failures.mjs` case
+  3 — written the same round, checked in, passing, and never re-read
+  against what it actually proves. `offenders` is exhaustive, not top-1:
+  it filters every element by its own `getBoundingClientRect().right`
+  independent of any other element's size, so a second offender that
+  individually exceeds the viewport is caught exactly like the first,
+  wider or narrower.
+
+  The residue that does hold, unchanged by the correction above:
+  `offenders` finds elements by their own `getBoundingClientRect().right`,
+  which misses block-level overflow entirely — a block element's box
+  respects its assigned width even when its content does not
+  (`overflow-x: visible`, the default), so `scrollWidth` can exceed
+  `clientWidth` and cascade up to the document without any element's
+  bounding rect ever showing it. Confirmed real, not hypothetical, by item
+  6 below. The classifier still fails closed when this happens (an empty
+  `offenders` list is never classified known), so this costs diagnostic
+  precision, not safety — but "no offender found" can mean either "the
+  page is fine" or "the cause is invisible to this scan," and only
+  `overflow: true` tells them apart. Catching it properly would mean
+  measuring every element's own overflow potential independent of the
+  page-level `scrollWidth` gate — a materially different, slower check
+  than "does the page reflow at 320px," and out of scope for a fix to this
+  one's identity-pinning. `docket/reviews/` is untouched by this round,
+  per the reviewer's own instruction.
 
 **6. What verifying item 5 found: a second, unrelated, pre-existing `/log` overflow — fixed**
 - Hypothesis: none stated in advance — this was found, not planned, while
@@ -381,6 +392,60 @@ it in the interim, so the charter had not moved again.
   this round, 10/14 after two closed-or-updated and five filed net — still
   under budget.
 
+**7. Review, second pass: the snippet match had no floor, and one of this entry's own claims was wrong**
+- Hypothesis: two findings, both against item 5's fix, neither live-exploitable
+  today because `KNOWN_FAILURES` ships empty. First: `classifyKnownFailure`
+  matched with a bare `.includes()`, which has no floor —
+  `"anything".includes("")` is `true` in JavaScript, so `snippets: [""]`
+  matches every offender unconditionally, and a short generic snippet like
+  `"the"` matches by accident. Either fully reconstructs the route-wide
+  bypass item 5 exists to close; verified directly against the shipped
+  code before either fix, not asserted. It cannot bite while the table is
+  empty, which is exactly why it would have survived: the first entry
+  someone adds carelessly reopens the hole with nothing to stop it.
+  Second: item 5's residue paragraph (corrected in place above) claimed a
+  smaller offender coexisting with a larger known one "would not appear in
+  `offenders`" and would "pass unnoticed" — tested directly against the
+  shipped code rather than trusted from the prose, and found false,
+  contradicted by this round's own `scripts/test-check-reflow-known-failures.mjs`
+  case 3, written the same round and never re-read against what it
+  actually proves.
+- Change: `MIN_SNIPPET_LENGTH` (12 characters) and `invalidSnippetReason`,
+  checked in both `classifyKnownFailure` (so a bad entry can never
+  accidentally excuse a real overflow) and `checkKnownFailureBookkeeping`
+  (so a bad entry is caught even on a route that is not currently
+  overflowing — `classifyKnownFailure` alone only runs when its route
+  does, which would have let a malformed entry sit undetected until the
+  day it mattered most). 12 was chosen as comfortably above single-word
+  length — no real snippet this file has shipped is under 45 characters —
+  while staying well short of anything that would reject a genuine short
+  identifier paired with context. Four new test cases (11–14): the
+  review's own `""` demonstration reproduced and rejected; the `"the"`
+  example rejected; a 12-character snippet that genuinely matches still
+  classifies known, proving the floor doesn't overreach; and
+  `checkKnownFailureBookkeeping` independently rejecting an empty snippet.
+  Verified a fifth way, outside the test file: `classifyKnownFailure`
+  imported directly and called with `snippets: [""]` and `snippets:
+  ["the"]` against offender text that would otherwise match everything —
+  both rejected, reasons pasted in the Guardrails line below.
+
+  Item 5's residue paragraph is corrected in place, not left wrong with a
+  note added elsewhere: the false claim is removed, the one residue that
+  does hold (block-level overflow invisible to a bounding-rect scan,
+  confirmed real by item 6) is restated on its own, and a visible sentence
+  says the paragraph was wrong and how that was caught — this file is not
+  the published, merged record `CHANGELOG.md`'s append-only rule (5)
+  protects; that rule binds `origin/main`, which this branch has not
+  reached. Editing this round's own not-yet-merged entry to say what is
+  true, while disclosing that it once said something false, is not the
+  same act as rewriting a past round's published entry, and this is the
+  former. What must not happen regardless of merge status is quietly
+  reflowing the sentence to read as if it were always accurate — CHARTER.md
+  rule 4 forbids publishing a claim about this project's own process that
+  is not currently true, and "the check's own comment described its limits
+  wrong" is exactly that kind of claim, corrected here rather than smoothed
+  over on the way to merge.
+
 None of `scratchpad/design-rubric-draft.md`, `scratchpad/scoring-methodologies.md`
 or `scratchpad/site-survey.md` is committed to this repository; they are
 working notes, cited here by name and finding, per the brief's own
@@ -430,7 +495,18 @@ by this round.
   `node scripts/round.mjs check` — lint, docket, track scope, build, and
   every route check including the reflow check and its regression test,
   green against a freshly restarted server, re-run after every fix in this
-  entry including both review-response items.
+  entry including both review-response items. Second review pass:
+  `node scripts/test-check-reflow-known-failures.mjs` — 15/15 (11 prior +
+  4 new: the review's `""` demonstration rejected, `"the"` rejected, a
+  12-character genuine match still classifies known, `checkKnownFailureBookkeeping`
+  independently rejects an empty snippet). Reproduced outside the test file
+  too, `classifyKnownFailure` imported and called directly:
+  `snippets: [""]` against a matching-everything offender ->
+  `{"known":false,"reason":"entry cannot identify a specific failure --
+  snippet(s) too short to identify a specific failure (minimum 12
+  characters): \"\""}`; `snippets: ["the"]` against offender text
+  containing "the" -> the same reason naming `"the"`. `node
+  scripts/round.mjs check` re-run clean after both fixes.
 - Result: not yet measured against a metric — this round fixed a false
   governance claim and two accessibility defects, neither of which this
   project has a metric-bearing page for, and CHARTER.md rule 3 makes "not
@@ -458,9 +534,15 @@ by this round.
   contrast, line length, first-screenful density); the possibility,
   considered and rejected for now, of deriving `/charter`'s amendment
   paragraph from the parsed document instead of hand-writing it; and the
-  two residues named in item 5 (a smaller unrelated failure hiding behind
-  a larger known one; block-level overflow invisible to a bounding-rect
-  scan — found in practice via item 6, not only anticipated).
+  one residue named in item 5, corrected in place after a second review
+  pass found the paragraph's *other* claimed residue was false (block-level
+  overflow invisible to a bounding-rect scan — found in practice via item
+  6, not only anticipated; the false claim it replaced, that a smaller
+  offender beside a larger known one goes uncaught, is item 7's finding
+  and this entry's own correction). Item 7 also closes the snippet-match
+  floor the second review pass found missing — narrower than item 5's
+  finding and never live-exploitable given `KNOWN_FAILURES` shipped empty,
+  but the same shape of bypass one careless entry away.
 
 ### 2026-08-22
 This meta round was briefed to reconcile `CHARTER.md` rule 13's
