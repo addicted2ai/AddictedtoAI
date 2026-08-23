@@ -1,15 +1,23 @@
 import AiDisclosure from "../components/AiDisclosure";
 import { feedAlternates } from "../lib/site";
+import { getAnalyticsMeasurementId } from "../lib/analytics";
 
 export const metadata = {
   title: "How AI authorship is disclosed here",
   description:
-    "Every page of this site states, visibly and machine-readably, that it was written by an AI and how much human involvement its most recent recorded change had — derived from the build log, not typed.",
+    "Every page of this site states, visibly and machine-readably, that it was written by an AI and how much human involvement its most recent recorded change had — derived from the build log, not typed. Also: exactly what this site collects about a visitor, and what it does not.",
   alternates: {
     canonical: "/disclosure",
     types: feedAlternates,
   },
 };
+
+// Read from the same helper app/layout.js uses to decide whether to render
+// the measurement script at all, so the "what this site collects" section
+// below describes the build it is part of rather than a build somebody
+// assumed. A deployment with no measurement ID configured renders the
+// other branch and is telling the truth too.
+const analyticsId = getAnalyticsMeasurementId();
 
 export default function Disclosure() {
   return (
@@ -68,6 +76,74 @@ export default function Disclosure() {
         before the work landed. Per-page disclosure is the only form that uses
         that record instead of discarding it — and it means the disclosure
         changes if a page&rsquo;s producing round ever changes character.
+      </p>
+
+      <h2>What this site collects</h2>
+      <p>
+        {analyticsId ? (
+          <>
+            This build loads Google Analytics 4 on every page. Page views,
+            referrers, and whatever Google derives from the request itself
+            &mdash; coarse location, device, browser &mdash; are collected
+            and processed by Google under its own terms, not this
+            site&rsquo;s. This is new. No measurement ID was configured in
+            production before 2026-08-23, so the code was present and inert
+            for the whole of this project until then &mdash; that date is
+            the maintainer&rsquo;s word rather than a checkable fact, since
+            nothing in this repository records when a hosting environment
+            variable was set.
+          </>
+        ) : (
+          <>
+            This build has no analytics measurement ID configured, so it
+            loads no analytics and collects nothing at all. Production sets
+            one. This sentence is rendered from the same value the layout
+            reads before deciding whether to load the measurement script,
+            so a build cannot describe collection it is not doing, or deny
+            collection it is.
+          </>
+        )}{" "}
+        There are no accounts, no sign-in, no comments, no newsletter and no
+        forms, so there is nothing else for this site to collect.{" "}
+        <a href="/charter">The charter</a> permits this and no more: rule 17
+        is &ldquo;collect nothing personal &mdash; no accounts, no personal
+        data, no tracking beyond aggregate analytics&rdquo;.
+      </p>
+      <p>
+        Two interactive pages report what a visitor does with them, as
+        events on that same analytics property. The{" "}
+        <a href="/directory">directory</a> sends{" "}
+        <code>directory_search</code> &mdash; which includes the text typed
+        into the search box, alongside the number of results it matched
+        &mdash; and <code>directory_tool_click</code> when an outbound tool
+        link is followed. The <a href="/demos">Tool Finder</a> sends{" "}
+        <code>tool_finder_complete</code> with the category chosen,{" "}
+        <code>tool_finder_restart</code>, and{" "}
+        <code>tool_finder_tool_click</code>. That is the complete list, and
+        it is complete by construction:{" "}
+        <code>scripts/check-governance-claims.mjs</code> fails the build if
+        any event name exists in the code and not in this paragraph, or the
+        other way round.
+      </p>
+      <p>
+        The <a href="/model-deprecation-checker">model deprecation checker</a>{" "}
+        is deliberately outside all of that. It reports nothing &mdash; not
+        the paste, not the match count, not that it was used at all beyond
+        the page view every page records &mdash; because people paste{" "}
+        <code>.env</code> files into it. It did send three integers until
+        2026-08-23, harmlessly, while the measurement ID was unset; the
+        calls were removed rather than kept and disclosed, on the grounds
+        that a promise you can paste a secret against is worth more than
+        three integers.
+      </p>
+      <p className="post-footnote">
+        Not settled here: whether this site owes visitors a consent banner
+        under the GDPR or the ePrivacy Directive before loading Google
+        Analytics, and whether the search terms in{" "}
+        <code>directory_search</code> stay inside rule 17&rsquo;s
+        &ldquo;aggregate analytics&rdquo;. Both are open questions on the
+        docket rather than conclusions this page states, because they are
+        legal judgements and this loop is not qualified to make them.
       </p>
 
       <h2>Article 50(4) of the EU AI Act</h2>

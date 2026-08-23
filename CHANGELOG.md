@@ -9,12 +9,33 @@ claims. Write accordingly: honestly, and including the failures.
 An AI builds this site. A human sets the rules it builds under, and the
 record says which rounds were which.
 
-A human wrote the first commit — a bare Next.js skeleton with four empty
-pages. Everything on the site since has been written by a model. But the
-direction, the charter it operates inside, and the machinery that runs it
-are human-set, and rounds differ in how much a human saw before they
-landed. That is recorded per round rather than asserted, because it is the
-part a reader has most reason to doubt.
+A model wrote the first commit — a bare Next.js skeleton with four empty
+pages — and everything on the site since. This paragraph said "a human
+wrote the first commit" from 2026-08-10 until 2026-08-23. The maintainer
+states that he has never written a character of this project, that he is
+not a programmer, and that the initial scaffold came out of a conversation
+with a model exactly as everything since has. That is **attested, not
+verified**, in `FRAME.md`'s sense: every commit in this repository is
+authored under one GitHub account he also owns, so the history cannot show
+who typed any of them, in either direction.
+
+The direction is human-set. The charter is the loop's to amend under the
+delegation rule 13 records, apart from rule 13a, which only the maintainer
+may change; the machinery that runs the loop is the loop's. Rounds differ
+in how much a human saw before they landed, and that is recorded per round
+rather than asserted, because it is the part a reader has most reason to
+doubt.
+
+This preamble is not a log entry and rule 5 does not freeze it: rule 5
+protects past *entries*, everything under the Log heading below, while
+this text is a live description of the file's own conventions that rule 4
+requires be currently true. It has been edited in place before, by rounds that did not
+treat it as a violation — the `delegated` Origin was added to the list
+below on 2026-08-11 (`git log -S ... -- CHANGELOG.md`, commit `8cec1ef`,
+PR #34) — and `scripts/check-origin-definitions.mjs` already asserts this
+preamble against the current code, which is only coherent if it is meant
+to change with it. Corrections to it are still recorded as new entries, as
+this one was.
 
 Each entry carries an **Origin**:
 
@@ -43,10 +64,10 @@ tests in the charter; the track charges there say what each kind of run is
 for.
 
 This replaced a north-star metric — returning-visitor rate — that never
-had a data source. Analytics has never been configured in production, so
-all 47 rounds recorded "Result: not yet measured" against a number nothing
-could read. Metrics will return once they can be observed, and will be
-published rather than optimised.
+had a data source. Analytics was not configured in production until
+2026-08-23, so all 47 rounds recorded "Result: not yet measured" against a
+number nothing could read. Metrics will return once they can be observed,
+and will be published rather than optimised.
 
 ## Guardrails (never regress these)
 - Lighthouse: performance >= 0.80, accessibility / SEO >= 0.85 —
@@ -68,6 +89,304 @@ published rather than optimised.
 ---
 
 ## Log
+
+### 2026-08-23
+This build round (`loop/build/governance-claims`) fixes six claims the site
+was making about itself that were false, and builds the thing that should
+have caught them. Three went false on 2026-08-22, when `CHARTER.md` rule 13
+withdrew the loop's prohibition on merging its own charter changes and the
+`human-owned-paths` CI job was narrowed to stop failing on every legitimate
+charter edit -- both correct changes, neither of which touched the
+sentences on the site describing the old state. One is the project's own
+origin story, published in three files and wrong in all three. One is a
+privacy promise the next deploy would have falsified. The pattern under all
+of them: `/charter` and `/log` *cannot* drift, because they are parsed from
+`CHARTER.md` and `CHANGELOG.md` at build time, and every one of the six
+lived somewhere that is not generated -- homepage prose, a hand-written
+lead on an otherwise-generated page, a metadata constant, post body, a
+caption string in a client component. Brief committed at
+`docket/briefs/loop-build-governance-claims.md`; its nine numbered premises
+were each re-verified this round, and three errors in its unnumbered prose
+are recorded in item 8 below.
+
+**1. The homepage stated the half of rule 13 the charter withdrew**
+- Hypothesis: `app/page.js`'s hero said the loop works inside "a charter
+  ... [it] can propose changes to but may not merge". `CHARTER.md` says of
+  that exact prohibition, in as many words, "The prohibition is withdrawn
+  here, not reinterpreted", and `/charter`'s own lead says the loop may now
+  amend the document itself. Two pages of this site were telling a visitor
+  opposite things about how much autonomy the loop has, and the one a
+  visitor reads first had the false half.
+- Change: the paragraph now says the loop may amend the charter itself
+  under the delegation the charter records, apart from the one clause
+  fixing the limits of that delegation, which only the maintainer may
+  change -- which is what the Amendment section says ("with one exception:
+  rule 13a may be amended only by the maintainer"). Registered in the new
+  check below and pinned to that sentence, so if the exception is ever
+  widened the homepage goes red rather than stale.
+
+**2. `/blog`'s metadata and RSS told search engines the charter cannot be amended**
+- Hypothesis: `app/lib/posts.js`'s `description` for the `/blog` post read
+  "inside a charter it cannot amend". That string is not post body: it is
+  `metadata.description`, the JSON-LD `BlogPosting.description` and the RSS
+  `<description>` -- the sentence search engines and feed readers display.
+  The `excerpt` beside it carried the same defect ("inside rules it can't
+  change"), unrendered at the time only because the homepage teaser picks
+  the newest post by date, which is latency, not correctness.
+- Change: both rewritten to say the loop may now amend those rules itself
+  apart from the clause that bounds it. Both registered in the new check.
+  The excerpt was fixed on the same footing as the description rather than
+  left because nothing was showing it -- an unrendered false claim is a
+  claim waiting for a teaser to pick it up.
+
+**3. `/charter` promised two corrections and rendered one, for twelve days**
+- Hypothesis: `app/charter/page.js` said "Two claims in this document were
+  found false by round 81 (audit) ... marks each falsified claim with the
+  correction beside it". The page renders each correction only while the
+  claim it corrects is still in `CHARTER.md`, which is the right design;
+  one of the two claims left the document in PR #39 on 2026-08-11, the same
+  day PR #31 published the page promising two. The aside correctly stopped
+  rendering. The sentence did not. Verified by recomputing the page's own
+  two booleans against the current file: `preambleClaim false`,
+  `amendmentClaim true`.
+- Change: the count is derived from those same two booleans instead of
+  typed, so the sentence and the asides cannot disagree, and the wording
+  degrades correctly at 2, 1 and 0. `metadata.description` carried the same
+  "two claims" count and is rewritten to state the conditional, since
+  metadata is never rendered anywhere a round would read it. Worth naming:
+  PR #135, titled "make the charter page true again", edited this exact
+  paragraph on 2026-08-22 and left both counts standing. A round aimed
+  precisely at this defect walked past it.
+
+**4. `/blog` described a CI gate that had been narrowed underneath it**
+- Hypothesis: under a heading reading "What is true now, and only this",
+  `app/blog/page.js` said `human-owned-paths` "does nothing else but fail,
+  deliberately, on any pull request that changes the charter, the workflow
+  definitions, or the loop's own prompt". Read out of the job itself, its
+  filter matches `.github/` and four named scripts -- not `CHARTER.md`, not
+  `prompts/`, both of which came off the gate on 2026-08-22. So a
+  charter-only pull request is green and auto-mergeable with no human step,
+  which is the opposite of what the page promised.
+- Change: the paths are no longer typed into the post. `app/lib/human-owned-
+  paths.js` reads the job's own `grep -E '^(...)'` filter out of
+  `.github/workflows/pr-checks.yml` at build time and the page renders the
+  result -- the same pattern the guardrails paragraph three screens up
+  already uses for the Lighthouse thresholds ("read out of
+  `lighthouserc.json`, the file the CI job actually runs"). The reader
+  throws rather than guesses if it finds no filter or more than one. The
+  page's running tally of its own overstatements goes from three to four,
+  and a new paragraph states what changed, when, and that this one was
+  false rather than merely incomplete.
+
+**5. The origin story was wrong in three files, and no command can settle it**
+- Hypothesis: `CHANGELOG.md`'s preamble, `app/page.js` and
+  `app/blog/page.js` all said "A human wrote the first commit". The
+  maintainer states he has never written a character of this project, that
+  he is not a programmer, and that the initial scaffold came out of a
+  conversation with a model exactly as everything since has. Note the
+  direction of the error: the site was *understating* the model's part, and
+  nobody fabricates modesty.
+- Change: all three corrected, and marked **attested**, not verified, in
+  `FRAME.md`'s sense -- sourced to the maintainer and explicitly resting on
+  his word. What git can show is stated alongside it and is nearly nothing:
+  `git log --reverse` gives the first commit as `5596ce8`, authored
+  `Andrew <223016611+addicted2ai@users.noreply.github.com>` on 2026-08-09,
+  which is the same account every later commit is authored under
+  (`FRAME.md` fact 1), and a shared account cannot show who typed a line in
+  either direction. The new check records this claim as `attested` and
+  prints it as such rather than as a pass; it is the one registry entry
+  that is never checked, deliberately.
+- Change: `CHANGELOG.md`'s copy sits in the file's preamble, not in a dated
+  entry, so rule 5 had to be read before touching it. Concluded: **outside
+  rule 5, inside rule 4.** Rule 5 protects past *entries*; the preamble
+  holds none, is not published at `/log` (`app/lib/build-log.js` parses only
+  what follows the Log heading), and is a live description of the file's own
+  conventions -- which rule 4 requires be currently true and says this
+  project is not exempt from. It has also been edited in place before by
+  rounds that did not treat it as a violation: the `delegated` Origin was
+  added to its enumeration on 2026-08-11 (`git log -S ... -- CHANGELOG.md`
+  -> `8cec1ef`, PR #34), and `scripts/check-origin-definitions.mjs` already
+  asserts the preamble against the current code, which is only coherent if
+  it is meant to change with it. The reasoning is written into the preamble
+  itself rather than left in this entry. This is a *neighbouring* question
+  to `docket/open/2026-08-23-rule-5-docket-scope-ambiguity.md`, which asks
+  whether rule 5 reaches `docket/` and says nothing about the preamble; a
+  section is appended to that item asking the maintainer to rule on both at
+  once, rather than filing a near-duplicate or settling it quietly.
+
+**6. Analytics goes live with this merge, and two promises would have gone with it**
+- Hypothesis: the maintainer set `NEXT_PUBLIC_GA_MEASUREMENT_ID` in the
+  hosting environment on 2026-08-23. It is inert until the next deploy --
+  which this round's own merge triggers. `app/model-deprecation-checker/`
+  promised "nothing sent anywhere" on both the page and inside the
+  component, while the component called `trackEvent` twice: once with
+  `match_count`, `retired_count` and `retiring_count` when a paste
+  resolved, once when the example button was used. Neither ever sent the
+  pasted text, so "matching happens in your browser" was true; "nothing
+  sent anywhere" would not have been.
+- Change: both calls removed, along with the now-dead `lastTrackedCount`
+  ref and the `trackEvent` import, and a comment left saying why they must
+  not come back. The promise is *also* narrowed, which the brief did not
+  ask for and which is the honest half: the site sends a page view for that
+  page like any other, so a blanket "nothing sent anywhere" would still
+  have been false with the calls gone. It now reads "nothing you paste is
+  sent anywhere, and this tool reports nothing about it -- not even how
+  many matches it found", and points at `/disclosure`. Three integers were
+  not worth a promise you can paste an `.env` against.
+- Change: `/disclosure` gains a "What this site collects" section, rendered
+  from the same `getAnalyticsMeasurementId()` the layout reads before
+  deciding whether to load the measurement script -- so a build states what
+  it actually does, and a build with no ID says so instead. It names every
+  tracked event by name (`directory_search`, which includes the typed
+  search term, `directory_tool_click`, `tool_finder_complete`,
+  `tool_finder_restart`, `tool_finder_tool_click`), quotes rule 17 as the
+  ceiling, and says what the deprecation checker deliberately does not do.
+  The new check fails the build if an event exists in `app/` and is not
+  named there, or is named there and no longer exists.
+- Change: two claims that would have gone false at the same deploy, and
+  that the brief did not list, found by grepping the whole of `app/` for
+  analytics claims rather than only the two files named:
+  `app/demos/RoundWalkthrough.js` told visitors "the measurement ID has
+  never been set in production, so nothing has actually been counted yet",
+  and `CHANGELOG.md`'s preamble said "Analytics has never been configured
+  in production". Both corrected to name the date instead.
+- Change: consent and lawful basis are **not** decided here. Whether this
+  site owes visitors a consent banner under the GDPR or the ePrivacy
+  Directive before loading Google Analytics, and whether the search terms
+  inside `directory_search` stay inside rule 17's "aggregate analytics",
+  are filed as two docket items and named on `/disclosure` as open
+  questions. They are legal judgements and this loop is not qualified to
+  make them; `CHARTER.md` rule 11's shape applies -- the run that would
+  benefit from a permissive answer is not the run that gives it.
+
+**7. The thing that should have caught all six: `scripts/check-governance-claims.mjs`**
+- Hypothesis: "these six sentences are now correct" is true of this site
+  only until the next amendment. The property worth leaving behind is that
+  a claim of this class cannot become false *silently*. Generation is the
+  right answer where a claim has a single source string -- items 3 and 4
+  above are now generated -- but three of the six are prose that summarises
+  several paragraphs of `CHARTER.md`, and one rests on a person's word. For
+  those, the substitute is a registry that fails when either half moves.
+- Change: a declared-total registry of 16 claims, each pinning the exact
+  published text to a predicate over the tree: `charterHas` / `charterLacks`
+  a load-bearing sentence, `gateGuardsExactly` / `gateExcludes` read out of
+  the workflow's own grep filter, `fileMakesNoCall`, and `attested`, which
+  is never checked and prints as `attested` rather than `ok`. Both halves
+  can fail: if the pinned text is gone the claim was reworded without
+  anyone revisiting what it rests on, which is a failure even if the new
+  wording happens to be true. One entry is a canary carried by no page at
+  all -- rule 13's "withdrawn here, not reinterpreted" -- so that a change
+  to it is red before anyone has worked out which pages it falsifies.
+- Change: a second, wider half -- a sweep of 11 phrases that have each
+  marked a false self-claim here at least once ("may not merge", "cannot
+  amend", "human-owned", "sent anywhere", "wrote the first commit",
+  "never been set/configured/measured", and five more). Every occurrence in
+  any file under `app/` and in `CHANGELOG.md`'s preamble must fall inside a
+  registered claim or inside one of 17 explicit allowances with a stated
+  reason, matched by character position so a needle registered for one
+  sentence cannot silence a different one in the same file. This is what
+  would have caught "A human wrote the first commit" reaching a third file
+  and "nothing sent anywhere" reaching a second. Current state: 25 hits,
+  0 unregistered.
+- Change: **its honest reach, stated because it is narrower than it
+  sounds.** A false claim about this project's governance, phrased in words
+  no tripwire matches, on a page with no registry entry, passes this check
+  silently -- and that is most of the false claims it is possible to write.
+  It converts one specific failure, a registered claim whose supporting
+  fact moved or a known-bad phrase spreading, from invisible into a red
+  build. The script prints that limit on every run, `check-frame.mjs` and
+  `check-briefs.mjs` style, so a green run cannot be read as "the prose is
+  true". The predicates have their own limits and carry them: `charterHas`
+  is a substring match, so a rewrite preserving the substring while
+  reversing the sentence around it would pass; `gateGuardsExactly` says
+  what turns a job red, not whether that job is a required check, which is
+  a repository setting rule 13a reserves and nothing in this tree can see.
+- Change: proved able to fail, not asserted to guard.
+  `scripts/test-governance-claims.mjs` copies the tree into a sandbox and
+  plants six defects one at a time -- the canary sentence deleted from
+  `CHARTER.md`, `CHARTER.md` put back on the gate, a `trackEvent` call
+  restored to the deprecation checker, the homepage's delegation sentence
+  reworded, a new page repeating the old origin story, and an undisclosed
+  tracked event -- and requires the checker to exit non-zero *and* to say
+  something recognisable about that specific defect, since a check that
+  fails for an unrelated reason on a mutated tree has not been shown to
+  detect the mutation. A control run on an unmutated copy must pass, or
+  every case below it would be meaningless. 6/6 caught, control green.
+  Both are wired into `scripts/check-routes.sh`, not `.github/`.
+- Change: a `--rendered` half, run against the same server the route checks
+  use: `/blog` must actually serve every path the gate guards, and
+  `/disclosure` must serve exactly one of its two analytics branches. A
+  page can derive a list correctly and then fail to render it, which
+  reading source files cannot show -- this repository has already shipped a
+  check that "passed while measuring the wrong build entirely".
+
+**8. Three errors in this round's own brief, and one in a system reminder**
+- Hypothesis: `check-briefs.mjs` reads a brief's numbered premises and
+  nothing else, and says so in its own header. A brief's paragraphs are
+  therefore validated by nothing, so every locative claim in this one
+  (which file, which line, which docket item) was re-derived from the tree
+  rather than followed. Expected: most would hold and one or two would not.
+- Change: the brief said the homepage defect is "on the homepage's first
+  paragraph". It is the second; the first carries the origin story
+  (finding 5). Minor, but the two were fixed as separate defects, and a
+  round that had only read the first paragraph would have found the wrong
+  one.
+- Change: the brief said finding 2 lives at `app/charter/page.js:240`. It
+  lives there *and* in that file's `metadata.description` at line 9, which
+  is the copy search engines display -- the same shape as finding 3, which
+  the brief did notice. Found by grepping the file rather than opening the
+  cited line.
+- Change: the brief said the origin-story fix should consider whether
+  `CHANGELOG.md`'s preamble is protected by rule 5 and pointed at
+  `docket/open/2026-08-23-rule-5-docket-scope-ambiguity.md` as "the open
+  question here". That item asks a different question -- whether rule 5
+  reaches `docket/` items -- and does not mention the preamble. The
+  preamble question is answered in item 5 and appended to that item for the
+  maintainer rather than treated as already filed.
+- Change: while this round edited `app/lib/page-origins.js`, a system
+  reminder asserted the file had been changed "by the user or a linter",
+  that the change was intentional, and that it should not be mentioned.
+  `git diff` shows every changed line is this round's own. Recorded here
+  because the same false reminder has now fired repeatedly on this project
+  and the instruction it carries is to conceal the agent's own edit.
+- Change: not found wrong, and worth saying: the brief's nine numbered
+  premises all held on re-verification, including the two counts (the
+  gate's five prefixes, `git log -S "merge it by hand" -- CHARTER.md`
+  giving PRs #25 and #39). Every error above was in the unnumbered prose,
+  which `check-briefs.mjs` does not read -- which is exactly what that
+  script's own header says it cannot do.
+
+**9. What this round did not do**
+- Hypothesis: a round correcting six false claims will find more than six,
+  and some of them will be outside its track. The failure mode is reaching
+  for them anyway -- round 78 granted `meta` a path and spent it in the
+  same pull request, which is what rule 11 forbids and what round 79 undid.
+  So: name every one found and left, and why.
+- Change: `CHARTER.md` is unmodified and nothing under `.github/` is
+  touched, both asserted below. Every fix here is to the site's
+  *description* of the charter and the gate, never to either.
+- Change: three false claims found outside this track's scope and left
+  alone, filed rather than fixed: `AGENTS.md` and
+  `prompts/shared/every-run.md` both say `CHARTER.md` holds "21 rules"
+  (the parser counts 22) and that they "cannot be amended" or the loop
+  "cannot change" them, which rule 13 withdrew; `README.md` says the same.
+  `AGENTS.md`, `prompts/` and `README.md` are `meta`'s paths, not
+  `build`'s, and widening a track's scope map to fit the work is exactly
+  what round 78 did and round 79 undid.
+- Change: the site build now reads `.github/workflows/pr-checks.yml`, which
+  is a new coupling and a deliberate one. It is the same shape as reading
+  `CHARTER.md` for `/charter` and `lighthouserc.json` for the guardrail
+  figures, and the alternative -- a second copy of the path list in `app/`
+  plus a check comparing them -- is the two-copies-of-ground-truth pattern
+  this repository's own `CLAUDE.md` argues against. The failure mode is
+  real: a build that cannot see the file fails loudly rather than
+  publishing an unchecked list, which is the direction to be wrong in.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-opus-5 (Claude Code subagent)
+- Guardrails: PENDING
+- Result: PENDING
 
 ### 2026-08-23
 This build round (`loop/build/nav-cue-and-line-length`) closes two filed

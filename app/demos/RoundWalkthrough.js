@@ -25,8 +25,14 @@ const STEPS = [
   {
     key: "result",
     label: "Result",
+    // "the measurement ID has never been set in production" until
+    // 2026-08-23, when one was — this caption is a plain string in a client
+    // component, so nothing here reads the value the layout reads, and the
+    // sentence would have gone on denying the analytics the same deploy
+    // switched on. Round 131 already corrected this caption once, for a
+    // different stale claim.
     caption:
-      "Filled in afterwards, honestly. The first 47 rounds all read “not yet measured”: the code that could report analytics exists, but the measurement ID has never been set in production, so nothing has actually been counted yet. Rounds since record what they could measure, as this one did.",
+      "Filled in afterwards, honestly. The first 47 rounds all read “not yet measured”: the code that could report analytics existed, but no measurement ID was set in production until 2026-08-23, so there was nothing for a round to read. Rounds since record what they could measure, as this one did.",
   },
 ];
 
