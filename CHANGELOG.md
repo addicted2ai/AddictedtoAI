@@ -185,6 +185,16 @@ it in the interim, so the charter had not moved again.
   shares a route list with. Confirmed failing on today's tree before the
   page fixes (three routes, not two — see below), confirmed passing after.
 
+  A defect in the check itself, caught by running it repeatedly rather than
+  once: the first cleanup path (`taskkill /pid <child> /T /F` on Windows)
+  left 3 of 6 launched `chrome-headless-shell.exe` processes running after
+  their script had already exited — an orphaned-process leak that would
+  accumulate on the maintainer's machine every time this check runs.
+  Replaced with the graceful shutdown Chromium itself expects
+  (`Browser.close` over the browser's own CDP WebSocket, OS-level kill as
+  an unconditional backstop afterward); re-run three times in a row after
+  the fix with zero processes left behind each time.
+
   The broader route list — reused from the AI-disclosure/document-size
   checks rather than narrowed to just the two known-bad routes — caught a
   third, unscoped failure this round did not fix: `/log` overflows by

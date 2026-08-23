@@ -387,17 +387,55 @@ async function launchBrowser() {
     child.kill();
     throw new Error(`launched ${bin} but it never opened the DevTools port`);
   }
-  return { bin, port, child, userDataDir };
+  return { bin, port, child, userDataDir, browserWsUrl: version.webSocketDebuggerUrl };
 }
 
-function stopBrowser(browser) {
+// Closing the browser's own top-level WebSocket target with `Browser.close`
+// is how Chromium expects to be shut down -- it tears down every renderer
+// and utility subprocess from the inside, rather than relying on the OS's
+// process-tree bookkeeping to have recorded them all as children of the PID
+// `spawn()` returned. Measured during this round's own testing: `taskkill
+// /T /F` on that PID alone left 3 of 6 chrome-headless-shell.exe processes
+// running after their script had already exited (`tasklist` on this
+// machine, confirmed and cleaned up by hand) -- an orphaned-process leak
+// that would accumulate on the maintainer's machine every time this check
+// runs, which is worse than the check being merely slow. `Browser.close` is
+// tried first; the OS-level kill still runs afterward, unconditionally, as
+// a backstop for whatever `Browser.close` does not reach (a hung renderer,
+// a browser that never answered).
+async function closeBrowserGracefully(wsUrl) {
+  if (!wsUrl) return;
+  try {
+    const conn = await wsConnect(wsUrl);
+    const session = new Session(conn);
+    await Promise.race([
+      session.send("Browser.close"),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 3000)),
+    ]);
+    conn.close();
+  } catch {
+    // Fall through to the OS-level kill below regardless of why this failed.
+  }
+}
+
+async function stopBrowser(browser) {
+  await closeBrowserGracefully(browser.browserWsUrl);
+  // A short grace period for the graceful close to actually finish tearing
+  // down subprocesses before the OS-level kill below runs -- otherwise the
+  // backstop below always fires (the child PID is still alive the instant
+  // `Browser.close`'s response arrives) and this function would always pay
+  // for both paths rather than only when the graceful one fails.
+  await new Promise((r) => setTimeout(r, 300));
   try {
     if (process.platform === "win32") {
       execFileSync("taskkill", ["/pid", String(browser.child.pid), "/T", "/F"], { stdio: "ignore" });
     } else {
       browser.child.kill("SIGKILL");
     }
-  } catch {}
+  } catch {
+    // ESRCH / "not found" here means the graceful close already reaped it --
+    // the expected outcome, not a failure.
+  }
   try {
     fs.rmSync(browser.userDataDir, { recursive: true, force: true });
   } catch {}
@@ -515,7 +553,7 @@ async function main() {
       }
     }
   } finally {
-    stopBrowser(browser);
+    await stopBrowser(browser);
   }
 
   if (failures > 0) {
