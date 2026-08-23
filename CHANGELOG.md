@@ -560,6 +560,96 @@ accurate; no error in the brief surfaced under that scrutiny.
   declared" : declaredTotal} declared`. Restructured so the label already
   includes the word "declared" only once, in both branches.
 
+**13. CI finding, PR #136: `build-and-audit` failed on facts a developer's clone can never see fail — five review passes and a local green did not catch it**
+- Hypothesis: none stated in advance — the review approved, PR #136 opened,
+  and the required `build-and-audit` check failed against facts 1 and 2,
+  which `node scripts/round.mjs check` had reported green at every commit
+  in this round.
+- Change: **the finding.** `git log --format=%ae main` (fact 1) and
+  `git log --all -- docket/HOLD.md` (fact 2) both assume a developer's full
+  clone, where `main` resolves as a local branch and `--all` walks every ref
+  the clone happens to have. Neither is true of a PR checkout: GitHub's
+  `actions/checkout@v4`, even with `fetch-depth: 0` (already set, so history
+  depth was never the problem), checks out a detached `HEAD` with only
+  `origin/*` remote-tracking refs — no local `main` branch exists at all.
+  `git log ... main` failed with "unknown revision", `$emails` came back
+  empty, and fact 1 reported `FAIL non-bot authors=[]
+  addicted2ai-loop-authored=0` for a claim that was never actually false —
+  the check could not distinguish "this is false" from "I could not
+  evaluate this", exactly the property fact 8 (`gh api`, unauthenticated in
+  CI) already gets right by reporting `UNVERIFIED`. Verified against CI's
+  actual conditions rather than reasoned about: cloned fresh from
+  `https://github.com/addicted2ai/AddictedtoAI.git`, deleted the local
+  `main` branch, checked out `origin/loop/meta/frame` detached — the exact
+  ref shape a PR build has — and ran both commands there. `git log
+  --format=%ae main` failed identically ("fatal: ambiguous argument
+  'main'"); `git log --all -- docket/HOLD.md` returned exactly 4, matching
+  CI's reported `hold-commits=4` against 10 found locally.
+- Change (continued — why 4, not 10, and why 4 is the number to keep, not a
+  regression to explain away): the 6 "missing" commits are pre-squash
+  duplicates. `scripts/round.mjs ship` merges with `--squash` (fact 10);
+  GitHub deletes the source branch after merge by default. A long-lived
+  local clone that fetched those branches before deletion still carries
+  their commits under old branch refs — same change, same message, authored
+  `Andrew` on the vanished branch and `addicted2ai` again on `main` after
+  squashing. `--all` in an old clone counts both; a fresh CI clone only ever
+  has the second. Confirmed directly: `git log --all --format='%H %an %s'
+  -- docket/HOLD.md | grep -vf <(git log --format=%H origin/main --
+  docket/HOLD.md)` names all 6 as `Andrew`-authored duplicates of the same
+  4 events, plus 2 more that never landed on `main` at all. Ten was never a
+  stable fact about the record — it was an artifact of one developer's own
+  git history, present in this session's long-lived clone and absent from
+  every fresh one, CI's included. `origin/main`'s own history is stable in
+  any clone, because squash-merging guarantees exactly one commit per
+  merged change regardless of how many existed on the source branch —
+  reconfirmed in the same constructed CI clone: `git log --oneline
+  origin/main -- docket/HOLD.md` returns the same 4 there as in this
+  session's own long-lived clone.
+- Change (the fix — made to work in CI, not downgraded to unverified): fact
+  1's check now resolves `origin/main` instead of `main`. Fact 2's check now
+  scopes to `git log origin/main -- docket/HOLD.md` (no `--all`) and lowers
+  its floor from 10 (an artifact-inflated number that was never really
+  achievable from a fresh clone) to 1 — consistent with fact 2's own
+  narrowing in change 7: the check's real job is confirming the file's
+  history has not been deleted, not tracking an exact evolving count, and 1
+  proves that without asserting a number this round cannot defend as stable.
+  Both re-verified in the constructed CI-shaped clone (copied the fixed
+  `FRAME.md` and `scripts/check-frame.mjs` into it, ran
+  `node scripts/check-frame.mjs` with that clone as the working directory):
+  facts 1 and 2 both report `verified`; the full run reports all 16
+  checkable facts passing, matching the real `FRAME.md`'s own local result.
+- Change (facing what is left, rather than downgrading everything to
+  unverified until green): facts 8, 9 and part of 12 call `gh api`, and
+  fact 18 reaches a local OpenCode server. Read `.github/workflows/pr-checks.yml`
+  rather than assumed: `build-and-audit`'s `env:` sets only
+  `NEXT_PUBLIC_REPO_URL`, no `GH_TOKEN`/`GITHUB_TOKEN`, so `gh` has no
+  configured authentication in that job, and nothing in a GitHub-hosted
+  runner serves OpenCode locally — both are genuine, structural gaps this
+  round cannot close, because closing either would mean editing
+  `.github/workflows/`, which the loop's push credential cannot push and
+  this round's own scope forbids touching. Those facts already report
+  `UNVERIFIED` there correctly (confirmed live in CI: fact 8's excerpt in
+  the coordinator's message reads exactly `unverified enforce_admins is off
+  on main -- gh unreachable or unauthenticated`) — the honest response is
+  not a fix, it is disclosure: `FRAME.md`'s preamble now states plainly
+  which facts `build-and-audit` can actually enforce (12 of 16, after this
+  fix — 1, 2, 3, 4, 5, 6, 7, 10, 11, 13, 14, 15) and which can only ever
+  report `UNVERIFIED` there (8, 9, 12 in part, 18), and why, rather than
+  leaving a reader to discover the gap by running the check themselves. If
+  the maintainer later wants `gh` authenticated for `build-and-audit`, that
+  is a workflow change and this entry files it as a decision for them, not
+  as something this round did or could do.
+- Change (why five review passes and a local green missed this): every
+  review this round had ran from this session's own long-lived clone, the
+  same one where `main` resolves and `--all` finds 10 — the exact
+  conditions that hide both defects. `node scripts/round.mjs check` runs
+  the identical commands, identically blind. Only `build-and-audit`, run on
+  a fresh GitHub-hosted checkout, ever exercised the ref shape these checks
+  actually depend on. The frame's own lesson — a claim can look checked and
+  still be checked against the wrong thing — held one level down, in the
+  tool built to stop it happening, verified in the one environment where
+  the check is a required, enforced gate rather than a courtesy.
+
 - Origin: delegated
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent)
@@ -567,28 +657,24 @@ accurate; no error in the brief surfaced under that scrutiny.
   attested facts listed and not executed, against the tree at the final
   commit; `completeness (declared): 18 declared vs 18 recognised by any
   scan`; `sequence (declared): recognised IDs [1,2,...,18] vs expected
-  {1..18}`. Re-run against five fixtures across four review passes, not
-  one: the first review's colon-heading fixture (4 candidates, all
-  accounted for, 0 missed — unaffected by changes 10-12); a fixture
-  reproducing the second review's exact case (`## 1.`, `##2.`, `##  3.`,
-  `### 4.`) — run against the **pre-fix** script first, confirming the
-  tautology live; a fixture reproducing the third review's exact case (one
-  heading at column 0, one indented one space) — run against the
-  **change-10** script first (both scans agree "0 missed" while one fact
-  was entirely gone), then against change 11's fix; a fixture reproducing
-  the fourth review's exact case (`## 1.`, `## 2.`, `## 47.`, declared
-  total 3) — run against the **change-11** script first, reproducing a
-  clean exit 0 with fact 47 reporting `verified` and fact 3 simply absent,
-  then against change 12's fix, correctly failing `sequence: recognised
-  IDs do not form {1, ..., 3} -- missing [3], unexpected [47]`. Every
-  fixture in this round's own scratchpad, none committed, none touching
-  `FRAME.md` itself. `node scripts/check-track-scope.mjs origin/main
-  loop/meta/frame` — `ok all 10 changed file(s) within meta's scope` at the
-  final commit, including four review artifacts
+  {1..18}`. Re-run against five fixtures across four review passes (see
+  changes 6, 10, 11, 12 for each), plus the CI finding in change 13 verified
+  by construction rather than fixture: cloned fresh from
+  `https://github.com/addicted2ai/AddictedtoAI.git`, deleted the local
+  `main` branch, checked out `origin/loop/meta/frame` detached — confirmed
+  `git log --format=%ae main` fails there identically to CI's error and
+  `git log --all -- docket/HOLD.md` returns 4, matching CI's reported
+  `hold-commits=4` exactly; copied the fixed `FRAME.md` and
+  `scripts/check-frame.mjs` into that clone and re-ran — facts 1 and 2 both
+  `verified`, all 16 checkable facts passing there, matching the real
+  `FRAME.md`. `node scripts/check-track-scope.mjs origin/main
+  loop/meta/frame` — `ok all 11 changed file(s) within meta's scope` at the
+  final commit, including five review artifacts
   (`9980ade895f69b88bc25fcac08256736bd931902.md`,
   `b918fa8eea57a12b3e63a9b96009f1174d5e51c5.md`,
   `d004ad064027f957437afe2905b5eda46a1a67ee.md`,
-  `20b63020109cc6b87f5e52af738f2f9ce6424da1.md`), none written or touched by
+  `20b63020109cc6b87f5e52af738f2f9ce6424da1.md`,
+  `4f683bfd637b29436fc53ccd9de84472131c23b6.md`), none written or touched by
   this round. `npm run lint` clean against the rewritten
   `scripts/check-frame.mjs`. `node scripts/round.mjs check` run after every
   commit landed, last run against a freshly restarted server:
@@ -609,35 +695,50 @@ accurate; no error in the brief surfaced under that scrutiny.
     node scripts/round.mjs ship
   ```
 
-  Not run: `round.mjs ship` itself, and no pull request was opened — this
-  round commits only, per the brief. `git status --short` empty after the
-  final commit. No guardrail was loosened without disclosure: this round
-  widens `scripts/check-track-scope.mjs`'s own map (change 4), stated
-  plainly rather than smoothed over, and touches nothing under `.github/` —
-  including for Finding 4's fix, which reads `.github/workflows/loop.yml`
-  and modifies nothing in it.
-- Result: 18 facts in `FRAME.md` (16 verified, 2 attested), all 16 checkable
-  ones passing against live state re-queried this round; `check-frame.mjs`
-  proved able to fail on a real mechanism change, an injected wrong value, a
-  malformed heading, a tautological reconciliation, a heading no shape-based
-  scan could see, and — fourth review pass — a deleted-and-renumbered fact
-  that a pure count comparison could not distinguish from a complete set,
-  each reverted or fixed and re-verified clean; five blocking review
-  findings fixed across four passes, including `CLAUDE.md` briefly
-  reintroducing a claim ("human-owned") this project had just spent two
-  rounds removing and `check-frame.mjs` overstating its own completeness
-  guarantee three times running — count-based recognition, then a
-  tautological reconciliation, then a declared total that checked
-  cardinality instead of the set itself — before an explicit sequence
-  check (recognised IDs must equal `{1, ..., declaredTotal}` exactly)
-  closed the class the first three fixes could only narrow; judgement
-  recorded in changes 11 and 12 for why heading-shape recognition does not
-  converge by incremental rediscovery while integer-set equality does, and
-  why that distinction is what ended the chase rather than a fifth,
-  narrower patch; the approval-classifier observation stands at two
-  independent, confounded occurrences, recorded as unconfirmed rather than
-  promoted into a finding, deliberately not tested further; track scope
-  widened by exactly the two paths this round used; the temporary
+  Not run by this round: `round.mjs ship` itself. This round committed
+  only, per the brief — the review approved the tree at change 12 and PR
+  #136 was opened and pushed outside this round's own actions, which is
+  where change 13's CI finding came from. `git status --short` empty after
+  every commit including the final one. No guardrail was loosened without
+  disclosure: this round widens `scripts/check-track-scope.mjs`'s own map
+  (change 4), stated plainly rather than smoothed over, and touches nothing
+  under `.github/` — including for change 13's fix, which reads
+  `.github/workflows/pr-checks.yml` to confirm no `gh` token is configured
+  there and modifies nothing in it.
+- Result: 18 facts in `FRAME.md` (16 verified, 2 attested); locally, all 16
+  checkable ones pass against live state re-queried this round, and in the
+  constructed CI-shaped clone the same 16 pass, facts 1 and 2 included.
+  `check-frame.mjs` proved able to fail on a real mechanism change, an
+  injected wrong value, a malformed heading, a tautological reconciliation,
+  a heading no shape-based scan could see, a deleted-and-renumbered fact a
+  pure count comparison could not distinguish from a complete set, and —
+  CI finding — two claims reported false that were never actually false,
+  each reverted or fixed and re-verified clean; six blocking findings fixed
+  across four review passes and one CI failure, including `CLAUDE.md`
+  briefly reintroducing a claim ("human-owned") this project had just spent
+  two rounds removing, `check-frame.mjs` overstating its own completeness
+  guarantee three times running before an explicit sequence check closed
+  the class the first three fixes could only narrow, and two checks that
+  assumed a developer's full local clone and reported false divergences
+  against a fresh CI checkout instead of the `UNVERIFIED` a check with no
+  way to evaluate a claim owes it; 12 of 16 verified facts are now confirmed
+  enforced by `build-and-audit` on every pull request (1, 2, 3, 4, 5, 6, 7,
+  10, 11, 13, 14, 15), and the remaining 4 (8, 9, 12 in part, 18) are
+  disclosed by name in `FRAME.md`'s own preamble as
+  structurally unverifiable there — no `gh` authentication configured for
+  `build-and-audit`, no local OpenCode server on a GitHub-hosted runner —
+  rather than papered over by downgrading working checks to match; no
+  `.github/` file touched to reach any of this, confirmed by reading
+  `pr-checks.yml` rather than assuming, and the gap named as a decision for
+  the maintainer rather than routed around; five review passes plus a
+  locally-green `round.mjs check` at every commit did not catch the CI
+  defect, because every one of them ran from the same long-lived local
+  clone that hides it — only `build-and-audit`, on a fresh checkout, ever
+  exercised the ref shape the checks actually depend on; the
+  approval-classifier observation stands at two independent, confounded
+  occurrences, recorded as unconfirmed rather than promoted into a finding,
+  deliberately not tested further; track scope widened by exactly the two
+  paths this round used; the temporary
   `~/.claude/rules/addictedtoai-frame.md` this file supersedes is outside
   this repository and cannot be removed by this round — noted for the
   orchestrator to remove once `FRAME.md` merges.
