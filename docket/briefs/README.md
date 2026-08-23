@@ -134,9 +134,26 @@ HTML comment so it reads as clearly not part of the original text, naming
 which round it briefed and where that round shipped; the body below it is
 otherwise verbatim.
 
-`scripts/check-briefs.mjs` does not check anything about files under
-`legacy/` — not the header lines, not a premises section, nothing. They are
-archive, not live convention.
+`scripts/check-briefs.mjs` does not check the header lines or a premises
+section for files under `legacy/` — they are archive, not live convention,
+and are not held to a requirement they predate.
+
+**What it does check: that `legacy/` cannot admit anything else.** A
+directory exempt from the premise requirement, with no check on what may
+enter it, is not an exemption — it is a way to dodge the requirement by
+choosing which folder to write to. Adversarial review demonstrated exactly
+that: an arbitrary new file, a file placed under a real legacy filename with
+different content, and a copy of a real current brief with its own
+`## Premises` section stripped out, all three landing in `legacy/` and
+passing with exit 0. So `legacy/` is pinned in `scripts/check-briefs.mjs`'s
+`LEGACY_MANIFEST` — the exact six filenames fixed at the moment this
+convention was established, each with the SHA-256 of its content as
+committed then. A file in `legacy/` not on that list fails; a listed file
+missing from disk fails; a listed file whose content no longer matches its
+pinned hash fails. `legacy/` is closed for good — nothing filed from now on
+can ever "predate" round 9, so the manifest has no legitimate way to grow,
+and a future round finding it needs to (which should not happen) is itself
+something worth stopping to ask about rather than doing quietly.
 
 ## Linking a brief to its round
 

@@ -26,8 +26,10 @@
 // actually supports the claim, and not that the attestation actually
 // happened. Verifying that would mean deciding whether a piece of freeform
 // prose is true, which is exactly the problem FRAME.md's own checker
-// (scripts/check-frame.mjs) spent three narrowing fixes and a fourth
-// replacement discovering is not a bounded problem -- see that script's own
+// (scripts/check-frame.mjs) discovered is not a bounded problem: two fixes
+// that stayed inside shape-recognition each still left a case unhandled, a
+// third replaced the approach itself with a declared total, and a fourth
+// closed a remaining flaw in that new approach -- see that script's own
 // header. This script does not attempt it. For a premise tagged [frame:N],
 // it checks that fact N still exists as a heading in FRAME.md today -- not
 // that the fact's wording still matches what the brief cited it for, and not
@@ -51,6 +53,7 @@
 
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 
 const root = process.cwd();
 const briefsDir = path.join(root, "docket", "briefs");
@@ -93,13 +96,85 @@ if (!fs.existsSync(briefsDir)) {
   process.exit(0);
 }
 
-const entries = fs.readdirSync(briefsDir, { withFileTypes: true });
-const legacyFiles = fs.existsSync(path.join(briefsDir, "legacy"))
-  ? fs
-      .readdirSync(path.join(briefsDir, "legacy"), { withFileTypes: true })
-      .filter((e) => e.isFile() && e.name.endsWith(".md"))
-  : [];
+// docket/briefs/legacy/ is a CLOSED, historical set -- exactly the briefs
+// that predate this convention (round 9, loop/meta/briefs-and-premises,
+// 2026-08-23), fixed at the moment the convention was established and never
+// growing again: nothing filed from now on can "predate" that moment. Before
+// this manifest existed, legacy/ was validated by directory alone --
+// adversarial review demonstrated three ways that a directory with no
+// membership check is not an exemption but a hole: an arbitrary new file, a
+// file placed under the name of a real legacy file with different content,
+// and a copy of a real CURRENT brief with its own ## Premises section
+// stripped out, all three landing in legacy/ and passing with exit 0. The
+// premise requirement this whole script exists to enforce was avoidable by
+// choosing which folder to write to.
+//
+// Pinned two ways so neither an unclaimed filename nor a same-named
+// replacement can enter unnoticed: the exact set of filenames (a missing or
+// an extra file both fail), and for each, the exact SHA-256 of its content
+// as committed under this convention. A legitimate legacy file changing
+// (even a whitespace fix) requires updating its hash here in the same
+// change -- the same "the loop may not spend a permission it grants itself
+// unnoticed" shape as every other pinned constant in this repository.
+const LEGACY_MANIFEST = {
+  "loop-meta-charter-reconciliation.md":
+    "b8a391148ca2c9135db6fcee4a49a203a25ff4b24d2cffcd33feccad5154a19a",
+  "loop-build-true-and-reflowable.md":
+    "a8bd39f8f662de5da067ffef8aa04bbc70f5d68f81ff722fe3e7fe5678b12d76",
+  "loop-meta-frame.md":
+    "52aac598c6ef51dffb3385f1e717a56ba61170712322f05b4092273a661b598a",
+  "review-a15ae5664e8b7d9c30e64505ebc2915f3e4d317b.md":
+    "f9c08987b789e9b73f39240a947af449118c40dd87037d93d733dfad5d6d5b35",
+  "review-cdfa7c3999960c2e2eb46bf66f6157db34560454.md":
+    "89ce078c43e4e001b1f059453bf37d4703e2375b47a28e0c9bb6bad992d5ff0a",
+  "review-9980ade895f69b88bc25fcac08256736bd931902.md":
+    "55de0a4186ecd6b33548bd87d6887975cb7ef518a430f169d4fee93c270831a5",
+};
 
+const legacyDir = path.join(briefsDir, "legacy");
+const legacyOnDisk = fs.existsSync(legacyDir)
+  ? fs
+      .readdirSync(legacyDir, { withFileTypes: true })
+      .filter((e) => e.isFile())
+      .map((e) => e.name)
+  : [];
+const legacyManifestNames = Object.keys(LEGACY_MANIFEST);
+const legacyUnexpected = legacyOnDisk.filter(
+  (f) => !legacyManifestNames.includes(f)
+);
+const legacyMissing = legacyManifestNames.filter(
+  (f) => !legacyOnDisk.includes(f)
+);
+for (const f of legacyUnexpected) {
+  fail(
+    `docket/briefs/legacy/${f}`,
+    `not part of the pinned legacy manifest in scripts/check-briefs.mjs -- legacy/ is a closed, historical set fixed at round 9 and cannot admit a new file; if this is genuinely a pre-convention brief, add it to LEGACY_MANIFEST with its content hash in the same change`
+  );
+}
+for (const f of legacyMissing) {
+  fail(
+    `docket/briefs/legacy/${f}`,
+    `pinned in LEGACY_MANIFEST but missing from disk`
+  );
+}
+for (const f of legacyOnDisk) {
+  if (!legacyManifestNames.includes(f)) continue; // already reported above
+  const actualHash = crypto
+    .createHash("sha256")
+    .update(fs.readFileSync(path.join(legacyDir, f)))
+    .digest("hex");
+  if (actualHash !== LEGACY_MANIFEST[f]) {
+    fail(
+      `docket/briefs/legacy/${f}`,
+      `content does not match the pinned manifest hash -- expected ${LEGACY_MANIFEST[f]}, got ${actualHash}`
+    );
+  }
+}
+const legacyFiles = legacyOnDisk.filter((f) =>
+  legacyManifestNames.includes(f)
+);
+
+const entries = fs.readdirSync(briefsDir, { withFileTypes: true });
 const briefFiles = entries.filter(
   (e) => e.isFile() && e.name.endsWith(".md") && e.name !== "README.md"
 );
