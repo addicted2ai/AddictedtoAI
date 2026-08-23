@@ -401,14 +401,36 @@ are recorded in item 8 below.
   real: a build that cannot see the file fails loudly rather than
   publishing an unchecked list, which is the direction to be wrong in.
 
+**10. A required check that failed on a green tree, five runs in**
+- Hypothesis: `node scripts/round.mjs check` was run five times on this
+  branch. Four were green. One failed, on an unchanged tree, between two
+  green runs: `FAIL ORCHESTRATE_COMMAND path was gated by the runner
+  system: 2026-08-23T20:34:20Z checkout free -- no session from this
+  supervisor is advancing`. Expected a real defect; found a timer.
+- Change: `scripts/test-orchestrate-runner-launch.mjs` spawns
+  `scripts/orchestrate.sh` in a sandbox, kills it after a fixed 6000 ms,
+  and then asserts the captured output matched `/iteration starting/`. On a
+  slow moment the child is still in its checkout-gate phase when the timer
+  fires, so the test sees output that is correct-so-far and reports it as a
+  gate failure. It cannot tell "this is false" from "I could not evaluate
+  this" -- the same defect `FRAME.md` fact 1's CI finding records, in a
+  check that feeds a required status check. Filed
+  (`docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-
+  dependent.md`) rather than fixed: it is pre-existing, nothing in this
+  round's diff touches the runner or the sandbox, and the obvious fix
+  (raise the timeout) is the direction that weakens the test. Recorded
+  because the working remedy today is "run it again", and a habit of
+  re-running until green is how a real failure eventually gets waved
+  through.
+
 - Origin: delegated
 - Track: build
 - Agent: claude-opus-5 (Claude Code subagent)
 - Guardrails: `node scripts/round.mjs check`: green end to end, exit 0,
   observed -- `npm run lint` `No ESLint warnings or errors`, `npm run
   build` succeeded, `all route checks passed` with no group SKIPPED. `node
-  scripts/check-docket.mjs`: `ok 127 docket item(s) valid (42 open)`,
-  `build` 9 -> 11 open (two filed, none closed; queue budget 14); `meta`
+  scripts/check-docket.mjs`: `ok 128 docket item(s) valid (43 open)`,
+  `build` 9 -> 12 open (three filed, none closed; queue budget 14); `meta`
   refused a third item at 26 against a budget of 14, which is why the
   `AGENTS.md`/`prompts/`/`README.md` staleness in item 9 is recorded here
   instead of filed. `node scripts/check-briefs.mjs`: `ok all current briefs
