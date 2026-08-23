@@ -70,6 +70,680 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-22
+This meta round (round 8 of the current Claude-Code-subagent era, `loop/meta/frame`)
+was briefed after the orchestrator asserted three false things about this
+project's own arrangement on this date, briefed subagents on them, and had
+work built on each before the maintainer caught it in conversation — that
+`docket/HOLD.md` was the maintainer's brake rather than the loop's own
+self-halt, that OpenCode has no websearch when it does, and that the 278
+non-bot commits on `main` are "the loop's account" when they are the
+maintainer's own. None of the three was a number this project's own build
+already checks; all three were about who decided what and who controls what,
+which review cannot catch because review checks work against a brief and the
+brief carried the error. The brief asked for two durable things and stated
+plainly they would go red on the guardrail judging them, by design. Checked
+against the brief's own claims rather than copied from it — every command
+below was re-run this round, not trusted from the brief's prose — and found
+accurate; no error in the brief surfaced under that scrutiny.
+
+**1. Added `FRAME.md`, sixteen facts about the arrangement — later eighteen; see change 5**
+- Hypothesis: a short, checkable file at the repository root — loaded by
+  every session automatically, the way `CLAUDE.md` reaches the approval
+  classifier too — would have stopped at least the second of the three
+  errors above outright, since it was already correct in the orchestrator's
+  own memory and got overridden by a stale summary anyway. A file has no
+  memory to go stale against; it has only whatever this round could verify
+  and defend today.
+- Change: `FRAME.md` shipped in this change with 16 facts, each carrying a
+  flat claim and a `verified` or `attested` marker: 14 `verified`, each with
+  a command re-run this round against real git history, the live GitHub API
+  (`gh auth status`, `gh api repos/addicted2ai/AddictedtoAI/branches/main/protection`,
+  `.../required_status_checks`), or this repository's own tracked files —
+  never copied from the brief's prose; 2 `attested` (OpenCode's websearch,
+  the supervisor's death on 2026-08-18), claims about a process or a tool's
+  configuration outside this checkout, which no command run from inside it
+  can prove, stated as such rather than smoothed into the same green as the
+  rest. Every `verified` check was written to fail on the specific wrong
+  version of its claim, not merely to exist — see change 2. Kept to 16
+  rather than padded toward the brief's stated 20–30 range: the brief's own
+  mid-round correction said a fact without a working check or a
+  maintainer's attestation behind it does not belong, and that bound more
+  than a target count. **Superseded by adversarial review before this entry
+  shipped, corrected here rather than left standing:** review (change 5)
+  added two facts and split a third, so `FRAME.md` now carries 18 facts, 16
+  `verified`, 2 `attested` — `node scripts/check-frame.mjs` at the foot of
+  this entry reports the current count, which is the one that matters; the
+  16-fact figure above describes only what this specific change shipped,
+  before review.
+
+**2. Added `scripts/check-frame.mjs`, wired into `check-routes.sh`, and proved able to fail**
+- Hypothesis: FRAME.md's checks are only as good as something that actually
+  runs them on every build. The script had to be able to fail loudly on a
+  real divergence, not merely report green because nothing tried to break
+  it — this project's own record already has checks that could not go red
+  (the `/charter` rule count at 0=0, `document.documentElement.scrollWidth`
+  against `window.innerWidth`) and one that passed while measuring the wrong
+  server.
+- Change: `scripts/check-frame.mjs` parses each `## N. Title` fact out of
+  `FRAME.md`, runs `verified` facts' fenced check commands via `bash -lc`,
+  and reads a self-printed `PASS` / `FAIL <reason>` / `UNVERIFIED <reason>`
+  verdict rather than guessing from exit codes — a check that cannot reach
+  `gh` or a local service reports `UNVERIFIED` and does not fail the build,
+  but is never silently counted as passed either. Wired into
+  `scripts/check-routes.sh` (and so into `build-and-audit`, a required
+  check) right after `check-origin-definitions.mjs`. Proved able to fail
+  twice, not once: first, planned — temporarily changed fact 1's expected
+  email in `FRAME.md`'s own check command to a wrong account, ran
+  `node scripts/check-frame.mjs`, got `FAIL 1. The three identities --
+  non-bot authors=[223016611+addicted2ai@users.noreply.github.com]
+  addicted2ai-loop-authored=0` naming the exact fact and the real value,
+  reverted the one line, re-ran clean, confirmed `git status --short` empty.
+  Second, unplanned and more informative: an earlier attempt at this same
+  test edited `scripts/orchestrate.sh`'s `if [ -s docket/HOLD.md ]; then`
+  gate (fact 2's actual target) to check a different filename instead, to
+  prove the check notices a real mechanism change rather than only a
+  markdown edit. The approval classifier blocked the very next Bash command
+  outright — the identical `node scripts/check-frame.mjs` invocation that
+  had run cleanly moments before — and kept blocking it until the gate was
+  reverted with the Edit tool, at which point the same command ran again
+  without incident. Read as the classifier itself refusing to let further
+  commands run while this project's own self-halt condition sat altered,
+  which is either a coincidence this round did not control for or a second,
+  independent layer of defence around exactly the mechanism fact 2
+  describes — not chased further, since `CLAUDE.md`'s own working rules (see
+  change 3) say to report a block and stop rather than work around it, and
+  this round's job was to test `check-frame.mjs`, not the classifier. Kept
+  in the record because a null result here — "this project defends its own
+  halt mechanism from more angles than the ones it wrote tests for" — is
+  worth more than a second, safer divergence test would have been on its
+  own. The FRAME.md-only test (above) is what the "proved able to fail"
+  checklist item is satisfied by; this one is disclosed alongside it rather
+  than folded in as if it had been the plan.
+
+**3. Added `CLAUDE.md`, pointing at `FRAME.md` and carrying the working rules**
+- Hypothesis: `FRAME.md` only reaches every session — orchestrator,
+  subagents, and the approval classifier alike — if something at the
+  repository root tells them to read it, the same way this round's own
+  brief explained the classifier reads `CLAUDE.md` content directly.
+- Change: `CLAUDE.md`, short, pointing at `FRAME.md` as the authority on the
+  arrangement and `node scripts/check-frame.mjs` as how to check it, plus
+  the working rules this round's own brief specified: never `cd`, keep
+  command strings short, never manipulate credentials on a command line,
+  never print a secret, prefer the dedicated file tools, and — added beyond
+  what the brief listed verbatim, because it is the same principle this
+  round's own "expect the classifier to flag you" section states for
+  itself — report a blocked tool call and stop rather than route around it
+  or edit a permission file to clear the path.
+
+**4. Widened track scope by exactly two paths: `FRAME.md`, `CLAUDE.md`**
+- Hypothesis: `scripts/check-track-scope.mjs` did not let `meta` write any
+  new file at the repository root before this round, so changes 1 and 3
+  were outside scope as the map stood. Widening it is itself a change to a
+  maintainer-owned file, and rule 11 forbids a run blocked by a guardrail
+  from being the one that loosens it.
+- Change: added `"FRAME.md"` and `"CLAUDE.md"` to `SCOPES.meta`, nothing
+  else, with a comment stating the tension plainly rather than working
+  around it. The guardrail rule 11 actually names is `human-owned-paths`,
+  not this file's own path map — and `scripts/check-track-scope.mjs` is
+  itself listed in `human-owned-paths` (round 79's fix for round 78, which
+  spent a self-granted path in the same pull request with every check
+  green, back when this file was not yet in that list). Confirmed rather
+  than asserted: `git diff --name-only origin/main...HEAD | grep -E
+  '^(\.github/|scripts/check-track-scope\.mjs|...)'` — the same pattern
+  `.github/workflows/pr-checks.yml`'s `human-owned-paths` job runs — matches
+  `scripts/check-track-scope.mjs` on this branch's diff. This pull request,
+  when one is opened, goes red on `human-owned-paths` by design and waits
+  for the maintainer to merge it by hand, the same red-then-authorise shape
+  the brief named in round 169. `node scripts/check-track-scope.mjs
+  origin/main loop/meta/frame` itself reports all 5 changed files within
+  `meta`'s scope — that script's own path logic has no opinion on
+  `human-owned-paths`; the two mechanisms are separate on purpose (see that
+  file's own header).
+
+**5. Review finding: `CLAUDE.md` reintroduced a claim two rounds had just removed — fixed, and the harder question acted on**
+- Hypothesis: none stated in advance — adversarial review (round 171,
+  verdict `request-changes`, `docket/reviews/9980ade895f69b88bc25fcac08256736bd931902.md`,
+  not edited by this round per the reviewer's own instruction) found this;
+  it is not a change this round planned.
+- Change: **`CLAUDE.md` was wrong twice in one sentence, and the second
+  wrongness is the one that matters.** It read "`CHARTER.md` is the binding
+  ruleset — 21 rules, human-owned." The rule count is 22, not 21 —
+  `sed -n '/^## I\. Truth/,/^## Amendment/p' CHARTER.md | grep -c
+  '^[0-9][0-9]*\. '` says so, and `CHANGELOG.md` (line ~1219) already
+  recorded "rule count 22" from an earlier round; the one claim in the
+  sentence with an existing, one-command, build-canonical answer was copied
+  from this repository's own already-stale `README.md`/`AGENTS.md` instead
+  of checked against it. But "human-owned" is the more serious half, and the
+  reviewer named it as such: **that is the precise claim round 169 withdrew
+  from `CHARTER.md`'s rule 13 and round 170 removed from `/charter`'s lead
+  paragraph, hours before this round wrote it back into the one file whose
+  stated job is to steer every future session and the approval classifier
+  reading it.** This is not "corrected a stale reference" — it is this
+  round, built specifically to stop unchecked claims about the arrangement
+  from propagating, reintroducing the exact shape of claim two prior rounds
+  had spent the night removing, into the highest-leverage file for doing so.
+  Recorded plainly rather than folded into a routine fix. The harder
+  question the review asked — why did no check protect that sentence, when
+  every fact in `FRAME.md` carries one and `CLAUDE.md` is the higher-leverage
+  file? — is answered by acting on it rather than agreeing with it:
+  `CLAUDE.md` no longer states the rule count as prose at all; it points at
+  a new `FRAME.md` fact 14, which checks the count two independent ways (the
+  same regex above, and a dynamic import of the real production parser,
+  `app/lib/charter.js`, counting the rule blocks it actually produces from
+  the live file — both non-zero, both required to agree, mirroring the
+  `/charter` rule-count check's own "0 = 0 must fail" design rather than
+  inventing a new one). The "human-owned" half now reads: "the delegation
+  (rule 13) covers ordinary edits to it; rule 13a reserves specific
+  properties — not the whole file — to the maintainer alone (`FRAME.md` fact
+  7)," matching what `CHARTER.md` currently says. `README.md`, `AGENTS.md`
+  and a comment in `app/charter/page.js` still say "21 rules" — pre-existing
+  staleness the reviewer found and this round's diff does not touch; noted,
+  not fixed, since they are outside `meta`'s scope as it stands and outside
+  what this review asked for.
+
+**6. Review finding: `check-frame.mjs` silently dropped a fact whose heading punctuation was off — fixed**
+- Hypothesis: none stated in advance — the review built a fixture to test
+  exactly this failure mode and reproduced it.
+- Change: **`check-frame.mjs` silently dropped a fact whose heading
+  punctuation was off, with no error and an undercounted summary.** The
+  reviewer built a four-fact fixture (in their own scratchpad, outside this
+  repository and not committed — `test-frame-parsing.md`: one normal fact,
+  one heading using `## 17:` instead of `## 17.`, two other malformed-body
+  cases already handled correctly) and reran it against this script's own
+  splitting regex, `text.split(/\n(?=## \d+\. )/)`: the colon heading opened
+  no chunk boundary, so the entire fact was absorbed as trailing text into
+  the *previous* fact's chunk — not reported malformed, not counted — and
+  the summary read "3 fact(s)" against a four-fact document with nothing to
+  say anything was missing. Reproduced exactly against the reviewer's own
+  fixture, reused rather than rebuilt. Fixed by splitting on a broad
+  candidate pattern first (`^## <digits>...`, whatever follows) so a
+  malformed heading gets its own isolated chunk instead of merging into a
+  neighbour's, then classifying each chunk as well-formed or malformed and
+  printing both counts plus a `reconciled:` line asserting candidates =
+  well-formed + malformed-heading + malformed-body. Re-run against the
+  reviewer's fixture (now via a new optional path argument, added so this
+  parser can be tested without touching the real `FRAME.md`, the same
+  reason the reviewer had to keep a scratchpad copy of the whole script
+  before):
+
+      test-frame-parsing.md check -- 4 candidate heading(s): 1 well-formed,
+      1 malformed heading(s), 2 malformed body
+
+      FAIL   17. 17: A fact whose heading uses a colon instead of a period --
+                 malformed heading, does not match "## N. Title":
+                 "## 17: A fact whose heading uses a colon instead of a period"
+      FAIL   18. A fact with an empty fenced check block -- malformed
+      FAIL   19. A fact using a non-recognised language tag on its fence -- malformed
+      verified 1. A normal fact with a real check
+
+      reconciled: 4 candidate heading(s) = 1 well-formed fact(s) +
+      1 malformed heading(s) + 2 malformed body
+      3 fact(s) failed or malformed, 0 unverified, 0 attested
+
+  The first version of this fix had its own bug, caught by running it
+  against the real `FRAME.md` before ever touching the fixture: the
+  well-formed count printed 18 against 16 candidate headings — impossible,
+  and traced to double-counting attested facts in the summary arithmetic
+  rather than to the parser itself. Fixed and re-verified against both the
+  real `FRAME.md` (18 candidates = 18 well-formed + 0 + 0, 16 checkable pass,
+  2 attested) and the reviewer's fixture (above) before either was trusted.
+
+**7. Review finding: fact 2 verified a proxy, not the claim — narrowed**
+- Hypothesis: none stated in advance — the review named the gap between what
+  the check tests and what the claim asserted.
+- Change: fact 2's check verified a gate existing, a phrase existing, and a
+  commit count, none of which can show *who* typed any commit on the shared
+  `addicted2ai` account, while its claim asserted "every commit... was the
+  loop halting itself, never the maintainer." Fixed by narrowing the claim
+  to what the check tests (the mechanism, and that the file's history has
+  not been deleted), naming explicitly that the who-typed-it
+  characterization is CHARTER.md's own one-time reading of the commit
+  messages, not a re-derivable property, and is not part of what "verified"
+  claims for this fact.
+
+**8. Review finding: fact 14 folded a checkable claim into `attested` — split**
+- Hypothesis: none stated in advance — the review found a checkable half
+  that had not been checked.
+- Change: fact 14 folded a checkable claim (Claude Code's `meta` track has
+  no `WebSearch`/`WebFetch`) into `attested` alongside a genuinely
+  unprovable one (OpenCode's own websearch support) — the exact pairing
+  fact 12's own text warns against, applied to itself. The checkable half
+  was real and findable: `.github/workflows/loop.yml` hard-codes
+  `tools="Read,Write,Edit,Glob,Grep,Bash"` for `track == meta`, no web
+  tools, confirmed by reading (not modifying) that file. Split into new
+  fact 15 (`verified`, greps the literal string above) and a narrowed fact
+  16 (`attested`, OpenCode's own tooling only).
+
+**9. What the review attacked and could not break**
+- Hypothesis: none stated in advance — recorded for completeness, since a
+  review that only lists what it found wrong is easier to over-trust than
+  one that also says what it tried and failed to break.
+- Change: `UNVERIFIED` handling under a genuinely unreachable `gh`/OpenCode
+  server, the scope widening's exact two-path diff, `.github/` untouched, no
+  past changelog entry edited, `Origin`/`Track` present, fact 13's
+  arithmetic, and 6 of the other facts' grep targets spot-checked against
+  the real files all held under direct testing. The review also assessed
+  (without reproducing, per its own brief) change 2's approval-classifier
+  report and left it explicitly unconfirmed, n=1 at that point — that stayed
+  exactly as disclosed, not promoted into `FRAME.md` on the strength of a
+  review that chose not to test it. **Updated by the second review pass**
+  (change 10): the reviewer independently hit the same shape of block —
+  after editing `CHARTER.md` as a reversible test, its own next complex
+  Bash call was blocked, and reverting cleared it — a second occurrence,
+  still under confounded conditions (a governance-adjacent file edited
+  immediately beforehand, same as this round's own observation), not an
+  isolated one. This stays **unconfirmed with two observations**, not a
+  finding: what would establish causation is a controlled test — the same
+  edit repeated with an unrelated, equally-important file edited as a
+  control, and a baseline of ordinary Bash calls not preceded by any such
+  edit — and neither this round nor the review ran one, on purpose: if the
+  effect is real, deliberately triggering it blocks the very session trying
+  to observe it. Recorded as two data points pointing the same direction,
+  nothing stronger claimed.
+
+**10. Second review pass: the completeness reconciliation was a tautology — fixed, and the general class named, not just this instance**
+- Hypothesis: none stated in advance — the review built a second fixture
+  testing the property change 6's fix claimed rather than trusting the
+  claim, and reproduced a live finding before sending it, which this round
+  reproduced again independently before touching anything.
+- Change: change 6's `reconciled:` line compared the candidate matcher's own
+  partition of what it found against itself — `boundaries.length` on one
+  side, `wellFormed + malformedHeadings + malformedBody` (all derived from
+  the same `boundaries`) on the other. That arithmetic cannot disagree with
+  itself by construction, so it reconciled nothing about the document, only
+  about the candidate matcher's internal bookkeeping. The review's fixture —
+  headings `## 1.`, `##2.` (no space), `##  3.` (two spaces), `### 4.` (one
+  level too deep) — made this concrete: four facts in the file, and
+  `node scripts/check-frame.mjs` against it reported
+
+      reconciled: 1 candidate heading(s) = 0 well-formed + 0 malformed heading(s) + 1 malformed body
+
+  one candidate found, three silently absorbed, arithmetic balanced. Header
+  comment claiming facts are "NEVER SILENTLY DROPPED" was false as written —
+  the third overstated guarantee in this round alone (`CLAUDE.md`'s rule
+  count and ownership claim, change 5, being the other two), named as its
+  own class here rather than patched quietly a second time. Reproduced
+  independently before any fix: built an equivalent fixture in this round's
+  own scratchpad and ran the pre-fix script against it, same result (1
+  candidate, 3 silently absorbed, clean-looking arithmetic).
+
+  Fixed two ways, not one. First, the candidate matcher itself
+  (`CANDIDATE_HEADING`) widened from a fixed single space to `\s*`, so
+  `##2.` and `##  3.` now open their own chunk boundary and are correctly
+  reported as malformed headings rather than merged into a neighbour's — two
+  of the fixture's three previously-invisible cases closed by this alone.
+  Second, and the one that actually answers the review's stated property —
+  completeness measured against something the candidate matcher cannot
+  influence — a new, independent scan (`looksLikeNumberedHeading`) that
+  shares no code or regex with the candidate matcher: a hand-walked
+  character loop counting any number of leading `#`, any whitespace, then a
+  digit, deliberately more permissive than the two-hash-only candidate
+  pattern. Its total is reconciled against the candidate matcher's own
+  count; a mismatch fails loudly and prints the exact missed line, rather
+  than a summary that can only ever agree with itself. This is what catches
+  `### 4.` — one heading level the candidate matcher will never match on
+  purpose, since a real level-3 sub-heading could legitimately appear inside
+  a fact's body — flagged as a completeness mismatch requiring a human
+  decision instead of silently passing or silently guessing. Re-run against
+  the review's fixture:
+
+      test-frame-parsing-2.md check -- 3 candidate heading(s): 1 well-formed, 2 malformed heading(s), 0 malformed body
+
+      FAIL        completeness: an independent scan found 1 heading-like line(s) the candidate matcher never saw at all:
+      FAIL          line 42: "### 4. A heading one level too deep"
+      FAIL        2. 2. A heading with no space after the hashes -- malformed heading, does not match "## N. Title": "##2. A heading with no space after the hashes"
+      FAIL        3. 3. A heading with two spaces after the hashes -- malformed heading, does not match "## N. Title": "##  3. A heading with two spaces after the hashes"
+      verified    1. A well-formed heading
+
+      accounted for: 3 candidate heading(s) = 1 well-formed fact(s) + 2 malformed heading(s) + 0 malformed body
+      completeness: independent scan found 4 heading-like line(s) total, 1 missed by the candidate matcher
+
+  All four facts now accounted for: two caught directly, one caught by the
+  completeness scan and named by line number, one genuinely well-formed. The
+  header comment no longer claims facts are never silently dropped in the
+  absolute; it states the two specific failure modes two rounds of review
+  found, what fixed each, and — plainly, rather than left for a third review
+  to find — what the scan still does not cover: a heading written with no
+  leading `#` at all, or identified by something other than a leading digit.
+  Regression-checked against both the first review's colon-heading fixture
+  (still 4 candidates, all accounted for, 0 missed by the completeness scan)
+  and the real `FRAME.md` (still 18 candidates = 18 well-formed, 0 missed).
+  The useful part is not this one instance: the first fix closed exactly the
+  case it was built for (a punctuation typo after the number) and the
+  general class — anything the candidate matcher's own pattern cannot see —
+  survived that fix completely intact, invisible to the same tautological
+  reconciliation that was supposed to catch it. A narrow fix for a reproduced
+  case is not the same thing as fixing the property, and this entry did not
+  know that until a second review said so.
+
+**11. Third review pass: both scans anchor at column 0 — asked to judge convergence before fixing, not to patch a fourth time**
+- Hypothesis: none stated in advance — the review verified change 10's fix
+  independently, then found the shared blind spot both of change 10's scans
+  never disagreed on, and required an answer to a question before a fix:
+  is recognising every malformed heading shape a bounded problem, or the
+  same shape as round 167's unbounded free-text matching?
+- Change: **the finding.** Both the candidate matcher and the "independent"
+  completeness scan require a heading to start at column 0. A heading
+  indented by one to three spaces or a tab is a valid CommonMark ATX
+  heading, not a typo, and it evades both scans identically — they share
+  the blind spot rather than disagreeing, so `missedLines` stays empty and
+  the tool reports clean. Reproduced independently before touching
+  anything: built a two-fact fixture (one heading at column 0, one indented
+  a single space) and ran the pre-fix script — `accounted for: 1 candidate
+  heading(s) = 0 well-formed + 0 malformed heading(s) + 1 malformed body`,
+  `completeness: independent scan found 1 heading-like line(s) total, 0
+  missed by the candidate matcher`. One fact gone, "0 missed".
+
+  **The judgement, answered before any fix.** A Markdown ATX heading is not
+  free text — it is a syntactic construct with a finite, written grammar
+  (CommonMark: 0-3 leading spaces, 1-6 `#`, a required space, optional
+  trailing `#`s). But *discovering that grammar incrementally through three
+  rounds of adversarial review*, one counterexample at a time, is unbounded
+  in practice regardless of whether the underlying grammar is finite —
+  colon, then spacing and heading level, then indentation, each fix closing
+  exactly the reproduced case and nothing upstream of it, with no reason to
+  expect the sequence stops here. And even a fully spec-compliant ATX
+  heading recogniser, correctly implemented by hand with nothing installed,
+  would not close the actual gap: a fact expressed with no heading markup at
+  all — a bare paragraph, a plain list item — is exactly round 167's shape
+  again, and no amount of heading-syntax sophistication touches it. So:
+  **detection by parsing shape is the wrong guarantee**, for both reasons —
+  the incremental-rediscovery version does not converge in practice, and the
+  theoretically-bounded version does not cover the failure that actually
+  matters.
+- Change (continued): fixed by changing the property, not the pattern. A
+  hidden fact needs to be detectable without recognising *why* it is
+  hidden. `FRAME.md` now opens with a declared total ("This file declares
+  18 facts below."), and `scripts/check-frame.mjs` reconciles that number
+  against whatever any scan manages to recognise — a mismatch fails,
+  whatever the cause, known or not yet discovered. The existing shape scans
+  (candidate matcher, independent scan) are kept exactly as they were, not
+  patched a fourth time for indentation specifically: they still give a
+  precise, useful diagnosis when they do catch something malformed, but
+  completeness no longer rests on them. This is the same shape this project
+  already uses elsewhere — `LEGACY_ROUNDS_WITHOUT_ORIGIN = 47` in
+  `scripts/check-routes.sh`, and the `/charter` rule-count check comparing
+  the file's own count against the rendered page's — declare a ground
+  truth, compare a derived value against it, fail on any disagreement,
+  rather than trying to enumerate every way the derivation could go wrong.
+  The bound this actually has, stated rather than assumed: it holds exactly
+  as long as whoever edits `FRAME.md` bumps the declared number in the same
+  change that adds or removes a fact — a single, human-auditable edit, not
+  a syntax-recognition problem — and if the declaration itself is missing
+  or unparseable, the check fails outright rather than skipping silently.
+  Verified against the fixture above (now correctly `FAIL
+  completeness: ... declares 2 fact(s), but only 1 heading-like line(s)
+  were found by any scan`), both prior fixtures (still fail for their
+  original reasons, and now also flag "does not declare its fact count",
+  since neither predates this change), and the real `FRAME.md` (18 declared,
+  18 recognised, clean).
+- Change (header comment, the fourth overstated guarantee this round
+  produced): "Every heading-like line is parsed, reported malformed, or
+  flagged" read as *every valid Markdown heading*, broader than two
+  column-0-anchored scans ever delivered. Rewritten to name all three fixes
+  in order, what each closed, and state plainly that shape-based scans are
+  diagnostic only — the actual guarantee is the declared-total comparison,
+  and its bound is stated in the same paragraph rather than implied.
+- Change (the progression, for a reader who was not here): three fixes,
+  three classes. Fix one (colon punctuation) closed exactly its reproduced
+  case. Fix two (spacing, heading level) closed its reproduced case and
+  named — but did not fix — a broader tautology. Fix three (this one) is
+  the first that changed the *approach*: not a wider pattern, but a
+  property that does not depend on pattern-matching at all. Whether that
+  is the last fix this class needs is not claimed — what changed is that
+  the promise in the header comment now matches what the mechanism can
+  actually prove, and the mechanism no longer depends on this round (or a
+  fourth review) having anticipated the next way a heading can be malformed.
+
+**12. Fourth review pass: the declared total checked a count, not a set — fixed, and this one converges**
+- Hypothesis: none stated in advance — the review confirmed change 11's fix
+  genuinely closes the indented-heading case, then found what it does not
+  cover: `## 1.`, `## 2.`, `## 47.` against a declared total of 3 — three
+  well-formed, column-0 headings, no shape defect anywhere — passes cleanly
+  while standing in for a deleted fact 3. Reported with an explicit caveat
+  about how far the reviewer got (their own fixture stayed malformed for an
+  unrelated reason, so they confirmed the mechanism rather than a clean
+  exit 0 directly) rather than overstating what was verified.
+- Change: reproduced first, independently, before touching anything — built
+  the exact fixture in this round's own scratchpad and ran it against the
+  change-11 script: `completeness (declared): 3 declared vs 3 recognised by
+  any scan`, all three facts reporting `verified` including fact "47", exit
+  0. `duplicateIds` (present since change 6) stops two headings claiming the
+  same number; nothing required the recognised numbers to *be*
+  `{1, ..., declaredTotal}` rather than merely that many numbers.
+
+  **Why this one is different in kind, not degree — the question asked and
+  answered before fixing anything.** Fixes 1 through 3 (changes 6, 10, 11)
+  each closed exactly the reproduced case and left a narrower one behind,
+  because recognising every way a heading's *shape* can be malformed is not
+  a bounded problem by incremental rediscovery — colon, then spacing and
+  heading level, then indentation, with no reason the sequence stops there.
+  Set equality over a finite range of integers is not that shape. Once the
+  recognised IDs must equal `{1, ..., declaredTotal}` exactly, there is no
+  narrower "wrong set" left to find: a missing fact changes the set, a
+  duplicate changes the set, a renumber changes the set, and the comparison
+  is total over every possible set, not a pattern matched against known
+  counterexamples. This is where the unbounded chase (changes 6, 10, 11)
+  stops and a closed, finite check (this change) starts — the same
+  distinction change 11 drew between shape-recognition and round 167's
+  free-text matching, applied one level down to why *this* fix does not
+  need a change 13.
+
+  Fixed with an explicit sequence check: the IDs the candidate matcher
+  recognises (well-formed or malformed-heading alike — a malformed heading
+  still claims a number) collected as a set and compared against
+  `{1, ..., declaredTotal}`; any missing or unexpected number fails,
+  printing both. Verified against the reproduced fixture (now correctly
+  `FAIL sequence: recognised IDs do not form {1, ..., 3} -- missing [3],
+  unexpected [47]`, exit 1), all three prior fixtures (unaffected — each
+  still fails for its original reason, IDs printed alongside for
+  visibility), and the real `FRAME.md` (`sequence (declared): recognised
+  IDs [1,2,...,18] vs expected {1..18}`, clean).
+- Change (the bound, corrected): change 11's entry stated the guarantee
+  holds "if someone keeps one number in sync" — true of the *count* but
+  silent on the *sequence*, which a rendered read-through of `FRAME.md`
+  does not surface (fact numbers are not usually read as a set). That was
+  the fifth overclaim in this round, one level more abstract than the
+  fourth, and change 11 inherited it from change 10's design rather than
+  checking it independently. Corrected, in both the header comment and
+  here: the guarantee holds exactly as long as the declared total is
+  bumped whenever a fact is truly added or removed — sequence integrity
+  itself is no longer something an editor is trusted to preserve by
+  convention, it is checked mechanically by this change. What remains
+  genuinely unverified, unchanged from change 11: a fact heading written
+  with no leading `#` at all never becomes a candidate and no check here
+  sees it.
+- Change (cosmetic, fixed while here because it is text read while
+  diagnosing a failure): the `not declared` branch of the completeness line
+  printed `completeness (declared): not declared declared vs ...` — a
+  duplicated word from string-templating `${declaredTotal === null ? "not
+  declared" : declaredTotal} declared`. Restructured so the label already
+  includes the word "declared" only once, in both branches.
+
+**13. CI finding, PR #136: `build-and-audit` failed on facts a developer's clone can never see fail — five review passes and a local green did not catch it**
+- Hypothesis: none stated in advance — the review approved, PR #136 opened,
+  and the required `build-and-audit` check failed against facts 1 and 2,
+  which `node scripts/round.mjs check` had reported green at every commit
+  in this round.
+- Change: **the finding.** `git log --format=%ae main` (fact 1) and
+  `git log --all -- docket/HOLD.md` (fact 2) both assume a developer's full
+  clone, where `main` resolves as a local branch and `--all` walks every ref
+  the clone happens to have. Neither is true of a PR checkout: GitHub's
+  `actions/checkout@v4`, even with `fetch-depth: 0` (already set, so history
+  depth was never the problem), checks out a detached `HEAD` with only
+  `origin/*` remote-tracking refs — no local `main` branch exists at all.
+  `git log ... main` failed with "unknown revision", `$emails` came back
+  empty, and fact 1 reported `FAIL non-bot authors=[]
+  addicted2ai-loop-authored=0` for a claim that was never actually false —
+  the check could not distinguish "this is false" from "I could not
+  evaluate this", exactly the property fact 8 (`gh api`, unauthenticated in
+  CI) already gets right by reporting `UNVERIFIED`. Verified against CI's
+  actual conditions rather than reasoned about: cloned fresh from
+  `https://github.com/addicted2ai/AddictedtoAI.git`, deleted the local
+  `main` branch, checked out `origin/loop/meta/frame` detached — the exact
+  ref shape a PR build has — and ran both commands there. `git log
+  --format=%ae main` failed identically ("fatal: ambiguous argument
+  'main'"); `git log --all -- docket/HOLD.md` returned exactly 4, matching
+  CI's reported `hold-commits=4` against 10 found locally.
+- Change (continued — why 4, not 10, and why 4 is the number to keep, not a
+  regression to explain away): the 6 "missing" commits are pre-squash
+  duplicates. `scripts/round.mjs ship` merges with `--squash` (fact 10);
+  GitHub deletes the source branch after merge by default. A long-lived
+  local clone that fetched those branches before deletion still carries
+  their commits under old branch refs — same change, same message, authored
+  `Andrew` on the vanished branch and `addicted2ai` again on `main` after
+  squashing. `--all` in an old clone counts both; a fresh CI clone only ever
+  has the second. Confirmed directly: `git log --all --format='%H %an %s'
+  -- docket/HOLD.md | grep -vf <(git log --format=%H origin/main --
+  docket/HOLD.md)` names all 6 as `Andrew`-authored duplicates of the same
+  4 events, plus 2 more that never landed on `main` at all. Ten was never a
+  stable fact about the record — it was an artifact of one developer's own
+  git history, present in this session's long-lived clone and absent from
+  every fresh one, CI's included. `origin/main`'s own history is stable in
+  any clone, because squash-merging guarantees exactly one commit per
+  merged change regardless of how many existed on the source branch —
+  reconfirmed in the same constructed CI clone: `git log --oneline
+  origin/main -- docket/HOLD.md` returns the same 4 there as in this
+  session's own long-lived clone.
+- Change (the fix — made to work in CI, not downgraded to unverified): fact
+  1's check now resolves `origin/main` instead of `main`. Fact 2's check now
+  scopes to `git log origin/main -- docket/HOLD.md` (no `--all`) and lowers
+  its floor from 10 (an artifact-inflated number that was never really
+  achievable from a fresh clone) to 1 — consistent with fact 2's own
+  narrowing in change 7: the check's real job is confirming the file's
+  history has not been deleted, not tracking an exact evolving count, and 1
+  proves that without asserting a number this round cannot defend as stable.
+  Both re-verified in the constructed CI-shaped clone (copied the fixed
+  `FRAME.md` and `scripts/check-frame.mjs` into it, ran
+  `node scripts/check-frame.mjs` with that clone as the working directory):
+  facts 1 and 2 both report `verified`; the full run reports all 16
+  checkable facts passing, matching the real `FRAME.md`'s own local result.
+- Change (facing what is left, rather than downgrading everything to
+  unverified until green): facts 8, 9 and part of 12 call `gh api`, and
+  fact 18 reaches a local OpenCode server. Read `.github/workflows/pr-checks.yml`
+  rather than assumed: `build-and-audit`'s `env:` sets only
+  `NEXT_PUBLIC_REPO_URL`, no `GH_TOKEN`/`GITHUB_TOKEN`, so `gh` has no
+  configured authentication in that job, and nothing in a GitHub-hosted
+  runner serves OpenCode locally — both are genuine, structural gaps this
+  round cannot close, because closing either would mean editing
+  `.github/workflows/`, which the loop's push credential cannot push and
+  this round's own scope forbids touching. Those facts already report
+  `UNVERIFIED` there correctly (confirmed live in CI: fact 8's excerpt in
+  the coordinator's message reads exactly `unverified enforce_admins is off
+  on main -- gh unreachable or unauthenticated`) — the honest response is
+  not a fix, it is disclosure: `FRAME.md`'s preamble now states plainly
+  which facts `build-and-audit` can actually enforce (12 of 16, after this
+  fix — 1, 2, 3, 4, 5, 6, 7, 10, 11, 13, 14, 15) and which can only ever
+  report `UNVERIFIED` there (8, 9, 12 in part, 18), and why, rather than
+  leaving a reader to discover the gap by running the check themselves. If
+  the maintainer later wants `gh` authenticated for `build-and-audit`, that
+  is a workflow change and this entry files it as a decision for them, not
+  as something this round did or could do.
+- Change (why five review passes and a local green missed this): every
+  review this round had ran from this session's own long-lived clone, the
+  same one where `main` resolves and `--all` finds 10 — the exact
+  conditions that hide both defects. `node scripts/round.mjs check` runs
+  the identical commands, identically blind. Only `build-and-audit`, run on
+  a fresh GitHub-hosted checkout, ever exercised the ref shape these checks
+  actually depend on. The frame's own lesson — a claim can look checked and
+  still be checked against the wrong thing — held one level down, in the
+  tool built to stop it happening, verified in the one environment where
+  the check is a required, enforced gate rather than a courtesy.
+
+- Origin: delegated
+- Track: meta
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `node scripts/check-frame.mjs` — 16 verified facts pass, 2
+  attested facts listed and not executed, against the tree at the final
+  commit; `completeness (declared): 18 declared vs 18 recognised by any
+  scan`; `sequence (declared): recognised IDs [1,2,...,18] vs expected
+  {1..18}`. Re-run against five fixtures across four review passes (see
+  changes 6, 10, 11, 12 for each), plus the CI finding in change 13 verified
+  by construction rather than fixture: cloned fresh from
+  `https://github.com/addicted2ai/AddictedtoAI.git`, deleted the local
+  `main` branch, checked out `origin/loop/meta/frame` detached — confirmed
+  `git log --format=%ae main` fails there identically to CI's error and
+  `git log --all -- docket/HOLD.md` returns 4, matching CI's reported
+  `hold-commits=4` exactly; copied the fixed `FRAME.md` and
+  `scripts/check-frame.mjs` into that clone and re-ran — facts 1 and 2 both
+  `verified`, all 16 checkable facts passing there, matching the real
+  `FRAME.md`. `node scripts/check-track-scope.mjs origin/main
+  loop/meta/frame` — `ok all 11 changed file(s) within meta's scope` at the
+  final commit, including five review artifacts
+  (`9980ade895f69b88bc25fcac08256736bd931902.md`,
+  `b918fa8eea57a12b3e63a9b96009f1174d5e51c5.md`,
+  `d004ad064027f957437afe2905b5eda46a1a67ee.md`,
+  `20b63020109cc6b87f5e52af738f2f9ce6424da1.md`,
+  `4f683bfd637b29436fc53ccd9de84472131c23b6.md`), none written or touched by
+  this round. `npm run lint` clean against the rewritten
+  `scripts/check-frame.mjs`. `node scripts/round.mjs check` run after every
+  commit landed, last run against a freshly restarted server:
+
+  ```
+  === Static checks ===
+    ok    npm run lint
+    ok    docket valid
+    ok    track scope for loop/meta/frame
+
+  === Build and serve ===
+    ok    npm run build
+
+  === Route checks ===
+    ok    all route checks passed
+
+  === Ready to ship ===
+    node scripts/round.mjs ship
+  ```
+
+  Not run by this round: `round.mjs ship` itself. This round committed
+  only, per the brief — the review approved the tree at change 12 and PR
+  #136 was opened and pushed outside this round's own actions, which is
+  where change 13's CI finding came from. `git status --short` empty after
+  every commit including the final one. No guardrail was loosened without
+  disclosure: this round widens `scripts/check-track-scope.mjs`'s own map
+  (change 4), stated plainly rather than smoothed over, and touches nothing
+  under `.github/` — including for change 13's fix, which reads
+  `.github/workflows/pr-checks.yml` to confirm no `gh` token is configured
+  there and modifies nothing in it.
+- Result: 18 facts in `FRAME.md` (16 verified, 2 attested); locally, all 16
+  checkable ones pass against live state re-queried this round, and in the
+  constructed CI-shaped clone the same 16 pass, facts 1 and 2 included.
+  `check-frame.mjs` proved able to fail on a real mechanism change, an
+  injected wrong value, a malformed heading, a tautological reconciliation,
+  a heading no shape-based scan could see, a deleted-and-renumbered fact a
+  pure count comparison could not distinguish from a complete set, and —
+  CI finding — two claims reported false that were never actually false,
+  each reverted or fixed and re-verified clean; six blocking findings fixed
+  across four review passes and one CI failure, including `CLAUDE.md`
+  briefly reintroducing a claim ("human-owned") this project had just spent
+  two rounds removing, `check-frame.mjs` overstating its own completeness
+  guarantee three times running before an explicit sequence check closed
+  the class the first three fixes could only narrow, and two checks that
+  assumed a developer's full local clone and reported false divergences
+  against a fresh CI checkout instead of the `UNVERIFIED` a check with no
+  way to evaluate a claim owes it; 12 of 16 verified facts are now confirmed
+  enforced by `build-and-audit` on every pull request (1, 2, 3, 4, 5, 6, 7,
+  10, 11, 13, 14, 15), and the remaining 4 (8, 9, 12 in part, 18) are
+  disclosed by name in `FRAME.md`'s own preamble as
+  structurally unverifiable there — no `gh` authentication configured for
+  `build-and-audit`, no local OpenCode server on a GitHub-hosted runner —
+  rather than papered over by downgrading working checks to match; no
+  `.github/` file touched to reach any of this, confirmed by reading
+  `pr-checks.yml` rather than assuming, and the gap named as a decision for
+  the maintainer rather than routed around; five review passes plus a
+  locally-green `round.mjs check` at every commit did not catch the CI
+  defect, because every one of them ran from the same long-lived local
+  clone that hides it — only `build-and-audit`, on a fresh checkout, ever
+  exercised the ref shape the checks actually depend on; the
+  approval-classifier observation stands at two independent, confounded
+  occurrences, recorded as unconfirmed rather than promoted into a finding,
+  deliberately not tested further; track scope widened by exactly the two
+  paths this round used; the temporary
+  `~/.claude/rules/addictedtoai-frame.md` this file supersedes is outside
+  this repository and cannot be removed by this round — noted for the
+  orchestrator to remove once `FRAME.md` merges.
+
+### 2026-08-22
 This build round was briefed as three small, measurable things — one
 paragraph of text, two CSS defects, one check — sequenced after round 169's
 charter rewrite (`986f6c4`) specifically so item 1 would describe the
