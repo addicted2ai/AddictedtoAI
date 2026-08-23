@@ -97,6 +97,38 @@ export default function ModelRetirementCalendar() {
         <a href="/feed.xml">via RSS</a>
       </p>
 
+      {/* docket/open/2026-08-22-first-screenful-density.md: this page put
+          672px of prose between its <h1> and its first table row, so 0 of
+          its 87 rows were visible before scrolling on a 1280x800 viewport --
+          the item's own worst case among the seven pages it measured. The
+          three paragraphs and the checker callout that used to sit here,
+          unchanged in wording, now sit in "About this page" below both
+          tables -- a reader arriving at a table of dates gets the table
+          first; a reader arriving to understand what the table means can
+          still read every word of that context, just after it rather than
+          before it. Nothing here was shortened or removed; see this round's
+          CHANGELOG.md entry for the measured before/after and the
+          reasoning. */}
+      <p className="log-lead">
+        Dated shutdowns for AI models and APIs, read off OpenAI&rsquo;s and
+        Anthropic&rsquo;s own deprecation pages &mdash; earliest first, past
+        shutdowns kept visible below. What each column means and how this
+        page stays checkable is explained in{" "}
+        <a href="#about-this-page">About this page</a>, after the tables.
+      </p>
+
+      <h2>Upcoming shutdowns</h2>
+      <p>Earliest first. Rows read off the vendors&rsquo; pages on {VERIFIED}.</p>
+      {shutdownTable("upcoming", "Upcoming shutdowns table", upcoming)}
+
+      <h2>Past shutdowns</h2>
+      <p>
+        Kept visible, newest first, so the page can be checked against what it
+        said.
+      </p>
+      {shutdownTable("past", "Past shutdowns table", past)}
+
+      <h2 id="about-this-page">About this page</h2>
       <p>
         When you build on a model, the vendor decides when it stops working.
         This page lists the dated shutdowns on the two vendors&rsquo; own
@@ -134,17 +166,6 @@ export default function ModelRetirementCalendar() {
         and get back which of your identifiers are in this table, retired
         or retiring, and what the vendor names as the replacement.
       </p>
-
-      <h2>Upcoming shutdowns</h2>
-      <p>Earliest first. Rows read off the vendors&rsquo; pages on {VERIFIED}.</p>
-      {shutdownTable("upcoming", "Upcoming shutdowns table", upcoming)}
-
-      <h2>Past shutdowns</h2>
-      <p>
-        Kept visible, newest first, so the page can be checked against what it
-        said.
-      </p>
-      {shutdownTable("past", "Past shutdowns table", past)}
 
       <h2>Anthropic publishes floors, not dates</h2>
       <p>
