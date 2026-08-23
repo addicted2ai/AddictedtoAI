@@ -86,7 +86,7 @@ against the brief's own claims rather than copied from it — every command
 below was re-run this round, not trusted from the brief's prose — and found
 accurate; no error in the brief surfaced under that scrutiny.
 
-**1. Added `FRAME.md`, sixteen facts about the arrangement**
+**1. Added `FRAME.md`, sixteen facts about the arrangement — later eighteen; see change 5**
 - Hypothesis: a short, checkable file at the repository root — loaded by
   every session automatically, the way `CLAUDE.md` reaches the approval
   classifier too — would have stopped at least the second of the three
@@ -94,21 +94,27 @@ accurate; no error in the brief surfaced under that scrutiny.
   own memory and got overridden by a stale summary anyway. A file has no
   memory to go stale against; it has only whatever this round could verify
   and defend today.
-- Change: `FRAME.md`, 16 facts, each carrying a flat claim and a `verified` or
-  `attested` marker. 14 are `verified`, each with a command re-run this
-  round against real git history, the live GitHub API (`gh auth status`,
-  `gh api repos/addicted2ai/AddictedtoAI/branches/main/protection`,
+- Change: `FRAME.md` shipped in this change with 16 facts, each carrying a
+  flat claim and a `verified` or `attested` marker: 14 `verified`, each with
+  a command re-run this round against real git history, the live GitHub API
+  (`gh auth status`, `gh api repos/addicted2ai/AddictedtoAI/branches/main/protection`,
   `.../required_status_checks`), or this repository's own tracked files —
-  never copied from the brief's prose. 2 are `attested` (OpenCode's
-  websearch, the supervisor's death on 2026-08-18): claims about a process
-  or a tool's configuration outside this checkout, which no command run from
-  inside it can prove, stated as such rather than smoothed into the same
-  green as the rest. Every `verified` check was written to fail on the
-  specific wrong version of its claim, not merely to exist — see change 2.
-  Kept to 16 rather than padded toward the brief's stated 20–30 range:
-  the brief's own mid-round correction said a fact without a working check
-  or a maintainer's attestation behind it does not belong, and that bound
-  more than a target count.
+  never copied from the brief's prose; 2 `attested` (OpenCode's websearch,
+  the supervisor's death on 2026-08-18), claims about a process or a tool's
+  configuration outside this checkout, which no command run from inside it
+  can prove, stated as such rather than smoothed into the same green as the
+  rest. Every `verified` check was written to fail on the specific wrong
+  version of its claim, not merely to exist — see change 2. Kept to 16
+  rather than padded toward the brief's stated 20–30 range: the brief's own
+  mid-round correction said a fact without a working check or a
+  maintainer's attestation behind it does not belong, and that bound more
+  than a target count. **Superseded by adversarial review before this entry
+  shipped, corrected here rather than left standing:** review (change 5)
+  added two facts and split a third, so `FRAME.md` now carries 18 facts, 16
+  `verified`, 2 `attested` — `node scripts/check-frame.mjs` at the foot of
+  this entry reports the current count, which is the one that matters; the
+  16-fact figure above describes only what this specific change shipped,
+  before review.
 
 **2. Added `scripts/check-frame.mjs`, wired into `check-routes.sh`, and proved able to fail**
 - Hypothesis: FRAME.md's checks are only as good as something that actually
@@ -194,15 +200,155 @@ accurate; no error in the brief surfaced under that scrutiny.
   `human-owned-paths`; the two mechanisms are separate on purpose (see that
   file's own header).
 
+**5. Review finding: `CLAUDE.md` reintroduced a claim two rounds had just removed — fixed, and the harder question acted on**
+- Hypothesis: none stated in advance — adversarial review (round 171,
+  verdict `request-changes`, `docket/reviews/9980ade895f69b88bc25fcac08256736bd931902.md`,
+  not edited by this round per the reviewer's own instruction) found this;
+  it is not a change this round planned.
+- Change: **`CLAUDE.md` was wrong twice in one sentence, and the second
+  wrongness is the one that matters.** It read "`CHARTER.md` is the binding
+  ruleset — 21 rules, human-owned." The rule count is 22, not 21 —
+  `sed -n '/^## I\. Truth/,/^## Amendment/p' CHARTER.md | grep -c
+  '^[0-9][0-9]*\. '` says so, and `CHANGELOG.md` (line ~1219) already
+  recorded "rule count 22" from an earlier round; the one claim in the
+  sentence with an existing, one-command, build-canonical answer was copied
+  from this repository's own already-stale `README.md`/`AGENTS.md` instead
+  of checked against it. But "human-owned" is the more serious half, and the
+  reviewer named it as such: **that is the precise claim round 169 withdrew
+  from `CHARTER.md`'s rule 13 and round 170 removed from `/charter`'s lead
+  paragraph, hours before this round wrote it back into the one file whose
+  stated job is to steer every future session and the approval classifier
+  reading it.** This is not "corrected a stale reference" — it is this
+  round, built specifically to stop unchecked claims about the arrangement
+  from propagating, reintroducing the exact shape of claim two prior rounds
+  had spent the night removing, into the highest-leverage file for doing so.
+  Recorded plainly rather than folded into a routine fix. The harder
+  question the review asked — why did no check protect that sentence, when
+  every fact in `FRAME.md` carries one and `CLAUDE.md` is the higher-leverage
+  file? — is answered by acting on it rather than agreeing with it:
+  `CLAUDE.md` no longer states the rule count as prose at all; it points at
+  a new `FRAME.md` fact 14, which checks the count two independent ways (the
+  same regex above, and a dynamic import of the real production parser,
+  `app/lib/charter.js`, counting the rule blocks it actually produces from
+  the live file — both non-zero, both required to agree, mirroring the
+  `/charter` rule-count check's own "0 = 0 must fail" design rather than
+  inventing a new one). The "human-owned" half now reads: "the delegation
+  (rule 13) covers ordinary edits to it; rule 13a reserves specific
+  properties — not the whole file — to the maintainer alone (`FRAME.md` fact
+  7)," matching what `CHARTER.md` currently says. `README.md`, `AGENTS.md`
+  and a comment in `app/charter/page.js` still say "21 rules" — pre-existing
+  staleness the reviewer found and this round's diff does not touch; noted,
+  not fixed, since they are outside `meta`'s scope as it stands and outside
+  what this review asked for.
+
+**6. Review finding: `check-frame.mjs` silently dropped a fact whose heading punctuation was off — fixed**
+- Hypothesis: none stated in advance — the review built a fixture to test
+  exactly this failure mode and reproduced it.
+- Change: **`check-frame.mjs` silently dropped a fact whose heading
+  punctuation was off, with no error and an undercounted summary.** The
+  reviewer built a four-fact fixture (in their own scratchpad, outside this
+  repository and not committed — `test-frame-parsing.md`: one normal fact,
+  one heading using `## 17:` instead of `## 17.`, two other malformed-body
+  cases already handled correctly) and reran it against this script's own
+  splitting regex, `text.split(/\n(?=## \d+\. )/)`: the colon heading opened
+  no chunk boundary, so the entire fact was absorbed as trailing text into
+  the *previous* fact's chunk — not reported malformed, not counted — and
+  the summary read "3 fact(s)" against a four-fact document with nothing to
+  say anything was missing. Reproduced exactly against the reviewer's own
+  fixture, reused rather than rebuilt. Fixed by splitting on a broad
+  candidate pattern first (`^## <digits>...`, whatever follows) so a
+  malformed heading gets its own isolated chunk instead of merging into a
+  neighbour's, then classifying each chunk as well-formed or malformed and
+  printing both counts plus a `reconciled:` line asserting candidates =
+  well-formed + malformed-heading + malformed-body. Re-run against the
+  reviewer's fixture (now via a new optional path argument, added so this
+  parser can be tested without touching the real `FRAME.md`, the same
+  reason the reviewer had to keep a scratchpad copy of the whole script
+  before):
+
+      test-frame-parsing.md check -- 4 candidate heading(s): 1 well-formed,
+      1 malformed heading(s), 2 malformed body
+
+      FAIL   17. 17: A fact whose heading uses a colon instead of a period --
+                 malformed heading, does not match "## N. Title":
+                 "## 17: A fact whose heading uses a colon instead of a period"
+      FAIL   18. A fact with an empty fenced check block -- malformed
+      FAIL   19. A fact using a non-recognised language tag on its fence -- malformed
+      verified 1. A normal fact with a real check
+
+      reconciled: 4 candidate heading(s) = 1 well-formed fact(s) +
+      1 malformed heading(s) + 2 malformed body
+      3 fact(s) failed or malformed, 0 unverified, 0 attested
+
+  The first version of this fix had its own bug, caught by running it
+  against the real `FRAME.md` before ever touching the fixture: the
+  well-formed count printed 18 against 16 candidate headings — impossible,
+  and traced to double-counting attested facts in the summary arithmetic
+  rather than to the parser itself. Fixed and re-verified against both the
+  real `FRAME.md` (18 candidates = 18 well-formed + 0 + 0, 16 checkable pass,
+  2 attested) and the reviewer's fixture (above) before either was trusted.
+
+**7. Review finding: fact 2 verified a proxy, not the claim — narrowed**
+- Hypothesis: none stated in advance — the review named the gap between what
+  the check tests and what the claim asserted.
+- Change: fact 2's check verified a gate existing, a phrase existing, and a
+  commit count, none of which can show *who* typed any commit on the shared
+  `addicted2ai` account, while its claim asserted "every commit... was the
+  loop halting itself, never the maintainer." Fixed by narrowing the claim
+  to what the check tests (the mechanism, and that the file's history has
+  not been deleted), naming explicitly that the who-typed-it
+  characterization is CHARTER.md's own one-time reading of the commit
+  messages, not a re-derivable property, and is not part of what "verified"
+  claims for this fact.
+
+**8. Review finding: fact 14 folded a checkable claim into `attested` — split**
+- Hypothesis: none stated in advance — the review found a checkable half
+  that had not been checked.
+- Change: fact 14 folded a checkable claim (Claude Code's `meta` track has
+  no `WebSearch`/`WebFetch`) into `attested` alongside a genuinely
+  unprovable one (OpenCode's own websearch support) — the exact pairing
+  fact 12's own text warns against, applied to itself. The checkable half
+  was real and findable: `.github/workflows/loop.yml` hard-codes
+  `tools="Read,Write,Edit,Glob,Grep,Bash"` for `track == meta`, no web
+  tools, confirmed by reading (not modifying) that file. Split into new
+  fact 15 (`verified`, greps the literal string above) and a narrowed fact
+  16 (`attested`, OpenCode's own tooling only).
+
+**9. What the review attacked and could not break**
+- Hypothesis: none stated in advance — recorded for completeness, since a
+  review that only lists what it found wrong is easier to over-trust than
+  one that also says what it tried and failed to break.
+- Change: `UNVERIFIED` handling under a genuinely unreachable `gh`/OpenCode
+  server, the scope widening's exact two-path diff, `.github/` untouched, no
+  past changelog entry edited, `Origin`/`Track` present, fact 13's
+  arithmetic, and 6 of the other facts' grep targets spot-checked against
+  the real files all held under direct testing. The review also assessed
+  (without reproducing, per its own brief) change 2's approval-classifier
+  report and left it explicitly unconfirmed, n=1 — that stays exactly as
+  disclosed, not promoted into `FRAME.md` on the strength of a review that
+  chose not to test it.
+
 - Origin: delegated
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent)
-- Guardrails: `node scripts/check-frame.mjs` — 14 verified facts pass, 2
-  attested facts listed and not executed, against the tree at each commit.
-  `node scripts/check-track-scope.mjs origin/main loop/meta/frame` — `ok
-  all 5 changed file(s) within meta's scope`. `node scripts/round.mjs check`
-  run after every commit landed, last run against a freshly restarted
-  server:
+- Guardrails: `node scripts/check-frame.mjs` — 16 verified facts pass, 2
+  attested facts listed and not executed, against the tree at the final
+  commit. `node scripts/check-frame.mjs <path-to-reviewer's-fixture>`, using
+  the new optional path argument against the reviewer's own scratchpad
+  fixture (unmodified, outside this repository) — reproduces the exact red
+  output pasted in change 5. `node
+  scripts/check-track-scope.mjs origin/main loop/meta/frame` — `ok all 7
+  changed file(s) within meta's scope` at the final commit, including
+  `docket/reviews/9980ade895f69b88bc25fcac08256736bd931902.md`, which this
+  round did not write and does not touch (re-run after each of this round's
+  own commits; the
+  reviewer independently confirmed the figure was accurate when measured at
+  each point it was quoted, including the apparent "5 vs 6" discrepancy
+  between change 4 and the changelog-recording commit, which is not a
+  discrepancy — `CHANGELOG.md` became the 6th file only in the commit that
+  records it). `npm run lint` clean against the rewritten
+  `scripts/check-frame.mjs`. `node scripts/round.mjs check` run after every
+  commit landed, last run against a freshly restarted server:
 
   ```
   === Static checks ===
@@ -224,14 +370,20 @@ accurate; no error in the brief surfaced under that scrutiny.
   round commits only, per the brief. `git status --short` empty after the
   final commit. No guardrail was loosened without disclosure: this round
   widens `scripts/check-track-scope.mjs`'s own map (change 4), stated
-  plainly rather than smoothed over, and touches nothing under `.github/`.
-- Result: 16 facts written (14 verified, 2 attested), all 14 checkable ones
-  passing against live state re-queried this round; `check-frame.mjs` proved
-  able to fail and to recover cleanly, twice; track scope widened by exactly
-  the two paths this round used, both named in the comment that grants them;
-  the temporary `~/.claude/rules/addictedtoai-frame.md` this file
-  supersedes is outside this repository and cannot be removed by this
-  round — noted for the orchestrator to remove once `FRAME.md` merges.
+  plainly rather than smoothed over, and touches nothing under `.github/` —
+  including for Finding 4's fix, which reads `.github/workflows/loop.yml`
+  and modifies nothing in it.
+- Result: 18 facts in `FRAME.md` (16 verified, 2 attested), all 16 checkable
+  ones passing against live state re-queried this round; `check-frame.mjs`
+  proved able to fail on a real mechanism change, on an injected wrong
+  value, and — after the review — on a malformed heading, each reverted and
+  re-verified clean; two blocking review findings fixed, including
+  `CLAUDE.md` briefly reintroducing a claim ("human-owned") this project had
+  just spent two rounds removing, corrected rather than smoothed over; track
+  scope widened by exactly the two paths this round used; the temporary
+  `~/.claude/rules/addictedtoai-frame.md` this file supersedes is outside
+  this repository and cannot be removed by this round — noted for the
+  orchestrator to remove once `FRAME.md` merges.
 
 ### 2026-08-22
 This build round was briefed as three small, measurable things — one
