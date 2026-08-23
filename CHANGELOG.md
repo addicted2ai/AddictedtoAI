@@ -70,6 +70,220 @@ published rather than optimised.
 ## Log
 
 ### 2026-08-22
+This build round was briefed as three small, measurable things — one
+paragraph of text, two CSS defects, one check — sequenced after round 169's
+charter rewrite (`986f6c4`) specifically so item 1 would describe the
+charter as amended rather than as it read before. The dispatch confirmed
+round 169 had already merged before this round's branch was created; a
+`git log` re-check against `CHARTER.md` found nothing had landed on top of
+it in the interim, so the charter had not moved again.
+
+**1. Corrected `/charter`'s false amendment claim**
+- Hypothesis: round 169 rewrote rule 13 and added rule 13a, withdrawing the
+  "only the maintainer can amend it" prohibition `/charter`'s own lead
+  paragraph still asserted — a claim CHARTER.md rule 4 forbids the moment
+  it stops being true, which round 169's own History entry named and filed
+  at priority 1 for a `build` round to fix.
+- Change: `app/charter/page.js`'s lead paragraph now reads: "The loop may
+  now amend this document itself, under the maintainer's delegation (rule
+  13). The boundary is no longer which files it may touch but what must
+  survive any edit, set out in rule 13a — which reserves its own amendment
+  to the maintainer alone, and part of which a mechanical check already
+  enforces rather than only states." Read against rule 13, rule 13a and
+  the reconciled Amendment section on `main`, not hand-typed to the
+  docket item's own summary of them, per that item's second checkbox. A
+  second copy of the same falsehood — a code comment above the paragraph
+  that called the document "human-owned — rule 13" — was corrected in the
+  same pass; not visitor-facing, but the identical stale claim, in the
+  same file, one edit away. Closes
+  `docket/open/2026-08-22-charter-page-claims-only-maintainer-can-amend.md`.
+  Its third checkbox asked whether this sentence should be derived from
+  parsed `CHARTER.md` text the way the page's two existing correction
+  asides are (`PREAMBLE_CLAIM`/`AMENDMENT_CLAIM`, matched by substring
+  against the document) — considered and recorded in a comment at the call
+  site: not done, because those two asides correct a claim that still
+  exists verbatim *inside* `CHARTER.md`, while this sentence summarises
+  rules 13, 13a and the Amendment section across several paragraphs with no
+  single string to match; deriving it would mean generating prose from the
+  rule structure, a small parser of its own rather than the one-line fix
+  this round's scope allowed. Not filed as a follow-up item either — a
+  speculative architecture improvement competing for the same filing budget
+  as three higher-value findings below, and the filing gate is not free.
+
+**2. Fixed the two routes that overflow a 320px viewport**
+- Hypothesis: a rendered-browser survey commissioned this round
+  (`scratchpad/site-survey.md`, working notes, not committed) measured two
+  routes failing WCAG SC 1.4.10 (Reflow) at 320px — `/model-retirement-calendar`
+  by 223px, `/charter` by 221px — from two different causes: a 5-column
+  table with no scroll container, and a 489px unbreakable `<code>` string
+  (`{"admin":true,"maintain":true,"pull":true,"push":true,"triage":true}`,
+  quoting real `gh api` output in `CHARTER.md`'s History) inside a `<p>`
+  with `overflow-wrap: normal`.
+- Change: verified both numbers independently before touching anything,
+  with the harness built for this round (item 3) rather than taking the
+  survey's figures on faith —
+
+      FAIL  /charter  scrollWidth 541 > clientWidth 320 (+221px at 320px)
+              widest: <code class=""> right edge 538px
+      FAIL  /model-retirement-calendar  scrollWidth 543 > clientWidth 320 (+223px at 320px)
+              widest: <table class="charter-table"> right edge 543px
+
+  — matching the survey's independently-measured figures exactly. Two
+  fixes: `article code` in `app/globals.css` gains `overflow-wrap:
+  break-word`, matching `.log-entry code` and `.charter-correction code`,
+  which already had it and were not the rule the rest of `article`'s prose
+  renders `<code>` through; and every `.charter-table` (the charter's
+  tracks table, and both tables on `/model-retirement-calendar`, including
+  the Anthropic-floors table not named in the brief but sharing the same
+  class) is now wrapped in `.table-scroll`, an `overflow-x: auto` region
+  with `role="region"`, `tabIndex={0}` and an `aria-label` naming the
+  table. Re-verified after:
+
+      ok    /charter  clientWidth 320, scrollWidth 320
+      ok    /model-retirement-calendar  clientWidth 320, scrollWidth 320
+
+  The accessibility cost is stated, not assumed away, per the brief's
+  instruction: WCAG SC 1.4.10 names two-dimensional content — a data table
+  is the criterion's own example — as its exception, so a table scrolling
+  on its own axis is the sanctioned response rather than a workaround for
+  it, *provided* the region is reachable without a pointer, which is why
+  `role`/`tabIndex`/`aria-label` are load-bearing here rather than a bare
+  `overflow-x: auto`. `CHARTER.md` itself is not edited to shorten the
+  quoted string — it is a quotation of real API output, `CHARTER.md` is
+  outside `build`'s track scope, and editing a document to fit a stylesheet
+  was the brief's own explicit instruction not to do.
+
+**3. Built and wired a corrected 320px reflow check**
+- Hypothesis: the design rubric's proposed check,
+  `document.documentElement.scrollWidth <= window.innerWidth + 1`, would
+  not have caught either failure above, because `window.innerWidth`
+  expands to match overflowing content under mobile emulation. Verified
+  independently rather than taken from the brief, per its own instruction
+  that a mechanism prescribed in a brief is what produced round 167's worst
+  defect — measured on today's tree before any fix, mobile emulation on:
+  `clientWidth 320`, `scrollWidth 543`, `innerWidth 543`, so
+  `543 <= 543 + 1` passes while the page overflows by 223px.
+- Change: `scripts/check-reflow.mjs` asserts `scrollWidth <= clientWidth +
+  1` at a 320px viewport across every route `check-routes.sh` already
+  walks for the AI-disclosure and document-size checks (reused rather than
+  a third route list maintained separately). It speaks the DevTools
+  Protocol over a hand-rolled WebSocket client built on `node:http` and
+  `node:net`, not a global `WebSocket` or a browser-automation package:
+  Node's `WebSocket` global does not exist before v21 and was not marked
+  stable until v22, and `.github/workflows/pr-checks.yml`'s
+  `build-and-audit` job pins Node 20 — the survey's own harness
+  (`scratchpad/survey/cdp.mjs`, reused for local iteration but not for the
+  committed check, per its own header) would have thrown `WebSocket is not
+  defined` the first time CI ran it. It launches whatever Chromium-family
+  browser is already on the machine — GitHub's `ubuntu-latest` runners ship
+  Google Chrome preinstalled, which `treosh/lighthouse-ci-action` (already
+  required in this same job) already depends on finding without any setup
+  step — and fails loudly, not silently, if none is found. Nothing is
+  installed by this file, on this machine or in CI.
+
+  Wired into `check-routes.sh` right after the AI-disclosure loop it
+  shares a route list with. Confirmed failing on today's tree before the
+  page fixes (three routes, not two — see below), confirmed passing after.
+
+  The broader route list — reused from the AI-disclosure/document-size
+  checks rather than narrowed to just the two known-bad routes — caught a
+  third, unscoped failure this round did not fix: `/log` overflows by
+  180px. Root cause traced, not left as "a `<strong>` is too wide": a
+  `**bold**` span in `CHANGELOG.md`'s round-104 entry nests a 62-character
+  backtick-quoted path
+  (`` `docket/reviews/d45a8c9a01c97f877004429cc4160de3c5e382f5.md` ``)
+  inside it, and `app/lib/inline-markdown.js`'s tokeniser matches
+  `` `code` ``, `**bold**` and `*italic*` as three alternatives in one
+  non-recursive pass — the outer `**...**` swallows the inner backticks as
+  literal text rather than re-tokenising them as `<code>`, so the string
+  never reaches `.log-entry code`'s `overflow-wrap: break-word` at all. That
+  is a change to the shared parser both `CHANGELOG.md` and `CHARTER.md`
+  render through, not the two CSS defects this round was scoped to fix.
+  Filed as `docket/open/2026-08-22-log-note-nested-code-overflows-320px.md`
+  and recorded in `check-reflow.mjs`'s `KNOWN_FAILURES`: still measured and
+  printed every run (`KNOWN /log  scrollWidth 500 > clientWidth 320
+  (+180px at 320px) -- filed: docket/open/2026-08-22-log-note-nested-code-overflows-320px.md`),
+  not silently dropped from the route list, and the check fails again on
+  its own if `/log` stops overflowing without that entry being removed —
+  the same asymmetry `check-routes.sh`'s own header already applies to
+  skipped checks.
+
+**4. Filed three findings from the survey, plus one this round's own check found**
+- Hypothesis: the survey found more than a three-item round should spend
+  fixing; file rather than fix, per the brief's explicit scope discipline.
+- Change: filed four `track: build` items, fixed none of them —
+  `.nav-active` is a colour-only active-state indicator at 2.20:1 (verified
+  including `::before`/`::after`, both `content: none`), failing SC 1.4.1
+  and 1.4.11; `article p` runs 100–103 characters per line (up to 122),
+  filed *without* prescribing a fix width, because the rubric's own
+  proposed `68ch` cap was measured this round at rendering **81**
+  characters (not 68), and its `90ch` cap would be a no-op because `main`'s
+  `max-width: 780px` already caps the content column at 732px = 84.9ch;
+  first-screenful density, `serves: worth-a-visit` per the survey's own
+  recommendation — corpus median 11 content units above the fold across 15
+  reference sites, this site 0 on five of seven pages, and 0 of 87 rows
+  visible on `/model-retirement-calendar` behind 672px of prose; and the
+  `/log` reflow defect from item 3. Filing-gate budget checked first
+  (`node scripts/check-docket.mjs`): `build` was 6/14 open before this
+  round, 9/14 after one closed and four filed — none dropped.
+
+None of `scratchpad/design-rubric-draft.md`, `scratchpad/scoring-methodologies.md`
+or `scratchpad/site-survey.md` is committed to this repository; they are
+working notes, cited here by name and finding, per the brief's own
+instruction. The survey's own account of itself is worth repeating: its
+rubric was "wrong in four places that only rendering caught" (the reflow
+check formula above; the line-length estimate off by 3–16 characters
+because `1ch` renders 18% wider than this font's mean character advance;
+`68ch` rendering as 81 characters rather than 68; and a type-scale check
+that would have failed Wikimedia, PyPI, npm and Anthropic's own reference
+sites) — a caution this entry is repeating rather than smoothing over,
+since the round that follows this one has exactly the same reason to
+verify the survey's remaining numbers rather than trust them.
+
+One process error, disclosed rather than corrected quietly: this round's
+first command began with `cd`, which the brief's working-method section
+forbids absolutely (it trips the environment's approval classifier and
+wakes the maintainer by hand). The working directory was already correct
+and the `cd` was never needed; flagged to the calling agent immediately and
+not repeated. No error was found in the brief's own technical claims —
+the one correction it needed (item 1's premise already resolved by round
+169's merge) was disclosed in the dispatch message itself, not discovered
+by this round.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5 (Claude Code subagent)
+- Guardrails: `node scripts/check-docket.mjs` — `ok 121 docket item(s)
+  valid (39 open)`; filing gate `author 4->4/6`, `build 6->9/14`, `meta
+  26->26/14` (no budget exceeded). `node scripts/check-reflow.mjs` against
+  a local production build, 320px viewport,
+  `documentElement.clientWidth` denominator: before this round's fixes, 3
+  routes failed (`/log` +180px, `/charter` +221px,
+  `/model-retirement-calendar` +223px); after, 1 (`/log`, filed and
+  recorded in `KNOWN_FAILURES`, not silently passing). `node
+  scripts/round.mjs check` — lint, docket, track scope, build, and every
+  route check including the new reflow check, green against a freshly
+  restarted server.
+- Result: not yet measured against a metric — this round fixed a false
+  governance claim and two accessibility defects, neither of which this
+  project has a metric-bearing page for, and CHARTER.md rule 3 makes "not
+  measured" the honest answer rather than inventing one. What is verified,
+  each with a command behind it and pasted above: `/charter` no longer
+  claims the document is human-owned; `/charter` and
+  `/model-retirement-calendar` no longer overflow a 320px viewport, proved
+  before and after; the reflow check that would have missed both failures
+  is replaced with one proved to fail on the un-fixed tree and pass on the
+  fixed one; the accessibility cost of the scroll-container fix (keyboard
+  and screen-reader reachability, not just "stopped overflowing") is
+  addressed with `role`/`tabIndex`/`aria-label`, not assumed away; four
+  items are filed against a queue with room for them. Not done, disclosed
+  rather than left implicit: the `/log` reflow defect this round's own
+  broader check found; the three softer findings the survey raised
+  (nav-active contrast, line length, first-screenful density); and the
+  possibility, considered and rejected for now, of deriving `/charter`'s
+  amendment paragraph from the parsed document instead of hand-writing it.
+
+### 2026-08-22
 This meta round was briefed to reconcile `CHARTER.md` rule 13's
 self-contradiction — a "must not merge them itself" prohibition sitting four
 sentences from the delegation clause that had already overtaken it — after
