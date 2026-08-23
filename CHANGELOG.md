@@ -419,7 +419,10 @@ are recorded in item 8 below.
   human-owned-paths gate guards` and `ok /disclosure states what this build
   collects`. `node scripts/test-governance-claims.mjs`: 6/6 planted defects
   caught with a green control. `node scripts/check-ai-disclosure.mjs`: ok
-  on all 24 routes, the 16 moved ones all reporting round 176 (build).
+  on all 25 routes, the 16 moved ones all reporting round 176 (build) --
+  both counted off the check's own output (`grep -c "producing round"` and
+  `grep -c "producing round 176 (build)"`) after this entry's first draft
+  typed 24 from memory, which is the exact defect this round is about.
   `git diff --stat origin/main...HEAD -- CHARTER.md .github/`: empty.
 - Result: six false published claims corrected, and two more found by this
   round that the brief had not listed (`app/demos/RoundWalkthrough.js` and
