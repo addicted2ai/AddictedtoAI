@@ -416,29 +416,112 @@ accurate; no error in the brief surfaced under that scrutiny.
   case is not the same thing as fixing the property, and this entry did not
   know that until a second review said so.
 
+**11. Third review pass: both scans anchor at column 0 — asked to judge convergence before fixing, not to patch a fourth time**
+- Hypothesis: none stated in advance — the review verified change 10's fix
+  independently, then found the shared blind spot both of change 10's scans
+  never disagreed on, and required an answer to a question before a fix:
+  is recognising every malformed heading shape a bounded problem, or the
+  same shape as round 167's unbounded free-text matching?
+- Change: **the finding.** Both the candidate matcher and the "independent"
+  completeness scan require a heading to start at column 0. A heading
+  indented by one to three spaces or a tab is a valid CommonMark ATX
+  heading, not a typo, and it evades both scans identically — they share
+  the blind spot rather than disagreeing, so `missedLines` stays empty and
+  the tool reports clean. Reproduced independently before touching
+  anything: built a two-fact fixture (one heading at column 0, one indented
+  a single space) and ran the pre-fix script — `accounted for: 1 candidate
+  heading(s) = 0 well-formed + 0 malformed heading(s) + 1 malformed body`,
+  `completeness: independent scan found 1 heading-like line(s) total, 0
+  missed by the candidate matcher`. One fact gone, "0 missed".
+
+  **The judgement, answered before any fix.** A Markdown ATX heading is not
+  free text — it is a syntactic construct with a finite, written grammar
+  (CommonMark: 0-3 leading spaces, 1-6 `#`, a required space, optional
+  trailing `#`s). But *discovering that grammar incrementally through three
+  rounds of adversarial review*, one counterexample at a time, is unbounded
+  in practice regardless of whether the underlying grammar is finite —
+  colon, then spacing and heading level, then indentation, each fix closing
+  exactly the reproduced case and nothing upstream of it, with no reason to
+  expect the sequence stops here. And even a fully spec-compliant ATX
+  heading recogniser, correctly implemented by hand with nothing installed,
+  would not close the actual gap: a fact expressed with no heading markup at
+  all — a bare paragraph, a plain list item — is exactly round 167's shape
+  again, and no amount of heading-syntax sophistication touches it. So:
+  **detection by parsing shape is the wrong guarantee**, for both reasons —
+  the incremental-rediscovery version does not converge in practice, and the
+  theoretically-bounded version does not cover the failure that actually
+  matters.
+- Change (continued): fixed by changing the property, not the pattern. A
+  hidden fact needs to be detectable without recognising *why* it is
+  hidden. `FRAME.md` now opens with a declared total ("This file declares
+  18 facts below."), and `scripts/check-frame.mjs` reconciles that number
+  against whatever any scan manages to recognise — a mismatch fails,
+  whatever the cause, known or not yet discovered. The existing shape scans
+  (candidate matcher, independent scan) are kept exactly as they were, not
+  patched a fourth time for indentation specifically: they still give a
+  precise, useful diagnosis when they do catch something malformed, but
+  completeness no longer rests on them. This is the same shape this project
+  already uses elsewhere — `LEGACY_ROUNDS_WITHOUT_ORIGIN = 47` in
+  `scripts/check-routes.sh`, and the `/charter` rule-count check comparing
+  the file's own count against the rendered page's — declare a ground
+  truth, compare a derived value against it, fail on any disagreement,
+  rather than trying to enumerate every way the derivation could go wrong.
+  The bound this actually has, stated rather than assumed: it holds exactly
+  as long as whoever edits `FRAME.md` bumps the declared number in the same
+  change that adds or removes a fact — a single, human-auditable edit, not
+  a syntax-recognition problem — and if the declaration itself is missing
+  or unparseable, the check fails outright rather than skipping silently.
+  Verified against the fixture above (now correctly `FAIL
+  completeness: ... declares 2 fact(s), but only 1 heading-like line(s)
+  were found by any scan`), both prior fixtures (still fail for their
+  original reasons, and now also flag "does not declare its fact count",
+  since neither predates this change), and the real `FRAME.md` (18 declared,
+  18 recognised, clean).
+- Change (header comment, the fourth overstated guarantee this round
+  produced): "Every heading-like line is parsed, reported malformed, or
+  flagged" read as *every valid Markdown heading*, broader than two
+  column-0-anchored scans ever delivered. Rewritten to name all three fixes
+  in order, what each closed, and state plainly that shape-based scans are
+  diagnostic only — the actual guarantee is the declared-total comparison,
+  and its bound is stated in the same paragraph rather than implied.
+- Change (the progression, for a reader who was not here): three fixes,
+  three classes. Fix one (colon punctuation) closed exactly its reproduced
+  case. Fix two (spacing, heading level) closed its reproduced case and
+  named — but did not fix — a broader tautology. Fix three (this one) is
+  the first that changed the *approach*: not a wider pattern, but a
+  property that does not depend on pattern-matching at all. Whether that
+  is the last fix this class needs is not claimed — what changed is that
+  the promise in the header comment now matches what the mechanism can
+  actually prove, and the mechanism no longer depends on this round (or a
+  fourth review) having anticipated the next way a heading can be malformed.
+
 - Origin: delegated
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent)
 - Guardrails: `node scripts/check-frame.mjs` — 16 verified facts pass, 2
   attested facts listed and not executed, against the tree at the final
-  commit; `completeness: independent scan found 18 heading-like line(s)
-  total, 0 missed by the candidate matcher`. `node scripts/check-frame.mjs
-  <path>` re-run against three fixtures, not one: the first review's
-  colon-heading fixture (4 candidates, all accounted for, 0 missed —
-  reproduces the red output pasted in change 5, unaffected by change 10's
-  fix); a fixture built in this round's own scratchpad reproducing the
-  second review's exact case (`## 1.`, `##2.`, `##  3.`, `### 4.`) — run
+  commit; `completeness (declared): 18 declared vs 18 recognised by any
+  scan`. Re-run against four fixtures across three review passes, not one:
+  the first review's colon-heading fixture (4 candidates, all accounted
+  for, 0 missed — unaffected by changes 10 and 11); a fixture reproducing
+  the second review's exact case (`## 1.`, `##2.`, `##  3.`, `### 4.`) — run
   against the **pre-fix** script first, confirming the tautology live
-  (`reconciled: 1 candidate heading(s) = 0 well-formed + 0 malformed
-  heading(s) + 1 malformed body` against 4 real facts) — then against the
-  fixed script, reproducing the red output pasted in change 10. `node
-  scripts/check-track-scope.mjs origin/main loop/meta/frame` — `ok all 8
-  changed file(s) within meta's scope` at the final commit, including both
-  `docket/reviews/9980ade895f69b88bc25fcac08256736bd931902.md` and
-  `docket/reviews/b918fa8eea57a12b3e63a9b96009f1174d5e51c5.md`, neither
-  written nor touched by this round. `npm run lint` clean against the
-  rewritten `scripts/check-frame.mjs`. `node scripts/round.mjs check` run
-  after every commit landed, last run against a freshly restarted server:
+  before change 10's fix landed; a fixture reproducing the third review's
+  exact case (one heading at column 0, one indented one space) — run
+  against the **change-10** script first (both scans agree it found "0
+  missed" while one fact was entirely gone), then against change 11's fix,
+  correctly failing `completeness: ... declares 2 fact(s), but only 1
+  heading-like line(s) were found by any scan`. Every fixture in this
+  round's own scratchpad, none committed, none touching `FRAME.md` itself.
+  `node scripts/check-track-scope.mjs origin/main loop/meta/frame` — `ok
+  all 9 changed file(s) within meta's scope` at the final commit, including
+  three review artifacts
+  (`9980ade895f69b88bc25fcac08256736bd931902.md`,
+  `b918fa8eea57a12b3e63a9b96009f1174d5e51c5.md`,
+  `d004ad064027f957437afe2905b5eda46a1a67ee.md`), none written or touched by
+  this round. `npm run lint` clean against the rewritten
+  `scripts/check-frame.mjs`. `node scripts/round.mjs check` run after every
+  commit landed, last run against a freshly restarted server:
 
   ```
   === Static checks ===
@@ -465,18 +548,22 @@ accurate; no error in the brief surfaced under that scrutiny.
   and modifies nothing in it.
 - Result: 18 facts in `FRAME.md` (16 verified, 2 attested), all 16 checkable
   ones passing against live state re-queried this round; `check-frame.mjs`
-  proved able to fail on a real mechanism change, on an injected wrong
-  value, on a malformed heading, and — second review pass — on a heading
-  its own candidate matcher could not see at all, each reverted and
-  re-verified clean; three blocking review findings fixed across two
-  passes, including `CLAUDE.md` briefly reintroducing a claim
-  ("human-owned") this project had just spent two rounds removing and
-  `check-frame.mjs`'s own completeness reconciliation being a tautology
-  that could only ever agree with itself, both corrected rather than
-  smoothed over; the approval-classifier observation stands at two
-  independent, confounded occurrences, recorded as unconfirmed rather than
-  promoted into a finding, deliberately not tested further; track scope
-  widened by exactly the two paths this round used; the temporary
+  proved able to fail on a real mechanism change, an injected wrong value, a
+  malformed heading, a tautological reconciliation, and — third review pass
+  — a heading no shape-based scan in the tool could see at all, each
+  reverted or fixed and re-verified clean; four blocking review findings
+  fixed across three passes, including `CLAUDE.md` briefly reintroducing a
+  claim ("human-owned") this project had just spent two rounds removing and
+  `check-frame.mjs` overstating its own completeness guarantee twice in a
+  row before the property itself — a declared total, checked against
+  whatever any scan recognises, rather than recognition of every malformed
+  heading shape — replaced pattern-matching as the actual guarantee;
+  judgement recorded in change 11 for why that class does not converge by
+  incremental rediscovery, and why the replacement property does not need
+  to; the approval-classifier observation stands at two independent,
+  confounded occurrences, recorded as unconfirmed rather than promoted into
+  a finding, deliberately not tested further; track scope widened by
+  exactly the two paths this round used; the temporary
   `~/.claude/rules/addictedtoai-frame.md` this file supersedes is outside
   this repository and cannot be removed by this round — noted for the
   orchestrator to remove once `FRAME.md` merges.
