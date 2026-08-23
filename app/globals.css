@@ -87,12 +87,36 @@ a { color: inherit; }
   text-decoration: none;
   color: var(--muted);
   font-size: 0.95rem;
+  /* Reserved on every link, transparent when inactive, so the current-page
+     border below does not shift layout by 2px when it appears -- `*` is
+     already `box-sizing: border-box`, so this eats into the existing
+     min-height rather than growing the box. */
+  border-bottom: 2px solid transparent;
 }
 
 .nav a:hover { color: var(--fg); }
 
 .nav a.nav-active {
   color: var(--accent);
+  /* docket/open/2026-08-22-nav-active-colour-only-indicator.md: colour alone
+     (2.20:1) distinguished the current page from the other eight, failing
+     both SC 1.4.1 (Use of Color -- no non-colour cue existed) and SC 1.4.11
+     (Non-text Contrast -- 2.20:1 is under the 3:1 floor for a UI-state
+     indicator). This border is the non-colour cue 1.4.1 asks for -- its
+     presence or absence is perceivable with no colour vision at all, not
+     just at a different hue -- and its own contrast against the page
+     background (--bg) is what this rule satisfies 1.4.11 against: measured
+     13.16:1 on a real render (scripts/check-nav-active-cue.mjs), comfortably
+     over the 3:1 floor. That check does NOT assert 3:1 between this color
+     and --muted (the inactive link colour) -- CHANGELOG.md's entry for this
+     round works the arithmetic: raising --accent vs --muted itself to 3:1
+     is not reachable without either darkening --muted below the 4.5:1 SC
+     1.4.3 text-contrast floor it holds against --bg today (its own margin
+     tops out around 2.93:1 vs accent at the 4.5:1 edge, still short of 3:1),
+     or lightening this colour to near-white, which would abandon the accent
+     hue rather than fix the nav. The border is the fix; the text colours
+     are unchanged from before this round. */
+  border-bottom-color: var(--accent);
 }
 
 main {
@@ -129,6 +153,30 @@ article h3 {
 
 article p {
   margin: 0 0 1rem;
+  /* docket/open/2026-08-22-article-p-line-length.md: this ran 100-103
+     characters per full (wrapped) rendered line at the median, up to 122 at
+     the max, across the five long-form pages the item measured -- `main`'s
+     780px max-width (732px content box, 84.9ch) was the only constraint,
+     and the item deliberately prescribed no fix width because a design
+     rubric got two numbers wrong by computing them from `ch` instead of
+     rendering it: `1ch` is the `0` glyph's width, ~18% wider than this
+     font's mean advance, so `90ch` (>= ~85ch) never bound against the
+     ancestor and `68ch` rendered as 81 characters, not 68.
+     This round re-measured the baseline on a real render (scripts/check-
+     article-line-length.mjs; CHANGELOG.md's entry for this round has the
+     numbers and the command) and independently re-derived the item's own
+     80ch candidate: 690px computed max-width, rendering to a ~87-94
+     character median across the five pages (full lines only -- excluding
+     each paragraph's shorter final line, the convention that reproduces the
+     item's own 100-103 baseline figure) for a page-length cost the same
+     round measured at +0.5% to +4.3% across those five pages -- cheaper
+     than every candidate the item itself measured except the 90ch no-op.
+     80ch was chosen over the site's existing 62ch/68ch family (.hero-lead,
+     .log-lead, .log-field, .log-note, .walkthrough-caption) deliberately:
+     those cap secondary, supporting text (captions, leads, per-entry
+     fields); this is the primary long-form reading column and was given
+     more room on purpose, not capped to match them by default. */
+  max-width: 80ch;
 }
 
 article ul {

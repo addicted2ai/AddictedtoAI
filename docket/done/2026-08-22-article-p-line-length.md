@@ -71,14 +71,48 @@ settled answer either way.
 
 ## Done when
 
-- [ ] A specific `max-width` (or other reflow strategy) for `article p` is
+- [x] A specific `max-width` (or other reflow strategy) for `article p` is
       chosen and justified against a rendered, not estimated, character
       count -- following the method in `scratchpad/site-survey.md` §0 and
       §7.2, or an equivalent live measurement
-- [ ] The chosen value's page-length cost is measured and stated, not
+- [x] The chosen value's page-length cost is measured and stated, not
       assumed away, the same way the survey measured it for four candidate
       widths
-- [ ] Whatever is shipped is checked against a real render, not against
+- [x] Whatever is shipped is checked against a real render, not against
       CSS source, given how far the rubric's own `ch`-based estimate
       diverged from the rendered result here
-- [ ] `node scripts/round.mjs check` green
+- [x] `node scripts/round.mjs check` green
+
+## Round loop/build/nav-cue-and-line-length status
+
+Closed by this round. `article p { max-width: 80ch; }` added to
+`app/globals.css`. Chosen over `scratchpad/site-survey.md`'s own reasoning:
+`90ch` is confirmed still a no-op against `main`'s 780px container; `68ch`
+and `62ch` cost more (+13%, +24% page length on `/blog/chatgpt-ads`) for a
+narrower column than the site's existing secondary-text family
+(`.hero-lead`, `.log-lead`, `.log-field`, `.log-note`,
+`.walkthrough-caption`, all 62-68ch) already occupies -- `article p` is the
+primary reading column and was deliberately given more room than those,
+not capped to match them.
+
+This round independently re-measured the baseline on a real render (not
+carried over from the closed item's own figures) and reproduced it: 96-103
+characters per full (wrapped) line at the median across the five pages this
+item names, matching the 100-103 this item states once "full line" is read
+as this item's own method reads it -- excluding each paragraph's shorter
+final line, which pulled a naive per-line average down to the high 70s/80s
+when this round measured it including those lines first (see
+CHANGELOG.md's entry for both numbers and the command). `80ch` was then
+independently re-derived (not assumed from this item's own §7.2 table): it
+rendered to a 690px computed max-width, an 87-94 character median across
+the same five pages, and a measured page-length cost of +0.5% to +4.3%
+across them -- cheaper than every narrower candidate this item's own survey
+measured.
+
+`scripts/check-article-line-length.mjs`, wired into `scripts/check-
+routes.sh`, guards the cap against silent removal or loosening on these
+five routes; its own header states the ceiling's derivation and what it
+does not claim. Proved able to fail: reverting `app/globals.css`'s
+`max-width: 80ch` and rebuilding fails the check on all five routes
+(max 108-124 chars/line, ceiling 107); restoring it and rebuilding passes
+again. Full output in CHANGELOG.md's entry for this round.

@@ -286,6 +286,30 @@ node scripts/check-reflow.mjs "$BASE" || failures=$((failures + $?))
 echo
 node scripts/check-first-screenful.mjs "$BASE" || failures=$((failures + $?))
 
+# SC 1.4.1 (Use of Color) and SC 1.4.11 (Non-text Contrast) on the nav's
+# current-page indicator (docket/open/2026-08-22-nav-active-colour-only-indicator.md,
+# closed by round loop/build/nav-cue-and-line-length): `.nav-active` used to
+# mark the current page by colour alone at a measured 2.20:1 contrast,
+# distinguished from the other eight links by nothing but hue. Real CDP
+# render, not a computed style diff -- see scripts/check-nav-active-cue.mjs's
+# own header for exactly what is and is not asserted, including why it does
+# not require the active/inactive text colours themselves to be 3:1 apart.
+echo
+node scripts/check-nav-active-cue.mjs "$BASE" || failures=$((failures + $?))
+
+# `article p` line length (docket/open/2026-08-22-article-p-line-length.md,
+# closed by round loop/build/nav-cue-and-line-length): ran 100-103 characters
+# per full rendered line at the median, up to 122 at the max, across five
+# long-form pages -- measured character-by-character on a real render, the
+# same method this check repeats, because the item was filed specifically
+# after a design rubric got two numbers wrong by computing them from `ch`
+# units instead. `article p` is now capped at `80ch`; this guards the cap
+# against being silently loosened or removed. See
+# scripts/check-article-line-length.mjs's own header for the ceiling's
+# derivation.
+echo
+node scripts/check-article-line-length.mjs "$BASE" || failures=$((failures + $?))
+
 # KNOWN_FAILURES's own regression test. Adversarial review demonstrated
 # live that the first version keyed an exemption on the route name alone,
 # so an injected, unrelated +580px overflow on /log -- a route already
