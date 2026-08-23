@@ -130,7 +130,9 @@ checker could not see the file — its sweep read `app/` and the log preamble.
   and never to the count typed in its own heading, so `check-frame.mjs` exited 0
   on a heading reading "999 rules". Fixed in FRAME.md's own check block, where
   that command reads its checks from, so the standalone command `CLAUDE.md`
-  points readers at is no longer the one with the hole. 9 planted, 9 caught.
+  points readers at is no longer the one with the hole. 9 planted, 9 caught. It
+  reads `FRAME.md` by name, so a fixture-argument re-verification returns a false
+  green — it fires correctly the documented way, which is the one that matters.
 
 **4. Declined: `README.md`, and two files this track cannot reach**
 - Hypothesis: `README.md` carries the same two claims plus "Human-owned,
@@ -140,13 +142,11 @@ checker could not see the file — its sweep read `app/` and the log preamble.
 - Change: nothing, deliberately. Two stale "21 rules" also sit in comments at
   `app/globals.css:1111` and `app/charter/page.js:104`, which `meta` cannot
   touch, having no `app/` path — also why no blanket rule-count tripwire was
-  added: it would go red on files this track cannot fix. `check-docket.mjs`
-  reports meta at 26 open against a queue budget of 14, so this is recorded here
-  rather than filed — including, for a later round, that `round.mjs:542` and
-  `automerge-origin.mjs:43` both say `review-artifact` is *not* a required check.
+  added. Meta is at 26 open against a queue budget of 14, so this is recorded
+  rather than filed, with one more for a later round: `round.mjs:542` and
+  `automerge-origin.mjs:43` both call `review-artifact` a non-required check.
   The live API returns exactly `build-and-audit`, `human-owned-paths`,
-  `review-artifact`, so fact 9 is correct and both comments are stale; both sit
-  in `scripts/`, reachable by a meta round.
+  `review-artifact` — fact 9 is correct, both comments stale, both in `scripts/`.
 
 - Origin: delegated
 - Track: meta

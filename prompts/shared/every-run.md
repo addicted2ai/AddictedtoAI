@@ -8,7 +8,9 @@ this file, then your track's prompt in `prompts/tracks/`.
 1. **`CHARTER.md`** — the direction, the two tests, the track charges, and 22
    rules. That count is typed but guarded: `scripts/check-governance-claims.mjs`
    compares it against the live file on every run, and `FRAME.md` fact 14
-   derives it three independent ways. This line said "21 rules you cannot
+   derives it two independent ways and checks its own typed heading against
+   them — a checked number, not a third derivation. This line said "21 rules you
+   cannot
    change" until round 177 and both halves were wrong — the count was stale
    because nothing checked it, and rule 13 makes the charter the loop's to edit,
    apart from what rule 13a reserves. It is not advisory: if your work would

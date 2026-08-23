@@ -33,7 +33,9 @@ over a failing check.
 `CHARTER.md` is binding: 22 rules covering truth, the record, and the limits of
 this loop's autonomy. That number is typed, but it is not unguarded —
 `scripts/check-governance-claims.mjs` compares it against the live file on every
-run, and `FRAME.md` fact 14 derives it three independent ways. This paragraph
+run, and `FRAME.md` fact 14 derives it two independent ways and checks its own
+typed heading against them — a checked number, not a third derivation. This
+paragraph
 said "21 rules" while the charter had 22. The defect was never that a number was
 typed; it was that nothing checked the one that was.
 

@@ -424,13 +424,16 @@ if [ "$undeclared" -eq 47 ]; then echo PASS; else echo "FAIL undeclared=$undecla
 
 **Claim.** The rule count is a live property of `CHARTER.md`'s own text —
 sections I through V, numbered top-level items — not a figure to memorise or
-copy into another file. Checked three independent ways: the same line-range
+copy into another file. Derived two independent ways — the same line-range
 regex `scripts/check-routes.sh` already asserts the `/charter` page against,
-a dynamic import of the real production parser (`app/lib/charter.js`)
-counting the rule blocks it actually produces from the live file, and the
-number typed in this fact's own heading. All three must agree, and the first
-two must be non-zero — a parser that silently stopped recognising every rule
-heading at once would otherwise pass a 0 = 0 comparison.
+and a dynamic import of the real production parser (`app/lib/charter.js`)
+counting the rule blocks it actually produces from the live file — and then
+compared against a third value that is *not* a derivation: the number typed
+in this fact's own heading. All three must agree, and the two derivations
+must be non-zero — a parser that silently stopped recognising every rule
+heading at once would otherwise pass a 0 = 0 comparison. Calling the heading
+a third "independent way" would flatter it: it is the typed value under test,
+which is the whole reason it is checked rather than trusted.
 
 **Round 177 finding: this check compared its two derivations to each other
 and never to the number in the heading above them.** Every other document in
