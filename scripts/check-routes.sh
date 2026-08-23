@@ -151,7 +151,7 @@ echo
 node scripts/test-orchestrate-hold.mjs || failures=$((failures + $?))
 
 # Round loop/meta/runner-config: harness/provider/model/variant are now
-# runners.yml's job, not a hardcoded string in scripts/orchestrate.sh, and
+# scripts/runners.yml's job, not a hardcoded string in scripts/orchestrate.sh, and
 # policy.yml's former second copy is now a `runner:` reference into that
 # file. scripts/check-runner-config.mjs asserts the reference still resolves
 # and still names an `opencode` harness -- the only harness this pricing
@@ -165,7 +165,7 @@ node scripts/check-runner-config.mjs || failures=$((failures + $?))
 # unauthenticated provider, a model absent from the provider's live
 # catalogue, and the "UNVERIFIED is not a guessed PASS" case for a harness
 # with no local catalogue endpoint -- proved able to fail against a stub
-# /provider server and synthetic runners.yml fixtures, never the real
+# /provider server and synthetic scripts/runners.yml fixtures, never the real
 # OpenCode server or a real binary beyond `node`. These same failures were
 # also constructed by hand against the real local server this round;
 # CHANGELOG.md and docket/briefs/loop-meta-runner-config.md record that

@@ -1,9 +1,9 @@
 # The opencode harness adapter for scripts/orchestrate.sh -- the one
 # function that differs when the harness is OpenCode. Everything else the
-# loop does is already harness-agnostic text (see runners.yml's header); this
+# loop does is already harness-agnostic text (see scripts/runners.yml's header); this
 # file is the whole boundary for "how do you launch it". "How do you know
 # it's alive" stays in scripts/orchestrate-liveness.sh, unmoved -- see
-# runners.yml's own comment on why.
+# scripts/runners.yml's own comment on why.
 #
 # CONTRACT every scripts/harness-adapters/*.sh file follows, so
 # scripts/orchestrate.sh never needs a harness-specific branch to call one:

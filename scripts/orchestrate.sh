@@ -18,9 +18,9 @@ cd "$REPO" || exit 1
 # Harness, provider, model and variant no longer live here as a hardcoded
 # string (they did, until round loop/meta/runner-config: MODEL was literally
 # "opencode-go/deepseek-v4-flash" and the launch line below invoked
-# `opencode run` directly). They live in runners.yml now, as independent
+# `opencode run` directly). They live in scripts/runners.yml now, as independent
 # fields -- see that file's header for why, and for what "never silently
-# substitute" means. RUNNER selects WHICH entry; empty means runners.yml's
+# substitute" means. RUNNER selects WHICH entry; empty means scripts/runners.yml's
 # own default_runner. scripts/runner-preflight.mjs resolves and CHECKS it,
 # by name, once per iteration below, before anything is launched -- this
 # variable alone never determines what actually runs, only what is asked
@@ -310,7 +310,7 @@ while true; do
 
   # Runner preflight, before anything else this pass touches git or logs an
   # "iteration starting" line: verify the chosen runner (RUNNER, or
-  # runners.yml's default_runner) can actually run -- harness present,
+  # scripts/runners.yml's default_runner) can actually run -- harness present,
   # provider authenticated, model in that provider's live catalogue, model
   # not excluded -- and read back exactly what it resolved to. Skipped
   # entirely when ORCHESTRATE_COMMAND overrides the launch line: that path
@@ -321,7 +321,7 @@ while true; do
   # NEVER SILENTLY SUBSTITUTE. A failed preflight is reported by name and
   # this pass is skipped -- not counted in $failures (a runner being
   # unavailable is not the same fact as a launched round going wrong; see
-  # runners.yml and scripts/runner-preflight.mjs), and never a reason to
+  # scripts/runners.yml and scripts/runner-preflight.mjs), and never a reason to
   # launch a different runner than the one that was asked for. This mirrors
   # peak_guard's own skip-and-retry shape immediately above.
   if [ -z "$ORCHESTRATE_COMMAND" ]; then

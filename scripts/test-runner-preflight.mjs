@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // scripts/runner-preflight.mjs, exercised against a stub /provider endpoint
-// and synthetic runners.yml fixtures -- never the real repository's
-// runners.yml, the real OpenCode server, or a real binary on PATH beyond
+// and synthetic scripts/runners.yml fixtures -- never the real repository's
+// scripts/runners.yml, the real OpenCode server, or a real binary on PATH beyond
 // `node` itself (already required to run this test at all). The same stub
 // approach scripts/test-orchestrate-checkout.mjs already uses for the
 // session API: an OS-assigned port, never a fixed one, so this test cannot
@@ -11,7 +11,7 @@
 //
 // WHY THIS EXISTS. Round loop/meta/runner-config's own preflight check
 // (scripts/runner-preflight.mjs) was proved able to fail seven ways by
-// hand against the real local OpenCode server and the real runners.yml --
+// hand against the real local OpenCode server and the real scripts/runners.yml --
 // construct, capture, revert, confirm clean -- and that proof is recorded
 // in CHANGELOG.md and docket/briefs/loop-meta-runner-config.md. It is not
 // repeatable in CI: CI has no OpenCode server, no opencode/codex/claude
@@ -70,6 +70,7 @@ const DEAD_URL = "http://127.0.0.1:1";
 
 function writeFixture(overrides = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "runner-preflight-test-"));
+  fs.mkdirSync(path.join(dir, "scripts"), { recursive: true });
   const base = {
     default_runner: "r1",
     runners: {
@@ -85,7 +86,7 @@ function writeFixture(overrides = {}) {
     },
   };
   const merged = { ...base, ...overrides };
-  fs.writeFileSync(path.join(dir, "runners.yml"), dumpYaml(merged));
+  fs.writeFileSync(path.join(dir, "scripts", "runners.yml"), dumpYaml(merged));
   return dir;
 }
 

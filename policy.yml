@@ -235,11 +235,11 @@ generative_push:
 # --- DeepSeek peak-hour pricing -----------------------------------------------
 #
 # docket/open/2026-08-17-deepseek-peak-hour-pricing.md. deepseek-v4-flash --
-# the model runners.yml's `runner:` reference below currently names -- moved
+# the model scripts/runners.yml's `runner:` reference below currently names -- moved
 # to peak/off-peak pricing in August 2026. (Not "the only model this loop
 # runs": round loop/meta/runner-config found CHANGELOG.md's own `Agent:`
 # field also carries `codex` and `claude-code`, on harnesses this pricing
-# does not apply to at all -- see runners.yml.) The windows below are
+# does not apply to at all -- see scripts/runners.yml.) The windows below are
 # OpenCode's, not DeepSeek's own: this account is billed through the
 # OpenCode Go subscription (the maintainer's own words, 2026-08-17:
 # "Primarily OpenCode Go subscription, but I also have the option to use my
@@ -261,8 +261,8 @@ generative_push:
 # a markdown prompt cannot read YAML, and two copies of a time window is how
 # this repository's guardrails have drifted before.
 #
-# `runner:` names which runners.yml entry this pricing applies to, rather
-# than restating its provider/model as a second literal -- runners.yml is
+# `runner:` names which scripts/runners.yml entry this pricing applies to, rather
+# than restating its provider/model as a second literal -- scripts/runners.yml is
 # the single source of truth for that fact as of round loop/meta/runner-config,
 # and scripts/check-runner-config.mjs (wired into scripts/check-routes.sh)
 # fails the build if this reference goes stale: pointed at a runner that no

@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // Preflight capability check for one loop runner -- harness, provider,
-// model and variant, as declared in runners.yml. Run from the repository
+// model and variant, as declared in scripts/runners.yml. Run from the repository
 // root:
 //
 //   node scripts/runner-preflight.mjs [runner-id]        # human-readable
 //   node scripts/runner-preflight.mjs [runner-id] --json
 //
-// runner-id defaults to $ORCHESTRATE_RUNNER, then runners.yml's own
+// runner-id defaults to $ORCHESTRATE_RUNNER, then scripts/runners.yml's own
 // default_runner. scripts/orchestrate.sh calls this before every iteration
-// and reads the final line of stdout -- see runners.yml's header for why
+// and reads the final line of stdout -- see scripts/runners.yml's header for why
 // the model, provider, harness and variant no longer live in
 // scripts/orchestrate.sh as a hardcoded string.
 //
@@ -60,7 +60,7 @@ function record(name, status, detail) {
 }
 
 function readConfig() {
-  return parseYaml(fs.readFileSync(path.join(root, "runners.yml"), "utf8"));
+  return parseYaml(fs.readFileSync(path.join(root, "scripts", "runners.yml"), "utf8"));
 }
 
 // PATH lookup only -- this never executes the candidate. This round's own
@@ -112,7 +112,7 @@ let config = null;
 try {
   config = readConfig();
 } catch (error) {
-  record("runners.yml readable", "FAIL", `could not read or parse runners.yml: ${error.message}`);
+  record("scripts/runners.yml readable", "FAIL", `could not read or parse scripts/runners.yml: ${error.message}`);
 }
 
 let resolvedId = null;
@@ -125,7 +125,7 @@ if (config) {
     record(
       "runner known",
       "FAIL",
-      `'${resolvedId}' is not a key under runners: in runners.yml`
+      `'${resolvedId}' is not a key under runners: in scripts/runners.yml`
     );
   } else {
     record("runner known", "PASS", resolvedId);
@@ -135,7 +135,7 @@ if (config) {
       record(
         "harness known",
         "FAIL",
-        `runner '${resolvedId}' names harness '${runner.harness}', not a key under harnesses: in runners.yml`
+        `runner '${resolvedId}' names harness '${runner.harness}', not a key under harnesses: in scripts/runners.yml`
       );
     } else {
       record("harness known", "PASS", runner.harness);

@@ -43,7 +43,7 @@ const ROOT = process.cwd();
 const OFFPEAK_NOW = "2026-08-23T12:00:00Z"; // confirmed OFFPEAK against the real policy.yml this round
 
 // A harness this repository does not otherwise define, so the sandbox's
-// runners.yml and adapter are unambiguously test fixtures, never mistakably
+// scripts/runners.yml and adapter are unambiguously test fixtures, never mistakably
 // close to a real launch line.
 const TEST_ADAPTER = `launch() {
   local provider="$1" model="$2" variant="$3" marker="$4" prompt_file="$5" log="$6"
@@ -95,7 +95,7 @@ function buildSandbox({ runnersYaml }) {
     fs.writeFileSync(path.join(dir, file), text);
   }
   fs.writeFileSync(path.join(dir, "policy.yml"), fs.readFileSync(path.join(ROOT, "policy.yml")));
-  fs.writeFileSync(path.join(dir, "runners.yml"), runnersYaml);
+  fs.writeFileSync(path.join(dir, "scripts", "runners.yml"), runnersYaml);
   fs.writeFileSync(path.join(dir, "scripts", "harness-adapters", "test-harness.sh"), TEST_ADAPTER);
   // scripts/peak-window.mjs and scripts/runner-preflight.mjs both `import
   // "js-yaml"` -- ESM resolves a bare specifier by walking up from the
@@ -227,7 +227,7 @@ function run(dir, { pattern, timeoutMs = 15000 } = {}) {
 // --- 3. ORCHESTRATE_COMMAND still bypasses the runner system entirely --------
 
 {
-  const dir = buildSandbox({ runnersYaml: BROKEN_RUNNERS_YML }); // even a broken runners.yml must not matter here
+  const dir = buildSandbox({ runnersYaml: BROKEN_RUNNERS_YML }); // even a broken scripts/runners.yml must not matter here
   const logDir = fs.mkdtempSync(path.join(os.tmpdir(), "runner-launch-log-"));
   const scriptPath = path.join(dir, "scripts", "orchestrate.sh");
   const r = await new Promise((resolve) => {
@@ -256,7 +256,7 @@ function run(dir, { pattern, timeoutMs = 15000 } = {}) {
     });
   });
   if (/iteration starting/.test(r.out) && !/runner unavailable/.test(r.out) && !/runner preflight ok/.test(r.out)) {
-    ok("ORCHESTRATE_COMMAND still bypasses the runner-preflight gate entirely, even against a broken runners.yml -- the stub-testing path this variable exists for is unaffected");
+    ok("ORCHESTRATE_COMMAND still bypasses the runner-preflight gate entirely, even against a broken scripts/runners.yml -- the stub-testing path this variable exists for is unaffected");
   } else {
     bad(`ORCHESTRATE_COMMAND path was gated by the runner system: ${r.out.trim()}`);
   }

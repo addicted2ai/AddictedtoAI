@@ -5,7 +5,7 @@
 # happened on this project (CHANGELOG.md: `Agent: claude-code` x13,
 # `Agent: claude-sonnet-5 (Claude Code subagent)` x8), but every one of them
 # was dispatched directly by an orchestrator session, never launched by
-# scripts/orchestrate.sh's supervisor loop -- see runners.yml's
+# scripts/orchestrate.sh's supervisor loop -- see scripts/runners.yml's
 # harnesses.claude-code.supervisor comment. This file exists so the
 # supervisor *could* launch a claude-code round the same way it launches an
 # opencode one, but the command below is written from the CLI's documented
@@ -16,7 +16,7 @@
 # this comment once they have actually been exercised.
 launch() {
   local provider="$1" model="$2" variant="$3" marker="$4" prompt_file="$5" log="$6"
-  # variant has no meaning for this harness (runners.yml's claude-code
+  # variant has no meaning for this harness (scripts/runners.yml's claude-code
   # entries carry variant: null) -- Claude Code's reasoning-effort knob, if
   # any, is not the OpenCode `low`/`high`/`max` vocabulary, so it is not
   # threaded through here rather than guessed at.

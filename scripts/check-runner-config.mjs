@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Reconciles policy.yml's deepseek_peak_pricing block against runners.yml,
+// Reconciles policy.yml's deepseek_peak_pricing block against scripts/runners.yml,
 // the single source of truth round loop/meta/runner-config established for
 // harness/provider/model/variant. Run from the repository root:
 //
@@ -14,11 +14,11 @@
 // scripts/peak-window.mjs matches nothing), so the field was documentation,
 // not wiring, and deleting a human-readable label from a block a reader
 // will actually open is a worse trade than checking it. So policy.yml now
-// names a `runner:` key into runners.yml instead of restating a model
+// names a `runner:` key into scripts/runners.yml instead of restating a model
 // string, and this script is what actually keeps the two in sync: it fails
 // if the referenced runner does not exist, and it fails if that runner's
 // harness is not the one this pricing block was written for (opencode) --
-// a future round repointing runners.yml's default runner at a different
+// a future round repointing scripts/runners.yml's default runner at a different
 // harness without updating this reference now fails a build instead of
 // silently mispricing.
 
@@ -44,9 +44,9 @@ try {
 
 let runners;
 try {
-  runners = parseYaml(fs.readFileSync(path.join(root, "runners.yml"), "utf8"));
+  runners = parseYaml(fs.readFileSync(path.join(root, "scripts", "runners.yml"), "utf8"));
 } catch (error) {
-  bad(`could not read or parse runners.yml: ${error.message}`);
+  bad(`could not read or parse scripts/runners.yml: ${error.message}`);
   process.exit(1);
 }
 
@@ -55,14 +55,14 @@ if (!pricing) {
   bad("policy.yml has no deepseek_peak_pricing block to reconcile");
 } else if (typeof pricing.runner !== "string" || !pricing.runner) {
   bad(
-    "policy.yml's deepseek_peak_pricing has no runner: field naming a runners.yml entry -- this is the field that replaced the old hardcoded model: string"
+    "policy.yml's deepseek_peak_pricing has no runner: field naming a scripts/runners.yml entry -- this is the field that replaced the old hardcoded model: string"
   );
 } else {
   const runnerId = pricing.runner;
   const runner = runners.runners && runners.runners[runnerId];
   if (!runner) {
     bad(
-      `policy.yml's deepseek_peak_pricing.runner ('${runnerId}') is not a key under runners: in runners.yml -- the pricing block now points nowhere`
+      `policy.yml's deepseek_peak_pricing.runner ('${runnerId}') is not a key under runners: in scripts/runners.yml -- the pricing block now points nowhere`
     );
   } else if (runner.harness !== "opencode") {
     bad(
@@ -70,7 +70,7 @@ if (!pricing) {
     );
   } else {
     ok(
-      `policy.yml's deepseek_peak_pricing applies to runners.yml's '${runnerId}' (${runner.provider}/${runner.model}, variant ${runner.variant})`
+      `policy.yml's deepseek_peak_pricing applies to scripts/runners.yml's '${runnerId}' (${runner.provider}/${runner.model}, variant ${runner.variant})`
     );
   }
 }
@@ -79,4 +79,4 @@ if (failures > 0) {
   console.log(`\n${failures} runner-config reconciliation problem(s)`);
   process.exit(1);
 }
-console.log("\nok    policy.yml and runners.yml agree on which runner the peak-pricing block prices");
+console.log("\nok    policy.yml and scripts/runners.yml agree on which runner the peak-pricing block prices");
