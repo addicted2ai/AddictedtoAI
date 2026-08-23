@@ -774,12 +774,21 @@ console.log(
     `registered has come loose; it is not evidence the site's prose is true. See this script's header.`
 );
 
+// process.exitCode, never process.exit(). --rendered leaves undici's
+// sockets closing when this point is reached, and calling process.exit()
+// on top of them aborts the process on Windows ("Assertion failed:
+// !(handle->flags & UV_HANDLE_CLOSING), src\\win\\async.c") -- which
+// scripts/check-routes.sh scores as a failed check with a nonsense exit
+// code, on a run where every assertion had just passed. Setting the code
+// and letting the loop drain reports the verdict this script actually
+// reached.
 if (problems.length > 0) {
   console.log();
   for (const problem of problems) console.log(`FAIL  ${problem}`);
   console.log(`\n${problems.length} governance-claim problem(s)`);
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  console.log(
+    `\nok    every registered governance claim still rests on something that holds`
+  );
 }
-
-console.log(`\nok    every registered governance claim still rests on something that holds`);
-process.exit(0);
