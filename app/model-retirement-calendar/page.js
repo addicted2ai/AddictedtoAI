@@ -26,46 +26,56 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function shutdownTable(key, rows) {
+// Each table is wrapped in an accessible scroll region rather than left to
+// overflow the page: this five-column table measured 223px wider than a
+// 320px viewport with no scroll container at all (scripts/check-reflow.mjs).
+// SC 1.4.10 (Reflow) names two-dimensional content -- a data table is its
+// own example -- as the exception a scroll container is meant for; the
+// role/tabIndex/aria-label make the region itself reachable without a
+// pointer, matching app/charter/page.js's identical treatment of the same
+// `.charter-table` class (see the .table-scroll comment in globals.css).
+function shutdownTable(key, label, rows) {
   return (
-    <table className="charter-table" data-retirement-table={key}>
-      <thead>
-        <tr>
-          <th scope="col">Shutdown</th>
-          <th scope="col">Vendor</th>
-          <th scope="col">What is switched off</th>
-          <th scope="col">Replacement</th>
-          <th scope="col">Source</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr key={`${row.vendor}-${row.shutdown}-${row.what}`}>
-            <td>
-              <time dateTime={row.shutdown}>{row.shutdown}</time>
-              {row.shutdown < today() ? (
-                <span className="retirement-past"> past</span>
-              ) : null}
-            </td>
-            <td>{row.vendor}</td>
-            <td>
-              <code>{row.what}</code>
-              {row.note ? <span className="commitment-more"> {row.note}</span> : null}
-            </td>
-            <td>
-              {row.replacement ? (
-                <code>{row.replacement}</code>
-              ) : (
-                <span className="commitment-more">none named</span>
-              )}
-            </td>
-            <td>
-              <a href={row.href}>source</a> · verified {row.verified}
-            </td>
+    <div className="table-scroll" role="region" tabIndex={0} aria-label={label}>
+      <table className="charter-table" data-retirement-table={key}>
+        <thead>
+          <tr>
+            <th scope="col">Shutdown</th>
+            <th scope="col">Vendor</th>
+            <th scope="col">What is switched off</th>
+            <th scope="col">Replacement</th>
+            <th scope="col">Source</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={`${row.vendor}-${row.shutdown}-${row.what}`}>
+              <td>
+                <time dateTime={row.shutdown}>{row.shutdown}</time>
+                {row.shutdown < today() ? (
+                  <span className="retirement-past"> past</span>
+                ) : null}
+              </td>
+              <td>{row.vendor}</td>
+              <td>
+                <code>{row.what}</code>
+                {row.note ? <span className="commitment-more"> {row.note}</span> : null}
+              </td>
+              <td>
+                {row.replacement ? (
+                  <code>{row.replacement}</code>
+                ) : (
+                  <span className="commitment-more">none named</span>
+                )}
+              </td>
+              <td>
+                <a href={row.href}>source</a> · verified {row.verified}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -127,14 +137,14 @@ export default function ModelRetirementCalendar() {
 
       <h2>Upcoming shutdowns</h2>
       <p>Earliest first. Rows read off the vendors&rsquo; pages on {VERIFIED}.</p>
-      {shutdownTable("upcoming", upcoming)}
+      {shutdownTable("upcoming", "Upcoming shutdowns table", upcoming)}
 
       <h2>Past shutdowns</h2>
       <p>
         Kept visible, newest first, so the page can be checked against what it
         said.
       </p>
-      {shutdownTable("past", past)}
+      {shutdownTable("past", "Past shutdowns table", past)}
 
       <h2>Anthropic publishes floors, not dates</h2>
       <p>
@@ -149,30 +159,37 @@ export default function ModelRetirementCalendar() {
         checkable statement about upcoming Anthropic shutdowns, and a model
         reaching its floor may still run for some time.
       </p>
-      <table className="charter-table">
-        <thead>
-          <tr>
-            <th scope="col">Model</th>
-            <th scope="col">Not sooner than</th>
-            <th scope="col">Source</th>
-          </tr>
-        </thead>
-        <tbody>
-          {RETIREMENT_FLOORS.map((row) => (
-            <tr key={row.what}>
-              <td>
-                <code>{row.what}</code>
-              </td>
-              <td>
-                <time dateTime={row.floor}>{row.floor}</time>
-              </td>
-              <td>
-                <a href={row.href}>source</a> · verified {row.verified}
-              </td>
+      <div
+        className="table-scroll"
+        role="region"
+        tabIndex={0}
+        aria-label="Anthropic retirement floors table"
+      >
+        <table className="charter-table">
+          <thead>
+            <tr>
+              <th scope="col">Model</th>
+              <th scope="col">Not sooner than</th>
+              <th scope="col">Source</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {RETIREMENT_FLOORS.map((row) => (
+              <tr key={row.what}>
+                <td>
+                  <code>{row.what}</code>
+                </td>
+                <td>
+                  <time dateTime={row.floor}>{row.floor}</time>
+                </td>
+                <td>
+                  <a href={row.href}>source</a> · verified {row.verified}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <h2>How this page goes stale</h2>
       <p>
