@@ -254,27 +254,78 @@ change below with the exact before/after output.
   needed) — re-measured this round to confirm, not assumed from the docket
   item's own number.
 
+**5. Two real build defects found running `round.mjs check`, both fixed — recorded rather than smoothed over**
+- Hypothesis: none — these were found running the checks this item's own
+  "Done when" requires, not anticipated.
+- Change: fixed both. Defect one (self-found): the first attempt at this
+  entry's item 4 wrote `- Hypothesis:` for the "decisions, not silence"
+  change block but never a matching `- Change:` bullet. `app/lib/build-log.js`'s
+  parser requires both on every `**N.**` block; the omission made it throw
+  `CHANGELOG.md contains incomplete build-log entries: round 174`, which
+  failed `npm run build` (`Failed to collect page data for
+  /log/rounds/[id]`, since that route's `generateStaticParams` reads the
+  parsed log). Found by reproducing the failure with full output, fixed by
+  adding the missing `- Change:` bullet to item 4 above, verified against
+  the parser directly (not a full rebuild) before committing: `getBuildLog()`
+  returned 174 entries with round 174's four changes all complete.
+- Defect two (found by the coordinator's own run of `round.mjs check`, not
+  by this session): `app/lib/page-origins.js`'s `PRODUCING_ROUNDS` map
+  still read `"/directory": 125`, so the AI disclosure this route renders
+  would have cited a 2026-08-15 maintain round for content this round's
+  own `build` commit had just changed. `scripts/check-ai-disclosure.mjs`
+  caught it: `mapped to round 125 (maintain), but its files were last
+  touched by "build: mark up the directory tool grid as a real list"
+  (build) — update PRODUCING_ROUNDS`. Fixed by updating the entry to
+  `174`. Checking for the same defect elsewhere in this round's own
+  changes (not requested, done because the check that caught it only
+  compares *track*, not round recency, and would stay silent on a second
+  instance in the same track) found `/model-retirement-calendar` mapped to
+  `170` — also `build`, so the check's track-only comparison would never
+  have flagged it — while `app/model-retirement-calendar/page.js`, its
+  listed source file, is exactly what item 1 above changed. Fixed the same
+  way, to `174`. Verified both resolve cleanly against the live parser
+  (`getPageDisclosure("/directory")` and `getPageDisclosure(
+  "/model-retirement-calendar")` both return `{ origin: "delegated", round:
+  174 }`, no throw) before committing — not by running the full check
+  again, which this round did not do; see the Guardrails line below for
+  exactly what was and was not re-verified after this fix.
+
 - Origin: delegated
 - Track: build
 - Agent: claude-sonnet-5 (Claude Code subagent)
-- Guardrails: `node scripts/round.mjs check` (below). `npm run lint`: `No
-  ESLint warnings or errors`. `npm run build`: succeeds, all 131 routes
-  generated, run four times across this entry's own history (baseline,
-  deliberate regression, revert, final). `node
-  scripts/check-first-screenful.mjs http://localhost:3000`: full output
-  quoted per item above; `ok` on `/model-retirement-calendar` and
-  `/directory`, measured (non-blocking) on the other five, proved able to
-  `FAIL` and reverted clean (item 3). `node scripts/check-briefs.mjs`: `ok
-  all current briefs declare their premises`, `3 current brief(s) ... 20
-  premise(s) checked`. `git status --short` after every rebuild cycle:
-  only the intended files touched. `.github/` untouched this round
-  (`git diff --stat origin/main...HEAD -- .github/`: empty). Not run:
-  `round.mjs ship`, `git push`, `gh pr create`, `gh pr merge`, per the
-  brief.
+- Guardrails: `npm run lint`: `No ESLint warnings or errors`. `npm run
+  build`: succeeded standalone four times during this entry's own
+  first-screenful measurement work (baseline, both fixes, deliberate
+  regression, revert) — all before item 4's missing-`Change:`-bullet defect
+  existed. `node scripts/check-first-screenful.mjs http://localhost:3000`:
+  full output quoted per item above; `ok` on `/model-retirement-calendar`
+  and `/directory`, measured (non-blocking) on the other five, proved able
+  to `FAIL` and reverted clean (item 3) — all captured before item 5's
+  defects existed, so unaffected by either. `node scripts/check-briefs.mjs`:
+  `ok all current briefs declare their premises`, `3 current brief(s) ...
+  20 premise(s) checked`. `node scripts/check-track-scope.mjs origin/main
+  loop/build/first-screenful-density`: `ok`, all 10 changed files within
+  `build`'s scope (re-run after every commit, including this one). `.github/`
+  untouched this round (`git diff --stat origin/main...HEAD -- .github/`:
+  empty, checked repeatedly). **`node scripts/round.mjs check` itself: two
+  runs this round, neither self-confirmed green by this session.** The
+  first failed at the build step on item 5's first defect (fixed, verified
+  against the parser directly). A second attempt was invalidated by this
+  session leaving a `next start` server running on port 3000 from its own
+  manual measurement work, which the round's own port-in-use guard refuses
+  to build alongside — the coordinator diagnosed and cleared it, then ran
+  `round.mjs check` directly and found item 5's second defect (the
+  `/directory` mapping), now fixed. **This session did not itself run
+  `round.mjs check` to a self-observed green result** — the coordinator's
+  own run is the one pending re-verification after this fix, and that
+  result is not yet in this entry.
 - Result: `/model-retirement-calendar` 0 &rarr; 4 content units above the
   fold, `/directory` 0 &rarr; 5; `/`, `/blog`, `/blog/*`, `/charter` left
   at 0 by explicit, recorded decision; `/what-vendors-promise` unchanged at
-  4. All four `docket/open/2026-08-22-first-screenful-density.md`
+  4. Two real defects found running the checks this item requires (item 5),
+  both fixed; `round.mjs check` green is not yet self-confirmed by this
+  session — pending the coordinator's re-run. All four
+  `docket/open/2026-08-22-first-screenful-density.md`
   checkboxes satisfied; item moved to `docket/done/`.
 
 ### 2026-08-23
