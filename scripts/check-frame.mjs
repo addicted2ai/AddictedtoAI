@@ -6,8 +6,7 @@
 //
 // The optional argument defaults to FRAME.md and exists so this parser can
 // be tested against a scratch fixture without touching the real file --
-// exactly how round 8's own adversarial review (docket/reviews/
-// 9980ade895f69b88bc25fcac08256736bd931902.md) found the defect this
+// exactly how round 8's own adversarial review found both defects this
 // section's comments describe.
 //
 // FRAME.md exists because round 8 (loop/meta/frame) found the orchestrator
@@ -26,21 +25,43 @@
 // repository's other drift bugs happened (see CHANGELOG.md on
 // scripts/check-log-pages.mjs and the homepage figure checks).
 //
-// EVERY CANDIDATE HEADING IS EITHER PARSED OR REPORTED MALFORMED -- NEVER
-// SILENTLY DROPPED. The first version of this script split the document on
-// the strict pattern "## N. " (period, space) alone, so a heading typo like
-// "## 17: Title" (colon) opened no chunk boundary and the entire fact --
-// heading, status, check -- was silently absorbed as trailing text inside
-// the *previous* fact's chunk: not reported malformed, not counted, invisible
-// in a summary that still read "all checks passed" against an undercounted
-// total. Adversarial review reproduced this on a four-fact fixture. The fix:
-// split on the BROAD candidate pattern "## <digits>..." first -- anything
-// that looks like it is trying to be a numbered fact -- so a malformed
-// heading gets its own isolated chunk instead of merging into a neighbour's,
-// then classify each chunk as well-formed or malformed. The number of
-// candidate headings found is printed and is always exactly the number of
-// well-formed facts plus the number reported malformed: that arithmetic is
-// the property under test, not incidental logging.
+// EVERY HEADING-LIKE LINE IS PARSED, REPORTED MALFORMED, OR FLAGGED BY AN
+// INDEPENDENT COMPLETENESS SCAN -- never silently absorbed with no trace in
+// the output. Two rounds of adversarial review found two different ways
+// this used to fail, and this comment states plainly what is and is not
+// guaranteed now rather than repeating either overclaim.
+//
+// (1) The first version split the document on the strict pattern "## N. "
+//     (period, space) alone, so a heading typo like "## 17: Title" (colon)
+//     opened no chunk boundary and the entire fact -- heading, status,
+//     check -- was silently absorbed as trailing text inside the *previous*
+//     fact's chunk: not reported malformed, not counted, invisible in a
+//     summary that still read "all checks passed" against an undercounted
+//     total. Fixed by splitting on a broader candidate pattern first
+//     ("##" + optional whitespace + digits, any trailing text) so a
+//     malformed heading gets its own isolated chunk instead of merging into
+//     a neighbour's.
+//
+// (2) That fix's own "reconciled: N candidates = well-formed + malformed"
+//     line was a tautology: every number in it was derived from the SAME
+//     candidate pattern, so it could only ever balance against itself -- it
+//     reconciled the candidate matcher against its own output, never against
+//     the document. A heading the candidate pattern could not see at all
+//     (no space after "##", extra space, or one heading level too deep --
+//     e.g. "##2.", "##  3.", "### 4.") was invisible to both the parsing
+//     AND the check meant to catch the parsing missing something, and the
+//     arithmetic balanced perfectly while 3 of 4 facts in a test fixture
+//     were silently gone. Fixed below with `looksLikeNumberedHeading`, a
+//     second, independent completeness scan that shares no code or pattern
+//     with the candidate matcher and is deliberately MORE permissive: any
+//     number of leading `#` characters, any whitespace, then a digit. Its
+//     count is reconciled against the candidate matcher's own count; a
+//     mismatch fails loudly and names the exact line the candidate matcher
+//     missed, rather than a summary that can only ever agree with itself.
+//
+// WHAT THIS STILL DOES NOT COVER: a fact heading written with no leading
+// `#` at all, or identified by something other than a leading digit, would
+// evade both scans. Stated here rather than left for a third review to find.
 //
 // SELF-VERDICT CONVENTION. Every verified fact's check command is written to
 // print exactly one of three tokens as the first word of its output:
@@ -75,12 +96,15 @@ try {
   process.exit(1);
 }
 
-// Broad net first: any line that looks like it is attempting a numbered
-// fact heading, well-formed or not. A section like "## Maintenance" (no
-// leading digits) is not a candidate at all and is correctly ignored -- it
-// is not claiming to be a fact.
-const CANDIDATE_HEADING = /^## (\d+)\S*/;
+// The candidate matcher: "##" then any amount of whitespace (including
+// none) then digits. Widened from a fixed single space after review found
+// "##2." and "##  3." both missed it entirely. Still anchored to exactly
+// two "#" characters -- a different heading level is not this matcher's
+// job, it is the independent scan's below.
+const CANDIDATE_HEADING = /^##\s*(\d+)/;
 // Strict shape a real fact heading must have: digits, a literal ". ", title.
+// Deliberately NOT widened to match CANDIDATE_HEADING's flexibility --
+// "##2." and "##  3." are still malformed, just no longer invisible.
 const STRICT_HEADING = /^## (\d+)\.\s+(.+)$/;
 
 const lines = text.split("\n");
@@ -93,6 +117,35 @@ if (boundaries.length === 0) {
   console.log(`FAIL  ${FRAME_PATH} contains no "## N..." fact heading to check`);
   process.exit(1);
 }
+
+// Independent completeness scan. Deliberately not built from
+// CANDIDATE_HEADING or any pattern it shares -- a hand-walked character
+// scan, so whatever the candidate matcher cannot see, this cannot be blind
+// to for the same reason. Any number of leading "#" (any heading level,
+// not just two), then any whitespace, then a digit. "## Maintenance" does
+// not match (next non-hash, non-space character is a letter); "### 4."
+// does (three hashes, a digit) even though CANDIDATE_HEADING above will
+// never match it on purpose.
+function looksLikeNumberedHeading(line) {
+  let i = 0;
+  if (line[i] !== "#") return false;
+  while (line[i] === "#") i++;
+  while (line[i] === " " || line[i] === "\t") i++;
+  return line[i] >= "0" && line[i] <= "9";
+}
+
+const independentHits = [];
+lines.forEach((line, i) => {
+  if (looksLikeNumberedHeading(line)) independentHits.push(i);
+});
+
+// CANDIDATE_HEADING is strictly narrower than looksLikeNumberedHeading (two
+// hashes exactly, vs one-or-more), so boundaries is always a subset of
+// independentHits when both scans agree with reality. Anything in
+// independentHits but not boundaries is a heading-like line the candidate
+// matcher -- and therefore every check below -- never even considered.
+const boundarySet = new Set(boundaries);
+const missedLines = independentHits.filter((i) => !boundarySet.has(i));
 
 const chunks = boundaries.map((start, idx) => {
   const end = idx + 1 < boundaries.length ? boundaries[idx + 1] : lines.length;
@@ -107,7 +160,7 @@ const facts = chunks.map((chunk) => {
   if (!strict) {
     return {
       id: candidateId,
-      title: headingLine.replace(/^## /, "").trim(),
+      title: headingLine.replace(/^##\s*/, "").trim(),
       malformedHeading: headingLine,
     };
   }
@@ -124,18 +177,13 @@ const facts = chunks.map((chunk) => {
 // Every candidate heading lands in exactly one bucket: a malformed heading
 // (didn't even parse), a malformed body (parsed, but missing Status or, for
 // a verified fact, a check block), or a fact this script actually runs.
-// That partition -- not a count printed for its own sake -- is what makes
-// "malformed" impossible to launder into "absent".
+// This partition is an accounting of what the candidate matcher found --
+// completeness (whether it found everything) is `missedLines` above, not
+// this arithmetic, which cannot by itself prove anything about lines
+// outside `boundaries` to begin with.
 const malformedHeadings = facts.filter((f) => f.malformedHeading);
 const parsed = facts.filter((f) => !f.malformedHeading);
 const malformedBody = parsed.filter((f) => !f.status || (f.status === "verified" && !f.checkCmd));
-// Well-formed facts this script will actually act on -- executed if
-// verified, listed if attested. A subset of `parsed`, never counted
-// alongside it a second time: `parsed.length === wellFormed.length +
-// malformedBody.length` is the invariant, and boundaries.length ===
-// wellFormed.length + malformedHeadings.length + malformedBody.length is
-// the one printed below and is what "reconcilable with the document" means
-// mechanically, not just as a claim.
 const wellFormed = parsed.filter((f) => !malformedBody.includes(f));
 
 // A repeated fact number is its own integrity problem -- CHANGELOG.md's own
@@ -157,6 +205,17 @@ console.log(
 let failures = 0;
 let unverified = 0;
 const attested = [];
+
+if (missedLines.length > 0) {
+  console.log(
+    `FAIL        completeness: an independent scan found ${missedLines.length} heading-like ` +
+      `line(s) the candidate matcher never saw at all:`
+  );
+  for (const i of missedLines) {
+    console.log(`FAIL          line ${i + 1}: ${JSON.stringify(lines[i])}`);
+  }
+  failures += missedLines.length;
+}
 
 for (const f of malformedHeadings) {
   console.log(`FAIL        ${f.id}. ${f.title} -- malformed heading, does not match "## N. Title": ${JSON.stringify(f.malformedHeading)}`);
@@ -217,8 +276,12 @@ if (attested.length > 0) {
 }
 
 console.log(
-  `\nreconciled: ${boundaries.length} candidate heading(s) = ${wellFormed.length} well-formed fact(s) + ` +
+  `\naccounted for: ${boundaries.length} candidate heading(s) = ${wellFormed.length} well-formed fact(s) + ` +
     `${malformedHeadings.length} malformed heading(s) + ${malformedBody.length} malformed body`
+);
+console.log(
+  `completeness: independent scan found ${independentHits.length} heading-like line(s) total, ` +
+    `${missedLines.length} missed by the candidate matcher`
 );
 
 const executed = wellFormed.length - attested.length;
