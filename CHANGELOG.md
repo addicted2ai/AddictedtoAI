@@ -209,6 +209,10 @@ change below with the exact before/after output.
   remaining zero-unit pages have a real editorial reason the docket item's
   own framing anticipated ("an explicit decision to keep the current
   ordering and say why").
+- Change: none — no code changed for `/`, `/blog`, `/blog/*` or `/charter`.
+  This item records the decision and its reasoning for each, in place of a
+  code change, per the docket item's own "Done when" #1 ("or an explicit
+  decision to keep the current ordering and say why").
 - `/` (homepage): decision is to leave it unchanged. A diagnostic pass
   (scratchpad, not shipped — same CDP technique, no fold cutoff) found
   **no `<li>` or `<tr>` element anywhere in the rendered page**, not just
