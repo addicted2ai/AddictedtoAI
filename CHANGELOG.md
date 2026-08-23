@@ -80,12 +80,12 @@ at the max, deliberately filed with no fix width). Files a third item
 rather than resolving it: whether `CHARTER.md` rule 5's append-only
 requirement reaches `docket/` items, an ambiguity round 174's own
 adversarial review surfaced and explicitly left for the maintainer. Brief
-committed at `docket/briefs/loop-build-nav-cue-and-line-length.md`; no
-error found in it -- all seven premises reproduced exactly as written,
-re-verified this round (`head -20` on both docket items, `grep` against
-`app/globals.css`, `scripts/check-first-screenful.mjs`, `CHARTER.md` and
-`scripts/round.mjs`, and the `frame:4` citation checked against
-`FRAME.md`).
+committed at `docket/briefs/loop-build-nav-cue-and-line-length.md`; all
+seven numbered premises reproduced exactly as written, re-verified this
+round (`head -20` on both docket items, `grep` against `app/globals.css`,
+`scripts/check-first-screenful.mjs`, `CHARTER.md` and `scripts/round.mjs`,
+and the `frame:4` citation checked against `FRAME.md`) -- its unnumbered
+body prose did carry an error, covered below.
 
 **1. `.nav-active` -- a non-colour cue, and SC 1.4.11 satisfied at the locus this repository already uses**
 - Hypothesis: the docket item's own two "Done when" boxes ask for a
@@ -221,44 +221,24 @@ re-verified this round (`head -20` on both docket items, `grep` against
   candidate narrower than the confirmed-no-op `90ch` (`main`'s content box
   is 732px = 84.9ch; `90ch` computes to 776.25px, wider than the container
   it sits inside).
-- **Three mistakes in how this rule's own rationale was written, corrected
-  in place rather than smoothed over -- this entry, `app/globals.css`'s
-  comment on the rule, and `docket/done/2026-08-22-article-p-line-length.md`
-  all carried each one and are all fixed together.** The first draft of
-  this entry claimed the site's other `ch`-capped rules
-  (`.hero-lead`/`.log-lead`/`.log-field`/`.log-note`/`.walkthrough-caption`)
-  "cap secondary, supporting text" while `article p` is "the primary
-  reading column" -- **adversarial review found this false**: `.log-lead`
-  is the entire freeform prose of `/log`, `/log/early` and `/log/archive`
-  (none of the three has an `<article>` wrapper -- `grep -rn "<article"
-  app/log/`, no matches), the same role `article p` fills elsewhere. The
-  first correction replaced that with an `<article>`-wrapper-vs-not
-  distinction -- **adversarial review found this false too, and backwards**:
-  none of the files `.hero-lead`, `.log-field`, `.log-note` or
-  `.walkthrough-caption` live in (`app/page.js`,
-  `app/log/LogEntry.js`, `app/demos/RoundWalkthrough.js`) has an
-  `<article>` wrapper either, and `.log-lead` is the *only* one of the
-  five that ever appears on an `<article>` page at all
-  (`app/model-retirement-calendar/page.js`, `app/charter/page.js`) --
-  the opposite of what the correction claimed. Fixing that second mistake
-  surfaced a third, self-caught this time, and **not this round's own
-  arithmetic**: both false characterisations above were built on a count
-  of "five" other `ch`-capped rules that traces to
-  `docket/briefs/loop-build-nav-cue-and-line-length.md` itself, which
-  states as fact "`app/globals.css` already caps several elements in `ch`
-  -- `62ch` at lines 507, 813 and 1002, `68ch` at 745 and 774" -- five
-  lines. The orchestrator produced that sentence with `grep -n "max-width"
-  app/globals.css | head -6` and read the truncated output as complete;
-  this round then carried "five" forward across two drafts without
-  re-deriving it. `grep -c "max-width: 6[28]ch" app/globals.css` (run
-  while writing this correction, not the ones before it) gives **twelve**.
-  Caught by this round running the count itself rather than trusting the
-  brief's enumeration -- the discipline the brief itself asked for
-  ("find out what those rules apply to before you add another") and that
-  its own preceding sentence did not follow. The rule now in
-  `app/globals.css` and quoted in the docket item makes no claim about
-  what relates these rules to each other -- stated plainly as something
-  this round did not establish, not something it hid.
+- This rule's stated rationale was wrong twice and revised in place --
+  this entry, `app/globals.css`'s comment on the rule, and
+  `docket/done/2026-08-22-article-p-line-length.md`'s status note all
+  carried both versions and are all fixed together. Each version attempted
+  to characterise how `80ch` relates to the site's other `ch`-capped
+  rules; adversarial review found each one false (`docket/reviews/` holds
+  the sequence). Both traced to a count of "five" other `ch`-capped rules,
+  from `docket/briefs/loop-build-nav-cue-and-line-length.md`'s own
+  enumeration ("`62ch` at lines 507, 813 and 1002, `68ch` at 745 and
+  774"). The orchestrator has since said, in conversation, that this came
+  from a truncated `grep -n "max-width" app/globals.css | head -6` -- that
+  command is not itself in the brief document, only its five-line output;
+  this round verified the command reproduces the brief's exact enumeration
+  when run against `ddffff7`, not that the brief states the command. The
+  true count is twelve (`grep -c "max-width: 6[28]ch" app/globals.css`).
+  Neither characterisation is restated here or in the other two places;
+  `80ch`'s own justification above is unaffected by any of this and was
+  never in question.
 - A fourth finding from the same investigation: the false "five" count
   above sat in the brief's unnumbered prose, not one of its seven numbered
   `## Premises` -- `scripts/check-briefs.mjs` reads only that section, so
