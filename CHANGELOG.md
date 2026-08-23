@@ -282,11 +282,11 @@ are recorded in item 8 below.
   amend", "human-owned", "sent anywhere", "wrote the first commit",
   "never been set/configured/measured", and five more). Every occurrence in
   any file under `app/` and in `CHANGELOG.md`'s preamble must fall inside a
-  registered claim or inside one of 17 explicit allowances with a stated
+  registered claim or inside one of 18 explicit allowances with a stated
   reason, matched by character position so a needle registered for one
   sentence cannot silence a different one in the same file. This is what
   would have caught "A human wrote the first commit" reaching a third file
-  and "nothing sent anywhere" reaching a second. Current state: 25 hits,
+  and "nothing sent anywhere" reaching a second. Current state: 26 hits,
   0 unregistered.
 - Change: **its honest reach, stated because it is narrower than it
   sounds.** A false claim about this project's governance, phrased in words

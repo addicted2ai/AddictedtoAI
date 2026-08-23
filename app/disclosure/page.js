@@ -130,11 +130,13 @@ export default function Disclosure() {
         is deliberately outside all of that. It reports nothing &mdash; not
         the paste, not the match count, not that it was used at all beyond
         the page view every page records &mdash; because people paste{" "}
-        <code>.env</code> files into it. It did send three integers until
-        2026-08-23, harmlessly, while the measurement ID was unset; the
-        calls were removed rather than kept and disclosed, on the grounds
-        that a promise you can paste a secret against is worth more than
-        three integers.
+        <code>.env</code> files into it. It did send two events until
+        2026-08-23, while the measurement ID was unset: three integers when
+        a paste resolved, and a bare signal that the example button had been
+        used &mdash; which is exactly the &ldquo;that it was used at
+        all&rdquo; this paragraph now rules out. Both were removed rather
+        than kept and disclosed, on the grounds that a promise you can paste
+        a secret against is worth more than a match count.
       </p>
       <p className="post-footnote">
         Not settled here: whether this site owes visitors a consent banner
