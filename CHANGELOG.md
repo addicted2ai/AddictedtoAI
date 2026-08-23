@@ -324,31 +324,121 @@ accurate; no error in the brief surfaced under that scrutiny.
   arithmetic, and 6 of the other facts' grep targets spot-checked against
   the real files all held under direct testing. The review also assessed
   (without reproducing, per its own brief) change 2's approval-classifier
-  report and left it explicitly unconfirmed, n=1 — that stays exactly as
-  disclosed, not promoted into `FRAME.md` on the strength of a review that
-  chose not to test it.
+  report and left it explicitly unconfirmed, n=1 at that point — that stayed
+  exactly as disclosed, not promoted into `FRAME.md` on the strength of a
+  review that chose not to test it. **Updated by the second review pass**
+  (change 10): the reviewer independently hit the same shape of block —
+  after editing `CHARTER.md` as a reversible test, its own next complex
+  Bash call was blocked, and reverting cleared it — a second occurrence,
+  still under confounded conditions (a governance-adjacent file edited
+  immediately beforehand, same as this round's own observation), not an
+  isolated one. This stays **unconfirmed with two observations**, not a
+  finding: what would establish causation is a controlled test — the same
+  edit repeated with an unrelated, equally-important file edited as a
+  control, and a baseline of ordinary Bash calls not preceded by any such
+  edit — and neither this round nor the review ran one, on purpose: if the
+  effect is real, deliberately triggering it blocks the very session trying
+  to observe it. Recorded as two data points pointing the same direction,
+  nothing stronger claimed.
+
+**10. Second review pass: the completeness reconciliation was a tautology — fixed, and the general class named, not just this instance**
+- Hypothesis: none stated in advance — the review built a second fixture
+  testing the property change 6's fix claimed rather than trusting the
+  claim, and reproduced a live finding before sending it, which this round
+  reproduced again independently before touching anything.
+- Change: change 6's `reconciled:` line compared the candidate matcher's own
+  partition of what it found against itself — `boundaries.length` on one
+  side, `wellFormed + malformedHeadings + malformedBody` (all derived from
+  the same `boundaries`) on the other. That arithmetic cannot disagree with
+  itself by construction, so it reconciled nothing about the document, only
+  about the candidate matcher's internal bookkeeping. The review's fixture —
+  headings `## 1.`, `##2.` (no space), `##  3.` (two spaces), `### 4.` (one
+  level too deep) — made this concrete: four facts in the file, and
+  `node scripts/check-frame.mjs` against it reported
+
+      reconciled: 1 candidate heading(s) = 0 well-formed + 0 malformed heading(s) + 1 malformed body
+
+  one candidate found, three silently absorbed, arithmetic balanced. Header
+  comment claiming facts are "NEVER SILENTLY DROPPED" was false as written —
+  the third overstated guarantee in this round alone (`CLAUDE.md`'s rule
+  count and ownership claim, change 5, being the other two), named as its
+  own class here rather than patched quietly a second time. Reproduced
+  independently before any fix: built an equivalent fixture in this round's
+  own scratchpad and ran the pre-fix script against it, same result (1
+  candidate, 3 silently absorbed, clean-looking arithmetic).
+
+  Fixed two ways, not one. First, the candidate matcher itself
+  (`CANDIDATE_HEADING`) widened from a fixed single space to `\s*`, so
+  `##2.` and `##  3.` now open their own chunk boundary and are correctly
+  reported as malformed headings rather than merged into a neighbour's — two
+  of the fixture's three previously-invisible cases closed by this alone.
+  Second, and the one that actually answers the review's stated property —
+  completeness measured against something the candidate matcher cannot
+  influence — a new, independent scan (`looksLikeNumberedHeading`) that
+  shares no code or regex with the candidate matcher: a hand-walked
+  character loop counting any number of leading `#`, any whitespace, then a
+  digit, deliberately more permissive than the two-hash-only candidate
+  pattern. Its total is reconciled against the candidate matcher's own
+  count; a mismatch fails loudly and prints the exact missed line, rather
+  than a summary that can only ever agree with itself. This is what catches
+  `### 4.` — one heading level the candidate matcher will never match on
+  purpose, since a real level-3 sub-heading could legitimately appear inside
+  a fact's body — flagged as a completeness mismatch requiring a human
+  decision instead of silently passing or silently guessing. Re-run against
+  the review's fixture:
+
+      test-frame-parsing-2.md check -- 3 candidate heading(s): 1 well-formed, 2 malformed heading(s), 0 malformed body
+
+      FAIL        completeness: an independent scan found 1 heading-like line(s) the candidate matcher never saw at all:
+      FAIL          line 42: "### 4. A heading one level too deep"
+      FAIL        2. 2. A heading with no space after the hashes -- malformed heading, does not match "## N. Title": "##2. A heading with no space after the hashes"
+      FAIL        3. 3. A heading with two spaces after the hashes -- malformed heading, does not match "## N. Title": "##  3. A heading with two spaces after the hashes"
+      verified    1. A well-formed heading
+
+      accounted for: 3 candidate heading(s) = 1 well-formed fact(s) + 2 malformed heading(s) + 0 malformed body
+      completeness: independent scan found 4 heading-like line(s) total, 1 missed by the candidate matcher
+
+  All four facts now accounted for: two caught directly, one caught by the
+  completeness scan and named by line number, one genuinely well-formed. The
+  header comment no longer claims facts are never silently dropped in the
+  absolute; it states the two specific failure modes two rounds of review
+  found, what fixed each, and — plainly, rather than left for a third review
+  to find — what the scan still does not cover: a heading written with no
+  leading `#` at all, or identified by something other than a leading digit.
+  Regression-checked against both the first review's colon-heading fixture
+  (still 4 candidates, all accounted for, 0 missed by the completeness scan)
+  and the real `FRAME.md` (still 18 candidates = 18 well-formed, 0 missed).
+  The useful part is not this one instance: the first fix closed exactly the
+  case it was built for (a punctuation typo after the number) and the
+  general class — anything the candidate matcher's own pattern cannot see —
+  survived that fix completely intact, invisible to the same tautological
+  reconciliation that was supposed to catch it. A narrow fix for a reproduced
+  case is not the same thing as fixing the property, and this entry did not
+  know that until a second review said so.
 
 - Origin: delegated
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent)
 - Guardrails: `node scripts/check-frame.mjs` — 16 verified facts pass, 2
   attested facts listed and not executed, against the tree at the final
-  commit. `node scripts/check-frame.mjs <path-to-reviewer's-fixture>`, using
-  the new optional path argument against the reviewer's own scratchpad
-  fixture (unmodified, outside this repository) — reproduces the exact red
-  output pasted in change 5. `node
-  scripts/check-track-scope.mjs origin/main loop/meta/frame` — `ok all 7
-  changed file(s) within meta's scope` at the final commit, including
-  `docket/reviews/9980ade895f69b88bc25fcac08256736bd931902.md`, which this
-  round did not write and does not touch (re-run after each of this round's
-  own commits; the
-  reviewer independently confirmed the figure was accurate when measured at
-  each point it was quoted, including the apparent "5 vs 6" discrepancy
-  between change 4 and the changelog-recording commit, which is not a
-  discrepancy — `CHANGELOG.md` became the 6th file only in the commit that
-  records it). `npm run lint` clean against the rewritten
-  `scripts/check-frame.mjs`. `node scripts/round.mjs check` run after every
-  commit landed, last run against a freshly restarted server:
+  commit; `completeness: independent scan found 18 heading-like line(s)
+  total, 0 missed by the candidate matcher`. `node scripts/check-frame.mjs
+  <path>` re-run against three fixtures, not one: the first review's
+  colon-heading fixture (4 candidates, all accounted for, 0 missed —
+  reproduces the red output pasted in change 5, unaffected by change 10's
+  fix); a fixture built in this round's own scratchpad reproducing the
+  second review's exact case (`## 1.`, `##2.`, `##  3.`, `### 4.`) — run
+  against the **pre-fix** script first, confirming the tautology live
+  (`reconciled: 1 candidate heading(s) = 0 well-formed + 0 malformed
+  heading(s) + 1 malformed body` against 4 real facts) — then against the
+  fixed script, reproducing the red output pasted in change 10. `node
+  scripts/check-track-scope.mjs origin/main loop/meta/frame` — `ok all 8
+  changed file(s) within meta's scope` at the final commit, including both
+  `docket/reviews/9980ade895f69b88bc25fcac08256736bd931902.md` and
+  `docket/reviews/b918fa8eea57a12b3e63a9b96009f1174d5e51c5.md`, neither
+  written nor touched by this round. `npm run lint` clean against the
+  rewritten `scripts/check-frame.mjs`. `node scripts/round.mjs check` run
+  after every commit landed, last run against a freshly restarted server:
 
   ```
   === Static checks ===
@@ -376,11 +466,17 @@ accurate; no error in the brief surfaced under that scrutiny.
 - Result: 18 facts in `FRAME.md` (16 verified, 2 attested), all 16 checkable
   ones passing against live state re-queried this round; `check-frame.mjs`
   proved able to fail on a real mechanism change, on an injected wrong
-  value, and — after the review — on a malformed heading, each reverted and
-  re-verified clean; two blocking review findings fixed, including
-  `CLAUDE.md` briefly reintroducing a claim ("human-owned") this project had
-  just spent two rounds removing, corrected rather than smoothed over; track
-  scope widened by exactly the two paths this round used; the temporary
+  value, on a malformed heading, and — second review pass — on a heading
+  its own candidate matcher could not see at all, each reverted and
+  re-verified clean; three blocking review findings fixed across two
+  passes, including `CLAUDE.md` briefly reintroducing a claim
+  ("human-owned") this project had just spent two rounds removing and
+  `check-frame.mjs`'s own completeness reconciliation being a tautology
+  that could only ever agree with itself, both corrected rather than
+  smoothed over; the approval-classifier observation stands at two
+  independent, confounded occurrences, recorded as unconfirmed rather than
+  promoted into a finding, deliberately not tested further; track scope
+  widened by exactly the two paths this round used; the temporary
   `~/.claude/rules/addictedtoai-frame.md` this file supersedes is outside
   this repository and cannot be removed by this round — noted for the
   orchestrator to remove once `FRAME.md` merges.
