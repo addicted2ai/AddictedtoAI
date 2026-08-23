@@ -495,30 +495,100 @@ accurate; no error in the brief surfaced under that scrutiny.
   actually prove, and the mechanism no longer depends on this round (or a
   fourth review) having anticipated the next way a heading can be malformed.
 
+**12. Fourth review pass: the declared total checked a count, not a set — fixed, and this one converges**
+- Hypothesis: none stated in advance — the review confirmed change 11's fix
+  genuinely closes the indented-heading case, then found what it does not
+  cover: `## 1.`, `## 2.`, `## 47.` against a declared total of 3 — three
+  well-formed, column-0 headings, no shape defect anywhere — passes cleanly
+  while standing in for a deleted fact 3. Reported with an explicit caveat
+  about how far the reviewer got (their own fixture stayed malformed for an
+  unrelated reason, so they confirmed the mechanism rather than a clean
+  exit 0 directly) rather than overstating what was verified.
+- Change: reproduced first, independently, before touching anything — built
+  the exact fixture in this round's own scratchpad and ran it against the
+  change-11 script: `completeness (declared): 3 declared vs 3 recognised by
+  any scan`, all three facts reporting `verified` including fact "47", exit
+  0. `duplicateIds` (present since change 6) stops two headings claiming the
+  same number; nothing required the recognised numbers to *be*
+  `{1, ..., declaredTotal}` rather than merely that many numbers.
+
+  **Why this one is different in kind, not degree — the question asked and
+  answered before fixing anything.** Fixes 1 through 3 (changes 6, 10, 11)
+  each closed exactly the reproduced case and left a narrower one behind,
+  because recognising every way a heading's *shape* can be malformed is not
+  a bounded problem by incremental rediscovery — colon, then spacing and
+  heading level, then indentation, with no reason the sequence stops there.
+  Set equality over a finite range of integers is not that shape. Once the
+  recognised IDs must equal `{1, ..., declaredTotal}` exactly, there is no
+  narrower "wrong set" left to find: a missing fact changes the set, a
+  duplicate changes the set, a renumber changes the set, and the comparison
+  is total over every possible set, not a pattern matched against known
+  counterexamples. This is where the unbounded chase (changes 6, 10, 11)
+  stops and a closed, finite check (this change) starts — the same
+  distinction change 11 drew between shape-recognition and round 167's
+  free-text matching, applied one level down to why *this* fix does not
+  need a change 13.
+
+  Fixed with an explicit sequence check: the IDs the candidate matcher
+  recognises (well-formed or malformed-heading alike — a malformed heading
+  still claims a number) collected as a set and compared against
+  `{1, ..., declaredTotal}`; any missing or unexpected number fails,
+  printing both. Verified against the reproduced fixture (now correctly
+  `FAIL sequence: recognised IDs do not form {1, ..., 3} -- missing [3],
+  unexpected [47]`, exit 1), all three prior fixtures (unaffected — each
+  still fails for its original reason, IDs printed alongside for
+  visibility), and the real `FRAME.md` (`sequence (declared): recognised
+  IDs [1,2,...,18] vs expected {1..18}`, clean).
+- Change (the bound, corrected): change 11's entry stated the guarantee
+  holds "if someone keeps one number in sync" — true of the *count* but
+  silent on the *sequence*, which a rendered read-through of `FRAME.md`
+  does not surface (fact numbers are not usually read as a set). That was
+  the fifth overclaim in this round, one level more abstract than the
+  fourth, and change 11 inherited it from change 10's design rather than
+  checking it independently. Corrected, in both the header comment and
+  here: the guarantee holds exactly as long as the declared total is
+  bumped whenever a fact is truly added or removed — sequence integrity
+  itself is no longer something an editor is trusted to preserve by
+  convention, it is checked mechanically by this change. What remains
+  genuinely unverified, unchanged from change 11: a fact heading written
+  with no leading `#` at all never becomes a candidate and no check here
+  sees it.
+- Change (cosmetic, fixed while here because it is text read while
+  diagnosing a failure): the `not declared` branch of the completeness line
+  printed `completeness (declared): not declared declared vs ...` — a
+  duplicated word from string-templating `${declaredTotal === null ? "not
+  declared" : declaredTotal} declared`. Restructured so the label already
+  includes the word "declared" only once, in both branches.
+
 - Origin: delegated
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent)
 - Guardrails: `node scripts/check-frame.mjs` — 16 verified facts pass, 2
   attested facts listed and not executed, against the tree at the final
   commit; `completeness (declared): 18 declared vs 18 recognised by any
-  scan`. Re-run against four fixtures across three review passes, not one:
-  the first review's colon-heading fixture (4 candidates, all accounted
-  for, 0 missed — unaffected by changes 10 and 11); a fixture reproducing
-  the second review's exact case (`## 1.`, `##2.`, `##  3.`, `### 4.`) — run
-  against the **pre-fix** script first, confirming the tautology live
-  before change 10's fix landed; a fixture reproducing the third review's
-  exact case (one heading at column 0, one indented one space) — run
-  against the **change-10** script first (both scans agree it found "0
-  missed" while one fact was entirely gone), then against change 11's fix,
-  correctly failing `completeness: ... declares 2 fact(s), but only 1
-  heading-like line(s) were found by any scan`. Every fixture in this
-  round's own scratchpad, none committed, none touching `FRAME.md` itself.
-  `node scripts/check-track-scope.mjs origin/main loop/meta/frame` — `ok
-  all 9 changed file(s) within meta's scope` at the final commit, including
-  three review artifacts
+  scan`; `sequence (declared): recognised IDs [1,2,...,18] vs expected
+  {1..18}`. Re-run against five fixtures across four review passes, not
+  one: the first review's colon-heading fixture (4 candidates, all
+  accounted for, 0 missed — unaffected by changes 10-12); a fixture
+  reproducing the second review's exact case (`## 1.`, `##2.`, `##  3.`,
+  `### 4.`) — run against the **pre-fix** script first, confirming the
+  tautology live; a fixture reproducing the third review's exact case (one
+  heading at column 0, one indented one space) — run against the
+  **change-10** script first (both scans agree "0 missed" while one fact
+  was entirely gone), then against change 11's fix; a fixture reproducing
+  the fourth review's exact case (`## 1.`, `## 2.`, `## 47.`, declared
+  total 3) — run against the **change-11** script first, reproducing a
+  clean exit 0 with fact 47 reporting `verified` and fact 3 simply absent,
+  then against change 12's fix, correctly failing `sequence: recognised
+  IDs do not form {1, ..., 3} -- missing [3], unexpected [47]`. Every
+  fixture in this round's own scratchpad, none committed, none touching
+  `FRAME.md` itself. `node scripts/check-track-scope.mjs origin/main
+  loop/meta/frame` — `ok all 10 changed file(s) within meta's scope` at the
+  final commit, including four review artifacts
   (`9980ade895f69b88bc25fcac08256736bd931902.md`,
   `b918fa8eea57a12b3e63a9b96009f1174d5e51c5.md`,
-  `d004ad064027f957437afe2905b5eda46a1a67ee.md`), none written or touched by
+  `d004ad064027f957437afe2905b5eda46a1a67ee.md`,
+  `20b63020109cc6b87f5e52af738f2f9ce6424da1.md`), none written or touched by
   this round. `npm run lint` clean against the rewritten
   `scripts/check-frame.mjs`. `node scripts/round.mjs check` run after every
   commit landed, last run against a freshly restarted server:
@@ -549,21 +619,25 @@ accurate; no error in the brief surfaced under that scrutiny.
 - Result: 18 facts in `FRAME.md` (16 verified, 2 attested), all 16 checkable
   ones passing against live state re-queried this round; `check-frame.mjs`
   proved able to fail on a real mechanism change, an injected wrong value, a
-  malformed heading, a tautological reconciliation, and — third review pass
-  — a heading no shape-based scan in the tool could see at all, each
-  reverted or fixed and re-verified clean; four blocking review findings
-  fixed across three passes, including `CLAUDE.md` briefly reintroducing a
-  claim ("human-owned") this project had just spent two rounds removing and
-  `check-frame.mjs` overstating its own completeness guarantee twice in a
-  row before the property itself — a declared total, checked against
-  whatever any scan recognises, rather than recognition of every malformed
-  heading shape — replaced pattern-matching as the actual guarantee;
-  judgement recorded in change 11 for why that class does not converge by
-  incremental rediscovery, and why the replacement property does not need
-  to; the approval-classifier observation stands at two independent,
-  confounded occurrences, recorded as unconfirmed rather than promoted into
-  a finding, deliberately not tested further; track scope widened by
-  exactly the two paths this round used; the temporary
+  malformed heading, a tautological reconciliation, a heading no shape-based
+  scan could see, and — fourth review pass — a deleted-and-renumbered fact
+  that a pure count comparison could not distinguish from a complete set,
+  each reverted or fixed and re-verified clean; five blocking review
+  findings fixed across four passes, including `CLAUDE.md` briefly
+  reintroducing a claim ("human-owned") this project had just spent two
+  rounds removing and `check-frame.mjs` overstating its own completeness
+  guarantee three times running — count-based recognition, then a
+  tautological reconciliation, then a declared total that checked
+  cardinality instead of the set itself — before an explicit sequence
+  check (recognised IDs must equal `{1, ..., declaredTotal}` exactly)
+  closed the class the first three fixes could only narrow; judgement
+  recorded in changes 11 and 12 for why heading-shape recognition does not
+  converge by incremental rediscovery while integer-set equality does, and
+  why that distinction is what ended the chase rather than a fifth,
+  narrower patch; the approval-classifier observation stands at two
+  independent, confounded occurrences, recorded as unconfirmed rather than
+  promoted into a finding, deliberately not tested further; track scope
+  widened by exactly the two paths this round used; the temporary
   `~/.claude/rules/addictedtoai-frame.md` this file supersedes is outside
   this repository and cannot be removed by this round — noted for the
   orchestrator to remove once `FRAME.md` merges.
