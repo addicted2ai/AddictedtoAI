@@ -262,14 +262,24 @@ untouched).
 - Origin: delegated
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent; Opus overloaded this session)
-- Guardrails: `node scripts/round.mjs check` green, run directly in the
-  foreground with a long timeout, watched to completion — lint, docket valid
-  (128 items), track scope for `loop/meta/loud-origin-exemption`, production
-  build, all route checks passed, zero SKIPPED, zero UNVERIFIED. Includes
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  with a long timeout each time, four times total on this branch. Runs 1 and
+  4 green — lint, docket valid (128 items), track scope for
+  `loop/meta/loud-origin-exemption`, production build, all route checks
+  passed, zero SKIPPED, zero UNVERIFIED, including
   `scripts/test-review-artifact.mjs` (11/11) and `scripts/check-frame.mjs`
-  (16/16 checkable facts, 2 attested). Did not hit the documented
-  runner-launch flake
-  (docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-dependent.md).
+  (16/16 checkable facts, 2 attested). Runs 2 and 3, back to back with no edit
+  between them, hit the documented runner-launch flake
+  (docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-dependent.md),
+  same signature both times: `FAIL  ORCHESTRATE_COMMAND path was gated by the
+  runner system: ... checkout free -- no session from this supervisor is
+  advancing`. Twice in a row is more than the "hit it once" other rounds have
+  reported; disclosed rather than smoothed into "hit it once". Nothing in this
+  round's diff touches the runner, the supervisor, or the sandbox (this
+  round's scope is `check-review-artifact.mjs`, `round.mjs`,
+  `build-prompt.mjs`, `CHANGELOG.md` and two docket items), so it is treated
+  as the pre-existing flake that item documents, not a regression this round
+  caused — the final run (4) succeeded with no changes in between.
 - Result: not yet measured — the visible-exemption wording and the mid-round
   drift check are live in code and demonstrated on a reconstruction; whether
   either one is ever exercised by a real round's mistake is not something
