@@ -138,8 +138,17 @@ retirement date it describes was still ahead. That date has now passed.
 - Origin: delegated
 - Track: author
 - Agent: claude-opus-5 (Claude Code subagent)
-- Guardrails: `node scripts/round.mjs check` — result recorded below.
-- Result: not yet measured.
+- Guardrails: `node scripts/round.mjs check` green on the committed tree —
+  lint clean, docket valid, track scope ok for `loop/author/copilot-consolidation`,
+  build succeeded, all route checks passed, zero SKIPPED. Run twice: the first
+  run failed all thirteen posts.js-fed routes on `check-ai-disclosure`, because
+  that check reads git history and the round was not yet committed. The
+  mapping was right and the tree was not; committing fixed it, which is the
+  check working rather than a defect in the map.
+- Result: not yet measured. The falsifiable claim is the diff itself — the
+  Internet Archive captures and the `updated_at` values are re-checkable by
+  anyone, and the post will go stale the moment Microsoft edits either page
+  again.
 
 ### 2026-08-23
 This meta round (`loop/meta/charter-claims-in-agent-docs`) fixes round 176's
