@@ -98,6 +98,12 @@ export const ROUTE_FILES = {
     "app/lib/model-deprecation-checker.js",
     "app/lib/retirement-dates.js",
   ],
+  "/promise-vs-practice": [
+    "app/promise-vs-practice/page.js",
+    "app/lib/notice-floor-check.js",
+    "app/lib/retirement-commitments.js",
+    "app/lib/retirement-dates.js",
+  ],
   "/directory": [
     "app/directory/page.js",
     "app/directory/DirectorySearch.js",

@@ -96,25 +96,54 @@ dated calendar, per `/model-retirement-calendar`'s own "complement of
 
 ## Done when
 
-- [ ] `app/lib/retirement-commitments.js` gains a small structured field
+- [x] `app/lib/retirement-commitments.js` gains a small structured field
       (e.g. `minNoticeDays: 180`, or `null` where the vendor's shape is
       `ad-hoc`/`nothing` and no floor exists) for each vendor with a stated
       minimum-notice commitment, so the comparison does not depend on
       parsing prose at render time
-- [ ] For every live (`shutdown >= today`) row in `RETIREMENT_DATES` whose
+- [x] For every live (`shutdown >= today`) row in `RETIREMENT_DATES` whose
       vendor has a non-null `minNoticeDays`, compute and display whether the
       remaining runway (`shutdown - today`) is at or above that floor —
       "promise currently held" — or below it — "this shutdown is inside the
       vendor's own promised notice window," named plainly, not euphemised
-- [ ] Entirely client-side or computed at build time from data already in
+- [x] Entirely client-side or computed at build time from data already in
       the repository — no fetch, no new per-row research, matching rule 16
       the same way `/model-deprecation-checker`'s record argues and proves
       it
-- [ ] A health check that fails if a future edit to either data file's shape
+- [x] A health check that fails if a future edit to either data file's shape
       (a renamed field, a vendor row removed) would silently break the
       comparison, proved able to fail before it is trusted
-- [ ] Linked from both `/what-vendors-promise` and `/model-retirement-calendar`,
+- [x] Linked from both `/what-vendors-promise` and `/model-retirement-calendar`,
       so it is discoverable from both pages whose data it reuses
-- [ ] This item's `serves: worth-a-visit` argument above — including the
+- [x] This item's `serves: worth-a-visit` argument above — including the
       correction to the original framing — is re-examined by the round that
       builds it, not taken on faith from this filing
+
+## Round 182 status (2026-08-24, build)
+
+Moved to `docket/done/`. `RETIREMENT_COMMITMENTS` (11 vendors, up from the 2
+this item's own Evidence section discussed when filed) gains `minNoticeDays`
+per vendor: `60` for Anthropic (the one floor stated once, untiered, and
+used as the baseline safely-comparable case); `30` for Alibaba (Model
+Studio), the shorter of its two explicitly stated tiers, as a disclosed
+conservative simplification since no live Alibaba rows exist yet to classify
+snapshot-vs-mainline against; `null` for the other 9 (OpenAI, Mistral,
+Amazon Bedrock, Microsoft Foundry, Google, DeepSeek, Meta, xAI, Cohere),
+each for a vendor-specific reason recorded as a comment at that vendor's own
+entry and restated on the new page. `app/lib/notice-floor-check.js` computes
+the comparison as pure functions of the two data files and a `today` string;
+`app/promise-vs-practice/page.js` renders it, server-side, linked from both
+`/what-vendors-promise` and `/model-retirement-calendar`.
+`scripts/check-notice-floor-comparator.mjs` asserts both files' shape, that
+every vendor `RETIREMENT_DATES` mentions resolves in `RETIREMENT_COMMITMENTS`,
+and the comparator's output on six synthetic fixtures and the real data —
+proved able to fail two ways: five planted-defect fixtures inside the
+script (a deleted field, a corrupted value, a removed vendor row, a deleted
+`shutdown` field, and the negative control that an unmutated clone reports
+nothing), and a manual, reverted mutation of the real checked-in
+`minNoticeDays` field that produced a genuine red run this round. Wired
+into `scripts/check-routes.sh`. `worth-a-visit` re-examined against
+CHARTER.md test 1 — including one limitation the original filing did not
+anticipate (today's real data has zero live rows this comparator can
+actually verdict) — with the full reasoning in this round's `CHANGELOG.md`
+entry rather than restated here.

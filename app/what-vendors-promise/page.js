@@ -216,6 +216,17 @@ export default function WhatVendorsPromise() {
         most worth stating.
       </p>
 
+      <p className="checker-callout">
+        A promise is only worth reading if it is still being kept.{" "}
+        <a href="/promise-vs-practice">
+          See which live shutdowns currently clear the vendor&rsquo;s own
+          promised notice floor
+        </a>{" "}
+        — computed from this page&rsquo;s own numbers against{" "}
+        <a href="/model-retirement-calendar">the retirement calendar</a>,
+        recomputed on every build.
+      </p>
+
       <h2>Who already tracks the dates, and what this page adds</h2>
       <p>
         This page deliberately does not compete with the trackers that
