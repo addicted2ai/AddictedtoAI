@@ -78,6 +78,7 @@ const ROUTES = [
   "/what-vendors-promise",
   "/model-retirement-calendar",
   "/model-deprecation-checker",
+  "/model-migration-chains",
   "/loop-history",
 ];
 

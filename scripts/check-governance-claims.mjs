@@ -279,7 +279,7 @@ function attested(who, when, what) {
 // CHARTER.md is a red build here even before anyone works out which pages
 // it falsifies.
 
-const CLAIMS_DECLARED = 24;
+const CLAIMS_DECLARED = 26;
 
 const CLAIMS = [
   {
@@ -373,6 +373,24 @@ const CLAIMS = [
     why: "The same promise on the page around the component. Same fix, same reason.",
     source: fileMakesNoCall(
       "app/model-deprecation-checker/ModelDeprecationChecker.js",
+      "trackEvent"
+    ),
+  },
+  {
+    file: "app/model-migration-chains/ModelMigrationChains.js",
+    needle: "nothing you type is sent anywhere",
+    why: "Round 181's chain walker repeats the checker's privacy promise, for the same reason: everything it needs is already client-side data, so the same trackEvent temptation and the same fix apply before it is ever added.",
+    source: fileMakesNoCall(
+      "app/model-migration-chains/ModelMigrationChains.js",
+      "trackEvent"
+    ),
+  },
+  {
+    file: "app/model-migration-chains/page.js",
+    needle: "nothing you type is sent anywhere",
+    why: "The same promise on the page around the component. Same fix, same reason.",
+    source: fileMakesNoCall(
+      "app/model-migration-chains/ModelMigrationChains.js",
       "trackEvent"
     ),
   },

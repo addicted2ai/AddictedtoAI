@@ -402,10 +402,20 @@ export const PRODUCING_ROUNDS = {
   // this entry closes without waiting for the check to catch it) -- found
   // and fixed alongside the /directory mismatch the check did report, for
   // the same underlying reason.
-  "/model-retirement-calendar": 174,
+  // Round 181 (build, loop/build/model-migration-chains) adds a "Follow the
+  // chain" callout linking to the new /model-migration-chains, a real
+  // content change to app/model-retirement-calendar/page.js, so the newest
+  // change is this round's.
+  "/model-retirement-calendar": 181,
   // Round 168 (build) built this page. New route, so its producing round is
   // the round that created it.
-  "/model-deprecation-checker": 176,
+  // Round 181 (build, loop/build/model-migration-chains) adds the same
+  // "Follow the chain" callout to app/model-deprecation-checker/page.js, so
+  // the newest change is this round's.
+  "/model-deprecation-checker": 181,
+  // Round 181 (build, loop/build/model-migration-chains) built this page.
+  // New route, so its producing round is the round that created it.
+  "/model-migration-chains": 181,
   // Round 112 (build) publishes the loop's run history at /loop-history. New
   // route, so its producing round is the round that created it.
   "/loop-history": 112,

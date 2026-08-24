@@ -91,6 +91,57 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+This build round (`loop/build/model-migration-chains`) ships
+`docket/open/2026-08-22-model-migration-chains.md`: follow `RETIREMENT_DATES`'
+`replacement` field hop by hop to where it actually lands, flagging any hop
+that dead-ends in another retirement.
+
+**1. `app/lib/model-migration-chains.js`: `parseReplacement` + `walkChain`**
+- Hypothesis: `replacement` is prose in places (an "or"-joined option list, a
+  parenthetical qualifier), so bare string comparison would mis-walk or drop
+  rows — the item names two rows this must get right.
+- Change: `parseReplacement()` splits options and separates a trailing
+  qualifier; `walkChain()` follows every option to a leaf (live /
+  no-replacement-named / cycle). Verified against both named rows:
+  `dall-e-2`/`dall-e-3` parses into 3 options; `o1-pro-2025-03-19` parses
+  into `gpt-5.6-sol` with qualifier `reasoning.mode: pro`. Re-derived the
+  item's own documented chains in code, not trusted from prose — both
+  two-hop chains and the dall-e-2 three-way split reproduce exactly.
+
+**2. `scripts/check-model-migration-chains.mjs`, proved able to fail**
+- Hypothesis: an assertion nobody has watched go red is untested.
+- Change: walks every identifier (primary + alias, 92 total) across the
+  live 77-row data — zero cycles, bounded depth. Proved red twice: in-script
+  fixtures plant a cycle and a malformed replacement, both caught; and,
+  manually, `gpt-realtime-mini`'s replacement was pointed back at
+  `gpt-4o-mini-realtime-preview` in the real data — 3 of 19 checks FAILed
+  naming the cycle, exit 1 — reverted, re-ran green. Wired into
+  `scripts/check-routes.sh`.
+
+**3. `/model-migration-chains`, linked from both pages sharing the data**
+- Hypothesis: chain-following belongs next to the data it reuses, not as an
+  isolated page nobody finds.
+- Change: new client-side page and text input against the same 77 rows,
+  showing every branch's dead-ends and final landing point. Callouts added
+  to `/model-retirement-calendar` and `/model-deprecation-checker`. No
+  fetch, no `trackEvent`; registered in
+  `scripts/check-governance-claims.mjs`'s "sent anywhere" sweep rather than
+  left to trip it.
+
+Re-examined the item's `worth-a-visit` argument (CHARTER.md test 1) rather
+than taking it on faith: holds on the demonstrated chains above — a reader
+who stops at the first hop can land on something also dying. One sub-claim,
+"nobody else can publish this," is not re-verified this round (no fresh
+fetch, rule 1) and is carried forward as the item's own claim, not restated
+as checked.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5 (Claude Code subagent; Opus overloaded this session)
+- Guardrails: `node scripts/round.mjs check`, watched to completion.
+- Result: not yet measured.
+
+### 2026-08-24
 This build round (`loop/build/model-shutdown-ics-feed`) ships
 `docket/open/2026-08-22-model-shutdown-ics-feed.md`: a static `.ics` calendar
 of `RETIREMENT_DATES`, one `VEVENT` per row, linked from both pages that

@@ -1391,3 +1391,37 @@ h2.latest-post-label {
 .checker-callout a {
   color: var(--accent);
 }
+
+/* ---- Model migration chains -------------------------------------------- */
+/* Each branch of a resolved chain (app/model-migration-chains/) is its own
+   block; multiple branches appear when a replacement names several options
+   (dall-e-2's three-way split is the real example in the data). */
+.chain-branch {
+  margin-top: 1.25rem;
+}
+
+.chain-branch + .chain-branch {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.chain-hops {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.chain-hops li + li {
+  margin-top: 0.5rem;
+}
+
+/* An interior hop that itself dead-ends into another dated row uses the
+   page's ordinary text color (.chain-hop-deadend carries no override); the
+   branch's final landing point is the one visually emphasized, so "this is
+   not where it stops yet" reads from weight, not just list order. */
+.chain-hop-landing {
+  font-weight: 500;
+}
+
+.chain-hop-cycle strong {
+  color: var(--danger, #e06c75);
+}

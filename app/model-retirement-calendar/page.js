@@ -175,6 +175,14 @@ export default function ModelRetirementCalendar() {
         or retiring, and what the vendor names as the replacement.
       </p>
       <p className="checker-callout">
+        The &ldquo;Replacement&rdquo; column above is only the first hop
+        &mdash; some of those replacements are themselves rows on this table.{" "}
+        <a href="/model-migration-chains">
+          Follow a chain to where it actually lands
+        </a>{" "}
+        before you migrate onto something that is also dated.
+      </p>
+      <p className="checker-callout">
         Would rather not check back?{" "}
         <a href="/model-retirement-calendar.ics">
           Subscribe to this table as a calendar feed

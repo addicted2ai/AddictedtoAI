@@ -91,6 +91,13 @@ export const ROUTE_FILES = {
     "app/lib/model-deprecation-checker.js",
     "app/lib/retirement-dates.js",
   ],
+  "/model-migration-chains": [
+    "app/model-migration-chains/page.js",
+    "app/model-migration-chains/ModelMigrationChains.js",
+    "app/lib/model-migration-chains.js",
+    "app/lib/model-deprecation-checker.js",
+    "app/lib/retirement-dates.js",
+  ],
   "/directory": [
     "app/directory/page.js",
     "app/directory/DirectorySearch.js",
