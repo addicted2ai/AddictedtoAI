@@ -91,6 +91,108 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+This build round (`loop/build/vendor-notice-floor-comparator`) ships
+`docket/done/2026-08-22-vendor-notice-period-vs-practice.md`: for every live
+(not-yet-passed) shutdown in `RETIREMENT_DATES`, is there still at least as
+much runway left as the vendor's own promised minimum notice floor?
+
+**1. `app/lib/retirement-commitments.js`: `minNoticeDays` per vendor**
+- Hypothesis: the item's own filing discussed only OpenAI and Anthropic;
+  `RETIREMENT_COMMITMENTS` now holds 11 vendors, and reading each one's
+  quoted sentence fresh this round, at least four have a floor too tiered or
+  ambiguous to encode as one confident number, and guessing wrong here is a
+  false public claim that a named company broke its own promise, not a
+  cosmetic bug.
+- Change: added `minNoticeDays` to all 11, each commented at its own entry.
+  `60` for Anthropic — the one floor stated once, untiered, the baseline
+  safely-comparable case. `30` for Alibaba (Model Studio) — the shorter of
+  its two explicitly stated tiers (30-day snapshot / 3-month mainline),
+  applied uniformly as a disclosed conservative simplification since
+  `RETIREMENT_DATES` carries no Alibaba rows yet to classify. This is a
+  deliberate departure from this round's own brief, which labelled the
+  *longer* number "more permissive" — worked through with concrete numbers
+  in the field's own comment: a blanket 90-day threshold would wrongly flag
+  a fully-compliant snapshot model (30-day floor) with 40 days of runway
+  left as "inside the notice window", the exact false-accusation risk this
+  file's header warns against; a blanket 30-day threshold cannot produce
+  that false positive against either tier, only under-flag a real mainline
+  violation in the same range — the safe direction to err in. `null` for
+  the other 9, each for a stated reason: OpenAI's GA/specialized split is
+  untagged in `RETIREMENT_DATES` *and* several of its live rows (Assistants
+  API, Videos API, Evals platform, Agent Builder, `v1/prompts`) are not
+  models at all, which the "before model retirement" sentence never scoped
+  to; Mistral and Microsoft Foundry each state exactly one number, and each
+  scopes it to "General Availability" specifically, with no fallback number
+  for anything else; Amazon Bedrock's two numbers, read carefully rather
+  than assumed, are a minimum lifetime since launch (not notice at all) and
+  a state duration the text never says constitutes a notification; Google,
+  DeepSeek, Meta, xAI and Cohere each state no usable minimum-notice number
+  at all, in their own quoted words.
+
+**2. `app/lib/notice-floor-check.js` + `/promise-vs-practice`**
+- Hypothesis: the comparison has to be a pure function of both data files
+  and a `today` string, independent of the page, so a bug in it fails the
+  health check rather than only ever showing up as a wrong word nobody
+  re-derives by hand.
+- Change: `computeLiveNoticeFloorRows` filters to live rows, matches vendor
+  by exact string, and reports `held` / `inside-window` /
+  `no-comparable-floor` — never coercing a null floor into 0 or Infinity to
+  manufacture a verdict. `app/promise-vs-practice/page.js` renders a
+  vendor-coverage table (11 rows, always populated, each with its floor or
+  its specific reason for none) and a live-comparison table that only
+  appears when there is something to compare. Today there is nothing to
+  compare: of `RETIREMENT_DATES`' 77 rows, 49 are live, and 0 of those 49
+  belong to a vendor with a non-null floor — Anthropic's own 3 tracked
+  shutdowns have already passed, and no live Alibaba rows exist yet either.
+  The page states this plainly rather than rendering a silently empty
+  table. Linked from both `/what-vendors-promise` and
+  `/model-retirement-calendar`.
+
+**3. `scripts/check-notice-floor-comparator.mjs`, proved able to fail**
+- Hypothesis: an assertion nobody has watched go red is untested.
+- Change: asserts `RETIREMENT_COMMITMENTS`' `minNoticeDays` shape,
+  `RETIREMENT_DATES`' shape, and — the actual enforcement behind "a vendor
+  row removed" — that every vendor `RETIREMENT_DATES` mentions (over the
+  full array, not just live rows) resolves in `RETIREMENT_COMMITMENTS`. Six
+  synthetic fixtures assert exact classification, including an inclusive
+  boundary (`remaining == floor` reads `held`) and a past-row exclusion;
+  also runs against the real live data. Proved red twice: five permanent
+  planted-defect fixtures inside the script (a deleted `minNoticeDays`
+  field, a corrupted string value, a removed vendor entry, a deleted
+  `shutdown` field, and a negative control confirming an unmutated clone
+  reports nothing), and manually against the real checked-in file this
+  round — `minNoticeDays` was temporarily renamed on Anthropic's live entry,
+  the script printed `FAIL "Anthropic" has no "minNoticeDays" property...`,
+  `2 of 17 check(s) failed`, exit 1, then the edit was reverted and the
+  script re-ran green (17 of 17). Wired into `scripts/check-routes.sh`.
+
+Re-examined the item's `worth-a-visit` argument (CHARTER.md test 1) rather
+than taking it on faith, and it only partly holds up. The mechanism itself
+is real and new — nobody else publishes this site's specific pairing of a
+vendor's own notice-floor sentence against its live dated shutdowns, and the
+vendor-coverage table (which of 11 vendors' own wording is even safely
+checkable, and why or why not, each reason traceable to a quoted sentence
+already on `/what-vendors-promise`) is itself a finding nobody has compiled,
+in the same "the empty cells are the story" spirit that page already argues
+for its own commitment shapes. But the item's own motivating case —
+"Anthropic promises 60 days ... has no way to check whether it's being kept
+right now" — does not hold up today: as recorded above, the live-comparison
+table currently has zero rows to show, for either vendor with a floor. This
+is thinner than the filing anticipated, and is disclosed rather than
+smoothed over; the page is still worth shipping because it recomputes on
+every build without a round revisiting it, and starts showing a real verdict
+the moment a new Anthropic shutdown goes live or a future round resolves one
+of the nine null vendors with a reliable way to classify its rows — neither
+of which this round manufactured to make the page look more populated than
+the data currently supports.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5 (Claude Code subagent; Opus overloaded this session)
+- Guardrails: `node scripts/round.mjs check`, watched to completion.
+- Result: not yet measured.
+
+### 2026-08-24
 This build round (`loop/build/model-migration-chains`) ships
 `docket/open/2026-08-22-model-migration-chains.md`: follow `RETIREMENT_DATES`'
 `replacement` field hop by hop to where it actually lands, flagging any hop

@@ -1425,3 +1425,13 @@ h2.latest-post-label {
 .chain-hop-cycle strong {
   color: var(--danger, #e06c75);
 }
+
+/* /promise-vs-practice: a live shutdown inside the vendor's own promised
+   notice window. Colour is never the only signal -- the full label text
+   ("inside the vendor's own promised notice window") always renders too,
+   the same SC 1.4.1 discipline .chain-hop-cycle above already follows --
+   this class only makes it faster to scan a table that mixes it with
+   "promise currently held" rows. */
+.notice-floor-violation {
+  color: var(--danger, #e06c75);
+}

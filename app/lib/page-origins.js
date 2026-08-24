@@ -377,7 +377,11 @@ export const PRODUCING_ROUNDS = {
   // consolidated report, and touches app/lib/retirement-commitments.js (a
   // listed source file) only via the data file's header comment — so the
   // newest change is this round's.
-  "/what-vendors-promise": 132,
+  // Round 182 (build, loop/build/vendor-notice-floor-comparator) adds a
+  // callout linking to the new /promise-vs-practice, a real content change
+  // to app/what-vendors-promise/page.js, so the newest change is this
+  // round's.
+  "/what-vendors-promise": 182,
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
   // Round 132 (build) rewrites the page's staleness passage to name the
@@ -406,7 +410,11 @@ export const PRODUCING_ROUNDS = {
   // chain" callout linking to the new /model-migration-chains, a real
   // content change to app/model-retirement-calendar/page.js, so the newest
   // change is this round's.
-  "/model-retirement-calendar": 181,
+  // Round 182 (build, loop/build/vendor-notice-floor-comparator) adds a
+  // callout linking to the new /promise-vs-practice, a real content change
+  // to app/model-retirement-calendar/page.js, so the newest change is this
+  // round's.
+  "/model-retirement-calendar": 182,
   // Round 168 (build) built this page. New route, so its producing round is
   // the round that created it.
   // Round 181 (build, loop/build/model-migration-chains) adds the same
@@ -416,6 +424,9 @@ export const PRODUCING_ROUNDS = {
   // Round 181 (build, loop/build/model-migration-chains) built this page.
   // New route, so its producing round is the round that created it.
   "/model-migration-chains": 181,
+  // Round 182 (build, loop/build/vendor-notice-floor-comparator) built this
+  // page. New route, so its producing round is the round that created it.
+  "/promise-vs-practice": 182,
   // Round 112 (build) publishes the loop's run history at /loop-history. New
   // route, so its producing round is the round that created it.
   "/loop-history": 112,

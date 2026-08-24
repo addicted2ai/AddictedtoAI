@@ -11,6 +11,7 @@ const links = [
   { href: "/model-retirement-calendar", label: "Retirement calendar" },
   { href: "/model-deprecation-checker", label: "Deprecation checker" },
   { href: "/model-migration-chains", label: "Migration chains" },
+  { href: "/promise-vs-practice", label: "Promise vs. practice" },
   { href: "/loop-history", label: "Failure rate" },
   { href: "/log", label: "Build log" },
 ];

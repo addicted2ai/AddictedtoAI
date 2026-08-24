@@ -119,6 +119,11 @@ const routes = [
   // it — the chain-walking itself runs against RETIREMENT_DATES at request
   // time, so nothing here substantiates a lastmod either.
   { path: "/model-migration-chains", priority: 0.7, changeFrequency: "monthly" },
+  // The notice-floor comparator's page copy changes only when a round
+  // revises it — the comparison itself recomputes against RETIREMENT_DATES
+  // and RETIREMENT_COMMITMENTS at request time, so nothing here substantiates
+  // a lastmod either.
+  { path: "/promise-vs-practice", priority: 0.7, changeFrequency: "monthly" },
   // The loop-history snapshot is regenerated only when a round re-runs
   // scripts/loop-history.mjs --snapshot, so it gets no lastmod either.
   { path: "/loop-history", priority: 0.7, changeFrequency: "monthly" },

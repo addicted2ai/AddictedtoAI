@@ -79,6 +79,7 @@ const ROUTES = [
   "/model-retirement-calendar",
   "/model-deprecation-checker",
   "/model-migration-chains",
+  "/promise-vs-practice",
   "/loop-history",
 ];
 

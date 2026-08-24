@@ -156,6 +156,30 @@ check /model-migration-chains       200 "text/html" 'gpt-image-1-mini'
 check /model-retirement-calendar    200 "text/html" 'href="/model-migration-chains"'
 check /model-deprecation-checker    200 "text/html" 'href="/model-migration-chains"'
 
+# The vendor notice-floor comparator
+# (docket/done/2026-08-22-vendor-notice-period-vs-practice.md): for every
+# live shutdown, is there still at least as much runway left as the
+# vendor's own promised minimum notice floor? Server-rendered, no client
+# input control needed. The coverage table and its two labelled numbers
+# (Anthropic's 60-day floor, Alibaba's 30-day floor) are static per
+# app/lib/retirement-commitments.js and safe to assert regardless of which
+# shutdowns happen to be live on any given day; the "which live shutdowns
+# currently clear the floor" table is not asserted here for exactly that
+# reason -- it is legitimately empty some days (see this round's CHANGELOG
+# entry) and a check pinned to today's row count would go stale as soon as
+# the data moves, which is the same discipline this file already applies
+# to sitemap/feed freshness elsewhere.
+check /promise-vs-practice          200 "text/html" 'data-notice-floor-table="coverage"'
+check /promise-vs-practice          200 "text/html" 'Anthropic'
+check /promise-vs-practice          200 "text/html" '60 days'
+check /promise-vs-practice          200 "text/html" 'Alibaba (Model Studio)'
+check /promise-vs-practice          200 "text/html" '30 days'
+check /promise-vs-practice          200 "text/html" 'no comparable floor'
+check /what-vendors-promise         200 "text/html" 'href="/promise-vs-practice"'
+check /model-retirement-calendar    200 "text/html" 'href="/promise-vs-practice"'
+echo
+run_step node scripts/check-notice-floor-comparator.mjs
+
 # The subscribable .ics calendar feed (docket/open/2026-08-22-model-shutdown-ics-feed.md):
 # a static route, generated once at build time from RETIREMENT_DATES (see
 # app/model-retirement-calendar.ics/route.js's own header for the two ways
@@ -327,7 +351,7 @@ run_step bash scripts/check-prebuild-single-branch.sh
 # scripts/check-ai-disclosure.mjs separately verifies the producing-round map
 # against the build log and git history.
 echo
-  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /model-deprecation-checker /model-migration-chains /loop-history; do
+  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /model-deprecation-checker /model-migration-chains /promise-vs-practice /loop-history; do
   body=$(curl -s "$BASE$route")
   case "$body" in
     *'data-ai-disclosure'*) echo "ok    $route carries the AI disclosure" ;;
@@ -501,7 +525,7 @@ else
   MARGIN=3000
   ceiling=$((budget - MARGIN))
   echo "      document budget $budget bytes; local ceiling $ceiling (margin $MARGIN)"
-for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /model-deprecation-checker /model-migration-chains /loop-history; do
+for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /model-deprecation-checker /model-migration-chains /promise-vs-practice /loop-history; do
     bytes=$(curl -s -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}' "$BASE$route")
     if [ "$bytes" -gt "$ceiling" ]; then
       echo "FAIL  $route is $bytes bytes gzipped, over the local ceiling of $ceiling"

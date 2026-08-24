@@ -183,6 +183,17 @@ export default function ModelRetirementCalendar() {
         before you migrate onto something that is also dated.
       </p>
       <p className="checker-callout">
+        A dated shutdown is only half the picture &mdash; the other half is
+        whether it still leaves as much runway as the vendor itself
+        promised.{" "}
+        <a href="/promise-vs-practice">
+          See which live shutdowns above currently clear the vendor&rsquo;s
+          own promised notice floor
+        </a>
+        , and which vendors&rsquo; own wording is too tiered or ambiguous to
+        check safely at all.
+      </p>
+      <p className="checker-callout">
         Would rather not check back?{" "}
         <a href="/model-retirement-calendar.ics">
           Subscribe to this table as a calendar feed
