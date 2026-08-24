@@ -68,35 +68,39 @@
 // changelog (like `ship` does): a branch that carries no entry of its own has
 // no round of its own to judge, and passes.
 //
-// For any Origin other than `delegated` the requirement to CARRY an artifact
-// does not apply. That exemption is reported as an exemption, never as a pass:
-// the `Origin` it turns on is written by the round this check is judging, so
-// it is a value the branch granted itself. See
-// docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md, and
-// round 152, which declared `supervised` by accident and read CLEAN and
-// mergeable while carrying a `request-changes` artifact.
+// Through round 179's first push, any Origin other than `delegated` was
+// exempt from CARRYING an artifact, while a second, always-on rule still
+// HONOURED one that already existed: whatever the Origin, and whether or not
+// the branch carried a changelog entry, a review that covered the merged
+// tree and did not say `approve` failed this check regardless. That closed
+// round 152's shape -- a branch could not walk past its own `request-changes`
+// artifact by declaring a different Origin or omitting a changelog entry
+// (see docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md).
 //
-// What the exemption does NOT do is discard a review that already exists. Two
-// separate jobs live here, and only the first is exempt-able:
+// Adversarial review of that push found the same shape one level deeper.
+// Condition 4 requires a covering artifact's named commit to differ from HEAD
+// by nothing outside `docket/reviews/` -- correct on its own; a stale review
+// should not count. But it meant a REJECTING review could be cleared by any
+// later commit, trivial or not: the instant coverage breaks, the honouring
+// check finds zero covering artifacts of *any* verdict and reports that as a
+// pass ("0 covering, N informational"), because its real pass condition was
+// "not actively rejected" -- true the moment nothing covers HEAD at all --
+// never "has been approved". A round could launder a `request-changes`
+// verdict with one no-op commit, no fresh review required. Proved with real
+// commits against this branch, not a synthetic fixture.
 //
-//   REQUIRING an artifact -- a delegated round must carry a covering approve.
-//   HONOURING one         -- whatever the Origin, and whether or not the branch
-//                            carries a changelog entry, a review artifact that
-//                            covers the merged tree and does not say `approve`
-//                            fails this check.
-//
-// Honouring costs nothing to a round that no reviewer rejected, and it closes
-// the shape round 152 demonstrated: the branch could not have walked past its
-// own `request-changes` artifact by writing a different word in its changelog.
-// Whether a non-delegated round should be REQUIRED to carry an artifact at all
-// is a different and much larger question. Counted through this same parser on
-// 2026-08-23 -- getBuildLog().filter((e) => e.declaredOrigin), grouped by
-// origin -- 131 entries declare one and 43 of them are not `delegated` (18
-// supervised, 11 unsupervised, 14 maintainer), so requiring artifacts for
-// `unsupervised` rounds would end unsupervised operation as this project has
-// published it.
-// That belongs to the maintainer, and the docket item above says so; this
-// script does not decide it.
+// Closed by removing the exemption rather than patching around it. This
+// check now passes only when a review artifact exists that covers HEAD
+// exactly (condition 4, unchanged) and reads `Verdict: approve`. Every other
+// state -- no artifact at all, one that does not cover HEAD, or a covering
+// `request-changes` -- fails, for every Origin and whether or not the branch
+// declares a changelog entry. There is one rule now, not two. Counted through
+// this same parser on 2026-08-23, 43 of 131 Origin-declaring rounds were not
+// `delegated`; this closes what those rounds could otherwise have exploited,
+// at the real cost of requiring a covering approve from all of them going
+// forward -- weighed against the alternative of trying to keep a rejection
+// "sticky" across whatever commits follow it, which trades one hole for a
+// more complex rule with room for a different one.
 //
 // This script is invoked in two places. In CI
 // (.github/workflows/pr-checks.yml, the `review-artifact` job) it is a
@@ -177,46 +181,26 @@ if (declaresRound) {
 
 const origin = entry && entry.declaredOrigin ? entry.origin : "";
 
-// Two jobs live here, and only the first can be exempted.
-//
-//   REQUIRING an artifact -- a delegated round must carry a covering approve.
-//   HONOURING one         -- a review artifact that covers the merged tree and
-//                            does not say `approve` fails this check whatever
-//                            the Origin says, and whether or not the branch
-//                            declares a round of its own.
-//
-// Both exits below used to return before anything looked at docket/reviews/,
-// so either one walked a rejecting review straight past the gate. Round 152
-// did exactly that: it read CLEAN and mergeable while carrying a covering
-// `request-changes` artifact, because `Origin: supervised` returned first.
-const required = declaresRound && origin === "delegated";
-
+// One rule now, not two (see the header): every branch this check runs
+// against needs a review artifact that covers HEAD exactly (condition 4) and
+// reads `Verdict: approve`, regardless of Origin and regardless of whether
+// the branch declares a changelog entry of its own. `origin`/`declaresRound`
+// are read only for the context printed below, never to exempt anything.
 if (!declaresRound) {
   console.log("  note    this branch changes no changelog entry — it declares no round of its own,");
-  console.log("          so there is no Origin here against which to require a review artifact.");
-  console.log("          Any review artifact it does carry is still honoured below.");
-} else if (!required) {
-  console.log(`  EXEMPT  Origin is '${origin || "undeclared"}' — no review artifact is required of it.`);
-  console.log("          A review artifact is required only for a round claiming an AI reviewed it");
-  console.log("          before merge. This Origin is written by the round this check is judging,");
-  console.log("          so it is an exemption the branch granted itself, not one this check");
-  console.log("          verified — see");
-  console.log("          docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md.");
-  console.log("          Any review artifact it does carry is still honoured below.");
+  console.log("          but a covering approve review is required of it regardless.");
 } else {
-  console.log("Origin: delegated — requiring a review artifact that covers the merged tree");
+  console.log(`Origin: ${origin || "undeclared"} — requiring a review artifact that covers the merged tree`);
 }
 
 // A review file is named by the commit it reviewed. Enumerate what the
-// branch actually carries rather than trusting a changelog claim. This runs on
-// every path: an exempt branch is not required to carry one, but what it does
-// carry is still read.
+// branch actually carries rather than trusting a changelog claim.
 const reviewFiles = git(["ls-tree", "-r", "--name-only", "HEAD", "--", REVIEWS_DIR])
   .split("\n")
   .filter(Boolean);
 
-if (required && reviewFiles.length === 0) {
-  bad(`no file under ${REVIEWS_DIR} on this branch — a delegated round must carry its review`);
+if (reviewFiles.length === 0) {
+  bad(`no file under ${REVIEWS_DIR} on this branch — a covering approve review is required`);
 }
 
 function reviewFields(text) {
@@ -245,9 +229,9 @@ const covering = [];
 let informational = 0;
 for (const file of reviewFiles) {
   const name = path.basename(file, ".md");
-  if (required) console.log(`\n  ${file}`);
+  console.log(`\n  ${file}`);
   if (!/^[0-9a-f]{40}$/.test(name)) {
-    if (required) bad(`${file}: filename is not a full 40-character SHA`);
+    bad(`${file}: filename is not a full 40-character SHA`);
     continue;
   }
 
@@ -272,50 +256,51 @@ for (const file of reviewFiles) {
   // and is a failure if it is not.
   const ancestor = tryGit(["merge-base", "--is-ancestor", name, head]);
   if (!ancestor.ok) {
-    if (required)
-      console.log(
-        `  note  ${file}: Commit ${name} is not in this branch's history — it ` +
-          "belongs to an already-merged or squashed tree (or names a commit this " +
-          "repository does not have), so it is not evidence about this branch; " +
-          "informational only, counts for nothing"
-      );
+    console.log(
+      `  note  ${file}: Commit ${name} is not in this branch's history — it ` +
+        "belongs to an already-merged or squashed tree (or names a commit this " +
+        "repository does not have), so it is not evidence about this branch; " +
+        "informational only, counts for nothing"
+    );
     informational++;
     continue;
   }
 
   const text = tryGit(["show", `HEAD:${file}`]);
   if (!text.ok) {
-    if (required) bad(`${file}: could not be read from the branch`);
+    bad(`${file}: could not be read from the branch`);
     continue;
   }
   const fields = reviewFields(text.out);
   const missing = REQUIRED_FIELDS.filter((field) => !fields[field]);
   if (missing.length > 0) {
-    if (required)
-      bad(`${file}: missing field(s) ${missing.join(", ")} — a review that cannot be parsed is not a review`);
+    bad(`${file}: missing field(s) ${missing.join(", ")} — a review that cannot be parsed is not a review`);
     continue;
   }
   if (fields.Commit !== name) {
-    if (required)
-      bad(`${file}: Commit '${fields.Commit}' does not match the filename it is stored under`);
+    bad(`${file}: Commit '${fields.Commit}' does not match the filename it is stored under`);
     continue;
   }
   if (reviewProse(text.out).length === 0) {
-    if (required)
-      bad(`${file}: no prose — a review that verified nothing by running anything is not a review`);
+    bad(`${file}: no prose — a review that verified nothing by running anything is not a review`);
     continue;
   }
 
   // Condition 4: the reviewed commit's tree must differ from HEAD only by
   // the review itself. A review of an earlier commit never vouches for later
-  // code, so a review whose tree diverges is stale and covers nothing.
+  // code, so a review whose tree diverges is stale and covers nothing. This
+  // is where the fourth hole lived: a rejecting review that stops covering
+  // (because of ANY later commit, not necessarily a substantive one) used to
+  // fall out of `covering` with nothing to replace it, and the exemption
+  // below read that as "nothing rejects this" rather than "nothing approves
+  // it either". There is no exemption below now; falling out of `covering`
+  // here always leads to the same "no covering approve" failure.
   const diff = tryGit(["diff", "--name-only", `${fields.Commit}..HEAD`]);
   const outside = (diff.ok ? diff.out.split("\n").filter(Boolean) : []).filter(
     (f) => !f.startsWith(REVIEWS_DIR)
   );
   if (outside.length > 0) {
-    if (required)
-      console.log(`  note  ${file}: does not cover the merged tree (${outside.length} file(s) changed after it)`);
+    console.log(`  note  ${file}: does not cover the merged tree (${outside.length} file(s) changed after it)`);
     continue;
   }
 
@@ -323,32 +308,6 @@ for (const file of reviewFiles) {
 }
 
 console.log("");
-
-// The half no exemption reaches. Whatever this branch declares about itself, a
-// review that covers the tree it is about to merge and does not say `approve`
-// is a review that says no.
-if (!required) {
-  const rejecting = covering.filter(
-    (artifact) => artifact.fields.Verdict.toLowerCase() !== "approve"
-  );
-  for (const { file, fields } of rejecting) {
-    bad(
-      `${file}: Verdict is '${fields.Verdict}', not 'approve' — it covers the merged tree, ` +
-        "so it stands whatever this branch declares about itself"
-    );
-  }
-  if (failures > 0) {
-    console.log("        Being exempt from CARRYING a review is not being exempt from one that");
-    console.log("        already exists and says no.");
-    console.log(`\n${failures} problem(s) — a covering review that does not approve blocks this branch`);
-    process.exit(1);
-  }
-  console.log(
-    `ok    no artifact required of this branch, and no covering review rejects it ` +
-      `(${covering.length} covering, ${informational} informational)`
-  );
-  process.exit(0);
-}
 
 if (covering.length === 0) {
   bad("no review artifact covers the merged tree");
@@ -375,6 +334,6 @@ if (failures === 0) {
   console.log(`ok    review artifact verified: ${covering.length} covering review(s) approve the merged tree`);
   process.exit(0);
 } else {
-  console.log(`${failures} problem(s) — a delegated round cannot merge without a covering approve review`);
+  console.log(`${failures} problem(s) — this branch cannot merge without a covering approve review`);
   process.exit(1);
 }

@@ -25,28 +25,43 @@
 //      missing fields still fails — "informational" is not a way for a
 //      broken artifact about live code to slip through.
 //
-// Four more hold the two exits round 179 closed. The checker had two ways to
-// return before it had looked at docket/reviews/ at all — a non-`delegated`
-// Origin, and a branch carrying no changelog entry — and a third that reported
-// an unevaluable base ref as a pass. A rejecting review walked past all three.
+// Four more held the two exits round 179's first push closed. The checker had
+// two ways to return before it had looked at docket/reviews/ at all — a
+// non-`delegated` Origin, and a branch carrying no changelog entry — and a
+// third that reported an unevaluable base ref as a pass. A rejecting review
+// walked past all three.
 //
 //   6. a branch declaring `Origin: supervised` while carrying a covering
-//      `request-changes` artifact fails: exemption from CARRYING a review is
-//      not exemption from one that exists and says no (round 152's shape),
+//      `request-changes` artifact fails (round 152's shape),
 //   7. a branch with no changelog entry of its own and a covering `reject`
 //      fails for the same reason,
 //   8. a base ref that cannot be resolved fails and says so, rather than
 //      reporting "no round of its own to judge" — a required status check must
 //      distinguish "this is false" from "I could not evaluate this"
-//      (FRAME.md fact 1),
-//   9. a branch declaring `Origin: supervised` and carrying no artifact at all
-//      still passes — the negative control proving 6 and 7 did not turn this
-//      into "every round must carry a review", which is a maintainer's
-//      question and not this checker's to answer.
+//      (FRAME.md fact 1).
+//
+// Three more hold the fix to the hole adversarial review found in that same
+// push, one level deeper than 6 and 7: "covering" is an exact-tree match, so
+// ANY later commit — trivial or not — strips a `request-changes` review's
+// coverage, and the checker used to read "nothing covers HEAD" as "nothing
+// rejects it" and pass. There is no REQUIRING/HONOURING split left to exploit
+// that way: every branch now needs a review that covers HEAD exactly and
+// approves, full stop.
+//
+//   9. a branch declaring `Origin: supervised` and carrying no artifact at
+//      all now fails too — the old case 9 asserted the opposite; this is its
+//      replacement, proving the exemption is actually gone, not just
+//      unreachable,
+//  10. the same branch with a covering `approve` still passes — a
+//      non-delegated round can still merge, it just needs a real approve now,
+//  11. the exact case adversarial review used: a covering `request-changes`,
+//      then one trivial unrelated follow-up commit. Before this fix that
+//      exited 0 ("0 covering, N informational"); it must fail now, the same
+//      "no covering approve" failure as never having been reviewed.
 //
 //   node scripts/test-review-artifact.mjs
 //
-// Runs in about a second, needs only git and node. Exit 0 means all nine
+// Runs in about a second, needs only git and node. Exit 0 means all eleven
 // properties held.
 //
 // The checker is spawned with the scratch repo as its working directory, so
@@ -289,22 +304,17 @@ function runChecker(repo, base) {
   }
 }
 
-// Case 6: round 152's shape. The branch declares `Origin: supervised`, which
-// exempts it from having to CARRY a review, and carries a covering
-// `request-changes` artifact anyway. Before round 179 this exited 0 with
-// "Origin is 'supervised' — this check does not apply", printed before
-// anything read docket/reviews/: a required status check reporting green over
-// a review that said no.
+// Case 6: round 152's shape. The branch declares `Origin: supervised` and
+// carries a covering `request-changes` artifact. Before round 179's first
+// push this exited 0 with "Origin is 'supervised' — this check does not
+// apply", printed before anything read docket/reviews/: a required status
+// check reporting green over a review that said no.
 {
   const { repo, base, work } = makeRepo({ origin: "supervised" });
   try {
     addReview(repo, work, "request-changes");
     const result = runChecker(repo, base);
-    if (
-      result.status === 1 &&
-      result.stdout.includes("Verdict is 'request-changes'") &&
-      result.stdout.includes("whatever this branch declares about itself")
-    ) {
+    if (result.status === 1 && result.stdout.includes("Verdict is 'request-changes', not 'approve'")) {
       console.log("ok    a non-delegated Origin does not exempt a branch from a covering rejection");
     } else {
       console.log(`FAIL  supervised + covering request-changes should fail; exit ${result.status}`);
@@ -362,22 +372,75 @@ function runChecker(repo, base) {
   }
 }
 
-// Case 9: the negative control for 6 and 7. A non-delegated round carrying no
-// artifact at all still passes. Requiring artifacts from every round would end
-// `unsupervised` operation as this project publishes it -- a maintainer's
-// decision, not this checker's
-// (docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md).
-// This case is what keeps 6 and 7 from quietly becoming that change.
+// Case 9: a non-delegated round carrying no artifact at all now fails too.
+// Through round 179's first push this passed as the negative control keeping
+// 6 and 7 from becoming "every round must carry a review" — but the fourth
+// hole showed that same exemption is exactly what let a trivial commit
+// launder a real rejection (case 11 below). Closed by removing the exemption
+// rather than patching around it, so this case now asserts the opposite of
+// what it used to.
 {
   const { repo, base } = makeRepo({ origin: "supervised" });
   try {
     const result = runChecker(repo, base);
-    if (result.status === 0 && result.stdout.includes("EXEMPT")) {
-      console.log("ok    a non-delegated round carrying no artifact still passes, and says it is exempt");
+    if (result.status === 1 && result.stdout.includes("no file under docket/reviews/")) {
+      console.log("ok    a non-delegated round carrying no artifact now fails, not exempted");
     } else {
-      console.log(`FAIL  supervised + no artifact should pass; exit ${result.status}`);
+      console.log(`FAIL  supervised + no artifact should now fail; exit ${result.status}`);
       console.log(result.stdout.trim());
-      failures.push("the non-delegated exemption stopped exempting");
+      failures.push("a non-delegated round with no artifact still passed");
+    }
+  } finally {
+    fs.rmSync(repo, { recursive: true, force: true });
+  }
+}
+
+// Case 10: the same non-delegated branch still passes with a genuine covering
+// approve. Closing case 9's old exemption must not turn into "no round can
+// ever merge without Origin: delegated" — a non-delegated round can still
+// merge, it now just needs the same real approve a delegated one does.
+{
+  const { repo, base, work } = makeRepo({ origin: "supervised" });
+  try {
+    addReview(repo, work, "approve");
+    const result = runChecker(repo, base);
+    if (
+      result.status === 0 &&
+      /ok\s+review artifact verified: 1 covering review\(s\) approve/.test(result.stdout)
+    ) {
+      console.log("ok    a non-delegated round with a genuine covering approve still passes");
+    } else {
+      console.log(`FAIL  supervised + covering approve should pass; exit ${result.status}`);
+      console.log(result.stdout.trim());
+      failures.push("a non-delegated round with a covering approve did not pass");
+    }
+  } finally {
+    fs.rmSync(repo, { recursive: true, force: true });
+  }
+}
+
+// Case 11: the exact hole adversarial review found, proved with hand-built
+// commits — the reason this round exists. A covering `request-changes`
+// review, then one trivial follow-up commit unrelated to it: the review
+// stops covering HEAD (condition 4 is exact-tree, correctly), but before this
+// fix the checker read "zero covering reviews of any verdict" as "nothing
+// rejects this" and passed with "0 covering, N informational" — the reject
+// laundered by a no-op commit, no new review required. It must fail now, the
+// same "no covering approve" failure as a branch that was never reviewed.
+{
+  const { repo, base, work } = makeRepo({ origin: "supervised" });
+  try {
+    addReview(repo, work, "request-changes");
+    fs.writeFileSync(path.join(repo, "trivial.txt"), "noop\n");
+    git(repo, ["add", "trivial.txt"]);
+    git(repo, ["commit", "-q", "-m", "trivial follow-up, unrelated to the review"]);
+    const result = runChecker(repo, base);
+    if (result.status === 1 && result.stdout.includes("no review artifact covers the merged tree")) {
+      console.log("ok    a trivial follow-up commit cannot launder a covering rejection into a pass");
+    } else {
+      console.log(`FAIL  reject + trivial follow-up should still fail; exit ${result.status}`);
+      console.log(result.stdout.trim());
+      failures.push("a trivial follow-up commit cleared a covering rejection");
     }
   } finally {
     fs.rmSync(repo, { recursive: true, force: true });

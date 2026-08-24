@@ -92,9 +92,8 @@ and will be published rather than optimised.
 
 ### 2026-08-24
 This meta round (`loop/meta/checks-that-misreport`) resumes round 179 after
-two Opus-overload crashes left the fix uncommitted. Read every hunk before
-trusting it, then proved each premise red-then-green independently — the
-predecessor's own verification, if any, was never visible.
+two Opus-overload crashes left the fix uncommitted, then closes a fourth hole
+adversarial review found in it. Every premise proved red-then-green.
 
 **1. `check-ai-disclosure.mjs` told a round to corrupt a correct map**
 - Hypothesis: round 178's real failure — uncommitted work leaves
@@ -127,6 +126,16 @@ predecessor's own verification, if any, was never visible.
   9). Proved by swapping the original checker into the predecessor's 9-case
   suite: 4 failed against it, all 9 pass fixed.
 
+**4. Review found a fourth hole, one level deeper**
+- Hypothesis: exact-tree "covering" meant any later commit, trivial or not,
+  cleared a `request-changes` review; the exempt path read "nothing covers
+  HEAD" as "nothing rejects it" and passed — proved with real commits.
+- Change: removed the exemption. Every branch now needs a review covering
+  HEAD exactly with `Verdict: approve`, for every Origin — a real cost, since
+  43 of 131 declared-Origin rounds are not `delegated`. Proved: the exact
+  reject-then-trivial-commit case now fails; a non-delegated approve still
+  passes; the earlier fixes hold (11/11 cases).
+
 Declined: hit the documented flake in `test-orchestrate-runner-launch.mjs`
 (docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-dependent.md)
 once, same signature, unrelated to this diff — disclosed, re-ran once, green.
@@ -135,7 +144,8 @@ once, same signature, unrelated to this diff — disclosed, re-ran once, green.
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent; Opus overloaded this session)
 - Guardrails: `node scripts/round.mjs check` green — lint, docket, track
-  scope, build, all route checks, zero SKIPPED, zero UNVERIFIED.
+  scope, build, all route checks, zero SKIPPED, zero UNVERIFIED. Re-verified
+  after the fourth-hole fix.
 - Result: not yet measured.
 
 ### 2026-08-23
