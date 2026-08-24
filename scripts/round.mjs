@@ -297,7 +297,14 @@ const TOOL_SCOPE = {
 
 function start() {
   const forced = arg("track");
-  const agent = arg("agent", "unknown");
+  // No default. This was `arg("agent", "unknown")` until round 185, and the
+  // literal string went straight into build-prompt.mjs's "Record these in
+  // your changelog entry" block -- so `round.mjs start` with no --agent
+  // instructed the round to write `- Agent: unknown`, which
+  // scripts/check-changelog-provenance.mjs rejects at merge. The launcher
+  // must not tell a round to write a value a required check blocks on.
+  // Given none, build-prompt.mjs tells the round to determine it instead.
+  const agent = arg("agent", null);
   const force = flag("force");
 
   head("Before starting");
@@ -367,8 +374,7 @@ function start() {
     "scripts/build-prompt.mjs",
     "--track",
     track,
-    "--agent",
-    agent,
+    ...(agent ? ["--agent", agent] : []),
     "--reason",
     reason,
   ]);
@@ -378,7 +384,9 @@ function start() {
   console.log(`  branch: loop/${track}/<slug>   (CI reads the track from this)`);
   console.log(`          HEAD is already on origin/main — branch from here, and`);
   console.log(`          never commit to main itself.`);
-  console.log(`  agent:  ${agent}`);
+  console.log(
+    `  agent:  ${agent || "(none given — the round names what ran it; see the prompt)"}`
+  );
   if (TOOL_SCOPE[track]) {
     console.log(`\n  Tool scope for this track, which nothing local enforces:`);
     console.log(`    ${TOOL_SCOPE[track]}`);

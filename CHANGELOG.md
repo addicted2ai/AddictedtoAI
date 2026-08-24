@@ -246,16 +246,21 @@ cannot live in the launcher.
   orchestrator session, and registering it claims nothing about the
   supervisor launch path.
 - Change: the checker resolves an entry's `Agent:` — everything before the
-  first parenthetical — against runner keys *and* runner `model:` values.
-  Both, deliberately: the record's convention is to publish the model, while
-  `policy.yml` and `scripts/runner-preflight.mjs` address runners by key.
+  first parenthetical — against a runner key, a runner `model:`, a harness
+  name, or `<provider-or-harness>/<model>`. All four, because all four are
+  shapes this repository actually produces.
+- **The first version of this resolver was built on an inverted reading of
+  the record, and review caught it.** It accepted only runner keys and
+  models, on a stated rationale that "the record's convention is to publish
+  the model". That describes 25 entries. The dominant convention is harness
+  first with the model in the parenthetical — `opencode (deepseek-v4-flash)`
+  70 times — plus bare harness names (`codex` 17, `claude-code` 13) and
+  slash-joined pairs. Corrected in the file rather than left standing.
 - **Historical coverage is nil, and that is the point of saying so.** The
-  `Agent:` field carries `opencode (deepseek-v4-flash)` 70 times, `codex`
-  17, `claude-code` 13, `claude-sonnet-5 (Claude Code subagent)` 11 and six
-  other spellings besides — 131 entries of free text, several of which
-  would not resolve. `CHARTER.md` rule 5 forbids rewriting them, so the
-  check applies from round 185 forward and prints the count it is skipping
-  on every run rather than reporting `ok` over a silent 135-round gap.
+  `Agent:` field carries 131 entries of free text across eleven spellings.
+  `CHARTER.md` rule 5 forbids rewriting them, so the check applies from
+  round 185 forward and prints the count it is skipping on every run rather
+  than reporting `ok` over a silent 135-round gap.
 
 **5. Proved able to fail, because a check nobody has watched go red is not a check**
 - Hypothesis: this repository's most-repeated defect class is a check that
@@ -265,13 +270,77 @@ cannot live in the launcher.
 - Change: `scripts/test-changelog-provenance.mjs`, following
   `scripts/test-governance-claims.mjs`'s technique — a sandbox copy, one
   planted defect per case, and an assertion that the checker both exits
-  non-zero *and* says something recognisable about that specific defect. 12
-  cases and 2 controls. The composition cases needed a generated 204-round
+  non-zero *and* says something recognisable about that specific defect. 14
+  cases, 3 controls, 10 must-resolve values and 2 launcher-output
+  assertions. The composition cases needed a generated 204-round
   record, because the armed state cannot be reached by editing the real
   changelog: the real newest round *is* the arming round, so its window
   necessarily reaches below the seam. One control proves the armed path can
   go green; two cases prove it goes red on a single starved heavy track and
   on both at once.
+
+**6. Review: a check that judged more than any round could fix**
+- Hypothesis (wrong, and wrong in a way worth recording): that scoping the
+  new assertions "from round 185 forward" was enough, and that a resolver
+  built from the changelog's `Agent:` values would accept whatever this
+  repository produces. Both were checked against the record and neither was
+  checked against the *launcher*.
+- The `Agent:` resolver rejected the values this project's own instructions
+  tell a round to write, inside a required check. `unknown` — the literal
+  default at `scripts/round.mjs:300` and `scripts/build-prompt.mjs:39`,
+  rendered by `build-prompt.mjs` under "Record these in your changelog
+  entry" — was rejected. So were `claude-code` and `claude-code-action`
+  (`prompts/shared/every-run.md:80`, and `.claude/skills/local-loop/
+  SKILL.md:58`), and `opencode (deepseek-v4-flash)`, the shape of 70
+  entries. A check whose own launcher instructs rounds to fail it is worse
+  than no check.
+- Change, at the source and not by widening an accept-list: neither
+  `round.mjs start` nor `build-prompt.mjs` defaults `--agent` to `unknown`
+  any more. Given none, the prompt tells the round to determine and name
+  what ran it and what that has to resolve to — the same pattern
+  `build-prompt.mjs` adopted for `--origin` on 2026-08-24, a caller told
+  what determines the value instead of being handed one nothing verified.
+  `.github/workflows/loop.yml` calls `build-prompt.mjs` without `--agent`
+  and runs rounds through `anthropics/claude-code-action@v1`, so
+  `scripts/runners.yml` now registers a `claude-code-action` harness —
+  with no adapter, because `scripts/orchestrate.sh` cannot launch it and
+  GitHub Actions does. `every-run.md` names `runners.yml` as the authority
+  rather than a hardcoded list that can drift. The test suite now pins all
+  ten prescribed values as cases that must PASS, and asserts
+  `build-prompt.mjs`'s actual output contains no `unknown` — the end-to-end
+  half, which is what was missing.
+- The deeper finding: asserting over *every* enforced-era entry meant one
+  bad value merged at, say, round 190 would red every future pull request,
+  with rule 5 forbidding the only remedy. "Rule 5 forbids the fix" is not a
+  recovery path, and that is an unrecoverable state reachable by a single
+  mistake.
+- Change: the two per-entry assertions now judge only the entries a branch
+  *adds* — those whose round number exceeds origin/main's round count,
+  which the append-only record makes exact. A bad value fails the pull
+  request that introduces it, while fixing it is still legal, and can never
+  deadlock the repository afterwards. Merged entries are still read and
+  still **reported** when they would not pass: visibility without a trap.
+  Where `origin/main` cannot be resolved the scope narrows to the newest
+  entry and says so, the guard `check-docket.mjs` carries for its own
+  filing gate. The composition assertion is unchanged and does not need
+  this — its remedy is to ship a `scout` or `maintain` round, which is
+  always legal.
+- Writing that scoping surfaced a third defect on its first run: reading
+  `origin/main:CHANGELOG.md` blew `execFileSync`'s default 1 MB buffer, and
+  the first version caught every error alike and announced "origin/main is
+  not in this checkout" on a tree where it plainly was. A check reporting
+  the wrong reason for standing down is this file's own subject matter. It
+  now separates a missing ref (narrow the scope) from a ref that exists and
+  cannot be read (fail).
+- Also from review, and cheap: the window regex tolerates whitespace so a
+  cosmetic reformat of `dispatch.mjs` cannot red the build; the checker's
+  header no longer tabulates per-track counts beside the code that computes
+  them live (it had already gone stale within the hour, because this round
+  shipped and moved the window); two test cases expected regexes that each
+  matched either of two messages and so proved neither, now anchored to the
+  assertion's own wording; and the test tally reports controls, cases,
+  must-resolve values and launcher assertions separately instead of mixing
+  them into one fraction.
 
 **What this does not make impossible.** `enforce_admins` is `false` on
 `main`, and this loop's account has documented, merged-pull-request proof
@@ -285,9 +354,15 @@ run rather than leaving it to this entry, and nothing here should be read
 as claiming a stronger guarantee than the branch protection actually
 provides.
 
-A follow-up was filed rather than built, under `build` because `meta`'s
-queue stands at 26 open against a `queue_budget` of 14 and
-`check-docket.mjs`'s filing gate correctly rejects a branch that grows it:
+Two follow-ups were filed rather than built, both under `build` because
+`meta`'s queue stands at 26 open against a `queue_budget` of 14 and
+`check-docket.mjs`'s filing gate correctly rejects a branch that grows it.
+`docket/open/2026-08-24-dispatch-field-is-enforced-but-never-rendered.md`:
+`Dispatch:` is enforced at merge but invisible at `/log`, because
+`app/lib/build-log.js` holds the `FIELDS` list and `app/` is not in `meta`'s
+scope — which is also why this round's checker reads `CHANGELOG.md` with its
+own small reader, cross-checked against the site's parser on every run
+rather than trusted. And
 `docket/open/2026-08-24-label-every-guardrail-launch-or-merge-time.md` —
 every guardrail this repository has should be labelled launch-time or
 merge-time, because nobody currently knows which are load-bearing.
@@ -305,32 +380,52 @@ check, not as a finding this round made.
   was `audit`. (Recorded verbatim from the brief; "below" is the brief's
   ordering, where the finding followed this line — in this entry it leads.)
 - Guardrails: `node scripts/round.mjs check`, run directly in the foreground
-  with a long explicit timeout, three times on this branch and green every
-  time: `npm run lint`, docket valid, track scope for
+  with a long explicit timeout, six times on this branch — five green, one a
+  disclosed flake. (The count stops here by the same convention round 184
+  used: the tail of these runs only re-confirms text-only edits to this
+  entry, and the sentence you are reading is the last of them. It touches no
+  checked code; `npm run lint` is `next lint`, JS/TS only.) Green means:
+  `npm run lint`, docket valid, track scope for
   `loop/meta/dispatch-binds-at-merge`, production build, all route checks
   passed. Run 2 outlived the 600-second ceiling the calling tool allows and
   finished detached, exit code 0 — a limit of the harness, not a check
   result, and its full output was read rather than assumed. Runs 2 and 3
   re-confirmed text-only edits to this entry, which touch no checked code
   (`npm run lint` is `next lint`, JS/TS only) but do rebuild `/log`, where
-  the document-size budget is asserted. The documented runner-launch flake
+  the document-size budget is asserted. Runs 4 and 5 followed the review
+  pass, which does change code. The documented runner-launch flake
   (`docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-dependent.md`)
-  was not hit on this branch. `node scripts/test-changelog-provenance.mjs`:
-  12 of 12 planted defects caught, both controls green — including the
-  control proving the *armed* composition path can go green, which no edit
-  to the real changelog can reach. `node
+  was not hit on this branch. Run 4, after the review pass, hit a *sibling*
+  of it — `scripts/test-orchestrate-checkout.mjs`, not the runner-launch
+  test the item names: `FAIL a quiet session delayed the checkout (rc=0,
+  5439ms)`. Same class (a fixed timer scoring a slow sandboxed child as a
+  gate failure), different file, so the open item does not literally cover
+  it. This round's diff touches no orchestrate, liveness or checkout code
+  (`git diff --name-only origin/main...HEAD`, checked before re-running
+  rather than assumed), and run 5 immediately after, with no edit in
+  between, was green. Recorded rather than quietly retried.
+  `node scripts/test-changelog-provenance.mjs` after the review pass: 14 of 14 planted defects caught, 3 of 3 controls
+  green, 10 of 10 prescribed `Agent:` values accepted, 2 of 2
+  launcher-output assertions green. Three of those started red and were
+  fixed rather than reinterpreted — two stale expectations of mine and one
+  fixture that mutated round 1 by accident and so proved nothing. The
+  controls include the *armed* composition path going green, which no edit
+  to the real changelog can reach, and the B2 property directly: a merged
+  entry carrying `Agent: unknown` is reported and does not fail the build.
+  `node
   scripts/check-changelog-provenance.mjs` against the real tree: agrees with
-  `app/lib/build-log.js` on all 185 rounds, one well-formed Dispatch, one
-  Agent resolving against 5 registered runners, and the composition `WARN`
-  naming `scout` 0 and `maintain` 0 over rounds 166..185. The cross-check
+  `app/lib/build-log.js` on all 185 rounds, scope correctly computed as the
+  1 entry this branch adds above origin/main's 184, one well-formed
+  Dispatch, one Agent resolving, and the composition `WARN` naming `scout` 0
+  and `maintain` 0 over rounds 166..185. The cross-check
   earned its place on its first run: it went red because this entry's change
   block 5 had a `Change:` with no `Hypothesis:`, which `app/lib/build-log.js`
   rejects — caught before `npm run build` ever saw it. `node
-  scripts/check-docket.mjs`: 129 items valid, 39 open; the filing gate reads
-  `build` 8 -> 9 against a budget of 14 and `meta` unchanged at 26. `node
+  scripts/check-docket.mjs`: 130 items valid, 40 open; the filing gate reads
+  `build` 8 -> 10 against a budget of 14 and `meta` unchanged at 26. `node
   scripts/check-runner-config.mjs`, `check-origin-definitions.mjs` and
-  `check-governance-claims.mjs` re-run directly after the `runners.yml` and
-  preamble edits, all green.
+  `check-governance-claims.mjs` re-run directly after the `runners.yml`,
+  `prompts/` and preamble edits, all green.
 - Result: not yet measured, and the falsifiable half is dated. If the loop
   goes on being briefed by hand, the composition `WARN` will keep printing
   `scout 0` every run and become a red build at round 204, when the window

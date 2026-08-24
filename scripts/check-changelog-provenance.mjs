@@ -17,20 +17,19 @@
 // in the launcher that stopped being used.
 //
 // Measured on 2026-08-24 (`node scripts/dispatch.mjs`, against policy.yml's
-// weights), over the last 20 shipped rounds:
+// weights) over the last 20 shipped rounds: the two heaviest tracks, `scout`
+// (weight 30) and `maintain` (25), had shipped ZERO; the lightest, `meta`
+// (5), had shipped nine. `scout` is the loop's only input from outside this
+// repository (policy.yml: `needs_docket_item: false` -- "its input is the
+// world, not the queue") and it was off for the whole stretch.
 //
-//   track     policy weight   shipped in last 20
-//   scout     30              0
-//   maintain  25              0
-//   author    15              2
-//   build     15              9
-//   audit     10              0
-//   meta       5              9
-//
-// The two heaviest tracks ran zero times; the lightest ran nine. `scout` is
-// the loop's only input from outside this repository (policy.yml:
-// `needs_docket_item: false` -- "its input is the world, not the queue")
-// and it was off for the whole stretch.
+// The per-track counts are deliberately NOT tabulated here. This file's own
+// output prints them, live, on every run -- and the first version of this
+// header did tabulate them, then went stale within the hour, because the
+// round that wrote it shipped and moved the window. A number copied into a
+// comment beside the code that computes it is the drift this repository
+// keeps re-shipping. Round 185's changelog entry records the numbers as of
+// the day, which is a record, not a live claim.
 //
 // The principle this file is built against: A GUARDRAIL ENFORCED AT LAUNCH
 // IS ADVISORY; ONLY A MERGE-TIME CHECK BINDS. Everything that survived the
@@ -49,20 +48,43 @@
 // *visible and deliberate*. It does not make bypass impossible, and nothing
 // here should be read as saying it does.
 //
-// NOT RETROACTIVE, ON PURPOSE. CHARTER.md rule 5 makes the record
-// append-only: past entries are not rewritten to satisfy a check invented
-// after them. Roughly 100+ entries carry free-text `Agent:` values
-// (`opencode`, `claude-code`, `claude-sonnet-5 (Claude Code subagent)`,
-// `claude-opus-5 (orchestrating model)` and more) and none carries a
-// `Dispatch:` field at all, because the field did not exist. So both
-// per-entry assertions below apply from ENFORCED_FROM forward and historical
-// coverage is nil. That is stated rather than hidden: an honest
-// "not retroactive" is this project's convention, and a check that quietly
-// skipped 135 rounds while printing "ok" would be the defect class this
-// round exists to reduce.
+// WHAT THE PER-ENTRY ASSERTIONS JUDGE, AND WHY IT IS THE DIFF AND NOT THE
+// ERA. This is the second version. The first asserted `Dispatch:` and
+// `Agent:` over EVERY entry at or after ENFORCED_FROM, and review caught
+// that this is an unrecoverable state reachable by a single mistake: one
+// merged entry with a bad value would turn every future pull request red,
+// and CHARTER.md rule 5 forbids the only remedy -- editing it. "Rule 5
+// forbids the fix" is not a recovery path.
+//
+// So the two per-entry assertions judge only what the branch under test can
+// still legally change: entries this branch ADDS, which are exactly the
+// entries whose round number exceeds the round count on origin/main (the
+// record is append-only, so a new entry can only appear on top and a merged
+// entry's number never moves). A bad value fails the pull request that
+// introduces it, while fixing it is still legal, and can never deadlock the
+// repository afterwards.
+//
+// Entries already on origin/main are still READ and still REPORTED when they
+// would not pass -- see the `note` lines below. Visibility without a trap:
+// the check does not stop looking at merged history, it stops making merged
+// history able to fail a build nobody can fix.
+//
+// When origin/main cannot be resolved -- a single-branch or shallow clone
+// has no remote ref -- the scope falls back to the newest entry alone,
+// announced rather than silently widened or silently skipped. That is the
+// guard scripts/check-docket.mjs carries for its own filing gate, and for
+// the same reason: a check that cannot read its baseline must not invent one
+// or take the build down with it.
+//
+// Rounds before ENFORCED_FROM are never judged at all. Roughly 130 entries
+// carry free-text `Agent:` values written before any registry existed, and
+// none carries a `Dispatch:` field, because the field did not exist. That is
+// stated rather than hidden: a check that quietly skipped 135 rounds while
+// printing "ok" would be the defect class this round exists to reduce.
 
 import fs from "fs";
 import path from "path";
+import { execFileSync } from "child_process";
 import { load as parseYaml } from "js-yaml";
 
 // An optional root, so scripts/test-changelog-provenance.mjs can run this
@@ -237,7 +259,73 @@ await crossCheck();
 // the published record instead of from whoever remembers how it was started.
 
 const DISPATCH_SHAPE = /^(dispatcher|forced)\b\s*(?:[—–-]{1,2})\s*(\S.*)$/;
-const enforced = parsed.filter((entry) => entry.number >= ENFORCED_FROM);
+
+// How many rounds the record already holds on origin/main. Everything above
+// that number is an entry this branch adds -- the only entries it can still
+// legally change, and therefore the only ones these assertions may fail on.
+// See the header: judging merged entries makes a single mistake permanent.
+// Returns a number, or null when there is genuinely no baseline to read.
+// The two are distinguished on purpose. A missing origin/main is expected in
+// a single-branch or shallow clone and narrows the scope. A ref that EXISTS
+// but cannot be read is a broken tool, and must not quietly become "no
+// baseline" -- the first version of this function caught every error alike
+// and reported "origin/main is not in this checkout" on a tree where it
+// plainly was, because CHANGELOG.md is over 1 MB and blew execFileSync's
+// default maxBuffer. A check that reports the wrong reason for standing down
+// is the defect class this file exists to reduce.
+function baseRoundCount() {
+  try {
+    execFileSync("git", ["rev-parse", "--verify", "--quiet", "origin/main^{commit}"], {
+      stdio: "ignore",
+      cwd: root,
+    });
+  } catch {
+    return null; // genuinely no remote ref here
+  }
+  try {
+    const text = execFileSync("git", ["show", "origin/main:CHANGELOG.md"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      cwd: root,
+      maxBuffer: 256 * 1024 * 1024,
+    }).replace(/\r\n/g, "\n");
+    return sections(text).length;
+  } catch (error) {
+    fail(
+      `origin/main exists but its CHANGELOG.md could not be read (${error.message
+        .split("\n")[0]
+        .trim()}) -- the scope of every per-entry assertion below depends on it, and a ` +
+        "baseline that cannot be read must not silently become no baseline"
+    );
+    return null;
+  }
+}
+
+const baseRounds = baseRoundCount();
+const eraEntries = parsed.filter((entry) => entry.number >= ENFORCED_FROM);
+
+let enforced;
+if (baseRounds === null) {
+  enforced = parsed.slice(0, 1).filter((entry) => entry.number >= ENFORCED_FROM);
+  console.log(
+    "note  origin/main is not in this checkout, so the entries this branch adds cannot be " +
+      "computed -- scope falls back to the newest entry alone. The check still runs; it is " +
+      "narrower than it would be in CI, and says so rather than widening or skipping silently"
+  );
+} else {
+  enforced = eraEntries.filter((entry) => entry.number > baseRounds);
+  console.log(
+    `note  scope: the ${enforced.length} entr(ies) this branch adds above origin/main's ` +
+      `${baseRounds} round(s). Entries already merged are read and reported below, never ` +
+      "failed on -- rule 5 forbids editing them, so failing on one would be a build nobody " +
+      "could fix"
+  );
+}
+
+// Merged entries in the enforced era that would not pass. Reported, never
+// failed on. This is the half that keeps the check honest about what it can
+// see without giving it a way to deadlock the repository.
+const merged = eraEntries.filter((entry) => !enforced.includes(entry));
 
 let dispatchProblems = 0;
 for (const entry of enforced) {
@@ -266,10 +354,17 @@ for (const entry of enforced) {
     dispatchProblems++;
   }
 }
-if (enforced.length === 0) {
+if (eraEntries.length === 0) {
   fail(
-    `no entry in CHANGELOG.md has a round number >= ${ENFORCED_FROM} -- this check has ` +
-      "nothing to assert, which must not read as a pass"
+    `no entry in CHANGELOG.md has a round number >= ${ENFORCED_FROM} -- the record holds ` +
+      "no round this check applies to at all, so it has nothing to assert, which must not " +
+      "read as a pass"
+  );
+} else if (enforced.length === 0) {
+  console.log(
+    "note  this branch adds no changelog entry, so the Dispatch and Agent assertions have " +
+      "nothing in scope. That is a legitimate state, not a pass over a defect -- `round.mjs " +
+      "ship` fails closed on a round with no entry of its own, separately from this check"
   );
 } else if (dispatchProblems === 0) {
   ok(
@@ -282,6 +377,17 @@ console.log(
   `note  historical coverage is nil by design: rounds 1..${ENFORCED_FROM - 1} predate the ` +
     "Dispatch field and CHARTER.md rule 5 forbids rewriting them"
 );
+for (const entry of merged) {
+  const shape = entry.dispatch && DISPATCH_SHAPE.test(entry.dispatch);
+  if (!shape) {
+    console.log(
+      `note  merged round ${entry.number} (${entry.date}) carries ` +
+        `${entry.dispatch === null ? "no Dispatch field" : `Dispatch '${entry.dispatch.slice(0, 50)}'`}` +
+        ", which this check would reject on a branch. It is already on origin/main and rule 5 " +
+        "forbids editing it, so it is reported and not failed on"
+    );
+  }
+}
 
 // --- 2. composition: a policy-heavy track may not sit at zero ----------------
 //
@@ -328,7 +434,9 @@ const heavy = Object.entries(tracks)
 // The dispatcher's own window, read from its source rather than restated.
 function dispatchWindow() {
   const source = read("scripts/dispatch.mjs");
-  const match = source.match(/^const WINDOW = (\d+);$/m);
+  // Tolerant of whitespace and of a formatter reflowing the declaration: a
+  // cosmetic reformat of dispatch.mjs must not turn this build red.
+  const match = source.match(/^\s*const WINDOW\s*=\s*(\d+)\s*;/m);
   return match ? Number(match[1]) : null;
 }
 
@@ -410,14 +518,42 @@ if (WINDOW === null) {
 // and it has always been free text, so "did this round come through a
 // registered runner?" could not be answered from the record at all.
 //
-// A value resolves when the part before any parenthetical names either a
-// runner key or a runner's `model`. Both are accepted deliberately: the
-// record's own convention is to publish the MODEL
-// (`claude-opus-5 (orchestrating model)`, `claude-sonnet-5 (Claude Code
-// subagent)`), while policy.yml and scripts/runner-preflight.mjs address
-// runners by KEY. Accepting only one of the two would either invalidate the
-// field's established shape or make it unresolvable from the file that
-// exists to resolve it.
+// WHAT THE RECORD'S CONVENTION ACTUALLY IS. The first version of this
+// resolver accepted a runner key or a runner `model`, on a rationale that
+// said "the record's own convention is to publish the MODEL". Review
+// established that this was inverted. Counted across the whole file, the
+// DOMINANT convention is harness first with the model in the parenthetical:
+// `opencode (deepseek-v4-flash)` appears 70 times against 25 entries in
+// model-first shape, plus bare harness names (`codex` 17, `claude-code` 13)
+// and slash-joined pairs (`opencode/deepseek-v4-flash`). A resolver built on
+// the inverted reading rejected the majority of this repository's own
+// history AND, worse, rejected the values its own launcher tells a round to
+// write -- inside a required check.
+//
+// So a value resolves when the part before any parenthetical names any of:
+//
+//   * a runner key            claude-code-opus-5, opencode-go-deepseek-max
+//   * a runner's model        claude-opus-5, deepseek-v4-flash, gpt-5-codex
+//   * a harness               opencode, claude-code, codex, claude-code-action
+//   * <something>/<model>     opencode/deepseek-v4-flash,
+//                             opencode-go/deepseek-v4-flash
+//
+// All four, because all four are shapes this repository actually produces:
+// `prompts/shared/every-run.md` names harnesses, `scripts/runners.yml`'s
+// `default_runner` produces a provider/model pair, and the launcher and the
+// changelog between them produce the other two.
+//
+// `unknown` IS DELIBERATELY REJECTED, and the source was fixed in the same
+// change rather than the accept-list widened to swallow it.
+// `scripts/round.mjs start` and `scripts/build-prompt.mjs` both defaulted
+// `--agent` to the literal string `unknown` and printed it under "Record
+// these in your changelog entry", so the launcher instructed a round to
+// write a value this check then blocks the merge on. Neither emits it now:
+// given no `--agent`, they tell the round to determine and name what ran it,
+// which is the same pattern build-prompt.mjs already adopted for `--origin`
+// on 2026-08-24 -- a caller told what determines the value instead of being
+// told a value nothing verified. A record that says "unknown" ran a round
+// answers the question this field exists to answer with a shrug.
 
 const runnersFile = "scripts/runners.yml";
 let runners;
@@ -432,7 +568,23 @@ if (runners) {
   const registry = runners.runners || {};
   const names = Object.keys(registry);
   const models = names.map((name) => registry[name]?.model).filter(Boolean);
-  const resolvable = new Set([...names, ...models]);
+  const harnesses = Object.keys(runners.harnesses || {});
+  const providers = names.map((name) => registry[name]?.provider).filter(Boolean);
+  const resolvable = new Set([...names, ...models, ...harnesses]);
+  // The left half of a slash-joined pair: anything that identifies where the
+  // model ran. `opencode-go/deepseek-v4-flash` names a provider;
+  // `opencode/deepseek-v4-flash` names a harness that is also a provider.
+  const leftHalves = new Set([...names, ...harnesses, ...providers]);
+
+  function resolves(named) {
+    if (resolvable.has(named)) return true;
+    const slash = named.indexOf("/");
+    if (slash === -1) return false;
+    return (
+      leftHalves.has(named.slice(0, slash)) &&
+      new Set(models).has(named.slice(slash + 1))
+    );
+  }
 
   if (resolvable.size === 0) {
     fail(
@@ -454,16 +606,35 @@ if (runners) {
       // Everything before the first parenthetical, which is where the record
       // puts the human-readable qualifier ("(orchestrating model)").
       const named = entry.agent.split("(")[0].trim().replace(/[.,;]+$/, "");
-      if (!resolvable.has(named)) {
+      if (named === "unknown") {
         fail(
-          `${label}: Agent: '${named}' does not resolve to a runner in ${runnersFile}. ` +
-            `Registered runners: ${names.join(", ")}. Registered models: ${[
-              ...new Set(models),
-            ].join(", ")}. Either the round ran on something unregistered -- register it -- ` +
-            "or the field names something that is not a runner at all"
+          `${label}: Agent: 'unknown' names nothing. This was the literal default ` +
+            "`scripts/round.mjs start` and `scripts/build-prompt.mjs` printed under \"Record " +
+            "these in your changelog entry\" until round 185; neither emits it now. Name what " +
+            `actually ran the round -- a harness, a model, or a runner from ${runnersFile}`
+        );
+        agentProblems++;
+        continue;
+      }
+      if (!resolves(named)) {
+        fail(
+          `${label}: Agent: '${named}' does not resolve in ${runnersFile}. Accepted: a runner ` +
+            `key (${names.join(", ")}), a runner model (${[...new Set(models)].join(", ")}), ` +
+            `a harness (${harnesses.join(", ")}), or <provider-or-harness>/<model>. Either the ` +
+            "round ran on something unregistered -- register it there -- or the field names " +
+            "something that is not a runner at all"
         );
         agentProblems++;
       }
+    }
+    for (const entry of merged) {
+      const named = (entry.agent || "").split("(")[0].trim().replace(/[.,;]+$/, "");
+      if (named && named !== "unknown" && resolves(named)) continue;
+      console.log(
+        `note  merged round ${entry.number} (${entry.date}) carries Agent ` +
+          `'${entry.agent || "(absent)"}', which this check would reject on a branch. Already ` +
+          "on origin/main; rule 5 forbids editing it, so it is reported and not failed on"
+      );
     }
     if (enforced.length > 0 && agentProblems === 0) {
       ok(
@@ -472,7 +643,7 @@ if (runners) {
       );
     }
     console.log(
-      `note  the ${parsed.length - enforced.length} round(s) before ${ENFORCED_FROM} are not ` +
+      `note  the ${parsed.length - eraEntries.length} round(s) before ${ENFORCED_FROM} are not ` +
         "checked: their Agent: values are free text written before any registry existed " +
         "(`opencode`, `claude-code`, `codex`, `claude-sonnet-5 (Claude Code subagent)` and " +
         "more), and rule 5 forbids rewriting them. Historical coverage is nil"
@@ -484,8 +655,9 @@ if (runners) {
 
 console.log();
 console.log(
-  `changelog provenance -- ${parsed.length} round(s) read, ${enforced.length} at or after ` +
-    `round ${ENFORCED_FROM} and therefore checked; composition window ${WINDOW ?? "?"} ` +
+  `changelog provenance -- ${parsed.length} round(s) read, ${eraEntries.length} in the ` +
+    `enforced era (round ${ENFORCED_FROM}+), of which ${enforced.length} added by this branch ` +
+    `and therefore assertable; composition window ${WINDOW ?? "?"} ` +
     `(read from scripts/dispatch.mjs), heavy tracks ${
       heavy.map((t) => t.name).join(", ") || "none"
     }`

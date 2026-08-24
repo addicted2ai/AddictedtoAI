@@ -90,7 +90,16 @@ function syntheticChangelog(total, tracksNewest) {
     parts.push("");
     parts.push("- Origin: delegated");
     parts.push(`- Track: ${track}`);
-    parts.push("- Agent: claude-opus-5 (orchestrating model)");
+    // Pre-era rounds carry the record's own dominant historical shape, era
+    // rounds the current one. Not cosmetic: it lets a test target an era
+    // entry by its Agent string without also matching 180 older ones, which
+    // is how the merged-entry case first mutated round 1 by accident and
+    // proved nothing.
+    parts.push(
+      number >= ENFORCED_FROM
+        ? "- Agent: claude-opus-5 (orchestrating model)"
+        : "- Agent: opencode (deepseek-v4-flash)"
+    );
     if (number >= ENFORCED_FROM) {
       parts.push("- Dispatch: dispatcher — quota: synthetic");
     }
@@ -177,9 +186,34 @@ const CONTROLS = [
     // control that passes because the assertion never ran proves nothing.
     expect: /composition: every track policy\.yml weights >= 20/,
   },
+  {
+    name: "merged-entry-not-failed-on",
+    what:
+      "an ALREADY-MERGED enforced-era entry carrying a bad Agent does not fail the build -- " +
+      "the B2 property: rule 5 forbids editing it, so failing on it would deadlock the repo",
+    make: () => {
+      // Two enforced-era rounds. The OLDER one gets the bad value; only the
+      // newest is in scope, so the checker must report it and pass.
+      const dir = syntheticTree("merged-bad", ["meta", "scout"], ENFORCED_FROM + 1);
+      const p = path.join(dir, "CHANGELOG.md");
+      const text = fs.readFileSync(p, "utf8");
+      const needle = "- Agent: claude-opus-5 (orchestrating model)";
+      const at = text.lastIndexOf(needle);
+      if (at === -1) {
+        throw new Error("test setup: no generated Agent bullet to spoil");
+      }
+      fs.writeFileSync(
+        p,
+        text.slice(0, at) + "- Agent: unknown" + text.slice(at + needle.length)
+      );
+      return dir;
+    },
+    // It must SAY so, not silently ignore it. Visibility without a trap.
+    expect: /note {2}merged round \d+ .*carries Agent 'unknown'/,
+  },
 ];
 
-let failures = 0;
+let controlFailures = 0;
 for (const control of CONTROLS) {
   let dir;
   try {
@@ -188,19 +222,19 @@ for (const control of CONTROLS) {
     if (result.code !== 0) {
       console.log(`FAIL  ${control.name}: ${control.what} -- it did not`);
       console.log(result.out.split("\n").slice(-14).join("\n"));
-      failures++;
+      controlFailures++;
     } else if (control.expect && !control.expect.test(result.out)) {
       console.log(
         `FAIL  ${control.name}: passed, but not by the path under test -- expected ` +
           `output matching ${control.expect}`
       );
-      failures++;
+      controlFailures++;
     } else {
       console.log(`ok    ${control.name} -- ${control.what}`);
     }
   } catch (error) {
     console.log(`FAIL  ${control.name}: ${error.message}`);
-    failures++;
+    controlFailures++;
   } finally {
     if (dir) fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -252,7 +286,7 @@ const CASES = [
   {
     name: "agent-unregistered",
     what: "a round names an Agent that resolves to no runner in scripts/runners.yml",
-    expect: /does not resolve to a runner in scripts\/runners\.yml/,
+    expect: /does not resolve in scripts\/runners\.yml/,
     make: () => {
       const dir = realSandbox("agent-unregistered");
       replaceNewestBullet(dir, "Agent", "- Agent: some-model-nobody-registered (a subagent)");
@@ -272,7 +306,7 @@ const CASES = [
   {
     name: "runner-deregistered",
     what: "the runner a shipped round named is deleted from scripts/runners.yml",
-    expect: /does not resolve to a runner in scripts\/runners\.yml/,
+    expect: /does not resolve in scripts\/runners\.yml/,
     make: () => {
       const dir = realSandbox("runner-deregistered");
       edit(dir, "scripts/runners.yml", "    model: claude-opus-5\n", "    model: claude-opus-6\n");
@@ -316,7 +350,11 @@ const CASES = [
   {
     name: "heavy-tracks-vanish",
     what: "policy.yml stops weighting any track at 20 or above, leaving nothing to assert",
-    expect: /has nothing to assert, which must not read as a pass/,
+    // Anchored to the composition assertion's OWN wording, not to the
+    // "nothing to assert" phrase both messages share -- review caught that
+    // this case and the one below expected regexes each matching either
+    // message, so neither proved which assertion had fired.
+    expect: /policy\.yml weights no track at 20 or above/,
     make: () => {
       const dir = realSandbox("heavy-gone");
       edit(dir, "policy.yml", "  scout:\n    weight: 30", "  scout:\n    weight: 3");
@@ -327,11 +365,54 @@ const CASES = [
   {
     name: "enforced-era-empty",
     what: "the record holds no round the checks apply to, so they assert nothing",
-    expect: /nothing to assert, which must not read as a pass/,
+    expect: /the record holds no round this check applies to at all/,
     make: () => syntheticTree("era-empty", [], ENFORCED_FROM - 1),
+  },
+  {
+    name: "agent-unknown",
+    what:
+      "a round writes the launcher's old default, `Agent: unknown`, which names nothing",
+    expect: /Agent: 'unknown' names nothing/,
+    make: () => {
+      const dir = realSandbox("agent-unknown");
+      replaceNewestBullet(dir, "Agent", "- Agent: unknown");
+      return dir;
+    },
+  },
+  {
+    name: "agent-half-registered-pair",
+    what: "a <provider>/<model> pair whose model half is not registered",
+    expect: /does not resolve in scripts\/runners\.yml/,
+    make: () => {
+      const dir = realSandbox("agent-pair");
+      replaceNewestBullet(dir, "Agent", "- Agent: opencode/gpt-4o");
+      return dir;
+    },
   },
 ];
 
+// --- values the launcher and the prompts actually tell a round to write ------
+//
+// B1: the first version of this resolver rejected every one of these inside a
+// required check, while `scripts/round.mjs`, `scripts/build-prompt.mjs` and
+// `prompts/shared/every-run.md` instructed rounds to write them. A resolver
+// that rejects its own launcher's output is worse than no resolver, so each
+// prescribed shape is pinned here as a case that must PASS.
+
+const MUST_RESOLVE = [
+  ["claude-code", "prompts/shared/every-run.md and .claude/skills/local-loop/SKILL.md"],
+  ["codex", "prompts/shared/every-run.md, and 17 entries in the record"],
+  ["claude-code-action", "prompts/shared/every-run.md, and how .github/workflows/loop.yml runs"],
+  ["opencode (deepseek-v4-flash)", "the dominant shape in the record, 70 entries"],
+  ["opencode/deepseek-v4-flash", "3 entries, and the shape default_runner produces"],
+  ["opencode-go/deepseek-v4-flash", "policy.yml's deepseek_peak_pricing runner"],
+  ["claude-opus-5 (orchestrating model)", "4 entries"],
+  ["claude-sonnet-5 (Claude Code subagent)", "11 entries"],
+  ["claude-code-opus-5", "a runner key, registered round 185"],
+  ["deepseek-v4-flash", "1 entry, bare model"],
+];
+
+let caseFailures = 0;
 for (const testCase of CASES) {
   let dir;
   try {
@@ -339,38 +420,109 @@ for (const testCase of CASES) {
     const result = run(dir);
     if (result.code === 0) {
       console.log(`FAIL  ${testCase.name}: ${testCase.what} -- checker still passed`);
-      failures++;
+      caseFailures++;
     } else if (!testCase.expect.test(result.out)) {
       console.log(
         `FAIL  ${testCase.name}: ${testCase.what} -- checker failed, but not about this: ` +
           `expected output matching ${testCase.expect}`
       );
       console.log(result.out.split("\n").filter((l) => /^FAIL/.test(l)).slice(0, 4).join("\n"));
-      failures++;
+      caseFailures++;
     } else {
       console.log(`ok    ${testCase.name} -- ${testCase.what}: caught`);
     }
   } catch (error) {
     console.log(`FAIL  ${testCase.name}: ${error.message}`);
-    failures++;
+    caseFailures++;
   } finally {
     if (dir) fs.rmSync(dir, { recursive: true, force: true });
   }
 }
 
+// --- the prescribed values must PASS ----------------------------------------
+
+let resolveFailures = 0;
+for (const [value, why] of MUST_RESOLVE) {
+  let dir;
+  try {
+    dir = realSandbox("resolve");
+    replaceNewestBullet(dir, "Agent", `- Agent: ${value}`);
+    const result = run(dir);
+    if (result.code !== 0) {
+      console.log(
+        `FAIL  must-resolve '${value}' (${why}) -- the checker REJECTED a value this ` +
+          "repository's own launcher or prompts tell a round to write"
+      );
+      console.log(result.out.split("\n").filter((l) => /^FAIL/.test(l)).slice(0, 2).join("\n"));
+      resolveFailures++;
+    } else {
+      console.log(`ok    must-resolve '${value}' -- accepted (${why})`);
+    }
+  } catch (error) {
+    console.log(`FAIL  must-resolve '${value}': ${error.message}`);
+    resolveFailures++;
+  } finally {
+    if (dir) fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// --- the launcher must not emit a value the checker rejects ------------------
+//
+// The end-to-end half of B1: it is not enough for the resolver to accept the
+// documented values. `scripts/round.mjs start` and `scripts/build-prompt.mjs`
+// must not PRINT one it rejects. Both defaulted `--agent` to the literal
+// `unknown` and rendered it under "Record these in your changelog entry".
+
+let sourceFailures = 0;
+const promptOut = execFileSync(
+  process.execPath,
+  [path.join(root, "scripts", "build-prompt.mjs"), "--track", "meta"],
+  { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], cwd: root }
+);
+if (/- Agent:\s*unknown/.test(promptOut)) {
+  console.log(
+    "FAIL  launcher-emits-unknown: scripts/build-prompt.mjs with no --agent still prints " +
+      "'- Agent: unknown', which scripts/check-changelog-provenance.mjs rejects -- the " +
+      "launcher is telling a round to write a value a required check blocks the merge on"
+  );
+  sourceFailures++;
+} else {
+  console.log(
+    "ok    launcher-emits-unknown -- build-prompt.mjs with no --agent prints no 'unknown' " +
+      "value for the round to copy"
+  );
+}
+if (!/resolve in scripts\/runners\.yml/.test(promptOut)) {
+  console.log(
+    "FAIL  launcher-guidance: build-prompt.mjs with no --agent does not tell the round its " +
+      "Agent must resolve in scripts/runners.yml -- removing the bad default without " +
+      "supplying the rule leaves the round guessing"
+  );
+  sourceFailures++;
+} else {
+  console.log(
+    "ok    launcher-guidance -- build-prompt.mjs tells a round what its Agent must resolve to"
+  );
+}
+
 console.log();
 console.log(
-  `changelog-provenance check proved able to fail on ${CASES.length - failures}/${
+  `changelog-provenance check proved able to fail on ${CASES.length - caseFailures}/${
     CASES.length
-  } planted defect(s), with ${CONTROLS.length} control(s)`
+  } planted defect(s); ${CONTROLS.length - controlFailures}/${CONTROLS.length} control(s) ` +
+    `green; ${MUST_RESOLVE.length - resolveFailures}/${MUST_RESOLVE.length} prescribed Agent ` +
+    `value(s) accepted; ${2 - sourceFailures}/2 launcher-output assertion(s) green`
 );
 console.log(
   "honest limit: this proves the checker detects these planted defects on these fixtures. " +
     "It says nothing about a round that writes a truthful-looking Dispatch reason which is " +
     "not the reason -- no check in this repository can read intent, and this one does not " +
-    "claim to."
+    "claim to. The sandboxes have no git remote, so the checker's scope falls back to the " +
+    "newest entry; the `merged-entry-not-failed-on` case exercises exactly that fallback, " +
+    "which is the same narrowing CI would apply from origin/main."
 );
 
+const failures = controlFailures + caseFailures + resolveFailures + sourceFailures;
 if (failures > 0) {
   console.log(`\n${failures} problem(s)`);
   process.exit(1);

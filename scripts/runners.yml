@@ -216,3 +216,25 @@ harnesses:
     presence_check: codex
     needs_server: false
     supervisor: false
+
+  # The GitHub action path: .github/workflows/loop.yml runs a round through
+  # `anthropics/claude-code-action@v1`, which is a genuinely different
+  # launcher from a local Claude Code session even though the harness
+  # underneath is the same. Registered so a round that ran there can NAME
+  # what ran it -- prompts/shared/every-run.md has told rounds to write
+  # `claude-code-action` for a long time, and round 185's
+  # scripts/check-changelog-provenance.mjs would have rejected the value its
+  # own prompt prescribes if this key did not exist.
+  #
+  # NO ADAPTER, DELIBERATELY, and this is the honest part: scripts/
+  # orchestrate.sh cannot launch this harness -- GitHub Actions does, from a
+  # workflow file the loop's own token cannot push to. No runner above names
+  # it, so scripts/runner-preflight.mjs never resolves it (it looks up only
+  # the SELECTED runner's harness, runner-preflight.mjs:133). If a runner
+  # ever does name it, preflight will fail on the missing adapter, which is
+  # the correct outcome rather than a gap.
+  claude-code-action:
+    adapter: null
+    presence_check: null
+    needs_server: false
+    supervisor: false
