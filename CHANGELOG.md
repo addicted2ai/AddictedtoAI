@@ -273,14 +273,68 @@ cannot live in the launcher.
   go green; two cases prove it goes red on a single starved heavy track and
   on both at once.
 
+**What this does not make impossible.** `enforce_admins` is `false` on
+`main`, and this loop's account has documented, merged-pull-request proof
+that it can merge past a red required check
+(`docket/open/2026-08-11-branch-protection-does-not-require-review.md`).
+Moving these assertions into CI raises the floor from *invisible* to
+*visible and deliberate*: a round that forces its track, or ships into a
+starved composition, now has to do it in front of a check that says so. It
+does not stop it. The checker prints that caveat in its own output on every
+run rather than leaving it to this entry, and nothing here should be read
+as claiming a stronger guarantee than the branch protection actually
+provides.
+
+A follow-up was filed rather than built, under `build` because `meta`'s
+queue stands at 26 open against a `queue_budget` of 14 and
+`check-docket.mjs`'s filing gate correctly rejects a branch that grows it:
+`docket/open/2026-08-24-label-every-guardrail-launch-or-merge-time.md` —
+every guardrail this repository has should be labelled launch-time or
+merge-time, because nobody currently knows which are load-bearing.
+`scripts/preflight.mjs` is the second candidate already visible:
+`policy.yml`'s `max_rounds_between_visitor_facing: 15` is read only by
+`preflight.mjs`, which is called only from `dispatch.mjs`. Whether that one
+has in fact gone unenforced is stated in the item as the first thing to
+check, not as a finding this round made.
+
 - Origin: maintainer
 - Track: meta
 - Agent: claude-opus-5 (Claude Code subagent)
 - Dispatch: forced — the maintainer instructed this round directly on
   2026-08-24 after the finding below; the dispatcher's own pick at the time
-  was `audit`.
-- Guardrails: pending
-- Result: pending
+  was `audit`. (Recorded verbatim from the brief; "below" is the brief's
+  ordering, where the finding followed this line — in this entry it leads.)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  with a long explicit timeout — green on the first run: `npm run lint`,
+  docket valid, track scope for `loop/meta/dispatch-binds-at-merge`,
+  production build, all route checks passed. The documented runner-launch
+  flake
+  (`docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-dependent.md`)
+  was not hit on this branch. `node scripts/test-changelog-provenance.mjs`:
+  12 of 12 planted defects caught, both controls green — including the
+  control proving the *armed* composition path can go green, which no edit
+  to the real changelog can reach. `node
+  scripts/check-changelog-provenance.mjs` against the real tree: agrees with
+  `app/lib/build-log.js` on all 185 rounds, one well-formed Dispatch, one
+  Agent resolving against 5 registered runners, and the composition `WARN`
+  naming `scout` 0 and `maintain` 0 over rounds 166..185. The cross-check
+  earned its place on its first run: it went red because this entry's change
+  block 5 had a `Change:` with no `Hypothesis:`, which `app/lib/build-log.js`
+  rejects — caught before `npm run build` ever saw it. `node
+  scripts/check-docket.mjs`: 129 items valid, 39 open; the filing gate reads
+  `build` 8 -> 9 against a budget of 14 and `meta` unchanged at 26. `node
+  scripts/check-runner-config.mjs`, `check-origin-definitions.mjs` and
+  `check-governance-claims.mjs` re-run directly after the `runners.yml` and
+  preamble edits, all green.
+- Result: not yet measured, and the falsifiable half is dated. If the loop
+  goes on being briefed by hand, the composition `WARN` will keep printing
+  `scout 0` every run and become a red build at round 204, when the window
+  first sits entirely at or above round 185. If a `scout` round and a
+  `maintain` round ship before then, it will not. Either outcome is visible
+  in this file without anyone having to remember to look — which is the
+  whole of what this round changed, and less than it sounds: the dispatcher
+  still is not consulted by any round that does not run `round.mjs start`.
+  This round makes that fact *legible*; it does not reconnect the steering.
 
 ### 2026-08-24
 This build round (`loop/build/rule-5-docket-scope-ruling`) closes
