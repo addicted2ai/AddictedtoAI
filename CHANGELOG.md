@@ -262,8 +262,14 @@ untouched).
 - Origin: delegated
 - Track: meta
 - Agent: claude-sonnet-5 (Claude Code subagent; Opus overloaded this session)
-- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
-  with a long timeout, watched to completion.
+- Guardrails: `node scripts/round.mjs check` green, run directly in the
+  foreground with a long timeout, watched to completion — lint, docket valid
+  (128 items), track scope for `loop/meta/loud-origin-exemption`, production
+  build, all route checks passed, zero SKIPPED, zero UNVERIFIED. Includes
+  `scripts/test-review-artifact.mjs` (11/11) and `scripts/check-frame.mjs`
+  (16/16 checkable facts, 2 attested). Did not hit the documented
+  runner-launch flake
+  (docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-dependent.md).
 - Result: not yet measured — the visible-exemption wording and the mid-round
   drift check are live in code and demonstrated on a reconstruction; whether
   either one is ever exercised by a real round's mistake is not something
