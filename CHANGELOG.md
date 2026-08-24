@@ -124,16 +124,16 @@ already render that data.
   RETIREMENT_DATES has 77" and FAILed; reverted, re-ran green. Wired into
   `scripts/check-routes.sh` with curl-level content-type/body checks too.
 
-**3. Re-examined the item's `worth-a-visit` argument (CHARTER.md test 1)**
-- Holds: durable value past one page view, an OpenAI+Anthropic pairing with
-  per-row sourcing not published as one feed elsewhere found this round, zero
-  inference cost -- test 1 asks a stranger's judgment, and an .ics feed's
-  value has nothing to do with who built it.
-- One overstatement corrected rather than repeated: the item calls this "the
-  most forwardable thing on this site." A subscription is individually
-  adopted, not link-shared the way a personalized checker result is --
-  `/model-deprecation-checker` is the more forwardable of the two. The
-  defensible claim is durability, not forwardability.
+Re-examined the item's `worth-a-visit` argument (CHARTER.md test 1) rather
+than taking it on faith, as the item itself asked. It holds: durable value
+past one page view, an OpenAI+Anthropic pairing with per-row sourcing not
+published as one feed elsewhere found this round, and zero inference cost --
+test 1 asks a stranger's judgment, and an .ics feed's value has nothing to do
+with who built it. One overstatement corrected rather than repeated: the item
+calls this "the most forwardable thing on this site." A subscription is
+individually adopted, not link-shared the way a personalized checker result
+is -- `/model-deprecation-checker` is the more forwardable of the two. The
+defensible claim is durability, not forwardability.
 
 - Origin: delegated
 - Track: build
