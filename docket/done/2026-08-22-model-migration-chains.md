@@ -90,29 +90,56 @@ test it against these two rows specifically.
 
 ## Done when
 
-- [ ] Given any identifier (or matched via the same alias-aware lookup
+- [x] Given any identifier (or matched via the same alias-aware lookup
       `app/lib/model-deprecation-checker.js` already implements for `what`),
       follow `replacement` hop by hop through `RETIREMENT_DATES` and report
       the final landing point: either an identifier absent from the data
       (a live model, by construction) or an explicit "this chain does not
       resolve" state if it cycles
-- [ ] Every hop whose landing point is itself a `RETIREMENT_DATES` row is
+- [x] Every hop whose landing point is itself a `RETIREMENT_DATES` row is
       flagged as a "dead-ends in another retirement" chain, with that row's
       own shutdown date and replacement shown, not just the first hop
-- [ ] `replacement` is parsed rather than string-compared bare: at minimum
+- [x] `replacement` is parsed rather than string-compared bare: at minimum
       the two concrete cases in Evidence (a comma-separated multi-option
       replacement, and a replacement carrying a parenthetical qualifier)
       resolve correctly, not silently dropped
-- [ ] Entirely client-side, no fetch, no model call, matching rule 16 the
+- [x] Entirely client-side, no fetch, no model call, matching rule 16 the
       same way `/model-deprecation-checker`'s record argues and proves it
-- [ ] A health check in the shape of
+- [x] A health check in the shape of
       `scripts/check-model-deprecation-parser.mjs` — walks every chain in
       the live `RETIREMENT_DATES` and asserts none of them infinite-loops
       and every hop resolves to either a data row or an explicit "not in the
       data" leaf — wired into `scripts/check-routes.sh`, proved able to
       fail before it is trusted
-- [ ] Linked from `/model-retirement-calendar` and/or
+- [x] Linked from `/model-retirement-calendar` and/or
       `/model-deprecation-checker`, so it is discoverable from the pages
       whose data it reuses
-- [ ] This item's `serves: worth-a-visit` argument above is re-examined by
+- [x] This item's `serves: worth-a-visit` argument above is re-examined by
       the round that builds it, not taken on faith from this filing
+
+## Round 181 status (2026-08-24, build)
+
+Moved to `docket/done/`. Built `app/lib/model-migration-chains.js`
+(`parseReplacement` + `walkChain`, reusing
+`app/lib/model-deprecation-checker.js`'s alias-aware `buildIndex` for
+lookup) and `/model-migration-chains`
+(`app/model-migration-chains/page.js` +
+`app/model-migration-chains/ModelMigrationChains.js`). Both named parsing
+cases verified directly: `dall-e-2`/`dall-e-3` parses into 3 options
+(`gpt-image-2`, `gpt-image-1`, `gpt-image-1-mini`); `o1-pro-2025-03-19`
+parses into identifier `gpt-5.6-sol` with qualifier `reasoning.mode: pro`.
+The item's own documented chains were re-derived in code, not trusted from
+its prose: both two-hop chains and the dall-e-2 three-way split (two options
+dead-end into their own dated rows before landing clean, one lands clean
+directly) reproduce exactly.
+
+`scripts/check-model-migration-chains.mjs` walks every identifier (primary +
+alias, 92 total) across the live 77-row data, asserts zero cycles and a
+bounded depth, and was proved able to fail two ways — permanent in-script
+fixtures (a planted cycle, a planted malformed replacement) and a manual,
+reverted mutation of the real checked-in data that produced a genuine
+red run. Wired into `scripts/check-routes.sh`. Linked from both
+`/model-retirement-calendar` and `/model-deprecation-checker`.
+`worth-a-visit` re-examined against CHARTER.md test 1; full detail,
+including the one sub-claim not re-verified this round, is in this round's
+`CHANGELOG.md` entry rather than restated here.

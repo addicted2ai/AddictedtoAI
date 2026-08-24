@@ -115,6 +115,10 @@ const routes = [
   // matching itself runs against RETIREMENT_DATES at request time, so
   // nothing here substantiates a lastmod either.
   { path: "/model-deprecation-checker", priority: 0.7, changeFrequency: "monthly" },
+  // The migration-chain walker's page copy changes only when a round revises
+  // it — the chain-walking itself runs against RETIREMENT_DATES at request
+  // time, so nothing here substantiates a lastmod either.
+  { path: "/model-migration-chains", priority: 0.7, changeFrequency: "monthly" },
   // The loop-history snapshot is regenerated only when a round re-runs
   // scripts/loop-history.mjs --snapshot, so it gets no lastmod either.
   { path: "/loop-history", priority: 0.7, changeFrequency: "monthly" },

@@ -145,6 +145,17 @@ check /model-retirement-calendar 200 "text/html" 'href="/model-deprecation-check
 check /model-deprecation-checker 200 "text/html" 'id="checker-input"'
 check /model-deprecation-checker 200 "text/html" 'Paste an example'
 
+# The migration-chain walker (docket/open/2026-08-22-model-migration-chains.md)
+# follows RETIREMENT_DATES's `replacement` field hop by hop; entirely
+# client-side like the checker above, so its input control and its
+# discoverability links from both pages whose data it reuses must render in
+# the server HTML.
+check /model-migration-chains       200 "text/html" 'id="chains-input"'
+check /model-migration-chains       200 "text/html" 'Three-option branch'
+check /model-migration-chains       200 "text/html" 'gpt-image-1-mini'
+check /model-retirement-calendar    200 "text/html" 'href="/model-migration-chains"'
+check /model-deprecation-checker    200 "text/html" 'href="/model-migration-chains"'
+
 # The subscribable .ics calendar feed (docket/open/2026-08-22-model-shutdown-ics-feed.md):
 # a static route, generated once at build time from RETIREMENT_DATES (see
 # app/model-retirement-calendar.ics/route.js's own header for the two ways
@@ -169,6 +180,18 @@ run_step node scripts/check-model-retirement-ics.mjs
 # health check", made concrete. See scripts/check-model-deprecation-parser.mjs.
 echo
 run_step node scripts/check-model-deprecation-parser.mjs
+# The migration-chain walker's own health check
+# (docket/open/2026-08-22-model-migration-chains.md, requirement 5): walks
+# every chain in the live RETIREMENT_DATES data and asserts none of them
+# loop and every hop resolves to a data row or an explicit "not in the data"
+# leaf, plus the two named parsing cases (dall-e-2's multi-option
+# replacement, o1-pro-2025-03-19's parenthetical qualifier) by name. Proved
+# able to fail on a planted cycle, a planted malformed replacement, and (this
+# round, manually, reverted) a real cycle introduced into the checked-in
+# data itself -- see scripts/check-model-migration-chains.mjs's own header
+# and this round's CHANGELOG.md entry.
+echo
+run_step node scripts/check-model-migration-chains.mjs
 # The loop-history page is data-driven: its figures come from the committed
 # snapshot, and the snapshot's own timestamp must be visible so a stale figure
 # reads as stale. The page's claim to checkability is the snapshot date and
@@ -304,7 +327,7 @@ run_step bash scripts/check-prebuild-single-branch.sh
 # scripts/check-ai-disclosure.mjs separately verifies the producing-round map
 # against the build log and git history.
 echo
-  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /model-deprecation-checker /loop-history; do
+  for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /model-deprecation-checker /model-migration-chains /loop-history; do
   body=$(curl -s "$BASE$route")
   case "$body" in
     *'data-ai-disclosure'*) echo "ok    $route carries the AI disclosure" ;;
@@ -478,7 +501,7 @@ else
   MARGIN=3000
   ceiling=$((budget - MARGIN))
   echo "      document budget $budget bytes; local ceiling $ceiling (margin $MARGIN)"
-for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /model-deprecation-checker /loop-history; do
+for route in / /blog /blog/frontier-cyber /directory /demos /log /log/early /log/archive /projects /disclosure /charter /what-vendors-promise /model-retirement-calendar /model-deprecation-checker /model-migration-chains /loop-history; do
     bytes=$(curl -s -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}' "$BASE$route")
     if [ "$bytes" -gt "$ceiling" ]; then
       echo "FAIL  $route is $bytes bytes gzipped, over the local ceiling of $ceiling"

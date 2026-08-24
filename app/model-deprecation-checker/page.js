@@ -50,6 +50,15 @@ export default function ModelDeprecationCheckerPage() {
       <ModelDeprecationChecker />
 
       <p className="checker-callout">
+        Found something retiring above? Its replacement can itself be
+        retiring &mdash;{" "}
+        <a href="/model-migration-chains">
+          follow the chain to where it actually lands
+        </a>{" "}
+        before you migrate onto something that is also dated.
+      </p>
+
+      <p className="checker-callout">
         Just found out something you depend on is retiring and want to hear
         about the <em>next</em> one before it breaks something? {" "}
         <a href="/model-retirement-calendar.ics">
