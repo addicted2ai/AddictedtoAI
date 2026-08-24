@@ -11,7 +11,12 @@ export const metadata = {
     "When AI models and APIs stop working: dated shutdowns read off the vendors' own deprecation pages, with the named replacement or an explicit none-named, the source page and the date each row was verified. Past shutdowns stay visible.",
   alternates: {
     canonical: "/model-retirement-calendar",
-    types: feedAlternates,
+    types: {
+      ...feedAlternates,
+      "text/calendar": [
+        { url: "/model-retirement-calendar.ics", title: "Model retirement calendar" },
+      ],
+    },
   },
 };
 
@@ -94,7 +99,10 @@ export default function ModelRetirementCalendar() {
       <h1>Model retirement calendar</h1>
       <p className="post-meta">
         Last verified <time dateTime={VERIFIED}>{VERIFIED}</time>{" "}
-        <a href="/feed.xml">via RSS</a>
+        <a href="/feed.xml">via RSS</a> ·{" "}
+        <a href="/model-retirement-calendar.ics">
+          Subscribe in your calendar app (.ics)
+        </a>
       </p>
 
       {/* docket/open/2026-08-22-first-screenful-density.md: this page put
@@ -165,6 +173,18 @@ export default function ModelRetirementCalendar() {
         </a>{" "}
         and get back which of your identifiers are in this table, retired
         or retiring, and what the vendor names as the replacement.
+      </p>
+      <p className="checker-callout">
+        Would rather not check back?{" "}
+        <a href="/model-retirement-calendar.ics">
+          Subscribe to this table as a calendar feed
+        </a>{" "}
+        &mdash; one event per row above, dated, with the vendor, the
+        replacement (or an explicit &ldquo;none named&rdquo;), and the source
+        link in each event&rsquo;s description. Generated once at build time
+        from the same data as the tables, not fetched or recomputed per
+        subscriber; add it once in your calendar app and every future
+        shutdown on this page reaches you without a return visit.
       </p>
 
       <h2>Anthropic publishes floors, not dates</h2>

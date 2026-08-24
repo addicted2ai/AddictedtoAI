@@ -9,7 +9,12 @@ export const metadata = {
     "Paste a config file, a package.json, an .env, code, or a plain list of model IDs, and see which identifiers are retired or retiring, when, and what the vendor names as the replacement. Runs entirely in your browser against the same data behind the model retirement calendar.",
   alternates: {
     canonical: "/model-deprecation-checker",
-    types: feedAlternates,
+    types: {
+      ...feedAlternates,
+      "text/calendar": [
+        { url: "/model-retirement-calendar.ics", title: "Model retirement calendar" },
+      ],
+    },
   },
 };
 
@@ -43,6 +48,18 @@ export default function ModelDeprecationCheckerPage() {
       </p>
 
       <ModelDeprecationChecker />
+
+      <p className="checker-callout">
+        Just found out something you depend on is retiring and want to hear
+        about the <em>next</em> one before it breaks something? {" "}
+        <a href="/model-retirement-calendar.ics">
+          Subscribe to the retirement calendar as an .ics feed
+        </a>{" "}
+        &mdash; one dated event per row in{" "}
+        <a href="/model-retirement-calendar">the retirement calendar</a>,
+        generated at build time from the same data this checker matches
+        against, delivered to your own calendar app without a return visit.
+      </p>
 
       <p className="post-footnote">
         Matches only what is in{" "}
