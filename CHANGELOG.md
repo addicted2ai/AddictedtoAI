@@ -107,6 +107,283 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+**Nothing at either vendor had moved.** Both deprecation pages behind
+`/model-retirement-calendar` were re-fetched this round and every one of the
+87 rows was compared against them: no shutdown date shifted, no row was
+dropped from either page, no named replacement changed, and neither vendor
+had added a dated shutdown the table was missing. That is the whole finding
+about the world, and it is the result — a calendar whose value is that
+someone checks it produces "still correct, checked today" most of the time,
+and the date is the product. The site had been telling readers its facts were
+ten days old; they are now checked.
+
+The round did find one thing wrong, and it was this site's, not a vendor's: a
+quote on `/what-vendors-promise` had been carrying two of the three bullets
+OpenAI publishes under "minimum notice periods" since the page was written,
+and the missing one is the shortest floor OpenAI states. That is corrected
+prominently rather than quietly, below.
+
+**1. The dataset re-verified in full: 87 rows, both vendors, nothing moved**
+- Hypothesis: ten days is long enough for something to move on a page like
+  this, and the row most likely to have moved was OpenAI's Assistants API —
+  shutdown 2026-08-26, two days out, last checked ten days ago. A deadline
+  extension announced in that window is exactly what this page exists to
+  catch and would have been wrong about. I expected to find at least one
+  shifted date and was prepared for the possibility of none.
+- Change: both pages re-fetched 2026-08-24T17:58Z with a plain curl
+  User-Agent, per `docket/open/2026-08-11-vendor-pages-reject-browser-user-agents.md`
+  — OpenAI's as raw markdown (HTTP 200, 36,252 bytes), Anthropic's as raw
+  markdown (HTTP 200, 13,415 bytes). Every row was then compared
+  mechanically rather than read by eye: identifier, shutdown date, alias
+  list and named replacement, in both directions (dataset rows absent from
+  the page, and page rows absent from the dataset). Result: **0 dates
+  changed, 0 rows dropped, 0 replacements changed, 0 rows on either page
+  missing from the file.** The Assistants API still reads 2026-08-26 on
+  OpenAI's page; it has not been extended. The 87 `verified` stamps in
+  `app/lib/retirement-dates.js` move from 2026-08-14 to 2026-08-24, and so
+  do the four published instances of that date on
+  `/model-retirement-calendar`, which now also states what the
+  re-verification found rather than only when it happened.
+- Counts, all derived this round rather than carried from the brief:
+  `app/lib/retirement-dates.js` holds 77 dated rows (74 OpenAI, 3 Anthropic)
+  plus 10 Anthropic floors — 87 stamps, every one previously reading
+  2026-08-14. On the page side, 71 of the 74 OpenAI rows come from its
+  shutdown tables and 3 from prose it dates at 2026-11-30, which is exactly
+  the split the file's header claimed; Anthropic's model-status table holds
+  16 rows, 10 active floors and 6 dated retirements, of which 3 fall in the
+  2026-05-01 scope window. All 10 floors and all 3 dates matched.
+- Two traps in the comparison, recorded because the first version of the
+  script reported 29 mismatches and every one of them was mine: OpenAI's
+  markdown writes model aliases as `` `gpt-4-0613` \| `gpt-4` `` *inside a
+  single table cell*, so splitting rows on `|` truncates every aliased row
+  and makes 11 correct rows look dropped; and the page's three
+  platform shutdowns live in `Date | Update` tables whose second column is
+  prose, which a word-count heuristic mis-skipped. Splitting on unescaped
+  pipes only and keying off each table's own header took it to 0. A checker
+  that reports a vendor changed something when the parser is what changed is
+  the exact failure mode this page is supposed to guard against, one level
+  down, and it is why the first run's output is recorded here rather than
+  the second run's alone.
+
+**2. Correction: this site published two-thirds of OpenAI's notice commitment**
+- Hypothesis: none — this was not looked for. It fell out of re-checking
+  every quoted sentence on `/what-vendors-promise` against its live page.
+- Change: `app/lib/retirement-commitments.js`'s OpenAI row quoted
+  "Generally available models: At least 6 months. Specialized variants...:
+  At least 3 months." and stopped. OpenAI's page lists a **third** bullet:
+  preview models, "identified by `preview` in the model name", "may be
+  retired with much shorter notice, such as 2 weeks." The quote was accurate
+  as far as it went, which is why a substring check had never flagged it —
+  and it went two-thirds of the way. The page around it says it "quotes the
+  sentence that establishes the commitment", so a reader would reasonably
+  have taken 3 months as OpenAI's floor for everything. It is not. The quote
+  is restored in full, and a dated correction now sits on the page in body
+  text rather than in the muted footnote style used for routine verification
+  history — `CHARTER.md` rule 6 says a correction is as prominent as the
+  thing it corrects, and setting it smaller than the error would have been
+  the rule's own failure case. That is what the new `.correction-note` class
+  in `app/globals.css` is for; it is not a styling change looking for a
+  justification.
+- **The first attempt at this correction repeated the defect it was fixing,
+  and review caught it.** That draft restored the third bullet's opening
+  clause only and silently dropped 22 words of vendor text between bullets
+  two and three — the "Examples include chat variants such as
+  `gpt-5.1-chat-latest`..." sentence and bullet three's tail — with no
+  ellipsis, inside quotation marks, while the *same commit* published the
+  claim that all ten quotes on the page are "a contiguous run of words in
+  the page it cites". Under that stated test the new quote matched 36 of 58
+  words and diverged, so the published count was nine, not ten — and this
+  commit is what broke it, because the two-bullet quote it replaced had been
+  contiguous. That is precisely why "a substring check had never flagged it"
+  was true of the original defect and stopped being true of the fix. The
+  resolution was not to mark the elision but to delete it: the whole passage
+  is quoted, all three bullets and both "Examples include ..." sentences,
+  re-tested at **115 of 115 words contiguous**, with a control run
+  confirming the test still fails when one interior word is removed. The
+  omitted examples were not padding — they are what names which models
+  OpenAI counts as specialized variants and which as previews, which is the
+  exact classification this row's `minNoticeDays` reasoning turns on.
+- **This was not a change at OpenAI, and the round checked rather than
+  assumed.** The bullet is present in the Internet Archive's capture of the
+  page at `20260810135331` — four days *before* the 2026-08-14 verification
+  this row was carrying. So the omission was in this site's reading, and it
+  survived at least one prior re-verification. Recording it as a vendor
+  change would have been the more flattering version and the false one.
+- Consequence, counted this round: 10 of the OpenAI rows on the calendar
+  carry `preview` in the identifier, which is precisely how OpenAI's bullet
+  says a preview model is identified — 9 already switched off, 1 still
+  upcoming. It also corrects a premise inside the round-182 reasoning for
+  `minNoticeDays: null`, which argued that a `-preview` heuristic would be
+  "a heuristic this round is inventing, not one OpenAI's page defines."
+  OpenAI's page does define it, in the bullet that was missing. The null
+  stands — the other two reasons hold independently, and a third floor
+  measured in weeks widens the spread a single number would stand in for
+  from 2:1 to roughly 13:1 — but it stands for partly different reasons, and
+  the comment now says which premise it lost.
+
+**3. No new Anthropic shutdown, so round 186's retraction stands**
+- Hypothesis: round 186 withdrew `/promise-vs-practice` because no live row
+  was comparable — Anthropic states a 60-day floor and all three of its dated
+  rows had expired. A new Anthropic shutdown would make that comparator
+  meaningful again and would be grounds for a later round to restore the
+  route. I checked for one specifically.
+- Change: **there is none.** Anthropic's most recent deprecation-history
+  heading is still 2026-06-05 (Claude Opus 4.1), unchanged, and its three
+  dated rows are still 2026-06-15, 2026-06-15 and 2026-08-05 — all in the
+  past as of today. OpenAI's most recent announcement heading is still
+  2026-07-20. Neither vendor has announced a dated shutdown since this
+  dataset was built.
+- One adjacent thing the page does carry, stated conservatively: Anthropic
+  notes that Claude Mythos Preview (`claude-mythos-preview`) is deprecated,
+  with `claude-mythos-5` as the migration target. It publishes **no
+  retirement date** for it and does not list it in the model-status table, so
+  there is nothing dated to add and no accusation to make — the page's own
+  definition of "deprecated" says a retirement date is assigned, and this
+  round is not going to read a missing date as a vendor failing its own
+  process on the strength of one absent table row. This was already known
+  here: `docket/dropped/2026-08-14-post-anthropic-sampling-parameters.md` was
+  dropped with "refilable if Anthropic gives the Mythos Preview a retirement
+  date". Re-checked today, that condition is still not met, so the item stays
+  dropped.
+
+**4. Ten of eleven vendor quotes re-checked; Meta is still unreadable**
+- Hypothesis: if one quote had drifted unnoticed, others might have too. The
+  brief scoped this round to the two deprecation pages; re-fetching the other
+  nine was the round's own call, and it is what surfaced change 2.
+- Change: all 11 vendor pages behind `/what-vendors-promise` re-fetched
+  2026-08-24 with a plain HTTP client (all HTTP 200), and each quoted
+  sentence checked as a contiguous run of words in the page it cites —
+  punctuation and markup discarded, word order and completeness not.
+  **All ten verifiable quotes hold on that test** — Mistral, Amazon
+  Bedrock, Microsoft Foundry, Alibaba, Google, DeepSeek, xAI and Cohere
+  alongside the two above. Five initially reported as mismatches were
+  artifacts of turning HTML into text (markup boundaries, list markers,
+  smart quotes); comparing on words rather than exact punctuation separated
+  those from real drift, and there was none. Their `verified` dates move to
+  2026-08-24.
+- That count is stated after re-testing, not before. As change 2 records, it
+  was briefly and publishably false: this round's own first correction drove
+  it to nine of ten while the page went on claiming ten, and the check that
+  should have caught that was the one being quoted. Re-run after the fix and
+  reported at the number it actually produced — ten of ten, the longest
+  quote at 115 of 115 words. The lesson is not that the test is weak; it is
+  that a round which *edits* a quote has changed the thing its own check
+  measures, and must re-run the check after the edit rather than cite the
+  run from before it.
+- Meta stays `verified: null`, as it has since 2026-08-15.
+  `www.llama.com/docs` still redirects to `developer.meta.com/ai/docs/overview/`,
+  which answered with HTTP 200 and 302,065 bytes containing 33 characters of
+  readable text — the page title and nothing else. The row now records that
+  only this one check was re-run today, and that the archive.org sweep and
+  the eighteen-root `llms.txt` probe recorded on 2026-08-15 were *not*
+  repeated, so a reader is not left thinking the whole investigation was
+  redone. A failed fetch is recorded as a failed fetch, not as an absent page.
+
+**5. The docket: nothing dropped, and the reason is not laziness**
+- Hypothesis: the brief's framing was that the queue is 40 open items of
+  which 26 are "machinery about machinery", that meta at 26 against a
+  `queue_budget` of 14 is blocking work the maintainer asked for by name, and
+  that several items from 2026-08-10/11 describe machinery since rebuilt. I
+  expected to drop a handful and relieve the budget.
+- Change: **nothing was dropped.** The counts first, re-derived with
+  `node scripts/check-docket.mjs` and a frontmatter census rather than taken
+  from the brief: **43 open items, not 40; 27 `serves: more-checkable`, not
+  26**; meta 26 in the head total the gate judges (25 open plus one blocked
+  on the maintainer). Two of the brief's three figures were wrong, which is
+  why they were re-derived.
+- I read 12 of the 43 in full — the whole 2026-08-10/11 cohort most likely to
+  be overtaken, plus the supervisor-era items — and checked each against the
+  current tree rather than against its own age. Every one still describes a
+  defect that is present today. Spot-checks, all read this round:
+  `round.mjs`'s `portFree` still binds `127.0.0.1` (line 111), still spawns
+  the server `stdio: "ignore"` (line 456), and `waitFor` still treats any
+  answer on the port as success — the stale-server item is untouched.
+  `README.md:99` and `AGENTS.md:15,27` still say `ship` "requests
+  auto-merge" unconditionally, which `prompts/shared/every-run.md` now
+  contradicts. `.env.example` still does not document `NEXT_PUBLIC_SITE_URL`
+  while `app/lib/site.js:22` still reads it. `check-track-scope.mjs:136`
+  still exits `skip` for a maintainer branch that `round.mjs:527` refuses.
+  `/what-vendors-promise` and `/log/archive` reached `check-routes.sh`'s
+  loops but still are not in CI's Lighthouse or lychee lists.
+- The honest conclusion is that **the brief's diagnosis was wrong about the
+  cause.** The queue is not over budget because it is full of dead wood; it
+  is over budget because it is full of real, verified, unfixed defects that
+  nothing has picked up. Most items even carry dated re-check appendices
+  saying exactly which boxes closed and which did not — one
+  (`2026-08-17-deepseek-peak-hour-pricing.md`) has every box ticked and a
+  section explaining why it must stay open anyway. Culling any of them to
+  make room for a new item would have made the queue *less* true, which is
+  the opposite of what dropping is for, and `CHARTER.md` rule 20 makes
+  "nothing to drop here" a real outcome. The `human-owned-paths` rename the
+  maintainer asked for is still blocked, and the thing blocking it is a
+  budget, not a queue full of junk — which points at a different fix, in
+  `policy.yml`, which meta owns and `maintain` may not write.
+- One thing checked and found *not* to be a defect: seven open items declare
+  `blocked-by`, and two name a blocker now sitting in `docket/done/`. That
+  looked like the queue lying about what is ready, but `dispatch.mjs:106`
+  resolves those edges with `.every((ref) => done.has(ref))`, so a completed
+  blocker correctly clears and both items already count as ready. Recorded
+  because the near-miss is the point: it would have been an easy and wrong
+  finding to report.
+
+**6. Two items filed**
+- Hypothesis: a round that drops nothing should still leave the queue more
+  true than it found it. Two gaps were known going in — one the brief named,
+  one this round created by making a scope call it did not want to leave
+  implicit — and both are cheap to state and expensive to rediscover.
+- Change: two items filed, and the filing gate re-run to confirm both were
+  accepted (build 12 -> 13 against a budget of 14; meta unchanged at 26, so
+  neither item was quietly relabelled into an unbounded track to get past the
+  gate).
+- `docket/open/2026-08-24-checkout-test-asserts-a-wall-clock-threshold.md`
+  (build). The brief suggested round 185 should have filed this and did not;
+  I confirmed it against the file rather than the claim.
+  `scripts/test-orchestrate-checkout.mjs:165-170` asserts `quiet.ms < 3000`
+  around a spawned child and reports a breach as "a quiet session delayed the
+  checkout" — a message naming a behaviour it never measured. Same shape as
+  the existing runner-launch flake item, different script and different
+  mechanism, so that item does not cover it. The item also names why the
+  15000 ms `killTimer` in the same file is *not* the same defect, so a round
+  fixing this does not remove a bound that is doing its job.
+- `docket/open/2026-08-24-dated-milestones-that-are-not-shutdowns.md`
+  (maintain, `serves: floor`). OpenAI's page carries dated entries the
+  calendar deliberately does not list — evals going read-only 2026-10-31, and
+  fine-tuning job creation ending 2027-01-06 — because they restrict a
+  capability rather than switch an identifier off. That call was never
+  written down, so every re-verification silently re-decides it. The item
+  asks for the decision to be recorded, not for rows to be added; this round
+  kept the existing scope rather than widen a published page's claims in
+  passing.
+
+- Origin: delegated
+- Track: maintain
+- Agent: claude-opus-5
+- Dispatch: dispatcher — quota: target 31%, recent 0% over last 20 shipped round(s)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  with a long explicit timeout, never backgrounded. Plus
+  `node scripts/check-docket.mjs` before and after filing, to confirm the
+  filing gate accepted both items (build 12 -> 13 against a budget of 14;
+  meta unchanged at 26). The row comparison and the quote check were run as
+  scratchpad scripts against the fetched pages, and both were made to fail
+  before being trusted — the row comparison's first run reported 29
+  mismatches that were parser bugs, which is recorded in change 1 rather
+  than discarded. Reviewed once (**request-changes**, one blocking finding:
+  the corrected OpenAI quote silently elided 22 words while the same commit
+  published a claim that no quote does — see change 2). Fixed by quoting the
+  passage whole, re-tested with a freshly written checker rather than the
+  one that had just been wrong, and `round.mjs check` re-run green
+  afterwards. The reviewer independently re-derived the rest and confirmed
+  it, including the 4 Part B spot-checks behind the decision to drop
+  nothing.
+- Result: 87 rows re-verified against both vendor pages, 0 changes found at
+  either vendor. 10 of 11 vendor commitment quotes re-verified word for word,
+  1 (Meta) unreachable and recorded as unreachable. 1 correction published,
+  to this site's own quote of OpenAI's notice commitment, dated and shown in
+  body text. 0 docket items dropped, 2 filed. No new Anthropic dated
+  shutdown exists, so the `/promise-vs-practice` retraction stands and no
+  later round should read this one as grounds to restore it.
+
+### 2026-08-24
 Two of this site's routes had never done the thing they existed to do, and
 both shipped in the last three days. That is the judgement of this round and
 everything below is its argument.

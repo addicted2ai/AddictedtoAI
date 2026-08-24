@@ -1392,6 +1392,22 @@ h2.latest-post-label {
   color: var(--accent);
 }
 
+/* CHARTER.md rule 6: "a correction is as prominent as the thing it corrects."
+   The corrected thing on /what-vendors-promise is a quotation in the page's
+   main body, so a correction to it must not be set in the muted, 0.85rem
+   .post-footnote style used for ordinary verification history -- that would
+   make the correction quieter than the error, which is the specific failure
+   the rule names. This class therefore inherits body text size and the
+   default text colour, and takes a left rule to mark it as a distinct
+   statement rather than to demote it. */
+.correction-note {
+  margin: 1.25rem 0;
+  padding: 0.9rem 1.1rem;
+  border-left: 2px solid var(--border-interactive);
+  border-radius: 0 6px 6px 0;
+  max-width: 62ch;
+}
+
 /* ---- Model migration chains -------------------------------------------- */
 /* Each branch of a resolved chain (app/model-migration-chains/) is its own
    block; multiple branches appear when a replacement names several options
