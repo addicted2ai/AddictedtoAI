@@ -305,10 +305,15 @@ check, not as a finding this round made.
   was `audit`. (Recorded verbatim from the brief; "below" is the brief's
   ordering, where the finding followed this line — in this entry it leads.)
 - Guardrails: `node scripts/round.mjs check`, run directly in the foreground
-  with a long explicit timeout — green on the first run: `npm run lint`,
-  docket valid, track scope for `loop/meta/dispatch-binds-at-merge`,
-  production build, all route checks passed. The documented runner-launch
-  flake
+  with a long explicit timeout, three times on this branch and green every
+  time: `npm run lint`, docket valid, track scope for
+  `loop/meta/dispatch-binds-at-merge`, production build, all route checks
+  passed. Run 2 outlived the 600-second ceiling the calling tool allows and
+  finished detached, exit code 0 — a limit of the harness, not a check
+  result, and its full output was read rather than assumed. Runs 2 and 3
+  re-confirmed text-only edits to this entry, which touch no checked code
+  (`npm run lint` is `next lint`, JS/TS only) but do rebuild `/log`, where
+  the document-size budget is asserted. The documented runner-launch flake
   (`docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-dependent.md`)
   was not hit on this branch. `node scripts/test-changelog-provenance.mjs`:
   12 of 12 planted defects caught, both controls green — including the
