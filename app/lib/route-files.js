@@ -91,19 +91,16 @@ export const ROUTE_FILES = {
     "app/lib/model-deprecation-checker.js",
     "app/lib/retirement-dates.js",
   ],
-  "/model-migration-chains": [
-    "app/model-migration-chains/page.js",
-    "app/model-migration-chains/ModelMigrationChains.js",
-    "app/lib/model-migration-chains.js",
-    "app/lib/model-deprecation-checker.js",
-    "app/lib/retirement-dates.js",
-  ],
-  "/promise-vs-practice": [
-    "app/promise-vs-practice/page.js",
-    "app/lib/notice-floor-check.js",
-    "app/lib/retirement-commitments.js",
-    "app/lib/retirement-dates.js",
-  ],
+  // Both routes were withdrawn by round 186 (audit) and now serve retraction
+  // notices. Their file lists are narrowed to the page file each retraction
+  // actually renders from, matching /projects — withdrawn since round 54 and
+  // listed as its page file alone. This is not tidying: the wider lists named
+  // the data files the live pages read, and leaving them would mean a future
+  // build round re-verifying app/lib/retirement-dates.js silently reassigned
+  // authorship of a retraction notice it never wrote. Restoring either page
+  // restores its list.
+  "/model-migration-chains": ["app/model-migration-chains/page.js"],
+  "/promise-vs-practice": ["app/promise-vs-practice/page.js"],
   "/directory": [
     "app/directory/page.js",
     "app/directory/DirectorySearch.js",

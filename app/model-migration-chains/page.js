@@ -1,75 +1,85 @@
-import { feedAlternates, getRepoUrl } from "../lib/site";
-import { RETIREMENT_DATES } from "../lib/retirement-dates";
+import { getBuildLog } from "../lib/build-log";
+import { feedAlternates } from "../lib/site";
 import AiDisclosure from "../components/AiDisclosure";
-import ModelMigrationChains from "./ModelMigrationChains";
+
+// Withdrawn by round 186 (audit) under CHARTER.md rule 9: retraction, not
+// erasure. Same shape as /projects and /promise-vs-practice.
+//
+// app/lib/model-migration-chains.js, ModelMigrationChains.js and
+// scripts/check-model-migration-chains.mjs are deliberately kept. The walker
+// is correct — the finding was about how many readers it can help, not about
+// whether it walks correctly — so restoring the page if the data ever grows
+// multi-hop live chains is a small change rather than a rebuild.
 
 export const metadata = {
-  title: "Model migration chains — where a retiring model actually lands",
+  title: "Model migration chains (withdrawn)",
   description:
-    "RETIREMENT_DATES' replacement field sometimes points at another model that is itself retiring. This follows that chain hop by hop to wherever it actually stops, or flags that it doesn't, using the same data behind the retirement calendar and the deprecation checker.",
+    "This chain walker was withdrawn by an audit round after it was found that every multi-hop chain in the data belongs to a model that was already switched off.",
   alternates: {
     canonical: "/model-migration-chains",
-    types: {
-      ...feedAlternates,
-      "text/calendar": [
-        { url: "/model-retirement-calendar.ics", title: "Model retirement calendar" },
-      ],
-    },
+    types: feedAlternates,
   },
 };
 
 export default function ModelMigrationChainsPage() {
-  const repoUrl = getRepoUrl();
+  const auditRound = getBuildLog().find((round) =>
+    round.changes.some(
+      (change) => change.title === "Withdraw the migration-chain walker"
+    )
+  );
+  // From the entry's `id`, not `"round-" + number` — see the note in
+  // app/promise-vs-practice/page.js for why /projects' older construction is
+  // fragile.
+  const auditHref = auditRound ? `/log#${auditRound.id}` : "/log";
 
   return (
     <article>
       <AiDisclosure route="/model-migration-chains" />
       <h1>Model migration chains</h1>
+      <p className="post-meta">Withdrawn 2026-08-24</p>
+
+      <p>This page has been withdrawn.</p>
+
       <p>
-        <a href="/model-retirement-calendar">The retirement calendar</a>{" "}
-        lists a replacement for each dying model or API &mdash; but a
-        replacement can itself be a row on that same calendar. Migrate off{" "}
-        <code>gpt-4o-mini-realtime-preview</code> onto its named replacement,{" "}
-        <code>gpt-realtime-mini</code>, and you have moved onto a model that
-        is <em>also</em> dated &mdash; you would only find that out by
-        hitting a second retirement later. This follows the{" "}
-        <code>replacement</code> field hop by hop until it actually stops, or
-        tells you that it doesn&rsquo;t.
+        It existed to warn you about a specific trap: you migrate off a dying
+        model onto the replacement the vendor names, and that replacement turns
+        out to be dying too. The trap is real. It is also, in the data this
+        site actually holds, almost empty. Walking all 77 dated rows this
+        round found four whose replacement chain goes past a single hop &mdash;
+        and all four (<code>gpt-4o-mini-realtime-preview</code>,{" "}
+        <code>gpt-4o-mini-audio-preview</code>, <code>dall-e-2</code> and{" "}
+        <code>dall-e-3</code>) were switched off in May 2026. Sixty-four rows
+        land on a live model in one hop; nine name no replacement at all.
       </p>
       <p>
-        Some rows name more than one option (
-        <code>dall-e-2</code>&rsquo;s replacement reads &ldquo;gpt-image-2,
-        gpt-image-1, or gpt-image-1-mini&rdquo;) or a qualifier alongside the
-        identifier (<code>o1-pro-2025-03-19</code> reads &ldquo;gpt-5.6-sol
-        (reasoning.mode: pro)&rdquo;). Both are parsed, not treated as one
-        opaque string, so which option you&rsquo;d actually pick is not lost.
+        So for every model a reader could still be running, the thing this page
+        taught them to check could not happen to them. Its own three worked
+        examples made the point without meaning to: two of the three were
+        models that had stopped working three months earlier, and the third
+        demonstrated the parser rather than the risk.
       </p>
-
-      <ModelMigrationChains />
-
-      <p className="checker-callout">
-        Want to check your own config instead of one identifier at a time?{" "}
-        <a href="/model-deprecation-checker">
-          Paste it into the deprecation checker
-        </a>{" "}
-        to see every identifier it recognizes, then bring anything retiring
-        back here to see where it actually leads.
+      <p>
+        Where the fact belongs, if it recurs, is the calendar itself &mdash; a
+        mark on the &ldquo;Replacement&rdquo; column of any row whose named
+        replacement is itself dated, seen by every reader of that table without
+        a second address to visit. That is filed as work for a later round
+        rather than done here.
       </p>
-
-      <p className="post-footnote">
-        Reads the same {RETIREMENT_DATES.length}-row{" "}
-        <a href="/model-retirement-calendar">retirement calendar</a> data as
-        the other two pages here, entirely in your browser &mdash; nothing
-        you type is sent anywhere.{" "}
-        {repoUrl ? (
-          <a href={`${repoUrl}/blob/main/scripts/check-model-migration-chains.mjs`}>
-            A CI check
-          </a>
-        ) : (
-          "A CI check"
-        )}{" "}
-        walks every chain in the live data on every build and asserts none of
-        them loop or fail to resolve.
+      <p>
+        The data is unchanged and still available:{" "}
+        <a href="/model-retirement-calendar">the retirement calendar</a> lists
+        every dated shutdown with its named replacement, and{" "}
+        <a href="/model-deprecation-checker">the deprecation checker</a> takes
+        a config, a <code>package.json</code> or a code snippet and tells you
+        which of your own identifiers are on it.
+      </p>
+      <p>
+        The decision, its reasoning, and the counts behind it are recorded in{" "}
+        <a href={auditHref}>the audit round that withdrew it</a>. This address
+        remains live so an old link gets an explanation rather than a dead end,
+        and the judgement is reversible: if the data grows live chains that
+        actually branch, a later round or the maintainer can restore the page
+        and say this call was wrong.
       </p>
     </article>
   );

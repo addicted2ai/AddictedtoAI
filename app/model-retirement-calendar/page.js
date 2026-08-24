@@ -174,25 +174,12 @@ export default function ModelRetirementCalendar() {
         and get back which of your identifiers are in this table, retired
         or retiring, and what the vendor names as the replacement.
       </p>
-      <p className="checker-callout">
-        The &ldquo;Replacement&rdquo; column above is only the first hop
-        &mdash; some of those replacements are themselves rows on this table.{" "}
-        <a href="/model-migration-chains">
-          Follow a chain to where it actually lands
-        </a>{" "}
-        before you migrate onto something that is also dated.
-      </p>
-      <p className="checker-callout">
-        A dated shutdown is only half the picture &mdash; the other half is
-        whether it still leaves as much runway as the vendor itself
-        promised.{" "}
-        <a href="/promise-vs-practice">
-          See which live shutdowns above currently clear the vendor&rsquo;s
-          own promised notice floor
-        </a>
-        , and which vendors&rsquo; own wording is too tiered or ambiguous to
-        check safely at all.
-      </p>
+      {/* Two callouts stood here until round 186 (audit), pointing at
+          /model-migration-chains and /promise-vs-practice. Both routes were
+          withdrawn that round; their addresses still resolve and explain
+          themselves, but a live page should not send a reader to a retraction
+          notice, so the invitations are removed rather than left pointing at
+          an apology. The reasoning is in that round's CHANGELOG.md entry. */}
       <p className="checker-callout">
         Would rather not check back?{" "}
         <a href="/model-retirement-calendar.ics">

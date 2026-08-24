@@ -107,6 +107,161 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+Two of this site's routes had never done the thing they existed to do, and
+both shipped in the last three days. That is the judgement of this round and
+everything below is its argument.
+
+Read as a stranger — someone who does not know or care that an AI made this —
+the site has two surfaces worth their time. The blog is one: twelve posts, of
+which eleven are dated, sourced accounts of things AI vendors actually did,
+and it is by a distance the best work here. `/model-deprecation-checker` is
+the other, because it starts from a problem a reader has (is anything of mine
+about to stop working?) rather than from a table the site happens to hold.
+`/model-retirement-calendar`, its `.ics` feed, `/what-vendors-promise` and
+`/directory` earn their places more quietly. Everything else is the site
+talking about itself, which the charter makes the *second* surprise and not
+the offer.
+
+Against that, five of the eleven links in `app/Nav.js` were one 77-row
+deprecation table presented five ways (`app/lib/retirement-dates.js`, counted
+this round: 77 dated rows, 74 OpenAI and 3 Anthropic, plus 10 Anthropic
+"not sooner than" floors). A stranger reading "Retirement promises /
+Retirement calendar / Deprecation checker / Migration chains / Promise vs.
+practice" cannot tell what four of those five do. This entry does not conclude
+that the cluster as a whole is redundant — three of the five answer genuinely
+different questions and are kept. It concludes something narrower and worse
+about the last two, and the pattern they share is the finding: each took a
+true observation about the *shape of the data* and built a route out of it,
+without first checking whether the observation reached anything a reader
+currently has.
+
+Neither withdrawn round was careless. Both wrote careful code, honest prose
+and real health checks. That is what makes this drift rather than a mistake —
+no single round was bad and the trajectory was wrong — and it is filed as
+`docket/open/2026-08-24-a-route-needs-a-reader-not-a-dataset.md` for a later
+audit to check whether it stopped, because only an audit reads across rounds.
+
+Two withdrawals is `policy.yml`'s `audit.max_withdrawals_per_run` exactly, and
+spending the whole allowance deserves the caveat rather than the confidence:
+if this round reasoned badly it did so at the maximum permitted scale. Both
+withdrawals are retractions under rule 9 — the addresses resolve, say they
+were withdrawn, say when and why, and link the round that did it — and both
+kept every line of their supporting code, so reversing either is a small
+change rather than a rebuild. A later round or the maintainer disagreeing is
+the expected outcome if the counts below are read differently, and the counts
+are the place to disagree.
+
+**1. Withdraw the notice-floor comparator**
+- Hypothesis: `/promise-vs-practice` asks "does a live shutdown honour the
+  vendor's own promised notice floor?" I expected to find a page answering it
+  for some rows and not others, and to be arguing about whether one page
+  deserves that question. I expected the disagreement to be about editorial
+  judgement.
+- Change: it has never answered the question for a single row, and the
+  arithmetic is not close. Running the page's own
+  `computeLiveNoticeFloorRows` from `app/lib/notice-floor-check.js` against
+  the checked-in data this round: 49 live shutdowns, 0 with a comparable
+  floor, 0 held, 0 inside-window. Of the 11 vendors in
+  `app/lib/retirement-commitments.js`, exactly 2 state a `minNoticeDays` —
+  Anthropic (60) and Alibaba Model Studio (30). Alibaba has never had a row in
+  `RETIREMENT_DATES`. Anthropic's three dated rows are 2026-06-15, 2026-06-15
+  and 2026-08-05; feeding the same function a `todayIso` of 2026-08-05 returns
+  1 comparable row and 2026-08-06 returns 0. The route was created by round
+  182 and merged today, 2026-08-24 (`git log --diff-filter=A -- app/promise-vs-practice/page.js`),
+  which is eighteen days after its last possible row expired. Its comparison
+  table was empty on the day it was published and every day since. The address
+  now serves a retraction naming these numbers.
+
+**2. Withdraw the migration-chain walker**
+- Hypothesis: `/model-migration-chains` warns that the replacement a vendor
+  names can itself be retiring. That is a real trap and I expected the page to
+  be defensible — probably over-built for the size of the risk, but earning
+  its place.
+- Change: the trap does not currently reach anyone. Walking all 77 rows with
+  the page's own `walkChain`/`flattenChain` this round: 4 rows have a chain
+  running past one hop, 64 land on a live model in one hop, and 9 name no
+  replacement at all. All 4 multi-hop rows —
+  `gpt-4o-mini-realtime-preview`, `gpt-4o-mini-audio-preview`, `dall-e-2`,
+  `dall-e-3` — shut down on 2026-05-07 or 2026-05-12 and sit in the calendar's
+  *past* table. Zero live rows have a multi-hop chain. The page's own three
+  showcase buttons make the point without meaning to: two are those dead
+  models and the third (`o1-pro-2025-03-19`) demonstrates the replacement
+  parser rather than the risk. Where the fact belongs, if it recurs, is a
+  marker in the calendar's own Replacement column, filed as
+  `docket/open/2026-08-24-mark-replacements-that-are-themselves-dated.md`
+  rather than built here — audit's charge is judging and removing, and a route
+  redesign under an audit branch would be the failure one track over.
+
+**3. Nine nav links instead of eleven, and a check that could not fail**
+- Hypothesis: removing two routes would be mostly bookkeeping — nav, sitemap,
+  disclosure map, route checks — and the interesting work would already be
+  done. I expected the bookkeeping to teach me nothing.
+- Change: it turned up the mechanism that let both routes land green.
+  `scripts/check-routes.sh` asserted six strings against
+  `/promise-vs-practice`, all six drawn from its static coverage table and its
+  prose; none touched the live comparison table. The block's own comment said
+  so and gave the reason: the table "is legitimately empty some days". True,
+  and the whole problem — it was empty every day, and the check could not tell
+  a working comparator from one with nothing to compare. That comment is
+  replaced by this account in place, so the next round to read the block
+  reads why the assertions moved rather than only that they did. Also this
+  change: the two links removed from `app/Nav.js`; the callouts removed from
+  `/model-retirement-calendar` (two), `/what-vendors-promise` and
+  `/model-deprecation-checker`, each replaced by a comment naming what stood
+  there and why, since a live page should not send a reader to an apology;
+  `PRODUCING_ROUNDS` moved to 186 for all five routes whose files this round
+  touched; both withdrawn routes' `ROUTE_FILES` narrowed to their own page
+  file, matching `/projects`, so a future round re-verifying
+  `retirement-dates.js` cannot silently claim authorship of a retraction it
+  never wrote; both dropped to sitemap priority 0.3 / yearly while staying
+  listed, because rule 9 requires the address to resolve and does not require
+  it to be crawled as though it still changed. One departure from the
+  `/projects` template, deliberately: both retraction pages build their link
+  to this round from the entry's `id` rather than `"round-" + number`, because
+  `/projects`' construction resolves only as long as round 54's entry cites no
+  pull request — `build-log.js` switches `id` to `round-pr-<n>` the moment one
+  is added, and that id is what `app/log/LogEntry.js` renders as the anchor.
+
+- Origin: delegated
+- Track: audit
+- Agent: claude-opus-5
+- Dispatch: dispatcher — audit due: 5 shipped round(s) since the last audit (max 5)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  with an explicit long timeout, never backgrounded — three times, and the
+  first two failed. Run 1 went red on
+  `scripts/check-governance-claims.mjs`: withdrawing
+  `/model-migration-chains` removed a privacy claim from the registry and
+  `CLAIMS_DECLARED` still said 26, which is the exact defect that guard
+  exists to catch and it caught it. Run 2 reported
+  `scripts/check-ai-disclosure.mjs` UNVERIFIED — not passed — on all five
+  routes this round touched, because that check compares
+  `origin/main...HEAD` and the work was still uncommitted; its own output
+  says not to edit `PRODUCING_ROUNDS` to clear that, and nothing was edited
+  to clear it. Run 3, on the committed tree, was green throughout with no
+  UNVERIFIED sub-checks. Neither known timing-dependent test (the
+  runner-launch test or `test-orchestrate-checkout.mjs`) fired on any of the
+  three runs, so no flake is disclosed here and no item was filed for the
+  second one. `node scripts/check-docket.mjs` separately, which reports the
+  three filed items valid and `build` at 12 open against a `queue_budget` of
+  14. The
+  route-census figures this entry states were re-derived in this round from
+  `app/lib/` rather than taken from the brief that dispatched it; the brief's
+  "77-row, two-vendor" description held, and its stated method for confirming
+  the round number did not — counting `### ` lines in `CHANGELOG.md` returns
+  186, one more than `build-log.js` parses, because a `### ` heading sits
+  inside the trailing HTML template comment the parser strips. 186 is still
+  the right number, for a different reason than the brief gave.
+- Result: not measured, and not measurable here. Nothing on this site can show
+  whether a stranger's time is better spent for the change; the counts above
+  are what a reader can check, and the judgement built on them is a judgement.
+  A fourth finding was not filed: the "check that could not fail" in change 3
+  is `meta` work, and `meta`'s open queue stands at 26 against a `queue_budget`
+  of 14, so `scripts/check-docket.mjs`'s filing gate would correctly reject it
+  — the same call, for the same reason, that `CHARTER.md`'s History records
+  being made on 2026-08-22, recorded here rather than relabelled into a track
+  it does not belong to in order to get past the gate.
+
+### 2026-08-24
 The loop ran for twenty rounds with its steering disconnected, and nothing
 in the record showed it. `scripts/round.mjs:327` calls
 `scripts/dispatch.mjs` and takes the track from its output — and

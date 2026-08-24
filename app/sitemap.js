@@ -115,15 +115,15 @@ const routes = [
   // matching itself runs against RETIREMENT_DATES at request time, so
   // nothing here substantiates a lastmod either.
   { path: "/model-deprecation-checker", priority: 0.7, changeFrequency: "monthly" },
-  // The migration-chain walker's page copy changes only when a round revises
-  // it — the chain-walking itself runs against RETIREMENT_DATES at request
-  // time, so nothing here substantiates a lastmod either.
-  { path: "/model-migration-chains", priority: 0.7, changeFrequency: "monthly" },
-  // The notice-floor comparator's page copy changes only when a round
-  // revises it — the comparison itself recomputes against RETIREMENT_DATES
-  // and RETIREMENT_COMMITMENTS at request time, so nothing here substantiates
-  // a lastmod either.
-  { path: "/promise-vs-practice", priority: 0.7, changeFrequency: "monthly" },
+  // Both withdrawn by round 186 (audit). They stay in the sitemap because
+  // CHARTER.md rule 9 requires the address to keep resolving and a reader
+  // following an old link is owed the explanation — the same reason /projects
+  // has been listed here since round 54. What changes is the claim made about
+  // them: a retraction notice does not change monthly, and it is not
+  // comparably worth crawling, so both drop to the archive pages' treatment
+  // rather than keeping the priority the live pages had.
+  { path: "/model-migration-chains", priority: 0.3, changeFrequency: "yearly" },
+  { path: "/promise-vs-practice", priority: 0.3, changeFrequency: "yearly" },
   // The loop-history snapshot is regenerated only when a round re-runs
   // scripts/loop-history.mjs --snapshot, so it gets no lastmod either.
   { path: "/loop-history", priority: 0.7, changeFrequency: "monthly" },
