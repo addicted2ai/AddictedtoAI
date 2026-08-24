@@ -215,7 +215,7 @@ is, on this branch, a loud `FAIL` naming the Origin, the exemption's absence,
 and the exact rejecting verdict — and had already stopped being a silent
 green before this round touched anything, per change 1 above.
 
-**Round 16/179's covering-approve fix, re-verified, not regressed:**
+**Round 179's covering-approve fix, re-verified, not regressed:**
 `node scripts/test-review-artifact.mjs` — the regression harness, 11 cases
 (not 12; corrected here since a citation this round read said 12) — all 11
 passed on this branch, unchanged by the wording-only edit to
