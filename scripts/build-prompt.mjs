@@ -36,7 +36,20 @@ function arg(name, fallback) {
 }
 
 const origin = arg("origin", null);
-const agent = arg("agent", "unknown");
+// `--agent` has no default. Until round 185 it defaulted to the literal
+// string `unknown`, which line 88's block then printed under "Record these
+// in your changelog entry" -- so this script instructed every round started
+// without the flag to write `- Agent: unknown`, a value that names nothing
+// and answers the provenance question with a shrug.
+// scripts/check-changelog-provenance.mjs rejects it, which made this the
+// launcher telling a round to write a value a required check blocks the
+// merge on. Same treatment as `--origin` above, and for the same reason: a
+// caller that cannot know the value is told what determines it rather than
+// handed one nothing verified. `.github/workflows/loop.yml` calls this
+// script without `--agent` and runs the round through
+// `anthropics/claude-code-action@v1`, so its rounds resolve their own agent
+// from this instruction.
+const agent = arg("agent", null);
 if (origin !== null && !["supervised", "unsupervised", "maintainer", "delegated"].includes(origin)) {
   console.error(`unknown origin: ${origin}`);
   process.exit(1);
@@ -87,10 +100,23 @@ ${
 }
 Record these in your changelog entry:
   - Track: ${track}
-  - Agent: ${agent}
-The dispatcher reads Track to hold each track to its quota. Agent says which
-model did the work -- rounds here have been produced by Claude Code, Codex and
-the GitHub action, and "an AI" is less specific than the record can be.
+  - Agent: ${agent ?? "<determine it -- see below>"}
+The dispatcher reads Track to hold each track to its quota. Agent says what
+actually ran the round -- rounds here have been produced by Claude Code,
+Codex and the GitHub action, and "an AI" is less specific than the record can
+be.${
+  agent === null
+    ? `
+No --agent was passed, so nothing here knows what is running you and this
+prompt will not invent a value. Name what actually ran this round. It must
+resolve in scripts/runners.yml, which scripts/check-changelog-provenance.mjs
+checks at merge: a harness (opencode, claude-code, codex,
+claude-code-action), a model (claude-opus-5, claude-sonnet-5,
+deepseek-v4-flash, gpt-5-codex), a runner key, or <provider>/<model>. A
+qualifier in parentheses is free text and is not checked, so
+'claude-opus-5 (Claude Code subagent)' is fine. Do not write 'unknown'.`
+    : ""
+}
 
 When you are done, run 'node scripts/round.mjs ship'. It pushes, opens the pull
 request, and decides whether to arm auto-merge from the round's own Origin. Do

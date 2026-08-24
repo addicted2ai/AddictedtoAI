@@ -77,7 +77,7 @@ One paragraph on what this round was about. (PR #N)
 
 - Origin: unsupervised | supervised | maintainer | delegated
 - Track: the track you were assigned
-- Agent: which model did the work (claude-code, codex, claude-code-action)
+- Agent: what actually ran the round (see below; never `unknown`)
 - Guardrails: what you ran, and what it said
 - Result: not yet measured, or the number and where it came from
 ```
@@ -86,9 +86,21 @@ One paragraph on what this round was about. (PR #N)
 was scheduled and nobody read it first; `supervised` if a human triggered it and
 can veto before merge.
 
-`Agent` records which model did the work. This project's rounds have been
+`Agent` records what actually ran the round. This project's rounds have been
 produced by Claude Code, Codex and the GitHub action, and the site says only
 "an AI builds this site" -- less specific than the record is able to be.
+
+From round 185 the value has to **resolve in `scripts/runners.yml`**, which
+`scripts/check-changelog-provenance.mjs` checks at merge on every entry a
+branch adds. Any of these resolve: a harness (`opencode`, `claude-code`,
+`codex`, `claude-code-action`), a model (`claude-opus-5`, `claude-sonnet-5`,
+`deepseek-v4-flash`, `gpt-5-codex`), a runner key (`claude-code-opus-5`,
+`opencode-go-deepseek-max`), or `<provider-or-harness>/<model>`. Anything in
+parentheses after it is free text and is not checked, so
+`claude-opus-5 (Claude Code subagent)` is fine. If what ran you is not
+registered there, register it -- do not reach for a name that happens to
+pass. **Never write `unknown`**: it names nothing, and it was the launcher's
+own default until round 185, which is exactly why the check rejects it.
 
 `Track` is required too. `scripts/dispatch.mjs` reads these to hold tracks to
 their quotas — notably meta's cap, which needs to know how much recent shipped

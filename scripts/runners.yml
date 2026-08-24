@@ -77,6 +77,32 @@ runners:
     model: claude-sonnet-5
     variant: null
 
+  # The model orchestrating and running rounds as of 2026-08-24, and the
+  # entry whose absence made CHANGELOG.md's `Agent:` field unresolvable:
+  # `Agent: claude-opus-5 (orchestrating model)` x4 and `Agent: claude-opus-5
+  # (Claude Code subagent)` x3 (grep -c, run this round) named a model no
+  # runner registered, while the only Claude entry here was the Sonnet one
+  # above. scripts/check-changelog-provenance.mjs now resolves every
+  # `Agent:` from round 185 forward against this file, so a round on an
+  # unregistered runner is a red build rather than a line of free text.
+  #
+  # Named for shape consistency with claude-code-sonnet-5 (harness first,
+  # then model) rather than as a bare `claude-opus-5`; the record publishes
+  # the MODEL, which is why that checker resolves an `Agent:` value against
+  # runner keys and runner `model:` values alike.
+  #
+  # Same adapter caveat as claude-code-sonnet-5 above, and it is the honest
+  # one: scripts/harness-adapters/claude-code.sh has still never been
+  # exercised. Every round this model has run was dispatched directly by an
+  # orchestrator session -- see harnesses.claude-code.supervisor below --
+  # so registering it here records what is true, and does not claim the
+  # supervisor launch path has been tried.
+  claude-code-opus-5:
+    harness: claude-code
+    provider: anthropic
+    model: claude-opus-5
+    variant: null
+
   # Ran real rounds already (CHANGELOG.md: `Agent: codex` x17). Same caveat
   # as claude-code-sonnet-5 above: adapter written, not exercised this round.
   codex:
@@ -188,5 +214,27 @@ harnesses:
   codex:
     adapter: scripts/harness-adapters/codex.sh
     presence_check: codex
+    needs_server: false
+    supervisor: false
+
+  # The GitHub action path: .github/workflows/loop.yml runs a round through
+  # `anthropics/claude-code-action@v1`, which is a genuinely different
+  # launcher from a local Claude Code session even though the harness
+  # underneath is the same. Registered so a round that ran there can NAME
+  # what ran it -- prompts/shared/every-run.md has told rounds to write
+  # `claude-code-action` for a long time, and round 185's
+  # scripts/check-changelog-provenance.mjs would have rejected the value its
+  # own prompt prescribes if this key did not exist.
+  #
+  # NO ADAPTER, DELIBERATELY, and this is the honest part: scripts/
+  # orchestrate.sh cannot launch this harness -- GitHub Actions does, from a
+  # workflow file the loop's own token cannot push to. No runner above names
+  # it, so scripts/runner-preflight.mjs never resolves it (it looks up only
+  # the SELECTED runner's harness, runner-preflight.mjs:133). If a runner
+  # ever does name it, preflight will fail on the missing adapter, which is
+  # the correct outcome rather than a gap.
+  claude-code-action:
+    adapter: null
+    presence_check: null
     needs_server: false
     supervisor: false

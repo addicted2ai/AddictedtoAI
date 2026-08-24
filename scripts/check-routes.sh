@@ -437,6 +437,30 @@ run_step node scripts/test-check-reflow-known-failures.mjs
 # so a third drift fails the build. See scripts/check-origin-definitions.mjs.
 echo
 run_step node scripts/check-origin-definitions.mjs
+# How a round was DISPATCHED and WHAT RAN IT, checked against policy.yml and
+# scripts/runners.yml. Round 185 exists because scripts/round.mjs:327 is the
+# only caller of scripts/dispatch.mjs in this repository, so a round briefed
+# by hand never consults the dispatcher at all -- which is how every round
+# from 2026-08-18 on was run, and how the two heaviest tracks in policy.yml
+# (scout 30, maintain 25) came to ship zero rounds out of twenty while the
+# lightest (meta 5) shipped nine. A guardrail enforced at launch is
+# advisory; only a merge-time check binds, and the check for "did this round
+# come through the launcher" cannot live in the launcher. It runs here
+# because build-and-audit is a required status check -- with the standing
+# caveat that `enforce_admins` is false on `main`
+# (docket/open/2026-08-11-branch-protection-does-not-require-review.md), so
+# this makes a forced or starved round visible and deliberate rather than
+# impossible.
+echo
+run_step node scripts/check-changelog-provenance.mjs
+# ...and the proof that the check above can go red, on 12 planted defects
+# across two kinds of sandbox. The composition half needs a GENERATED record:
+# its assertion arms only once the whole window sits at or above the round
+# that introduced the Dispatch field, and the real changelog's newest round
+# is that round -- so the armed path is unreachable by editing the real file
+# and would otherwise ship never having been seen either red or green.
+echo
+run_step node scripts/test-changelog-provenance.mjs
 # FRAME.md's own claims about who controls what -- the identities, the
 # HOLD.md self-halt, the .github/ push rejection, the required-checks list,
 # and the rest -- checked against the current tree and (where reachable)
