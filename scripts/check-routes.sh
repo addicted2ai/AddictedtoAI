@@ -145,6 +145,23 @@ check /model-retirement-calendar 200 "text/html" 'href="/model-deprecation-check
 check /model-deprecation-checker 200 "text/html" 'id="checker-input"'
 check /model-deprecation-checker 200 "text/html" 'Paste an example'
 
+# The subscribable .ics calendar feed (docket/open/2026-08-22-model-shutdown-ics-feed.md):
+# a static route, generated once at build time from RETIREMENT_DATES (see
+# app/model-retirement-calendar.ics/route.js's own header for the two ways
+# that is enforced). These are the cheap, server-facing half of its
+# checking -- right content-type, right body shape, and the Subscribe links
+# actually render on both pages that promise them; the deep RFC 5545
+# parser validation and the one-event-per-row assertion are
+# scripts/check-model-retirement-ics.mjs below, which needs no server.
+check /model-retirement-calendar.ics 200 "text/calendar" "BEGIN:VCALENDAR"
+check /model-retirement-calendar.ics 200 "text/calendar" "VERSION:2.0"
+check /model-retirement-calendar.ics 200 "text/calendar" "BEGIN:VEVENT"
+check /model-retirement-calendar.ics 200 "text/calendar" "gpt-5.2-chat-latest"
+check /model-retirement-calendar   200 "text/html" 'href="/model-retirement-calendar.ics"'
+check /model-deprecation-checker   200 "text/html" 'href="/model-retirement-calendar.ics"'
+echo
+run_step node scripts/check-model-retirement-ics.mjs
+
 # The parser's own health check: assert it still matches every `what` string
 # (and every parenthetical alias) in the live RETIREMENT_DATES export, so a
 # future edit to that data cannot silently break matching without a red

@@ -1373,8 +1373,11 @@ h2.latest-post-label {
   font-size: 1rem;
 }
 
-/* The pointer from /model-retirement-calendar to the checker that reuses
-   its data. */
+/* Cross-links between the three pages sharing RETIREMENT_DATES:
+   /model-retirement-calendar <-> /model-deprecation-checker <->
+   /model-retirement-calendar.ics. Originally just the pointer from the
+   calendar to the checker; reused for the .ics subscribe callouts on both
+   pages rather than adding a second near-identical box style. */
 .checker-callout {
   margin: 1.25rem 0;
   padding: 0.9rem 1.1rem;

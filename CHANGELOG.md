@@ -91,6 +91,60 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+This build round (`loop/build/model-shutdown-ics-feed`) ships
+`docket/open/2026-08-22-model-shutdown-ics-feed.md`: a static `.ics` calendar
+of `RETIREMENT_DATES`, one `VEVENT` per row, linked from both pages that
+already render that data.
+
+**1. `/model-retirement-calendar.ics`, generated once at build time**
+- Hypothesis: a route handler satisfies rule 16's non-inference path if its
+  body is computed once and only served, never recomputed per request --
+  provable, not assumed the way the checker's own docket item argued for
+  client-side matching.
+- Change: `app/lib/retirement-ics.js` builds RFC 5545 text (UID, DTSTAMP,
+  DTSTART/DTEND;VALUE=DATE, SUMMARY/DESCRIPTION with vendor, replacement or
+  "none named", and source link, folded and escaped per spec).
+  `app/model-retirement-calendar.ics/route.js` computes the body at module
+  load and pins `dynamic = "force-static"` (Context7-checked: Next 15 drops
+  route-handler static-by-default, so this isn't left to the installed
+  version's current behaviour). `next build` marks the route `○ (Static)`,
+  same as `/feed.xml`. Subscribe links added to `/model-retirement-calendar`
+  and `/model-deprecation-checker`.
+
+**2. Validated against a real RFC 5545 parser, and proved able to fail**
+- Hypothesis: a hand-rolled regex check would only confirm this file's own
+  assumptions about the format, not the spec.
+- Change: added `ical.js` (Mozilla Thunderbird's parser, 1.8M downloads/month,
+  MPL-2.0, zero transitive deps) as a devDependency.
+  `scripts/check-model-retirement-ics.mjs` parses the feed with `ICAL.parse()`
+  and asserts VCALENDAR/VERSION/PRODID, exactly one VEVENT per
+  `RETIREMENT_DATES` row (77), unique UIDs, and every row's fields surviving
+  the transform. Proved red: dropped the last row inside
+  `buildRetirementIcsFeed` (`.slice(0, -1)`) -- reported "76 VEVENT(s),
+  RETIREMENT_DATES has 77" and FAILed; reverted, re-ran green. Wired into
+  `scripts/check-routes.sh` with curl-level content-type/body checks too.
+
+Re-examined the item's `worth-a-visit` argument (CHARTER.md test 1) rather
+than taking it on faith, as the item itself asked. It holds: durable value
+past one page view, an OpenAI+Anthropic pairing with per-row sourcing not
+published as one feed elsewhere found this round, and zero inference cost --
+test 1 asks a stranger's judgment, and an .ics feed's value has nothing to do
+with who built it. One overstatement corrected rather than repeated: the item
+calls this "the most forwardable thing on this site." A subscription is
+individually adopted, not link-shared the way a personalized checker result
+is -- `/model-deprecation-checker` is the more forwardable of the two. The
+defensible claim is durability, not forwardability.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5 (Claude Code subagent; Opus overloaded this session)
+- Guardrails: `node scripts/round.mjs check` green, zero SKIPPED. One
+  sub-check, `check-ai-disclosure.mjs`, reported UNVERIFIED against this
+  round's own uncommitted route files (round 179's documented behaviour,
+  "commit and re-run") -- not a failure.
+- Result: not yet measured.
+
+### 2026-08-24
 This meta round (`loop/meta/checks-that-misreport`) resumes round 179 after
 two Opus-overload crashes left the fix uncommitted, then closes a fourth hole
 adversarial review found in it. Every premise proved red-then-green.
