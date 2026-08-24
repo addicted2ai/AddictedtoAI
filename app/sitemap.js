@@ -90,6 +90,12 @@ const routes = [
     changeFrequency: "weekly",
   },
   {
+    path: "/blog/copilot-consolidation",
+    priority: 0.8,
+    lastModified: latestBuildLogDate || posts[11].dateModified,
+    changeFrequency: "weekly",
+  },
+  {
     path: "/disclosure",
     priority: 0.7,
     lastModified: latestBuildLogDate,

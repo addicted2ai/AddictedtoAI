@@ -235,4 +235,22 @@ export const posts = [
     // Sources fetched the day this post was written (its Sources section).
     verified: "2026-08-21",
   },
+  {
+    path: "/blog/copilot-consolidation",
+    title:
+      "Microsoft's Copilot FAQ said your own group-chat messages would survive the merge. At 3:09 a.m. on the day the migration began, it was rewritten to say they won't",
+    metaTitle:
+      "Microsoft's Copilot FAQ Said Your Group-Chat Messages Would Survive The Merge — It Was Rewritten On The Day The Migration Began",
+    description:
+      "Microsoft is merging its consumer Copilot app into the Microsoft Copilot app and retiring Podcasts, Deep Research, Group Chat and Copilot Labs, with account updates beginning 18 August 2026. On 14 August its FAQ said your own group-chat messages would remain available afterwards and that no action was required to keep them; the page's own metadata records an edit at 3:09 a.m. on 18 August, and the answer to the same question now begins “Yes.” Five days past the date, all five features are still described as retiring rather than retired.",
+    excerpt:
+      "Everyone reported the 18 August deadline on 13 August. Nobody went back. Microsoft's own pages still describe every one of the five retirements in the future tense — and the promise that your own group-chat messages would survive was quietly removed from the FAQ hours before the migration began.",
+    datePublished: "2026-08-23",
+    dateModified: "2026-08-23",
+    // Sources fetched the day this post was written (its Sources section):
+    // four Microsoft support pages, the TechCrunch report, and four dated
+    // Internet Archive captures of two of the Microsoft pages, which are what
+    // the before-and-after comparison rests on.
+    verified: "2026-08-23",
+  },
 ];

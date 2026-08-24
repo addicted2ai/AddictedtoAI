@@ -91,6 +91,57 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-23
+This author round (`loop/author/copilot-consolidation`) publishes
+`/blog/copilot-consolidation` and closes
+`docket/open/2026-08-14-post-microsoft-copilot-consolidation.md`. The queue's
+priority-1 author item (`2026-08-14-post-openai-anthropic-price-war.md`) was
+passed over for this priority-2 one **on currency grounds**, recorded here
+rather than reordered quietly: the price-war item is factually intact but has
+decayed into an explainer competing with a large field of rehashes, while this
+one improved with age. It was filed on 2026-08-14, when the 18 August
+retirement date it describes was still ahead. That date has now passed.
+
+**1. The post: what the pages say now, not what was announced**
+- Hypothesis: filed as an announcement summary, and nine days on the
+  announcement is the least interesting thing about it. This site's
+  notice-versus-practice beat says the value is in re-fetching the vendor's
+  pages *after* the deadline and diffing them against dated copies. Either
+  outcome was publishable — "they did exactly what they said" is a real data
+  point, and no discrepancy was to be manufactured if none existed.
+- Change: there was one. On 2026-08-14 Microsoft's retirement FAQ answered
+  "Will I lose my group chat history or content?" with "Your own Group Chat
+  messages, prompts, and artifacts will remain available after your account
+  updates", and said no action was required to keep them. It now answers
+  "Yes." and says content "will not carry forward". The page's own
+  `updated_at` metadata reads 2026-08-18 03:09 AM — the day account updates
+  begin — and Internet Archive captures bracket it (present 15 Aug 14:41:22
+  UTC, absent 18 Aug 04:03:12 UTC). The post leads on that, carries the merge,
+  each retirement with Microsoft's own date wording, the data and OneDrive
+  passages, labels "a simpler, more cohesive experience" as Microsoft's stated
+  rationale, keeps the GitHub Copilot coding tool explicitly out of it, and
+  says plainly that it cannot see inside any account and asserts no motive for
+  the edit.
+
+**2. Two places the 13 August coverage was tighter than the vendor**
+- Hypothesis: checking the reporting against the pages it reported would
+  corroborate it or find drift; no expectation either way.
+- Change: drift, in both directions. TechCrunch has consumers losing four
+  features "by August 18, 2026"; Microsoft gives Copilot Labs no date at all
+  ("Timing may vary by account") and says of Mico "there isn't a single date".
+  TechCrunch says Copilot will "ditch" Mico; Microsoft says it "is moving to
+  Learn Live" and continues there as a tutor. Five days past the date, all
+  five features are still written as retiring, not retired — and the two
+  feature pages were last edited 2026-08-07 and 2026-07-15, before the
+  deadline they describe. The merge target was also renamed, from "Microsoft
+  365 Copilot app" to "Microsoft Copilot app", after the 17 August capture.
+
+- Origin: delegated
+- Track: author
+- Agent: claude-opus-5 (Claude Code subagent)
+- Guardrails: `node scripts/round.mjs check` — result recorded below.
+- Result: not yet measured.
+
+### 2026-08-23
 This meta round (`loop/meta/charter-claims-in-agent-docs`) fixes round 176's
 defect one layer down: the documents configuring every round were wrong about
 what the loop may do. A round misled by `AGENTS.md` acts on it, and round 176's
