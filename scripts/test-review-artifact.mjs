@@ -25,9 +25,28 @@
 //      missing fields still fails — "informational" is not a way for a
 //      broken artifact about live code to slip through.
 //
+// Four more hold the two exits round 179 closed. The checker had two ways to
+// return before it had looked at docket/reviews/ at all — a non-`delegated`
+// Origin, and a branch carrying no changelog entry — and a third that reported
+// an unevaluable base ref as a pass. A rejecting review walked past all three.
+//
+//   6. a branch declaring `Origin: supervised` while carrying a covering
+//      `request-changes` artifact fails: exemption from CARRYING a review is
+//      not exemption from one that exists and says no (round 152's shape),
+//   7. a branch with no changelog entry of its own and a covering `reject`
+//      fails for the same reason,
+//   8. a base ref that cannot be resolved fails and says so, rather than
+//      reporting "no round of its own to judge" — a required status check must
+//      distinguish "this is false" from "I could not evaluate this"
+//      (FRAME.md fact 1),
+//   9. a branch declaring `Origin: supervised` and carrying no artifact at all
+//      still passes — the negative control proving 6 and 7 did not turn this
+//      into "every round must carry a review", which is a maintainer's
+//      question and not this checker's to answer.
+//
 //   node scripts/test-review-artifact.mjs
 //
-// Runs in about a second, needs only git and node. Exit 0 means all five
+// Runs in about a second, needs only git and node. Exit 0 means all nine
 // properties held.
 //
 // The checker is spawned with the scratch repo as its working directory, so
@@ -51,7 +70,7 @@ const failures = [];
 // number that cannot collide with anything in the scratch repo. The file
 // needs the same `## Log` section seam the real changelog has, or the parser
 // finds no sections at all.
-const SCRATCH_CHANGELOG = `# Changelog & Loop Log
+const scratchChangelog = (origin) => `# Changelog & Loop Log
 
 Scratch record for the review-artifact regression test.
 
@@ -64,7 +83,7 @@ Scratch round for the review-artifact regression test. (PR #1)
 - Hypothesis: this entry passes the same validation the real changelog does.
 - Change: scratch only, lives in the temp directory.
 
-- Origin: delegated
+- Origin: ${origin}
 - Track: meta
 - Agent: test
 - Guardrails: none
@@ -80,7 +99,10 @@ function git(repo, args) {
   return result.stdout.trim();
 }
 
-function makeRepo() {
+// `changelogAtBase` puts CHANGELOG.md in the base commit instead of the work
+// commit, so the work commit changes substantive files and leaves the
+// changelog alone — a branch with no round of its own to judge.
+function makeRepo({ origin = "delegated", changelogAtBase = false } = {}) {
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), "review-artifact-test-"));
   git(repo, ["init", "-q"]);
   git(repo, ["config", "user.name", "test"]);
@@ -89,10 +111,19 @@ function makeRepo() {
   fs.copyFileSync(buildLogPath, path.join(repo, "app", "lib", "build-log.js"));
   fs.writeFileSync(path.join(repo, "README.md"), "scratch\n");
   git(repo, ["add", "README.md"]);
+  if (changelogAtBase) {
+    fs.writeFileSync(path.join(repo, "CHANGELOG.md"), scratchChangelog(origin));
+    git(repo, ["add", "CHANGELOG.md"]);
+  }
   git(repo, ["commit", "-q", "-m", "base"]);
   const base = git(repo, ["rev-parse", "HEAD"]);
-  fs.writeFileSync(path.join(repo, "CHANGELOG.md"), SCRATCH_CHANGELOG);
-  git(repo, ["add", "CHANGELOG.md"]);
+  if (changelogAtBase) {
+    fs.writeFileSync(path.join(repo, "app", "lib", "shipped.js"), "export const x = 1;\n");
+    git(repo, ["add", "app/lib/shipped.js"]);
+  } else {
+    fs.writeFileSync(path.join(repo, "CHANGELOG.md"), scratchChangelog(origin));
+    git(repo, ["add", "CHANGELOG.md"]);
+  }
   git(repo, ["commit", "-q", "-m", "round work"]);
   const work = git(repo, ["rev-parse", "HEAD"]);
   return { repo, base, work };
@@ -252,6 +283,101 @@ function runChecker(repo, base) {
       console.log(`FAIL  malformed artifact about a present commit should fail; exit ${result.status}`);
       console.log(result.stdout.trim());
       failures.push("malformed present-commit artifact did not fail");
+    }
+  } finally {
+    fs.rmSync(repo, { recursive: true, force: true });
+  }
+}
+
+// Case 6: round 152's shape. The branch declares `Origin: supervised`, which
+// exempts it from having to CARRY a review, and carries a covering
+// `request-changes` artifact anyway. Before round 179 this exited 0 with
+// "Origin is 'supervised' — this check does not apply", printed before
+// anything read docket/reviews/: a required status check reporting green over
+// a review that said no.
+{
+  const { repo, base, work } = makeRepo({ origin: "supervised" });
+  try {
+    addReview(repo, work, "request-changes");
+    const result = runChecker(repo, base);
+    if (
+      result.status === 1 &&
+      result.stdout.includes("Verdict is 'request-changes'") &&
+      result.stdout.includes("whatever this branch declares about itself")
+    ) {
+      console.log("ok    a non-delegated Origin does not exempt a branch from a covering rejection");
+    } else {
+      console.log(`FAIL  supervised + covering request-changes should fail; exit ${result.status}`);
+      console.log(result.stdout.trim());
+      failures.push("self-declared Origin walked past a covering rejection");
+    }
+  } finally {
+    fs.rmSync(repo, { recursive: true, force: true });
+  }
+}
+
+// Case 7: the other exit. The branch carries no changelog entry of its own, so
+// there is no Origin here to require anything against -- and a covering
+// `reject` must still stand. Before round 179 this exited 0 too.
+{
+  const { repo, base, work } = makeRepo({ changelogAtBase: true });
+  try {
+    addReview(repo, work, "reject");
+    const result = runChecker(repo, base);
+    if (result.status === 1 && result.stdout.includes("Verdict is 'reject'")) {
+      console.log("ok    a branch with no changelog entry does not walk past a covering rejection");
+    } else {
+      console.log(`FAIL  no-entry branch + covering reject should fail; exit ${result.status}`);
+      console.log(result.stdout.trim());
+      failures.push("no-changelog-entry branch walked past a covering rejection");
+    }
+  } finally {
+    fs.rmSync(repo, { recursive: true, force: true });
+  }
+}
+
+// Case 8: an unevaluable base ref is not a pass. `git diff <bad-ref>...HEAD`
+// fails, and the checker used to fold that into the same branch as "no
+// changelog entry" and report `ok ... no round of its own to judge`. FRAME.md
+// fact 1 records this class of defect reaching CI once already: a check must
+// distinguish "this is false" from "I could not evaluate this".
+{
+  const { repo, work } = makeRepo();
+  try {
+    addReview(repo, work, "approve");
+    const result = runChecker(repo, "refs/heads/no-such-base-ref");
+    if (
+      result.status === 1 &&
+      result.stdout.includes("could not be evaluated") &&
+      !result.stdout.includes("no round of its own to judge")
+    ) {
+      console.log("ok    an unresolvable base ref fails as unevaluable, not as a pass");
+    } else {
+      console.log(`FAIL  unresolvable base ref should fail as unevaluable; exit ${result.status}`);
+      console.log(result.stdout.trim());
+      failures.push("unresolvable base ref reported as a pass");
+    }
+  } finally {
+    fs.rmSync(repo, { recursive: true, force: true });
+  }
+}
+
+// Case 9: the negative control for 6 and 7. A non-delegated round carrying no
+// artifact at all still passes. Requiring artifacts from every round would end
+// `unsupervised` operation as this project publishes it -- a maintainer's
+// decision, not this checker's
+// (docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md).
+// This case is what keeps 6 and 7 from quietly becoming that change.
+{
+  const { repo, base } = makeRepo({ origin: "supervised" });
+  try {
+    const result = runChecker(repo, base);
+    if (result.status === 0 && result.stdout.includes("EXEMPT")) {
+      console.log("ok    a non-delegated round carrying no artifact still passes, and says it is exempt");
+    } else {
+      console.log(`FAIL  supervised + no artifact should pass; exit ${result.status}`);
+      console.log(result.stdout.trim());
+      failures.push("the non-delegated exemption stopped exempting");
     }
   } finally {
     fs.rmSync(repo, { recursive: true, force: true });

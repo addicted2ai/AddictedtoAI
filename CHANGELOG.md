@@ -90,6 +90,54 @@ and will be published rather than optimised.
 
 ## Log
 
+### 2026-08-24
+This meta round (`loop/meta/checks-that-misreport`) resumes round 179 after
+two Opus-overload crashes left the fix uncommitted. Read every hunk before
+trusting it, then proved each premise red-then-green independently — the
+predecessor's own verification, if any, was never visible.
+
+**1. `check-ai-disclosure.mjs` told a round to corrupt a correct map**
+- Hypothesis: round 178's real failure — uncommitted work leaves
+  `origin/main...HEAD` empty, so the check falls back to `origin/main` and
+  can mismatch a route that is actually fine.
+- Change: uncommitted route-file changes now report UNVERIFIED ("commit and
+  re-run"), never FAIL ("update PRODUCING_ROUNDS"). Proved red (dirtied
+  `posts.js`, remapped a route to a mismatched round: original FAILed with
+  the wrong remedy) then green (13 routes UNVERIFIED, exit 0; clean tree
+  unchanged).
+
+**2. `check-routes.sh` summed exit codes instead of counting failures**
+- Hypothesis: 31 call sites did `failures=$((failures + $?))`; a missing
+  command (exit 127) could read "127 check(s) failed" with zero FAIL lines.
+- Change: confirmed the count against `main`; a `run_step` helper now counts
+  and names failures and surfaces UNVERIFIED sub-checks instead of a blanket
+  pass. Fixed a predecessor edit that had concatenated two call sites onto
+  one line (`...mjsecho`), which would have thrown "command not found."
+  Proved both halves red-then-green with isolated harnesses.
+
+**3. `check-review-artifact.mjs` had three ways to walk a rejection past it**
+- Hypothesis: a self-declared non-`delegated` Origin, a branch with no
+  changelog entry, and an unresolvable base ref all returned before reading
+  `docket/reviews/` — round 152's shape.
+- Change: the first two now exempt CARRYING a review, never HONOURING one
+  that rejects; the third fails as unevaluable. The same hole was in
+  `round.mjs ship`'s arming gate (it only ran the checker for `delegated`);
+  closed there too. `automerge-origin.mjs` got a stale-comment fix (round
+  177 filed this; the live API confirms `review-artifact` is required, fact
+  9). Proved by swapping the original checker into the predecessor's 9-case
+  suite: 4 failed against it, all 9 pass fixed.
+
+Declined: hit the documented flake in `test-orchestrate-runner-launch.mjs`
+(docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-dependent.md)
+once, same signature, unrelated to this diff — disclosed, re-ran once, green.
+
+- Origin: delegated
+- Track: meta
+- Agent: claude-sonnet-5 (Claude Code subagent; Opus overloaded this session)
+- Guardrails: `node scripts/round.mjs check` green — lint, docket, track
+  scope, build, all route checks, zero SKIPPED, zero UNVERIFIED.
+- Result: not yet measured.
+
 ### 2026-08-23
 This author round (`loop/author/copilot-consolidation`) publishes
 `/blog/copilot-consolidation` and closes

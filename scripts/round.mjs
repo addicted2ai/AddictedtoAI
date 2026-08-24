@@ -414,7 +414,15 @@ async function check() {
         env: { ...env, BASE },
       });
       const tail = routes.out.split("\n").filter(Boolean).slice(-3).join("\n");
-      if (routes.ok && !/SKIPPED/.test(routes.out)) {
+      // A sub-check that reported UNVERIFIED ran but could not evaluate its
+      // claim. check-routes.sh exits 0 on that by design, so this summary --
+      // the only line an operator sees, since the ~1,000 lines below it are
+      // captured, not printed -- must not answer it with "all route checks
+      // passed". Not a failure either: see that script's own roll-up.
+      if (routes.ok && /reported UNVERIFIED/.test(routes.out) && !/SKIPPED/.test(routes.out)) {
+        ok("route checks passed, but some could not be evaluated — see below");
+        console.log(routes.out.split("\n").filter(Boolean).slice(-6).join("\n"));
+      } else if (routes.ok && !/SKIPPED/.test(routes.out)) {
         ok("all route checks passed");
       } else if (routes.ok) {
         bad("route checks passed but SKIPPED a group — see below");
@@ -538,27 +546,38 @@ async function ship() {
   const origin = entry && entry.declaredOrigin ? entry.origin : "";
 
   // A delegated round claims an orchestrating model reviewed it before merge.
-  // That claim is only true if a covering review artifact exists. The
-  // review-artifact CI job is a visible check, not a required one — it is not
-  // in the branch-protection required list — so GitHub's auto-merge would
-  // ignore it. The gate is here, in arming, which is the one place this loop
-  // controls the merge: `ship` runs the same checker CI runs
-  // (scripts/check-review-artifact.mjs — the same rule, no second
-  // implementation, no second parser) and refuses to arm a delegated round
-  // unless a file at docket/reviews/<sha>.md approves and covers the merged
-  // tree.
+  // That claim is only true if a covering review artifact exists.
+  //
+  // Two gates stand here, not one. The `review-artifact` CI job has been a
+  // REQUIRED status check since 2026-08-17: the required contexts on `main`
+  // are `build-and-audit`, `human-owned-paths`, `review-artifact` — FRAME.md
+  // fact 9, which re-reads them from the API rather than quoting this line.
+  // This comment said it was "a visible check, not a required one" until round
+  // 179, and describing this project's own gate as weaker than it is, is the
+  // same defect as describing it as stronger. `ship` runs that same checker
+  // here before arming, which stops the sanctioned path one step earlier —
+  // same rule, same parser, no second implementation.
+  //
+  // It runs for every Origin, not only `delegated`. Being exempt from having
+  // to CARRY a review artifact is something a round's own declared Origin can
+  // do; being exempt from one that already exists and does not approve is not,
+  // and check-review-artifact.mjs enforces that distinction itself. Gating
+  // this call on `delegated` would have reopened, at the arming step, exactly
+  // the hole round 152 walked through in CI.
   let shouldArm = originAllowsAutomerge(entry);
   let withheldReason = "";
-  if (origin === "delegated") {
-    const artifact = tryRun("node", ["scripts/check-review-artifact.mjs", "origin/main"]);
-    if (!artifact.ok) {
-      withheldReason =
-        "Origin 'delegated' has no covering approve review artifact — ship ran the same " +
-        "check CI runs and it failed; the output above says why";
-      console.log(artifact.out.trim());
-    } else {
-      shouldArm = true;
-    }
+  const artifact = tryRun("node", ["scripts/check-review-artifact.mjs", "origin/main"]);
+  if (!artifact.ok) {
+    shouldArm = false;
+    withheldReason =
+      origin === "delegated"
+        ? "Origin 'delegated' has no covering approve review artifact — ship ran the same " +
+          "check CI runs and it failed; the output above says why"
+        : "a review artifact on this branch covers the merged tree and does not approve it — " +
+          "ship ran the same check CI runs and it failed; the output above says why";
+    console.log(artifact.out.trim());
+  } else if (origin === "delegated") {
+    shouldArm = true;
   }
 
   if (shouldArm) {

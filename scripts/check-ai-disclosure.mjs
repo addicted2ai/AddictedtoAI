@@ -106,6 +106,40 @@ function isBannerOnlyDiff(sha, files) {
   return changedLines.every((l) => l.includes("AiDisclosure"));
 }
 
+// The producing-round map is read from the WORKING TREE (this script imports
+// app/lib/page-origins.js and app/lib/route-files.js, and getBuildLog() parses
+// the working tree's CHANGELOG.md), while the history it is compared against
+// is read from COMMITTED refs. Uncommitted work breaks that symmetry:
+// `git diff origin/main...HEAD` cannot see a file that has not been committed,
+// so the merged tree it describes is not the tree the map was written for, and
+// the comparison silently falls back to origin/main -- the state before this
+// round existed.
+//
+// Round 178 hit this for real. Mid-round, before its own author commit
+// existed, all thirteen app/lib/posts.js-fed routes were compared against the
+// previous *build* round's commit and reported as
+// "... -- update PRODUCING_ROUNDS". The map was already correct; the work was
+// simply not committed yet. A round that obeyed that message would have
+// corrupted a correct map to silence a false failure -- which is worse than
+// the check not existing, because the remedy is destructive and the failure
+// is not real.
+//
+// So name the condition that was actually detected. A route whose source
+// files have uncommitted changes is UNVERIFIED here -- not passed, not failed
+// -- and the remedy printed is the one that resolves it: commit and re-run.
+// CI never takes this path: there the working tree is clean and HEAD is the
+// merge ref, so the check keeps its full strength in the place where it gates.
+function uncommittedRouteFiles(files) {
+  const out = execFileSync("git", ["status", "--porcelain", "--", ...files], {
+    encoding: "utf8",
+    cwd: root,
+  });
+  return out
+    .split("\n")
+    .map((line) => line.slice(3).trim())
+    .filter(Boolean);
+}
+
 function lastContentCommitSubject(files, route) {
   // The producing round of a route is decided by what the page ships, which
   // is the merged tree — the net diff of origin/main...HEAD — not by the
@@ -150,6 +184,7 @@ function lastContentCommitSubject(files, route) {
 }
 
 const problems = [];
+const unverified = [];
 
 // 0. Every route in the map must be verifiable here, and vice versa.
 for (const route of Object.keys(PRODUCING_ROUNDS)) {
@@ -188,6 +223,30 @@ for (const route of Object.keys(ROUTE_FILES)) {
     disclosure = getPageDisclosure(route);
   } catch (error) {
     problems.push(`${route}: ${error.message}`);
+    continue;
+  }
+
+  // 1b. The git half of this check can only be answered about committed work.
+  //     Say that, rather than reporting the map as stale (see
+  //     uncommittedRouteFiles above).
+  const dirty = uncommittedRouteFiles(ROUTE_FILES[route]);
+  if (dirty.length > 0) {
+    unverified.push(route);
+    console.log(
+      `UNVERIFIED  ${route}: uncommitted changes to ${dirty.join(", ")}, so origin/main...HEAD`
+    );
+    console.log(
+      "            does not yet describe the tree this map was written for, and this route's"
+    );
+    console.log(
+      "            producing round cannot be judged. Commit this round's work and re-run."
+    );
+    console.log(
+      "            Do NOT edit PRODUCING_ROUNDS to clear this: the map is not what is"
+    );
+    console.log(
+      "            unverified here, the git history is, and editing the map would break it."
+    );
     continue;
   }
 
@@ -264,10 +323,24 @@ for (const route of Object.keys(ROUTE_FILES)) {
   }
 }
 
+if (unverified.length > 0) {
+  console.log(
+    `\n${unverified.length} route(s) UNVERIFIED, not passed: ${unverified.join(", ")}`
+  );
+  console.log(
+    "      Their source files have uncommitted changes, so the merged-tree comparison"
+  );
+  console.log("      this check makes cannot be made about them yet.");
+}
+
 if (problems.length > 0) {
   for (const problem of problems) console.log(`FAIL  ${problem}`);
   console.log(`\n${problems.length} disclosure problem(s)`);
   process.exit(1);
 }
-console.log("ok    all page disclosures resolve and match git history");
+console.log(
+  unverified.length > 0
+    ? `ok    every page disclosure that could be judged resolves and matches git history (${unverified.length} UNVERIFIED above)`
+    : "ok    all page disclosures resolve and match git history"
+);
 process.exit(0);
