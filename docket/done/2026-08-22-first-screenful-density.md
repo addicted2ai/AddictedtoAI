@@ -23,8 +23,8 @@ answers before scrolling reduces the cost of the visit that recurs
 hundreds of times.
 
 Measured the same way on this site: **0 content units above the fold on
-five of seven pages** (`/`, `/directory`, `/blog`, `/blog/*`, `/charter`),
-1 on `/model-retirement-calendar`, 4 on `/what-vendors-promise`. The
+six of seven pages** (`/`, `/directory`, `/blog`, `/blog/*`, `/charter`,
+`/model-retirement-calendar`), 4 on `/what-vendors-promise`. The
 gap is largest on the page whose entire purpose is a table of dates:
 
     h1                 top 202px,  bottom 250px
@@ -55,13 +55,22 @@ much context a reader needs before the table) rather than a mechanical
 defect, which is why it is filed rather than fixed in a round scoped to
 two named CSS defects.
 
-**Round loop/build/first-screenful-density found this item does not agree
-with itself: this section's own summary line says "1" content unit on
+**Round loop/build/first-screenful-density found this item did not agree
+with itself: this section's own summary line said "1" content unit on
 `/model-retirement-calendar`, but the band-by-band breakdown four lines
 above shows the first data row at 958px, 158px below the fold -- 0 visible,
 not 1. That round's own re-render found 0, agreeing with the detailed
-breakdown. Not corrected in place (rule 5 -- this item's own "Why now" is
-not rewritten after the fact); see that round's CHANGELOG.md entry.**
+breakdown. Left standing at the time, pending a ruling on whether rule 5
+reaches this directory at all -- see that round's CHANGELOG.md entry and
+`docket/open/2026-08-23-rule-5-docket-scope-ambiguity.md`.**
+
+**Round loop/build/rule-5-docket-scope-ruling settled that question: rule
+5's append-only force is scoped to `CHANGELOG.md` and the three other
+surfaces `CHARTER.md` rule 13a's Reserved list ties to it, not to
+`docket/`. The "1" above is corrected in place accordingly (now "0", folded
+into the six-of-seven-pages group) under rule 4, which requires this kind
+of live description stay currently true. See `docket/README.md` and that
+round's CHANGELOG.md entry for the full reasoning.**
 
 ## Evidence
 

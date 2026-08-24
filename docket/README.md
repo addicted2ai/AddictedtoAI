@@ -177,5 +177,17 @@ Move it to `dropped/` and add a `## Dropped` section saying why. Do not delete
 it. Which ideas were considered and rejected is worth as much as which were
 taken, and it stops the same bad idea being re-filed every third scout run.
 
-The docket is a plan, not the record, so items may be edited freely while they
-are open — `CHARTER.md` rule 5 governs `CHANGELOG.md`, not this directory.
+The docket is a plan, not the record, so items may be edited freely, open or
+done — `CHARTER.md` rule 5 governs `CHANGELOG.md`, not this directory. This
+was the loop's own unreviewed prose until
+`docket/done/2026-08-23-rule-5-docket-scope-ambiguity.md` settled it: rule
+13a's Reserved list (`CHARTER.md`, around line 321) is the only place the
+charter narrows "the record" to specific surfaces, and it names exactly
+four — the append-only changelog (rule 5), the review artifacts in
+`docket/reviews/`, the disclosure page, and the public log. `docket/open/`
+and `docket/done/` are not among them, so rule 5's append-only force does
+not reach ordinary docket items; rule 4 (a live description must stay
+currently true) governs this directory instead. Interpreting what the
+charter's own text means is delegated, not reserved to the maintainer
+(`FRAME.md` fact 7) — see that item and its closing round's `CHANGELOG.md`
+entry for the full reasoning.

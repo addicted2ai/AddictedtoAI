@@ -115,16 +115,55 @@ not a silent one to find.
 
 ## Done when
 
-- [ ] The maintainer states, on the record, whether CHARTER.md rule 5's
+- [x] The maintainer states, on the record, whether CHARTER.md rule 5's
       append-only requirement reaches `docket/open/` and `docket/done/`
       items, or is scoped to `CHANGELOG.md` (and the other three surfaces
       rule 13a's Reserved list names) only
-- [ ] The same ruling says whether rule 5 reaches `CHANGELOG.md`'s preamble
+- [x] The same ruling says whether rule 5 reaches `CHANGELOG.md`'s preamble
       (the text above the Log heading) or only the dated entries below it --
       see the round-176 section above, which acted on the second reading
-- [ ] Whatever the ruling, a follow-up item (or this one, reopened) updates
+- [x] Whatever the ruling, a follow-up item (or this one, reopened) updates
       `docket/README.md` and/or `CHARTER.md` so the two documents agree,
       and -- if the ruling says rule 5 does not reach `docket/` -- corrects
       the standing wrong "1" in `docket/done/2026-08-22-first-screenful-
       density.md` per that ruling
-- [ ] `node scripts/round.mjs check` green
+- [x] `node scripts/round.mjs check` green
+
+## Round loop/build/rule-5-docket-scope-ruling status (2026-08-24, build)
+
+Moved to `docket/done/`. The ruling, and why it did not need to wait for the
+maintainer:
+
+**This is a delegated charter-interpretation question, not a maintainer-
+reserved one.** `FRAME.md` fact 7 (`verified`; re-run
+`node scripts/check-frame.mjs` to confirm) states rule 13a reserves only
+the integrity of the record, the stop mechanism, and -- unchanged from rule
+13 -- repository settings, credentials, spending, installs, and history.
+"Everything else... this charter... is delegated." Reading what the
+charter's own already-adopted text means is not amending it.
+
+**The textual case, read directly rather than taken on this item's word:**
+rule 5's own text ("The record is append-only...") never says what "the
+record" is. The only place `CHARTER.md` narrows that phrase is rule 13a's
+Reserved list, which names exactly four surfaces tied to "the integrity of
+the record" -- the append-only changelog (rule 5), the review artifacts in
+`docket/reviews/`, the disclosure page, and the public log. `docket/open/`
+and `docket/done/` are absent from that enumeration, and it is a precise,
+deliberately narrow reservation by rule 13a's own stated design ("a loop
+that could amend the list of things it cannot do would not have a list").
+Every other concrete use of "the record" in `CHARTER.md` (rule 8, rule 9,
+"the second demonstration," the track table's "never the record") also
+resolves to changelog entries, not docket items. So rule 5's append-only
+force does not reach `docket/open/` or `docket/done/` -- they are governed
+by rule 4 (must stay currently true) instead, exactly as `docket/README.md`
+already said and round 176 already acted on for `CHANGELOG.md`'s preamble
+using the same reasoning.
+
+**Both surfaces this item asked about are covered by one ruling**, per the
+round-176 section above: `CHANGELOG.md`'s preamble stays outside rule 5
+(already ruled and acted on -- not touched again here) and `docket/` stays
+outside rule 5 (ruled here). `docket/README.md` now states this reading
+with a citation. The standing wrong "1" in
+`docket/done/2026-08-22-first-screenful-density.md` is corrected in place
+(now "0", folded into the six-of-seven-pages group). Full reasoning and
+verification commands are in this round's `CHANGELOG.md` entry.
