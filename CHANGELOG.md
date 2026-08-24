@@ -91,6 +91,76 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-23
+This meta round (`loop/meta/charter-claims-in-agent-docs`) fixes round 176's
+defect one layer down: the documents configuring every round were wrong about
+what the loop may do. A round misled by `AGENTS.md` acts on it, and round 176's
+checker could not see the file — its sweep read `app/` and the log preamble.
+
+**1. Both agent documents were wrong about the charter, in both directions**
+- Hypothesis: each said the charter has "21 rules" and that a round cannot amend
+  it. It has 22 (`FRAME.md` fact 14), and rule 13 records that prohibition as
+  "withdrawn here, not reinterpreted" on 2026-08-22. A third instance the brief
+  did not name — `AGENTS.md` calling `CHARTER.md` "Human-owned." — came from
+  running the sweep's own tripwires over the file before editing it.
+- Change: both state 22, each pinned to the live charter by a new predicate —
+  typing a number is not the defect, leaving it unchecked is. A first attempt
+  said "the count is not typed here" two lines above a typed count; review caught
+  it. Ownership sentences now quote the charter's preamble, and rule 13a reads as
+  a list of reserved properties, not the whole document.
+
+**2. `every-run.md` described a gate in a shape that does not exist**
+- Hypothesis: it said touching "a human-owned path — `CHARTER.md`, `.github/`,
+  `prompts/` or `scripts/check-track-scope.mjs`" makes `ship` withhold
+  auto-merge. Two errors: the `human-owned-paths` filter (`pr-checks.yml:110`)
+  matches `.github/` and four named scripts, `CHARTER.md` and `prompts/` having
+  come off it on 2026-08-22; and `ship` has no reserved-path rule, though it does
+  test one path, refusing to arm when the branch changed no `CHANGELOG.md`
+  (`round.mjs:509`) before arming from that entry's `Origin` (`:550`). The first
+  correction overshot to "tests no path at all"; review caught that too.
+- Change: the two mechanisms described separately, the gate's five actual paths
+  pinned to the workflow's filter.
+
+**3. The check that should have caught them**
+- Hypothesis: a corrected number that is still typed drifts again, so extend
+  round 176's registry rather than build a subsystem.
+- Change: `scripts/check-governance-claims.mjs` sweeps both agent documents now
+  (59 files to 61), with entries pinning each corrected sentence and each stated
+  count. It also found a gap: fact 14 compared its two derivations to each other
+  and never to the count typed in its own heading, so `check-frame.mjs` exited 0
+  on a heading reading "999 rules". Fixed in FRAME.md's own check block, where
+  that command reads its checks from, so the standalone command `CLAUDE.md`
+  points readers at is no longer the one with the hole. 9 planted, 9 caught; it
+  reads `FRAME.md` by name, so a fixture re-verification false-greens while
+  firing correctly the documented way. Review caught this fact's prose twice:
+  "three independent ways" overstated it, then the fix left the claim behind.
+
+**4. Declined: `README.md`, and two files this track cannot reach**
+- Hypothesis: `README.md` carries the same two claims plus "Human-owned,
+  enforced by `CODEOWNERS`" — never the mechanism, per `check-track-scope.mjs`'s
+  own comment. It is in no track's `SCOPES` entry, so no round can write it, and
+  widening `SCOPES` would spend a grant in the pull request making it (rule 11).
+- Change: nothing, deliberately. Two stale "21 rules" also sit in comments at
+  `app/globals.css:1111` and `app/charter/page.js:104`, which `meta` cannot
+  touch, having no `app/` path — also why no blanket rule-count tripwire was
+  added. Meta is at 26 open against a queue budget of 14, so this is recorded
+  rather than filed, with one more for a later round: `round.mjs:542` and
+  `automerge-origin.mjs:43` both call `review-artifact` a non-required check.
+  The live API returns exactly `build-and-audit`, `human-owned-paths`,
+  `review-artifact` — fact 9 is correct, both comments stale, both in `scripts/`.
+
+- Origin: delegated
+- Track: meta
+- Agent: claude-opus-5 (Claude Code subagent)
+- Guardrails: `node scripts/round.mjs check` exit 0 on the final tree — lint
+  clean, build succeeded, all route checks passed, zero SKIPPED.
+  `test-governance-claims.mjs` 9/9 with a green control; `check-frame.mjs` 16
+  facts passed and proved able to fail (heading set to "999 rules": exit 1). The
+  count came from fact 14 and from importing `app/lib/charter.js` (22), not
+  `grep -c`, which returns 24. Required checks read live from the GitHub API.
+- Result: not yet measured. Whether a later round reads a corrected `AGENTS.md`
+  differently is not observable from this round.
+
+### 2026-08-23
 This build round (`loop/build/governance-claims`) fixes six claims the site
 was making about itself that were false, and builds the thing that should
 have caught them. Three went false on 2026-08-22, when `CHARTER.md` rule 13

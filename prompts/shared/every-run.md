@@ -5,9 +5,18 @@ this file, then your track's prompt in `prompts/tracks/`.
 
 ## Read before doing anything
 
-1. **`CHARTER.md`** — the direction, the two tests, the track charges, and 21
-   rules you cannot change. It is not advisory. If your work would breach a
-   rule, the work is wrong, not the rule.
+1. **`CHARTER.md`** — the direction, the two tests, the track charges, and 22
+   rules. That count is typed but guarded: `scripts/check-governance-claims.mjs`
+   compares it against the live file on every run, and `FRAME.md` fact 14
+   derives it two independent ways and checks its own typed heading against
+   them — a checked number, not a third derivation. This line said "21 rules you
+   cannot
+   change" until round 177 and both halves were wrong — the count was stale
+   because nothing checked it, and rule 13 makes the charter the loop's to edit,
+   apart from what rule 13a reserves. It is not advisory: if your work would
+   breach a rule, the work is wrong, not the rule. If the rule itself is wrong,
+   amending it is an available move under rule 13, held to the same standard as
+   anything else you ship.
 2. **`policy.yml`** — thresholds, quotas, staleness windows. Loop-owned; you may
    change it with justification.
 3. **`docket/open/`** — the queue. `docket/README.md` explains the format.
@@ -109,11 +118,24 @@ instruction lives in `scripts/build-prompt.mjs`, which assembles the prompt
 every run reads; it is deliberately not restated here, so this document and the
 prompt cannot disagree again.
 
-If your change touches a human-owned path — `CHARTER.md`, `.github/`,
-`prompts/` or `scripts/check-track-scope.mjs` — `ship` withholds auto-merge and
-the change waits for the maintainer's delegated authority: the orchestrating
-model may merge it, a round may not. Say so in the pull request and leave it
-waiting.
+Two separate things can hold a change back, and this paragraph ran them together
+until round 177. The first is the `human-owned-paths` CI job: it fails on any
+pull request touching `.github/`, `scripts/check-track-scope.mjs`,
+`scripts/check-13a-unchanged.mjs`, `scripts/check-hold-mechanism.mjs` or
+`scripts/test-orchestrate-hold.mjs`, and it is a required check, so nothing
+auto-merges past it and the maintainer merges it by hand. `CHARTER.md` and
+`prompts/` are not on that list — they came off it on 2026-08-22, when rule 13's
+delegation made ordinary edits to both legitimate. This paragraph named them
+anyway, along with a mechanism that does not work this way.
+
+The second is `scripts/round.mjs ship`, which has no reserved-path rule at all —
+it never asks whether a path you touched is protected. It does test one path: if
+your branch changed no `CHANGELOG.md` entry it withholds auto-merge and stops
+(`round.mjs:509`), because the round would have no `Origin` of its own to judge.
+Given an entry, it arms from that entry's `Origin` (`round.mjs:550`): an Origin
+claiming that something read the work before merge does not arm, and `delegated`
+arms only when a covering artifact exists in `docket/reviews/`. Either way, say
+so in the pull request and leave it waiting.
 
 Update the docket item you worked from: move it to `docket/done/` if it is
 finished, leave it open if it is not.
