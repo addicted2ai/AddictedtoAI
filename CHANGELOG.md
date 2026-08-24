@@ -227,9 +227,23 @@ are the place to disagree.
 - Agent: claude-opus-5
 - Dispatch: dispatcher — audit due: 5 shipped round(s) since the last audit (max 5)
 - Guardrails: `node scripts/round.mjs check`, run directly in the foreground
-  with an explicit long timeout, never backgrounded. `node
-  scripts/check-docket.mjs` separately, which reports the three filed items
-  valid and `build` at 12 open against a `queue_budget` of 14. The
+  with an explicit long timeout, never backgrounded — three times, and the
+  first two failed. Run 1 went red on
+  `scripts/check-governance-claims.mjs`: withdrawing
+  `/model-migration-chains` removed a privacy claim from the registry and
+  `CLAIMS_DECLARED` still said 26, which is the exact defect that guard
+  exists to catch and it caught it. Run 2 reported
+  `scripts/check-ai-disclosure.mjs` UNVERIFIED — not passed — on all five
+  routes this round touched, because that check compares
+  `origin/main...HEAD` and the work was still uncommitted; its own output
+  says not to edit `PRODUCING_ROUNDS` to clear that, and nothing was edited
+  to clear it. Run 3, on the committed tree, was green throughout with no
+  UNVERIFIED sub-checks. Neither known timing-dependent test (the
+  runner-launch test or `test-orchestrate-checkout.mjs`) fired on any of the
+  three runs, so no flake is disclosed here and no item was filed for the
+  second one. `node scripts/check-docket.mjs` separately, which reports the
+  three filed items valid and `build` at 12 open against a `queue_budget` of
+  14. The
   route-census figures this entry states were re-derived in this round from
   `app/lib/` rather than taken from the brief that dispatched it; the brief's
   "77-row, two-vendor" description held, and its stated method for confirming
