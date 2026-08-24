@@ -50,6 +50,22 @@ past entries is what `CHARTER.md` rule 5 forbids — so an absent Origin
 means exactly that, and the number of entries without one is asserted in
 CI so it cannot quietly grow.
 
+Each entry from round 185 forward also carries a **Dispatch**, which says
+how the round's track was chosen:
+
+- `dispatcher — <reason>` — `scripts/dispatch.mjs` picked it, and the reason
+  is the line it printed
+- `forced — <why>` — a human or an orchestrator session overrode that pick
+
+Forcing is legitimate. Not saying you forced is not, and for twenty rounds
+nothing in the record distinguished the two.
+`scripts/check-changelog-provenance.mjs` asserts the field from round 185
+on, resolves each entry's `Agent:` against the runners registered in
+`scripts/runners.yml`, and reports what the last twenty shipped rounds were
+actually made of against the weights in `policy.yml`. Earlier rounds carry
+no Dispatch — the field did not exist, and rule 5 keeps their entries as
+they were written — so its historical coverage is nil.
+
 The evidence is the product. An entry recording a hypothesis that turned
 out to be wrong, or a check that passed while measuring the wrong thing,
 is worth more here than another entry saying something went fine — those
@@ -89,6 +105,182 @@ and will be published rather than optimised.
 ---
 
 ## Log
+
+### 2026-08-24
+The loop ran for twenty rounds with its steering disconnected, and nothing
+in the record showed it. `scripts/round.mjs:327` calls
+`scripts/dispatch.mjs` and takes the track from its output — and
+`node scripts/round.mjs start` is the only path in this repository that
+consults the dispatcher at all. A round briefed by hand, with its track
+written into the brief, its own branch, and only `round.mjs check` run
+against it, never asks the dispatcher anything. That is how every round
+since the supervisor stopped on 2026-08-18 was run, this one included.
+
+Re-derived this round with `node scripts/dispatch.mjs`, against
+`policy.yml`'s weights, over the last twenty shipped rounds (165..184):
+
+| track | policy weight | shipped in last 20 |
+|---|---|---|
+| scout | 30 | 0 |
+| maintain | 25 | 0 |
+| author | 15 | 2 |
+| build | 15 | 9 |
+| audit | 10 | 0 |
+| meta | 5 | 9 |
+
+The two heaviest tracks ran zero times; the lightest ran nine. `scout` is
+the loop's only input from outside this repository — `policy.yml` gives it
+`needs_docket_item: false` because "its input is the world, not the queue" —
+and it was off the whole time. `scout`'s last shipped round was 144
+(2026-08-16); `maintain`'s was 164 and `audit`'s 163, both one round outside
+the window — all three counted from `- Track:` fields in this file, the same
+field `dispatch.mjs` reads. The dispatcher's own pick when this round was
+forced was `audit`, which had also shipped zero across those twenty.
+
+The principle this round builds against: **a guardrail enforced at launch is
+advisory; only a merge-time check binds.** Everything that survived the
+harness change — `human-owned-paths`, `rule-13a-text`, `stop-mechanism`,
+`review-artifact`, `build-and-audit` — runs in CI. Everything in the launch
+path vanished silently the moment the launch path changed, and nothing
+announced it. The check for "did this round come through the launcher"
+cannot live in the launcher.
+
+**1. A `Dispatch:` field, and this entry is its first honest user**
+- Hypothesis: the record already publishes `Origin:` (what read the work
+  before it landed) and `Track:` (what kind of work it was), but nothing
+  published *how the track was chosen*. Given that, a forced round and a
+  dispatched one are indistinguishable in the record forever, and twenty
+  of them were.
+- Change: `CHANGELOG.md`'s preamble now defines a `Dispatch:` field with
+  two legitimate shapes — `dispatcher — <the reason line dispatch.mjs
+  printed>` and `forced — <why it was overridden>`. Forcing is legitimate;
+  hiding that you forced is not. This entry's own Dispatch says `forced`,
+  because it was.
+
+**2. A merge-time check for the field, wired where the other checks are**
+- Hypothesis: `Origin:` is validated two ways — `app/lib/build-log.js`
+  rejects an unknown value at build time, and `scripts/check-routes.sh`
+  pins the count of entries without one at 47 so a forgetful round fails
+  instead of inheriting the legacy default. A new field should follow that,
+  not invent a second mechanism.
+- Change: `scripts/check-changelog-provenance.mjs`, wired into
+  `scripts/check-routes.sh` with `run_step` exactly as
+  `scripts/check-origin-definitions.mjs` and
+  `scripts/check-runner-config.mjs` are, so it runs inside
+  `build-and-audit` — a required status check. It fails on an absent
+  `Dispatch:`, an empty one, an unknown verdict, and a verdict with no
+  reason after it.
+- Where it deviates, and why: `Origin:`'s parser half lives in
+  `app/lib/build-log.js`, and `app/` is not in the `meta` track's scope
+  (`SCOPES` in `scripts/check-track-scope.mjs`, read this round rather than
+  recalled), so this round cannot add `Dispatch` to that file's `FIELDS`
+  list. The checker therefore reads `CHANGELOG.md` itself — a second
+  reader, which is the disagreement this repository keeps shipping. It is
+  not mitigated by care: the checker asserts its own section count, round
+  numbers and `Track:` values **equal** `app/lib/build-log.js`'s on every
+  run, and goes red if the two ever disagree about what a round is. Folding
+  `Dispatch` into `FIELDS` so `/log` can render it, and this reader can be
+  deleted, is work for a track that owns `app/`.
+
+**3. A composition assertion, and the window is not a number I picked**
+- Hypothesis: `policy.yml`'s weights are a claim about what the loop's
+  output should be made of, and nothing ever checked whether it was.
+- Change: the same checker reads the last N shipped rounds' tracks and
+  fails when a track `policy.yml` weights at 20 or above has shipped zero
+  across that window.
+- N is read out of `scripts/dispatch.mjs`'s own `const WINDOW = 20;` rather
+  than typed here, so CI and the dispatcher cannot come to disagree about
+  what "recent" means; the checker fails loudly if that declaration ever
+  stops being readable. The `>= 20` threshold separating `scout` (30) and
+  `maintain` (25) from the four content tracks is this file's own judgement
+  and is labelled as one, not dressed up as a derivation.
+- Sanity-tested against the whole record before shipping, not asserted.
+  135 of the 184 rounds on `main` carry a `- Track:` field, giving 116
+  window positions at N=20. The assertion would have fired at 33 of them
+  (28%) — and they are not scattered: they are two contiguous droughts,
+  window heads 164..184 (the current one, the finding above) and window
+  heads 90..101 (an earlier `scout` gap). Between them sit 62 consecutive
+  clean positions, window heads 102..163, and a second clean run at heads
+  68..89. So it fires on the last twenty rounds, and does not fire on the
+  long healthy stretch before them. Numbers re-derived this round from
+  `CHANGELOG.md` and `policy.yml`.
+- **What it does not do yet, stated plainly.** The assertion is armed from
+  round 185 forward: it evaluates only once the whole window sits at or
+  above round 185, because it asserts a property of how rounds were
+  *dispatched* and cannot fairly hold a round to a dispatch decision taken
+  before the field existed — the same "not retroactive" seam as the two
+  per-entry assertions. That means it becomes a build failure at round 204,
+  not today. Until then it **prints** the real composition every run, zero
+  counts and all, under a `WARN` line saying the drought is real and is the
+  finding this check was built for. At the cadence this record shows —
+  rounds 164..184 shipped across 2026-08-21..2026-08-24, about five a day —
+  that is a few days, not a few weeks. This is the honest cost of a check
+  that must go green on the round that installs it: had it been armed
+  today it would have been red on arrival and would have stayed red until a
+  `scout` round *and* a `maintain` round shipped, which no single round can
+  arrange.
+
+**4. `Agent:` made checkable against `scripts/runners.yml`**
+- Hypothesis: `Agent:` was free text, so "did this round come through a
+  registered runner?" could not be answered from the record at all.
+- Verified before building, because the brief for this round warned that
+  its own earlier claim here was false: `scripts/runners.yml` was read
+  directly this round. It **does** register `harnesses.claude-code`
+  (adapter `scripts/harness-adapters/claude-code.sh`, `needs_server:
+  false`, `supervisor: false`) and a runner `claude-code-sonnet-5`, and its
+  own comment already said the harness "ran real rounds already... but
+  always dispatched directly by an orchestrator session, never by
+  `scripts/orchestrate.sh`'s supervisor loop". The earlier claim that the
+  Claude Code harness "was never registered in `runners.yml`" was wrong,
+  and it is recorded here as wrong rather than quietly worked around.
+- Change: `scripts/runners.yml` gains `claude-code-opus-5` (harness
+  `claude-code`, provider `anthropic`, model `claude-opus-5`, variant
+  `null`) — the model actually orchestrating and running rounds now, and
+  the one whose absence made the field unresolvable:
+  `Agent: claude-opus-5 (orchestrating model)` appears 4 times in this file
+  and `Agent: claude-opus-5 (Claude Code subagent)` 3 times, naming a model
+  no runner registered. Named for shape consistency with
+  `claude-code-sonnet-5` rather than as a bare `claude-opus-5`. Its comment
+  keeps the existing entries' honesty convention: the adapter has still
+  never been exercised, every round on it was dispatched directly by an
+  orchestrator session, and registering it claims nothing about the
+  supervisor launch path.
+- Change: the checker resolves an entry's `Agent:` — everything before the
+  first parenthetical — against runner keys *and* runner `model:` values.
+  Both, deliberately: the record's convention is to publish the model, while
+  `policy.yml` and `scripts/runner-preflight.mjs` address runners by key.
+- **Historical coverage is nil, and that is the point of saying so.** The
+  `Agent:` field carries `opencode (deepseek-v4-flash)` 70 times, `codex`
+  17, `claude-code` 13, `claude-sonnet-5 (Claude Code subagent)` 11 and six
+  other spellings besides — 131 entries of free text, several of which
+  would not resolve. `CHARTER.md` rule 5 forbids rewriting them, so the
+  check applies from round 185 forward and prints the count it is skipping
+  on every run rather than reporting `ok` over a silent 135-round gap.
+
+**5. Proved able to fail, because a check nobody has watched go red is not a check**
+- Hypothesis: this repository's most-repeated defect class is a check that
+  has never been seen to fail — a needle matching nothing and a predicate
+  accidentally true both look exactly like a pass. Three assertions shipped
+  green on one round is three chances to repeat it.
+- Change: `scripts/test-changelog-provenance.mjs`, following
+  `scripts/test-governance-claims.mjs`'s technique — a sandbox copy, one
+  planted defect per case, and an assertion that the checker both exits
+  non-zero *and* says something recognisable about that specific defect. 12
+  cases and 2 controls. The composition cases needed a generated 204-round
+  record, because the armed state cannot be reached by editing the real
+  changelog: the real newest round *is* the arming round, so its window
+  necessarily reaches below the seam. One control proves the armed path can
+  go green; two cases prove it goes red on a single starved heavy track and
+  on both at once.
+
+- Origin: maintainer
+- Track: meta
+- Agent: claude-opus-5 (Claude Code subagent)
+- Dispatch: forced — the maintainer instructed this round directly on
+  2026-08-24 after the finding below; the dispatcher's own pick at the time
+  was `audit`.
+- Guardrails: pending
+- Result: pending
 
 ### 2026-08-24
 This build round (`loop/build/rule-5-docket-scope-ruling`) closes
