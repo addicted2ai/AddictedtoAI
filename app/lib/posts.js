@@ -237,10 +237,19 @@ export const posts = [
   },
   {
     path: "/blog/copilot-consolidation",
+    // The title said "At 3:09 a.m. on the day the migration began" until the
+    // second review pass. That is the page's own stamp read at face value,
+    // and the body deliberately does not claim it: the stamp states no
+    // timezone, and while US readings are ruled out by arithmetic, UTC+12
+    // would map it to 2026-08-17T15:09Z. What is provable without a timezone
+    // is the bracket — old answer live at 14:41:22 UTC on 15 August, new
+    // answer recorded at 04:03:12 UTC on 18 August — so the title states
+    // that instead. Same defect as the excerpt: a summary claiming more than
+    // the thing it summarises.
     title:
-      "Microsoft's Copilot FAQ said your own group-chat messages would survive the merge. At 3:09 a.m. on the day the migration began, it was rewritten to say they won't",
+      "Microsoft's Copilot FAQ said your own group-chat messages would survive the merge. Between 15 and 18 August, it was rewritten to say they won't",
     metaTitle:
-      "Microsoft's Copilot FAQ Said Your Group-Chat Messages Would Survive The Merge — It Was Rewritten On The Day The Migration Began",
+      "Microsoft's Copilot FAQ Said Your Group-Chat Messages Would Survive The Merge — Between 15 And 18 August It Was Rewritten To Say They Won't",
     description:
       "Microsoft is merging its consumer Copilot app into the Microsoft Copilot app and retiring Podcasts, Deep Research, Group Chat and Copilot Labs, with account updates beginning 18 August 2026. On 14 August its FAQ said your own group-chat messages would remain available afterwards and that no action was required to keep them; the page's own metadata records an edit at 3:09 a.m. on 18 August, and the answer to the same question now begins “Yes.” Five days past the date, all five features are still described as retiring rather than retired.",
     // Rewritten in review. The first version asserted a motive ("quietly

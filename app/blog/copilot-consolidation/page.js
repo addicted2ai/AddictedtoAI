@@ -124,11 +124,18 @@ export default function CopilotConsolidation() {
         UTC it falls 54 minutes before that capture. What the arithmetic fixes
         whatever the zone is the upper bound: the edit precedes 04:03:12 UTC
         on 18 August, the moment the archive first recorded the new wording.
-        Two more of the page&rsquo;s own fields
-        mark the same boundary: <code>updated_at</code> read{" "}
-        <strong>2026-08-13 11:21 PM</strong> in both the 14 and 15 August
-        captures, and <code>word_count</code> went from 1136 in those two
-        captures to 1035 in the 18 August one, where it remains.
+      </p>
+      <p>
+        Two more of the page&rsquo;s own fields fix the other end. In both the
+        14 and 15 August captures <code>updated_at</code> read{" "}
+        <strong>2026-08-13 11:21 PM</strong> and <code>word_count</code> read
+        1136; from the 18 August capture onwards they read 03:09 AM and 1035,
+        as they still do. So the old answer was demonstrably still live at
+        14:41:22 UTC on 15 August, and the rewrite is bracketed rather than
+        merely dated: after that moment, and before 04:03:12 UTC on 18 August.
+        The Internet Archive&rsquo;s index lists no capture of the page in
+        between, which is why 04:03:12 is the first recording of the new
+        wording and not necessarily the first moment it was live.
       </p>
       <p>
         Microsoft gives no reason for the change, and this post does not
