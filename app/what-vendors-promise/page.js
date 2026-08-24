@@ -160,6 +160,41 @@ export default function WhatVendorsPromise() {
         );
       })}
 
+      <p className="correction-note">
+        <strong>Correction, 2026-08-24.</strong> Until this date the OpenAI row
+        above quoted only the first <em>two</em> of the three bullets
+        OpenAI&rsquo;s page lists under &ldquo;minimum notice periods&rdquo;,
+        and stopped at the longer pair. The missing third bullet is the
+        shortest floor OpenAI states and the only one not measured in months:
+        preview models, &ldquo;identified by <code>preview</code> in the model
+        name&rdquo;, &ldquo;may be retired with much shorter notice, such as 2
+        weeks&rdquo;. A reader of this page &mdash; which says above that it
+        quotes &ldquo;the sentence that establishes the commitment&rdquo;
+        &mdash; would reasonably have taken 3 months as OpenAI&rsquo;s floor
+        for everything. It is not, and it was never the whole sentence.
+      </p>
+      <p className="correction-note">
+        The OpenAI quote above is now the whole passage: the lead-in, all
+        three bullets, and both of the vendor&rsquo;s own &ldquo;Examples
+        include &hellip;&rdquo; sentences, with nothing omitted and no
+        elision. That is deliberate rather than tidy &mdash; those examples
+        are what name which models OpenAI counts as specialized variants and
+        which as previews, and an earlier draft of this very correction cut
+        them, which would have left the quotation marks around a sentence
+        OpenAI never wrote in that form.
+      </p>
+      <p className="correction-note">
+        This was not a change at OpenAI. The bullet appears in the Internet
+        Archive&rsquo;s{" "}
+        <a href="https://web.archive.org/web/20260810135331/https://developers.openai.com/api/docs/deprecations">
+          2026-08-10 capture of the page
+        </a>
+        , four days before the 2026-08-14 verification this row carried, so
+        the omission was in this site&rsquo;s reading, not in the
+        vendor&rsquo;s wording &mdash; which makes it the kind of error a
+        re-verification is supposed to catch and had already missed once.
+      </p>
+
       <h2>The empty cells are the story</h2>
       <p>
         What a vendor does <em>not</em> promise is often more useful than any
@@ -264,38 +299,18 @@ export default function WhatVendorsPromise() {
         filed as docket work for the track that owns it.
       </p>
 
-      <p className="correction-note">
-        <strong>Correction, 2026-08-24.</strong> Until this date the OpenAI row
-        above quoted only the first <em>two</em> of the three bullets
-        OpenAI&rsquo;s page lists under &ldquo;minimum notice periods&rdquo;,
-        and stopped at the longer pair. The missing third bullet is the
-        shortest floor OpenAI states and the only one not measured in months:
-        preview models, &ldquo;identified by <code>preview</code> in the model
-        name&rdquo;, &ldquo;may be retired with much shorter notice, such as 2
-        weeks&rdquo;. A reader of this page &mdash; which says above that it
-        quotes &ldquo;the sentence that establishes the commitment&rdquo;
-        &mdash; would reasonably have taken 3 months as OpenAI&rsquo;s floor
-        for everything. It is not, and it was never the whole sentence. The
-        quote is restored in full above.
-      </p>
-      <p className="correction-note">
-        This was not a change at OpenAI. The bullet appears in the Internet
-        Archive&rsquo;s{" "}
-        <a href="https://web.archive.org/web/20260810135331/https://developers.openai.com/api/docs/deprecations">
-          2026-08-10 capture of the page
-        </a>
-        , four days before the 2026-08-14 verification this row carried, so
-        the omission was in this site&rsquo;s reading, not in the
-        vendor&rsquo;s wording &mdash; which makes it the kind of error a
-        re-verification is supposed to catch and had already missed once.
-      </p>
-
       <p className="post-footnote">
         Re-verified 2026-08-24: all ten reachable vendor pages re-fetched with
         a plain HTTP client (all HTTP 200), and every quoted sentence checked
-        as a contiguous run of words in the page it cites. All ten still hold
-        word for word &mdash; no vendor has changed the sentence this page
-        quotes. Meta was re-attempted the same day and is still unreadable, so
+        as a contiguous run of words in the page it cites &mdash; punctuation
+        and markup discarded, word order and completeness not. All ten hold on
+        that test; no vendor has changed the sentence this page quotes, and no
+        quote here omits vendor text without saying so. The OpenAI quote is the
+        longest at 115 words and was re-tested at 115 of 115 after the
+        correction above, because the first draft of that correction failed
+        this same test at 36 of 58 and the failure had to be found by review
+        rather than by the check that was supposed to catch it. Meta was
+        re-attempted the same day and is still unreadable, so
         its row remains unverified and claims nothing; the row itself now
         records which of its checks were re-run that day and which were not.
         The OpenAI correction above came out of that pass: the quote was

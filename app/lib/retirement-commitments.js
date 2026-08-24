@@ -68,6 +68,20 @@ export const RETIREMENT_COMMITMENTS = [
     // OpenAI promises at least 3 months for everything, which its page does
     // not say. Restored here in full.
     //
+    // "In full" is literal, and it took two attempts. The first version of
+    // this correction restored the third bullet's opening clause only and
+    // silently dropped 22 words of vendor text between bullets two and
+    // three -- while the same commit published the claim that all ten of
+    // this file's quotes are "a contiguous run of words in the page it
+    // cites". Review caught it: under that stated test the quote matched 36
+    // of 58 words and then diverged, so the count was nine, not ten, and
+    // this commit was what broke it (the shorter two-bullet quote it
+    // replaced HAD been contiguous). The whole passage is now here --
+    // lead-in, all three bullets, and both "Examples include ..." sentences
+    // -- and re-tested at 115 of 115 words contiguous. The examples are not
+    // padding: they are what names which models OpenAI counts as
+    // specialized variants and as previews.
+    //
     // This was not a change at OpenAI: the bullet is present in the Internet
     // Archive's 2026-08-10 capture of the page
     // (web.archive.org/web/20260810135331/https://developers.openai.com/api/docs/deprecations),
@@ -75,7 +89,7 @@ export const RETIREMENT_COMMITMENTS = [
     // omission was in the reading, not in the vendor's wording. Recorded as
     // a correction rather than a quiet re-quote (CHARTER.md rules 5 and 6).
     sentence:
-      "Unless safety or compliance concerns require a faster timeline, we provide the following minimum notice periods before model retirement: Generally available models: At least 6 months. Specialized variants of generally available models: At least 3 months. Preview models: Preview models, identified by preview in the model name, may be retired with much shorter notice, such as 2 weeks.",
+      "Unless safety or compliance concerns require a faster timeline, we provide the following minimum notice periods before model retirement: Generally available models: At least 6 months. Specialized variants of generally available models: At least 3 months. Examples include chat variants such as gpt-5.1-chat-latest, Codex variants such as gpt-5.3-codex, and deep research variants such as o3-deep-research. Preview models: Preview models, identified by preview in the model name, may be retired with much shorter notice, such as 2 weeks. Examples include computer-use-preview and gpt-4o-audio-preview. We don't recommend using preview models for business-critical production workloads unless you can migrate on short notice.",
     sentenceMore:
       "All deprecated models and endpoints will also have a shut down date. The faster-timeline clause means even these dates can move earlier. The preview tier is not hypothetical here: ten of the OpenAI rows on the model retirement calendar carry “preview” in the identifier, which is exactly how OpenAI's bullet says a preview model is identified — nine of them already switched off, one still upcoming (counted 2026-08-24). For those, the floor OpenAI states is weeks, not months.",
     // null (round 182): two compounding reasons, not one. (1) Two floors \u2014
@@ -100,7 +114,10 @@ export const RETIREMENT_COMMITMENTS = [
     // it, in the bullet that was missing from the quote: preview models are
     // "identified by preview in the model name". So that specific objection
     // does not hold; the others do, and they are enough on their own. The
-    // GA-versus-specialized split still has no page-defined test, the
+    // GA-versus-specialized split still has no page-defined test -- the now
+    // fully-restored quote gives three EXAMPLES of specialized variants
+    // (chat, Codex and deep-research variants) but no rule, and examples
+    // classify the rows they name and no others -- the
     // non-model API rows ("Assistants API", "Videos API") are still outside
     // a sentence scoped to "model retirement", and a third floor measured in
     // weeks widens the spread a single number would have to stand in for

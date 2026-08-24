@@ -27,7 +27,12 @@
 // markdown, Anthropic 13,415) and every row compared to them mechanically
 // rather than by eye: identifier, shutdown date, alias list and named
 // replacement. Nothing moved -- 0 dates changed, 0 rows dropped, 0
-// replacements changed, 0 rows on either page absent from this file. The
+// replacements changed, and 0 rows on either page that fall inside the
+// 2026-05-01 scope window above are absent from this file. That last
+// qualifier is load-bearing: rows dated before the window are correctly
+// absent (`chatgpt-4o-latest`, 2026-02-17, is the nearest one), so a
+// reader comparing this file to the vendors' pages line by line will find
+// entries here that are not defects. The
 // 71 + 3 split above still holds exactly, and OpenAI's most recent
 // announcement heading is still 2026-07-20, Anthropic's still 2026-06-05,
 // so neither vendor has announced a dated shutdown since this file was

@@ -184,6 +184,25 @@ prominently rather than quietly, below.
   the rule's own failure case. That is what the new `.correction-note` class
   in `app/globals.css` is for; it is not a styling change looking for a
   justification.
+- **The first attempt at this correction repeated the defect it was fixing,
+  and review caught it.** That draft restored the third bullet's opening
+  clause only and silently dropped 22 words of vendor text between bullets
+  two and three — the "Examples include chat variants such as
+  `gpt-5.1-chat-latest`..." sentence and bullet three's tail — with no
+  ellipsis, inside quotation marks, while the *same commit* published the
+  claim that all ten quotes on the page are "a contiguous run of words in
+  the page it cites". Under that stated test the new quote matched 36 of 58
+  words and diverged, so the published count was nine, not ten — and this
+  commit is what broke it, because the two-bullet quote it replaced had been
+  contiguous. That is precisely why "a substring check had never flagged it"
+  was true of the original defect and stopped being true of the fix. The
+  resolution was not to mark the elision but to delete it: the whole passage
+  is quoted, all three bullets and both "Examples include ..." sentences,
+  re-tested at **115 of 115 words contiguous**, with a control run
+  confirming the test still fails when one interior word is removed. The
+  omitted examples were not padding — they are what names which models
+  OpenAI counts as specialized variants and which as previews, which is the
+  exact classification this row's `minNoticeDays` reasoning turns on.
 - **This was not a change at OpenAI, and the round checked rather than
   assumed.** The bullet is present in the Internet Archive's capture of the
   page at `20260810135331` — four days *before* the 2026-08-14 verification
@@ -233,14 +252,24 @@ prominently rather than quietly, below.
   nine was the round's own call, and it is what surfaced change 2.
 - Change: all 11 vendor pages behind `/what-vendors-promise` re-fetched
   2026-08-24 with a plain HTTP client (all HTTP 200), and each quoted
-  sentence checked as a contiguous run of words in the page it cites.
-  **All ten verifiable quotes still hold word for word** — Mistral, Amazon
+  sentence checked as a contiguous run of words in the page it cites —
+  punctuation and markup discarded, word order and completeness not.
+  **All ten verifiable quotes hold on that test** — Mistral, Amazon
   Bedrock, Microsoft Foundry, Alibaba, Google, DeepSeek, xAI and Cohere
   alongside the two above. Five initially reported as mismatches were
   artifacts of turning HTML into text (markup boundaries, list markers,
   smart quotes); comparing on words rather than exact punctuation separated
   those from real drift, and there was none. Their `verified` dates move to
   2026-08-24.
+- That count is stated after re-testing, not before. As change 2 records, it
+  was briefly and publishably false: this round's own first correction drove
+  it to nine of ten while the page went on claiming ten, and the check that
+  should have caught that was the one being quoted. Re-run after the fix and
+  reported at the number it actually produced — ten of ten, the longest
+  quote at 115 of 115 words. The lesson is not that the test is weak; it is
+  that a round which *edits* a quote has changed the thing its own check
+  measures, and must re-run the check after the edit rather than cite the
+  run from before it.
 - Meta stays `verified: null`, as it has since 2026-08-15.
   `www.llama.com/docs` still redirects to `developer.meta.com/ai/docs/overview/`,
   which answered with HTTP 200 and 302,065 bytes containing 33 characters of
@@ -338,7 +367,14 @@ prominently rather than quietly, below.
   scratchpad scripts against the fetched pages, and both were made to fail
   before being trusted — the row comparison's first run reported 29
   mismatches that were parser bugs, which is recorded in change 1 rather
-  than discarded.
+  than discarded. Reviewed once (**request-changes**, one blocking finding:
+  the corrected OpenAI quote silently elided 22 words while the same commit
+  published a claim that no quote does — see change 2). Fixed by quoting the
+  passage whole, re-tested with a freshly written checker rather than the
+  one that had just been wrong, and `round.mjs check` re-run green
+  afterwards. The reviewer independently re-derived the rest and confirmed
+  it, including the 4 Part B spot-checks behind the decision to drop
+  nothing.
 - Result: 87 rows re-verified against both vendor pages, 0 changes found at
   either vendor. 10 of 11 vendor commitment quotes re-verified word for word,
   1 (Meta) unreachable and recorded as unreachable. 1 correction published,
