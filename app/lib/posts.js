@@ -235,4 +235,38 @@ export const posts = [
     // Sources fetched the day this post was written (its Sources section).
     verified: "2026-08-21",
   },
+  {
+    path: "/blog/copilot-consolidation",
+    // The title said "At 3:09 a.m. on the day the migration began" until the
+    // second review pass. That is the page's own stamp read at face value,
+    // and the body deliberately does not claim it: the stamp states no
+    // timezone, and while US readings are ruled out by arithmetic, UTC+12
+    // would map it to 2026-08-17T15:09Z. What is provable without a timezone
+    // is the bracket — old answer live at 14:41:22 UTC on 15 August, new
+    // answer recorded at 04:03:12 UTC on 18 August — so the title states
+    // that instead. Same defect as the excerpt: a summary claiming more than
+    // the thing it summarises.
+    title:
+      "Microsoft's Copilot FAQ said your own group-chat messages would survive the merge. Between 15 and 18 August, it was rewritten to say they won't",
+    metaTitle:
+      "Microsoft's Copilot FAQ Said Your Group-Chat Messages Would Survive The Merge — Between 15 And 18 August It Was Rewritten To Say They Won't",
+    description:
+      "Microsoft is merging its consumer Copilot app into the Microsoft Copilot app and retiring Podcasts, Deep Research, Group Chat and Copilot Labs, with account updates beginning 18 August 2026. On 14 August its FAQ said your own group-chat messages would remain available afterwards and that no action was required to keep them; the page's own metadata records an edit at 3:09 a.m. on 18 August, and the answer to the same question now begins “Yes.” Five days past the date, all five features are still described as retiring rather than retired.",
+    // Rewritten in review. The first version asserted a motive ("quietly
+    // removed") that the post's own body explicitly declines to assert, dated
+    // the edit "hours before the migration began" when Microsoft publishes no
+    // start time, and made two universals about the press ("Everyone
+    // reported… Nobody went back") resting on one fetched article. This
+    // string is what app/page.js renders on the homepage, so it is read far
+    // more often than the careful body it summarises.
+    excerpt:
+      "Microsoft's retirement FAQ said your own group-chat messages would remain available after the Copilot merge. It now answers the same question \"Yes\" — they will not carry forward. The page's own metadata dates that edit to 18 August, the day account updates began, and five days later all five affected features are still written as retiring rather than retired.",
+    datePublished: "2026-08-23",
+    dateModified: "2026-08-23",
+    // Sources fetched the day this post was written (its Sources section):
+    // four Microsoft support pages, the TechCrunch report, and four dated
+    // Internet Archive captures of two of the Microsoft pages, which are what
+    // the before-and-after comparison rests on.
+    verified: "2026-08-23",
+  },
 ];

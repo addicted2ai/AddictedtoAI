@@ -252,6 +252,16 @@ export const ARCHIVE = "archive";
 // the three log pages, /log/rounds/[id], /projects, /what-vendors-promise,
 // /model-retirement-calendar and /loop-history have no listed source file
 // in this diff and do not move.
+//
+// Round 178 (author) publishes the copilot-consolidation post. posts.js is a
+// listed source file of /, /blog and every post route, and this round touches
+// it, so all thirteen of those routes move to 178 together — the same pattern
+// as rounds 87, 100, 103, 107, 108, 132, 133, 154 and 165. The thirteen were
+// counted off route-files.js (the routes whose file lists contain
+// app/lib/posts.js), not estimated. The new route is 178 by construction:
+// this round built it. /charter, /demos, /disclosure and
+// /model-deprecation-checker also sit on 176 but list no posts.js and do not
+// move.
 export const PRODUCING_ROUNDS = {
   // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
@@ -267,7 +277,9 @@ export const PRODUCING_ROUNDS = {
   // listed source file of /, so the newest change is this round's.
   // Round 165 (author) publishes the manus-meta-split post in posts.js, a
   // listed source file of /, so the newest change is this round's.
-  "/": 176,
+  // Round 178 (author) publishes the copilot-consolidation post in posts.js, a
+  // listed source file of /, so the newest change is this round's.
+  "/": 178,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
@@ -288,7 +300,10 @@ export const PRODUCING_ROUNDS = {
   // Round 165 (author) adds the manus-meta-split post to posts.js, which
   // feeds the "More from the blog" list, so the newest change is this
   // round's.
-  "/blog": 176,
+  // Round 178 (author) adds the copilot-consolidation post to posts.js, which
+  // feeds the "More from the blog" list, so the newest change is this
+  // round's.
+  "/blog": 178,
   // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The ultrafast-mode route is 108 by construction: this round built the
@@ -304,25 +319,32 @@ export const PRODUCING_ROUNDS = {
   // Round 165 (author) publishes the manus-meta-split post in posts.js, a
   // listed source file of every post route, so each route's newest commit
   // is this round's.
-  "/blog/frontier-cyber": 176,
-  "/blog/claude-code-auto-mode": 176,
-  "/blog/cyber-eval-cascade": 176,
-  "/blog/gpt-5-6-price-drop": 176,
-  "/blog/fable-5-export-controls": 176,
-  "/blog/chatgpt-ads": 176,
-  "/blog/gemini-3-7-flash": 176,
-  "/blog/ultrafast-mode": 176,
+  // Round 178 (author) publishes the copilot-consolidation post in posts.js,
+  // a listed source file of every post route, so each route's newest commit
+  // is this round's.
+  "/blog/frontier-cyber": 178,
+  "/blog/claude-code-auto-mode": 178,
+  "/blog/cyber-eval-cascade": 178,
+  "/blog/gpt-5-6-price-drop": 178,
+  "/blog/fable-5-export-controls": 178,
+  "/blog/chatgpt-ads": 178,
+  "/blog/gemini-3-7-flash": 178,
+  "/blog/ultrafast-mode": 178,
   // The ai-security-week route is 154 by construction: this round built the
   // page, and posts.js — a listed source file of every post route — carries
   // its metadata.
   // Round 165 (author) publishes the manus-meta-split post in posts.js, a
   // listed source file of every post route, so the newest commit is this
   // round's.
-  "/blog/ai-security-week": 176,
+  "/blog/ai-security-week": 178,
   // The manus-meta-split route is 165 by construction: this round built the
   // page, and posts.js — a listed source file of every post route — carries
   // its metadata.
-  "/blog/manus-meta-split": 176,
+  "/blog/manus-meta-split": 178,
+  // The copilot-consolidation route is 178 by construction: this round built
+  // the page, and posts.js — a listed source file of every post route —
+  // carries its metadata.
+  "/blog/copilot-consolidation": 178,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 160 (maintain) corrects the two correction asides' present-tense

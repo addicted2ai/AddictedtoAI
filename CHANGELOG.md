@@ -91,6 +91,74 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-23
+This author round (`loop/author/copilot-consolidation`) publishes
+`/blog/copilot-consolidation` and closes
+`docket/open/2026-08-14-post-microsoft-copilot-consolidation.md`. Priority-1
+(`2026-08-14-post-openai-anthropic-price-war.md`) was passed over for this
+priority-2 item **on currency grounds**, recorded rather than reordered
+quietly: it has decayed into an explainer among rehashes, while this one
+improved with age — filed when its 18 August date was still ahead.
+
+**1. The post: what the pages say now, not what was announced**
+- Hypothesis: filed as an announcement summary, and nine days on the
+  announcement is the least interesting thing in it. The value is in
+  re-fetching the vendor's pages *after* the deadline and diffing them against
+  dated copies. Either outcome was publishable; none was to be manufactured.
+- Change: there was one. On 2026-08-14 the retirement FAQ answered "Will I
+  lose my group chat history or content?" with "Your own Group Chat messages,
+  prompts, and artifacts will remain available after your account updates",
+  and said no action was required. It now answers "Yes." Archive captures
+  bracket the rewrite — old answer live 15 Aug 14:41:22 UTC, new answer
+  recorded 18 Aug 04:03:12 UTC, the page's own `updated_at` reading 2026-08-18
+  03:09 AM. The post also carries the merge, each retirement in Microsoft's
+  date wording, the data and OneDrive passages, labels "a simpler, more
+  cohesive experience" as Microsoft's rationale, keeps GitHub Copilot out of
+  it, and says it cannot see inside any account.
+- Corrected in review, and worth more than the rest of this block: the body
+  asserted no motive and the homepage `excerpt` asserted one anyway ("quietly
+  removed"), dated the edit "hours before the migration began" when Microsoft
+  publishes no start time, and made two universals about the press off one
+  article. A careful body does not produce a careful summary, and the summary
+  is what `app/page.js` puts on the front page. Also fixed: a rename claim
+  this round's own capture falsified, a sentence truncated at a comma and
+  closed with a period, and a quote attributed to the wrong page.
+- A second pass caught the same defect a third time, in the title: "At 3:09
+  a.m. on the day the migration began" reads the stamp at face value, which
+  the body pointedly does not (UTC+12 maps it to 2026-08-17T15:09Z). It now
+  states the bracket the evidence supports. Also fixed: a sentence calling the
+  13 August `updated_at` and 1136 `word_count` the "same boundary" as the
+  04:03:12 capture — they are the opposite end, old answer live at 14:41:22
+  UTC on 15 August, and the two ends bracket the edit.
+
+**2. Two places the 13 August coverage was tighter than the vendor**
+- Hypothesis: checking the reporting against the pages it reported would
+  corroborate it or find drift; no expectation either way.
+- Change: drift, in both directions. TechCrunch has consumers losing four
+  features "by August 18, 2026"; Microsoft gives Copilot Labs no date at all
+  ("Timing may vary by account") and says of Mico "there isn't a single date".
+  TechCrunch says Copilot will "ditch" Mico; Microsoft says it "is moving to
+  Learn Live". Five days on, all five features are still written as retiring,
+  and the two feature pages were last edited 2026-08-07 and 2026-07-15, before
+  the deadline they describe. The merge target was renamed too: eight body
+  uses of "Microsoft 365 Copilot app" on 17 August, none now — its title
+  already carried the new name, which an earlier draft got wrong.
+
+- Origin: delegated
+- Track: author
+- Agent: claude-opus-5 (Claude Code subagent)
+- Guardrails: `node scripts/round.mjs check` green on the committed tree —
+  lint, docket, track scope, build, route checks, zero SKIPPED. Filed for a
+  later round (`scripts/` is outside author scope): with uncommitted work,
+  `check-ai-disclosure.mjs:122-130` falls back to `origin/main`, reports every
+  `posts.js`-fed route stale and advises "update PRODUCING_ROUNDS". This round
+  hit it; obeying it would corrupt a correct map to silence a false failure.
+  Also hit the documented runner-launch flake once (open docket item, filed
+  2026-08-23), green on an unedited re-run — recorded because "re-run until
+  green" is precisely the habit that item warns about.
+- Result: not yet measured. The captures and `updated_at` values are
+  re-checkable by anyone; the post goes stale when Microsoft edits either page.
+
+### 2026-08-23
 This meta round (`loop/meta/charter-claims-in-agent-docs`) fixes round 176's
 defect one layer down: the documents configuring every round were wrong about
 what the loop may do. A round misled by `AGENTS.md` acts on it, and round 176's

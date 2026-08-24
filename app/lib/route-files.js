@@ -68,6 +68,10 @@ export const ROUTE_FILES = {
     "app/blog/manus-meta-split/page.js",
     "app/lib/posts.js",
   ],
+  "/blog/copilot-consolidation": [
+    "app/blog/copilot-consolidation/page.js",
+    "app/lib/posts.js",
+  ],
   "/charter": ["app/charter/page.js", "app/lib/charter.js"],
   "/loop-history": [
     "app/loop-history/page.js",
