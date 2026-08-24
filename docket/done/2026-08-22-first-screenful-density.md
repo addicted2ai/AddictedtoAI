@@ -55,22 +55,33 @@ much context a reader needs before the table) rather than a mechanical
 defect, which is why it is filed rather than fixed in a round scoped to
 two named CSS defects.
 
-**Round loop/build/first-screenful-density found this item did not agree
-with itself: this section's own summary line said "1" content unit on
+**Round loop/build/first-screenful-density found this item does not agree
+with itself: this section's own summary line says "1" content unit on
 `/model-retirement-calendar`, but the band-by-band breakdown four lines
 above shows the first data row at 958px, 158px below the fold -- 0 visible,
 not 1. That round's own re-render found 0, agreeing with the detailed
-breakdown. Left standing at the time, pending a ruling on whether rule 5
-reaches this directory at all -- see that round's CHANGELOG.md entry and
-`docket/open/2026-08-23-rule-5-docket-scope-ambiguity.md`.**
+breakdown. Not corrected in place (rule 5 -- this item's own "Why now" is
+not rewritten after the fact); see that round's CHANGELOG.md entry.**
+
+Round 184's gloss, added after the paragraph above rather than rewritten
+into it: round 174's actual reason, quoted in full from its own
+`CHANGELOG.md` entry, was "the docket is a plan and may be edited freely
+while open, but this item is closing this round, not staying open for a
+retype" -- a decision made under rule 5, not one deferred. The question of
+whether rule 5 reaches this directory at all was not filed until almost
+three hours later, by round 175 (`loop/build/nav-cue-and-line-length`,
+`docket/done/2026-08-23-rule-5-docket-scope-ambiguity.md`); round 174
+cannot have been waiting on a question that did not exist yet.
 
 **Round loop/build/rule-5-docket-scope-ruling settled that question: rule
 5's append-only force is scoped to `CHANGELOG.md` and the three other
 surfaces `CHARTER.md` rule 13a's Reserved list ties to it, not to
 `docket/`. The "1" above is corrected in place accordingly (now "0", folded
-into the six-of-seven-pages group) under rule 4, which requires this kind
-of live description stay currently true. See `docket/README.md` and that
-round's CHANGELOG.md entry for the full reasoning.**
+into the six-of-seven-pages group). What licenses the correction is rule
+5's absence, not rule 4 -- rule 4 covers claims about this project's own
+*process*, and a content-density measurement is not one. See
+`docket/README.md` and that round's CHANGELOG.md entry for the full
+reasoning.**
 
 ## Evidence
 

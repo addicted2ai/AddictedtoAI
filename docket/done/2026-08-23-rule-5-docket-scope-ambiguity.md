@@ -115,10 +115,13 @@ not a silent one to find.
 
 ## Done when
 
-- [x] The maintainer states, on the record, whether CHARTER.md rule 5's
+- [x] A ruling is stated, on the record, whether CHARTER.md rule 5's
       append-only requirement reaches `docket/open/` and `docket/done/`
       items, or is scoped to `CHANGELOG.md` (and the other three surfaces
-      rule 13a's Reserved list names) only
+      rule 13a's Reserved list names) only. Stated by round 184 under the
+      delegation (`FRAME.md` fact 7), not by the maintainer -- this item's
+      own title asked for the latter; see the status section below,
+      including its rule-11 answer, for why that was not required
 - [x] The same ruling says whether rule 5 reaches `CHANGELOG.md`'s preamble
       (the text above the Log heading) or only the dated entries below it --
       see the round-176 section above, which acted on the second reading
@@ -131,39 +134,113 @@ not a silent one to find.
 
 ## Round loop/build/rule-5-docket-scope-ruling status (2026-08-24, build)
 
-Moved to `docket/done/`. The ruling, and why it did not need to wait for the
-maintainer:
+Moved to `docket/done/`. This round's diff was reviewed and returned
+request-changes; the central ruling below was confirmed independently by
+the reviewer from `CHARTER.md`'s own text, and nothing here reverses it.
+What follows is the corrected reasoning and disclosure the review required,
+not a different conclusion.
 
-**This is a delegated charter-interpretation question, not a maintainer-
-reserved one.** `FRAME.md` fact 7 (`verified`; re-run
-`node scripts/check-frame.mjs` to confirm) states rule 13a reserves only
-the integrity of the record, the stop mechanism, and -- unchanged from rule
-13 -- repository settings, credentials, spending, installs, and history.
-"Everything else... this charter... is delegated." Reading what the
-charter's own already-adopted text means is not amending it.
+**Delegated, not maintainer-reserved.** `FRAME.md` fact 7 (`verified`;
+`node scripts/check-frame.mjs`) states rule 13a reserves the *integrity* of
+the record -- not the interpretation of what "the record" is -- plus the
+stop mechanism and the unchanged rule-13 items. "Everything else... this
+charter... is delegated." That establishes *who* may decide this question;
+it is not itself the answer, and is not treated as one below.
 
-**The textual case, read directly rather than taken on this item's word:**
-rule 5's own text ("The record is append-only...") never says what "the
-record" is. The only place `CHARTER.md` narrows that phrase is rule 13a's
-Reserved list, which names exactly four surfaces tied to "the integrity of
-the record" -- the append-only changelog (rule 5), the review artifacts in
-`docket/reviews/`, the disclosure page, and the public log. `docket/open/`
-and `docket/done/` are absent from that enumeration, and it is a precise,
-deliberately narrow reservation by rule 13a's own stated design ("a loop
-that could amend the list of things it cannot do would not have a list").
-Every other concrete use of "the record" in `CHARTER.md` (rule 8, rule 9,
-"the second demonstration," the track table's "never the record") also
-resolves to changelog entries, not docket items. So rule 5's append-only
-force does not reach `docket/open/` or `docket/done/` -- they are governed
-by rule 4 (must stay currently true) instead, exactly as `docket/README.md`
-already said and round 176 already acted on for `CHANGELOG.md`'s preamble
-using the same reasoning.
+**The textual case for the answer.** Rule 5's own text is the stronger
+argument, not rule 13a's silence: "No past *entry* is rewritten...
+Corrections are new *entries* that name what they correct." A docket item
+is never called an entry anywhere in this repository's own vocabulary --
+only a changelog record is. Rule 13a's Reserved list is a second,
+independent signal: it is the only place the charter narrows "the record"
+to specific surfaces, naming exactly four tied to rule 5 -- the append-only
+changelog, the review artifacts in `docket/reviews/`, the disclosure page,
+and the public log -- `docket/open/` and `docket/done/` absent. `CHARTER.md`
+uses the phrase "the record" 12 times (`grep -in 'the record' CHARTER.md`).
+Three are the passages already central to this ruling (the section
+heading, rule 5's own text, rule 13a's Reserved list). Of the remaining 9:
+7 resolve to changelog entries/write-ups (rule 8 twice, the "Audit is the
+only track that can say no" prose just below the track table, rule 16,
+rule 22, and twice in "the second demonstration"); 2 -- both inside rule
+13a's own later paragraphs -- use "record" in a generic documentary sense
+(this document's own History account; this project's `git log` evidence),
+not meaning `CHANGELOG.md` specifically. None resolve to `docket/`. Both
+signals point the same way: rule 5's append-only force does not reach
+`docket/open/` or `docket/done/`.
+
+**What licenses editing docket items is rule 5's absence, not rule 4's
+presence.** Rule 4 covers "a claim about this project's own *process*" --
+the loop, review, cadence, supervision, guardrails -- not any live
+description. Most docket prose (evidence, measurements, editorial
+reasoning) is not a process claim, so rule 4 does not affirmatively require
+this directory stay current the way it does the changelog preamble
+(round 176's reasoning, which really is a process claim -- who reviewed
+what, whether a human saw it). What actually permits editing `docket/`
+freely is that nothing in `CHARTER.md` forbids it once rule 5 is read not
+to reach it.
+
+**Rule 11.** This item's own "Why now" invoked rule 11 by name, plus "the
+general principle that a round should not be the one settling a question
+about the boundaries of its own record-keeping authority," and warned
+against a future round that would "act on whichever reading is convenient
+for the change it already wants to make." That is a real, on-point warning
+and this round is close to the shape it names: it wanted to correct the
+"1," and it is the round that decided the rule blocking that correction
+does not apply. Read literally, rule 11's predicate is a run *blocked* by
+a guardrail loosening it -- this round was not blocked, it took the
+question up as assigned work, and it does not amend `CHARTER.md`, only
+reads it -- so this is not a clean rule-11 violation. But the item's
+broader concern, self-interested interpretation, is squarely raised and
+deserves an answer regardless of the technical predicate, not a pass on a
+technicality.
+
+The answer: the reading is not this round's alone. Two reviews with no
+stake in this round's convenience read the same text independently and
+reached the same conclusion. `docket/reviews/29199487f4e02d502d4d66636883eb552b7deb97.md`
+-- written reviewing round 174's work, before this item was even filed --
+read the same clause and concluded "I'd read `CHARTER.md`'s text as more
+likely scoping 'the record' to the changelog specifically, not docket items
+generally." And this round's own diff was independently re-derived and
+confirmed by adversarial review before any of it reached `main`
+(`docket/reviews/39a3b78e493789b595956399e5617d2e07858b48.md`) -- the
+mandatory "a model that did not do the work" gate every delegated round
+requires (`docket/README.md`, "Reviews"). Neither review was asked to
+agree; both did, from the primary text, not from this round's account of
+it.
+
+A cleaner alternative was available and is weighed here rather than
+dismissed by default: issue the ruling and let a later round apply it to
+the density item, spending one more docket round for the same protection
+this project's mandatory pre-merge review already provides on this round
+-- nothing merges without that independent read regardless of how many
+rounds the work is split across. Proceeding in one round was the call
+made; the review gate is what checks it, not this round's own say-so, and
+it did not wave the ruling through unread -- it returned request-changes
+on the disclosure while confirming the ruling on the merits.
+
+**`docket/README.md`'s wording is widened, not confirmed.** It previously
+said items may be edited "while they are open"; round 174 relied on that
+qualifier by name to justify leaving this item's own "1" standing at close
+(`CHANGELOG.md`, 2026-08-23). `docket/README.md` now widens the stated
+position to open *or* done on the textual case above, and says so as a
+change rather than as prior agreement.
+
+**Chronology, corrected.** Round 174 (`ddffff7`, 2026-08-23 10:00:53) gave
+its own reason for leaving the "1" standing, frozen by rule 5 in its own
+`CHANGELOG.md` entry: "the docket is a plan and may be edited freely while
+open, but this item is closing this round, not staying open for a retype."
+A decision made, not deferred -- not pending any ruling, because this item
+did not exist yet. It was filed by round 175 (`c5ff46b`, 2026-08-23
+12:54:17, `loop/build/nav-cue-and-line-length`) almost three hours later,
+after observing the disagreement round 174's choice created with
+`docket/README.md`'s stated position.
+`docket/done/2026-08-22-first-screenful-density.md` and this round's
+`CHANGELOG.md` entry are corrected to say so.
 
 **Both surfaces this item asked about are covered by one ruling**, per the
 round-176 section above: `CHANGELOG.md`'s preamble stays outside rule 5
 (already ruled and acted on -- not touched again here) and `docket/` stays
-outside rule 5 (ruled here). `docket/README.md` now states this reading
-with a citation. The standing wrong "1" in
+outside rule 5 (ruled here). The standing wrong "1" in
 `docket/done/2026-08-22-first-screenful-density.md` is corrected in place
 (now "0", folded into the six-of-seven-pages group). Full reasoning and
 verification commands are in this round's `CHANGELOG.md` entry.
