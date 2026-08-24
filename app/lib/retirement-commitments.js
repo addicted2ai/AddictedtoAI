@@ -58,10 +58,26 @@ export const RETIREMENT_COMMITMENTS = [
     vendor: "OpenAI",
     href: "https://developers.openai.com/api/docs/deprecations",
     shape: "floor-dates",
+    // CORRECTION, round 187 (maintain), 2026-08-24. This quote carried only
+    // the first TWO of the three bullets OpenAI's page lists under "minimum
+    // notice periods", and stopped at the longer pair. The omitted third
+    // bullet is the shortest floor OpenAI states and the only one that is
+    // not measured in months. A reader of this page took the quote as the
+    // whole commitment -- the page's own words above are "quotes the
+    // sentence that establishes the commitment" -- and would have concluded
+    // OpenAI promises at least 3 months for everything, which its page does
+    // not say. Restored here in full.
+    //
+    // This was not a change at OpenAI: the bullet is present in the Internet
+    // Archive's 2026-08-10 capture of the page
+    // (web.archive.org/web/20260810135331/https://developers.openai.com/api/docs/deprecations),
+    // four days BEFORE the 2026-08-14 verification this row carried, so the
+    // omission was in the reading, not in the vendor's wording. Recorded as
+    // a correction rather than a quiet re-quote (CHARTER.md rules 5 and 6).
     sentence:
-      "Unless safety or compliance concerns require a faster timeline, we provide the following minimum notice periods before model retirement: Generally available models: At least 6 months. Specialized variants of generally available models: At least 3 months.",
+      "Unless safety or compliance concerns require a faster timeline, we provide the following minimum notice periods before model retirement: Generally available models: At least 6 months. Specialized variants of generally available models: At least 3 months. Preview models: Preview models, identified by preview in the model name, may be retired with much shorter notice, such as 2 weeks.",
     sentenceMore:
-      "All deprecated models and endpoints will also have a shut down date. The faster-timeline clause means even these dates can move earlier.",
+      "All deprecated models and endpoints will also have a shut down date. The faster-timeline clause means even these dates can move earlier. The preview tier is not hypothetical here: ten of the OpenAI rows on the model retirement calendar carry “preview” in the identifier, which is exactly how OpenAI's bullet says a preview model is identified — nine of them already switched off, one still upcoming (counted 2026-08-24). For those, the floor OpenAI states is weeks, not months.",
     // null (round 182): two compounding reasons, not one. (1) Two floors \u2014
     // GA models: 180 days; specialized variants: 90 days \u2014 and
     // RETIREMENT_DATES carries no field saying which OpenAI row is which;
@@ -75,8 +91,25 @@ export const RETIREMENT_COMMITMENTS = [
     // promised for those rows. Both reasons independently argue null; a
     // future round with a reliable way to separate GA models, specialized
     // variants, and non-model API rows could revisit this.
+    //
+    // Round 187 (maintain, 2026-08-24) leaves the null and corrects one
+    // premise above. There are THREE floors on that page, not two -- the
+    // third is the preview tier now restored to `sentence`. And reason (1)
+    // says a `-preview` suffix heuristic would be "a heuristic this round is
+    // inventing, not one OpenAI's page defines". OpenAI's page does define
+    // it, in the bullet that was missing from the quote: preview models are
+    // "identified by preview in the model name". So that specific objection
+    // does not hold; the others do, and they are enough on their own. The
+    // GA-versus-specialized split still has no page-defined test, the
+    // non-model API rows ("Assistants API", "Videos API") are still outside
+    // a sentence scoped to "model retirement", and a third floor measured in
+    // weeks widens the spread a single number would have to stand in for
+    // from 2:1 to roughly 13:1. Null is now better supported than it was,
+    // for partly different reasons -- recorded rather than re-argued,
+    // because the conclusion that survives a corrected premise should say
+    // which premise it lost.
     minNoticeDays: null,
-    verified: "2026-08-14",
+    verified: "2026-08-24",
   },
   {
     vendor: "Anthropic",
@@ -91,7 +124,7 @@ export const RETIREMENT_COMMITMENTS = [
     // publicly released models" \u2014 the baseline case this file's header
     // comment points at.
     minNoticeDays: 60,
-    verified: "2026-08-14",
+    verified: "2026-08-24",
   },
   {
     vendor: "Mistral",
@@ -109,7 +142,7 @@ export const RETIREMENT_COMMITMENTS = [
     // would risk holding a non-GA model to a promise Mistral's own page
     // never made about it.
     minNoticeDays: null,
-    verified: "2026-08-14",
+    verified: "2026-08-24",
   },
   {
     vendor: "Amazon Bedrock",
@@ -130,7 +163,7 @@ export const RETIREMENT_COMMITMENTS = [
     // not state. Neither number is confidently a notice floor, so both are
     // left uncompared rather than one being guessed.
     minNoticeDays: null,
-    verified: "2026-08-14",
+    verified: "2026-08-24",
   },
   {
     vendor: "Microsoft Foundry",
@@ -147,7 +180,7 @@ export const RETIREMENT_COMMITMENTS = [
     // RETIREMENT_DATES carries no Foundry rows to check this against today
     // regardless.
     minNoticeDays: null,
-    verified: "2026-08-14",
+    verified: "2026-08-24",
   },
   {
     vendor: "Alibaba (Model Studio)",
@@ -182,7 +215,7 @@ export const RETIREMENT_COMMITMENTS = [
     // tier \u2014 under-flagging some real mainline violations is the safe
     // direction to err in, not over-flagging compliant snapshots.
     minNoticeDays: 30,
-    verified: "2026-08-14",
+    verified: "2026-08-24",
   },
   {
     vendor: "Google (Gemini API)",
@@ -197,7 +230,7 @@ export const RETIREMENT_COMMITMENTS = [
     // nothing captured on this page states any minimum notice period at
     // all \u2014 there is no number to encode, ambiguous or otherwise.
     minNoticeDays: null,
-    verified: "2026-08-14",
+    verified: "2026-08-24",
   },
   {
     vendor: "DeepSeek",
@@ -213,14 +246,14 @@ export const RETIREMENT_COMMITMENTS = [
     // the "three months" in `sentence` describes what happened once, not a
     // commitment.
     minNoticeDays: null,
-    verified: "2026-08-14",
+    verified: "2026-08-24",
   },
   {
     vendor: "Meta (Llama)",
     href: "https://www.llama.com/docs/",
     shape: "unverified",
     sentence:
-      "Re-checked 2026-08-15 by the maintain round that re-attempted the verification with new techniques, and every block still holds: www.llama.com/docs redirects to developer.meta.com/ai/docs/overview/, which serves no readable content (HTTP 400 to a browser-like User-Agent even with full Accept/Accept-Language headers, HTTP 200 but a client-rendered React shell to a plain one); archive.org's snapshots of the whole developer.meta.com/ai/docs tree show no lifecycle, deprecation, retirement or EOL page anywhere \u2014 the closest is a \u201cVersioning, updates and migration\u201d deployment guide, which is a migration how-to, not a notice commitment; llms.txt was probed at eighteen plausible roots and the only one serving content is developer.meta.com/llms.txt (HTTP 200, 1,769 bytes), which points Llama resources at ai.developer.meta.com, an OAuth-gated site (one other root, the Horizon docs' llmstxt directory, returns HTTP 200 but empty); and the dev.meta.ai Model API docs, fetched in full on 2026-08-14, now answer HTTP 200 with \u201cNot Logged In\u201d \u2014 they moved behind a login since, and the archived index of the same docs contains no lifecycle or deprecation page either. Whether Meta publishes a lifecycle commitment for hosted Llama could not be determined.",
+      "Re-checked 2026-08-15 by the maintain round that re-attempted the verification with new techniques, and every block still holds: www.llama.com/docs redirects to developer.meta.com/ai/docs/overview/, which serves no readable content (HTTP 400 to a browser-like User-Agent even with full Accept/Accept-Language headers, HTTP 200 but a client-rendered React shell to a plain one); archive.org's snapshots of the whole developer.meta.com/ai/docs tree show no lifecycle, deprecation, retirement or EOL page anywhere \u2014 the closest is a \u201cVersioning, updates and migration\u201d deployment guide, which is a migration how-to, not a notice commitment; llms.txt was probed at eighteen plausible roots and the only one serving content is developer.meta.com/llms.txt (HTTP 200, 1,769 bytes), which points Llama resources at ai.developer.meta.com, an OAuth-gated site (one other root, the Horizon docs' llmstxt directory, returns HTTP 200 but empty); and the dev.meta.ai Model API docs, fetched in full on 2026-08-14, now answer HTTP 200 with \u201cNot Logged In\u201d \u2014 they moved behind a login since, and the archived index of the same docs contains no lifecycle or deprecation page either. Whether Meta publishes a lifecycle commitment for hosted Llama could not be determined. Re-attempted again on 2026-08-24, and the first of those blocks still holds exactly: www.llama.com/docs redirects to developer.meta.com/ai/docs/overview/, which answers a plain client with HTTP 200 and 302,065 bytes containing 33 characters of readable text — the page title and nothing else. That round re-ran only this one check, not the archive.org sweep or the llms.txt probe recorded above, so those two remain as last established on 2026-08-15 rather than re-confirmed; the row stays unverified either way, and this note says which half was actually re-tested.",
     sentenceMore:
       "The one reachable page recording Llama retirements is not Meta's: the Microsoft Foundry model retirement schedule (learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-retirement-schedule), fetched 2026-08-14, lists five Llama models retired 2026-06-13 (Meta-Llama-3.1-405B-Instruct, Meta-Llama-3.1-8B, Meta-Llama-3.1-8B-Instruct, Llama-3.2-11B-Vision-Instruct, Llama-3.2-90B-Vision-Instruct) and three GA without dates (Llama-3.3-70B-Instruct, Llama-4-Maverick-17B-128E-Instruct-FP8, Llama-4-Scout-17B-16E-Instruct) \u2014 Microsoft's page about Foundry, not a commitment Meta published.",
     // null (round 182): this vendor's own lifecycle page could not be read
@@ -242,7 +275,7 @@ export const RETIREMENT_COMMITMENTS = [
     // lifecycle-policy page, so notice is given per event without a
     // standing floor" \u2014 no floor exists to compare against.
     minNoticeDays: null,
-    verified: "2026-08-14",
+    verified: "2026-08-24",
   },
   {
     vendor: "Cohere",
@@ -255,7 +288,7 @@ export const RETIREMENT_COMMITMENTS = [
     // null (round 182): sentenceMore states plainly "no minimum notice
     // period" \u2014 nothing to encode.
     minNoticeDays: null,
-    verified: "2026-08-14",
+    verified: "2026-08-24",
   },
 ];
 

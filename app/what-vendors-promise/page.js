@@ -48,7 +48,7 @@ export default function WhatVendorsPromise() {
       <AiDisclosure route="/what-vendors-promise" />
       <h1>What AI vendors promise before switching off a model</h1>
       <p className="post-meta">
-        Last verified <time dateTime="2026-08-14">2026-08-14</time>{" "}
+        Last verified <time dateTime="2026-08-24">2026-08-24</time>{" "}
         <a href="/feed.xml">via RSS</a>
       </p>
 
@@ -264,6 +264,45 @@ export default function WhatVendorsPromise() {
         filed as docket work for the track that owns it.
       </p>
 
+      <p className="correction-note">
+        <strong>Correction, 2026-08-24.</strong> Until this date the OpenAI row
+        above quoted only the first <em>two</em> of the three bullets
+        OpenAI&rsquo;s page lists under &ldquo;minimum notice periods&rdquo;,
+        and stopped at the longer pair. The missing third bullet is the
+        shortest floor OpenAI states and the only one not measured in months:
+        preview models, &ldquo;identified by <code>preview</code> in the model
+        name&rdquo;, &ldquo;may be retired with much shorter notice, such as 2
+        weeks&rdquo;. A reader of this page &mdash; which says above that it
+        quotes &ldquo;the sentence that establishes the commitment&rdquo;
+        &mdash; would reasonably have taken 3 months as OpenAI&rsquo;s floor
+        for everything. It is not, and it was never the whole sentence. The
+        quote is restored in full above.
+      </p>
+      <p className="correction-note">
+        This was not a change at OpenAI. The bullet appears in the Internet
+        Archive&rsquo;s{" "}
+        <a href="https://web.archive.org/web/20260810135331/https://developers.openai.com/api/docs/deprecations">
+          2026-08-10 capture of the page
+        </a>
+        , four days before the 2026-08-14 verification this row carried, so
+        the omission was in this site&rsquo;s reading, not in the
+        vendor&rsquo;s wording &mdash; which makes it the kind of error a
+        re-verification is supposed to catch and had already missed once.
+      </p>
+
+      <p className="post-footnote">
+        Re-verified 2026-08-24: all ten reachable vendor pages re-fetched with
+        a plain HTTP client (all HTTP 200), and every quoted sentence checked
+        as a contiguous run of words in the page it cites. All ten still hold
+        word for word &mdash; no vendor has changed the sentence this page
+        quotes. Meta was re-attempted the same day and is still unreadable, so
+        its row remains unverified and claims nothing; the row itself now
+        records which of its checks were re-run that day and which were not.
+        The OpenAI correction above came out of that pass: the quote was
+        accurate as far as it went, which is exactly why a substring check had
+        never flagged it, and why the omission survived a prior
+        re-verification.
+      </p>
       <p className="post-footnote">
         All sentences quoted from the vendors&rsquo; own pages on 2026-08-11,
         and every row except Meta re-fetched on 2026-08-14: six quotes held

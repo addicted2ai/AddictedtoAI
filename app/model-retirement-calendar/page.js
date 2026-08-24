@@ -20,7 +20,7 @@ export const metadata = {
   },
 };
 
-const VERIFIED = "2026-08-14";
+const VERIFIED = "2026-08-24";
 const CUTOFF = "2026-05-01";
 
 const OPENAI_HREF = "https://developers.openai.com/api/docs/deprecations";
@@ -256,7 +256,17 @@ export default function ModelRetirementCalendar() {
         <a href={OPENAI_HREF}>OpenAI&rsquo;s deprecations page</a> (via its raw
         markdown, HTTP 200) and{" "}
         <a href={ANTHROPIC_HREF}>Anthropic&rsquo;s model-deprecations page</a>{" "}
-        (HTTP 200). A note for checkability: OpenAI&rsquo;s page dates{" "}
+        (HTTP 200). Every row above was compared against those two pages that
+        day &mdash; identifier, date, and named replacement &mdash; and{" "}
+        <strong>nothing had moved</strong>: no date shifted, no row was dropped
+        from either page, no named replacement changed, and neither page had
+        added a dated shutdown this table was missing. The most
+        time-critical row, OpenAI&rsquo;s Assistants API, still reads{" "}
+        <time dateTime="2026-08-26">2026-08-26</time> on OpenAI&rsquo;s page,
+        two days after this check; it has not been extended. A
+        re-verification that finds nothing changed is the result, not the
+        absence of one &mdash; the date above is what it produces. A note for
+        checkability: OpenAI&rsquo;s page dates{" "}
         <code>dall-e-2</code> and <code>dall-e-3</code> at 2026-05-12; the
         2026-12-01 date belongs to the separate GPT Image family (
         <code>gpt-image-1-mini</code>, <code>gpt-image-1.5</code>,{" "}
