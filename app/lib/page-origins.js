@@ -385,7 +385,14 @@ export const PRODUCING_ROUNDS = {
   // the /promise-vs-practice callout from app/what-vendors-promise/page.js
   // after withdrawing that route, a real content change to a listed source
   // file, so the newest change is this round's.
-  "/what-vendors-promise": 186,
+  // Round 187 (maintain, loop/maintain/reverify-retirement-dataset) re-fetches
+  // all eleven vendor pages, moves the ten verifiable `verified` dates to
+  // 2026-08-24, and publishes a dated correction: the OpenAI row had quoted
+  // two of the three bullets in OpenAI's minimum-notice list, omitting the
+  // preview tier. Both listed source files change --
+  // app/what-vendors-promise/page.js and app/lib/retirement-commitments.js --
+  // so the newest change is this round's.
+  "/what-vendors-promise": 187,
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
   // Round 132 (build) rewrites the page's staleness passage to name the
@@ -422,7 +429,13 @@ export const PRODUCING_ROUNDS = {
   // the two callouts rounds 181 and 182 added here, after withdrawing both
   // routes they pointed at. app/model-retirement-calendar/page.js is a listed
   // source file, so the newest change is this round's.
-  "/model-retirement-calendar": 186,
+  // Round 187 (maintain, loop/maintain/reverify-retirement-dataset)
+  // re-verifies every row against both vendor pages, moves all 87 `verified`
+  // stamps to 2026-08-24, and adds what the re-verification found (nothing
+  // moved) to the page's own footnote. Both listed source files change --
+  // app/model-retirement-calendar/page.js and app/lib/retirement-dates.js --
+  // so the newest change is this round's.
+  "/model-retirement-calendar": 187,
   // Round 168 (build) built this page. New route, so its producing round is
   // the round that created it.
   // Round 181 (build, loop/build/model-migration-chains) adds the same
@@ -432,7 +445,13 @@ export const PRODUCING_ROUNDS = {
   // round 181's "Follow the chain" callout from
   // app/model-deprecation-checker/page.js after withdrawing the route it
   // pointed at, so the newest change is this round's.
-  "/model-deprecation-checker": 186,
+  // Round 187 (maintain, loop/maintain/reverify-retirement-dataset) moves this
+  // route without editing either of its own page files: it lists
+  // app/lib/retirement-dates.js as a source file, shared with
+  // /model-retirement-calendar, and that round re-stamped all 87 rows there.
+  // A data re-verification is a real content change to what this page tells a
+  // reader -- the checker answers out of those rows -- so it moves with them.
+  "/model-deprecation-checker": 187,
   // Round 181 (build, loop/build/model-migration-chains) built this page.
   // New route, so its producing round is the round that created it.
   // Round 186 (audit) withdraws it under CHARTER.md rule 9: the address now
