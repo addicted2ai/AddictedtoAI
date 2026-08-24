@@ -15,6 +15,67 @@ failures=0
 # it verified something it never looked at.
 skipped=0
 
+# --- sub-check bookkeeping ---------------------------------------------------
+#
+# Every sub-check below used to be wired up as
+#
+#     node scripts/check-whatever.mjs#
+# at 31 call sites, which SUMS EXIT CODES instead of counting failures. A
+# sub-check exiting 127 ("command not found") added 127, so the roll-up read
+# "127 check(s) failed" when one command was missing. Reproduced on 2026-08-23
+# by replacing one invocation with a name that does not exist: 1,080 lines of
+# output, "127 check(s) failed", and not one line beginning with FAIL anywhere
+# in it. That last part is the worse half. scripts/round.mjs surfaces route
+# failures by filtering this output for /^FAIL/, so a run whose only failure
+# was a sub-check's exit code showed the operator a number and nothing else --
+# no name, no reason, nothing to act on. A check that cannot say what failed
+# trains rounds to ignore it.
+#
+# So: one failure per failing sub-check, a FAIL line naming it (which is what
+# reaches round.mjs), and a roll-up that lists them.
+failed_steps=""
+# A sub-check that reports UNVERIFIED ran but could not evaluate its claim --
+# no network, no `gh`, no local server. That is not a pass, and the roll-up
+# must not describe a run containing one as "all route checks passed". It is
+# also not a failure: scripts/check-frame.mjs and
+# scripts/check-free-model-exclusion.mjs both exit 0 in that state on purpose,
+# because CI genuinely cannot evaluate those facts (FRAME.md's own preamble
+# says so). The roll-up names them instead of swallowing them.
+unverified_steps=""
+step_log="${TMPDIR:-/tmp}/check-routes-step.$$"
+
+record_step() {
+  step_rc="$1"
+  step_label="$2"
+  if [ "$step_rc" -ne 0 ]; then
+    echo "FAIL  $step_label exited $step_rc"
+    failures=$((failures + 1))
+    if [ -z "$failed_steps" ]; then
+      failed_steps="  - $step_label (exit $step_rc)"
+    else
+      failed_steps="$failed_steps
+  - $step_label (exit $step_rc)"
+    fi
+  fi
+}
+
+# Runs one sub-check. `tee` rather than a captured buffer so a slow check still
+# prints as it goes; PIPESTATUS[0] because `set -o pipefail` is on but the
+# status wanted here is the sub-check's, not tee's.
+run_step() {
+  "$@" 2>&1 | tee "$step_log"
+  step_rc=${PIPESTATUS[0]}
+  record_step "$step_rc" "$*"
+  if grep -qiE '^[[:space:]]*unverified' "$step_log"; then
+    if [ -z "$unverified_steps" ]; then
+      unverified_steps="  - $*"
+    else
+      unverified_steps="$unverified_steps
+  - $*"
+    fi
+  fi
+}
+
 check() {
   local path="$1" want_status="$2" want_type="$3" want_text="$4"
   local url="$BASE$path"
@@ -90,8 +151,7 @@ check /model-deprecation-checker 200 "text/html" 'Paste an example'
 # build -- prompts/tracks/build.md's "you fail if you ship a demo with no
 # health check", made concrete. See scripts/check-model-deprecation-parser.mjs.
 echo
-node scripts/check-model-deprecation-parser.mjs || failures=$((failures + $?))
-
+run_step node scripts/check-model-deprecation-parser.mjs
 # The loop-history page is data-driven: its figures come from the committed
 # snapshot, and the snapshot's own timestamp must be visible so a stale figure
 # reads as stale. The page's claim to checkability is the snapshot date and
@@ -108,8 +168,7 @@ check /loop-history 200 "text/html" 'Attempted is not shipped'
 # forever. The href in tool-categories.js is the recorded final URL; this
 # resolves each one and fails on any mismatch.
 echo
-node scripts/check-tool-links.mjs || failures=$((failures + $?))
-
+run_step node scripts/check-tool-links.mjs
 # The overflow fallback in check-tool-links.mjs only ever fires on
 # gemini.google.com, which sends ~24 KiB of response headers -- so the
 # real-directory run above cannot tell a working fallback from a silently
@@ -117,8 +176,7 @@ node scripts/check-tool-links.mjs || failures=$((failures + $?))
 # same oversized headers, and against a port nothing listens on, so both
 # directions of the fallback are asserted without reaching the internet.
 echo
-node scripts/test-tool-links-overflow.mjs || failures=$((failures + $?))
-
+run_step node scripts/test-tool-links-overflow.mjs
 # The review-artifact gate's three invariants, on scratch git repositories:
 # a covering approve passes, a branch with only stale artifacts fails for the
 # right reason, and a covering reject fails. The middle case is the one that
@@ -126,8 +184,7 @@ node scripts/test-tool-links-overflow.mjs || failures=$((failures + $?))
 # commits could also stop requiring a covering approve, and this test holds
 # it to all three at once.
 echo
-node scripts/test-review-artifact.mjs || failures=$((failures + $?))
-
+run_step node scripts/test-review-artifact.mjs
 # The shared-checkout guard's two directions and its two boundaries: an
 # attributed session that is still advancing defers the checkout (bounded,
 # so a session that never stops cannot halt the loop), and a session that
@@ -136,8 +193,7 @@ node scripts/test-review-artifact.mjs || failures=$((failures + $?))
 # test drives scripts/orchestrate-liveness.sh against a stub session API
 # that serves crafted GET /session payloads.
 echo
-node scripts/test-orchestrate-checkout.mjs || failures=$((failures + $?))
-
+run_step node scripts/test-orchestrate-checkout.mjs
 # CHARTER.md rule 13a's stop-mechanism reservation: "a present, non-empty
 # docket/HOLD.md stops the loop." scripts/check-hold-mechanism.mjs (the
 # PR-diff check, not required yet -- see .github/workflows/pr-checks.yml)
@@ -148,8 +204,7 @@ node scripts/test-orchestrate-checkout.mjs || failures=$((failures + $?))
 # behavioural half of rule 13a's stop-mechanism reservation real enforcement
 # immediately, unlike the two new PR-diff checks alongside it.
 echo
-node scripts/test-orchestrate-hold.mjs || failures=$((failures + $?))
-
+run_step node scripts/test-orchestrate-hold.mjs
 # Round loop/meta/runner-config: harness/provider/model/variant are now
 # scripts/runners.yml's job, not a hardcoded string in scripts/orchestrate.sh, and
 # policy.yml's former second copy is now a `runner:` reference into that
@@ -157,8 +212,7 @@ node scripts/test-orchestrate-hold.mjs || failures=$((failures + $?))
 # and still names an `opencode` harness -- the only harness this pricing
 # card applies to.
 echo
-node scripts/check-runner-config.mjs || failures=$((failures + $?))
-
+run_step node scripts/check-runner-config.mjs
 # scripts/runner-preflight.mjs's own seven preconditions -- unknown runner,
 # unknown harness, harness absent from PATH, an excluded model, an
 # unreachable harness server, the SPA-shell content-type guard, an
@@ -172,8 +226,7 @@ node scripts/check-runner-config.mjs || failures=$((failures + $?))
 # proof, which is not repeatable in CI (no server, no credentials there) --
 # this is the CI-safe version.
 echo
-node scripts/test-runner-preflight.mjs || failures=$((failures + $?))
-
+run_step node scripts/test-runner-preflight.mjs
 # The wiring between scripts/orchestrate.sh and the runner system, not just
 # scripts/runner-preflight.mjs in isolation: that the supervisor actually
 # calls it, actually reads HARNESS/PROVIDER/MODEL/VARIANT off its RUNNER_OK
@@ -185,8 +238,7 @@ node scripts/test-runner-preflight.mjs || failures=$((failures + $?))
 # HOLD.md stop mechanism, against a synthetic test-only harness adapter --
 # never opencode, codex or claude, and never a real session.
 echo
-node scripts/test-orchestrate-runner-launch.mjs || failures=$((failures + $?))
-
+run_step node scripts/test-orchestrate-runner-launch.mjs
 # Adversarial review on this same round found scripts/runners.yml's
 # excluded_model_patterns (`-free$`) missed every `:free`- and
 # `/free`-suffixed model reachable on this account's connected providers --
@@ -199,10 +251,9 @@ node scripts/test-orchestrate-runner-launch.mjs || failures=$((failures + $?))
 # cannot be evaluated). See scripts/runners.yml's own header for the fix and
 # the residue it does not close.
 echo
-node scripts/test-free-model-pattern.mjs || failures=$((failures + $?))
+run_step node scripts/test-free-model-pattern.mjs
 echo
-node scripts/check-free-model-exclusion.mjs || failures=$((failures + $?))
-
+run_step node scripts/check-free-model-exclusion.mjs
 # The DeepSeek peak-hour guard (docket/open/2026-08-17-deepseek-peak-hour-pricing.md):
 # scripts/peak-window.mjs at every boundary the two half-open UTC windows
 # define, and scripts/orchestrate-peak.sh's peak_guard() -- the function
@@ -210,8 +261,7 @@ node scripts/check-free-model-exclusion.mjs || failures=$((failures + $?))
 # directly for both a skipped and an authorised iteration inside the same
 # window, plus the fail-closed and self-expiring-authorisation cases.
 echo
-node scripts/test-peak-window.mjs || failures=$((failures + $?))
-
+run_step node scripts/test-peak-window.mjs
 # The generative-push multiplier (docket/open/2026-08-22-model-deprecation-checker.md,
 # CHARTER.md's 2026-08-22 amendment): scripts/generative-push.mjs's pure
 # functions at the boundaries that matter -- zero generative stock (no boost
@@ -220,8 +270,7 @@ node scripts/test-peak-window.mjs || failures=$((failures + $?))
 # against the real policy.yml so a future retune of its numbers stays
 # exercised.
 echo
-node scripts/test-dispatch-generative-push.mjs || failures=$((failures + $?))
-
+run_step node scripts/test-dispatch-generative-push.mjs
 # The prebuild chain must pass in a checkout shaped like Vercel's production
 # clone: one branch, no remote refs. CI clones the full history, so a prebuild
 # check that shells out to git for origin/main passes here while Vercel's
@@ -230,8 +279,7 @@ node scripts/test-dispatch-generative-push.mjs || failures=$((failures + $?))
 # prebuild in it, and then deletes the origin/main fallback on purpose to
 # prove the guard can go red. See scripts/check-prebuild-single-branch.sh.
 echo
-bash scripts/check-prebuild-single-branch.sh || failures=$((failures + $?))
-
+run_step bash scripts/check-prebuild-single-branch.sh
 # Every published HTML route must carry the AI authorship disclosure, visibly
 # and machine-readably. A page without one is a page claiming nothing about
 # who wrote it -- the exact silence Article 50(4) of the EU AI Act addresses.
@@ -246,8 +294,7 @@ echo
     *) echo "FAIL  $route renders no AI disclosure"; failures=$((failures + 1)) ;;
   esac
 done
-node scripts/check-ai-disclosure.mjs || failures=$((failures + $?))
-
+run_step node scripts/check-ai-disclosure.mjs
 # WCAG SC 1.4.10 (Reflow): no route may need horizontal scrolling of the
 # page itself at a 320px viewport. Walks the same route list as the AI
 # disclosure loop above.
@@ -269,8 +316,7 @@ node scripts/check-ai-disclosure.mjs || failures=$((failures + $?))
 # run but does not fail the build because it is a real, separately filed
 # defect this check found rather than one it exists to fix.
 echo
-node scripts/check-reflow.mjs "$BASE" || failures=$((failures + $?))
-
+run_step node scripts/check-reflow.mjs "$BASE"
 # First-screenful content density (docket/open/2026-08-22-first-screenful-density.md,
 # closed by round loop/build/first-screenful-density): how many <tr>/<li>
 # content units intersect the first 800px of a 1280-wide viewport, on a real
@@ -284,8 +330,7 @@ node scripts/check-reflow.mjs "$BASE" || failures=$((failures + $?))
 # pending a fix -- see scripts/check-first-screenful.mjs's own header and
 # this round's CHANGELOG.md entry for why.
 echo
-node scripts/check-first-screenful.mjs "$BASE" || failures=$((failures + $?))
-
+run_step node scripts/check-first-screenful.mjs "$BASE"
 # SC 1.4.1 (Use of Color) and SC 1.4.11 (Non-text Contrast) on the nav's
 # current-page indicator (docket/open/2026-08-22-nav-active-colour-only-indicator.md,
 # closed by round loop/build/nav-cue-and-line-length): `.nav-active` used to
@@ -295,8 +340,7 @@ node scripts/check-first-screenful.mjs "$BASE" || failures=$((failures + $?))
 # own header for exactly what is and is not asserted, including why it does
 # not require the active/inactive text colours themselves to be 3:1 apart.
 echo
-node scripts/check-nav-active-cue.mjs "$BASE" || failures=$((failures + $?))
-
+run_step node scripts/check-nav-active-cue.mjs "$BASE"
 # `article p` line length (docket/open/2026-08-22-article-p-line-length.md,
 # closed by round loop/build/nav-cue-and-line-length): ran 100-103 characters
 # per full rendered line at the median, up to 122 at the max, across five
@@ -308,8 +352,7 @@ node scripts/check-nav-active-cue.mjs "$BASE" || failures=$((failures + $?))
 # scripts/check-article-line-length.mjs's own header for the ceiling's
 # derivation.
 echo
-node scripts/check-article-line-length.mjs "$BASE" || failures=$((failures + $?))
-
+run_step node scripts/check-article-line-length.mjs "$BASE"
 # KNOWN_FAILURES's own regression test. Adversarial review demonstrated
 # live that the first version keyed an exemption on the route name alone,
 # so an injected, unrelated +580px overflow on /log -- a route already
@@ -320,8 +363,7 @@ node scripts/check-article-line-length.mjs "$BASE" || failures=$((failures + $?)
 # scripts/test-check-reflow-known-failures.mjs and the KNOWN_FAILURES
 # comment in scripts/check-reflow.mjs for the full account.
 echo
-node scripts/test-check-reflow-known-failures.mjs || failures=$((failures + $?))
-
+run_step node scripts/test-check-reflow-known-failures.mjs
 # The four Origin values' published definitions each appear on several
 # surfaces -- the /log badge tooltips, the per-page disclosure sentences,
 # the /disclosure enumeration, the homepage prose, the changelog preamble
@@ -330,8 +372,7 @@ node scripts/test-check-reflow-known-failures.mjs || failures=$((failures + $?))
 # distinguishing content of every Origin on every surface that defines it,
 # so a third drift fails the build. See scripts/check-origin-definitions.mjs.
 echo
-node scripts/check-origin-definitions.mjs || failures=$((failures + $?))
-
+run_step node scripts/check-origin-definitions.mjs
 # FRAME.md's own claims about who controls what -- the identities, the
 # HOLD.md self-halt, the .github/ push rejection, the required-checks list,
 # and the rest -- checked against the current tree and (where reachable)
@@ -342,8 +383,7 @@ node scripts/check-origin-definitions.mjs || failures=$((failures + $?))
 # for why: round 8 (loop/meta/frame) exists because three false claims about
 # this exact territory reached the maintainer only by accident.
 echo
-node scripts/check-frame.mjs || failures=$((failures + $?))
-
+run_step node scripts/check-frame.mjs
 # Briefs committed under docket/briefs/ -- the instructions the orchestrator
 # wrote before each round ran. Round 9 (loop/meta/briefs-and-premises) exists
 # because three false premises reached this project through briefs on 22
@@ -358,8 +398,7 @@ node scripts/check-frame.mjs || failures=$((failures + $?))
 # cannot gate one in advance; see scripts/check-briefs.mjs's own header for
 # exactly what it does and does not verify.
 echo
-node scripts/check-briefs.mjs || failures=$((failures + $?))
-
+run_step node scripts/check-briefs.mjs
 # The site's hand-written claims about its own governance, pinned to the
 # facts in the tree that make them true. Round 176 exists because six of
 # them were false at once: three went false on 2026-08-22 when CHARTER.md
@@ -386,15 +425,13 @@ node scripts/check-briefs.mjs || failures=$((failures + $?))
 # analytics branches. A page can derive a list correctly and then fail to
 # render it, which no amount of reading source files would show.
 echo
-node scripts/check-governance-claims.mjs --rendered "$BASE" || failures=$((failures + $?))
-
+run_step node scripts/check-governance-claims.mjs --rendered "$BASE"
 # ...and the proof that the check above can go red, against six planted
 # defects in a sandbox copy of this tree. A registry check is unusually
 # easy to ship broken -- a needle that matches nothing and a predicate that
 # is accidentally true both look exactly like a pass.
 echo
-node scripts/test-governance-claims.mjs || failures=$((failures + $?))
-
+run_step node scripts/test-governance-claims.mjs
 # Document transfer size, against the same budget CI gates on.
 #
 # lighthouserc.json holds `resource-summary:document:size` at 150,000 bytes,
@@ -444,8 +481,7 @@ fi
 # scripts/check-one-limit-count.mjs also validates the file's internal
 # shape at build time (prebuild); this half checks the rendered direction.
 echo
-node scripts/check-one-limit-count.mjs --rendered "$BASE/blog" || failures=$((failures + $?))
-
+run_step node scripts/check-one-limit-count.mjs --rendered "$BASE/blog"
 # /charter is generated by parsing CHARTER.md at build time. If the parser
 # silently drops a rule — a heading shape it stops understanding, a rule that
 # stops matching its regex — the page still renders, it just publishes a
@@ -507,8 +543,7 @@ expected=$((all_headings - template_headings))
 # this heading count, so a parser that stops understanding a heading shape
 # fails against the file rather than against itself.
 echo
-node scripts/check-log-pages.mjs || failures=$((failures + $?))
-
+run_step node scripts/check-log-pages.mjs
 # RSS should carry one compact build-log item per parsed round. The guid
 # prefix is deliberately distinct from the blog's permalink guid, so this
 # remains true if the blog gains more posts later.
@@ -543,7 +578,7 @@ const base = process.env.BASE_URL;
   }
 })();
 NODE
-failures=$((failures + $?))
+record_step $? "RSS descriptions carry no raw Markdown markers (inline node)"
 
 # Dated rounds expose their date as machine-readable HTML, while the current
 # Unreleased round intentionally remains text until it receives a date.
@@ -590,7 +625,7 @@ const base = process.env.BASE_URL;
   process.exitCode = bad ? 1 : 0;
 })();
 NODE
-failures=$((failures + $?))
+record_step $? "feed link anchors resolve in /log (inline node)"
 
 # Every figure the homepage advertises is a link, and the number has to
 # match the page that link opens.
@@ -775,7 +810,7 @@ for (const path of paths) {
 }
 process.exitCode = failures ? 1 : 0;
 NODE
-failures=$((failures + $?))
+record_step $? "sitemap lastmod freshness (inline node)"
 
 feed_last_build=$(curl -s "$BASE/feed.xml" | grep -o '<lastBuildDate>[^<]*</lastBuildDate>' | head -1)
 if [ "$feed_last_build" = "<lastBuildDate>$(node -e 'process.stdout.write(new Date(process.argv[1]).toUTCString())' "$latest_date")</lastBuildDate>" ]; then
@@ -889,7 +924,7 @@ if failures == 0:
 
 sys.exit(1 if failures else 0)
 PY
-  failures=$((failures + $?))
+  record_step $? "round badge links and eras on /log (inline python)"
 else
   echo "skip  round badges render unlinked (NEXT_PUBLIC_REPO_URL unset)"
   echo "      every badge assertion above is skipped, not satisfied — a local"
@@ -928,14 +963,31 @@ else
   failures=$((failures + 1))
 fi
 
+rm -f "$step_log"
+
 echo
 if [ "$failures" -gt 0 ]; then
+  # One per failure. This number was a sum of exit codes until 2026-08-23, so
+  # it could read 127 for a single missing command.
   echo "$failures check(s) failed"
+  if [ -n "$failed_steps" ]; then
+    echo "sub-checks that failed:"
+    echo "$failed_steps"
+  fi
+  echo "(every failure above is a line beginning FAIL; assertions made inline in this"
+  echo " script report there rather than in the list)"
   exit 1
+fi
+if [ -n "$unverified_steps" ]; then
+  echo "sub-check(s) reported UNVERIFIED — they ran but could not evaluate their claim,"
+  echo "which is not a pass:"
+  echo "$unverified_steps"
 fi
 if [ "$skipped" -gt 0 ]; then
   echo "all route checks passed, but $skipped group(s) were SKIPPED — see above"
   echo "(set NEXT_PUBLIC_REPO_URL to exercise them; CI always does)"
+elif [ -n "$unverified_steps" ]; then
+  echo "every route check that could be evaluated passed; the UNVERIFIED one(s) above did not"
 else
   echo "all route checks passed"
 fi

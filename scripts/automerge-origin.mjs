@@ -38,12 +38,16 @@
 // file in `docket/reviews/` that approves and covers the merged tree. Now
 // `ship` arms a delegated round only when that artifact exists, by running
 // `scripts/check-review-artifact.mjs` — the same check CI runs — and refuses
-// to arm when it does not, saying why. The gate lives in the arming, not in
-// CI: the `review-artifact` job in `.github/workflows/pr-checks.yml` is a
-// *visible* check, not a required one (the required list is `build-and-audit`
-// and `human-owned-paths`), so GitHub's auto-merge would ignore it. Until the
-// maintainer promotes it to a required check — a settings change, see the
-// docket item — this arming gate is the only thing that holds.
+// to arm when it does not, saying why. Two gates hold this, not one: the
+// `review-artifact` job in `.github/workflows/pr-checks.yml` has been a
+// REQUIRED status check since 2026-08-17, so GitHub's auto-merge waits on it
+// as well. The required contexts on `main` are `build-and-audit`,
+// `human-owned-paths`, `review-artifact` — FRAME.md fact 9, which re-reads
+// them from the API rather than quoting this line. Until round 179 this
+// comment said the job was "a *visible* check, not a required one" and listed
+// the required set without it, and called the arming gate "the only thing
+// that holds"; all three were false from the day the maintainer made the
+// settings change.
 //
 // A round that declares no Origin, or one the parser cannot read, is withheld
 // too (fail closed): `ship` runs after the entry is written, so this is

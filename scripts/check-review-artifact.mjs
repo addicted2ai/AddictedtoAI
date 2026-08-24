@@ -68,17 +68,55 @@
 // changelog (like `ship` does): a branch that carries no entry of its own has
 // no round of its own to judge, and passes.
 //
-// For any Origin other than `delegated` the check does not apply and passes.
+// Through round 179's first push, any Origin other than `delegated` was
+// exempt from CARRYING an artifact, while a second, always-on rule still
+// HONOURED one that already existed: whatever the Origin, and whether or not
+// the branch carried a changelog entry, a review that covered the merged
+// tree and did not say `approve` failed this check regardless. That closed
+// round 152's shape -- a branch could not walk past its own `request-changes`
+// artifact by declaring a different Origin or omitting a changelog entry
+// (see docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md).
 //
-// This script is invoked in two places, and it is worth being precise about
-// what each invocation is. In CI (.github/workflows/pr-checks.yml, the
-// `review-artifact` job) it is a VISIBLE CHECK, not a gate: it is not on the
-// branch-protection required list, so GitHub's auto-merge would ignore it. It
-// exists to show the failure in the pull request and to be promotable to a
-// required check later -- a settings change only the maintainer can make. The
-// gate is `round.mjs ship`, which runs this same script with the same base-ref
-// before it will arm auto-merge for a delegated round. Same rule, same parser,
-// two callers.
+// Adversarial review of that push found the same shape one level deeper.
+// Condition 4 requires a covering artifact's named commit to differ from HEAD
+// by nothing outside `docket/reviews/` -- correct on its own; a stale review
+// should not count. But it meant a REJECTING review could be cleared by any
+// later commit, trivial or not: the instant coverage breaks, the honouring
+// check finds zero covering artifacts of *any* verdict and reports that as a
+// pass ("0 covering, N informational"), because its real pass condition was
+// "not actively rejected" -- true the moment nothing covers HEAD at all --
+// never "has been approved". A round could launder a `request-changes`
+// verdict with one no-op commit, no fresh review required. Proved with real
+// commits against this branch, not a synthetic fixture.
+//
+// Closed by removing the exemption rather than patching around it. This
+// check now passes only when a review artifact exists that covers HEAD
+// exactly (condition 4, unchanged) and reads `Verdict: approve`. Every other
+// state -- no artifact at all, one that does not cover HEAD, or a covering
+// `request-changes` -- fails, for every Origin and whether or not the branch
+// declares a changelog entry. There is one rule now, not two. Counted through
+// this same parser on 2026-08-23, 43 of 131 Origin-declaring rounds were not
+// `delegated`; this closes what those rounds could otherwise have exploited,
+// at the real cost of requiring a covering approve from all of them going
+// forward -- weighed against the alternative of trying to keep a rejection
+// "sticky" across whatever commits follow it, which trades one hole for a
+// more complex rule with room for a different one.
+//
+// This script is invoked in two places. In CI
+// (.github/workflows/pr-checks.yml, the `review-artifact` job) it is a
+// REQUIRED status check, and has been since 2026-08-17: the required contexts
+// on `main` are `build-and-audit`, `human-owned-paths`, `review-artifact`
+// (FRAME.md fact 9, which re-reads them from the API rather than quoting this
+// line). This header said the opposite -- "a visible check, not a gate" --
+// from 2026-08-13 until round 179 corrected it, describing this project's own
+// gate as weaker than it is, which is the same defect as describing it as
+// stronger. `scripts/round.mjs ship` runs this same script with the same
+// base-ref before it will arm auto-merge, which stops the sanctioned path one
+// step earlier. Same rule, same parser, two callers.
+//
+// What being required does not buy: `enforce_admins` is false (FRAME.md fact
+// 8), so the account the loop operates as can merge past a red required check
+// by hand.
 
 import { execFileSync } from "child_process";
 import path from "path";
@@ -114,27 +152,46 @@ const head = git(["rev-parse", "HEAD"]);
 // The newest changelog entry is the round's own only if the branch changed
 // the changelog. A branch that does not is not a round of its own; judging it
 // by the previous round's Origin would block or pass the wrong thing.
+//
+// "There is no changelog entry" and "I could not ask whether there is one" are
+// different findings, and this check printed the first for both: given a base
+// ref it cannot resolve, `git diff` fails, `logChanged.ok` is false, and it
+// reported `ok ... no round of its own to judge` and exited 0 -- a REQUIRED
+// status check reporting success having evaluated nothing. FRAME.md fact 1
+// records the same class of defect reaching CI once already, and states the
+// rule it broke: a check must distinguish "this is false" from "I could not
+// evaluate this".
 const logChanged = tryGit(["diff", "--name-only", `${baseRef}...HEAD`, "--", "CHANGELOG.md"]);
-if (!logChanged.ok || !logChanged.out.trim()) {
-  ok("this branch changes no changelog entry — no round of its own to judge");
-  process.exit(0);
+if (!logChanged.ok) {
+  bad(`could not diff CHANGELOG.md against '${baseRef}' — this check could not be evaluated`);
+  console.log("        That is not a pass. Make the base ref resolvable (git fetch origin main)");
+  console.log("        and re-run; a gate that cannot read its own input must not report success.");
+  process.exit(1);
 }
+const declaresRound = Boolean(logChanged.out.trim());
 
 let entry;
-try {
-  entry = getBuildLog()[0];
-} catch (error) {
-  bad(`could not read the build log: ${error.message}`);
+if (declaresRound) {
+  try {
+    entry = getBuildLog()[0];
+  } catch (error) {
+    bad(`could not read the build log: ${error.message}`);
+  }
 }
 
 const origin = entry && entry.declaredOrigin ? entry.origin : "";
-if (origin !== "delegated") {
-  ok(`Origin is '${origin || "undeclared"}' — this check does not apply`);
-  console.log("      a review artifact is required only for a round claiming an AI reviewed it before merge");
-  process.exit(failures ? 1 : 0);
-}
 
-console.log("Origin: delegated — requiring a review artifact that covers the merged tree");
+// One rule now, not two (see the header): every branch this check runs
+// against needs a review artifact that covers HEAD exactly (condition 4) and
+// reads `Verdict: approve`, regardless of Origin and regardless of whether
+// the branch declares a changelog entry of its own. `origin`/`declaresRound`
+// are read only for the context printed below, never to exempt anything.
+if (!declaresRound) {
+  console.log("  note    this branch changes no changelog entry — it declares no round of its own,");
+  console.log("          but a covering approve review is required of it regardless.");
+} else {
+  console.log(`Origin: ${origin || "undeclared"} — requiring a review artifact that covers the merged tree`);
+}
 
 // A review file is named by the commit it reviewed. Enumerate what the
 // branch actually carries rather than trusting a changelog claim.
@@ -143,7 +200,7 @@ const reviewFiles = git(["ls-tree", "-r", "--name-only", "HEAD", "--", REVIEWS_D
   .filter(Boolean);
 
 if (reviewFiles.length === 0) {
-  bad(`no file under ${REVIEWS_DIR} on this branch — a delegated round must carry its review`);
+  bad(`no file under ${REVIEWS_DIR} on this branch — a covering approve review is required`);
 }
 
 function reviewFields(text) {
@@ -231,7 +288,13 @@ for (const file of reviewFiles) {
 
   // Condition 4: the reviewed commit's tree must differ from HEAD only by
   // the review itself. A review of an earlier commit never vouches for later
-  // code, so a review whose tree diverges is stale and covers nothing.
+  // code, so a review whose tree diverges is stale and covers nothing. This
+  // is where the fourth hole lived: a rejecting review that stops covering
+  // (because of ANY later commit, not necessarily a substantive one) used to
+  // fall out of `covering` with nothing to replace it, and the exemption
+  // below read that as "nothing rejects this" rather than "nothing approves
+  // it either". There is no exemption below now; falling out of `covering`
+  // here always leads to the same "no covering approve" failure.
   const diff = tryGit(["diff", "--name-only", `${fields.Commit}..HEAD`]);
   const outside = (diff.ok ? diff.out.split("\n").filter(Boolean) : []).filter(
     (f) => !f.startsWith(REVIEWS_DIR)
@@ -245,6 +308,7 @@ for (const file of reviewFiles) {
 }
 
 console.log("");
+
 if (covering.length === 0) {
   bad("no review artifact covers the merged tree");
   if (informational > 0) {
@@ -270,6 +334,6 @@ if (failures === 0) {
   console.log(`ok    review artifact verified: ${covering.length} covering review(s) approve the merged tree`);
   process.exit(0);
 } else {
-  console.log(`${failures} problem(s) — a delegated round cannot merge without a covering approve review`);
+  console.log(`${failures} problem(s) — this branch cannot merge without a covering approve review`);
   process.exit(1);
 }
