@@ -6,9 +6,23 @@
 // started them -- which is precisely the thing the record is supposed to make
 // legible.
 //
-//   node scripts/build-prompt.mjs                      # dispatcher picks, supervised
+//   node scripts/build-prompt.mjs                      # dispatcher picks, no Origin claim
 //   node scripts/build-prompt.mjs --track scout        # force a track
 //   node scripts/build-prompt.mjs --origin unsupervised
+//
+// `--origin` has no default. Until 2026-08-24 it defaulted to `supervised`,
+// so any caller that omitted the flag -- which `scripts/round.mjs start` did,
+// unconditionally -- was handed a printed claim ("Origin is 'supervised'")
+// that nothing had verified: at the moment a round starts, nobody yet knows
+// whether a human will actually read it before it merges, which is the part
+// of `supervised`'s own published meaning that made the claim true or false.
+// See docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md,
+// the box folded in from 2026-08-11-unsupervised-origin-assumes-scheduled.md.
+// A caller that already knows its Origin (the GitHub workflow computes one
+// from real signal -- schedule vs. `workflow_dispatch` -- before calling this
+// script) still passes `--origin` explicitly and gets the same claim as
+// before; only the no-flag case changed, to a caller told what determines
+// the value instead of being told the value.
 //
 // Prints the prompt on stdout and a short summary on stderr, so the prompt can
 // be piped without the summary getting in the way.
@@ -21,9 +35,9 @@ function arg(name, fallback) {
   return i !== -1 && argv[i + 1] ? argv[i + 1] : fallback;
 }
 
-const origin = arg("origin", "supervised");
+const origin = arg("origin", null);
 const agent = arg("agent", "unknown");
-if (!["supervised", "unsupervised", "maintainer", "delegated"].includes(origin)) {
+if (origin !== null && !["supervised", "unsupervised", "maintainer", "delegated"].includes(origin)) {
   console.error(`unknown origin: ${origin}`);
   process.exit(1);
 }
@@ -57,7 +71,17 @@ Branch as loop/${track}/<slug>. CI reads your track from that branch name and
 rejects changes outside your track's paths.
 
 ${
-  origin === "unsupervised"
+  origin === null
+    ? "This run was started by hand. Nothing at this point knows whether anyone will actually " +
+      "read it before it merges -- that is exactly what 'Origin: supervised' would need to be " +
+      "true, and this tool has no way to assert it yet " +
+      "(docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md). Determine your " +
+      "true Origin from what actually happens this round -- CHANGELOG.md's own definitions, not " +
+      "this message -- and declare it honestly. 'supervised' was recorded as this session's " +
+      "working default for 'ship' to compare your entry against later, not as a claim handed to " +
+      "you: if your true Origin differs, 'ship' will not arm auto-merge on its own say-so; a " +
+      "human arms it by hand after checking why."
+    : origin === "unsupervised"
     ? "This run was scheduled and nobody read it first: Origin is 'unsupervised'."
     : `This run was started by hand: Origin is '${origin}'.`
 }

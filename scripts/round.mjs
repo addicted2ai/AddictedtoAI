@@ -19,6 +19,7 @@
 import { execFileSync, execSync, spawn } from "child_process";
 import fs from "fs";
 import net from "net";
+import os from "os";
 import path from "path";
 
 const PORT = 3000; // The sitemap is built with this. Serving elsewhere fails
@@ -36,6 +37,30 @@ const ROUTE_CHECK_SHELL =
   process.platform === "win32" && fs.existsSync(WINDOWS_GIT_BASH)
     ? WINDOWS_GIT_BASH
     : "bash";
+
+// Where `start` records the Origin it began a local round under, so `ship`
+// can tell whether the round's own final declaration agrees with it later.
+// Not committed to the repository, and not a claim asserted to the round --
+// build-prompt.mjs no longer tells a hand-started run "Origin is
+// 'supervised'" as settled fact (docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md,
+// the box folded in from 2026-08-11-unsupervised-origin-assumes-scheduled.md).
+// This file is purely a mechanical anchor `ship` uses to catch a MID-ROUND
+// change the way round 152's was caught only by a human noticing -- it does
+// not decide what the round's true Origin is, and a round correcting it
+// honestly is not an error. Absence is not a failure either: a round the
+// GitHub workflow launches builds its prompt directly in loop.yml (which
+// computes its own Origin from real signal and never calls `start`), so it
+// never writes this file, and `ship` must not treat that as a problem.
+const ORIGIN_ANCHOR_PATH = path.join(os.tmpdir(), "addictedtoai-round-origin-anchor.json");
+
+function readOriginAnchor() {
+  try {
+    const data = JSON.parse(fs.readFileSync(ORIGIN_ANCHOR_PATH, "utf8"));
+    return data && typeof data.origin === "string" ? data : null;
+  } catch {
+    return null; // no anchor recorded for this session -- see the comment above, not a failure
+  }
+}
 
 // npm is a .cmd shim on Windows, which execFile cannot spawn (EINVAL), while
 // passing an args array through a shell is deprecated. Running the whole thing
@@ -316,12 +341,32 @@ function start() {
     process.exit(0);
   }
 
+  // `start` cannot know yet whether anyone will actually read this round
+  // before it merges -- that is what `Origin: supervised` claims, and
+  // asserting it here would be exactly the claim `start` has no way to
+  // support (docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md).
+  // No `--origin` is passed below; given none, build-prompt.mjs tells the
+  // round to determine its true Origin itself instead of handing it a claim.
+  //
+  // 'supervised' is still recorded to ORIGIN_ANCHOR_PATH, but only as the
+  // baseline `ship` compares the round's own final entry against later, not
+  // as a claim shown to the round. A mismatch does not mean the round lied;
+  // it means a human arms the merge by hand instead of the round arming its
+  // own correction.
+  try {
+    fs.writeFileSync(
+      ORIGIN_ANCHOR_PATH,
+      JSON.stringify({ origin: "supervised", writtenAt: new Date().toISOString() })
+    );
+  } catch (error) {
+    console.log(`  WARN  could not record the origin anchor: ${error.message}`);
+    console.log("        ship's mid-round Origin-change check will have nothing to compare against.");
+  }
+
   const prompt = run("node", [
     "scripts/build-prompt.mjs",
     "--track",
     track,
-    "--origin",
-    "supervised",
     "--agent",
     agent,
     "--reason",
@@ -545,6 +590,33 @@ async function ship() {
 
   const origin = entry && entry.declaredOrigin ? entry.origin : "";
 
+  // A mid-round Origin change, caught by the tool rather than by a human
+  // noticing -- round 152 declared `Origin: supervised` by mistake and the
+  // mistake stood until a human spotted it on inspection
+  // (docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md).
+  // Absence of an anchor is not evidence of anything: a round the GitHub
+  // workflow started never ran `round.mjs start` locally, so it never wrote
+  // one, and ORIGIN_ANCHOR_PATH's own comment says that is expected, not a
+  // failure. Only a recorded anchor that DISAGREES with what the round
+  // settled on withholds anything -- a round correcting its own Origin
+  // honestly is exactly what should happen; it just does not also get to arm
+  // its own merge on that self-correction. Consumed here (deleted once read)
+  // so a stale anchor from an abandoned round can never apply to a later,
+  // unrelated one.
+  const anchor = readOriginAnchor();
+  fs.rmSync(ORIGIN_ANCHOR_PATH, { force: true });
+  const anchorMismatch = anchor && origin && anchor.origin !== origin ? anchor : null;
+  if (anchorMismatch) {
+    console.log(
+      `  note  Origin drift: this entry declares '${origin}', but 'start' recorded ` +
+        `'${anchor.origin}' as this session's working default at ${anchor.writtenAt}`
+    );
+  } else if (anchor) {
+    console.log(`  ok    Origin matches what 'start' recorded (${anchor.origin})`);
+  } else {
+    console.log("  note  no start-time Origin anchor for this session — mid-round-change check skipped");
+  }
+
   // A delegated round claims an orchestrating model reviewed it before merge.
   // That claim is only true if a covering review artifact exists.
   //
@@ -558,12 +630,18 @@ async function ship() {
   // here before arming, which stops the sanctioned path one step earlier —
   // same rule, same parser, no second implementation.
   //
-  // It runs for every Origin, not only `delegated`. Being exempt from having
-  // to CARRY a review artifact is something a round's own declared Origin can
-  // do; being exempt from one that already exists and does not approve is not,
-  // and check-review-artifact.mjs enforces that distinction itself. Gating
-  // this call on `delegated` would have reopened, at the arming step, exactly
-  // the hole round 152 walked through in CI.
+  // It runs for every Origin, not only `delegated`. Until round 179's second
+  // push, a round's own declared Origin could exempt it from having to CARRY
+  // a review artifact at all; only HONOURING one that already existed and
+  // rejected was never exempt, and check-review-artifact.mjs enforced that
+  // distinction itself. This paragraph said that distinction still held until
+  // this round corrected it: check-review-artifact.mjs's own header records
+  // that its second push removed the CARRYING exemption too ("removing the
+  // exemption rather than patching around it") -- every Origin needs a
+  // covering approve now, full stop. Gating this call on `delegated` would
+  // still have reopened, at the arming step, exactly the hole round 152
+  // walked through in CI, whether or not the exemption it originally
+  // described still exists to reopen.
   let shouldArm = originAllowsAutomerge(entry);
   let withheldReason = "";
   const artifact = tryRun("node", ["scripts/check-review-artifact.mjs", "origin/main"]);
@@ -578,6 +656,16 @@ async function ship() {
     console.log(artifact.out.trim());
   } else if (origin === "delegated") {
     shouldArm = true;
+  }
+
+  if (anchorMismatch) {
+    shouldArm = false;
+    const drift =
+      `this round's Origin ('${origin}') differs from '${anchorMismatch.origin}', which 'start' ` +
+      `recorded as this session's working default at ${anchorMismatch.writtenAt} — a mid-round ` +
+      "Origin change, correct or not, is caught by the tool rather than trusted on the round's " +
+      "own say-so; a human arms the merge after checking why";
+    withheldReason = withheldReason ? `${withheldReason}; also, ${drift}` : drift;
   }
 
   if (shouldArm) {

@@ -155,3 +155,22 @@ same defect as `2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md`,
 which holds the evidence, the distribution across the log and the maintainer's
 question stated as a decision. It is tracked there. This item keeps the
 vocabulary half: what the words mean and where they are published.
+
+## 2026-08-24 — the mechanical box (folded into the Origin item) is done
+
+`scripts/round.mjs start` no longer hardcodes `Origin: supervised` and hands
+it to `build-prompt.mjs` as a default. `build-prompt.mjs --origin` now has no
+default at all; given none (which is what `start` always passes now), it
+tells a hand-started run what determines its true Origin instead of asserting
+one — the "`start` stops asserting it and says what determines it" half of
+the choice the moved box above offered. Built and demonstrated in
+`docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md`'s own
+2026-08-24 note (`loop/meta/loud-origin-exemption`), since the two items share
+this exact box and it is tracked in one place per that item's 2026-08-17 note.
+
+This ticks the mechanical clause of the fourth `Done when` box above
+("`Origin: supervised` is not assignable at `start` ... `start` stops
+asserting it and says what determines it"). The vocabulary half of that same
+box — what the words mean, published where a reader sees them — is
+untouched, same as every other box on this list; none of them are this
+round's to close.
