@@ -91,6 +91,96 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+This build round (`loop/build/rule-5-docket-scope-ruling`) closes
+`docket/done/2026-08-23-rule-5-docket-scope-ambiguity.md`: does CHARTER.md
+rule 5's append-only requirement reach `docket/open/` and `docket/done/`
+items, or is it scoped to `CHANGELOG.md` and the three other surfaces rule
+13a's Reserved list names?
+
+- Hypothesis: the item's title asked for a "maintainer ruling," but
+  interpreting the charter's own already-adopted text is delegated, not
+  reserved -- `FRAME.md` fact 7 names exactly what rule 13a keeps for the
+  maintainer, and this question is not on that list. That establishes who
+  may decide, not what the answer is.
+- Verified before acting: read rule 5, rule 4, and rule 13a's Reserved list
+  in `CHARTER.md` directly, and `FRAME.md` fact 7, rather than trust the
+  item's own account of them. Rule 5's own text is the stronger argument:
+  it protects past *entries*, and a docket item is never called an entry
+  anywhere in this repository's vocabulary. Rule 13a's Reserved list is a
+  second, independent signal -- the only place `CHARTER.md` narrows "the
+  record" to specific surfaces, naming exactly four tied to rule 5,
+  `docket/open/` and `docket/done/` absent. `grep -in 'the record'
+  CHARTER.md`: the phrase appears 12 times; excluding the section heading,
+  rule 5's own text, and rule 13a's Reserved list (the three passages
+  already central to this ruling), 9 remain -- 7 resolve to changelog
+  entries/write-ups, 2 (both inside rule 13a's own later paragraphs) use
+  "record" in a generic documentary sense, not `CHANGELOG.md` specifically.
+  None mean `docket/`.
+- Ruling: rule 5's append-only force does not reach `docket/`; nothing in
+  `CHARTER.md` forbids editing it, which is what licenses this, not rule 4
+  affirmatively requiring it -- rule 4 covers claims about this project's
+  own *process*, and a content-density measurement is not one.
+  `docket/README.md`'s prior "while... open" wording is widened to
+  open-or-done, disclosed as a widening rather than asserted as agreement
+  it never stated, and covers, alongside round 176's already-applied
+  reasoning, the same question for `CHANGELOG.md`'s preamble -- not
+  reopened here.
+- Rule 11: this item warned against a round ruling on the boundary of its
+  own record-keeping authority and then acting on the convenient reading --
+  and predicted this round's shape closely. Rule 11's literal predicate (a
+  run *blocked* by a guardrail loosening it) does not strictly apply -- this
+  round was not blocked, it took the question up as assigned work -- but
+  the broader concern is real and answered on the merits, not on a
+  technicality: two reviews with no stake in this round's outcome
+  (`docket/reviews/29199487f4e02d502d4d66636883eb552b7deb97.md`, reviewing
+  round 174, and this round's own
+  `docket/reviews/39a3b78e493789b595956399e5617d2e07858b48.md`) read the
+  same primary text independently and reached the same ruling. See the
+  closed item's status section for the full argument.
+- Change: `docket/README.md`'s closing paragraph now states the settled
+  reading with a citation. The standing wrong "1" in
+  `docket/done/2026-08-22-first-screenful-density.md` is corrected in
+  place: round 174 declined to fix it under its own reading of rule 5, full
+  stop -- the ambiguity item did not exist yet; it was filed by round 175
+  almost three hours later the same day. The page's original measurement
+  was 0 content units above the fold, not 1, agreeing with its own
+  band-by-band breakdown. `CHARTER.md` itself is not touched -- this is
+  interpretation, not amendment.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5 (Claude Code subagent; Opus overloaded this session)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  with a long timeout each time, seven times total on this branch (the
+  later runs re-confirming text-only edits, which touch no checked code,
+  did not disturb the gate -- `npm run lint` is `next lint`, JS/TS only,
+  confirmed by reading `package.json`). Runs 1 and 3 through 7 green --
+  lint, docket valid, track scope for `loop/build/rule-5-docket-scope-ruling`,
+  production build, all route checks passed. Run 2 hit the documented
+  runner-launch flake
+  (docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-dependent.md):
+  `FAIL  ORCHESTRATE_COMMAND path was gated by the runner system: ...
+  checkout free -- no session from this supervisor is advancing`. This
+  round's own diff touches no runner, supervisor, or sandbox code (only
+  `docket/README.md`, two docket items, and this file), so it is treated as
+  that pre-existing flake, not a regression this round caused; run 3,
+  immediately after with no edit in between, came back green. `node
+  scripts/check-docket.mjs`: 128 items valid, 38 open; build's open count
+  moved 9 -> 8, this item closing the difference (re-confirmed unchanged
+  after the fixes below). `node scripts/check-frame.mjs`: 16/16 checkable
+  facts passed, 2 attested, run before acting on fact 7 rather than assumed
+  from memory. Also reviewed: `docket/reviews/39a3b78e493789b595956399e5617d2e07858b48.md`
+  independently re-ran `round.mjs check` twice and reproduced the same
+  flake/green pair before returning request-changes on disclosure and
+  wording, confirming the ruling; this entry incorporates that review's
+  fixes.
+- Result: not yet measured as a site metric -- this round settles an
+  internal interpretation question and corrects one stale number; whether
+  the two documents stay in agreement from here is for a later round
+  reading them again to find, not something this round's own check
+  measures.
+
+### 2026-08-24
 This meta round (`loop/meta/loud-origin-exemption`) builds the
 explicitly-scoped partial mitigation from
 `docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md`: make

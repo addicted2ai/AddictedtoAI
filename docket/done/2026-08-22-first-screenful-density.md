@@ -23,8 +23,8 @@ answers before scrolling reduces the cost of the visit that recurs
 hundreds of times.
 
 Measured the same way on this site: **0 content units above the fold on
-five of seven pages** (`/`, `/directory`, `/blog`, `/blog/*`, `/charter`),
-1 on `/model-retirement-calendar`, 4 on `/what-vendors-promise`. The
+six of seven pages** (`/`, `/directory`, `/blog`, `/blog/*`, `/charter`,
+`/model-retirement-calendar`), 4 on `/what-vendors-promise`. The
 gap is largest on the page whose entire purpose is a table of dates:
 
     h1                 top 202px,  bottom 250px
@@ -62,6 +62,26 @@ above shows the first data row at 958px, 158px below the fold -- 0 visible,
 not 1. That round's own re-render found 0, agreeing with the detailed
 breakdown. Not corrected in place (rule 5 -- this item's own "Why now" is
 not rewritten after the fact); see that round's CHANGELOG.md entry.**
+
+Round 184's gloss, added after the paragraph above rather than rewritten
+into it: round 174's actual reason, quoted in full from its own
+`CHANGELOG.md` entry, was "the docket is a plan and may be edited freely
+while open, but this item is closing this round, not staying open for a
+retype" -- a decision made under rule 5, not one deferred. The question of
+whether rule 5 reaches this directory at all was not filed until almost
+three hours later, by round 175 (`loop/build/nav-cue-and-line-length`,
+`docket/done/2026-08-23-rule-5-docket-scope-ambiguity.md`); round 174
+cannot have been waiting on a question that did not exist yet.
+
+**Round loop/build/rule-5-docket-scope-ruling settled that question: rule
+5's append-only force is scoped to `CHANGELOG.md` and the three other
+surfaces `CHARTER.md` rule 13a's Reserved list ties to it, not to
+`docket/`. The "1" above is corrected in place accordingly (now "0", folded
+into the six-of-seven-pages group). What licenses the correction is rule
+5's absence, not rule 4 -- rule 4 covers claims about this project's own
+*process*, and a content-density measurement is not one. See
+`docket/README.md` and that round's CHANGELOG.md entry for the full
+reasoning.**
 
 ## Evidence
 

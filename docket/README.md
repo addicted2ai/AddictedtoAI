@@ -177,5 +177,37 @@ Move it to `dropped/` and add a `## Dropped` section saying why. Do not delete
 it. Which ideas were considered and rejected is worth as much as which were
 taken, and it stops the same bad idea being re-filed every third scout run.
 
-The docket is a plan, not the record, so items may be edited freely while they
-are open — `CHARTER.md` rule 5 governs `CHANGELOG.md`, not this directory.
+The docket is a plan, not the record. This paragraph used to say items may
+be edited freely "while they are open — `CHARTER.md` rule 5 governs
+`CHANGELOG.md`, not this directory." Those two halves were already in
+tension: the first is narrow (open items only), the second is broad (rule
+5 doesn't govern any of `docket/`). Round 174 leaned on the narrow half by
+name to justify leaving a wrong number standing in an item it had just
+closed (`CHANGELOG.md`, 2026-08-23, `loop/build/first-screenful-density`).
+Round 184 (`docket/done/2026-08-23-rule-5-docket-scope-ambiguity.md`)
+resolves that tension toward the broad half — open *or* done — and
+discloses this as a widening, not a confirmation: the sentence did not
+already say this about done items, and pretending otherwise would erase
+the reason round 174 had for reading it the other way.
+
+The widening rests on `CHARTER.md`'s own text. Rule 5's text is the
+stronger argument: "No past *entry* is rewritten... Corrections are new
+*entries* that name what they correct." A docket item is never called an
+entry anywhere in this repository's vocabulary — only a changelog record
+is. Rule 13a's Reserved list ("Reserved: the integrity of the record — the
+append-only changelog (rule 5)...") is a second, independent signal: it is
+the only place the charter narrows "the record" to specific surfaces, and
+names exactly four — the append-only changelog, the review artifacts in
+`docket/reviews/`, the disclosure page, and the public log — `docket/open/`
+and `docket/done/` absent. That list establishes *who* may decide this
+question (delegated — `FRAME.md` fact 7 — not reserved to the maintainer),
+not the answer by itself. Rule 4 ("Never publish a claim about this
+project's own *process* that is not currently true") is narrower than it
+sounds and does not license this either: it covers claims about the loop,
+review, cadence, supervision and guardrails specifically, not docket prose
+in general. What actually licenses editing this directory freely is rule
+5's absence, not rule 4's presence. See
+`docket/done/2026-08-23-rule-5-docket-scope-ambiguity.md` and its closing
+round's `CHANGELOG.md` entry for the full reasoning, including why this
+round was allowed to rule on the scope of its own record-keeping authority
+(rule 11).
