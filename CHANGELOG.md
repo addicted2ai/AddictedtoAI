@@ -91,6 +91,201 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+This meta round (`loop/meta/loud-origin-exemption`) builds the
+explicitly-scoped partial mitigation from
+`docket/open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md`: make
+a review-gate exemption loud instead of silent, and catch a mid-round Origin
+change with the tool. It does **not** answer the item's own reserved central
+question — should a round be able to declare itself outside the review
+requirement at all? — and does not touch `unsupervised`/`supervised`/
+`maintainer` as concepts or which Origin values exempt anything. That
+question surfaced sharper than expected below, and is left open on purpose.
+
+**1. `check-review-artifact.mjs`'s exemption made loud — and found already gone**
+- Hypothesis: the item's requirement 1 asked this script to print the Origin
+  it read and state it is standing down because of it, whenever an Origin
+  exempts a branch from carrying a review artifact. Expected to find that
+  exemption still live (the item's own evidence, dated 2026-08-17, quotes it)
+  and make it loud.
+- Change: it is not still live. `loop/meta/checks-that-misreport` (round
+  179's second push, PR #144, merged 2026-08-24, already an ancestor of this
+  round's base commit `7fb2832`) removed the Origin-based CARRYING exemption
+  entirely, as the fix for a *different* bug: a `request-changes` review
+  losing coverage to any later commit, trivial or not, which the checker then
+  read as "nothing rejects this" and passed. Its own header says so —
+  "Closed by removing the exemption rather than patching around it... every
+  other state... fails, for every Origin" — and `test-review-artifact.mjs`
+  case 9 already asserts it: "a non-delegated round carrying no artifact now
+  fails, not exempted." Verified by reading `check-review-artifact.mjs` start
+  to finish before writing anything: `origin`/`declaresRound` are read only
+  for the printed context line, never as a branch condition. There was no
+  exemption left to announce, so none was invented. What shipped instead is a
+  small, honest, additive wording change — `Origin: X — no Origin exempts a
+  branch from this check; requiring a review artifact that covers the merged
+  tree` — plus a header note recording this finding for the next reader, so
+  the gap between "the code already forecloses self-exemption" and "the
+  reserved question was actually decided" does not read as the same thing.
+  Also fixed in the same file, found reading its neighbour in `round.mjs`
+  (change 2 below): a stale comment in `round.mjs` still said "being exempt
+  from having to CARRY a review artifact is something a round's own declared
+  Origin can do" — false since the same PR #144 fix; corrected in place.
+
+**2. `round.mjs` refuses to arm auto-merge on a mid-round Origin change**
+- Hypothesis: round 152 declared `Origin: supervised` by mistake and the
+  mistake stood until a human noticed it on inspection; nothing mechanical
+  would have caught a value changing between when a round starts and when it
+  ships, whether by mistake or otherwise.
+- Change: `start` now records the Origin it began under (`'supervised'`, the
+  session's working default) to a small JSON file in the OS temp directory —
+  not committed to the repository, not a claim shown to the round, purely a
+  mechanical anchor. `ship` reads and deletes it (consumed once, so it cannot
+  leak into a later, unrelated round), and if the round's final declared
+  Origin disagrees, forces `shouldArm = false` and says why, on top of
+  whatever the existing `originAllowsAutomerge` / review-artifact checks
+  already decided. A round correcting its own Origin honestly is not an
+  error — it just does not also get to arm its own merge on that correction;
+  a human arms it by hand after checking. Absence of an anchor is explicitly
+  not a failure: a round the GitHub workflow launches builds its prompt
+  directly in `loop.yml` (computing its own Origin from real signal — cron
+  vs. `workflow_dispatch` — and never calling `start` locally), so it never
+  writes one, and the mismatch check is skipped for it, informationally.
+  Verified with a standalone harness against the real OS temp path on this
+  machine (not `round.mjs`'s own git/gh-touching `ship`, which this round
+  must not actually run): match → no override; mismatch → arm forced off,
+  reason recorded; absent anchor → normal logic, not a failure; anchor
+  consumed once → gone for a second, later read. All four passed.
+
+**3. `round.mjs start` stops asserting `Origin: supervised` early**
+- Hypothesis (the mechanical box folded in from
+  `docket/open/2026-08-11-unsupervised-origin-assumes-scheduled.md`): `start`
+  hardcoded `Origin: supervised` and handed it to `build-prompt.mjs`, which
+  printed "This run was started by hand: Origin is 'supervised'" before the
+  round had done anything — a claim about vetoability nothing had verified.
+  The vocabulary question (what `supervised` *means*) is the maintainer's;
+  this box is purely mechanical.
+- Change: `start` no longer passes `--origin` to `build-prompt.mjs` at all.
+  `build-prompt.mjs`'s `--origin` default changed from `"supervised"` to
+  none; given none, it tells the round what determines its true Origin and
+  that `ship` will compare its final declaration against the anchor from
+  change 2, instead of asserting a value. A caller that already knows its
+  Origin — the GitHub workflow, which computes one from real signal — still
+  passes `--origin` explicitly and is unaffected; only the no-flag path
+  (`round.mjs start`'s own call) changed.
+
+**Demonstration, round 152's shape reconstructed** (its own commits do not
+survive as ancestors of anything — its pull request squash-merged — so this
+is a scratch git repository built the way `test-review-artifact.mjs` already
+does it, carrying round 152's real declared Origin and its real review
+verdict):
+
+    ==============================================================================
+    CASE A — round 152's shape reconstructed: Origin: supervised,
+    a covering artifact with Verdict: request-changes
+    ==============================================================================
+    Origin: supervised — no Origin exempts a branch from this check; requiring a review artifact that covers the merged tree
+
+      docket/reviews/80245cec711a7ab178a560da5866e05df26460be.md
+
+      FAIL  docket/reviews/80245cec711a7ab178a560da5866e05df26460be.md: Verdict is 'request-changes', not 'approve'
+
+    1 problem(s) — this branch cannot merge without a covering approve review
+
+    exit code: 1
+
+**Negative control, same reconstruction, a genuine covering approve:**
+
+    ==============================================================================
+    CASE B — negative control: same shape, a genuine covering
+    Verdict: approve
+    ==============================================================================
+    Origin: supervised — no Origin exempts a branch from this check; requiring a review artifact that covers the merged tree
+
+      docket/reviews/2cf3918e2df1a6d66ef6b7db2d4844d10ec799c5.md
+
+      ok    docket/reviews/2cf3918e2df1a6d66ef6b7db2d4844d10ec799c5.md covers the merged tree (2cf3918e2df1), Verdict: approve
+
+    ok    review artifact verified: 1 covering review(s) approve the merged tree
+
+    exit code: 0
+
+The check is not "always fails": a real covering approve still merges. What
+was previously a silent green (the docket item's own account: "read CLEAN and
+mergeable, because the check that would have blocked it had exempted itself")
+is, on this branch, a loud `FAIL` naming the Origin, the exemption's absence,
+and the exact rejecting verdict — and had already stopped being a silent
+green before this round touched anything, per change 1 above.
+
+**Round 179's covering-approve fix, re-verified, not regressed:**
+`node scripts/test-review-artifact.mjs` — the regression harness, 11 cases
+(not 12; corrected here since a citation this round read said 12) — all 11
+passed on this branch, unchanged by the wording-only edit to
+`check-review-artifact.mjs`: covering approve passes; stale-only fails
+correctly and informationally; covering reject fails; absent+malformed is
+informational; malformed present-commit artifact fails; round 152's shape (a
+non-delegated Origin does not exempt a covering rejection) fails; no-entry
+branch does not walk past a covering rejection; an unresolvable base ref
+fails as unevaluable, not a pass; a non-delegated round with no artifact now
+fails, not exempted; the same round with a genuine covering approve still
+passes; a trivial follow-up commit cannot launder a covering rejection.
+
+**Fresh count, re-derived through `app/lib/build-log.js` (the same parser
+`check-review-artifact.mjs` and `round.mjs` read, never a second one; not
+copied forward from either the item's 39-of-105 or round 179's 43-of-131
+figure):** 135 entries currently declare an Origin; 43 of them are not
+`delegated` (18 `supervised`, 14 `maintainer`, 11 `unsupervised`). The
+non-delegated count is unchanged from round 179's figure. The denominator grew
+by four: round 179's own entry (its "43 of 131" was measured before that
+entry was appended, per this file's own convention) plus the three build
+rounds after it (`vendor-notice-floor-comparator`, `model-migration-chains`,
+`model-shutdown-ics-feed`) — all four `delegated`, verified by reading each
+entry's `Origin:` line, not assumed.
+
+**Timeline, corrected against what this round actually found:** the
+self-exemption was live from `027acb1` (2026-08-13, the commit that added the
+`review-artifact` gate) and became binding on a *required* status check on
+2026-08-17 (FRAME.md fact 9). It was **not** closed by this round. It was
+closed by `b82a2bb` (round 179's second push, PR #144, merged 2026-08-24,
+already on this round's base) — a fix for a different bug that removed this
+one as a side effect, twelve days after the exemption first shipped and about
+a week into being a required check. This round's own item ("Done when")
+assumed its own fix would be the one closing that window; it was not, and
+saying so plainly is worth more here than letting the pasted demonstration
+above imply this round closed something round 179 already had.
+
+Both docket items updated with dated notes rather than closed:
+`2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md` (the reserved
+question stays open; everything else in its own "Done when" list is now
+satisfied) and `2026-08-11-unsupervised-origin-assumes-scheduled.md` (its
+mechanical box, folded into the item above, is done; the vocabulary half is
+untouched).
+
+- Origin: delegated
+- Track: meta
+- Agent: claude-sonnet-5 (Claude Code subagent; Opus overloaded this session)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  with a long timeout each time, four times total on this branch. Runs 1 and
+  4 green — lint, docket valid (128 items), track scope for
+  `loop/meta/loud-origin-exemption`, production build, all route checks
+  passed, zero SKIPPED, zero UNVERIFIED, including
+  `scripts/test-review-artifact.mjs` (11/11) and `scripts/check-frame.mjs`
+  (16/16 checkable facts, 2 attested). Runs 2 and 3, back to back with no edit
+  between them, hit the documented runner-launch flake
+  (docket/open/2026-08-23-orchestrate-runner-launch-test-is-timing-dependent.md),
+  same signature both times: `FAIL  ORCHESTRATE_COMMAND path was gated by the
+  runner system: ... checkout free -- no session from this supervisor is
+  advancing`. Twice in a row is more than the "hit it once" other rounds have
+  reported; disclosed rather than smoothed into "hit it once". Nothing in this
+  round's diff touches the runner, the supervisor, or the sandbox (this
+  round's scope is `check-review-artifact.mjs`, `round.mjs`,
+  `build-prompt.mjs`, `CHANGELOG.md` and two docket items), so it is treated
+  as the pre-existing flake that item documents, not a regression this round
+  caused — the final run (4) succeeded with no changes in between.
+- Result: not yet measured — the visible-exemption wording and the mid-round
+  drift check are live in code and demonstrated on a reconstruction; whether
+  either one is ever exercised by a real round's mistake is not something
+  this round can measure.
+
+### 2026-08-24
 This build round (`loop/build/vendor-notice-floor-comparator`) ships
 `docket/done/2026-08-22-vendor-notice-period-vs-practice.md`: for every live
 (not-yet-passed) shutdown in `RETIREMENT_DATES`, is there still at least as

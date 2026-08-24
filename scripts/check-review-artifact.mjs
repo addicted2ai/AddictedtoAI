@@ -117,6 +117,21 @@
 // What being required does not buy: `enforce_admins` is false (FRAME.md fact
 // 8), so the account the loop operates as can merge past a red required check
 // by hand.
+//
+// This round (loop/meta/loud-origin-exemption) set out to build exactly one
+// more line here: print the Origin read and state plainly that the check is
+// standing down because of it, whenever an Origin exempts a branch (docket/
+// open/2026-08-17-origin-is-self-declared-in-the-tree-it-gates.md, requirement
+// 1). Reading the code above first: there is no such exemption left to
+// announce. Round 179's second push removed it entirely as the fix for a
+// DIFFERENT bug -- a `request-changes` review laundered by one trivial
+// follow-up commit -- not as a deliberate answer to this item's reserved
+// question ("should a round be able to declare itself outside review at
+// all?"). That question is still the maintainer's; nothing here decides it.
+// It is simply already true, as an unflagged side effect of closing that
+// other hole, that no Origin exempts a branch from carrying a covering
+// approve today. The line below is reworded to say so explicitly, rather
+// than inventing an exemption to make visible where none exists.
 
 import { execFileSync } from "child_process";
 import path from "path";
@@ -190,7 +205,10 @@ if (!declaresRound) {
   console.log("  note    this branch changes no changelog entry — it declares no round of its own,");
   console.log("          but a covering approve review is required of it regardless.");
 } else {
-  console.log(`Origin: ${origin || "undeclared"} — requiring a review artifact that covers the merged tree`);
+  console.log(
+    `Origin: ${origin || "undeclared"} — no Origin exempts a branch from this check; requiring ` +
+      "a review artifact that covers the merged tree"
+  );
 }
 
 // A review file is named by the commit it reviewed. Enumerate what the

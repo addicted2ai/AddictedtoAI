@@ -167,3 +167,73 @@ defaults to it and prints "This run was started by hand: Origin is
 the entry it writes from that claim is what the review gate then reads. The
 vocabulary item keeps the half about what the words mean and where they are
 published; the mechanical half is this one's.
+
+## 2026-08-24 — the mechanical half built; the exemption itself was already gone
+
+Three things landed this round (`loop/meta/loud-origin-exemption`), all
+scoped to this item's own explicitly-reserved partial mitigation — the
+central question below is untouched:
+
+- `check-review-artifact.mjs` now says explicitly, on every branch that
+  declares a round, that no Origin exempts it:
+  `Origin: X — no Origin exempts a branch from this check; requiring a
+  review artifact that covers the merged tree`. Reading the code before
+  changing anything: there was no exemption left to announce. Round 179's
+  second push (`loop/meta/checks-that-misreport`, PR #144, 2026-08-24) had
+  already removed the Origin-based CARRYING exemption entirely, as the fix
+  for a *different* bug — a `request-changes` review laundered by one
+  trivial follow-up commit — not as a deliberate answer to the question
+  below. `test-review-artifact.mjs` case 9 already asserted this ("a
+  non-delegated round carrying no artifact now fails, not exempted"); this
+  round only reworded the line, it did not change the behaviour.
+- `scripts/round.mjs` now refuses to arm auto-merge when the round's final
+  declared Origin differs from the value `start` recorded when the round
+  began — a mid-round change, correct or not, now needs a human to arm the
+  merge, the way round 152's was previously caught only by a human noticing.
+  Implemented as a small, untracked, per-machine anchor file (`start` writes
+  it, `ship` reads and consumes it), so a round the GitHub workflow launches
+  — which never calls `start` locally — is unaffected: absence of an anchor
+  is not a failure, only a disagreeing one withholds arming.
+- `scripts/round.mjs start` no longer hardcodes `Origin: supervised` into the
+  prompt it hands a hand-started round. `build-prompt.mjs`'s `--origin`
+  default changed from `"supervised"` to none: given no explicit value
+  (which is now what `start` always passes), it tells the round what
+  determines its true Origin instead of asserting one. This is the
+  mechanical box folded in from
+  `2026-08-11-unsupervised-origin-assumes-scheduled.md`; see that item's own
+  note dated today.
+
+**What this surfaces, unprompted:** the central question this item reserves —
+"should a round be able to declare itself outside the review requirement at
+all?" — is already answered "no" in the code, operationally, as of round
+179's second push, without that round's own entry framing it that way (its
+entry discusses the fix only as closing a laundering hole, with a cost
+disclosed in passing: "a real cost, since 43 of 131 declared-Origin rounds
+are not `delegated`"). Whether the maintainer intended that, ratifies it, or
+wants it reconsidered is still open. This round changes nothing about it
+either way — consistent with the reservation above and `CHARTER.md` rule 11
+— but the gap between "the code already forecloses this" and "someone
+decided to foreclose it" is exactly the kind of drift this item exists to
+catch, so it is recorded here rather than smoothed over.
+
+**Demonstration** (round 152's shape reconstructed in a scratch git
+repository, the same technique `test-review-artifact.mjs` uses — round 152's
+own commits do not survive as ancestors of anything, because its pull
+request squash-merged): `Origin: supervised` + a covering
+`Verdict: request-changes` artifact now FAILs (`exit 1`,
+`Verdict is 'request-changes', not 'approve'`), with the Origin line printed
+loudly. The negative control — same shape, a genuine covering
+`Verdict: approve` — passes (`exit 0`). Full output pasted in this round's
+`CHANGELOG.md` entry.
+
+**Fresh count, re-derived through `app/lib/build-log.js` (not copied
+forward):** 135 entries declare an Origin; 43 of them are not `delegated`
+(18 `supervised`, 14 `maintainer`, 11 `unsupervised`). The docket item's
+original figure (39 of 105) and round 179's figure (43 of 131) are both
+superseded by entries filed since; the *non-delegated* count of 43 happens
+to be unchanged from round 179's count — only the denominator grew (131 →
+135, four more `delegated` entries).
+
+Left open, unchecked, on purpose: the maintainer's decision on the reserved
+question. Everything else in the "Done when" list above this note is now
+satisfied and is not re-typed here.
