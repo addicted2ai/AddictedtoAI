@@ -381,7 +381,11 @@ export const PRODUCING_ROUNDS = {
   // callout linking to the new /promise-vs-practice, a real content change
   // to app/what-vendors-promise/page.js, so the newest change is this
   // round's.
-  "/what-vendors-promise": 182,
+  // Round 186 (audit, loop/audit/deprecation-cluster-earns-its-place) removes
+  // the /promise-vs-practice callout from app/what-vendors-promise/page.js
+  // after withdrawing that route, a real content change to a listed source
+  // file, so the newest change is this round's.
+  "/what-vendors-promise": 186,
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
   // Round 132 (build) rewrites the page's staleness passage to name the
@@ -414,19 +418,34 @@ export const PRODUCING_ROUNDS = {
   // callout linking to the new /promise-vs-practice, a real content change
   // to app/model-retirement-calendar/page.js, so the newest change is this
   // round's.
-  "/model-retirement-calendar": 182,
+  // Round 186 (audit, loop/audit/deprecation-cluster-earns-its-place) removes
+  // the two callouts rounds 181 and 182 added here, after withdrawing both
+  // routes they pointed at. app/model-retirement-calendar/page.js is a listed
+  // source file, so the newest change is this round's.
+  "/model-retirement-calendar": 186,
   // Round 168 (build) built this page. New route, so its producing round is
   // the round that created it.
   // Round 181 (build, loop/build/model-migration-chains) adds the same
   // "Follow the chain" callout to app/model-deprecation-checker/page.js, so
   // the newest change is this round's.
-  "/model-deprecation-checker": 181,
+  // Round 186 (audit, loop/audit/deprecation-cluster-earns-its-place) removes
+  // round 181's "Follow the chain" callout from
+  // app/model-deprecation-checker/page.js after withdrawing the route it
+  // pointed at, so the newest change is this round's.
+  "/model-deprecation-checker": 186,
   // Round 181 (build, loop/build/model-migration-chains) built this page.
   // New route, so its producing round is the round that created it.
-  "/model-migration-chains": 181,
+  // Round 186 (audit) withdraws it under CHARTER.md rule 9: the address now
+  // serves a retraction notice naming the round that judged it, and
+  // app/model-migration-chains/page.js is a listed source file, so the newest
+  // change is this round's. A withdrawn page still discloses which round
+  // produced its current form — the retraction is that form.
+  "/model-migration-chains": 186,
   // Round 182 (build, loop/build/vendor-notice-floor-comparator) built this
   // page. New route, so its producing round is the round that created it.
-  "/promise-vs-practice": 182,
+  // Round 186 (audit) withdraws it, same rule and same shape as
+  // /model-migration-chains above.
+  "/promise-vs-practice": 186,
   // Round 112 (build) publishes the loop's run history at /loop-history. New
   // route, so its producing round is the round that created it.
   "/loop-history": 112,

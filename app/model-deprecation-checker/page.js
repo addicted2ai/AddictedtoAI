@@ -49,14 +49,13 @@ export default function ModelDeprecationCheckerPage() {
 
       <ModelDeprecationChecker />
 
-      <p className="checker-callout">
-        Found something retiring above? Its replacement can itself be
-        retiring &mdash;{" "}
-        <a href="/model-migration-chains">
-          follow the chain to where it actually lands
-        </a>{" "}
-        before you migrate onto something that is also dated.
-      </p>
+      {/* A callout stood here until round 186 (audit), pointing at
+          /model-migration-chains. That page was withdrawn that round: all four
+          rows in the data whose replacement chain runs past one hop are models
+          that were switched off in May 2026, so the risk it taught readers to
+          check cannot reach anything they are still running. Its address still
+          resolves and explains itself; the invitation is removed rather than
+          left pointing at a retraction notice. */}
 
       <p className="checker-callout">
         Just found out something you depend on is retiring and want to hear

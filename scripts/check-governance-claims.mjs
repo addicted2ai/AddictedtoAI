@@ -279,7 +279,12 @@ function attested(who, when, what) {
 // CHARTER.md is a red build here even before anyone works out which pages
 // it falsifies.
 
-const CLAIMS_DECLARED = 26;
+// 26 until round 186 (audit) withdrew /model-migration-chains and removed
+// that page's privacy claim with it. This guard caught the removal on the
+// round's first gate run, which is the behaviour it was built for: the count
+// is declared separately from the list precisely so a claim cannot leave the
+// registry silently.
+const CLAIMS_DECLARED = 25;
 
 const CLAIMS = [
   {
@@ -385,15 +390,13 @@ const CLAIMS = [
       "trackEvent"
     ),
   },
-  {
-    file: "app/model-migration-chains/page.js",
-    needle: "nothing you type is sent anywhere",
-    why: "The same promise on the page around the component. Same fix, same reason.",
-    source: fileMakesNoCall(
-      "app/model-migration-chains/ModelMigrationChains.js",
-      "trackEvent"
-    ),
-  },
+  // The matching entry for app/model-migration-chains/page.js was removed by
+  // round 186 (audit), which withdrew that route: the retraction notice now at
+  // that address makes no privacy promise, because it renders no input control
+  // to make one about, so there is no claim here to hold to a source. The
+  // component's own entry above is deliberately kept — the file still carries
+  // the promise, and if a later round restores the page it should find the
+  // guard already standing rather than have to remember to rebuild it.
   {
     file: "app/disclosure/page.js",
     needle: "rule 17 is &ldquo;collect nothing personal",

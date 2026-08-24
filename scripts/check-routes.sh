@@ -145,38 +145,42 @@ check /model-retirement-calendar 200 "text/html" 'href="/model-deprecation-check
 check /model-deprecation-checker 200 "text/html" 'id="checker-input"'
 check /model-deprecation-checker 200 "text/html" 'Paste an example'
 
-# The migration-chain walker (docket/open/2026-08-22-model-migration-chains.md)
-# follows RETIREMENT_DATES's `replacement` field hop by hop; entirely
-# client-side like the checker above, so its input control and its
-# discoverability links from both pages whose data it reuses must render in
-# the server HTML.
-check /model-migration-chains       200 "text/html" 'id="chains-input"'
-check /model-migration-chains       200 "text/html" 'Three-option branch'
-check /model-migration-chains       200 "text/html" 'gpt-image-1-mini'
-check /model-retirement-calendar    200 "text/html" 'href="/model-migration-chains"'
-check /model-deprecation-checker    200 "text/html" 'href="/model-migration-chains"'
+# The migration-chain walker was WITHDRAWN by round 186 (audit): all four rows
+# in RETIREMENT_DATES whose replacement chain runs past one hop are models
+# switched off in May 2026, so the risk the page taught readers to check could
+# not reach anything they were still running. What is asserted now is what
+# CHARTER.md rule 9 actually requires of a withdrawal -- the address still
+# resolves, and it says it was withdrawn -- not the interactive control, which
+# is gone. The two discoverability links this block used to assert are gone
+# with it, by design: a live page pointing readers at a retraction notice is
+# worse than not pointing at all.
+check /model-migration-chains       200 "text/html" 'Withdrawn 2026-08-24'
+check /model-migration-chains       200 "text/html" 'This page has been withdrawn'
 
-# The vendor notice-floor comparator
-# (docket/done/2026-08-22-vendor-notice-period-vs-practice.md): for every
-# live shutdown, is there still at least as much runway left as the
-# vendor's own promised minimum notice floor? Server-rendered, no client
-# input control needed. The coverage table and its two labelled numbers
-# (Anthropic's 60-day floor, Alibaba's 30-day floor) are static per
-# app/lib/retirement-commitments.js and safe to assert regardless of which
-# shutdowns happen to be live on any given day; the "which live shutdowns
-# currently clear the floor" table is not asserted here for exactly that
-# reason -- it is legitimately empty some days (see this round's CHANGELOG
-# entry) and a check pinned to today's row count would go stale as soon as
-# the data moves, which is the same discipline this file already applies
-# to sitemap/feed freshness elsewhere.
-check /promise-vs-practice          200 "text/html" 'data-notice-floor-table="coverage"'
-check /promise-vs-practice          200 "text/html" 'Anthropic'
-check /promise-vs-practice          200 "text/html" '60 days'
-check /promise-vs-practice          200 "text/html" 'Alibaba (Model Studio)'
-check /promise-vs-practice          200 "text/html" '30 days'
-check /promise-vs-practice          200 "text/html" 'no comparable floor'
-check /what-vendors-promise         200 "text/html" 'href="/promise-vs-practice"'
-check /model-retirement-calendar    200 "text/html" 'href="/promise-vs-practice"'
+# The vendor notice-floor comparator was WITHDRAWN by round 186 (audit).
+#
+# Worth reading before this block is ever restored, because this is the
+# specific defect CHARTER.md's audit charge exists to catch and this file is
+# where it hid. The six assertions that stood here checked the page's static
+# coverage table and its two labelled numbers, and the block's own comment
+# said the live comparison table was deliberately NOT asserted because "it is
+# legitimately empty some days". That was true and it was the whole problem:
+# the table was empty on every single day of the page's published life, and
+# this check could not tell the difference between a comparator that worked
+# and one that had nothing to compare. Six green assertions, and none of them
+# touched the thing the page was for. The audit prompt's "checks that cannot
+# fail" watch-item, made concrete -- the check did not lie, it measured the
+# frame around the product instead of the product.
+#
+# The lesson is not "assert the row count" (which really would go stale as the
+# data moves). It is that a page whose output can legitimately be empty every
+# day needs something else to justify being a route at all.
+#
+# scripts/check-notice-floor-comparator.mjs below still runs: the comparator
+# library is correct code and is kept so restoring this page is small if a
+# vendor with a comparable floor ever publishes a dated shutdown.
+check /promise-vs-practice          200 "text/html" 'Withdrawn 2026-08-24'
+check /promise-vs-practice          200 "text/html" 'This page has been withdrawn'
 echo
 run_step node scripts/check-notice-floor-comparator.mjs
 

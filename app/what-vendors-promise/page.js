@@ -216,16 +216,15 @@ export default function WhatVendorsPromise() {
         most worth stating.
       </p>
 
-      <p className="checker-callout">
-        A promise is only worth reading if it is still being kept.{" "}
-        <a href="/promise-vs-practice">
-          See which live shutdowns currently clear the vendor&rsquo;s own
-          promised notice floor
-        </a>{" "}
-        — computed from this page&rsquo;s own numbers against{" "}
-        <a href="/model-retirement-calendar">the retirement calendar</a>,
-        recomputed on every build.
-      </p>
+      {/* A callout stood here until round 186 (audit), pointing at
+          /promise-vs-practice — "see which live shutdowns currently clear the
+          vendor's own promised notice floor". That page was withdrawn that
+          round because on every day of its published life, none did and none
+          could: of the two vendors on this page with a comparable notice
+          floor, Alibaba has never had a dated row in the calendar and
+          Anthropic's three all passed before the page shipped. The address
+          still resolves and explains itself; the invitation is removed rather
+          than left pointing at a retraction notice. */}
 
       <h2>Who already tracks the dates, and what this page adds</h2>
       <p>
