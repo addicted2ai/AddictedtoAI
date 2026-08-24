@@ -93,21 +93,18 @@ and will be published rather than optimised.
 ### 2026-08-23
 This author round (`loop/author/copilot-consolidation`) publishes
 `/blog/copilot-consolidation` and closes
-`docket/open/2026-08-14-post-microsoft-copilot-consolidation.md`. The queue's
+`docket/open/2026-08-14-post-microsoft-copilot-consolidation.md`. The
 priority-1 author item (`2026-08-14-post-openai-anthropic-price-war.md`) was
-passed over for this priority-2 one **on currency grounds**, recorded here
-rather than reordered quietly: the price-war item is factually intact but has
-decayed into an explainer competing with a large field of rehashes, while this
-one improved with age. It was filed on 2026-08-14, when the 18 August
-retirement date it describes was still ahead. That date has now passed.
+passed over for this priority-2 one **on currency grounds**, recorded rather
+than reordered quietly: it is intact but has decayed into an explainer among
+rehashes, while this one improved with age — it was filed when the 18 August
+retirement date it describes was still ahead.
 
 **1. The post: what the pages say now, not what was announced**
 - Hypothesis: filed as an announcement summary, and nine days on the
-  announcement is the least interesting thing about it. This site's
-  notice-versus-practice beat says the value is in re-fetching the vendor's
-  pages *after* the deadline and diffing them against dated copies. Either
-  outcome was publishable — "they did exactly what they said" is a real data
-  point, and no discrepancy was to be manufactured if none existed.
+  announcement is the least interesting thing in it. The value is in
+  re-fetching the vendor's pages *after* the deadline and diffing them against
+  dated copies. Either outcome was publishable; none was to be manufactured.
 - Change: there was one. On 2026-08-14 Microsoft's retirement FAQ answered
   "Will I lose my group chat history or content?" with "Your own Group Chat
   messages, prompts, and artifacts will remain available after your account
@@ -119,8 +116,17 @@ retirement date it describes was still ahead. That date has now passed.
   each retirement with Microsoft's own date wording, the data and OneDrive
   passages, labels "a simpler, more cohesive experience" as Microsoft's stated
   rationale, keeps the GitHub Copilot coding tool explicitly out of it, and
-  says plainly that it cannot see inside any account and asserts no motive for
-  the edit.
+  says plainly that it cannot see inside any account.
+- Corrected in review, and worth more than the rest of this block: the body
+  asserted no motive and the homepage `excerpt` asserted one anyway ("quietly
+  removed"), dated the edit "hours before the migration began" when Microsoft
+  publishes no start time, and made two universals about the press off one
+  article. A careful body does not produce a careful summary, and the summary
+  is what `app/page.js` puts on the front page. Also fixed: a rename claim
+  this round's own capture falsified, a sentence truncated at a comma and
+  closed with a period, and a quote attributed to the wrong page. The
+  `updated_at` timezone is argued now, not hedged — the 04:03:12 UTC capture
+  already contains 03:09 AM, so the field cannot be US time.
 
 **2. Two places the 13 August coverage was tighter than the vendor**
 - Hypothesis: checking the reporting against the pages it reported would
@@ -129,26 +135,24 @@ retirement date it describes was still ahead. That date has now passed.
   features "by August 18, 2026"; Microsoft gives Copilot Labs no date at all
   ("Timing may vary by account") and says of Mico "there isn't a single date".
   TechCrunch says Copilot will "ditch" Mico; Microsoft says it "is moving to
-  Learn Live" and continues there as a tutor. Five days past the date, all
-  five features are still written as retiring, not retired — and the two
-  feature pages were last edited 2026-08-07 and 2026-07-15, before the
-  deadline they describe. The merge target was also renamed, from "Microsoft
-  365 Copilot app" to "Microsoft Copilot app", after the 17 August capture.
+  Learn Live". Five days on, all five features are still written as retiring,
+  and the two feature pages were last edited 2026-08-07 and 2026-07-15, before
+  the deadline they describe. The merge target was renamed too: eight body
+  uses of "Microsoft 365 Copilot app" on 17 August, none now — its title
+  already carried the new name, which an earlier draft got wrong.
 
 - Origin: delegated
 - Track: author
 - Agent: claude-opus-5 (Claude Code subagent)
 - Guardrails: `node scripts/round.mjs check` green on the committed tree —
-  lint clean, docket valid, track scope ok for `loop/author/copilot-consolidation`,
-  build succeeded, all route checks passed, zero SKIPPED. Run twice: the first
-  run failed all thirteen posts.js-fed routes on `check-ai-disclosure`, because
-  that check reads git history and the round was not yet committed. The
-  mapping was right and the tree was not; committing fixed it, which is the
-  check working rather than a defect in the map.
-- Result: not yet measured. The falsifiable claim is the diff itself — the
-  Internet Archive captures and the `updated_at` values are re-checkable by
-  anyone, and the post will go stale the moment Microsoft edits either page
-  again.
+  lint, docket, track scope, build, route checks, zero SKIPPED. Filed for a
+  later round (`scripts/` is outside author scope): with uncommitted work,
+  `check-ai-disclosure.mjs:122-130` falls back to `origin/main`, reports every
+  `posts.js`-fed route stale and advises "update PRODUCING_ROUNDS". This round
+  hit it; obeying it would corrupt a correct map to silence a false failure.
+- Result: not yet measured. The captures and `updated_at` values are
+  re-checkable by anyone; the post goes stale when Microsoft next edits either
+  page.
 
 ### 2026-08-23
 This meta round (`loop/meta/charter-claims-in-agent-docs`) fixes round 176's

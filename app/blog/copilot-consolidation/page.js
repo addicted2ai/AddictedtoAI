@@ -97,7 +97,8 @@ export default function CopilotConsolidation() {
         equivalent passage on the main updates page, which said on 17 August
         that &ldquo;Group Chats will be migrated as individual chats. Your
         Group Chat history, including your messages and artifacts, will remain
-        available after your account updates.&rdquo;
+        available after your account updates, but each Group Chat will appear
+        as a one to one conversation with Copilot.&rdquo;
       </p>
       <p>
         <strong>When it changed is on the page itself.</strong> The FAQ carries
@@ -109,9 +110,25 @@ export default function CopilotConsolidation() {
         updates page carries <code>updated_at</code> of{" "}
         <strong>2026-08-19 10:39 PM</strong>, the day after the date it
         describes, and its 17 August capture still carries the old wording.
-        Neither page states the timezone of those values, and neither displays
-        a revision date or a change note to a reader. Both still advertise{" "}
+        Neither page prints either value where a reader would see it, and
+        neither shows a revision date or a change note. Both still advertise{" "}
         <code>ms.date</code> of 08/10/2026.
+      </p>
+      <p>
+        Neither states a timezone for those values either &mdash; but the
+        captures rule out the readings that would change the story. The copy
+        archived at 04:03:12 UTC on 18 August already contains{" "}
+        <code>updated_at</code> of 03:09 AM, so the field cannot be US time:
+        03:09 PDT is 10:09 UTC and 03:09 EDT is 07:09 UTC, both of them{" "}
+        <em>after</em> the capture that already contains the value. Read as
+        UTC it falls 54 minutes before that capture. What the arithmetic fixes
+        whatever the zone is the upper bound: the edit precedes 04:03:12 UTC
+        on 18 August, the moment the archive first recorded the new wording.
+        Two more of the page&rsquo;s own fields
+        mark the same boundary: <code>updated_at</code> read{" "}
+        <strong>2026-08-13 11:21 PM</strong> in both the 14 and 15 August
+        captures, and <code>word_count</code> went from 1136 in those two
+        captures to 1035 in the 18 August one, where it remains.
       </p>
       <p>
         Microsoft gives no reason for the change, and this post does not
@@ -252,14 +269,17 @@ export default function CopilotConsolidation() {
         updates.&rdquo;
       </p>
       <p>
-        One more quiet edit: the app being merged into has been renamed in the
-        documentation. The 17 August capture of the updates page refers
-        throughout to &ldquo;the Microsoft 365 Copilot app&rdquo; and is titled
-        &ldquo;Updates to Copilot and the Microsoft 365 Copilot app&rdquo;. The
-        live page is titled &ldquo;Updates to Copilot and the Microsoft Copilot
-        app&rdquo; and says &ldquo;Microsoft Copilot app&rdquo; in each of those
-        places, including &ldquo;You will see the Microsoft Copilot icon and
-        name update&rdquo;.
+        One more change, in the documentation rather than the product: the app
+        being merged into is named differently now. The 17 August capture of
+        the updates page uses &ldquo;the Microsoft 365 Copilot app&rdquo; eight
+        times in its body; the live page uses that name nowhere, saying
+        &ldquo;Microsoft Copilot app&rdquo; in each of those places, including
+        &ldquo;You will see the Microsoft Copilot icon and name update&rdquo;.
+        The page title is not part of this, and an earlier draft of this post
+        had it wrong: the 17 August capture was already titled &ldquo;Updates
+        to Copilot and the Microsoft Copilot app&rdquo;, exactly as the live
+        page is. The title carried the new name while the body still carried
+        the old one.
       </p>
 
       <h2>This is not GitHub Copilot</h2>
@@ -302,14 +322,20 @@ export default function CopilotConsolidation() {
         dual sign-in and account-separation wording, the migrated-data list,
         the OneDrive move, the temporary-gaps warning, the
         &ldquo;simpler, more cohesive experience&rdquo; rationale, and the
-        Podcasts, Deep Research and Group Chat entries. Microsoft Support,{" "}
+        Podcasts and Deep Research retirement notices. Its Group Chat entry is
+        the source for &ldquo;will not be carried forward after August 18,
+        2026&rdquo; only; the &ldquo;Account updates begin on August 18,
+        2026&rdquo; sentence quoted above appears on the FAQ and not on this
+        page. Microsoft Support,{" "}
         <a href="https://support.microsoft.com/en-us/microsoft-365-copilot/frequently-asked-questions-about-retired-copilot-features">
           &ldquo;Frequently asked questions about retiring Copilot
           features&rdquo;
         </a>{" "}
         (<code>ms.date</code> 08/10/2026, <code>updated_at</code> 2026-08-18
-        03:09 AM) &mdash; the current Group Chat answers, the Mico and Copilot
-        Labs sections, and the no-single-date and timing-may-vary wording.
+        03:09 AM, <code>word_count</code> 1035) &mdash; the current Group Chat
+        answers including the &ldquo;Account updates begin on August 18,
+        2026&rdquo; timing answer, the Mico and Copilot Labs sections, and the
+        no-single-date and timing-may-vary wording.
         Microsoft Support,{" "}
         <a href="https://support.microsoft.com/en-us/microsoft-copilot/podcasts-in-microsoft-copilot">
           &ldquo;Podcasts in Microsoft Copilot&rdquo;
@@ -355,9 +381,14 @@ export default function CopilotConsolidation() {
         <a href="https://web.archive.org/web/20260817221028/https://support.microsoft.com/en-us/microsoft-365-copilot/learning/changes-microsoft-copilot-app">
           22:10:28 UTC on 17 August 2026
         </a>
-        , the source for the older Group Chat migration passage and the older
-        app name. The capture list came from the Internet Archive&rsquo;s CDX
-        index for both URLs, queried in the same run.
+        , the source for the older Group Chat migration passage and for the
+        eight body uses of the older app name. The capture list came from the
+        Internet Archive&rsquo;s CDX index for both URLs, queried in the same
+        run; the 18 August capture time is also fixed by the archive&rsquo;s
+        own in-document stamp, &ldquo;FILE ARCHIVED ON 04:03:12 Aug 18,
+        2026&rdquo;. The <code>updated_at</code> and <code>word_count</code>
+        values quoted above are read from the captures and the live pages
+        themselves.
       </p>
     </article>
   );
