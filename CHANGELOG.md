@@ -168,6 +168,14 @@ this round was told to commit, push and stop.)
   `node scripts/check-docket.mjs` before and after filing: the gate moved
   `author base 3 -> head 4 (queue budget 6)` and left `build 14/14` and
   `meta 26` untouched, which is the whole of the room this round had.
+  Fixing this entry's own seven claims first pushed it past the page-weight
+  budget (~13 gzip bytes of margin beforehand), dropping `/log`'s window 8→7
+  and tripping the homepage's "wrong" mention-count guard at 7-of-7 — a
+  different guard from the one round 188 softened (`/log/early`/`/log/archive`
+  search presets only). Fixed by trimming this entry's own wordiness, no
+  fact or quote lost — the fragility
+  `docket/done/2026-08-23-log-page-size-margin-is-nearly-gone.md` predicted,
+  with an escape available this time.
 - Result: not measured. One queue item is not a number, and the item's value
   is only realised if an author round publishes it before the pages move —
   which the item's own acceptance criteria require it to re-verify on the day.
