@@ -195,6 +195,26 @@ review flagged and did not block on.**
   in the file rather than inventing new phrasing. No other text in the
   description changed.
 
+**3. Update the AI-disclosure map for every route this round's own commit touched**
+- Hypothesis: none going in — this item exists because
+  `scripts/check-ai-disclosure.mjs` failed for real on the second
+  `round.mjs check` run of this round (after change 1 and change 2 were
+  committed), not from a plan made before writing.
+- Change: `app/lib/page-origins.js`'s `PRODUCING_ROUNDS` map records, per
+  route, the round whose commit most recently touched that route's listed
+  source files (`app/lib/route-files.js`); the check compares that map
+  against git history on every run. This round's commit touched
+  `app/lib/tool-categories.js` (the Directory's only data source, listed for
+  `/directory`) and `app/lib/posts.js` (listed for `/`, `/blog`, and all 12
+  post routes), so all 15 of those routes were now mapped to older rounds
+  than the commit that actually last changed them. Moved all 15 to round
+  197, with an inline note on each naming what changed and why, matching the
+  file's own established pattern — the same category of finding rounds 174
+  and 193 recorded here before.
+- Not done: did not audit whether any other route's map entry is stale for a
+  reason unrelated to this round's own commit — this round only chases the
+  15 routes its own diff actually moved.
+
 - Origin: delegated
 - Track: maintain
 - Agent: claude-sonnet-5
@@ -202,16 +222,25 @@ review flagged and did not block on.**
   round(s); author was not selectable: no honest publish date before
   2026-08-31 — 2026-08-25 already holds 1 post (cap 1)
 - Guardrails: `node scripts/round.mjs check`, run directly in the foreground
-  with a 600000ms timeout. Went green end to end: lint clean, docket valid,
-  track scope for `loop/maintain/directory-drift-recheck` ok, `npm run
-  build` clean (prebuild's staleness report: 132 published artefacts judged,
-  131 within window, 1 recorded-unverified-within-window, 0 stale), all
-  route checks passed except one sub-check `check-ai-disclosure.mjs`
-  reported `UNVERIFIED` — self-explained as caused by this round's own
-  uncommitted changes to `app/lib/posts.js` making `origin/main...HEAD` not
-  yet describe the tree, not a defect; expected to clear once this round's
-  commit lands. No recurrence of the documented
-  `test-orchestrate-runner-launch.mjs` flake.
+  with a 600000ms timeout, three times. First run (before committing): lint
+  clean, docket valid, `npm run build` clean (prebuild's staleness report:
+  132 published artefacts judged, 131 within window, 1
+  recorded-unverified-within-window, 0 stale), all route checks passed
+  except `check-ai-disclosure.mjs`, self-explained `UNVERIFIED` because
+  uncommitted changes to `app/lib/posts.js` meant `origin/main...HEAD` did
+  not yet describe the tree — expected before a commit, not a defect.
+  Second run (after committing this round's Directory and posts.js
+  changes): `check-ai-disclosure.mjs` now genuinely **FAILED** on 15 routes
+  — `/`, `/blog`, all 12 posts.js-backed post routes, and `/directory` —
+  each mapped in `app/lib/page-origins.js`'s `PRODUCING_ROUNDS` to an older
+  round while this round's own commit was now the newest one touching their
+  listed source files. Fixed by moving all 15 entries to round 197 and
+  adding this round's own note to each, the same pattern the file's own
+  history uses (see the entries themselves for exactly what changed and
+  why), committed separately. Third run: fully green end to end — `npm run
+  build` clean, `all route checks passed`, no `UNVERIFIED` or `FAIL` lines,
+  no recurrence of the documented `test-orchestrate-runner-launch.mjs`
+  flake.
 - Result: not measured — this round re-verified existing published claims
   and fixed a wording error; maintain is exempt from the charter's first
   test (would a stranger care), and there is no reader-engagement number for
