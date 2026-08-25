@@ -53,6 +53,36 @@
 // prose, with no tier or scope qualifier \u2014 the baseline case a number here
 // is safe to encode. Every other non-null or null choice below is commented
 // at its own entry with the specific reason.
+import { RETIREMENT_DATES, numberWord, today } from "./retirement-dates.js";
+
+// The OpenAI row's `sentenceMore` below used to end with a hand-typed count
+// ("nine of them already switched off, one still upcoming (counted
+// 2026-08-24)") -- the same drifting-count shape app/lib/one-limit-count.js
+// exists to stop for a different figure, caught during round 193's sweep for
+// claims that go false with the passage of time alone (2026-08-25). The date
+// qualifier told a reader the count was a snapshot, but not what the current
+// count actually is, and the count moves the moment gpt-4-1106-preview's
+// 2026-10-23 shutdown passes. Derived here instead, straight from
+// RETIREMENT_DATES, using the same rule OpenAI's own bullet states for
+// identifying a preview model ("identified by preview in the model name").
+function previewTierSentence() {
+  const rows = RETIREMENT_DATES.filter(
+    (row) => row.vendor === "OpenAI" && /preview/i.test(row.what)
+  );
+  const todayIso = today();
+  const upcoming = rows.filter((row) => row.shutdown >= todayIso).length;
+  const past = rows.length - upcoming;
+  const upcomingPhrase =
+    upcoming === 0 ? "none still upcoming" : `${numberWord(upcoming)} still upcoming`;
+  return (
+    `The preview tier is not hypothetical here: ${numberWord(rows.length)} of the ` +
+    `OpenAI rows on the model retirement calendar carry “preview” in the ` +
+    "identifier, which is exactly how OpenAI's bullet says a preview model is " +
+    `identified — ${numberWord(past)} of them already switched off, ` +
+    `${upcomingPhrase}. For those, the floor OpenAI states is weeks, not months.`
+  );
+}
+
 export const RETIREMENT_COMMITMENTS = [
   {
     vendor: "OpenAI",
@@ -91,7 +121,8 @@ export const RETIREMENT_COMMITMENTS = [
     sentence:
       "Unless safety or compliance concerns require a faster timeline, we provide the following minimum notice periods before model retirement: Generally available models: At least 6 months. Specialized variants of generally available models: At least 3 months. Examples include chat variants such as gpt-5.1-chat-latest, Codex variants such as gpt-5.3-codex, and deep research variants such as o3-deep-research. Preview models: Preview models, identified by preview in the model name, may be retired with much shorter notice, such as 2 weeks. Examples include computer-use-preview and gpt-4o-audio-preview. We don't recommend using preview models for business-critical production workloads unless you can migrate on short notice.",
     sentenceMore:
-      "All deprecated models and endpoints will also have a shut down date. The faster-timeline clause means even these dates can move earlier. The preview tier is not hypothetical here: ten of the OpenAI rows on the model retirement calendar carry “preview” in the identifier, which is exactly how OpenAI's bullet says a preview model is identified — nine of them already switched off, one still upcoming (counted 2026-08-24). For those, the floor OpenAI states is weeks, not months.",
+      "All deprecated models and endpoints will also have a shut down date. The faster-timeline clause means even these dates can move earlier. " +
+      previewTierSentence(),
     // null (round 182): two compounding reasons, not one. (1) Two floors \u2014
     // GA models: 180 days; specialized variants: 90 days \u2014 and
     // RETIREMENT_DATES carries no field saying which OpenAI row is which;

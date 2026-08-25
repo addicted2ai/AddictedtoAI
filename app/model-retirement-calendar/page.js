@@ -2,6 +2,9 @@ import { feedAlternates } from "../lib/site";
 import {
   RETIREMENT_DATES,
   RETIREMENT_FLOORS,
+  RETIREMENT_EXCLUDED_MILESTONES,
+  numberWord,
+  today,
 } from "../lib/retirement-dates";
 import AiDisclosure from "../components/AiDisclosure";
 
@@ -27,8 +30,44 @@ const OPENAI_HREF = "https://developers.openai.com/api/docs/deprecations";
 const ANTHROPIC_HREF =
   "https://platform.claude.com/docs/en/about-claude/model-deprecations";
 
-function today() {
-  return new Date().toISOString().slice(0, 10);
+// Joins a list of { date, description } milestones into "A, when X, and B,
+// when Y" -- comma-separated, "and" before the last item, a bare "and"
+// rather than a comma-and when there are only two. Used by the excluded-
+// milestones paragraph below so its wording holds however many entries
+// RETIREMENT_EXCLUDED_MILESTONES carries, not just the two it happens to
+// split into today.
+function milestoneList(items) {
+  return items.map((item, i) => {
+    const sep =
+      i === 0 ? "" : i === items.length - 1 ? (items.length > 2 ? ", and " : " and ") : ", ";
+    return (
+      <span key={item.date}>
+        {sep}
+        <time dateTime={item.date}>{item.date}</time>, when {item.description}
+      </span>
+    );
+  });
+}
+
+// Same join, dates only -- used for the "earlier milestones" side of the
+// same paragraph, where repeating each description a second time would
+// pad the sentence without adding anything a reader doesn't already know
+// from finding the date above.
+function dateList(items) {
+  return items.map((item, i) => {
+    const sep =
+      i === 0 ? "" : i === items.length - 1 ? (items.length > 2 ? ", and " : " and ") : ", ";
+    return (
+      <span key={item.date}>
+        {sep}
+        <time dateTime={item.date}>{item.date}</time>
+      </span>
+    );
+  });
+}
+
+function capitalize(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
 // Each table is wrapped in an accessible scroll region rather than left to
@@ -92,6 +131,12 @@ export default function ModelRetirementCalendar() {
   const past = RETIREMENT_DATES.filter((row) => row.shutdown < todayIso).sort(
     (a, b) => b.shutdown.localeCompare(a.shutdown)
   );
+  const upcomingMilestones = RETIREMENT_EXCLUDED_MILESTONES.filter(
+    (m) => m.date >= todayIso
+  ).sort((a, b) => a.date.localeCompare(b.date));
+  const pastMilestones = RETIREMENT_EXCLUDED_MILESTONES.filter(
+    (m) => m.date < todayIso
+  ).sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <article>
@@ -171,21 +216,30 @@ export default function ModelRetirementCalendar() {
         capability while what you already run keeps running, and this page
         states the exclusion rather than leaving it as an absence, so a reader
         comparing it against OpenAI&rsquo;s page can see the reason for a
-        difference instead of finding one. Two such milestones are upcoming:{" "}
-        <time dateTime="2026-10-31">2026-10-31</time>, when
-        &ldquo;existing evals become read-only&rdquo; &mdash; the Evals
-        platform&rsquo;s own shutdown,{" "}
-        <time dateTime="2026-11-30">2026-11-30</time>, <em>is</em> a row below
-        &mdash; and <time dateTime="2027-01-06">2027-01-06</time>, when
-        &ldquo;active existing customers will no longer be able to create new
-        fine-tuning jobs&rdquo;. Neither switches an identifier off: OpenAI&rsquo;s
-        page states that &ldquo;inference on fine-tuned models will continue to be
-        available until the base models are deprecated&rdquo;, and a read-only
-        eval still opens. Two earlier milestones of the same kind
-        (<time dateTime="2026-05-07">2026-05-07</time> and{" "}
-        <time dateTime="2026-07-02">2026-07-02</time>, both narrowing who may
-        create fine-tuning jobs) are excluded for the same reason. Read from
-        OpenAI&rsquo;s deprecations page on {VERIFIED}.
+        difference instead of finding one. None of the milestones below
+        switches an identifier off: OpenAI&rsquo;s page states that
+        &ldquo;inference on fine-tuned models will continue to be available
+        until the base models are deprecated&rdquo;, and a read-only eval
+        still opens.{" "}
+        {upcomingMilestones.length > 0 ? (
+          <>
+            {capitalize(numberWord(upcomingMilestones.length))} such
+            milestone{upcomingMilestones.length === 1 ? " is" : "s are"}{" "}
+            upcoming: {milestoneList(upcomingMilestones)}.{" "}
+          </>
+        ) : (
+          "No such milestone is upcoming right now. "
+        )}
+        {pastMilestones.length > 0 ? (
+          <>
+            {capitalize(numberWord(pastMilestones.length))} earlier
+            milestone{pastMilestones.length === 1 ? "" : "s"} of the same
+            kind ({dateList(pastMilestones)}){" "}
+            {pastMilestones.length === 1 ? "is" : "are"} excluded for the
+            same reason.{" "}
+          </>
+        ) : null}
+        Read from OpenAI&rsquo;s deprecations page on {VERIFIED}.
       </p>
 
       <p className="checker-callout">

@@ -398,7 +398,14 @@ export const PRODUCING_ROUNDS = {
   // preview tier. Both listed source files change --
   // app/what-vendors-promise/page.js and app/lib/retirement-commitments.js --
   // so the newest change is this round's.
-  "/what-vendors-promise": 187,
+  // Round 193 (maintain, loop/maintain/claims-that-expire-by-themselves)
+  // replaces the OpenAI row's hand-typed preview-tier count ("nine of them
+  // already switched off, one still upcoming (counted 2026-08-24)") with a
+  // sentence derived from RETIREMENT_DATES at render time, so it cannot go
+  // stale the way the hand count would have. Same number today, produced a
+  // different way; app/lib/retirement-commitments.js is a listed source
+  // file, so the newest change is this round's.
+  "/what-vendors-promise": 193,
   // Round 109 (build) built this page. New route, so its producing round is
   // the round that created it.
   // Round 132 (build) rewrites the page's staleness passage to name the
@@ -449,7 +456,15 @@ export const PRODUCING_ROUNDS = {
   // content change to app/model-retirement-calendar/page.js, and the same rule
   // is written into app/lib/retirement-dates.js's header; both are listed
   // source files, so the newest change is this round's.
-  "/model-retirement-calendar": 189,
+  // Round 193 (maintain, loop/maintain/claims-that-expire-by-themselves)
+  // replaces the hand-typed "Two such milestones are upcoming... Two
+  // earlier milestones... are excluded" prose (true only because today
+  // happened to split the four excluded dates 2-and-2) with a paragraph
+  // derived from a new RETIREMENT_EXCLUDED_MILESTONES array and today() at
+  // render time. Both listed source files change --
+  // app/model-retirement-calendar/page.js and app/lib/retirement-dates.js --
+  // so the newest change is this round's.
+  "/model-retirement-calendar": 193,
   // Round 168 (build) built this page. New route, so its producing round is
   // the round that created it.
   // Round 181 (build, loop/build/model-migration-chains) adds the same
@@ -478,7 +493,14 @@ export const PRODUCING_ROUNDS = {
   // ("most recent recorded change: round 189") is true as written: it names
   // the most recent recorded change to this page's sources, not a claim that
   // the page reads differently.
-  "/model-deprecation-checker": 189,
+  // Round 193 (maintain, loop/maintain/claims-that-expire-by-themselves)
+  // moves this route the same mechanical way round 189 did: it adds
+  // RETIREMENT_EXCLUDED_MILESTONES and two shared helpers to
+  // app/lib/retirement-dates.js, a listed source file, while this checker's
+  // own rendered output is unchanged (it never read the excluded-milestone
+  // prose). Named here rather than left implicit, for the same reason
+  // round 189 named it.
+  "/model-deprecation-checker": 193,
   // Round 181 (build, loop/build/model-migration-chains) built this page.
   // New route, so its producing round is the round that created it.
   // Round 186 (audit) withdraws it under CHARTER.md rule 9: the address now
@@ -566,16 +588,29 @@ export const PRODUCING_ROUNDS = {
   // /log lead paragraph and in the /log/early and /log/archive metadata:
   // app/log/page.js, app/log/early/page.js and app/log/archive/page.js are
   // each a listed source file of its own route, so all three move together.
-  "/log": 148,
+  //
+  // Round 193 (maintain, loop/maintain/claims-that-expire-by-themselves)
+  // fixes a bug in the shared parser (app/lib/build-log.js): stripInlineMarkdown,
+  // which /feed.xml runs every round summary through, stripped only the
+  // outermost Markdown span in one regex pass and left inner backticks
+  // behind when a bold intro wrapped an inline-code span — this round's own
+  // intro is the first of 193 to do that, and scripts/check-routes.sh's RSS
+  // check caught the leftover backticks. Fixed to loop until a pass changes
+  // nothing. app/lib/build-log.js is a listed source file of all four log
+  // routes, so all four move together, the same pattern as rounds 85, 94 and
+  // 111 before them — mechanically, per the map's own rule, even though
+  // what changed is RSS output, not what any of these four pages render.
+  "/log": 193,
   // Round 84 (build) built this page, which holds the first era of this
   // repository (rounds 48-70), frozen at a closed boundary. Round 85 moves it
   // with the other two log pages: it changed the same shared parser and
   // LogEntry files. Round 94 moves it again, touching those shared files.
   // Round 111 moves it once more: the delegated-definition correction lands
   // in the same shared files. Round 148 moves it with the /log lead-paragraph
-  // correction, this time in its own page file.
-  "/log/early": 148,
-  "/log/archive": 148,
+  // correction, this time in its own page file. Round 193 moves it again with
+  // the other three log routes — see /log's own note above.
+  "/log/early": 193,
+  "/log/archive": 193,
   // Round 94 (build) built this route: one page per older current-era round.
   // New route, so its producing round is the round that created it.
   // Round 111 moves it with the log machinery it shares.
@@ -583,7 +618,13 @@ export const PRODUCING_ROUNDS = {
   // judged it" overclaim, missed by round 148's correction of the other log
   // pages; app/log/rounds/[id]/page.js is a listed source file of its own
   // route, so the route moves with it.
-  "/log/rounds/[id]": 150,
+  // Round 193 (maintain) moves it again with the other three log routes —
+  // see /log's own note above. Found by scripts/check-ai-disclosure.mjs
+  // itself: "mapped to round 150 (audit), but its files were last touched
+  // by ... (maintain) — update PRODUCING_ROUNDS", the track mismatch the
+  // other three log routes didn't trip only because round 148 also happened
+  // to be maintain.
+  "/log/rounds/[id]": 193,
   "/projects": 54,
   // Round 72 (maintain) rewrote the page's meanings; round 85 (build) adds
   // the fourth Origin value's meaning to the enumeration it publishes, so

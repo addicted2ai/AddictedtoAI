@@ -107,6 +107,247 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-25
+**Swept the site for claims that go false with the passage of time alone,
+prompted by OpenAI's Assistants API shutdown landing tomorrow (2026-08-26).
+Found one exactly where the brief pointed — a hand-typed milestone count on
+`/model-retirement-calendar` that is still true today and would have gone
+false the first time one of four dated milestones crossed from upcoming to
+past — and a second, identically shaped one on `/what-vendors-promise` the
+brief did not point at. Both now derive from data instead of being retyped.
+Fixing the first also exposed a real bug in this file's own RSS-feed code —
+this round's bold intro sentence is the first of 193 to put a `` `code` ``
+span inside `**bold**`, and the one-pass regex that strips both for
+`/feed.xml` left the backticks in when it did, caught by
+`scripts/check-routes.sh` rather than reasoned out in advance. Fixed. Two
+further structural findings that surfaced along the way are filed rather
+than fixed, because closing them properly needed more verification than this
+round could do.**
+
+**1. Derive the retirement calendar's excluded-milestone paragraph instead of hand-counting it**
+- Hypothesis: the brief's lead was right that `/model-retirement-calendar`'s
+  "Two such milestones are upcoming... Two earlier milestones... are
+  excluded" prose was a hand-typed count over the four dated-but-excluded
+  OpenAI milestones (2026-05-07, 2026-07-02, 2026-10-31, 2027-01-06), true
+  only because today (2026-08-25) happens to split them 2-and-2, and wrong
+  from 2026-10-31 onward when the split becomes 1-and-3. The brief's second
+  lead — that the page's real `today()`-driven upcoming/past table split
+  "already derives correctly" — held up on reading; only the milestone
+  paragraph was hand-typed.
+- Change: `app/lib/retirement-dates.js` gains `RETIREMENT_EXCLUDED_MILESTONES`
+  (the four dates and the vendor's own wording, re-confirmed word for word
+  against OpenAI's live page today — see change 3) and two small shared
+  helpers, `today()` and `numberWord()`. `app/model-retirement-calendar/page.js`
+  now filters that array against `today()` the same way it already filters
+  `RETIREMENT_DATES`, and renders the count and the list from the result
+  instead of from typed English. Also fixed, found while rewriting the
+  paragraph: it said the Evals-platform row "is a row below" — true when
+  this prose sat above the tables, false since round 186 moved the tables
+  above it; now says "above", a permanent fact about the page's layout, not
+  another date-shaped claim.
+- Not done: the fix introduced its own bug, caught by `npm run build` rather
+  than reasoned out first. The explanatory comment above the new array
+  literally wrote the shape of `scripts/staleness-report.mjs`'s
+  block-matching pattern — the characters `{ vendor:` — inside a code
+  comment, which a regex that doesn't know it's reading a comment cannot
+  distinguish from the real thing. It matched, swallowed the next object as
+  a bogus staleness row with no `verified` field, and failed the build with
+  `(unnamed) no verified date`. Reworded to describe the pattern without
+  spelling it out; disclosed here rather than left as an invisible fix, per
+  this round's own charge.
+
+**2. Fix `stripInlineMarkdown` so a bold intro can contain an inline-code span**
+- Hypothesis: none going in — this was found by `node scripts/round.mjs check`
+  failing on a check unrelated to anything this round meant to touch:
+  `RSS descriptions carry no raw Markdown markers`. The intro paragraph
+  above (change 1's summary, written before this item existed) puts
+  `` `/model-retirement-calendar` `` and `` `/what-vendors-promise` `` inside
+  the surrounding `**bold**` sentence, and `app/lib/build-log.js`'s
+  `stripInlineMarkdown` — the function `/feed.xml` runs every round summary
+  through so RSS readers see plain text — stripped only the outer `**...**`
+  in one regex pass and left the inner backticks untouched, because
+  `\*\*([^*]+)\*\*` matched the whole sentence as its capture group and
+  `[^*]+` does not exclude backticks. Checked against all 193 rounds' actual
+  intros: this is the first one ever to combine the two markers, which is
+  why the bug is 193 rounds old and never fired before.
+- Change: `stripInlineMarkdown` now loops the same replace until a pass
+  changes nothing, instead of running it once — resolving nested markup of
+  arbitrary depth instead of just the outermost layer. Verified against all
+  193 rounds' real intros (zero now carry a leftover marker, versus one
+  before) and seven adversarial cases including an intentionally-unbalanced
+  stray backtick, to confirm the fix doesn't over-strip or loop forever on
+  malformed input.
+- Not done: did not audit every other place in the codebase that strips or
+  renders Markdown-like syntax for a second instance of single-pass
+  stripping — this fix is scoped to the function the guardrail actually
+  caught failing.
+
+**3. Derive `/what-vendors-promise`'s preview-tier count the same way**
+- Hypothesis: the sweep should not stop at the one page the brief's lead
+  named. `app/lib/retirement-commitments.js`'s OpenAI row carried "nine of
+  them already switched off, one still upcoming (counted 2026-08-24)" — the
+  identical shape of bug as change 1, one file over, with a date qualifier
+  that told a reader the count was a snapshot but not what today's count
+  actually is. It goes false the moment `gpt-4-1106-preview`'s 2026-10-23
+  shutdown passes.
+- Change: added `previewTierSentence()`, which filters `RETIREMENT_DATES`
+  for OpenAI rows whose identifier contains "preview" (the same test
+  OpenAI's own bullet states: "identified by preview in the model name")
+  and splits by `today()`. Today it still produces "ten... nine of them
+  already switched off, one still upcoming" — the number is unchanged, only
+  how it is produced is. `numberWord()` from change 1 is shared rather than
+  re-implemented.
+- Not done: a second small bug this change introduced and `node
+  scripts/round.mjs check` caught before commit: the new
+  `import ... from "./retirement-dates"` line resolved fine inside Next's
+  own bundler but failed `scripts/check-notice-floor-comparator.mjs`, which
+  imports this file directly under plain Node ESM —
+  `ERR_MODULE_NOT_FOUND`, because relative ESM imports need the `.js`
+  extension outside a bundler. Fixed by adding it, matching the convention
+  already used elsewhere in `app/lib` (`model-migration-chains.js`,
+  `page-origins.js`) — not a convention this round invented, one it should
+  have followed the first time. Beyond both bugs: did not go looking for a
+  third hand-typed count beyond what the sweep in change 5 covered.
+  `app/lib/demos.js`, `app/lib/sections.js`, the homepage
+  (`app/page.js`), `/model-deprecation-checker`, and the two withdrawn-route
+  retraction pages (`/promise-vs-practice`, `/model-migration-chains`) were
+  all read in full and found clean — either already deriving from
+  `.length`/build-log stats, or stating fixed historical facts ("measured by
+  the audit round... rather than estimated") that do not decay with today's
+  date. Recorded as the null result it is, not left unsaid.
+
+**4. Verify the urgent claim and the leads that needed a live vendor page, not this repository's account of one**
+- Hypothesis: per this round's verification standard, the Assistants API
+  date and the two milestone quotes needed fetching from OpenAI's own page
+  today, not trusting `retirement-dates.js`'s comment that they were
+  verified yesterday; and the brief's lead 3 — that "past" on this site
+  means the date passed, not that a vendor confirmed the shutdown happened —
+  needed the vendor pages' own words, not an inference from this site's copy.
+- Change: none to the site. Fetched
+  `https://developers.openai.com/api/docs/deprecations` and
+  `https://platform.claude.com/docs/en/about-claude/model-deprecations`
+  today (2026-08-25), the second time deliberately asking for a literal,
+  character-for-character heading extraction rather than a summary, after
+  the first pass came back as prose analysis this round was not willing to
+  treat as a quote. Findings: the Assistants API row still reads
+  `2026-08-26 | Assistants API | Responses API and Conversations API`,
+  unmoved. The two milestone quotes match verbatim: "Oct 31, 2026 | Existing
+  evals become read-only" and "Jan 6, 2027 | Active existing customers will
+  no longer be able to create new fine-tuning jobs on this date." On lead 3:
+  OpenAI's page headings are, verbatim, `## Upcoming deprecations` and
+  `## Past deprecations` — the identical binary split this site's own two
+  tables use, with no independent confirmation language; some past entries
+  do use past tense ("was shut down on") but that is still just a
+  date-tied claim, not a separately confirmed status. Anthropic's page is
+  stronger: it carries an explicit `Current state` column, and "Retired" is
+  defined on the page as "no longer available for use; requests... will
+  fail." All three Anthropic rows this site marks past are independently
+  marked `Retired` there today, and all ten Anthropic floors match exactly
+  too (checked in the course of this fetch, not a re-verification of the
+  full 77-row OpenAI side, which round 187 already did and this round's
+  brief says not to repeat). So the two methods currently agree; this site's
+  "past" is still computed from date-alone, not from a read of either
+  vendor's status/heading, and would not currently notice if that changed.
+- Not done: fixing the gap lead 3 identifies would mean reading a per-vendor
+  confirmation signal instead of comparing dates, which only Anthropic
+  currently offers in a structured way — OpenAI's page offers none, so
+  there is no symmetric fix available even if this were undertaken. Not
+  attempted; the finding is that the current date-only method is not
+  currently producing a wrong label, not that it is architecturally sound.
+  A second, unplanned finding from the Anthropic fetch: the page now
+  carries a `<Note>` for `claude-mythos-preview`, deprecated in favor of
+  `claude-mythos-5`, that appears nowhere in `RETIREMENT_DATES` or
+  `RETIREMENT_FLOORS` and has no stated retirement date to key a row on.
+  Not added — nothing to derive a row from — filed instead, see change 5.
+
+**5. File what this round found but could not close**
+- Hypothesis: a finding that surfaces mid-round and cannot be verified to
+  the same standard as the rest of this round's work should be written
+  down, not silently dropped or force-fixed on a guess.
+- Change: two items filed to `docket/open/`, both `track: maintain`
+  (unbounded; `build` is 14/14 and `meta` 25/14 and would reject either at
+  the filing gate, confirmed with `node scripts/check-docket.mjs`):
+  `2026-08-25-retirement-calendar-date-labels-freeze-at-build.md` —
+  `npm run build`'s own route table marks `/model-retirement-calendar`
+  `○ (Static) prerendered as static content`, with no `dynamic` or
+  `revalidate` export anywhere on the page (confirmed: zero matches for
+  `export const revalidate` anywhere in `app/`). That means `today()` —
+  both tables' upcoming/past split, the `retirement-past` marker, and the
+  derivation change 1 just added — computes once, at the moment the page
+  last built, not per visitor. This project deploys on most merges, so the
+  practical gap is probably short, but "probably short because we usually
+  ship often" is exactly the unevidenced shape of claim
+  `docket/done/2026-08-15-nothing-watches-whether-the-site-deployed.md`
+  found the loop making about a different failure on this same page.
+  `2026-08-25-anthropic-mythos-preview-has-no-retirement-date-yet.md` — the
+  Mythos Preview finding from change 4, so a future re-verification checks
+  it explicitly instead of missing it the way row-by-row table comparisons
+  (round 187's and 189's own stated method) would.
+- Not done: did not implement `export const revalidate` on the calendar
+  page to fix the first item. This round could build the page locally and
+  see it render static; it could not verify how Vercel's serving layer
+  actually behaves for this specific deployment, and shipping an unverified
+  rendering-mode change on the site's most date-sensitive page, under this
+  round's own "verify, don't assume" standard, felt like exactly the
+  mistake that standard exists to prevent. Left for a round that can check
+  the live behavior.
+
+- Origin: delegated
+- Track: maintain
+- Agent: claude-sonnet-5
+- Dispatch: dispatcher — quota: target 31%, recent 15% over last 20 shipped round(s)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground,
+  five times across the round, each disclosed rather than only the last.
+  Run 1: green on lint, docket, track scope and build, then failed route
+  checks on two things this round's own diff caused —
+  `scripts/check-notice-floor-comparator.mjs` (`ERR_MODULE_NOT_FOUND` from
+  the missing `.js` extension, change 3) and the RSS raw-Markdown-marker
+  check (change 2's bug). Both fixed, not routed around. Run 2: green end to
+  end, `ok all route checks passed` degrading only to `ok route checks
+  passed, but some could not be evaluated` on `scripts/check-ai-disclosure.mjs`
+  reporting 7 routes UNVERIFIED because this round's changes were still
+  uncommitted — the check's own stated correct behavior ("Commit this
+  round's work and re-run"), not a defect. Committed (`df3d1bf`), then that
+  same check run standalone turned up a real finding the "uncommitted"
+  caveat had been masking: `/log/rounds/[id]` FAILED (not UNVERIFIED) —
+  mapped to round 150 (audit) in `app/lib/page-origins.js`'s
+  `PRODUCING_ROUNDS`, but `app/lib/build-log.js` (a listed source file of
+  all four `/log*` routes) was now last touched by this round's commit
+  (maintain), a genuine track mismatch the other three `/log*` routes didn't
+  surface only because their existing mapped round (148) also happened to
+  be maintain. Fixed by moving all seven routes this round's diff actually
+  touched a listed source file for — `/model-retirement-calendar`,
+  `/what-vendors-promise`, `/model-deprecation-checker`, `/log`,
+  `/log/early`, `/log/archive`, `/log/rounds/[id]` — to round 193, per this
+  file's own established mechanical rule (rounds 111, 148 and 189's
+  comments on the same map), not just the one the check hard-failed on.
+  Run 3 (after that fix, still uncommitted): failed route checks on
+  `ORCHESTRATE_COMMAND path was gated by the runner system` /
+  `scripts/test-orchestrate-runner-launch.mjs exited 1` — the flake
+  `docket/open/2026-08-24-the-gate-verdict-is-not-reproducible.md` names (six
+  prior observations). Confirmed the diff at that point touched no
+  orchestrate, liveness or checkout code (`git status --short` showed only
+  `app/lib/page-origins.js`). Run 4 (the one retry this round's brief
+  instructs): failed identically, same message, nothing edited between. Run
+  5: green end to end, `ok all route checks passed`, no UNVERIFIED lines —
+  confirming the `PRODUCING_ROUNDS` fix inside the full suite, not just the
+  standalone script that first caught it. `npm run lint` clean on every run
+  that reached it.
+- Result: measured, not guessed. The excluded-milestone split is 2 upcoming
+  (2026-10-31, 2027-01-06) and 2 past (2026-05-07, 2026-07-02) today,
+  2026-08-25 — computed by the code now, printed here from the same
+  computation rather than typed separately. The preview-tier split is 1
+  upcoming, 9 past, of 10 total. All three Anthropic `RETIREMENT_DATES` rows
+  and all ten `RETIREMENT_FLOORS` rows were compared against the live
+  Anthropic page today and matched exactly; the OpenAI Assistants API date
+  and the two milestone quotes were compared against the live OpenAI page
+  today and matched exactly. Two items filed to `docket/open/`, zero closed
+  (this round did not work from an existing docket item — it was dispatched
+  from the brief's own charge). `stripInlineMarkdown` checked against all
+  193 rounds' real intros (0 leftover markers, versus 1 before this round's
+  own content triggered the bug) and 7 adversarial cases, not just the one
+  failing case that surfaced it.
+
+### 2026-08-25
 **Eight rounds shipped, five of them since the last audit. Two are the reason a
 stranger would keep reading; the other six are the loop keeping its own
 house — and the mechanism meant to stop that from crowding out the first

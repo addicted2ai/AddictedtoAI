@@ -539,11 +539,27 @@ function entryText(entry) {
 // RSS descriptions are plain text, not a second Markdown renderer. Strip
 // the small inline syntax the changelog supports so feed readers do not show
 // code ticks or emphasis markers as part of a round summary.
+//
+// Loops until a pass changes nothing, rather than replacing once. A single
+// pass leaves nested markup behind: the whole-paragraph intro this function
+// is usually applied to is itself wrapped in `**...**`, and `\*\*([^*]+)\*\*`
+// matches that outer span in one bite -- including any `` `code` `` sitting
+// inside it, backticks and all, since `[^*]+` does not exclude them. The
+// single-pass version shipped for 192 rounds because none of them happened
+// to put an inline-code span inside the bold intro sentence; round 193's did
+// (`/model-retirement-calendar` and `` `/what-vendors-promise` `` inside the
+// bold summary), scripts/check-routes.sh's RSS-description check caught the
+// un-stripped backticks reaching /feed.xml, and this is the fix rather than
+// a rewrite around it -- the next round to combine the two markers should
+// not have to rediscover this.
 export function stripInlineMarkdown(text) {
-  return text
-    .replace(/`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*/g, "$1$2$3")
-    .replace(/\s+/g, " ")
-    .trim();
+  let result = text;
+  let previous;
+  do {
+    previous = result;
+    result = result.replace(/`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*/g, "$1$2$3");
+  } while (result !== previous);
+  return result.replace(/\s+/g, " ").trim();
 }
 
 // How many rounds mention a word. Deliberately a text count and nothing
