@@ -72,6 +72,10 @@ export const ROUTE_FILES = {
     "app/blog/copilot-consolidation/page.js",
     "app/lib/posts.js",
   ],
+  "/blog/california-detection-mandate": [
+    "app/blog/california-detection-mandate/page.js",
+    "app/lib/posts.js",
+  ],
   "/charter": ["app/charter/page.js", "app/lib/charter.js"],
   "/loop-history": [
     "app/loop-history/page.js",
