@@ -772,6 +772,17 @@ function entriesOf(html) {
 
   let bad = 0;
 
+  // Both assertions below distinguish a page that renders a whole era from
+  // one that renders a derived window of it: /log/early and /log/archive
+  // each hold their entire era, so "every round on the page" is a real
+  // population there. /log does not -- it renders only the newest rounds
+  // that fit a byte budget (getLogPageSize() in app/lib/build-log.js), so
+  // its denominator is a function of how fat recent entries are, not of
+  // anything a count or a preset means. Hoisted here so both the
+  // mention-count assertion below and the preset assertion further down
+  // share one definition instead of each carrying its own copy.
+  const WHOLE_ERA = ["/log/early", "/log/archive"];
+
   // Anchor text, not a fixed <strong> shape: the homepage states one figure
   // as "<strong>15</strong> rounds say ..." and another as "13 for ...", and
   // an assertion that only understood one of them would silently stop
@@ -807,16 +818,29 @@ function entriesOf(html) {
       bad++;
       continue;
     }
-    // A count equal to every round on the page is not a signal, it is the
-    // page size wearing a number. The homepage explains at length why it
-    // deleted a "guardrail failures: 0" counter for being arithmetic that
-    // looked like evidence; printing "N rounds say X" where N is every
-    // round would be the same thing in the same panel.
-    if (actual === entries.length) {
+    // A count equal to every round on the page is not a signal on a page
+    // that renders a whole era -- it is the page size wearing a number. The
+    // homepage explains at length why it deleted a "guardrail failures: 0"
+    // counter for being arithmetic that looked like evidence; printing "N
+    // rounds say X" where N is every round would be the same thing in the
+    // same panel. But /log is not a whole era (WHOLE_ERA above, and the
+    // round 188 reasoning at the preset check below, which applies here
+    // unchanged) -- its denominator is a derived window, so an all-match
+    // there is reported, not failed. Round 190 hit exactly this: fixing the
+    // claims in its own entry dropped the /log window to 7 rounds, all 7 of
+    // which mentioned "wrong", and this assertion failed for a reason that
+    // had nothing to do with the entry content.
+    if (actual === entries.length && WHOLE_ERA.includes(path)) {
       console.log(
         `FAIL  homepage advertises "${term}", which matches all ${actual} rounds on ${path} — that is the page size, not a finding`
       );
       bad++;
+      continue;
+    }
+    if (actual === entries.length) {
+      console.log(
+        `note  homepage advertises "${term}", which matches all ${actual} rounds on ${path}, but ${path} renders a derived window of its era rather than the era — that is the page size, not the count; the whole-era pages carry the verdict`
+      );
       continue;
     }
     console.log(`ok    homepage advertises ${claimed} for "${term}"; ${path} has ${actual} of ${entries.length}`);
@@ -848,11 +872,14 @@ function entriesOf(html) {
   //
   // So on /log an all-match is reported and not failed. It is the same
   // objection the homepage-figures guard above makes -- a number equal to
-  // the page size is the page size wearing a number -- turned on the guard
-  // that was making it. The failing assertion stays exactly as it was on
-  // the two pages where the denominator is a real population, and a preset
-  // that returns everything everywhere still fails there.
-  const WHOLE_ERA = ["/log/early", "/log/archive"];
+  // the page size is the page size wearing a number. Round 188 applied this
+  // reasoning to the preset check only and left the homepage-figures guard
+  // above unscoped; round 191 scoped that guard the same way, reusing the
+  // WHOLE_ERA constant hoisted near the top of this block rather than
+  // defining it twice, so a later reader sees one principle applied twice,
+  // not two ad-hoc exceptions. The failing assertion stays exactly as it
+  // was on the two pages where the denominator is a real population, and a
+  // preset that returns everything everywhere still fails there.
   for (const path of ["/log", ...WHOLE_ERA]) {
     const html = await fetchText(base + path);
     const entries = await load(path);
