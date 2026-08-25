@@ -237,7 +237,8 @@ what Sora makes.**
   committing them: identical, except `scripts/check-ai-disclosure.mjs`
   reported `UNVERIFIED` rather than `ok` — its own documented behaviour for
   source files with uncommitted changes, not a failure. Third run, after
-  committing change 3, recorded below.
+  committing change 3: green end to end again, `all route checks passed`,
+  no UNVERIFIED or SKIPPED lines.
 - Result: not yet measured — this post's own facts were re-verified against
   primary sources fetched this round (see above); "Result" here refers to
   reader engagement, which this project does not yet instrument per-post.
