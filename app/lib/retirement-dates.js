@@ -66,8 +66,15 @@
 // 2026-08-24 (round 189): the page states "inference on fine-tuned models
 // will continue to be available until the base models are deprecated" and
 // "inference on fine-tuned models will be disabled only when the underlying
-// base model is deprecated" -- so no identifier goes dark on any of those
-// dates. A read-only eval still opens.
+// base model is deprecated" -- so none of these four milestones switches an
+// identifier off. A read-only eval still opens.
+//
+// Careful with 2026-05-07: it is BOTH a milestone above AND a genuine
+// shutdown date, and this comment said "nothing goes dark on any of those
+// dates" until review caught it. Six rows below (the gpt-4o realtime and
+// audio previews) really do switch off that day. They are unrelated to the
+// fine-tuning milestone that happens to share the date -- which is exactly
+// why the rule is stated per-milestone and not per-date.
 //
 // The rule is drawn where it is because of the .ics feed, not for tidiness:
 // /model-retirement-calendar.ics emits one event per row, and the
