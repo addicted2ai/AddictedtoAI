@@ -23,7 +23,12 @@ export const toolCategories = [
         name: "Gemini",
         description:
           "Google's assistant — past 1 billion monthly users, with Gemini Spark, a 24/7 personal agent that acts on your behalf.",
-        verified: "2026-08-14",
+        // Round 197 (maintain) re-checked 2026-08-25 against Google's own
+        // blog.google posts, fetched raw: "Google's Gemini app hits 1
+        // billion monthly active users" and "The Gemini app becomes more
+        // agentic, delivering proactive, 24/7 help" (Gemini Spark "does
+        // real work on your behalf"). Both claims still match.
+        verified: "2026-08-25",
       },
       {
         href: "https://you.com/",
@@ -37,7 +42,12 @@ export const toolCategories = [
         name: "HuggingChat",
         description:
           "Chat with open models via Hugging Face's Omni router, metered by inference credits.",
-        verified: "2026-08-15",
+        // Round 197 (maintain) re-checked 2026-08-25: huggingface.co/chat
+        // (raw fetch) still labels its router "Omni" ("Omni automatically
+        // picks the best AI model..."); huggingface.co/docs/inference-providers/pricing
+        // (raw fetch) confirms usage is drawn from monthly per-account
+        // inference credits. Still matches.
+        verified: "2026-08-25",
       },
     ],
   },
@@ -68,7 +78,12 @@ export const toolCategories = [
         name: "Ollama",
         description:
           "Run open-source LLMs locally with one command — or in the cloud.",
-        verified: "2026-08-15",
+        // Round 197 (maintain) re-checked 2026-08-25: ollama.com (raw
+        // fetch) still advertises "Build with open models, on your
+        // computer and in the cloud," lists cloud regions (US, Europe,
+        // Singapore), and ollama.com/download still ships a single
+        // install command. Still matches.
+        verified: "2026-08-25",
       },
     ],
   },
@@ -81,14 +96,23 @@ export const toolCategories = [
         name: "Claude Agent SDK",
         description:
           "Anthropic's library for building production agents — the same agent loop, tools, and context management that power Claude Code, in Python and TypeScript.",
-        verified: "2026-08-14",
+        // Round 197 (maintain) re-checked 2026-08-25: code.claude.com/docs/en/agent-sdk/overview
+        // (raw fetch) still reads "The Agent SDK gives you the same
+        // tools, agent loop, and context management that power Claude
+        // Code, programmable in Python and TypeScript." Still matches.
+        verified: "2026-08-25",
       },
       {
         href: "https://openai.github.io/openai-agents-python/",
         name: "OpenAI Agents SDK",
         description:
           "OpenAI's lightweight Python SDK for building agentic apps — agents, handoffs, guardrails, sessions, and built-in tracing.",
-        verified: "2026-08-14",
+        // Round 197 (maintain) re-checked 2026-08-25: openai.github.io/openai-agents-python/
+        // (raw fetch) still describes itself as "a lightweight,
+        // easy-to-use package with very few abstractions" and its own
+        // nav still carries Handoffs, Guardrails, Sessions, and Tracing
+        // as live sections. Still matches.
+        verified: "2026-08-25",
       },
       {
         href: "https://www.langchain.com",
@@ -108,7 +132,14 @@ export const toolCategories = [
         name: "Model Context Protocol",
         description:
           "The open-source standard for connecting AI applications to tools and data — used by Claude, ChatGPT, and VS Code, governed under the Linux Foundation's Agentic AI Foundation.",
-        verified: "2026-08-14",
+        // Round 197 (maintain) re-checked 2026-08-25: linuxfoundation.org's
+        // own press release (raw fetch) confirms MCP is a founding
+        // project contribution to the Agentic AI Foundation (AAIF) under
+        // the Linux Foundation; code.visualstudio.com's MCP-servers docs
+        // and developers.openai.com's MCP-server docs (both raw fetch)
+        // confirm current VS Code and OpenAI/ChatGPT-side support. Still
+        // matches.
+        verified: "2026-08-25",
       },
     ],
   },
@@ -120,14 +151,22 @@ export const toolCategories = [
         name: "Firefly",
         description:
           "Adobe's AI creative studio — generate images, video, audio and more with 30+ AI models in one place.",
-        verified: "2026-08-14",
+        // Round 197 (maintain) re-checked 2026-08-25: firefly.adobe.com
+        // (raw fetch) still reads "Generate images, video, audio and
+        // more with 30+ AI models, all in one place." Still matches.
+        verified: "2026-08-25",
       },
       {
         href: "https://runway.com",
         name: "Runway",
         description:
           "AI video generation and world-model research — Creative, Dev, and Robotics platforms.",
-        verified: "2026-08-15",
+        // Round 197 (maintain) re-checked 2026-08-25: runway.com (raw
+        // fetch) still lists Creative, Dev (dev.runwayml.com), and
+        // Robotics (/product/robotics) as distinct product surfaces, and
+        // its own General World Model ("GWM-1") research copy is live.
+        // Still matches.
+        verified: "2026-08-25",
       },
       {
         href: "https://elevenlabs.io",
@@ -158,7 +197,12 @@ export const toolCategories = [
         name: "n8n",
         description:
           "Source-available workflow automation with AI nodes — fair-code licensed, not OSI open source.",
-        verified: "2026-08-15",
+        // Round 197 (maintain) re-checked 2026-08-25: github.com/n8n-io/n8n
+        // (raw fetch) still describes itself as "Fair-code workflow
+        // automation platform" distributed under the Sustainable Use
+        // License and n8n Enterprise License — neither is an OSI-approved
+        // open-source license. Still matches.
+        verified: "2026-08-25",
       },
     ],
   },

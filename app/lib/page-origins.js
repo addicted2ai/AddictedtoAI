@@ -306,7 +306,12 @@ export const PRODUCING_ROUNDS = {
   // Round 195 (author) adds the california-detection-mandate post to
   // posts.js, a listed source file of /, so the newest change is this
   // round's.
-  "/": 195,
+  // Round 197 (maintain, loop/maintain/directory-drift-recheck) fixes the
+  // ungrammatical "fetched the day this posts" phrase in the
+  // california-detection-mandate description in posts.js — a listed source
+  // file of / — so the newest change is this round's, even though this
+  // round's own charge was the Directory, not this page.
+  "/": 197,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
@@ -336,7 +341,11 @@ export const PRODUCING_ROUNDS = {
   // Round 195 (author) adds the california-detection-mandate post to
   // posts.js, which feeds the "More from the blog" list, so the newest
   // change is this round's.
-  "/blog": 195,
+  // Round 197 (maintain, loop/maintain/directory-drift-recheck) fixes the
+  // ungrammatical "fetched the day this posts" phrase in the
+  // california-detection-mandate description in posts.js, which feeds the
+  // "More from the blog" list, so the newest change is this round's.
+  "/blog": 197,
   // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The ultrafast-mode route is 108 by construction: this round built the
@@ -365,14 +374,19 @@ export const PRODUCING_ROUNDS = {
   // Round 195 (author) touches posts.js again (see above), so each of these
   // eight routes moves too even though none of these specific posts' claims
   // were part of this round's own re-verification.
-  "/blog/frontier-cyber": 195,
-  "/blog/claude-code-auto-mode": 195,
-  "/blog/cyber-eval-cascade": 195,
-  "/blog/gpt-5-6-price-drop": 195,
-  "/blog/fable-5-export-controls": 195,
-  "/blog/chatgpt-ads": 195,
-  "/blog/gemini-3-7-flash": 195,
-  "/blog/ultrafast-mode": 195,
+  // Round 197 (maintain, loop/maintain/directory-drift-recheck) touches
+  // posts.js again — fixing the california-detection-mandate description's
+  // wording, not any of these eight posts' content — so each of these eight
+  // routes moves too, the same mechanical way round 194 moved routes whose
+  // own posts it had not touched.
+  "/blog/frontier-cyber": 197,
+  "/blog/claude-code-auto-mode": 197,
+  "/blog/cyber-eval-cascade": 197,
+  "/blog/gpt-5-6-price-drop": 197,
+  "/blog/fable-5-export-controls": 197,
+  "/blog/chatgpt-ads": 197,
+  "/blog/gemini-3-7-flash": 197,
+  "/blog/ultrafast-mode": 197,
   // The ai-security-week route is 154 by construction: this round built the
   // page, and posts.js — a listed source file of every post route — carries
   // its metadata.
@@ -384,7 +398,9 @@ export const PRODUCING_ROUNDS = {
   // this round's re-verification.
   // Round 195 (author) touches posts.js again (see above), so this route
   // moves too.
-  "/blog/ai-security-week": 195,
+  // Round 197 (maintain, loop/maintain/directory-drift-recheck) touches
+  // posts.js again (see /'s own note above), so this route moves too.
+  "/blog/ai-security-week": 197,
   // The manus-meta-split route is 165 by construction: this round built the
   // page, and posts.js — a listed source file of every post route — carries
   // its metadata.
@@ -393,7 +409,9 @@ export const PRODUCING_ROUNDS = {
   // this round's re-verification.
   // Round 195 (author) touches posts.js again (see above), so this route
   // moves too.
-  "/blog/manus-meta-split": 195,
+  // Round 197 (maintain, loop/maintain/directory-drift-recheck) touches
+  // posts.js again (see /'s own note above), so this route moves too.
+  "/blog/manus-meta-split": 197,
   // The copilot-consolidation route is 178 by construction: this round built
   // the page, and posts.js — a listed source file of every post route —
   // carries its metadata.
@@ -402,10 +420,17 @@ export const PRODUCING_ROUNDS = {
   // this round's re-verification.
   // Round 195 (author) touches posts.js again (see above), so this route
   // moves too.
-  "/blog/copilot-consolidation": 195,
-  // New route: this round built it. app/lib/posts.js is also a listed
+  // Round 197 (maintain, loop/maintain/directory-drift-recheck) touches
+  // posts.js again (see /'s own note above), so this route moves too.
+  "/blog/copilot-consolidation": 197,
+  // New route: round 195 built it. app/lib/posts.js is also a listed
   // source file of this route.
-  "/blog/california-detection-mandate": 195,
+  // Round 197 (maintain, loop/maintain/directory-drift-recheck) fixes this
+  // post's own description — "fetched the day this posts" to "fetched the
+  // day this post was written" — in posts.js, the listed source file whose
+  // content this route's page actually renders, so the newest change is
+  // this round's.
+  "/blog/california-detection-mandate": 197,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 160 (maintain) corrects the two correction asides' present-tense
@@ -607,7 +632,11 @@ export const PRODUCING_ROUNDS = {
   // change is this round's. Found by scripts/check-ai-disclosure.mjs
   // itself: "mapped to round 125 (maintain), but its files were last
   // touched by ... (build) — update PRODUCING_ROUNDS".
-  "/directory": 174,
+  // Round 197 (maintain, loop/maintain/directory-drift-recheck) re-derives
+  // nine entries' descriptions against their own primary sources and moves
+  // their `verified` dates in app/lib/tool-categories.js — a listed source
+  // file — so the newest change is this round's.
+  "/directory": 197,
   // Round 131 (maintain) corrected the walkthrough's "Result" caption, which
   // the record had disproved.
   // Round 132 (build) renders per-demo verification dates from the new
