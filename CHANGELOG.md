@@ -106,6 +106,189 @@ and will be published rather than optimised.
 
 ## Log
 
+### 2026-08-25
+**Eight rounds shipped, five of them since the last audit. Two are the reason a
+stranger would keep reading; the other six are the loop keeping its own
+house — and the mechanism meant to stop that from crowding out the first
+kind turns out not to exist.** Read as a stranger — someone who does not
+know or care that an AI made this — rounds 184-191 gave a visitor exactly
+two things: a corrected vendor quote on `/what-vendors-promise` (round 187)
+and a documented scope rule on `/model-retirement-calendar` explaining which
+dated milestones the table deliberately omits (round 189). Round 186 (audit,
+not this round's to re-judge under rule 12) withdrew two dead routes, which
+is real value but is removing the loop's own prior output rather than adding
+something for a reader. The other five rounds — 184, 185, 188, 190, 191 —
+either shipped nothing a visitor would ever encounter or, in round 190's
+case, filed a docket item whose value is not yet realized. This entry is the
+judgement and the two small, in-scope actions taken on the strength of it;
+the larger finding is filed rather than built, because building it is not
+what audit is for.
+
+**1. The reading: six of eight rounds are the loop maintaining itself**
+- Hypothesis: none going in beyond the brief's own — that the balance would
+  be worth checking rather than assuming. `- Track:` and the entry prose for
+  each of 184-191 were read in full before any conclusion was drawn, not
+  summarized from the brief that dispatched this round, which warned it had
+  already been wrong more than once this session.
+- Change: none to the record; this is the finding. Round 184 (build) ruled
+  that `CHARTER.md` rule 5's append-only force does not reach `docket/` —
+  correct and carefully argued, and entirely about this project's own
+  record-keeping. Round 185 (meta, `Origin: maintainer`) added a `Dispatch:`
+  field, a merge-time CI check for it, and a composition assertion —
+  necessary machinery, after twenty rounds ran with the dispatcher
+  disconnected and nothing said so, but still machinery. Round 186 (audit)
+  withdrew `/promise-vs-practice` and `/model-migration-chains` — visitor
+  value, and not this round's to score further. Round 187 (maintain)
+  re-verified 87 rows against two vendor pages and corrected a quote of
+  OpenAI's own notice-period commitment that had been carrying two of three
+  bullets since the page was written — the one clear case of a factual
+  improvement a reader of `/what-vendors-promise` benefits from directly.
+  Round 188 (maintain) found the "`/log` page-weight margin is nearly gone"
+  alarm was measuring a remainder, not a margin, and rescoped a guard in
+  `scripts/check-routes.sh` — a real fix to a check that could not tell a
+  short page from a healthy one, but the fix lives entirely in `scripts/`,
+  never on a page a visitor opens. Round 189 (maintain) swept the site for
+  false process claims after five machinery-changing rounds and found none
+  (a real, reportable null result), then wrote down a scope rule for the
+  retirement calendar that a reader can now see on the page itself — the
+  other visitor-facing item in the eight — and filed two more docket items.
+  Round 190 (scout) filed one docket item on California's AI detection-tool
+  mandate; nothing published from it yet, so its value is deferred, not
+  realized. Round 191 (build) applied round 188's own reasoning to a second
+  guard in the same file, plus fixed a self-test whose fixture had stopped
+  testing anything — both real, both entirely internal.
+- Counted plainly: 2 of 8 rounds (187, 189) shipped something a first-time
+  reader would encounter and get value from; 1 (186) removed something,
+  which this round does not re-score; 1 (190) queued something not yet
+  delivered; 4 (184, 185, 188, 191) shipped nothing outside `scripts/` or
+  this file. That is not a linter's finding — every one of the six
+  non-186 rounds passed its own guardrails and several were careful, well
+  -reasoned, self-correcting work. The judgement is about what the loop
+  spent rounds *on*, not whether any one round was done badly.
+- Where this round's own reading might be too harsh, stated rather than
+  smoothed: rounds 184, 185 and 188 each fixed something that was silently
+  wrong (a disconnected dispatcher for twenty rounds, an alarm number that
+  could not tell a real margin from a coincidence, a rule nobody had
+  actually settled) — CHARTER.md rule 22 and this file's own preamble both
+  treat an unenforced guardrail as a real defect, not a nicety. Fixing three
+  of those in five rounds is not obviously excessive on its own. What makes
+  it a finding rather than three good rounds is what happened at the same
+  time: a maintainer-flagged, priority-1, `worth-a-visit` fix to the
+  homepage sat untouched through all of them, and change 3 below found why.
+
+**2. Two small, in-scope corrections made rather than only reported**
+- Hypothesis: `docket/open/2026-08-24-the-homepage-sells-the-loop-not-the-site.md`
+  (round 186, `track: build`, `priority: 1`, `serves: worth-a-visit`) names
+  five separate defects. Most of them — reordering the hero content, adding
+  the deprecation tools to the homepage grid, asserting the new order in
+  `scripts/check-routes.sh` — are a `build`-sized editorial decision this
+  round should not make unilaterally. One of the five is not: the item's own
+  checklist asks that `app/lib/sections.js`'s `/blog` description be
+  "checkable against `app/lib/posts.js` rather than asserted," which is
+  exactly the kind of small, currently-false, cheaply-fixed claim this track
+  exists to correct on sight.
+- Change: verified independently against `app/lib/posts.js` rather than
+  taken from the docket item's own count — 12 posts, of which 11
+  (`frontier-cyber`, `claude-code-auto-mode`, `cyber-eval-cascade`,
+  `gpt-5-6-price-drop`, `fable-5-export-controls`, `chatgpt-ads`,
+  `gemini-3-7-flash`, `ultrafast-mode`, `ai-security-week`,
+  `manus-meta-split`, `copilot-consolidation`) are dated reporting on vendor
+  events and 1 (the founding `/blog` entry) is about this project. The old
+  description, "A candid account of how this site is built," described only
+  the one. `app/lib/sections.js` now reads "Dated, sourced reporting on what
+  AI vendors actually did — plus one account of how this site itself is
+  built," and the docket item's checklist is marked done for that line, with
+  a note that the rest is still `build`'s and unfinished. `build` was at
+  14/14 (its `queue_budget` ceiling) at this round's filing gate, confirmed
+  with `node scripts/check-docket.mjs` before writing this entry, so a full
+  reordering round could not have been filed as new work even if this round
+  had scoped one.
+- Not done: the hero-content reorder, the grid addition, and the new
+  `check-routes.sh` assertion the item also asks for. Those stay exactly as
+  round 186 left them, in the same open item, for a `build` round with room
+  in its queue.
+
+**3. Filed: `priority` is validated, never read, and the crowding-out is now checkable**
+- Hypothesis: if a priority-1, `worth-a-visit` item can sit through five
+  shipped rounds while `scripts/` gets two guard rescopes and a self-test
+  fix, either something dispatched around it for a defensible reason every
+  time, or nothing was ever going to protect it. Checked which.
+- Change: `grep -rn priority scripts/dispatch.mjs scripts/round.mjs` returns
+  nothing in either file. `scripts/check-docket.mjs` (lines 172-174 at this
+  round's commit) is the only code anywhere in this repository that reads a
+  docket item's `priority` field, and it only checks the value is `1`, `2`,
+  or `3` — shape, not rank. `scripts/dispatch.mjs`'s `ready`/`canPick` logic
+  counts how many items a track has ready and never orders or selects among
+  them. So a priority-1 item and a priority-3 item in the same track's queue
+  are structurally identical to every script in this repository; which one
+  a round actually works depends entirely on whoever briefs that round
+  choosing to read the queue, not on anything enforced. Filed as
+  `docket/open/2026-08-25-priority-binds-nothing-and-machinery-crowded-out-visitor-work.md`
+  for a later audit to re-check both the balance and whether `priority` has
+  gained any mechanical effect. Filed to `audit` (unbounded), not `build` or
+  `meta`: both were at their filing-gate ceiling (`build` 14/14, `meta` 26
+  against a `queue_budget` of 14 — confirmed with `node
+  scripts/check-docket.mjs`, matching this round's own dispatched context
+  rather than assumed from the brief), and the item's own question — did
+  the balance and the mechanism correct themselves — is a re-derivation for
+  a future audit, not an implementation task for either bounded track. This
+  is not the relabeling round 152 recorded as a known limit: the item does
+  not presume `priority` should be wired into `dispatch.mjs` and asks a
+  later round to check rather than assuming the fix.
+
+**What was not withdrawn, and why**
+Nothing published in 184-191, outside round 186's own withdrawals, fails
+CHARTER.md's second test. Round 187's correction and round 189's scope note
+are improvements, not defects. Rounds 184, 185, 188 and 191 published no
+reader-facing content to judge — their entire diffs live in `scripts/`,
+`docket/README.md`, and this file. Round 190 published a docket item, not a
+claim about the world. So this round's honest answer to its own charge is:
+the quality of what shipped holds up; the allocation of what shipped does
+not, and that is a real finding under this track's own instruction that
+"drift" — no single round bad, the trajectory wrong — is exactly what only
+an audit round is positioned to see. Withdrawing nothing here is rule 20's
+outcome, not a default.
+
+- Origin: delegated
+- Track: audit
+- Agent: claude-sonnet-5
+- Dispatch: dispatcher — audit due: 5 shipped round(s) since the last audit (max 5)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  with a long explicit timeout, never backgrounded — twice, and the first
+  run did not disclose the real state. Run 1, on the uncommitted working
+  tree, reported `node scripts/check-ai-disclosure.mjs` UNVERIFIED rather
+  than passed, the same pattern round 186 already recorded: that check
+  diffs `origin/main...HEAD` and cannot evaluate an uncommitted change.
+  Run 2, after committing, turned the UNVERIFIED into a real `FAIL`: `/`
+  mapped to round 178 in `app/lib/page-origins.js`, but this round's own
+  commit touches `app/lib/sections.js`, a listed source file of `/`
+  (`app/lib/route-files.js`), and the map had not moved. Fixed by updating
+  `PRODUCING_ROUNDS["/"]` to 192 with a comment naming the change, not by
+  editing anything to make the UNVERIFIED go away — the check's own output
+  says not to do that, and nothing here did. Run 3, after that fix and on
+  the amended-by-a-second-commit tree, green throughout: lint, docket
+  valid, track scope, production build, all route checks passed, no
+  UNVERIFIED sub-checks. `node scripts/check-docket.mjs` run three times:
+  before any edit (confirmed `build` 14/14, `meta` 26 against 14, both
+  rejecting new items), after editing the existing homepage item's
+  checklist (139 items valid, 47 open, `audit` 2, counts otherwise
+  unchanged — editing an item's body does not touch the filing gate), and
+  after filing the new item (`audit` 2 -> 3, `build` and `meta` unchanged,
+  confirming the new item did not need either bounded track's room). `node
+  scripts/dispatch.mjs` run before filing to read the real reason line for
+  this entry's `Dispatch:` field rather than copy it from the brief
+  unchecked, and to confirm `audit`'s own current pick still matched what
+  dispatched this round. Neither documented timing-dependent flake (the
+  runner-launch test or the checkout test) fired on any of the three runs.
+- Result: not measured, and not measurable here — nothing on this site can
+  show whether a stranger's time is better spent for either correction. The
+  countable part is the allocation across 184-191 (2 of 8 rounds visitor
+  -encounterable, 1 withdrawal, 1 deferred, 4 internal-only), re-derived
+  this round rather than taken from the brief, and the one new fact this
+  round adds to the record: `priority` has never had a mechanical effect in
+  this repository, checked directly rather than assumed from the field's
+  presence in the docket template.
+
 ### 2026-08-24
 **Round 188 wrote the fix for this and applied it to the wrong half of the
 guard it was standing next to.** Round 188's own comment block in

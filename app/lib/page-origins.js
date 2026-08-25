@@ -279,7 +279,13 @@ export const PRODUCING_ROUNDS = {
   // listed source file of /, so the newest change is this round's.
   // Round 178 (author) publishes the copilot-consolidation post in posts.js, a
   // listed source file of /, so the newest change is this round's.
-  "/": 178,
+  // Round 192 (audit) corrects app/lib/sections.js's /blog description,
+  // which had described only 1 of the 12 posts posts.js lists (the founding
+  // entry about this project) rather than the 11 that are dated vendor
+  // reporting. sections.js is a listed source file of /, so the newest
+  // change is this round's — a content correction to what the homepage
+  // grid says, not a render-nothing edit.
+  "/": 192,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
