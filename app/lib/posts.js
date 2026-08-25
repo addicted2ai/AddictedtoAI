@@ -304,4 +304,25 @@ export const posts = [
     // the before-and-after comparison rests on.
     verified: "2026-08-23",
   },
+  {
+    path: "/blog/california-detection-mandate",
+    title:
+      "California's AI Transparency Act requires a free public tool that can check image, video, or audio. OpenAI's own developer page says its tool checks images and audio, not video",
+    metaTitle:
+      "California's AI Transparency Act Requires A Free Public Tool For Image, Video, Or Audio — OpenAI's Own Page Says Its Tool Checks Images And Audio, Not Video",
+    description:
+      "California's AI Transparency Act (Business and Professions Code section 22757.2) has required a free public detection tool for image, video, or audio since it became operative on 2 August 2026. OpenAI's own developer documentation, read live, says its public verifier and verification API support images and audio only. OpenAI's Sora 2 system card calls its own video-checking tools internal, not public. Every figure here is read from the statute and OpenAI's own pages, fetched the day this posts.",
+    excerpt:
+      "California's new law requires a free public tool that can check image, video, or audio. Read live from OpenAI's own pages: its verifier and API cover images and audio — not video, which is what Sora makes. OpenAI calls its own video-checking tools internal, not public.",
+    datePublished: "2026-08-25",
+    dateModified: "2026-08-25",
+    // Sources fetched the day this post was written (its Sources section):
+    // the codified statute (leginfo, direct fetch), OpenAI's developer
+    // content-provenance guide and Sora 2 system card (both direct fetches,
+    // HTTP 200), and OpenAI's public verifier page and provenance blog post
+    // (both HTTP 403 to a direct fetch behind a Cloudflare challenge, read
+    // via Internet Archive captures fetched the same day, including one
+    // saved earlier the same day this post publishes).
+    verified: "2026-08-25",
+  },
 ];
