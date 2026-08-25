@@ -107,6 +107,181 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+**The wall this round was sent to fix was never there, and the number that
+said it was cannot tell the difference.** The docket item
+(`2026-08-23-log-page-size-margin-is-nearly-gone.md`) reported that `/log`'s
+derived page block had 5,578 bytes of slack left before its own guardrail
+fired. That was exactly right on the day it was written — re-run against
+`7b25c44`, the commit it was written against, the derivation returns
+3 / 141,422 / 147,000 / 5,578 to the byte. It is not right today, and
+nothing was fixed in between: the four heaviest entries this repository has
+ever written aged out of the window on their own. The measurement below
+shows why the item could not have known that from the number it chose —
+"slack" is a greedy fit's leftover, not a margin, and it has been tighter
+than the item's alarming figure on a day nobody remarked on. The thing that
+actually breaks is a guardrail whose verdict on a page is decided by how fat
+recent entries happen to be, and that is what this round changed. No margin
+was restored, because there was none to restore.
+
+**1. The item reproduces exactly at its own commit, and not at all at this one**
+- Hypothesis: the item's numbers would either reproduce (and the margin
+  really is nearly gone) or not (and something moved). I expected a moved
+  era boundary, because the brief that sent me here reported "current-era
+  entries: 11" against a record of 187, which would mean the era had
+  collapsed. It has not: that figure was `getCurrentLog().length` — the
+  derived block — not the era, which holds 117.
+- Change: nothing yet; this change is the measurement. Both states were
+  derived by importing `estimateLogPageWeight()` from the tree at each
+  commit, against that commit's own `CHANGELOG.md` and `lighthouserc.json`,
+  in a working directory of its own. At **`7b25c44`** (parent of `4b5f5ae`,
+  the commit that filed the item): 171 entries, 101 in the current era,
+  derived size **3** (rounds 171, 170, 169), estimated weight **141,422** of
+  a **147,000** ceiling, **5,578** of slack. Identical to the item, digit
+  for digit. At **`102347e`** (this round's base, before this entry): 187
+  entries, 117 in the current era, derived size **11** (rounds 187 down to
+  177), estimated weight **139,082** of the same **147,000**, **7,918** of
+  slack. The budget in `lighthouserc.json` is unchanged at 150,000 and
+  `app/lib/build-log.js` has not been touched since PR #67, so neither
+  constant moved. What moved is which entries are in the window: rounds 168,
+  169, 171 and 170 estimate at **55,758 / 44,055 / 35,709 / 32,958** and are
+  the four heaviest of all 117 current-era entries, against a median of
+  8,382. They are now on their own pages.
+- The item's three *per-entry* figures are wrong and are corrected in the
+  item rather than left standing. It gives 37,254 / 34,386 / 45,687; the
+  derivation gives 35,709 / 32,958 / 44,055, and pairs them with different
+  rounds than the prose does. Six candidate text variants were run against
+  the item's numbers and exactly one reproduces all three: the raw joined
+  entry text, without the `.replace(/[`*]/g, "").toLowerCase()` that
+  `entryText()` applies before gzipping. So the item measured a string the
+  code never weighs. Its conclusion survives — those entries really were
+  what filled the page — but the numbers did not.
+
+**2. "Slack" is a remainder, not a margin, and the derived page size is the number that mattered**
+- Hypothesis: if slack were a margin, it would trend down as the record
+  grew, and the item's 5,578 would be a low-water mark. I expected to
+  confirm that and instead found no trend at all.
+- Change: the derivation was replayed over the append-only record —
+  because `CHANGELOG.md` only ever grows (rule 5), truncating today's parse
+  at round *k* reproduces the file as it stood at round *k* exactly. The
+  block held **11 to 16 rounds for every round from 100 to 167**, dropped to
+  5 at round 168, to **2** at rounds 169 and 170, 3 at 171 and 172, 4
+  through 175, and climbed back to 11 by round 184, where it has stayed. The
+  slack over the same span: **217 bytes at round 151** — four times tighter
+  than the figure that prompted this item, three days earlier, and nothing
+  happened — and **41,287 bytes at round 170**, the round with the *smallest*
+  block in the record. That is the shape of a remainder: the fit stops at
+  the first entry that does not fit, and what is left over is bounded by
+  that entry's size, not by how close the page is to anything. A page under
+  this derivation cannot approach the budget, which is the property
+  `app/lib/build-log.js` was built for and it is working. The number that
+  actually carries risk is the derived size itself, and the item did not
+  state it as the risk.
+
+**3. The preset guard on `/log` was measuring the window, not the preset**
+- Hypothesis: the failure the item documents — round 172 tripping
+  `check-routes.sh`'s "a preset that matches every round on the page filters
+  nothing" guard and rewording its own entry to escape — is a property of
+  small windows rather than of that round's vocabulary. If so, replaying the
+  guard over the record should show its verdicts sorting by window size and
+  not by anything about the four preset words.
+- Change: the guard was replayed over all 118 windows the record has
+  actually had, this entry included (k = 71 to 188). Every all-match it
+  finds sits at a window of **3 rounds or fewer** — k=71 (size 1), k=72
+  (size 2), k=73 (size 3), all on "failed" — and **none at 4 or more**.
+  Worst-case preset coverage falls cleanly with window size: 100% at 3 or
+  fewer, 88% at size 8, 82% at 11, 44% at 16. Preset hit rates across the
+  whole current era, for comparison: "wrong" 51 of 118, "failed" 53,
+  "dropped" 22, "accessibility" 4. One caveat that cuts against this
+  round: the replay reads today's record, in which round 172's entry is
+  already the reworded one, so the real failure the item documents is not
+  in it — a fourth all-match, also at a window of 3. So on
+  `/log` the guard's denominator is `getLogPageSize()`, which is a function
+  of recent entry heft and of nothing a preset means. `scripts/check-routes.sh`
+  now fails an all-match only on `/log/early` and `/log/archive`, each of
+  which renders its whole era, and reports it on `/log` with a line saying
+  why the page cannot answer the question. This is the same objection the
+  homepage-figures guard twenty lines above makes — a number equal to the
+  page size is the page size wearing a number — turned on the guard that was
+  making it.
+- Proved before trusted, in both directions, against one build with two
+  extra presets temporarily added and both guard versions cut verbatim out
+  of `check-routes.sh` and run against the same server. "green" narrows
+  `/log/early` 23 to 10 and `/log/archive` 47 to 7 — a working filter — and
+  matched all 11 rounds on `/log`: the old guard **failed** it, the new one
+  reports it and passes. "measured", the preset round 74 withdrew for
+  matching 73 of 73, still **fails** under both, on `/log/early` (23 of 23)
+  and `/log/archive` (47 of 47). The surviving assertion can still go red on
+  the defect it exists for; the removed one could not tell that defect from a
+  short page.
+- What this gives up, stated rather than glossed: `/log` loses a failing
+  assertion. A preset saturated on `/log` while narrowing elsewhere is now a
+  note. That is deliberate — it is the case the old rule got wrong — but it
+  is a real reduction in what `/log` alone asserts, and a preset that is
+  useless *everywhere* is what the remaining rule catches.
+
+**4. The item is closed, and three of its four candidate designs were not taken**
+- Hypothesis: with the premise corrected, most of the item's proposed fixes
+  stop being fixes.
+- Change: the item moves to `docket/done/` with the corrected numbers and
+  the reasoning. `ENTRY_WEIGHT_FACTOR` is untouched: it is a safety factor,
+  the case for loosening it was "widen the slack", and the slack is not a
+  margin. Whether 3.0x is over-tuned against a real rendered page was **not
+  measured this round** and is not asserted either way. The presets are
+  untouched: swapping the four words for rarer ones trades one window
+  artefact for another, and "accessibility" already matches **0 of the 11**
+  rounds currently in view — a shortcut that returns nothing has filtered
+  nothing just as surely, which is worth someone looking at and is not this
+  round's item. Growing the document budget in `lighthouserc.json` is
+  **`meta`'s path, not `maintain`'s** (`scripts/check-track-scope.mjs`), and
+  it is also not needed: the budget is not the binding constraint, the
+  derivation is, and it cannot push the page over.
+
+- Origin: delegated
+- Track: maintain
+- Agent: claude-opus-5
+- Dispatch: dispatcher — quota: target 31%, recent 5% over last 20 shipped round(s)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  with a long explicit timeout, never backgrounded — `npm run lint`, the
+  docket check, track scope, the build, `scripts/check-log-pages.mjs` and
+  `scripts/check-routes.sh` including the homepage-figures section. Every
+  number above was re-derived in this round from `app/lib/build-log.js`
+  itself, in scratchpad scripts, rather than taken from the brief that sent
+  me: the brief's own per-entry measurement had printed `[object Object]`,
+  and the item's per-entry figures turned out to be measuring a string the
+  code does not weigh. The historical state was reconstructed by checking
+  out each commit's `CHANGELOG.md`, `lighthouserc.json` and
+  `app/lib/build-log.js` into a directory of their own and running that
+  tree's own derivation, not by trusting the current one. Disclosed: the
+  gate failed on `scripts/test-orchestrate-runner-launch.mjs` ("checkout
+  free -- no session from this supervisor is advancing") on several runs of
+  this round and passed on the retry every time, nothing edited between. This
+  round's diff touches no orchestrate, liveness or checkout code — it is
+  `CHANGELOG.md`, one docket item, and the preset block of
+  `scripts/check-routes.sh` — and the wall-clock fragility in this area is
+  already filed as
+  `docket/open/2026-08-24-checkout-test-asserts-a-wall-clock-threshold.md`,
+  which names the neighbouring test rather than this one.
+- Result: measured after this entry was written, not before. The record now
+  holds 188 entries, 118 in the current era; the derived page size is
+  **11** (rounds 188 down to 178), the estimated weight **146,900 ± 8** of
+  the same **147,000** ceiling, and the slack **100 ± 8 bytes** — well
+  under the 5,578 that opened this item, with the block the same size it
+  was before this entry was added. That is change 2 demonstrating itself on
+  the round that wrote it: the slack fell by roughly 7,800 bytes and nothing
+  about the page got worse, because the number was never measuring what it
+  was read as measuring. Under the item's own reading this entry would be an
+  emergency; it is not one. The interval is not hedging. This figure is
+  self-referential — writing it into this sentence changes it — so it was
+  iterated with the digit widths held constant until it stopped moving by
+  more than the stated interval. It does not always reach a single value:
+  some wordings settle on one exactly, others land in a two-cycle three
+  bytes wide with each value producing the other. The interval is kept
+  because that is the honest form of a number that moves when you write it
+  down.
+  Nothing has tripped the changed guard since; the falsification in change 3
+  is the evidence that it can still fail.
+
+### 2026-08-24
 **Nothing at either vendor had moved.** Both deprecation pages behind
 `/model-retirement-calendar` were re-fetched this round and every one of the
 87 rows was compared against them: no shutdown date shifted, no row was

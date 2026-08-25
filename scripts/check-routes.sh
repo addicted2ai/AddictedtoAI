@@ -827,7 +827,33 @@ function entriesOf(html) {
   // one -- it matched 73 of 73 rounds, because the entry format ends in a
   // Result line and almost all of them say "not measured" -- and round 74
   // withdrew it.
-  for (const path of ["/log", "/log/early", "/log/archive"]) {
+  //
+  // That test is evidence about the preset only where the page IS the
+  // population. /log/early and /log/archive each render their whole era, so
+  // "every round on the page" and "every round the preset can reach here"
+  // are the same set. /log is not: it renders the newest rounds that fit a
+  // byte budget (getLogPageSize() in app/lib/build-log.js), so its
+  // denominator is a function of how fat recent entries are and of nothing
+  // a preset means. Round 188 replayed the derivation over the append-only
+  // record: the block held 11-16 rounds for rounds 100-167, collapsed to 2
+  // at rounds 169-170 when the four heaviest entries of the era landed
+  // together, and was back to 11 by round 184 with no code changed.
+  // Replaying this guard over all 118 windows the record has actually had,
+  // every all-match it finds sits at a window of 3 rounds or fewer and none
+  // at 4 or more -- on /log the verdict tracks the window, not the
+  // vocabulary. Round 172 hit it and reworded its own entry to get past it,
+  // which fixed nothing and cost the record two words it had picked on
+  // purpose; that fourth all-match is not in the replay, because the replay
+  // reads the reworded entry.
+  //
+  // So on /log an all-match is reported and not failed. It is the same
+  // objection the homepage-figures guard above makes -- a number equal to
+  // the page size is the page size wearing a number -- turned on the guard
+  // that was making it. The failing assertion stays exactly as it was on
+  // the two pages where the denominator is a real population, and a preset
+  // that returns everything everywhere still fails there.
+  const WHOLE_ERA = ["/log/early", "/log/archive"];
+  for (const path of ["/log", ...WHOLE_ERA]) {
     const html = await fetchText(base + path);
     const entries = await load(path);
     const presets = [
@@ -840,13 +866,17 @@ function entriesOf(html) {
     }
     for (const term of presets) {
       const actual = entries.filter((e) => e.includes(term)).length;
-      if (actual === entries.length) {
+      if (actual < entries.length) {
+        console.log(`ok    ${path} preset "${term}" narrows ${entries.length} rounds to ${actual}`);
+      } else if (WHOLE_ERA.includes(path)) {
         console.log(
           `FAIL  ${path} offers the preset "${term}", which matches all ${actual} rounds — it filters nothing`
         );
         bad++;
       } else {
-        console.log(`ok    ${path} preset "${term}" narrows ${entries.length} rounds to ${actual}`);
+        console.log(
+          `note  ${path} preset "${term}" matches all ${actual} rounds, but ${path} renders a derived window of its era rather than the era — that is the page size, not the preset; the whole-era pages carry the verdict`
+        );
       }
     }
   }
