@@ -179,6 +179,30 @@ export default function Gpt56PriceDrop() {
         Chat-specific Sol update is not the Sol that powers Work and Codex,
         which the company says is unchanged.
       </p>
+      <p className="correction-note">
+        <strong>Update, 2026-08-25.</strong> Sol&rsquo;s price is no longer
+        unchanged. OpenAI&rsquo;s live API pricing page today lists{" "}
+        <code>gpt-5.6-sol</code> at <strong>$4.00 input / $20.00 output</strong>{" "}
+        per million tokens for short-context requests &mdash; a rate the page
+        labels &ldquo;GPT-5.6 Sol&rsquo;s promotional pricing&rdquo;, stated as
+        &ldquo;available at least through November 21, 2026&rdquo; &mdash; and{" "}
+        <strong>$8.00 input / $30.00 output</strong> for long-context requests.
+        Neither figure is the flat $5 / $30 this post reports above, and
+        repeats below, as unchanged from the 9 July launch; that flat rate is
+        not on the page at all as fetched for this update. Terra ($2.00 input
+        / $12.00 output, short context) and Luna ($0.20 / $1.20) still match
+        this post&rsquo;s figures exactly, read off the same page at the same
+        time. Neither announcement this post cites describes a short/long-context
+        split for Sol, so when the split and the promotional rate began is not
+        established here &mdash; only that, as of this update, they have.
+        Source:{" "}
+        <a href="https://developers.openai.com/api/docs/pricing">
+          OpenAI, API pricing
+        </a>{" "}
+        (fetched 2026-08-25 with a plain HTTP client; the marketing pages this
+        post cites under openai.com/index/ returned a Cloudflare JavaScript
+        challenge to the same request and could not be re-fetched this round).
+      </p>
 
       <h2>What to do with this</h2>
       <p>
