@@ -335,9 +335,16 @@ needs a withdrawal to express.
   new item (confirmed `maintain` unbounded and every bounded track's exact
   state cited above) and again after (148 items valid, 55 open, `maintain`
   moved 5 to 6, every other track's count unchanged, confirming the new item
-  needed no bounded track's room). Neither documented timing-dependent flake
-  (`test-orchestrate-runner-launch.mjs` / "ORCHESTRATE_COMMAND path was
-  gated") fired.
+  needed no bounded track's room). Second run (after committing): route
+  checks FAILED — `ORCHESTRATE_COMMAND path was gated by the runner system`
+  / `node scripts/test-orchestrate-runner-launch.mjs exited 1` — the
+  documented non-reproducible flake
+  (`docket/open/2026-08-24-the-gate-verdict-is-not-reproducible.md`).
+  Confirmed first, with `git diff --stat origin/main...HEAD`, that this
+  round's committed diff is exactly `CHANGELOG.md` and one new file in
+  `docket/open/` — no orchestrate, liveness or checkout code — then retried
+  once, per that item's own instruction. Third run: green end to end, `all
+  route checks passed`, no recurrence.
 - Result: not measured, and largely not measurable here — nothing on this
   site instruments whether a stranger's time is better spent on a check or a
   page. The countable parts, re-derived this round rather than taken from the
