@@ -107,7 +107,7 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-25
-**Eight rounds shipped since the last audit. Two of them are the reason a
+**Eight rounds shipped, five of them since the last audit. Two are the reason a
 stranger would keep reading; the other six are the loop keeping its own
 house — and the mechanism meant to stop that from crowding out the first
 kind turns out not to exist.** Read as a stranger — someone who does not
