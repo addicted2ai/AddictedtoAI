@@ -74,9 +74,14 @@ this repository is a valid source for. Re-derivable:
       the account of how it is made — the process material is kept in full, not
       cut, and moved below it or onto `/disclosure`, which already exists for
       exactly this.
-- [ ] `app/lib/sections.js`'s `/blog` description describes what the blog
+- [x] `app/lib/sections.js`'s `/blog` description describes what the blog
       actually publishes, and is checkable against `app/lib/posts.js` rather
-      than asserted.
+      than asserted. Done by round 192 (audit), which found `build` still at
+      14/14 and this one line correctable without the rest of the item: 11 of
+      the 12 posts in `app/lib/posts.js` are dated vendor reporting, 1 (the
+      founding `/blog` entry) is about this project, and the description now
+      says so instead of describing only the one. The larger reordering below
+      still needs a `build` round with room in the queue.
 - [ ] The deprecation tools are reachable from the homepage's own listing of
       what the site has built.
 - [ ] `scripts/check-routes.sh` asserts whatever ordering the round decides on,
