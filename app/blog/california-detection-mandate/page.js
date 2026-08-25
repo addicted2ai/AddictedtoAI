@@ -59,6 +59,17 @@ export default function CaliforniaDetectionMandate() {
         there &mdash; and Sora, OpenAI&rsquo;s video generator, is the reason
         the gap is not abstract.
       </p>
+      <p>
+        Said here, before anything else, rather than at the end: this post
+        does not decide whether OpenAI&rsquo;s tools satisfy that law, and it
+        does not establish that OpenAI is bound by it in the first place
+        &mdash; whether OpenAI crosses the statute&rsquo;s own traffic
+        threshold for who it applies to was not checked. What follows is the
+        checkable part: what the law&rsquo;s text actually requires, what
+        OpenAI&rsquo;s own pages say its tool does today, and the dates on
+        the record. That is a real, specific gap. Whether it amounts to
+        anything legally is not for this post to say.
+      </p>
 
       <h2>What the law actually requires</h2>
       <p>
@@ -152,13 +163,14 @@ export default function CaliforniaDetectionMandate() {
         , could not be read directly for this post: it returned HTTP 403 to a
         plain request and again to a request with a full browser-style
         User-Agent, both times carrying Cloudflare&rsquo;s{" "}
-        <code>cf-mitigated: challenge</code> header. The
-        page is readable through the Internet Archive instead, and a capture
-        saved earlier the same day this post was written &mdash; 13:10 UTC,
-        hours before this paragraph &mdash; still describes itself only as a
-        place to &ldquo;Upload an image or audio file to check for signals
-        that it was generated with OpenAI tools,&rdquo; matching the
-        developer guide exactly.
+        <code>cf-mitigated: challenge</code> header. The page is readable
+        through the Internet Archive instead, and a snapshot saved into the
+        Wayback Machine at 13:10 UTC the same day this post was written
+        &mdash; hours before this paragraph &mdash; still carries the
+        page&rsquo;s actual visible subhead, the line sitting directly under
+        its heading on the page itself, not just its metadata: &ldquo;Upload
+        an image or audio file to check for signals that it was generated
+        with OpenAI tools,&rdquo; matching the developer guide exactly.
       </p>
 
       <h2>Sora&rsquo;s video is marked. OpenAI&rsquo;s own tool cannot check it</h2>
@@ -191,12 +203,16 @@ export default function CaliforniaDetectionMandate() {
         specifically so outside platforms can read that metadata; a visible
         watermark is, by definition, visible without any OpenAI tool at all.
         The precise gap is narrower and still real: <strong>OpenAI offers no
-        public way to check its own video</strong>. Whether that satisfies a
-        statute that names video as one of three formats a free tool must
-        cover is a legal question this post does not answer.
+        public way to check its own video</strong>. That gap does not, on
+        its own, mean OpenAI&rsquo;s tools fall short of the law above
+        &mdash; criterion (1) is written as <em>image, video, or audio</em>,
+        not all three, exactly as this post read it earlier. What is
+        checkable, independent of that legal question, is narrower and
+        stands on its own: OpenAI&rsquo;s public tool does not reach the one
+        format its own newest generative product makes.
       </p>
 
-      <h2>When audio was added, and how close to the deadline</h2>
+      <h2>When audio support arrived, and what the dates do not show</h2>
       <p>
         The verifier did not always cover audio. An Internet Archive capture
         of{" "}
@@ -225,17 +241,26 @@ export default function CaliforniaDetectionMandate() {
         still no video.
       </p>
       <p>
-        The statute states a date, not a time or time zone: &ldquo;operative
-        on August 2, 2026.&rdquo; If that means the first moment of that day
-        in California&rsquo;s own time zone &mdash; Pacific Daylight Time in
-        August, UTC&minus;7 &mdash; then 2 August 2026 00:00 PDT is 07:00 UTC,
-        and the 1 August capture showing audio already live sits about 14
-        hours 55 minutes before it. Measured only in UTC clock time, with no
-        assumption about which zone the date means, the same capture sits
-        about 7 hours 55 minutes before UTC midnight on 2 August. Either way
-        the change landed inside a single day of the deadline; this post does
-        not know, and does not guess, why OpenAI shipped it when it did
-        &mdash; only that the archive brackets it there.
+        Two dates sit close together here, and what that closeness does and
+        does not show is worth saying before doing the arithmetic. A reader
+        could take it as OpenAI racing to meet a deadline it recognized
+        applied to it. This post does not draw that inference. The public
+        record &mdash; a page that changed, and an archive that recorded
+        when &mdash; is a record of <em>what changed and when</em>, not of{" "}
+        <em>why</em>; it cannot support or rule out a claim about OpenAI&rsquo;s
+        reasons or its awareness of this statute, and nothing below should be
+        read as making one. With that said, the dates themselves are
+        checkable. The statute states a date, not a time or time zone:
+        &ldquo;operative on August 2, 2026.&rdquo; If that means the first
+        moment of that day in California&rsquo;s own time zone &mdash;
+        Pacific Daylight Time in August, UTC&minus;7 &mdash; then 2 August
+        2026 00:00 PDT is 07:00 UTC, and the 1 August capture showing audio
+        already live sits about 14 hours 55 minutes before it. Measured only
+        in UTC clock time, with no assumption about which zone the date
+        means, the same capture sits about 7 hours 55 minutes before UTC
+        midnight on 2 August. Either way the change landed inside a single
+        day of the deadline &mdash; a fact about the calendar, not a claim
+        about intent.
       </p>
 
       <h2>What this post does not determine</h2>
@@ -331,9 +356,15 @@ export default function CaliforniaDetectionMandate() {
         <a href="http://web.archive.org/web/20260825131005/https://openai.com/research/verify/">
           13:10:05 UTC on 25 August 2026
         </a>
-        , the day this post was written, confirming the page&rsquo;s
-        image-or-audio framing had not changed by the time this post was
-        checked.
+        , the day this post was written. That capture&rsquo;s underlying
+        markup still carries a{" "}
+        <code>data-article-hero-copy-region=&quot;subhead&quot;</code> element
+        immediately under the page&rsquo;s <code>&lt;h1&gt;</code>, i.e. the
+        page&rsquo;s own real, on-screen subhead rather than only its{" "}
+        <code>&lt;meta&gt;</code> description &mdash; confirming the
+        page&rsquo;s image-or-audio framing had not changed, in what a
+        visitor to the live page would actually see, by the time this post
+        was checked.
       </p>
       <p className="post-footnote">
         OpenAI, &ldquo;Advancing content provenance for a safer, more

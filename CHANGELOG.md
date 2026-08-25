@@ -176,17 +176,68 @@ what Sora makes.**
 - Not done: nothing — this is the mechanical move the established pattern
   requires, not a judgment call.
 
+**3. Fix the caveat-last structure review found blocking, without softening the finding**
+- Hypothesis: none going in — this item exists because adversarial review
+  returned `request-changes` on the commit this round had already pushed
+  (`docket/reviews/f9558462ab16b560d890290e419c9a6a3453ab9f.md`, verdict on
+  commit `f9558462ab16b560d890290e419c9a6a3453ab9f`), not from a plan made
+  before writing.
+- Change: the review independently re-verified every fact — the statute
+  character-for-character, both live OpenAI pages, all four archive
+  captures, the timing arithmetic, the track-scope diff, and the round
+  number — and found none of it wrong, in its own words: "No fact in this
+  post is wrong.... Every quotation, statute citation, timing calculation,
+  and archive capture I re-fetched independently matches what the post says
+  it matches." It blocked on structure instead: "the post is a public
+  accusation-shaped piece about a named company's conduct against a statute,
+  and its structure — not any single sentence — leaves an ordinary
+  reader... believing OpenAI is short of a legal requirement, before the
+  caveats that would correct that impression ever arrive." It named three
+  passages: the "What this post does not determine" section sat
+  second-to-last, after the penalty figures and an entire section titled
+  "OpenAI's own tool cannot check it"; the timing section measured the gap
+  to the deadline in minutes and disclaimed motive only at its very end; and
+  the Sora section's closing line — "a statute that names video as one of
+  three formats a free tool must cover" — quietly restated the
+  all-three-required reading the post had explicitly rejected three
+  sections earlier. Fixed by adding a new paragraph immediately after the
+  lead, before any statute text or penalty figure, stating plainly that the
+  post does not decide compliance and does not establish OpenAI is bound by
+  the statute at all; rewriting the Sora section's closing sentence to state
+  the "or" reading instead of contradicting it; retitling the timing section
+  ("When audio support arrived, and what the dates do not show") and moving
+  its no-inferred-motive statement to the front of that paragraph, before
+  the hour arithmetic, instead of only after it; and upgrading the same-day
+  archive citation to what the review found it actually is — the page's
+  real visible subhead (`data-article-hero-copy-region="subhead"`,
+  immediately under its `<h1>`), not merely a meta description, which is
+  stronger evidence than the post had given itself credit for. Re-reading
+  for a fourth instance of the same pattern, as the review asked, found one
+  it had not named: `app/lib/posts.js`'s `description` and `excerpt` fields
+  — the only text a search snippet, RSS reader, or social share shows on
+  its own, with no access to the body — stated the gap with no caveat at
+  all. Corrected both.
+- Not done: did not soften or remove the underlying finding. "The gap is
+  real, checkable, and worth publishing" — every fix here is to placement
+  and precision, not to the claim itself. Did not repeat the review's own
+  independent re-verification of the statute and the blocked pages; its
+  character-for-character check is taken as read rather than re-run.
+
 - Origin: delegated
 - Track: author
 - Agent: claude-sonnet-5
 - Dispatch: dispatcher — quota: target 15%, recent 5% over last 20 shipped round(s)
 - Guardrails: `node scripts/round.mjs check`, run directly in the foreground
-  with a 600000ms timeout, once. Green end to end on the first run: `npm run
-  lint` clean, `docket valid`, `track scope for
+  with a 600000ms timeout. First run (before review): green end to end —
+  `npm run lint` clean, `docket valid`, `track scope for
   loop/author/california-detection-mandate` ok, `npm run build` clean, and
   `all route checks passed` — no UNVERIFIED or SKIPPED lines, and no
   recurrence of the documented `test-orchestrate-runner-launch.mjs` flake, so
-  no retry was needed.
+  no retry was needed. Second run, after change 3's fixes but before
+  committing them: identical, except `scripts/check-ai-disclosure.mjs`
+  reported `UNVERIFIED` rather than `ok` — its own documented behaviour for
+  source files with uncommitted changes, not a failure. Third run, after
+  committing change 3, recorded below.
 - Result: not yet measured — this post's own facts were re-verified against
   primary sources fetched this round (see above); "Result" here refers to
   reader engagement, which this project does not yet instrument per-post.

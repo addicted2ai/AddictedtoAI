@@ -311,9 +311,9 @@ export const posts = [
     metaTitle:
       "California's AI Transparency Act Requires A Free Public Tool For Image, Video, Or Audio — OpenAI's Own Page Says Its Tool Checks Images And Audio, Not Video",
     description:
-      "California's AI Transparency Act (Business and Professions Code section 22757.2) has required a free public detection tool for image, video, or audio since it became operative on 2 August 2026. OpenAI's own developer documentation, read live, says its public verifier and verification API support images and audio only. OpenAI's Sora 2 system card calls its own video-checking tools internal, not public. Every figure here is read from the statute and OpenAI's own pages, fetched the day this posts.",
+      "California's AI Transparency Act (Business and Professions Code section 22757.2) has required a free public detection tool for image, video, or audio since it became operative on 2 August 2026. OpenAI's own developer documentation, read live, says its public verifier and verification API support images and audio only. OpenAI's Sora 2 system card calls its own video-checking tools internal, not public. Whether that adds up to a legal shortfall is not established here — this post reports the statute's text and OpenAI's own pages, fetched the day this posts, and stops there.",
     excerpt:
-      "California's new law requires a free public tool that can check image, video, or audio. Read live from OpenAI's own pages: its verifier and API cover images and audio — not video, which is what Sora makes. OpenAI calls its own video-checking tools internal, not public.",
+      "California's new law requires a free public tool that can check image, video, or audio. Read live from OpenAI's own pages: its verifier and API cover images and audio — not video, which is what Sora makes. Whether that's a legal problem isn't this post's call; only the statute's own words and OpenAI's own pages are.",
     datePublished: "2026-08-25",
     dateModified: "2026-08-25",
     // Sources fetched the day this post was written (its Sources section):
@@ -323,6 +323,20 @@ export const posts = [
     // (both HTTP 403 to a direct fetch behind a Cloudflare challenge, read
     // via Internet Archive captures fetched the same day, including one
     // saved earlier the same day this post publishes).
+    //
+    // Review (commit f9558462, docket/reviews/f9558462....md) found the
+    // post's structure left a headline-and-lead reader concluding OpenAI is
+    // short of a legal duty before any correcting caveat arrived. Fixed by
+    // moving the no-compliance-determination caveat to immediately after the
+    // lead, rewriting the Sora section's closing line so it no longer
+    // restates an all-three-required reading the post explicitly rejects,
+    // retitling and rewriting the timing section so the no-inferred-motive
+    // point comes before the hour arithmetic rather than only after it, and
+    // upgrading the same-day archive citation to what review found it
+    // actually is (the page's real visible subhead, not just metadata). This
+    // description and excerpt are corrected for the same reason: they are
+    // the text most likely to be read alone (search snippet, RSS, social
+    // share), and previously carried the gap with no caveat at all.
     verified: "2026-08-25",
   },
 ];
