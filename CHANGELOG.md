@@ -237,6 +237,92 @@ Recorded so a later scout round does not re-walk the same ground.
   does not have to re-discover the same surface search results from
   scratch.
 
+**4. Fix what adversarial review found wrong, and fold in what it found stronger**
+- Hypothesis: none going in — this item exists because adversarial review
+  returned `request-changes` on commit `5bc751e`, which this round had
+  already pushed
+  (`docket/reviews/5bc751e1a53f77fe4d3ed64774de70dcc0c096f6.md`), not from a
+  plan made before writing.
+- Change: the review re-verified all three filed items against their own
+  primary sources independently and found the Gemini and SB 947 items
+  exemplary — every legislative fact and Newsom's veto message checked out
+  character-for-character, the 22-course Claude Academy count reproduced
+  exactly — but found one blocking defect and one non-blocking gap, and
+  independently strengthened the strongest item further. All three are now
+  re-verified a second time by this round itself, not merely copied from
+  the review artifact.
+  - **Fixed the blocking defect.** The Claude Academy item's first draft
+    said the "4D AI Fluency Framework" terminology "did not appear in the
+    text this round fetched from the homepage or courses page." That was
+    false: it sits verbatim in the homepage's "AI Fluency: Framework &
+    Foundations" course-card description — *"Learn to collaborate with AI
+    effectively, efficiently, ethically, and safely using the 4D framework:
+    Delegation, Description, Discernment, and Diligence"* — on the exact
+    page the item said it had fetched; the original search simply checked
+    the wrong one of the two cached files. Re-fetched and re-confirmed
+    directly this round (not merely trusted from the review), corrected in
+    `docket/open/2026-08-25-post-claude-academy-launch.md`, and added an
+    explicit correction note rather than silently rewriting the claim. Also
+    added, independently verified this round: one sampled individual course
+    page (`/courses/claude-101`) is gate-free too, with a "Sign in to save
+    progress" CTA being the only auth-related element, not a content wall.
+  - **Fixed the sourcing gap.** "No Robo Bosses Act" appears in neither
+    fetched leginfo page for SB 947 (confirmed again this round with a
+    fresh case-insensitive search of both, zero real matches). It is
+    Senator McNerney's own name for his own bill: his Senate office's press
+    release (`sd05.senate.ca.gov`, fetched fresh this round), titled "CA
+    Senate Approves No Robo Bosses Act of 2026...", calls it "Sen. Jerry
+    McNerney's SB 947, the No Robo Bosses Act of 2026." Added this sourcing,
+    and the distinction that it is the sponsor's branding rather than the
+    Legislature's title, to
+    `docket/open/2026-08-25-post-no-robo-bosses-act.md`.
+  - **Folded in the strengthening.** The review went looking for Gemini 3.5
+    Pro on every Google-run surface it could reach and found it nowhere;
+    this round independently reproduced every one of those checks rather
+    than take the review's word for them. `ai.google.dev/gemini-api/docs/
+    models` (fetched via plain `curl` — a Node `fetch()` with a browser
+    User-Agent hit a redirect loop on this specific host, a genuine tooling
+    difference worth recording, not a discrepancy in the underlying fact):
+    lists `gemini-3.1-pro-preview` as the only Pro-tier model on the page,
+    zero occurrences of `gemini-3.5-pro`, while Flash has already moved to
+    `gemini-3.7-flash` and `gemini-3.6-flash`. Direct probes of
+    `gemini-3.5-pro`, `-preview`, `gemini-3.6-pro` and `-preview` all
+    returned HTTP 404, paired against `gemini-3.1-pro-preview` returning
+    200 on the identical path pattern, confirming the probe discriminates
+    rather than just failing generally. `gemini.google.com/updates`
+    (798,284 bytes, also via `curl` after a Node header-overflow error):
+    zero occurrences of "3.5 Pro." The DeepMind models root page's own "3.5
+    Pro coming soon" button resolves, via a 302 this round followed
+    directly, to the identical 19 May launch post already cited — Google's
+    own site has nothing newer to point to. Two surfaces (Vertex Model
+    Garden, AI Studio's live app) stayed unreachable and are recorded as
+    unverified, not as negative evidence, exactly as the review itself
+    insisted on. All folded into
+    `docket/open/2026-08-25-post-gemini-3-5-pro-delay.md`, which is now
+    corroborated across four independent Google-run surfaces rather than
+    two.
+  - **Filed the parser trap** the review said should not have gone
+    unfiled: `docket/open/2026-08-25-changelog-numbered-heading-breaks-
+    sitemap-build.md` (`maintain`), naming the failure signature (`Failed
+    to collect page data for /sitemap.xml`, no mention of `CHANGELOG.md`
+    anywhere in it), the actual cause (`build-log.js`'s
+    `^\*\*(\d+)\.` heading regex matches any numbered bold line, not just
+    an intended change block), and the diagnostic route this round actually
+    used (bypassing Next.js and importing `build-log.js` directly in a
+    scratch script to see the unwrapped `validateEntries` error). Required
+    its own genuine external citation to clear scout's own filing gate
+    (`check-docket.mjs` correctly rejected a first draft with none): a
+    matching Next.js GitHub discussion
+    (`github.com/vercel/next.js/discussions/74884`) confirming the
+    generic "Failed to collect page data for X" wrapper is known upstream
+    behaviour that swallows an unrelated underlying error too, not
+    something unique to this repository's build.
+- Not done: did not re-litigate anything the review found already correct
+  — the character-for-character veto quotation, the SB 947 history rows and
+  Daily File Status entry, the 22-course count, the free/no-login scoping —
+  those are taken as independently re-verified by the review and this
+  round's own spot re-checks, not redone from scratch a third time.
+
 - Origin: delegated
 - Track: scout
 - Agent: claude-sonnet-5
@@ -257,10 +343,19 @@ Recorded so a later scout round does not re-walk the same ground.
   loop/scout/gemini-pro-delay-robo-bosses-claude-academy` ok, `npm run
   build` clean, `all route checks passed`, no UNVERIFIED or SKIPPED lines,
   and no recurrence of the documented `test-orchestrate-runner-launch.mjs`
-  flake.
-- Result: not measured — this round filed leads to the queue rather than
-  shipping anything a reader would see, so there is nothing yet for reader
-  engagement to be measured against.
+  flake. Third run, after fixing the review's findings and filing the new
+  `maintain` item (change 4): `check-docket.mjs` first failed on the new
+  item's missing external citation (`filed by scout with no external
+  citation`), fixed by adding the Next.js discussion link and confirmed
+  passing on its own before the full check was re-run; the full
+  `round.mjs check` then went green end to end again — `docket valid` (147
+  items; `author base 3 -> head 6`, the gate's own reported figure, still
+  exactly at budget; `maintain` unbounded, its plain open count moved 4 to
+  5 with this round's new item), `npm run build` clean, `all route checks
+  passed`.
+- Result: not measured — this round filed and then corrected leads in the
+  queue rather than shipping anything a reader would see, so there is
+  nothing yet for reader engagement to be measured against.
 
 ### 2026-08-25
 **California's AI Transparency Act has required a free public detection tool

@@ -41,17 +41,29 @@ any outlet's count:
   the "AI Fluency: Framework & Foundations" course card reads "14 lessons ·
   1 quiz" — this matches what secondary coverage reported, but this round
   confirmed it directly rather than trusting that reporting.
+- **The "4D framework" is Anthropic's own stated term, on the homepage,
+  verbatim.** Correction: an earlier draft of this item said this
+  terminology "did not appear in the text this round fetched" — that was
+  false, caught by adversarial review and re-verified independently before
+  this edit. The academy.claude.com homepage's own "AI Fluency: Framework &
+  Foundations" course-card description reads, verbatim: *"Learn to
+  collaborate with AI effectively, efficiently, ethically, and safely using
+  the 4D framework: Delegation, Description, Discernment, and Diligence."*
+  It is on the homepage specifically, not the `/courses` listing page — the
+  original search simply looked in the wrong fetched file.
+- **Individual course pages are also gate-free.** Fetched
+  `academy.claude.com/courses/claude-101` (one course page, sampled) raw:
+  HTTP 200, full content, no login redirect. The only auth-related element
+  is a "Sign in to save progress" button linking to `/login?returnTo=...`
+  — opt-in progress tracking, not a content gate. This does not establish
+  every course page behaves the same way; it is one sample.
 
 What this item does **not** verify and secondary sources claim: a total
 resource count beyond the 22 structured courses ("355 tutorials" is reported
 by at least one outlet but this round found no primary-source count of
 tutorials/use-cases separate from the 22 courses, since much of the site's
-content loads client-side and a full inventory was not attempted); the "4D
-AI Fluency Framework" (Delegation, Description, Discernment, Diligence)
-terminology, which appears in secondary coverage but did not appear in the
-text this round fetched from the homepage or courses page (it likely lives
-inside the course content itself, not the listing pages fetched this
-round); and completion badges / LinkedIn integration, also unverified here.
+content loads client-side and a full inventory was not attempted); and
+completion badges / LinkedIn integration, also unverified here.
 
 Worth a reader's time: this is a free, immediately-usable resource — the
 kind of "worth a visit" item this site can point readers to and let them
@@ -72,12 +84,24 @@ Fetched raw (not summarised), 2026-08-25:
 - `https://academy.claude.com/courses` — HTTP 200, 486,820 bytes. Contains
   exactly 22 unique `href="/courses/<slug>"` links (counted
   programmatically from the fetched HTML, listed above). "AI Fluency:
-  Framework & Foundations" card text: "14 lessons · 1 quiz".
+  Framework & Foundations" card text: "14 lessons · 1 quiz". The 4D-framework
+  sentence quoted above is **not** on this page — it is on the homepage only
+  (see below); the two fetched pages have different content and were
+  checked separately.
+- `https://academy.claude.com/` (re-checked): the 4D-framework sentence
+  quoted above sits directly in the "AI Fluency: Framework & Foundations"
+  course-card description in the homepage HTML, not hidden behind any
+  course-content page.
+- `https://academy.claude.com/courses/claude-101` — HTTP 200, 66,002 bytes.
+  Full course content, no login wall; one "Sign in to save progress" CTA
+  (`href="/login?returnTo=..."`) is the only auth-related element found.
 
 Not fetched or verified this round: any individual course's actual lesson
-content; the "355 resources" / "4D Framework" claims from secondary
-coverage (Superhuman.ai, BigGo Finance, Termdock) — cited by those outlets,
-not confirmed here; whether progress tracking or completion badges actually
+content beyond the `claude-101` landing page sampled above; the "355
+resources" figure from secondary coverage (Superhuman.ai, BigGo Finance,
+Termdock) — cited by those outlets, not confirmed here, and this round found
+no primary-source count of tutorials/use-cases separate from the 22
+structured courses; whether progress tracking or completion badges actually
 work, which would require an authenticated account this round did not
 create.
 
@@ -88,9 +112,14 @@ create.
 - [ ] States the 22-course count as counted from the live `/courses` page at
       publication time, re-counting rather than reusing this item's number
       if the catalog has changed
-- [ ] Does not repeat the "355 resources" or "4D Framework" figures unless
-      independently confirmed from Anthropic's own site or another primary
-      source at publication time
+- [ ] May state the 4D framework quote (Delegation, Description,
+      Discernment, Diligence) — it is verified verbatim on the homepage as
+      of this item — but re-fetches and re-quotes it directly rather than
+      copying this item's text, and does not extend it to claim every course
+      teaches it
+- [ ] Does not repeat the "355 resources" figure unless independently
+      confirmed from Anthropic's own site or another primary source at
+      publication time
 - [ ] Names at least one concrete course a reader could start today, with
       its actual stated structure (e.g. "14 lessons · 1 quiz" for the
       flagship fluency course), rather than describing the site only in the

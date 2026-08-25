@@ -16,6 +16,22 @@ to discipline or fire workers. It is checkable end to end from the
 Legislature's own site, and it has a genuine hook a reader would not expect:
 the Governor already vetoed the previous version, in writing, and said why.
 
+**A naming note, checked because the brief for this round specifically
+flagged it.** "No Robo Bosses Act" is **not** the Legislature's own name for
+SB 947 — it appears nowhere in either the bill-status page or the bill text
+fetched this round (checked with a case-insensitive search for "robo" across
+both full pages; leginfo's own Topic field for the bill is just "Employment:
+automated decision systems."). It is the bill author's own name for his own
+bill: Senator Jerry McNerney's official Senate office page
+(`sd05.senate.ca.gov`), fetched raw this round, is titled "CA Senate
+Approves No Robo Bosses Act of 2026 to Ensure Human Oversight of AI in the
+Workplace" and its meta description reads: *"The California state Senate
+has approved Sen. Jerry McNerney's SB 947, the No Robo Bosses Act of
+2026."* A legitimate primary source — it is McNerney's own government
+office publishing it — but a sponsor's branding for his own bill, not the
+bill's official title, and the distinction should survive into anything
+published.
+
 **Status, fetched today.** `leginfo.legislature.ca.gov`'s bill-status page
 for SB 947 (`bill_id=202520260SB947`), fetched 2026-08-25, shows: House
 Location "Assembly"; Last Amended Date 08/21/26; bill-type flag "Active Bill
@@ -89,6 +105,21 @@ Fetched raw (not summarised), 2026-08-25:
   — HTTP 200. Status "Inactive Bill - Vetoed"; history: "10/13/25 — Vetoed
   by the Governor," "03/02/26 — Veto sustained." Full Governor's veto
   message quoted on the page and reproduced above, signed Gavin Newsom.
+- `https://sd05.senate.ca.gov/news/ca-senate-approves-no-robo-bosses-act-2026-ensure-human-oversight-ai-workplace`
+  — HTTP 200. Title and meta description quoted above naming SB 947 "the No
+  Robo Bosses Act of 2026." Also on this page, checked but not carried into
+  the "Why now" section above beyond what is needed to source the name: the
+  29-9 Senate vote count, that SB 947 "is sponsored by the California
+  Federation of Labor Unions, AFL-CIO," and a direct quote from Sen.
+  McNerney himself ("The commonsense guardrails in SB 947 will ensure that
+  California businesses do not rely entirely on robo bosses to fire or
+  discipline workers") — useful colour for an executing round, not verified
+  as balanced (this is the bill's own sponsor's press release, not a neutral
+  account).
+- Confirmed independently, both leginfo pages fetched above: a
+  case-insensitive search for "robo" across the full SB 947 status page and
+  the full SB 947 tracked-changes bill text returns zero matches (the only
+  near-hits are inside "corroborate"/"corroborating," excluded by hand).
 
 Not verified this round: whether SB 947's current text actually cures the
 three specific objections in Newsom's SB 7 veto message (side-by-side
@@ -111,3 +142,7 @@ item — re-check before writing.
       sponsor's own "addresses the governor's concerns" framing unchecked
 - [ ] States the $500-per-violation penalty and who may enforce it (worker
       civil action or public prosecutor), sourced to the bill text
+- [ ] Sources "No Robo Bosses Act" to McNerney's own Senate office rather
+      than presenting it as the bill's official title — leginfo's own name
+      for SB 947 is "Employment: automated decision systems," and the post
+      should not let a reader believe the Legislature named it
