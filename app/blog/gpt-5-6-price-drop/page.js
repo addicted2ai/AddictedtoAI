@@ -89,6 +89,12 @@ export default function Gpt56PriceDrop() {
         ChatGPT and Codex subscription prices and quota budgets are unchanged
         &mdash; Terra and Luna usage now simply consumes fewer credits.
       </p>
+      <p className="correction-note">
+        <strong>Update, 2026-08-25.</strong> &ldquo;Sol&rsquo;s pricing is
+        unchanged,&rdquo; above, was true of the 30 July cuts this paragraph
+        describes. It is not true today &mdash; see the dated update under
+        &ldquo;What did not change&rdquo; below for what Sol costs now.
+      </p>
 
       <h2>What changed for a free user</h2>
       <p>
@@ -217,6 +223,17 @@ export default function Gpt56PriceDrop() {
         outperforms a rival at 99% lower cost, treat the benchmark as a
         hypothesis worth testing on your own workload &mdash; not as a number
         that became true because it was printed.
+      </p>
+      <p className="correction-note">
+        <strong>Update, 2026-08-25.</strong> The &ldquo;Sol at $5 / $30 is
+        unchanged&rdquo; recommendation just above is the same stale claim
+        corrected earlier in this post (see the update under &ldquo;What did
+        not change&rdquo;). It is not currently actionable: OpenAI&rsquo;s
+        live pricing page shows no flat $5 / $30 rate for Sol at all, only a
+        promotional <strong>$4.00 input / $20.00 output</strong> for
+        short-context requests (through at least 21 November 2026) or{" "}
+        <strong>$8.00 input / $30.00 output</strong> for long-context
+        requests, per million tokens.
       </p>
 
       <h2>Sources</h2>

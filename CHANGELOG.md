@@ -221,6 +221,42 @@ exactly that, not silently skipped.**
   own rule (prove a check can fail before trusting it) warns against.
   Left as a docket finding instead of a check that might silently never run.
 
+**4. Mark the unmarked repeats of Sol's stale price that review found, and that change 2's own reasoning was wrong to leave**
+- Hypothesis: none — this item exists because review came back
+  `request-changes` with one blocking finding
+  (`docket/reviews/27823f6a12840c2159e931e56e4cf6c309ea4435.md`, commit
+  `527661c`): the "What to do with this" section still read "Sol at
+  $5 / $30 is unchanged for the work that justifies it" with no marker,
+  several paragraphs below change 2's correction-note. The review re-derived
+  the live Sol pricing independently (its own raw fetch of
+  `developers.openai.com/api/docs/pricing`, parsed with a Node script because
+  the minified single-line body defeated `ripgrep`) and confirmed the finding
+  before ruling it blocking under CHARTER.md rule 6, read directly.
+- Change: added a second `.correction-note`, immediately after the "What to
+  do with this" paragraph, naming the two live rates and pointing back at the
+  first note rather than repeating its full text. While re-reading the whole
+  post for a third unmarked occurrence — not trusting the review's count
+  alone, since a third would be "found by a reader rather than by review" —
+  found one: "What the prices were, and what they are now" states "Sol's
+  pricing is unchanged" in the same present tense as that sentence's
+  still-accurate Terra and Luna prices, with nothing distinguishing the one
+  clause that has since gone false from the two that have not. Added a third,
+  minimal `.correction-note` there too. Neither new note touches the original
+  prose; both are the same `.correction-note` pattern change 2 already used.
+- Not done, and the reasoning error this corrects: change 2's own "Not done"
+  bullet above says the second occurrence was left unmarked "per this round's
+  own instruction against silently rewriting dated reporting" — invoking
+  rule 5's don't-rewrite force as the reason not to mark it. That conflates
+  two different things: rule 5 forbids rewriting the *original prose*: it
+  says nothing against placing a second, equally prominent marker beside a
+  second occurrence of the same false claim. Change 2's own diff already
+  proved the pattern works without rewriting anything — 24 insertions, 0
+  deletions, original text intact — and the fix here is running that same
+  pattern a second and third time, not a new technique. That earlier bullet
+  is left standing above rather than edited, so the reasoning error is part
+  of the record rather than smoothed out of it before anyone else could read
+  it wrong.
+
 - Origin: delegated
 - Track: maintain
 - Agent: claude-sonnet-5
