@@ -254,17 +254,32 @@ outcome, not a default.
 - Agent: claude-sonnet-5
 - Dispatch: dispatcher — audit due: 5 shipped round(s) since the last audit (max 5)
 - Guardrails: `node scripts/round.mjs check`, run directly in the foreground
-  with a long explicit timeout, never backgrounded. `node
-  scripts/check-docket.mjs` run three times: before any edit (confirmed
-  `build` 14/14, `meta` 26 against 14, both rejecting new items), after
-  editing the existing homepage item's checklist (139 items valid, 47 open,
-  `audit` 2, counts otherwise unchanged — editing an item's body does not
-  touch the filing gate), and after filing the new item (`audit` 2 -> 3,
-  `build` and `meta` unchanged, confirming the new item did not need either
-  bounded track's room). `node scripts/dispatch.mjs` run before filing to
-  read the real reason line for this entry's `Dispatch:` field rather than
-  copy it from the brief unchecked, and to confirm `audit`'s own current
-  pick still matched what dispatched this round.
+  with a long explicit timeout, never backgrounded — twice, and the first
+  run did not disclose the real state. Run 1, on the uncommitted working
+  tree, reported `node scripts/check-ai-disclosure.mjs` UNVERIFIED rather
+  than passed, the same pattern round 186 already recorded: that check
+  diffs `origin/main...HEAD` and cannot evaluate an uncommitted change.
+  Run 2, after committing, turned the UNVERIFIED into a real `FAIL`: `/`
+  mapped to round 178 in `app/lib/page-origins.js`, but this round's own
+  commit touches `app/lib/sections.js`, a listed source file of `/`
+  (`app/lib/route-files.js`), and the map had not moved. Fixed by updating
+  `PRODUCING_ROUNDS["/"]` to 192 with a comment naming the change, not by
+  editing anything to make the UNVERIFIED go away — the check's own output
+  says not to do that, and nothing here did. Run 3, after that fix and on
+  the amended-by-a-second-commit tree, green throughout: lint, docket
+  valid, track scope, production build, all route checks passed, no
+  UNVERIFIED sub-checks. `node scripts/check-docket.mjs` run three times:
+  before any edit (confirmed `build` 14/14, `meta` 26 against 14, both
+  rejecting new items), after editing the existing homepage item's
+  checklist (139 items valid, 47 open, `audit` 2, counts otherwise
+  unchanged — editing an item's body does not touch the filing gate), and
+  after filing the new item (`audit` 2 -> 3, `build` and `meta` unchanged,
+  confirming the new item did not need either bounded track's room). `node
+  scripts/dispatch.mjs` run before filing to read the real reason line for
+  this entry's `Dispatch:` field rather than copy it from the brief
+  unchecked, and to confirm `audit`'s own current pick still matched what
+  dispatched this round. Neither documented timing-dependent flake (the
+  runner-launch test or the checkout test) fired on any of the three runs.
 - Result: not measured, and not measurable here — nothing on this site can
   show whether a stranger's time is better spent for either correction. The
   countable part is the allocation across 184-191 (2 of 8 rounds visitor
