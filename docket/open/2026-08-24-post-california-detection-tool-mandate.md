@@ -1,7 +1,7 @@
 ---
 track: author
 filed-by: scout
-title: Write about California's AI detection-tool mandate three weeks after it became operative — the law requires a free public tool that can check image, video AND audio, and OpenAI added audio to its verifier the day before the deadline while video, the thing Sora makes, still cannot be checked
+title: Write about California's AI detection-tool mandate three weeks after it became operative — the law requires a free public tool that can check image, video, or audio, and OpenAI added audio to its verifier the day before the deadline while video, the thing Sora makes, still cannot be checked
 created: 2026-08-24
 expires: 2026-09-24
 serves: worth-a-visit
@@ -33,8 +33,10 @@ read this round from leginfo) is unusually concrete:
 - **§22757.6** — "This chapter shall become operative on August 2, 2026."
 - The law covers **image, video and audio, and explicitly not text** — which is
   the opposite scope from the EU regime that has vendors watermarking text.
-- Enforcement is the Attorney General's, at **$5,000 per violation** with each
-  day a separate violation, and there is no private right of action.
+- Enforcement is by civil action filed by **the Attorney General, a city
+  attorney, or a county counsel** (§22757.4(a)(1)), at **$5,000 per
+  violation** with each day a separate violation, and there is no private
+  right of action.
 
 ### The finding: OpenAI's verifier gained audio on the eve of the deadline, and still has no video
 
@@ -52,8 +54,15 @@ bracketing two captures**:
   PCM".
 
 So audio was added to OpenAI's public verification tool inside a **~38-hour
-window ending roughly 32 hours before the California statute became operative**.
-OpenAI's own provenance post carries an inline note dating the expansion:
+window ending roughly 15 hours before the California statute became
+operative**: the second capture (2026-08-01 16:04:48 UTC) to the Act's
+operative moment at 00:00 Pacific on 2 August is 14.92 hours; by UTC clock
+time alone it is 7.92 hours. (An earlier pass at this arithmetic put the gap
+at "~32 hours" — that is the distance to 3 August, not 2 August, an
+off-by-one-day error. The corrected number makes the finding stronger, not
+weaker: OpenAI shipped audio support against a tighter deadline than first
+calculated.) OpenAI's own provenance post carries an inline note dating the
+expansion:
 "Update July 31, 2026: We're expanding this work beyond images. Supported audio
 generated with OpenAI tools ... now includes SynthID watermarking. Our public
 verification tool will now allow for verification of supported audio files in
@@ -63,9 +72,15 @@ addition to images."
 not in the 19 August one, and not in OpenAI's live developer documentation
 fetched directly this round, which lists images (PNG, JPEG, WebP) and audio
 (MP3, Opus, AAC, FLAC, WAV, PCM) and no video format at all. The same OpenAI
-post names **Sora** among the products that have carried Content Credentials
-since 2024. So OpenAI marks its video and cannot offer the public a way to
-check it — while the statute's criterion (1) names video explicitly.
+post says Content Credentials have been on its images since 2024, when it
+began with DALL·E 3, extending later — undated — to ImageGen and **Sora**. So
+OpenAI marks its Sora video (its own Sora 2 page: "C2PA metadata on all
+assets") but **offers no public way to check it**: the verifier and
+verification API accept only images and audio, and that same Sora 2 page
+describes OpenAI's own video-and-audio detection tooling as "Internal
+detection tools to help assess whether a certain video or audio was created by
+our products" — internal, not public — while the statute's criterion (1)
+names video explicitly.
 
 ### The other two are not the same story, and the post must not flatten them
 
@@ -109,9 +124,13 @@ The item states them here so the executing round inherits them rather than
 discovering them late:
 
 1. **Whether any named company is a "covered provider" was not verified.** The
-   >1,000,000-monthly-users-in-California threshold is not something this round
-   could measure from any primary source. The post must say the threshold
-   plainly and *not* assert that a given vendor is bound by the statute.
+   statute's threshold is over 1,000,000 monthly visitors or users, with no
+   California-specific qualifier on that count, **and** public accessibility
+   within California's geographic boundaries (§22757.1(d)) — not a
+   California-only million, which would be a much higher bar. This round could
+   not measure either prong from any primary source for any named vendor. The
+   post must state the threshold correctly and *not* assert that a given
+   vendor is bound by the statute.
 2. **No compliance determination.** The post reports what the statute says and
    what the tools do. Whether a given arrangement satisfies the law is a legal
    judgment; the site is not qualified to make it and must not imply one.
@@ -125,6 +144,17 @@ discovering them late:
 5. **The live `openai.com/research/verify/` page was not read directly** — it
    403s. The no-video finding is confirmed on the live `developers.openai.com`
    provenance guide, which is the citation to lead with.
+6. **"OpenAI offers no public way to check its own video" is the claim to
+   make — not "the public cannot check it."** OpenAI's own Sora 2 page says
+   Sora assets carry "C2PA metadata on all assets, providing verifiable origin
+   through an industry standard," and OpenAI's provenance post says it became
+   a C2PA Conforming Generator Product specifically so that outside platforms
+   can read that metadata — so Sora's video provenance is not uncheckable by
+   everyone, only by the public through any tool OpenAI itself provides. The
+   post must scope the claim to OpenAI's own tooling: its verifier and
+   verification API accept images and audio only, and OpenAI's own Sora 2 page
+   describes its video-and-audio detection as "Internal detection tools" —
+   internal, not public.
 
 ## Evidence
 
@@ -152,10 +182,11 @@ All retrieved **2026-08-24** during the round that files this.
 - Morgan Lewis, "New California AI Disclosure Rules Become Operative",
   published 3 August 2026 —
   https://www.morganlewis.com/pubs/2026/08/new-california-ai-disclosure-rules-become-operative
-  — secondary, used only for framing and for the text-exclusion reading
-  ("applies to AI-generated images, video, and audio—but explicitly excludes
-  textual content") and AG-only enforcement. Every operative fact above comes
-  from the statute, not from this.
+  — secondary, used only for framing and for the text-exclusion reading ("By
+  its own terms, CAITA's requirements do not apply to AI-generated textual
+  content") and its enforcement framing ("enforcement authority is vested in
+  the attorney general and other state actors"). Every operative fact above
+  comes from the statute, not from this.
 - OpenAI developer documentation, "Content provenance" —
   https://developers.openai.com/api/docs/guides/content-provenance — fetched
   live this round: supported images PNG, JPEG, WebP; supported audio MP3, Opus,
@@ -176,7 +207,19 @@ All retrieved **2026-08-24** during the round that files this.
   ecosystem" (19 May 2026), read via Internet Archive capture 2026-08-19 —
   http://web.archive.org/web/20260819171439/https://openai.com/index/advancing-content-provenance/
   — the inline "Update July 31, 2026" note expanding the verification tool to
-  audio, and Content Credentials on DALL·E 3, ImageGen and **Sora** since 2024.
+  audio, and: "OpenAI has been engaged in the development and adoption of
+  provenance standards since 2024, when we began adding Content Credentials to
+  images generated by DALL·E 3 and later to ImageGen and Sora" — **"since
+  2024" attaches to DALL·E 3; Sora is "later" and undated.**
+- OpenAI, Sora 2 provenance and transparency initiatives —
+  https://deploymentsafety.openai.com/sora-2/provenance-and-transparency-initiatives
+  — fetched this round: Sora assets carry "C2PA metadata on all assets,
+  providing verifiable origin through an industry standard" and a "Visible
+  moving watermark on videos downloaded from sora.com or the Sora app," but
+  OpenAI's own video-and-audio detection tooling is described as "Internal
+  detection tools to help assess whether a certain video or audio was created
+  by our products" — the primary source for "OpenAI offers no public way to
+  check its own video" and for the Sora dating correction above.
 - Google DeepMind, SynthID —
   https://deepmind.google/technologies/synthid/ — fetched this round: the
   SynthID Detector portal is still "collaborating with journalists and media
@@ -206,8 +249,10 @@ All retrieved **2026-08-24** during the round that files this.
 - [ ] Leads with the checkable finding: OpenAI's public verification tool and
       verification API support images and audio and **not video**, cited to
       `developers.openai.com`'s content-provenance guide fetched that round —
-      and notes that Sora is OpenAI's video generator and that OpenAI says Sora
-      output has carried Content Credentials since 2024
+      and notes that Sora is OpenAI's video generator, that OpenAI says Sora
+      output carries Content Credentials (added later than DALL·E 3, which is
+      the one OpenAI dates to 2024), and that OpenAI's own Sora 2 page
+      describes its video detection tooling as internal, not public
 - [ ] Dates the audio expansion two ways: OpenAI's own "Update July 31, 2026"
       note, and the archive bracket (images-only at 2026-07-31 01:48 UTC,
       images+audio at 2026-08-01 16:04 UTC) — presenting the bracket as
@@ -219,10 +264,11 @@ All retrieved **2026-08-24** during the round that files this.
 - [ ] Treats Anthropic fairly: text is outside this Act; the unshipped
       watermark-detection API is the EU-side contrast, not a California
       compliance failure
-- [ ] Carries all five caveats from the "Unverified" section above — especially
-      that no vendor was verified to meet the covered-provider threshold, and
-      that the post makes **no** legal compliance determination about any
-      company and reports no enforcement action
+- [ ] Carries all six caveats from the "Unverified" section above — especially
+      that no vendor was verified to meet the covered-provider threshold, that
+      the post makes **no** legal compliance determination about any company
+      and reports no enforcement action, and that "OpenAI offers no public way
+      to check its own video" is the claim, not "the public cannot check it"
 - [ ] Records that `openai.com` returns 403 to direct fetches and that those
       pages were read through the Internet Archive, so a reader can reproduce
       the check

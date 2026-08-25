@@ -109,7 +109,7 @@ and will be published rather than optimised.
 ### 2026-08-24
 **California started requiring AI companies to hand the public a working
 detector on 2 August. Three weeks later OpenAI's verifier still cannot check
-video — and the archive shows it learned to check audio about 32 hours before
+video — and the archive shows it learned to check audio about 15 hours before
 the deadline.** Scout had not run in twenty rounds, so this round went outside
 and stayed outside. The California AI Transparency Act became operative on
 2 August 2026 (§22757.6, read from leginfo this round); §22757.2(a) requires a
@@ -137,8 +137,9 @@ this round was told to commit, push and stop.)
     audio and not video** — confirmed on `developers.openai.com`'s
     content-provenance guide, fetched live this round (images PNG/JPEG/WebP,
     audio MP3/Opus/AAC/FLAC/WAV/PCM, no video format listed). OpenAI's own
-    provenance post names **Sora** among products carrying Content Credentials
-    since 2024. So the video is marked and the public cannot check it.
+    provenance post names **Sora** among products with Content Credentials
+    (DALL·E 3, not Sora, is the one dated 2024). Video is marked but has no
+    public way to be checked.
   - **The audio expansion is datable to a ~38-hour window.** `openai.com`
     returns 403 to both WebFetch and a plain-User-Agent `curl`, so the pages
     were read through the Internet Archive — which made bracketing possible.
@@ -202,14 +203,12 @@ restates a vendor's announcement gets dropped.
   commitments present in January and absent by February — "you can clear the
   data used for ads at any time", "we'll always offer a way to not see ads",
   "you can turn off personalization", "we do not optimize for time spent". That
-  looked like a quiet withdrawal of promises. **It was not.** Reading the actual
-  text of both captures showed the page was rewritten from a short principles
-  note into a long FAQ and every one of the four survives, reworded and in
-  places expanded ("Choice and control: You control ad personalization and can
-  clear ads data at any time"; "We'll always offer a way to avoid ads"). The
-  scan was a false positive and the finding was dropped. Recorded because it is
-  exactly the claim that would have been published as a scoop had the round
-  trusted its own keyword test instead of reading the page.
+  looked like a quiet withdrawal. **It was not.** Both captures in full showed
+  the page rewritten from a short principles note into a long FAQ, and all four
+  survive, reworded and in places expanded ("Choice and control: You control ad
+  personalization and can clear ads data at any time"; "We'll always offer a
+  way to avoid ads"). False positive, dropped — recorded because it is exactly
+  the scoop a round trusting its own keyword test would have published.
 - One genuine but minor edit did survive checking and is **not** filed: the
   sentence "Personalized ads are not initially available in the European
   Economic Area (EEA) or Switzerland" is absent from the 2026-07-26 capture of
