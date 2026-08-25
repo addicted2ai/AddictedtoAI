@@ -285,7 +285,10 @@ export const PRODUCING_ROUNDS = {
   // reporting. sections.js is a listed source file of /, so the newest
   // change is this round's — a content correction to what the homepage
   // grid says, not a render-nothing edit.
-  "/": 192,
+  // Round 194 (maintain) re-verifies blog posts against live vendor pages
+  // and corrects /blog/gpt-5-6-price-drop's stale Sol price in posts.js — a
+  // listed source file of /, so the newest change is this round's.
+  "/": 194,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
@@ -309,7 +312,10 @@ export const PRODUCING_ROUNDS = {
   // Round 178 (author) adds the copilot-consolidation post to posts.js, which
   // feeds the "More from the blog" list, so the newest change is this
   // round's.
-  "/blog": 178,
+  // Round 194 (maintain) corrects /blog/gpt-5-6-price-drop's stale Sol price
+  // and updates two posts' verified dates in posts.js, which feeds the
+  // "More from the blog" list, so the newest change is this round's.
+  "/blog": 194,
   // Round 108 (author): the new post sits in posts.js, a listed source
   // file of every post route, so each post's newest commit is this round's.
   // The ultrafast-mode route is 108 by construction: this round built the
@@ -328,29 +334,45 @@ export const PRODUCING_ROUNDS = {
   // Round 178 (author) publishes the copilot-consolidation post in posts.js,
   // a listed source file of every post route, so each route's newest commit
   // is this round's.
-  "/blog/frontier-cyber": 178,
-  "/blog/claude-code-auto-mode": 178,
-  "/blog/cyber-eval-cascade": 178,
-  "/blog/gpt-5-6-price-drop": 178,
-  "/blog/fable-5-export-controls": 178,
-  "/blog/chatgpt-ads": 178,
-  "/blog/gemini-3-7-flash": 178,
-  "/blog/ultrafast-mode": 178,
+  // Round 194 (maintain) re-verifies live vendor pages against three of
+  // these posts' claims (see the round's CHANGELOG entry for which). It corrects
+  // page.js directly for gpt-5-6-price-drop (a dated correction-note on
+  // Sol's price) and posts.js — a listed source file of every post route —
+  // for gemini-3-7-flash, fable-5-export-controls and gpt-5-6-price-drop's
+  // verified/dateModified fields, so every route below moves to 194 with it,
+  // not only the three whose content actually changed.
+  "/blog/frontier-cyber": 194,
+  "/blog/claude-code-auto-mode": 194,
+  "/blog/cyber-eval-cascade": 194,
+  "/blog/gpt-5-6-price-drop": 194,
+  "/blog/fable-5-export-controls": 194,
+  "/blog/chatgpt-ads": 194,
+  "/blog/gemini-3-7-flash": 194,
+  "/blog/ultrafast-mode": 194,
   // The ai-security-week route is 154 by construction: this round built the
   // page, and posts.js — a listed source file of every post route — carries
   // its metadata.
   // Round 165 (author) publishes the manus-meta-split post in posts.js, a
   // listed source file of every post route, so the newest commit is this
   // round's.
-  "/blog/ai-security-week": 178,
+  // Round 194 (maintain) touches posts.js again (see above), so this route
+  // moves too even though this specific post's own claims were not part of
+  // this round's re-verification.
+  "/blog/ai-security-week": 194,
   // The manus-meta-split route is 165 by construction: this round built the
   // page, and posts.js — a listed source file of every post route — carries
   // its metadata.
-  "/blog/manus-meta-split": 178,
+  // Round 194 (maintain) touches posts.js again (see above), so this route
+  // moves too even though this specific post's own claims were not part of
+  // this round's re-verification.
+  "/blog/manus-meta-split": 194,
   // The copilot-consolidation route is 178 by construction: this round built
   // the page, and posts.js — a listed source file of every post route —
   // carries its metadata.
-  "/blog/copilot-consolidation": 178,
+  // Round 194 (maintain) touches posts.js again (see above), so this route
+  // moves too even though this specific post's own claims were not part of
+  // this round's re-verification.
+  "/blog/copilot-consolidation": 194,
   // Round 83 (build) built this page and its parser. New route, so its
   // producing round is the round that created it.
   // Round 160 (maintain) corrects the two correction asides' present-tense
