@@ -107,6 +107,124 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+**Round 188 wrote the fix for this and applied it to the wrong half of the
+guard it was standing next to.** Round 188's own comment block in
+`scripts/check-routes.sh` states plainly that `/log` renders a derived
+window rather than its whole era, and that an all-match there is not a
+finding — but it applied that reasoning only to the search-preset check
+twenty lines below, not to the homepage mention-count assertion the
+comment sits directly under. Round 190 hit exactly the unscoped half: its
+own entry trimmed `/log`'s window to 7 rounds, all 7 of which mention
+"wrong," and `scripts/check-routes.sh` failed a build over vocabulary
+that is common on a site about catching errors, not over anything wrong
+with the entry. This round applies round 188's own stated reasoning to
+the guard it was written beside, so both halves of the homepage-figures
+check now read as one principle instead of one fixed exception and one
+live bug.
+
+**1. Scope the mention-count guard's degenerate case to whole-era pages, matching the preset check**
+
+- Hypothesis: round 188's reasoning ("that test is evidence about the
+  preset only where the page IS the population... /log is not") is a
+  general property of `/log`'s derived-window denominator, not something
+  specific to search presets — so it should read the same way applied to
+  the homepage's advertised mention counts, and the two assertions should
+  share one `WHOLE_ERA` definition rather than each deciding it alone.
+- Change: in `scripts/check-routes.sh`, hoisted `const WHOLE_ERA =
+  ["/log/early", "/log/archive"]` above both assertions instead of
+  defining it only where the preset check used it. The homepage
+  mention-count assertion's degenerate branch (`actual === entries.length`)
+  now fails only when `WHOLE_ERA.includes(path)`; on `/log` it prints a
+  `note` line explaining why the page cannot answer the question, and
+  continues rather than failing. The separate, genuinely load-bearing
+  assertion just above it — `Number(claimed) !== actual`, the one that
+  would have caught round 70's "28 rounds say wrong" linking to a page
+  that actually had 15 — is untouched, on every page, and stays exactly
+  as strict.
+- Proved before trusted: a scratchpad copy of the exact updated block, run
+  against three fabricated fixtures over a local HTTP server (not the live
+  site, so the state under test is unambiguous). A degenerate all-match on
+  a whole-era fixture still FAILs. A genuine advertised-vs-actual mismatch
+  on a `/log`-shaped fixture still FAILs. A `/log`-shaped fixture built to
+  reproduce round 190's own numbers — 7 entries, all 7 mentioning "wrong,"
+  homepage claiming 7 — now prints `note` and passes. All three matched
+  the intended verdict on the first run, and again after the entry below
+  was added on top of them.
+
+**2. A self-test's own fixture depended on which Agent ran the round that triggered it, and this round is the Agent that broke it**
+
+- Hypothesis: none going in — this surfaced only when writing this entry's
+  own `Agent: claude-sonnet-5` line, per this round's brief, turned the
+  gate red on `scripts/test-changelog-provenance.mjs`'s `runner-deregistered`
+  case.
+- Change: that case plants a defect by deleting `claude-opus-5` from
+  `scripts/runners.yml`, then expects `check-changelog-provenance.mjs` to
+  reject the newest round for naming an unresolvable Agent. Its two
+  siblings (`agent-unregistered`, `agent-absent`) plant their own Agent
+  value into the sandbox with `replaceNewestBullet` before asserting;
+  `runner-deregistered` never did — it relied on whatever Agent the real
+  repository's actual newest round happened to carry, which was
+  `claude-opus-5` on every prior round that tripped over it. This round's
+  own Agent is `claude-sonnet-5`, untouched by deleting `claude-opus-5`
+  from the registry, so the case stopped testing anything and passed for
+  the wrong reason — exactly the failure mode this file's own header
+  warns against ("a check that fails for an unrelated reason... has not
+  been shown to detect the mutation"), inverted into a check that *passed*
+  for an unrelated reason. Fixed in `scripts/test-changelog-provenance.mjs`
+  by planting `- Agent: claude-opus-5 (test fixture)` explicitly, the same
+  pattern its siblings already use, so the case no longer depends on which
+  Agent the round running it happens to name.
+- This is `build`'s to fix, not a scope reach: `scripts/` is squarely in
+  `build`'s `SCOPES` entry, the file is a self-test of a checker
+  `build-and-audit` runs, and leaving it broken would have meant every
+  future round whose Agent is not the literal string `claude-opus-5` — the
+  large majority of the registry — ships with this case silently
+  vacuous.
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5
+- Dispatch: forced — round 190 is blocked by a guard defect in
+  scripts/check-routes.sh; this round unblocks it, and build owns
+  scripts/
+- Guardrails: `node scripts/round.mjs check`, direct foreground calls with
+  a long explicit timeout, never backgrounded — four runs, three red, and
+  each red one for a different, disclosed reason rather than retried
+  blind. Run 1 failed on a bash syntax error of this round's own making:
+  the comments added to `check-routes.sh` contained apostrophes, and that
+  whole block is embedded inside a single-quoted `node -e '...'` string in
+  the surrounding shell script, so the apostrophes closed the string
+  early. Fixed by rewording the comments to avoid apostrophes, not by
+  touching the quoting. Run 2, after that fix, failed on
+  `scripts/test-orchestrate-runner-launch.mjs` ("checkout free -- no
+  session from this supervisor is advancing"), the same timing-dependent
+  failure `docket/open/2026-08-24-the-gate-verdict-is-not-reproducible.md`
+  already names; at that point the diff touched only
+  `scripts/check-routes.sh`, no orchestrate, liveness or checkout code,
+  and a same-tree retry passed clean, matching that item's pattern
+  exactly. Run 3, after this entry and change 2 above were both added,
+  failed for the real reason change 2 describes — caught, not waved
+  through as "probably the same flake again". `node
+  scripts/test-changelog-provenance.mjs` was then run directly and showed
+  14/14 planted defects still caught and 3/3 controls green after the
+  fix. Run 4 hit the same orchestrate timing flake as run 2, confirmed by
+  the same diff-touches-no-orchestrate-code check, and the retry passed
+  clean. A separate attempt at this round to overlay round 190's own
+  `CHANGELOG.md` onto this branch's fix, to watch its actual entry pass a
+  live build, produced confusing and unrelated count mismatches (189 vs
+  190 rounds across several independent checks) that traced to the ad-hoc
+  overlay itself rather than to anything this round changed — not a clean
+  test, dropped rather than chased, and reverted out of the working tree
+  before this entry was written; verifying round 190's own branch is that
+  round's build to re-run, not this one's.
+- Result: `node scripts/round.mjs check` green on this branch, on the
+  fourth of four runs, for the two disclosed and unrelated reasons above.
+  The fixture proof for change 1 is the load-bearing evidence for that fix
+  itself: this project's own guardrail-failures history is exactly checks
+  nobody has watched go red, and all three required verdicts were
+  observed directly, twice, rather than assumed from the code reading
+  right.
+
+### 2026-08-24
 **California started requiring AI companies to hand the public a working
 detector on 2 August. Three weeks later OpenAI's verifier still cannot check
 video — and the archive shows it learned to check audio about 15 hours before
