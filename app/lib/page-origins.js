@@ -435,7 +435,15 @@ export const PRODUCING_ROUNDS = {
   // moved) to the page's own footnote. Both listed source files change --
   // app/model-retirement-calendar/page.js and app/lib/retirement-dates.js --
   // so the newest change is this round's.
-  "/model-retirement-calendar": 187,
+  // Round 189 (maintain, loop/maintain/process-claims-after-five-rounds)
+  // publishes the inclusion rule the page had never stated -- a row is a date
+  // on which something stops working, so a dated milestone that only restricts
+  // a capability is not one -- and names the four excluded OpenAI milestones
+  // with the reason. A new paragraph in the page's Scope section is a real
+  // content change to app/model-retirement-calendar/page.js, and the same rule
+  // is written into app/lib/retirement-dates.js's header; both are listed
+  // source files, so the newest change is this round's.
+  "/model-retirement-calendar": 189,
   // Round 168 (build) built this page. New route, so its producing round is
   // the round that created it.
   // Round 181 (build, loop/build/model-migration-chains) adds the same
@@ -451,7 +459,20 @@ export const PRODUCING_ROUNDS = {
   // /model-retirement-calendar, and that round re-stamped all 87 rows there.
   // A data re-verification is a real content change to what this page tells a
   // reader -- the checker answers out of those rows -- so it moves with them.
-  "/model-deprecation-checker": 187,
+  // Round 189 (maintain, loop/maintain/process-claims-after-five-rounds) moves
+  // this route on a change that renders nothing, and says so rather than
+  // borrowing round 187's justification. That round moved it because 87 rows
+  // of data changed; this one only writes the calendar's newly-decided
+  // inclusion rule into app/lib/retirement-dates.js's header comment. No row
+  // moved, so nothing this checker answers with is different. It moves anyway
+  // because the map is judged mechanically against git history -- the file is
+  // a listed source of this route and this round is the newest commit to touch
+  // it -- and the alternative, leaving the map at 187, is the one thing
+  // check-ai-disclosure.mjs exists to catch. The disclosure this produces
+  // ("most recent recorded change: round 189") is true as written: it names
+  // the most recent recorded change to this page's sources, not a claim that
+  // the page reads differently.
+  "/model-deprecation-checker": 189,
   // Round 181 (build, loop/build/model-migration-chains) built this page.
   // New route, so its producing round is the round that created it.
   // Round 186 (audit) withdraws it under CHARTER.md rule 9: the address now

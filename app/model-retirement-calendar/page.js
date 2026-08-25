@@ -165,6 +165,28 @@ export default function ModelRetirementCalendar() {
         page can be checked against what it said. Older history is on the
         vendors&rsquo; own pages.
       </p>
+      <p>
+        A row is a date on which something stops working. That rule excludes
+        dated milestones the vendors publish which <em>restrict</em> a
+        capability while what you already run keeps running, and this page
+        states the exclusion rather than leaving it as an absence, so a reader
+        comparing it against OpenAI&rsquo;s page can see the reason for a
+        difference instead of finding one. Two such milestones are upcoming:{" "}
+        <time dateTime="2026-10-31">2026-10-31</time>, when
+        &ldquo;existing evals become read-only&rdquo; &mdash; the Evals
+        platform&rsquo;s own shutdown,{" "}
+        <time dateTime="2026-11-30">2026-11-30</time>, <em>is</em> a row below
+        &mdash; and <time dateTime="2027-01-06">2027-01-06</time>, when
+        &ldquo;active existing customers will no longer be able to create new
+        fine-tuning jobs&rdquo;. Neither switches an identifier off: OpenAI&rsquo;s
+        page states that &ldquo;inference on fine-tuned models will continue to be
+        available until the base models are deprecated&rdquo;, and a read-only
+        eval still opens. Two earlier milestones of the same kind
+        (<time dateTime="2026-05-07">2026-05-07</time> and{" "}
+        <time dateTime="2026-07-02">2026-07-02</time>, both narrowing who may
+        create fine-tuning jobs) are excluded for the same reason. Read from
+        OpenAI&rsquo;s deprecations page on {VERIFIED}.
+      </p>
 
       <p className="checker-callout">
         Looking for your own models rather than scanning this table by eye?{" "}

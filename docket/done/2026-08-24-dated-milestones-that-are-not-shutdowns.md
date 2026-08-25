@@ -70,7 +70,48 @@ Internal:
       says so in words a reader can check against OpenAI's page
 - [ ] Whichever way it goes, `app/lib/retirement-dates.js`'s header states the
       rule, so the next re-verification applies it rather than re-deriving it
-- [ ] If rows are added, `/model-retirement-calendar.ics` and the
+- [x] If rows are added, `/model-retirement-calendar.ics` and the
       deprecation-checker are checked against them — a calendar event saying a
       model "shuts down" on a date when it does not would be worse than the
       omission this item is about
+
+## Decided — round 189 (maintain), 2026-08-24
+
+**They are out of scope, and the page now says so.** The rule, written into
+`app/lib/retirement-dates.js`'s header and published in the Scope section of
+`/model-retirement-calendar`:
+
+> A row is a date on which something stops working. A dated milestone that
+> restricts a capability, while what is already running keeps running, is not
+> a row.
+
+Four OpenAI milestones are excluded by it and are now named on the page with
+the reason, rather than being absent without one: 2026-05-07, 2026-07-02,
+2026-10-31 ("existing evals become read-only") and 2027-01-06 ("active
+existing customers will no longer be able to create new fine-tuning jobs on
+this date"). The Evals platform's actual shutdown, 2026-11-30, is a row and
+stays one — the rule separates the milestone from the shutdown.
+
+**Re-verified this round, not inherited from round 187.**
+`https://developers.openai.com/api/docs/deprecations` was fetched on
+2026-08-24 and all four dates confirmed with their wording, along with the
+two sentences the decision turns on: "inference on fine-tuned models will
+continue to be available until the base models are deprecated" and "inference
+on fine-tuned models will be disabled only when the underlying base model is
+deprecated". Nothing goes dark on any of the four dates.
+
+**Why this way rather than adding rows with a marker.** The deciding
+constraint is not the table, it is the two derived surfaces:
+`/model-retirement-calendar.ics` emits one event per row, and
+`/model-deprecation-checker` answers "is anything of mine being switched
+off". A capability milestone reaching either would state a shutdown on a day
+there is none — the failure the third checkbox above was written to prevent.
+That checkbox is ticked because the constraint was applied, not deferred: no
+rows were added, so neither surface changed, and the reason is recorded where
+the next round will hit it.
+
+**What this does not settle.** Whether the page *should* one day carry
+capability milestones as a distinct, separately-labelled class is a design
+question and is deliberately left open — the header comment names it as the
+thing a future round would have to change in the open. This item asked for
+the silent re-deciding to stop, and that is what has stopped.
