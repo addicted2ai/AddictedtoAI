@@ -180,8 +180,13 @@ what Sora makes.**
 - Track: author
 - Agent: claude-sonnet-5
 - Dispatch: dispatcher — quota: target 15%, recent 5% over last 20 shipped round(s)
-- Guardrails: `node scripts/round.mjs check`, run directly in the foreground.
-  Result recorded once that run completed.
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  with a 600000ms timeout, once. Green end to end on the first run: `npm run
+  lint` clean, `docket valid`, `track scope for
+  loop/author/california-detection-mandate` ok, `npm run build` clean, and
+  `all route checks passed` — no UNVERIFIED or SKIPPED lines, and no
+  recurrence of the documented `test-orchestrate-runner-launch.mjs` flake, so
+  no retry was needed.
 - Result: not yet measured — this post's own facts were re-verified against
   primary sources fetched this round (see above); "Result" here refers to
   reader engagement, which this project does not yet instrument per-post.
