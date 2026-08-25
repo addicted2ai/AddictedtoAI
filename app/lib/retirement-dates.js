@@ -41,13 +41,45 @@
 // method and the two traps it had to get past (escaped pipes inside a
 // table cell, and the page's prose "Date | Update" tables).
 //
-// Two dated OpenAI milestones on the page are deliberately still not rows,
-// unchanged from the original scope call: "existing evals become read-only"
-// (2026-10-31) and "active existing customers will no longer be able to
-// create new fine-tuning jobs" (2027-01-06). Both restrict a capability;
-// neither switches an identifier off, which is what this file lists. Filed
-// as docket/open/2026-08-24-dated-milestones-that-are-not-shutdowns.md for
-// a round that wants to decide rather than inherit it.
+// THE INCLUSION RULE, decided by round 189 (maintain) on 2026-08-24 and
+// stated here so a re-verification applies it instead of re-deriving it.
+// Previously this was an unwritten scope call, which meant every
+// re-verification silently re-decided it; that is what
+// docket/done/2026-08-24-dated-milestones-that-are-not-shutdowns.md asked to
+// end, and it asked for a decision to be recorded, not for rows to be added.
+//
+//   A row is a date on which something stops working. A dated milestone that
+//   RESTRICTS a capability, while what is already running keeps running, is
+//   not a row.
+//
+// So these four dated OpenAI milestones stay out, and the page now says so in
+// its own Scope section rather than leaving readers to infer it from an
+// absence:
+//
+//   2026-05-07  fine-tuning job creation closed to orgs that never fine-tuned
+//   2026-07-02  ... and to orgs with no fine-tuned inference in 60 days
+//   2026-10-31  "existing evals become read-only"
+//   2027-01-06  "active existing customers will no longer be able to create
+//               new fine-tuning jobs on this date"
+//
+// Verified against https://developers.openai.com/api/docs/deprecations on
+// 2026-08-24 (round 189): the page states "inference on fine-tuned models
+// will continue to be available until the base models are deprecated" and
+// "inference on fine-tuned models will be disabled only when the underlying
+// base model is deprecated" -- so no identifier goes dark on any of those
+// dates. A read-only eval still opens.
+//
+// The rule is drawn where it is because of the .ics feed, not for tidiness:
+// /model-retirement-calendar.ics emits one event per row, and the
+// deprecation checker answers "is anything of mine being switched off". A
+// capability milestone rendered as either would tell a reader a model shuts
+// down on a day it does not, which is worse than the omission. The Evals
+// platform's actual shutdown (2026-11-30) is a row and stays one -- the rule
+// separates the milestone from the shutdown, it does not drop the product.
+//
+// If a future round wants these visible, the rule above is what it has to
+// change, in the open, along with the Scope paragraph that publishes it and
+// a column or marker distinguishing a capability milestone from a shutdown.
 //
 // The
 // OpenAI page's `dall-e-2` / `dall-e-3` row reads 2026-05-12; the 2026-12-01

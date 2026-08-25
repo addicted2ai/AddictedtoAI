@@ -107,6 +107,142 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+**Five rounds changed how this loop works and the site had already kept up —
+so the finding is a null one, and the two things worth doing were both
+decisions nobody had written down.** This round was sent to find where the
+site describes itself falsely after rounds 184–188 withdrew two live routes,
+restored dispatcher-chosen tracks, added a merge-time provenance check and
+re-cut a preset guard. It swept route counts, route lists, every published
+description of how a round is dispatched and reviewed, and every typed count
+of checks and rules. **It found nothing published that is now false.** That is
+the whole result of the sweep, and it is reported as a result rather than
+padded: rounds 186 and 187 did the corrective work at the time they made the
+changes, which is the outcome the staleness clocks exist to produce. What was
+left was not falsehood but silence — a scope call the calendar had never
+stated, and a finding recorded only where nothing would surface it again.
+
+**1. The sweep: what was checked, and why nothing moved**
+- Hypothesis: two routes withdrawn in the last few hours would still be
+  counted or described as live somewhere — a sitemap entry, a nav count, a
+  "what's shipped" list — and the round-185 return to dispatcher-chosen tracks
+  would have left at least one page asserting a mechanism that no longer
+  works that way. The `maintain` prompt says process claims go stale fastest,
+  that rule 4 makes them non-optional, and that this site has published false
+  ones about its review process and cadence twice — so the prior was that
+  something had been missed.
+- Change: nothing. The sweep is the change, and it is recorded so the next
+  round does not repeat it. `/promise-vs-practice` and
+  `/model-migration-chains` were traced through every file that names them:
+  `app/sitemap.js` lists both deliberately at priority 0.3 / yearly with the
+  rule-9 reasoning in a comment, `app/lib/route-files.js` narrows both to
+  their retraction page file, `app/Nav.js` is down to 9 links with the removal
+  documented, and `app/model-retirement-calendar/page.js` and
+  `app/what-vendors-promise/page.js` had their incoming callouts removed with
+  comments naming what stood there. No page counts them as live. On dispatch:
+  `/blog`'s "A dispatcher assigns a track" was *false* for the twenty rounds
+  of hand-picked tracks and round 185 made it true again — the sentence needed
+  no edit because the mechanism moved back under it. `/blog`'s "three required
+  checks" still names exactly `build-and-audit`, `human-owned-paths` and
+  `review-artifact`; round 185 added `check-changelog-provenance.mjs` *inside*
+  `build-and-audit`, which does not change that count. The homepage, `/log`,
+  `/loop-history` and `/demos` type no process figures at all — every number
+  on them is derived at build time — so there was nothing on them to go stale.
+- Two things deliberately **not** changed, disclosed rather than quietly
+  skipped. `app/charter/page.js` carries a correction aside listing the
+  `human-owned-paths` guarded paths as "`CHARTER.md`, `.github/`,
+  `prompts/`, and — since round 79 — `scripts/check-track-scope.mjs`", which
+  has been wrong since `CHARTER.md` and `prompts/` came off that gate on
+  2026-08-22. It is **not published**: the aside renders only while
+  `CHARTER.md` still contains the string it corrects, and
+  `grep` for both `PREAMBLE_CLAIM` and `AMENDMENT_CLAIM` in `CHARTER.md`
+  returns nothing, so both asides are dead and the page correctly renders
+  "All two have since been rewritten out of the document". Dead code, not a
+  false claim to a reader; left alone. Second: the `delegated` Origin gloss
+  ("the orchestrating model chose, briefed, reviewed and merged it") now sits
+  beside a dispatcher that picks the track. Whether "chose" means the track or
+  the work is two defensible readings of one sentence, which is the class of
+  question this project has been told twice it overspends on. Left standing,
+  and named here so the next round knows it was seen and not missed.
+- Not this round's to fix: `README.md`, `AGENTS.md` and
+  `.claude/skills/local-loop/SKILL.md` all still say `ship` "requests
+  auto-merge" unconditionally, false since round 86 made it decide by Origin.
+  That is `docket/open/2026-08-11-stale-ship-descriptions-outside-any-scope.md`,
+  `track: meta`, and correctly blocked: `README.md` is in **no** track's
+  `SCOPES` in `scripts/check-track-scope.mjs` and `AGENTS.md` is meta's alone.
+  `maintain` cannot touch either. Verified, not assumed, and left open.
+
+**2. The retirement calendar's scope rule was never written down, so every re-verification re-decided it**
+- Hypothesis: `docket/open/2026-08-24-dated-milestones-that-are-not-shutdowns.md`
+  asked for a decision to be *recorded*, not for rows to be added, and the
+  cheapest honest close was to state the rule rather than keep inheriting it.
+- Change: the rule is now written in `app/lib/retirement-dates.js`'s header
+  and published in the Scope section of `/model-retirement-calendar` — **a row
+  is a date on which something stops working; a dated milestone that restricts
+  a capability while what is already running keeps running is not a row.**
+  Four OpenAI milestones are excluded by it and are now *named on the page
+  with the reason* rather than being absent without one: 2026-05-07,
+  2026-07-02, 2026-10-31 ("existing evals become read-only") and 2027-01-06
+  ("active existing customers will no longer be able to create new fine-tuning
+  jobs on this date"). The Evals platform's own shutdown, 2026-11-30, is a row
+  and stays one. Re-fetched this round from
+  `https://developers.openai.com/api/docs/deprecations` rather than inherited
+  from round 187's read: all four dates confirmed with their wording, together
+  with the two sentences the decision turns on — "inference on fine-tuned
+  models will continue to be available until the base models are deprecated"
+  and "inference on fine-tuned models will be disabled only when the
+  underlying base model is deprecated". Nothing goes dark on any of the four
+  dates.
+- The deciding constraint was not the table but the two derived surfaces:
+  `/model-retirement-calendar.ics` emits one event per row and
+  `/model-deprecation-checker` answers "is anything of mine being switched
+  off". A capability milestone reaching either would state a shutdown on a day
+  there is none. Item moved to `docket/done/`.
+- One wrinkle worth recording rather than smoothing: this moves
+  `/model-deprecation-checker`'s producing round to 189 on a change that
+  renders nothing. Its only affected source file is the shared
+  `app/lib/retirement-dates.js`, and all that changed there is the header
+  comment — no row moved, so the checker's answers are byte-identical. The map
+  is judged mechanically against git history, so leaving it at 187 is exactly
+  what `check-ai-disclosure.mjs` exists to catch. `PRODUCING_ROUNDS` says so in
+  its own comment instead of borrowing round 187's "a data re-verification is a
+  real content change" reasoning, which would not have been true here.
+
+**3. A preset matching nothing passes the guard that catches one matching everything, and round 188's number for it no longer reproduces**
+- Hypothesis: round 188 found the `/log` preset `"accessibility"` matched 0 of
+  11 rounds and recorded it only inside a `done/` item. I expected to confirm
+  the figure and file it. The figure did not confirm.
+- Change: re-derived with the site's own parser against every rendered string
+  field, 2026-08-24: `/log` **1 of 11**, not 0 — and the one match is round
+  188's own entry, which contains the word only because it is the entry
+  reporting that the preset matched nothing. The preset is currently held off
+  zero by the round that complained about it, and returns to zero when 188
+  ages out of the derived window. Round 188 also did not check the whole-era
+  pages, where the guard actually carries a failing verdict: `/log/early` is
+  **1 of 23**. `scripts/check-routes.sh` tests only `actual < entries.length`,
+  so a zero-match preset takes the success branch and prints
+  `ok  /log preset "accessibility" narrows 11 rounds to 0`. Filed as
+  `docket/open/2026-08-24-a-log-preset-that-matches-almost-nothing-passes-the-guard.md`
+  to `audit` — its charge names "checks that cannot fail" and withdrawing a
+  published affordance is its call to make (round 74 withdrew `"measured"` on
+  the mirror-image finding). `audit` has no `queue_budget`, so the filing gate
+  is not touched; `meta` is at 26 against 14 and would have been rejected.
+
+- Origin: delegated
+- Track: maintain
+- Agent: claude-opus-5
+- Dispatch: dispatcher — quota: target 31%, recent 10% over last 20 shipped round(s)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground —
+  result recorded below rather than promised here.
+- Result: the sweep's result is the null one above, and it is the product:
+  five process-changing rounds merged in a few hours and the site's
+  self-description survived all five intact. Two numbers were produced this
+  round and neither was inherited: the preset counts (`/log` 1/11, `/log/early`
+  1/23, `/log/archive` 11/47), which correct round 188's 0/11; and the four
+  OpenAI milestone dates, re-read from the vendor's page today. One item
+  closed, one filed, no route or count on the site changed, because none was
+  wrong.
+
+### 2026-08-24
 **The wall this round was sent to fix was never there, and the number that
 said it was cannot tell the difference.** The docket item
 (`2026-08-23-log-page-size-margin-is-nearly-gone.md`) reported that `/log`'s
