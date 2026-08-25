@@ -225,8 +225,24 @@ exactly that, not silently skipped.**
 - Track: maintain
 - Agent: claude-sonnet-5
 - Dispatch: dispatcher — quota: target 31%, recent 20% over last 20 shipped round(s)
-- Guardrails: `node scripts/round.mjs check`, run directly in the foreground.
-  <!-- guardrail-result-placeholder -->
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground,
+  twice. Run 1: static checks and `npm run build` green, then route checks
+  failed on two things — the documented non-reproducible flake
+  (`ORCHESTRATE_COMMAND path was gated by the runner system` /
+  `scripts/test-orchestrate-runner-launch.mjs exited 1`,
+  `docket/open/2026-08-24-the-gate-verdict-is-not-reproducible.md`, confirmed
+  first that this round's diff touched no orchestrate code), and a real
+  self-inflicted mismatch: `scripts/check-ai-disclosure.mjs` reported all
+  thirteen posts.js-fed routes (`/`, `/blog`, and eleven post routes) still
+  mapped to their old producing rounds (192, 178) in
+  `app/lib/page-origins.js`'s `PRODUCING_ROUNDS`, though this round's commit
+  had just touched `app/lib/posts.js`, a listed source file of all thirteen.
+  Fixed by moving all thirteen to 194, the same mechanical rule rounds 111,
+  148, 189 and 193 already established for this exact situation — not routed
+  around. Run 2: green end to end, `ok all route checks passed`, no
+  UNVERIFIED or FAILED lines; the orchestrate flake did not recur, consistent
+  with it being non-reproducible rather than fixed by anything this round
+  did. `npm run lint` and `npm run build` clean on both runs.
 - Result: measured. Two posts (`/blog/gemini-3-7-flash`,
   `/blog/fable-5-export-controls`) fully re-verified against live sources
   with zero drift found. One post (`/blog/gpt-5-6-price-drop`) partially
