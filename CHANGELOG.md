@@ -107,6 +107,117 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-24
+**California started requiring AI companies to hand the public a working
+detector on 2 August. Three weeks later OpenAI's verifier still cannot check
+video — and the archive shows it learned to check audio about 32 hours before
+the deadline.** Scout had not run in twenty rounds, so this round went outside
+and stayed outside. The California AI Transparency Act became operative on
+2 August 2026 (§22757.6, read from leginfo this round); §22757.2(a) requires a
+covered provider to make available a free AI detection tool, and its first
+criterion names **image, video, or audio**. Reading that against the vendors'
+own pages produced one finding worth a post and a pile of leads worth
+rejecting. **One docket item filed, not the three there was room for** — the
+other five leads all failed this site's own demonstrated bar, and one of them
+failed it because the round checked and disproved its own hypothesis.
+(Branch `loop/scout/california-detection-mandate`; no pull request opened —
+this round was told to commit, push and stop.)
+
+**1. Filed: California's detection-tool mandate against the tools that exist**
+
+- Hypothesis: written before looking — that a law compelling a *specific,
+  publicly checkable artefact* on a *specific date* would be partly unmet, and
+  that the gap would be visible in vendor documentation rather than in any
+  announcement. The prediction was that someone would be missing a whole media
+  type. That is roughly what turned up, though not where expected: the guess
+  was that audio would be the hole, and it was video.
+- Change: filed
+  `docket/open/2026-08-24-post-california-detection-tool-mandate.md` (author,
+  `serves: worth-a-visit`, priority 1). What it carries:
+  - **OpenAI's public verification tool and verification API support images and
+    audio and not video** — confirmed on `developers.openai.com`'s
+    content-provenance guide, fetched live this round (images PNG/JPEG/WebP,
+    audio MP3/Opus/AAC/FLAC/WAV/PCM, no video format listed). OpenAI's own
+    provenance post names **Sora** among products carrying Content Credentials
+    since 2024. So the video is marked and the public cannot check it.
+  - **The audio expansion is datable to a ~38-hour window.** `openai.com`
+    returns 403 to both WebFetch and a plain-User-Agent `curl`, so the pages
+    were read through the Internet Archive — which made bracketing possible.
+    Capture 2026-07-31 01:48 UTC: titled "Verify OpenAI-generated **images**",
+    "Supported formats: PNG, JPG, WEBP", no occurrence of "audio" or "video".
+    Capture 2026-08-01 16:04 UTC: titled "Verify OpenAI-generated **content**",
+    formats now including MP3, WAV, AAC, FLAC, OPUS, PCM. OpenAI's own inline
+    "Update July 31, 2026" note dates the expansion independently. The item
+    tells the executing round to present the bracket as evidence of *when* the
+    page changed and never as evidence of *why*.
+  - **Google is a different story and the item says so.** The SynthID Detector
+    portal page, fetched this round, still offers only a "Join the early tester
+    waitlist" while "collaborating with journalists and media professionals" —
+    but Google's own blog says SynthID verification for image, video and audio
+    is live in the Gemini app. Reporting the waitlist alone as "Google has no
+    detector" would have been wrong, and the item forbids it.
+  - **Anthropic is mostly out of scope** — the Act covers image/video/audio and
+    explicitly not text — but its support page still says watermark detection
+    details are coming "in forthcoming technical documentation", so the
+    detection API promised on 14 August has not shipped.
+- Origin: delegated
+- Track: scout
+- Agent: claude-opus-5
+- Dispatch: dispatcher — quota: target 18%, recent 0% over last 20 shipped round(s)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground.
+  `node scripts/check-docket.mjs` before and after filing: the gate moved
+  `author base 3 -> head 4 (queue budget 6)` and left `build 14/14` and
+  `meta 26` untouched, which is the whole of the room this round had.
+- Result: not measured. One queue item is not a number, and the item's value
+  is only realised if an author round publishes it before the pages move —
+  which the item's own acceptance criteria require it to re-verify on the day.
+
+**The five leads that were rejected, and the one the round disproved**
+
+Recorded because a scout round's rejections are the part that keeps the queue
+usable, and this site's `docket/dropped/` shows the standard: an item that only
+restates a vendor's announcement gets dropped.
+
+- **Anthropic's watermark detection API** — `docket/dropped/2026-08-14-post-claude-text-watermarking.md`
+  says explicitly it is refilable "if the watermark detection API Anthropic
+  promises actually ships". Checked: Anthropic's support page still says
+  detection details are forthcoming. **The refile condition is not met**, so it
+  was not refiled.
+- **A2A joining the Agentic AI Foundation** — the Linux Foundation press
+  release reachable this round is dated 9 April 2026 and does not mention AAIF
+  at all; the August claim rests on secondary coverage (Axios 17 August, which
+  403s; Forbes 19 August). **Not verified from a primary source, and a
+  restatement even if it were.**
+- **OpenAI's Assistants API shutting down 26 August 2026** — confirmed on
+  OpenAI's own deprecations page, but it is a restatement of one table, in the
+  single subject this site has covered most, and the maintainer has ruled out
+  more deprecation work.
+- **Qwen3.8 / GLM open-weights** — already in `docket/dropped/`; its refile
+  condition (a synthesis beat, or a dated consequence of the licence terms) is
+  not met.
+- **Check Point's 11 agent-framework vulnerabilities** — 5 August, three weeks
+  old, adjacent to three already-published security posts, and a restatement of
+  vendor research.
+- **The one the round got wrong and caught.** A phrase-presence scan across 22
+  archive captures of OpenAI's "Ads in ChatGPT" help article showed four
+  commitments present in January and absent by February — "you can clear the
+  data used for ads at any time", "we'll always offer a way to not see ads",
+  "you can turn off personalization", "we do not optimize for time spent". That
+  looked like a quiet withdrawal of promises. **It was not.** Reading the actual
+  text of both captures showed the page was rewritten from a short principles
+  note into a long FAQ and every one of the four survives, reworded and in
+  places expanded ("Choice and control: You control ad personalization and can
+  clear ads data at any time"; "We'll always offer a way to avoid ads"). The
+  scan was a false positive and the finding was dropped. Recorded because it is
+  exactly the claim that would have been published as a scoop had the round
+  trusted its own keyword test instead of reading the page.
+- One genuine but minor edit did survive checking and is **not** filed: the
+  sentence "Personalized ads are not initially available in the European
+  Economic Area (EEA) or Switzerland" is absent from the 2026-07-26 capture of
+  that article and present in the 2026-08-19 one. A 24-day bracket around one
+  sentence of availability is too thin for a post; it is noted here so a later
+  round can pick it up if it develops.
+
+### 2026-08-24
 **Five rounds changed how this loop works and the site had already kept up —
 so the finding is a null one, and the two things worth doing were both
 decisions nobody had written down.** This round was sent to find where the
