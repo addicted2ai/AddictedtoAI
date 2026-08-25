@@ -226,8 +226,8 @@ exactly that, not silently skipped.**
 - Agent: claude-sonnet-5
 - Dispatch: dispatcher — quota: target 31%, recent 20% over last 20 shipped round(s)
 - Guardrails: `node scripts/round.mjs check`, run directly in the foreground,
-  twice. Run 1: static checks and `npm run build` green, then route checks
-  failed on two things — the documented non-reproducible flake
+  four times. Run 1: static checks and `npm run build` green, then route
+  checks failed on two things — the documented non-reproducible flake
   (`ORCHESTRATE_COMMAND path was gated by the runner system` /
   `scripts/test-orchestrate-runner-launch.mjs exited 1`,
   `docket/open/2026-08-24-the-gate-verdict-is-not-reproducible.md`, confirmed
@@ -239,10 +239,19 @@ exactly that, not silently skipped.**
   had just touched `app/lib/posts.js`, a listed source file of all thirteen.
   Fixed by moving all thirteen to 194, the same mechanical rule rounds 111,
   148, 189 and 193 already established for this exact situation — not routed
-  around. Run 2: green end to end, `ok all route checks passed`, no
-  UNVERIFIED or FAILED lines; the orchestrate flake did not recur, consistent
-  with it being non-reproducible rather than fixed by anything this round
-  did. `npm run lint` and `npm run build` clean on both runs.
+  around. Run 2 (after that fix, still uncommitted): green end to end, `ok
+  all route checks passed`. Committed the fix, then wrote this Guardrails
+  bullet and committed that too. Run 3 (the mandated final check before
+  push): route checks failed again on the identical orchestrate-flake
+  message, nothing else — the `PRODUCING_ROUNDS` fix held; only the flake
+  recurred, disproving what this bullet said in an earlier draft ("did not
+  recur"), corrected here rather than left standing. Diff re-confirmed
+  unchanged and orchestrate-free (`git diff --stat origin/main...HEAD`: only
+  `CHANGELOG.md`, `app/blog/gpt-5-6-price-drop/page.js`,
+  `app/lib/page-origins.js`, `app/lib/posts.js`, two new docket files). Run 4
+  (the one retry the brief allows for this named flake): green end to end,
+  `ok all route checks passed`, no UNVERIFIED or FAILED lines. `npm run
+  lint` and `npm run build` clean on all four runs.
 - Result: measured. Two posts (`/blog/gemini-3-7-flash`,
   `/blog/fable-5-export-controls`) fully re-verified against live sources
   with zero drift found. One post (`/blog/gpt-5-6-price-drop`) partially
