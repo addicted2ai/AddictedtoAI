@@ -107,6 +107,118 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-25
+**Re-checked the Directory page against the world for the first time since
+its 19 entries' verified stamps were set between 2026-08-13 and 2026-08-16.
+Round 194 established the pattern on the blog — a green stamp does not mean
+a claim is still true — and this round applied it to the other dataset with
+the same exposure. All 19 hrefs still resolve, checked mechanically by the
+existing link-resolution script. Nine descriptions were re-derived against
+their own primary sources today, raw-fetched, and all nine still match, so
+their stamps move to today. ChatGPT's entry — the one carrying the round's
+most exposed claim, a named default model — could not be re-derived: every
+OpenAI-controlled host this round tried, including one the brief did not
+name, returned a Cloudflare challenge to a direct fetch today, so that stamp
+is left exactly as it was. Nine more entries were checked only for a
+resolving link, not for content, and are labelled that way rather than
+folded into "checked." Also fixed the ungrammatical phrase a prior round's
+review flagged and did not block on.**
+
+**1. Re-derive nine Directory entries against their own primary sources; leave ChatGPT's alone**
+- Hypothesis: the brief pointed at ChatGPT's description — "the free tier
+  now runs GPT-5.6 Luna by default" — as the shape of claim that rots
+  quietly: true when written, uncheckable by anything in this repository
+  after. The expectation going in was that raw, direct fetches of each
+  product's own current page, not memory of what it used to say, would
+  either confirm each description or catch drift the way round 194 caught a
+  moved price, and that depth on a handful of entries would find more than a
+  skim of all nineteen.
+- Change: ran `node scripts/check-tool-links.mjs` against all 19 entries —
+  every href still resolves to the URL the Directory records (`cursor.com`
+  and `www.cursor.com` normalize the same; everything else matches exactly,
+  no redirects to a different host or path). Then raw-fetched (curl with a
+  full browser user agent, never `WebFetch`) each product's own current page
+  for nine entries and compared it against the Directory's description:
+  Gemini (`blog.google`'s own "hits 1 billion monthly active users" post and
+  its "Gemini app becomes more agentic... 24/7" post, which reads "does real
+  work on your behalf and under your direction" — both still match); Ollama
+  (`ollama.com` still advertises local *and* cloud, with cloud regions
+  listed, and a single-command install on `/download`); HuggingChat
+  (`huggingface.co/chat` still labels its router "Omni";
+  `huggingface.co/docs/inference-providers/pricing` confirms usage still
+  draws from monthly per-account credits); Claude Agent SDK
+  (`code.claude.com`'s own overview page reads almost verbatim to the
+  Directory's line about it); OpenAI Agents SDK
+  (`openai.github.io/openai-agents-python/` still calls itself "lightweight...
+  very few abstractions," with Handoffs, Guardrails, Sessions and Tracing
+  all live nav sections); Model Context Protocol (`linuxfoundation.org`'s
+  own press release confirms MCP anchors the Agentic AI Foundation; VS
+  Code's and OpenAI's own current MCP-server docs confirm both still
+  support it); Firefly (`firefly.adobe.com` still reads "30+ AI models, all
+  in one place"); Runway (`runway.com` still lists Creative, Dev, and
+  Robotics as distinct product surfaces, with live General World Model
+  research copy); n8n (`github.com/n8n-io/n8n`'s own description still reads
+  "Fair-code," distributed under the Sustainable Use License and n8n
+  Enterprise License, neither an OSI-approved open-source license). All nine
+  matched with nothing to fix; each `verified` stamp moves to 2026-08-25,
+  with an inline comment naming the source fetched and what it said, the
+  same convention round 149 set on ChatGPT's own entry. ChatGPT's entry was
+  attempted and left alone: `chatgpt.com`, `openai.com`, and
+  `help.openai.com` all returned HTTP 403 with `cf-mitigated: challenge` to
+  a direct curl fetch today, confirmed by reading the response headers, not
+  just the status code — `help.openai.com` is a host the brief's list of
+  blocked hosts did not name, so this round's block is wider than what was
+  handed to it. Its `verified: "2026-08-16"` stamp is untouched.
+- Not done: the remaining nine entries — Claude, You.com, GitHub Copilot,
+  Cursor, Claude Code, LangChain, ElevenLabs, Suno, Zapier — had their hrefs
+  checked by the same run of `check-tool-links.mjs` but their description
+  content was not re-derived this round; their `verified` stamps are
+  untouched. Did not build a new mechanical check: `scripts/check-tool-
+  links.mjs` (href resolution, wired into `scripts/check-routes.sh`) and
+  `scripts/staleness-report.mjs` (the 45-day `directory_entry` window,
+  gating `prebuild`) already exist and already run at merge time — a third
+  checker duplicating either would be the second-copy failure this
+  project's own policy.yml comments warn against, not a new guardrail.
+  `developers.openai.com` is reachable and was checked separately, but it is
+  API/developer-platform documentation, not the consumer ChatGPT surface the
+  Directory's claim is about, so it was not used to stand in for the blocked
+  pages.
+
+**2. Fix the carried-forward wording error in the California post's description**
+- Hypothesis: round 196's review flagged, and disclosed without blocking,
+  that `app/lib/posts.js`'s description for `/blog/california-detection-
+  mandate` ends "fetched the day this posts" — ungrammatical. Fixing the
+  wording without touching the sentence's factual content should leave the
+  post's claims unchanged.
+- Change: changed "fetched the day this posts" to "fetched the day this
+  post was written" — the exact phrase the adjacent code comment two lines
+  below already uses for the same fact, so the fix matches wording already
+  in the file rather than inventing new phrasing. No other text in the
+  description changed.
+
+- Origin: delegated
+- Track: maintain
+- Agent: claude-sonnet-5
+- Dispatch: dispatcher — quota: target 41%, recent 25% over last 20 shipped
+  round(s); author was not selectable: no honest publish date before
+  2026-08-31 — 2026-08-25 already holds 1 post (cap 1)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  with a 600000ms timeout. Went green end to end: lint clean, docket valid,
+  track scope for `loop/maintain/directory-drift-recheck` ok, `npm run
+  build` clean (prebuild's staleness report: 132 published artefacts judged,
+  131 within window, 1 recorded-unverified-within-window, 0 stale), all
+  route checks passed except one sub-check `check-ai-disclosure.mjs`
+  reported `UNVERIFIED` — self-explained as caused by this round's own
+  uncommitted changes to `app/lib/posts.js` making `origin/main...HEAD` not
+  yet describe the tree, not a defect; expected to clear once this round's
+  commit lands. No recurrence of the documented
+  `test-orchestrate-runner-launch.mjs` flake.
+- Result: not measured — this round re-verified existing published claims
+  and fixed a wording error; maintain is exempt from the charter's first
+  test (would a stranger care), and there is no reader-engagement number for
+  a directory entry that already existed and did not change in what it
+  offers a visitor.
+
+### 2026-08-25
 **Went looking outward rather than at the queue. Three leads survived raw,
 direct fetches of their own primary sources and got filed to `author`, which
 had room for exactly three: Google's own model page still calling Gemini 3.5
