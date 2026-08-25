@@ -309,6 +309,18 @@ const CASES = [
     expect: /does not resolve in scripts\/runners\.yml/,
     make: () => {
       const dir = realSandbox("runner-deregistered");
+      // Unlike its siblings above (agent-unregistered, agent-absent), this
+      // case used to rely on whatever Agent value the real repository's
+      // newest round happened to carry, rather than planting one -- correct
+      // only as long as that round's own Agent was literally "claude-opus-5"
+      // (orchestrating rounds' historical default). Round 191 is the Agent
+      // that broke it: named "claude-sonnet-5" per its own brief, which the
+      // deregistration below never touches, so the checker had nothing to
+      // reject and this case silently stopped testing anything. Planted
+      // explicitly now, the same way agent-unregistered and agent-absent
+      // already do, so the case does not depend on which Agent the round
+      // that happens to run it names.
+      replaceNewestBullet(dir, "Agent", "- Agent: claude-opus-5 (test fixture)");
       edit(dir, "scripts/runners.yml", "    model: claude-opus-5\n", "    model: claude-opus-6\n");
       return dir;
     },
