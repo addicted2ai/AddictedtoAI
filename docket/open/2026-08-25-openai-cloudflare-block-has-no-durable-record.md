@@ -13,7 +13,7 @@ priority: 1
 This repository's only checked-in list of hosts known to fail an automated
 fetch is lychee's `--exclude` flag in `.github/workflows/pr-checks.yml`
 (`chatgpt\.com` and `gemini\.google\.com`). That list exists for a narrower
-purpose than verification: it is scoped to the five pages lychee crawls on
+purpose than verification: it is scoped to the seven pages lychee crawls on
 *this site*, to stop a shared GitHub runner's bot-protection 403 from failing
 the dead-link check for a page `scripts/check-tool-links.mjs` already confirms
 is live. It says nothing about which vendor hosts a verification round can
