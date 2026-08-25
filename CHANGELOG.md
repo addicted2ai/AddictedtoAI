@@ -296,17 +296,42 @@ round could do.**
 - Agent: claude-sonnet-5
 - Dispatch: dispatcher — quota: target 31%, recent 15% over last 20 shipped round(s)
 - Guardrails: `node scripts/round.mjs check`, run directly in the foreground,
-  twice. First run: green on lint, docket, track scope and build, then
-  failed route checks on two things this round's own diff caused —
+  five times across the round, each disclosed rather than only the last.
+  Run 1: green on lint, docket, track scope and build, then failed route
+  checks on two things this round's own diff caused —
   `scripts/check-notice-floor-comparator.mjs` (`ERR_MODULE_NOT_FOUND` from
   the missing `.js` extension, change 3) and the RSS raw-Markdown-marker
-  check (change 2's bug). Both fixed, not routed around; second run green
-  end to end: `ok all route checks passed` degraded only to `ok route checks
-  passed, but some could not be evaluated` on one pre-existing, documented
-  case — `scripts/check-ai-disclosure.mjs` reports 7 routes UNVERIFIED
-  because this round's own changes were still uncommitted at the time it
-  ran, which is the check's own stated correct behavior ("Commit this
-  round's work and re-run"), not a defect. `npm run lint` clean both times.
+  check (change 2's bug). Both fixed, not routed around. Run 2: green end to
+  end, `ok all route checks passed` degrading only to `ok route checks
+  passed, but some could not be evaluated` on `scripts/check-ai-disclosure.mjs`
+  reporting 7 routes UNVERIFIED because this round's changes were still
+  uncommitted — the check's own stated correct behavior ("Commit this
+  round's work and re-run"), not a defect. Committed (`df3d1bf`), then that
+  same check run standalone turned up a real finding the "uncommitted"
+  caveat had been masking: `/log/rounds/[id]` FAILED (not UNVERIFIED) —
+  mapped to round 150 (audit) in `app/lib/page-origins.js`'s
+  `PRODUCING_ROUNDS`, but `app/lib/build-log.js` (a listed source file of
+  all four `/log*` routes) was now last touched by this round's commit
+  (maintain), a genuine track mismatch the other three `/log*` routes didn't
+  surface only because their existing mapped round (148) also happened to
+  be maintain. Fixed by moving all seven routes this round's diff actually
+  touched a listed source file for — `/model-retirement-calendar`,
+  `/what-vendors-promise`, `/model-deprecation-checker`, `/log`,
+  `/log/early`, `/log/archive`, `/log/rounds/[id]` — to round 193, per this
+  file's own established mechanical rule (rounds 111, 148 and 189's
+  comments on the same map), not just the one the check hard-failed on.
+  Run 3 (after that fix, still uncommitted): failed route checks on
+  `ORCHESTRATE_COMMAND path was gated by the runner system` /
+  `scripts/test-orchestrate-runner-launch.mjs exited 1` — the flake
+  `docket/open/2026-08-24-the-gate-verdict-is-not-reproducible.md` names (six
+  prior observations). Confirmed the diff at that point touched no
+  orchestrate, liveness or checkout code (`git status --short` showed only
+  `app/lib/page-origins.js`). Run 4 (the one retry this round's brief
+  instructs): failed identically, same message, nothing edited between. Run
+  5: green end to end, `ok all route checks passed`, no UNVERIFIED lines —
+  confirming the `PRODUCING_ROUNDS` fix inside the full suite, not just the
+  standalone script that first caught it. `npm run lint` clean on every run
+  that reached it.
 - Result: measured, not guessed. The excluded-milestone split is 2 upcoming
   (2026-10-31, 2027-01-06) and 2 past (2026-05-07, 2026-07-02) today,
   2026-08-25 — computed by the code now, printed here from the same
