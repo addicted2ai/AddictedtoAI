@@ -52,15 +52,18 @@
 //   RESTRICTS a capability, while what is already running keeps running, is
 //   not a row.
 //
-// So these four dated OpenAI milestones stay out, and the page now says so in
-// its own Scope section rather than leaving readers to infer it from an
-// absence:
-//
-//   2026-05-07  fine-tuning job creation closed to orgs that never fine-tuned
-//   2026-07-02  ... and to orgs with no fine-tuned inference in 60 days
-//   2026-10-31  "existing evals become read-only"
-//   2027-01-06  "active existing customers will no longer be able to create
-//               new fine-tuning jobs on this date"
+// So these four dated OpenAI milestones stay out, listed below as
+// RETIREMENT_EXCLUDED_MILESTONES rather than typed into the page's own Scope
+// section by hand. Round 193 (maintain, 2026-08-25) made that change: the
+// page used to say "Two such milestones are upcoming" and "Two earlier
+// milestones ... are excluded", both hand-counted at the moment they were
+// written -- true that day, false the first time one of the four crossed
+// from upcoming to past (2026-10-31 is next). The page now reads this array
+// and splits it against today() itself, the same way it already did for the
+// upcoming/past tables below. See CHANGELOG.md 2026-08-25 for the count that
+// had already drifted once before it was even written down here (the
+// preview-tier count in app/lib/retirement-commitments.js, found by the same
+// sweep).
 //
 // Verified against https://developers.openai.com/api/docs/deprecations on
 // 2026-08-24 (round 189): the page states "inference on fine-tuned models
@@ -100,6 +103,62 @@
 // staleness_days.retirement_calendar — a key meta owns; until it exists the
 // report enforces an interim window and says loudly that it is doing so (see
 // docket/open/2026-08-14-retirement-calendar-staleness-window.md).
+
+// Two small shared helpers, so "today" and "spell a small count out in
+// words" are computed once rather than re-typed per file. The same WORDS
+// array pattern already exists once in app/lib/one-limit-count.js for a
+// different drifting count (a PR total read from a sweep file, not a date
+// split); this one is small enough not to warrant importing that module for
+// a single array.
+const NUMBER_WORDS = [
+  "zero", "one", "two", "three", "four",
+  "five", "six", "seven", "eight", "nine", "ten",
+];
+
+export function numberWord(n) {
+  return NUMBER_WORDS[n] ?? String(n);
+}
+
+export function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// The four dated OpenAI milestones the inclusion rule above keeps out of
+// RETIREMENT_DATES. `description` is the vendor's own wording (or a short
+// paraphrase for the two fine-tuning-narrowing ones, which share no single
+// quotable sentence), read verbatim off
+// https://developers.openai.com/api/docs/deprecations on 2026-08-24 (round
+// 189) and re-confirmed word for word on 2026-08-25 (round 193). No "vendor"
+// property on these objects, on purpose: scripts/staleness-report.mjs finds
+// retirement-calendar rows in this file by pattern-matching an object literal
+// that opens with that property name, and these are deliberately not
+// shutdown rows -- giving them that property would sweep them into a
+// staleness class they do not belong to. (Spelling the pattern out here as
+// brace-space-vendor-colon would itself match it and swallow the next
+// object as a bogus unnamed row with no verified date -- caught by
+// `npm run build` while writing this comment, not reasoned out in advance.)
+export const RETIREMENT_EXCLUDED_MILESTONES = [
+  {
+    date: "2026-05-07",
+    description:
+      "fine-tuning job creation closed to orgs that never fine-tuned",
+  },
+  {
+    date: "2026-07-02",
+    description:
+      "fine-tuning job creation closed to orgs with no fine-tuned inference in the last 60 days",
+  },
+  {
+    date: "2026-10-31",
+    description:
+      "“existing evals become read-only” — the Evals platform’s own shutdown, 2026-11-30, is a row above",
+  },
+  {
+    date: "2027-01-06",
+    description:
+      "“active existing customers will no longer be able to create new fine-tuning jobs”",
+  },
+];
 
 export const RETIREMENT_DATES = [
   { vendor: "OpenAI", what: "gpt-4o-realtime-preview", shutdown: "2026-05-07", replacement: "gpt-realtime-1.5", href: "https://developers.openai.com/api/docs/deprecations", verified: "2026-08-24" },
