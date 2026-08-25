@@ -236,7 +236,7 @@ round could do.**
   OpenAI's page headings are, verbatim, `## Upcoming deprecations` and
   `## Past deprecations` — the identical binary split this site's own two
   tables use, with no independent confirmation language; some past entries
-  do use past tense ("were shut down on") but that is still just a
+  do use past tense ("was shut down on") but that is still just a
   date-tied claim, not a separately confirmed status. Anthropic's page is
   stronger: it carries an explicit `Current state` column, and "Retired" is
   defined on the page as "no longer available for use; requests... will
