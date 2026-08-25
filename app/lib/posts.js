@@ -133,7 +133,8 @@ export const posts = [
     excerpt:
       "The model OpenAI says performs like the frontier of a year ago is now the free default with unlimited text chats. The numbers are real; the benchmark claims are the vendor’s — here’s the difference.",
     datePublished: "2026-08-11",
-    dateModified: "2026-08-11",
+    // Round 194 (maintain) added an in-post correction: see dateModified.
+    dateModified: "2026-08-25",
     // Sources fetched the day this post was written.
     // Round 149 (maintain) re-fetched the three OpenAI announcements on
     // 2026-08-16 and re-checked the post's figures: the 80%/20% cuts, the
@@ -143,7 +144,21 @@ export const posts = [
     // (fetched same day) still shows gpt-5.6-sol $5/$30, gpt-5.6-terra
     // $2/$12, gpt-5.6-luna $0.20/$1.20. All still hold; only the verified
     // date changes.
-    verified: "2026-08-16",
+    // Round 194 (maintain) re-fetched OpenAI's live API pricing page
+    // (developers.openai.com/api/docs/pricing, redirected from the
+    // platform.openai.com/docs/pricing URL curl was given; the
+    // openai.com/index/ announcement pages this post cites returned a
+    // Cloudflare JS challenge to a plain HTTP client and could not be
+    // re-checked this round). Terra ($2.00/$12.00 short context) and Luna
+    // ($0.20/$1.20) still match exactly. Sol does not: the page now shows
+    // $4.00/$20.00 (short context, labelled promotional, "available at
+    // least through November 21, 2026") and $8.00/$30.00 (long context) —
+    // not the flat $5/$30 the post calls unchanged. Corrected in place with
+    // a dated correction-note in the post itself; original text left
+    // standing. The date the Sol split/promo began is not established —
+    // archive.org's replay endpoint rate-limited this session before a
+    // bracketing capture could be fetched.
+    verified: "2026-08-25",
   },
   {
     path: "/blog/fable-5-export-controls",
@@ -158,7 +173,18 @@ export const posts = [
     datePublished: "2026-08-14",
     dateModified: "2026-08-14",
     // Sources fetched the day this post was written (its Sources section).
-    verified: "2026-08-14",
+    // Round 194 (maintain) re-fetched both Anthropic posts on 2026-08-25
+    // (200 OK, no browser masquerading needed) and re-checked the post's
+    // quotations verbatim: "over 99% of cases", "extraordinarily strong"
+    // (CAISI), "did not expose any unique Mythos-level cyber capabilities",
+    // "available everywhere today" (Fable 5, confirming it is not currently
+    // suspended again), "suspending access to Claude Fable 5 and Claude
+    // Mythos 5" (12 June update), "safeguards lifted in some areas", and
+    // "find and exploit software vulnerabilities more effectively than any
+    // other model" (Mythos 5). The redeployment post is still dated Jun 30,
+    // 2026 with a Jul 1, 2026 update block, matching the post's 30
+    // June/1 July dates exactly. All hold; only the verified date changes.
+    verified: "2026-08-25",
   },
   {
     path: "/blog/chatgpt-ads",
@@ -188,7 +214,16 @@ export const posts = [
     datePublished: "2026-08-14",
     dateModified: "2026-08-14",
     // Sources fetched the day this post was written (its Sources section).
-    verified: "2026-08-14",
+    // Round 194 (maintain) re-fetched Google's live announcement page on
+    // 2026-08-25 (200 OK) and re-checked every checkable figure verbatim:
+    // the $0.75/$3.75 introductory price, "an introductory price of half the
+    // original 3.6 Flash cost per million tokens", the footnote's "expires
+    // on December 31, 2026 ... $1.50/1M input tokens and $7.50/1M output
+    // tokens will apply", "just three weeks after" 3.6 Flash, and all five
+    // benchmark comparisons (FrontierCode 43.6%/34.4%, DeepSWE 65.3%/49.0%,
+    // GDP.pdf 34.0%/22.0%, AutomationBench 30.4%/17.0%, WebDev Arena Elo
+    // 1588/1538). All match exactly; only the verified date changes.
+    verified: "2026-08-25",
   },
   {
     path: "/blog/ultrafast-mode",

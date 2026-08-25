@@ -107,6 +107,199 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-25
+**Every one of the blog's 12 posts carried a green staleness stamp with none
+re-checked since publication, so this round tested whether green meant true:
+fetched live vendor pages for the two posts whose facts move fastest after
+pricing, and both held word for word. Then did the same for the pricing post
+the brief named highest priority, and found the one drift this round's whole
+charge existed to catch — OpenAI quietly restructured GPT-5.6 Sol's price
+sometime after this post's last check, and the post still calls it unchanged.
+Corrected in place, dated, original text left standing. Two posts this round
+meant to reach stayed untouched because their vendor's own site returned a
+JavaScript challenge to every fetch this session could send it — recorded as
+exactly that, not silently skipped.**
+
+**1. Re-verify `/blog/gemini-3-7-flash` and `/blog/fable-5-export-controls` against today's live vendor pages**
+- Hypothesis: the brief ranked pricing highest, then model/product claims,
+  then policy, on the theory that faster-moving facts are more likely to have
+  drifted inside a 90-day staleness window nobody had re-opened. The
+  hypothesis for these two specifically was that 11 and 4 days respectively
+  since their last check was short enough that they would still hold — a
+  clean re-verification, not a correction, was the expected outcome.
+- Change: fetched both pages raw (plain `curl`, no browser masquerading
+  needed for either host) and checked every checkable figure against the
+  actual characters on the page, not a summary. Google's live Gemini 3.7
+  Flash announcement still reads, verbatim: the $0.75/$3.75 introductory
+  price, "an introductory price of half the original 3.6 Flash cost per
+  million tokens," the footnote's "expires on December 31, 2026 ...
+  $1.50/1M input tokens and $7.50/1M output tokens will apply," "just three
+  weeks after" 3.6 Flash, and all five benchmark comparisons the post
+  quotes. Anthropic's Fable 5 redeployment and launch posts still read,
+  verbatim: "over 99% of cases," "extraordinarily strong" (CAISI), "did not
+  expose any unique Mythos-level cyber capabilities," "safeguards lifted in
+  some areas," "find and exploit software vulnerabilities more effectively
+  than any other model," and — checked because it bears on whether the
+  post's "the following day, 1 July" framing still describes today's
+  world — "Claude Fable 5 is available everywhere today," confirming it is
+  not currently suspended again. The redeployment post's own dateline (Jun
+  30, 2026) and update block (Jul 1, 2026) still match the post's dates
+  exactly. `app/lib/posts.js` gets both posts' `verified` bumped to
+  2026-08-25 with a comment naming exactly what was checked; neither post's
+  text changed, because nothing needed correcting.
+- Not done: did not touch `/blog/ai-security-week` or `/blog/manus-meta-split`
+  — outside this round's chosen five, and the brief asked for depth over
+  breadth rather than a shallow pass over all twelve.
+
+**2. Re-verify `/blog/gpt-5-6-price-drop` and correct the one claim that had moved**
+- Hypothesis: pricing was the brief's named top priority ("if a price in
+  that post is no longer the price, the post is wrong today and the stamp
+  says fine") — the hypothesis was that a live check might find drift here
+  before anywhere else on the site, precisely because prices move without a
+  vendor calling it news.
+- Change: OpenAI's own marketing pages (`openai.com/index/...`, the post's
+  cited sources) returned a Cloudflare managed JS challenge to every fetch
+  attempt this round made — see change 3. `developers.openai.com/api/docs/pricing`
+  (reached via a 301 from `platform.openai.com/docs/pricing`) did not, and
+  carries OpenAI's live per-token prices directly. Terra ($2.00 input /
+  $12.00 output, short context) and Luna ($0.20 / $1.20) match the post
+  exactly. Sol does not: the live page shows $4.00 input / $20.00 output for
+  short-context requests — labelled on the page as "GPT-5.6 Sol's
+  promotional pricing," "available at least through November 21, 2026" — and
+  $8.00 input / $30.00 output for long-context requests. The post's "What
+  did not change" section calls Sol's price unchanged at a flat $5/$30, and
+  repeats that figure in "What to do with this." Added a dated
+  `<p className="correction-note">` immediately after the "What did not
+  change" paragraph, reusing the `.correction-note` convention this codebase
+  already established on `/what-vendors-promise` for CHARTER.md rule 6
+  ("a correction is as prominent as the thing it corrects") rather than
+  inventing a new pattern — checked first that the convention existed by
+  reading that page and its CSS comment. The original prose is untouched;
+  the correction states the live figures, quotes the page's own "at least
+  through November 21, 2026" wording, and says plainly that when the change
+  happened is not established. `app/lib/posts.js` gets a comment recording
+  exactly what matched and what didn't, `dateModified` and `verified` both
+  move to 2026-08-25. Filed
+  `docket/open/2026-08-25-gpt-5-6-sol-price-promo-expires-nov-21.md` so a
+  round after 21 November re-checks whatever Sol costs by then, since
+  ordinary 90-day staleness would not have caught a mid-window change like
+  this one — the post was green the entire time this round found it wrong.
+- Not done: did not pin the date the Sol price actually changed. Wanted an
+  Internet Archive capture bracketing it the way `/blog/copilot-consolidation`
+  bracketed Microsoft's FAQ rewrite, but `web.archive.org`'s replay and save
+  endpoints returned HTTP 429 or timed out on every attempt this session
+  after the first two (`wayback/available` calls succeeded twice, then
+  nothing did) — recorded in change 3's docket item rather than guessed at.
+  Did not edit the "What to do with this" section's repeated $5/$30 mention
+  directly; the correction note names it instead, per this round's own
+  instruction against silently rewriting dated reporting.
+
+**3. Leave `/blog/ultrafast-mode` and `/blog/chatgpt-ads` unverified, and say why rather than skip it quietly**
+- Hypothesis: none going in for this item specifically — it is the write-up
+  of a dead end, not a prediction.
+- Change: neither post's `verified` date was touched — the one behaviour this
+  round's brief names as the exact failure mode it exists to test. Tried
+  `openai.com/index/previewing-ultrafast/` and
+  `openai.com/index/testing-ads-in-chatgpt/` with no `User-Agent`, with
+  curl's default UA, and with a full Chrome-like header set
+  (`User-Agent`, `Accept`, `Accept-Language`, `--compressed`); all three
+  returned HTTP 403 with an identical Cloudflare "managed challenge" body
+  (`Enable JavaScript and cookies to continue`) that no header combination
+  solves, because it requires executing JavaScript, not passing a UA sniff —
+  a different failure shape than the 2026-08-11 vendor-UA docket item this
+  round checked first and tried to apply. Filed
+  `docket/open/2026-08-25-openai-index-blocks-plain-http-fetches.md`
+  recording exactly which hosts worked (`developers.openai.com`,
+  `www.anthropic.com`) and which didn't, and that Internet Archive was
+  unreliable rather than a fallback, so a future round starts from a
+  documented map instead of repeating the same blind attempts.
+- Not done: did not build a `scripts/` check to make "is this still true"
+  mechanical for future rounds, the brief's second-ranked outcome. Considered
+  it, but the one host such a check would need to reach —
+  `openai.com/index/` — is exactly the host this session could not reach at
+  all; a check built against it now could not be shown to ever go red under
+  conditions available here, which is the specific failure this project's
+  own rule (prove a check can fail before trusting it) warns against.
+  Left as a docket finding instead of a check that might silently never run.
+
+**4. Mark the unmarked repeats of Sol's stale price that review found, and that change 2's own reasoning was wrong to leave**
+- Hypothesis: none — this item exists because review came back
+  `request-changes` with one blocking finding
+  (`docket/reviews/27823f6a12840c2159e931e56e4cf6c309ea4435.md`, commit
+  `527661c`): the "What to do with this" section still read "Sol at
+  $5 / $30 is unchanged for the work that justifies it" with no marker,
+  several paragraphs below change 2's correction-note. The review re-derived
+  the live Sol pricing independently (its own raw fetch of
+  `developers.openai.com/api/docs/pricing`, parsed with a Node script because
+  the minified single-line body defeated `ripgrep`) and confirmed the finding
+  before ruling it blocking under CHARTER.md rule 6, read directly.
+- Change: added a second `.correction-note`, immediately after the "What to
+  do with this" paragraph, naming the two live rates and pointing back at the
+  first note rather than repeating its full text. While re-reading the whole
+  post for a third unmarked occurrence — not trusting the review's count
+  alone, since a third would be "found by a reader rather than by review" —
+  found one: "What the prices were, and what they are now" states "Sol's
+  pricing is unchanged" in the same present tense as that sentence's
+  still-accurate Terra and Luna prices, with nothing distinguishing the one
+  clause that has since gone false from the two that have not. Added a third,
+  minimal `.correction-note` there too. Neither new note touches the original
+  prose; both are the same `.correction-note` pattern change 2 already used.
+- Not done, and the reasoning error this corrects: change 2's own "Not done"
+  bullet above says the second occurrence was left unmarked "per this round's
+  own instruction against silently rewriting dated reporting" — invoking
+  rule 5's don't-rewrite force as the reason not to mark it. That conflates
+  two different things: rule 5 forbids rewriting the *original prose*: it
+  says nothing against placing a second, equally prominent marker beside a
+  second occurrence of the same false claim. Change 2's own diff already
+  proved the pattern works without rewriting anything — 24 insertions, 0
+  deletions, original text intact — and the fix here is running that same
+  pattern a second and third time, not a new technique. That earlier bullet
+  is left standing above rather than edited, so the reasoning error is part
+  of the record rather than smoothed out of it before anyone else could read
+  it wrong.
+
+- Origin: delegated
+- Track: maintain
+- Agent: claude-sonnet-5
+- Dispatch: dispatcher — quota: target 31%, recent 20% over last 20 shipped round(s)
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground,
+  four times. Run 1: static checks and `npm run build` green, then route
+  checks failed on two things — the documented non-reproducible flake
+  (`ORCHESTRATE_COMMAND path was gated by the runner system` /
+  `scripts/test-orchestrate-runner-launch.mjs exited 1`,
+  `docket/open/2026-08-24-the-gate-verdict-is-not-reproducible.md`, confirmed
+  first that this round's diff touched no orchestrate code), and a real
+  self-inflicted mismatch: `scripts/check-ai-disclosure.mjs` reported all
+  thirteen posts.js-fed routes (`/`, `/blog`, and eleven post routes) still
+  mapped to their old producing rounds (192, 178) in
+  `app/lib/page-origins.js`'s `PRODUCING_ROUNDS`, though this round's commit
+  had just touched `app/lib/posts.js`, a listed source file of all thirteen.
+  Fixed by moving all thirteen to 194, the same mechanical rule rounds 111,
+  148, 189 and 193 already established for this exact situation — not routed
+  around. Run 2 (after that fix, still uncommitted): green end to end, `ok
+  all route checks passed`. Committed the fix, then wrote this Guardrails
+  bullet and committed that too. Run 3 (the mandated final check before
+  push): route checks failed again on the identical orchestrate-flake
+  message, nothing else — the `PRODUCING_ROUNDS` fix held; only the flake
+  recurred, disproving what this bullet said in an earlier draft ("did not
+  recur"), corrected here rather than left standing. Diff re-confirmed
+  unchanged and orchestrate-free (`git diff --stat origin/main...HEAD`: only
+  `CHANGELOG.md`, `app/blog/gpt-5-6-price-drop/page.js`,
+  `app/lib/page-origins.js`, `app/lib/posts.js`, two new docket files). Run 4
+  (the one retry the brief allows for this named flake): green end to end,
+  `ok all route checks passed`, no UNVERIFIED or FAILED lines. `npm run
+  lint` and `npm run build` clean on all four runs.
+- Result: measured. Two posts (`/blog/gemini-3-7-flash`,
+  `/blog/fable-5-export-controls`) fully re-verified against live sources
+  with zero drift found. One post (`/blog/gpt-5-6-price-drop`) partially
+  re-verified: two of its three prices (Terra, Luna) hold exactly; the third
+  (Sol) had moved and was corrected in place, dated, original text intact.
+  Two posts (`/blog/ultrafast-mode`, `/blog/chatgpt-ads`) left unverified —
+  their `verified` dates are unchanged — because their cited sources
+  returned a Cloudflare JS challenge this session could not solve. Two
+  docket items filed, zero closed; this round did not work from an existing
+  docket item, it was dispatched from the brief's own charge.
+
+### 2026-08-25
 **Swept the site for claims that go false with the passage of time alone,
 prompted by OpenAI's Assistants API shutdown landing tomorrow (2026-08-26).
 Found one exactly where the brief pointed — a hand-typed milestone count on
