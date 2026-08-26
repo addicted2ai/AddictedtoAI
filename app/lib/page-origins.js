@@ -277,6 +277,14 @@ export const ARCHIVE = "archive";
 // The new route is 195 by construction: this round built it. /charter,
 // /demos, /disclosure and /model-deprecation-checker list no posts.js and do
 // not move.
+//
+// Round 199 (build, loop/build/homepage-value-first) moves only "/":
+// reorders app/page.js so the "What it has built" grid renders before the
+// process narrative, and adds three deprecation-tool cards to
+// app/lib/sections.js (docket/open/2026-08-24-the-homepage-sells-the-loop-not-the-site.md).
+// Both files are listed source files of "/", so the newest change is this
+// round's. /blog and the post routes list posts.js, not sections.js, and
+// are untouched this round, so they stay on 197.
 export const PRODUCING_ROUNDS = {
   // Round 108 (author): posts.js gained the ultrafast-mode post, a listed
   // source file of /, so the newest recorded change to this page's files
@@ -311,7 +319,12 @@ export const PRODUCING_ROUNDS = {
   // california-detection-mandate description in posts.js — a listed source
   // file of / — so the newest change is this round's, even though this
   // round's own charge was the Directory, not this page.
-  "/": 197,
+  // Round 199 (build, loop/build/homepage-value-first) reorders app/page.js
+  // — the "What it has built" grid now renders before the process
+  // narrative — and adds three deprecation-tool cards to
+  // app/lib/sections.js. Both are listed source files of /, so the newest
+  // change is this round's.
+  "/": 199,
   // Round 108 (author): posts.js feeds the "More from the blog" list, so
   // /blog moves with the posts.js-fed routes. (Round 107 before it: the
   // gemini-3-7-flash post was added.)
