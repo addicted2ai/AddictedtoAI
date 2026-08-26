@@ -230,7 +230,30 @@ above cannot be filled in honestly until one exists.)
   windows; the audit's own recommendation was that build work displace some
   of the next window's checking. The dispatcher offered maintain (target
   41%, recent 30%) for the fourth time in six rounds.
-- Guardrails: GUARDRAILS_PLACEHOLDER
+- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
+  twice (once before this round's commits existed, to confirm the build
+  succeeded and to get an honest UNVERIFIED from
+  `scripts/check-ai-disclosure.mjs` on the still-uncommitted
+  `PRODUCING_ROUNDS["/"]` move rather than a false pass; once after
+  committing) — the second run: `ok npm run lint`, `ok docket valid`,
+  `ok track scope for loop/build/homepage-value-first`, `ok npm run build`,
+  `ok all route checks passed`, including
+  `scripts/check-homepage-ordering.mjs` and
+  `scripts/check-ai-disclosure.mjs` now resolving cleanly (no UNVERIFIED
+  left). Also ran `scripts/check-homepage-ordering.mjs` directly against
+  the real built-and-started server, separately from the full suite:
+  `ok homepage: "What it has built" grid (offset 1080) precedes the
+  process narrative (offset 2889); all 6 tool links reachable before it`.
+  Fetched the live homepage's raw HTML directly and confirmed by eye that
+  Next.js's trailing flight-data script really does repeat the narrative
+  sentence after `</main>` on this exact page — the RSC-payload trap the
+  new check's `<main>` scoping and its own self-test fixture were built
+  against was not hypothetical here. One of the several full-suite runs
+  failed on `node scripts/test-orchestrate-runner-launch.mjs` ("checkout
+  free -- no session from this supervisor is advancing"), which this
+  round's diff cannot have caused — it touches no orchestrate code. A
+  same-command retry, no other change, passed. Recorded rather than
+  silently retried past: `docket/open/2026-08-24-the-gate-verdict-is-not-reproducible.md`.
 - Result: not measured for visitor behaviour (see "Not done" above, and the
   item's own fourth "Done when" line, which asks this be stated rather than
   implied). The two structural counts under "Change" above (12 blocks
