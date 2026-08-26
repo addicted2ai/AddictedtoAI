@@ -65,6 +65,40 @@ not.
   `test-orchestrate-checkout.mjs` into `build-and-audit`, so both reach the
   required check.
 
+## Observed 2026-08-25 — two IDENTICAL consecutive failures, and a mechanism
+
+Every observation above is *fail once, pass on immediate retry*. On 2026-08-25
+the orchestrating session hit **two identical consecutive failures** on round
+198's branch, against a diff of two prose lines touching no `scripts/` and
+nothing the failing test exercises:
+
+```
+FAIL  ORCHESTRATE_COMMAND path was gated by the runner system:
+      <timestamp>  checkout free -- no session from this supervisor is advancing
+FAIL  node scripts/test-orchestrate-runner-launch.mjs exited 1
+```
+
+That shape is not what the retry-once convention was built for, and the
+convention says nothing about what a round should do when the retry fails too.
+
+**A mechanism, found by reading the test rather than guessing:** test 3 in
+`scripts/test-orchestrate-runner-launch.mjs` (lines 227-263) does **not** use
+the shared `run()` helper. It inlines its own spawn with a flat, unconditional
+`setTimeout(..., 6000)` at line 245 — the shortest budget of the three tests,
+with no load scaling, where tests 1 and 2 get 15000ms and 8000ms. The assertion
+needs `iteration starting` in the captured output, and `checkout free ...` logs
+*before* it in the real flow. Under heavy concurrent load the 6s clock expires
+mid-flow and the output truncates at exactly that line — which is what both
+failures showed.
+
+A **third** run of the same command, on a tree with three further prose edits,
+then passed clean. So the full observed sequence that day was **fail, fail,
+pass** — which is why "retry once and disclose" is not a rule so much as a
+coin-flip with a convention attached.
+
+That is corroborating evidence for a timing bound rather than a logic
+regression, and it names a specific number a fix can target.
+
 The two existing items are the likely proximate causes and should be read with
 this one; this item is not a duplicate of either, and closing both would not by
 itself close this one. What this item asks for is a statement about the gate's

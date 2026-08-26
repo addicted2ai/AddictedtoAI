@@ -87,8 +87,21 @@ number — round 197 already proved it silently drops entries.
   `Invoke-WebRequest`, confirming a tool failure rather than an unreachable
   page, the exact distinction this round's own brief names).
 
+- The lychee comment that describes that exclude list is **itself stale**, and
+  this item inherited the error from it before review caught it. The comment
+  at `.github/workflows/pr-checks.yml:396` says lychee "only crawls the five
+  pages"; the `args:` line above it lists **seven** (`/`, `/blog`,
+  `/directory`, `/projects`, `/demos`, `/log`, `/log/archive`). Round 198
+  repeated "five" from the comment rather than counting the args, and so did
+  the first draft of this item. The comment is `.github/` — `meta` scope —
+  so no `audit` or `maintain` round can correct it, and the next round to
+  read it will inherit "five" the same way.
+
 ## Done when
 
+- [ ] `.github/workflows/pr-checks.yml`'s lychee comment either says seven or
+      stops naming a count at all, so the number cannot go stale again
+      (**`meta` scope** — not doable from the tracks that keep hitting this)
 - [ ] A single durable file (not a docket item, not brief prose) records
       known-blocked and known-reachable hosts for verification-fetch
       purposes, separately from lychee's CI-scoped exclude list — a

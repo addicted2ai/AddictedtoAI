@@ -278,7 +278,7 @@ have now independently rediscovered it.**
   repository.
 - Change: confirmed directly, reading `.github/workflows/pr-checks.yml`, that
   the only checked-in host list (lychee's `--exclude`) names two hosts
-  (`chatgpt\.com`, `gemini\.google\.com`) and is scoped, by its own comment,
+  (`chatgpt\.com`, `gemini\.google\.com`) and is scoped, by its `args:` line,
   to the seven pages lychee crawls for dead links — not to verification
   fetches. Confirmed `scripts/build-prompt.mjs` contains no reference to
   blocked hosts at all (`grep -n "blocked\|cf-mitigated\|Cloudflare"` returns
