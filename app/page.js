@@ -64,7 +64,7 @@ export default function Home() {
           site." heading further down, where every paragraph, the stats
           panel, the mention counts and the call to action all still
           render, unchanged, in the same relative order they always have. */}
-      <h1 className="hero-title">Track what AI vendors actually do.</h1>
+      <h1 className="hero-title">AI tools to use, and what AI vendors actually do.</h1>
 
       <p className="hero-lead">
         Below: a directory of AI tools, dated reporting on what vendors

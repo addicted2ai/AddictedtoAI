@@ -129,8 +129,8 @@ above cannot be filled in honestly until one exists.)
   sentence of the honesty the item's own line explicitly protects ("move
   it, do not destroy it").
 - Change: `app/page.js` now opens with the AI-disclosure banner, a new
-  `<h1>` ("Track what AI vendors actually do."), and one new lead
-  paragraph, then the "What it has built" heading and grid, then the
+  `<h1>` ("AI tools to use, and what AI vendors actually do."), and one new
+  lead paragraph, then the "What it has built" heading and grid, then the
   latest blog post — all reachable before any process content. Only after
   that does a demoted `<h2>` — reusing the exact original headline text,
   "An AI builds this site." — introduce the unchanged narrative: every
@@ -160,31 +160,36 @@ above cannot be filled in honestly until one exists.)
 
   A new merge-time guard, `scripts/check-homepage-ordering.mjs`, wired into
   `scripts/check-routes.sh`. It fetches the rendered homepage, scopes to
-  `<main id="main-content">...</main>` — `scripts/check-routes.sh`'s own
-  `/log` checks already document why: a trailing Next.js flight-data script
-  "repeats every entry", sometimes out of order, so a check that reads the
-  whole document can be fooled by a decoy copy of a marker string outside
-  the actual rendered content — and asserts the "What it has built" grid
-  renders before the pinned narrative sentence, with all six tool links
-  reachable in between. Proved able to fail before being trusted: its
-  `selfTest()` runs six constructed fixtures on every invocation and this
-  round watched each one: an inverted order (fails, naming the
-  regression), a grid missing one tool link (fails, naming the route), a
-  page with no narrative sentence (fails), a page with no `<main>` to scope
-  to (fails rather than passing silently), a correctly-ordered page (passes),
-  and — the RSC-payload trap named above, constructed on purpose — a
-  correctly-ordered page carrying a pre-`<main>` decoy copy of the
-  narrative sentence (still passes, proving the `<main>` scoping actually
-  holds rather than merely being written). Exact output, run standalone
-  with no server (`node scripts/check-homepage-ordering.mjs
-  http://localhost:9999`):
+  `<main id="main-content">...</main>`, and asserts the "What it has built"
+  grid renders before the pinned narrative sentence, with all six tool
+  links reachable in between. The scoping is necessary because `app/Nav.js`
+  renders before `<main>` on every page load and its own `links` array
+  names all six `TOOL_LINKS` routes — an unscoped search finds Nav's copy
+  of each `href` at a lower byte offset than the grid's real copy, and
+  would wrongly fail a correctly-ordered page. (An earlier draft of this
+  paragraph and the check's own header comment gave a different reason —
+  a Next.js flight-data script repeating text after `</main>` — which
+  round 199's own adversarial review disproved as mathematically
+  impossible to cause this failure mode; see change 2 below for the full
+  correction.) Proved able to fail before being trusted: its `selfTest()`
+  runs six constructed cases on every invocation and this round watched
+  each one: an inverted order (fails, naming the regression), a grid
+  missing one tool link (fails, naming the route), a page with no
+  narrative sentence (fails), a page with no `<main>` to scope to (fails
+  rather than passing silently), a correctly-ordered page (passes), and —
+  the Nav hazard itself, proved rather than merely asserted — the same
+  correctly-ordered page evaluated both scoped (passes) and, through a
+  small unscoped comparison built only for the test, unscoped (wrongly
+  reports all six tool links as "before the grid", proving the scoping is
+  load-bearing). Exact output, run standalone with no server (`node
+  scripts/check-homepage-ordering.mjs http://localhost:9999`):
 
       ok    self-test: correctly ordered fixture passes
       ok    self-test: inverted-order fixture fails, naming the regression
       ok    self-test: missing-tool-link fixture fails, naming the route
       ok    self-test: missing-narrative fixture fails
       ok    self-test: fixture with no <main id="main-content"> fails rather than passing silently
-      ok    self-test: correctly ordered fixture with a pre-main decoy still passes (RSC-payload scoping holds)
+      ok    self-test: <main> scoping is load-bearing: the same correctly-ordered page passes scoped and would wrongly fail unscoped, on Nav's own pre-<main> tool-link hrefs
       FAIL  could not fetch http://localhost:9999/ — fetch failed
 
   (the final line is the live fetch against a port nothing listens on,
@@ -194,10 +199,12 @@ above cannot be filled in honestly until one exists.)
   Measured directly against the JSX source — top-level elements rendered
   before the "What it has built" grid, counted by hand against both the
   pre-round file (read in full before editing) and the post-round file:
-  **12 before this round** (the disclosure banner, the old headline, six
-  paragraphs, the stats panel, the mention-count paragraph, the correction
-  paragraph, the call-to-action row) and **3 after** (the disclosure
-  banner, the new headline, the new lead paragraph).
+  **11 before this round** (the disclosure banner, the old headline, five
+  generic paragraphs, the stats panel, the mention-count paragraph, the
+  correction paragraph, the call-to-action row) and **3 after** (the
+  disclosure banner, the new headline, the new lead paragraph). First
+  written here as "12", also "measured directly... not estimated" — round
+  199's own adversarial review recounted and found 11; see change 2 below.
 
   `scripts/check-first-screenful.mjs` and the matching comment in
   `scripts/check-routes.sh` are corrected: both previously said `/` was
@@ -221,6 +228,85 @@ above cannot be filled in honestly until one exists.)
   "not measured" under rule 3, the item's own fourth "Done when" line, not
   a claimed improvement dressed as one.
 
+**2. What adversarial review found wrong in change 1, and the fix**
+- Hypothesis: change 1 above stated two specific, checkable claims with
+  unusual confidence — a block count "measured directly... not estimated"
+  and a causal explanation for why `scripts/check-homepage-ordering.mjs`
+  scopes to `<main>`. Both were submitted for adversarial review before
+  merge specifically so a wrong confident claim would be caught before it
+  became permanent under rule 5, not after.
+- Change: review (`docket/reviews/4f45ff53f9df0239a5f8485e1dd3cf49981af35e.md`,
+  verdict `request-changes`) found three things, and this entry records
+  what was done about each rather than silently rewriting change 1 to read
+  as though it were right the first time:
+
+  **The block count was wrong.** Change 1 said 12; the review counted 11,
+  twice — by hand and programmatically — and traced the error: the prose
+  listed "six paragraphs" as distinct from "the correction paragraph,"
+  double-counting one paragraph that is both. Recounted a third time by
+  this round, independently, against both the pre-round file (`git show
+  6d6a29b:app/page.js`) and the post-round file: 11, matching the review.
+  Corrected above and in the docket item's "Closed" section.
+
+  **The `<main>`-scoping justification was a specific, disprovable causal
+  claim, and it was false.** Change 1 said the scoping guards against a
+  Next.js flight-data script that repeats page text after `</main>`,
+  finding a decoy "at an earlier byte offset than the real grid." The
+  review disproved this mathematically: `indexOf()` returns the first
+  (leftmost) match, so content positioned *after* `</main>` can never be
+  found before content already inside `<main>` — the mechanism described
+  cannot produce a false positive, full stop. The review found the real
+  hazard instead, by constructing it directly against the live page:
+  `app/Nav.js` renders before `<main>` on every page load and its own
+  `links` array names all six `TOOL_LINKS` routes, so an *unscoped* search
+  finds Nav's copy of each `href` at a lower byte offset than the grid's —
+  which would fail a correctly-ordered page, for real, on every load, not
+  only a contrived one. `scripts/check-homepage-ordering.mjs`'s header
+  comment, its scoping comment, and its `selfTest()` fixtures are rewritten
+  to name and prove the Nav hazard instead: `selfTest()` now runs the real
+  scoped function against a fixture whose `<nav>` (like the real
+  `app/Nav.js`) always carries every `TOOL_LINKS` href before `<main>`, and
+  separately runs a small unscoped comparison against the identical
+  fixture to show the two disagree — proving the scoping is load-bearing
+  rather than asserting it. Confirmed the rewritten self-test still passes
+  all six cases (`node scripts/check-homepage-ordering.mjs
+  http://localhost:9999`, output in change 1 above, updated to match).
+
+  **The new headline oversold two of the six grid items.** "Track what AI
+  vendors actually do." fits the blog and the three deprecation trackers
+  (4 of 6) but not `/directory` (a tool index) or `/demos` (a walkthrough
+  of this site's own build process plus a tool-finder) — neither tracks
+  what a vendor did. The review also noted the round's own lead paragraph,
+  one line below the h1, already scoped this correctly ("a directory of AI
+  tools, dated reporting on what vendors actually did, two demos, and
+  three trackers... six things to use"), making the h1 an unforced
+  overclaim rather than a necessary simplification. Rewritten to name both
+  halves the grid actually offers rather than only one:
+  `<h1 className="hero-title">AI tools to use, and what AI vendors actually
+  do.</h1>` — true of all six cards (directory and demos are tools to use;
+  the blog and the three trackers are what vendors actually do), not
+  narrowed into vagueness. The lead paragraph is unchanged; the review did
+  not find it wrong.
+
+  Non-blocking findings the review made and this round did not act on,
+  named rather than silently dropped: grid card 1's description
+  ("Retirement promises") paraphrases its source page's specific language
+  ("minimum notice periods... versus per-event announcements versus no
+  commitment at all") into the vaguer "compared side by side" — not
+  factually wrong, worth a tighter trim in a follow-up; the metadata/title
+  scope boundary (see "Not done" in change 1) is defensible but would
+  benefit from a filed follow-up item rather than only a paragraph in the
+  closed docket entry.
+- Not done: did not re-run the full byte-for-byte honesty diff the review
+  performed independently (extracting `app/page.js` at both revisions and
+  comparing the process-narrative body and the grid/latest-post block) —
+  the review's own output (`baseBody length: 116 headBody length: 116
+  Total mismatches: 0`, `baseGrid length: 17 headGrid length: 17 Total
+  mismatches: 0`) already verifies this independently of the round that
+  made the claim, and rule 12 (no run judges its own output) makes the
+  review's independent check the one that counts here, not a third
+  self-check.
+
 - Origin: delegated
 - Track: build
 - Agent: claude-sonnet-5
@@ -230,35 +316,38 @@ above cannot be filled in honestly until one exists.)
   windows; the audit's own recommendation was that build work displace some
   of the next window's checking. The dispatcher offered maintain (target
   41%, recent 30%) for the fourth time in six rounds.
-- Guardrails: `node scripts/round.mjs check`, run directly in the foreground
-  twice (once before this round's commits existed, to confirm the build
-  succeeded and to get an honest UNVERIFIED from
-  `scripts/check-ai-disclosure.mjs` on the still-uncommitted
-  `PRODUCING_ROUNDS["/"]` move rather than a false pass; once after
-  committing) — the second run: `ok npm run lint`, `ok docket valid`,
-  `ok track scope for loop/build/homepage-value-first`, `ok npm run build`,
-  `ok all route checks passed`, including
-  `scripts/check-homepage-ordering.mjs` and
-  `scripts/check-ai-disclosure.mjs` now resolving cleanly (no UNVERIFIED
-  left). Also ran `scripts/check-homepage-ordering.mjs` directly against
-  the real built-and-started server, separately from the full suite:
-  `ok homepage: "What it has built" grid (offset 1080) precedes the
-  process narrative (offset 2889); all 6 tool links reachable before it`.
-  Fetched the live homepage's raw HTML directly and confirmed by eye that
-  Next.js's trailing flight-data script really does repeat the narrative
-  sentence after `</main>` on this exact page — the RSC-payload trap the
-  new check's `<main>` scoping and its own self-test fixture were built
-  against was not hypothetical here. One of the several full-suite runs
-  failed on `node scripts/test-orchestrate-runner-launch.mjs` ("checkout
-  free -- no session from this supervisor is advancing"), which this
-  round's diff cannot have caused — it touches no orchestrate code. A
-  same-command retry, no other change, passed. Recorded rather than
-  silently retried past: `docket/open/2026-08-24-the-gate-verdict-is-not-reproducible.md`.
-- Result: not measured for visitor behaviour (see "Not done" above, and the
-  item's own fourth "Done when" line, which asks this be stated rather than
-  implied). The two structural counts under "Change" above (12 blocks
+- Guardrails: `node scripts/round.mjs check`, run directly in the
+  foreground, multiple times across this round: before commit (to get an
+  honest UNVERIFIED from `scripts/check-ai-disclosure.mjs` on the
+  still-uncommitted `PRODUCING_ROUNDS["/"]` move rather than a false pass),
+  after the first two commits (clean pass, including a
+  `test-orchestrate-runner-launch.mjs` flake on one run — "checkout free --
+  no session from this supervisor is advancing", unrelated to this diff,
+  cleared on an immediate retry, recorded per
+  `docket/open/2026-08-24-the-gate-verdict-is-not-reproducible.md`), and
+  again after change 2's corrections above (clean pass). Also ran
+  `scripts/check-homepage-ordering.mjs` directly against the real
+  built-and-started server: `ok homepage: "What it has built" grid (offset
+  1080) precedes the process narrative (offset 2889); all 6 tool links
+  reachable before it`. Independently confirmed by fetching the live
+  homepage's raw HTML directly (not trusting the review's own quote of it):
+  `<nav class="nav">` does render before `<main id="main-content"`, and
+  does contain `href="/blog"`, `href="/directory"`, `href="/demos"`,
+  `href="/what-vendors-promise"`, `href="/model-retirement-calendar"` and
+  `href="/model-deprecation-checker"` — all six `TOOL_LINKS` routes, before
+  `<main>` opens, on every load — which is the real mechanism `<main>`
+  scoping guards against (see change 2). Also confirmed the trailing
+  `self.__next_f.push(...)` flight-data script does repeat the narrative
+  sentence after `</main>`, as originally reported — that observation was
+  accurate; only the conclusion drawn from it (that it could cause a false
+  positive) was wrong, and change 2 corrects the conclusion without
+  retracting the observation.
+- Result: not measured for visitor behaviour (see "Not done" in change 1,
+  and the item's own fourth "Done when" line, which asks this be stated
+  rather than implied). The structural counts in change 1 (11 blocks
   before the grid, now 3) are measured directly against the source, a
-  claim about this project's own file, not about a reader.
+  claim about this project's own file, not about a reader; change 2
+  corrects the record rather than adding a new measured result.
 
 ### 2026-08-25
 **Read rounds 193-197 from their actual diffs, not the brief that dispatched

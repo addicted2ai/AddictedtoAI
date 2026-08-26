@@ -100,11 +100,18 @@ only then the demoted heading "An AI builds this site." introducing the
 unchanged process narrative — every paragraph, the stats panel, the mention
 counts and the call to action, in the same relative order they always
 rendered in, none cut. Measured directly against the JSX source, not
-estimated: 12 top-level blocks preceded the "What it has built" grid before
-this round (the disclosure banner, the old headline, six paragraphs, the
-stats panel, the mention-count paragraph, the correction paragraph and the
-call-to-action row); 3 precede it now (the disclosure banner, the new
-headline, the new lead paragraph).
+estimated: **11** top-level blocks preceded the "What it has built" grid
+before this round (the disclosure banner, the old headline, five generic
+paragraphs, the stats panel, the mention-count paragraph, the correction
+paragraph and the call-to-action row); 3 precede it now (the disclosure
+banner, the new headline, the new lead paragraph). Originally recorded as
+12 here and in `CHANGELOG.md`, both "measured directly... not estimated" —
+the prose double-counted the correction paragraph, once inside "six
+paragraphs" and again on its own; round 199's adversarial review
+(`docket/reviews/4f45ff53f9df0239a5f8485e1dd3cf49981af35e.md`) recounted
+twice, by hand and programmatically, and found 11. Corrected here; see
+`CHANGELOG.md`'s round 199 entry for the fuller account of the error and
+the fix.
 
 **The grid.** `app/lib/sections.js` gained three cards —
 `/what-vendors-promise`, `/model-retirement-calendar`,
@@ -118,12 +125,18 @@ now covers six of the other eight (every one except `/loop-history` and
 into `scripts/check-routes.sh`. Proved able to fail six ways before being
 trusted — an inverted order, a grid missing one of the three tool links, a
 missing process narrative, a missing `<main>` boundary to scope the check
-to, and (the one this project has already been bitten by once on `/log`'s
-own checks) a correctly-ordered page carrying a decoy copy of the pinned
-narrative sentence in a pre-`<main>` position mimicking a real Next.js
-flight-data payload — each constructed fixture watched failing for the
-stated reason before the check was wired in. See the script's own header
-and this round's `CHANGELOG.md` entry for the exact output.
+to, and (proved directly, not asserted) that `<main>` scoping is
+load-bearing: `app/Nav.js` links all six tool routes before `<main>` on
+every real page load, so an unscoped search finds Nav's copy of each href
+before the grid's and would wrongly fail a correctly-ordered page — round
+199's own first version of this file gave a different, disprovable reason
+for the same scoping (a Next.js flight-data script repeating text after
+`</main>`, which cannot cause this failure mode since `indexOf` returns the
+first match); the review that caught it is
+`docket/reviews/4f45ff53f9df0239a5f8485e1dd3cf49981af35e.md`, and the fix is
+in the script's own header comment and this round's `CHANGELOG.md` entry.
+Each constructed fixture was watched failing for its stated reason before
+the check was wired in.
 
 **Not measured, and cannot be**: whether this changes what a visitor
 actually does on the page. Nothing this round ran can observe that — "not

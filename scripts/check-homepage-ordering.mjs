@@ -29,29 +29,59 @@
 //
 //   node scripts/check-homepage-ordering.mjs [baseUrl]
 //
-// PROVING THE CHECK CAN FAIL. selfTest() below runs on every invocation,
-// before the live fetch, against six synthetic fixtures: a correctly
-// ordered page (must pass), the ordering inverted (must fail, naming
-// "regressed"), a grid missing one tool link (must fail, naming that
-// route), a page with no process narrative at all (must fail), a page with
-// no <main id="main-content"> to scope the check to (must fail, not pass
-// silently), and — the one this project has been bitten by before,
-// see scripts/check-routes.sh's own comment on /log's "</ol>" scoping and
-// the RSC payload that "repeats every entry" after it — a correctly
-// ordered page whose trailing Next.js flight-data script (appended after
-// </main> in real output) contains an out-of-order decoy copy of the
-// narrative sentence. A version of evaluateHomepageOrdering() that searched
-// the whole document instead of scoping to <main>...</main> would find the
-// decoy at an earlier byte offset than the real grid and report a correct
-// page as broken; the fixture proves the scoping actually holds, not just
-// that it was written.
+// WHY THIS SCOPES TO <main id="main-content">...</main> INSTEAD OF
+// SEARCHING THE WHOLE DOCUMENT — corrected by round 199's own adversarial
+// review (docket/reviews/4f45ff53f9df0239a5f8485e1dd3cf49981af35e.md) after
+// this file's first version gave a wrong reason for it.
+//
+// The wrong reason, stated here so the mistake stays visible rather than
+// quietly vanishing: that Next.js's trailing flight-data script — real,
+// confirmed by fetching the live page, and it does repeat page text after
+// </main> — could make an unscoped search find a decoy match "at an
+// earlier byte offset than the real grid." That is mathematically
+// impossible: indexOf() returns the FIRST (leftmost) match, and anything
+// positioned after </main> is, by construction, always at a HIGHER offset
+// than real content already found inside <main>. Trailing content can
+// never produce this failure mode, full stop.
+//
+// The real reason: app/Nav.js renders before <main> on every page load —
+// not a rare or synthetic case — and its own `links` array names all six
+// TOOL_LINKS routes below (/blog, /directory, /demos,
+// /what-vendors-promise, /model-retirement-calendar,
+// /model-deprecation-checker). An unscoped `html.indexOf('href="/blog"')`
+// finds Nav's copy at a lower byte offset than the grid's copy inside
+// <main> — on every correctly ordered page this site has ever served, not
+// only a contrived one. Scoping to <main> excludes that occurrence before
+// the search runs; searching the whole document instead would fail a
+// correct page with "link renders before the grid starts", for all six
+// routes, every time. selfTest() below proves this directly rather than
+// asserting it: it runs the real scoped function AND a small unscoped
+// comparison against the same fixture and shows the two disagree.
+//
+// PROVING THE CHECK CAN FAIL. selfTest() runs on every invocation, before
+// the live fetch, against six constructed cases — each built from a page()
+// helper whose <nav>, like the real app/Nav.js, always links every
+// TOOL_LINKS route before <main>, so every fixture already carries the
+// real hazard rather than a special-cased one:
+//   1. a correctly ordered page (must pass)
+//   2. the ordering inverted (must fail, naming "regressed")
+//   3. a grid missing one tool link (must fail, naming that route)
+//   4. a page with no process narrative at all (must fail)
+//   5. a page with no <main id="main-content"> to scope to (must fail,
+//      not pass silently)
+//   6. the Nav hazard itself, made explicit: the same correctly ordered
+//      page, evaluated twice — scoped (must pass) and, through a tiny
+//      unscoped comparison built only for this test, unscoped (must
+//      report every TOOL_LINKS route as "before the grid") — proving the
+//      <main> scoping is load-bearing, not decorative.
 //
 // This was also run once against the real, correctly-ordered page (a
 // production build, `npm run build && npm run start`) before this round's
 // commit, in addition to the synthetic proof above: `ok    homepage:
 // "What it has built" grid ... precedes the process narrative ...; all 6
 // tool links reachable before it`. See this round's CHANGELOG.md entry for
-// the exact output.
+// the exact output, and for the same output the review re-derived
+// independently.
 
 const MAIN_START = 'id="main-content"';
 const MAIN_END = "</main>";
@@ -91,10 +121,10 @@ export function evaluateHomepageOrdering(html) {
       narrativePos: -1,
     };
   }
-  // Scoped to <main>...</main> on purpose: everything outside it (Nav, the
-  // layout's own JSON-LD script, and — in real Next.js output — the
-  // trailing flight-data script) can legitimately contain any of these
-  // strings without being the rendered page content this check is about.
+  // Scoped to <main>...</main> on purpose: app/Nav.js — outside <main> on
+  // every page — links all six TOOL_LINKS routes before <main> even opens.
+  // See the header comment above for why that, not the trailing
+  // flight-data script, is the reason this matters.
   const main = html.slice(mainStart, mainEnd);
 
   const gridPos = main.indexOf(GRID_MARKER);
@@ -152,18 +182,21 @@ function narrative(omit) {
 }
 
 // Mirrors real Next.js output shape closely enough to exercise the scoping
-// logic: a pre-main JSON-LD script (layout.js does this for real), Nav
-// outside <main>, and a trailing flight-data script after </main> that can
-// carry a decoy copy of any string on the page.
-function page(mainInner, { decoyBeforeMain = false } = {}) {
-  const decoy = decoyBeforeMain
-    ? `<script>self.__next_f.push([1,"decoy: ${NARRATIVE_MARKER}"])</script>`
-    : "";
+// logic: a pre-main JSON-LD script (layout.js does this for real) and a
+// <nav> before <main> that — like the real app/Nav.js — links every one of
+// TOOL_LINKS. That nav is not an optional trap dialled in for one test; it
+// is what every fixture below actually contains, because it is what every
+// real page load actually contains. A trailing flight-data script is
+// included too, for shape only — it is provably inert under indexOf's
+// leftmost-match behaviour (see the header comment) and is never the thing
+// being tested.
+function page(mainInner) {
+  const navLinks = TOOL_LINKS.map((h) => `<a href="${h}">x</a>`).join("");
   return (
-    `<html><body><script type="application/ld+json">{}</script>${decoy}` +
-    `<nav><a href="/model-deprecation-checker">Deprecation checker</a></nav>` +
+    `<html><body><script type="application/ld+json">{}</script>` +
+    `<nav>${navLinks}</nav>` +
     `<main id="main-content">${mainInner}</main>` +
-    `<script>self.__next_f.push([1,"trailing payload, ignored"])</script>` +
+    `<script>self.__next_f.push([1,"trailing payload, provably inert -- see header comment"])</script>` +
     `</body></html>`
   );
 }
@@ -179,7 +212,8 @@ function selfTest() {
     }
   };
 
-  const good = evaluateHomepageOrdering(page(grid() + narrative()));
+  const goodHtml = page(grid() + narrative());
+  const good = evaluateHomepageOrdering(goodHtml);
   expect(
     "correctly ordered fixture passes",
     good.ok,
@@ -221,19 +255,31 @@ function selfTest() {
     JSON.stringify(noMain)
   );
 
-  // The trap: correct order inside <main>, but a decoy copy of the
-  // narrative sentence sits earlier in the document, outside <main> — the
-  // shape a real trailing/leading flight-data script can take. Must still
-  // pass: a version of evaluateHomepageOrdering() that forgot to scope to
-  // <main>...</main> would find the decoy's offset (before mainStart, so
-  // before the real grid too) and wrongly report this correct page broken.
-  const rscTrap = evaluateHomepageOrdering(
-    page(grid() + narrative(), { decoyBeforeMain: true })
-  );
+  // The real hazard, made explicit and proved, not just asserted around.
+  // goodHtml already contains Nav's own copy of every TOOL_LINKS href
+  // before <main> — the same shape app/Nav.js renders on every real page.
+  // unscopedProblems() below is a deliberately naive re-implementation of
+  // the tool-link check with the <main> scoping removed, built only to
+  // demonstrate the counterfactual this header comment describes: run it
+  // against the exact same correctly-ordered fixture the first assertion
+  // above already passed, scoped, and show it disagrees.
+  function unscopedProblems(html) {
+    const gridPos = html.indexOf(GRID_MARKER);
+    const problems = [];
+    for (const href of TOOL_LINKS) {
+      const pos = html.indexOf(`href="${href}"`);
+      if (pos !== -1 && gridPos !== -1 && pos < gridPos) {
+        problems.push(`link to ${href} renders before the grid starts`);
+      }
+    }
+    return problems;
+  }
+  const scopedVerdict = evaluateHomepageOrdering(goodHtml);
+  const unscopedVerdict = unscopedProblems(goodHtml);
   expect(
-    "correctly ordered fixture with a pre-main decoy still passes (RSC-payload scoping holds)",
-    rscTrap.ok,
-    JSON.stringify(rscTrap)
+    "<main> scoping is load-bearing: the same correctly-ordered page passes scoped and would wrongly fail unscoped, on Nav's own pre-<main> tool-link hrefs",
+    scopedVerdict.ok && unscopedVerdict.length === TOOL_LINKS.length,
+    `scoped=${JSON.stringify(scopedVerdict)} unscoped=${JSON.stringify(unscopedVerdict)}`
   );
 
   return failures;
