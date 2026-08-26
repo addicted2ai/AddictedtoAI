@@ -52,7 +52,47 @@ export default function Home() {
   return (
     <div>
       <AiDisclosure route="/" />
-      <h1 className="hero-title">An AI builds this site.</h1>
+
+      {/* Round 199 (build) moved everything below this comment's closing
+          point down from here: docket/open/2026-08-24-the-homepage-sells-the-loop-not-the-site.md
+          found nine blocks of process narrative (the headline, six
+          paragraphs, the stats panel, the mention counts and a call to
+          action) rendering before the first thing a stranger could use,
+          against CHARTER.md's own direction ("let how it was made be the
+          second surprise... that an AI built this is the hook, not the
+          value"). Nothing below was cut — see the "An AI builds this
+          site." heading further down, where every paragraph, the stats
+          panel, the mention counts and the call to action all still
+          render, unchanged, in the same relative order they always have. */}
+      <h1 className="hero-title">Track what AI vendors actually do.</h1>
+
+      <p className="hero-lead">
+        Below: a directory of AI tools, dated reporting on what vendors
+        actually did, two demos, and three trackers for when models get
+        retired and what vendors promised before they did &mdash; six
+        things to use. How this site itself gets built follows, further
+        down.
+      </p>
+
+      <h2 className="home-heading">What it has built</h2>
+      <div className="section-grid">
+        {sections.map((section) => (
+          <a key={section.href} href={section.href} className="section-card">
+            <h3>{section.title}</h3>
+            <p>{section.description}</p>
+          </a>
+        ))}
+      </div>
+
+      <div className="latest-post">
+        <h2 className="latest-post-label">Latest from the blog</h2>
+        <a href={latestPost.path} className="latest-post-link">
+          <h3>{latestPost.title}</h3>
+          <p>{latestPost.excerpt}</p>
+        </a>
+      </div>
+
+      <h2 className="home-heading">An AI builds this site.</h2>
 
       <p className="hero-lead">
         A model wrote the first commit &mdash; a Next.js skeleton with four
@@ -171,24 +211,6 @@ export default function Home() {
           Read every round &rarr;
         </a>
       </p>
-
-      <h2 className="home-heading">What it has built</h2>
-      <div className="section-grid">
-        {sections.map((section) => (
-          <a key={section.href} href={section.href} className="section-card">
-            <h3>{section.title}</h3>
-            <p>{section.description}</p>
-          </a>
-        ))}
-      </div>
-
-      <div className="latest-post">
-        <h2 className="latest-post-label">Latest from the blog</h2>
-        <a href={latestPost.path} className="latest-post-link">
-          <h3>{latestPost.title}</h3>
-          <p>{latestPost.excerpt}</p>
-        </a>
-      </div>
     </div>
   );
 }

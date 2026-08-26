@@ -36,14 +36,23 @@
 // the defect this round closes, so it is guarded. The other six routes are
 // measured and printed every run, the same "loud, not silently skipped"
 // convention scripts/check-reflow.mjs's KNOWN_FAILURES table already uses,
-// but are NOT asserted against a minimum: four of them (/, /blog, /blog/*,
+// but are NOT asserted against a minimum: three of them (/blog, /blog/*,
 // /charter) were deliberately left as prose-first pages this round, by an
 // explicit editorial decision recorded in CHANGELOG.md, not a defect
-// pending a fix -- turning their current count into a floor would make a
-// future legitimate content edit fail a build for a reason nobody reading
-// this file's blocking list would understand. Baking in every measured
-// number as a floor is the over-claiming this project's own house style
-// (CLAUDE.md, scripts/check-frame.mjs) exists to avoid.
+// pending a fix. `/` is measured and printed for a different reason: round
+// 199 (build) put a real card grid of links a stranger can use directly
+// below the fold line this file's own FOLD_PX draws, but a grid of <a>
+// cards is not a <tr> or <li> by this file's own narrow definition (see
+// WHAT THIS DOES NOT CLAIM above), so its count stays 0 without the page
+// having gone back to being prose-first -- scripts/check-homepage-ordering.mjs
+// is the merge-time guard for that page's actual shape, asserted on the
+// grid's presence and position rather than on a content-unit count this
+// file cannot give it. Turning any of these four routes' current count
+// into a floor would make a future legitimate content edit fail a build
+// for a reason nobody reading this file's blocking list would understand.
+// Baking in every measured number as a floor is the over-claiming this
+// project's own house style (CLAUDE.md, scripts/check-frame.mjs) exists to
+// avoid.
 import {
   launchBrowser,
   stopBrowser,

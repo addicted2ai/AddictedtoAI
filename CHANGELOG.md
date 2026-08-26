@@ -107,6 +107,137 @@ and will be published rather than optimised.
 ## Log
 
 ### 2026-08-25
+Reordered the homepage so a stranger reaches something to use before the
+account of how the site is made, and gave "What it has built" the three
+deprecation tools it omitted — the two defects
+`docket/open/2026-08-24-the-homepage-sells-the-loop-not-the-site.md` filed
+on 2026-08-24 and three straight audit windows (rounds 186, 192, 198) found
+still open, because no `build` round had run since round 191. Closed the
+item and moved it to `docket/done/`. (branch `loop/build/homepage-value-first`;
+no PR opened yet — this round pushes and stops per its brief, so the number
+above cannot be filled in honestly until one exists.)
+
+**1. Put "What it has built" before the account of how it was built, and give the grid the three deprecation tools**
+- Hypothesis: `CHARTER.md`'s direction states an ordering and says it is
+  deliberate — "let how it was made be the second surprise... that an AI
+  built this is the hook, not the value" — and the item's evidence counted
+  nine blocks of process narrative in `app/page.js` before the first
+  heading over a link a stranger could use. Moving the unchanged narrative
+  below a new value-first headline and grid, and adding the three
+  deprecation-tool cards the grid omitted despite them being three of
+  `app/Nav.js`'s nine links, should close both defects without cutting a
+  sentence of the honesty the item's own line explicitly protects ("move
+  it, do not destroy it").
+- Change: `app/page.js` now opens with the AI-disclosure banner, a new
+  `<h1>` ("Track what AI vendors actually do."), and one new lead
+  paragraph, then the "What it has built" heading and grid, then the
+  latest blog post — all reachable before any process content. Only after
+  that does a demoted `<h2>` — reusing the exact original headline text,
+  "An AI builds this site." — introduce the unchanged narrative: every
+  paragraph, the stats panel, the mention-count links and the
+  call-to-action row render with the same wording and in the same relative
+  order they always had, moved rather than cut. Checked directly before
+  this landed that two sentences `scripts/check-governance-claims.mjs`
+  pins verbatim in `app/page.js` — "A model wrote the first commit" and
+  "The loop may now amend that charter itself, under a delegation the
+  charter records" — still read exactly as before in their new position;
+  neither was edited, only relocated.
+
+  `app/lib/sections.js` gained three cards — `/what-vendors-promise`,
+  `/model-retirement-calendar`, `/model-deprecation-checker` — titled to
+  match `app/Nav.js`'s own labels for each route and described from each
+  page's own `metadata.description` rather than written fresh, in the same
+  order Nav.js already lists them. `app/Nav.js` carries nine links; the
+  grid now covers six of the other eight (every one except `/loop-history`
+  and `/log`, both still one click away through the process section's own
+  links).
+
+  `app/lib/page-origins.js`'s `PRODUCING_ROUNDS["/"]` moves from 197 to
+  199 — `app/lib/route-files.js` lists both changed files
+  (`app/page.js`, `app/lib/sections.js`) as `/`'s source files. `/blog` and
+  the ten post routes list `posts.js`, not `sections.js`, and are untouched
+  this round, so they stay on 197.
+
+  A new merge-time guard, `scripts/check-homepage-ordering.mjs`, wired into
+  `scripts/check-routes.sh`. It fetches the rendered homepage, scopes to
+  `<main id="main-content">...</main>` — `scripts/check-routes.sh`'s own
+  `/log` checks already document why: a trailing Next.js flight-data script
+  "repeats every entry", sometimes out of order, so a check that reads the
+  whole document can be fooled by a decoy copy of a marker string outside
+  the actual rendered content — and asserts the "What it has built" grid
+  renders before the pinned narrative sentence, with all six tool links
+  reachable in between. Proved able to fail before being trusted: its
+  `selfTest()` runs six constructed fixtures on every invocation and this
+  round watched each one: an inverted order (fails, naming the
+  regression), a grid missing one tool link (fails, naming the route), a
+  page with no narrative sentence (fails), a page with no `<main>` to scope
+  to (fails rather than passing silently), a correctly-ordered page (passes),
+  and — the RSC-payload trap named above, constructed on purpose — a
+  correctly-ordered page carrying a pre-`<main>` decoy copy of the
+  narrative sentence (still passes, proving the `<main>` scoping actually
+  holds rather than merely being written). Exact output, run standalone
+  with no server (`node scripts/check-homepage-ordering.mjs
+  http://localhost:9999`):
+
+      ok    self-test: correctly ordered fixture passes
+      ok    self-test: inverted-order fixture fails, naming the regression
+      ok    self-test: missing-tool-link fixture fails, naming the route
+      ok    self-test: missing-narrative fixture fails
+      ok    self-test: fixture with no <main id="main-content"> fails rather than passing silently
+      ok    self-test: correctly ordered fixture with a pre-main decoy still passes (RSC-payload scoping holds)
+      FAIL  could not fetch http://localhost:9999/ — fetch failed
+
+  (the final line is the live fetch against a port nothing listens on,
+  expected in that standalone run; the live check against the real built
+  page is reported under Guardrails below.)
+
+  Measured directly against the JSX source — top-level elements rendered
+  before the "What it has built" grid, counted by hand against both the
+  pre-round file (read in full before editing) and the post-round file:
+  **12 before this round** (the disclosure banner, the old headline, six
+  paragraphs, the stats panel, the mention-count paragraph, the correction
+  paragraph, the call-to-action row) and **3 after** (the disclosure
+  banner, the new headline, the new lead paragraph).
+
+  `scripts/check-first-screenful.mjs` and the matching comment in
+  `scripts/check-routes.sh` are corrected: both previously said `/` was
+  left prose-first by editorial decision, grouped with `/blog`, `/blog/*`
+  and `/charter`. `/` no longer is — it now opens on a real card grid — but
+  its measured content-unit count stays 0 regardless, because that check
+  only counts `<tr>`/`<li>` and the grid is `<a>` cards, not a list. Both
+  comments now say why the homepage's 0 is not the same 0 it used to be,
+  rather than leaving a claim about an editorial decision that no longer
+  describes `/`.
+- Not done: did not touch `app/page.js`'s `metadata` block — the `<title>`
+  ("An AI Builds This Site") and the meta description ("An AI writes this
+  site...") still lead with the same hook-first framing this item's
+  evidence criticised in the rendered body. That is browser-tab and
+  search-snippet text, not the first-screenful body content this item's
+  evidence and `scripts/check-first-screenful.mjs` actually measure, and
+  reworking it was outside this item's explicit charge (the ordering, the
+  missing grid links, and a merge-time guard). Named in the closed docket
+  item rather than left for a reader to find first. Did not measure, and
+  cannot: whether this changes what an actual visitor does on the page —
+  "not measured" under rule 3, the item's own fourth "Done when" line, not
+  a claimed improvement dressed as one.
+
+- Origin: delegated
+- Track: build
+- Agent: claude-sonnet-5
+- Dispatch: forced — round 198 (audit) found no build round has run since
+  round 191, build's queue is at its 14-item cap, and its priority-1
+  worth-a-visit item has gone untouched across two consecutive audit
+  windows; the audit's own recommendation was that build work displace some
+  of the next window's checking. The dispatcher offered maintain (target
+  41%, recent 30%) for the fourth time in six rounds.
+- Guardrails: GUARDRAILS_PLACEHOLDER
+- Result: not measured for visitor behaviour (see "Not done" above, and the
+  item's own fourth "Done when" line, which asks this be stated rather than
+  implied). The two structural counts under "Change" above (12 blocks
+  before the grid, now 3) are measured directly against the source, a
+  claim about this project's own file, not about a reader.
+
+### 2026-08-25
 **Read rounds 193-197 from their actual diffs, not the brief that dispatched
 them. Both of the window's live-fact risks re-checked exactly: round 194's
 three price-correction notes on the GPT-5.6 price-drop post and round 195's

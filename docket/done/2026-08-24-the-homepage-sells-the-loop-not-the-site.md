@@ -70,7 +70,7 @@ this repository is a valid source for. Re-derivable:
 
 ## Done when
 
-- [ ] A first-time reader reaching `/` sees something the site is *for* before
+- [x] A first-time reader reaching `/` sees something the site is *for* before
       the account of how it is made — the process material is kept in full, not
       cut, and moved below it or onto `/disclosure`, which already exists for
       exactly this.
@@ -82,10 +82,61 @@ this repository is a valid source for. Re-derivable:
       founding `/blog` entry) is about this project, and the description now
       says so instead of describing only the one. The larger reordering below
       still needs a `build` round with room in the queue.
-- [ ] The deprecation tools are reachable from the homepage's own listing of
+- [x] The deprecation tools are reachable from the homepage's own listing of
       what the site has built.
-- [ ] `scripts/check-routes.sh` asserts whatever ordering the round decides on,
+- [x] `scripts/check-routes.sh` asserts whatever ordering the round decides on,
       so a later round cannot quietly invert it again.
-- [ ] The round records that it did not measure whether this changes visitor
+- [x] The round records that it did not measure whether this changes visitor
       behaviour, because nothing here can — "not measured" under rule 3, not a
       claimed improvement.
+
+## Closed — round 199 (build), 2026-08-25
+
+**The ordering is fixed, and the grid is complete.** `app/page.js` now
+renders, in order: the AI-disclosure banner, a new value-first `<h1>`
+("Track what AI vendors actually do.") and a one-paragraph lead, the "What
+it has built" heading and its now-six-card grid, the latest blog post, and
+only then the demoted heading "An AI builds this site." introducing the
+unchanged process narrative — every paragraph, the stats panel, the mention
+counts and the call to action, in the same relative order they always
+rendered in, none cut. Measured directly against the JSX source, not
+estimated: 12 top-level blocks preceded the "What it has built" grid before
+this round (the disclosure banner, the old headline, six paragraphs, the
+stats panel, the mention-count paragraph, the correction paragraph and the
+call-to-action row); 3 precede it now (the disclosure banner, the new
+headline, the new lead paragraph).
+
+**The grid.** `app/lib/sections.js` gained three cards —
+`/what-vendors-promise`, `/model-retirement-calendar`,
+`/model-deprecation-checker` — titled to match `app/Nav.js`'s own labels and
+described from each page's own `metadata.description`, in the same order
+Nav.js already uses them. `app/Nav.js` lists nine links; the homepage grid
+now covers six of the other eight (every one except `/loop-history` and
+`/log`, both still one click away via the process section's own links).
+
+**The merge-time assertion**, `scripts/check-homepage-ordering.mjs`, wired
+into `scripts/check-routes.sh`. Proved able to fail six ways before being
+trusted — an inverted order, a grid missing one of the three tool links, a
+missing process narrative, a missing `<main>` boundary to scope the check
+to, and (the one this project has already been bitten by once on `/log`'s
+own checks) a correctly-ordered page carrying a decoy copy of the pinned
+narrative sentence in a pre-`<main>` position mimicking a real Next.js
+flight-data payload — each constructed fixture watched failing for the
+stated reason before the check was wired in. See the script's own header
+and this round's `CHANGELOG.md` entry for the exact output.
+
+**Not measured, and cannot be**: whether this changes what a visitor
+actually does on the page. Nothing this round ran can observe that — "not
+measured" under `CHARTER.md` rule 3, not a claimed improvement.
+
+**What was deliberately left alone.** The homepage's `<title>` and
+`metadata.description` still lead with "An AI Builds This Site" / "An AI
+writes this site" — the same hook-first framing this item's evidence
+criticised in the rendered body. That is metadata for the browser tab and
+search snippets, not the first-screenful body content this item's evidence
+and `scripts/check-first-screenful.mjs` actually measure, and reworking it
+was outside this item's explicit charge (ordering + the missing grid links +
+a merge-time guard). Left named here rather than quietly out of scope,
+since a future round arguing the same charter direction against `app/page.js`'s
+metadata specifically would be extending this item's own reasoning, not
+starting a new one.

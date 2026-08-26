@@ -385,6 +385,19 @@ run_step node scripts/check-ai-disclosure.mjs
 # defect this check found rather than one it exists to fix.
 echo
 run_step node scripts/check-reflow.mjs "$BASE"
+# Homepage ordering (docket/open/2026-08-24-the-homepage-sells-the-loop-not-the-site.md,
+# closed by round 199, loop/build/homepage-value-first): the "What it has
+# built" grid, and specifically a link to each of the three deprecation
+# tools, must render before the process narrative explaining how the site
+# itself gets made -- CHARTER.md's own direction ("let how it was made be
+# the second surprise... that an AI built this is the hook, not the
+# value"), made a merge-time assertion so a later edit cannot silently
+# invert it again the way this round found it inverted. Proved able to fail
+# six ways, including against the exact RSC-trailing-payload trap this
+# file's own /log checks above have already been bitten by once -- see
+# scripts/check-homepage-ordering.mjs's own header.
+echo
+run_step node scripts/check-homepage-ordering.mjs "$BASE"
 # First-screenful content density (docket/open/2026-08-22-first-screenful-density.md,
 # closed by round loop/build/first-screenful-density): how many <tr>/<li>
 # content units intersect the first 800px of a 1280-wide viewport, on a real
@@ -393,10 +406,12 @@ run_step node scripts/check-reflow.mjs "$BASE"
 # /model-retirement-calendar carries a blocking minimum (this round moved its
 # intro prose below both tables so >=1 row is visible instead of 0 of 87);
 # the other six routes it measured are printed every run but not asserted
-# against a floor, because four of them (/, /blog, /blog/*, /charter) were a
-# deliberate editorial decision to leave as prose-first pages, not a defect
-# pending a fix -- see scripts/check-first-screenful.mjs's own header and
-# this round's CHANGELOG.md entry for why.
+# against a floor: three (/blog, /blog/*, /charter) are a deliberate
+# editorial decision to leave as prose-first pages, not a defect pending a
+# fix, and / is measured but not floored for a different reason since round
+# 199 (build) gave it a real card grid instead -- see
+# scripts/check-first-screenful.mjs's own header (updated the same round)
+# and this round's CHANGELOG.md entry for why.
 echo
 run_step node scripts/check-first-screenful.mjs "$BASE"
 # SC 1.4.1 (Use of Color) and SC 1.4.11 (Non-text Contrast) on the nav's
