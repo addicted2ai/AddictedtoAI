@@ -94,7 +94,8 @@ this repository is a valid source for. Re-derivable:
 
 **The ordering is fixed, and the grid is complete.** `app/page.js` now
 renders, in order: the AI-disclosure banner, a new value-first `<h1>`
-("Track what AI vendors actually do.") and a one-paragraph lead, the "What
+("AI tools to use, and what AI vendors actually do.") and a one-paragraph
+lead, the "What
 it has built" heading and its now-six-card grid, the latest blog post, and
 only then the demoted heading "An AI builds this site." introducing the
 unchanged process narrative — every paragraph, the stats panel, the mention

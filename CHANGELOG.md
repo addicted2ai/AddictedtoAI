@@ -113,9 +113,10 @@ deprecation tools it omitted — the two defects
 `docket/open/2026-08-24-the-homepage-sells-the-loop-not-the-site.md` filed
 on 2026-08-24 and three straight audit windows (rounds 186, 192, 198) found
 still open, because no `build` round had run since round 191. Closed the
-item and moved it to `docket/done/`. (branch `loop/build/homepage-value-first`;
-no PR opened yet — this round pushes and stops per its brief, so the number
-above cannot be filled in honestly until one exists.)
+item and moved it to `docket/done/`. (PR #164, branch
+`loop/build/homepage-value-first`. The round pushed and stopped per its brief;
+the number could not be filled in honestly until a pull request existed, and
+the orchestrating session added it when opening one.)
 
 **1. Put "What it has built" before the account of how it was built, and give the grid the three deprecation tools**
 - Hypothesis: `CHARTER.md`'s direction states an ordering and says it is
