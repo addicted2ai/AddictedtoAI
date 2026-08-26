@@ -87,9 +87,12 @@ the shared `run()` helper. It inlines its own spawn with a flat, unconditional
 `setTimeout(..., 6000)` at line 245 — the shortest budget of the three tests,
 with no load scaling, where tests 1 and 2 get 15000ms and 8000ms. The assertion
 needs `iteration starting` in the captured output, and `checkout free ...` logs
-*before* it in the real flow. Under heavy concurrent load the 6s clock expires
-mid-flow and the output truncates at exactly that line — which is what both
-failures showed.
+*before* it in the real flow. A fixed 6s budget that expires before
+`iteration starting` is logged would truncate the output at exactly that line —
+**which is what both failures showed.** Heavy concurrent load (this machine ran
+many agents through that session) is the plausible trigger for hitting that
+budget now rather than before, but **it was not measured at the time of either
+run** and is not established here.
 
 A **third** run of the same command, on a tree with three further prose edits,
 then passed clean. So the full observed sequence that day was **fail, fail,
