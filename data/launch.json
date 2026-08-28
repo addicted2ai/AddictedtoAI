@@ -6,24 +6,24 @@
     "pages": {
       "/": {
         "label": "home",
-        "chunks_kb_gzipped": 101,
-        "inline_kb_gzipped": 4.6,
-        "total_kb_gzipped": 105.5,
-        "html_kb_gzipped": 6.9
+        "chunks_kb_gzipped": 103.8,
+        "inline_kb_gzipped": 4.8,
+        "total_kb_gzipped": 108.5,
+        "html_kb_gzipped": 7.2
       },
       "/wiki/model/aion-labs-aion-2-0": {
         "label": "entry",
-        "chunks_kb_gzipped": 101,
-        "inline_kb_gzipped": 2.6,
-        "total_kb_gzipped": 103.5,
-        "html_kb_gzipped": 3.9
+        "chunks_kb_gzipped": 103.8,
+        "inline_kb_gzipped": 2.9,
+        "total_kb_gzipped": 106.5,
+        "html_kb_gzipped": 4.2
       },
       "/catalog": {
         "label": "table",
-        "chunks_kb_gzipped": 101.4,
-        "inline_kb_gzipped": 17.3,
-        "total_kb_gzipped": 118.9,
-        "html_kb_gzipped": 32.9
+        "chunks_kb_gzipped": 104.2,
+        "inline_kb_gzipped": 17.5,
+        "total_kb_gzipped": 121.9,
+        "html_kb_gzipped": 33.3
       }
     }
   },
@@ -32,5 +32,19 @@
     "pass": true,
     "failures": 0,
     "checks": 32
+  },
+  "analytics_local": {
+    "date": "2026-08-28",
+    "base": "http://localhost:3212",
+    "measurement_id": "G-KJPHKYL3XL",
+    "pages_tested": [
+      "/",
+      "/wiki/model/aion-labs-aion-2-0",
+      "click-through / → nav link"
+    ],
+    "assertions": 20,
+    "failures": 0,
+    "pass": true,
+    "method": "Playwright/Chromium against the exported build served by scripts/serve-static.mjs; assertions are on captured /g/collect requests and their response status, never on markup"
   }
 }

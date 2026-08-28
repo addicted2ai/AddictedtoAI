@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import './globals.css';
+import Analytics from './_components/Analytics';
 import SearchBox from './_components/SearchBox';
 import ThemeToggle from './_components/ThemeToggle';
 import { getSite } from '../lib/site.mjs';
@@ -20,7 +22,19 @@ import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, SITE_TAGLINE } from '../lib/site
  *
  * The theme script is the first thing in the body so the stored choice is
  * applied before the first paint. It is inline (no origin, no request) and
- * about 200 bytes — the only script on the site that is not the framework's.
+ * about 200 bytes.
+ *
+ * **The primary nav uses `next/link`, and that is load-bearing** (task 5.1,
+ * specs/analytics). Under `output: 'export'` Next still ships its client
+ * router and exports an RSC payload per route (`out/wiki.txt` and friends), so
+ * a `Link` navigates without a document load. Plain `<a href>` everywhere
+ * would make every navigation a full load — which sounds harmless and is not:
+ * it would make the route-change tracker dead code, and it would make the
+ * click-through assertion in `scripts/verify-analytics.mjs` pass for the wrong
+ * reason (a reload re-fires the tag), leaving the site's actual soft-navigation
+ * behaviour untested the day anyone adds a `Link`. The footer's links stay
+ * plain anchors because they point at static files, which have no route to
+ * navigate to.
  */
 
 export const metadata: Metadata = {
@@ -70,20 +84,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en">
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <Analytics />
         <a className="skip" href="#main">
           Skip to content
         </a>
 
         <header className="site-header">
           <div className="shell header-bar">
-            <a className="wordmark" href="/">
+            <Link className="wordmark" href="/">
               addictedto<span className="dot">AI</span>
-            </a>
+            </Link>
             <nav aria-label="Primary">
               <ul className="nav">
                 {NAV.map((item) => (
                   <li key={item.href}>
-                    <a href={item.href}>{item.label}</a>
+                    <Link href={item.href}>{item.label}</Link>
                   </li>
                 ))}
               </ul>
