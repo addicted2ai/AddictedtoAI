@@ -1,6 +1,46 @@
 {
   "aliases": [
     {
+      "name": "@huggingface/transformers",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/transformers-js",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "AI Winter",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/ai-winter",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "AI winter",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "concept/ai-winter",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Aider",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/aider",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "AionLabs: Aion-2.0",
       "linkable": false,
       "claimed_by": [
@@ -41,12 +81,62 @@
       ]
     },
     {
+      "name": "AlexNet",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/imagenet-2012",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Alibaba",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/alibaba-cloud",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Alibaba Cloud",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/alibaba-cloud",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "AllenAI: Olmo 3 32B Think",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/allenai-olmo-3-32b-think",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "AlphaGo",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/alphago-lee-sedol",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "AlphaGo versus Lee Sedol",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/alphago-lee-sedol",
+          "class": "exclusive"
         }
       ]
     },
@@ -101,6 +191,16 @@
       ]
     },
     {
+      "name": "Anthropic",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/anthropic",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Anthropic Claude Haiku Latest",
       "linkable": false,
       "claimed_by": [
@@ -117,6 +217,16 @@
         {
           "id": "model/anthropic-claude-sonnet-latest",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic PBC",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/anthropic",
+          "class": "shared"
         }
       ]
     },
@@ -411,6 +521,16 @@
       ]
     },
     {
+      "name": "Attention Is All You Need",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/attention-is-all-you-need",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Auto Router",
       "linkable": false,
       "claimed_by": [
@@ -521,12 +641,22 @@
       ]
     },
     {
-      "name": "Claude Opus 5",
+      "name": "Chinchilla scaling",
       "linkable": false,
       "claimed_by": [
         {
+          "id": "concept/scaling-laws",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Claude Opus 5",
+      "linkable": true,
+      "claimed_by": [
+        {
           "id": "model/anthropic-claude-opus-5",
-          "class": "manual"
+          "class": "exclusive"
         }
       ]
     },
@@ -601,12 +731,92 @@
       ]
     },
     {
+      "name": "ComfyUI",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "tool/comfyui",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Continue",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/continue",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Cursor",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/cursor",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DPO",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/direct-preference-optimization",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DSPy",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/dspy",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepMind",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/google-deepmind",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/deepseek",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "DeepSeek V4 Flash Latest",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/deepseek-deepseek-v4-flash-latest",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek-V4-Flash-0731",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-flash-0731",
+          "class": "exclusive"
         }
       ]
     },
@@ -751,11 +961,51 @@
       ]
     },
     {
+      "name": "Direct Preference Optimization",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/direct-preference-optimization",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Dots Studio: Dots3-Note Preview (free)",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/dots-studio-dots-3-note-preview-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Effective context",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/effective-context-length",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Effective context length",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "concept/effective-context-length",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "ElevenLabs",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/elevenlabs",
           "class": "manual"
         }
       ]
@@ -767,6 +1017,66 @@
         {
           "id": "model/openrouter-free",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "GLM",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/z-ai",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "GPT-5.6 Sol",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-6-sol",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Gemini 3.7 Flash",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-7-flash",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Google AI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/google-deepmind",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google DeepMind",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/google-deepmind",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Google DeepMind Challenge Match",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/alphago-lee-sedol",
+          "class": "exclusive"
         }
       ]
     },
@@ -1191,6 +1501,76 @@
       ]
     },
     {
+      "name": "Grok",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/spacexai",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Grok 4.6",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/x-ai-grok-4-6",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Groq",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/groq-cloud",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "GroqCloud",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/groq-cloud",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "High-Flyer",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/deepseek",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Hugging Face",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/hugging-face-hub",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Hugging Face Hub",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/hugging-face-hub",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "IBM: Granite 4.0 Micro",
       "linkable": false,
       "claimed_by": [
@@ -1211,12 +1591,82 @@
       ]
     },
     {
+      "name": "ILSVRC 2012",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/imagenet-2012",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "ImageNet 2012",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/imagenet-2012",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Inception: Mercury 2",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/inception-mercury-2",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "K-quants",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/quantization",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "KV cache",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "concept/kv-cache",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Key-value cache",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/kv-cache",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Kimi K2.5",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k2-5",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Kimi K3",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k3",
+          "class": "exclusive"
         }
       ]
     },
@@ -1246,6 +1696,36 @@
       "claimed_by": [
         {
           "id": "model/kwaipilot-kat-coder-pro-v2-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "LM Studio",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/lm-studio",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "LangChain",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/langchain",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Langfuse",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/langfuse",
           "class": "manual"
         }
       ]
@@ -1281,6 +1761,36 @@
       ]
     },
     {
+      "name": "LlamaIndex",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/llamaindex",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MCP",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/model-context-protocol",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MSL",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/meta-superintelligence-labs",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Magnum v4 72B",
       "linkable": false,
       "claimed_by": [
@@ -1307,6 +1817,36 @@
         {
           "id": "model/meituan-longcat-2-0",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/meta-superintelligence-labs",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta AI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/meta-superintelligence-labs",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Meta Superintelligence Labs",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/meta-superintelligence-labs",
+          "class": "exclusive"
         }
       ]
     },
@@ -1801,6 +2341,56 @@
       ]
     },
     {
+      "name": "Mixture of Experts",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/mixture-of-experts",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "MoE",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/mixture-of-experts",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Model Context Protocol",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "concept/model-context-protocol",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Moonshot",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/moonshot-ai",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Moonshot AI",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/moonshot-ai",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "MoonshotAI Kimi Latest",
       "linkable": false,
       "claimed_by": [
@@ -1897,6 +2487,16 @@
         {
           "id": "model/morph-morph-v3-large",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Muse Glimmer 30B",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-glimmer-30b",
+          "class": "exclusive"
         }
       ]
     },
@@ -2031,6 +2631,16 @@
       ]
     },
     {
+      "name": "NormalFloat",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/quantization",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Nous: Hermes 3 405B Instruct",
       "linkable": false,
       "claimed_by": [
@@ -2071,6 +2681,56 @@
       ]
     },
     {
+      "name": "ONNX Runtime Web",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/onnx-runtime-web",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Ollama",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "tool/ollama",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Open WebUI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/open-webui",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/openai",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Foundation",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/openai",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "OpenAI GPT Latest",
       "linkable": false,
       "claimed_by": [
@@ -2087,6 +2747,16 @@
         {
           "id": "model/openai-gpt-mini-latest",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Group PBC",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/openai",
+          "class": "shared"
         }
       ]
     },
@@ -2671,12 +3341,52 @@
       ]
     },
     {
+      "name": "OpenRouter",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/openrouter",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "OpenRouter: Fusion",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/openrouter-fusion",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Opus",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Opus 5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-5",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "PagedAttention",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/vllm",
+          "class": "shared"
         }
       ]
     },
@@ -2786,6 +3496,36 @@
       "claimed_by": [
         {
           "id": "model/poolside-laguna-xs-2-1-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qdrant",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/qdrant",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Quantization",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/quantization",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Qwen",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/alibaba-cloud",
           "class": "manual"
         }
       ]
@@ -3311,12 +4051,42 @@
       ]
     },
     {
+      "name": "RLVR",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/reinforcement-learning-with-verifiable-rewards",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "RadixAttention",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/sglang",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "ReMM SLERP 13B",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/undi95-remm-slerp-l2-13b",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Reinforcement Learning with Verifiable Rewards",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/reinforcement-learning-with-verifiable-rewards",
+          "class": "exclusive"
         }
       ]
     },
@@ -3357,6 +4127,26 @@
         {
           "id": "model/relace-relace-search",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Replicate",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/replicate",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "SGLang",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "tool/sglang",
+          "class": "exclusive"
         }
       ]
     },
@@ -3407,6 +4197,26 @@
         {
           "id": "model/sao10k-l3-3-euryale-70b",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Sol",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-6-sol",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "SpaceXAI",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/spacexai",
+          "class": "exclusive"
         }
       ]
     },
@@ -3471,6 +4281,36 @@
       ]
     },
     {
+      "name": "Sparse Mixture of Experts",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/mixture-of-experts",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Speculative decoding",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/speculative-decoding",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Speculative sampling",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/speculative-decoding",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "StepFun: Step 3.5 Flash",
       "linkable": false,
       "claimed_by": [
@@ -3487,6 +4327,16 @@
         {
           "id": "model/stepfun-step-3-7-flash",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "SuperVision",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/imagenet-2012",
+          "class": "shared"
         }
       ]
     },
@@ -3557,6 +4407,16 @@
         {
           "id": "model/tencent-hy4-preview",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "The Bitter Lesson",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "concept/the-bitter-lesson",
+          "class": "exclusive"
         }
       ]
     },
@@ -3641,6 +4501,36 @@
       ]
     },
     {
+      "name": "Tongyi Qianwen",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/alibaba-cloud",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Transformers.js",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/transformers-js",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Unsloth",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/unsloth",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Upstage: Solar Pro 3",
       "linkable": false,
       "claimed_by": [
@@ -3671,6 +4561,16 @@
       ]
     },
     {
+      "name": "Verifiable rewards",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/reinforcement-learning-with-verifiable-rewards",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "WizardLM-2 8x22B",
       "linkable": false,
       "claimed_by": [
@@ -3686,6 +4586,16 @@
       "claimed_by": [
         {
           "id": "model/writer-palmyra-x5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Xenova/all-MiniLM-L6-v2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/all-minilm-l6-v2",
           "class": "manual"
         }
       ]
@@ -3707,6 +4617,16 @@
         {
           "id": "model/xiaomi-mimo-v2-5-pro",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/z-ai",
+          "class": "exclusive"
         }
       ]
     },
@@ -3871,12 +4791,222 @@
       ]
     },
     {
+      "name": "Zhipu AI",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/z-ai",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "all-MiniLM-L6-v2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/all-minilm-l6-v2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "anthropic/claude-opus-5",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-5",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "bitter lesson",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/the-bitter-lesson",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "deepseek/deepseek-v4-flash-0731",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-flash-0731",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "google/gemini-3.7-flash",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-7-flash",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "llama.cpp",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "tool/llama-cpp",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "meta/muse-glimmer-30b",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-glimmer-30b",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "moonshotai/kimi-k2.5",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k2-5",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "moonshotai/kimi-k3",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k3",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "neural scaling laws",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "concept/scaling-laws",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "onnxruntime-web",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/onnx-runtime-web",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "openai/gpt-5.6-sol",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-6-sol",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "scaling laws",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/scaling-laws",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "the Transformer paper",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/attention-is-all-you-need",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "vLLM",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "tool/vllm",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "x-ai/grok-4.6",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/x-ai-grok-4-6",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "xAI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/spacexai",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "xAI: Grok Latest",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/x-ai-grok-latest",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "智谱",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/z-ai",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "月之暗面",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/moonshot-ai",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "深度求索",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/deepseek",
+          "class": "shared"
         }
       ]
     }

@@ -1,7 +1,540 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 388,
+  "count": 477,
   "docs": [
+    {
+      "u": "/blog/reference-urls-that-still-return-200",
+      "t": "Nine of twelve AI reference URLs return 200. Four of them are not what was cited.",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/same-catalog-same-day",
+      "t": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/bird-in-the-photo",
+      "t": "Which bird is that",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/competition-mathematics",
+      "t": "Competition mathematics",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/context-window",
+      "t": "How much a model reads at once",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/driverless-rides",
+      "t": "A car with nobody in it",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/human-parity-speech-recognition",
+      "t": "Transcription at human accuracy",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/learned-weather-forecasts",
+      "t": "A forecast that was learned, not simulated",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/open-frontier-weights",
+      "t": "Frontier weights you can download",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/protein-structure-prediction",
+      "t": "The shape of a protein",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/raw-audio-speech-synthesis",
+      "t": "Speech built one sample at a time",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/resolving-github-issues",
+      "t": "Real bugs in real repositories",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/superhuman-go",
+      "t": "Go above professional strength",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/text-to-image",
+      "t": "An image from a sentence",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/translation-between-languages",
+      "t": "Translation at human accuracy",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/video-with-sound",
+      "t": "Video with sound from a sentence",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/learn/how-a-language-model-works",
+      "t": "How a language model turns text into text",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/learn/how-inference-is-served",
+      "t": "How inference is served, and why it is priced the way it is",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/learn/how-models-are-trained",
+      "t": "How models are trained, and how they are changed afterwards",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/learn/what-a-model-is",
+      "t": "What a model is, and what it is not",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/aider",
+      "t": "Aider",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/comfyui",
+      "t": "ComfyUI",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/continue",
+      "t": "Continue",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/cursor",
+      "t": "Cursor",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/dspy",
+      "t": "DSPy",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/elevenlabs",
+      "t": "ElevenLabs",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/groq-cloud",
+      "t": "GroqCloud",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/hugging-face-hub",
+      "t": "Hugging Face Hub",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/langchain",
+      "t": "LangChain",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/langfuse",
+      "t": "Langfuse",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/llama-cpp",
+      "t": "llama.cpp",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/llamaindex",
+      "t": "LlamaIndex",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/lm-studio",
+      "t": "LM Studio",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/ollama",
+      "t": "Ollama",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/open-webui",
+      "t": "Open WebUI",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/openrouter",
+      "t": "OpenRouter",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/qdrant",
+      "t": "Qdrant",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/replicate",
+      "t": "Replicate",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/unsloth",
+      "t": "Unsloth",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/vllm",
+      "t": "vLLM",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tutorials/browser-embeddings-no-server",
+      "t": "Run a sentence-embedding model in the browser, with no server and no API key",
+      "k": "tutorial",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tutorials/openrouter-catalog-watch",
+      "t": "Watch the OpenRouter model catalog change, with no key and no dependencies",
+      "k": "tutorial",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/ai-winter",
+      "t": "AI winter",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/ai-winter",
+      "a": [
+        "AI Winter"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/effective-context-length",
+      "t": "Effective context length",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/effective-context-length",
+      "a": [
+        "Effective context"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/kv-cache",
+      "t": "KV cache",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/kv-cache",
+      "a": [
+        "Key-value cache"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/model-context-protocol",
+      "t": "Model Context Protocol",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/model-context-protocol",
+      "a": [
+        "MCP"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/scaling-laws",
+      "t": "Scaling laws",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/scaling-laws",
+      "a": [
+        "neural scaling laws",
+        "scaling laws",
+        "Chinchilla scaling"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/the-bitter-lesson",
+      "t": "The Bitter Lesson",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/the-bitter-lesson",
+      "a": [
+        "bitter lesson"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/alphago-lee-sedol",
+      "t": "AlphaGo versus Lee Sedol",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/alphago-lee-sedol",
+      "a": [
+        "Google DeepMind Challenge Match",
+        "AlphaGo"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/attention-is-all-you-need",
+      "t": "Attention Is All You Need",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/attention-is-all-you-need",
+      "a": [
+        "the Transformer paper"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/imagenet-2012",
+      "t": "ILSVRC 2012",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/imagenet-2012",
+      "a": [
+        "ImageNet 2012",
+        "SuperVision",
+        "AlexNet"
+      ],
+      "b": false
+    },
     {
       "u": "/wiki/model/aion-labs-aion-2-0",
       "t": "AionLabs: Aion-2.0",
@@ -40,6 +573,19 @@
       "s": "active",
       "i": "model/aion-labs-aion-rp-llama-3-1-8b",
       "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/all-minilm-l6-v2",
+      "t": "all-MiniLM-L6-v2 (ONNX)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/all-minilm-l6-v2",
+      "a": [
+        "all-MiniLM-L6-v2",
+        "Xenova/all-MiniLM-L6-v2"
+      ],
       "b": true
     },
     {
@@ -319,8 +865,12 @@
       "d": "model",
       "s": "active",
       "i": "model/anthropic-claude-opus-5",
-      "a": [],
-      "b": true
+      "a": [
+        "anthropic/claude-opus-5",
+        "Opus 5",
+        "Opus"
+      ],
+      "b": false
     },
     {
       "u": "/wiki/model/anthropic-claude-opus-5-batch",
@@ -699,7 +1249,10 @@
       "d": "model",
       "s": "active",
       "i": "model/deepseek-deepseek-v4-flash-0731",
-      "a": [],
+      "a": [
+        "DeepSeek-V4-Flash-0731",
+        "deepseek/deepseek-v4-flash-0731"
+      ],
       "b": true
     },
     {
@@ -999,7 +1552,10 @@
       "d": "model",
       "s": "active",
       "i": "model/google-gemini-3-7-flash",
-      "a": [],
+      "a": [
+        "Gemini 3.7 Flash",
+        "google/gemini-3.7-flash"
+      ],
       "b": true
     },
     {
@@ -1379,7 +1935,10 @@
       "d": "model",
       "s": "active",
       "i": "model/meta-muse-glimmer-30b",
-      "a": [],
+      "a": [
+        "Muse Glimmer 30B",
+        "meta/muse-glimmer-30b"
+      ],
       "b": true
     },
     {
@@ -1819,8 +2378,11 @@
       "d": "model",
       "s": "deprecated",
       "i": "model/moonshotai-kimi-k2-5",
-      "a": [],
-      "b": true
+      "a": [
+        "Kimi K2.5",
+        "moonshotai/kimi-k2.5"
+      ],
+      "b": false
     },
     {
       "u": "/wiki/model/moonshotai-kimi-k2-6",
@@ -1859,7 +2421,10 @@
       "d": "model",
       "s": "active",
       "i": "model/moonshotai-kimi-k3",
-      "a": [],
+      "a": [
+        "Kimi K3",
+        "moonshotai/kimi-k3"
+      ],
       "b": true
     },
     {
@@ -2409,7 +2974,11 @@
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-5-6-sol",
-      "a": [],
+      "a": [
+        "GPT-5.6 Sol",
+        "openai/gpt-5.6-sol",
+        "Sol"
+      ],
       "b": true
     },
     {
@@ -3679,7 +4248,10 @@
       "d": "model",
       "s": "active",
       "i": "model/x-ai-grok-4-6",
-      "a": [],
+      "a": [
+        "Grok 4.6",
+        "x-ai/grok-4.6"
+      ],
       "b": true
     },
     {
@@ -3880,6 +4452,430 @@
       "s": "active",
       "i": "model/z-ai-glm-latest",
       "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/org/alibaba-cloud",
+      "t": "Alibaba Cloud",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/alibaba-cloud",
+      "a": [
+        "Tongyi Qianwen",
+        "Qwen",
+        "Alibaba"
+      ],
+      "b": true
+    },
+    {
+      "u": "/wiki/org/anthropic",
+      "t": "Anthropic",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/anthropic",
+      "a": [
+        "Anthropic PBC"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/deepseek",
+      "t": "DeepSeek",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/deepseek",
+      "a": [
+        "深度求索",
+        "High-Flyer"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/google-deepmind",
+      "t": "Google DeepMind",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/google-deepmind",
+      "a": [
+        "DeepMind",
+        "Google AI"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/meta-superintelligence-labs",
+      "t": "Meta Superintelligence Labs",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/meta-superintelligence-labs",
+      "a": [
+        "MSL",
+        "Meta AI",
+        "Meta"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/moonshot-ai",
+      "t": "Moonshot AI",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/moonshot-ai",
+      "a": [
+        "Moonshot",
+        "月之暗面"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/openai",
+      "t": "OpenAI",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/openai",
+      "a": [
+        "OpenAI Group PBC",
+        "OpenAI Foundation"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/spacexai",
+      "t": "SpaceXAI",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/spacexai",
+      "a": [
+        "xAI",
+        "Grok"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/z-ai",
+      "t": "Z.ai",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/z-ai",
+      "a": [
+        "Zhipu AI",
+        "智谱",
+        "GLM"
+      ],
+      "b": true
+    },
+    {
+      "u": "/wiki/technique/direct-preference-optimization",
+      "t": "Direct Preference Optimization",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/direct-preference-optimization",
+      "a": [
+        "DPO"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/technique/mixture-of-experts",
+      "t": "Mixture of Experts",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/mixture-of-experts",
+      "a": [
+        "Sparse Mixture of Experts",
+        "MoE"
+      ],
+      "b": true
+    },
+    {
+      "u": "/wiki/technique/quantization",
+      "t": "Quantization",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/quantization",
+      "a": [
+        "K-quants",
+        "NormalFloat"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/technique/reinforcement-learning-with-verifiable-rewards",
+      "t": "Reinforcement Learning with Verifiable Rewards",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/reinforcement-learning-with-verifiable-rewards",
+      "a": [
+        "RLVR",
+        "Verifiable rewards"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/technique/speculative-decoding",
+      "t": "Speculative decoding",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/speculative-decoding",
+      "a": [
+        "Speculative sampling"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/tool/aider",
+      "t": "Aider",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/aider",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/comfyui",
+      "t": "ComfyUI",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/comfyui",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/continue",
+      "t": "Continue",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/continue",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/cursor",
+      "t": "Cursor",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/cursor",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/dspy",
+      "t": "DSPy",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/dspy",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/elevenlabs",
+      "t": "ElevenLabs",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/elevenlabs",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/groq-cloud",
+      "t": "GroqCloud",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/groq-cloud",
+      "a": [
+        "Groq"
+      ],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/hugging-face-hub",
+      "t": "Hugging Face Hub",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/hugging-face-hub",
+      "a": [
+        "Hugging Face"
+      ],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/langchain",
+      "t": "LangChain",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/langchain",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/langfuse",
+      "t": "Langfuse",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/langfuse",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/llama-cpp",
+      "t": "llama.cpp",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/llama-cpp",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/llamaindex",
+      "t": "LlamaIndex",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/llamaindex",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/lm-studio",
+      "t": "LM Studio",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/lm-studio",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/ollama",
+      "t": "Ollama",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/ollama",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/onnx-runtime-web",
+      "t": "ONNX Runtime Web",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/onnx-runtime-web",
+      "a": [
+        "onnxruntime-web"
+      ],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/open-webui",
+      "t": "Open WebUI",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/open-webui",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/openrouter",
+      "t": "OpenRouter",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/openrouter",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/qdrant",
+      "t": "Qdrant",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/qdrant",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/replicate",
+      "t": "Replicate",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/replicate",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/sglang",
+      "t": "SGLang",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/sglang",
+      "a": [
+        "RadixAttention"
+      ],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/transformers-js",
+      "t": "Transformers.js",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/transformers-js",
+      "a": [
+        "@huggingface/transformers"
+      ],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/unsloth",
+      "t": "Unsloth",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/unsloth",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/vllm",
+      "t": "vLLM",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/vllm",
+      "a": [
+        "PagedAttention"
+      ],
       "b": true
     }
   ]

@@ -1,3 +1,886 @@
 {
-  "backlinks": {}
+  "backlinks": {
+    "concept/ai-winter": [
+      {
+        "url": "/wiki/event/imagenet-2012",
+        "title": "ILSVRC 2012",
+        "type": "entry",
+        "file": "content/wiki/event/imagenet-2012.md"
+      }
+    ],
+    "concept/effective-context-length": [
+      {
+        "url": "/wiki/concept/kv-cache",
+        "title": "KV cache",
+        "type": "entry",
+        "file": "content/wiki/concept/kv-cache.md"
+      }
+    ],
+    "concept/kv-cache": [
+      {
+        "url": "/wiki/concept/effective-context-length",
+        "title": "Effective context length",
+        "type": "entry",
+        "file": "content/wiki/concept/effective-context-length.md"
+      },
+      {
+        "url": "/wiki/technique/speculative-decoding",
+        "title": "Speculative decoding",
+        "type": "entry",
+        "file": "content/wiki/technique/speculative-decoding.md"
+      },
+      {
+        "url": "/wiki/tool/sglang",
+        "title": "SGLang",
+        "type": "entry",
+        "file": "content/wiki/tool/sglang.md"
+      },
+      {
+        "url": "/wiki/tool/vllm",
+        "title": "vLLM",
+        "type": "entry",
+        "file": "content/wiki/tool/vllm.md"
+      }
+    ],
+    "concept/scaling-laws": [
+      {
+        "url": "/wiki/concept/the-bitter-lesson",
+        "title": "The Bitter Lesson",
+        "type": "entry",
+        "file": "content/wiki/concept/the-bitter-lesson.md"
+      },
+      {
+        "url": "/wiki/event/attention-is-all-you-need",
+        "title": "Attention Is All You Need",
+        "type": "entry",
+        "file": "content/wiki/event/attention-is-all-you-need.md"
+      },
+      {
+        "url": "/learn/how-a-language-model-works",
+        "title": "How a language model turns text into text",
+        "type": "learn",
+        "file": "content/learn/how-a-language-model-works.md"
+      },
+      {
+        "url": "/learn/how-inference-is-served",
+        "title": "How inference is served, and why it is priced the way it is",
+        "type": "learn",
+        "file": "content/learn/how-inference-is-served.md"
+      },
+      {
+        "url": "/learn/how-models-are-trained",
+        "title": "How models are trained, and how they are changed afterwards",
+        "type": "learn",
+        "file": "content/learn/how-models-are-trained.md"
+      }
+    ],
+    "concept/the-bitter-lesson": [
+      {
+        "url": "/wiki/concept/ai-winter",
+        "title": "AI winter",
+        "type": "entry",
+        "file": "content/wiki/concept/ai-winter.md"
+      },
+      {
+        "url": "/wiki/concept/scaling-laws",
+        "title": "Scaling laws",
+        "type": "entry",
+        "file": "content/wiki/concept/scaling-laws.md"
+      },
+      {
+        "url": "/wiki/event/alphago-lee-sedol",
+        "title": "AlphaGo versus Lee Sedol",
+        "type": "entry",
+        "file": "content/wiki/event/alphago-lee-sedol.md"
+      },
+      {
+        "url": "/wiki/event/imagenet-2012",
+        "title": "ILSVRC 2012",
+        "type": "entry",
+        "file": "content/wiki/event/imagenet-2012.md"
+      },
+      {
+        "url": "/learn/how-models-are-trained",
+        "title": "How models are trained, and how they are changed afterwards",
+        "type": "learn",
+        "file": "content/learn/how-models-are-trained.md"
+      }
+    ],
+    "event/alphago-lee-sedol": [
+      {
+        "url": "/wiki/concept/the-bitter-lesson",
+        "title": "The Bitter Lesson",
+        "type": "entry",
+        "file": "content/wiki/concept/the-bitter-lesson.md"
+      }
+    ],
+    "event/attention-is-all-you-need": [
+      {
+        "url": "/wiki/concept/scaling-laws",
+        "title": "Scaling laws",
+        "type": "entry",
+        "file": "content/wiki/concept/scaling-laws.md"
+      },
+      {
+        "url": "/learn/how-a-language-model-works",
+        "title": "How a language model turns text into text",
+        "type": "learn",
+        "file": "content/learn/how-a-language-model-works.md"
+      },
+      {
+        "url": "/learn/how-inference-is-served",
+        "title": "How inference is served, and why it is priced the way it is",
+        "type": "learn",
+        "file": "content/learn/how-inference-is-served.md"
+      },
+      {
+        "url": "/learn/what-a-model-is",
+        "title": "What a model is, and what it is not",
+        "type": "learn",
+        "file": "content/learn/what-a-model-is.md"
+      }
+    ],
+    "event/imagenet-2012": [
+      {
+        "url": "/wiki/concept/ai-winter",
+        "title": "AI winter",
+        "type": "entry",
+        "file": "content/wiki/concept/ai-winter.md"
+      }
+    ],
+    "model/all-minilm-l6-v2": [
+      {
+        "url": "/tutorials/browser-embeddings-no-server",
+        "title": "Run a sentence-embedding model in the browser, with no server and no API key",
+        "type": "tutorial",
+        "file": "content/tutorials/browser-embeddings-no-server.md"
+      }
+    ],
+    "model/anthropic-claude-3-haiku": [
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/anthropic-claude-fable-5": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-5",
+        "title": "Claude Opus 5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-5.md"
+      },
+      {
+        "url": "/wiki/org/anthropic",
+        "title": "Anthropic",
+        "type": "entry",
+        "file": "content/wiki/org/anthropic.md"
+      }
+    ],
+    "model/anthropic-claude-opus-4-5": [
+      {
+        "url": "/wiki/org/anthropic",
+        "title": "Anthropic",
+        "type": "entry",
+        "file": "content/wiki/org/anthropic.md"
+      }
+    ],
+    "model/anthropic-claude-opus-4-7": [
+      {
+        "url": "/wiki/org/anthropic",
+        "title": "Anthropic",
+        "type": "entry",
+        "file": "content/wiki/org/anthropic.md"
+      }
+    ],
+    "model/anthropic-claude-opus-4-8": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-5",
+        "title": "Claude Opus 5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-5.md"
+      },
+      {
+        "url": "/wiki/org/anthropic",
+        "title": "Anthropic",
+        "type": "entry",
+        "file": "content/wiki/org/anthropic.md"
+      }
+    ],
+    "model/anthropic-claude-opus-5": [
+      {
+        "url": "/wiki/org/anthropic",
+        "title": "Anthropic",
+        "type": "entry",
+        "file": "content/wiki/org/anthropic.md"
+      }
+    ],
+    "model/anthropic-claude-opus-5-batch": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-5",
+        "title": "Claude Opus 5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-5.md"
+      }
+    ],
+    "model/anthropic-claude-opus-5-fast": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-5",
+        "title": "Claude Opus 5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-5.md"
+      }
+    ],
+    "model/deepseek-deepseek-r1": [
+      {
+        "url": "/impossible-routine/competition-mathematics",
+        "title": "Competition mathematics",
+        "type": "delta",
+        "file": "content/deltas/competition-mathematics.md"
+      },
+      {
+        "url": "/wiki/org/deepseek",
+        "title": "DeepSeek",
+        "type": "entry",
+        "file": "content/wiki/org/deepseek.md"
+      },
+      {
+        "url": "/wiki/technique/reinforcement-learning-with-verifiable-rewards",
+        "title": "Reinforcement Learning with Verifiable Rewards",
+        "type": "entry",
+        "file": "content/wiki/technique/reinforcement-learning-with-verifiable-rewards.md"
+      }
+    ],
+    "model/deepseek-deepseek-v4-flash-0731": [
+      {
+        "url": "/wiki/org/deepseek",
+        "title": "DeepSeek",
+        "type": "entry",
+        "file": "content/wiki/org/deepseek.md"
+      }
+    ],
+    "model/deepseek-deepseek-v4-flash-latest": [
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/deepseek-deepseek-v4-pro-0813": [
+      {
+        "url": "/wiki/model/deepseek-deepseek-v4-flash-0731",
+        "title": "DeepSeek: DeepSeek V4 Flash 0731",
+        "type": "entry",
+        "file": "content/wiki/model/deepseek-deepseek-v4-flash-0731.md"
+      },
+      {
+        "url": "/wiki/org/deepseek",
+        "title": "DeepSeek",
+        "type": "entry",
+        "file": "content/wiki/org/deepseek.md"
+      }
+    ],
+    "model/google-gemini-3-1-pro-preview": [
+      {
+        "url": "/wiki/model/google-gemini-3-7-flash",
+        "title": "Google: Gemini 3.7 Flash",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-7-flash.md"
+      },
+      {
+        "url": "/wiki/org/google-deepmind",
+        "title": "Google DeepMind",
+        "type": "entry",
+        "file": "content/wiki/org/google-deepmind.md"
+      }
+    ],
+    "model/google-gemini-3-5-flash": [
+      {
+        "url": "/wiki/org/deepseek",
+        "title": "DeepSeek",
+        "type": "entry",
+        "file": "content/wiki/org/deepseek.md"
+      },
+      {
+        "url": "/wiki/org/google-deepmind",
+        "title": "Google DeepMind",
+        "type": "entry",
+        "file": "content/wiki/org/google-deepmind.md"
+      }
+    ],
+    "model/google-gemini-3-6-flash": [
+      {
+        "url": "/wiki/model/google-gemini-3-7-flash",
+        "title": "Google: Gemini 3.7 Flash",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-7-flash.md"
+      },
+      {
+        "url": "/wiki/org/google-deepmind",
+        "title": "Google DeepMind",
+        "type": "entry",
+        "file": "content/wiki/org/google-deepmind.md"
+      }
+    ],
+    "model/google-gemini-3-7-flash": [
+      {
+        "url": "/wiki/org/google-deepmind",
+        "title": "Google DeepMind",
+        "type": "entry",
+        "file": "content/wiki/org/google-deepmind.md"
+      }
+    ],
+    "model/ibm-granite-granite-4-0-h-micro": [
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/meta-llama-llama-4-maverick": [
+      {
+        "url": "/wiki/org/meta-superintelligence-labs",
+        "title": "Meta Superintelligence Labs",
+        "type": "entry",
+        "file": "content/wiki/org/meta-superintelligence-labs.md"
+      }
+    ],
+    "model/meta-llama-llama-4-scout": [
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/meta-muse-glimmer-30b": [
+      {
+        "url": "/wiki/org/meta-superintelligence-labs",
+        "title": "Meta Superintelligence Labs",
+        "type": "entry",
+        "file": "content/wiki/org/meta-superintelligence-labs.md"
+      }
+    ],
+    "model/meta-muse-spark-1-1": [
+      {
+        "url": "/wiki/org/meta-superintelligence-labs",
+        "title": "Meta Superintelligence Labs",
+        "type": "entry",
+        "file": "content/wiki/org/meta-superintelligence-labs.md"
+      }
+    ],
+    "model/meta-muse-spark-1-2": [
+      {
+        "url": "/wiki/model/meta-muse-glimmer-30b",
+        "title": "Meta: Muse Glimmer 30B",
+        "type": "entry",
+        "file": "content/wiki/model/meta-muse-glimmer-30b.md"
+      },
+      {
+        "url": "/wiki/org/meta-superintelligence-labs",
+        "title": "Meta Superintelligence Labs",
+        "type": "entry",
+        "file": "content/wiki/org/meta-superintelligence-labs.md"
+      }
+    ],
+    "model/meta-muse-spark-1-2-contributor": [
+      {
+        "url": "/wiki/org/meta-superintelligence-labs",
+        "title": "Meta Superintelligence Labs",
+        "type": "entry",
+        "file": "content/wiki/org/meta-superintelligence-labs.md"
+      }
+    ],
+    "model/mistralai-mistral-large": [
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/mistralai-mistral-nemo": [
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/mistralai-mixtral-8x22b-instruct": [
+      {
+        "url": "/wiki/technique/mixture-of-experts",
+        "title": "Mixture of Experts",
+        "type": "entry",
+        "file": "content/wiki/technique/mixture-of-experts.md"
+      }
+    ],
+    "model/moonshotai-kimi-k2": [
+      {
+        "url": "/wiki/org/moonshot-ai",
+        "title": "Moonshot AI",
+        "type": "entry",
+        "file": "content/wiki/org/moonshot-ai.md"
+      }
+    ],
+    "model/moonshotai-kimi-k2-5": [
+      {
+        "url": "/wiki/model/moonshotai-kimi-k3",
+        "title": "MoonshotAI: Kimi K3",
+        "type": "entry",
+        "file": "content/wiki/model/moonshotai-kimi-k3.md"
+      },
+      {
+        "url": "/wiki/org/moonshot-ai",
+        "title": "Moonshot AI",
+        "type": "entry",
+        "file": "content/wiki/org/moonshot-ai.md"
+      },
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/moonshotai-kimi-k2-7-code": [
+      {
+        "url": "/wiki/model/moonshotai-kimi-k2-5",
+        "title": "MoonshotAI: Kimi K2.5",
+        "type": "entry",
+        "file": "content/wiki/model/moonshotai-kimi-k2-5.md"
+      },
+      {
+        "url": "/wiki/org/moonshot-ai",
+        "title": "Moonshot AI",
+        "type": "entry",
+        "file": "content/wiki/org/moonshot-ai.md"
+      }
+    ],
+    "model/moonshotai-kimi-k3": [
+      {
+        "url": "/wiki/model/moonshotai-kimi-k2-5",
+        "title": "MoonshotAI: Kimi K2.5",
+        "type": "entry",
+        "file": "content/wiki/model/moonshotai-kimi-k2-5.md"
+      },
+      {
+        "url": "/wiki/org/moonshot-ai",
+        "title": "Moonshot AI",
+        "type": "entry",
+        "file": "content/wiki/org/moonshot-ai.md"
+      }
+    ],
+    "model/openai-gpt-3-5-turbo": [
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/openai-gpt-4": [
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/openai-gpt-4-1-nano": [
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/openai-gpt-4-turbo-preview": [
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/openai-gpt-5-4": [
+      {
+        "url": "/wiki/org/deepseek",
+        "title": "DeepSeek",
+        "type": "entry",
+        "file": "content/wiki/org/deepseek.md"
+      },
+      {
+        "url": "/wiki/org/openai",
+        "title": "OpenAI",
+        "type": "entry",
+        "file": "content/wiki/org/openai.md"
+      }
+    ],
+    "model/openai-gpt-5-5": [
+      {
+        "url": "/wiki/org/openai",
+        "title": "OpenAI",
+        "type": "entry",
+        "file": "content/wiki/org/openai.md"
+      }
+    ],
+    "model/openai-gpt-5-6-luna": [
+      {
+        "url": "/wiki/model/openai-gpt-5-6-sol",
+        "title": "OpenAI: GPT-5.6 Sol",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-sol.md"
+      },
+      {
+        "url": "/wiki/org/openai",
+        "title": "OpenAI",
+        "type": "entry",
+        "file": "content/wiki/org/openai.md"
+      }
+    ],
+    "model/openai-gpt-5-6-sol": [
+      {
+        "url": "/wiki/org/openai",
+        "title": "OpenAI",
+        "type": "entry",
+        "file": "content/wiki/org/openai.md"
+      }
+    ],
+    "model/openai-gpt-5-6-terra": [
+      {
+        "url": "/wiki/model/openai-gpt-5-6-sol",
+        "title": "OpenAI: GPT-5.6 Sol",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-sol.md"
+      },
+      {
+        "url": "/wiki/org/openai",
+        "title": "OpenAI",
+        "type": "entry",
+        "file": "content/wiki/org/openai.md"
+      }
+    ],
+    "model/qwen-qwen3-7-max": [
+      {
+        "url": "/wiki/org/alibaba-cloud",
+        "title": "Alibaba Cloud",
+        "type": "entry",
+        "file": "content/wiki/org/alibaba-cloud.md"
+      }
+    ],
+    "model/qwen-qwen3-8-27b": [
+      {
+        "url": "/wiki/org/alibaba-cloud",
+        "title": "Alibaba Cloud",
+        "type": "entry",
+        "file": "content/wiki/org/alibaba-cloud.md"
+      }
+    ],
+    "model/qwen-qwen3-8-max": [
+      {
+        "url": "/wiki/org/alibaba-cloud",
+        "title": "Alibaba Cloud",
+        "type": "entry",
+        "file": "content/wiki/org/alibaba-cloud.md"
+      }
+    ],
+    "model/x-ai-grok-4-20": [
+      {
+        "url": "/wiki/model/x-ai-grok-4-6",
+        "title": "SpaceXAI: Grok 4.6",
+        "type": "entry",
+        "file": "content/wiki/model/x-ai-grok-4-6.md"
+      },
+      {
+        "url": "/wiki/org/spacexai",
+        "title": "SpaceXAI",
+        "type": "entry",
+        "file": "content/wiki/org/spacexai.md"
+      },
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/x-ai-grok-4-3": [
+      {
+        "url": "/wiki/org/spacexai",
+        "title": "SpaceXAI",
+        "type": "entry",
+        "file": "content/wiki/org/spacexai.md"
+      }
+    ],
+    "model/x-ai-grok-4-5": [
+      {
+        "url": "/wiki/model/x-ai-grok-4-6",
+        "title": "SpaceXAI: Grok 4.6",
+        "type": "entry",
+        "file": "content/wiki/model/x-ai-grok-4-6.md"
+      },
+      {
+        "url": "/wiki/org/spacexai",
+        "title": "SpaceXAI",
+        "type": "entry",
+        "file": "content/wiki/org/spacexai.md"
+      }
+    ],
+    "model/x-ai-grok-4-6": [
+      {
+        "url": "/wiki/org/spacexai",
+        "title": "SpaceXAI",
+        "type": "entry",
+        "file": "content/wiki/org/spacexai.md"
+      }
+    ],
+    "model/z-ai-glm-5": [
+      {
+        "url": "/wiki/org/z-ai",
+        "title": "Z.ai",
+        "type": "entry",
+        "file": "content/wiki/org/z-ai.md"
+      }
+    ],
+    "model/z-ai-glm-5-1": [
+      {
+        "url": "/wiki/org/z-ai",
+        "title": "Z.ai",
+        "type": "entry",
+        "file": "content/wiki/org/z-ai.md"
+      }
+    ],
+    "model/z-ai-glm-5-2": [
+      {
+        "url": "/wiki/org/z-ai",
+        "title": "Z.ai",
+        "type": "entry",
+        "file": "content/wiki/org/z-ai.md"
+      }
+    ],
+    "model/z-ai-glm-5-3": [
+      {
+        "url": "/wiki/org/z-ai",
+        "title": "Z.ai",
+        "type": "entry",
+        "file": "content/wiki/org/z-ai.md"
+      }
+    ],
+    "org/alibaba-cloud": [
+      {
+        "url": "/wiki/org/moonshot-ai",
+        "title": "Moonshot AI",
+        "type": "entry",
+        "file": "content/wiki/org/moonshot-ai.md"
+      }
+    ],
+    "org/anthropic": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-5",
+        "title": "Claude Opus 5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-5.md"
+      }
+    ],
+    "org/deepseek": [
+      {
+        "url": "/wiki/model/deepseek-deepseek-v4-flash-0731",
+        "title": "DeepSeek: DeepSeek V4 Flash 0731",
+        "type": "entry",
+        "file": "content/wiki/model/deepseek-deepseek-v4-flash-0731.md"
+      }
+    ],
+    "org/google-deepmind": [
+      {
+        "url": "/wiki/model/google-gemini-3-7-flash",
+        "title": "Google: Gemini 3.7 Flash",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-7-flash.md"
+      }
+    ],
+    "org/meta-superintelligence-labs": [
+      {
+        "url": "/wiki/model/meta-muse-glimmer-30b",
+        "title": "Meta: Muse Glimmer 30B",
+        "type": "entry",
+        "file": "content/wiki/model/meta-muse-glimmer-30b.md"
+      }
+    ],
+    "org/moonshot-ai": [
+      {
+        "url": "/wiki/model/moonshotai-kimi-k2-5",
+        "title": "MoonshotAI: Kimi K2.5",
+        "type": "entry",
+        "file": "content/wiki/model/moonshotai-kimi-k2-5.md"
+      },
+      {
+        "url": "/wiki/model/moonshotai-kimi-k3",
+        "title": "MoonshotAI: Kimi K3",
+        "type": "entry",
+        "file": "content/wiki/model/moonshotai-kimi-k3.md"
+      }
+    ],
+    "org/openai": [
+      {
+        "url": "/wiki/model/openai-gpt-5-6-sol",
+        "title": "OpenAI: GPT-5.6 Sol",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-sol.md"
+      }
+    ],
+    "org/spacexai": [
+      {
+        "url": "/wiki/model/x-ai-grok-4-6",
+        "title": "SpaceXAI: Grok 4.6",
+        "type": "entry",
+        "file": "content/wiki/model/x-ai-grok-4-6.md"
+      }
+    ],
+    "technique/direct-preference-optimization": [
+      {
+        "url": "/wiki/technique/reinforcement-learning-with-verifiable-rewards",
+        "title": "Reinforcement Learning with Verifiable Rewards",
+        "type": "entry",
+        "file": "content/wiki/technique/reinforcement-learning-with-verifiable-rewards.md"
+      }
+    ],
+    "technique/quantization": [
+      {
+        "url": "/wiki/tool/llama-cpp",
+        "title": "llama.cpp",
+        "type": "entry",
+        "file": "content/wiki/tool/llama-cpp.md"
+      },
+      {
+        "url": "/wiki/tool/ollama",
+        "title": "Ollama",
+        "type": "entry",
+        "file": "content/wiki/tool/ollama.md"
+      }
+    ],
+    "technique/reinforcement-learning-with-verifiable-rewards": [
+      {
+        "url": "/wiki/technique/direct-preference-optimization",
+        "title": "Direct Preference Optimization",
+        "type": "entry",
+        "file": "content/wiki/technique/direct-preference-optimization.md"
+      }
+    ],
+    "technique/speculative-decoding": [
+      {
+        "url": "/wiki/tool/sglang",
+        "title": "SGLang",
+        "type": "entry",
+        "file": "content/wiki/tool/sglang.md"
+      },
+      {
+        "url": "/wiki/tool/vllm",
+        "title": "vLLM",
+        "type": "entry",
+        "file": "content/wiki/tool/vllm.md"
+      }
+    ],
+    "tool/llama-cpp": [
+      {
+        "url": "/wiki/technique/quantization",
+        "title": "Quantization",
+        "type": "entry",
+        "file": "content/wiki/technique/quantization.md"
+      },
+      {
+        "url": "/wiki/tool/ollama",
+        "title": "Ollama",
+        "type": "entry",
+        "file": "content/wiki/tool/ollama.md"
+      }
+    ],
+    "tool/ollama": [
+      {
+        "url": "/wiki/technique/quantization",
+        "title": "Quantization",
+        "type": "entry",
+        "file": "content/wiki/technique/quantization.md"
+      }
+    ],
+    "tool/onnx-runtime-web": [
+      {
+        "url": "/wiki/tool/transformers-js",
+        "title": "Transformers.js",
+        "type": "entry",
+        "file": "content/wiki/tool/transformers-js.md"
+      },
+      {
+        "url": "/tutorials/browser-embeddings-no-server",
+        "title": "Run a sentence-embedding model in the browser, with no server and no API key",
+        "type": "tutorial",
+        "file": "content/tutorials/browser-embeddings-no-server.md"
+      }
+    ],
+    "tool/openrouter": [
+      {
+        "url": "/blog/reference-urls-that-still-return-200",
+        "title": "Nine of twelve AI reference URLs return 200. Four of them are not what was cited.",
+        "type": "post",
+        "file": "content/blog/reference-urls-that-still-return-200.md"
+      },
+      {
+        "url": "/blog/same-catalog-same-day",
+        "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
+        "type": "post",
+        "file": "content/blog/same-catalog-same-day.md"
+      },
+      {
+        "url": "/tutorials/openrouter-catalog-watch",
+        "title": "Watch the OpenRouter model catalog change, with no key and no dependencies",
+        "type": "tutorial",
+        "file": "content/tutorials/openrouter-catalog-watch.md"
+      }
+    ],
+    "tool/sglang": [
+      {
+        "url": "/wiki/concept/kv-cache",
+        "title": "KV cache",
+        "type": "entry",
+        "file": "content/wiki/concept/kv-cache.md"
+      },
+      {
+        "url": "/wiki/technique/speculative-decoding",
+        "title": "Speculative decoding",
+        "type": "entry",
+        "file": "content/wiki/technique/speculative-decoding.md"
+      }
+    ],
+    "tool/transformers-js": [
+      {
+        "url": "/wiki/model/all-minilm-l6-v2",
+        "title": "all-MiniLM-L6-v2 (ONNX)",
+        "type": "entry",
+        "file": "content/wiki/model/all-minilm-l6-v2.md"
+      },
+      {
+        "url": "/tutorials/browser-embeddings-no-server",
+        "title": "Run a sentence-embedding model in the browser, with no server and no API key",
+        "type": "tutorial",
+        "file": "content/tutorials/browser-embeddings-no-server.md"
+      }
+    ],
+    "tool/vllm": [
+      {
+        "url": "/wiki/concept/kv-cache",
+        "title": "KV cache",
+        "type": "entry",
+        "file": "content/wiki/concept/kv-cache.md"
+      },
+      {
+        "url": "/wiki/technique/speculative-decoding",
+        "title": "Speculative decoding",
+        "type": "entry",
+        "file": "content/wiki/technique/speculative-decoding.md"
+      }
+    ]
+  }
 }
