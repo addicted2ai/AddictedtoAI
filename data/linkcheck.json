@@ -391,6 +391,206 @@
       "last_ok": "2026-08-28",
       "ok": true,
       "status": 200
+    },
+    "https://comfy.org/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://computerhistory.org/press-releases/chm-makes-alexnet-source-code-available-to-the-public/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://continue.dev/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://cursor.com/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://danluu.com/symbolics-lisp-machines/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://deepmind.google/discover/blog/alphafold-a-solution-to-a-50-year-old-grand-challenge-in-biology/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://deepmind.google/discover/blog/alphafold-reveals-the-structure-of-the-protein-universe/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://deepmind.google/discover/blog/alphago-zero-starting-from-scratch/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://deepmind.google/discover/blog/graphcast-ai-model-for-faster-and-more-accurate-global-weather-forecasting/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://deepmind.google/discover/blog/wavenet-a-generative-model-for-raw-audio/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://deepmind.google/discover/blog/wavenet-launches-in-the-google-assistant/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://deepmind.google/research/alphago/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://developers.googleblog.com/en/new-features-for-the-gemini-api-and-google-ai-studio/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://developers.googleblog.com/en/veo-3-now-available-gemini-api/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://developers.openai.com/api/docs/guides/prompt-caching": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://docs.vllm.ai/en/latest/features/speculative_decoding/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://dspy.ai/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://elevenlabs.io/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Anthropic": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Bitter_lesson": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/DeepSeek": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Google_DeepMind": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Moonshot_AI": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Muse_Spark": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/OpenAI": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
     }
   }
 }

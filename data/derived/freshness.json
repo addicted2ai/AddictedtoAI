@@ -2,7 +2,7 @@
   "broken_links": [],
   "date": "2026-08-28",
   "link_check": {
-    "checked": 0,
+    "checked": 25,
     "confirm_after_failures": 2,
     "declined": 0,
     "due": 108,
@@ -32,7 +32,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/comfyui.md",
-      "since": null,
+      "since": "2026-08-28",
       "slug": "comfyui",
       "state": "ok",
       "url": "https://comfy.org/"
@@ -45,7 +45,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/continue.md",
-      "since": null,
+      "since": "2026-08-28",
       "slug": "continue",
       "state": "ok",
       "url": "https://continue.dev/"
@@ -58,7 +58,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/cursor.md",
-      "since": null,
+      "since": "2026-08-28",
       "slug": "cursor",
       "state": "ok",
       "url": "https://cursor.com/"
@@ -71,7 +71,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/dspy.md",
-      "since": null,
+      "since": "2026-08-28",
       "slug": "dspy",
       "state": "ok",
       "url": "https://dspy.ai/"
@@ -84,7 +84,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/elevenlabs.md",
-      "since": null,
+      "since": "2026-08-28",
       "slug": "elevenlabs",
       "state": "ok",
       "url": "https://elevenlabs.io/"

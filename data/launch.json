@@ -7,16 +7,16 @@
       "/": {
         "label": "home",
         "chunks_kb_gzipped": 103.8,
-        "inline_kb_gzipped": 4.8,
-        "total_kb_gzipped": 108.5,
-        "html_kb_gzipped": 7.2
+        "inline_kb_gzipped": 5.9,
+        "total_kb_gzipped": 109.6,
+        "html_kb_gzipped": 8.7
       },
-      "/wiki/model/aion-labs-aion-2-0": {
+      "/wiki/concept/ai-winter": {
         "label": "entry",
         "chunks_kb_gzipped": 103.8,
-        "inline_kb_gzipped": 2.9,
-        "total_kb_gzipped": 106.5,
-        "html_kb_gzipped": 4.2
+        "inline_kb_gzipped": 5.1,
+        "total_kb_gzipped": 108.8,
+        "html_kb_gzipped": 7
       },
       "/catalog": {
         "label": "table",
