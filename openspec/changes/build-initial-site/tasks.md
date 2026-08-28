@@ -322,7 +322,7 @@ minimum). Specs referenced below live in
 
 ## 6. Seed content — real entries, through review (specs/editorial, specs/review, design D9)
 
-- [ ] 6.1 Write 40 wiki entries (mix per design D9: frontier model
+- [x] 6.1 Write 40 wiki entries (mix per design D9: frontier model
       families, major labs and orgs, key tools, 6–8 post-2023
       concepts/techniques, plus history/culture/argument entries from D9's
       candidate list), each schema-valid with sourced facts; at least 12
@@ -335,11 +335,11 @@ minimum). Specs referenced below live in
       errors, and a Glob count of `content/wiki/**/*.md` shows ≥40 files
       with ≥12 containing prose bodies; the full automated floor check
       runs in 6.6.
-- [ ] 6.2 Write 4 static education pages covering design D9's ladder tops,
+- [x] 6.2 Write 4 static education pages covering design D9's ladder tops,
       each with level/outcome/prerequisites and zero perishable literals.
       Verify: build passes with no currency-literal warnings on these
       pages.
-- [ ] 6.3 Write 2 tutorials from design D9's named credential-free
+- [x] 6.3 Write 2 tutorials from design D9's named credential-free
       candidates — (a) in-browser inference with transformers.js (npm +
       ~25 MB model, no keys, no installs beyond npm), (b) a model-price
       tracker against the OpenRouter public models endpoint (public JSON,
@@ -351,7 +351,7 @@ minimum). Specs referenced below live in
       Verify: each tutorial's front matter is complete and its
       `verified_on` is the authoring date; the shown outputs come from
       real runs (transcripts kept under `data/reviews/evidence/`).
-- [ ] 6.4 Write 2 blog posts per design D9: candidate 1 documents the
+- [x] 6.4 Write 2 blog posts per design D9: candidate 1 documents the
       reference-rot phenomenon from facts checked live at authoring time
       (read the Aider leaderboard's own banner date today; observe where
       paperswithcode.com actually redirects today; substitute other live
@@ -361,7 +361,7 @@ minimum). Specs referenced below live in
       demonstration with receipts (every date sourced from the launch
       data), not topic coverage. Verify: each claim in each post carries
       a working source link; the reviewer in 6.5 re-fetches them.
-- [ ] 6.5 Run every seed prose piece (entry bodies, education pages,
+- [x] 6.5 Run every seed prose piece (entry bodies, education pages,
       tutorials, posts, deltas) through the review flow as its first live
       exercise: separate reviewer invocation with fresh context, the
       specs/review checklist for its kind, verdict + reasons + the
@@ -371,7 +371,7 @@ minimum). Specs referenced below live in
       Verify: every published seed prose file has a recorded `approve`
       verdict whose `would-cite` field is non-empty and specific to the
       piece; the file count matches.
-- [ ] 6.6 Write `scripts/verify-launch.mjs`: prints and checks the launch
+- [x] 6.6 Write `scripts/verify-launch.mjs`: prints and checks the launch
       minimums (≥40 entries, ≥12 bodies of which ≥3 carry a
       history/culture/argument theme, 4 learn pages, 2 tutorials, 2
       posts, ≥12 deltas, ≥20 curated tools each linking a resolvable wiki
@@ -379,14 +379,14 @@ minimum). Specs referenced below live in
       present, all reviews recorded with non-empty `would-cite`, build
       passing). Verify: the script exits 0 and its printed counts match
       reality when spot-checked by hand.
-- [ ] 6.7 Curate 20 tool listings (fresh research, not mined from the old
+- [x] 6.7 Curate 20 tool listings (fresh research, not mined from the old
       tree), each with a live-verified URL, `last_verified` set, and a
       link to a wiki entry per specs/directory — creating a stub entry for
       any listed tool not already among the 40 (stubs are data-only and
       cheap; they count toward the entry total). Verify: verify-launch
       reports ≥20 with every listing's entry link resolving, and the
       Pulse's link check passes them.
-- [ ] 6.8 Curate ≥12 Impossible → Routine deltas (widened from 8 per
+- [x] 6.8 Curate ≥12 Impossible → Routine deltas (widened from 8 per
       review — launch stock is the cheapest place to buy the reaction
       while build-phase abundance lasts) — each end dated and sourced live
       at authoring time (research-result end and commodity end), reviewed
