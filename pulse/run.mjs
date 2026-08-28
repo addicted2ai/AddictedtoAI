@@ -151,9 +151,16 @@ log.step(
 // ---- 5. rolling link check ----------------------------------------------
 const links = corpusLinks(corpus);
 const linkResult = await rollingLinkCheck(root, links, { offline: options.offline });
+// "broken" is reserved for a failure confirmed across two consecutive checks
+// (CONFIRM_AFTER_FAILURES); a first failure is reported separately rather than
+// summed into it, so the line never overstates what the check established.
+const confirmedBroken = linkResult.broken.filter((b) => b.state === 'broken').length;
+const failingOnce = linkResult.broken.length - confirmedBroken;
 log.step(
   'link check',
-  `${linkResult.total} link(s) known, ${linkResult.due} due, ${linkResult.checked} checked, ${linkResult.broken.length} broken` +
+  `${linkResult.total} link(s) known, ${linkResult.due} due, ${linkResult.checked} checked, ${confirmedBroken} broken` +
+    (failingOnce ? `, ${failingOnce} failing once (not yet confirmed)` : '') +
+    (linkResult.declined ? `, ${linkResult.declined} declined our user-agent (no verdict)` : '') +
     (linkResult.excluded ? `, ${linkResult.excluded} loopback/private/reserved host(s) not checkable` : ''),
 );
 

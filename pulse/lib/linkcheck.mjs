@@ -26,6 +26,60 @@ const USER_AGENT = 'AddictedtoAI-Pulse/0.1 (+https://www.addictedtoai.net)';
 
 /**
  * ---------------------------------------------------------------------------
+ * How many consecutive failures before a failure is a fact.
+ *
+ * `specs/directory` marks a listing "could not verify" once its URL "fails
+ * across two consecutive Pulse checks" — one flaky timeout is not a dead tool.
+ * That reasoning is about evidence, not about listings, so it holds identically
+ * for any link: a 503 from an overloaded host, a slow response past the 15s
+ * budget, a one-off DNS failure. One observation cannot distinguish those from
+ * a dead resource; two consecutive ones, a rolling interval apart, can.
+ *
+ * Before this, a link filed a `broken-link` repair at rank 90 — the highest
+ * rank in the queue — on its FIRST failure, while a listing on the same URL
+ * waited for its second. The Desk would select the flake ahead of every real
+ * item, and if the flake had healed by then no job could repair it: the same
+ * unrepairable-top-of-queue shape as addictedtoai-5hn.
+ *
+ * Exported so the listing rule and the link rule are literally the same
+ * number, not two numbers that happen to agree today.
+ * ---------------------------------------------------------------------------
+ */
+export const CONFIRM_AFTER_FAILURES = 2;
+
+/** Has this URL failed often enough for "broken" to be a claim about the URL? */
+export function isConfirmedBroken(consecutiveFailures) {
+  return (consecutiveFailures ?? 0) >= CONFIRM_AFTER_FAILURES;
+}
+
+/**
+ * ---------------------------------------------------------------------------
+ * Statuses that answer a different question than the one we asked.
+ *
+ * The check asks "is this resource still there?". A 401, 403, 407 or 429 does
+ * not answer it. The host resolved, accepted the connection, routed the path
+ * and replied — every one of which is evidence the resource exists — and then
+ * declined *this requester*: an unknown crawler user-agent, an API endpoint
+ * wanting a key, a rate limit, a proxy. A reader with a browser, or a reader
+ * with credentials, gets the page.
+ *
+ * Treating that as "broken" states something the check did not observe, and
+ * files a repair job with nothing to repair: the URL is right, the content is
+ * right, and no edit to this site changes the answer. So these are recorded as
+ * a non-verdict (`ok: null`) — neither confirmed alive nor counted as a
+ * failure. `last_ok` is not advanced, because the resource was not verified;
+ * `consecutive_failures` is carried through unchanged, because no evidence
+ * about the resource arrived either way.
+ *
+ * 404, 410, every other 4xx, and all 5xx remain failures. A dead link is still
+ * a dead link, and transience is handled by CONFIRM_AFTER_FAILURES above, not
+ * by forgiving the status.
+ * ---------------------------------------------------------------------------
+ */
+const DECLINED_STATUSES = new Set([401, 403, 407, 429]);
+
+/**
+ * ---------------------------------------------------------------------------
  * What counts as a link this check can have an opinion about.
  *
  * **This is not a relaxation of the check. It is the check's domain.**
@@ -129,18 +183,34 @@ export function saveLinkState(root, state) {
   writeJson(paths(root).linkcheck, state);
 }
 
-/** One URL. A HEAD that the server rejects as a method is retried as GET. */
+/**
+ * One URL. A HEAD that the server rejects as a method is retried as GET.
+ *
+ * Returns `ok: true` (resolves), `ok: false` (failed — see
+ * CONFIRM_AFTER_FAILURES before acting on one), or `ok: null` (the host
+ * declined this requester; no verdict — see DECLINED_STATUSES).
+ *
+ * Each request gets its OWN timeout. One shared `AbortSignal.timeout` made the
+ * 15s budget cover the HEAD and the retried GET together, so a slow-but-alive
+ * host that spent 14s on the HEAD had one second to answer the GET and was
+ * recorded as a timeout — the check manufacturing the failure it then reports.
+ */
 export async function checkUrl(url) {
-  const opts = {
-    redirect: 'follow',
-    headers: { 'user-agent': USER_AGENT },
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  };
+  const request = (method) =>
+    fetch(url, {
+      method,
+      redirect: 'follow',
+      headers: { 'user-agent': USER_AGENT },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
   try {
-    let res = await fetch(url, { ...opts, method: 'HEAD' });
-    if (res.status === 405 || res.status === 501 || res.status === 403) {
-      res = await fetch(url, { ...opts, method: 'GET' });
+    let res = await request('HEAD');
+    // Many hosts answer HEAD with a method error, or refuse it while serving
+    // GET happily, so a refusal is retried once before it is believed.
+    if (res.status === 405 || res.status === 501 || DECLINED_STATUSES.has(res.status)) {
+      res = await request('GET');
     }
+    if (DECLINED_STATUSES.has(res.status)) return { ok: null, status: res.status, error: null };
     return { ok: res.status < 400, status: res.status, error: null };
   } catch (err) {
     return { ok: false, status: null, error: `${err.name}: ${err.message}` };
@@ -194,13 +264,18 @@ export async function rollingLinkCheck(root, allLinks, { offline = false, max = 
     for (const link of due.slice(0, max)) {
       const res = await checkUrl(link.url);
       const prev = state.urls[link.url] ?? {};
+      // `ok: null` is a non-verdict, not a failure: it neither advances
+      // `last_ok` nor increments the failure count. `last_checked` DOES
+      // advance, so a host that rate-limits us is not re-hit every single run
+      // — which would be both rude and no more informative.
+      const declined = res.ok === null;
       state.urls[link.url] = {
         last_checked: day,
         status: res.status,
         ok: res.ok,
         error: res.error,
-        last_ok: res.ok ? day : (prev.last_ok ?? null),
-        consecutive_failures: res.ok ? 0 : (prev.consecutive_failures ?? 0) + 1,
+        last_ok: res.ok === true ? day : (prev.last_ok ?? null),
+        consecutive_failures: declined ? (prev.consecutive_failures ?? 0) : res.ok ? 0 : (prev.consecutive_failures ?? 0) + 1,
       };
       checked.push({ url: link.url, ...res });
     }
@@ -208,23 +283,36 @@ export async function rollingLinkCheck(root, allLinks, { offline = false, max = 
 
   saveLinkState(root, state);
 
+  // `ok === false` already excludes the declined non-verdicts (`ok === null`).
+  // Both failure states are reported so staleness cannot hide; the queue files
+  // work only for the confirmed ones, exactly as it does for listings.
   const broken = links
     .map((l) => ({ ...l, record: state.urls[l.url] }))
     .filter((l) => l.record && l.record.ok === false)
-    .map((l) => ({
-      url: l.url,
-      status: l.record.status,
-      error: l.record.error,
-      consecutive_failures: l.record.consecutive_failures ?? 1,
-      last_checked: l.record.last_checked,
-      last_ok: l.record.last_ok ?? null,
-      cited_by: l.cited_by,
-    }))
+    .map((l) => {
+      const failures = l.record.consecutive_failures ?? 1;
+      return {
+        url: l.url,
+        status: l.record.status,
+        error: l.record.error,
+        consecutive_failures: failures,
+        // Mirrors the listing states in freshness.mjs, from the same constant.
+        state: isConfirmedBroken(failures) ? 'broken' : 'failing-once',
+        last_checked: l.record.last_checked,
+        last_ok: l.record.last_ok ?? null,
+        cited_by: l.cited_by,
+      };
+    })
     .sort((a, b) => (a.url < b.url ? -1 : 1));
+
+  // Counted, not hidden — the same discipline as `excluded`: a host declining
+  // our user-agent should be visible in the derived data, never silently gone.
+  const declined = links.filter((l) => state.urls[l.url]?.ok === null).length;
 
   return {
     total: links.length,
     excluded,
+    declined,
     due: due.length,
     checked: checked.length,
     pruned,

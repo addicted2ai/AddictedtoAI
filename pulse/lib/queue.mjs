@@ -27,6 +27,7 @@
 
 import { paths, readJson, writeJson } from './core.mjs';
 import { uninterpretedChanges } from './diff.mjs';
+import { isConfirmedBroken } from './linkcheck.mjs';
 
 export const QUEUE_CAP = 50;
 export const WANT_ELIGIBLE_AT = 3; // specs/wiki: "a name wanted by 3 or more distinct pages"
@@ -100,6 +101,14 @@ export function computeQueue(root, { freshness, changesFile, wants = readWants(r
   }
 
   for (const l of freshness.broken_links ?? []) {
+    // A single failure is not yet a broken link — one flaky timeout is not a
+    // dead resource, the same reasoning specs/directory already applies to a
+    // listing below (`listing-could-not-verify` waits for the second failure
+    // too). `broken-link` is the highest-ranked repair in the queue after a
+    // refusing source, so filing it on one observation put an item the Desk
+    // selects first, and that may have healed by the time it is selected, at
+    // the top of the queue. See CONFIRM_AFTER_FAILURES in linkcheck.mjs.
+    if (!isConfirmedBroken(l.consecutive_failures)) continue;
     items.push(
       item(
         'repair',

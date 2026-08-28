@@ -24,7 +24,7 @@
 
 import { daysSince, paths, today, writeJson } from './core.mjs';
 import { volatilityInterval } from './corpus.mjs';
-import { LISTING_INTERVAL_DAYS } from './linkcheck.mjs';
+import { CONFIRM_AFTER_FAILURES, LISTING_INTERVAL_DAYS, isConfirmedBroken } from './linkcheck.mjs';
 
 export function computeFreshness(root, { registry, corpus, derived, linkResult }) {
   const p = paths(root);
@@ -86,9 +86,10 @@ export function computeFreshness(root, { registry, corpus, derived, linkResult }
       if (l.discontinued) state = 'discontinued';
       // specs/directory: the could-not-verify marker appears once the URL has
       // failed across two consecutive Pulse checks — one flaky timeout is not
-      // a dead tool.
-      else if (failures >= 2) state = 'could-not-verify';
-      else if (failures === 1) state = 'failing-once';
+      // a dead tool. The constant is shared with the broken-link rule so the
+      // two cannot drift apart; see CONFIRM_AFTER_FAILURES in linkcheck.mjs.
+      else if (isConfirmedBroken(failures)) state = 'could-not-verify';
+      else if (failures > 0) state = 'failing-once';
       else if (age === null) state = 'unverified';
       else if (age > LISTING_INTERVAL_DAYS) state = 'due';
       return {
@@ -139,9 +140,14 @@ export function computeFreshness(root, { registry, corpus, derived, linkResult }
       // Loopback/private/reserved hosts the check cannot speak to — counted,
       // not hidden, so an exclusion silently swallowing links is visible.
       excluded: linkResult?.excluded ?? 0,
+      // Hosts that answered but declined our user-agent (401/403/407/429).
+      // Not a verdict about the link, and counted for the same reason
+      // `excluded` is: nothing should leave the check invisibly.
+      declined: linkResult?.declined ?? 0,
       due: linkResult?.due ?? 0,
       checked: linkResult?.checked ?? 0,
       interval_days: 30,
+      confirm_after_failures: CONFIRM_AFTER_FAILURES,
     },
     sources,
     vanished_feed_rows: derived?.vanished ?? [],

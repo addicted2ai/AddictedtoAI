@@ -45,12 +45,83 @@ function globMd(dir) {
     .sort();
 }
 
-/** Every external http(s) URL a file references, from front matter and body. */
+/**
+ * ---------------------------------------------------------------------------
+ * Code is not citation.
+ *
+ * **This narrows the link check to what it can be right about; it does not
+ * weaken it.** A URL inside a code span or a fenced block is not a link on the
+ * rendered page — GFM autolinks a bare URL in prose, but inside backticks it
+ * renders as literal monospace text that no reader can click. It is a command,
+ * an endpoint a script calls, a quoted `<meta>` tag, or a specimen. The check
+ * asks "does a link this site offers still resolve?", and about a string the
+ * reader cannot follow there is no such question to answer.
+ *
+ * This is the same boundary `specs/wiki` already draws for the alias linker —
+ * "it never operates inside code blocks, headings, or existing links" — and
+ * the same one `lib/linker.mjs` enforces by skipping `code` and `pre`.
+ *
+ * The corpus proves the need rather than merely suggesting it.
+ * `content/blog/reference-urls-that-still-return-200.md` quotes a transcript
+ * of twelve fetches, and three of those URLs are reported dead *by the post
+ * itself*: `chat.lmsys.org` (ENOTFOUND), `www.paperswithcode.com` (TLS
+ * failure), `huggingface.co/imagenet-1k/datasets` (404). They are evidence,
+ * quoted as evidence. Scanned as links they become three permanent rank-90
+ * repair jobs that no job can close without deleting the post's proof —
+ * addictedtoai-5hn's deadlock again, three times over, already in the tree.
+ * The same file cites five URLs in prose, and those stay checked.
+ *
+ * Citations are unaffected: they live in front-matter `source_url` fields
+ * (specs/wiki: a `cited` fact needs a `source_url` and an `accessed` date) and
+ * in prose links. Front matter is walked whole, below, and never stripped.
+ *
+ * Indented (four-space) code blocks are deliberately NOT stripped: no URL in
+ * the corpus sits in one, and the indentation is ambiguous with list
+ * continuation, where swallowing a real prose link would be the worse error.
+ * ---------------------------------------------------------------------------
+ */
+
+/**
+ * A markdown body with fenced blocks and inline code spans blanked out, line
+ * count preserved. Tolerant by design (this whole module is): unterminated
+ * fences and stray backticks degrade to "treat less as code", never to a throw.
+ */
+export function stripCode(markdown) {
+  if (typeof markdown !== 'string') return '';
+  const out = [];
+  let fence = null; // the opening run of ``` or ~~~, while inside one
+  for (const line of markdown.split('\n')) {
+    // Block level first, exactly as CommonMark parses it: a fence is decided
+    // before any inline span on the line is considered.
+    const marker = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+    if (fence) {
+      // A closing fence is the same character, at least as long, nothing after.
+      if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && marker[2].trim() === '') {
+        fence = null;
+      }
+      out.push('');
+      continue;
+    }
+    if (marker) {
+      fence = marker[1];
+      out.push('');
+      continue;
+    }
+    // Inline spans: a run of n backticks closed by a run of exactly n.
+    out.push(line.replace(/(`+)(?:[^`]|(?!\1)`)*?\1/g, ' '));
+  }
+  return out.join('\n');
+}
+
+/**
+ * Every external http(s) URL a file references, from front matter and the
+ * body's prose. Code — fenced or inline — is not scanned; see above.
+ */
 export function extractLinks(file) {
   const found = new Set();
   const scan = (text) => {
     if (typeof text !== 'string') return;
-    for (const m of text.matchAll(/https?:\/\/[^\s"'<>)\]}]+/g)) {
+    for (const m of text.matchAll(/https?:\/\/[^\s"'`<>)\]}]+/g)) {
       found.add(m[0].replace(/[.,;:]+$/, ''));
     }
   };
@@ -60,7 +131,7 @@ export function extractLinks(file) {
     else if (v && typeof v === 'object') Object.values(v).forEach(walk);
   };
   walk(file.data);
-  scan(file.body);
+  scan(stripCode(file.body));
   return [...found].sort();
 }
 
