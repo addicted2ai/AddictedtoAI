@@ -1,18 +1,103 @@
+import { getSite } from '../lib/site.mjs';
+import {
+  renderChangedFeed,
+  renderLifecycleStrip,
+  renderLatest,
+  renderCatalogGlance,
+  renderDoors,
+} from '../lib/render/home.mjs';
+import { renderDeltaStrip } from '../lib/render/delta.mjs';
+
 /**
- * Home page — SCAFFOLD PLACEHOLDER (task 1.1).
+ * Home (task 4.7, specs/site).
  *
- * The real home page is task 4.7: a derived view leading with the changed
- * feed from `data/changes.jsonl`, a recent-deprecations strip, the latest
- * post and tutorial, and doors into all five surfaces — content above the
- * fold at 1440x900 and 390x844. Replace this file wholesale there.
+ * No hero. The first thing under the header is the first dated line of the
+ * changed feed, with the lifecycle strip and the catalog's shape beside it —
+ * because *"the home page serves someone already following AI daily"*, and
+ * what that person came for is what moved since yesterday.
  *
- * The string below is what task 1.1's verification greps for.
+ * Every region is derived: the feed from `data/changes.jsonl`, the strip and
+ * the glance from the Pulse's tables, the doors' counts from the corpus. On a
+ * day when no model is invoked anywhere, this page still changes if the world
+ * did.
  */
-export default function HomePage() {
+
+export const metadata = {
+  title: 'AddictedtoAI — what changed in AI, dated and sourced',
+  description:
+    'A dated feed of what changed in AI — prices, releases, retirements — with the source on every line.',
+};
+
+export default async function HomePage() {
+  const site = await getSite();
+
   return (
-    <main>
-      <h1>AddictedtoAI</h1>
-      <p>Scaffold placeholder — the site is being rebuilt.</p>
-    </main>
+    <>
+      <div className="home-grid">
+        <div className="home-lead">
+          <section className="section" aria-labelledby="changed">
+            <h1 className="section-title" id="changed">
+              What changed
+            </h1>
+            <div dangerouslySetInnerHTML={{ __html: renderChangedFeed(site.changes, { limit: 24 }) }} />
+            <p className="sort-note">
+              Observed mechanically from public sources; every line carries the source it was read
+              from. <a href="/catalog/changed">The last 30 days as a table</a> ·{' '}
+              <a href="/feeds/changes.xml">RSS</a>
+            </p>
+          </section>
+        </div>
+
+        <aside className="home-side" aria-label="Today's shape">
+          <section className="section" aria-labelledby="glance">
+            <h2 className="section-title" id="glance">
+              Catalog
+            </h2>
+            <div dangerouslySetInnerHTML={{ __html: renderCatalogGlance(site) }} />
+          </section>
+
+          <section className="section" aria-labelledby="lifecycle">
+            <h2 className="section-title" id="lifecycle">
+              Deprecated &amp; retired
+            </h2>
+            <div dangerouslySetInnerHTML={{ __html: renderLifecycleStrip(site.deprecations) }} />
+            <p className="sort-note">
+              <a href="/catalog/deprecations">The whole record</a> — kept after the vendor deletes
+              theirs.
+            </p>
+          </section>
+
+          <section className="section" aria-labelledby="latest">
+            <h2 className="section-title" id="latest">
+              Latest
+            </h2>
+            <div dangerouslySetInnerHTML={{ __html: renderLatest(site) }} />
+          </section>
+        </aside>
+      </div>
+
+      <section className="section" aria-labelledby="showpiece">
+        <h2 className="section-title" id="showpiece">
+          Impossible → Routine
+        </h2>
+        <p className="page-lede">
+          Capabilities that were research results, and the date each became something anyone could
+          buy. Both ends dated, both ends sourced.
+        </p>
+        <div dangerouslySetInnerHTML={{ __html: renderDeltaStrip(site.deltas, 2) }} />
+        <p className="sort-note">
+          <a href="/impossible-routine">
+            {site.deltas.length > 0 ? `All ${site.deltas.length} dated pairs` : 'The surface, and how a pair is built'}
+          </a>
+        </p>
+      </section>
+
+      <section className="section" aria-labelledby="doors">
+        <h2 className="section-title" id="doors">
+          Everything here
+        </h2>
+        <div dangerouslySetInnerHTML={{ __html: renderDoors(site) }} />
+      </section>
+    </>
   );
 }

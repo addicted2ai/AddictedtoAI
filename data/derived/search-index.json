@@ -1,0 +1,3886 @@
+{
+  "generated_from": "content/ at build time — names and titles only, never body text",
+  "count": 388,
+  "docs": [
+    {
+      "u": "/wiki/model/aion-labs-aion-2-0",
+      "t": "AionLabs: Aion-2.0",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/aion-labs-aion-2-0",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/aion-labs-aion-3-0",
+      "t": "AionLabs: Aion-3.0",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/aion-labs-aion-3-0",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/aion-labs-aion-3-0-mini",
+      "t": "AionLabs: Aion-3.0-Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/aion-labs-aion-3-0-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/aion-labs-aion-rp-llama-3-1-8b",
+      "t": "AionLabs: Aion-RP 1.0 (8B)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/aion-labs-aion-rp-llama-3-1-8b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/allenai-olmo-3-32b-think",
+      "t": "AllenAI: Olmo 3 32B Think",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/allenai-olmo-3-32b-think",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/amazon-nova-2-lite-v1",
+      "t": "Amazon: Nova 2 Lite",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/amazon-nova-2-lite-v1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/amazon-nova-lite-v1",
+      "t": "Amazon: Nova Lite 1.0",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/amazon-nova-lite-v1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/amazon-nova-micro-v1",
+      "t": "Amazon: Nova Micro 1.0",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/amazon-nova-micro-v1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/amazon-nova-premier-v1",
+      "t": "Amazon: Nova Premier 1.0",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/amazon-nova-premier-v1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/amazon-nova-pro-v1",
+      "t": "Amazon: Nova Pro 1.0",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/amazon-nova-pro-v1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthracite-org-magnum-v4-72b",
+      "t": "Magnum v4 72B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthracite-org-magnum-v4-72b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-3-haiku",
+      "t": "Anthropic: Claude 3 Haiku",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-3-haiku",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-fable-5",
+      "t": "Anthropic: Claude Fable 5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-fable-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-fable-5-batch",
+      "t": "Anthropic: Claude Fable 5 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-fable-5-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-fable-latest",
+      "t": "Anthropic: Claude Fable Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-fable-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-haiku-4-5",
+      "t": "Anthropic: Claude Haiku 4.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-haiku-4-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-haiku-4-5-batch",
+      "t": "Anthropic: Claude Haiku 4.5 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-haiku-4-5-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-haiku-latest",
+      "t": "Anthropic Claude Haiku Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-haiku-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4",
+      "t": "Anthropic: Claude Opus 4",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-1",
+      "t": "Anthropic: Claude Opus 4.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-1-batch",
+      "t": "Anthropic: Claude Opus 4.1 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-1-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-5",
+      "t": "Anthropic: Claude Opus 4.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-5-batch",
+      "t": "Anthropic: Claude Opus 4.5 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-5-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-6",
+      "t": "Anthropic: Claude Opus 4.6",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-6",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-6-batch",
+      "t": "Anthropic: Claude Opus 4.6 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-6-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-7",
+      "t": "Anthropic: Claude Opus 4.7",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-7",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-7-batch",
+      "t": "Anthropic: Claude Opus 4.7 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-7-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-7-fast",
+      "t": "Anthropic: Claude Opus 4.7 (Fast)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-7-fast",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-8",
+      "t": "Anthropic: Claude Opus 4.8",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-8",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-8-batch",
+      "t": "Anthropic: Claude Opus 4.8 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-8-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-4-8-fast",
+      "t": "Anthropic: Claude Opus 4.8 (Fast)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-4-8-fast",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-5",
+      "t": "Claude Opus 5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-5-batch",
+      "t": "Claude Opus 5 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-5-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-5-fast",
+      "t": "Claude Opus 5 (Fast)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-5-fast",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-opus-latest",
+      "t": "Anthropic: Claude Opus Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-opus-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-sonnet-4",
+      "t": "Anthropic: Claude Sonnet 4",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-sonnet-4",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-sonnet-4-5",
+      "t": "Anthropic: Claude Sonnet 4.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-sonnet-4-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-sonnet-4-5-batch",
+      "t": "Anthropic: Claude Sonnet 4.5 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-sonnet-4-5-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-sonnet-4-6",
+      "t": "Anthropic: Claude Sonnet 4.6",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-sonnet-4-6",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-sonnet-4-6-batch",
+      "t": "Anthropic: Claude Sonnet 4.6 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-sonnet-4-6-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-sonnet-5",
+      "t": "Anthropic: Claude Sonnet 5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-sonnet-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-sonnet-5-batch",
+      "t": "Anthropic: Claude Sonnet 5 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-sonnet-5-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-sonnet-latest",
+      "t": "Anthropic Claude Sonnet Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-sonnet-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/arcee-ai-trinity-large-thinking",
+      "t": "Arcee AI: Trinity Large Thinking",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/arcee-ai-trinity-large-thinking",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/arcee-ai-virtuoso-large",
+      "t": "Arcee AI: Virtuoso Large",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/arcee-ai-virtuoso-large",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/baidu-ernie-4-5-vl-424b-a47b",
+      "t": "Baidu: ERNIE 4.5 VL 424B A47B ",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/baidu-ernie-4-5-vl-424b-a47b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/bytedance-seed-seed-1-6",
+      "t": "ByteDance Seed: Seed 1.6",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/bytedance-seed-seed-1-6",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/bytedance-seed-seed-1-6-flash",
+      "t": "ByteDance Seed: Seed 1.6 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/bytedance-seed-seed-1-6-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/bytedance-seed-seed-2-0-code",
+      "t": "ByteDance Seed: Seed-2.0-Code",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/bytedance-seed-seed-2-0-code",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/bytedance-seed-seed-2-0-lite",
+      "t": "ByteDance Seed: Seed-2.0-Lite",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/bytedance-seed-seed-2-0-lite",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/bytedance-seed-seed-2-0-mini",
+      "t": "ByteDance Seed: Seed-2.0-Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/bytedance-seed-seed-2-0-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/bytedance-seed-seed-2-1-turbo",
+      "t": "ByteDance Seed: Seed 2.1 Turbo",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/bytedance-seed-seed-2-1-turbo",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/bytedance-ui-tars-1-5-7b",
+      "t": "ByteDance: UI-TARS 7B ",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/bytedance-ui-tars-1-5-7b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/cognitivecomputations-dolphin-mistral-24b-venice-edition",
+      "t": "Venice: Uncensored",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/cognitivecomputations-dolphin-mistral-24b-venice-edition",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/cohere-command-a",
+      "t": "Cohere: Command A",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/cohere-command-a",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/cohere-command-r-08-2024",
+      "t": "Cohere: Command R (08-2024)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/cohere-command-r-08-2024",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/cohere-command-r-plus-08-2024",
+      "t": "Cohere: Command R+ (08-2024)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/cohere-command-r-plus-08-2024",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/cohere-command-r7b-12-2024",
+      "t": "Cohere: Command R7B (12-2024)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/cohere-command-r7b-12-2024",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/cohere-north-mini-code-free",
+      "t": "Cohere: North Mini Code (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/cohere-north-mini-code-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-chat",
+      "t": "DeepSeek: DeepSeek V3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-chat",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-chat-v3-0324",
+      "t": "DeepSeek: DeepSeek V3 0324",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-chat-v3-0324",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-chat-v3-1",
+      "t": "DeepSeek: DeepSeek V3.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-chat-v3-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-r1",
+      "t": "DeepSeek: R1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-r1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-r1-0528",
+      "t": "DeepSeek: R1 0528",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-r1-0528",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-r1-distill-llama-70b",
+      "t": "DeepSeek: R1 Distill Llama 70B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-r1-distill-llama-70b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v3-1-terminus",
+      "t": "DeepSeek: DeepSeek V3.1 Terminus",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v3-1-terminus",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v3-2",
+      "t": "DeepSeek: DeepSeek V3.2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v3-2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v3-2-exp",
+      "t": "DeepSeek: DeepSeek V3.2 Exp",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v3-2-exp",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v4-flash",
+      "t": "DeepSeek: DeepSeek V4 Flash 0423",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v4-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v4-flash-0731",
+      "t": "DeepSeek: DeepSeek V4 Flash 0731",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v4-flash-0731",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v4-flash-latest",
+      "t": "DeepSeek V4 Flash Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v4-flash-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v4-flash-vision-exp",
+      "t": "DeepSeek: DeepSeek V4 Flash Vision Exp",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v4-flash-vision-exp",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v4-pro",
+      "t": "DeepSeek: DeepSeek V4 Pro 0423",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v4-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v4-pro-0813",
+      "t": "DeepSeek: DeepSeek V4 Pro 0813",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v4-pro-0813",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/dots-studio-dots-3-note-preview-free",
+      "t": "Dots Studio: Dots3-Note Preview (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "deprecated",
+      "i": "model/dots-studio-dots-3-note-preview-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-2-5-flash",
+      "t": "Google: Gemini 2.5 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-2-5-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-2-5-flash-batch",
+      "t": "Google: Gemini 2.5 Flash (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-2-5-flash-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-2-5-flash-image",
+      "t": "Google: Nano Banana (Gemini 2.5 Flash Image)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-2-5-flash-image",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-2-5-flash-lite",
+      "t": "Google: Gemini 2.5 Flash Lite",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-2-5-flash-lite",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-2-5-flash-lite-batch",
+      "t": "Google: Gemini 2.5 Flash Lite (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-2-5-flash-lite-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-2-5-pro",
+      "t": "Google: Gemini 2.5 Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-2-5-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-2-5-pro-batch",
+      "t": "Google: Gemini 2.5 Pro (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-2-5-pro-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-2-5-pro-preview",
+      "t": "Google: Gemini 2.5 Pro Preview 06-05",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-2-5-pro-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-2-5-pro-preview-05-06",
+      "t": "Google: Gemini 2.5 Pro Preview 05-06",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-2-5-pro-preview-05-06",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-1-flash-image",
+      "t": "Google: Nano Banana 2 (Gemini 3.1 Flash Image)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-1-flash-image",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-1-flash-image-preview",
+      "t": "Google: Nano Banana 2 (Gemini 3.1 Flash Image Preview)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-1-flash-image-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-1-flash-lite",
+      "t": "Google: Gemini 3.1 Flash Lite",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-1-flash-lite",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-1-flash-lite-batch",
+      "t": "Google: Gemini 3.1 Flash Lite (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-1-flash-lite-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-1-flash-lite-image",
+      "t": "Google: Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-1-flash-lite-image",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-1-flash-lite-preview",
+      "t": "Google: Gemini 3.1 Flash Lite Preview",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-1-flash-lite-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-1-pro-preview",
+      "t": "Google: Gemini 3.1 Pro Preview",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-1-pro-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-1-pro-preview-batch",
+      "t": "Google: Gemini 3.1 Pro Preview (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-1-pro-preview-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-1-pro-preview-customtools",
+      "t": "Google: Gemini 3.1 Pro Preview Custom Tools",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-1-pro-preview-customtools",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-5-flash",
+      "t": "Google: Gemini 3.5 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-5-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-5-flash-batch",
+      "t": "Google: Gemini 3.5 Flash (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-5-flash-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-5-flash-lite",
+      "t": "Google: Gemini 3.5 Flash Lite",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-5-flash-lite",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-5-flash-lite-batch",
+      "t": "Google: Gemini 3.5 Flash Lite (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-5-flash-lite-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-6-flash",
+      "t": "Google: Gemini 3.6 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-6-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-6-flash-batch",
+      "t": "Google: Gemini 3.6 Flash (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-6-flash-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-7-flash",
+      "t": "Google: Gemini 3.7 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-7-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-7-flash-batch",
+      "t": "Google: Gemini 3.7 Flash (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-7-flash-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-flash-preview",
+      "t": "Google: Gemini 3 Flash Preview",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-flash-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-flash-preview-batch",
+      "t": "Google: Gemini 3 Flash Preview (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-flash-preview-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-pro-image",
+      "t": "Google: Nano Banana Pro (Gemini 3 Pro Image)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-pro-image",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-3-pro-image-preview",
+      "t": "Google: Nano Banana Pro (Gemini 3 Pro Image Preview)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-3-pro-image-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-flash-latest",
+      "t": "Google Gemini Flash Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-flash-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemini-pro-latest",
+      "t": "Google Gemini Pro Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemini-pro-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemma-2-27b-it",
+      "t": "Google: Gemma 2 27B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemma-2-27b-it",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemma-3-12b-it",
+      "t": "Google: Gemma 3 12B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemma-3-12b-it",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemma-3-27b-it",
+      "t": "Google: Gemma 3 27B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemma-3-27b-it",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemma-3-4b-it",
+      "t": "Google: Gemma 3 4B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemma-3-4b-it",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemma-4-26b-a4b-it",
+      "t": "Google: Gemma 4 26B A4B ",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemma-4-26b-a4b-it",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemma-4-26b-a4b-it-free",
+      "t": "Google: Gemma 4 26B A4B  (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemma-4-26b-a4b-it-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemma-4-31b-it",
+      "t": "Google: Gemma 4 31B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemma-4-31b-it",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-gemma-4-31b-it-free",
+      "t": "Google: Gemma 4 31B (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemma-4-31b-it-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-lyria-3-clip-preview",
+      "t": "Google: Lyria 3 Clip Preview",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-lyria-3-clip-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/google-lyria-3-pro-preview",
+      "t": "Google: Lyria 3 Pro Preview",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-lyria-3-pro-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/gryphe-mythomax-l2-13b",
+      "t": "MythoMax 13B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/gryphe-mythomax-l2-13b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/ibm-granite-granite-4-0-h-micro",
+      "t": "IBM: Granite 4.0 Micro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/ibm-granite-granite-4-0-h-micro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/ibm-granite-granite-4-1-8b",
+      "t": "IBM: Granite 4.1 8B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/ibm-granite-granite-4-1-8b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/inception-mercury-2",
+      "t": "Inception: Mercury 2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/inception-mercury-2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/inclusionai-ling-3-0-flash",
+      "t": "Ling-3.0-flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/inclusionai-ling-3-0-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/inclusionai-ling-3-0-flash-fin-free",
+      "t": "Ling 3.0 Flash Fin (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/inclusionai-ling-3-0-flash-fin-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/kwaipilot-kat-coder-air-v2-5",
+      "t": "Kwaipilot: KAT-Coder-Air V2.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/kwaipilot-kat-coder-air-v2-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/kwaipilot-kat-coder-pro-v2",
+      "t": "Kwaipilot: KAT-Coder-Pro V2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/kwaipilot-kat-coder-pro-v2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/kwaipilot-kat-coder-pro-v2-5",
+      "t": "Kwaipilot: KAT-Coder-Pro V2.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/kwaipilot-kat-coder-pro-v2-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/liquid-lfm-2-5-2-6b-free",
+      "t": "LiquidAI: LFM2.5-2.6B (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/liquid-lfm-2-5-2-6b-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mancer-weaver",
+      "t": "Mancer: Weaver (alpha)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mancer-weaver",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meituan-longcat-2-0",
+      "t": "Meituan: LongCat 2.0",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meituan-longcat-2-0",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-llama-llama-3-1-70b-instruct",
+      "t": "Meta: Llama 3.1 70B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-llama-llama-3-1-70b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-llama-llama-3-1-8b-instruct",
+      "t": "Meta: Llama 3.1 8B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-llama-llama-3-1-8b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-llama-llama-3-2-1b-instruct",
+      "t": "Meta: Llama 3.2 1B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-llama-llama-3-2-1b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-llama-llama-3-2-3b-instruct",
+      "t": "Meta: Llama 3.2 3B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-llama-llama-3-2-3b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-llama-llama-3-3-70b-instruct",
+      "t": "Meta: Llama 3.3 70B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-llama-llama-3-3-70b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-llama-llama-4-maverick",
+      "t": "Meta: Llama 4 Maverick",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-llama-llama-4-maverick",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-llama-llama-4-scout",
+      "t": "Meta: Llama 4 Scout",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-llama-llama-4-scout",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-llama-llama-guard-4-12b",
+      "t": "Meta: Llama Guard 4 12B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-llama-llama-guard-4-12b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-muse-glimmer-30b",
+      "t": "Meta: Muse Glimmer 30B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-muse-glimmer-30b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-muse-spark-1-1",
+      "t": "Meta: Muse Spark 1.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-muse-spark-1-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-muse-spark-1-2",
+      "t": "Meta: Muse Spark 1.2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-muse-spark-1-2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/meta-muse-spark-1-2-contributor",
+      "t": "Meta: Muse Spark 1.2 Contributor",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-muse-spark-1-2-contributor",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/microsoft-phi-4",
+      "t": "Microsoft: Phi 4",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/microsoft-phi-4",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/microsoft-wizardlm-2-8x22b",
+      "t": "WizardLM-2 8x22B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/microsoft-wizardlm-2-8x22b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-01",
+      "t": "MiniMax: MiniMax-01",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-01",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-m1",
+      "t": "MiniMax: MiniMax M1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-m1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-m2",
+      "t": "MiniMax: MiniMax M2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-m2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-m2-1",
+      "t": "MiniMax: MiniMax M2.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-m2-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-m2-5",
+      "t": "MiniMax: MiniMax M2.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-m2-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-m2-7",
+      "t": "MiniMax: MiniMax M2.7",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-m2-7",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-m2-7-free",
+      "t": "MiniMax: MiniMax M2.7 (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-m2-7-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-m2-her",
+      "t": "MiniMax: MiniMax M2-her",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-m2-her",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-m3",
+      "t": "MiniMax: MiniMax M3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-m3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-m3-batch",
+      "t": "MiniMax: MiniMax M3 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-m3-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/minimax-minimax-m3-free",
+      "t": "MiniMax: MiniMax M3 (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/minimax-minimax-m3-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-codestral-2508",
+      "t": "Mistral: Codestral 2508",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-codestral-2508",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-codestral-2508-batch",
+      "t": "Mistral: Codestral 2508 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-codestral-2508-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-devstral-2512",
+      "t": "Mistral: Devstral 2 2512",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-devstral-2512",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-ministral-14b-2512",
+      "t": "Mistral: Ministral 3 14B 2512",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-ministral-14b-2512",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-ministral-3b-2512",
+      "t": "Mistral: Ministral 3 3B 2512",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-ministral-3b-2512",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-ministral-8b-2512",
+      "t": "Mistral: Ministral 3 8B 2512",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-ministral-8b-2512",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-ministral-8b-2512-batch",
+      "t": "Mistral: Ministral 3 8B 2512 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-ministral-8b-2512-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-large",
+      "t": "Mistral Large",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-large",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-large-2407",
+      "t": "Mistral Large 2407",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-large-2407",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-large-2512",
+      "t": "Mistral: Mistral Large 3 2512",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-large-2512",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-large-2512-batch",
+      "t": "Mistral: Mistral Large 3 2512 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-large-2512-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-medium-3",
+      "t": "Mistral: Mistral Medium 3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-medium-3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-medium-3-1",
+      "t": "Mistral: Mistral Medium 3.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-medium-3-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-medium-3-1-batch",
+      "t": "Mistral: Mistral Medium 3.1 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-medium-3-1-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-medium-3-5",
+      "t": "Mistral: Mistral Medium 3.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-medium-3-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-medium-3-5-batch",
+      "t": "Mistral: Mistral Medium 3.5 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-medium-3-5-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-nemo",
+      "t": "Mistral: Mistral Nemo",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-nemo",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-saba",
+      "t": "Mistral: Saba",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-saba",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-small-24b-instruct-2501",
+      "t": "Mistral: Mistral Small 3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-small-24b-instruct-2501",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-small-2603",
+      "t": "Mistral: Mistral Small 4",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-small-2603",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-small-2603-batch",
+      "t": "Mistral: Mistral Small 4 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-small-2603-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-small-3-1-24b-instruct",
+      "t": "Mistral: Mistral Small 3.1 24B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-small-3-1-24b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mistral-small-3-2-24b-instruct",
+      "t": "Mistral: Mistral Small 3.2 24B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mistral-small-3-2-24b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-mixtral-8x22b-instruct",
+      "t": "Mistral: Mixtral 8x22B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-mixtral-8x22b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/mistralai-voxtral-small-24b-2507",
+      "t": "Mistral: Voxtral Small 24B 2507",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/mistralai-voxtral-small-24b-2507",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/moonshotai-kimi-k2",
+      "t": "MoonshotAI: Kimi K2 0711",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/moonshotai-kimi-k2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/moonshotai-kimi-k2-0905",
+      "t": "MoonshotAI: Kimi K2 0905",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/moonshotai-kimi-k2-0905",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/moonshotai-kimi-k2-5",
+      "t": "MoonshotAI: Kimi K2.5",
+      "k": "entry",
+      "d": "model",
+      "s": "deprecated",
+      "i": "model/moonshotai-kimi-k2-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/moonshotai-kimi-k2-6",
+      "t": "MoonshotAI: Kimi K2.6",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/moonshotai-kimi-k2-6",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/moonshotai-kimi-k2-7-code",
+      "t": "MoonshotAI: Kimi K2.7 Code",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/moonshotai-kimi-k2-7-code",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/moonshotai-kimi-k2-thinking",
+      "t": "MoonshotAI: Kimi K2 Thinking",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/moonshotai-kimi-k2-thinking",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/moonshotai-kimi-k3",
+      "t": "MoonshotAI: Kimi K3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/moonshotai-kimi-k3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/moonshotai-kimi-latest",
+      "t": "MoonshotAI Kimi Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/moonshotai-kimi-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/morph-morph-v3-fast",
+      "t": "Morph: Morph V3 Fast",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/morph-morph-v3-fast",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/morph-morph-v3-large",
+      "t": "Morph: Morph V3 Large",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/morph-morph-v3-large",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nex-agi-nex-n2-mini",
+      "t": "Nex AGI: Nex-N2-Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nex-agi-nex-n2-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nex-agi-nex-n2-pro",
+      "t": "Nex AGI: Nex-N2-Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nex-agi-nex-n2-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nousresearch-hermes-3-llama-3-1-405b",
+      "t": "Nous: Hermes 3 405B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nousresearch-hermes-3-llama-3-1-405b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nousresearch-hermes-3-llama-3-1-70b",
+      "t": "Nous: Hermes 3 70B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nousresearch-hermes-3-llama-3-1-70b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nousresearch-hermes-4-405b",
+      "t": "Nous: Hermes 4 405B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nousresearch-hermes-4-405b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nousresearch-hermes-4-70b",
+      "t": "Nous: Hermes 4 70B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nousresearch-hermes-4-70b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-5-content-safety-free",
+      "t": "NVIDIA: Nemotron 3.5 Content Safety (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-5-content-safety-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-5-lightning",
+      "t": "NVIDIA: Nemotron 3.5 Lightning",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-5-lightning",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-5-lightning-free",
+      "t": "NVIDIA: Nemotron 3.5 Lightning (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-5-lightning-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-nano-30b-a3b",
+      "t": "NVIDIA: Nemotron 3 Nano 30B A3B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-nano-30b-a3b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning-free",
+      "t": "NVIDIA: Nemotron 3 Nano Omni (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-super-120b-a12b",
+      "t": "NVIDIA: Nemotron 3 Super",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-super-120b-a12b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-super-120b-a12b-free",
+      "t": "NVIDIA: Nemotron 3 Super (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-super-120b-a12b-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-ultra-550b-a55b",
+      "t": "NVIDIA: Nemotron 3 Ultra",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-ultra-550b-a55b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-ultra-550b-a55b-batch",
+      "t": "NVIDIA: Nemotron 3 Ultra (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-ultra-550b-a55b-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-ultra-550b-a55b-free",
+      "t": "NVIDIA: Nemotron 3 Ultra (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-ultra-550b-a55b-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-3-5-turbo",
+      "t": "OpenAI: GPT-3.5 Turbo",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-3-5-turbo",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-3-5-turbo-0613",
+      "t": "OpenAI: GPT-3.5 Turbo (older v0613)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-3-5-turbo-0613",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-3-5-turbo-16k",
+      "t": "OpenAI: GPT-3.5 Turbo 16k",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-3-5-turbo-16k",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-3-5-turbo-instruct",
+      "t": "OpenAI: GPT-3.5 Turbo Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-3-5-turbo-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4",
+      "t": "OpenAI: GPT-4",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4-1",
+      "t": "OpenAI: GPT-4.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4-1-mini",
+      "t": "OpenAI: GPT-4.1 Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4-1-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4-1-nano",
+      "t": "OpenAI: GPT-4.1 Nano",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4-1-nano",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4-turbo",
+      "t": "OpenAI: GPT-4 Turbo",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4-turbo",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4-turbo-preview",
+      "t": "OpenAI: GPT-4 Turbo Preview",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4-turbo-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4o",
+      "t": "OpenAI: GPT-4o",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4o",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4o-2024-05-13",
+      "t": "OpenAI: GPT-4o (2024-05-13)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4o-2024-05-13",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4o-2024-08-06",
+      "t": "OpenAI: GPT-4o (2024-08-06)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4o-2024-08-06",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4o-2024-11-20",
+      "t": "OpenAI: GPT-4o (2024-11-20)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4o-2024-11-20",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4o-mini",
+      "t": "OpenAI: GPT-4o-mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4o-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4o-mini-2024-07-18",
+      "t": "OpenAI: GPT-4o-mini (2024-07-18)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4o-mini-2024-07-18",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5",
+      "t": "OpenAI: GPT-5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-1",
+      "t": "OpenAI: GPT-5.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-1-codex",
+      "t": "OpenAI: GPT-5.1-Codex",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-1-codex",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-1-codex-max",
+      "t": "OpenAI: GPT-5.1-Codex-Max",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-1-codex-max",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-1-codex-mini",
+      "t": "OpenAI: GPT-5.1-Codex-Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-1-codex-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-2",
+      "t": "OpenAI: GPT-5.2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-2-chat",
+      "t": "OpenAI: GPT-5.2 Chat",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-2-chat",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-2-codex",
+      "t": "OpenAI: GPT-5.2-Codex",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-2-codex",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-2-pro",
+      "t": "OpenAI: GPT-5.2 Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-2-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-3-codex",
+      "t": "OpenAI: GPT-5.3-Codex",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-3-codex",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-4",
+      "t": "OpenAI: GPT-5.4",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-4",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-4-image-2",
+      "t": "OpenAI: GPT-5.4 Image 2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-4-image-2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-4-mini",
+      "t": "OpenAI: GPT-5.4 Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-4-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-4-nano",
+      "t": "OpenAI: GPT-5.4 Nano",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-4-nano",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-4-pro",
+      "t": "OpenAI: GPT-5.4 Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-4-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-5",
+      "t": "OpenAI: GPT-5.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-5-pro",
+      "t": "OpenAI: GPT-5.5 Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-5-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-6-luna",
+      "t": "OpenAI: GPT-5.6 Luna",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-luna",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-6-luna-pro",
+      "t": "OpenAI: GPT-5.6 Luna Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-luna-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-6-sol",
+      "t": "OpenAI: GPT-5.6 Sol",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-sol",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-6-sol-pro",
+      "t": "OpenAI: GPT-5.6 Sol Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-sol-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-6-terra",
+      "t": "OpenAI: GPT-5.6 Terra",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-terra",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-6-terra-pro",
+      "t": "OpenAI: GPT-5.6 Terra Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-terra-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-image",
+      "t": "OpenAI: GPT-5 Image",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-image",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-image-mini",
+      "t": "OpenAI: GPT-5 Image Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-image-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-mini",
+      "t": "OpenAI: GPT-5 Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-nano",
+      "t": "OpenAI: GPT-5 Nano",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-nano",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-pro",
+      "t": "OpenAI: GPT-5 Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-audio",
+      "t": "OpenAI: GPT Audio",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-audio",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-audio-mini",
+      "t": "OpenAI: GPT Audio Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-audio-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-chat-latest",
+      "t": "OpenAI: GPT Chat Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-chat-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-latest",
+      "t": "OpenAI GPT Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-mini-latest",
+      "t": "OpenAI GPT Mini Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-mini-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-oss-120b",
+      "t": "OpenAI: gpt-oss-120b",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-oss-120b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-oss-20b",
+      "t": "OpenAI: gpt-oss-20b",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-oss-20b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-oss-safeguard-20b",
+      "t": "OpenAI: gpt-oss-safeguard-20b",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-oss-safeguard-20b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-o1",
+      "t": "OpenAI: o1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-o1-pro",
+      "t": "OpenAI: o1-pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o1-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-o3",
+      "t": "OpenAI: o3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-o3-mini",
+      "t": "OpenAI: o3 Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o3-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-o3-mini-high",
+      "t": "OpenAI: o3 Mini High",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o3-mini-high",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-o3-pro",
+      "t": "OpenAI: o3 Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o3-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-o4-mini",
+      "t": "OpenAI: o4 Mini",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o4-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-o4-mini-high",
+      "t": "OpenAI: o4 Mini High",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o4-mini-high",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openrouter-auto",
+      "t": "Auto Router",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openrouter-auto",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openrouter-auto-beta",
+      "t": "Auto Router (Beta)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openrouter-auto-beta",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openrouter-bodybuilder",
+      "t": "Body Builder (beta)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openrouter-bodybuilder",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openrouter-free",
+      "t": "Free Models Router",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openrouter-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openrouter-fusion",
+      "t": "OpenRouter: Fusion",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openrouter-fusion",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openrouter-pareto-code",
+      "t": "Pareto Code Router",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openrouter-pareto-code",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/perceptron-perceptron-mk1",
+      "t": "Perceptron: Perceptron Mk1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/perceptron-perceptron-mk1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/perplexity-sonar",
+      "t": "Perplexity: Sonar",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/perplexity-sonar",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/perplexity-sonar-deep-research",
+      "t": "Perplexity: Sonar Deep Research",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/perplexity-sonar-deep-research",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/perplexity-sonar-pro",
+      "t": "Perplexity: Sonar Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/perplexity-sonar-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/perplexity-sonar-pro-search",
+      "t": "Perplexity: Sonar Pro Search",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/perplexity-sonar-pro-search",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/perplexity-sonar-reasoning-pro",
+      "t": "Perplexity: Sonar Reasoning Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/perplexity-sonar-reasoning-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/poolside-laguna-s-2-1",
+      "t": "Poolside: Laguna S 2.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/poolside-laguna-s-2-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/poolside-laguna-s-2-1-free",
+      "t": "Poolside: Laguna S 2.1 (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/poolside-laguna-s-2-1-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/poolside-laguna-xs-2-1",
+      "t": "Poolside: Laguna XS 2.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/poolside-laguna-xs-2-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/poolside-laguna-xs-2-1-free",
+      "t": "Poolside: Laguna XS 2.1 (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/poolside-laguna-xs-2-1-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen-2-5-72b-instruct",
+      "t": "Qwen2.5 72B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen-2-5-72b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen-2-5-7b-instruct",
+      "t": "Qwen: Qwen2.5 7B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen-2-5-7b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen-2-5-coder-32b-instruct",
+      "t": "Qwen2.5 Coder 32B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen-2-5-coder-32b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen-plus",
+      "t": "Qwen: Qwen-Plus",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen-plus",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen-plus-2025-07-28",
+      "t": "Qwen: Qwen Plus 0728",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen-plus-2025-07-28",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen2-5-vl-72b-instruct",
+      "t": "Qwen: Qwen2.5 VL 72B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen2-5-vl-72b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-14b",
+      "t": "Qwen: Qwen3 14B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-14b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-235b-a22b",
+      "t": "Qwen: Qwen3 235B A22B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-235b-a22b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-235b-a22b-2507",
+      "t": "Qwen: Qwen3 235B A22B Instruct 2507",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-235b-a22b-2507",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-235b-a22b-thinking-2507",
+      "t": "Qwen: Qwen3 235B A22B Thinking 2507",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-235b-a22b-thinking-2507",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-30b-a3b",
+      "t": "Qwen: Qwen3 30B A3B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-30b-a3b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-30b-a3b-instruct-2507",
+      "t": "Qwen: Qwen3 30B A3B Instruct 2507",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-30b-a3b-instruct-2507",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-30b-a3b-thinking-2507",
+      "t": "Qwen: Qwen3 30B A3B Thinking 2507",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-30b-a3b-thinking-2507",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-32b",
+      "t": "Qwen: Qwen3 32B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-32b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-5-122b-a10b",
+      "t": "Qwen: Qwen3.5-122B-A10B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-5-122b-a10b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-5-27b",
+      "t": "Qwen: Qwen3.5-27B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-5-27b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-5-35b-a3b",
+      "t": "Qwen: Qwen3.5-35B-A3B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-5-35b-a3b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-5-397b-a17b",
+      "t": "Qwen: Qwen3.5 397B A17B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-5-397b-a17b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-5-9b",
+      "t": "Qwen: Qwen3.5-9B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-5-9b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-5-flash-02-23",
+      "t": "Qwen: Qwen3.5-Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-5-flash-02-23",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-5-plus-02-15",
+      "t": "Qwen: Qwen3.5 Plus 2026-02-15",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-5-plus-02-15",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-5-plus-20260420",
+      "t": "Qwen: Qwen3.5 Plus 2026-04-20",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-5-plus-20260420",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-6-27b",
+      "t": "Qwen: Qwen3.6 27B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-6-27b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-6-35b-a3b",
+      "t": "Qwen: Qwen3.6 35B A3B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-6-35b-a3b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-6-flash",
+      "t": "Qwen: Qwen3.6 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-6-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-6-max-preview",
+      "t": "Qwen: Qwen3.6 Max Preview",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-6-max-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-6-plus",
+      "t": "Qwen: Qwen3.6 Plus",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-6-plus",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-7-flash",
+      "t": "Qwen: Qwen3.7 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-7-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-7-max",
+      "t": "Qwen: Qwen3.7 Max",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-7-max",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-7-plus",
+      "t": "Qwen: Qwen3.7 Plus",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-7-plus",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-8-2-4t-a95b",
+      "t": "Qwen: Qwen3.8 2.4T A95B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-8-2-4t-a95b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-8-2-4t-a95b-batch",
+      "t": "Qwen: Qwen3.8 2.4T A95B (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-8-2-4t-a95b-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-8-27b",
+      "t": "Qwen: Qwen3.8 27B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-8-27b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-8-flash",
+      "t": "Qwen: Qwen3.8 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-8-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-8-max",
+      "t": "Qwen: Qwen3.8 Max",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-8-max",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-8b",
+      "t": "Qwen: Qwen3 8B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-8b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-coder",
+      "t": "Qwen: Qwen3 Coder 480B A35B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-coder",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-coder-30b-a3b-instruct",
+      "t": "Qwen: Qwen3 Coder 30B A3B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-coder-30b-a3b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-coder-flash",
+      "t": "Qwen: Qwen3 Coder Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-coder-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-coder-next",
+      "t": "Qwen: Qwen3 Coder Next",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-coder-next",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-coder-plus",
+      "t": "Qwen: Qwen3 Coder Plus",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-coder-plus",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-max",
+      "t": "Qwen: Qwen3 Max",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-max",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-max-thinking",
+      "t": "Qwen: Qwen3 Max Thinking",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-max-thinking",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-next-80b-a3b-instruct",
+      "t": "Qwen: Qwen3 Next 80B A3B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-next-80b-a3b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-next-80b-a3b-thinking",
+      "t": "Qwen: Qwen3 Next 80B A3B Thinking",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-next-80b-a3b-thinking",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-vl-235b-a22b-instruct",
+      "t": "Qwen: Qwen3 VL 235B A22B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-vl-235b-a22b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-vl-235b-a22b-thinking",
+      "t": "Qwen: Qwen3 VL 235B A22B Thinking",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-vl-235b-a22b-thinking",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-vl-30b-a3b-instruct",
+      "t": "Qwen: Qwen3 VL 30B A3B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-vl-30b-a3b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-vl-30b-a3b-thinking",
+      "t": "Qwen: Qwen3 VL 30B A3B Thinking",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-vl-30b-a3b-thinking",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-vl-32b-instruct",
+      "t": "Qwen: Qwen3 VL 32B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-vl-32b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-vl-8b-instruct",
+      "t": "Qwen: Qwen3 VL 8B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-vl-8b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-vl-8b-thinking",
+      "t": "Qwen: Qwen3 VL 8B Thinking",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-vl-8b-thinking",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/rekaai-reka-edge",
+      "t": "Reka Edge",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/rekaai-reka-edge",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/rekaai-reka-flash-3",
+      "t": "Reka Flash 3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/rekaai-reka-flash-3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/relace-relace-apply-3",
+      "t": "Relace: Relace Apply 3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/relace-relace-apply-3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/relace-relace-search",
+      "t": "Relace: Relace Search",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/relace-relace-search",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/sakana-fugu-ultra",
+      "t": "Sakana: Fugu Ultra",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/sakana-fugu-ultra",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/sakana-sakana-namazu",
+      "t": "Sakana: Sakana Namazu",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/sakana-sakana-namazu",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/sao10k-l3-1-euryale-70b",
+      "t": "Sao10K: Llama 3.1 Euryale 70B v2.2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/sao10k-l3-1-euryale-70b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/sao10k-l3-3-euryale-70b",
+      "t": "Sao10K: Llama 3.3 Euryale 70B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/sao10k-l3-3-euryale-70b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/sao10k-l3-lunaris-8b",
+      "t": "Sao10K: Llama 3 8B Lunaris",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/sao10k-l3-lunaris-8b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/stepfun-step-3-5-flash",
+      "t": "StepFun: Step 3.5 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/stepfun-step-3-5-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/stepfun-step-3-7-flash",
+      "t": "StepFun: Step 3.7 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/stepfun-step-3-7-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/tencent-hunyuan-a13b-instruct",
+      "t": "Tencent: Hunyuan A13B Instruct",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/tencent-hunyuan-a13b-instruct",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/tencent-hy-mt2-1-8b",
+      "t": "Tencent: Hy-MT2-1.8B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/tencent-hy-mt2-1-8b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/tencent-hy-mt2-30b-a3b",
+      "t": "Tencent: Hy-MT2-30B-A3B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/tencent-hy-mt2-30b-a3b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/tencent-hy-mt2-7b",
+      "t": "Tencent: Hy-MT2-7B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/tencent-hy-mt2-7b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/tencent-hy3",
+      "t": "Tencent: Hy3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/tencent-hy3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/tencent-hy3-preview",
+      "t": "Tencent: Hy3 preview",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/tencent-hy3-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/tencent-hy4-preview",
+      "t": "Tencent: Hy4 preview",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/tencent-hy4-preview",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/thedrummer-cydonia-24b-v4-1",
+      "t": "TheDrummer: Cydonia 24B V4.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/thedrummer-cydonia-24b-v4-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/thedrummer-skyfall-36b-v2",
+      "t": "TheDrummer: Skyfall 36B V2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/thedrummer-skyfall-36b-v2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/thedrummer-unslopnemo-12b",
+      "t": "TheDrummer: UnslopNemo 12B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/thedrummer-unslopnemo-12b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/thinkingmachines-inkling",
+      "t": "Thinking Machines: Inkling",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/thinkingmachines-inkling",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/thinkingmachines-inkling-batch",
+      "t": "Thinking Machines: Inkling (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/thinkingmachines-inkling-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/thinkingmachines-inkling-free",
+      "t": "Thinking Machines: Inkling (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/thinkingmachines-inkling-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/thinkingmachines-inkling-small",
+      "t": "Thinking Machines: Inkling Small",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/thinkingmachines-inkling-small",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/thinkingmachines-inkling-small-free",
+      "t": "Thinking Machines: Inkling Small (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/thinkingmachines-inkling-small-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/undi95-remm-slerp-l2-13b",
+      "t": "ReMM SLERP 13B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/undi95-remm-slerp-l2-13b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/upstage-solar-pro-3",
+      "t": "Upstage: Solar Pro 3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/upstage-solar-pro-3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/upstage-solar-pro4",
+      "t": "Upstage: Solar Pro 4",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/upstage-solar-pro4",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/writer-palmyra-x5",
+      "t": "Writer: Palmyra X5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/writer-palmyra-x5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/x-ai-grok-4-20",
+      "t": "SpaceXAI: Grok 4.20",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/x-ai-grok-4-20",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/x-ai-grok-4-20-multi-agent",
+      "t": "SpaceXAI: Grok 4.20 Multi-Agent",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/x-ai-grok-4-20-multi-agent",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/x-ai-grok-4-3",
+      "t": "SpaceXAI: Grok 4.3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/x-ai-grok-4-3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/x-ai-grok-4-5",
+      "t": "SpaceXAI: Grok 4.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/x-ai-grok-4-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/x-ai-grok-4-6",
+      "t": "SpaceXAI: Grok 4.6",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/x-ai-grok-4-6",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/x-ai-grok-build-0-1",
+      "t": "SpaceXAI: Grok Build 0.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/x-ai-grok-build-0-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/x-ai-grok-latest",
+      "t": "xAI: Grok Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/x-ai-grok-latest",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/xiaomi-mimo-v2-5",
+      "t": "Xiaomi: MiMo-V2.5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/xiaomi-mimo-v2-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/xiaomi-mimo-v2-5-pro",
+      "t": "Xiaomi: MiMo-V2.5-Pro",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/xiaomi-mimo-v2-5-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-4-5",
+      "t": "Z.ai: GLM 4.5",
+      "k": "entry",
+      "d": "model",
+      "s": "deprecated",
+      "i": "model/z-ai-glm-4-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-4-5-air",
+      "t": "Z.ai: GLM 4.5 Air",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-4-5-air",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-4-5v",
+      "t": "Z.ai: GLM 4.5V",
+      "k": "entry",
+      "d": "model",
+      "s": "deprecated",
+      "i": "model/z-ai-glm-4-5v",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-4-6",
+      "t": "Z.ai: GLM 4.6",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-4-6",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-4-6v",
+      "t": "Z.ai: GLM 4.6V",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-4-6v",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-4-7",
+      "t": "Z.ai: GLM 4.7",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-4-7",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-4-7-flash",
+      "t": "Z.ai: GLM 4.7 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-4-7-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-5",
+      "t": "Z.ai: GLM 5",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-5-1",
+      "t": "Z.ai: GLM 5.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-5-2",
+      "t": "Z.ai: GLM 5.2",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5-2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-5-2-free",
+      "t": "Z.ai: GLM 5.2 (free)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5-2-free",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-5-3",
+      "t": "Z.ai: GLM 5.3",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5-3",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-5-3-flash",
+      "t": "Z.ai: GLM 5.3 Flash",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5-3-flash",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-5-turbo",
+      "t": "Z.ai: GLM 5 Turbo",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5-turbo",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-5v-turbo",
+      "t": "Z.ai: GLM 5V Turbo",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5v-turbo",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-latest",
+      "t": "Z.ai: GLM Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-latest",
+      "a": [],
+      "b": true
+    }
+  ]
+}

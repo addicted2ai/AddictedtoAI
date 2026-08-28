@@ -19,6 +19,7 @@
  */
 
 import { contentBuildStep } from '../lib/build-content.mjs';
+import { siteAssetsStep } from '../lib/site-assets.mjs';
 
 /** @type {{ name: string, run: () => Promise<void> | void }[]} */
 const STEPS = [
@@ -27,6 +28,12 @@ const STEPS = [
   // check. Runs before `next build` so a violation stops the build rather
   // than failing only the pages that happened to import the checker.
   { name: 'content', run: contentBuildStep },
+
+  // tasks 4.2, 4.9, 4.12, 4.13 — the static files that are served alongside
+  // the pages: the build stamp, the search index, the standing tables' JSON
+  // siblings, the feeds and the open dataset. Second, because every one of
+  // them is derived from the corpus the step above just validated.
+  { name: 'assets', run: siteAssetsStep },
 ];
 
 let failed = false;

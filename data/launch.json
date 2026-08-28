@@ -1,0 +1,36 @@
+{
+  "js_payload": {
+    "measured_on": "2026-08-28",
+    "budget_kb_gzipped": 150,
+    "method": "gzip -9 over every <script src> a modern browser fetches (nomodule excluded) plus every inline <script> body, measured on the exported build in out/",
+    "pages": {
+      "/": {
+        "label": "home",
+        "chunks_kb_gzipped": 101,
+        "inline_kb_gzipped": 4.6,
+        "total_kb_gzipped": 105.5,
+        "html_kb_gzipped": 6.9
+      },
+      "/wiki/model/aion-labs-aion-2-0": {
+        "label": "entry",
+        "chunks_kb_gzipped": 101,
+        "inline_kb_gzipped": 2.6,
+        "total_kb_gzipped": 103.5,
+        "html_kb_gzipped": 3.9
+      },
+      "/catalog": {
+        "label": "table",
+        "chunks_kb_gzipped": 101.4,
+        "inline_kb_gzipped": 17.3,
+        "total_kb_gzipped": 118.9,
+        "html_kb_gzipped": 32.9
+      }
+    }
+  },
+  "design_verification": {
+    "date": "2026-08-28",
+    "pass": true,
+    "failures": 0,
+    "checks": 32
+  }
+}

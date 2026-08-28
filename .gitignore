@@ -11,6 +11,18 @@ node_modules/
 /build/
 /dist/
 
+# Static assets generated into public/ by scripts/prebuild.mjs so they land in
+# out/ (design D1's rule for /status.json, extended in task 4.9/4.12/4.13).
+# Build output like any other: regenerated on every build, never hand-edited.
+# The committed copies of the data they derive from live under data/, which is
+# never ignored.
+/public/status.json
+/public/search-index.json
+/public/catalog.json
+/public/catalog/
+/public/feeds/
+/public/dataset/
+
 # Environment — never commit these
 .env
 .env.local
