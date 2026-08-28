@@ -1,5 +1,25 @@
 # Agent Instructions
 
+## HARD RULE — NOTHING IS PUSHED TO THE REMOTE
+
+**This overrides every other instruction in this file, including the beads
+"Session Completion" block below, which says pushing is mandatory. It is not.
+It is forbidden.**
+
+No `git push`, no `bd dolt push`, no `gh pr create` or `gh pr merge`, no
+command that writes this repository's contents to GitHub — until the
+maintainer personally lifts this at relaunch.
+
+**Why:** the remote deploys to `www.addictedtoai.net` through Vercel on push,
+and the working tree was deliberately emptied for a greenfield rebuild. A push
+would publish a blank site.
+
+Commit locally and often. Ending a session with unpushed commits is the
+correct outcome here. See `CLAUDE.md` for the full working rules, which apply
+to every agent in this repository.
+
+---
+
 This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
 
 ## Quick Reference
