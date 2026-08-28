@@ -130,12 +130,15 @@ export function computeFreshness(root, { registry, corpus, derived, linkResult }
     tutorials,
     listings,
     broken_links: linkResult?.broken ?? [],
+    // No `offline` marker here on purpose: how a run was invoked is not part
+    // of the site's state, and recording it would make this file vary with
+    // the flags rather than with the world. `checked` and `due` already say
+    // whether the rolling check ran.
     link_check: {
       total: linkResult?.total ?? 0,
       due: linkResult?.due ?? 0,
       checked: linkResult?.checked ?? 0,
       interval_days: 30,
-      offline: Boolean(linkResult?.offline),
     },
     sources,
     vanished_feed_rows: derived?.vanished ?? [],

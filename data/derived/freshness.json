@@ -5,7 +5,6 @@
     "checked": 0,
     "due": 0,
     "interval_days": 30,
-    "offline": false,
     "total": 0
   },
   "listings": [],
