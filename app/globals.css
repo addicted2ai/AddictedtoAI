@@ -1017,6 +1017,19 @@ main {
   gap: 0.15rem 0.6rem;
 }
 
+/* A transcluded fact sits inside a sentence, so it must not inherit the
+   flex layout the standalone .fact block uses. The wiki spec requires
+   volatile values to be transcluded rather than typed, so without this
+   every prose page that follows the spec breaks its own paragraphs. */
+.fact-inline {
+  display: inline;
+}
+
+.fact-inline .fact-source,
+.fact-inline .fact-as-of {
+  white-space: nowrap;
+}
+
 .fact-value {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
