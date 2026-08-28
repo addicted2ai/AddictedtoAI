@@ -151,7 +151,11 @@ log.step(
 // ---- 5. rolling link check ----------------------------------------------
 const links = corpusLinks(corpus);
 const linkResult = await rollingLinkCheck(root, links, { offline: options.offline });
-log.step('link check', `${linkResult.total} link(s) known, ${linkResult.due} due, ${linkResult.checked} checked, ${linkResult.broken.length} broken`);
+log.step(
+  'link check',
+  `${linkResult.total} link(s) known, ${linkResult.due} due, ${linkResult.checked} checked, ${linkResult.broken.length} broken` +
+    (linkResult.excluded ? `, ${linkResult.excluded} loopback/private/reserved host(s) not checkable` : ''),
+);
 
 // ---- 6. freshness --------------------------------------------------------
 const freshness = computeFreshness(root, { registry, corpus, derived, linkResult });

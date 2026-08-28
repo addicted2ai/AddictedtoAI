@@ -1,13 +1,5 @@
 {
   "urls": {
-    "http://localhost:8080/": {
-      "consecutive_failures": 1,
-      "error": "TypeError: fetch failed",
-      "last_checked": "2026-08-28",
-      "last_ok": null,
-      "ok": false,
-      "status": null
-    },
     "http://www.chilton-computing.org.uk/inf/literature/reports/lighthill_report/p001.htm": {
       "consecutive_failures": 0,
       "error": null,

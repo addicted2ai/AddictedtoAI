@@ -1,23 +1,12 @@
 {
-  "broken_links": [
-    {
-      "cited_by": [
-        "content/tutorials/browser-embeddings-no-server.md"
-      ],
-      "consecutive_failures": 1,
-      "error": "TypeError: fetch failed",
-      "last_checked": "2026-08-28",
-      "last_ok": null,
-      "status": null,
-      "url": "http://localhost:8080/"
-    }
-  ],
+  "broken_links": [],
   "date": "2026-08-28",
   "link_check": {
-    "checked": 25,
-    "due": 150,
+    "checked": 0,
+    "due": 125,
+    "excluded": 1,
     "interval_days": 30,
-    "total": 175
+    "total": 174
   },
   "listings": [
     {

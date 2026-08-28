@@ -96,16 +96,20 @@ test('tutorial staleness has three states: fresh, stale, and demoted at 2x', asy
 test('a listing past its 45-day interval is due; two consecutive URL failures make it could-not-verify', async (t) => {
   const root = makeRoot([]);
   t.after(() => cleanup(root));
-  writeEntry(root, 'content/directory/tools/ok.md', { url: 'https://ok.invalid/', pricing: 'free', last_verified: '2026-08-20', entry: 'tool/ok', mentions: [] }, 'body');
-  writeEntry(root, 'content/directory/tools/old.md', { url: 'https://old.invalid/', pricing: 'free', last_verified: '2026-05-01', entry: 'tool/old', mentions: [] }, 'body');
-  writeEntry(root, 'content/directory/tools/dead.md', { url: 'https://dead.invalid/', pricing: 'free', last_verified: '2026-08-20', entry: 'tool/dead', mentions: [] }, 'body');
+  // Ordinary public hosts, not `*.invalid`: a reserved documentation name is
+  // one the rolling check deliberately never judges (see isCheckableUrl), so
+  // a fixture built on one would prove nothing about the failing-URL path.
+  // Nothing is fetched here — the run is offline and the state is seeded.
+  writeEntry(root, 'content/directory/tools/ok.md', { url: 'https://ok.fixture-vendor.net/', pricing: 'free', last_verified: '2026-08-20', entry: 'tool/ok', mentions: [] }, 'body');
+  writeEntry(root, 'content/directory/tools/old.md', { url: 'https://old.fixture-vendor.net/', pricing: 'free', last_verified: '2026-05-01', entry: 'tool/old', mentions: [] }, 'body');
+  writeEntry(root, 'content/directory/tools/dead.md', { url: 'https://dead.fixture-vendor.net/', pricing: 'free', last_verified: '2026-08-20', entry: 'tool/dead', mentions: [] }, 'body');
 
   // A link-check state standing in for two prior Pulse checks that failed.
   writeJson(join(root, 'data', 'linkcheck.json'), {
     urls: {
-      'https://ok.invalid/': { last_checked: '2026-08-27', status: 200, ok: true, error: null, last_ok: '2026-08-27', consecutive_failures: 0 },
-      'https://old.invalid/': { last_checked: '2026-08-27', status: 200, ok: true, error: null, last_ok: '2026-08-27', consecutive_failures: 0 },
-      'https://dead.invalid/': { last_checked: '2026-08-27', status: 404, ok: false, error: null, last_ok: '2026-06-01', consecutive_failures: 2 },
+      'https://ok.fixture-vendor.net/': { last_checked: '2026-08-27', status: 200, ok: true, error: null, last_ok: '2026-08-27', consecutive_failures: 0 },
+      'https://old.fixture-vendor.net/': { last_checked: '2026-08-27', status: 200, ok: true, error: null, last_ok: '2026-08-27', consecutive_failures: 0 },
+      'https://dead.fixture-vendor.net/': { last_checked: '2026-08-27', status: 404, ok: false, error: null, last_ok: '2026-06-01', consecutive_failures: 2 },
     },
   });
 
@@ -114,7 +118,7 @@ test('a listing past its 45-day interval is due; two consecutive URL failures ma
   const states = Object.fromEntries(fresh.listings.map((l) => [l.slug, l.state]));
   assert.deepEqual(states, { ok: 'ok', old: 'due', dead: 'could-not-verify' });
   assert.equal(fresh.broken_links.length, 1);
-  assert.equal(fresh.broken_links[0].url, 'https://dead.invalid/');
+  assert.equal(fresh.broken_links[0].url, 'https://dead.fixture-vendor.net/');
 });
 
 test('a source that has not changed for 3x its expected_change_days is suspect, and its date label flips', async (t) => {

@@ -136,6 +136,9 @@ export function computeFreshness(root, { registry, corpus, derived, linkResult }
     // whether the rolling check ran.
     link_check: {
       total: linkResult?.total ?? 0,
+      // Loopback/private/reserved hosts the check cannot speak to — counted,
+      // not hidden, so an exclusion silently swallowing links is visible.
+      excluded: linkResult?.excluded ?? 0,
       due: linkResult?.due ?? 0,
       checked: linkResult?.checked ?? 0,
       interval_days: 30,
