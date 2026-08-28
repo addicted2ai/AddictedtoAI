@@ -192,6 +192,16 @@ async function executeJob(ctx, opts) {
     gateResult = typeof gates === 'function' ? gates(ctx, worktree) : runGates(ctx, worktree);
     ctx.log(`gates: ${gateResult.ok ? 'PASS' : 'FAIL'}`);
     if (!gateResult.ok) {
+      // Print WHY, not just THAT. The worktree is torn down in the caller's
+      // `finally`, so this is the only moment the evidence exists: a gate
+      // failure nobody can diagnose is a gate failure nobody can act on.
+      // Observed on job j-20260828-01, whose only record was `gates: FAIL`.
+      for (const r of gateResult.results ?? []) {
+        ctx.log(`  gate ${r.script}: ${r.ok ? 'PASS' : `FAIL (exit ${r.status})`}`);
+      }
+      ctx.log('--- gate output ---');
+      ctx.log(gateResult.output ?? '(no output captured)');
+      ctx.log('--- end gate output ---');
       return { outcome: 'failed', mm: run.mm, changed, note: 'gates failed', gateOutput: gateResult.output };
     }
   }
