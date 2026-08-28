@@ -33,7 +33,14 @@ import Parser from 'rss-parser';
 
 import { scanExportedPages } from '../lib/origins.mjs';
 import { SITE_HOSTS } from '../lib/site-config.mjs';
-import { FEED_ROUTES, DATASET_JSON_ROUTE, DATASET_CSV_ROUTES, DATASET_LICENSE } from '../lib/asset-routes.mjs';
+import {
+  FEED_ROUTES,
+  DATASET_JSON_ROUTE,
+  DATASET_CSV_ROUTES,
+  DATASET_LICENSE,
+  TABLE_JSON_ROUTES,
+  SEARCH_INDEX_ROUTE,
+} from '../lib/asset-routes.mjs';
 
 let failures = 0;
 
@@ -77,6 +84,28 @@ async function checkSortNotes(out) {
       `${route} states its sort criterion`,
       note.attr('data-sort-note') ?? 'no [data-sort-note] element',
     );
+  }
+
+  // Each standing table's machine-readable sibling: it must parse, carry its
+  // rows, and state the same sort criterion the page does — a JSON sibling
+  // ordered differently from the page it mirrors is a trap, not a service.
+  for (const [route, pageRoute] of Object.entries(TABLE_JSON_ROUTES).map(([name, r]) => [
+    r,
+    { catalog: '/catalog', deprecations: '/catalog/deprecations', changed: '/catalog/changed' }[name],
+  ])) {
+    try {
+      const payload = JSON.parse(await read(out, route));
+      const $ = await page(out, pageRoute);
+      check(
+        Array.isArray(payload.rows) &&
+          payload.row_count === payload.rows.length &&
+          payload.sort_criterion === $('[data-sort-note]').first().attr('data-sort-note'),
+        `${route} parses and matches ${pageRoute}`,
+        `${payload.row_count} row(s), sorted by ${payload.sort_criterion}`,
+      );
+    } catch (err) {
+      bad(`${route} parses`, err.message);
+    }
   }
 }
 
@@ -173,6 +202,20 @@ async function checkFeeds(out) {
     check(count > 0, '/sitemap.xml lists URLs', `${count} URL(s)`);
   } catch (err) {
     bad('/sitemap.xml exists', err.message);
+  }
+
+  // The search index is served, not only written to data/derived/ — the
+  // browser can only fetch what is in the export.
+  try {
+    const index = JSON.parse(await read(out, SEARCH_INDEX_ROUTE));
+    const stubs = index.docs.filter((d) => d.b).length;
+    check(
+      index.count === index.docs.length && index.count > 0,
+      `${SEARCH_INDEX_ROUTE} is served and covers the corpus`,
+      `${index.count} page(s), ${stubs} of them stubs`,
+    );
+  } catch (err) {
+    bad(`${SEARCH_INDEX_ROUTE} parses`, err.message);
   }
 
   const $ = await page(out, '/');
