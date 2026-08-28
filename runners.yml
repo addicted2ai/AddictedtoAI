@@ -149,7 +149,7 @@ runners:
     roles: [author, reviewer]
     model: opencode-go/deepseek-v4-flash
     harness: opencode
-    command: 'opencode run --dir "{worktree}" --model opencode-go/deepseek-v4-flash --variant max --auto --file "{prompt_file}" "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs."'
+    command: 'opencode run --dir "{worktree}" --model opencode-go/deepseek-v4-flash --variant max --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
     conformance: unverified
     note: >-
@@ -168,8 +168,18 @@ runners:
       runs a lower reasoning effort, which the maintainer identified as a
       real quality difference during earlier work on this project.
 
+      ARGUMENT ORDER IS LOAD-BEARING, found by running it. `-f/--file` is an
+      ARRAY option, so it consumes every argument that follows it. With the
+      message placed after the flag, OpenCode read the instruction as a
+      second file path and died with
+      `Error: File not found: Follow the attached brief exactly…` — the brief
+      never reached the model at all. The message therefore comes first and
+      `--file` goes last, where it has nothing left to swallow.
+
+      Conformance found this on its first run: four FAILs, all
+      `no RESULT.md at all`, which is the correct verdict for a runner whose
+      prompt never arrived.
+
       UNVERIFIED until `node loop/conformance.mjs --runner opencode-deepseek`
       records four PASSes in data/conformance.json. The selector refuses any
-      runner carrying a recorded FAIL. Note the brief reaches this harness as
-      an attached `--file` rather than on stdin — if the attachment does not
-      deliver, conformance check 1 fails and that is exactly what it is for.
+      runner carrying a recorded FAIL.
