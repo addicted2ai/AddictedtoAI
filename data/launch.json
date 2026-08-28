@@ -39,12 +39,52 @@
     "measurement_id": "G-KJPHKYL3XL",
     "pages_tested": [
       "/",
-      "/wiki/model/aion-labs-aion-2-0",
+      "/wiki/concept/ai-winter",
       "click-through / → nav link"
     ],
     "assertions": 20,
     "failures": 0,
     "pass": true,
     "method": "Playwright/Chromium against the exported build served by scripts/serve-static.mjs; assertions are on captured /g/collect requests and their response status, never on markup"
+  },
+  "build_verification": {
+    "date": "2026-08-28",
+    "task": "8.4",
+    "pass": true,
+    "serial": true,
+    "note": "Run serially in one session, never concurrently: two next build processes share one .next/ and fail with ENOENT on pages-manifest.json after the pages generate (addictedtoai-6s7). The authoritative build is verify-launch's own, because it is the last one, it is the build whose PASS is recorded here, and it is the tree scripts/serve-static.mjs then served to the analytics check.",
+    "steps": [
+      {
+        "order": 1,
+        "command": "npm test",
+        "exit": 0,
+        "result": "267 tests, 267 pass, 0 fail, 0 cancelled, 0 skipped, 0 todo"
+      },
+      {
+        "order": 2,
+        "command": "npm run build",
+        "exit": 0,
+        "result": "prebuild content + assets ok; static export clean; 103 kB first-load JS shared by all"
+      },
+      {
+        "order": 3,
+        "command": "node pulse/verify-zero-model.mjs",
+        "exit": 0,
+        "result": "the real pulse/run.mjs with 11 model-related environment variables stripped: 2 sources, 0 stubs minted, 0 timeline events, 388 catalog rows, 0 overdue facts, queue 1 item, publish disabled (skip line printed)",
+        "note": "This is task 8.4's `node pulse/run.mjs` step. The wrapper is how the 'no model env' half is measured rather than asserted — it strips the variables and runs the real program."
+      },
+      {
+        "order": 4,
+        "command": "node scripts/verify-launch.mjs",
+        "exit": 0,
+        "result": "15/15 checks passed, including its own `npm run build` (exit 0 in 21s). No --no-build, so the build row is a PASS and not a SKIP."
+      },
+      {
+        "order": 5,
+        "command": "node scripts/verify-analytics.mjs",
+        "exit": 0,
+        "result": "20 assertions, 0 failures, against out/ served by scripts/serve-static.mjs on :3212 — one page_view per direct load on 2 pages, matching tid, HTTP 204, plus the client-side click-through carrying the new path"
+      }
+    ]
   }
 }

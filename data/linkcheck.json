@@ -1,3 +1,404 @@
 {
-  "urls": {}
+  "urls": {
+    "http://localhost:8080/": {
+      "consecutive_failures": 1,
+      "error": "TypeError: fetch failed",
+      "last_checked": "2026-08-28",
+      "last_ok": null,
+      "ok": false,
+      "status": null
+    },
+    "http://www.chilton-computing.org.uk/inf/literature/reports/lighthill_report/p001.htm": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "http://www.incompleteideas.net/IncIdeas/BitterLesson.html": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://9to5google.com/2026/08/13/gemini-3-7-flash-launch/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://about.fb.com/news/2026/04/introducing-muse-spark-meta-superintelligence-labs/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://ai.meta.com/blog/meta-llama-3-1/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://aider.chat/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://aider.chat/docs/leaderboards/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://ar5iv.labs.arxiv.org/html/1706.03762": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://ar5iv.labs.arxiv.org/html/2005.14165": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://ar5iv.labs.arxiv.org/html/2103.03874": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://ar5iv.labs.arxiv.org/html/2210.02303": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://ar5iv.labs.arxiv.org/html/2211.00241": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/1706.03762": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2001.08361": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2002.04745": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2102.12092": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2203.15556": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2207.04672": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2211.00241": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2211.17192": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2212.04356": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2302.01318": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2302.13971": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2305.11206": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2305.13245": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2305.14314": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2305.18290": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2309.06180": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2310.06770": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2310.16944": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2312.07104": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2401.04088": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2401.10774": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2402.03300": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2404.06654": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2404.10102": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2404.10719": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2406.19146": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2411.15124": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2412.19437": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2501.12948": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2502.05167": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2503.01840": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2504.13837": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/html/2501.12948v1": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-3-7-flash/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://blog.google/innovation-and-ai/products/alphagos-ultimate-challenge/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://blogs.microsoft.com/blog/2016/10/18/historic-milestone-microsoft-researchers-achieve-human-parity-conversational-speech-recognition/": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://braddelong.substack.com/p/hoistedcrosspost-richard-s-sutton": {
+      "consecutive_failures": 0,
+      "error": null,
+      "last_checked": "2026-08-28",
+      "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    }
+  }
 }

@@ -1,13 +1,286 @@
 {
-  "broken_links": [],
+  "broken_links": [
+    {
+      "cited_by": [
+        "content/tutorials/browser-embeddings-no-server.md"
+      ],
+      "consecutive_failures": 1,
+      "error": "TypeError: fetch failed",
+      "last_checked": "2026-08-28",
+      "last_ok": null,
+      "status": null,
+      "url": "http://localhost:8080/"
+    }
+  ],
   "date": "2026-08-28",
   "link_check": {
-    "checked": 0,
-    "due": 0,
+    "checked": 25,
+    "due": 150,
     "interval_days": 30,
-    "total": 0
+    "total": 175
   },
-  "listings": [],
+  "listings": [
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/aider",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/aider.md",
+      "since": "2026-08-28",
+      "slug": "aider",
+      "state": "ok",
+      "url": "https://aider.chat/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/comfyui",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/comfyui.md",
+      "since": null,
+      "slug": "comfyui",
+      "state": "ok",
+      "url": "https://comfy.org/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/continue",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/continue.md",
+      "since": null,
+      "slug": "continue",
+      "state": "ok",
+      "url": "https://continue.dev/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/cursor",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/cursor.md",
+      "since": null,
+      "slug": "cursor",
+      "state": "ok",
+      "url": "https://cursor.com/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/dspy",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/dspy.md",
+      "since": null,
+      "slug": "dspy",
+      "state": "ok",
+      "url": "https://dspy.ai/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/elevenlabs",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/elevenlabs.md",
+      "since": null,
+      "slug": "elevenlabs",
+      "state": "ok",
+      "url": "https://elevenlabs.io/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/groq-cloud",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/groq-cloud.md",
+      "since": null,
+      "slug": "groq-cloud",
+      "state": "ok",
+      "url": "https://groq.com/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/hugging-face-hub",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/hugging-face-hub.md",
+      "since": null,
+      "slug": "hugging-face-hub",
+      "state": "ok",
+      "url": "https://huggingface.co/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/langchain",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/langchain.md",
+      "since": null,
+      "slug": "langchain",
+      "state": "ok",
+      "url": "https://www.langchain.com/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/langfuse",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/langfuse.md",
+      "since": null,
+      "slug": "langfuse",
+      "state": "ok",
+      "url": "https://langfuse.com/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/llama-cpp",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/llama-cpp.md",
+      "since": null,
+      "slug": "llama-cpp",
+      "state": "ok",
+      "url": "https://github.com/ggml-org/llama.cpp"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/llamaindex",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/llamaindex.md",
+      "since": null,
+      "slug": "llamaindex",
+      "state": "ok",
+      "url": "https://www.llamaindex.ai/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/lm-studio",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/lm-studio.md",
+      "since": null,
+      "slug": "lm-studio",
+      "state": "ok",
+      "url": "https://lmstudio.ai/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/ollama",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/ollama.md",
+      "since": null,
+      "slug": "ollama",
+      "state": "ok",
+      "url": "https://ollama.com/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/open-webui",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/open-webui.md",
+      "since": null,
+      "slug": "open-webui",
+      "state": "ok",
+      "url": "https://openwebui.com/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/openrouter",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/openrouter.md",
+      "since": null,
+      "slug": "openrouter",
+      "state": "ok",
+      "url": "https://openrouter.ai/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/qdrant",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/qdrant.md",
+      "since": null,
+      "slug": "qdrant",
+      "state": "ok",
+      "url": "https://qdrant.tech/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/replicate",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/replicate.md",
+      "since": null,
+      "slug": "replicate",
+      "state": "ok",
+      "url": "https://replicate.com/"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/unsloth",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/unsloth.md",
+      "since": null,
+      "slug": "unsloth",
+      "state": "ok",
+      "url": "https://github.com/unslothai/unsloth"
+    },
+    {
+      "age_days": 0,
+      "consecutive_failures": 0,
+      "discontinued": null,
+      "entry": "tool/vllm",
+      "interval_days": 45,
+      "last_verified": "2026-08-28",
+      "path": "content/directory/tools/vllm.md",
+      "since": null,
+      "slug": "vllm",
+      "state": "ok",
+      "url": "https://github.com/vllm-project/vllm"
+    }
+  ],
   "overdue_facts": [],
   "sources": [
     {
@@ -37,7 +310,24 @@
       "suspect_after_days": 9
     }
   ],
-  "tutorials": [],
+  "tutorials": [
+    {
+      "age_days": 0,
+      "path": "content/tutorials/browser-embeddings-no-server.md",
+      "reverify_days": 30,
+      "slug": "browser-embeddings-no-server",
+      "state": "fresh",
+      "verified_on": "2026-08-28"
+    },
+    {
+      "age_days": 0,
+      "path": "content/tutorials/openrouter-catalog-watch.md",
+      "reverify_days": 30,
+      "slug": "openrouter-catalog-watch",
+      "state": "fresh",
+      "verified_on": "2026-08-28"
+    }
+  ],
   "unreadable_content": [],
   "vanished_feed_rows": []
 }

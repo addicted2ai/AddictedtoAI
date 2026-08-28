@@ -534,21 +534,26 @@ minimum). Specs referenced below live in
 
 ## 8. Documentation and change hygiene
 
-- [ ] 8.1 Add the "Operating the site" section to `AGENTS.md`
+- [x] 8.1 Add the "Operating the site" section to `AGENTS.md`
       (harness-neutral: starting the Pulse and a Desk run, where specs
       live, the review flow, the swap procedure with its verification, the
       STOP/HOLD semantics), leaving the no-push hard rule block untouched.
       Mirror only Claude-Code specifics into `CLAUDE.md`. Verify: both
       files render the new sections; the hard-rule block is byte-identical
       to before (git diff shows no change inside it).
-- [ ] 8.2 Update `CLAUDE.md`'s Build & Test / Architecture placeholder
+- [x] 8.2 Update `CLAUDE.md`'s Build & Test / Architecture placeholder
       sections with the real commands (`npm run build`, `npm test`,
       `node pulse/run.mjs`, `node loop/run.mjs`) and a five-line
       architecture summary pointing at the specs. Verify: sections no
       longer read "Not yet established".
-- [ ] 8.3 Run `openspec validate --change build-initial-site --strict` and
+- [x] 8.3 Run `openspec validate --change build-initial-site --strict` and
       fix anything it reports. Verify: validation exits clean.
-- [ ] 8.4 Final integrated verification, in order: `npm test` (all
+      (The installed OpenSpec is 1.11.0, whose `validate` takes the item as a
+      positional argument and has no `--change` flag; the invocation that runs
+      is `openspec validate build-initial-site --type change --strict`.
+      It reported nothing to fix: "Change 'build-initial-site' is valid",
+      exit 0.)
+- [x] 8.4 Final integrated verification, in order: `npm test` (all
       fixtures), `npm run build` (clean), `node pulse/run.mjs` (exit 0,
       no model env), `node scripts/verify-launch.mjs` (exit 0),
       `scripts/verify-analytics.mjs` against the exported build served by
@@ -556,7 +561,7 @@ minimum). Specs referenced below live in
       (exit 0). Verify: all five exit 0 in a single fresh session, and
       the results are recorded in `data/launch.json` under
       `build_verification`.
-- [ ] 8.5 Commit everything locally with clear messages. Verify:
+- [x] 8.5 Commit everything locally with clear messages. Verify:
       `git status` clean; `git log` shows the work; **nothing pushed** —
       unpushed local commits are the correct end state of this change.
 

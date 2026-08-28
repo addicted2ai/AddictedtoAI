@@ -1,6 +1,15 @@
 {
   "cap": 50,
-  "count": 0,
-  "items": [],
-  "total_before_cap": 0
+  "count": 1,
+  "items": [
+    {
+      "detail": "HTTP TypeError: fetch failed on 1 consecutive check(s); cited by 1 file(s)",
+      "rank": 90,
+      "reason": "broken-link",
+      "subject": "http://localhost:8080/",
+      "target": "content/tutorials/browser-embeddings-no-server.md",
+      "type": "repair"
+    }
+  ],
+  "total_before_cap": 1
 }
