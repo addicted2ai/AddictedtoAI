@@ -18,8 +18,16 @@
  * itself. Do not swallow errors here: the build is the gate.
  */
 
+import { contentBuildStep } from '../lib/build-content.mjs';
+
 /** @type {{ name: string, run: () => Promise<void> | void }[]} */
-const STEPS = [];
+const STEPS = [
+  // task 2.1–2.10 — schema validation, ids, aliases, transclusion, wants,
+  // backlinks, indexability, redirects (vercel.json) and the internal-link
+  // check. Runs before `next build` so a violation stops the build rather
+  // than failing only the pages that happened to import the checker.
+  { name: 'content', run: contentBuildStep },
+];
 
 let failed = false;
 for (const step of STEPS) {
