@@ -1,0 +1,114 @@
+# runners.yml — the runner registry (specs/loop, "The loop is portable
+# across model, provider, and harness").
+#
+# THIS IS THE ONLY FILE IN THE MACHINERY THAT NAMES A MODEL, A PROVIDER, OR
+# A HARNESS. `loop/`, `pulse/`, `scripts/` and `data/config.json` never do.
+# If you find a harness name in those paths, that is a bug — the swap
+# ("model X, from provider Y, using harness Z, chosen at start time") is only
+# real while this file is the single point of change.
+#
+# It is a RESERVED PATH: the maintainer edits it freely, no job may
+# (specs/loop, breaker 4).
+#
+# IT MUST NEVER CONTAIN A CREDENTIAL. Commands name executables and flags.
+# API keys, tokens and logins are the maintainer's, held wherever the harness
+# itself keeps them. The loop never reads, writes, passes or prints one.
+#
+# ---------------------------------------------------------------------------
+# Entry schema (specs/loop)
+# ---------------------------------------------------------------------------
+#   id                        unique, kebab-case. Used by `--runner <id>`, and
+#                             recorded on every ledger line.
+#   provider                  THE LANE KEY. Runners sharing a provider share a
+#                             subscription, so a `capacity` classification on
+#                             one pauses all of them (specs/loop). It is the
+#                             thing that runs out, not the vendor's brand.
+#   tier                      `frontier` | `cheap`. Budget shares are computed
+#                             within a tier and never summed across tiers.
+#   roles                     which of `author`, `reviewer` this entry is
+#                             cleared for.
+#   command                   the shell command template that invokes it.
+#   capacity_stderr_pattern   optional regex (JS syntax, matched
+#                             case-insensitively against the executor's
+#                             stderr). A match classifies the run `capacity`
+#                             even with no RESULT.md. Per-runner data, never a
+#                             global heuristic.
+#   model / harness / note    documentation only; nothing reads them.
+#   conformance               documentation only: the maintainer's note of
+#                             whether `node loop/conformance.mjs --runner <id>`
+#                             has been run. The MACHINE-READABLE record lives
+#                             in `data/conformance.json` (written by
+#                             conformance.mjs, read by the selector) precisely
+#                             so that the loop never has to write to this
+#                             reserved file.
+#
+# ---------------------------------------------------------------------------
+# Command template placeholders
+# ---------------------------------------------------------------------------
+#   {prompt_file}   absolute path to the brief, written by the loop as a plain
+#                   markdown file. Self-contained: no session, no prior
+#                   conversation, no harness-specific syntax.
+#   {worktree}      absolute path to the job's worktree. The command is ALSO
+#                   spawned with this as its working directory, so most
+#                   templates never need it.
+#   {job_id}        e.g. j-20260828-01
+#   {role}          `author` or `reviewer`
+#
+# If a template contains no {prompt_file}, the loop pipes the brief on stdin
+# instead. That is the whole executor interface: one written prompt in, files
+# out, exit or be killed. No memory across invocations, no subagents, no MCP,
+# no hooks, no tool-calling API, no structured output, no minimum context
+# window, no vendor file layout (specs/loop, executor contract).
+
+version: 1
+
+# The runner used when `--runner` is not given.
+default: claude-code-opus
+
+runners:
+  - id: claude-code-opus
+    provider: anthropic
+    tier: frontier
+    roles: [author, reviewer]
+    model: opus
+    harness: claude-code
+    command: 'claude --print --permission-mode acceptEdits --model opus < "{prompt_file}"'
+    capacity_stderr_pattern: '(usage limit reached|rate.?limit|quota exceeded|overloaded_error)'
+    conformance: unverified
+    note: >-
+      The setup this repository was built on. Frontier tier, cleared for both
+      roles; when it authors and reviews, review keeps fresh-context
+      independence but loses family-level diversity (specs/review states that
+      as accepted, not as a failure).
+
+  - id: claude-code-sonnet
+    provider: anthropic
+    tier: cheap
+    roles: [author, reviewer]
+    model: sonnet
+    harness: claude-code
+    command: 'claude --print --permission-mode acceptEdits --model sonnet < "{prompt_file}"'
+    capacity_stderr_pattern: '(usage limit reached|rate.?limit|quota exceeded|overloaded_error)'
+    conformance: unverified
+    note: >-
+      Same harness and same subscription as claude-code-opus — deliberately
+      the same `provider`, so a capacity pause on one pauses both. This is
+      what a lane is: the thing that runs out, not the brand.
+
+  - id: opencode-deepseek
+    provider: opencode-zen
+    tier: cheap
+    roles: [author, reviewer]
+    model: deepseek/deepseek-chat
+    harness: opencode
+    command: 'opencode run --dir "{worktree}" --model deepseek/deepseek-chat --auto --file "{prompt_file}" "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs."'
+    capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
+    conformance: unverified
+    note: >-
+      The advertised swap: a different model, a different provider, a
+      different harness, reachable by `node loop/run.mjs --runner
+      opencode-deepseek` with no other file edited. UNVERIFIED until
+      `node loop/conformance.mjs --runner opencode-deepseek` records four
+      PASSes in data/conformance.json — the flags below are the maintainer's
+      to confirm, and conformance is what confirms them. The selector refuses
+      any runner carrying a recorded FAIL.
