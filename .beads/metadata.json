@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "addictedtoai",
+  "project_id": "1accb86e-8335-4031-8b20-67eebdd2f266"
+}
