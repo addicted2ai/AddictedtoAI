@@ -1,0 +1,188 @@
+#!/usr/bin/env node
+/**
+ * pulse/run.mjs — the Pulse (specs/pulse, design D2).
+ *
+ * One ordinary command that performs, in order: stop-file check, source
+ * fetching, snapshot/hash/diff, data-layer update (including mechanical stub
+ * minting and lifecycle timeline appends), rolling link check, freshness
+ * computation, derived-queue recomputation, site rebuild, and — only when
+ * `data/config.json` has `publish: true` — the publish step.
+ *
+ * **It contains no model invocation on any path.** Nothing in this file's
+ * dependency graph imports a model SDK, reads a model API key, or would
+ * behave differently if every model credential on the machine vanished. That
+ * is the property the whole economics of the site rests on: the front page
+ * keeps changing on a day when no inference exists at all.
+ *
+ * Usage:
+ *   node pulse/run.mjs                 the full run
+ *   node pulse/run.mjs --force         ignore per-source fetch cadence
+ *   node pulse/run.mjs --offline       no network: no fetches, no link checks
+ *   node pulse/run.mjs --no-build      skip the site rebuild step
+ *   node pulse/run.mjs --no-mint       skip mechanical stub minting
+ *   node pulse/run.mjs --dry-run       publish step prints, executes nothing
+ *   node pulse/run.mjs --assume-publish --dry-run
+ *                                      print the publish: true path without
+ *                                      touching data/config.json (a reserved
+ *                                      path). Refused without --dry-run.
+ *
+ * Environment: `PULSE_ROOT` points the whole run at another tree (fixtures);
+ * `PULSE_NOW` fixes the clock; `SITE_URL` overrides the deploy poll target.
+ * No model-related variable is read anywhere.
+ */
+
+import { existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { makeLogger, paths, readJsonl, repoRoot, today } from './lib/core.mjs';
+import { loadRegistry, sortedSources } from './lib/registry.mjs';
+import { ingestSource, loadSnapshot, loadState, saveState } from './lib/sources.mjs';
+import { appendChanges, diffSnapshots, seedChanges } from './lib/diff.mjs';
+import { readCorpus, corpusLinks } from './lib/corpus.mjs';
+import { deriveDataLayer } from './lib/derive.mjs';
+import { mintStubs, appendTimelineEvents } from './lib/mint.mjs';
+import { rollingLinkCheck } from './lib/linkcheck.mjs';
+import { computeFreshness } from './lib/freshness.mjs';
+import { computeQueue, writeQueue } from './lib/queue.mjs';
+import { publishStep } from './lib/publish.mjs';
+
+const argv = new Set(process.argv.slice(2));
+const flag = (name, env) => argv.has(name) || process.env[env] === '1';
+
+const options = {
+  force: flag('--force', 'PULSE_FORCE'),
+  offline: flag('--offline', 'PULSE_OFFLINE'),
+  noBuild: flag('--no-build', 'PULSE_NO_BUILD'),
+  noMint: flag('--no-mint', 'PULSE_NO_MINT'),
+  dryRun: argv.has('--dry-run'),
+  assumePublish: argv.has('--assume-publish'),
+};
+
+if (argv.has('--help') || argv.has('-h')) {
+  process.stdout.write(
+    'node pulse/run.mjs [--force] [--offline] [--no-build] [--no-mint] [--dry-run] [--assume-publish]\n',
+  );
+  process.exit(0);
+}
+
+const root = repoRoot();
+const p = paths(root);
+const log = makeLogger('pulse');
+
+// ---- 1. stop-file check --------------------------------------------------
+// The maintainer's brake. Exits immediately, does nothing, says so. Exit 0:
+// a stopped Pulse is an instruction obeyed, not an error for a scheduler to
+// alarm about.
+if (existsSync(p.stop)) {
+  process.stdout.write(`pulse: STOP file present at ${p.stop} — exiting immediately, nothing done.\n`);
+  process.exit(0);
+}
+
+log.step('run', `root ${root}, date ${today()}${options.offline ? ', offline' : ''}${options.force ? ', forced' : ''}`);
+
+const registry = loadRegistry(root);
+log.step('registry', `${registry.sources.length} source(s): ${sortedSources(registry).map((s) => s.id).join(', ')}`);
+
+// ---- 2/3. fetch, snapshot, hash, diff ------------------------------------
+const freshChanges = [];
+for (const source of sortedSources(registry)) {
+  const result = await ingestSource(root, source, { force: options.force, offline: options.offline });
+  const detail =
+    result.action === 'refused'
+      ? `REFUSING since ${result.since} (HTTP ${result.status}) — recorded, not routed around; last snapshot keeps serving`
+      : result.action === 'error'
+        ? `unreachable: ${result.error} — last snapshot keeps serving`
+        : result.action === 'skipped' || result.action === 'offline'
+          ? result.why
+          : `${result.action}, ${result.rows} row(s)${result.skipped ? `, ${result.skipped} row(s) without an id skipped` : ''}`;
+  log.step(`source ${source.id}`, detail);
+
+  const latest = loadSnapshot(root, source.id, 'latest');
+  const previous = loadSnapshot(root, source.id, 'previous');
+  const candidates = diffSnapshots(source, previous, latest);
+
+  // Launch-feed seeding: once per source, on the first ingestion of a source
+  // whose rows carry their own dated historical records (specs/pulse).
+  const state = loadState(root, source.id);
+  if (source.seeds && latest && !state.seeded) {
+    const seeds = seedChanges(source, latest);
+    candidates.push(...seeds);
+    state.seeded = true;
+    state.seeded_on = today();
+    saveState(root, source.id, state);
+    log.step(`seed ${source.id}`, `${seeds.length} dated historical record(s) offered to the changed feed`);
+  }
+
+  const written = appendChanges(p.changes, candidates);
+  if (candidates.length || written.length) {
+    log.step(`diff ${source.id}`, `${candidates.length} change(s) computed, ${written.length} new line(s) appended`);
+  }
+  // Only newly recorded lines drive downstream effects — see appendChanges.
+  freshChanges.push(...written.filter((c) => !c.seeded));
+}
+
+// ---- 4. data-layer update -----------------------------------------------
+let corpus = readCorpus(root);
+if (corpus.unreadable.length) log.warn(`${corpus.unreadable.length} content file(s) could not be parsed; skipped`);
+
+if (options.noMint) {
+  log.step('mint', 'skipped (--no-mint)');
+} else {
+  const mints = mintStubs(root, registry, corpus, { date: today() });
+  log.step(
+    'mint',
+    `${mints.minted.length} stub(s) minted from ${mints.considered} undeclared row(s)` +
+      (mints.collisions.length ? `, ${mints.collisions.length} slug collision(s) left untouched` : ''),
+  );
+  for (const c of mints.collisions) log.warn(`slug collision: row "${c.row_id}" would land on existing ${c.path} — not overwritten`);
+  if (mints.minted.length) corpus = readCorpus(root);
+}
+
+const timeline = appendTimelineEvents(root, corpus, freshChanges);
+log.step('timeline', `${timeline.appended.length} lifecycle event(s) appended to joined entries`);
+if (timeline.appended.length) corpus = readCorpus(root);
+
+const derived = deriveDataLayer(root, registry, corpus);
+log.step(
+  'data layer',
+  `${derived.catalog_rows} catalog row(s), ${derived.deprecations} deprecation(s), ${derived.changed_30d} change(s) in 30d` +
+    (derived.vanished.length ? `, ${derived.vanished.length} vanished feed row(s)` : ''),
+);
+
+// ---- 5. rolling link check ----------------------------------------------
+const links = corpusLinks(corpus);
+const linkResult = await rollingLinkCheck(root, links, { offline: options.offline });
+log.step('link check', `${linkResult.total} link(s) known, ${linkResult.due} due, ${linkResult.checked} checked, ${linkResult.broken.length} broken`);
+
+// ---- 6. freshness --------------------------------------------------------
+const freshness = computeFreshness(root, { registry, corpus, derived, linkResult });
+log.step(
+  'freshness',
+  `${freshness.overdue_facts.length} overdue fact(s), ${freshness.tutorials.filter((t) => t.state === 'stale' || t.state === 'demoted').length} stale tutorial(s), ` +
+    `${freshness.listings.filter((l) => l.state !== 'ok').length} listing(s) needing attention, ${freshness.sources.filter((s) => s.suspect).length} suspect source(s)`,
+);
+
+// ---- 7. derived queue ----------------------------------------------------
+const queue = computeQueue(root, { freshness, changesFile: p.changes });
+writeQueue(root, queue);
+log.step('queue', `${queue.count} item(s) of ${queue.total_before_cap} (cap ${queue.cap}) — recomputed from state, never accumulated`);
+
+// ---- 8. site rebuild -----------------------------------------------------
+if (options.noBuild) {
+  log.step('build', 'skipped (--no-build)');
+} else if (!existsSync(`${root}/package.json`)) {
+  log.step('build', 'skipped (no package.json at this root)');
+} else {
+  const res = spawnSync('npm', ['run', 'build'], { cwd: root, stdio: 'inherit', shell: process.platform === 'win32' });
+  if (res.status !== 0) {
+    log.error(`site rebuild failed with exit code ${res.status}`);
+    process.exit(res.status ?? 1);
+  }
+  log.step('build', 'ok');
+}
+
+// ---- 9. publish ----------------------------------------------------------
+await publishStep(root, { dryRun: options.dryRun, assumePublish: options.assumePublish, log });
+
+const feedLines = readJsonl(p.changes).length;
+log.step('done', `changed feed holds ${feedLines} line(s); queue holds ${queue.count} item(s)`);
+process.exit(0);

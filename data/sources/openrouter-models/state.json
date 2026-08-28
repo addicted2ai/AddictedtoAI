@@ -1,0 +1,11 @@
+{
+  "consecutive_no_change_fetches": 2,
+  "last_change_date": "2026-08-28",
+  "last_error": null,
+  "last_fetch_at": "2026-08-28T18:19:56.176Z",
+  "last_fetch_date": "2026-08-28",
+  "last_status": 200,
+  "refusing": null,
+  "seeded": false,
+  "source": "openrouter-models"
+}

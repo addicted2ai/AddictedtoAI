@@ -1,0 +1,120 @@
+{
+  "note": "The source registry (specs/pulse). Adding or removing a source is an ordinary data change, not an OpenSpec change. Every entry records what the source yields, which field is its row id (the join key entries declare in their `feeds` map), its cadences, its robots/terms check, and the date it was last verified live.",
+  "sources": [
+    {
+      "id": "openrouter-models",
+      "title": "OpenRouter model catalog",
+      "url": "https://openrouter.ai/api/v1/models",
+      "format": "json",
+      "rows_path": "data",
+      "row_id_field": "id",
+      "display_name_field": "name",
+      "yields": [
+        "id",
+        "canonical_slug",
+        "name",
+        "description",
+        "created",
+        "context_length",
+        "architecture.modality",
+        "architecture.input_modalities",
+        "architecture.output_modalities",
+        "architecture.tokenizer",
+        "pricing.prompt",
+        "pricing.completion",
+        "pricing.image",
+        "pricing.web_search",
+        "pricing.internal_reasoning",
+        "pricing.input_cache_read",
+        "pricing.input_cache_write",
+        "top_provider.context_length",
+        "top_provider.max_completion_tokens",
+        "top_provider.is_moderated",
+        "supported_parameters",
+        "hugging_face_id",
+        "knowledge_cutoff",
+        "expiration_date",
+        "per_request_limits"
+      ],
+      "fetch_every_days": 1,
+      "expected_change_days": 3,
+      "emit_on_remove": true,
+      "material_fields": [
+        { "field": "price_input", "path": "pricing.prompt" },
+        { "field": "price_output", "path": "pricing.completion" },
+        { "field": "context_window", "path": "context_length" },
+        { "field": "status", "path": "$status" }
+      ],
+      "status_rule": {
+        "kind": "expiration_date",
+        "path": "expiration_date",
+        "deprecated_within_days": 365,
+        "note": "OpenRouter serves no status field of its own. Status is derived deterministically from `expiration_date`: absent -> active; in the past -> retired; within 365 days -> deprecated; further out -> active. The far-future sentinel dates the API carries (2098-12-31 on several z-ai rows, observed 2026-08-28) therefore read as active, which is what they mean — deriving `deprecated` from a sentinel would fire a false lifecycle timeline event on the joined entry."
+      },
+      "mints": {
+        "kind": "model",
+        "slug_from": "row_id",
+        "note": "The launch set's one minting source (design D7). Every row whose id no entry declares mints a stub `content/wiki/model/<slug>.md` with all aliases classed `manual` (specs/pulse). One minting source deliberately, so cross-source duplicate stubs cannot arise at launch."
+      },
+      "seeds": null,
+      "robots": {
+        "url": "https://openrouter.ai/robots.txt",
+        "checked_on": "2026-08-28",
+        "result": "allowed",
+        "detail": "HTTP 200. `User-Agent: *` / `Allow: /` / `Disallow: /seo/`. The models endpoint is not under any disallowed prefix. It is a public, unauthenticated JSON API and is fetched once per day."
+      },
+      "verification": {
+        "date": "2026-08-28",
+        "result": "live",
+        "http_status": 200,
+        "content_type": "application/json",
+        "bytes": 640354,
+        "rows": 388,
+        "row_ids_unique": true,
+        "detail": "Fetched unauthenticated. Top-level keys: data, total_count, links. total_count 388, links.next null (no pagination). `id` is unique across all 388 rows. `created` spans 2023-05-28 to 2026-08-28. No row has a null `context_length`. 8 rows carry a non-null `expiration_date`."
+      }
+    },
+    {
+      "id": "llm-releases",
+      "title": "LLM Releases — model release/retirement tracker",
+      "url": "https://llm-releases.com/feed.xml",
+      "site_url": "https://llm-releases.com",
+      "format": "rss",
+      "row_id_field": "guid",
+      "display_name_field": "title",
+      "yields": ["title", "link", "guid", "pubDate", "description", "source_url", "source_name"],
+      "fetch_every_days": 1,
+      "expected_change_days": 3,
+      "emit_on_remove": false,
+      "rolling_window": true,
+      "material_fields": [],
+      "status_rule": null,
+      "mints": null,
+      "seeds": {
+        "date_field": "pubDate",
+        "title_field": "title",
+        "source_url_field": "source_url",
+        "note": "This source's rows are dated, sourced historical events, which is what makes the launch-feed seeding in specs/pulse possible: on first ingestion its history seeds `data/changes.jsonl` marked `seeded: true` with the original dates and sources, so the home changed feed is populated on day one rather than starting empty."
+      },
+      "robots": {
+        "url": "https://llm-releases.com/robots.txt",
+        "checked_on": "2026-08-28",
+        "result": "allowed",
+        "detail": "HTTP 200 (redirects to www). Disallows /admin, /api/admin, /api/cron, /api/candidates, /api/indexnow, /api/v1 and /data/. `/feed.xml` is not disallowed, and the site's own <head> advertises it as `<link rel=\"alternate\" type=\"application/rss+xml\">`. The disallowed /api/v1 and /data/ paths are never fetched."
+      },
+      "verification": {
+        "date": "2026-08-28",
+        "result": "live",
+        "http_status": 200,
+        "content_type": "application/rss+xml",
+        "bytes": 43193,
+        "rows": 60,
+        "row_ids_unique": true,
+        "declared_url_status": 200,
+        "detail": "The URL named in design D7, https://llm-releases.com, returns HTTP 200 but is a 1.3 MB client-rendered Next.js HTML page. The Pulse instead fetches the machine-readable representation the site itself advertises in that page's <head>, https://llm-releases.com/feed.xml — same source, robots-allowed, declared by the publisher for this purpose, and stable to parse. 60 items, all 60 carrying a <source url=...> vendor link (the archived source reference). `guid` is unique across all 60; `link` is NOT unique (54 distinct links; 5 model pages carry 2-3 events each), which is why `guid` and not `link` is the row id. pubDate spans 2026-06-29 to 2026-08-24; channel lastBuildDate Mon, 24 Aug 2026. No item in the current 60-item window is a retirement or deprecation — the window is releases and updates only, so launch seeding yields release history and no retirement history."
+      }
+    }
+  ],
+  "verified_on": "2026-08-28",
+  "version": 1
+}

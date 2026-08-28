@@ -1,0 +1,44 @@
+{
+  "broken_links": [],
+  "date": "2026-08-28",
+  "link_check": {
+    "checked": 0,
+    "due": 0,
+    "interval_days": 30,
+    "offline": false,
+    "total": 0
+  },
+  "listings": [],
+  "overdue_facts": [],
+  "sources": [
+    {
+      "days_since_change": 0,
+      "display_date": "2026-08-28",
+      "display_date_label": "last checked",
+      "expected_change_days": 3,
+      "id": "llm-releases",
+      "last_change_date": "2026-08-28",
+      "last_fetch_date": "2026-08-28",
+      "refusing": null,
+      "snapshot_date": "2026-08-28",
+      "suspect": false,
+      "suspect_after_days": 9
+    },
+    {
+      "days_since_change": 0,
+      "display_date": "2026-08-28",
+      "display_date_label": "last checked",
+      "expected_change_days": 3,
+      "id": "openrouter-models",
+      "last_change_date": "2026-08-28",
+      "last_fetch_date": "2026-08-28",
+      "refusing": null,
+      "snapshot_date": "2026-08-28",
+      "suspect": false,
+      "suspect_after_days": 9
+    }
+  ],
+  "tutorials": [],
+  "unreadable_content": [],
+  "vanished_feed_rows": []
+}
