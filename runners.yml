@@ -95,20 +95,81 @@ runners:
       the same `provider`, so a capacity pause on one pauses both. This is
       what a lane is: the thing that runs out, not the brand.
 
+  - id: codex-gpt-luna
+    provider: openai
+    tier: frontier
+    roles: [author, reviewer]
+    model: gpt-5.6-luna
+    harness: codex-cli
+    command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="max" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s workspace-write -C "{worktree}" < "{prompt_file}"'
+    capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
+    conformance: unverified
+    note: >-
+      A third harness, and the one that makes the portability claim
+      non-trivial: a different model, a different provider and a different
+      CLI from both Claude Code entries.
+
+      Verified against this machine on 2026-08-28 rather than assumed.
+      `codex doctor` reports auth configured (mode `chatgpt`, provider
+      `openai`) and gpt-5.6-luna as the default model. `codex exec` reads its
+      prompt from stdin when none is given as an argument, which is why the
+      template redirects the brief in exactly as the Claude entries do.
+
+      Reasoning effort is set IN THE COMMAND, not inherited. The maintainer's
+      `~/.codex/config.toml` already carries `model_reasoning_effort = "max"`
+      and lists it among `enabled-reasoning-efforts`, but a runner that
+      depends on one machine's user config is not a swap — the command
+      template is the entire interface, so the flag is explicit here.
+      `approval_policy` and the sandbox mode are pinned for the same reason:
+      an unattended run must not wait on a prompt that a different config
+      would raise.
+
+      The 1M context window is requested explicitly
+      (`model_context_window=1000000`, with the complementary
+      `model_auto_compact_token_limit=900000`). TWO KNOWN UPSTREAM ISSUES,
+      recorded so nobody later mistakes them for a defect here: openai/codex
+      #16068 reports that setting `model_context_window` at all can break
+      auto-compaction permanently after a first context overflow, and #19185
+      reports the context settings sometimes not taking effect, with Codex
+      still using roughly 258k. Neither is fatal for this use — a Desk job is
+      a single shot from a self-contained brief and should never approach
+      either limit — but if a job ever fails on context, look here first.
+
+      NOTE the lane. `provider: openai` is a different lane from the two
+      anthropic entries, so exhausting the Claude subscription does not pause
+      this runner and vice versa. That is the lane concept doing real work
+      rather than being described.
+
+      UNVERIFIED until `node loop/conformance.mjs --runner codex-gpt-luna`
+      records four PASSes in data/conformance.json.
+
   - id: opencode-deepseek
-    provider: opencode-zen
+    provider: opencode-go
     tier: cheap
     roles: [author, reviewer]
-    model: deepseek/deepseek-chat
+    model: opencode-go/deepseek-v4-flash
     harness: opencode
-    command: 'opencode run --dir "{worktree}" --model deepseek/deepseek-chat --auto --file "{prompt_file}" "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs."'
+    command: 'opencode run --dir "{worktree}" --model opencode-go/deepseek-v4-flash --variant max --auto --file "{prompt_file}" "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs."'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
     conformance: unverified
     note: >-
       The advertised swap: a different model, a different provider, a
       different harness, reachable by `node loop/run.mjs --runner
-      opencode-deepseek` with no other file edited. UNVERIFIED until
-      `node loop/conformance.mjs --runner opencode-deepseek` records four
-      PASSes in data/conformance.json — the flags below are the maintainer's
-      to confirm, and conformance is what confirms them. The selector refuses
-      any runner carrying a recorded FAIL.
+      opencode-deepseek` with no other file edited.
+
+      Identifiers verified against this machine on 2026-08-28 rather than
+      assumed. `opencode auth list` holds three credentials — OpenRouter,
+      Ollama Cloud and OpenCode Go — and there is no OpenCode Zen provider
+      here, so `opencode-go` is both the configured account and the model
+      prefix `opencode models` prints. The bare `opencode/` provider carries
+      only free models and no deepseek.
+
+      `--variant max` is MANDATORY for this model. Without it the harness
+      runs a lower reasoning effort, which the maintainer identified as a
+      real quality difference during earlier work on this project.
+
+      UNVERIFIED until `node loop/conformance.mjs --runner opencode-deepseek`
+      records four PASSes in data/conformance.json. The selector refuses any
+      runner carrying a recorded FAIL. Note the brief reaches this harness as
+      an attached `--file` rather than on stdin — if the attachment does not
+      deliver, conformance check 1 fails and that is exactly what it is for.
