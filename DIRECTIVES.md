@@ -30,3 +30,5 @@ is never silently re-run. Removing finished lines is yours, at leisure.
 ---
 
 <!-- directives below this line -->
+
+- entry: write a prose body for `org/z-ai`. Its record already carries five sourced facts and five dated timeline events and no prose at all, so this is writing rather than research — read what the record already establishes and find the story in it. Apply the editorial bar in `specs/editorial`: it must give an enthusiast something they did not know or assemble scattered things for the first time, be specific with dates and numbers and mechanisms, and be worth linking. Do not restate the facts table in sentences — that is on the cut list. Every new claim needs a source you actually fetched.
