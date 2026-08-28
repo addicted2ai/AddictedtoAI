@@ -1,7 +1,7 @@
 ---
 title: "How the mechanism actually works"
 level: mechanics
-outcome: "After this you will be able to trace a token from input to output and say what each stage contributes."
+outcome: "You can trace a token from input to output and say what each stage contributes."
 prerequisites:
   - orientation
 mentions:

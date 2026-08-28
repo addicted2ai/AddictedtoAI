@@ -1,7 +1,7 @@
 ---
 title: "Where to start"
 level: orientation
-outcome: "be able to say what a language model is doing when it answers you"
+outcome: "You can say what a language model is doing when it answers you."
 prerequisites: []
 mentions:
   - concept/stub-entry

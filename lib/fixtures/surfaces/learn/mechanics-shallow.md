@@ -1,7 +1,7 @@
 ---
 title: "Zzz shapes and vocabulary"
 level: mechanics
-outcome: "be able to name the tensors that move through a transformer block"
+outcome: "You can name the tensors that move through a transformer block."
 prerequisites:
   - orientation-page
 mentions: []

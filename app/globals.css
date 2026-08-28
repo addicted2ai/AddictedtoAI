@@ -353,6 +353,36 @@ a:hover {
   border-color: var(--accent);
 }
 
+/* The theme toggle is the one control on the page a reader has to *find*
+   rather than being led to, and muted-on-panel with a transparent fill read
+   as an inert tag: it sat last in the header, after seven nav items and the
+   search field, and the site's owner could not spot it. Full-contrast ink and
+   the page ground behind it make it read as raised against the panel header,
+   and the glyph is what the eye actually scans for. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ink);
+  background: var(--paper);
+  padding: 0.34rem 0.55rem;
+}
+
+.theme-toggle svg {
+  display: block;
+  flex: none;
+}
+
+.theme-toggle-label {
+  letter-spacing: 0.02em;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ── page furniture ─────────────────────────────────────────────────── */
 
 main {
@@ -1030,9 +1060,35 @@ main {
   white-space: nowrap;
 }
 
+/* The standalone .fact is a flex row, so its `gap` separates the parts. An
+   inline fact is not, and the renderer emits no whitespace between the spans
+   — without this the value ran straight into its source ("trueopenrouter-
+   models, last checked ..."), and a unit would have made a third collision. */
+.fact-inline .fact-source,
+.fact-inline .fact-as-of,
+.fact-inline .fact-overdue,
+.fact-inline .fact-suspect {
+  margin-left: 0.4ch;
+}
+
 .fact-value {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
+}
+
+/* A value and its unit are one quantity, so they are one flex item: they wrap
+   together, and the space between them is tighter than the gap separating the
+   quantity from the source line beside it. */
+.fact-quantity {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.4ch;
+}
+
+.fact-unit {
+  font-family: var(--mono);
+  color: var(--muted);
 }
 
 .fact-source,

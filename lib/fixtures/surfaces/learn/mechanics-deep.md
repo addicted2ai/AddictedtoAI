@@ -1,7 +1,7 @@
 ---
 title: "Attention, in detail"
 level: mechanics
-outcome: "be able to follow the arithmetic of one attention head end to end"
+outcome: "You can follow the arithmetic of one attention head end to end."
 prerequisites:
   - mechanics-shallow
 mentions: []

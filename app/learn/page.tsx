@@ -24,8 +24,10 @@ export default async function LearnIndex() {
       <h1 className="page-title">How this actually works</h1>
       <p className="page-lede">
         A ladder, not a course. Each page states its level, what you will understand after reading
-        it, and which pages it assumes. Nothing on these pages perishes with the news cycle: a
-        current example is transcluded from its wiki entry, so it updates itself.
+        it, and which pages it assumes. Nothing on these pages perishes with the news cycle,
+        because nothing on them is a current number: they explain mechanisms, and the prices,
+        context windows and model names that go out of date live in the wiki and the catalog,
+        where they carry a date and a source.
       </p>
       <div dangerouslySetInnerHTML={{ __html: renderLadder(site.learnLadder) }} />
     </>
