@@ -1,14 +1,14 @@
 ---
 job: seed-concept-kv-cache
-verdict: revise
-reasons: [false-or-unsupported-claim]
+verdict: approve
+reasons: []
 would-cite: >-
-  The developer debugging a zero-hit cache rate would link the
-  breakpoint-hashing paragraph — the bug falls straight out of the mechanism
-  as described; and the lifetime-measured-from-request-start detail, which
-  this review verified verbatim against Anthropic's documentation, settles
-  arguments about why long streaming replies miss their follow-up window.
-reviewer: task-6.5 seed reviewer (fresh invocation, no authorship of any seed content)
+  The zero-hit-rate paragraph is what you paste at a developer whose cache
+  never hits — the hash-of-prefix mechanism predicts the bug before any log
+  does — and the lifetime-timed-from-request-start detail, quoted from the
+  vendor's own documentation, ends the argument about why long streaming
+  replies miss their follow-up window.
+reviewer: task-6.5 seed reviewer (fresh invocation, no authorship of any seed content); delta review by a separate fresh invocation (no authorship of the entry or its revision)
 date: 2026-08-28
 ---
 
@@ -65,3 +65,18 @@ position, layers x kv-heads x head-dim x bytes) is correct.
 Everything else in this piece is the strongest sourcing I checked in the
 whole seed set — including the one detail I specifically tried to catch as
 written-from-intent, which turned out to be quoted from measurement.
+
+## Delta review (commit 6ba8b3b only) — approve
+
+The one named finding is fixed. Fetched
+https://developers.openai.com/api/docs/guides/prompt-caching and matched the
+substring myself — the doc reads verbatim: "After the minimum cacheable
+token length, you can choose where to place cache breakpoints explicitly, or
+let OpenAI choose their locations implicitly." The rewritten sentence quotes
+this exactly, and its framing ("supports both modes: below a minimum
+cacheable prompt length nothing is cached at all, and above it ...") is the
+doc's own structure — the preceding sentence there is "A prompt prefix must
+meet the model's minimum cacheable token length before it can be cached."
+The 30-minute retention transclusion re-confirmed on the same page. The
+false automatic-versus-declared contrast is gone and nothing unsupported
+replaced it.

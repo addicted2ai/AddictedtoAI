@@ -1,9 +1,9 @@
 ---
 job: seed-resolving-github-issues
-verdict: revise
-reasons: [overclaiming-summary, false-or-unsupported-claim]
-would-cite: "Once the metric is restated at its unconditioned value, this is the delta a working programmer pastes into any argument about whether coding agents are real: the same benchmark family, 1.96 percent to the low sixties, in sixteen months."
-reviewer: task-6.5 seed reviewer (fresh context, no edit rights)
+verdict: approve
+reasons: []
+would-cite: "At its unconditioned value this is the working programmer's receipt in any coding-agents-are-real argument: the same benchmark family, 1.96% to 62.3% in sixteen months, both ends stated by the paper and the vendor's own page."
+reviewer: task-6.5 seed reviewer (fresh context, no edit rights); delta review by a separate fresh invocation (no authorship of the delta or its correction)
 date: 2026-08-28
 ---
 
@@ -40,3 +40,29 @@ Required changes (one revision pass):
 Nothing else needs to change: "the same benchmark's human-verified subset"
 is honest framing, and 1.96% to 62.3% in sixteen months loses none of the
 delta's force — arguably it gains credibility.
+
+## Delta review (of the 70.3% → 62.3% correction only) — approve
+
+The overclaim is fixed and the replacement number is on the cited page — but
+where it lives matters, so recording it precisely. Fetched
+https://www.anthropic.com/news/claude-3-7-sonnet twice, by two independent
+methods: the string "62.3" appears nowhere in the page's HTML or rendered
+text — every "62" in the source is SVG path data or an asset hash. The
+running text carries only the conditioned pair: "This results in a score of
+70.3% on the subset of n=489 verified tasks which work on our
+infrastructure" and "Without this scaffold, Claude 3.7 Sonnet achieves
+63.7% on SWE-bench Verified using this same subset."
+
+The 62.3% is in the page's SWE-bench Verified bar chart. I downloaded the
+chart image the announcement embeds
+(www-cdn.anthropic.com/images/4zrzovbb/website/08bba4487fb5ac1ba52540ee656d7e4da10ca1be-1920x1145.png)
+and read it directly: the Claude 3.7 Sonnet bar is labeled 62.3%, with a
+lighter extension labeled "70.3% with custom scaffold". So 62.3% is the
+announcement's own headline unconditioned figure, presented exactly as the
+delta now presents it, and the scaffolded number is no longer stated without
+its condition.
+
+Caveat for future verification passes: a text-substring check against this
+URL will fail on "62.3" forever — the support is the chart image, verified
+here by reading the image itself. Do not "correct" the figure to the text's
+63.7%; that number is itself conditioned on the n=489 subset.

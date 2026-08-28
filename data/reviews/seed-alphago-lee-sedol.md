@@ -1,13 +1,13 @@
 ---
 job: seed-alphago-lee-sedol
-verdict: revise
-reasons: [false-or-unsupported-claim]
+verdict: approve
+reasons: []
 would-cite: >-
-  Anyone in a "humans can never beat Go engines again" thread — this is the
-  one page that pairs the 2016 match record with the 2022 adversarial-policy
-  result and Lee's retirement quotes, so it settles both the triumph and its
-  asterisk.
-reviewer: seed-review-6.5
+  Still the one page pairing the 2016 match record with the 2022 cyclic
+  exploit — now with every quotation on a fetchable page — so it settles
+  both "machines won" and the asterisk: the last human wins over top Go
+  engines came from an exploit a person can run by hand, not from better Go.
+reviewer: seed-review-6.5; delta review by a separate fresh invocation (no authorship of the entry or its revision)
 date: 2026-08-28
 ---
 
@@ -76,3 +76,67 @@ Everything else in the piece measured true, and the closing argument (the
 last human win by playing better Go vs. wins by exploit) is well-earned by
 the sources once the quotations are anchored. One revision pass should
 settle all four points.
+
+## Delta review (commit db1e2df only) — approve
+
+All four named findings fixed; the revision's substantial new material was
+verified line by line against fresh fetches.
+
+1. Announcement date. Fetched
+   research.google/blog/alphago-mastering-the-ancient-game-of-go-with-machine-learning/
+   — dated January 27, 2016, carrying verbatim: "AlphaGo's next challenge
+   will be to play the top Go player in the world over the last decade, Lee
+   Sedol. The match will take place this March in Seoul, South Korea."
+   Fetched blog.google/innovation-and-ai/products/alphagos-ultimate-challenge/
+   — dated Mar 08, 2016, first game March 9, and carrying "The games will be
+   even (no handicap), with $1 million USD in prize money" and "If AlphaGo
+   wins, the prize money will be donated to UNICEF, STEM charities and Go
+   organizations." Every element of the revised 2016-03-08 row — day before
+   play, five games, no handicap, purse, charity pledge — is on that page,
+   and the opening paragraph now matches both sources.
+2. The unfetchable Pelrine quotation is gone; every replacement string was
+   matched as a substring of ar5iv.labs.arxiv.org/html/2211.00241: "97% win
+   rate against KataGo running at superhuman settings"; "the strongest
+   publicly available Go AI system at the time of writing"; "Our adversaries
+   do not win by playing Go well"; the three-stage description ("first, set
+   up an 'inside' group ... before the victim realizes it is in danger and
+   defends" — verbatim in Appendix G, inner quote marks converted for
+   nesting); "one of our authors, a Go expert, was able to learn from our
+   adversary's game records to implement this attack without any algorithmic
+   assistance"; "obtained a greater than 90% win rate against a top ranked
+   KataGo bot that is unaffiliated with the authors"; "KataGo and Leela Zero
+   playing with 100k visits each, which is normally far beyond human
+   capabilities"; "persists even in KataGo agents adversarially trained to
+   defend against our attack". The unquoted paraphrase also checks: the
+   paper says "Typically the victim predicts that it will win with over 99%
+   confidence for most of the game, then suddenly realizes it will lose with
+   high probability, often just one move before its cyclic group is
+   captured." The new cyclic_adversary_win_rate fact is the abstract's own
+   number. I also tested the revising agent's stated reason for abandoning
+   goattack.far.ai rather than citing it: fetched, HTTP 200, exactly 71
+   characters of rendered text — "JavaScript is required to view this
+   website." The claim was accurate and the removal was the right call.
+3. Korea Baduk Association and "sincere efforts" are gone. The 9-dan
+   material now quotes deepmind.google/research/alphago/, and both strings
+   match verbatim: "earned AlphaGo a 9 dan professional ranking — the first
+   time a computer Go player had received the highest possible
+   certification" and "Known as 'God's Touch', this move was just as
+   unlikely and inventive as the one AlphaGo played two games earlier" (the
+   page ties the quote to "Lee Sedol played a Move 78", supporting the
+   entry's framing). One note: the source's sentence subject is "This game";
+   the entry renders it as "the match" — the source's own antecedent is the
+   4-1 victory in its preceding sentence, so this is a fair reading, not a
+   defect.
+4. Game-four specifics. "180 moves", "won by resignation" and the "wedge"
+   are cut; "played with white" is now doubly supported — the cited
+   blog.google page's Game 4 recap reads "Playing as white, Lee won by
+   resignation after 180 moves", and the cited ABC piece quotes Lee himself:
+   "My white 78 was not a move that should be countered straightforwardly."
+   The misquotation fix ("Using a single machine, AlphaGo won all but one of
+   its 500 games") matched with the capital U, and the unsupported
+   KataGo-stronger-than-AlphaGo comparison is replaced by the paper's own
+   "strongest publicly available" claim, which matched.
+
+The revision did not merely survive: replacing a secondhand quotation with
+the paper's own KGS numbers made the closing argument stronger than the
+version that was returned.

@@ -1,15 +1,14 @@
 ---
 job: seed-org-anthropic
-verdict: revise
-reasons: [false-or-unsupported-claim, intent-not-measurement]
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone arguing that frontier capability gating has become a policy and
-  clearance question rather than a technical one — "the top model is not for
-  sale, and it came back from suspension through a government approval" —
-  would paste this page; so would anyone claiming Anthropic ships capability
-  gains without price increases, since the flat five-release price ladder
-  against a rising intelligence index is assembled here and nowhere else.
-reviewer: task-6.5 seed reviewer (fresh invocation, no authorship of any seed content)
+  The page to hand anyone claiming frontier access has become a clearance
+  question: a tier that left the market for nineteen days and returned "for a
+  set of US organizations, following the US government's approval", stacked
+  against a measured five-release price ladder that never moved while the
+  intelligence index climbed eight points.
+reviewer: task-6.5 seed reviewer (fresh invocation, no authorship of any seed content); delta review by a separate fresh invocation (no authorship of the entry or its revision)
 date: 2026-08-28
 ---
 
@@ -67,3 +66,33 @@ Everything else in the piece held up under fetch and measurement, and the
 piece easily clears the editorial bar — the suspension-and-clearance story
 and the price-stillness measurement are exactly the assembled-in-one-place
 material the spec asks for.
+
+## Delta review (commit 6ba8b3b only) — approve
+
+Both named findings verified fixed by independent re-fetch and
+re-measurement; nothing new introduced.
+
+1. The `top_tier_access` fact now reads "Mythos 5 is available to a small
+   set of initial testing partners for cybersecurity, and soon, biology
+   research." Fetched https://www.anthropic.com/claude/mythos — its
+   Availability section carries the sentence verbatim ("Claude Mythos 5 is
+   available to a small set of initial testing partners for cybersecurity,
+   and soon, biology research."). The lede's softening to "not on general
+   sale" is consistent with the page (access gated to testing partners; a
+   published $10/$50 per million list price, so "not for sale" would have
+   been wrong). The body's restatement that biology researchers "are still
+   listed as coming" is supported on both cited pages: the Mythos page's
+   "and soon, biology research" and the announcement's "In the coming weeks,
+   some biomedical researchers and companies will be able to join our
+   trusted access program for biology."
+2. "Two step-ups in ninety-nine days, neither of them charged for" —
+   re-measured against `data/sources/openrouter-models/latest.json`
+   (2026-08-28, 388 rows): 4.7 = 55 (created 2026-04-16), 4.8 = 57.3
+   (2026-05-27), opus-5 = 63.1 (2026-07-24); `claude-opus-4.6` carries no
+   artificial_analysis object at all; 2026-04-16 to 2026-07-24 is exactly
+   99 days; all five opus rows at 0.000005/0.000025. Two step-ups, measured.
+
+New-defect check: `anthropic/claude-fable-5` is a priced catalog row
+(0.00001/0.00005, created 2026-06-09), which the new fact wording no longer
+contradicts; the reworded lede paragraph's remaining quotes were already
+verified in the first pass and are unchanged.

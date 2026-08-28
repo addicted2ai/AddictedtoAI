@@ -1,14 +1,14 @@
 ---
 job: seed-org-deepseek
-verdict: revise
-reasons: [false-or-unsupported-claim]
+verdict: approve
+reasons: []
 would-cite: >-
-  The person in every "is the expensive API worth it" thread needs exactly
-  this page: three vendors within about 1.5 points on the same intelligence
-  index with a forty-fold input-price spread, plus the stated mechanism
-  (13B active of 284B) that makes the floor price structural rather than a
-  subsidy.
-reviewer: task-6.5 seed reviewer (fresh invocation, no authorship of any seed content)
+  Anyone pricing an agent workload cites the three-vendor comparison — a
+  1.3-point intelligence-index spread against a 41x input-price spread in a
+  single dated snapshot — plus the 13B-active-of-284B mechanism that makes
+  the floor price structural rather than a subsidy; Willison's hedged
+  one-liner is the quotable summary.
+reviewer: task-6.5 seed reviewer (fresh invocation, no authorship of any seed content); delta review by a separate fresh invocation (no authorship of the entry or its revision)
 date: 2026-08-28
 ---
 
@@ -56,3 +56,15 @@ catalog.
 
 Otherwise a sharp piece that clears the bar: the price-floor framing is an
 assembled comparison no single vendor page shows.
+
+## Delta review (commit 6ba8b3b only) — approve
+
+The one named finding is fixed. Fetched
+https://simonwillison.net/2026/Jul/31/deepseek-v4-flash-0731/ and matched
+the substring myself: the post's sentence reads "It's $0.14/million input
+and $0.27/million output pricing means this may currently be the best
+value-per-intelligence model out there." The entry now quotes "may currently
+be the best value-per-intelligence model out there" — hedge intact — and its
+lead-in ("wrote that the release's pricing means this") mirrors the source's
+own construction instead of flattening a hedged assessment into a flat one.
+Nothing else in the piece changed; no new claim was introduced.

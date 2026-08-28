@@ -1,13 +1,13 @@
 ---
 job: seed-attention-is-all-you-need
-verdict: revise
-reasons: [false-or-unsupported-claim]
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone correcting "the Transformer paper predicted LLMs" or "modern models
-  use the architecture as published" — it carries section-level quotes showing
-  a one-machine translation paper whose post-LN layout was superseded, with
-  the seven-version arXiv history as the receipt.
-reviewer: seed-review-6.5
+  The corrective for "the Transformer paper predicted LLMs": a translation
+  paper trained on one eight-GPU box whose post-LN diagram was superseded —
+  and now also the footnote nobody quotes past its second sentence, with the
+  six per-author credit sentences as the receipt.
+reviewer: seed-review-6.5; delta review by a separate fresh invocation (no authorship of the entry or its revision)
 date: 2026-08-28
 ---
 
@@ -49,3 +49,27 @@ Required change (false-or-unsupported-claim):
 
 Everything else measured true. The three-misrememberings structure earns the
 read, and the v7 detail is the kind of thing nobody else has in one place.
+
+## Delta review (commit db1e2df only) — approve
+
+The named finding is fixed, and the fix's own new claims verify. Fetched
+https://ar5iv.labs.arxiv.org/html/1706.03762 and matched the substrings
+myself: the footnote opens "Equal contribution. Listing order is random."
+and then runs exactly six further sentences, each apportioning work by name
+(Jakob / Ashish-with-Illia / Noam / Niki / Llion / Lukasz-and-Aidan — all
+eight authors named across them). Both newly quoted fragments are verbatim
+substrings: "Jakob proposed replacing RNNs with self-attention and started
+the effort to evaluate this idea" and "Noam proposed scaled dot-product
+attention, multi-head attention and the parameter-free position
+representation". The unsupported "decided by a coin" is gone. "Runs on for
+six more sentences" and "four more like them" are counts I performed on the
+fetched footnote text; both are exact.
+
+The second fix also holds: the Xiong et al. quotation now reads
+"well-behaved at initialization" — fetched https://arxiv.org/abs/2002.04745;
+the abstract carries "the gradients are well-behaved at initialization" with
+the z. (The entry's own prose still spells "initialisation" outside
+quotation marks, which is style, not sourcing.) The revised paragraph's
+editorial close — that the quoted half of the footnote is the half that says
+less — is argument, not claim, and the piece now passes the test its own
+closing sets.

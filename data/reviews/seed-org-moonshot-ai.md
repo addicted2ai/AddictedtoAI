@@ -1,15 +1,14 @@
 ---
 job: seed-org-moonshot-ai
-verdict: revise
-reasons: [false-or-unsupported-claim]
+verdict: approve
+reasons: []
 would-cite: >-
-  Anyone arguing that "open weights" has become a spectrum rather than a
-  binary would cite the licence paragraph — a revenue-share clause above
-  US$20M mirrored by Qwen's above US$50M, documented as a pattern across
-  two Chinese labs; and the seven-month vendor-hosted life of a
-  trillion-parameter flagship is the number for arguments about how fast
-  frontier releases now depreciate.
-reviewer: task-6.5 seed reviewer (fresh invocation, no authorship of any seed content)
+  The licence paragraph is the citable evidence that "open weights" has
+  become a spectrum — a 30%-above-US$20M revenue-share clause mirrored by
+  Qwen's above-US$50M, documented across two labs — and the
+  January-flagship-sunset-in-August arithmetic is the number for arguments
+  about how fast a trillion-parameter release now depreciates.
+reviewer: task-6.5 seed reviewer (fresh invocation, no authorship of any seed content); delta review by a separate fresh invocation (no authorship of the entry or its revision)
 date: 2026-08-28
 ---
 
@@ -62,3 +61,22 @@ Checklist: wiki entry. Sources fetched, catalog claims measured against
 
 Everything else held. The closing arithmetic — a January flagship sunset in
 August — is the piece's real contribution and survives measurement.
+
+## Delta review (commit 6ba8b3b only) — approve
+
+The named finding is fixed exactly as the first pass prescribed: the
+2026-01-27 timeline row's source_url now points at
+https://huggingface.co/moonshotai/Kimi-K2.5. Fetched it and matched the
+substring myself — the card's License section states verbatim: "Both the
+code repository and the model weights are released under the Modified MIT
+License." The licence claim now rests on a source that carries it.
+
+Residual, recorded but not blocking: the HF card does not state the
+27 January release date anywhere in its text (the repo's embedded createdAt
+metadata is 2026-01-01; the card's citation year is 2026). The date itself
+was fetch-verified in the first pass against the SiliconANGLE article and
+stands in this record; but the row's single cited source now supports the
+licence and the published weights, not the specific day. The first pass's
+own prescribed remedy created this trade, so it is not held against the
+revision — a maintenance pass could re-anchor the date if the row is ever
+re-touched.
