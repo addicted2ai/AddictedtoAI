@@ -1,0 +1,23 @@
+# Normalize every text file to LF, in the repository and in the working tree.
+#
+# This is not cosmetic. The Pulse regenerates files under data/ on every run
+# and several checks in this change assert byte-identity between a
+# regenerated file and its committed form (for example: "re-running with no
+# state change produces a byte-identical queue", task 3.5). Node writes LF;
+# if git checked those files out with CRLF on Windows, every regenerated
+# file would differ from its committed blob on every line and those checks
+# would be meaningless.
+* text=auto eol=lf
+
+# Never touch binary payloads.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.pdf binary
