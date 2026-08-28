@@ -60,8 +60,16 @@ mentions:
 The paper that removed recurrence from sequence modelling was posted to arXiv
 on 12 June 2017 by Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit,
 Llion Jones, Aidan N. Gomez, Lukasz Kaiser and Illia Polosukhin, under a
-first-page footnote reading in full: "Equal contribution. Listing order is
-random." Eight authors, no first author, decided by a coin.
+first-page footnote that opens: "Equal contribution. Listing order is random."
+
+That is where the quotation almost always stops. The footnote does not. It
+runs on for six more sentences apportioning the work by name — "Jakob proposed
+replacing RNNs with self-attention and started the effort to evaluate this
+idea", "Noam proposed scaled dot-product attention, multi-head attention and
+the parameter-free position representation", and four more like them. The
+paper declines to rank its eight authors and then records, in the same
+breath, exactly what each of them did. The half that gets quoted is the half
+that says less.
 
 Three things about it are consistently misremembered.
 
@@ -94,7 +102,7 @@ placement makes the notorious learning-rate warm-up stage necessary: at
 initialisation, expected gradients near the output layer are large, so a large
 learning rate destabilises training and warm-up is the workaround. Move the
 normalisation inside the residual block — pre-LN — and "the gradients are
-well-behaved at initialisation," and the warm-up stage can be dropped. Pre-LN
+well-behaved at initialization," and the warm-up stage can be dropped. Pre-LN
 is what large models are actually built from. The diagram in Figure 1 is a
 diagram of a variant that was superseded within three years.
 
