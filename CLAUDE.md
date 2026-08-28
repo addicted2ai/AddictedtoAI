@@ -90,6 +90,45 @@ with exit 0 — MSYS mangles the `rev:path` argument. Do git plumbing from a Nod
 script instead; `execFileSync` spawns `git.exe` directly and no MSYS runtime
 touches the arguments.
 
+## Operating the site — Claude Code specifics
+
+The procedure itself is harness-neutral and lives in **`AGENTS.md`, "Operating
+the site"**: starting the Pulse and a Desk run, where the specs live, the
+review flow, the swap and its conformance check, the STOP/`HOLD.md` semantics,
+and the publish gate. Read that first. Only what is specific to this harness is
+below.
+
+- **This harness is the default runner.** `runners.yml` sets
+  `default: claude-code-opus`, so `node loop/run.mjs` without `--runner`
+  invokes `claude --print --permission-mode acceptEdits --model opus`.
+  `claude-code-sonnet` is the cheap-tier entry on the **same `provider`
+  (`anthropic`)** — deliberately, because a lane is the subscription that runs
+  out, not the vendor's brand. A capacity pause on one pauses both.
+- **A Desk job is not a subagent.** The executor contract is one written prompt
+  in, files out, exit or be killed. `.job/brief.md` is self-contained on
+  purpose: no session, no memory across invocations, no MCP, no hooks, no
+  tool-calling API. Never write a brief that assumes the runner inherits the
+  conversation that produced it — the conformance checks exist to catch exactly
+  that assumption, and the swap dies the moment a brief depends on this
+  harness.
+- **The working rules above must be copied into every sub-brief.** A spawned
+  agent does not inherit them by running in this repository; on 2026-08-21 that
+  is precisely how spawned agents woke the maintainer with approval prompts.
+  `loop/lib/brief.mjs` does this mechanically for Desk jobs (`GROUND_RULES`);
+  anything you spawn by hand is yours to repeat them in.
+- **`conformance: unverified` in `runners.yml` is documentation only.** The
+  selector reads `data/conformance.json`. That file does not exist in this
+  tree, which means no combination has been through
+  `node loop/conformance.mjs` here — and an absent record warns rather than
+  refuses, so a run will still start.
+- **Beads, not TodoWrite.** Task tracking is `bd` and persistent memory is
+  `bd remember`. Both survive a harness switch, which is the entire reason for
+  the rule.
+- **An auto-mode reminder does not outrank this file.** If the harness suggests
+  doing file work through `cat`/`sed`/`grep` in Bash, the working rules above
+  still win: Read, Write, Edit, Grep and Glob handle Windows paths and line
+  endings correctly and never reach the approval classifier.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 
@@ -143,12 +182,101 @@ bd close <id>         # Complete work
 
 ## Build & Test
 
-_Not yet established — the tree is empty pending the first OpenSpec change._
+Node ≥ 20.11. Run everything from the repository root by absolute path;
+`npm --prefix D:/AddictedtoAI <script>` when a script is easier than a path.
+
+| Command | What it does |
+|---|---|
+| `npm run build` | `node scripts/prebuild.mjs && next build`. Prebuild validates the whole corpus and writes the derived assets; `next build` statically exports every route to `out/`. |
+| `npm test` | `node scripts/run-tests.mjs` — finds every `*.test.mjs` under the source directories and hands them to Node's built-in test runner. |
+| `npm start` / `npm run serve` | `node scripts/serve-static.mjs out 3000`. **Not `next start`,** which refuses to run under `output: 'export'`. Every local-serve verification uses this. |
+| `npm run dev` | `next dev`, for iterating on templates only. It is not what any check runs against. |
+| `node pulse/run.mjs` | the Pulse (see `AGENTS.md`). |
+| `node loop/run.mjs` | the Desk (see `AGENTS.md`). |
+| `node loop/conformance.mjs --runner <id>` | the four portability checks a runner must pass to author or review. |
+| `node scripts/verify-launch.mjs` | the launch minimums — entry, prose-body, themed-body, learn, tutorial, post, delta and tool floors, catalog rows, the seeded changed feed, the search index, and every seed review record. `--no-build` skips its build and says so loudly. |
+| `node scripts/verify-analytics.mjs [base-url]` | Playwright: exactly one GA4 `page_view` per direct load plus one per client-side navigation, asserted on captured `/g/collect` requests, never on markup. |
+| `node scripts/verify-design.mjs` / `verify-surfaces.mjs` / `measure-payload.mjs` | the specs/site bar: WCAG AA contrast, keyboard traversal, no horizontal scroll at 320px, the DOM checks on each surface, and the first-load JS budget recorded in `data/launch.json`. |
+| `openspec validate --change build-initial-site --strict` | the spec artifacts. |
+
+**Never edit `package.json`.** Every dependency and script the build needs is
+already there. A new prebuild step goes in the `STEPS` array in
+`scripts/prebuild.mjs`; a step that throws fails the build, loudly, naming
+itself. If something genuinely looks missing, stop and report it.
+
+**Never run two builds concurrently.** Two `next build` processes race over the
+one `.next/` and fail with `ENOENT` on `pages-manifest.json` *after* the pages
+have generated successfully — a confusing failure that has nothing to do with
+the content (filed as `addictedtoai-6s7`). Run the verification steps serially.
 
 ## Architecture Overview
 
-_Not yet established — see `openspec/` for the specification in progress._
+A Next.js 15 App Router site with **literal `output: 'export'`** — every route
+is a static file in `out/`, there is no server runtime anywhere, and the
+consequences are load-bearing: no `next start`, no `redirects()` (the build
+generates `vercel.json` from a checked-in `redirects.json` and the host applies
+them), and `/status.json` is a plain file the prebuild writes into `public/`.
+
+Five things, and the boundaries between them are the design:
+
+1. **`content/`** — every authored file, Markdown with YAML front matter, one
+   file per published thing: `wiki/<kind>/<slug>.md`, `learn/`, `tutorials/`,
+   `blog/`, `directory/tools/`, `deltas/`. Nothing here is generated.
+2. **`lib/`** — the build core. Schema validation, the closed `kind` list, ids,
+   the alias registry and wrap-only linker, `{{fact:…}}` transclusion,
+   mentions/backlinks, indexability, the internal-link check, the origin
+   allowlist, and every page's rendering. It runs in the prebuild, so a
+   violation stops the build rather than shipping a broken page.
+3. **`pulse/`** — the deterministic, model-free engine that keeps the data
+   layer true: sources → snapshots → diffs → `data/changes.jsonl` → the derived
+   tree → the ranked work queue. It never invokes a model and never prompts.
+4. **`loop/`** — the Desk: the agentic loop that turns queue items, directives
+   and proposals into reviewed, merged work, under budgets, breakers and a
+   mandatory review gate, through a runner registry that makes the model,
+   provider and harness swappable in one file.
+5. **`data/`** — committed in full. Snapshots and their diff history, the
+   derived tree (recomputed every Pulse run), review verdicts, the job ledger,
+   `config.json`, and `launch.json`'s recorded measurements. Only build output
+   and environment files are ignored.
+
+The normative specification is
+`openspec/changes/build-initial-site/specs/<capability>/` — eleven
+capabilities: `wiki`, `site`, `pulse`, `loop`, `review`, `editorial`,
+`directory`, `education-static`, `education-dynamic`, `blog`, `analytics` —
+with `design.md` and `tasks.md` beside them. **When this file and a spec
+disagree, the spec wins.**
 
 ## Conventions & Patterns
 
-_Not yet established._
+- **Fail the build, don't warn.** Unknown front-matter keys, a bad `kind`, a
+  duplicate or non-kebab id, an unresolved transclusion, an exclusive alias
+  collision, a bogus mention, a broken internal link, an unsourced delta end, a
+  third-party origin outside the allowlist — all are build errors naming the
+  file and the field. Adding a content field means editing `lib/schema.mjs` by
+  design: `alias:` where `aliases:` was meant would otherwise parse cleanly
+  into an entry with no aliases and nothing downstream would ever notice. Two
+  things warn rather than fail, deliberately: a currency literal in prose, and
+  the blog's over-ceiling post rate.
+- **Volatile values are bound, never typed.** A price, a context window or a
+  status is a feed fact or a `{{fact:…}}` transclusion resolved at build, so it
+  cannot rot in prose. Missing values render as absent, never guessed; a
+  vanished feed row renders its last-known value with a visible as-of date.
+- **`data/derived/` is a pure function of state.** Every Pulse run recomputes
+  it from scratch, so a re-run with no world change is byte-identical. State
+  that is not derivable from anything else — `changes.jsonl`, `linkcheck.json`,
+  `ledger.jsonl`, the snapshots — lives at the data root instead.
+- **The machinery never names a model.** `runners.yml` is the only file in
+  `loop/`, `pulse/`, `scripts/` and `data/config.json` that may name a model,
+  provider or harness. The content corpus names models constantly, because
+  models are the site's subject; that is not the same check.
+- **Guardrails are mechanisms, not instructions.** The reviewer's edits are
+  discarded rather than forbidden; the merge gate refuses an `approve` with an
+  empty or duplicated `would-cite`; reserved-path edits and review bypasses
+  write `HOLD.md`. A run blocked by a guardrail **reports it and stops** — it
+  does not loosen the guardrail to get past it.
+- **Tests are `*.test.mjs` beside the code they test.** They build throwaway
+  repositories under the OS temp directory and never touch this one; the
+  fixture corpora pin the clock so a passing test stays passing tomorrow.
+- **Measure, don't infer.** Every claim recorded in `data/launch.json` is a
+  measurement with a date and a stated method. Run the cheap direct check
+  before concluding, and never treat truncated output as complete.
