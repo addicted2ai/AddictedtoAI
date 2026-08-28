@@ -16,7 +16,7 @@ minimum). Specs referenced below live in
 
 ## 1. Foundations
 
-- [ ] 1.1 Scaffold a Next.js 15 App Router project at the repository root
+- [x] 1.1 Scaffold a Next.js 15 App Router project at the repository root
       (`package.json`, `next.config.mjs` with **literal `output: 'export'`**
       per design D1, `app/`, `tsconfig` or `jsconfig`, ESLint off by
       default to keep the toolchain small). Also write
@@ -27,13 +27,13 @@ minimum). Specs referenced below live in
       0; `npm run build` exits 0 producing `out/` with an `index.html`;
       the serve script serves that page at `http://localhost:3000/` (curl
       returns 200 and the placeholder text).
-- [ ] 1.2 Create the content and data skeleton from design D1
+- [x] 1.2 Create the content and data skeleton from design D1
       (`content/wiki/`, `content/learn/`, `content/tutorials/`,
       `content/blog/`, `content/directory/tools/`, `data/sources/`,
       `data/derived/`, `pulse/`, `loop/`, `scripts/`) with a `README.md`
       one-liner in each explaining what belongs there. Verify: the
       directories exist and `git status` shows them staged after commit.
-- [ ] 1.3 Commit policy per design D1: the **entire `data/` tree is
+- [x] 1.3 Commit policy per design D1: the **entire `data/` tree is
       committed** — snapshots (latest and previous), changes.jsonl,
       proposals, reviews, all derived files including the rolling
       link-check state (`data/linkcheck.json`) and the append-only job ledger
@@ -56,7 +56,7 @@ minimum). Specs referenced below live in
 
 ## 2. Content model and build core (specs/wiki, specs/site)
 
-- [ ] 2.1 Implement front-matter schema validation for all five content
+- [x] 2.1 Implement front-matter schema validation for all five content
       types (entry: id / kind / display_name / aliases-with-classes /
       status / maintenance / feeds / facts / timeline / mentions / optional
       themes — the normative shape is the worked example in specs/wiki;
@@ -66,11 +66,11 @@ minimum). Specs referenced below live in
       any violation. Verify: a deliberately malformed fixture entry makes
       `npm run build` fail naming the file and field; removing it makes the
       build pass.
-- [ ] 2.2 Implement the closed `kind` list, duplicate-id detection, and id
+- [x] 2.2 Implement the closed `kind` list, duplicate-id detection, and id
       format validation per specs/wiki. Verify: fixtures with a bad kind, a
       duplicated id, and a non-kebab-case id each fail the build with the
       specified error content.
-- [ ] 2.3 Implement fact rendering: `cited` facts render value + source link
+- [x] 2.3 Implement fact rendering: `cited` facts render value + source link
       + accessed date, with build-injected overdue marker when past their
       volatility interval; `feed` facts render from `data/derived/` values;
       a feed fact whose declared row id is vanished (per the freshness
@@ -78,28 +78,28 @@ minimum). Specs referenced below live in
       per specs/wiki. Verify: fixture entries for each case — including a
       vanished-row fixture — render the expected markup (checked by a unit
       test on the rendering function).
-- [ ] 2.4 Implement transclusion `{{fact:<kind>/<slug>#<field>}}` resolved
+- [x] 2.4 Implement transclusion `{{fact:<kind>/<slug>#<field>}}` resolved
       at build; unresolved reference fails the build naming file and
       reference. Verify: one passing fixture and one failing fixture behave
       as specified.
-- [ ] 2.5 Implement the derived alias registry with the three link classes
+- [x] 2.5 Implement the derived alias registry with the three link classes
       and exclusive-collision build failure. Verify: fixture collision
       fails the build naming both entries; the derived
       `data/derived/aliases.json` is regenerated on build.
-- [ ] 2.6 Implement the wrap-only alias linker with all five rules from
+- [x] 2.6 Implement the wrap-only alias linker with all five rules from
       specs/wiki and the required fixture tests (exclusive wrapped; shared
       plain; manual plain; second occurrence plain; code block plain).
       Verify: `npm test` runs the linker fixtures and all pass; breaking a
       rule in the linker makes a fixture fail.
-- [ ] 2.7 Implement `mentions` front matter → "Referenced here" rail and
+- [x] 2.7 Implement `mentions` front matter → "Referenced here" rail and
       computed "Appears in" backlinks (`data/derived/backlinks.json`);
       unresolvable mention id fails the build. Verify: fixture pages show
       both rails after build; a bogus mention fails the build.
-- [ ] 2.8 Implement `{{want:Name}}` (renders plain, increments
+- [x] 2.8 Implement `{{want:Name}}` (renders plain, increments
       `data/derived/wants.json` with distinct referring pages). Verify:
       two fixture pages wanting the same name produce a count of 2 with
       both page paths listed.
-- [ ] 2.9 Implement derived indexability (`noindex` rules from specs/wiki)
+- [x] 2.9 Implement derived indexability (`noindex` rules from specs/wiki)
       and redirects: a checked-in `redirects.json` from which the build
       generates `vercel.json` redirect rules (Next's `redirects()` does not
       exist under static export — the host applies these), plus the
@@ -107,7 +107,7 @@ minimum). Specs referenced below live in
       stub fixture renders with `noindex` and is absent from browse
       listings; an indexed fixture is present; a fixture redirect entry
       appears in the generated `vercel.json`.
-- [ ] 2.10 Implement the currency-literal build warning (numbers adjacent
+- [x] 2.10 Implement the currency-literal build warning (numbers adjacent
       to `tokens`/`context`/`$`/version patterns in prose outside the wiki
       data layer produce a named warning, not a failure). Verify: a fixture
       prose file with a hard-coded price produces the warning naming file
@@ -115,7 +115,7 @@ minimum). Specs referenced below live in
 
 ## 3. The Pulse (specs/pulse)
 
-- [ ] 3.1 Re-verify the two launch sources live before wiring: fetch
+- [x] 3.1 Re-verify the two launch sources live before wiring: fetch
       `https://openrouter.ai/api/v1/models` and `https://llm-releases.com`
       once each; record in `data/sources/registry.json` their URL, yielded
       fields, which field is the row id (the join key — see specs/pulse and
@@ -126,7 +126,7 @@ minimum). Specs referenced below live in
       that does, record why, and note it in the final report. Verify:
       `registry.json` exists with both entries carrying a dated
       verification result.
-- [ ] 3.2 Implement fetch → snapshot (`latest.json`/`previous.json`) →
+- [x] 3.2 Implement fetch → snapshot (`latest.json`/`previous.json`) →
       hash → diff for registered sources, appending material changes
       (price, context, status, new arrival, retirement), each embedding
       its relevant source-row excerpt per specs/pulse (the archived source
@@ -135,11 +135,11 @@ minimum). Specs referenced below live in
       `node pulse/run.mjs` twice in a row produces zero new change lines
       the second time; a hand-edited `previous.json` price produces
       exactly one change line naming old and new values.
-- [ ] 3.3 Implement the data layer derivation: model catalog rows and
+- [x] 3.3 Implement the data layer derivation: model catalog rows and
       status tables in `data/derived/` from the snapshots. Verify: catalog
       rows exist after a Pulse run and a spot-checked row matches the raw
       snapshot value.
-- [ ] 3.4 Implement freshness computation (overdue cited facts, tutorial
+- [x] 3.4 Implement freshness computation (overdue cited facts, tutorial
       staleness incl. 2× demotion state, listing verification, rolling
       link check ≤30 days with its state in `data/linkcheck.json`,
       suspect-source flag at 3× the registry's `expected_change_days` —
@@ -147,7 +147,7 @@ minimum). Specs referenced below live in
       absent from the latest snapshot) into
       `data/derived/freshness.json`. Verify: fixtures for each state
       produce the expected freshness records.
-- [ ] 3.5 Implement the derived queue (`data/derived/queue.json`,
+- [x] 3.5 Implement the derived queue (`data/derived/queue.json`,
       recomputed each run, ranked, capped at 50, no identity/history) with
       the full specs/pulse enumeration — including refusing sources,
       vanished feed rows, and uninterpreted material changes on
@@ -157,23 +157,23 @@ minimum). Specs referenced below live in
       state change produces a byte-identical queue; fixtures for a
       refusing source, a vanished row, and an unannotated material change
       each produce a queue item of the right type.
-- [ ] 3.6 Implement the STOP file check and refusal handling (403/429 →
+- [x] 3.6 Implement the STOP file check and refusal handling (403/429 →
       recorded refusal, daily retry cap, last snapshot served with visible
       date). Verify: creating `STOP` makes `node pulse/run.mjs` exit
       immediately saying so; a mocked 403 source is marked refusing.
-- [ ] 3.7 Zero-model verification: run `node pulse/run.mjs` in an
+- [x] 3.7 Zero-model verification: run `node pulse/run.mjs` in an
       environment with all model-provider environment variables unset and
       confirm exit 0 through all steps; grep the `pulse/` dependency graph
       for model SDK imports and confirm none. Verify: the command exits 0
       and the import check finds nothing.
-- [ ] 3.8 Implement launch-feed seeding per specs/pulse: on first ingestion
+- [x] 3.8 Implement launch-feed seeding per specs/pulse: on first ingestion
       of the release/retirement source, its dated historical records seed
       `data/changes.jsonl` marked `seeded: true` with original dates and
       sources; seeding is idempotent. Verify: after the first Pulse run,
       `changes.jsonl` contains seeded entries with real dates; a second
       run appends no duplicates (line count unchanged apart from any
       genuinely observed change).
-- [ ] 3.9 Implement the publish step per specs/pulse: reads
+- [x] 3.9 Implement the publish step per specs/pulse: reads
       `data/config.json`; with `publish: false` it prints one skip line
       and does nothing else; with `publish: true` it commits, pushes,
       then polls the live `/status.json` build stamp for up to 10 minutes
@@ -185,7 +185,7 @@ minimum). Specs referenced below live in
       `publish: true` prints the intended commands and performs no commit
       and no push (confirm `git rev-parse HEAD` is unchanged before and
       after).
-- [ ] 3.10 Implement mechanical stub minting and lifecycle timeline
+- [x] 3.10 Implement mechanical stub minting and lifecycle timeline
       appends per specs/pulse: the registry's `mints` mapping (declared at
       launch only on `openrouter-models`, `kind: model`, slug normalized
       from the row id); on ingest, every row of a minting source whose row
@@ -202,11 +202,11 @@ minimum). Specs referenced below live in
 
 ## 4. Surfaces (specs/wiki, directory, education-static, education-dynamic, blog, site)
 
-- [ ] 4.1 Wiki entry pages: render identity, facts with sources and
+- [x] 4.1 Wiki entry pages: render identity, facts with sources and
       freshness, timeline, prose body when present, "Appears in" rail,
       dormant stamp when classed dormant. Verify: fixture entries of each
       shape render all specified elements.
-- [ ] 4.2 Directory: model catalog page (filterable client-side from
+- [x] 4.2 Directory: model catalog page (filterable client-side from
       pre-rendered data, fetch date visible, missing values rendered
       absent), plus the three standing tables (full catalog,
       deprecations/retirements, changed-in-30-days), each with a stable
@@ -215,28 +215,28 @@ minimum). Specs referenced below live in
       guessed; and every listing page states its sort criterion per
       specs/directory (DOM check: the sort-order statement is present on
       each standing table and the tools listing).
-- [ ] 4.3 Curated tools directory: listing template with
+- [x] 4.3 Curated tools directory: listing template with
       url/pricing/last_verified and the could-not-verify / discontinued
       markers driven by freshness data. Verify: fixtures for a healthy, an
       unverifiable, and a dead listing render the specified markers.
-- [ ] 4.4 Learn (static education): ladder index generated from page
+- [x] 4.4 Learn (static education): ladder index generated from page
       declarations (level, outcome, prerequisites) and page template
       showing all three. Verify: fixture pages produce a correctly ordered
       generated index and render prerequisite links.
-- [ ] 4.5 Tutorials (dynamic education): page template with build-injected
+- [x] 4.5 Tutorials (dynamic education): page template with build-injected
       verification stamp, staleness banner, moved-on banner (from feed
       data), demotion at 2× interval (noindex + delisted + full-width
       notice + URL still resolves), archived state for dead subjects.
       Verify: fixtures for fresh, stale, moved-on, demoted, and archived
       states each render exactly the specified treatment.
-- [ ] 4.6 Blog: post template with visible date, appended-correction
+- [x] 4.6 Blog: post template with visible date, appended-correction
       support, feeds inclusion, and the over-ceiling build warning from
       specs/blog (more than 3 published posts dated within any trailing 7
       days → named warning, not a failure). Verify: fixture post with a
       correction block renders both the original text treatment and the
       dated correction; a fixture set of 4 posts dated within 7 days
       produces the warning naming the dates.
-- [ ] 4.7 Home page: changed feed from `data/changes.jsonl` (dated lines
+- [x] 4.7 Home page: changed feed from `data/changes.jsonl` (dated lines
       linking entries and sources — populated at launch by the 3.8
       seeding, and rendering an `interpret` annotation line alongside its
       change when one exists, per specs/loop), recent deprecations strip,
@@ -246,11 +246,11 @@ minimum). Specs referenced below live in
       history present (not an empty feed); a fixture annotation line
       renders with its change; a screenshot or DOM check confirms content
       above the fold at both sizes.
-- [ ] 4.8 Colophon: one page, out of primary nav, stating what the site is
+- [x] 4.8 Colophon: one page, out of primary nav, stating what the site is
       and that an AI writes and maintains it under review, linking the
       public commit history. Verify: the page exists, is ≤1 page, and no
       primary-nav link points to it.
-- [ ] 4.9 Citable assets: RSS/Atom for blog, tutorials, and the changed
+- [x] 4.9 Citable assets: RSS/Atom for blog, tutorials, and the changed
       feed; sitemap; generic Open Graph tags (no social handles); the open
       dataset (entries, facts, timelines, catalog, deprecations) as JSON +
       CSV at a stable URL with CC BY 4.0 stated inside the payload.
@@ -258,11 +258,11 @@ minimum). Specs referenced below live in
       npm package (devDependency) and exposes a title, items, and valid
       item dates; the dataset downloads, parses, and contains the license
       string.
-- [ ] 4.10 Third-party origin allowlist enforcement: build fails if any
+- [x] 4.10 Third-party origin allowlist enforcement: build fails if any
       rendered page references a network origin other than the site itself
       and Google Analytics. Verify: a fixture page with a stray CDN script
       fails the build naming page and origin.
-- [ ] 4.11 Design pass to the specs/site bar: typographic identity (max 2
+- [x] 4.11 Design pass to the specs/site bar: typographic identity (max 2
       typefaces), dark/light themes, data-dense tables, fast static loads.
       Verify: WCAG AA contrast on both themes via automated check
       (axe-core or equivalent) with zero violations on home, one entry,
@@ -273,17 +273,17 @@ minimum). Specs referenced below live in
       reaches and activates the nav links, the search box, and the theme
       toggle on those three pages — every interactive element reachable
       without a mouse per specs/site.
-- [ ] 4.12 Client-side name search per specs/site: build emits
+- [x] 4.12 Client-side name search per specs/site: build emits
       `data/derived/search-index.json` (id, display name, aliases, kind,
       status, title — every page including stubs); a search box filters it
       in-browser with no server or external service. Verify: typing a stub
       fixture's alias surfaces the stub's page in results; the index file
       regenerates on build.
-- [ ] 4.13 Build stamp per specs/site: UTC timestamp + short commit hash
+- [x] 4.13 Build stamp per specs/site: UTC timestamp + short commit hash
       rendered in the footer and served at `/status.json`. Verify: two
       builds from two different commits produce different stamps in both
       places.
-- [ ] 4.14 The Impossible → Routine showpiece per specs/site: delta record
+- [x] 4.14 The Impossible → Routine showpiece per specs/site: delta record
       schema (capability, end A date+source, end B date+source, optional
       metric), rendered as a dated, newest-first progression with each
       end's source one click away; schema validation fails the build on an
@@ -292,7 +292,7 @@ minimum). Specs referenced below live in
 
 ## 5. Analytics (specs/analytics)
 
-- [ ] 5.1 Implement the GA4 component: gtag loader emitted on every page
+- [x] 5.1 Implement the GA4 component: gtag loader emitted on every page
       when `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set, nothing emitted when
       unset, **and a route-change tracker** (client component watching the
       pathname) that fires `page_view` with the new path and title on
@@ -301,7 +301,7 @@ minimum). Specs referenced below live in
       variable. Verify: build with the variable set contains the loader on
       every sampled page and the tracker component; build with it unset
       contains no analytics markup.
-- [ ] 5.2 Implement `scripts/verify-analytics.mjs` per specs/analytics
+- [x] 5.2 Implement `scripts/verify-analytics.mjs` per specs/analytics
       (Playwright; load home + one content page directly, assert **exactly
       one** `page_view` collect request per direct load — zero is the
       dead-tag failure, two is the gtag-plus-tracker double-fire — with
@@ -316,7 +316,7 @@ minimum). Specs referenced below live in
       click-through assertion; with the route-change tracker temporarily
       disabled, it exits nonzero naming the click-through assertion (then
       re-enable).
-- [ ] 5.3 Record the local verification result (date, pages tested, pass)
+- [x] 5.3 Record the local verification result (date, pages tested, pass)
       in `data/launch.json` under `analytics_local`. Verify: the file
       exists with the recorded result.
 
@@ -396,7 +396,7 @@ minimum). Specs referenced below live in
 
 ## 7. The Desk and portability (specs/loop, specs/review)
 
-- [ ] 7.1 Create `runners.yml` with at least two entries (the current
+- [x] 7.1 Create `runners.yml` with at least two entries (the current
       Claude Code setup as default `author`+`reviewer`, and one non-Claude
       combination such as OpenCode+DeepSeek, marked unverified until
       conformance passes), each carrying the full schema from specs/loop —
@@ -410,7 +410,7 @@ minimum). Specs referenced below live in
       the registered runner names) — the content corpus names models
       constantly because models are the site's subject, so content paths
       are out of scope for this check.
-- [ ] 7.2 Implement `loop/run.mjs`: first resume the oldest resumable
+- [x] 7.2 Implement `loop/run.mjs`: first resume the oldest resumable
       `job/*` branch per specs/loop (last ledger line `interrupted` or
       `capacity`, lane not paused, under 14 days old — re-invoke with the
       branch's committed `.job/brief.md` plus the fixed continue
@@ -437,7 +437,7 @@ minimum). Specs referenced below live in
       resumed) job and assembled brief without invoking anything, the
       brief text contains the RESULT.md instruction, the branch name
       embeds the job id, and the ledger line schema includes provider.
-- [ ] 7.3 Implement budget enforcement from the rolling 30-day ledger
+- [x] 7.3 Implement budget enforcement from the rolling 30-day ledger
       (per-tier shares; ceilings AND the upkeep floor's own enforcement
       per specs/loop) and outcome classification. Verify: unit tests with
       synthetic ledgers show the selector refusing new-writing at the
@@ -456,7 +456,7 @@ minimum). Specs referenced below live in
       pause file, and a success line resets the sequence; and a fixture
       `DIRECTIVES.md` shows a `[done ...]`-marked directive skipped while
       an unmarked one is selected.
-- [ ] 7.4 Implement the review step: reviewer invocation from
+- [x] 7.4 Implement the review step: reviewer invocation from
       `runners.yml` (`reviewer` role), fresh context, diff + checklist in,
       verdict file out (`data/reviews/<job-id>.md` — same directory as the
       seed reviews, which use `seed-<slug>.md`) with verdict + reasons
@@ -475,7 +475,7 @@ minimum). Specs referenced below live in
       reviewer that edits the tree has its edits discarded (the diff is
       empty after the review step); and a mock proposal-originated job's
       reviewer brief contains the rejection index.
-- [ ] 7.5 Implement breakers and holds per specs/loop (three consecutive
+- [x] 7.5 Implement breakers and holds per specs/loop (three consecutive
       same-type failures — counting only `failed` and `discarded`
       outcomes, never `blocked`/`interrupted`/`capacity`/`abandoned`;
       build/deploy red; review bypass attempt; reserved-path edit attempt
@@ -484,7 +484,7 @@ minimum). Specs referenced below live in
       synthetic ledger with two `failed` and one `blocked` of the same
       type does NOT trip breaker 1, while three `failed`/`discarded` do;
       the loop refuses to start while `STOP` or `HOLD.md` exists.
-- [ ] 7.6 Implement `loop/conformance.mjs` with the four canned checks
+- [x] 7.6 Implement `loop/conformance.mjs` with the four canned checks
       (trivial edit; insufficient-information → blocked; fabricated-quote
       trap; reserved-path probe), each PASS condition defined in terms of
       the executor result protocol per specs/loop — a check completed
@@ -507,7 +507,7 @@ minimum). Specs referenced below live in
       the review verdict file exists with a non-empty `would-cite` field
       if prose was touched, and the run log shows the publish step's
       skip line (publish is false throughout this change).
-- [ ] 7.8 Implement the surface and degradation selector rules the specs
+- [x] 7.8 Implement the surface and degradation selector rules the specs
       assert — each a real selector behavior with its own synthetic-state
       test in 7.3's style:
       (a) blog ceiling per specs/blog: a `post` job is refused while 3
