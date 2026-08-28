@@ -13,9 +13,10 @@ at all.
 
 The Pulse SHALL be a single ordinary command (`node pulse/run.mjs`) that
 performs, in order: stop-file check, source fetching, snapshot/hash/diff,
-data-layer update, rolling link check, freshness computation, derived-queue
-recomputation, site rebuild, and — when publishing is enabled — **publish**
-(the deploy step defined below). It SHALL contain no model invocation on any
+data-layer update (including mechanical stub minting and lifecycle
+timeline appends, defined below), rolling link check, freshness
+computation, derived-queue recomputation, site rebuild, and — when
+publishing is enabled — **publish** (the deploy step defined below). It SHALL contain no model invocation on any
 path and SHALL run to completion on a machine with no model credentials of
 any kind. It SHALL be safe to run on any schedule (idempotent between world
 changes) and SHALL never prompt interactively. The zero-model property is
@@ -152,14 +153,67 @@ per source and never overwrites observed entries.
 - **WHEN** the Pulse runs again after seeding
 - **THEN** no duplicate seeded entries are appended
 
+### Requirement: Registry ingest mints stubs and appends lifecycle events, mechanically
+
+This is how "everything about AI" becomes payable: breadth arrives in the
+data layer at zero inference cost. Two deterministic behaviors, both part
+of the data-layer update step:
+
+**Stub minting.** A source registry entry MAY declare a `mints` mapping
+(the `kind` its rows become, and the deterministic slug derivation from
+the row id — at launch exactly one source, `openrouter-models`, declares
+one, with `kind: model` and the slug derived by normalizing the row id).
+On each ingest of a minting source, every row whose row id is declared by
+no entry's `feeds` map SHALL mint a stub entry file: deterministic id from
+the mapping, `display_name` from the row, a `feeds` binding to that row,
+the source's standard fact bindings (price, context, status), maintenance
+class `living`, and every alias classed `manual` — an automatic process
+never claims `exclusive`, so mechanical minting can never create a wrong
+link (upgrading an alias class is entry-editing work for the Desk).
+Minting **creates a new record; it never modifies an existing entry** —
+that is the division of labor with the rule in `wiki` that an undeclared
+row never touches an entry. A row whose id is already declared (by a stub
+or a hand-authored entry) SHALL never mint again; a source without a
+`mints` mapping feeds the catalog and changed feed only.
+
+**Lifecycle timeline appends.** When a diff shows a **status** change for
+a row that some entry declares, the Pulse SHALL append the dated, sourced
+timeline event to that entry's front matter mechanically. Status changes
+only — prices and other field changes live in the diff history, not the
+timeline. This is deterministic data maintenance by reviewed machinery; no
+model writes it, so it publishes under the review exemption.
+
+#### Scenario: A new row becomes a stub, safely
+
+- **WHEN** a minting source's snapshot gains a row no entry declares
+- **THEN** the next data-layer update creates a stub entry with a `feeds`
+  binding to that row and only `manual`-classed aliases, and a second run
+  mints nothing further for that row
+
+#### Scenario: Non-minting sources stay in the catalog
+
+- **WHEN** a non-minting source's snapshot gains a new row
+- **THEN** the row appears in the catalog and (if material) the changed
+  feed, and no entry file is created or modified
+
+#### Scenario: A status flip lands on the entry's timeline
+
+- **WHEN** a declared row's status moves from `active` to `deprecated`
+  between snapshots
+- **THEN** the joined entry gains exactly one dated timeline event citing
+  the source, appended mechanically, and a re-run appends no duplicate
+
 ### Requirement: Freshness is computed, staleness cannot hide
 
 The Pulse SHALL compute, every run: which cited facts are past their
 volatility interval, which tutorials are past `reverify_days` (and past
-2×, for demotion), which directory listings failed verification, and which
-links in the corpus are broken (rolling, every link at least every 30 days).
-All staleness display (overdue markers, tutorial banners, demotions,
-could-not-verify marks) derives from this computation at build time.
+2×, for demotion), which directory listings failed verification, which
+links in the corpus are broken (rolling, every link at least every 30
+days), and which declared feed rows have vanished (a row id an entry's
+`feeds` map declares that is absent from the latest snapshot — the state
+behind the last-known-value rendering in `wiki`). All staleness display
+(overdue markers, tutorial banners, demotions, could-not-verify marks,
+vanished-row as-of dates) derives from this computation at build time.
 
 Additionally: a source or extractor that has reported "no change" for 3×
 its registry-declared `expected_change_days` (not its fetch cadence — the
@@ -179,7 +233,10 @@ broken fetcher cannot make the site look fresher than it is.
 
 The Pulse SHALL recompute the loop's work queue from current state on every
 run: overdue facts, overdue tutorials, failed verifications, broken links,
-want-demand eligible mints, suspect sources. The queue is a ranked snapshot
+want-demand eligible mints, suspect sources, refusing sources, vanished
+feed rows, and material changes on price/licence/status fields from the
+trailing 14 days that lack an interpretation annotation (the source
+`interpret` jobs draw from — see `loop`). The queue is a ranked snapshot
 (a generated file), not a ledger: nothing is ever "filed" into it, it has no
 history, and it cannot backlog — an item leaves the queue the moment the
 underlying state is fixed, and the queue's size is bounded by the size of

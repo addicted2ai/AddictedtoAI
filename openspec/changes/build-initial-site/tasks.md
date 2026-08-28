@@ -45,8 +45,10 @@ minimum). Specs referenced below live in
       `data/config.json` — the one normative loop config, a reserved path
       per specs/loop — with `publish: false`, the budget bounds (upkeep
       floor 40, new-writing ceiling 45, machinery ceiling 10), the
-      per-type job caps (cheap 30 min, frontier authoring 60 min), and the
-      degradation thresholds (capacity events in trailing 48h: 1/2/3).
+      per-type job caps (a map of every job type to its cap, defaults
+      derived from the type's tier: cheap types 30 min, frontier authoring
+      types 60 min), and the degradation thresholds (capacity events in
+      trailing 48h: 1/2/3).
       Verify: `npm run build` then `git status` shows no unintended
       untracked build artifacts; `git check-ignore
       data/derived/queue.json` reports not ignored; `data/config.json`
@@ -64,14 +66,18 @@ minimum). Specs referenced below live in
       any violation. Verify: a deliberately malformed fixture entry makes
       `npm run build` fail naming the file and field; removing it makes the
       build pass.
-- [ ] 2.2 Implement the closed `kind` list and duplicate-id detection per
-      specs/wiki. Verify: fixtures with a bad kind and a duplicated id each
-      fail the build with the specified error content.
+- [ ] 2.2 Implement the closed `kind` list, duplicate-id detection, and id
+      format validation per specs/wiki. Verify: fixtures with a bad kind, a
+      duplicated id, and a non-kebab-case id each fail the build with the
+      specified error content.
 - [ ] 2.3 Implement fact rendering: `cited` facts render value + source link
       + accessed date, with build-injected overdue marker when past their
-      volatility interval; `feed` facts render from `data/derived/` values.
-      Verify: fixture entries for each case render the expected markup
-      (checked by a unit test on the rendering function).
+      volatility interval; `feed` facts render from `data/derived/` values;
+      a feed fact whose declared row id is vanished (per the freshness
+      computation) renders its last-known value with a visible as-of date
+      per specs/wiki. Verify: fixture entries for each case — including a
+      vanished-row fixture — render the expected markup (checked by a unit
+      test on the rendering function).
 - [ ] 2.4 Implement transclusion `{{fact:<kind>/<slug>#<field>}}` resolved
       at build; unresolved reference fails the build naming file and
       reference. Verify: one passing fixture and one failing fixture behave
@@ -113,8 +119,10 @@ minimum). Specs referenced below live in
       `https://openrouter.ai/api/v1/models` and `https://llm-releases.com`
       once each; record in `data/sources/registry.json` their URL, yielded
       fields, which field is the row id (the join key — see specs/pulse and
-      specs/wiki), `fetch_every_days`, `expected_change_days`, robots/terms
-      check result, and the verification date. If either no longer serves usable data, choose a replacement
+      specs/wiki), `fetch_every_days`, `expected_change_days`, the `mints`
+      mapping on `openrouter-models` only (`kind: model` — see specs/pulse
+      and design D7; `llm-releases` is non-minting), robots/terms check
+      result, and the verification date. If either no longer serves usable data, choose a replacement
       that does, record why, and note it in the final report. Verify:
       `registry.json` exists with both entries carrying a dated
       verification result.
@@ -135,14 +143,20 @@ minimum). Specs referenced below live in
       staleness incl. 2× demotion state, listing verification, rolling
       link check ≤30 days with its state in `data/linkcheck.json`,
       suspect-source flag at 3× the registry's `expected_change_days` —
-      never the fetch cadence) into
+      never the fetch cadence — and vanished feed rows: declared row ids
+      absent from the latest snapshot) into
       `data/derived/freshness.json`. Verify: fixtures for each state
       produce the expected freshness records.
 - [ ] 3.5 Implement the derived queue (`data/derived/queue.json`,
-      recomputed each run, ranked, capped at 50, no identity/history).
-      Verify: fixing a fixture's overdue fact and re-running the Pulse
-      removes it from the queue; re-running with no state change produces
-      a byte-identical queue.
+      recomputed each run, ranked, capped at 50, no identity/history) with
+      the full specs/pulse enumeration — including refusing sources,
+      vanished feed rows, and uninterpreted material changes on
+      price/licence/status from the trailing 14 days (the source of
+      `interpret` jobs). Verify: fixing a fixture's overdue fact and
+      re-running the Pulse removes it from the queue; re-running with no
+      state change produces a byte-identical queue; fixtures for a
+      refusing source, a vanished row, and an unannotated material change
+      each produce a queue item of the right type.
 - [ ] 3.6 Implement the STOP file check and refusal handling (403/429 →
       recorded refusal, daily retry cap, last snapshot served with visible
       date). Verify: creating `STOP` makes `node pulse/run.mjs` exit
@@ -171,6 +185,20 @@ minimum). Specs referenced below live in
       `publish: true` prints the intended commands and performs no commit
       and no push (confirm `git rev-parse HEAD` is unchanged before and
       after).
+- [ ] 3.10 Implement mechanical stub minting and lifecycle timeline
+      appends per specs/pulse: the registry's `mints` mapping (declared at
+      launch only on `openrouter-models`, `kind: model`, slug normalized
+      from the row id); on ingest, every row of a minting source whose row
+      id no entry declares mints a stub entry file (deterministic id,
+      `display_name` from the row, `feeds` binding, standard fact
+      bindings, maintenance `living`, all aliases classed `manual`);
+      and a diffed **status** change on any declared row appends the
+      dated, sourced timeline event to the joined entry's front matter.
+      Verify: a fixture snapshot with one undeclared row produces exactly
+      one stub with `manual` aliases and a valid schema; a second run
+      mints nothing; a non-minting source's new row creates no file; a
+      fixture status flip appends exactly one timeline event and a re-run
+      appends no duplicate.
 
 ## 4. Surfaces (specs/wiki, directory, education-static, education-dynamic, blog, site)
 
@@ -184,7 +212,9 @@ minimum). Specs referenced below live in
       deprecations/retirements, changed-in-30-days), each with a stable
       URL and a JSON sibling. Verify: pages render from Pulse data; the
       JSON siblings parse; a missing context window renders as absent not
-      guessed.
+      guessed; and every listing page states its sort criterion per
+      specs/directory (DOM check: the sort-order statement is present on
+      each standing table and the tools listing).
 - [ ] 4.3 Curated tools directory: listing template with
       url/pricing/last_verified and the could-not-verify / discontinued
       markers driven by freshness data. Verify: fixtures for a healthy, an
@@ -208,12 +238,14 @@ minimum). Specs referenced below live in
       produces the warning naming the dates.
 - [ ] 4.7 Home page: changed feed from `data/changes.jsonl` (dated lines
       linking entries and sources — populated at launch by the 3.8
-      seeding), recent deprecations strip, latest post and tutorial, doors
-      to all five surfaces and the showpiece; content above the fold at
-      1440×900 and 390×844 (no full-viewport hero). Verify: build renders
-      the feed with the seeded history present (not an empty feed); a
-      screenshot or DOM check confirms content above the fold at both
-      sizes.
+      seeding, and rendering an `interpret` annotation line alongside its
+      change when one exists, per specs/loop), recent deprecations strip,
+      latest post and tutorial, doors to all five surfaces and the
+      showpiece; content above the fold at 1440×900 and 390×844 (no
+      full-viewport hero). Verify: build renders the feed with the seeded
+      history present (not an empty feed); a fixture annotation line
+      renders with its change; a screenshot or DOM check confirms content
+      above the fold at both sizes.
 - [ ] 4.8 Colophon: one page, out of primary nav, stating what the site is
       and that an AI writes and maintains it under review, linking the
       public commit history. Verify: the page exists, is ≤1 page, and no
@@ -367,8 +399,11 @@ minimum). Specs referenced below live in
 - [ ] 7.1 Create `runners.yml` with at least two entries (the current
       Claude Code setup as default `author`+`reviewer`, and one non-Claude
       combination such as OpenCode+DeepSeek, marked unverified until
-      conformance passes) plus `DIRECTIVES.md` (empty, with a one-line
-      header explaining its role). Verify: files exist; `runners.yml`
+      conformance passes), each carrying the full schema from specs/loop —
+      id, `provider` (the lane key), tier, command template, roles,
+      optional `capacity_stderr_pattern` — plus `DIRECTIVES.md` (empty,
+      with a one-line header explaining its role and the
+      `[done <date> <job-id>]` completion marker). Verify: files exist; `runners.yml`
       parses; and within the machinery paths only (`loop/`, `pulse/`,
       `scripts/`, `data/config.json`) no file names a specific model,
       provider, or harness outside `runners.yml` (grep those paths for
@@ -380,8 +415,10 @@ minimum). Specs referenced below live in
       `capacity`, lane not paused, under 14 days old — re-invoke with the
       branch's committed `.job/brief.md` plus the fixed continue
       preamble; discard older branches with an `abandoned` ledger line);
-      otherwise select one job (directives → derived queue → ripe
-      proposals from `data/proposals/`, with exact-slug duplicate
+      otherwise select one job (directives first — skipping any directive
+      carrying a `[done ...]` marker, and appending that marker to a
+      directive's line when its job completes — then the derived queue,
+      then ripe proposals from `data/proposals/` with exact-slug duplicate
       suppression against `data/proposals/rejected/`), assign the job id
       (`j-<yyyymmdd>-<seq>`), create branch `job/<id>`, commit the
       assembled self-contained brief to it as `.job/brief.md` (task,
@@ -393,11 +430,13 @@ minimum). Specs referenced below live in
       absent or malformed after exit/kill → `interrupted`), honor a
       runner's optional `capacity_stderr_pattern`, compute the diff
       itself, run schema/build checks, require a recorded review verdict
-      before merging, write the ledger line (id, type, runner, tier, MM,
-      outcome) to `data/ledger.jsonl`. Verify: a dry-run mode prints the
-      selected (or resumed) job and assembled brief without invoking
-      anything, the brief text contains the RESULT.md instruction, and
-      the branch name embeds the job id.
+      before merging, on merge invoke the shared publish step from 3.9
+      (which prints its skip line while `publish` is false), and write the
+      ledger line (id, type, runner, provider, tier, MM, outcome) to
+      `data/ledger.jsonl`. Verify: a dry-run mode prints the selected (or
+      resumed) job and assembled brief without invoking anything, the
+      brief text contains the RESULT.md instruction, the branch name
+      embeds the job id, and the ledger line schema includes provider.
 - [ ] 7.3 Implement budget enforcement from the rolling 30-day ledger
       (per-tier shares; ceilings AND the upkeep floor's own enforcement
       per specs/loop) and outcome classification. Verify: unit tests with
@@ -410,7 +449,13 @@ minimum). Specs referenced below live in
       branch — a `job/*` branch with a committed `.job/brief.md` and an
       `interrupted` ledger line is picked up before any new selection,
       with no retry consumed, and a 15-day-old mock branch is discarded
-      with an `abandoned` line.
+      with an `abandoned` line; lane pausing is tested with a synthetic
+      ledger — a lane whose latest line is `capacity` is paused for the
+      backoff interval (1h, doubling per consecutive capacity line, 6h
+      max), computed from ledger lines plus clock arithmetic with no
+      pause file, and a success line resets the sequence; and a fixture
+      `DIRECTIVES.md` shows a `[done ...]`-marked directive skipped while
+      an unmarked one is selected.
 - [ ] 7.4 Implement the review step: reviewer invocation from
       `runners.yml` (`reviewer` role), fresh context, diff + checklist in,
       verdict file out (`data/reviews/<job-id>.md` — same directory as the
@@ -418,37 +463,50 @@ minimum). Specs referenced below live in
       from the closed list **and the required non-empty `would-cite` field
       for prose**; merge refuses without an `approve`, and refuses an
       `approve` whose `would-cite` field is empty; any tree changes made
-      by the reviewer invocation are discarded; the
+      by the reviewer invocation are discarded; for a proposal-originated
+      job, the reviewer brief includes the rejection index (the slugs and
+      reasons from `data/proposals/rejected/`) per specs/review; the
       revise-once/discard-on-second mechanics. Verify: a test job with a
       planted `false-or-unsupported-claim` is rejected and, after a second
       failure, discarded with the record kept; a mock `approve` with a
       blank `would-cite` is refused by the merge step, and so is a mock
       `approve` whose `would-cite` text exactly duplicates (after
-      whitespace trimming) the field of an existing review record.
+      whitespace trimming) the field of an existing review record; a mock
+      reviewer that edits the tree has its edits discarded (the diff is
+      empty after the review step); and a mock proposal-originated job's
+      reviewer brief contains the rejection index.
 - [ ] 7.5 Implement breakers and holds per specs/loop (three consecutive
-      same-type failures; build/deploy red; review bypass attempt;
-      reserved-path edit attempt → write `HOLD.md` and stop; `STOP`
-      honored at run start). Verify: each breaker is unit-tested to write
-      `HOLD.md` with its reason; the loop refuses to start while `STOP`
-      or `HOLD.md` exists.
+      same-type failures — counting only `failed` and `discarded`
+      outcomes, never `blocked`/`interrupted`/`capacity`/`abandoned`;
+      build/deploy red; review bypass attempt; reserved-path edit attempt
+      → write `HOLD.md` and stop; `STOP` honored at run start). Verify:
+      each breaker is unit-tested to write `HOLD.md` with its reason; a
+      synthetic ledger with two `failed` and one `blocked` of the same
+      type does NOT trip breaker 1, while three `failed`/`discarded` do;
+      the loop refuses to start while `STOP` or `HOLD.md` exists.
 - [ ] 7.6 Implement `loop/conformance.mjs` with the four canned checks
       (trivial edit; insufficient-information → blocked; fabricated-quote
       trap; reserved-path probe), each PASS condition defined in terms of
       the executor result protocol per specs/loop — a check completed
       without a well-formed `RESULT.md` FAILs regardless of the diff —
-      each printing PASS/FAIL with evidence. Verify: running it against
-      the default runner prints four PASS lines; a deliberately-sabotaged
-      mock runner (wrong diff, missing RESULT.md, fabricated quote)
-      produces the expected FAILs including the protocol FAIL.
+      each printing PASS/FAIL with evidence, and the recorded result
+      gating selection: `loop/run.mjs` refuses a runner with any recorded
+      conformance FAIL for `author` or `reviewer` roles. Verify: running
+      it against the default runner prints four PASS lines; a
+      deliberately-sabotaged mock runner (wrong diff, missing RESULT.md,
+      fabricated quote) produces the expected FAILs including the
+      protocol FAIL; and `loop/run.mjs` refuses to select the FAILed mock
+      runner, naming the failed check.
 - [ ] 7.7 Run one real job end-to-end through the Desk (a small `repair`
       or `interpret` job from the derived queue; if the queue happens to
       be empty at this point, plant a seeded-state fixture — e.g. set one
       curated listing's `last_verified` past its interval — so a real
       queue item exists, and note the planting in the ledger line): brief
       → executor → review → merge, ledger line written. Verify: the merged
-      commit exists, the ledger line names the runner and MM, and the
-      review verdict file exists with a non-empty `would-cite` field if
-      prose was touched.
+      commit exists, the ledger line names the runner, provider, and MM,
+      the review verdict file exists with a non-empty `would-cite` field
+      if prose was touched, and the run log shows the publish step's
+      skip line (publish is false throughout this change).
 - [ ] 7.8 Implement the surface and degradation selector rules the specs
       assert — each a real selector behavior with its own synthetic-state
       test in 7.3's style:
@@ -461,10 +519,11 @@ minimum). Specs referenced below live in
       `tutorial` job is refused entirely while any tutorial stands
       demoted for staleness (dead-subject archived tutorials do not
       block) — test both branches with fixture freshness states;
-      (c) proposal duplicate suppression per specs/loop: a proposal whose
-      `slug` matches one in `data/proposals/rejected/` is auto-discarded
-      with a pointer to the earlier reason before any model is invoked —
-      test with a fixture rejected proposal;
+      (c) proposal duplicate suppression and cooling per specs/loop: a
+      proposal whose `slug` matches one in `data/proposals/rejected/` is
+      auto-discarded with a pointer to the earlier reason before any model
+      is invoked, and a proposal younger than 3 days is not selectable
+      while a 4-day-old one is — test with fixture proposals;
       (d) capacity degradation per specs/loop: shed level from `capacity`
       classifications in the tier's trailing-48h ledger (1 → no
       `post`/`education`; 2 → also no `entry`/`tutorial`; 3+ → only

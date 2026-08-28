@@ -103,7 +103,11 @@ design never guesses. Concretely:
 - Each feed-bound fact declares the source id and the field path within the
   joined row (dot notation, e.g. `pricing.prompt`).
 - A feed row whose id is declared by no entry feeds the model catalog and
-  the changed feed only; it SHALL never touch any entry.
+  the changed feed; it SHALL never modify any existing entry. For a source
+  with a `mints` mapping it additionally mints a **new** stub record per
+  the ingest-minting rule in `pulse` — creating a new record and touching
+  an existing entry are different operations, and only the first is ever
+  automatic.
 - A declared row id that is absent from the current snapshot SHALL cause
   the fact to render its last-known value with a visible as-of date, and a
   repair finding enters the derived queue. It never renders as current.
@@ -157,11 +161,12 @@ mentions: []
 - **THEN** the entry above renders the new `price_input` at next build,
   because the join was declared — not inferred
 
-#### Scenario: An undeclared row never touches an entry
+#### Scenario: An undeclared row never modifies an existing entry
 
 - **WHEN** a new row appears in a feed and no entry declares its id
 - **THEN** it appears in the model catalog and (if material) the changed
-  feed, and no entry's facts change
+  feed, no existing entry's facts change, and — only if the source
+  declares a `mints` mapping — a new stub record is created per `pulse`
 
 #### Scenario: A vanished row cannot pose as current
 

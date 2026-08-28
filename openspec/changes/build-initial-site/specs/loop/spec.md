@@ -13,9 +13,10 @@ unreviewed work.
 
 The unit of Desk work SHALL be a **job**: one stated outcome with acceptance
 checks, executed on its own branch, ending in exactly one merge or one
-discard. Every job type carries a wall-clock cap (declared alongside the
-budget bounds in `data/config.json`; defaults: 30 minutes for cheap-tier
-jobs, 60 minutes for frontier authoring); an executor still running at its
+discard. Every job type carries a wall-clock cap: `data/config.json` maps
+each job type to its cap, with defaults keyed by the type's tier (cheap-tier
+types 30 minutes, frontier authoring types 60) — the caps are per-type, the
+defaults are merely tier-derived; an executor still running at its
 cap is killed and the job becomes `interrupted`. Nothing is ever
 half-published: visitors SHALL only see merged, built work, and a job that
 dies mid-run leaves a branch, not a broken page. After a merge, when
@@ -24,8 +25,13 @@ the Pulse uses (push, then live build-stamp verification — see `pulse`); if
 it does not publish, the merged work reaches the live site at the next
 Pulse run. Job types form a closed list:
 
-- `interpret` — a Pulse-detected change needs judgment (material or not; how
-  the changed line should read).
+- `interpret` — a Pulse-detected change needs judgment (what it means,
+  whether it matters, how the changed line should read). Drawn from the
+  derived queue's uninterpreted material changes (price/licence/status,
+  trailing 14 days — see `pulse`); its output is an annotation line
+  appended to the diff history (`data/changes.jsonl` stays append-only:
+  the annotation is a new line keyed to the change it interprets), which
+  the changed feed renders alongside the mechanical line.
 - `verify` — re-verify a tutorial or a cited fact by actually executing or
   re-fetching.
 - `entry` — mint a demanded wiki entry (identity, aliases, sourced facts —
@@ -85,7 +91,11 @@ Job identity and resumption are mechanical, not remembered:
 Jobs are selected from, in priority order:
 
 1. **The maintainer's directives** — a plain file (`DIRECTIVES.md`) the
-   maintainer edits; always selectable first.
+   maintainer edits; always selectable first. Completion semantics: on
+   completing a directive's job, the loop SHALL append a
+   `[done <date> <job-id>]` marker to that directive's line and SHALL skip
+   directives carrying one; removing finished lines is the maintainer's,
+   at leisure. A directive is never silently re-run.
 2. **The derived queue** — the Pulse's recomputed snapshot of what the site
    currently needs (see `pulse`). This source cannot backlog by construction.
 3. **Proposals** — the only model-originated source. A proposal is one
@@ -183,10 +193,19 @@ intentions.
 ### Requirement: Capacity exhaustion is a pause, and degradation is ordered
 
 When a provider's allowance runs out mid-job, the job SHALL be marked
-`interrupted` (branch kept, resumable — distinct from `failed`) and the loop
-SHALL pause that provider's lane, resuming by scheduled re-probe (first
-probe after 1 hour, doubling to a 6-hour maximum between probes) — never by
-predicting the provider's window, which is unknowable for consumer
+`interrupted` (branch kept, resumable — distinct from `failed`: `failed`
+means the executor finished but its work was rejected by gates or review,
+while `interrupted`/`capacity`/`blocked` are not failures) and the loop
+SHALL pause that provider's lane. **A lane is the set of runners sharing a
+`provider` value in `runners.yml`, and pause state is computed, not
+stored**: every ledger line records the runner's provider; a lane is
+paused exactly when its most recent ledger line is a `capacity`
+classification and the backoff interval since that line has not yet
+elapsed — 1 hour after the first `capacity` in a consecutive run of them,
+doubling per consecutive `capacity` to a 6-hour maximum; any successful
+completion on the lane resets the sequence. No pause file exists; the
+predicate reads `data/ledger.jsonl` plus clock arithmetic — never a
+prediction of the provider's window, which is unknowable for consumer
 subscriptions. Exhaustion is
 never an error, never triggers a retry storm, and never causes a hunt for
 another credential or provider. As capacity tightens, work SHALL be shed in
@@ -224,10 +243,12 @@ and no rewriting of prompts. Concretely:
    (`node loop/run.mjs`), optionally with `--runner <id>`. It is not a
    harness feature, a skill, or a slash command.
 2. **Runner registry**: a checked-in `runners.yml` lists each
-   model/provider/harness combination: id, tier, the shell command template
-   that invokes it, and the roles it is cleared for (`author`, `reviewer`).
-   Defaults are configuration; nothing else in the system names a model,
-   provider, or harness.
+   model/provider/harness combination: id, `provider` (the subscription it
+   spends — the lane key for capacity pausing), tier, the shell command
+   template that invokes it, the roles it is cleared for (`author`,
+   `reviewer`), and optionally `capacity_stderr_pattern`. Defaults are
+   configuration; nothing else in the system names a model, provider, or
+   harness.
 3. **Executor contract**: an executor is anything that can (a) run to
    completion from one written prompt with no human input, (b) read and
    write files in a given directory, (c) run shell commands there, (d) stop
@@ -370,7 +391,10 @@ is used as the mechanical work queue (that queue is derived — see `pulse`).
 Each of these SHALL write a `HOLD.md` at the repository root with the reason
 and stop the Desk (the Pulse keeps running except where noted):
 
-1. Three consecutive failures of the same job type.
+1. Three consecutive failures of the same job type — a failure is a job
+   whose outcome is `failed` (gates or review rejected finished work) or
+   `discarded` (rejected twice); `blocked`, `interrupted`, `capacity`, and
+   `abandoned` outcomes never count toward this breaker.
 2. The published site failing to build or deploy (Pulse halts deploy step
    too).
 3. Any attempt to publish work that skipped review.

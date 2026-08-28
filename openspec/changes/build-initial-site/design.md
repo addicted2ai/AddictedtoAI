@@ -145,8 +145,10 @@ version starved the site to feed the machinery.
 
 **Choice.** `data/derived/queue.json` is recomputed from current site state
 on every Pulse run (overdue facts, overdue tutorials, failed listings,
-broken links, demand-eligible wants, suspect sources), ranked, capped at 50
-entries. It has no identity, no history, no "closing".
+broken links, demand-eligible wants, suspect sources, refusing sources,
+vanished feed rows, and uninterpreted material changes from the trailing
+14 days — the full enumeration is normative in `specs/pulse`), ranked,
+capped at 50 entries. It has no identity, no history, no "closing".
 
 **Why.** The previous site died of tracked work accumulating faster than it
 closed — the backlog wrecked the scheduler. A recomputed snapshot cannot
@@ -190,8 +192,10 @@ materializes, reserving `loop/` is a one-line OpenSpec change.
 
 **Choice.** The loop timestamps executor invocation and return; the delta in
 minutes is recorded per tier in `data/ledger.jsonl` (one line per
-job: id, type, runner, tier, MM, outcome — append-only state, deliberately
-outside `derived/`). Budgets in `specs/loop` are
+job: id, type, runner, **provider**, tier, MM, outcome — append-only
+state, deliberately outside `derived/`; provider is the lane key, and lane
+pause state is computed from these lines plus backoff arithmetic per
+`specs/loop`, never stored separately). Budgets in `specs/loop` are
 enforced by the selector reading the rolling 30-day ledger — shares within
 each tier separately, the upkeep floor with its own enforcement point.
 Per-type wall-clock caps ("job caps") live beside the budget bounds and
@@ -238,9 +242,15 @@ the ledger.
 
 1. `openrouter-models` — `https://openrouter.ai/api/v1/models` (public JSON:
    pricing, context length, created; verified live 2026-08-27 by the design
-   inputs — re-verify during implementation).
+   inputs — re-verify during implementation). This is the launch set's one
+   **minting** source (`mints: {kind: model}` — see `specs/pulse`): its
+   rows become model stubs with `manual`-classed aliases, which is how the
+   catalog's breadth reaches the wiki layer at zero inference. One minting
+   source, deliberately, so cross-source duplicate stubs cannot arise at
+   launch; adding a second minting source later must state its dedupe rule.
 2. `llm-releases` — `https://llm-releases.com` (releases plus first-class
-   retirements/deprecations; same caveat).
+   retirements/deprecations; same caveat). Non-minting: feeds the catalog,
+   the changed feed, and the launch seeding only.
 
 Each entry in the registry records its robots/terms check result and date.
 More sources (HuggingFace API, Ollama library, GitHub repos, killedbyai)
@@ -259,10 +269,11 @@ starting empty.
 pages, capture requests matching `/g/collect`, assert tid + 2xx per
 `specs/analytics`, and — the assertion that catches the App Router
 undercount — click an internal link (client-side navigation, no full
-reload) and assert a further collect request with the new path. Route-change
-tracking is a small client component watching the pathname and firing
-`page_view` manually, and asserts exactly one `page_view` per direct load (two means
-gtag auto-send and the tracker double-fired). It runs against
+reload) and assert a further collect request with the new path.
+Route-change tracking is a small client component watching the pathname
+and firing `page_view` manually. The script separately asserts exactly one
+`page_view` per direct load (two means gtag auto-send and the tracker
+double-fired). It runs against
 `node scripts/serve-static.mjs out 3000` serving the exported build
 (`next start` refuses to run under `output: 'export'` — see D1) with
 `NEXT_PUBLIC_GA_MEASUREMENT_ID` set from `.env.local` at build time
