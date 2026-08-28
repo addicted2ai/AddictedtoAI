@@ -43,6 +43,69 @@ education is a door they can take, not the framing of the page.
   model was invoked
 - **THEN** the home page's changed feed shows the new dated lines
 
+### Requirement: The dated-delta showpiece demonstrates the pace of the field
+
+The site SHALL carry a standing surface — **Impossible → Routine** — of
+dated capability deltas. Each delta is a small curated record stating: the
+capability in one plain sentence; end A (the date it was a research result
+or widely considered impossible, with a source); end B (the date it became
+a routine, commodity operation, with a source); and optionally the price or
+metric at each end. The surface renders the deltas as a browsable, dated
+progression, newest first, each end's source one click away.
+
+Rules: every end MUST carry a real date and a reachable source; a delta
+with an unsourced end SHALL NOT publish; deltas are routine content
+(authored and reviewed like any prose, no change artifact); entries'
+timeline events MAY feed candidate deltas but every published delta is
+curated, never auto-generated. The showpiece exists because gates filter
+dullness out but cannot put astonishment in: this surface's whole job is to
+demonstrate the field's pace with receipts instead of asserting it, and
+dated pairs do not perish.
+
+#### Scenario: A delta demonstrates instead of asserting
+
+- **WHEN** a visitor opens the showpiece
+- **THEN** each item shows a capability with two dated, sourced ends, and
+  no item relies on an intensifier in place of a date
+
+#### Scenario: An unsourced end cannot publish
+
+- **WHEN** a draft delta's end B has a date but no source
+- **THEN** it fails review (`false-or-unsupported-claim`) and does not
+  render
+
+### Requirement: Every build carries a visible build stamp
+
+Every build SHALL embed a build stamp — the build's UTC timestamp and the
+short commit hash — rendered in the site footer and served as JSON at a
+stable status URL (`/status.json`). The stamp is how deploy success is
+verified from outside (see `pulse`): a fetch of the live site reveals
+whether a deploy landed, with no hosting-provider API involved. The stamp
+changes on every build; two builds from different commits MUST carry
+different stamps.
+
+#### Scenario: The stamp betrays a frozen site
+
+- **WHEN** two scheduled Pulse runs complete on a day the world changed,
+  and the live site's `/status.json` stamp is fetched after each
+- **THEN** the two fetched stamps differ; identical stamps mean publishing
+  is broken regardless of what the runs' logs claim
+
+### Requirement: Client-side name search covers the whole corpus
+
+The site SHALL provide a search box that filters the whole corpus —
+including stubs — by name: it matches against entry ids, display names,
+aliases, and page titles from a prebuilt index generated at build time and
+served as a static file. Search runs entirely in the visitor's browser (no
+server, no external service, no inference) and is name/title search by
+design, not full-text. Stubs are discoverable through it even though they
+are `noindex` for crawlers.
+
+#### Scenario: A stub is findable
+
+- **WHEN** a visitor types a stub entry's alias into search
+- **THEN** the stub's page appears in the results and is reachable
+
 ### Requirement: Published URLs never break
 
 No published URL SHALL ever 404. Renames and removals leave permanent
@@ -101,10 +164,12 @@ a recurring cost.
 
 The site SHALL look and feel deliberately designed, not templated: a
 distinctive typographic identity, a data-dense home page (content above the
-fold, not hero banners), fast loads (no client-side framework payload where
-static markup serves), dark and light themes, and accessible markup (WCAG AA
-contrast, keyboard navigation, no reflow breakage at 320px). Pages lead with
-their substance; decoration never displaces information.
+fold, not hero banners), dark and light themes, and accessible markup (WCAG
+AA contrast, keyboard navigation, no reflow breakage at 320px). Fast loads
+are a measured bound, not a sentiment: first-load JavaScript SHALL be at
+most 150 KB gzipped per page, measured on the home page, one entry page,
+and one table page, with the measured values recorded at launch. Pages lead
+with their substance; decoration never displaces information.
 
 #### Scenario: The front page is content above the fold
 

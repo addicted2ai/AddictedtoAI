@@ -63,16 +63,32 @@ content/
   learn/<slug>.md              static education pages
   tutorials/<slug>.md          dynamic education pages
   blog/<slug>.md               posts
+  deltas/<slug>.md             dated-delta records for Impossible → Routine
   directory/tools/<slug>.md    curated tool listings
 data/
+  config.json                  operational flags, notably publish: true|false
+  sources/registry.json        the source registry (specs/pulse)
   sources/<source-id>/latest.json      newest snapshot per source
   sources/<source-id>/previous.json    prior snapshot (diff base)
   changes.jsonl                append-only dated diff history (small, one
-                               JSON object per detected change)
+                               JSON object per detected or seeded change)
+  proposals/                   proposal files; rejected/ is the rejection index
+  reviews/                     verdict records (see naming in tasks 6.5/7.4)
   derived/                     generated: catalog rows, freshness, queue,
-                               wants, backlinks, alias registry
+                               wants, backlinks, alias registry, linkcheck
+                               state, search index, ledger
   analytics/summary.json       maintainer-supplied aggregate (absent = fine)
 ```
+
+**Commit policy: the entire `data/` tree is committed.** Nothing under
+`data/` is gitignored — snapshots (latest and previous), the diff history,
+derived files, the ledger, and especially the rolling link-check state
+(30 days of accumulated check dates, which is *not* derivable from anything
+else) all travel with the repo, because the deploy build and the next
+machine both need them. Redirects use a checked-in `redirects.json` from
+which the build generates `vercel.json` redirect rules (the host applies
+them; `next.config` redirects don't exist under static export); the
+internal-link check still runs at build time.
 
 **Why.** Vercel-native (the project and domain already exist there); the
 most widely known React/SSG stack, which matters when a weak model
@@ -92,9 +108,15 @@ Next.js is the boring choice; boring is the point.
 
 - `pulse/run.mjs` — deterministic; no model imports anywhere in its
   dependency graph; runnable by an OS scheduler; performs the pipeline in
-  `specs/pulse`.
+  `specs/pulse`, ending in the publish step: when `data/config.json` has
+  `publish: true`, commit + push, then poll the live `/status.json` build
+  stamp until it advances (10-minute budget) — stamp not advancing writes
+  `HOLD.md`. With `publish: false` (the whole build phase), the step prints
+  a skip line. Deploy detection is a plain HTTPS fetch of the live page; no
+  Vercel or GitHub API.
 - `loop/run.mjs` — the Desk; reads `runners.yml`, `DIRECTIVES.md`, the
-  derived queue, and the budget ledger; assembles one job at a time.
+  derived queue, and the budget ledger; assembles one job at a time; after
+  a merge it invokes the same publish step the Pulse uses.
 
 **Why.** The site's liveness must not be hostage to inference availability
 (the operating budget is bursty consumer allowances). The front page
@@ -126,8 +148,10 @@ machine-filed issues recreate the docket that killed version one.
 
 **Choice.** Operating phase: a job runs on a branch in the working repo;
 review happens on the branch's diff; the loop merges to `main` locally;
-deploy = push (which Vercel builds). No pull requests, no GitHub API, no
-`gh` dependency.
+deploy = push (which Vercel builds), executed by the shared publish step
+(D2) and verified by the live build stamp advancing — which is also how
+breaker 2 (deploy failure) is detected, keeping the no-hosting-API rule
+intact. No pull requests, no GitHub API, no `gh` dependency.
 
 **Why.** Portability. Requiring `gh`/PRs binds the loop to GitHub tooling
 and re-creates the three-git-identities/approval-classifier swamp the
@@ -145,7 +169,12 @@ site proved server-side gates get gamed around anyway, at enormous cost.
 **Choice.** The loop timestamps executor invocation and return; the delta in
 minutes is recorded per tier in `data/derived/ledger.jsonl` (one line per
 job: id, type, runner, tier, MM, outcome). Budgets in `specs/loop` are
-enforced by the selector reading the rolling 30-day ledger.
+enforced by the selector reading the rolling 30-day ledger — shares within
+each tier separately, the upkeep floor with its own enforcement point.
+Per-type wall-clock caps ("job caps") live beside the budget bounds in the
+config: cheap-tier jobs default 30 minutes, frontier authoring 60; the
+executor is killed at the cap and the run classifies `interrupted` under
+the result protocol.
 
 **Why.** Tokens are invisible across consumer subscriptions; "rounds" ranged
 200K–9M tokens; wall-clock per tier is the one thing the orchestrator can
@@ -171,6 +200,13 @@ the ledger.
   guessing). Instead, authors record a want explicitly with
   `{{want:Name}}` (renders as plain text, increments the counter). Zero
   false positives; a missing want costs nothing.
+- **Feed joins**: declared row ids only — the normative worked example and
+  join rules live in `specs/wiki` (an entry's `feeds:` map names its row id
+  per source; unmatched rows feed the catalog only).
+- **Name search**: the build emits `data/derived/search-index.json` (id,
+  display name, aliases, kind, status, page title for every page including
+  stubs); a small client component filters it in-browser. No server, no
+  service, no full text.
 
 ### D7. Feeds at launch: two sources, small on purpose
 
@@ -187,13 +223,26 @@ More sources (HuggingFace API, Ollama library, GitHub repos, killedbyai)
 are ordinary data additions during operation — the registry is designed for
 growth, the launch set is designed to be verifiable in one sitting.
 
+The `llm-releases` source carries dated release/retirement records, which
+is what makes the launch-feed seeding in `specs/pulse` possible: its
+history seeds `changes.jsonl` (marked `seeded: true`) so the home changed
+feed is populated with real, sourced, dated events on day one rather than
+starting empty.
+
 ### D8. Analytics verification: Playwright against a local prod build
 
 `scripts/verify-analytics.mjs` uses Playwright (devDependency) to load
-pages, capture requests matching `/g/collect`, and assert tid + 2xx per
-`specs/analytics`. It runs against `npx next start` serving the production
-build with `NEXT_PUBLIC_GA_MEASUREMENT_ID` set from `.env.local` (loaded as
-environment, never printed). GA4 accepts hits from any origin, so local
+pages, capture requests matching `/g/collect`, assert tid + 2xx per
+`specs/analytics`, and — the assertion that catches the App Router
+undercount — click an internal link (client-side navigation, no full
+reload) and assert a further collect request with the new path. Route-change
+tracking is a small client component watching the pathname and firing
+`page_view` manually. It runs against `npx next start` serving the
+production build with `NEXT_PUBLIC_GA_MEASUREMENT_ID` set from `.env.local`
+(loaded as environment, never printed). The script also prints any
+`Content-Security-Policy` header it observes and fails if one exists that
+omits the GA origins (none is expected at launch — `specs/analytics`
+governs any future header). GA4 accepts hits from any origin, so local
 verification is real delivery verification; the launch checklist adds the
 GA4 Realtime confirmation with the maintainer's eyes on the live property.
 
@@ -209,8 +258,9 @@ through the review flow as review's first live exercise:
 |---|---|---|
 | Wiki | 40 entries total; ≥ 12 with review-passed prose bodies | Prose-first picks: the current frontier model families, major labs, 6–8 post-2023 concepts/techniques where canonical sources are stale (per the education scout: RLHF/DPO, quantization, KV-cache, MCP, context windows, speculative decoding) |
 | Education (static) | 4 pages | Top of the ladder: orientation; how an LLM actually works; how models are trained/adapted; how inference is served and priced |
-| Education (dynamic) | 2 tutorials | Must be executable in this environment so verification is real (e.g., local models via Ollama; an OpenRouter-API quickstart) |
-| Blog | 2 posts | Candidate 1: the field's own references are rotting (Aider banner, Papers-with-Code redirect — re-verify every fact live before writing). Candidate 2: what the launch dataset shows (e.g., retirement velocity). Both must clear the editorial bar or be replaced |
+| Education (dynamic) | 2 tutorials | Must be credential-free and executable in this environment with a small footprint, so verification is real and no credential hunting occurs. Named candidates: (a) run a small model fully in-browser with transformers.js (npm dependency + ~25 MB model, no keys); (b) build a model-price tracker against the OpenRouter public `/api/v1/models` endpoint (public JSON, no key). Ollama is disqualified (requires installation, which is maintainer-reserved). If a candidate proves unexecutable, substitute another credential-free subject and record why |
+| Blog | 2 posts | Candidate 1: "the field's own references are rotting" — the phenomenon that respected AI reference pages silently stale out. Two concrete leads to check live: the Aider leaderboard's on-page "last updated" banner (read the date it shows today) and paperswithcode.com (observe where it redirects). Every fact is re-verified live at authoring time; if a lead no longer holds, find another instance of the same phenomenon or drop it. Candidate 2: **a dated-delta piece with receipts** — what the launch data shows about capability or lifecycle velocity (e.g., time-from-release-to-retirement), every date sourced; this post's acceptance test is the dated-delta demonstration, not topic coverage. Both must clear the editorial bar or be replaced |
+| Impossible → Routine | ≥ 8 dated deltas | Each end dated and sourced (research-result date → commodity date); reviewed like any prose; this is the awe surface's launch stock |
 | Directory | Catalog from feeds (whatever the sources yield, expected 200+ rows) + 20 curated tool listings + the three standing tables | Curated picks favor what enthusiasts actually run (coding agents, local runners, image/video tools) |
 
 Counts are minimums for launch, not quotas afterward; after launch the blog
@@ -223,7 +273,12 @@ dark/light, density) meeting `specs/site`. Implementation guidance: system
 of 2 typefaces max, data-dense tables as a first-class visual element, the
 changed-feed as the hero. The bar is verifiable by the checks named in
 tasks (axe-core pass, no horizontal scroll at 320px, content above the fold
-at 1440×900 and 390×844). Taste beyond the checks is exercised in review.
+at 1440×900 and 390×844, and first-load JS ≤ 150 KB gzipped on the three
+sampled pages — the App Router runtime ships on every page, so the payload
+is measured, never assumed, and the measured values are recorded in
+`data/launch.json`). Client-side navigation staying enabled is exactly why
+the analytics route-change requirement exists (`specs/analytics`). Taste
+beyond the checks is exercised in review.
 
 ### D11. Operating-phase instructions live in AGENTS.md
 
@@ -245,8 +300,9 @@ launch checklist exists.
 - **Numeric quality scores** — cut (`specs/review`; scores become targets).
 - **Newsletter/accounts/comments** — cut (personal data + moderation with
   no operator).
-- **Embeddings/vector search** — cut (second inference dependency; alias
-  registry + backlinks suffice at this scale).
+- **Embeddings/vector search and full-text search** — cut (second inference
+  dependency / index weight; the client-side *name* search in D6 is the
+  whole search story at this scale).
 - **Dead-man alarms, seeded-defect schedulers, canary batteries** — cut
   from v1 as apparatus; the four breakers in `specs/loop` plus the linker
   and build fixtures are the safety floor. Revisit only with evidence.
@@ -288,14 +344,17 @@ during the change.
 
 **Launch (maintainer-gated, after this change lands):**
 
-1. Maintainer lifts the no-push rule (edits `CLAUDE.md`/`AGENTS.md`).
+1. Maintainer lifts the no-push rule (edits `CLAUDE.md`/`AGENTS.md`) and
+   sets `publish: true` in `data/config.json`, arming the publish step.
 2. `git push` → Vercel builds → verify `https://www.addictedtoai.net/`
-   serves the new site.
+   serves the new site and `/status.json` carries the pushed commit's
+   stamp.
 3. Run `node scripts/verify-analytics.mjs https://www.addictedtoai.net` —
    all assertions pass.
 4. Maintainer GA4 Realtime confirmation per `specs/analytics`.
 5. Maintainer schedules the Pulse (OS scheduler, 4×/day,
-   `node pulse/run.mjs`).
+   `node pulse/run.mjs`) — verified by the live build stamp differing
+   across consecutive scheduled runs, never by runs merely completing.
 6. Record the launch date and the Realtime confirmation in the launch
    record (`data/launch.json`).
 

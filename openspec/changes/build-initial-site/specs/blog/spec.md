@@ -61,7 +61,11 @@ the more dramatic reading.
 
 There SHALL be no minimum posting cadence: zero posts in a week is a normal,
 healthy outcome. There SHALL be a ceiling of 3 published posts in any rolling
-7 days, so a capacity glut converts to depth rather than volume. A post
+7 days, so a capacity glut converts to depth rather than volume. The ceiling
+is enforced at a named point: the loop's selector SHALL refuse a `post` job
+whenever 3 published posts carry dates within the trailing 7 days, and the
+build SHALL warn when the published set already exceeds the ceiling (a
+warning, not a failure, so historical rebuilds never break). A post
 exists because something happened worth an enthusiast's time — the editorial
 bar (see `editorial`) decides, not a schedule.
 

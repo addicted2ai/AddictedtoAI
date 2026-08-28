@@ -9,11 +9,16 @@ what the loop does with the signal.
 
 ## ADDED Requirements
 
-### Requirement: Every page reports a pageview to GA4
+### Requirement: Every page view reports to GA4, however the visitor navigates
 
 Every page SHALL load the GA4 tag (gtag.js) configured with a measurement ID
-supplied by the environment variable `NEXT_PUBLIC_GA_MEASUREMENT_ID`, and
-SHALL send a `page_view` event on load. When the variable is absent, pages
+supplied by the environment variable `NEXT_PUBLIC_GA_MEASUREMENT_ID`, and a
+`page_view` event SHALL be sent both on full page load **and on every
+client-side route change**. The chosen stack navigates client-side after
+first load, so "on load only" counts one page per visit and undercounts
+everything a visitor clicks — the exact trickle-of-single-page-sessions
+failure this capability exists to prevent. The route-change `page_view` MUST
+carry the new page's path and title. When the variable is absent, pages
 SHALL render with no analytics markup at all (local development stays
 silent). No event SHALL carry any personally identifying payload; no custom
 events are required beyond `page_view` at launch. The measurement ID is
@@ -27,6 +32,12 @@ never printed by any tool or script.
 - **THEN** every rendered page contains the gtag loader for that ID and
   sends `page_view` on load
 
+#### Scenario: A click is a counted page view
+
+- **WHEN** a visitor lands on the home page and clicks an internal link that
+  navigates client-side without a full reload
+- **THEN** a second `page_view` is sent carrying the new page's path
+
 #### Scenario: Unconfigured build is silent
 
 - **WHEN** the site is built with the variable unset
@@ -38,16 +49,21 @@ never printed by any tool or script.
 There SHALL be an automated verification, `node scripts/verify-analytics.mjs
 <base-url>`, that:
 
-1. loads at least the home page and one content page in a real browser
+1. loads the home page and one content page directly in a real browser
    context,
 2. captures outgoing network requests to the GA collection endpoint
    (`google-analytics.com` / regional equivalents, path containing
    `/g/collect`),
-3. asserts at least one collect request per page whose `tid` parameter
-   equals the configured measurement ID,
+3. asserts at least one collect request per loaded page whose `tid`
+   parameter equals the configured measurement ID,
 4. asserts the collect response status is 2xx,
-5. prints one line per page: URL, collect endpoint hit yes/no, tid match
-   yes/no, HTTP status — and exits nonzero if any assertion fails.
+5. **clicks an internal link from the home page without a full reload
+   (client-side navigation) and asserts a further collect request arrives
+   carrying the new page's path** — this is the assertion that catches the
+   single-page-session undercount,
+6. prints one line per assertion: URL or action, collect endpoint hit
+   yes/no, tid match yes/no, HTTP status — and exits nonzero if any
+   assertion fails.
 
 A rendered script tag SHALL never be accepted as evidence that analytics
 works; only this check (and the launch confirmation below) counts. The check
@@ -64,8 +80,33 @@ live site at launch.
 #### Scenario: The check passes only on accepted delivery
 
 - **WHEN** each tested page produces a collect request with the configured
-  `tid` and a 2xx response
-- **THEN** the check exits zero and prints the per-page evidence lines
+  `tid` and a 2xx response, and the click-through navigation produces its
+  own collect request with the new path
+- **THEN** the check exits zero and prints the per-assertion evidence lines
+
+#### Scenario: Soft navigation that goes uncounted fails the check
+
+- **WHEN** the tag fires on first load but no collect request follows the
+  client-side click
+- **THEN** the check exits nonzero naming the click-through assertion
+
+### Requirement: Response headers may never silently block collection
+
+The site sets no Content-Security-Policy at launch. If any CSP or other
+security header is ever introduced (in the app, in `vercel.json`, or in
+host configuration), it MUST permit the GA origins —
+`https://www.googletagmanager.com` (script) and
+`https://www.google-analytics.com` plus its regional collect endpoints
+(connect) — and the change MUST NOT publish until
+`scripts/verify-analytics.mjs` passes against a build carrying the new
+headers. The behavioral check is the guard: headers are never assumed
+compatible by reading them, only proven by observing delivery.
+
+#### Scenario: A header change re-proves delivery
+
+- **WHEN** a change introduces or edits any security header
+- **THEN** `verify-analytics.mjs` is run against the changed build and the
+  change publishes only on its exit 0
 
 ### Requirement: Launch confirmation is observed in GA4 Realtime
 

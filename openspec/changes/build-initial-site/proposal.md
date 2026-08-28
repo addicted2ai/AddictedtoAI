@@ -33,7 +33,16 @@ posts, tutorial re-verification, directory refreshes — **never** touches
   context windows, deprecations and retirements, plus curated tools), and the
   wiki itself.
 - **The home page** is a "what changed" view derived from the wiki's data
-  layer — it changes daily at zero inference cost.
+  layer — it changes daily at zero inference cost, and its diff history is
+  seeded at launch from the release feed's own dated records so the feed is
+  populated with real sourced history on day one.
+- **Impossible → Routine ships as a standing showpiece surface** — dated
+  capability deltas: a thing that was a research result on one date and a
+  commodity call on another, each end sourced. Adopted from the brief's
+  suggested surfaces, with this stated reason: gates filter dullness out but
+  cannot put astonishment in; the site needs at least one surface whose whole
+  job is to *demonstrate* the pace of the field with receipts rather than
+  assert it, and dated pairs do not perish the way live claims do.
 - **The Pulse** is created: a deterministic, model-free engine (fetch, hash,
   diff, link-check, freshness, rebuild) on a schedule. The site stays alive in
   a week where no inference runs at all.
@@ -69,16 +78,18 @@ posts, tutorial re-verification, directory refreshes — **never** touches
 - `directory`: the feed-fed model catalog (standing tables: every callable
   model with price and context window; deprecations and retirements) and the
   curated tools directory, every row sourced and re-verified.
-- `site`: static rendering, the derived home page, navigation, URL stability,
-  citable assets (feeds, sitemap, open dataset), the one-page colophon that
-  carries the AI-authorship record, design and accessibility bar, and the
-  no-visitor-inference rule.
+- `site`: static rendering, the derived home page, the dated-delta showpiece
+  (Impossible → Routine), client-side name search, the build stamp, navigation,
+  URL stability, citable assets (feeds, sitemap, open dataset), the one-page
+  colophon that carries the AI-authorship record, design and accessibility bar,
+  and the no-visitor-inference rule.
 - `analytics`: GA4 wiring, the verification that events actually arrive
   (automated collect-endpoint check plus maintainer Realtime confirmation),
   and what the loop does with the signal.
 - `pulse`: the deterministic engine — source registry, snapshot/hash/diff,
   derived data, link checking, freshness computation, the derived work queue,
-  rebuild; provably runs with zero model access.
+  rebuild, and **publish** (the operating-phase deploy step, verified against
+  the live site's build stamp); provably runs with zero model access.
 - `loop`: the Desk — job model, work sources, budgets and degradation,
   breakers, the portability contract (model X / provider Y / harness Z), the
   swap procedure, and the line between routine work and OpenSpec changes.

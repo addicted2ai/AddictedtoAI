@@ -14,7 +14,8 @@ at all.
 The Pulse SHALL be a single ordinary command (`node pulse/run.mjs`) that
 performs, in order: stop-file check, source fetching, snapshot/hash/diff,
 data-layer update, rolling link check, freshness computation, derived-queue
-recomputation, and site rebuild. It SHALL contain no model invocation on any
+recomputation, site rebuild, and — when publishing is enabled — **publish**
+(the deploy step defined below). It SHALL contain no model invocation on any
 path and SHALL run to completion on a machine with no model credentials of
 any kind. It SHALL be safe to run on any schedule (idempotent between world
 changes) and SHALL never prompt interactively. The zero-model property is
@@ -32,6 +33,50 @@ variables unset: `node pulse/run.mjs` completes with exit code 0.
 - **WHEN** a file named `STOP` exists at the repository root
 - **THEN** the Pulse exits immediately, doing nothing, and prints that the
   stop file is present
+
+### Requirement: The Pulse publishes what it builds
+
+A local rebuild is not publication. Publishing is a named pipeline step,
+controlled by the `publish` flag in `data/config.json`:
+
+- **When `publish` is `true`** (the operating phase): after a successful
+  rebuild, the Pulse SHALL commit its data and content changes and push
+  `main` to the remote (deploy = push; the host builds and serves). It SHALL
+  then verify the deploy by fetching the live site's build stamp (see `site`)
+  and confirming, within 10 minutes and with retries, that the stamp
+  advanced to the just-built value. A stamp that does not advance is a
+  deploy failure: the Pulse SHALL write `HOLD.md` naming the failure
+  (breaker 2 in `loop`) and suspend further publish attempts until the hold
+  clears. Detection is by fetching the live page only — no hosting-provider
+  API, no GitHub API.
+- **When `publish` is `false`** (the build phase, while the no-push rule
+  stands — and any time the maintainer wants a local-only mode): the Pulse
+  SHALL skip the publish step entirely and print one line stating that
+  publishing is disabled. Nothing else in the pipeline changes. The launch
+  checklist is what flips the flag to `true`.
+
+Without this step the site would rebuild locally forever while the live
+domain stayed frozen; a Pulse run that completes without the live site
+changing is not a success when publishing is enabled.
+
+#### Scenario: An operating-phase run reaches the live site
+
+- **WHEN** the Pulse runs with `publish: true` and the rebuild succeeds
+- **THEN** the changes are committed and pushed, and the run's final step
+  confirms the live build stamp now carries the new build's value
+
+#### Scenario: A deploy that does not land is a halt, not a shrug
+
+- **WHEN** the push succeeds but the live build stamp has not advanced
+  after 10 minutes of polling
+- **THEN** the Pulse writes `HOLD.md` naming the deploy failure and makes
+  no further publish attempts until the hold is cleared
+
+#### Scenario: Build phase publishes nothing
+
+- **WHEN** the Pulse runs with `publish: false`
+- **THEN** no push occurs, and the run log contains one line stating
+  publishing is disabled
 
 ### Requirement: Sources live in a registry and refusals are data
 
@@ -73,6 +118,30 @@ a dated diff history from which the home page's changed feed and the
 - **THEN** the diff history gains a dated entry naming the model, the field,
   the old and new values, and the source — and the next build shows it in
   the changed feed
+
+### Requirement: The diff history is seeded so the launch feed is not empty
+
+Diff history normally begins at first fetch, which would leave the changed
+feed — the launch-day hero — nearly empty. At first ingestion of a source
+whose rows carry their own dated historical records (release dates,
+retirement dates, deprecation dates), the Pulse SHALL seed `changes.jsonl`
+with those records as dated, sourced entries marked `seeded: true`, carrying
+their original dates. Seeded entries render in the changed feed exactly like
+observed ones (they are real, sourced history — not synthesized), and the
+`seeded` marker keeps them distinguishable in the data. Seeding runs once
+per source and never overwrites observed entries.
+
+#### Scenario: Launch day shows real history
+
+- **WHEN** the release/retirement source is ingested for the first time
+- **THEN** `changes.jsonl` contains dated entries for its historical
+  releases and retirements, each marked `seeded: true` with its original
+  date and source, and the home changed feed renders them
+
+#### Scenario: Seeding is idempotent
+
+- **WHEN** the Pulse runs again after seeding
+- **THEN** no duplicate seeded entries are appended
 
 ### Requirement: Freshness is computed, staleness cannot hide
 

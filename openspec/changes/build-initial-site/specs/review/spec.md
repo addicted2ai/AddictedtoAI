@@ -17,9 +17,12 @@ Every job whose diff contains model-written or model-edited content (prose,
 entry data changes beyond feed binding, machinery code) SHALL be reviewed
 before merge. The reviewer SHALL be a separate invocation with a fresh
 context and no edit rights — a different model where `runners.yml` clears
-one for `reviewer`, otherwise the same model freshly invoked. The authoring
-run and the reviewing run are never the same session; self-review is not
-review.
+one for `reviewer`, otherwise the same model freshly invoked. "No edit
+rights" is a mechanism, not an instruction: the loop SHALL discard any
+change a reviewer invocation makes to the reviewed tree, and the only
+output it accepts from a reviewer is the verdict record, written to a
+designated path outside the reviewed worktree. The authoring run and the
+reviewing run are never the same session; self-review is not review.
 
 **The one exemption:** deterministic outputs of already-reviewed machinery —
 Pulse feed refreshes, derived tables, computed banners, the derived queue —
@@ -60,6 +63,23 @@ this closed list:
   paths it should not.
 
 Verdicts are categorical, never numeric — scores drift and become targets.
+
+**The quality question is asked, not merely available.** For every verdict
+on a prose piece, the review record SHALL contain a required, non-empty
+`would-cite` field: the reviewer's own-words answer to "who would link
+this, and in what argument?" An `approve` whose `would-cite` field is empty
+or boilerplate-identical to a previous record is not a valid verdict and
+the merge SHALL refuse it. Making the quality objection sayable fixed the
+old failure; this field makes it asked — a reviewer that approves
+everything without ever confronting the would-cite test produces the same
+unread site as one that could not object at all.
+
+#### Scenario: An approve must answer the quality question
+
+- **WHEN** a reviewer returns `approve` on a blog post with the
+  `would-cite` field blank
+- **THEN** the verdict is invalid, the merge refuses, and the reviewer must
+  re-issue the verdict with the field answered
 
 #### Scenario: Boring is a verdict
 

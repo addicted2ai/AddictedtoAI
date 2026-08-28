@@ -89,6 +89,87 @@ without its source being reachable from the rendered page (a link for
   `accessed` date
 - **THEN** the site build fails naming the entry and the field
 
+### Requirement: Feed binding joins on declared ids, never on names
+
+A feed-bound fact is joined to its source row by an **explicitly declared
+row id**, never by name matching — name matching is guessing, and this
+design never guesses. Concretely:
+
+- An entry that binds any fact to a feed SHALL declare, in a `feeds` map in
+  its front matter, the row id it corresponds to in each source, using that
+  source's own id field (for OpenRouter, the row's `id` such as
+  `anthropic/claude-opus-5`; each source's registry entry names which field
+  is its row id).
+- Each feed-bound fact declares the source id and the field path within the
+  joined row (dot notation, e.g. `pricing.prompt`).
+- A feed row whose id is declared by no entry feeds the model catalog and
+  the changed feed only; it SHALL never touch any entry.
+- A declared row id that is absent from the current snapshot SHALL cause
+  the fact to render its last-known value with a visible as-of date, and a
+  repair finding enters the derived queue. It never renders as current.
+
+**The worked example** — the complete front matter of one entry, normative
+for field names and shapes (prose body follows the closing delimiter):
+
+```yaml
+id: model/claude-opus-5
+kind: model
+display_name: "Claude Opus 5"
+status: active            # active | preview | announced | deprecated | retired | dead
+maintenance: living       # living | stable | dormant
+aliases:
+  - name: "Claude Opus 5"
+    class: exclusive
+  - name: "Opus 5"
+    class: shared
+  - name: "Claude"
+    class: manual
+feeds:
+  openrouter-models: "anthropic/claude-opus-5"   # this source's row id
+facts:
+  - field: price_input
+    source: feed
+    feed: openrouter-models
+    path: pricing.prompt
+    volatility: fast
+  - field: context_window
+    source: feed
+    feed: openrouter-models
+    path: context_length
+    volatility: fast
+  - field: release_date
+    source: cited
+    value: "2026-05-01"
+    source_url: "https://www.anthropic.com/news/claude-opus-5"
+    accessed: "2026-08-27"
+    volatility: dated
+timeline:
+  - date: "2026-05-01"
+    event: released
+    source_url: "https://www.anthropic.com/news/claude-opus-5"
+mentions: []
+```
+
+#### Scenario: A declared join updates the entry
+
+- **WHEN** the snapshot row `anthropic/claude-opus-5` changes its
+  `pricing.prompt` value
+- **THEN** the entry above renders the new `price_input` at next build,
+  because the join was declared — not inferred
+
+#### Scenario: An undeclared row never touches an entry
+
+- **WHEN** a new row appears in a feed and no entry declares its id
+- **THEN** it appears in the model catalog and (if material) the changed
+  feed, and no entry's facts change
+
+#### Scenario: A vanished row cannot pose as current
+
+- **WHEN** an entry declares a row id that the latest snapshot no longer
+  contains
+- **THEN** the bound facts render their last-known values with a visible
+  as-of date and a repair finding appears in the derived queue
+
 ### Requirement: Volatile facts travel by transclusion, never by restatement
 
 Prose anywhere on the site (wiki bodies, education pages, tutorials, blog
@@ -199,9 +280,13 @@ build.
 ### Requirement: Mentions never create work
 
 A mention of a thing that has no entry SHALL render as plain text,
-permanently, and SHALL create no task, no issue, and no obligation. The build
-records it only as a want: a counter of (name, distinct referring pages).
-Wants are data, not a queue. New entries are minted only:
+permanently, and SHALL create no task, no issue, no obligation — and no
+record: the build does not scan prose for unregistered names (fuzzy mention
+scanning is guessing, and it is deliberately not built). Demand is recorded
+only when an author writes the explicit marker `{{want:Name}}`, which
+renders as the plain text `Name` and increments the want counter for that
+name (count of distinct referring pages). Wants are data, not a queue. New
+entries are minted only:
 
 - from registry ingest (the Pulse observing that the world produced a thing),
 - from want demand (a name wanted by 3 or more distinct pages is eligible),
@@ -211,11 +296,18 @@ Minting is budgeted under the loop's new-writing budget (see `loop`). The
 corpus grows at the rate the world produces things plus the rate capacity
 allows, never at the rate the corpus talks about itself.
 
-#### Scenario: Unknown mention costs nothing
+#### Scenario: Unknown mention costs nothing and records nothing
 
-- **WHEN** a tutorial mentions a library that has no entry
-- **THEN** the text renders plain, the want counter for that name increments,
-  and no task or issue exists anywhere as a result
+- **WHEN** a tutorial mentions a library that has no entry, with no want
+  marker
+- **THEN** the text renders plain and nothing is recorded anywhere as a
+  result
+
+#### Scenario: Demand is recorded only by the explicit marker
+
+- **WHEN** two different pages each contain `{{want:vLLM}}`
+- **THEN** both render the plain text `vLLM` and the want counter records
+  the name with a count of 2 distinct referring pages
 
 #### Scenario: Demand makes a want eligible, not mandatory
 
@@ -229,8 +321,8 @@ allows, never at the rate the corpus talks about itself.
 Every entry is either a **stub** (structured data only, no prose body) or
 **full** (has a prose body). Stubs SHALL exist freely at zero inference cost:
 they render a page from their data (identity, facts, timeline, backlinks),
-they appear in site search and in the open dataset, but they carry `noindex`
-and appear in no browse listing.
+they appear in the client-side name search (defined in `site`) and in the
+open dataset, but they carry `noindex` and appear in no browse listing.
 
 An entry SHALL be indexed (no `noindex`, present in browse listings) only if
 at least one of:
@@ -246,8 +338,8 @@ never authored by hand.
 #### Scenario: A stub exists without being publishable noise
 
 - **WHEN** ingest creates an entry with only identity and one fact
-- **THEN** its page renders, is searchable on-site, carries `noindex`, and
-  appears in no browse listing
+- **THEN** its page renders, is findable through the client-side name
+  search, carries `noindex`, and appears in no browse listing
 
 #### Scenario: A dead thing's entry is indexed
 
