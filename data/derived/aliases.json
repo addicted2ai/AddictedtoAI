@@ -1,3 +1,3884 @@
 {
-  "aliases": []
+  "aliases": [
+    {
+      "name": "AionLabs: Aion-2.0",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/aion-labs-aion-2-0",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "AionLabs: Aion-3.0",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/aion-labs-aion-3-0",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "AionLabs: Aion-3.0-Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/aion-labs-aion-3-0-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "AionLabs: Aion-RP 1.0 (8B)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/aion-labs-aion-rp-llama-3-1-8b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "AllenAI: Olmo 3 32B Think",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/allenai-olmo-3-32b-think",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Amazon: Nova 2 Lite",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/amazon-nova-2-lite-v1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Amazon: Nova Lite 1.0",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/amazon-nova-lite-v1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Amazon: Nova Micro 1.0",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/amazon-nova-micro-v1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Amazon: Nova Premier 1.0",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/amazon-nova-premier-v1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Amazon: Nova Pro 1.0",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/amazon-nova-pro-v1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic Claude Haiku Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-haiku-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic Claude Sonnet Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-sonnet-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude 3 Haiku",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-3-haiku",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Fable 5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-fable-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Fable 5 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-fable-5-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Fable Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-fable-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Haiku 4.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-haiku-4-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Haiku 4.5 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-haiku-4-5-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.1 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-1-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.5 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-5-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.6",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-6",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.6 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-6-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.7",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-7",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.7 (Fast)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-7-fast",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.7 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-7-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.8",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-8",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.8 (Fast)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-8-fast",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus 4.8 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-4-8-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Opus Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Sonnet 4",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-sonnet-4",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Sonnet 4.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-sonnet-4-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Sonnet 4.5 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-sonnet-4-5-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Sonnet 4.6",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-sonnet-4-6",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Sonnet 4.6 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-sonnet-4-6-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Sonnet 5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-sonnet-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Sonnet 5 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-sonnet-5-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Arcee AI: Trinity Large Thinking",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/arcee-ai-trinity-large-thinking",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Arcee AI: Virtuoso Large",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/arcee-ai-virtuoso-large",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Auto Router",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openrouter-auto",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Auto Router (Beta)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openrouter-auto-beta",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Baidu: ERNIE 4.5 VL 424B A47B ",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/baidu-ernie-4-5-vl-424b-a47b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Body Builder (beta)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openrouter-bodybuilder",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "ByteDance Seed: Seed 1.6",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/bytedance-seed-seed-1-6",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "ByteDance Seed: Seed 1.6 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/bytedance-seed-seed-1-6-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "ByteDance Seed: Seed 2.1 Turbo",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/bytedance-seed-seed-2-1-turbo",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "ByteDance Seed: Seed-2.0-Code",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/bytedance-seed-seed-2-0-code",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "ByteDance Seed: Seed-2.0-Lite",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/bytedance-seed-seed-2-0-lite",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "ByteDance Seed: Seed-2.0-Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/bytedance-seed-seed-2-0-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "ByteDance: UI-TARS 7B ",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/bytedance-ui-tars-1-5-7b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Claude Opus 5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Claude Opus 5 (Fast)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-5-fast",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Claude Opus 5 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-opus-5-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Cohere: Command A",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/cohere-command-a",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Cohere: Command R (08-2024)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/cohere-command-r-08-2024",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Cohere: Command R+ (08-2024)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/cohere-command-r-plus-08-2024",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Cohere: Command R7B (12-2024)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/cohere-command-r7b-12-2024",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Cohere: North Mini Code (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/cohere-north-mini-code-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek V4 Flash Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-flash-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-chat",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V3 0324",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-chat-v3-0324",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V3.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-chat-v3-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V3.1 Terminus",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v3-1-terminus",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V3.2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v3-2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V3.2 Exp",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v3-2-exp",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V4 Flash 0423",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V4 Flash 0731",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-flash-0731",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V4 Flash Vision Exp",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-flash-vision-exp",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V4 Pro 0423",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V4 Pro 0813",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-pro-0813",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: R1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-r1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: R1 0528",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-r1-0528",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: R1 Distill Llama 70B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-r1-distill-llama-70b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Dots Studio: Dots3-Note Preview (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/dots-studio-dots-3-note-preview-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Free Models Router",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openrouter-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google Gemini Flash Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-flash-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google Gemini Pro Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-pro-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 2.5 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-2-5-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 2.5 Flash (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-2-5-flash-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 2.5 Flash Lite",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-2-5-flash-lite",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 2.5 Flash Lite (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-2-5-flash-lite-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 2.5 Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-2-5-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 2.5 Pro (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-2-5-pro-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 2.5 Pro Preview 05-06",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-2-5-pro-preview-05-06",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 2.5 Pro Preview 06-05",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-2-5-pro-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3 Flash Preview",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-flash-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3 Flash Preview (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-flash-preview-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.1 Flash Lite",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-1-flash-lite",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.1 Flash Lite (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-1-flash-lite-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.1 Flash Lite Preview",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-1-flash-lite-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.1 Pro Preview",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-1-pro-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.1 Pro Preview (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-1-pro-preview-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.1 Pro Preview Custom Tools",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-1-pro-preview-customtools",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.5 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-5-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.5 Flash (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-5-flash-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.5 Flash Lite",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-5-flash-lite",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.5 Flash Lite (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-5-flash-lite-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.6 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-6-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.6 Flash (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-6-flash-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.7 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-7-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.7 Flash (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-7-flash-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemma 2 27B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemma-2-27b-it",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemma 3 12B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemma-3-12b-it",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemma 3 27B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemma-3-27b-it",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemma 3 4B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemma-3-4b-it",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemma 4 26B A4B ",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemma-4-26b-a4b-it",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemma 4 26B A4B  (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemma-4-26b-a4b-it-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemma 4 31B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemma-4-31b-it",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemma 4 31B (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemma-4-31b-it-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Lyria 3 Clip Preview",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-lyria-3-clip-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Lyria 3 Pro Preview",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-lyria-3-pro-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Nano Banana (Gemini 2.5 Flash Image)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-2-5-flash-image",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Nano Banana 2 (Gemini 3.1 Flash Image Preview)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-1-flash-image-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Nano Banana 2 (Gemini 3.1 Flash Image)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-1-flash-image",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-1-flash-lite-image",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Nano Banana Pro (Gemini 3 Pro Image Preview)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-pro-image-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Nano Banana Pro (Gemini 3 Pro Image)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-pro-image",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "IBM: Granite 4.0 Micro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/ibm-granite-granite-4-0-h-micro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "IBM: Granite 4.1 8B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/ibm-granite-granite-4-1-8b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Inception: Mercury 2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inception-mercury-2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Kwaipilot: KAT-Coder-Air V2.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/kwaipilot-kat-coder-air-v2-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Kwaipilot: KAT-Coder-Pro V2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/kwaipilot-kat-coder-pro-v2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Kwaipilot: KAT-Coder-Pro V2.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/kwaipilot-kat-coder-pro-v2-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Ling 3.0 Flash Fin (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inclusionai-ling-3-0-flash-fin-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Ling-3.0-flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inclusionai-ling-3-0-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "LiquidAI: LFM2.5-2.6B (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/liquid-lfm-2-5-2-6b-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Magnum v4 72B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthracite-org-magnum-v4-72b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mancer: Weaver (alpha)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mancer-weaver",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meituan: LongCat 2.0",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meituan-longcat-2-0",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Llama 3.1 70B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-llama-llama-3-1-70b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Llama 3.1 8B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-llama-llama-3-1-8b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Llama 3.2 1B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-llama-llama-3-2-1b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Llama 3.2 3B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-llama-llama-3-2-3b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Llama 3.3 70B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-llama-llama-3-3-70b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Llama 4 Maverick",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-llama-llama-4-maverick",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Llama 4 Scout",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-llama-llama-4-scout",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Llama Guard 4 12B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-llama-llama-guard-4-12b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Muse Glimmer 30B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-glimmer-30b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Muse Spark 1.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-spark-1-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Muse Spark 1.2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-spark-1-2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Muse Spark 1.2 Contributor",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-spark-1-2-contributor",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Microsoft: Phi 4",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/microsoft-phi-4",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax M1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax M2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax M2-her",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m2-her",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax M2.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m2-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax M2.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m2-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax M2.7",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m2-7",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax M2.7 (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m2-7-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax M3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax M3 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m3-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax M3 (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-m3-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax: MiniMax-01",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/minimax-minimax-01",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral Large",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-large",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral Large 2407",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-large-2407",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Codestral 2508",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-codestral-2508",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Codestral 2508 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-codestral-2508-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Devstral 2 2512",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-devstral-2512",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Ministral 3 14B 2512",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-ministral-14b-2512",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Ministral 3 3B 2512",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-ministral-3b-2512",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Ministral 3 8B 2512",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-ministral-8b-2512",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Ministral 3 8B 2512 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-ministral-8b-2512-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Large 3 2512",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-large-2512",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Large 3 2512 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-large-2512-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Medium 3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-medium-3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Medium 3.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-medium-3-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Medium 3.1 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-medium-3-1-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Medium 3.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-medium-3-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Medium 3.5 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-medium-3-5-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Nemo",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-nemo",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Small 3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-small-24b-instruct-2501",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Small 3.1 24B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-small-3-1-24b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Small 3.2 24B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-small-3-2-24b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Small 4",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-small-2603",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mistral Small 4 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-small-2603-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Mixtral 8x22B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mixtral-8x22b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Saba",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-mistral-saba",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral: Voxtral Small 24B 2507",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/mistralai-voxtral-small-24b-2507",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MoonshotAI Kimi Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MoonshotAI: Kimi K2 0711",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MoonshotAI: Kimi K2 0905",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k2-0905",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MoonshotAI: Kimi K2 Thinking",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k2-thinking",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MoonshotAI: Kimi K2.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k2-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MoonshotAI: Kimi K2.6",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k2-6",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MoonshotAI: Kimi K2.7 Code",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k2-7-code",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MoonshotAI: Kimi K3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Morph: Morph V3 Fast",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/morph-morph-v3-fast",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Morph: Morph V3 Large",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/morph-morph-v3-large",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MythoMax 13B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/gryphe-mythomax-l2-13b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3 Nano 30B A3B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-nano-30b-a3b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-nano-omni-30b-a3b-reasoning-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3 Super",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-super-120b-a12b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3 Super (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-super-120b-a12b-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3 Ultra",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-ultra-550b-a55b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3 Ultra (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-ultra-550b-a55b-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3 Ultra (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-ultra-550b-a55b-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3.5 Content Safety (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-5-content-safety-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3.5 Lightning",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-5-lightning",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3.5 Lightning (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-5-lightning-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Nex AGI: Nex-N2-Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nex-agi-nex-n2-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Nex AGI: Nex-N2-Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nex-agi-nex-n2-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Nous: Hermes 3 405B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nousresearch-hermes-3-llama-3-1-405b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Nous: Hermes 3 70B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nousresearch-hermes-3-llama-3-1-70b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Nous: Hermes 4 405B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nousresearch-hermes-4-405b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Nous: Hermes 4 70B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nousresearch-hermes-4-70b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI GPT Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI GPT Mini Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-mini-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT Audio",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-audio",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT Audio Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-audio-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT Chat Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-chat-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-3.5 Turbo",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-3-5-turbo",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-3.5 Turbo (older v0613)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-3-5-turbo-0613",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-3.5 Turbo 16k",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-3-5-turbo-16k",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-3.5 Turbo Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-3-5-turbo-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4 Turbo",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4-turbo",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4 Turbo Preview",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4-turbo-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4.1 Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4-1-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4.1 Nano",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4-1-nano",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4o",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4o",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4o (2024-05-13)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4o-2024-05-13",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4o (2024-08-06)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4o-2024-08-06",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4o (2024-11-20)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4o-2024-11-20",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4o-mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4o-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-4o-mini (2024-07-18)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-4o-mini-2024-07-18",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5 Image",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-image",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5 Image Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-image-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5 Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5 Nano",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-nano",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5 Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.1-Codex",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-1-codex",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.1-Codex-Max",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-1-codex-max",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.1-Codex-Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-1-codex-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.2 Chat",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-2-chat",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.2 Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-2-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.2-Codex",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-2-codex",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.3-Codex",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-3-codex",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.4",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-4",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.4 Image 2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-4-image-2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.4 Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-4-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.4 Nano",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-4-nano",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.4 Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-4-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.5 Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-5-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.6 Luna",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-6-luna",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.6 Luna Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-6-luna-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.6 Sol",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-6-sol",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.6 Sol Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-6-sol-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.6 Terra",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-6-terra",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-5.6 Terra Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-5-6-terra-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: gpt-oss-120b",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-oss-120b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: gpt-oss-20b",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-oss-20b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: gpt-oss-safeguard-20b",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-oss-safeguard-20b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: o1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-o1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: o1-pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-o1-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: o3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-o3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: o3 Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-o3-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: o3 Mini High",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-o3-mini-high",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: o3 Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-o3-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: o4 Mini",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-o4-mini",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: o4 Mini High",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-o4-mini-high",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenRouter: Fusion",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openrouter-fusion",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Pareto Code Router",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openrouter-pareto-code",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Perceptron: Perceptron Mk1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/perceptron-perceptron-mk1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Perplexity: Sonar",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/perplexity-sonar",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Perplexity: Sonar Deep Research",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/perplexity-sonar-deep-research",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Perplexity: Sonar Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/perplexity-sonar-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Perplexity: Sonar Pro Search",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/perplexity-sonar-pro-search",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Perplexity: Sonar Reasoning Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/perplexity-sonar-reasoning-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Poolside: Laguna S 2.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/poolside-laguna-s-2-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Poolside: Laguna S 2.1 (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/poolside-laguna-s-2-1-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Poolside: Laguna XS 2.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/poolside-laguna-xs-2-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Poolside: Laguna XS 2.1 (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/poolside-laguna-xs-2-1-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen2.5 72B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen-2-5-72b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen2.5 Coder 32B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen-2-5-coder-32b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen Plus 0728",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen-plus-2025-07-28",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen-Plus",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen-plus",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen2.5 7B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen-2-5-7b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen2.5 VL 72B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen2-5-vl-72b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 14B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-14b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 235B A22B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-235b-a22b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 235B A22B Instruct 2507",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-235b-a22b-2507",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 235B A22B Thinking 2507",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-235b-a22b-thinking-2507",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 30B A3B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-30b-a3b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 30B A3B Instruct 2507",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-30b-a3b-instruct-2507",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 30B A3B Thinking 2507",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-30b-a3b-thinking-2507",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 32B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-32b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 8B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-8b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 Coder 30B A3B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-coder-30b-a3b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 Coder 480B A35B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-coder",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 Coder Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-coder-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 Coder Next",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-coder-next",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 Coder Plus",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-coder-plus",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 Max",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-max",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 Max Thinking",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-max-thinking",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 Next 80B A3B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-next-80b-a3b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 Next 80B A3B Thinking",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-next-80b-a3b-thinking",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 VL 235B A22B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-vl-235b-a22b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 VL 235B A22B Thinking",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-vl-235b-a22b-thinking",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 VL 30B A3B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-vl-30b-a3b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 VL 30B A3B Thinking",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-vl-30b-a3b-thinking",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 VL 32B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-vl-32b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 VL 8B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-vl-8b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3 VL 8B Thinking",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-vl-8b-thinking",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.5 397B A17B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-5-397b-a17b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.5 Plus 2026-02-15",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-5-plus-02-15",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.5 Plus 2026-04-20",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-5-plus-20260420",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.5-122B-A10B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-5-122b-a10b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.5-27B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-5-27b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.5-35B-A3B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-5-35b-a3b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.5-9B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-5-9b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.5-Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-5-flash-02-23",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.6 27B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-6-27b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.6 35B A3B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-6-35b-a3b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.6 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-6-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.6 Max Preview",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-6-max-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.6 Plus",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-6-plus",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.7 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-7-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.7 Max",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-7-max",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.7 Plus",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-7-plus",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.8 2.4T A95B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-8-2-4t-a95b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.8 2.4T A95B (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-8-2-4t-a95b-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.8 27B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-8-27b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.8 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-8-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.8 Max",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-8-max",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "ReMM SLERP 13B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/undi95-remm-slerp-l2-13b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Reka Edge",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/rekaai-reka-edge",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Reka Flash 3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/rekaai-reka-flash-3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Relace: Relace Apply 3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/relace-relace-apply-3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Relace: Relace Search",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/relace-relace-search",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Sakana: Fugu Ultra",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/sakana-fugu-ultra",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Sakana: Sakana Namazu",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/sakana-sakana-namazu",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Sao10K: Llama 3 8B Lunaris",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/sao10k-l3-lunaris-8b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Sao10K: Llama 3.1 Euryale 70B v2.2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/sao10k-l3-1-euryale-70b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Sao10K: Llama 3.3 Euryale 70B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/sao10k-l3-3-euryale-70b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "SpaceXAI: Grok 4.20",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/x-ai-grok-4-20",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "SpaceXAI: Grok 4.20 Multi-Agent",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/x-ai-grok-4-20-multi-agent",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "SpaceXAI: Grok 4.3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/x-ai-grok-4-3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "SpaceXAI: Grok 4.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/x-ai-grok-4-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "SpaceXAI: Grok 4.6",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/x-ai-grok-4-6",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "SpaceXAI: Grok Build 0.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/x-ai-grok-build-0-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "StepFun: Step 3.5 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/stepfun-step-3-5-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "StepFun: Step 3.7 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/stepfun-step-3-7-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Tencent: Hunyuan A13B Instruct",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hunyuan-a13b-instruct",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Tencent: Hy-MT2-1.8B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy-mt2-1-8b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Tencent: Hy-MT2-30B-A3B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy-mt2-30b-a3b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Tencent: Hy-MT2-7B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy-mt2-7b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Tencent: Hy3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Tencent: Hy3 preview",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy3-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Tencent: Hy4 preview",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy4-preview",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "TheDrummer: Cydonia 24B V4.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/thedrummer-cydonia-24b-v4-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "TheDrummer: Skyfall 36B V2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/thedrummer-skyfall-36b-v2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "TheDrummer: UnslopNemo 12B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/thedrummer-unslopnemo-12b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Thinking Machines: Inkling",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/thinkingmachines-inkling",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Thinking Machines: Inkling (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/thinkingmachines-inkling-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Thinking Machines: Inkling (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/thinkingmachines-inkling-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Thinking Machines: Inkling Small",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/thinkingmachines-inkling-small",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Thinking Machines: Inkling Small (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/thinkingmachines-inkling-small-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Upstage: Solar Pro 3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/upstage-solar-pro-3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Upstage: Solar Pro 4",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/upstage-solar-pro4",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Venice: Uncensored",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/cognitivecomputations-dolphin-mistral-24b-venice-edition",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "WizardLM-2 8x22B",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/microsoft-wizardlm-2-8x22b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Writer: Palmyra X5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/writer-palmyra-x5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Xiaomi: MiMo-V2.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/xiaomi-mimo-v2-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Xiaomi: MiMo-V2.5-Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/xiaomi-mimo-v2-5-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 4.5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-4-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 4.5 Air",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-4-5-air",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 4.5V",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-4-5v",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 4.6",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-4-6",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 4.6V",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-4-6v",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 4.7",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-4-7",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 4.7 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-4-7-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 5",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 5 Turbo",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5-turbo",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 5.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 5.2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5-2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 5.2 (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5-2-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 5.3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5-3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 5.3 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5-3-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 5V Turbo",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5v-turbo",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-latest",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "xAI: Grok Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/x-ai-grok-latest",
+          "class": "manual"
+        }
+      ]
+    }
+  ]
 }
