@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 477,
+  "count": 476,
   "docs": [
     {
       "u": "/blog/reference-urls-that-still-return-200",
@@ -115,16 +115,6 @@
     {
       "u": "/impossible-routine/resolving-github-issues",
       "t": "Real bugs in real repositories",
-      "k": "delta",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/impossible-routine/superhuman-go",
-      "t": "Go above professional strength",
       "k": "delta",
       "d": null,
       "s": null,
