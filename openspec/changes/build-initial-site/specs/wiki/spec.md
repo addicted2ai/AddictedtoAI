@@ -175,9 +175,12 @@ mentions: []
 Prose anywhere on the site (wiki bodies, education pages, tutorials, blog
 posts) SHALL state a volatile fact (any `fast` or `slow` fact: price, context
 window, version, status, benchmark score) only by transcluding it from the
-owning entry with an explicit reference (entry id + field name), rendered
-with its current value at build time. Prose MUST NOT hard-code a volatile
-value as literal text.
+owning entry, rendered with its current value at build time. The normative
+transclusion syntax is `{{fact:<kind>/<slug>#<field>}}` (for example
+`{{fact:model/claude-opus-5#price_input}}`), chosen for grep-ability and
+for being inert in any other Markdown renderer; the want marker's normative
+syntax is `{{want:Name}}`. Prose MUST NOT hard-code a volatile value as
+literal text.
 
 A transclusion whose target entry or field does not exist SHALL fail the
 build. Enforcement of the no-hard-coding rule is the reviewer's named
@@ -292,9 +295,12 @@ entries are minted only:
 - from want demand (a name wanted by 3 or more distinct pages is eligible),
 - or from a maintainer directive.
 
-Minting is budgeted under the loop's new-writing budget (see `loop`). The
-corpus grows at the rate the world produces things plus the rate capacity
-allows, never at the rate the corpus talks about itself.
+Minting has exactly two paths: registry ingest creates stubs mechanically
+in the Pulse at zero inference cost, and demand- or directive-driven
+minting of things no registry carries runs as `entry` jobs under the
+loop's new-writing budget (see `loop`). The corpus grows at the rate the
+world produces things plus the rate capacity allows, never at the rate the
+corpus talks about itself.
 
 #### Scenario: Unknown mention costs nothing and records nothing
 

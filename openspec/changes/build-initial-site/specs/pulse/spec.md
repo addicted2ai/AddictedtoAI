@@ -81,8 +81,12 @@ changing is not a success when publishing is enabled.
 ### Requirement: Sources live in a registry and refusals are data
 
 Every external source the Pulse fetches SHALL be declared in a checked-in
-source registry recording: URL, what fields it yields, fetch cadence, and its
-robots/terms status (checked before the source entered the set). A source
+source registry recording: URL, what fields it yields, which of its fields
+is the row id (the join key entries declare — see `wiki`), fetch cadence
+(`fetch_every_days`), expected change cadence (`expected_change_days` — how
+often the source's content actually changes, the input to the
+suspect-source computation), and its robots/terms status (checked before
+the source entered the set). A source
 that refuses (403, 429, terms) SHALL be recorded as refusing with the date —
 never routed around, never retried aggressively, never scraped through a
 side door. The registry at launch SHALL include at least the OpenRouter
@@ -104,7 +108,12 @@ it, and diff it against the previous snapshot. Only changed sources produce
 findings; an unchanged source costs one fetch and nothing else. Detected
 changes update the data layer (model rows, statuses, versions) and append to
 a dated diff history from which the home page's changed feed and the
-"what changed recently" tables render.
+"what changed recently" tables render. Each material change entry SHALL
+embed the relevant source row (or a minimal excerpt of it) alongside the
+source URL and date — this embedded excerpt is the **archived source
+reference**: it is what lets a lifecycle record (a retirement, a
+deprecation) keep its evidence after the vendor deletes the page, since
+only the latest and previous snapshots are retained.
 
 #### Scenario: Unchanged source is a no-op
 
@@ -153,7 +162,8 @@ All staleness display (overdue markers, tutorial banners, demotions,
 could-not-verify marks) derives from this computation at build time.
 
 Additionally: a source or extractor that has reported "no change" for 3×
-its expected change cadence SHALL be flagged suspect, its dependent facts
+its registry-declared `expected_change_days` (not its fetch cadence — the
+two are different fields) SHALL be flagged suspect, its dependent facts
 switching from displaying "last checked" to "last changed", so a silently
 broken fetcher cannot make the site look fresher than it is.
 

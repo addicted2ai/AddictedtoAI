@@ -53,9 +53,18 @@ Constraints that shape everything here:
 
 ### D1. Stack: Next.js (App Router), static output, content as files
 
-**Choice.** Next.js 15, App Router, `output: 'export'`-style fully static
-generation (every route statically generated at build; no server runtime
-required). Content lives as files:
+**Choice.** Next.js 15, App Router, **literal `output: 'export'`** in
+`next.config.mjs` — no hedge: every route statically generated into `out/`,
+no server runtime anywhere. Consequences, stated so no verify contradicts
+them: `next start` refuses to run under export, so **every local
+verification serves `out/` with `node scripts/serve-static.mjs out 3000`**
+(a ~30-line dependency-free static file server written in task 1.1);
+`next.config` `redirects()` does not exist under export, so redirects are
+host-applied via the generated `vercel.json` (task 2.9); `/status.json` is
+a plain static file — a prebuild step writes it into `public/` so it lands
+in `out/`; client-side navigation still works under export (Next ships the
+router runtime), which is why the analytics route-change requirement stays
+load-bearing. Content lives as files:
 
 ```
 content/
@@ -66,17 +75,22 @@ content/
   deltas/<slug>.md             dated-delta records for Impossible → Routine
   directory/tools/<slug>.md    curated tool listings
 data/
-  config.json                  operational flags, notably publish: true|false
+  config.json                  the one normative loop config: publish flag,
+                               budget bounds, job caps, degradation
+                               thresholds — a reserved path (specs/loop)
   sources/registry.json        the source registry (specs/pulse)
   sources/<source-id>/latest.json      newest snapshot per source
   sources/<source-id>/previous.json    prior snapshot (diff base)
-  changes.jsonl                append-only dated diff history (small, one
-                               JSON object per detected or seeded change)
+  changes.jsonl                append-only dated diff history (one JSON
+                               object per detected or seeded change, each
+                               embedding its source-row excerpt)
+  ledger.jsonl                 append-only job ledger — state, not derived
+  linkcheck.json               rolling link-check dates — state, not derived
   proposals/                   proposal files; rejected/ is the rejection index
   reviews/                     verdict records (see naming in tasks 6.5/7.4)
-  derived/                     generated: catalog rows, freshness, queue,
-                               wants, backlinks, alias registry, linkcheck
-                               state, search index, ledger
+  derived/                     strictly recomputable on every run: catalog
+                               rows, freshness, queue, wants, backlinks,
+                               alias registry, search index
   analytics/summary.json       maintainer-supplied aggregate (absent = fine)
 ```
 
@@ -163,18 +177,28 @@ not from PR ceremony.
 work cannot merge lives in the loop's merge step (which refuses without a
 recorded verdict) and in the review spec's breaker. Accepted: the previous
 site proved server-side gates get gamed around anyway, at enormous cost.
+A second accepted risk, stated rather than papered over: `loop/` itself is
+not a reserved path, so a `machinery` job may modify the loop's own
+enforcement code (merge refusal, breakers) under ordinary review. Reserving
+it would deadlock the first loop bugfix on an absent maintainer; the
+defenses are the machinery MM ceiling, mandatory review with the
+machinery checklist (run the changed check, attempt what it forbids), the
+review-bypass breaker, and one-revert recovery. If this risk ever
+materializes, reserving `loop/` is a one-line OpenSpec change.
 
 ### D5. Cost unit: model-minutes per tier, measured by the loop
 
 **Choice.** The loop timestamps executor invocation and return; the delta in
-minutes is recorded per tier in `data/derived/ledger.jsonl` (one line per
-job: id, type, runner, tier, MM, outcome). Budgets in `specs/loop` are
+minutes is recorded per tier in `data/ledger.jsonl` (one line per
+job: id, type, runner, tier, MM, outcome — append-only state, deliberately
+outside `derived/`). Budgets in `specs/loop` are
 enforced by the selector reading the rolling 30-day ledger — shares within
 each tier separately, the upkeep floor with its own enforcement point.
-Per-type wall-clock caps ("job caps") live beside the budget bounds in the
-config: cheap-tier jobs default 30 minutes, frontier authoring 60; the
-executor is killed at the cap and the run classifies `interrupted` under
-the result protocol.
+Per-type wall-clock caps ("job caps") live beside the budget bounds and
+degradation thresholds in `data/config.json` — the single normative config
+file, a reserved path: cheap-tier jobs default 30 minutes, frontier
+authoring 60; the executor is killed at the cap and the run classifies
+`interrupted` under the result protocol.
 
 **Why.** Tokens are invisible across consumer subscriptions; "rounds" ranged
 200K–9M tokens; wall-clock per tier is the one thing the orchestrator can
@@ -237,8 +261,11 @@ pages, capture requests matching `/g/collect`, assert tid + 2xx per
 undercount — click an internal link (client-side navigation, no full
 reload) and assert a further collect request with the new path. Route-change
 tracking is a small client component watching the pathname and firing
-`page_view` manually. It runs against `npx next start` serving the
-production build with `NEXT_PUBLIC_GA_MEASUREMENT_ID` set from `.env.local`
+`page_view` manually, and asserts exactly one `page_view` per direct load (two means
+gtag auto-send and the tracker double-fired). It runs against
+`node scripts/serve-static.mjs out 3000` serving the exported build
+(`next start` refuses to run under `output: 'export'` — see D1) with
+`NEXT_PUBLIC_GA_MEASUREMENT_ID` set from `.env.local` at build time
 (loaded as environment, never printed). The script also prints any
 `Content-Security-Policy` header it observes and fails if one exists that
 omits the GA origins (none is expected at launch — `specs/analytics`
@@ -256,11 +283,11 @@ through the review flow as review's first live exercise:
 
 | Surface | Minimum | Notes |
 |---|---|---|
-| Wiki | 40 entries total; ≥ 12 with review-passed prose bodies | Prose-first picks: the current frontier model families, major labs, 6–8 post-2023 concepts/techniques where canonical sources are stale (per the education scout: RLHF/DPO, quantization, KV-cache, MCP, context windows, speculative decoding) |
+| Wiki | 40 entries total; ≥ 12 with review-passed prose bodies, **of which ≥ 3 are history/culture/argument entries** (front-matter `themes:` includes `history`, `culture`, or `argument`) | Prose-first picks: the current frontier model families, major labs, 6–8 post-2023 concepts/techniques where canonical sources are stale (per the education scout: RLHF/DPO, quantization, KV-cache, MCP, context windows, speculative decoding). History/argument candidates: `event/alphago-lee-sedol`, `event/attention-is-all-you-need`, `concept/the-bitter-lesson`, `concept/ai-winter`, `concept/scaling-laws` (the argument, not just the curves), `event/imagenet-2012`. The owner's brief names research, culture, history, the people, the arguments, the weird corners — a slate of models and prices alone does not cover it |
 | Education (static) | 4 pages | Top of the ladder: orientation; how an LLM actually works; how models are trained/adapted; how inference is served and priced |
 | Education (dynamic) | 2 tutorials | Must be credential-free and executable in this environment with a small footprint, so verification is real and no credential hunting occurs. Named candidates: (a) run a small model fully in-browser with transformers.js (npm dependency + ~25 MB model, no keys); (b) build a model-price tracker against the OpenRouter public `/api/v1/models` endpoint (public JSON, no key). Ollama is disqualified (requires installation, which is maintainer-reserved). If a candidate proves unexecutable, substitute another credential-free subject and record why |
 | Blog | 2 posts | Candidate 1: "the field's own references are rotting" — the phenomenon that respected AI reference pages silently stale out. Two concrete leads to check live: the Aider leaderboard's on-page "last updated" banner (read the date it shows today) and paperswithcode.com (observe where it redirects). Every fact is re-verified live at authoring time; if a lead no longer holds, find another instance of the same phenomenon or drop it. Candidate 2: **a dated-delta piece with receipts** — what the launch data shows about capability or lifecycle velocity (e.g., time-from-release-to-retirement), every date sourced; this post's acceptance test is the dated-delta demonstration, not topic coverage. Both must clear the editorial bar or be replaced |
-| Impossible → Routine | ≥ 8 dated deltas | Each end dated and sourced (research-result date → commodity date); reviewed like any prose; this is the awe surface's launch stock |
+| Impossible → Routine | ≥ 12 dated deltas | Each end dated and sourced (research-result date → commodity date); reviewed like any prose; this is the awe surface's launch stock, widened from 8 while build-phase abundance lasts — launch stock is the cheapest place to buy the reaction, and it costs nothing to operate afterward |
 | Directory | Catalog from feeds (whatever the sources yield, expected 200+ rows) + 20 curated tool listings + the three standing tables | Curated picks favor what enthusiasts actually run (coding agents, local runners, image/video tools) |
 
 Counts are minimums for launch, not quotas afterward; after launch the blog

@@ -17,11 +17,16 @@ minimum). Specs referenced below live in
 ## 1. Foundations
 
 - [ ] 1.1 Scaffold a Next.js 15 App Router project at the repository root
-      (`package.json`, `next.config.mjs` configured for fully static
-      generation, `app/`, `tsconfig` or `jsconfig`, ESLint off by default to
-      keep the toolchain small). Verify: `npm install` exits 0 and
-      `npm run build` exits 0 producing a static build with a placeholder
-      home page.
+      (`package.json`, `next.config.mjs` with **literal `output: 'export'`**
+      per design D1, `app/`, `tsconfig` or `jsconfig`, ESLint off by
+      default to keep the toolchain small). Also write
+      `scripts/serve-static.mjs` — a small dependency-free static file
+      server (`node scripts/serve-static.mjs out 3000`) used by every
+      local-serve verification in this change, because `next start`
+      refuses to run under `output: 'export'`. Verify: `npm install` exits
+      0; `npm run build` exits 0 producing `out/` with an `index.html`;
+      the serve script serves that page at `http://localhost:3000/` (curl
+      returns 200 and the placeholder text).
 - [ ] 1.2 Create the content and data skeleton from design D1
       (`content/wiki/`, `content/learn/`, `content/tutorials/`,
       `content/blog/`, `content/directory/tools/`, `data/sources/`,
@@ -31,21 +36,31 @@ minimum). Specs referenced below live in
 - [ ] 1.3 Commit policy per design D1: the **entire `data/` tree is
       committed** — snapshots (latest and previous), changes.jsonl,
       proposals, reviews, all derived files including the rolling
-      link-check state and the search index, config.json. Ensure
+      link-check state (`data/linkcheck.json`) and the append-only job ledger
+      (`data/ledger.jsonl`) — both state files at the data root, since
+      `data/derived/` holds only what every Pulse run recomputes — plus the
+      search index and config.json. Ensure
       `.gitignore` excludes only build output (`.next/`, `out/`) and the
       environment files, never anything under `data/`. Also create
-      `data/config.json` with `{"publish": false}`. Verify: `npm run
-      build` then `git status` shows no unintended untracked build
-      artifacts, and `git check-ignore data/derived/queue.json` reports
-      not ignored.
+      `data/config.json` — the one normative loop config, a reserved path
+      per specs/loop — with `publish: false`, the budget bounds (upkeep
+      floor 40, new-writing ceiling 45, machinery ceiling 10), the
+      per-type job caps (cheap 30 min, frontier authoring 60 min), and the
+      degradation thresholds (capacity events in trailing 48h: 1/2/3).
+      Verify: `npm run build` then `git status` shows no unintended
+      untracked build artifacts; `git check-ignore
+      data/derived/queue.json` reports not ignored; `data/config.json`
+      parses and contains all four groups of keys.
 
 ## 2. Content model and build core (specs/wiki, specs/site)
 
 - [ ] 2.1 Implement front-matter schema validation for all five content
-      types (entry: id/kind/aliases/status/maintenance/facts/timeline;
+      types (entry: id / kind / display_name / aliases-with-classes /
+      status / maintenance / feeds / facts / timeline / mentions / optional
+      themes — the normative shape is the worked example in specs/wiki;
       tutorial: subjects/verified_against/verified_on/reverify_days; post:
       date; learn: level/prerequisites/outcome; tool listing:
-      url/pricing/last_verified). Build fails with file path + field name on
+      url/pricing/last_verified/entry-link). Build fails with file path + field name on
       any violation. Verify: a deliberately malformed fixture entry makes
       `npm run build` fail naming the file and field; removing it makes the
       build pass.
@@ -97,14 +112,17 @@ minimum). Specs referenced below live in
 - [ ] 3.1 Re-verify the two launch sources live before wiring: fetch
       `https://openrouter.ai/api/v1/models` and `https://llm-releases.com`
       once each; record in `data/sources/registry.json` their URL, yielded
-      fields, cadence, robots/terms check result, and the verification
-      date. If either no longer serves usable data, choose a replacement
+      fields, which field is the row id (the join key — see specs/pulse and
+      specs/wiki), `fetch_every_days`, `expected_change_days`, robots/terms
+      check result, and the verification date. If either no longer serves usable data, choose a replacement
       that does, record why, and note it in the final report. Verify:
       `registry.json` exists with both entries carrying a dated
       verification result.
 - [ ] 3.2 Implement fetch → snapshot (`latest.json`/`previous.json`) →
       hash → diff for registered sources, appending material changes
-      (price, context, status, new arrival, retirement) to
+      (price, context, status, new arrival, retirement), each embedding
+      its relevant source-row excerpt per specs/pulse (the archived source
+      reference), to
       `data/changes.jsonl` as dated, sourced objects. Verify: running
       `node pulse/run.mjs` twice in a row produces zero new change lines
       the second time; a hand-edited `previous.json` price produces
@@ -115,7 +133,9 @@ minimum). Specs referenced below live in
       snapshot value.
 - [ ] 3.4 Implement freshness computation (overdue cited facts, tutorial
       staleness incl. 2× demotion state, listing verification, rolling
-      link check ≤30 days, suspect-source flag at 3× expected cadence) into
+      link check ≤30 days with its state in `data/linkcheck.json`,
+      suspect-source flag at 3× the registry's `expected_change_days` —
+      never the fetch cadence) into
       `data/derived/freshness.json`. Verify: fixtures for each state
       produce the expected freshness records.
 - [ ] 3.5 Implement the derived queue (`data/derived/queue.json`,
@@ -180,9 +200,12 @@ minimum). Specs referenced below live in
       Verify: fixtures for fresh, stale, moved-on, demoted, and archived
       states each render exactly the specified treatment.
 - [ ] 4.6 Blog: post template with visible date, appended-correction
-      support, feeds inclusion. Verify: fixture post with a correction
-      block renders both the original text treatment and the dated
-      correction.
+      support, feeds inclusion, and the over-ceiling build warning from
+      specs/blog (more than 3 published posts dated within any trailing 7
+      days → named warning, not a failure). Verify: fixture post with a
+      correction block renders both the original text treatment and the
+      dated correction; a fixture set of 4 posts dated within 7 days
+      produces the warning naming the dates.
 - [ ] 4.7 Home page: changed feed from `data/changes.jsonl` (dated lines
       linking entries and sources — populated at launch by the 3.8
       seeding), recent deprecations strip, latest post and tutorial, doors
@@ -199,8 +222,10 @@ minimum). Specs referenced below live in
       feed; sitemap; generic Open Graph tags (no social handles); the open
       dataset (entries, facts, timelines, catalog, deprecations) as JSON +
       CSV at a stable URL with CC BY 4.0 stated inside the payload.
-      Verify: feeds validate against an RSS/Atom validator library check;
-      the dataset downloads, parses, and contains the license string.
+      Verify: each generated feed parses cleanly with the `rss-parser`
+      npm package (devDependency) and exposes a title, items, and valid
+      item dates; the dataset downloads, parses, and contains the license
+      string.
 - [ ] 4.10 Third-party origin allowlist enforcement: build fails if any
       rendered page references a network origin other than the site itself
       and Google Analytics. Verify: a fixture page with a stray CDN script
@@ -211,7 +236,11 @@ minimum). Specs referenced below live in
       (axe-core or equivalent) with zero violations on home, one entry,
       one table page; no horizontal scroll at 320px on those pages;
       first-load JS ≤ 150 KB gzipped on those three pages, with the
-      measured values recorded in `data/launch.json` under `js_payload`.
+      measured values recorded in `data/launch.json` under `js_payload`;
+      and a scripted keyboard-only traversal (Playwright: Tab/Enter) that
+      reaches and activates the nav links, the search box, and the theme
+      toggle on those three pages — every interactive element reachable
+      without a mouse per specs/site.
 - [ ] 4.12 Client-side name search per specs/site: build emits
       `data/derived/search-index.json` (id, display name, aliases, kind,
       status, title — every page including stubs); a search box filters it
@@ -241,14 +270,17 @@ minimum). Specs referenced below live in
       every sampled page and the tracker component; build with it unset
       contains no analytics markup.
 - [ ] 5.2 Implement `scripts/verify-analytics.mjs` per specs/analytics
-      (Playwright; load home + one content page directly, assert
-      `/g/collect` with matching `tid` and 2xx per page; **then click an
-      internal link from home without a full reload and assert a further
-      collect request carrying the new path**; print one evidence line per
-      assertion; also print any Content-Security-Policy header observed
-      and fail if one exists that omits the GA origins; exit nonzero on
-      any failure). Verify: against a local production build (`npm run
-      build` then `npx next start`), the script exits 0 including the
+      (Playwright; load home + one content page directly, assert **exactly
+      one** `page_view` collect request per direct load — zero is the
+      dead-tag failure, two is the gtag-plus-tracker double-fire — with
+      matching `tid` and 2xx per page; **then click an internal link from
+      home without a full reload and assert a further collect request
+      carrying the new path**; print one evidence line per assertion; also
+      print any Content-Security-Policy header observed and fail if one
+      exists that omits the GA origins; exit nonzero on any failure).
+      Verify: against a local exported build (`npm run build` then
+      `node scripts/serve-static.mjs out 3000` — `next start` does not run
+      under `output: 'export'`), the script exits 0 including the
       click-through assertion; with the route-change tracker temporarily
       disabled, it exits nonzero naming the click-through assertion (then
       re-enable).
@@ -260,11 +292,17 @@ minimum). Specs referenced below live in
 
 - [ ] 6.1 Write 40 wiki entries (mix per design D9: frontier model
       families, major labs and orgs, key tools, 6–8 post-2023
-      concepts/techniques), each schema-valid with sourced facts; at least
-      12 carry prose bodies. Volatile model facts bind to feed data where
-      the feeds carry them. Verify: `node scripts/verify-launch.mjs`
-      (written in 6.6) reports ≥40 entries, ≥12 with bodies, 0 schema
-      errors.
+      concepts/techniques, plus history/culture/argument entries from D9's
+      candidate list), each schema-valid with sourced facts; at least 12
+      carry prose bodies, of which **at least 3 are history/culture/
+      argument entries** (front-matter `themes:` containing `history`,
+      `culture`, or `argument`) — the owner asked for the whole field, not
+      a price sheet. Volatile model facts bind to feed data where the
+      feeds carry them. Verify now (without depending on the 6.6 script,
+      which is written later): `npm run build` exits 0 with no schema
+      errors, and a Glob count of `content/wiki/**/*.md` shows ≥40 files
+      with ≥12 containing prose bodies; the full automated floor check
+      runs in 6.6.
 - [ ] 6.2 Write 4 static education pages covering design D9's ladder tops,
       each with level/outcome/prerequisites and zero perishable literals.
       Verify: build passes with no currency-literal warnings on these
@@ -302,21 +340,27 @@ minimum). Specs referenced below live in
       verdict whose `would-cite` field is non-empty and specific to the
       piece; the file count matches.
 - [ ] 6.6 Write `scripts/verify-launch.mjs`: prints and checks the launch
-      minimums (≥40 entries, ≥12 bodies, 4 learn pages, 2 tutorials, 2
-      posts, ≥8 deltas, ≥20 curated tools, catalog rows > 0, seeded
-      changed-feed non-empty, search index present, all reviews recorded
-      with non-empty `would-cite`, build passing). Verify: the script
-      exits 0 and its printed counts match reality when spot-checked by
-      hand.
+      minimums (≥40 entries, ≥12 bodies of which ≥3 carry a
+      history/culture/argument theme, 4 learn pages, 2 tutorials, 2
+      posts, ≥12 deltas, ≥20 curated tools each linking a resolvable wiki
+      entry, catalog rows > 0, seeded changed-feed non-empty, search index
+      present, all reviews recorded with non-empty `would-cite`, build
+      passing). Verify: the script exits 0 and its printed counts match
+      reality when spot-checked by hand.
 - [ ] 6.7 Curate 20 tool listings (fresh research, not mined from the old
-      tree), each with a live-verified URL and `last_verified` set.
-      Verify: verify-launch reports ≥20 and the Pulse's link check passes
-      them.
-- [ ] 6.8 Curate ≥8 Impossible → Routine deltas — each end dated and
-      sourced live at authoring time (research-result end and
-      commodity end), reviewed like any prose per 6.5. Verify:
-      verify-launch reports ≥8 deltas; every end's source URL resolves in
-      the Pulse's link check; each has an `approve` verdict recorded.
+      tree), each with a live-verified URL, `last_verified` set, and a
+      link to a wiki entry per specs/directory — creating a stub entry for
+      any listed tool not already among the 40 (stubs are data-only and
+      cheap; they count toward the entry total). Verify: verify-launch
+      reports ≥20 with every listing's entry link resolving, and the
+      Pulse's link check passes them.
+- [ ] 6.8 Curate ≥12 Impossible → Routine deltas (widened from 8 per
+      review — launch stock is the cheapest place to buy the reaction
+      while build-phase abundance lasts) — each end dated and sourced live
+      at authoring time (research-result end and commodity end), reviewed
+      like any prose per 6.5. Verify: verify-launch reports ≥12 deltas;
+      every end's source URL resolves in the Pulse's link check; each has
+      an `approve` verdict recorded.
 
 ## 7. The Desk and portability (specs/loop, specs/review)
 
@@ -331,21 +375,29 @@ minimum). Specs referenced below live in
       the registered runner names) — the content corpus names models
       constantly because models are the site's subject, so content paths
       are out of scope for this check.
-- [ ] 7.2 Implement `loop/run.mjs`: select one job (directives → derived
-      queue → ripe proposals from `data/proposals/`), assemble a
-      self-contained brief (task, acceptance checks, relevant spec
-      excerpts, ground rules, and the instruction to end by writing
-      `RESULT.md` per the executor result protocol), create a branch,
-      invoke the runner's command template under the job type's wall-clock
-      cap, read `RESULT.md`'s first line for status (`done` /
-      `blocked: <reason>` / `capacity`; absent or malformed after
-      exit/kill → `interrupted`), honor a runner's optional
-      `capacity_stderr_pattern`, compute the diff itself, run schema/build
-      checks, require a recorded review verdict before merging, write the
-      ledger line (id, type, runner, tier, MM, outcome). Verify: a
-      dry-run mode prints the selected job and assembled brief without
-      invoking anything, and the brief text contains the RESULT.md
-      instruction.
+- [ ] 7.2 Implement `loop/run.mjs`: first resume the oldest resumable
+      `job/*` branch per specs/loop (last ledger line `interrupted` or
+      `capacity`, lane not paused, under 14 days old — re-invoke with the
+      branch's committed `.job/brief.md` plus the fixed continue
+      preamble; discard older branches with an `abandoned` ledger line);
+      otherwise select one job (directives → derived queue → ripe
+      proposals from `data/proposals/`, with exact-slug duplicate
+      suppression against `data/proposals/rejected/`), assign the job id
+      (`j-<yyyymmdd>-<seq>`), create branch `job/<id>`, commit the
+      assembled self-contained brief to it as `.job/brief.md` (task,
+      acceptance checks, relevant spec excerpts, ground rules, and the
+      instruction to end by writing `RESULT.md` per the executor result
+      protocol), invoke the runner's command template under the job
+      type's wall-clock cap from `data/config.json`, read `RESULT.md`'s
+      first line for status (`done` / `blocked: <reason>` / `capacity`;
+      absent or malformed after exit/kill → `interrupted`), honor a
+      runner's optional `capacity_stderr_pattern`, compute the diff
+      itself, run schema/build checks, require a recorded review verdict
+      before merging, write the ledger line (id, type, runner, tier, MM,
+      outcome) to `data/ledger.jsonl`. Verify: a dry-run mode prints the
+      selected (or resumed) job and assembled brief without invoking
+      anything, the brief text contains the RESULT.md instruction, and
+      the branch name embeds the job id.
 - [ ] 7.3 Implement budget enforcement from the rolling 30-day ledger
       (per-tier shares; ceilings AND the upkeep floor's own enforcement
       per specs/loop) and outcome classification. Verify: unit tests with
@@ -354,8 +406,11 @@ minimum). Specs referenced below live in
       is unmet; outcome classification is tested with mock executors that
       really write, malform, or omit `RESULT.md` (done / blocked /
       capacity / interrupted each observed from the file system, not from
-      synthetic status values), and an interrupted job resumes without
-      consuming a retry.
+      synthetic status values); resumption is tested with a real mock
+      branch — a `job/*` branch with a committed `.job/brief.md` and an
+      `interrupted` ledger line is picked up before any new selection,
+      with no retry consumed, and a 15-day-old mock branch is discarded
+      with an `abandoned` line.
 - [ ] 7.4 Implement the review step: reviewer invocation from
       `runners.yml` (`reviewer` role), fresh context, diff + checklist in,
       verdict file out (`data/reviews/<job-id>.md` — same directory as the
@@ -367,7 +422,9 @@ minimum). Specs referenced below live in
       revise-once/discard-on-second mechanics. Verify: a test job with a
       planted `false-or-unsupported-claim` is rejected and, after a second
       failure, discarded with the record kept; a mock `approve` with a
-      blank `would-cite` is refused by the merge step.
+      blank `would-cite` is refused by the merge step, and so is a mock
+      `approve` whose `would-cite` text exactly duplicates (after
+      whitespace trimming) the field of an existing review record.
 - [ ] 7.5 Implement breakers and holds per specs/loop (three consecutive
       same-type failures; build/deploy red; review bypass attempt;
       reserved-path edit attempt → write `HOLD.md` and stop; `STOP`
@@ -392,6 +449,29 @@ minimum). Specs referenced below live in
       commit exists, the ledger line names the runner and MM, and the
       review verdict file exists with a non-empty `would-cite` field if
       prose was touched.
+- [ ] 7.8 Implement the surface and degradation selector rules the specs
+      assert — each a real selector behavior with its own synthetic-state
+      test in 7.3's style:
+      (a) blog ceiling per specs/blog: a `post` job is refused while 3
+      published posts carry dates within the trailing 7 days — test with
+      a fixture content set of 3 recent posts (refused) and 2 (allowed);
+      (b) tutorial upkeep priority and the demotion gate per
+      specs/education-dynamic: when a tutorial re-`verify` item and a new
+      `tutorial` job compete in the same tier, `verify` wins; and a
+      `tutorial` job is refused entirely while any tutorial stands
+      demoted for staleness (dead-subject archived tutorials do not
+      block) — test both branches with fixture freshness states;
+      (c) proposal duplicate suppression per specs/loop: a proposal whose
+      `slug` matches one in `data/proposals/rejected/` is auto-discarded
+      with a pointer to the earlier reason before any model is invoked —
+      test with a fixture rejected proposal;
+      (d) capacity degradation per specs/loop: shed level from `capacity`
+      classifications in the tier's trailing-48h ledger (1 → no
+      `post`/`education`; 2 → also no `entry`/`tutorial`; 3+ → only
+      `verify`/`repair`/material-`interpret`) — test each level with a
+      synthetic ledger.
+      Verify: `npm test` runs all four rule groups and each refusal names
+      its rule in the selector's output.
 
 ## 8. Documentation and change hygiene
 
@@ -412,7 +492,8 @@ minimum). Specs referenced below live in
 - [ ] 8.4 Final integrated verification, in order: `npm test` (all
       fixtures), `npm run build` (clean), `node pulse/run.mjs` (exit 0,
       no model env), `node scripts/verify-launch.mjs` (exit 0),
-      `scripts/verify-analytics.mjs` against a local production build
+      `scripts/verify-analytics.mjs` against the exported build served by
+      `scripts/serve-static.mjs`
       (exit 0). Verify: all five exit 0 in a single fresh session, and
       the results are recorded in `data/launch.json` under
       `build_verification`.

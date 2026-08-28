@@ -14,7 +14,7 @@ unreviewed work.
 The unit of Desk work SHALL be a **job**: one stated outcome with acceptance
 checks, executed on its own branch, ending in exactly one merge or one
 discard. Every job type carries a wall-clock cap (declared alongside the
-budget bounds in the checked-in config; defaults: 30 minutes for cheap-tier
+budget bounds in `data/config.json`; defaults: 30 minutes for cheap-tier
 jobs, 60 minutes for frontier authoring); an executor still running at its
 cap is killed and the job becomes `interrupted`. Nothing is ever
 half-published: visitors SHALL only see merged, built work, and a job that
@@ -28,7 +28,10 @@ Pulse run. Job types form a closed list:
   the changed line should read).
 - `verify` — re-verify a tutorial or a cited fact by actually executing or
   re-fetching.
-- `entry` — write or substantially revise a wiki entry's prose.
+- `entry` — mint a demanded wiki entry (identity, aliases, sourced facts —
+  a stub for a thing no registry carries) or write/substantially revise an
+  entry's prose. Registry ingest is not an `entry` job: the Pulse creates
+  those stubs mechanically at zero inference cost.
 - `tutorial` — write a new tutorial (subordinate to `verify` per
   `education-dynamic`).
 - `post` — write a blog post.
@@ -45,6 +48,38 @@ Adding a job type requires an OpenSpec change.
 - **THEN** the published site is unchanged; the branch remains for resumption
   or discard
 
+### Requirement: Jobs have identities, and interrupted jobs resume by branch
+
+Job identity and resumption are mechanical, not remembered:
+
+- At selection, the loop SHALL assign the job an id of the form
+  `j-<yyyymmdd>-<seq>` (sequence within the day), name its branch
+  `job/<id>`, and commit the assembled brief to the branch as
+  `.job/brief.md` before invoking any executor — the branch itself carries
+  everything resumption needs.
+- At the start of every run, **before** consulting the three work sources,
+  the loop SHALL look for resumable branches: any `job/*` branch whose most
+  recent ledger line is `interrupted` or `capacity` (and whose lane is not
+  paused). If one exists, the oldest SHALL be resumed instead of selecting
+  new work: the runner is re-invoked in that branch's worktree with the
+  committed brief plus a fixed one-line preamble stating the branch
+  contains partial work to continue. Resumption consumes no retry.
+- A resumable branch older than 14 days SHALL be discarded with a ledger
+  line (`abandoned`), so dead branches cannot accumulate silently.
+
+#### Scenario: An interrupted job is picked up first
+
+- **WHEN** a run starts and `job/j-20260901-02`'s last ledger line is
+  `interrupted`
+- **THEN** the loop resumes that branch with its committed `.job/brief.md`
+  before considering directives, the queue, or proposals
+
+#### Scenario: Stale branches do not pile up
+
+- **WHEN** a resumable branch is 15 days old
+- **THEN** the loop discards it and writes an `abandoned` ledger line
+  naming the job id
+
 ### Requirement: Work comes from three sources and cannot self-amplify
 
 Jobs are selected from, in priority order:
@@ -55,17 +90,22 @@ Jobs are selected from, in priority order:
    currently needs (see `pulse`). This source cannot backlog by construction.
 3. **Proposals** — the only model-originated source. A proposal is one
    markdown file in `data/proposals/`, with front matter declaring: a date,
-   the job type it proposes (from the closed list — a proposal proposes a
-   job of an existing type, never a new kind of work), a one-paragraph
-   summary, and the evidence that prompted it. Proposals come into
-   existence three ways: a Desk run MAY end by writing at most one proposal
-   as a side-output of whatever it noticed; a reviewer MAY note one in its
-   verdict record (the loop transcribes it); the maintainer MAY drop one in
-   directly. A proposal SHALL cool for at least 3 days (file age) before
-   selection. A rejected proposal moves to `data/proposals/rejected/` with
-   the rejection reason appended — that directory is the rejection index —
-   and a new proposal that substantially duplicates a rejected one dies
-   with a pointer to the earlier reason.
+   a kebab-case `slug` naming the idea, the job type it proposes (from the
+   closed list — a proposal proposes a job of an existing type, never a new
+   kind of work), a one-paragraph summary, and the evidence that prompted
+   it. Proposals come into existence three ways: a Desk run MAY end by
+   writing at most one proposal as a side-output of whatever it noticed; a
+   reviewer MAY note one in its verdict record (the loop transcribes it);
+   the maintainer MAY drop one in directly. A proposal SHALL cool for at
+   least 3 days (file age) before selection. A rejected proposal moves to
+   `data/proposals/rejected/` with the rejection reason appended — that
+   directory is the rejection index. Duplicate suppression is deterministic
+   and exact: a new proposal whose `slug` equals a rejected proposal's
+   `slug` SHALL be auto-discarded with a pointer to the earlier reason,
+   spending no inference. That is the whole automatic mechanism —
+   differently-worded resubmissions of a rejected idea are caught by the
+   reviewer (the rejection index travels in the review checklist), not by
+   fuzzy matching, because fuzzy matching is guessing.
 
 "No qualifying job — do nothing" is a normal, healthy outcome and SHALL be
 treated as such: a run that finds nothing worth doing ends without
@@ -80,7 +120,8 @@ manufacturing work.
 
 #### Scenario: A rejected idea stays rejected
 
-- **WHEN** a proposal substantially duplicates one previously rejected
+- **WHEN** a new proposal file carries the same `slug` as a proposal in
+  `data/proposals/rejected/`
 - **THEN** it is discarded automatically with a pointer to the recorded
   rejection reason, spending no inference
 
@@ -111,8 +152,10 @@ enforcement point: when a ceiling is reached, jobs of that category are not
 selectable until the window rolls; when the upkeep share in a tier is below
 its floor and any upkeep job is available in that tier, only upkeep jobs
 are selectable in that tier until the floor is met — the floor binds on its
-own, not merely as the arithmetic residue of the ceilings. The bounds live
-in a checked-in config file; changing them requires an OpenSpec change. The
+own, not merely as the arithmetic residue of the ceilings. The bounds, the
+per-type wall-clock caps, and the degradation thresholds all live in
+**`data/config.json`** — the one normative home for loop configuration;
+changing the bounds requires an OpenSpec change. The
 machinery ceiling exists because the previous site spent roughly seven lines
 of process per line of site — the loop improving its own tooling is capped,
 permanently, and the cap is enforced by the selector, not by good
@@ -146,17 +189,30 @@ probe after 1 hour, doubling to a 6-hour maximum between probes) — never by
 predicting the provider's window, which is unknowable for consumer
 subscriptions. Exhaustion is
 never an error, never triggers a retry storm, and never causes a hunt for
-another credential or provider. As capacity tightens, work is shed in this
-order: new `post`/`education` first, then `entry`/`tutorial` minting, then
-`interpret` on immaterial diffs — keeping `verify` (tutorial and fact
-re-verification) and `repair` last. The Pulse never pauses for capacity
-reasons: the site stays alive on zero inference.
+another credential or provider. As capacity tightens, work SHALL be shed in
+this order: new `post`/`education` first, then `entry`/`tutorial` minting,
+then `interpret` on immaterial diffs — keeping `verify` (tutorial and fact
+re-verification) and `repair` last. "Tightening" is deterministic, read
+from the ledger: a tier's shed level equals the count of `capacity`
+classifications recorded for that tier in the trailing 48 hours — at 1,
+`post` and `education` are not selectable in that tier; at 2, `entry` and
+`tutorial` are also excluded; at 3 or more, only `verify`, `repair`, and
+material-field `interpret` remain selectable. The Pulse never pauses for
+capacity reasons: the site stays alive on zero inference.
 
 #### Scenario: A window closes mid-job
 
 - **WHEN** the provider hard-stops during a job
 - **THEN** the branch is kept, the job is `interrupted` not `failed`, and it
   resumes when capacity returns, with no retry consumed
+
+#### Scenario: Repeated capacity events shed the expensive extras
+
+- **WHEN** a tier's ledger shows two `capacity` classifications within the
+  trailing 48 hours
+- **THEN** the selector refuses `post`, `education`, `entry`, and
+  `tutorial` jobs in that tier, while `verify` and `repair` remain
+  selectable
 
 ### Requirement: The loop is portable across model, provider, and harness
 
@@ -318,8 +374,11 @@ and stop the Desk (the Pulse keeps running except where noted):
 2. The published site failing to build or deploy (Pulse halts deploy step
    too).
 3. Any attempt to publish work that skipped review.
-4. Any attempted edit to a reserved path (`openspec/specs/`, `runners.yml`
-   budget bounds, `STOP`, `HOLD.md` removal by the loop itself).
+4. Any attempted edit to a reserved path — the reserved paths are exactly:
+   `openspec/specs/`, `data/config.json` (budget bounds, job caps,
+   degradation thresholds, publish flag), `runners.yml`, `STOP`, and
+   removal of `HOLD.md` by the loop itself. The maintainer edits these
+   freely; no job may.
 
 `HOLD.md` is the loop's self-halt for things needing the maintainer; the
 `STOP` file is the maintainer's brake. The loop MUST NOT remove either. No

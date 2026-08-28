@@ -18,7 +18,10 @@ client-side route change**. The chosen stack navigates client-side after
 first load, so "on load only" counts one page per visit and undercounts
 everything a visitor clicks — the exact trickle-of-single-page-sessions
 failure this capability exists to prevent. The route-change `page_view` MUST
-carry the new page's path and title. When the variable is absent, pages
+carry the new page's path and title. **Exactly one** `page_view` SHALL be
+sent per full page load: gtag's automatic send and the route-change tracker
+MUST NOT both fire on initial load (disable one), because double-counted
+landings corrupt the signal as surely as uncounted clicks. When the variable is absent, pages
 SHALL render with no analytics markup at all (local development stays
 silent). No event SHALL carry any personally identifying payload; no custom
 events are required beyond `page_view` at launch. The measurement ID is
@@ -54,8 +57,9 @@ There SHALL be an automated verification, `node scripts/verify-analytics.mjs
 2. captures outgoing network requests to the GA collection endpoint
    (`google-analytics.com` / regional equivalents, path containing
    `/g/collect`),
-3. asserts at least one collect request per loaded page whose `tid`
-   parameter equals the configured measurement ID,
+3. asserts **exactly one** `page_view` collect request per directly loaded
+   page whose `tid` parameter equals the configured measurement ID (zero is
+   the dead-tag failure; two is the double-fire failure),
 4. asserts the collect response status is 2xx,
 5. **clicks an internal link from the home page without a full reload
    (client-side navigation) and asserts a further collect request arrives
@@ -67,7 +71,8 @@ There SHALL be an automated verification, `node scripts/verify-analytics.mjs
 
 A rendered script tag SHALL never be accepted as evidence that analytics
 works; only this check (and the launch confirmation below) counts. The check
-SHALL run against a local production build before launch and against the
+SHALL run against a locally served production (exported) build before
+launch and against the
 live site at launch.
 
 #### Scenario: The check fails when events do not arrive

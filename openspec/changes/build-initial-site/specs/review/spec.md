@@ -67,9 +67,13 @@ Verdicts are categorical, never numeric — scores drift and become targets.
 **The quality question is asked, not merely available.** For every verdict
 on a prose piece, the review record SHALL contain a required, non-empty
 `would-cite` field: the reviewer's own-words answer to "who would link
-this, and in what argument?" An `approve` whose `would-cite` field is empty
-or boilerplate-identical to a previous record is not a valid verdict and
-the merge SHALL refuse it. Making the quality objection sayable fixed the
+this, and in what argument?" An `approve` whose `would-cite` field is
+empty, or exactly identical (after whitespace trimming) to the
+`would-cite` field of any existing review record, is not a valid verdict
+and the merge SHALL refuse it. Both checks are exact and mechanical; a
+reviewer writing a fresh-but-vacuous sentence each time passes them, which
+is accepted — no mechanical check can compel judgment, and the field's job
+is to make the question asked. Making the quality objection sayable fixed the
 old failure; this field makes it asked — a reviewer that approves
 everything without ever confronting the would-cite test produces the same
 unread site as one that could not object at all.
@@ -111,6 +115,12 @@ wiki entry, a tutorial, and a machinery change are not the same job:
   claimed behavior — red before, green after where applicable; every claim
   about what the change does verified by executing, not by reading; guard
   rails tested by attempting what they forbid.
+
+For a job that originated from a proposal, the checklist additionally
+includes the rejection index (`data/proposals/rejected/`): the reviewer
+confirms the piece is not a differently-worded re-tread of a rejected
+proposal — this is the judgment half of duplicate suppression, whose
+mechanical half is the exact slug match in `loop`.
 
 In every kind, the reviewer's standing instruction is: **for every claim
 about what something does, run the cheap direct check; for every sourced
