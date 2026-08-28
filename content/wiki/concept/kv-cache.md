@@ -115,10 +115,11 @@ timed from the *start* of the request that wrote or read it — so a reply that
 streams for four minutes leaves about one minute for the follow-up to arrive. The
 classic zero-hit-rate bug falls straight out of this: put the breakpoint on the
 block that changes every request, and every write is a new hash that nothing will
-ever match. OpenAI's version is automatic rather than declared, with a minimum
-prompt length below which nothing is cached, retention of
-{{fact:concept/kv-cache#openai_cache_retention}} on current models, and no
-sharing across organizations.
+ever match. OpenAI's version supports both modes: below a minimum cacheable
+prompt length nothing is cached at all, and above it "you can choose where to
+place cache breakpoints explicitly, or let OpenAI choose their locations
+implicitly." Retention is {{fact:concept/kv-cache#openai_cache_retention}} on
+current models, and caches are not shared across organizations.
 
 Cache lifetimes are measured in minutes rather than days because a cached prefix
 occupies the same GPU memory every other request is competing for. Prompt caching

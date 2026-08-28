@@ -51,7 +51,7 @@ facts:
 timeline:
   - date: "2026-01-27"
     event: "Kimi K2.5 released with published weights under a Modified MIT License"
-    source_url: "https://siliconangle.com/2026/01/27/moonshot-ai-releases-open-source-kimi-k2-5-model-1t-parameters/"
+    source_url: "https://huggingface.co/moonshotai/Kimi-K2.5"
   - date: "2026-07-16"
     event: "Kimi K3 listed — 2.8T parameters, open weights under the bespoke Kimi K3 License"
     source_url: "https://openrouter.ai/moonshotai/kimi-k3"

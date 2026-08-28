@@ -42,7 +42,7 @@ facts:
     volatility: slow
   - field: top_tier_access
     source: cited
-    value: "Mythos 5 is restricted to vetted partners; general sale is of the Opus tier and below"
+    value: "Mythos 5 is available to a small set of initial testing partners for cybersecurity, and soon, biology research"
     source_url: "https://www.anthropic.com/claude/mythos"
     accessed: "2026-08-28"
     volatility: slow
@@ -70,15 +70,15 @@ mentions:
   - model/anthropic-claude-opus-4-8
 ---
 
-Anthropic's most capable model is not for sale. On 9 June 2026 the company
-announced Claude Fable 5 and Claude Mythos 5 in a single post, calling them
-"a tier of Claude models that sit above our Opus class in capability" — and
-describing them as the same underlying model, separated only by which
+Anthropic's most capable model is not on general sale. On 9 June 2026 the
+company announced Claude Fable 5 and Claude Mythos 5 in a single post, calling
+them "a tier of Claude models that sit above our Opus class in capability" —
+and describing them as the same underlying model, separated only by which
 safeguards are switched on. Fable 5 shipped everywhere. Mythos 5 went to
-Project Glasswing partners with cyber safeguards lifted, and, later, to
-selected biology researchers with biology and chemistry safeguards lifted.
-The distinction between the model anyone can buy and the model almost nobody
-can is a policy setting, not a checkpoint.
+Project Glasswing partners with cyber safeguards lifted; select biology
+researchers, with biology and chemistry safeguards lifted, are still listed as
+coming. The distinction between the model anyone can buy and the model almost
+nobody can is a policy setting, not a checkpoint.
 
 Three days later both were withdrawn. The same announcement page carries a
 12 June note — "We are suspending access to Claude Fable 5 and Claude Mythos
@@ -104,5 +104,5 @@ at {{fact:model/anthropic-claude-opus-5#context_window}}. The Artificial
 Analysis intelligence index the catalog carries went from
 {{fact:model/anthropic-claude-opus-4-7#intelligence_index}} on the April
 release to {{fact:model/anthropic-claude-opus-4-8#intelligence_index}} in May
-to {{fact:model/anthropic-claude-opus-5#intelligence_index}} in July. Three
-step-ups in a hundred days, none of them charged for.
+to {{fact:model/anthropic-claude-opus-5#intelligence_index}} in July. Two
+step-ups in ninety-nine days, neither of them charged for.
