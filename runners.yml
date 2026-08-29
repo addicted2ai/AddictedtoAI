@@ -55,6 +55,33 @@
 #                             stderr). A match classifies the run `capacity`
 #                             even with no RESULT.md. Per-runner data, never a
 #                             global heuristic.
+#   startup_failure_stderr_pattern
+#                             optional regex, same matching rules. This one
+#                             does NOT change the classification: a run with
+#                             no RESULT.md stays `interrupted`, because
+#                             specs/loop says so and a guardrail is not
+#                             relaxed to make a symptom go away. What it does
+#                             is name the cause on the ledger line and count
+#                             toward the runner-health refusal, so a
+#                             permanently dead credential stops being
+#                             invisible.
+#
+#                             Found by running, on 2026-08-28: an expired
+#                             login made this harness print `401
+#                             token_expired` and exit in seconds with no
+#                             RESULT.md. That classifies `interrupted`, which
+#                             keeps the branch resumable, consumes no retry
+#                             and trips no breaker — so the Desk would resume
+#                             the same branch forever, halting nothing and
+#                             telling nobody. The loop now refuses a runner
+#                             after three consecutive runs that produced
+#                             nothing at all (no RESULT.md, no stdout, no
+#                             diff), whether or not a pattern is declared;
+#                             this field is what makes the ledger say WHY
+#                             rather than just that nothing came back.
+#                             Per-runner data, never a global heuristic: only
+#                             the maintainer knows what this harness prints
+#                             when its login has lapsed.
 #   model / harness / note    documentation only; nothing reads them.
 #   conformance               documentation only: the maintainer's note of
 #                             whether `node loop/conformance.mjs --runner <id>`
@@ -96,6 +123,7 @@ runners:
     harness: claude-code
     command: 'claude --print --permission-mode acceptEdits --allowedTools "Read Write Edit Glob Grep WebFetch WebSearch Bash" --model opus < "{prompt_file}"'
     capacity_stderr_pattern: '(usage limit reached|rate.?limit|quota exceeded|overloaded_error)'
+    startup_failure_stderr_pattern: '(401|403|invalid api.?key|authentication_error|permission_error|oauth .{0,20}expired|token.?expired|please run .{0,12}login|not logged in|credit balance is too low)'
     conformance: unverified
     note: >-
       The setup this repository was built on. Frontier tier, cleared for both
@@ -111,6 +139,7 @@ runners:
     harness: claude-code
     command: 'claude --print --permission-mode acceptEdits --allowedTools "Read Write Edit Glob Grep WebFetch WebSearch Bash" --model sonnet < "{prompt_file}"'
     capacity_stderr_pattern: '(usage limit reached|rate.?limit|quota exceeded|overloaded_error)'
+    startup_failure_stderr_pattern: '(401|403|invalid api.?key|authentication_error|permission_error|oauth .{0,20}expired|token.?expired|please run .{0,12}login|not logged in|credit balance is too low)'
     conformance: unverified
     note: >-
       Same harness and same subscription as claude-code-opus — deliberately
@@ -125,6 +154,7 @@ runners:
     harness: codex-cli
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="max" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s workspace-write -C "{worktree}" < "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
+    startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
     conformance: unverified
     note: >-
       A third harness, and the one that makes the portability claim
@@ -173,6 +203,7 @@ runners:
     harness: opencode
     command: 'opencode run --dir "{worktree}" --model opencode-go/deepseek-v4-flash --variant max --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
+    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found)'
     conformance: unverified
     note: >-
       The advertised swap: a different model, a different provider, a

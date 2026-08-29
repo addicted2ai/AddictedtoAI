@@ -99,10 +99,88 @@ export function verdictPath(ctx, jobId, pass = 1) {
 }
 
 /**
+ * What the loop already ran on this branch, as the reviewer's brief states it.
+ *
+ * specs/review's machinery checklist tells a reviewer to "run the changed check
+ * and confirm the claimed behaviour", which is right — and on job j-20260829-01
+ * the reviewer read that as "run the suite", re-ran `npm test` and
+ * `npm run build` that the loop's own gates had just run and passed on that
+ * exact branch, and spent its whole run doing it. Nothing told it what had
+ * already been verified. This does (beads addictedtoai-5z9).
+ *
+ * It states a MEASUREMENT — which scripts ran, on which commit, with which exit
+ * status — and never a reassurance. A skipped gate is reported as skipped, in
+ * the same place and just as plainly, because a brief that implies verification
+ * which did not happen is worse than one that says nothing.
+ *
+ * @param {{ran: boolean, ok?: boolean, results?: Array, why?: string}|null|undefined} gates
+ * @param {string} [sha] the commit the gates ran on
+ */
+export function gatesSection(gates, sha = '') {
+  const on = sha ? ` on commit \`${sha.slice(0, 12)}\`` : '';
+  if (!gates || gates.ran === false) {
+    return `## What the loop has verified on this branch
+
+**Nothing.** The loop did not run its gates this run${gates?.why ? ` (${gates.why})` : ''}, so
+no mechanical check has been run on this diff at all. Run whatever you need to
+judge it, and say in your notes what you ran and what you observed.
+`;
+  }
+  const lines = (gates.results ?? []).map(
+    (r) =>
+      `- \`npm run ${r.script}\` — **${r.ok ? 'PASS' : `FAIL (exit ${r.status})`}**`,
+  );
+  return `## What the loop has already verified on this branch
+
+The loop ran these itself, in this branch's own worktree, immediately before
+this review${on} — the same commit the diff below was computed from:
+
+${lines.join('\n') || '- (no gate ran)'}
+
+**Do not re-run them.** They have run, on this branch, and their result is above.
+A review on this loop once spent its entire run re-running exactly this suite,
+formed its judgment, and ended before writing it down; the job was discarded and
+every minute of it was lost. If a specific claim in the diff needs a check, run
+**that** check — the one that would be red if the claim were false — and quote
+what it printed. That is what the checklist asks for. Re-running the whole suite
+is not that, and it is the one way this review can run out of time.
+`;
+}
+
+/**
+ * The reviewer's own run, stated: it has a cap, it gets one shot, and the record
+ * is the only thing that survives it.
+ */
+export function runShapeSection({ capMinutes, mmSoFar }) {
+  return `## How this run ends — read this before you start
+
+This is a single non-interactive run under a **wall-clock cap of ${capMinutes} minutes**.
+When you stop producing output, your run is over: there is no later turn, nothing
+will wake you, and anything still running is killed with you. If you start a
+long-running command, wait for it and read its output **in this same run** — never
+end your turn intending to come back to it.${
+    typeof mmSoFar === 'number'
+      ? `\n\nThis job has already cost ${mmSoFar.toFixed(2)} model-minutes, and your minutes are added
+to the same job. Spend them on judgment, not on repetition.`
+      : ''
+  }
+
+**Write the verdict record the moment your judgment is formed, then keep checking
+and rewrite it if it changes.** The record is the only output of this run that
+exists afterwards. A judgment you formed and did not write down is, to the loop,
+identical to no review at all: the merge is refused, the job is thrown away, and
+everything spent on it is lost. Do not leave the writing until last.
+`;
+}
+
+/**
  * Assemble the reviewer's brief: the diff and the checklist, and nothing of
  * the author's reasoning.
  */
-export function assembleReviewBrief(ctx, { jobId, job, diffText, pass, findings, outPath }) {
+export function assembleReviewBrief(
+  ctx,
+  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar },
+) {
   const prose = isProse(job.type);
   const fromProposal = job.source === 'proposal';
   const rejection = fromProposal
@@ -117,6 +195,8 @@ You have **no edit rights** — any change you make to this worktree is thrown
 away, so do not try to fix anything. Your only accepted output is the verdict
 record.
 
+${runShapeSection({ capMinutes, mmSoFar })}
+${gatesSection(gates, sha)}
 ${pass > 1 ? `## What this delta review covers\n\nThe previous verdict asked for revisions. Review **only what changed since
 then**, against these findings:\n\n${findings}\n\nThis is the last pass. A second non-approval discards the job.\n` : ''}
 ## Your standing instruction
@@ -330,7 +410,7 @@ export function mergeGate(ctx, { jobId, type, pass = 1 }) {
  * @returns {Promise<{run: object, discarded: object, branchShaBefore: string,
  *                    branchShaAfter: string, recordWritten: boolean}>}
  */
-export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '' }) {
+export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const outPath = verdictPath(ctx, jobId, pass);
   const reviewDir = join(ctx.worktreeRoot, `${jobId}-review-${pass}`);
@@ -340,7 +420,21 @@ export async function runReview(ctx, { jobId, job, branch, diffText, runner, cap
   const before = gitTry(ctx.repoRoot, ['rev-parse', branch]).stdout.trim();
   addWorktree(ctx.repoRoot, reviewDir, branch, { create: false, detach: true });
 
-  const brief = assembleReviewBrief(ctx, { jobId, job, diffText, pass, findings, outPath });
+  // The gate report names the commit it ran on, and that commit is this one:
+  // `before` is the branch head the review worktree was just checked out at and
+  // the head the diff was computed from.
+  const brief = assembleReviewBrief(ctx, {
+    jobId,
+    job,
+    diffText,
+    pass,
+    findings,
+    outPath,
+    gates,
+    sha: before,
+    capMinutes,
+    mmSoFar,
+  });
   const run = await runExecutor({
     command: runner.command,
     cwd: reviewDir,

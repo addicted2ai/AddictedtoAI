@@ -23,11 +23,69 @@ import { withinWindow } from './ledger.mjs';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
+ * How many full-length jobs a rolling window must be able to hold before a
+ * ceiling is measured against the window's own total rather than against this
+ * floor. See warmUpMm() for the derivation; the number is not a taste.
+ */
+export const WARM_UP_JOBS = 10;
+
+/**
+ * The warm-up denominator: the smallest window a *share* means anything in.
+ *
+ * READING, recorded rather than hidden — this is the fix for the defect found
+ * by running the loop (beads addictedtoai-3on), and it is a reading of
+ * specs/loop rather than a quotation of it. specs/loop says a category's share
+ * is its MM divided by the tier's total MM over the rolling 30 days. After
+ * exactly one real job that arithmetic said `new_writing 100.0%`, so the 45%
+ * ceiling refused every subsequent entry, tutorial, post and education job for
+ * a month. The rule is right; at n=1 it has no meaning, because a share is a
+ * share OF something and one job is not a something.
+ *
+ * The existing code already took this reading for the empty case (`0/0` is
+ * undefined, so no bound binds). This is the same reading, made continuous
+ * instead of a special case: a **ceiling** is evaluated against
+ * `max(observed total, warm-up)`. Below the warm-up the question asked is "has
+ * this category spent more than 45% of a window worth having?"; above it, the
+ * denominator IS the observed total and the rule is exactly the spec's rule,
+ * unchanged. There is no cliff and no stored state.
+ *
+ * The number is derived, not chosen. `WARM_UP_JOBS` (10) times the largest
+ * per-type wall-clock cap in `data/config.json` (60 minutes) is 600 MM. Ten is
+ * the smallest window in which one maximum-length job does not by itself reach
+ * the tightest ceiling: one 60-minute job is exactly 10% of 600, so the first
+ * machinery job is allowed and the second is refused. Below ten, the arithmetic
+ * is dominated by a single job's length rather than by a policy. 600 MM is also
+ * far smaller than any plausible steady-state month for this Desk (one job a
+ * day at 30–60 minutes is 900–1800 MM), so every allowance during warm-up is
+ * SMALLER than the steady-state allowance it converges to — the ceiling's
+ * purpose survives, which is the whole constraint. The machinery cap exists
+ * because the previous site spent roughly seven lines of process per line of
+ * site, and under warm-up machinery still gets one job before it binds.
+ *
+ * The upkeep FLOOR is deliberately left alone: a floor measured on a thin
+ * window errs toward doing upkeep, which is the safe direction, and it already
+ * binds only when an upkeep job is actually available. One upkeep job clears it.
+ */
+export function warmUpMm(cfg) {
+  const caps = Object.values(cfg?.job_caps_minutes ?? {}).filter(
+    (n) => typeof n === 'number' && Number.isFinite(n) && n > 0,
+  );
+  const maxCap = caps.length ? Math.max(...caps) : 60;
+  return WARM_UP_JOBS * maxCap;
+}
+
+/**
  * Shares within one tier over the rolling window.
  *
  * specs/loop: "a category's share is its MM divided by that tier's total MM
  * over the rolling 30 days, and the bounds SHALL hold in each tier
  * independently". Never summed across tiers.
+ *
+ * Two percentages come back, and they are not the same number:
+ *  - `share_pct` — the observed share, the spec's arithmetic exactly. This is
+ *    what gets printed and what the upkeep floor reads.
+ *  - `ceiling_pct` — the same MM over `max(total, warm-up)`. Only the ceilings
+ *    read this, and it equals `share_pct` for any window past the warm-up.
  */
 export function tierShares(cfg, ledger, tier, now) {
   const win = withinWindow(ledger, now, cfg.budget.window_days * DAY_MS).filter(
@@ -40,13 +98,27 @@ export function tierShares(cfg, ledger, tier, now) {
     const cat = categoryOf(cfg, l.type);
     if (cat) byCategory[cat] += Number(l.mm) || 0;
   }
+  const warmUp = warmUpMm(cfg);
+  const denominator = Math.max(total, warmUp);
   const shares = {};
+  const ceilingPct = {};
   for (const [cat, mm] of Object.entries(byCategory)) {
     // 0/0 is undefined, not 0. An empty tier has no shares at all — see
     // budgetGate for why that means "no bound binds yet".
     shares[cat] = total > 0 ? (mm / total) * 100 : null;
+    ceilingPct[cat] = (mm / denominator) * 100;
   }
-  return { tier, total_mm: total, mm: byCategory, share_pct: shares, lines: win.length };
+  return {
+    tier,
+    total_mm: total,
+    mm: byCategory,
+    share_pct: shares,
+    ceiling_pct: ceilingPct,
+    warm_up_mm: warmUp,
+    ceiling_denominator_mm: denominator,
+    warming_up: total < warmUp,
+    lines: win.length,
+  };
 }
 
 /**
@@ -73,14 +145,26 @@ export function budgetGate(cfg, shares, type) {
     machinery: b.machinery_ceiling_pct,
   };
   const ceiling = ceilings[cat];
-  if (ceiling !== undefined && shares.share_pct[cat] >= ceiling) {
+  // The ceiling reads `ceiling_pct`, not `share_pct`: below the warm-up the
+  // denominator is the warm-up rather than the handful of minutes recorded so
+  // far. See warmUpMm(). `ceiling_pct` is absent only if a caller built a
+  // shares object by hand, in which case fall back to the observed share.
+  const pct = shares.ceiling_pct?.[cat] ?? shares.share_pct[cat];
+  if (ceiling !== undefined && pct >= ceiling) {
+    const warming = shares.warming_up && shares.ceiling_denominator_mm > shares.total_mm;
     return {
       ok: false,
       rule: `budget:${cat}-ceiling`,
       reason:
-        `${cat} is at ${shares.share_pct[cat].toFixed(1)}% of the ${shares.tier} tier's ` +
-        `rolling ${cfg.budget.window_days}-day model-minutes, at or over its ${ceiling}% ` +
-        `ceiling — no ${type} job is selectable until the window rolls`,
+        `${cat} is at ${pct.toFixed(1)}% of the ${shares.tier} tier's ` +
+        (warming
+          ? `warm-up window of ${shares.ceiling_denominator_mm} model-minutes ` +
+            `(${shares.total_mm.toFixed(2)} MM actually recorded in the rolling ` +
+            `${cfg.budget.window_days} days — too few for a share to mean anything, so the ` +
+            `ceiling is measured against the warm-up instead)`
+          : `rolling ${cfg.budget.window_days}-day model-minutes`) +
+        `, at or over its ${ceiling}% ceiling — no ${type} job is selectable until ` +
+        (warming ? 'the window grows or rolls' : 'the window rolls'),
     };
   }
   return { ok: true };

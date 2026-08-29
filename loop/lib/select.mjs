@@ -18,6 +18,7 @@ import { isTutorialVerify, readQueue } from './queue.mjs';
 import { readProposals, discardDuplicate } from './proposals.mjs';
 import { blogCeilingGate, tutorialDemotionGate, tutorialPriorityGate } from './surfaces.mjs';
 import { conformanceGate, loadConformance } from './runners.mjs';
+import { runnerHealthGate } from './health.mjs';
 
 /**
  * Gather every candidate, in the spec's priority order: directives, then the
@@ -81,6 +82,23 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
       shed,
       lane,
       blocked: conformance.reason,
+    };
+  }
+
+  // Runtime evidence that the runner cannot run at all — a dead credential, a
+  // command template that never delivers the prompt. Refused here for the same
+  // reason a recorded conformance FAIL is, and before a model is invoked.
+  const health = runnerHealthGate(ledger, runner.id);
+  if (!health.ok) {
+    return {
+      selected: null,
+      refusals: [{ candidate: null, rule: health.rule, reason: health.reason }],
+      warnings: [],
+      notes: [],
+      shares,
+      shed,
+      lane,
+      blocked: health.reason,
     };
   }
 

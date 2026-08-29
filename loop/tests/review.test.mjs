@@ -18,6 +18,7 @@ import { runLoop } from '../run.mjs';
 import { readLedger } from '../lib/ledger.mjs';
 import {
   assembleReviewBrief,
+  gatesSection,
   mergeGate,
   parseVerdict,
   verdictPath,
@@ -174,6 +175,101 @@ test('the reviewer brief carries the closed reason list, the checklist, and no a
   assert.match(brief, /you have not seen the author's\s+reasoning/);
   assert.match(brief, /no edit rights/);
   assert.match(brief, /outside\*\* the worktree you are reviewing/);
+  ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// What the reviewer is told it need not repeat (beads addictedtoai-5z9).
+//
+// On job j-20260829-01 the loop's gates ran `npm test` and `npm run build` on
+// the branch and both passed; the reviewer then re-ran the same suite at its own
+// expense, formed its judgment ("everything else in the review is settled") and
+// ended before recording it. The merge was refused for `no-record` — correctly,
+// fail-closed — and 20.87 model-minutes were lost. Nothing in the brief told the
+// reviewer what had already been verified, or that its run ends when it stops.
+//
+// The gates in the first test below are REAL: the fixture's package.json carries
+// real `test` and `build` scripts and `runGates` really runs them. Stubbing the
+// gate result would test the assertion against itself.
+// ---------------------------------------------------------------------------
+
+function repoWithRealGates(reviewerMode = 'review-approve') {
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({ command: mockCommand('done-edit'), reviewerCommand: mockCommand(reviewerMode) }),
+    files: {
+      'package.json':
+        JSON.stringify(
+          { name: 'fixture', private: true, scripts: { test: 'node --version', build: 'node --version' } },
+          null,
+          2,
+        ) + '\n',
+    },
+  });
+  writeQueue(ctx, [{ type: 'entry', title: 'write the entry for the fixture subject' }]);
+  return ctx;
+}
+
+test('the review brief states which gates really ran on this branch, and on which commit', async () => {
+  const ctx = repoWithRealGates();
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer' });
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  const brief = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-review-1-brief.md`), 'utf8');
+  assert.match(brief, /## What the loop has already verified on this branch/);
+  assert.match(brief, /`npm run test` — \*\*PASS\*\*/);
+  assert.match(brief, /`npm run build` — \*\*PASS\*\*/);
+  assert.match(brief, /on commit `[0-9a-f]{12}`/, 'which commit, not just "the branch"');
+  assert.match(brief, /\*\*Do not re-run them\.\*\*/);
+  assert.match(brief, /run\s+\*\*that\*\* check/);
+  ctx.cleanup();
+});
+
+test('the review brief states the cap, the spend so far, and that the run ends when the reviewer stops', async () => {
+  const ctx = repoWithRealGates();
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer' });
+  const brief = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-review-1-brief.md`), 'utf8');
+  assert.match(brief, /wall-clock cap of 60 minutes/);
+  assert.match(brief, /When you stop producing output, your run is over/);
+  assert.match(brief, /never\s+end your turn intending to come back to it/);
+  assert.match(brief, /Write the verdict record the moment your judgment is formed/);
+  assert.match(brief, /This job has already cost \d+\.\d\d model-minutes/);
+  ctx.cleanup();
+});
+
+test('a brief never claims a verification that did not happen', async () => {
+  // The same plumbing, with the gates skipped. A brief that said "already
+  // verified" here would be worse than one that said nothing at all.
+  const ctx = repoWithRealGates();
+  const res = await go(ctx); // noGates
+  assert.equal(res.outcome, 'done', ctx.output());
+  const brief = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-review-1-brief.md`), 'utf8');
+  assert.match(brief, /## What the loop has verified on this branch\n\n\*\*Nothing\.\*\*/);
+  assert.match(brief, /no mechanical check has been run on this diff at all/);
+  assert.ok(!/already verified/.test(brief));
+  ctx.cleanup();
+});
+
+test('a failed gate is reported to the reviewer as failed, with its exit status', () => {
+  const failing = gatesSection(
+    { ran: true, ok: false, results: [{ script: 'test', ok: true, status: 0 }, { script: 'build', ok: false, status: 1 }] },
+    'abcdef0123456789',
+  );
+  assert.match(failing, /`npm run test` — \*\*PASS\*\*/);
+  assert.match(failing, /`npm run build` — \*\*FAIL \(exit 1\)\*\*/);
+  assert.match(failing, /on commit `abcdef012345`/);
+});
+
+test('the loop says WHY a verdict is missing, and still refuses the merge', async () => {
+  const ctx = repo('done-edit', 'review-nothing');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.match(ctx.output(), /no reviewer verdict recorded/);
+  assert.match(
+    ctx.output(),
+    /the reviewer's run ended on its own after \d+\.\d\d model-minutes \(exit 0\) and left no usable verdict/,
+    ctx.output(),
+  );
   ctx.cleanup();
 });
 

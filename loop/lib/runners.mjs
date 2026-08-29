@@ -49,11 +49,12 @@ export function loadRunners(ctx) {
     if (!r.command || typeof r.command !== 'string') {
       throw new Error(`${where}: missing "command" template`);
     }
-    if (r.capacity_stderr_pattern) {
+    for (const key of ['capacity_stderr_pattern', 'startup_failure_stderr_pattern']) {
+      if (!r[key]) continue;
       try {
-        new RegExp(r.capacity_stderr_pattern, 'i');
+        new RegExp(r[key], 'i');
       } catch (e) {
-        throw new Error(`${where}: capacity_stderr_pattern is not a valid regex: ${e.message}`);
+        throw new Error(`${where}: ${key} is not a valid regex: ${e.message}`);
       }
     }
   }

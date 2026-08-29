@@ -41,6 +41,7 @@ import {
   removeWorktree,
 } from './lib/git.mjs';
 import { scanJobBranches, readCommittedBrief } from './lib/resume.mjs';
+import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './lib/health.mjs';
 import { runGates, unlinkNodeModules } from './lib/gates.mjs';
 import { mergeGate, runReview, verdictPath } from './lib/review.mjs';
 import {
@@ -171,7 +172,30 @@ async function executeJob(ctx, opts) {
     return { outcome: 'capacity', mm: run.mm, changed, note: classified.evidence };
   }
   if (classified.status === 'interrupted') {
-    return { outcome: 'interrupted', mm: run.mm, changed, note: classified.evidence };
+    // The outcome stays `interrupted` — specs/loop says an absent RESULT.md
+    // after the process exited is exactly that, and the branch stays resumable.
+    // The SIGNAL is the added detection: the run produced no RESULT.md, no
+    // output AND no diff, which is a runner that never ran rather than a job
+    // cut off mid-work. health.mjs counts these; three in a row refuses the
+    // runner instead of resuming its branch forever (beads addictedtoai-h5k).
+    const producedNothing = Boolean(classified.producedNothing) && changed.length === 0;
+    if (producedNothing) {
+      ctx.log(
+        `this run produced nothing at all: no RESULT.md, nothing on stdout, and an empty branch diff. ` +
+          `Recording signal \`${NO_OUTPUT_SIGNAL}\` on the ledger line` +
+          (classified.startupFailure
+            ? ` (the runner's declared startup_failure_stderr_pattern matched: ${JSON.stringify(classified.startupFailure.line)})`
+            : '') +
+          '.',
+      );
+    }
+    return {
+      outcome: 'interrupted',
+      mm: run.mm,
+      changed,
+      note: classified.evidence,
+      signal: producedNothing ? NO_OUTPUT_SIGNAL : undefined,
+    };
   }
   if (classified.status === 'blocked') {
     // A well-formed `blocked:` with a clean tree is a SUCCESSFUL honest
@@ -185,11 +209,15 @@ async function executeJob(ctx, opts) {
     return { outcome: 'failed', mm: run.mm, changed, note: 'done with an empty diff' };
   }
 
-  // Gates.
+  // Gates. `gateReport` is what the reviewer is told about them — a
+  // measurement of what ran on this branch, never a reassurance (see
+  // review.mjs gatesSection, beads addictedtoai-5z9).
   let gateResult = { ok: true, output: 'gates skipped (--no-gates)' };
+  let gateReport = { ran: false, why: 'the loop was run with --no-gates' };
   if (gates !== false) {
     ctx.log('running the schema/build gates on the branch');
     gateResult = typeof gates === 'function' ? gates(ctx, worktree) : runGates(ctx, worktree);
+    gateReport = { ran: true, ok: gateResult.ok, results: gateResult.results ?? [] };
     ctx.log(`gates: ${gateResult.ok ? 'PASS' : 'FAIL'}`);
     if (!gateResult.ok) {
       // Print WHY, not just THAT. The worktree is torn down in the caller's
@@ -222,6 +250,8 @@ async function executeJob(ctx, opts) {
       capMinutes,
       pass,
       findings,
+      gates: gateReport,
+      mmSoFar: mm,
     });
     mm += rev.run.mm; // "Review MM counts toward the job it reviews."
     if (rev.discarded.discardedAnything) {
@@ -234,6 +264,17 @@ async function executeJob(ctx, opts) {
     }
     ctx.log(`review: merge refused — [${gate.code}] ${gate.reason}`);
     if (gate.code === 'no-record' || gate.code === 'malformed-verdict') {
+      // Fail closed, and say WHY the record is missing — the refusal is
+      // correct, but "no-record" alone does not distinguish a reviewer killed
+      // at its cap from one that ended on its own with its judgment unwritten.
+      // The second is what happened on j-20260829-01 (beads addictedtoai-5z9).
+      ctx.log(
+        `  the reviewer's run ${
+          rev.run.killed
+            ? `was killed at the ${capMinutes}-minute cap`
+            : `ended on its own after ${rev.run.mm.toFixed(2)} model-minutes (exit ${rev.run.code})`
+        } and left no usable verdict at ${rev.outPath}. Its log is at ${rev.run.logPath ?? '(not captured)'}.`,
+      );
       return { outcome: 'failed', mm, changed, note: gate.reason };
     }
     if (gate.code === 'would-cite-empty' || gate.code === 'would-cite-duplicate') {
@@ -313,6 +354,27 @@ export async function runLoop(ctx, opts = {}) {
     }
   }
 
+  // Runner health, after the 14-day abandon sweep and BEFORE resumption. The
+  // placement is both halves of the fix. Before resumption, because a dead
+  // credential leaves an interrupted branch, an interrupted branch is resumable,
+  // and resumption happens ahead of the three work sources — a check sitting
+  // only in the selector would never be reached and the spin would continue.
+  // After the abandon sweep, because refusing a runner must not also stop the
+  // housekeeping that keeps dead branches from accumulating silently — that is
+  // the failure this whole issue is about, and it would be perverse to
+  // reintroduce it while fixing it (beads addictedtoai-h5k).
+  const health = runnerHealthGate(ledger, runner.id);
+  if (!health.ok) {
+    ctx.log(`REFUSED [${health.rule}]: ${health.reason}`);
+    return { started: true, selected: null, refused: health.reason, rule: health.rule };
+  }
+  if (health.streak > 0) {
+    ctx.log(
+      `note: runner "${runner.id}" produced nothing on its last ${health.streak} run(s); ` +
+        `at ${NO_OUTPUT_STREAK_LIMIT} it is refused until a run on it produces something.`,
+    );
+  }
+
   const lane = lanePause(ledger, runner.provider, now);
   let resumeTarget = null;
   if (!lane.paused && scan.resumable.length > 0) resumeTarget = scan.resumable[0];
@@ -349,6 +411,20 @@ export async function runLoop(ctx, opts = {}) {
               .map(([k, v]) => `${k} ${v === null ? 'n/a' : v.toFixed(1) + '%'}`)
               .join(', ')),
     );
+    if (sel.shares.total_mm > 0 && sel.shares.warming_up) {
+      // Say which denominator the ceilings actually used, or the printed shares
+      // above look like they contradict the refusals below them.
+      ctx.log(
+        `  warming up: ${sel.shares.total_mm.toFixed(2)} of ${sel.shares.warm_up_mm} model-minutes. ` +
+          `The shares above are the observed ones; the CEILINGS are measured against the ` +
+          `${sel.shares.ceiling_denominator_mm}-minute warm-up window (` +
+          Object.entries(sel.shares.ceiling_pct)
+            .map(([k, v]) => `${k} ${v.toFixed(1)}%`)
+            .join(', ') +
+          `), because a share of one job is not a share of anything. The upkeep floor still ` +
+          `reads the observed share.`,
+      );
+    }
     if (sel.shed.level > 0) {
       ctx.log(`capacity shed level ${sel.shed.level} (${sel.shed.events} capacity event(s) in the trailing ${cfg.degradation.window_hours}h)`);
     }
@@ -466,6 +542,7 @@ export async function runLoop(ctx, opts = {}) {
       mm: result.mm ?? 0,
       outcome,
       note: result.note,
+      signal: result.signal,
       ts: ctx.now().toISOString(),
     }),
   );

@@ -35,21 +35,27 @@ function fixture(lines, queue = []) {
 }
 
 test('new writing is refused at its 45% ceiling, within the tier', () => {
+  // A warm window: 1000 MM in the tier, past the 600-minute warm-up, so the
+  // ceiling is measured against the window's own total — the spec's arithmetic
+  // exactly. (The low-n case, where it is not, is two tests below.)
   const ctx = fixture([
-    ledgerLine({ id: 'a', type: 'entry', mm: 45, tier: 'frontier', ts: daysAgo(NOW, 2) }),
-    ledgerLine({ id: 'b', type: 'verify', mm: 55, tier: 'frontier', ts: daysAgo(NOW, 3) }),
+    ledgerLine({ id: 'a', type: 'entry', mm: 450, tier: 'frontier', ts: daysAgo(NOW, 2) }),
+    ledgerLine({ id: 'b', type: 'verify', mm: 550, tier: 'frontier', ts: daysAgo(NOW, 3) }),
     // a different tier's spending must not affect the frontier shares at all
-    ledgerLine({ id: 'c', type: 'entry', mm: 900, tier: 'cheap', ts: daysAgo(NOW, 1) }),
+    ledgerLine({ id: 'c', type: 'entry', mm: 9000, tier: 'cheap', ts: daysAgo(NOW, 1) }),
   ]);
   const cfg = loadConfig(ctx);
   const shares = tierShares(cfg, readLedger(ctx), 'frontier', NOW);
-  assert.equal(shares.total_mm, 100);
+  assert.equal(shares.total_mm, 1000);
   assert.equal(shares.share_pct.new_writing, 45);
+  assert.equal(shares.warming_up, false);
+  assert.equal(shares.ceiling_pct.new_writing, 45, 'past the warm-up the two are the same number');
 
   const refused = budgetGate(cfg, shares, 'post');
   assert.equal(refused.ok, false);
   assert.equal(refused.rule, 'budget:new_writing-ceiling');
   assert.match(refused.reason, /45\.0% of the frontier tier/);
+  assert.match(refused.reason, /rolling 30-day model-minutes/);
 
   assert.equal(budgetGate(cfg, shares, 'repair').ok, true, 'upkeep is still selectable');
   ctx.cleanup();
@@ -57,8 +63,8 @@ test('new writing is refused at its 45% ceiling, within the tier', () => {
 
 test('machinery is refused at its 10% ceiling — the selector enforces it, not good intentions', () => {
   const ctx = fixture([
-    ledgerLine({ id: 'a', type: 'machinery', mm: 10, tier: 'frontier', ts: daysAgo(NOW, 1) }),
-    ledgerLine({ id: 'b', type: 'verify', mm: 90, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+    ledgerLine({ id: 'a', type: 'machinery', mm: 100, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+    ledgerLine({ id: 'b', type: 'verify', mm: 900, tier: 'frontier', ts: daysAgo(NOW, 1) }),
   ]);
   const cfg = loadConfig(ctx);
   const shares = tierShares(cfg, readLedger(ctx), 'frontier', NOW);
@@ -66,6 +72,95 @@ test('machinery is refused at its 10% ceiling — the selector enforces it, not 
   const g = budgetGate(cfg, shares, 'machinery');
   assert.equal(g.ok, false);
   assert.match(g.reason, /10% ceiling/);
+  ctx.cleanup();
+});
+
+test('one job does not saturate its category for a month — the n=1 defect, with the real numbers', () => {
+  // Job j-20260828-01, exactly as it happened: one entry job, 12.19 cheap-tier
+  // model-minutes, outcome `failed`. The observed share of new writing is
+  // 100.0%, and before this fix that refused every subsequent entry, tutorial,
+  // post and education job until the 30-day window rolled past it.
+  const ctx = fixture([
+    ledgerLine({ id: 'j-20260828-01', type: 'entry', mm: 12.19, tier: 'cheap', outcome: 'failed', ts: daysAgo(NOW, 1) }),
+  ]);
+  const cfg = loadConfig(ctx);
+  const shares = tierShares(cfg, readLedger(ctx), 'cheap', NOW);
+
+  assert.equal(shares.total_mm, 12.19);
+  assert.equal(shares.share_pct.new_writing, 100, 'the observed share really is 100% — that is the input');
+  assert.equal(shares.warming_up, true);
+  assert.equal(shares.warm_up_mm, 600, 'ten times the largest per-type cap in data/config.json');
+
+  for (const t of ['entry', 'tutorial', 'post', 'education']) {
+    const g = budgetGate(cfg, shares, t);
+    assert.equal(g.ok, true, `${t} must still be selectable after one job: ${g.reason ?? ''}`);
+  }
+  // The minutes are still counted. A transient failure spending 12 minutes
+  // spent 12 minutes; nothing here excludes it.
+  assert.equal(shares.mm.new_writing, 12.19);
+  ctx.cleanup();
+});
+
+test('the warm-up is a smaller allowance than the steady state, never a larger one', () => {
+  const ctx = fixture([]);
+  const cfg = loadConfig(ctx);
+  const at = (mm, type = 'entry') =>
+    tierShares(
+      cfg,
+      [ledgerLine({ id: 'x', type, mm, tier: 'frontier', ts: daysAgo(NOW, 1) })],
+      'frontier',
+      NOW,
+    );
+
+  // 45% of the 600-minute warm-up is 270 MM of new writing before the ceiling
+  // binds — about five full-length jobs, and far less than 45% of any plausible
+  // month (a job a day at 30–60 minutes is 900–1800 MM).
+  assert.equal(budgetGate(cfg, at(269), 'post').ok, true);
+  assert.equal(budgetGate(cfg, at(270), 'post').ok, false);
+
+  // And the tightest ceiling: one maximum-length machinery job is exactly 10%
+  // of the warm-up window, so the first is allowed and the second is not. That
+  // is the derivation of the number, measured rather than asserted.
+  assert.equal(budgetGate(cfg, at(59, 'machinery'), 'machinery').ok, true);
+  assert.equal(budgetGate(cfg, at(60, 'machinery'), 'machinery').ok, false);
+  assert.match(budgetGate(cfg, at(60, 'machinery'), 'machinery').reason, /warm-up window of 600 model-minutes/);
+  ctx.cleanup();
+});
+
+test('the warm-up never loosens a ceiling once the window is real', () => {
+  // Above the warm-up the denominator IS the observed total, so the rule is the
+  // spec's rule and nothing has been relaxed.
+  const ctx = fixture([]);
+  const cfg = loadConfig(ctx);
+  const shares = tierShares(
+    cfg,
+    [
+      ledgerLine({ id: 'a', type: 'machinery', mm: 200, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+      ledgerLine({ id: 'b', type: 'verify', mm: 1800, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+    ],
+    'frontier',
+    NOW,
+  );
+  assert.equal(shares.warming_up, false);
+  assert.equal(shares.ceiling_denominator_mm, shares.total_mm);
+  assert.equal(shares.ceiling_pct.machinery, shares.share_pct.machinery);
+  assert.equal(budgetGate(cfg, shares, 'machinery').ok, false);
+  ctx.cleanup();
+});
+
+test('the upkeep floor is untouched by the warm-up and reads the observed share', () => {
+  // Deliberate: a floor measured on a thin window errs toward doing upkeep,
+  // which is the safe direction, and it already binds only when an upkeep job
+  // is available. One upkeep job clears it.
+  const ctx = fixture([
+    ledgerLine({ id: 'a', type: 'entry', mm: 12.19, tier: 'cheap', ts: daysAgo(NOW, 1) }),
+  ]);
+  const cfg = loadConfig(ctx);
+  const shares = tierShares(cfg, readLedger(ctx), 'cheap', NOW);
+  assert.equal(shares.share_pct.upkeep, 0);
+  const r = applyUpkeepFloor(cfg, shares, [{ type: 'post' }, { type: 'verify' }]);
+  assert.deepEqual(r.candidates.map((c) => c.type), ['verify']);
+  assert.match(r.refused[0].reason, /below its 40% floor/);
   ctx.cleanup();
 });
 
@@ -196,8 +291,8 @@ test('breaker-1 counting: only failed and discarded count, blocked never does', 
 test('the selector refuses at the ceiling and names the rule in its output', () => {
   const ctx = fixture(
     [
-      ledgerLine({ id: 'a', type: 'entry', mm: 50, tier: 'frontier', ts: daysAgo(NOW, 1) }),
-      ledgerLine({ id: 'b', type: 'verify', mm: 50, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+      ledgerLine({ id: 'a', type: 'entry', mm: 500, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+      ledgerLine({ id: 'b', type: 'verify', mm: 500, tier: 'frontier', ts: daysAgo(NOW, 1) }),
     ],
     [{ type: 'post', title: 'a new post' }],
   );

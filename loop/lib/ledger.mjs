@@ -56,7 +56,15 @@ export function appendLedger(ctx, line) {
   return line;
 }
 
-export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, note, ts }) {
+/**
+ * `signal` is optional and additive: an outcome says what happened to the JOB,
+ * a signal says something about the RUN that the outcome cannot carry. The one
+ * in use is `no-output` — the run produced no RESULT.md, no output and no diff
+ * (beads addictedtoai-h5k). It is a field rather than prose in `note` because
+ * health.mjs counts it, and counting free text is how a check comes to mean
+ * whatever the last note happened to say.
+ */
+export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, note, ts, signal }) {
   const line = {
     ts: ts ?? new Date().toISOString(),
     id,
@@ -68,6 +76,7 @@ export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, 
     outcome,
   };
   if (note) line.note = note;
+  if (signal) line.signal = signal;
   return line;
 }
 

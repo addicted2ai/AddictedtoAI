@@ -67,6 +67,7 @@ runners:
     roles: [author, reviewer]
     command: '${c.replace(/'/g, "''")}'
     capacity_stderr_pattern: 'MOCK-CAPACITY-LIMIT'
+    startup_failure_stderr_pattern: 'MOCK-AUTH-FAILURE'
   - id: mock-cheap
     provider: provider-a
     tier: cheap
@@ -149,7 +150,7 @@ export function writeLedger(ctx, lines) {
 }
 
 export function ledgerLine(o) {
-  return {
+  const line = {
     ts: o.ts ?? new Date().toISOString(),
     id: o.id ?? 'j-20260101-01',
     type: o.type ?? 'entry',
@@ -159,6 +160,9 @@ export function ledgerLine(o) {
     mm: o.mm ?? 10,
     outcome: o.outcome ?? 'done',
   };
+  if (o.note) line.note = o.note;
+  if (o.signal) line.signal = o.signal;
+  return line;
 }
 
 export function hoursAgo(now, h) {

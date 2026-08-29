@@ -20,6 +20,36 @@
 
 import { contentBuildStep } from '../lib/build-content.mjs';
 import { siteAssetsStep } from '../lib/site-assets.mjs';
+import { acquireBuildLock, DEFAULT_WAIT_MS } from './build-lock.mjs';
+
+/**
+ * One build at a time (beads addictedtoai-6s7). This is the right place for it
+ * and the only one: every `npm run build` runs this file first — the loop's
+ * gates inside a job worktree, the loop's post-merge build at the root,
+ * `scripts/verify-launch.mjs`, and a person or an agent typing the command. A
+ * lock taken in any single caller would leave the other callers racing.
+ *
+ * The holder is `process.ppid`, the shell npm spawned for
+ * `node scripts/prebuild.mjs && next build`, because that process lives for the
+ * whole build and this one does not. See scripts/build-lock.mjs for why the
+ * lock is never released and how a crashed build is reclaimed.
+ */
+try {
+  const waitMs = Number(process.env.ATAI_BUILD_LOCK_WAIT_MS ?? DEFAULT_WAIT_MS);
+  const lock = acquireBuildLock({
+    dir: process.cwd(),
+    holderPid: process.ppid || process.pid,
+    label: `npm run build (${process.cwd()})`,
+    waitMs: Number.isFinite(waitMs) ? waitMs : DEFAULT_WAIT_MS,
+    log: (s) => process.stdout.write(`${s}\n`),
+  });
+  if (lock.waitedMs > 1000) {
+    process.stdout.write(`prebuild: waited ${(lock.waitedMs / 1000).toFixed(0)}s for the build lock\n`);
+  }
+} catch (err) {
+  process.stderr.write(`prebuild: BUILD LOCK\n${err?.message ?? err}\n`);
+  process.exit(1);
+}
 
 /** @type {{ name: string, run: () => Promise<void> | void }[]} */
 const STEPS = [

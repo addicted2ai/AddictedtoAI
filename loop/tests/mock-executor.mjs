@@ -73,6 +73,24 @@ switch (mode) {
     process.stderr.write('MOCK-CAPACITY-LIMIT: allowance exhausted, try later\n');
     break;
 
+  // An executor that never ran: no RESULT.md, nothing on stdout, no edit, and a
+  // non-zero exit — the shape of an expired credential or a command template
+  // that never delivered the prompt. It classifies `interrupted` like any other
+  // absent RESULT.md, which is the point: the outcome alone cannot tell this
+  // apart from work cut off mid-flight, and on its own it would be resumed
+  // forever (beads addictedtoai-h5k).
+  case 'produces-nothing':
+    process.stderr.write('MOCK-AUTH-FAILURE: the credential for this runner has expired\n');
+    process.exit(1);
+    break;
+
+  // The same, with nothing at all on stderr either: detection must not depend
+  // on a declared pattern, because a credential expires on runners whose
+  // maintainer never declared one.
+  case 'produces-nothing-silently':
+    process.exit(1);
+    break;
+
   case 'slow': // runs past any sane cap so the kill path is exercised
     setTimeout(() => {}, 10 * 60 * 1000);
     break;

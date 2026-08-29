@@ -101,6 +101,15 @@ export function readResult(worktree) {
   };
 }
 
+/** The first stderr line matching a pattern, for the evidence string. */
+function matchingLine(text, pattern) {
+  const re = new RegExp(pattern, 'i');
+  for (const line of String(text ?? '').split(/\r?\n/)) {
+    if (re.test(line)) return line.trim().slice(0, 200);
+  }
+  return null;
+}
+
 /**
  * Combine the file's verdict with what the process did.
  *
@@ -112,7 +121,20 @@ export function readResult(worktree) {
  *  - Killed at the cap with a well-formed file still honours the file: work
  *    that reported itself before the axe fell reported itself.
  *
- * @param {object} run   result of runExecutor(): { killed, code, stderr }
+ * `interrupted` is also returned for a run that never started — an expired
+ * credential, a mis-assembled command, a harness that never received the
+ * prompt. specs/loop is explicit that an absent `RESULT.md` after the process
+ * "has exited or been killed at its cap" IS `interrupted`, so the
+ * classification does not change here. What is added is the DISTINCTION the
+ * classification loses (beads addictedtoai-h5k). `producedNothing` separates
+ * two cases the single word `interrupted` cannot: an executor that ran and was
+ * cut off mid-work, and an executor that produced nothing whatsoever.
+ * `startupFailure` records a runner's own declared message for a failure to
+ * start. Neither relaxes anything; both exist so that a permanently dead
+ * credential stops being invisible. What the loop DOES with them is in
+ * health.mjs and select.mjs — a stated refusal, not a halt.
+ *
+ * @param {object} run   result of runExecutor(): { killed, code, stderr, stdout }
  * @param {object} runner  the runners.yml entry
  */
 export function classifyRun(run, fileResult, runner) {
@@ -125,10 +147,18 @@ export function classifyRun(run, fileResult, runner) {
       status: fileResult.status,
       reason: fileResult.reason,
       evidence: fileResult.why,
+      producedNothing: false,
+      startupFailure: null,
     };
   }
   if (fileResult.status === 'capacity') {
-    return { status: 'capacity', reason: null, evidence: fileResult.why };
+    return {
+      status: 'capacity',
+      reason: null,
+      evidence: fileResult.why,
+      producedNothing: false,
+      startupFailure: null,
+    };
   }
   if (stderrSaysCapacity) {
     return {
@@ -136,13 +166,39 @@ export function classifyRun(run, fileResult, runner) {
       reason: null,
       evidence:
         `${fileResult.why}; the runner's declared capacity_stderr_pattern matched its stderr`,
+      producedNothing: false,
+      startupFailure: null,
     };
   }
+
+  // No RESULT.md at all, not killed at the cap, and nothing said on stdout: the
+  // executor did not run, as distinct from ran and was cut off. Note the
+  // conditions are all about the PROCESS; whether the branch gained a diff is
+  // known only to the caller, which is why run.mjs requires that too before
+  // recording the signal.
+  const silent = String(run.stdout ?? '').trim() === '';
+  const producedNothing = !fileResult.present && !run.killed && silent;
+
+  const startPattern = runner?.startup_failure_stderr_pattern;
+  const startLine = startPattern ? matchingLine(run.stderr, startPattern) : null;
+  const startupFailure = startLine
+    ? { pattern: startPattern, line: startLine }
+    : null;
+
   return {
     status: 'interrupted',
     reason: null,
     evidence:
       fileResult.why +
-      (run.killed ? ' and the executor was killed at its wall-clock cap' : ` and the executor exited with code ${run.code}`),
+      (run.killed
+        ? ' and the executor was killed at its wall-clock cap'
+        : ` and the executor exited with code ${run.code}`) +
+      (startupFailure
+        ? `; the runner's declared startup_failure_stderr_pattern matched its stderr: ${JSON.stringify(startupFailure.line)}`
+        : producedNothing
+          ? ', having written no RESULT.md and printed nothing on stdout — it produced nothing at all'
+          : ''),
+    producedNothing: producedNothing || Boolean(startupFailure),
+    startupFailure,
   };
 }
