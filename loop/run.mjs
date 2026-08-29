@@ -292,7 +292,16 @@ async function executeJob(ctx, opts) {
     if (rev.discarded.discardedAnything) {
       ctx.log(`the reviewer changed its worktree; those changes were discarded (branch ${rev.branchUnchanged ? 'unchanged' : 'CHANGED — investigate'})`);
     }
-    const gate = mergeGate(ctx, { jobId, type: job.type, pass });
+    // The same measurement the post-merge write uses (`base` here IS
+    // `mergeBaseSha`), re-read from the branch rather than reused from `changed`
+    // above: a revision pass can add a file after the author run, and the gate
+    // must compare the record against what is actually about to merge.
+    const gate = mergeGate(ctx, {
+      jobId,
+      type: job.type,
+      pass,
+      subjects: joinableSubjects(changedPathsWithStatus(ctx.repoRoot, base, branch)),
+    });
     phase(`review${pass}`, reviewer, rev.run, gate.ok ? 'approve' : gate.code);
     if (gate.ok) {
       ctx.log(`review: approve (would-cite recorded)`);
@@ -562,9 +571,19 @@ export async function runLoop(ctx, opts = {}) {
       // that list was computed after the AUTHOR run and a revision pass can add
       // a file to the branch afterwards. This is the diff that just merged.
       const subjects = joinableSubjects(changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch));
-      const wrote = writeRecordSubjects(verdictPath(ctx, jobId, result.pass ?? 1), subjects);
+      const wrote = writeRecordSubjects(verdictPath(ctx, jobId, result.pass ?? 1), subjects, {
+        repoRoot: ctx.repoRoot,
+      });
       if (wrote.ok) {
         ctx.log(`recorded subject: ${subjects.join(', ')} on the verdict record — the join reads it as the piece(s) reviewed`);
+        // WHAT it reviewed, not only which files (beads addictedtoai-zlq). The
+        // hashes are read from the merged tree, in the same call, so the two
+        // keys can never describe different diffs.
+        if (wrote.reviewed) {
+          ctx.log(`recorded reviewed: ${Object.keys(wrote.reviewed).length} reviewed-surface hash(es) — an edit to any of these files now reads as mismatched, not as approved`);
+        } else {
+          ctx.log(`NO reviewed: hash was recorded (${wrote.hashWhy}) — the record binds by name only, as records did before this mechanism`);
+        }
       } else if (subjects.length) {
         ctx.log(`could not record the reviewed files on the verdict record: ${wrote.why}`);
       }

@@ -43,6 +43,7 @@ import { mintStubs, appendTimelineEvents } from './lib/mint.mjs';
 import { rollingLinkCheck } from './lib/linkcheck.mjs';
 import { computeFreshness } from './lib/freshness.mjs';
 import { computeQueue, writeQueue } from './lib/queue.mjs';
+import { corroborationFindings } from './lib/corroboration.mjs';
 import { publishStep } from './lib/publish.mjs';
 
 const argv = new Set(process.argv.slice(2));
@@ -186,7 +187,21 @@ log.step(
 );
 
 // ---- 7. derived queue ----------------------------------------------------
-const queue = computeQueue(root, { freshness, changesFile: p.changes });
+// One of the queue's inputs, computed here because it needs the corpus: where
+// an entry declares that two of its facts measure the same quantity, compare
+// them. Arithmetic, not judgment — nothing is edited, no source is marked
+// authoritative, and a disagreement becomes a queue item rather than an error.
+// A pair with an unresolvable side is not compared at all: absence is not
+// disagreement. This is not a new pipeline step; it is part of recomputing the
+// queue from current state.
+const corroborations = corroborationFindings(root, corpus);
+log.step(
+  'corroboration',
+  `${corroborations.length} declared pair(s) disagree` +
+    (corroborations.length ? `: ${corroborations.map((c) => `${c.entry_id} ${c.a.field}/${c.b.field}`).join(', ')}` : ''),
+);
+
+const queue = computeQueue(root, { freshness, changesFile: p.changes, corroborations });
 writeQueue(root, queue);
 log.step('queue', `${queue.count} item(s) of ${queue.total_before_cap} (cap ${queue.cap}) — recomputed from state, never accumulated`);
 

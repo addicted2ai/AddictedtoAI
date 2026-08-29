@@ -177,3 +177,132 @@ test('a stale queue file is overwritten whole, never merged', async (t) => {
   assert.equal(queue.count, 0, 'nothing is ever "filed" into the queue');
   assert.equal(queue.items.length, 0);
 });
+
+// ── a declared corroboration that disagrees (specs/pulse, addictedtoai-473) ──
+
+const ROW = 'deepseek/deepseek-v4-flash-0731';
+
+/** An entry declaring a feed-bound `parameters` and a cited `card_parameters`. */
+function corroboratingEntry(root, { citedValue = '304B params' } = {}) {
+  writeEntry(root, 'content/wiki/model/v4-flash.md', {
+    id: 'model/v4-flash',
+    kind: 'model',
+    display_name: 'V4 Flash',
+    status: 'active',
+    maintenance: 'living',
+    aliases: [],
+    feeds: { openrouter: ROW },
+    facts: [
+      { field: 'parameters', source: 'feed', feed: 'openrouter', path: 'parameters', volatility: 'slow' },
+      {
+        field: 'card_parameters',
+        source: 'cited',
+        value: citedValue,
+        source_url: 'https://huggingface.co/example/card',
+        accessed: '2026-08-28',
+        volatility: 'static',
+        corroborates: 'parameters',
+      },
+    ],
+    timeline: [],
+    mentions: [],
+  });
+}
+
+function feedSays(root, parameters) {
+  writeJson(paths.latest(root, 'openrouter'), {
+    source: 'openrouter',
+    url: 'http://fixture.invalid/or',
+    date: '2026-08-28',
+    body_hash: 'x',
+    row_count: 1,
+    rows: { [ROW]: { id: ROW, parameters } },
+  });
+}
+
+test('a declared pair that disagrees yields exactly one verify item naming both sides', async (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+  corroboratingEntry(root);
+  feedSays(root, '284B total');
+
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0, 'a disagreement is a finding, not a failure');
+  const items = readJson(paths.queue(root)).items.filter((i) => i.reason === 'corroboration');
+  assert.equal(items.length, 1, 'exactly one item for one disagreeing pair');
+
+  const [i] = items;
+  assert.equal(i.type, 'verify', 'it proposes a verify job');
+  // Everything the job needs to begin: the entry, both fields, both resolved
+  // values, and both sources.
+  assert.match(i.subject, /model\/v4-flash/, 'the entry');
+  assert.equal(i.target, 'content/wiki/model/v4-flash.md');
+  assert.match(i.detail, /card_parameters/, 'the cited field');
+  assert.match(i.detail, /\bparameters\b/, 'the feed-bound field');
+  assert.match(i.detail, /304B params/, 'the cited value');
+  assert.match(i.detail, /284B total/, 'the feed value');
+  assert.match(i.detail, /openrouter/, 'the feed’s registry id');
+  assert.match(i.detail, /https:\/\/huggingface\.co\/example\/card/, 'the cited source_url');
+  // It proposes; it does not decide.
+  assert.doesNotMatch(i.detail, /authoritative|correct value|is wrong/i, 'it names no winner');
+});
+
+test('the corroboration item edits no fact and does not accumulate', async (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+  corroboratingEntry(root);
+  feedSays(root, '284B total');
+  const file = join(root, 'content', 'wiki', 'model', 'v4-flash.md');
+  const snapshotFile = paths.latest(root, 'openrouter');
+  const contentBefore = readFileSync(file, 'utf8');
+  const feedBefore = readFileSync(snapshotFile, 'utf8');
+
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
+  const first = readFileSync(paths.queue(root), 'utf8');
+
+  assert.equal(readFileSync(file, 'utf8'), contentBefore, 'the cited fact is untouched, byte for byte');
+  assert.equal(readFileSync(snapshotFile, 'utf8'), feedBefore, 'and so is the feed row — verbatim is verbatim');
+
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
+  assert.equal(readFileSync(paths.queue(root), 'utf8'), first, 'a second run produces the same bytes, not a second item');
+});
+
+test('agreement empties the item, with no close action by anyone', async (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+  corroboratingEntry(root);
+  feedSays(root, '284B total');
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
+  assert.equal(readJson(paths.queue(root)).items.filter((i) => i.reason === 'corroboration').length, 1);
+
+  // The source is corrected. Nothing is closed, archived or acknowledged.
+  feedSays(root, '304B total');
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
+  assert.deepEqual(
+    readJson(paths.queue(root)).items.filter((i) => i.reason === 'corroboration'),
+    [],
+    'fix the state and the item vanishes',
+  );
+});
+
+test('a vanished declared row produces no corroboration item', async (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+  corroboratingEntry(root);
+  // The snapshot no longer carries the declared row at all.
+  writeJson(paths.latest(root, 'openrouter'), {
+    source: 'openrouter',
+    url: 'http://fixture.invalid/or',
+    date: '2026-08-28',
+    body_hash: 'x',
+    row_count: 0,
+    rows: {},
+  });
+
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
+  const items = readJson(paths.queue(root)).items;
+  assert.deepEqual(
+    items.filter((i) => i.reason === 'corroboration'),
+    [],
+    'absence is not disagreement — reporting it under a second name makes both findings less legible',
+  );
+});

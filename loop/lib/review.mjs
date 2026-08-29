@@ -28,6 +28,8 @@ import { PROSE_TYPES } from './specs.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { GROUND_RULES } from './brief.mjs';
 import { REASONS, VERDICTS, parseVerdict, normalizeWouldCite } from './verdict.mjs';
+import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
+import { reviewedOf } from '../../lib/reviews.mjs';
 
 /**
  * Reading a verdict record lives in `verdict.mjs` — a leaf module with no
@@ -288,11 +290,23 @@ export function existingWouldCites(ctx, excludeJobId) {
 
 /**
  * The merge gate. Refuses without an `approve`; refuses an `approve` whose
- * `would-cite` is empty or duplicates an existing record's.
+ * `would-cite` is empty or duplicates an existing record's; and refuses a
+ * record whose `reviewed:` paths are not the paths the merge measured.
+ *
+ * `subjects` is the joinable content paths measured from the branch — the same
+ * set `writeRecordSubjects` will write as `subject:`. The two fields are
+ * written from one measurement, so they can only disagree if someone edited one
+ * by hand, and THAT is precisely the case worth refusing: a record whose
+ * `subject:` claims one piece and whose `reviewed:` hashes another passes every
+ * other check here while binding an approval to the wrong bytes (design D2).
+ *
+ * A record carrying no `reviewed:` at all is NOT refused. Every record written
+ * before this mechanism existed is one, and the normal path writes `reviewed:`
+ * after the merge, not before it — refusing here would refuse every merge.
  *
  * @returns {{ok: boolean, reason?: string, verdict?: object}}
  */
-export function mergeGate(ctx, { jobId, type, pass = 1 }) {
+export function mergeGate(ctx, { jobId, type, pass = 1, subjects }) {
   const path = verdictPath(ctx, jobId, pass);
   if (!existsSync(path)) {
     return {
@@ -344,6 +358,25 @@ export function mergeGate(ctx, { jobId, type, pass = 1 }) {
           `the field in ${dup.file}. A recycled sentence is not an answer to the question.`,
         verdict: v,
       };
+    }
+  }
+  if (Array.isArray(subjects)) {
+    const hashed = Object.keys(reviewedOf({ data: v.data })).sort();
+    if (hashed.length) {
+      const measured = [...subjects].sort();
+      if (hashed.join(' ') !== measured.join(' ')) {
+        return {
+          ok: false,
+          code: 'reviewed-subject-mismatch',
+          reason:
+            `the record's \`reviewed:\` names a different set of files than the merge measured. ` +
+            `reviewed: ${hashed.join(', ') || '(none)'}; measured for subject: ` +
+            `${measured.join(', ') || '(none)'}. One record cannot name one piece and hash ` +
+            `another — the two are written from a single measurement, so a difference means the ` +
+            `record was edited by hand.`,
+          verdict: v,
+        };
+      }
     }
   }
   return { ok: true, verdict: v, path };
@@ -452,48 +485,94 @@ export function joinableSubjects(changed) {
 }
 
 /**
- * Write `subject:` into an existing verdict record, naming what it reviewed.
+ * Write `subject:` and `reviewed:` into an existing verdict record: WHICH files
+ * it reviewed, and WHAT they contained.
+ *
+ * `subject:` alone names a piece; it says nothing about the text that was
+ * judged, so an approval survived every later edit to it (beads
+ * addictedtoai-zlq). `reviewed:` maps each subject path to the SHA-256 of that
+ * file's reviewed surface (`lib/review-hash.mjs`), read from the merged tree —
+ * ONE call, ONE measurement, two keys, so the two can never describe different
+ * diffs.
+ *
+ * `subject:`'s value shape does NOT change (design D2). It is read by nine
+ * accepted key names in `lib/reviews.mjs` and by hand-written records; carrying
+ * the hash inside it would break the join for every record that already exists,
+ * which is the opposite of the outcome this is for.
+ *
+ * If any subject cannot be hashed, NO `reviewed:` is written at all rather than
+ * a partial one. The invariant the merge gate enforces is that the two key sets
+ * are equal; a partial map would be a record that fails that check on its next
+ * reading, for a reason that has nothing to do with what it reviewed.
  *
  * The edit is deliberately surgical — the front-matter block is rewritten with
- * any prior `subject:` removed and one new key appended, and the reviewer's own
- * keys, its notes and its byte-for-byte `would-cite` are left exactly as they
- * were. Re-serialising the record through a YAML writer would reformat a
- * document a human reads as evidence, and the duplicate-`would-cite` check
- * compares that field after nothing but whitespace trimming.
+ * any prior `subject:`/`reviewed:` removed and the new keys appended, and the
+ * reviewer's own keys, its notes and its byte-for-byte `would-cite` are left
+ * exactly as they were. Re-serialising the record through a YAML writer would
+ * reformat a document a human reads as evidence, and the duplicate-`would-cite`
+ * check compares that field after nothing but whitespace trimming.
  *
- * @returns {{ok: boolean, why?: string, subjects?: string[]}}
+ * @param {string} path         the verdict record
+ * @param {string[]} subjects   joinable content paths, repo-relative
+ * @param {{repoRoot?: string}} [opts] the merged tree the hashes are read from
+ * @returns {{ok: boolean, why?: string, subjects?: string[],
+ *            reviewed?: Record<string,string>|null, hashWhy?: string}}
  */
-export function writeRecordSubjects(path, subjects) {
+export function writeRecordSubjects(path, subjects, { repoRoot = '' } = {}) {
   if (!subjects?.length) return { ok: false, why: 'no joinable content file merged' };
   if (!existsSync(path)) return { ok: false, why: `no record at ${path}` };
   const text = readFileSync(path, 'utf8');
   const m = /^(﻿?---[ \t]*\r?\n)([\s\S]*?)(\r?\n---[ \t]*(?:\r?\n|$))/.exec(text);
   if (!m) return { ok: false, why: 'the record has no YAML front-matter block to add a key to' };
 
+  let reviewed = null;
+  let hashWhy = '';
+  if (!repoRoot) {
+    hashWhy = 'no merged tree was given to hash the reviewed surfaces against';
+  } else {
+    const map = {};
+    const unreadable = [];
+    for (const s of subjects) {
+      const h = reviewedHashOfFile(join(repoRoot, s));
+      if (h) map[s] = h;
+      else unreadable.push(s);
+    }
+    if (unreadable.length) hashWhy = `could not read ${unreadable.join(', ')} on the merged tree`;
+    else reviewed = map;
+  }
+
   const eol = /\r\n/.test(m[1]) ? '\r\n' : '\n';
-  // Drop a previous `subject:` key and any list items indented under it, so
-  // re-running on the same record replaces rather than duplicates.
+  // Drop a previous `subject:`/`reviewed:` key and everything indented under
+  // it, so re-running on the same record replaces rather than duplicates. The
+  // indent test is what makes it work for both shapes: `subject:`'s children
+  // are `  - "path"` list items, `reviewed:`'s are `  "path": "<hash>"` pairs.
   const kept = [];
   let dropping = false;
   for (const raw of m[2].split(/\r?\n/)) {
-    if (/^subject\s*:/.test(raw)) {
+    if (/^(?:subject|reviewed)\s*:/.test(raw)) {
       dropping = true;
       continue;
     }
-    if (dropping && /^\s*-\s+/.test(raw)) continue;
+    if (dropping && /^\s+\S/.test(raw)) continue;
     if (dropping && raw.trim() === '') continue;
     dropping = false;
     kept.push(raw);
   }
   while (kept.length && kept[kept.length - 1].trim() === '') kept.pop();
 
-  const block =
+  const blocks = [
     subjects.length === 1
       ? `subject: ${JSON.stringify(subjects[0])}`
-      : ['subject:', ...subjects.map((s) => `  - ${JSON.stringify(s)}`)].join(eol);
-  const front = [...kept, block].join(eol);
+      : ['subject:', ...subjects.map((s) => `  - ${JSON.stringify(s)}`)].join(eol),
+  ];
+  if (reviewed) {
+    blocks.push(
+      ['reviewed:', ...subjects.map((s) => `  ${JSON.stringify(s)}: ${JSON.stringify(reviewed[s])}`)].join(eol),
+    );
+  }
+  const front = [...kept, ...blocks].join(eol);
   writeFileSync(path, `${m[1]}${front}${m[3]}${text.slice(m[0].length)}`, 'utf8');
-  return { ok: true, subjects };
+  return { ok: true, subjects, reviewed, hashWhy };
 }
 
 /** Used by the seed-review flow and by tests to write a record by hand. */

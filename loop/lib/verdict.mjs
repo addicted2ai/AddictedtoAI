@@ -73,6 +73,11 @@ export function parseVerdict(text) {
     reasons,
     wouldCite: String(wouldCite ?? '').trim(),
     notes: body.trim(),
+    // The record's front matter as parsed, so a caller that needs a key this
+    // parser does not interpret — `subject:`, `reviewed:`, `job:`, `date:` —
+    // reads it from the one parse rather than opening the file again. A second
+    // `matter()` call on the same bytes is a second parser by another name.
+    data,
     raw: text,
   };
 }

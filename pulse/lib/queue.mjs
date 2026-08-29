@@ -45,6 +45,12 @@ export const RANKS = {
   // is what keeps it from becoming the unrepairable top-of-queue item that
   // halted the loop on addictedtoai-5hn.
   'reference-drift': 72,
+  // Two sources that disagree about the same published quantity. Ranked above
+  // every timer in this table and below every confirmed breakage, because that
+  // is what it is: not "this value may have gone stale" but "two records of
+  // this value are measured to differ, today". It sits under `tutorial-demoted`
+  // and `reference-drift`, which are things already visibly wrong on a page.
+  corroboration: 68,
   'listing-verification-due': 60,
   'tutorial-demoted': 70,
   'tutorial-stale': 55,
@@ -79,8 +85,29 @@ function item(type, reason, subject, detail, target) {
  * Recompute the queue. Pure with respect to the queue file: it reads current
  * state only, never a previous queue.
  */
-export function computeQueue(root, { freshness, changesFile, wants = readWants(root) }) {
+export function computeQueue(root, { freshness, changesFile, wants = readWants(root), corroborations = [] }) {
   const items = [];
+
+  // A declared pair whose two sides disagree (specs/pulse, addictedtoai-473).
+  // The item proposes a `verify` job and carries everything that job needs to
+  // begin: the entry, both fields, both resolved values, and both sources — the
+  // feed's registry id for one side and the cited `source_url` for the other.
+  // It names no winner. Which source is right is judgment, and judgment is the
+  // job, not this line.
+  for (const c of corroborations) {
+    const side = (s) => `${s.field} = ${JSON.stringify(String(s.value))} (${s.kind}: ${s.source ?? 'unrecorded'})`;
+    items.push(
+      item(
+        'verify',
+        'corroboration',
+        `${c.entry_id ?? c.path}#${c.a.field}`,
+        `declared corroboration disagrees: ${side(c.a)} against ${side(c.b)}. ` +
+          'Both are transcribed faithfully; establish which source is right for this entry and ' +
+          'repair the claim that rests on it. Do not edit a feed-bound fact to match a citation.',
+        c.path,
+      ),
+    );
+  }
 
   for (const s of freshness.sources ?? []) {
     if (s.refusing) {

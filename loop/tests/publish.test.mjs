@@ -8,18 +8,54 @@
  * direct check, rather than a fixture that would have passed even if the two
  * had never been wired together.
  *
- * `publish` is false throughout this change, so exercising the real step here
- * cannot push anything: the flag is the shared step's to read, and it prints
- * one skip line and returns.
+ * `publish` was false throughout the build phase, so exercising the real step
+ * here could not push anything: the flag is the shared step's to read, and it
+ * printed one skip line and returned.
+ *
+ * ## That assumption expired on 2026-08-29
+ *
+ * The maintainer set `publish: true` in `data/config.json` when the site went
+ * live. The second test below calls the real shared step with the **real**
+ * repository root, and the shared step reads the flag itself — deliberately, so
+ * that there is only ever one reading of it (`loop/lib/publish.mjs` does not
+ * forward `cfg` to it). With the flag true, that call takes the true path:
+ * `git push origin main` against the live remote, a ten-minute poll, and a
+ * `HOLD.md` written into this repository. It did exactly that on 2026-08-29,
+ * observed in a `npm test` run.
+ *
+ * Nothing was published — no commit was created, because the step stages only
+ * `data content public` and the working tree matched HEAD there, so the push
+ * was a no-op — but `npm test` is not allowed to be a command that can push at
+ * all. The repository's hard rule is that nothing reaches the remote until the
+ * maintainer lifts it personally.
+ *
+ * So that test is **guarded, not deleted**: it runs when the flag is false, and
+ * refuses to run the real path when it is true, naming why. Restoring the
+ * coverage under `publish: true` needs a decision this file cannot make on its
+ * own — the shared step owns the flag by design, and the honest options
+ * (forward an override, or point the handoff at a throwaway root that has no
+ * shared step to find) each trade away part of what the test is for. Filed as
+ * `addictedtoai-64y`.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { DEFAULT_REPO_ROOT, makeContext } from '../lib/paths.mjs';
 import { findSharedStep, publishStep, FALLBACK_SKIP_LINE } from '../lib/publish.mjs';
 import { makeRepo } from './helpers.mjs';
+
+/** Is the real repository armed to publish? Read at run time, never cached. */
+function realRepoPublishes() {
+  try {
+    return JSON.parse(readFileSync(join(DEFAULT_REPO_ROOT, 'data', 'config.json'), 'utf8')).publish === true;
+  } catch {
+    // No readable config is not a licence to push.
+    return true;
+  }
+}
 
 test('the loop finds the Pulse\'s shared publish step where it actually lives', () => {
   const found = findSharedStep(DEFAULT_REPO_ROOT);
@@ -28,7 +64,15 @@ test('the loop finds the Pulse\'s shared publish step where it actually lives', 
   assert.match(found.replace(/\\/g, '/'), /pulse\/(lib\/)?publish\.mjs$/);
 });
 
-test('the loop hands off to the real shared step, which prints its own skip line', async () => {
+test('the loop hands off to the real shared step, which prints its own skip line', async (t) => {
+  if (realRepoPublishes()) {
+    t.skip(
+      'data/config.json has publish: true, so calling the real shared step against the real ' +
+        'repository root would run `git push origin main` against the live remote and write ' +
+        'HOLD.md. Observed on 2026-08-29. See this file’s header and addictedtoai-64y.',
+    );
+    return;
+  }
   const lines = [];
   const ctx = makeContext({ log: (s) => lines.push(s) });
   const res = await publishStep(ctx, {});

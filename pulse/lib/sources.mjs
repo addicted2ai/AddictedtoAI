@@ -148,8 +148,33 @@ export async function fetchSource(source) {
     }
     return { outcome: 'ok', status: res.status, body, final_url: res.url };
   } catch (err) {
-    return { outcome: 'error', status: null, error: `${err.name}: ${err.message}` };
+    return { outcome: 'error', status: null, error: describeFetchError(err) };
   }
+}
+
+/**
+ * Name the errno behind a failed fetch.
+ *
+ * `fetch` collapses every connection-level failure into the identical
+ * `TypeError: fetch failed`, and puts the only distinguishing detail on
+ * `err.cause`. Discarding it made a source that is genuinely down
+ * indistinguishable from a machine that has run out of ephemeral ports, and
+ * `npm test` is a merge gate: whoever reads a failing gate sees this string
+ * and nothing else.
+ *
+ * Measured 2026-08-29 (addictedtoai-ar0): with ~7,000 loopback ports held in
+ * TIME_WAIT, 688 of 3,000 fetches to a freshly bound 127.0.0.1 server failed,
+ * every one of them `connect EADDRINUSE` — the client could not obtain a
+ * local port. The engine's behaviour is unchanged and nothing is retried;
+ * only the recorded sentence gets longer, and only when there is a cause to
+ * name.
+ */
+export function describeFetchError(err) {
+  const base = `${err.name}: ${err.message}`;
+  const cause = err?.cause;
+  if (!cause) return base;
+  const detail = cause.code ?? cause.message ?? null;
+  return detail ? `${base} (${detail})` : base;
 }
 
 /**

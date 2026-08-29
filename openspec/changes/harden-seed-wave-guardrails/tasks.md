@@ -27,7 +27,7 @@ implements one.
 
 ## 1. Bind a review record to the bytes it reviewed (specs/review, `addictedtoai-zlq`)
 
-- [ ] 1.1 Add the reviewed-surface hash to `lib/`: a `reviewedSurface(doc)` that
+- [x] 1.1 Add the reviewed-surface hash to `lib/`: a `reviewedSurface(doc)` that
       returns the canonical bytes a hash is taken over — the front matter with
       every key in a new exported `MECHANICAL_FRONT_MATTER_KEYS` removed,
       serialised deterministically with sorted keys, then the body verbatim —
@@ -38,7 +38,7 @@ implements one.
       differing only in `timeline` hash equal, (b) documents differing in the
       body, in a `facts[].value`, or in a `source_url` hash differently, and (c)
       reordering front-matter keys does not change the hash.
-- [ ] 1.2 In `loop/lib/review.mjs`, extend the merge-time write so the same
+- [x] 1.2 In `loop/lib/review.mjs`, extend the merge-time write so the same
       measurement that produces `subject:` also produces `reviewed:` — a mapping
       from each joinable content path to that file's `reviewedHash` read from the
       merged tree. One call, one measurement, two keys. The serialisation of
@@ -50,14 +50,14 @@ implements one.
       `reviewed:` with one hash per subject; plus a golden-record assertion that
       `subjectsOf()` returns exactly what it returned before this change for a
       one-path record, a many-path record and a hand-written `subject:` record.
-- [ ] 1.3 In `mergeGate()`, refuse a record whose set of `reviewed:` paths
+- [x] 1.3 In `mergeGate()`, refuse a record whose set of `reviewed:` paths
       differs from the set of joinable paths written to `subject:`, in the same
       place and with the same shape of message as the empty/duplicate
       `would-cite` refusal, naming both sets. Implements **C4, C5**.
       Verify: `loop/tests/review.test.mjs` — a record with an extra
       `reviewed:` path, one with a missing path, and one whose paths match; the
       first two are refused with both sets named, the third merges.
-- [ ] 1.4 In `lib/reviews.mjs`, give `resolveReviews()`/`reviewJoin()` a
+- [x] 1.4 In `lib/reviews.mjs`, give `resolveReviews()`/`reviewJoin()` a
       per-piece `state` of `recorded` | `mismatched` | `unbound` | `missing`,
       computed from whether a record joins, whether it carries a hash for that
       path, and whether that hash equals the piece's current `reviewedHash`.
@@ -66,7 +66,7 @@ implements one.
       four states in one run and asserts the exact classification of each piece,
       including that a record carrying a hash for a *different* path than the
       piece is `unbound` for that piece and not `mismatched`.
-- [ ] 1.5 In `scripts/verify-launch.mjs`, split the review check's output into
+- [x] 1.5 In `scripts/verify-launch.mjs`, split the review check's output into
       the four states, fail on any `mismatched` piece naming the piece, the
       record and that the reviewed surface changed after the verdict, and count
       and print `unbound` without failing on it. Extract the report into a pure
@@ -78,19 +78,19 @@ implements one.
       mismatched piece and not the unbound one, and that the unbound count is
       printed; then `node scripts/verify-launch.mjs` on this repository prints
       the four counts.
-- [ ] 1.6 Extend the prebuild's review summary line in `lib/build-content.mjs`
+- [x] 1.6 Extend the prebuild's review summary line in `lib/build-content.mjs`
       to print all four counts every build, so the number to watch — unbound,
       which can only fall — is on the screen. Implements **C8** (the prebuild
       half).
       Verify: `npm run build` prints a line carrying all four counts; a fixture
       build with a deliberately edited approved piece shows `mismatched 1`.
-- [ ] 1.7 Leave `entryReviewGate()` reading the verdict alone, and pin that with
+- [x] 1.7 Leave `entryReviewGate()` reading the verdict alone, and pin that with
       a test rather than a comment: a mismatched piece keeps exactly the
       indexability its verdict alone would give it. Implements **C13**.
       Verify: `lib/reviews.test.mjs` — an approved entry whose body is edited
       after approval still returns true from `hasApprovedReview`, and the
       rendered page's robots meta is byte-identical to the unedited case.
-- [ ] 1.8 In `lib/reviews.mjs`, order multiple records naming one piece by a
+- [x] 1.8 In `lib/reviews.mjs`, order multiple records naming one piece by a
       value read from the record — its own `date`, else its `job` id, whose
       `j-<yyyymmdd>-<seq>` form sorts chronologically as a string — bind the most
       recent, exclude the superseded ones from both the orphan list and the
@@ -106,7 +106,7 @@ implements one.
 
 ## 2. Make the volatile-literal check non-vacuous (specs/wiki, `addictedtoai-48r`)
 
-- [ ] 2.1 In `lib/schema.mjs`, declare the classification: exported
+- [x] 2.1 In `lib/schema.mjs`, declare the classification: exported
       `PROSE_FIELDS` and `NON_PROSE_FIELDS` giving, per content type, the field
       paths of every string-valued field (the table in `design.md` D5 is the
       proposed split), plus an `assertFieldsClassified()` that walks each schema's
@@ -116,7 +116,7 @@ implements one.
       Verify: `lib/schema.test.mjs` — the assertion passes on today's six
       schemas; a fixture schema with an added unclassified string field makes it
       throw naming that field; a field listed in both lists also throws.
-- [ ] 2.2 In `lib/currency.mjs`, add `findFrontMatterLiterals(data, paths)`
+- [x] 2.2 In `lib/currency.mjs`, add `findFrontMatterLiterals(data, paths)`
       applying the existing `RULES` to the declared author-prose fields, with the
       exemption that a hit is dropped when the object directly containing the
       field has a sibling key whose value matches `ISO_DATE_RE`. Wire it into
@@ -129,7 +129,7 @@ implements one.
       carries its required `date`, produces no warning; (c) a blog
       `corrections[].text` with a price and a sibling `date` produces none;
       (d) the build still exits 0 with a hit present, because this warns.
-- [ ] 2.3 Add the coverage counts to the content build step's summary: per
+- [x] 2.3 Add the coverage counts to the content build step's summary: per
       content type, how many documents had at least one author-prose field
       scanned and how many had none. Implements **C24**.
       Verify: `npm run build` prints one line per content type carrying both
@@ -137,9 +137,41 @@ implements one.
       is known by construction (a fixture with two scannable and three
       fully-exempt documents reports 2 and 3).
 
+**Measured 2026-08-29, after sections 1 and 2 landed** — measurements, not
+expectations, each taken by running the named command on this tree:
+
+- **Review binding**, `node scripts/verify-launch.mjs --no-build` and the
+  prebuild's own line, over all **119** reviewable pieces: `recorded 0,
+  mismatched 0, unbound 119, missing 0`. Every one of the 129 records predates
+  the `reviewed:` key, so every piece is **unbound**, and the launch check
+  passes — *"14 check(s) passed … The launch minimums are met."* `unbound` is
+  the number to watch; it can only fall.
+- **A mismatch really fails**, measured rather than reasoned: `verify-launch`
+  run against `lib/fixtures/review-states/` with a throwaway data dir reports
+  `recorded 1, mismatched 1, unbound 5, missing 0`, names the piece and its
+  record under `REVIEWED THEN CHANGED`, and **exits 1**. The five unbound
+  pieces contribute nothing to the failure.
+- **Multi-record binding** is a no-op on today's corpus: measured before the
+  change, **0** of 119 pieces had more than one candidate record, and 129/129
+  records carry `job:` with 128/129 also carrying `date:` — so the supersede
+  rule has recency to read from wherever it is ever needed.
+- **Volatile-literal coverage**, per type, from the prebuild's own line:
+  `delta 27 scanned / 0 none`, `learn 10 / 0`, `entry 0 / 495`, `post 0 / 5`,
+  `tool 0 / 35`, `tutorial 0 / 4`. The check was **vacuous on 23 of 29 deltas**;
+  every delta's `capability` is now scanned. The zeros are the date-anchor
+  exemption working exactly as design D5 predicted — after it, the fields
+  actually scanned are `delta.capability` and `learn.outcome`, and no other.
+- **Nothing correct was newly warned about**: front-matter currency warnings on
+  the live corpus = **0**, body warnings unchanged at 5. The four files the
+  originating reviewer report flagged stay clean, which is the correction
+  `addictedtoai-48r` records against its own premise.
+- **The classification is exhaustive today**: `classificationProblems()` returns
+  `[]` over all six schemas. It caught `facts[].corroborates` as unclassified
+  the moment section 3 added it — the mechanism firing on its first real case.
+
 ## 3. Compare a feed-bound fact against a cited one (specs/wiki + specs/pulse, `addictedtoai-473`)
 
-- [ ] 3.1 In `lib/schema.mjs`, add an optional `corroborates` field to both fact
+- [x] 3.1 In `lib/schema.mjs`, add an optional `corroborates` field to both fact
       variants, and a build failure — naming the entry and the field — when its
       value names no fact on that entry or names the declaring fact itself.
       Change no rendering path. Implements **C25, C26**.
@@ -148,7 +180,7 @@ implements one.
       byte-identical to the same entry with the key removed; a fixture naming a
       field the entry does not declare fails the build naming entry and field; a
       self-referencing declaration fails.
-- [ ] 3.2 Add `pulse/lib/corroboration.mjs`: resolve the feed side from the
+- [x] 3.2 Add `pulse/lib/corroboration.mjs`: resolve the feed side from the
       latest snapshot through the entry's declared row id and the fact's field
       path, resolve the cited side from its written value, and compare — trim,
       collapse whitespace, case-fold, then extract each side's first numeric
@@ -163,7 +195,7 @@ implements one.
       agree; `284B total` vs `284B params` agree; `active` vs `deprecated`
       disagree by the string path; a field path absent from the row produces no
       comparison.
-- [ ] 3.3 Emit the finding into the derived queue as a `corroboration` item
+- [x] 3.3 Emit the finding into the derived queue as a `corroboration` item
       proposing a `verify` job, naming the entry, both fields, both resolved
       values, the feed's registry id and the cited `source_url`. Recompute it
       from state every run like every other queue item, edit no fact, mark no
@@ -175,6 +207,35 @@ implements one.
       item with no close action; and a byte comparison of the fixture's content
       files plus a `npm run build` exit 0 confirm the run changed no fact and
       failed no build.
+
+      **Measured 2026-08-29** (section 3 implemented; sections 1, 2, 4 were not
+      touched by this pass):
+      - `node --test pulse/tests/corroboration.test.mjs` — 17 pass, 0 fail.
+      - `node --test pulse/tests/queue.test.mjs` — 12 pass, 0 fail, including
+        the four new cases: one item carrying entry, both fields, both values,
+        the feed's registry id and the cited `source_url`; the entry file and
+        the snapshot file byte-identical across a run; two consecutive runs
+        byte-identical; agreement emptying the item; and a vanished row
+        producing no corroboration item.
+      - `node --test lib/schema.test.mjs` — 17 pass, 0 fail;
+        `node --test lib/facts.test.mjs` — 17 pass, 0 fail (the byte-identical
+        render assertion for C26).
+      - `npm run build` was NOT run: other agents share one build lock and
+        `addictedtoai-6s7` makes concurrent builds fail confusingly. Substituted
+        the same `lib/` validation over the real corpus — 495 entries, 27
+        deltas, 10 learn, 4 tutorials, 5 posts, 643 aliases, **0 errors, 0
+        warnings** — which measures "the schema change fails no build" but does
+        not measure the export. The build gate still needs running once for 3.3.
+
+      **One choice the spec left open, made here and recorded:** the queue rank
+      for a `corroboration` item. Every queue item needs one (`item()` defaults
+      an unknown reason to rank 0, which would bury it below everything and
+      effectively never be selected). Set to **68** in `pulse/lib/queue.mjs`:
+      above every timer in the table (`overdue-fact-fast` 65,
+      `listing-verification-due` 60) because a measured contradiction between
+      two sources is stronger evidence than an elapsed interval, and below every
+      confirmed breakage (`tutorial-demoted` 70, `reference-drift` 72) because
+      nothing on the page is yet wrong to a reader.
 
 ## 4. The undisputed floor of the three open loop gaps (specs/loop)
 

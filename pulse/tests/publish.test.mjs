@@ -5,6 +5,14 @@
  * through `--dry-run`, and the one structural guarantee tested here is that
  * `--assume-publish` cannot be combined with a real run: `data/config.json`
  * is the only thing that can arm a push, and it is a reserved path.
+ *
+ * That contract stands, and it is also why this file could not have caught
+ * `addictedtoai-1ml`: the deploy *verification* only runs on the true path, so
+ * nothing here ever executed it, and the suite stayed green for the whole life
+ * of a mechanism that could not confirm a single one of its own deploys. That
+ * path is covered in `publish-verify.test.mjs`, which pushes to a bare
+ * repository under the OS temp directory and polls a loopback server — no
+ * network, no remote, no live site.
  */
 
 import test from 'node:test';

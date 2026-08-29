@@ -66,7 +66,14 @@ import { ROOT, CONTENT_DIR, DATA_DIR, CONTENT_TYPES } from '../lib/paths.mjs';
 import { Diagnostics } from '../lib/errors.mjs';
 import { loadCorpus } from '../lib/corpus.mjs';
 import { normalizeWouldCite, VERDICTS } from '../loop/lib/verdict.mjs';
-import { SUBJECT_KEYS, reviewCandidates, reviewJoin } from '../lib/reviews.mjs';
+import {
+  SUBJECT_KEYS,
+  mismatchProblems,
+  reviewCandidates,
+  reviewJoin,
+  reviewStateLine,
+  reviewStateReport,
+} from '../lib/reviews.mjs';
 
 // ---------------------------------------------------------------------------
 // The floors. One place, so the printed output and the exit code cannot drift.
@@ -457,6 +464,16 @@ function checkReviews(corpus, dataDir) {
     problems.push(`data/reviews/${c} — one record cannot be the review of two pieces.`);
   }
 
+  // The four states, from the one join (specs/review, beads addictedtoai-zlq).
+  // MISMATCHED fails: a record exists, it carries a hash for this piece, and
+  // the piece's reviewed surface has moved since — the approval describes text
+  // that no longer exists. UNBOUND fails NOTHING: every record from the seed
+  // wave carries no hash, and a mechanism that failed on every pre-existing
+  // record could not land. The two are never collapsed into `missing`, which
+  // means unreviewed and is the opposite finding.
+  const states = reviewStateReport(resolved);
+  problems.push(...mismatchProblems(states));
+
   for (const doc of pieces) {
     const candidates = reviewCandidates(doc);
     const hit = resolved.byFile.get(doc.file);
@@ -528,6 +545,12 @@ function checkReviews(corpus, dataDir) {
           ? ` ${orphans.length} claimed by no piece: ${orphans.join(', ')} — an orphan beside a ` +
             'missing piece means the naming does not match, not that a review is absent.'
           : ''),
+      `Binding, over all ${states.total} reviewable piece(s): ${reviewStateLine(states)}. ` +
+        'A record names the bytes it judged (`reviewed:`), so `mismatched` — reviewed and then ' +
+        'changed — is a different finding from `missing`, which is unreviewed. `mismatched` ' +
+        'fails this check and never changes a page\'s indexability. `unbound` is a record ' +
+        'written before that key existed: it is counted, it fails nothing, and the only thing ' +
+        'to watch is that the number falls.',
       'Verdict parsing and the duplicate rule come from loop/lib/verdict.mjs, so this check and ' +
         "the loop's merge gate agree on what a valid record is. The piece -> record lookup comes " +
         'from lib/reviews.mjs, so this check and the build\'s indexability rule agree on which ' +

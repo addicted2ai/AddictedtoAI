@@ -34,6 +34,7 @@ import {
 // what the build reads, and asserting that here is the only place the two ends
 // meet (beads addictedtoai-sge).
 import { subjectsOf } from '../../lib/reviews.mjs';
+import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml, git, daysAgo } from './helpers.mjs';
 
 const NOW = new Date('2026-09-10T12:00:00.000Z');
@@ -367,8 +368,20 @@ test('sge a merged job writes into its verdict record which files it reviewed', 
     'content/wiki/model/fixture-model.md',
   ]);
 
+  // zlq — and WHAT it reviewed, from the same measurement: one reviewed-surface
+  // hash per subject, each equal to the file as it landed on the merged tree.
+  assert.deepEqual(
+    Object.keys(rec.data.reviewed ?? {}).sort(),
+    ['content/blog/fixture-post.md', 'content/wiki/model/fixture-model.md'],
+    'the reviewed: key set equals the subject: key set',
+  );
+  for (const [p, h] of Object.entries(rec.data.reviewed)) {
+    assert.equal(h, reviewedHashOfFile(join(ctx.repoRoot, p)), `${p} hashes what merged`);
+  }
+
   // It is committed with the rest of the job's records, not left loose.
   assert.match(ctx.output(), /recorded subject: content\/blog\/fixture-post\.md/);
+  assert.match(ctx.output(), /recorded reviewed: 2 reviewed-surface hash\(es\)/);
   assert.ok(!/data\/reviews/.test(git(ctx.repoRoot, ['status', '--porcelain'])), 'nothing left uncommitted');
   ctx.cleanup();
 });
@@ -428,5 +441,114 @@ test('a non-prose job type does not require would-cite', () => {
   writeVerdictRecord(ctx, 'j-2', { verdict: 'approve', wouldCite: '' });
   assert.equal(mergeGate(ctx, { jobId: 'j-2', type: 'machinery' }).ok, true);
   assert.equal(mergeGate(ctx, { jobId: 'j-2', type: 'post' }).ok, false);
+  ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// beads addictedtoai-zlq — the record names the BYTES it reviewed, not only the
+// files. Everything below attempts what the mechanism forbids and measures the
+// result, which is the standard specs/review holds a machinery reviewer to.
+// ---------------------------------------------------------------------------
+
+const PIECE = (n) => `---\ntitle: "Piece ${n}"\ndate: "2026-09-01"\nmentions: []\n---\n\nBody ${n}.\n`;
+
+test('zlq the merge writes `reviewed:` from the same measurement as `subject:`', () => {
+  const ctx = makeRepo({
+    now: () => NOW,
+    files: {
+      'content/blog/one.md': PIECE(1),
+      'content/blog/two.md': PIECE(2),
+      'content/blog/three.md': PIECE(3),
+    },
+  });
+  const hash = (p) => reviewedHashOfFile(join(ctx.repoRoot, p));
+
+  // One path: `subject:` stays a bare string, and one hash rides beside it.
+  const p1 = writeVerdictRecord(ctx, 'j-one', { verdict: 'approve', wouldCite: 'one', notes: 'n' });
+  const w1 = writeRecordSubjects(p1, ['content/blog/one.md'], { repoRoot: ctx.repoRoot });
+  assert.equal(w1.ok, true);
+  const d1 = matter(readFileSync(p1, 'utf8')).data;
+  assert.equal(d1.subject, 'content/blog/one.md', 'subject: keeps its one-path shape');
+  assert.deepEqual(d1.reviewed, { 'content/blog/one.md': hash('content/blog/one.md') });
+
+  // Three paths: a hash per subject, and the two key sets are equal.
+  const three = ['content/blog/one.md', 'content/blog/three.md', 'content/blog/two.md'];
+  const p3 = writeVerdictRecord(ctx, 'j-three', { verdict: 'approve', wouldCite: 'three', notes: 'n' });
+  assert.equal(writeRecordSubjects(p3, three, { repoRoot: ctx.repoRoot }).ok, true);
+  const d3 = matter(readFileSync(p3, 'utf8')).data;
+  assert.deepEqual(d3.subject, three, 'subject: keeps its many-path list shape');
+  assert.deepEqual(Object.keys(d3.reviewed).sort(), [...three].sort());
+  for (const p of three) assert.equal(d3.reviewed[p], hash(p), `${p} hashes its reviewed surface`);
+
+  // A hash that is not the file's is not written by accident: edit the file and
+  // the recorded hash stops matching, which is the entire mechanism.
+  writeFileSync(join(ctx.repoRoot, 'content/blog/one.md'), PIECE('1 edited'), 'utf8');
+  assert.notEqual(d3.reviewed['content/blog/one.md'], hash('content/blog/one.md'));
+
+  // Golden: `subjectsOf()` returns exactly what it returned before this change,
+  // for a one-path record, a many-path record, and a hand-written subject.
+  assert.deepEqual(subjectsOf({ data: d1 }), ['content/blog/one.md', 'j-one']);
+  assert.deepEqual(subjectsOf({ data: d3 }), [...three, 'j-three']);
+  assert.deepEqual(subjectsOf({ data: { subject: 'content/blog/x.md' } }), ['content/blog/x.md']);
+  ctx.cleanup();
+});
+
+test('zlq with no merged tree to hash against, `reviewed:` is omitted, never guessed', () => {
+  const ctx = makeRepo({ now: () => NOW });
+  const p = writeVerdictRecord(ctx, 'j-nohash', { verdict: 'approve', wouldCite: 'x', notes: 'n' });
+
+  // No repoRoot at all.
+  const bare = writeRecordSubjects(p, ['content/blog/one.md']);
+  assert.equal(bare.ok, true);
+  assert.equal(bare.reviewed, null);
+  assert.match(bare.hashWhy, /no merged tree/);
+  assert.equal(matter(readFileSync(p, 'utf8')).data.reviewed, undefined);
+
+  // A repoRoot where one of the subjects does not exist: NO partial map, because
+  // the merge gate's invariant is that the two key sets are equal.
+  const partial = writeRecordSubjects(p, ['content/blog/one.md', 'content/blog/gone.md'], {
+    repoRoot: ctx.repoRoot,
+  });
+  assert.equal(partial.reviewed, null);
+  assert.match(partial.hashWhy, /content\/blog\/gone\.md/);
+  assert.equal(matter(readFileSync(p, 'utf8')).data.reviewed, undefined);
+  ctx.cleanup();
+});
+
+test('zlq the merge refuses a record whose `reviewed:` names a different set than it measured', () => {
+  const ctx = makeRepo({
+    now: () => NOW,
+    files: { 'content/blog/one.md': PIECE(1), 'content/blog/two.md': PIECE(2) },
+  });
+  const p = writeVerdictRecord(ctx, 'j-gate', { verdict: 'approve', wouldCite: 'gate', notes: 'n' });
+  const measured = ['content/blog/one.md'];
+
+  // Matching sets merge.
+  writeRecordSubjects(p, measured, { repoRoot: ctx.repoRoot });
+  assert.equal(mergeGate(ctx, { jobId: 'j-gate', type: 'post', subjects: measured }).ok, true);
+
+  // An EXTRA path in `reviewed:` is refused, with both sets named.
+  writeRecordSubjects(p, ['content/blog/one.md', 'content/blog/two.md'], { repoRoot: ctx.repoRoot });
+  const extra = mergeGate(ctx, { jobId: 'j-gate', type: 'post', subjects: measured });
+  assert.equal(extra.ok, false);
+  assert.equal(extra.code, 'reviewed-subject-mismatch');
+  assert.match(extra.reason, /content\/blog\/two\.md/);
+  assert.match(extra.reason, /measured for subject: content\/blog\/one\.md/);
+
+  // A MISSING path is refused too.
+  const missing = mergeGate(ctx, {
+    jobId: 'j-gate',
+    type: 'post',
+    subjects: ['content/blog/one.md', 'content/blog/two.md', 'content/blog/three.md'],
+  });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.code, 'reviewed-subject-mismatch');
+  assert.match(missing.reason, /content\/blog\/three\.md/);
+
+  // A record with NO `reviewed:` is not refused — every record written before
+  // this mechanism existed is one, and the normal path writes it AFTER the merge.
+  const p2 = writeVerdictRecord(ctx, 'j-unbound', { verdict: 'approve', wouldCite: 'unbound', notes: 'n' });
+  assert.ok(p2);
+  assert.equal(mergeGate(ctx, { jobId: 'j-unbound', type: 'post', subjects: measured }).ok, true);
   ctx.cleanup();
 });
