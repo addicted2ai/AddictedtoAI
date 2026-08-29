@@ -36,5 +36,42 @@ facts:
     path: $status
     volatility: fast
 timeline: []
-mentions: []
+mentions:
+  - org/anthropic
+  - model/anthropic-claude-opus-4-1
+  - model/anthropic-claude-opus-4-5
+  - model/anthropic-claude-opus-4-6
+  - model/anthropic-claude-opus-4-7
+  - model/anthropic-claude-opus-5
 ---
+
+Five Opus releases in a row list at the same input price.
+`anthropic/claude-opus-4.1` billed at
+{{fact:model/anthropic-claude-opus-4-1#price_input}}; the next release cut
+two thirds off that, to
+{{fact:model/anthropic-claude-opus-4-5#price_input}} on
+`anthropic/claude-opus-4.5` —
+and every release since has matched that new number exactly:
+{{fact:model/anthropic-claude-opus-4-6#price_input}} on 4.6,
+{{fact:model/anthropic-claude-opus-4-7#price_input}} on 4.7, this row's own
+{{fact:model/anthropic-claude-opus-4-8#price_input}}, and
+{{fact:model/anthropic-claude-opus-5#price_input}} on Opus 5. Same number,
+five times running.
+
+Nothing about the model stayed flat over that stretch. The Artificial
+Analysis intelligence index reads
+{{fact:model/anthropic-claude-opus-4-7#intelligence_index}} on 4.7,
+{{fact:model/anthropic-claude-opus-4-8#intelligence_index}} on this row,
+and {{fact:model/anthropic-claude-opus-5#intelligence_index}} on Opus 5 two
+releases later — eight points of climb while the row billed the same five
+times running.
+
+The context window moved on a different schedule than the price.
+`anthropic/claude-opus-4.5` still capped at
+{{fact:model/anthropic-claude-opus-4-5#context_window}} tokens, the same
+ceiling the line had shipped with since the first Opus 4. The next
+release, `anthropic/claude-opus-4.6`, raised it to
+{{fact:model/anthropic-claude-opus-4-6#context_window}}, at an
+unchanged price, and it has held there through this row and Opus 5. Price
+and context window are two separate dials in this lineup, and they don't
+turn together.
