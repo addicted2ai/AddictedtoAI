@@ -251,6 +251,12 @@ bd close <id>         # Complete work
 - Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
 - Run `bd prime` for detailed command reference and session close protocol
 - Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
+- **File every deferral as its own issue, before moving on.** Not in a
+  close-reason, not in a commit message, not in a report — its own issue, with
+  its own id. **If a thought exists only inside something that is finished, it
+  is already lost**, and a closed issue, a merged commit and a sent message are
+  all finished. Fix the urgent thing narrowly, file the durable thing
+  separately, and name the issue that carries the rest.
 
 ## Session Completion
 

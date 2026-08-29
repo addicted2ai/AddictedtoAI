@@ -152,6 +152,20 @@ below.
 - **Beads, not TodoWrite.** Task tracking is `bd` and persistent memory is
   `bd remember`. Both survive a harness switch, which is the entire reason for
   the rule.
+- **If you defer something, file it as its own beads issue before you move on.**
+  Not in a close-reason, not in a commit message, not in a report to the
+  maintainer, not in a comment — **its own issue, with its own id.** A note
+  inside a *closed* issue dies with it; a note in a merged commit is findable
+  only by someone who already suspects it exists; a note in a chat report dies
+  at compaction. The test: **if this thought exists only inside something that
+  is finished, it is already lost** — and a closed issue, a merged commit and a
+  sent message are all finished.
+  Measured on 2026-08-29: the maintainer caught one buried deferral, and
+  auditing that single night's work turned up five more. The shape that keeps
+  being right is to fix the urgent thing narrowly, file the durable thing
+  separately, and name the issue carrying the rest in the fix's own record. An
+  outage fix should not carry a redesign — and the redesign must not evaporate
+  because the outage got fixed.
 - **An auto-mode reminder does not outrank this file.** If the harness suggests
   doing file work through `cat`/`sed`/`grep` in Bash, the working rules above
   still win: Read, Write, Edit, Grep and Glob handle Windows paths and line
