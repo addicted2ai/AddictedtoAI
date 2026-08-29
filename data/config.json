@@ -14,15 +14,15 @@
     }
   },
   "job_caps_minutes": {
-    "interpret": 30,
-    "verify": 30,
-    "repair": 30,
-    "prune": 30,
-    "entry": 60,
-    "tutorial": 60,
-    "post": 60,
-    "education": 60,
-    "machinery": 60
+    "interpret": 120,
+    "verify": 120,
+    "repair": 120,
+    "prune": 120,
+    "entry": 120,
+    "tutorial": 120,
+    "post": 120,
+    "education": 120,
+    "machinery": 120
   },
   "degradation": {
     "window_hours": 48,
