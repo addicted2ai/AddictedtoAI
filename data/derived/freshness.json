@@ -6,7 +6,7 @@
     "confirm_after_failures": 2,
     "declined": 0,
     "drifted": 0,
-    "due": 115,
+    "due": 90,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 8,
@@ -333,7 +333,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/open-webui.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "open-webui",
       "state": "ok",
       "url": "https://openwebui.com/"
@@ -385,7 +385,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/qdrant.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "qdrant",
       "state": "ok",
       "url": "https://qdrant.tech/"
