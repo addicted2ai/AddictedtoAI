@@ -38,6 +38,21 @@ Still requiring the maintainer, and still not the agent's to take:
 instruction, after the site went live. The Pulse and the loop may now commit
 and push their own work unattended.
 
+**The orchestrator has STANDING AUTHORITY to turn publishing on and off, at its
+own judgment, without asking** — granted 2026-08-29. The intended use is the
+obvious one: hold publishing down while a larger change is in flight, and turn
+it back on when the tree is coherent again. Turning it *off* needs no
+justification at all; the honest bar for turning it back *on* is the same one
+that governs any push — **the gates pass**.
+
+**This does not weaken the reserved-path rule, and the difference is worth
+keeping straight.** `data/config.json` remains reserved: **no Desk job may edit
+it**, and a job that tries writes `HOLD.md`. That rule exists so a job cannot
+unblock its own publishing mid-run — which is a conflict of interest, not a
+permission question. An orchestrator acting between runs, on the maintainer's
+standing authority, is a different actor in a different position. If you are a
+job, this paragraph is not for you.
+
 That is the larger of the two grants and it deserves its own line: a reviewed
 launch push is one human-checked act, while this arms a scheduled engine to
 push with nobody watching. What still stands between it and the remote is the

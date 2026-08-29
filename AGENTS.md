@@ -181,6 +181,16 @@ so there is exactly one implementation of deploy and exactly one gate on it.
 instruction once the site was live. The Pulse and the loop now commit and push
 their own work, unattended.
 
+**The orchestrator may turn publishing on and off at its own judgment**, by
+standing authority granted 2026-08-29 — typically off while a larger change is
+in flight, back on when the tree is coherent. Off needs no justification; on
+carries the same bar as any push, which is that the gates pass.
+
+**A Desk job may not**, and that is not the same question. `data/config.json`
+is a reserved path: a job editing it writes `HOLD.md`. The rule stops a job
+unblocking its own publishing mid-run — a conflict of interest rather than a
+missing permission.
+
 This was deliberately a separate decision from lifting the no-push rule the day
 before: a reviewed launch push is one human-checked act, while this arms a
 scheduled engine to push with nobody watching. The guard that remains is

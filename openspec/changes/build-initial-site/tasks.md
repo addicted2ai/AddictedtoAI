@@ -497,7 +497,7 @@ minimum). Specs referenced below live in
       fabricated quote) produces the expected FAILs including the
       protocol FAIL; and `loop/run.mjs` refuses to select the FAILed mock
       runner, naming the failed check.
-- [ ] 7.7 Run one real job end-to-end through the Desk (a small `repair`
+- [x] 7.7 Run one real job end-to-end through the Desk (a small `repair`
       or `interpret` job from the derived queue; if the queue happens to
       be empty at this point, plant a seeded-state fixture — e.g. set one
       curated listing's `last_verified` past its interval — so a real
@@ -567,19 +567,19 @@ minimum). Specs referenced below live in
 
 ## 9. Launch checklist — MAINTAINER-GATED (do not perform; blocked until the no-push rule is lifted)
 
-- [ ] 9.1 MAINTAINER: lift the no-push hard rule in `CLAUDE.md` and
+- [x] 9.1 MAINTAINER: lift the no-push hard rule in `CLAUDE.md` and
       `AGENTS.md`, and set `publish: true` in `data/config.json` (this
       arms the Pulse's and the loop's publish step). Verify: the blocks
       are removed or amended by the maintainer's own edit, and
       `data/config.json` reads `publish: true`.
-- [ ] 9.2 MAINTAINER (or agent, once 9.1 is done): `git push`; watch the
+- [x] 9.2 MAINTAINER (or agent, once 9.1 is done): `git push`; watch the
       Vercel deployment; verify `https://www.addictedtoai.net/` serves the
       new site (positive string match on the home page via `curl -sL`,
       and `/status.json` returns the just-pushed commit's build stamp).
-- [ ] 9.3 Run `node scripts/verify-analytics.mjs
+- [x] 9.3 Run `node scripts/verify-analytics.mjs
       https://www.addictedtoai.net` — exit 0 with evidence lines,
       including the click-through assertion.
-- [ ] 9.4 MAINTAINER: GA4 Realtime confirmation per specs/analytics (open
+- [x] 9.4 MAINTAINER: GA4 Realtime confirmation per specs/analytics (open
       property → Reports → Realtime, visit the site and click through to
       a second page, see ≥1 active user and both page_views within 5
       minutes); record the pass date in `data/launch.json` under
