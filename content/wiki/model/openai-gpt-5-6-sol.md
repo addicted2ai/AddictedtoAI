@@ -86,4 +86,37 @@ mentions:
   - org/openai
   - model/openai-gpt-5-6-terra
   - model/openai-gpt-5-6-luna
+  - model/openai-gpt-5-6-sol-pro
+  - model/openai-gpt-5-5
+  - model/openai-gpt-5-5-pro
 ---
+
+Sol did not launch straight to the public. On 26 June 2026, OpenAI put the
+finished model in front of roughly 20 organisations "at the US
+government's request" — thirteen days before anyone else could reach it.
+General availability across ChatGPT, Codex, the API and GitHub Copilot
+followed on {{fact:model/openai-gpt-5-6-sol#release_date}}. The same
+[VentureBeat report](https://venturebeat.com/technology/openai-unveils-gpt-5-6-sol-terra-and-luna-models-but-only-accessible-to-limited-preview-partners-for-now-per-us-gov)
+on the preview carries two scores the GA announcement didn't repeat: this
+row measured {{fact:model/openai-gpt-5-6-sol#terminalbench_score}} and
+{{fact:model/openai-gpt-5-6-sol#capture_the_flag_score}}.
+
+The "Pro" suffix means a markup elsewhere in the GPT-5 line. Two minor
+versions earlier, `openai/gpt-5.5-pro` billed at
+{{fact:model/openai-gpt-5-5-pro#price_input}} input against
+{{fact:model/openai-gpt-5-5#price_input}} for plain GPT-5.5 — six times
+over. On Sol it means nothing at the meter: `openai/gpt-5.6-sol-pro` lists
+at {{fact:model/openai-gpt-5-6-sol-pro#price_input}}, identical to this
+row's own {{fact:model/openai-gpt-5-6-sol#price_input}}. Whatever "Pro"
+buys in this family, on Sol it isn't compute.
+
+This row's own record calls it {{fact:model/openai-gpt-5-6-sol#tier_role}},
+and the scoreboard agrees against its two same-day siblings. The coding
+index reads {{fact:model/openai-gpt-5-6-sol#coding_index}} here, against
+{{fact:model/openai-gpt-5-6-terra#coding_index}} for Terra and
+{{fact:model/openai-gpt-5-6-luna#coding_index}} for Luna; the agentic
+index runs the same order: {{fact:model/openai-gpt-5-6-sol#agentic_index}}
+against {{fact:model/openai-gpt-5-6-terra#agentic_index}} and
+{{fact:model/openai-gpt-5-6-luna#agentic_index}}. Three models, one launch
+day, one government-picked first audience — and Sol is the one OpenAI put
+at the top of it.

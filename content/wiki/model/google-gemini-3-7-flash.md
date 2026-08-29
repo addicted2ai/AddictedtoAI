@@ -77,3 +77,28 @@ mentions:
   - model/google-gemini-3-6-flash
   - model/google-gemini-3-1-pro-preview
 ---
+
+Right now, this row costs exactly what its predecessor does. It lists at
+{{fact:model/google-gemini-3-7-flash#price_input}} input, identical to
+`google/gemini-3.6-flash`'s own
+{{fact:model/google-gemini-3-6-flash#price_input}} — not a coincidence but
+an introductory rate. Google's
+[launch post](https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-3-7-flash/)
+dates the window plainly: {{fact:model/google-gemini-3-7-flash#introductory_pricing_ends}}.
+
+Everything else about the row is already ahead of 3.6 at that matched
+price. The intelligence index moved from
+{{fact:model/google-gemini-3-6-flash#intelligence_index}} to
+{{fact:model/google-gemini-3-7-flash#intelligence_index}}, and on the two
+benchmarks the launch post leans on hardest, the same document reports
+DeepSWE at {{fact:model/google-gemini-3-7-flash#deepswe_score}} and
+FrontierCode at {{fact:model/google-gemini-3-7-flash#frontiercode_score}}
+— both already stated against the 3.6 baseline, not left for a reader to
+compute.
+
+None of that gap costs anything until the calendar turns. On 1 January
+2027 the shared price stops being shared: 3.7 Flash becomes the pricier of
+the two Flash rows, for work that was already scoring higher on 3.7 while
+the invoice read the same. A comparison shopper pricing these two rows
+today by their listed rate alone is pricing a discount that has an expiry
+date, not a permanent position in the lineup.
