@@ -283,3 +283,61 @@ test('a price change never reaches the timeline — only status does', async (t)
   const priceLines = readLines(paths.changes(root)).filter((l) => l.field === 'price_input');
   assert.equal(priceLines.length, 1, 'the price change is in the diff history');
 });
+
+/**
+ * The regression this file did not previously catch (2026-08-29).
+ *
+ * `appendTimelineEvents` wrote `date` as a bare scalar, so YAML emitted
+ * `date: 2026-08-29` — a *timestamp*, which round-trips back as a `Date`. The
+ * entry schema's `isoDate` then rejected it ("expected string, received Date"),
+ * and the Pulse's own site rebuild failed on a file the Pulse had just written.
+ * Because the broken entry no longer loaded, an org page whose `mentions` named
+ * it failed too: one bad scalar, two content errors, in unrelated files.
+ *
+ * Every other test here reads the timeline through `YAML.parse`, which is why
+ * they all passed while the engine could not complete a run — a parsed `Date`
+ * compares equal enough to a date string in a `deepEqual` on other fields.
+ * This test asserts the TYPE after a round trip, which is the thing that broke.
+ */
+test('an appended timeline date survives a round trip as a string, not a Date', async (t) => {
+  let rows = [{ id: 'acme/two', name: 'Acme Two', pricing: { prompt: '0.000001' }, context_length: 100000, expiration_date: null }];
+  const server = await serve(() => ({ status: 200, body: body(rows) }));
+  const root = makeRoot([jsonSource('models', `${server.url}/models`, MINTS)]);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  const file = writeEntry(root, 'content/wiki/model/acme-two.md', {
+    id: 'model/acme-two',
+    kind: 'model',
+    display_name: 'Acme Two',
+    status: 'active',
+    maintenance: 'living',
+    aliases: [{ name: 'Acme Two', class: 'manual' }],
+    feeds: { models: 'acme/two' },
+    facts: [],
+    timeline: [],
+    mentions: [],
+  });
+
+  assert.equal((await runPulse(root, NO_BUILD)).status, 0);
+  // The source now says the row expires soon: derived status active -> deprecated,
+  // which is the only kind of change that reaches the timeline.
+  rows = [{ ...rows[0], expiration_date: '2026-09-30' }];
+  assert.equal((await runPulse(root, [...NO_BUILD, '--force'])).status, 0);
+
+  const text = readFileSync(file, 'utf8');
+  const front = YAML.parse(text.slice(4, text.indexOf('\n---', 3) + 1));
+  assert.ok(front.timeline.length >= 1, 'a status change appends a timeline event');
+
+  for (const entry of front.timeline) {
+    assert.equal(
+      typeof entry.date,
+      'string',
+      `timeline date must round-trip as a string; got ${entry.date instanceof Date ? 'Date' : typeof entry.date}. ` +
+        'A bare YAML scalar that looks like a date is parsed as a timestamp and fails the entry schema.',
+    );
+    assert.match(entry.date, /^\d{4}-\d{2}-\d{2}$/, 'and it must still be an ISO day');
+  }
+});

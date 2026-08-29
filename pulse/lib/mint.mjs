@@ -229,9 +229,27 @@ export function appendTimelineEvents(root, corpus, changes) {
       continue;
     }
 
+    // `date` MUST serialise as a QUOTED string. Written bare, `2026-08-29` is a
+    // YAML timestamp: it round-trips back as a Date, the entry schema's isoDate
+    // rejects it as "expected string, received Date", and the Pulse's own site
+    // rebuild then fails on content the Pulse itself just wrote. Measured
+    // 2026-08-29 — the engine could not complete a run, and because the failing
+    // entry no longer loaded, an org page mentioning it failed too, so one bad
+    // scalar produced two content errors in unrelated files.
     const seq = doc.get('timeline');
     if (seq && typeof seq.add === 'function') seq.add(doc.createNode(event));
     else doc.set('timeline', doc.createNode([...(Array.isArray(existing) ? existing : []), event]));
+
+    // Quote every date in the sequence, not just the one just added: the `else`
+    // branch above rebuilds the whole timeline, and a bare date anywhere in it
+    // breaks the file just as surely as a bare date in the new event.
+    const written = doc.get('timeline');
+    if (written && Array.isArray(written.items)) {
+      for (const item of written.items) {
+        const d = typeof item?.get === 'function' ? item.get('date', true) : null;
+        if (d && typeof d === 'object' && 'value' in d) d.type = 'QUOTE_DOUBLE';
+      }
+    }
 
     writeFileSync(file, composeFile(doc.toString({ lineWidth: 0 }), body), 'utf8');
     result.appended.push({ entry: entry.id, path: entry.path, date: event.date, event: event.event });
