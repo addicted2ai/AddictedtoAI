@@ -117,10 +117,15 @@ below.
   `loop/lib/brief.mjs` does this mechanically for Desk jobs (`GROUND_RULES`);
   anything you spawn by hand is yours to repeat them in.
 - **`conformance: unverified` in `runners.yml` is documentation only.** The
-  selector reads `data/conformance.json`. That file does not exist in this
-  tree, which means no combination has been through
-  `node loop/conformance.mjs` here — and an absent record warns rather than
-  refuses, so a run will still start.
+  selector reads `data/conformance.json`, which now exists and records three
+  runners as of 2026-08-28: `claude-code-sonnet` **pass**, `opencode-deepseek`
+  **pass**, `codex-gpt-luna` **fail** (an expired login, not a portability
+  defect — it needs `codex login`, which is the maintainer's). Four checks each.
+  `claude-code-opus`, the default, has *not* been through
+  `node loop/conformance.mjs`; an absent record warns rather than refuses, so a
+  run still starts. Keep the `runners.yml` field and this file in step with the
+  JSON by re-reading the JSON — it is the authority, and this sentence has
+  already been wrong once.
 - **Beads, not TodoWrite.** Task tracking is `bd` and persistent memory is
   `bd remember`. Both survive a harness switch, which is the entire reason for
   the rule.
