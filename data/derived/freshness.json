@@ -6,10 +6,10 @@
     "confirm_after_failures": 2,
     "declined": 0,
     "drifted": 0,
-    "due": 165,
+    "due": 140,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 5,
+    "redirected": 6,
     "total": 339
   },
   "listings": [
@@ -255,7 +255,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/langfuse.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "langfuse",
       "state": "ok",
       "url": "https://langfuse.com/"
@@ -529,6 +529,18 @@
       "last_checked": "2026-08-29",
       "meta_refresh": null,
       "url": "https://huggingface.co/CohereForAI/c4ai-command-a-03-2025",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": 230985,
+      "cited_by": [
+        "content/wiki/org/tencent.md"
+      ],
+      "final_url": "https://huggingface.co/tencent/Hy-MT2-7B",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-29",
+      "meta_refresh": null,
+      "url": "https://huggingface.co/tencent/hy-mt2-7b",
       "verdict_recorded": true
     }
   ],

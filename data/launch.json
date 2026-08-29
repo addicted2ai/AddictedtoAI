@@ -118,7 +118,13 @@
     "assertions": 20,
     "failures": 0,
     "pass": true,
-    "method": "Playwright/Chromium against the deployed site. Assertions are on captured /g/collect requests and their response status (HTTP 204), never on markup — markup rendering a gtag loader is not evidence that an event was delivered, which is the precise failure mode of the previous site. This also confirms NEXT_PUBLIC_GA_MEASUREMENT_ID is set in the Vercel project: Vercel rebuilds from source on push, so a missing env var would have produced a live build with no analytics while every local check still passed.",
-    "realtime_confirmation": "NOT YET DONE — task 9.4 is the maintainer's: open the GA property, Reports, Realtime, visit the site and click through to a second page, and see at least one active user with both page_views within five minutes. Recorded as absent rather than assumed."
+    "method": "Playwright/Chromium against the deployed site. Assertions are on captured /g/collect requests and their response status (HTTP 204), never on markup — markup rendering a gtag loader is not evidence that an event was delivered, which is the precise failure mode of the previous site. This also confirms NEXT_PUBLIC_GA_MEASUREMENT_ID is set in the Vercel project: Vercel rebuilds from source on push, so a missing env var would have produced a live build with no analytics while every local check still passed."
+  },
+  "analytics_realtime": {
+    "date": "2026-08-29",
+    "pass": true,
+    "observed_by": "maintainer",
+    "method": "GA4 property -> Reports -> Realtime, per specs/analytics: visit the live site and click through to a second page, then see at least one active user and both page_views within five minutes. This is the one check no agent can perform — it requires a signed-in browser on the GA property — so it is recorded as the maintainer's own observation, not as a measurement taken here.",
+    "corroborated_by": "scripts/verify-analytics.mjs against https://www.addictedtoai.net: 20 assertions, 0 failures, asserted on captured /g/collect POSTs returning HTTP 204 rather than on markup. Independent of the Realtime view and agreeing with it."
   }
 }
