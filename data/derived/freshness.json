@@ -6,10 +6,10 @@
     "confirm_after_failures": 2,
     "declined": 0,
     "drifted": 0,
-    "due": 215,
+    "due": 190,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 1,
+    "redirected": 3,
     "total": 339
   },
   "listings": [
@@ -60,7 +60,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/browser-use.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "browser-use",
       "state": "ok",
       "url": "https://browser-use.com/"
@@ -112,7 +112,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/crewai.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "crewai",
       "state": "ok",
       "url": "https://crewai.com/"
@@ -138,7 +138,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/deepgram.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "deepgram",
       "state": "ok",
       "url": "https://deepgram.com/"
@@ -177,7 +177,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/fireworks-ai.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "fireworks-ai",
       "state": "ok",
       "url": "https://fireworks.ai/"
@@ -481,6 +481,30 @@
       "last_checked": "2026-08-29",
       "meta_refresh": null,
       "url": "https://ai.google.dev/gemini-api/docs/models",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": 140588,
+      "cited_by": [
+        "content/wiki/event/alphafold-casp14.md"
+      ],
+      "final_url": "https://deepmind.google/blog/demis-hassabis-john-jumper-awarded-nobel-prize-in-chemistry/",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-29",
+      "meta_refresh": null,
+      "url": "https://deepmind.google/discover/blog/demis-hassabis-john-jumper-awarded-nobel-prize-in-chemistry/",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/wiki/technique/retrieval-augmented-generation.md"
+      ],
+      "final_url": "https://docs.langchain.com/oss/python/deepagents/rag",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-29",
+      "meta_refresh": null,
+      "url": "https://docs.langchain.com/oss/python/langchain/rag",
       "verdict_recorded": true
     }
   ],

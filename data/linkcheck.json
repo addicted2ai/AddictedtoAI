@@ -1185,6 +1185,17 @@
       "ok": true,
       "status": 200
     },
+    "https://blog.dottxt.ai/say-what-you-mean.html": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://blog.dottxt.ai/say-what-you-mean.html",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-3-7-flash/": {
       "consecutive_failures": 0,
       "error": null,
@@ -1217,6 +1228,28 @@
       "ok": true,
       "status": 200
     },
+    "https://browser-use.com/": {
+      "bytes": 115796,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://browser-use.com/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://comfy.org/": {
       "consecutive_failures": 0,
       "error": null,
@@ -1241,6 +1274,28 @@
       "ok": true,
       "status": 200
     },
+    "https://courses.cs.umbc.edu/331/papers/eliza.html": {
+      "bytes": 18578,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://courses.cs.umbc.edu/331/papers/eliza.html",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://crewai.com/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://crewai.com/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://cursor.com/": {
       "consecutive_failures": 0,
       "error": null,
@@ -1254,6 +1309,17 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://deepgram.com/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://deepgram.com/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1281,6 +1347,17 @@
       "ok": true,
       "status": 200
     },
+    "https://deepmind.google/discover/blog/demis-hassabis-john-jumper-awarded-nobel-prize-in-chemistry/": {
+      "bytes": 140588,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://deepmind.google/blog/demis-hassabis-john-jumper-awarded-nobel-prize-in-chemistry/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://deepmind.google/discover/blog/graphcast-ai-model-for-faster-and-more-accurate-global-weather-forecasting/": {
       "consecutive_failures": 0,
       "error": null,
@@ -1302,6 +1379,17 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://deepmind.google/models/model-cards/gemini-3-7-flash/": {
+      "bytes": 157640,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://deepmind.google/models/model-cards/gemini-3-7-flash/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1329,11 +1417,66 @@
       "ok": true,
       "status": 200
     },
+    "https://developers.openai.com/api/docs/changelog": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://developers.openai.com/api/docs/changelog",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://developers.openai.com/api/docs/deprecations": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://developers.openai.com/api/docs/deprecations",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://developers.openai.com/api/docs/guides/prompt-caching": {
       "consecutive_failures": 0,
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://developers.openai.com/api/docs/guides/structured-outputs": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://developers.openai.com/api/docs/guides/structured-outputs",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://developers.openai.com/api/docs/models": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://developers.openai.com/api/docs/models",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://docs.langchain.com/oss/python/langchain/rag": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://docs.langchain.com/oss/python/deepagents/rag",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1361,6 +1504,17 @@
       "ok": true,
       "status": 200
     },
+    "https://en.chessbase.com/post/breakthrough-performance-by-pocket-fritz-4-in-buenos-aires": {
+      "bytes": 102971,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.chessbase.com/post/breakthrough-performance-by-pocket-fritz-4-in-buenos-aires",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://en.wikipedia.org/wiki/Anthropic": {
       "consecutive_failures": 0,
       "error": null,
@@ -1374,6 +1528,17 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Cohere": {
+      "bytes": 55316,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/Cohere",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1393,6 +1558,17 @@
       "ok": true,
       "status": 200
     },
+    "https://en.wikipedia.org/wiki/Mistral_AI": {
+      "bytes": 72476,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/Mistral_AI",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://en.wikipedia.org/wiki/Moonshot_AI": {
       "consecutive_failures": 0,
       "error": null,
@@ -1409,11 +1585,110 @@
       "ok": true,
       "status": 200
     },
+    "https://en.wikipedia.org/wiki/Nvidia": {
+      "bytes": 210509,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/Nvidia",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://en.wikipedia.org/wiki/OpenAI": {
       "consecutive_failures": 0,
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Perplexity_AI": {
+      "bytes": 62867,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/Perplexity_AI",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Qwen": {
+      "bytes": 86101,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/Qwen",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/SpaceXAI": {
+      "bytes": 88248,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/SpaceXAI",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Tencent": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/Tencent",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Thinking_Machines_Lab": {
+      "bytes": 40111,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/Thinking_Machines_Lab",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/Zhipu_AI": {
+      "bytes": 62603,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/Zhipu_AI",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://fireworks.ai/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://fireworks.ai/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://github.blog/changelog/2026-07-09-openais-gpt-5-6-sol-terra-and-luna-are-now-available-in-github-copilot/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://github.blog/changelog/2026-07-09-openais-gpt-5-6-sol-terra-and-luna-are-now-available-in-github-copilot/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     }
