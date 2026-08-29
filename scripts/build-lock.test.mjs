@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, symlinkSync, existsSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { tmpdir } from 'node:os';
+import { tmpdir, hostname } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { acquireBuildLock, buildLockPath, isAlive, readLock, releaseBuildLock, LOCK_FILENAME } from './build-lock.mjs';
@@ -166,5 +166,54 @@ test('an over-age lock is reclaimed even if its pid is alive, so nothing wedges 
   const lock = acquireBuildLock({ dir, waitMs: 0, staleMs: 60 * 60 * 1000 });
   assert.equal(lock.reclaimed, true);
   releaseBuildLock(path);
+  rmSync(root, { recursive: true, force: true });
+});
+
+/**
+ * The regression that broke every deployment on 2026-08-29.
+ *
+ * The lock lives under `node_modules`, and Vercel caches and restores
+ * `node_modules` between deployments. A previous build machine's lock came back
+ * with the cache naming `pid 97` — a low, certainly-live pid on the fresh Linux
+ * builder — so `isAlive` said "held", the build waited the full 600s and the
+ * deploy failed. It had been failing on every push for hours, and the site
+ * silently stopped receiving updates.
+ *
+ * The pid in this test is deliberately `process.pid`: alive, so the test fails
+ * for the right reason if the host check is ever removed.
+ */
+test('a lock written by another machine is reclaimed, because its pid cannot be checked here', () => {
+  const root = tmp();
+  const dir = join(root, 'tree');
+  mkdirSync(dir, { recursive: true });
+  const path = buildLockPath(dir);
+  writeFileSync(
+    path,
+    JSON.stringify({
+      pid: process.pid,
+      host: 'some-other-build-machine',
+      label: 'npm run build (/vercel/path0)',
+      started: new Date().toISOString(),
+    }),
+    'utf8',
+  );
+  assert.equal(isAlive(process.pid), true, 'the trap only exists when the recorded pid IS alive here');
+  const lock = acquireBuildLock({ dir, waitMs: 0 });
+  assert.equal(lock.reclaimed, true, 'a foreign-host lock must not block this machine');
+  releaseBuildLock(path);
+  rmSync(root, { recursive: true, force: true });
+});
+
+test('a live lock from THIS machine is still respected', () => {
+  const root = tmp();
+  const dir = join(root, 'tree');
+  mkdirSync(dir, { recursive: true });
+  const path = buildLockPath(dir);
+  writeFileSync(
+    path,
+    JSON.stringify({ pid: process.pid, host: hostname(), label: 'a real concurrent build', started: new Date().toISOString() }),
+    'utf8',
+  );
+  assert.throws(() => acquireBuildLock({ dir, waitMs: 0 }), /another build holds/);
   rmSync(root, { recursive: true, force: true });
 });

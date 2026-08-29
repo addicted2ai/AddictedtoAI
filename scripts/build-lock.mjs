@@ -101,6 +101,32 @@ export function buildLockPath(dir) {
   return join(base, LOCK_FILENAME);
 }
 
+/**
+ * Was this lock written by a different machine?
+ *
+ * If so its pid means nothing here, and `isAlive` is worse than useless: it
+ * answers about a LOCAL process that happens to share the number. This is not
+ * hypothetical. On 2026-08-29 every Vercel deployment began failing because the
+ * lock lives under `node_modules`, Vercel caches and restores `node_modules`
+ * between deployments, and the restored lock named `pid 97` on a previous build
+ * machine. On Linux pid 97 is a low, almost certainly live system process — so
+ * the inherited lock looked held, the build waited the full 600s, and the deploy
+ * failed. It had been failing on every push, silently, for hours.
+ *
+ * A foreign host is therefore treated as unverifiable, and unverifiable is
+ * reclaimable. That is safe in the direction that matters: two builds racing on
+ * ONE machine is the failure this module exists to prevent, and a lock from
+ * another machine cannot be one of those two. The residual risk is a genuinely
+ * shared network filesystem, where this would let two builds in — which is not
+ * this repository's arrangement, and would be a wait rather than a wrong answer
+ * to re-tighten if it ever became one.
+ */
+export function isForeignHost(holder) {
+  const recorded = holder?.host;
+  if (typeof recorded !== 'string' || recorded === '') return false;
+  return recorded !== hostname();
+}
+
 /** Does this pid exist? EPERM means it exists and is not ours, which is alive. */
 export function isAlive(pid) {
   if (!Number.isInteger(pid) || pid <= 0) return false;
@@ -243,10 +269,17 @@ export function acquireBuildLock({
     const age = holder && Number.isFinite(Date.parse(holder.started))
       ? Date.now() - Date.parse(holder.started)
       : 0;
-    if (unreadableTooLong || (holder && (!isAlive(holder.pid) || age > staleMs))) {
+    const foreign = holder ? isForeignHost(holder) : false;
+    if (unreadableTooLong || (holder && (foreign || !isAlive(holder.pid) || age > staleMs))) {
       log(
         `build-lock: reclaiming ${path} from ${describe(holder)} — ` +
-          (!holder ? 'the lock file has been unreadable too long' : !isAlive(holder.pid) ? 'that process is gone' : `it is older than ${(staleMs / 60000).toFixed(0)} minutes`),
+          (!holder
+            ? 'the lock file has been unreadable too long'
+            : foreign
+              ? `it was written by ${holder.host}, not this machine (${hostname()}), so its pid cannot be checked here`
+              : !isAlive(holder.pid)
+                ? 'that process is gone'
+                : `it is older than ${(staleMs / 60000).toFixed(0)} minutes`),
       );
       rmSync(path, { force: true });
       reclaimed = true;
