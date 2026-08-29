@@ -333,9 +333,9 @@ mistral-v0.3             4.43   3.31   3.25   3.36   2.58   2.34   0.90   0.88  
 ```
 
 The English column is the flat one: `11,490` to `13,061` tokens across eight
-tokenizers spanning fifteen years of design and a 6x range of vocabulary size.
-Every other column is not flat. Tamil runs from 24,443 to 196,135 — an 8x
-spread for one sentence set.
+tokenizers whose vocabulary sizes span a factor of six, from `33,539` to
+`200,019`. Every other column is not flat. Tamil runs from 24,443 to 196,135 —
+an 8x spread for one sentence set.
 
 **Chinese has one third the characters of English and more tokens on five of
 the eight.** Both facts about the same 200 sentences. Characters per token for

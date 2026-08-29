@@ -26,8 +26,8 @@ every tensor, every shape, and the real bits per weight of eight quants,
 measured rather than looked up. Three of the results contradict what the
 filenames say.
 
-No account, no key, no `huggingface_hub`, no packages. Node's built-in `fetch`
-and about 120 lines.
+No account, no key, no `huggingface_hub`, no packages — Node's built-in `fetch`,
+a 126-line GGUF parser and six short scripts around it.
 
 ## 1. Find out what the server will let you do
 
