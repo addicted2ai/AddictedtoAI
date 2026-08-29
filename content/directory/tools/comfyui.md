@@ -4,6 +4,7 @@ url: "https://comfy.org/"
 pricing: "free, open source (GPL-3.0) to run locally; a paid cloud service is offered separately"
 last_verified: "2026-08-28"
 entry: tool/comfyui
+category: image
 mentions: []
 ---
 

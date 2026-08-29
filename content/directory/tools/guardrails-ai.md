@@ -4,6 +4,7 @@ url: "https://guardrailsai.com/"
 pricing: "core validation framework free, open source (Apache-2.0); Guardrails Hub and the enterprise platform are not publicly priced"
 last_verified: "2026-08-28"
 entry: tool/guardrails-ai
+category: evaluation
 mentions: []
 ---
 

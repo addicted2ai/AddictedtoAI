@@ -4,6 +4,7 @@ url: "https://groq.com/"
 pricing: "pay per million input and output tokens, priced per model"
 last_verified: "2026-08-28"
 entry: tool/groq-cloud
+category: inference
 mentions: []
 ---
 

@@ -80,3 +80,45 @@ meet the model's minimum cacheable token length before it can be cached."
 The 30-minute retention transclusion re-confirmed on the same page. The
 false automatic-versus-declared contrast is gone and nothing unsupported
 replaced it.
+
+## Recheck 2026-08-29 (wave addictedtoai-flh) — approve stands
+
+Re-examined because this entry was approved in the earlier seed round, which
+the 2026-08-29 seed wave never revisited. All five source documents were
+re-fetched and every decisive string re-matched as a literal substring of the
+saved bytes.
+
+- `vllm.ai/blog/2023-06-20-vllm` (117,850 bytes) — "60% - 80% of memory",
+  "fragmentation and over-reservation", "a mere waste of under 4%",
+  "PagedAttention". The `memory_waste_before_paging` fact is the blog's own
+  pair of numbers.
+- `arxiv.org/abs/2309.06180` (43,425 bytes) — "improves the throughput of
+  popular LLMs by 2-4" and "with the same level of latency compared to the
+  state-of-the-art systems, such as FasterTransformer and Orca", submission
+  "12 Sep 2023". `paged_attention_throughput_gain` supported verbatim.
+- `arxiv.org/abs/2305.13245` (41,223 bytes) — "uptraining existing multi-head
+  language model checkpoints" using "5% of original pre-training compute",
+  submitted "22 May 2023". `gqa_uptraining_cost` and the timeline row both
+  supported.
+- `platform.claude.com/.../prompt-caching` (1,913,199 bytes) — every one of
+  the five Anthropic claims matched raw: "The lookback window is 20 blocks",
+  "counting the breakpoint itself as the first", "writes exactly one cache
+  entry", "a hash of the prefix ending at that block", "The lifetime is
+  measured from the start of the request that writes or reads the cache
+  entry", "4 minutes to stream", "5-minute", "4 cache breakpoints". The
+  four-minute streaming example in the body is still the documentation's own.
+- `developers.openai.com/api/docs/guides/prompt-caching` (640,956 bytes) —
+  "you can choose where to place cache breakpoints explicitly, or let OpenAI
+  choose their locations implicitly" (raw), and the retention fact's source
+  sentence in full: "A cached prefix remains eligible for reuse for 30 minutes
+  after its most recent write or reuse, though OpenAI may retain it longer."
+  The "at least 30 minutes" rendering is right *because* of the trailing
+  clause, not in spite of it. The doc scopes that paragraph to "GPT-5.6 and
+  later", which is what the body's "on current models" carries; earlier models
+  use `prompt_cache_retention` with different numbers, and the body correctly
+  does not claim otherwise. "minimum cacheable token length" and "not shared
+  across organizations" both matched raw.
+
+No superlative, no licence claim and no secondary-source figure in this entry
+— every number is a vendor doc or a paper, and each was read at the source.
+Nothing changed.

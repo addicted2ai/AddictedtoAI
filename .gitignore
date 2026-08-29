@@ -23,6 +23,39 @@ node_modules/
 /public/feeds/
 /public/dataset/
 
+# The two brakes (beads addictedtoai-ufu). `STOP` is the maintainer's; `HOLD.md`
+# is the loop's self-halt, written when a breaker trips. Both address a person
+# at this keyboard — this repository is built and operated on one machine —
+# and neither carries repository content, so neither belongs in a commit.
+#
+# It is ignored rather than remembered because a halt signal is exactly the
+# thing a stray `git add -A` should not be able to push to the remote, and
+# "don't commit it" was previously an instruction held in one memory entry.
+# Guardrails here are mechanisms, not instructions. This one is now structural:
+# `HOLD.md` appeared on 2026-08-29 when breaker 2 correctly tripped and sat in
+# `git status` as an untracked file while five agents worked in this tree.
+#
+# Ignoring them does NOT relax any rule about them. Everything that acts on
+# these files reads the FILESYSTEM, never git — `loop/lib/breakers.mjs`
+# (`startGate`) and `pulse/lib/publish.mjs` both `existsSync` them — so the
+# Desk still refuses to start while `HOLD.md` exists, publish is still
+# suspended, and removing `HOLD.md` is still the maintainer's alone. Nothing
+# commits them either: `pulse/lib/publish.mjs` stages `data content public` by
+# name, `loop/run.mjs` stages its records by exact path, and the only `add -A`
+# in the machinery runs inside a job worktree.
+#
+# One thing it DOES change, measured rather than assumed and filed as
+# addictedtoai-59q: breaker 4 spotted a job creating `STOP` by finding it in the
+# branch diff, and an ignored file never reaches a diff. That detection is gone.
+# The harm it detected is gone too, and structurally — a job's `STOP` lives in a
+# scratch worktree, and commit-then-merge was its only route to this root.
+#
+# Anchored, like the build-output patterns above and for the same reason: an
+# unanchored `STOP` would swallow any file or directory called STOP anywhere in
+# the tree, `content/` included.
+/HOLD.md
+/STOP
+
 # Environment — never commit these
 .env
 .env.local

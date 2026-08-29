@@ -192,7 +192,12 @@ test('a brief is self-contained plain markdown carrying the RESULT.md instructio
   assert.ok(brief.includes(RESULT_PROTOCOL_INSTRUCTION), 'the exact protocol instruction, not a paraphrase');
   assert.match(brief, /^# Job j-20260910-01/m);
   assert.match(brief, /Branch\*\*: `job\/j-20260910-01`/);
-  assert.match(brief, /Wall-clock cap\*\*: 60 minutes/);
+  // The cap is stated as this invocation's limit, never as the job's budget
+  // (specs/loop, `A job's total spend is measured, and the cap is named for
+  // what it is`). Portability cares that the figure is IN the brief; which
+  // wording carries it is asserted in review.test.mjs.
+  assert.match(brief, /Wall-clock cap for THIS invocation\*\*: 60 minutes/);
+  assert.match(brief, /Spent on this job so far\*\*: 0\.00 model-minutes/);
   assert.match(brief, /Never push/);
   assert.match(brief, /Reserved paths/);
   assert.match(brief, /Report blocked rather than guessing/);

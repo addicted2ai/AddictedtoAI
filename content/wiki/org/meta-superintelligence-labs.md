@@ -78,7 +78,10 @@ which required a separate licence from Meta for any product with more than
 and made you prefix derived model names with "Llama." The open-weight model
 Meta shipped on 10 August 2026, Muse Glimmer 30B, is
 [Apache-2.0](https://huggingface.co/meta-models/Muse-Glimmer-30B): no user
-threshold, no naming clause, no acceptable-use annex. Meta's open weights got
+threshold, no naming clause, and a licence text left unmodified. A usage
+policy still ships in the repository, but the Apache grant never references
+it, so it binds nothing — where the Llama agreement made adherence to its
+acceptable-use policy a condition of the licence. Meta's open weights got
 freer and smaller in the same move — Glimmer is a distillation of Muse Spark
 sized to run on one consumer GPU, not the flagship.
 

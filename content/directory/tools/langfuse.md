@@ -4,6 +4,7 @@ url: "https://langfuse.com/"
 pricing: "free to self-host; cloud has a free tier, then monthly plans by usage"
 last_verified: "2026-08-28"
 entry: tool/langfuse
+category: observability
 mentions: []
 ---
 

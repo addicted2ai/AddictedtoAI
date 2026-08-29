@@ -4,6 +4,7 @@ url: "https://axolotl.ai/"
 pricing: "free, open source (Apache-2.0); no vendor-hosted product"
 last_verified: "2026-08-28"
 entry: tool/axolotl
+category: training
 mentions: []
 ---
 

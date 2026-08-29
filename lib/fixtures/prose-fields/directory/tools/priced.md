@@ -4,6 +4,7 @@ url: "https://example.org/pricedtool"
 pricing: "$20/month for the individual plan"
 last_verified: "2026-08-26"
 entry: tool/fixture-subject
+category: coding
 mentions: []
 ---
 

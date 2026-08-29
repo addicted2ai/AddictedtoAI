@@ -80,21 +80,20 @@ keeping.
 The reason it makes no difference is the shape of the rest of the table. The
 next four classification submissions, from ISI, come in at 26.172%, 26.602%,
 26.646% and 26.952%. Then OXFORD_VGG at 26.979%, then XRCE/INRIA at 27.058%,
-then more OXFORD_VGG at 27.079% and 27.302%. Every serious non-neural system
-in the world that year finished within about one percentage point of every
-other one — and then there is a gap of ten points before the winner. This was
-not a close contest narrowly won. It was two different regimes printed on the
-same page.
+then more OXFORD_VGG at 27.079% and 27.302%. The eight best non-neural
+submissions finished within 1.2 percentage points of each other — and then
+there is a gap of ten points before the winner. This was not a close contest
+narrowly won. It was two different regimes printed on the same page.
 
 The localisation task shows the same discontinuity more starkly: SuperVision
 at 0.335463 and 0.341905 error, and the next entry, from OXFORD_VGG, at
 0.500342.
 
 The system behind those rows is described in Krizhevsky, Sutskever and
-Hinton's NIPS 2012 paper: five convolutional layers with max-pooling, two
-fully connected layers, a thousand-way softmax, and 60 million parameters,
-trained — per the Computer History Museum's account — "on a computer with two
-NVIDIA cards."
+Hinton's NIPS 2012 paper: five convolutional layers with max-pooling, three
+fully connected layers ending in a thousand-way softmax, and 60 million
+parameters, trained — per the Computer History Museum's account — "on a
+computer with two NVIDIA cards."
 
 The code did not become public for another twelve years. On
 20 March 2025 the Computer History Museum released the original source in

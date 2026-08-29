@@ -96,3 +96,62 @@ New-defect check: `anthropic/claude-fable-5` is a priced catalog row
 (0.00001/0.00005, created 2026-06-09), which the new fact wording no longer
 contradicts; the reworded lede paragraph's remaining quotes were already
 verified in the first pass and are unchanged.
+
+## Recheck 2026-08-29 (addictedtoai-flh) — holds, no change
+
+Every quotation re-matched literally against bytes on disk, and every
+catalog claim re-measured from the snapshot rather than read out of the
+earlier record.
+
+- anthropic.com/news/claude-fable-5-mythos-5 (371,344 bytes): "a tier of
+  Claude models that sit above our Opus class in capability"; "It's the same
+  underlying model as Fable 5, but with the safeguards lifted in some
+  areas"; "We are suspending access to Claude Fable 5 and Claude Mythos 5"
+  under a "Jun 12, 2026" heading, with a "Jul 1, 2026 Claude Fable 5 and
+  Mythos 5 are now available" heading above it; "In the coming weeks, some
+  biomedical researchers and companies will be able to join our trusted
+  access program for biology capabilities in Mythos 5". The body's
+  "biology and chemistry safeguards" is the page's own category name
+  ("a request related to cybersecurity, biology and chemistry, or
+  distillation"). The site nav lists the tiers "Mythos Fable Opus Sonnet
+  Haiku", supporting the five-tier `model_tiers` fact.
+- anthropic.com/claude/mythos (322,724 bytes): "Claude Mythos 5 is available
+  to a small set of initial testing partners for cybersecurity, and soon,
+  biology research" verbatim (the `top_tier_access` fact, word for word);
+  "We have restored access to Mythos 5 for a set of US organizations,
+  following the US government's approval." The Glasswing partner list is on
+  the page in the entry's order — "Amazon Web Services, Anthropic, Apple,
+  Broadcom, Cisco, CrowdStrike, Google, JPMorganChase, the Linux Foundation,
+  Microsoft, NVIDIA, and Palo Alto Networks" — twelve names including
+  Anthropic itself, which is why the timeline correctly lists eleven
+  partners.
+- anthropic.com/news/claude-opus-5 (354,386 bytes): "greatly improved
+  performance for the same cost as its predecessor, Opus 4.8."
+- en.wikipedia.org/wiki/Anthropic (654,553 bytes): "founded in January
+  2021"; "public benefit corporation headquartered in San Francisco,
+  California"; "It was valued at US$965 billion in May 2026." All four
+  Wikipedia-sourced facts hold as written.
+
+**Re-measured from `data/sources/openrouter-models/latest.json`** (which has
+rolled to 2026-08-29, 396 rows, since the round-one measurement against the
+388-row snapshot — every figure below re-derived from the current file, and
+every one still matches):
+- All five Opus rows list prompt 0.000005 / completion 0.000025:
+  `claude-opus-4.5` (created 2025-11-24), `-4.6` (2026-02-04), `-4.7`
+  (2026-04-16), `-4.8` (2026-05-27), `claude-opus-5` (2026-07-24).
+- Context 200000 → 1000000 at `claude-opus-4.6`, created 2026-02-04.
+  "Quintupled" is exact.
+- Intelligence index 55 → 57.3 → 63.1; `claude-opus-4.6` carries only a
+  `design_arena` benchmarks object and no `artificial_analysis` key at all,
+  so "two step-ups" remains the only defensible count. 2026-04-16 →
+  2026-07-24 = 99 days.
+- Suspension arithmetic: 2026-06-12 → 2026-07-01 = 19 days. "Nineteen days"
+  exact.
+
+One phrase examined and left alone: "five releases ... over nine months".
+The five *releases* span 2025-11-24 → 2026-07-24, which is eight months; the
+*price stillness* the sentence is about runs from the 4.5 listing to the
+present (2026-08-29), which is nine months and five days. The second reading
+is the one the sentence makes — the price is a live transclusion, so the
+interval is open-ended — and it measures out. Recorded here so a later pass
+does not "fix" it to eight and break the claim it is actually making.

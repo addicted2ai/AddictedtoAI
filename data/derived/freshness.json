@@ -4,12 +4,12 @@
   "link_check": {
     "checked": 25,
     "confirm_after_failures": 2,
-    "declined": 0,
+    "declined": 2,
     "drifted": 0,
-    "due": 90,
+    "due": 65,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 8,
+    "redirected": 9,
     "total": 339
   },
   "listings": [
@@ -398,7 +398,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/replicate.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "replicate",
       "state": "ok",
       "url": "https://replicate.com/"
@@ -437,7 +437,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/unstructured.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "unstructured",
       "state": "ok",
       "url": "https://unstructured.io/"
@@ -565,6 +565,18 @@
       "last_checked": "2026-08-29",
       "meta_refresh": null,
       "url": "https://ojs.aaai.org/aimagazine/index.php/aimagazine/article/view/1911/1809",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/deltas/professional-level-go.md"
+      ],
+      "final_url": "https://research.facebook.com/blog/2018/05/facebook-open-sources-elf-opengo/?_fb_noscript=1",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-29",
+      "meta_refresh": "https://research.facebook.com/blog/2018/05/facebook-open-sources-elf-opengo/?_fb_noscript=1",
+      "url": "https://research.facebook.com/blog/2018/05/facebook-open-sources-elf-opengo/",
       "verdict_recorded": true
     }
   ],

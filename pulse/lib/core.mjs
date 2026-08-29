@@ -9,9 +9,29 @@
  *      two spaces, uses LF, and ends with a single newline. `.gitattributes`
  *      enforces LF in the repo; this makes the byte-identity property of
  *      `data/derived/queue.json` (task 3.5) mean something.
- *   2. **One notion of "now".** Dates are UTC `YYYY-MM-DD`. `PULSE_NOW` may
- *      override the clock so freshness fixtures can be written against a
- *      fixed day without sleeping or waiting for the calendar.
+ *   2. **One notion of "now".** Dates are the **LOCAL** `YYYY-MM-DD` of the
+ *      machine that wrote them, matching the rule CLAUDE.md and AGENTS.md
+ *      state for the whole repository: "Every date in this repository is the
+ *      LOCAL date of the machine that wrote it — `accessed:` on a fact,
+ *      `date:` on a review record, `verified_on:` on a tutorial, a delta
+ *      end's `date:`. Not UTC." The Pulse used to stamp UTC, so on a machine
+ *      west of Greenwich its 18:00 scheduled run wrote tomorrow's date onto
+ *      everything, every day (addictedtoai-4ih). The freshness layer measures
+ *      *intervals* between these dates, and an interval computed across two
+ *      conventions is off by a day for no reason a later reader can
+ *      reconstruct — so the engine and the humans must share one frame.
+ *
+ *      A *wall-clock instant* is a different thing and stays UTC: a
+ *      `last_fetch_at` or a source's own published timestamp is an instant,
+ *      zone-independent and reproducible anywhere. Only *calendar dates the
+ *      Pulse mints for the corpus* are local.
+ *
+ *      `PULSE_NOW` may override the clock so freshness fixtures can be
+ *      written against a fixed day without sleeping or waiting for the
+ *      calendar. A bare `YYYY-MM-DD` override therefore pins **local**
+ *      midnight of that day: pinning UTC midnight would make `today()`
+ *      return the day *before* the one the fixture named on any machine west
+ *      of Greenwich.
  *
  * `PULSE_ROOT` overrides the repository root. Tests point it at a fixture
  * tree so the whole pipeline can run end-to-end without touching the real
@@ -121,27 +141,85 @@ export function sha256(text) {
   return createHash('sha256').update(text, 'utf8').digest('hex');
 }
 
-/** The run's "now". `PULSE_NOW` (an ISO date or datetime) overrides the clock. */
+/** A bare `YYYY-MM-DD`, or null. Anything else (a datetime) is not one. */
+const BARE_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/**
+ * Days since the Unix epoch for a calendar date, as three numbers.
+ *
+ * `Date.UTC` is used purely as integer calendar arithmetic here — it never
+ * means "this value is UTC". Going through it rather than subtracting two
+ * instants is what makes the count DST-proof: a local day containing a
+ * clock change is 23 or 25 hours long, and dividing elapsed milliseconds by
+ * 86400000 would silently miscount it.
+ */
+function dayNumber(y, m, d) {
+  return Math.round(Date.UTC(y, m - 1, d) / 86400000);
+}
+
+/** The day number of the local calendar date a Date instance falls on. */
+function localDayNumber(d) {
+  return dayNumber(d.getFullYear(), d.getMonth() + 1, d.getDate());
+}
+
+/**
+ * The run's "now". `PULSE_NOW` (an ISO date or datetime) overrides the clock.
+ *
+ * A bare date pins **local** midnight of that day, so `today()` returns the
+ * day the fixture named. A datetime is passed through to `Date` untouched and
+ * keeps whatever zone it carries — it is an instant, not a calendar day.
+ */
 export function now() {
   const override = process.env.PULSE_NOW;
   if (override) {
-    const d = new Date(override.length === 10 ? `${override}T00:00:00Z` : override);
+    const bare = BARE_DATE.exec(override);
+    const d = bare ? new Date(+bare[1], +bare[2] - 1, +bare[3]) : new Date(override);
     if (!Number.isNaN(d.getTime())) return d;
   }
   return new Date();
 }
 
-/** UTC `YYYY-MM-DD` for a Date (default: the run's now). */
+/**
+ * LOCAL `YYYY-MM-DD` for a Date (default: the run's now).
+ *
+ * Local, not UTC — see rule 2 at the top of this file. Every date the Pulse
+ * writes into the corpus goes through here, so this one function is what puts
+ * the engine in the same calendar frame as every human and agent that authors
+ * the corpus by hand.
+ */
 export function today(d = now()) {
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-/** Whole days from `iso` (a date or datetime string) until `to`. Null if unparseable. */
+/**
+ * Whole calendar days from `iso` (a date or datetime string) until `to`.
+ * Null if unparseable.
+ *
+ * A *calendar-day* difference, not a count of elapsed 24-hour periods, and
+ * that distinction is the whole point: the values on both sides are local
+ * calendar dates (`accessed:`, `verified_on:`, `last_checked`), so the answer
+ * has to be "how many local days apart are these two days". Parsing a bare
+ * date as UTC midnight and subtracting instants — what this did before —
+ * returned 1 for a fact accessed *today* any time after 18:00 local on a
+ * UTC-6 machine, which is how a same-day fact read as a day stale every
+ * evening (addictedtoai-4ih).
+ *
+ * A datetime argument is resolved to the local calendar day it falls on,
+ * which is the only reading that can be compared against a bare local date.
+ */
 export function daysSince(iso, to = now()) {
   if (!iso) return null;
-  const then = new Date(String(iso).length === 10 ? `${iso}T00:00:00Z` : iso);
-  if (Number.isNaN(then.getTime())) return null;
-  return Math.floor((to.getTime() - then.getTime()) / 86400000);
+  const text = String(iso);
+  const bare = BARE_DATE.exec(text);
+  let thenDay;
+  if (bare) {
+    thenDay = dayNumber(+bare[1], +bare[2], +bare[3]);
+  } else {
+    const then = new Date(text);
+    if (Number.isNaN(then.getTime())) return null;
+    thenDay = localDayNumber(then);
+  }
+  return localDayNumber(to) - thenDay;
 }
 
 /** Repo-relative POSIX path — what goes into derived files, never an absolute path. */

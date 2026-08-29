@@ -17,6 +17,8 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { runLoop } from '../run.mjs';
 import { readLedger } from '../lib/ledger.mjs';
@@ -193,6 +195,116 @@ test('the 14-day abandon sweep does not re-arm the runner it just swept', () => 
   assert.equal(noOutputStreak([empty(1), empty(2), empty(3), swept, worked], 'mock-frontier').count, 0);
 
   assert.deepEqual([...NON_RUN_OUTCOMES], ['abandoned'], 'every other outcome records a real invocation');
+});
+
+/* ---------------------------------------------------------------------------
+ * The audit gap (task 4.1) and the clause that keeps D7 open (task 4.2).
+ *
+ * Everything above was written for `addictedtoai-h5k` and asserts what the
+ * refusal DOES. Nothing above asserts what it must NOT do — write `HOLD.md` —
+ * and that omission is load-bearing rather than cosmetic. specs/loop names four
+ * breakers and closes the list; whether a Desk with no usable runner should
+ * halt is design decision D7 and is the maintainer's, not this change's. With
+ * no test on the negative, adopting a fifth breaker later would silently
+ * satisfy this whole suite, and the one clause distinguishing "refused" from
+ * "halted" would be unmeasured at exactly the moment it stopped being true.
+ * ------------------------------------------------------------------------ */
+
+test('C41 refusing a runner writes no HOLD.md — a refusal is not a halt', async () => {
+  const ctx = repoWith('produces-nothing');
+  const hold = join(ctx.repoRoot, 'HOLD.md');
+  assert.equal(ctx.holdPath, hold, 'the loop and this test mean the same file');
+
+  // The three empty runs that build the streak. None of them may halt anything
+  // either: an interrupted run is not a breaker, which is the whole reason the
+  // spin was invisible in the first place.
+  for (let i = 1; i <= NO_OUTPUT_STREAK_LIMIT; i++) {
+    const r = await go(ctx);
+    assert.equal(r.outcome, 'interrupted', ctx.output());
+    assert.equal(existsSync(hold), false, `run ${i} wrote HOLD.md`);
+  }
+
+  // The refusing run.
+  const refused = await go(ctx);
+  assert.equal(refused.rule, 'runner:produced-nothing', ctx.output());
+  assert.equal(
+    existsSync(hold),
+    false,
+    'the refusal wrote HOLD.md — specs/loop names four breakers and this is not one of them (design D7 is the maintainer\'s open decision, not this change\'s)',
+  );
+
+  // And the run's own log says the runner was refused, so the operator learns
+  // it from the output rather than from the absence of a halt file.
+  assert.match(ctx.output(), /REFUSED \[runner:produced-nothing\]/);
+
+  // A refusal is also not a start-gate halt: the NEXT run still starts and
+  // still refuses, rather than finding a hold left behind by the last one.
+  const again = await go(ctx);
+  assert.equal(again.started, true, 'the Desk still starts');
+  assert.equal(again.rule, 'runner:produced-nothing');
+  assert.equal(existsSync(hold), false);
+  ctx.cleanup();
+});
+
+test('C37 the refusal preempts a resumption that was genuinely available', async () => {
+  // The existing four-run test asserts the fourth run refuses. It does not
+  // assert there was anything to resume at that moment, and a refusal that
+  // beats an empty queue would satisfy it just as well. The spin this ends IS a
+  // resumption loop, so the branch has to be there and has to be left alone.
+  const ctx = repoWith('produces-nothing');
+  for (let i = 0; i < NO_OUTPUT_STREAK_LIMIT; i++) await go(ctx);
+
+  const branches = git(ctx.repoRoot, ['branch', '--list', 'job/*']).trim();
+  assert.match(branches, /job\//, 'a resumable branch really is sitting there');
+  const shaBefore = git(ctx.repoRoot, ['rev-parse', branches.replace('*', '').trim()]).trim();
+
+  const refused = await go(ctx);
+  assert.equal(refused.rule, 'runner:produced-nothing', ctx.output());
+  assert.equal(refused.selected, null, 'nothing was selected and nothing was resumed');
+  assert.ok(!/resuming job\//.test(ctx.output().split('REFUSED')[1] ?? ''), 'no resumption after the refusal');
+  assert.equal(
+    git(ctx.repoRoot, ['rev-parse', branches.replace('*', '').trim()]).trim(),
+    shaBefore,
+    'the branch is untouched — it was refused before resumption, not after',
+  );
+  ctx.cleanup();
+});
+
+test('C36 the refusal covers the reviewer role, not only the author role', async () => {
+  // specs/loop: "the loop SHALL refuse that runner for the `author` and
+  // `reviewer` roles". Measured before this assertion existed: only the author
+  // runner was gated, so a dead REVIEWER was invoked anyway — the author spent
+  // its full run producing a diff that could never be reviewed and therefore
+  // could never merge. The author here is healthy; the reviewer is the one with
+  // the streak.
+  const ctx = makeRepo({
+    runners: runnersYaml({ command: mockCommand('done-edit'), reviewerCommand: mockCommand('produces-nothing') }),
+  });
+  writeQueue(ctx, [{ type: 'repair', title: 'a repair that would otherwise qualify' }]);
+  writeLedger(
+    ctx,
+    [1, 2, 3].map((i) =>
+      ledgerLine({ id: `j-${i}`, runner: 'mock-reviewer', outcome: 'interrupted', signal: NO_OUTPUT_SIGNAL, mm: 0 }),
+    ),
+  );
+
+  // The author is healthy — this is not the author gate firing under another name.
+  assert.equal(runnerHealthGate(readLedger(ctx), 'mock-frontier').ok, true);
+  assert.equal(runnerHealthGate(readLedger(ctx), 'mock-reviewer').ok, false);
+
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+  assert.equal(res.rule, 'runner:produced-nothing', ctx.output());
+  assert.match(res.refused, /mock-reviewer/, 'and it names the runner it refused');
+  assert.match(ctx.output(), /REFUSED \[runner:produced-nothing\]/);
+
+  // Refused BEFORE an executor is invoked: no branch, no ledger line, nothing
+  // spent on work that could not have been reviewed.
+  assert.equal(git(ctx.repoRoot, ['branch', '--list', 'job/*']).trim(), '', 'no job branch was created');
+  assert.equal(readLedger(ctx).length, 3, 'and no new ledger line was appended');
+
+  // Still not a halt, for the reviewer role either.
+  assert.equal(existsSync(join(ctx.repoRoot, 'HOLD.md')), false);
+  ctx.cleanup();
 });
 
 test('the selector refuses a dead runner too, before any candidate is considered', () => {

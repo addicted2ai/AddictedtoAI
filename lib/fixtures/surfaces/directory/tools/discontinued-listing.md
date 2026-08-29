@@ -5,6 +5,7 @@ pricing: "was free"
 last_verified: "2026-05-30"
 discontinued: "2026-05-30"
 entry: tool/dead-subject
+category: agents
 mentions: []
 ---
 

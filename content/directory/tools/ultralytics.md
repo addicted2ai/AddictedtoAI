@@ -4,6 +4,7 @@ url: "https://www.ultralytics.com/"
 pricing: "dual-licensed: free under AGPL-3.0 for open-source use; a commercial Enterprise license is required for closed-source use, custom-priced"
 last_verified: "2026-08-28"
 entry: tool/ultralytics
+category: image
 mentions: []
 ---
 

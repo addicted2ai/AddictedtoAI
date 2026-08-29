@@ -116,8 +116,8 @@ cheapest input at >= 200k context (248 rows qualify)
 ```
 
 `372 + 21 = 393`, not `398`. Five rows are neither priced nor free. Two rows
-in the table have a tilde in front of their id. And 248 of 398 rows clear a
-200k-token bar that was the frontier two years ago. Each of those is a field
+in the table have a tilde in front of their id. And 248 of the 372 priced
+rows clear a 200k-token bar that was the frontier two years ago. Each of those is a field
 worth pulling apart before you trust a sort.
 
 ## 3. Pull the misleading fields apart

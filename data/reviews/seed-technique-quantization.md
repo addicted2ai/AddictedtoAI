@@ -48,3 +48,51 @@ Short, and better for it: every sentence is either a measured number or
 the reading of one. The opening — Q4 does not mean four bits, and the
 difference decides what fits on a card — passes the "what exactly is this
 telling me?" test in its first line. Approve.
+
+## Recheck 2026-08-29 (wave addictedtoai-flh) — approve stands
+
+Re-examined because this entry was approved in the earlier seed round, which
+the 2026-08-29 seed wave never revisited. All three sources re-fetched. The
+`quantize/README.md` was pulled as **raw text** (12,406 bytes) rather than as
+rendered HTML, so the table could be read cell by cell rather than by
+searching for loose numbers.
+
+- `tools/quantize/README.md`, the `meta-llama/Llama-3.1-8B` tables — every one
+  of the seven numbers in the two measured facts is the value in the cell the
+  entry attributes it to, not merely a string present somewhere on the page:
+  bits/weight Q4_K_S **4.6672**, Q4_K_M **4.8944**, Q6_K **6.5633**, Q8_0
+  **8.5008**; text generation t/s @128 F16 **29.17** against Q4_K_M **71.93**;
+  prompt processing t/s @512 F16 **923.49** against Q4_K_M **821.81**.
+- The three readings the body draws from those cells were recomputed:
+  4.6672/4 = 1.167 and 4.8944/4 = 1.224, so "roughly a fifth above their
+  nominal width" holds; 71.93/29.17 = **2.466**, so "about two and a half
+  times faster" holds; 821.81 against 923.49 is a small decrease, so "moves
+  barely at all — slightly *slower* quantized" holds in direction and rough
+  size. The "two builds both labelled four-bit can differ by several hundred
+  megabytes" claim is supported by the same table's size column: Q4_K_S 4.36
+  GiB against Q4_K_M 4.58 GiB, and IQ4_XS 4.17 GiB against Q4_K_M 4.58 GiB —
+  a ~420 MB spread across rows a user would call four-bit.
+- `github.com/ggml-org/llama.cpp/pull/1684` (716,642 bytes) — page states
+  "**Merged** … **Jun 5, 2023**", matching the timeline row. Carries verbatim
+  "GGML_TYPE_Q4_K - 'type-1' 4-bit quantization in **super-blocks containing 8
+  blocks, each block having 32 weights**. Scales and mins are quantized with 6
+  bits. This ends up using **4.5 bpw**." — the `k_quant_block_structure` fact
+  exactly. The type-0/type-1 sentence the body paraphrases is there too:
+  "In 'type-0', weights w are obtained from quants q using w = d * q, where d
+  is the block scale. In 'type-1', weights are given by w = d * q + m, where m
+  is the block minimum." And the S/M/L claim is the PR's own mix table:
+  `Q4_K_S` "uses GGML_TYPE_Q4_K for all tensors" against `Q4_K_M` "uses
+  GGML_TYPE_Q6_K for half of the attention.wv and feed_forward.w2 tensors,
+  else GGML_TYPE_Q4_K", and for the `_L` half of the claim, `Q3_K_M` promotes
+  those tensors to Q4_K while `Q3_K_L` promotes them to Q5_K — "`_L` more
+  still" is right.
+- `arxiv.org/abs/2305.14314` (44,173 bytes, "[Submitted on **23 May 2023**")
+  — "**finetune a 65B parameter model on a single 48GB GPU**", "(a) **4-bit
+  NormalFloat** (NF4)", "(b) **double quantization** to reduce the average
+  memory footprint by quantizing the quantization constants, and (c) **paged
+  optimziers** to manage memory spikes". Note the last one for any future
+  pass: the abstract contains the **typo `optimziers`**, so a naive search for
+  "paged optimizers" returns a false absence. The `nf4_origin` fact is
+  supported in full.
+
+Nothing changed.

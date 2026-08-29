@@ -4,6 +4,7 @@ url: "https://elevenlabs.io/"
 pricing: "free tier; monthly subscriptions metered in credits"
 last_verified: "2026-08-28"
 entry: tool/elevenlabs
+category: audio
 mentions: []
 ---
 

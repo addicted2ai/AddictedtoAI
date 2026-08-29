@@ -34,19 +34,19 @@ facts:
     source: cited
     value: "Modified MIT License — commercial products or services with more than 100 million monthly active users, or more than US$30 million in annual recurring revenue, must prominently display \"MiniMax M2\" in the user interface"
     source_url: "https://github.com/MiniMax-AI/MiniMax-M2/blob/main/LICENSE"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: slow
   - field: parameters
     source: cited
     value: "230B total, 10B active"
     source_url: "https://huggingface.co/MiniMaxAI/MiniMax-M2"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: static
   - field: listed_date
     source: cited
     value: "2025-10-23"
     source_url: "https://openrouter.ai/minimax/minimax-m2"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: dated
 timeline: []
 mentions:

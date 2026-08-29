@@ -4,6 +4,7 @@ url: "https://replicate.com/"
 pricing: "pay per second of compute; some models billed per token or per image"
 last_verified: "2026-08-28"
 entry: tool/replicate
+category: inference
 mentions: []
 ---
 

@@ -4,6 +4,7 @@ url: "https://cursor.com/"
 pricing: "free tier; individual and team subscriptions per user per month"
 last_verified: "2026-08-28"
 entry: tool/cursor
+category: coding
 mentions: []
 ---
 

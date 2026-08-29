@@ -584,7 +584,7 @@ minimum). Specs referenced below live in
       a second page, see ≥1 active user and both page_views within 5
       minutes); record the pass date in `data/launch.json` under
       `analytics_realtime`.
-- [ ] 9.5 MAINTAINER: schedule the Pulse 4×/day via the OS scheduler
+- [x] 9.5 MAINTAINER: schedule the Pulse 4×/day via the OS scheduler
       running `node pulse/run.mjs`. Verify **by observing the live site
       change, not by runs completing**: after two consecutive scheduled
       runs, fetch `https://www.addictedtoai.net/status.json` following

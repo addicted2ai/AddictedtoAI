@@ -73,3 +73,34 @@ quotation marks, which is style, not sourcing.) The revised paragraph's
 editorial close — that the quoted half of the footnote is the half that says
 less — is argument, not claim, and the piece now passes the test its own
 closing sets.
+
+## Recheck 2026-08-29 (addictedtoai-flh) — holds, verdict unchanged
+
+Re-fetched and matched by literal substring, not by summariser prose.
+`https://ar5iv.labs.arxiv.org/html/1706.03762` (167,302 B) carries verbatim:
+"Equal contribution. Listing order is random."; "Jakob proposed replacing
+RNNs with self-attention and started the effort to evaluate this idea";
+"Noam proposed scaled dot-product attention, multi-head attention and the
+parameter-free position representation"; "We trained our models on one
+machine with 8 NVIDIA P100 GPUs"; "To evaluate if the Transformer can
+generalize to other tasks we performed experiments on English constituency
+parsing"; "modalities other than text"; "the output of each sub-layer is".
+
+**The footnote sentence count is measured, not repeated.** I extracted the
+footnote and counted the sentences after "Listing order is random.":
+Jakob / Ashish-with-Illia / Noam / Niki / Llion / Lukasz-and-Aidan —
+**exactly six**, naming all eight authors between them. "Six more sentences"
+and "four more like them" (six minus the two quoted) are both exact.
+
+Table 2 read directly: "Transformer (base model) 27.3 38.1 3.3\cdot 10^{18}"
+and "Transformer (big) 28.4 41.8 2.3\cdot 10^{19}" — the two FLOP figures,
+the 28.4 EN-DE BLEU and the 41.8 EN-FR score are one table row each, exactly
+as the entry reports. Step counts "100,000 steps", "300,000 steps",
+"3.5 days", "twelve hours" all present.
+
+abs/1706.03762: "12 Jun 2017", "2 Aug 2023", "v7", "3.5 days on eight GPUs".
+abs/2002.04745 (Xiong et al.): "12 Feb 2020", "mean field theory", "warm-up",
+"the gradients are well-behaved at initialization" — the z spelling inside
+the quotation marks is correct in the entry.
+
+Nothing re-opened. Every claim in this entry now has a literal-byte receipt.

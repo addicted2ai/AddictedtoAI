@@ -81,3 +81,46 @@ show, and it is the part that does not hold; the rest restates the transclusions
 As a data-only stub it keeps everything I verified — the licence, the parameters,
 the listed date, the catalog row — and loses only the false count. That is the
 right trade. Revise.
+
+---
+
+## Recheck, 2026-08-29 (a5-claims) — `addictedtoai-473` propagation
+
+Verdict unchanged: **revise**. No edit was needed to this entry beyond
+refreshing `accessed:`.
+
+**The propagation `addictedtoai-473` warns about does not exist any more, and I
+checked rather than assumed it.** The issue says this entry transcludes
+`model/deepseek-deepseek-v4-flash-0731#parameters`, so a fix there has to
+propagate. It did transclude it — `git show c115472~1:` on this path (3,611 b)
+has the string `flash-0731#parameters` at byte 3230, in the cross-lab sizing
+sentence. That body was discarded in `c115472` and the entry is now a data-only
+stub, so the current file (1,630 b) carries no transclusion at all. A corpus-wide
+grep for `deepseek-deepseek-v4-flash-0731#` returns **4 hits, none of them here**:
+`content/wiki/org/deepseek.md` ×2 and `content/wiki/model/cohere-command-a.md`
+×2, all `price_input` or `intelligence_index`. Nothing propagates.
+
+Worth recording for whoever rebuilds this body: the sentence that carried the
+figure attributed it *correctly* — `"the {{…#parameters}} OpenRouter records for
+DeepSeek's V4 Flash"` — which is the framing the pricing sweep below wants and
+most of the corpus does not use. Do not lose it in a rewrite.
+
+**Front-matter facts re-fetched and matched literally today.**
+
+- `github.com/MiniMax-AI/MiniMax-M2` `LICENSE`, fetched raw from
+  `raw.githubusercontent.com` (**1,453 b**, read in full). `"MIT License"` at
+  byte 0; `"100 million monthly active users"`, `"30 million US dollars"`,
+  `"annual recurring revenue"` and `"prominently display"` each **1 occurrence**,
+  in the single modification sentence. The `license` fact reproduces both
+  thresholds and the obligation.
+- **`%` → 0 occurrences across all 1,453 bytes.** Round 2's absence finding
+  re-confirmed independently, on a re-fetch, against the same defect class that
+  produced three real errors elsewhere in this corpus on 2026-08-29.
+- HF `MiniMaxAI/MiniMax-M2` `README.md` (**22,046 b**): `"230 billion total
+  parameters with 10 billion active parameters"` → 1 occurrence. `parameters`
+  fact exact.
+- `listed_date` 2025-10-23 against the snapshot's `created` 1761252093 =
+  2025-10-23T20:41:33Z. Exact.
+
+`accessed:` moved to 2026-08-29 on all three cited facts, because all three were
+re-fetched and matched today.

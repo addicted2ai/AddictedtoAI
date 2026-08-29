@@ -4,6 +4,7 @@ url: "https://example.org/demotool"
 pricing: "free, open source"
 last_verified: "2026-08-26"
 entry: tool/demo-tool
+category: coding
 mentions:
   - tool/demo-tool
 ---

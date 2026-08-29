@@ -42,3 +42,29 @@ Checklist: education page.
 - Cut list: clean.
 
 Approve.
+
+## Recheck 2026-08-29 (wave addictedtoai-flh) — approve stands
+
+Re-examined because this page was approved in the earlier seed round, which
+the 2026-08-29 seed wave never revisited. The page has exactly one external
+claim, and it was re-fetched: `arxiv.org/abs/2305.11206` (43,595 bytes,
+"[Submitted on **18 May 2023**"). The quotation the page renders inside
+quotation marks matched as a **raw substring**, in full and character for
+character:
+
+> "almost all knowledge in large language models is learned during
+> pretraining, and only limited instruction tuning data is necessary to teach
+> models to produce high quality output"
+
+The abstract's surrounding claims that the page paraphrases also matched raw:
+"1,000 carefully curated prompts and responses" (page: "about a thousand
+carefully curated examples") and "without any reinforcement learning or human
+preference modeling" (page: "with no preference training at all"). The page's
+hedge — "Treat that as a working hypothesis rather than a law" — is still more
+careful than the source warrants, which is the safe direction.
+
+I also re-swept the page for the failure classes this wave was hunting: it
+carries **no licence claim, no superlative, no vendor-page figure and no
+cross-row arithmetic**. Every other sentence is mechanism description, and a
+full-text pass turned up no model name, price, version or vendor ranking that
+could rot. Nothing changed.

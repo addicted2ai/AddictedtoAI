@@ -148,17 +148,21 @@ is not that, and it is the one way this review can run out of time.
  * The reviewer's own run, stated: it has a cap, it gets one shot, and the record
  * is the only thing that survives it.
  */
-export function runShapeSection({ capMinutes, mmSoFar }) {
+export function runShapeSection({ capMinutes, mmSoFar, invocations = 0 }) {
+  const n = Number(invocations) || 0;
   return `## How this run ends — read this before you start
 
-This is a single non-interactive run under a **wall-clock cap of ${capMinutes} minutes**.
+This is a single non-interactive run under a **per-invocation wall-clock cap of
+${capMinutes} minutes** — the limit on THIS run, not a budget for the job.
 When you stop producing output, your run is over: there is no later turn, nothing
 will wake you, and anything still running is killed with you. If you start a
 long-running command, wait for it and read its output **in this same run** — never
 end your turn intending to come back to it.${
     typeof mmSoFar === 'number'
-      ? `\n\nThis job has already cost ${mmSoFar.toFixed(2)} model-minutes, and your minutes are added
-to the same job. Spend them on judgment, not on repetition.`
+      ? `\n\nThis job has already cost ${mmSoFar.toFixed(2)} model-minutes across ${n} completed
+invocation${n === 1 ? '' : 's'}, and your minutes are added to the same job. Authoring, a
+revision and each review pass each get the cap above, so the job's total is the sum
+of them. Spend yours on judgment, not on repetition.`
       : ''
   }
 
@@ -176,7 +180,7 @@ everything spent on it is lost. Do not leave the writing until last.
  */
 export function assembleReviewBrief(
   ctx,
-  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar },
+  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar, invocations = 0 },
 ) {
   const prose = isProse(job.type);
   const fromProposal = job.source === 'proposal';
@@ -192,7 +196,7 @@ You have **no edit rights** — any change you make to this worktree is thrown
 away, so do not try to fix anything. Your only accepted output is the verdict
 record.
 
-${runShapeSection({ capMinutes, mmSoFar })}
+${runShapeSection({ capMinutes, mmSoFar, invocations })}
 ${gatesSection(gates, sha)}
 ${pass > 1 ? `## What this delta review covers\n\nThe previous verdict asked for revisions. Review **only what changed since
 then**, against these findings:\n\n${findings}\n\nThis is the last pass. A second non-approval discards the job.\n` : ''}
@@ -388,7 +392,7 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects }) {
  * @returns {Promise<{run: object, discarded: object, branchShaBefore: string,
  *                    branchShaAfter: string, recordWritten: boolean}>}
  */
-export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar }) {
+export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0 }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const outPath = verdictPath(ctx, jobId, pass);
   const reviewDir = join(ctx.worktreeRoot, `${jobId}-review-${pass}`);
@@ -412,6 +416,7 @@ export async function runReview(ctx, { jobId, job, branch, diffText, runner, cap
     sha: before,
     capMinutes,
     mmSoFar,
+    invocations,
   });
   const run = await runExecutor({
     command: runner.command,

@@ -104,6 +104,42 @@ const ACCEPTANCE_BY_TYPE = {
   ],
 };
 
+/**
+ * What the cap actually is, and what the job has actually cost (specs/loop
+ * delta, `A job's total spend is measured, and the cap is named for what it is`;
+ * beads addictedtoai-o5t).
+ *
+ * `data/config.json` maps each job type to ONE wall-clock cap and the loop
+ * passes it unchanged to every invocation: the author, the revision, and each
+ * review pass. A job revised once therefore makes four invocations, each
+ * entitled to the full cap — with today's caps, 480 minutes for one job. Every
+ * brief printed "Wall-clock cap: N minutes", which is true of the run reading it
+ * and reads like a budget for the job. That misreading is the concrete harm the
+ * issue reported: the cap applied four times over.
+ *
+ * Whether a job's total should be BOUNDED is design decision D9 and is the
+ * maintainer's; nothing here bounds anything. What this does is stop the brief
+ * implying a bound that does not exist, and state the two numbers that let a
+ * reader tell the difference: what this invocation may spend, and what the job
+ * has already spent across how many invocations.
+ *
+ * @param {number} capMinutes    this invocation's wall-clock limit
+ * @param {number} mmSoFar       model-minutes already recorded against this job
+ * @param {number} invocations   invocations already completed for this job
+ */
+export function invocationAccounting({ capMinutes, mmSoFar = 0, invocations = 0 }) {
+  const n = Number(invocations) || 0;
+  const spent = Number(mmSoFar) || 0;
+  return `- **Wall-clock cap for THIS invocation**: ${capMinutes} minutes. It is a
+  per-invocation runaway guard, **not a budget for the job**. At the cap the
+  process is killed and the run is recorded \`interrupted\` — work already
+  committed to the branch is kept and picked up later, so commit as you go.
+- **Spent on this job so far**: ${spent.toFixed(2)} model-minutes across ${n}
+  completed invocation${n === 1 ? '' : 's'} recorded on the ledger. Authoring, a
+  revision and each review pass are separate invocations and each is given the
+  cap above, so the job's total is the sum of them — the cap does not bound it.`;
+}
+
 export const CONTINUE_PREAMBLE =
   'CONTINUE: this branch already contains partial work from an earlier, interrupted run of this same job. ' +
   'Read what is already there before changing anything, finish the outcome below, and end by writing RESULT.md as instructed.';
@@ -117,7 +153,7 @@ export const CONTINUE_PREAMBLE =
  * @param {number} args.capMinutes
  * @param {boolean} [args.resumed]
  */
-export function assembleBrief(ctx, { jobId, job, branch, capMinutes, resumed = false }) {
+export function assembleBrief(ctx, { jobId, job, branch, capMinutes, resumed = false, mmSoFar = 0, invocations = 0 }) {
   const ex = excerptsFor(ctx.repoRoot, job.type);
   const checks = ACCEPTANCE_BY_TYPE[job.type] ?? [];
   const prose = PROSE_TYPES.includes(job.type);
@@ -129,9 +165,7 @@ ${resumed ? CONTINUE_PREAMBLE + '\n\n' : ''}You are working alone, unattended, i
 you. There is no prior conversation to recall and no session to resume.
 
 - **Branch**: \`${branch}\`
-- **Wall-clock cap**: ${capMinutes} minutes. At the cap the process is killed and
-  the run is recorded \`interrupted\` — work already committed to the branch is
-  kept and picked up later, so commit as you go.
+${invocationAccounting({ capMinutes, mmSoFar, invocations })}
 - **Work source**: ${job.source}${job.slug ? ` (proposal \`${job.slug}\`)` : ''}${job.lineNumber ? ` (DIRECTIVES.md line ${job.lineNumber})` : ''}
 
 ## The outcome
@@ -171,7 +205,23 @@ ${ex.text || '_No spec files found in this worktree._'}
 `;
 }
 
-/** The one-line preamble a resumed brief carries, per specs/loop. */
-export function resumeBrief(committedBrief) {
-  return `${CONTINUE_PREAMBLE}\n\n---\n\n${committedBrief}`;
+/**
+ * The preamble a resumed brief carries, per specs/loop.
+ *
+ * The committed brief below it was assembled on an earlier run and its spend
+ * figures are frozen at that moment — for a resumed job they are stale by
+ * definition, and a stale running total is exactly the misreading this change
+ * exists to end. So the current accounting goes ABOVE the committed text and
+ * says which one to believe. Passing no accounting leaves the old behaviour
+ * untouched, which keeps `resumeBrief(text)` valid for callers that have no
+ * ledger to read.
+ */
+export function resumeBrief(committedBrief, accounting = null) {
+  const now = accounting
+    ? `\n\n**This job's accounting, as of now** — these supersede any cap or spend
+figures in the committed brief below, which were written on an earlier run:
+
+${invocationAccounting(accounting)}`
+    : '';
+  return `${CONTINUE_PREAMBLE}${now}\n\n---\n\n${committedBrief}`;
 }

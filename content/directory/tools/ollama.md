@@ -4,6 +4,7 @@ url: "https://ollama.com/"
 pricing: "free, open source (MIT); hosted models sold separately"
 last_verified: "2026-08-28"
 entry: tool/ollama
+category: local
 mentions: []
 ---
 

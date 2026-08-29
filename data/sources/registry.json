@@ -39,12 +39,30 @@
       "fetch_every_days": 1,
       "expected_change_days": 3,
       "emit_on_remove": true,
+      "material_fields_note": "`material_fields` does double duty: it is the CATALOG COLUMN SET (pulse/lib/derive.mjs builds each catalog row from it and skips a source declaring none) and the ENTRY-PAGE FACT SET (pulse/lib/mint.mjs binds one feed fact per spec), and it is also the CHANGED-FEED EVENT SET (pulse/lib/diff.mjs). `event: false` separates the last job from the first two: the column stays, the entry-page fact stays, the feed line stops. Deleting the field would have blanked all three, which is the trap addictedtoai-8ho names.",
       "material_fields": [
-        { "field": "price_input", "path": "pricing.prompt" },
-        { "field": "price_output", "path": "pricing.completion" },
+        {
+          "field": "price_input",
+          "path": "pricing.prompt",
+          "event": false,
+          "note": "A column and a fact, not an event. OpenRouter documents this field as \"Pricing from the top provider for this model\" — one provider's posted rate, with the top provider re-chosen on a rolling 30-second outage window and inverse-square price weighting. Measured 2026-08-29 across 56 priced models: 55 headline prices exactly equalled one provider endpoint's posted rate (only 4 equalled the arithmetic mean), and the cross-provider spread reached 14.7x. The value is verbatim but the referent rotates, so a movement is a routing artifact, not a repricing — and this repo's own snapshots show the same row falling 10.81% then 10.56% in 20 hours, and another falling and rising back. addictedtoai-8ho."
+        },
+        {
+          "field": "price_output",
+          "path": "pricing.completion",
+          "event": false,
+          "note": "Same field, same mechanism, same measurement as price_input above. addictedtoai-8ho."
+        },
         { "field": "context_window", "path": "context_length" },
         { "field": "status", "path": "$status" }
       ],
+      "schedule_rule": {
+        "kind": "utc_windows",
+        "path": "pricing.overrides",
+        "window_keys": ["utc_start", "utc_end", "utc_days"],
+        "governs": ["price_input", "price_output"],
+        "note": "Some rows republish their price on a timetable, so two fetches at different times of day read two different numbers off one unchanged price sheet. tencent/hy3 posts 0.000000132 for utc_start 0 / utc_end 1600 and 0.0000000825 for 1600-0; this repo recorded a \"+60%\" change on that row whose previous fetch was 18:19 UTC and whose latest was 07:27 UTC. pulse/lib/diff.mjs suppresses a governed field's diff on a row carrying such a window, on either side of the comparison. Measured on the 2026-08-29 snapshot (396 rows): 3 rows carry UTC windows (deepseek/deepseek-v4-flash-vision-exp, deepseek/deepseek-v4-pro-0813, tencent/hy3). A further 48 rows carry a pricing.overrides array of min_prompt_tokens long-context tiers, which do not move with the clock and are deliberately NOT suppressed — window_keys, not the presence of the array, is the test."
+      },
       "status_rule": {
         "kind": "expiration_date",
         "path": "expiration_date",

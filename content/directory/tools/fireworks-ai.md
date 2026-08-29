@@ -4,6 +4,7 @@ url: "https://fireworks.ai/"
 pricing: "usage-based: per-token for serverless inference, per-GPU-second for dedicated deployments, per-token for fine-tuning; free starter credit"
 last_verified: "2026-08-28"
 entry: tool/fireworks-ai
+category: inference
 mentions: []
 ---
 

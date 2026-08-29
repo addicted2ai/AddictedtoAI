@@ -4,6 +4,7 @@ url: "https://qdrant.tech/"
 pricing: "free, open source (Apache-2.0) to self-host; managed cloud has a free cluster, then usage-based pricing"
 last_verified: "2026-08-28"
 entry: tool/qdrant
+category: retrieval
 mentions: []
 ---
 

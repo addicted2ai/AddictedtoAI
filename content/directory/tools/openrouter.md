@@ -4,6 +4,7 @@ url: "https://openrouter.ai/"
 pricing: "pay per token from prepaid credits; no subscription"
 last_verified: "2026-08-28"
 entry: tool/openrouter
+category: inference
 mentions: []
 ---
 

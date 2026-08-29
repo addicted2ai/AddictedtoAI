@@ -4,6 +4,7 @@ url: "https://crewai.com/"
 pricing: "free, open-source framework (MIT); the hosted Enterprise platform is custom-priced"
 last_verified: "2026-08-28"
 entry: tool/crewai
+category: agents
 mentions: []
 ---
 

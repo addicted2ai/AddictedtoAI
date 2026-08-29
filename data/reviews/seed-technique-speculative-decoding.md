@@ -55,3 +55,58 @@ literals.
 The piece knows exactly which mistake its reader is about to make (quality
 loss; headline multiples) and heads off both with sourced numbers.
 Approve.
+
+## Recheck 2026-08-29 (addictedtoai-flh) — holds, no change
+
+All five sources re-fetched to disk and every quoted string re-matched
+literally. This entry's exposure was the arithmetic-across-rows class — its
+central contrast sets 6.5x against 1.38x — so both operands were checked in
+the same document.
+
+- arxiv.org/abs/2211.17192 (41,908 bytes): "[Submitted on 30 Nov 2022";
+  authors Yaniv Leviathan, Matan Kalman, Yossi Matias; "without changing the
+  distribution"; "a 2X-3X acceleration compared to the standard T5X
+  implementation, with identical outputs".
+- arxiv.org/abs/2302.01318 (40,250 bytes): "[Submitted on 2 Feb 2023"; all
+  six authors including John Jumper; "a novel modified rejection sampling
+  scheme which preserves the distribution of the target model within
+  hardware numerics"; "achieving a 2-2.5x decoding speedup in a distributed
+  setup". False-absence note: the literal "Chinchilla 70B" is **not** on the
+  page — it reads "with Chinchilla, a 70 billion parameter language model".
+  A format variant, not a defect; the `reported_speedup_chinchilla` fact is
+  supported.
+- arxiv.org/abs/2401.10774 (45,392 bytes): "[Submitted on 19 Jan 2024";
+  "adding extra decoding heads"; "Using a tree-based attention mechanism";
+  "Medusa-1 can achieve over 2.2x speedup". The body's claim that Medusa
+  "names explicitly" the weight-movement bottleneck is the paper's own
+  sentence: "each step necessitates moving the full model parameters from
+  High-Bandwidth Memory (HBM) to the accelerator's cache".
+- arxiv.org/abs/2503.01840 (42,071 bytes): "[Submitted on 3 Mar 2025";
+  "abandons feature prediction in favor of direct token prediction"; and
+  **both operands of the contrast in one sentence** — "EAGLE-3 achieves a
+  speedup ratio up to 6.5x, with about 1.4x improvement over EAGLE-2. In the
+  SGLang framework, EAGLE-3 achieves a 1.38x throughput improvement at a
+  batch size of 64." Same paper, same abstract; the comparison cannot invert
+  on a mis-read operand.
+- docs.vllm.ai speculative decoding page (622,789 bytes): "Speculative
+  decoding sampling is theoretically lossless up to the precision limits of
+  hardware numerics" (the `numerics_caveat` fact) and "Real gains depend on
+  your model family, traffic pattern, hardware, and sampling settings" (the
+  body's closing quote), both verbatim. The body's "several of which,
+  n-gram and suffix decoding among them, use no neural draft at all" is
+  supported by the page's own contrast: "Model-based methods such as EAGLE,
+  MTP, draft models, PARD and MLP provide the best latency reduction, while
+  simpler methods such as n-gram and suffix decoding provide modest speedups
+  without increasing workload during peak traffic."
+
+Outside this slice, so reported rather than touched: the transcluded
+`tool/vllm#speculative_decoding_methods` fact says "ten proposer methods".
+The page's current list reads EAGLE, MTP, Draft Model, PARD, MLP, N-Gram,
+Suffix Decoding, Hidden State Extraction, Custom Proposer Backend
+(Experimental), then Dynamic Speculative Decoding, Adaptive Verification and
+Per-Request Acceptance Metrics — so the count lands between nine and twelve
+depending on whether the trailing three are read as proposers or as features
+of the feature. Defensible as written; not a finding, but the next editor of
+`content/wiki/tool/vllm.md` should know the boundary is soft.
+
+No claim in this entry required correction.

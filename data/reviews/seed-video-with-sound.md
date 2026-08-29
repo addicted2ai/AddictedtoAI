@@ -33,3 +33,27 @@ the correct direction for this surface.
 
 Quality: recency gives it force — this is the delta whose routine end a
 visitor can go spend money on today. Approve, upper-middle.
+
+## Recheck 2026-08-29 (wave addictedtoai-flh) — approve stands
+
+Re-examined because this delta was approved in the earlier seed round, which
+the 2026-08-29 seed wave never revisited. The price was the thing most likely
+to have rotted, so both ends were re-fetched today.
+
+- End A, `ar5iv.labs.arxiv.org/html/2210.02303` (278,606 bytes, HTTP 200) —
+  title "**Imagen Video: High Definition Video Generation with Diffusion
+  Models**" and, verbatim, "**We have decided not to release the Imagen Video
+  model or its source code** until these concerns are mitigated." The delta's
+  end-A sentence is the paper's own words. The arXiv abstract page for the
+  same identifier gives "[v1] Wed, 5 Oct 2022", matching the front matter.
+- End B, the Google developers blog post (50,135 bytes, HTTP 200, dated
+  "July 17, 2025") — "Veo 3 **natively generates rich audio—dialogue, effects,
+  and music—and synchronizes it with video in a single pass**" and "Veo 3 will
+  be priced at **$0.75 per second for video and audio output**." Sentence and
+  metric both exact, and the price is still the page's stated figure on
+  today's fetch, not only on the review date.
+
+The asymmetry the round-one review examined and judged fair — Imagen Video
+produced no audio at all, so end A is strictly weaker than the titled
+capability — is unchanged, and still points in the direction that strengthens
+the delta rather than stretching it. Nothing changed.

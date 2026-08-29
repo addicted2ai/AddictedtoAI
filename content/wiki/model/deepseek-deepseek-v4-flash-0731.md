@@ -48,61 +48,61 @@ facts:
     source: cited
     value: "MIT License, repository and weights"
     source_url: "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: slow
   - field: parameters
     source: cited
     value: "284B total, 13B active per token (sparse mixture of experts)"
     source_url: "https://openrouter.ai/api/v1/models"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: static
-  - field: card_parameters
+  - field: repository_tensor_total
     source: cited
     value: "304B params"
     source_url: "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: static
   - field: preview_parameters
     source: cited
     value: "284 billion parameters"
     source_url: "https://en.wikipedia.org/wiki/DeepSeek"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: static
   - field: structure
     source: cited
     value: "the same model structure as DeepSeek-V4-Flash-DSpark, i.e. it comes with a speculative decoding module attached"
     source_url: "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: static
   - field: terminal_bench_score
     source: cited
     value: "82.7 on Terminal Bench (2.1), per the model card"
     source_url: "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: dated
   - field: cybergym_score
     source: cited
     value: "76.7 on CyberGym, per the model card"
     source_url: "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: dated
   - field: preview_terminal_bench_score
     source: cited
     value: "61.8 on Terminal Bench (2.1) — the April preview checkpoint's score, per the same table on the July model card"
     source_url: "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: dated
   - field: preview_cybergym_score
     source: cited
     value: "38.7 on CyberGym — the April preview checkpoint's score, per the same table on the July model card"
     source_url: "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: dated
   - field: release_date
     source: cited
     value: "2026-07-31"
     source_url: "https://simonwillison.net/2026/Jul/31/deepseek-v4-flash-0731/"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: dated
 timeline:
   - date: "2026-04-24"

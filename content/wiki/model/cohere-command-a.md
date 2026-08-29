@@ -39,19 +39,19 @@ facts:
     source: cited
     value: "CC-BY-NC, plus Cohere Labs' Acceptable Use Policy — commercial use is prohibited"
     source_url: "https://huggingface.co/CohereForAI/c4ai-command-a-03-2025"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: slow
   - field: parameters
     source: cited
     value: "111B"
     source_url: "https://huggingface.co/CohereForAI/c4ai-command-a-03-2025"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: static
   - field: listed_date
     source: cited
     value: "2025-03-13"
     source_url: "https://openrouter.ai/cohere/command-a"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: dated
 timeline: []
 mentions:
@@ -78,7 +78,11 @@ the Artificial Analysis intelligence index, Command A scores
 {{fact:model/cohere-command-a#intelligence_index}}, against
 {{fact:model/deepseek-deepseek-v4-flash-0731#intelligence_index}} for
 DeepSeek's `deepseek-ai/DeepSeek-V4-Flash-0731` — a model listed more than
-a year later, priced at {{fact:model/deepseek-deepseek-v4-flash-0731#price_input}}
-input, and licensed under plain MIT with no commercial restriction
-whatsoever. A non-commercial licence is a harder sell on a model trailing
-a permissively licensed rival than on one that leads.
+a year later, whose OpenRouter row heads at
+{{fact:model/deepseek-deepseek-v4-flash-0731#price_input}} input, and which
+is licensed under plain MIT with no commercial restriction whatsoever. That
+figure is the top listed provider's rate for that row rather than
+necessarily DeepSeek's own, because a licence with no commercial
+restriction is exactly what lets anyone else host the weights and quote a
+price for them. A non-commercial licence is a harder sell on a model
+trailing a permissively licensed rival than on one that leads.

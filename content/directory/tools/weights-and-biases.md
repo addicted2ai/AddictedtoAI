@@ -4,6 +4,7 @@ url: "https://wandb.ai/site"
 pricing: "free for personal, non-commercial use; paid team plans billed per seat, custom Enterprise pricing"
 last_verified: "2026-08-28"
 entry: tool/weights-and-biases
+category: training
 mentions: []
 ---
 

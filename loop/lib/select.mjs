@@ -135,8 +135,15 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
         break;
       }
     }
-    if (refused) refusals.push({ candidate: c, rule: refused.rule, reason: refused.reason });
-    else eligible.push(c);
+    // Spread rather than pick three fields: a budget refusal also carries
+    // `category_mm`, `denominator_mm`, `denominator_substituted` and
+    // `denominator_origin` (specs/loop, `A budget refusal states the arithmetic
+    // it refused on`), and a hand-listed copy here is how a recorded value comes
+    // to exist nowhere anyone reads it.
+    if (refused) {
+      const { ok, ...rest } = refused;
+      refusals.push({ candidate: c, ...rest });
+    } else eligible.push(c);
   }
 
   const floor = applyUpkeepFloor(cfg, shares, eligible);

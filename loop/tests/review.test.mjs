@@ -239,11 +239,104 @@ test('the review brief states the cap, the spend so far, and that the run ends w
   const ctx = repoWithRealGates();
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer' });
   const brief = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-review-1-brief.md`), 'utf8');
-  assert.match(brief, /wall-clock cap of 60 minutes/);
+  // The cap is stated per invocation and wraps across a line; matching it
+  // whitespace-insensitively keeps this assertion about the wording rather than
+  // about where the paragraph happens to break.
+  assert.match(brief, /per-invocation wall-clock cap of\s+60 minutes/);
   assert.match(brief, /When you stop producing output, your run is over/);
   assert.match(brief, /never\s+end your turn intending to come back to it/);
   assert.match(brief, /Write the verdict record the moment your judgment is formed/);
   assert.match(brief, /This job has already cost \d+\.\d\d model-minutes/);
+  ctx.cleanup();
+});
+
+/* ---------------------------------------------------------------------------
+ * The cap is named for what it is (specs/loop delta, C45/C46/C47; beads
+ * addictedtoai-o5t).
+ *
+ * GOLDEN LIST — the exact phrasings this change removed. They are asserted
+ * absent, not merely "the new wording is present", because a brief that gained
+ * the honest sentence AND kept the misleading one would satisfy every positive
+ * assertion while still telling an executor it has a job budget it does not
+ * have. Each pattern is written so the replacement cannot match it.
+ * ------------------------------------------------------------------------ */
+const BUDGET_IMPLYING_PHRASES = [
+  // was: `- **Wall-clock cap**: 60 minutes.` in the author brief's facts list,
+  // sitting beside the branch and the work source as though it scoped the job.
+  { re: /\*\*Wall-clock cap\*\*:/, was: '- **Wall-clock cap**: N minutes.' },
+  // was: `a single non-interactive run under a **wall-clock cap of 60 minutes**`
+  // in the reviewer brief — true of the run, silent about the job.
+  { re: /under a \*\*wall-clock cap of/, was: 'under a **wall-clock cap of N minutes**' },
+];
+
+test('C45/C46/C47 the author brief states the cap per invocation, with the running total and count', async () => {
+  const ctx = repoWithRealGates();
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', dryRun: true });
+  assert.equal(res.dryRun, true, 'a dry run assembles the brief and invokes nothing');
+  const brief = res.briefText;
+  assert.ok(brief, ctx.output());
+
+  // C45 — the cap is this invocation's limit, and says so.
+  assert.match(brief, /\*\*Wall-clock cap for THIS invocation\*\*: 60 minutes/);
+  assert.match(brief, /per-invocation runaway guard/);
+  // C47 — and it explicitly is not the other thing.
+  assert.match(brief, /\*\*not a budget for the job\*\*/);
+  // C46 — the running total and the invocation count, both present, both numbers.
+  assert.match(brief, /\*\*Spent on this job so far\*\*: 0\.00 model-minutes across 0\s+completed invocations/);
+  assert.match(brief, /the job's total is the sum of them — the cap does not bound it/);
+
+  for (const { re, was } of BUDGET_IMPLYING_PHRASES) {
+    assert.ok(!re.test(brief), `the author brief still carries the removed phrasing ${was}`);
+  }
+  ctx.cleanup();
+});
+
+test('C45/C46/C47 the reviewer brief does the same, with the spend the job has actually reached', async () => {
+  const ctx = repoWithRealGates();
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer' });
+  assert.equal(res.outcome, 'done', ctx.output());
+  const brief = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-review-1-brief.md`), 'utf8');
+
+  assert.match(brief, /\*\*per-invocation wall-clock cap of\n60 minutes\*\* — the limit on THIS run, not a budget for the job/);
+  assert.match(brief, /This job has already cost \d+\.\d\d model-minutes across 1 completed\ninvocation\b/);
+  assert.match(brief, /the job's total is the sum\nof them/);
+
+  for (const { re, was } of BUDGET_IMPLYING_PHRASES) {
+    assert.ok(!re.test(brief), `the reviewer brief still carries the removed phrasing ${was}`);
+  }
+
+  // The count is a measurement, not a constant: by the delta review of a revised
+  // job, three invocations have run and the brief says three.
+  const ctx2 = repo('done-content-entry', 'review-revise-then-approve');
+  const res2 = await go(ctx2);
+  assert.equal(res2.outcome, 'done', ctx2.output());
+  const pass2 = readFileSync(join(ctx2.worktreeRoot, `${res2.jobId}-review-2-brief.md`), 'utf8');
+  assert.match(pass2, /across 3 completed\ninvocations/, 'author + review 1 + revision');
+  const line = readLedger(ctx2).at(-1);
+  assert.equal(line.phases.length, 4, 'and the fourth is this very review');
+  ctx2.cleanup();
+  ctx.cleanup();
+});
+
+test('C46 the revision brief supersedes the stale figures it inherits', async () => {
+  // The revision brief is the author brief plus the findings. The author brief
+  // was assembled before anything ran, so on its own it would tell the third
+  // invocation of a job that the job had spent nothing — the precise misreading
+  // this requirement exists to end.
+  const ctx = repo('done-content-entry', 'review-revise-then-approve');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+  const brief = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-revision-brief.md`), 'utf8');
+
+  assert.match(brief, /\*\*This job's accounting, as of now\*\*/);
+  assert.match(brief, /these supersede the figures near the top/);
+  assert.match(brief, /across 2\s+completed invocations/, 'the author run and the first review');
+  // The stale block is still above it — that is what "supersede" means — so the
+  // fresh one must not be the only thing asserted.
+  assert.ok(brief.indexOf('as of now') > brief.indexOf('## The outcome'), 'the fresh accounting comes after the inherited brief body');
+  for (const { re, was } of BUDGET_IMPLYING_PHRASES) {
+    assert.ok(!re.test(brief), `the revision brief still carries the removed phrasing ${was}`);
+  }
   ctx.cleanup();
 });
 
@@ -335,6 +428,27 @@ test('59s the ledger records model-minutes PER INVOCATION, and `mm` is still the
 
   // The line the maintainer actually reads, printed by the run itself.
   assert.match(ctx.output(), /ledger: \{.*"phases":\[/);
+  ctx.cleanup();
+});
+
+test('C44 a job that makes one invocation records one phase, and it is the whole total', async () => {
+  // The four-phase case above shows the breakdown can differ from the total.
+  // This is the other end of the same claim, and it is the one that catches a
+  // `phases` array padded with roles the loop did not actually invoke: a
+  // well-formed `blocked:` is a SUCCESSFUL honest outcome that ends the job
+  // after the author run, with no review pass and no revision. One invocation,
+  // one measurement, and the sum is the total exactly.
+  const ctx = repo('blocked', 'review-approve');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'blocked', ctx.output());
+
+  const line = readLedger(ctx).at(-1);
+  assert.ok(Array.isArray(line.phases), `no phases on the ledger line: ${JSON.stringify(line)}`);
+  assert.equal(line.phases.length, 1, 'one invocation, one phase — not a placeholder for each role');
+  assert.deepEqual(line.phases.map((p) => p.role), ['author']);
+  assert.deepEqual(line.phases.map((p) => p.runner), ['mock-frontier']);
+  assert.equal(line.phases[0].outcome, 'blocked', 'the author\'s own result-protocol classification');
+  assert.equal(line.phases[0].mm, line.mm, 'with one phase the breakdown IS the total, to the last hundredth');
   ctx.cleanup();
 });
 

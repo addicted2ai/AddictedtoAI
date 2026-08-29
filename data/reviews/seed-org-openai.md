@@ -49,3 +49,59 @@ Checklist: wiki entry. Sources fetched, catalog claims measured against
 
 No cut-list violations; the closing paragraph's hedge ("the catalog is what
 it is, dated") conveys a real epistemic state, not boilerplate. Approve.
+
+## Recheck 2026-08-29 (wave addictedtoai-flh) — approve stands
+
+Re-examined because this entry was approved in the earlier seed round, which
+the 2026-08-29 seed wave never revisited. All four sources re-fetched; every
+quotation re-matched literally, and the catalog arithmetic re-derived against
+a *later* snapshot than the one it was written from.
+
+- VentureBeat (200,731 bytes, byline "June 26, 2026") — "In this new naming
+  system introduced with GPT‑5.6, **the number identifies a model's
+  generation, while Sol, Terra, and Luna identify durable capability tiers**
+  that can advance on their own"; "the models are being made available
+  initially to a narrow set of **approximately 20 total organizations, after
+  OpenAI shared the models and release plans with the U.S. government**"; "an
+  executive order issued by President Donald J. Trump earlier this month on
+  **June 2, 2026**"; and OpenAI's own words, "we previewed our plans and the
+  models' capabilities ahead of today's launch. At [the U.S. government's]
+  request, we are **starting with a limited preview** for a small group of
+  trusted partners." The entry's framing that `mini` and `nano` "gave way" is
+  the article's own: "the new naming scheme was designed to move away from the
+  'nano' and 'mini' variants of GPT-5".
+- GitHub Copilot changelog (105,739 bytes, dated "July 9, 2026") — "highest
+  reasoning ceiling in the family", "balanced default", "lightweight,
+  cost-efficient variant", all raw.
+- WilmerHale client alert (61,976 bytes) — "to determine which systems qualify
+  as 'covered frontier models' and to assess such models prior to public
+  release. **Under this voluntary framework**, AI developers are invited to
+  engage with the federal government … to **provide prerelease access for a
+  period of up to 30 days**" and "the EO **stops short of imposing licensing
+  requirements**, mandatory safety testing or any government veto over launch
+  decisions." Every element of the entry's EO sentence, including the
+  "voluntary by design" and "no licensing requirement" framing.
+- Wikipedia (1,345,502 bytes) — "Founded December 8, 2015"; "OpenAI
+  Headquarters in 1515 Third Street , San Francisco"; "The OpenAI Foundation
+  holds a **26%** stake in the PBC, while Microsoft holds a **27%** stake";
+  "In April 2026, the company announced that it closed a funding round of $122
+  billion in committed capital at a **post-money valuation of $852 billion**";
+  "On **October 28, 2025**, OpenAI announced that it had adopted the new PBC
+  corporate structure after receiving approval from the **attorneys general of
+  California and Delaware**." All five facts and the timeline row supported.
+
+Re-measured against `data/sources/openrouter-models/latest.json` (2026-08-29):
+`openai/gpt-5.6-luna` II 52.3 at 0.20/Mtok input, `openai/gpt-5.4` II 53.1 at
+2.50 — gap 0.8 points ("within a point"), ratio exactly 12.50 ("roughly a
+twelfth"), created 2026-03-05 → 2026-07-09 = **126 days**, as written. The pro
+oddity also still reproduces on the later snapshot: `sol-pro` 2.00/10.00 =
+`sol`; `terra-pro` 2.00/12.00 = `terra`; `luna-pro` 0.20/1.20 = `luna`; while
+`gpt-5.2-pro` 21.00 against `gpt-5.2` 1.75 is 12x and `gpt-5.5-pro` 30.00
+against `gpt-5.5` 5.00 is 6x. The entry dates that observation to 28 August
+2026 and offers two readings without asserting either, which is still right.
+
+One thing worth leaving on the record so a later pass does not mistake it for
+a defect: VentureBeat's own pricing table lists GPT-5.6 Luna at $1.00/$6.00
+per million, five times the OpenRouter row's 0.20 input. The entry does not
+collide with that, because it says explicitly that Luna "lists at … **in the
+OpenRouter catalog**" and reasons only over catalog rows. Nothing changed.

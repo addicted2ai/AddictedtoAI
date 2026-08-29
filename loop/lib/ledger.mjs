@@ -98,6 +98,32 @@ export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, 
   return line;
 }
 
+/**
+ * What one job has already cost, read from the ledger (specs/loop delta: every
+ * brief "SHALL state the job's total spend so far and how many invocations have
+ * already run").
+ *
+ * A job that was interrupted and resumed has more than one line, each carrying
+ * that RUN's total, so the job's total is their sum. The invocation count comes
+ * from `phases` where a line has it. A line written before `phases` existed, or
+ * one whose run made no invocation at all, cannot say how many invocations it
+ * covered — so it contributes 1 when it recorded any minutes and 0 when it did
+ * not, and never a guess. That is a floor on the count, and the brief says it is
+ * what the ledger records rather than claiming it is exhaustive.
+ */
+export function jobSpendSoFar(ledger, jobId) {
+  const mine = (ledger ?? []).filter((l) => l.id === jobId);
+  let mm = 0;
+  let invocations = 0;
+  for (const l of mine) {
+    const lineMm = Number(l.mm) || 0;
+    mm += lineMm;
+    if (Array.isArray(l.phases) && l.phases.length) invocations += l.phases.length;
+    else if (lineMm > 0) invocations += 1;
+  }
+  return { mm: Math.round(mm * 100) / 100, invocations };
+}
+
 /** Lines inside a trailing window, newest last (file order preserved). */
 export function withinWindow(lines, now, ms) {
   const cutoff = now.getTime() - ms;

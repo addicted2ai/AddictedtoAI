@@ -4,6 +4,7 @@ url: "https://aider.chat/"
 pricing: "free, open source (Apache-2.0); you supply your own model API key"
 last_verified: "2026-08-28"
 entry: tool/aider
+category: coding
 mentions: []
 ---
 

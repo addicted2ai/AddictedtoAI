@@ -4,6 +4,7 @@ url: "https://continue.dev/"
 pricing: "free, open source (Apache-2.0)"
 last_verified: "2026-08-28"
 entry: tool/continue
+category: coding
 mentions: []
 ---
 

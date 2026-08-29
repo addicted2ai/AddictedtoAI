@@ -4,6 +4,7 @@ url: "https://dspy.ai/"
 pricing: "free, open source (MIT)"
 last_verified: "2026-08-28"
 entry: tool/dspy
+category: frameworks
 mentions: []
 ---
 

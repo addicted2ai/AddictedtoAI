@@ -25,7 +25,7 @@ import {
 } from '../lib/budget.mjs';
 import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { readLedger } from '../lib/ledger.mjs';
-import { selectJob } from '../lib/select.mjs';
+import { formatRefusals, selectJob } from '../lib/select.mjs';
 import { makeRepo, writeLedger, ledgerLine, hoursAgo, daysAgo, writeQueue } from './helpers.mjs';
 
 const NOW = new Date('2026-09-10T12:00:00.000Z');
@@ -336,6 +336,129 @@ test('breaker-1 counting: only failed and discarded count, blocked never does', 
     3,
     'interrupted and capacity are skipped, not counted and not resetting',
   );
+});
+
+/* ---------------------------------------------------------------------------
+ * A budget refusal states the arithmetic it refused on (specs/loop delta,
+ * clauses C42 and C43; beads addictedtoai-tr8, settled half).
+ *
+ * A percentage hides its own denominator. `loop/lib/budget.mjs` measures
+ * ceilings against `max(observed total, warm-up)` while specs/loop says a
+ * category's share is its MM over the tier's rolling total — a defensible
+ * reading that was invisible, because every refusal printed only a percentage.
+ * WHICH denominator is right is D8 in design.md and is NOT decided here. That
+ * the answer cannot hide is what these two tests measure.
+ * ------------------------------------------------------------------------ */
+
+test('C42 a ceiling refusal carries and prints its numerator, denominator and origin', () => {
+  // A warm window: the denominator IS the observed rolling total, so nothing is
+  // substituted and the refusal says so plainly.
+  const ctx = fixture([
+    ledgerLine({ id: 'a', type: 'entry', mm: 450, tier: 'frontier', ts: daysAgo(NOW, 2) }),
+    ledgerLine({ id: 'b', type: 'verify', mm: 550, tier: 'frontier', ts: daysAgo(NOW, 3) }),
+  ]);
+  const cfg = loadConfig(ctx);
+  const shares = tierShares(cfg, readLedger(ctx), 'frontier', NOW);
+  const g = budgetGate(cfg, shares, 'post');
+  assert.equal(g.ok, false);
+
+  // RECORDED — the three values, as values, not as prose a caller must parse.
+  assert.equal(g.category_mm, 450, 'the numerator: new_writing MM in this tier');
+  assert.equal(g.denominator_mm, 1000, 'the denominator the percentage was computed against');
+  assert.equal(g.denominator_substituted, false);
+  assert.match(g.denominator_origin, /observed rolling 30-day total/);
+
+  // PRINTED — `formatRefusals` prints `reason` and nothing else, so all three
+  // have to survive into it or they are recorded and invisible.
+  assert.match(g.reason, /450 model-minutes of new_writing/);
+  assert.match(g.reason, /1000 model-minutes/);
+  assert.match(g.reason, /denominator origin: .*observed rolling 30-day total/);
+  assert.ok(!/SUBSTITUTED/.test(g.reason), 'nothing was substituted, so nothing announces a substitution');
+  ctx.cleanup();
+});
+
+test('C43 a substituted denominator announces itself, names what it replaced, and says why', () => {
+  // One maximum-length machinery job below the warm-up: the ceiling is measured
+  // against 600 MM that were never spent. THAT is the divergence from the
+  // specification's literal arithmetic, and it must be impossible to miss.
+  const ctx = fixture([
+    ledgerLine({ id: 'a', type: 'machinery', mm: 60, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+  ]);
+  const cfg = loadConfig(ctx);
+  const shares = tierShares(cfg, readLedger(ctx), 'frontier', NOW);
+  const g = budgetGate(cfg, shares, 'machinery');
+  assert.equal(g.ok, false);
+
+  assert.equal(g.category_mm, 60);
+  assert.equal(g.denominator_mm, 600, 'the warm-up window, not the 60 MM actually recorded');
+  assert.equal(g.denominator_substituted, true);
+  assert.notEqual(g.denominator_mm, shares.total_mm, 'the whole point: it is not the observed total');
+
+  assert.match(g.reason, /SUBSTITUTED/, 'it announces itself');
+  assert.match(g.reason, /observed rolling 30-day total of 60(\.0+)? model-minutes/, 'names the value it replaced');
+  assert.match(g.reason, /warm-up window/, 'names the value used instead');
+  assert.match(g.reason, /100 \/ 10% tightest ceiling/, 'and where that value comes from');
+  assert.match(g.reason, /60-minute largest per-type cap/);
+  ctx.cleanup();
+});
+
+test('C42 the upkeep floor refusal states its arithmetic too, and never claims a substitution', () => {
+  // The floor is deliberately measured against the observed total alone
+  // (design D8's sub-decision, unchanged here). Its refusal must say that, or a
+  // reader has no way to tell the floor's denominator from a ceiling's.
+  const ctx = fixture([
+    ledgerLine({ id: 'a', type: 'entry', mm: 30, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+    ledgerLine({ id: 'b', type: 'verify', mm: 20, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+    ledgerLine({ id: 'c', type: 'machinery', mm: 50, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+  ]);
+  const cfg = loadConfig(ctx);
+  const shares = tierShares(cfg, readLedger(ctx), 'frontier', NOW);
+  const r = applyUpkeepFloor(cfg, shares, [{ type: 'post', title: 'a post' }, { type: 'repair', title: 'a repair' }]);
+  const refusal = r.refused[0];
+
+  assert.equal(refusal.category_mm, 20, 'upkeep MM, the numerator');
+  assert.equal(refusal.denominator_mm, 100, 'the observed rolling total — the floor never reads the warm-up');
+  assert.equal(refusal.denominator_substituted, false);
+  assert.match(refusal.denominator_origin, /observed rolling 30-day total/);
+  assert.match(refusal.reason, /20 model-minutes of upkeep/);
+  assert.match(refusal.reason, /100 model-minutes/);
+  assert.ok(!/SUBSTITUTED/.test(refusal.reason));
+
+  // And the warm-up genuinely does not reach the floor: below it, the floor
+  // still reads the observed share, so this stays true at n=1.
+  const thin = tierShares(
+    cfg,
+    [ledgerLine({ id: 'z', type: 'entry', mm: 12.19, tier: 'cheap', ts: daysAgo(NOW, 1) })],
+    'cheap',
+    NOW,
+  );
+  const thinRefusal = applyUpkeepFloor(cfg, thin, [{ type: 'post' }, { type: 'verify' }]).refused[0];
+  assert.equal(thinRefusal.denominator_mm, 12.19, 'the observed total, thin as it is');
+  assert.equal(thinRefusal.denominator_substituted, false);
+  ctx.cleanup();
+});
+
+test('C42 the arithmetic survives the selector, which is where a refusal is actually read', () => {
+  // budgetGate's return value is not what an operator sees. `selectJob` rebuilds
+  // each refusal into its own object and `formatRefusals` prints it, and a field
+  // dropped in between is recorded nowhere anyone looks.
+  const ctx = fixture(
+    [
+      ledgerLine({ id: 'a', type: 'entry', mm: 500, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+      ledgerLine({ id: 'b', type: 'verify', mm: 500, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+    ],
+    [{ type: 'post', title: 'a new post' }],
+  );
+  const cfg = loadConfig(ctx);
+  const runner = pickRunner(loadRunners(ctx), { id: 'mock-frontier', role: 'author' });
+  const sel = selectJob(ctx, { cfg, ledger: readLedger(ctx), runner, dryRun: true });
+  const refusal = sel.refusals.find((r) => r.rule === 'budget:new_writing-ceiling');
+  assert.ok(refusal, 'the ceiling refused, as this ledger requires');
+  assert.equal(refusal.category_mm, 500);
+  assert.equal(refusal.denominator_mm, 1000);
+  assert.match(refusal.denominator_origin, /observed rolling 30-day total/);
+  assert.match(formatRefusals([refusal]).join('\n'), /500 model-minutes of new_writing/);
+  ctx.cleanup();
 });
 
 test('the selector refuses at the ceiling and names the rule in its output', () => {

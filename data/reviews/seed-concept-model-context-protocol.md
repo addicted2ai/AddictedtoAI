@@ -54,3 +54,71 @@ This is the piece the launch-vintage MCP content everywhere else fails to
 be: the sampling-inversion observation and the version-string explanation
 are judgment on top of a verified inventory, not a summary of one. The
 would-cite answer was the easiest of the sixteen to write. Approve.
+
+## Recheck 2026-08-29 (addictedtoai-flh) — holds, verdict unchanged
+
+Every technical identifier in the body's removal inventory re-confirmed by
+literal substring against freshly fetched bytes. `specification/2026-07-28/
+changelog` (295,501 B) contains all thirteen of: `server/discover`,
+`UnsupportedProtocolVersionError`, `io.modelcontextprotocol/protocolVersion`,
+`io.modelcontextprotocol/clientCapabilities`, `Mcp-Session-Id`,
+`Multi Round-Trip Request`, `input_required`, `inputRequests`,
+`inputResponses`, `subscriptions/listen`, `Last-Event-ID`, `logging/setLevel`,
+`notifications/roots/list_changed`.
+
+Semantics checked, not just presence. The changelog reads: "Make MCP
+stateless: remove the initialize / notifications/initialized handshake";
+"Add server/discover : servers MUST implement this RPC"; "servers MUST NOT
+emit notifications/message for requests that did not include this field";
+"Clients MUST treat results from earlier-protocol servers that omit the field
+as \"complete\""; "clients MUST re-issue it as a new request with a new
+request ID". The four **MUST**/**MUST NOT** claims in the entry are the
+specification's own modal verbs, not the entry's emphasis.
+
+Deprecation trio verbatim: "Deprecate the Roots, Sampling, and Logging
+features ( SEP-2577 )" with "Suggested migrations: pass directories or files
+via tool parameters, resource URIs, or server configuration instead of Roots;
+integrate directly with LLM provider APIs instead of Sampling; log to stderr
+(stdio) or use OpenTelemetry instead of Logging" — the entry's three
+migrations are this sentence, compressed. "The deprecated features registry
+tracks every feature currently in the Deprecated state" and "Reclassify the
+HTTP+SSE transport (deprecated since protocol version 2025-03-26) as
+Deprecated under the feature lifecycle policy" both present.
+
+Facts. Versioning page (now served at `/docs/2026-07-28/learn/versioning`;
+the cited `/specification/versioning` redirects there): "The current protocol
+version is 2026-07-28."; "string-based version identifiers following the
+format YYYY-MM-DD , to indicate the last date backwards incompatible changes
+were made" plus "The protocol version will not be incremented when the
+protocol is updated, as long as the changes maintain backwards compatibility";
+"remain in the specification for at least twelve months, or at least ninety
+days under the policy's expedited-removal exception". Searching
+`backwards-incompatible` hyphenated returns ABSENT — the source writes it
+unhyphenated; that is a false absence.
+
+The three-state lifecycle is on `/community/feature-lifecycle`: "How
+individual MCP specification features move through Active, Deprecated, and
+Removed states" — the entry's "Active, Deprecated, Removed" is exact.
+
+`base_protocol` and the three roles come from `/specification/2026-07-28`:
+"The protocol uses JSON-RPC 2.0 messages to establish communication between:
+Hosts : LLM applications that initiate connections Clients : Connectors
+within the h[ost]... Servers". `announced`: the Anthropic post is dated
+"Nov 25, 2024" ("November 25, 2024" is ABSENT — format variant) and reads
+"Today, we're open-sourcing the Model Context Protocol (MCP)", listing "The
+Model Context Protocol specification and SDKs / Local MCP server support in
+the Claude Desktop apps / An open-source repository of MCP servers" and
+"pre-built MCP servers for popular enterprise systems like Google Drive,
+Slack, GitHub, Git, Postgres, and Puppeteer" — the entry's six-server list is
+the post's own, in the post's own order.
+
+Timeline entry 2025-03-26 confirmed at that revision's changelog: "Added a
+comprehensive authorization framework based on OAuth 2.1" and "Replaced the
+previous HTTP+SSE transport with a more flexible Streamable HTTP transport".
+
+**One imprecision noted, not corrected.** The body says "the two revisions
+that removed it" — the 2026-07-28 changelog states it lists changes "since
+the previous revision, 2025-11-25", so there are intervening revisions the
+entry's timeline does not carry. The two it names are the two that did the
+removing, so the sentence is true as written; the timeline is selective
+rather than wrong. Filed as addictedtoai-9df.

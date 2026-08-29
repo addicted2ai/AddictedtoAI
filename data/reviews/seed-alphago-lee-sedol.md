@@ -140,3 +140,67 @@ verified line by line against fresh fetches.
 The revision did not merely survive: replacing a secondhand quotation with
 the paper's own KGS numbers made the closing argument stronger than the
 version that was returned.
+
+## Recheck 2026-08-29 (wave addictedtoai-flh) — approve stands
+
+Re-examined because this entry was approved in the earlier seed round, which
+the 2026-08-29 seed wave never revisited. Effort went to the two highest-risk
+classes here: the **superlatives** ("the first time a computer Go player had
+received the highest possible certification", "the strongest publicly
+available Go AI system", "the top Go player in the world over the last
+decade") and every string carried inside quotation marks. All seven cited
+sources were re-fetched and every quotation re-matched literally.
+
+- `research.google/blog/alphago-mastering-the-ancient-game-of-go-with-machine-learning/`
+  (166,071 bytes, dated "January 27, 2016") — "AlphaGo's next challenge will
+  be to play the top Go player in the world over the last decade, Lee Sedol",
+  "The match will take place this March in Seoul, South Korea", "Using a
+  single machine, AlphaGo won all but one of its 500 games", "behind closed
+  doors between October 5-9 last year", "AlphaGo won by 5 games to 0", "at
+  least another 10 years until a computer could beat one of the world's elite
+  group of Go professionals". The entry's "three-time European champion Fan
+  Hui" is the post's own "the reigning 3-time European Go champion Fan Hui",
+  and its "5 and 9 October 2015" is the post's "October 5-9 last year" read
+  against a January 2016 dateline. Announcement date holds.
+- `blog.google/innovation-and-ai/products/alphagos-ultimate-challenge/`
+  (393,450 bytes) — "$1 million USD in prize money", "donated to UNICEF, STEM
+  charities and Go organizations", "no handicap", "March 9", and "Playing as
+  white, Lee won by resignation after 180 moves", which is what anchors the
+  entry's "played with white".
+- `deepmind.google/research/alphago/` (141,589 bytes) — "4-1 victory in
+  Seoul", "earned AlphaGo a 9 dan professional ranking", "the first time a
+  computer Go player had received the highest possible certification", "God's
+  Touch", "just as unlikely and inventive as the one AlphaGo played two games
+  earlier", "Move 78". The superlative is the source's own sentence, not the
+  entry's inference.
+- `britgo.org/deepmind2016/press1` (18,026 bytes) — "Silver", "529", "7587",
+  "484-489". `nature_citation` supported.
+- `deepmind.google/.../alphago-zero-starting-from-scratch/` (152,293 bytes) —
+  `article:published_time` is `2017-10-18T00:00:00+00:00`, matching the
+  timeline row exactly; "learns to play simply by playing games against
+  itself, starting from completely random play", "three days of self-play",
+  "by 100 games to 0" all raw.
+- `abc.net.au/...11745872` (352,293 bytes) — "with the debut of AI in Go
+  games", "I'm not at the top even if I become the number one", "even if I
+  become the number one, there is an entity that cannot be defeated",
+  "Yonhap", "My white 78".
+- `techcrunch.com/2016/03/13/...` (229,169 bytes) — "was too good for us
+  today and pressured #AlphaGo into a mistake that it couldn't recover from".
+- `arxiv.org/abs/2211.00241` (42,947 bytes, "[Submitted on 1 Nov 2022") and
+  `ar5iv.labs.arxiv.org/html/2211.00241` (2,216,364 bytes) — "97% win rate
+  against KataGo running at superhuman settings", "the strongest publicly
+  available Go AI system at the time of writing", "Our adversaries do not win
+  by playing Go well", "surround the cyclic group", "guarantee the capture
+  before the victim realizes it is in danger and defends", "one of our
+  authors, a Go expert, was able to learn from our adversary", "obtained a
+  greater than 90% win rate against a top ranked KataGo bot that is
+  unaffiliated with the authors", "KataGo and Leela Zero playing with 100k
+  visits each, which is normally far beyond human capabilities", "persists
+  even in KataGo agents adversarially trained to defend against our attack",
+  and the 99% paraphrase's source ("over 99% confidence for most of the
+  game"). The arXiv author list carries Tony T. Wang, Adam Gleave, Kellin
+  Pelrine, Sergey Levine and Stuart Russell, so the entry's "a group
+  including …" is accurate.
+
+Also re-derived: "Nineteen months later" for March 2016 → 18 October 2017 is
+right. Nothing changed.

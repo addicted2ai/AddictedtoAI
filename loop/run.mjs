@@ -22,10 +22,10 @@ import { fileURLToPath } from 'node:url';
 import { makeContext } from './lib/paths.mjs';
 import { loadConfig } from './lib/config.mjs';
 import { loadRunners, pickRunner, conformanceGate, loadConformance } from './lib/runners.mjs';
-import { appendLedger, makeLedgerLine, nextJobId, readLedger, LEDGER_FIELDS } from './lib/ledger.mjs';
+import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LEDGER_FIELDS } from './lib/ledger.mjs';
 import { lanePause } from './lib/budget.mjs';
 import { selectJob, formatRefusals } from './lib/select.mjs';
-import { assembleBrief, resumeBrief } from './lib/brief.mjs';
+import { assembleBrief, invocationAccounting, resumeBrief } from './lib/brief.mjs';
 import { readResult, classifyRun } from './lib/result.mjs';
 import { runExecutor, jobLogPath } from './lib/exec.mjs';
 import {
@@ -127,6 +127,7 @@ async function executeJob(ctx, opts) {
   } = opts;
   const capMinutes = cfg.job_caps_minutes[job.type];
   const base = opts.base;
+  const prior = opts.prior ?? { mm: 0, invocations: 0 };
 
   // -------------------------------------------------------------------------
   // PER-INVOCATION MODEL-MINUTES (beads addictedtoai-59s).
@@ -286,7 +287,10 @@ async function executeJob(ctx, opts) {
       pass,
       findings,
       gates: gateReport,
-      mmSoFar: mm,
+      // The job's spend, not this run's: a resumed job carries what its earlier
+      // runs cost, and the reviewer is told the number the ledger would show.
+      mmSoFar: prior.mm + mm,
+      invocations: prior.invocations + phases.length,
     });
     mm += rev.run.mm; // "Review MM counts toward the job it reviews."
     if (rev.discarded.discardedAnything) {
@@ -332,7 +336,18 @@ async function executeJob(ctx, opts) {
     // One revision pass against the named findings, then a delta review.
     findings = `${gate.verdict.reasons.join(', ')}\n\n${gate.verdict.notes}`;
     ctx.log('one revision pass against the named findings');
-    const revisionBrief = `${briefText}\n\n---\n\n## Revision pass (one only)\n\nThe reviewer did not approve. Address exactly these findings, change nothing\nelse, and end by writing RESULT.md again:\n\n${findings}\n`;
+    // The revision brief is the author brief plus the findings, and the author
+    // brief's spend figures were true when it was assembled and are stale now —
+    // the author run and at least one review have happened since. A brief that
+    // restated "0.00 across 0 invocations" to the third invocation of a job
+    // would be the exact misreading this is for, so the current accounting is
+    // appended and supersedes what is above it.
+    const revisionBrief =
+      `${briefText}\n\n---\n\n## Revision pass (one only)\n\n` +
+      `**This job's accounting, as of now** — these supersede the figures near the top of\n` +
+      `this brief, which were written before the author run and the review:\n\n` +
+      `${invocationAccounting({ capMinutes, mmSoFar: prior.mm + mm, invocations: prior.invocations + phases.length })}\n\n` +
+      `The reviewer did not approve. Address exactly these findings, change nothing\nelse, and end by writing RESULT.md again:\n\n${findings}\n`;
     const run2 = await runExecutor({
       command: runner.command,
       cwd: worktree,
@@ -409,16 +424,28 @@ export async function runLoop(ctx, opts = {}) {
   // housekeeping that keeps dead branches from accumulating silently — that is
   // the failure this whole issue is about, and it would be perverse to
   // reintroduce it while fixing it (beads addictedtoai-h5k).
-  const health = runnerHealthGate(ledger, runner.id);
-  if (!health.ok) {
-    ctx.log(`REFUSED [${health.rule}]: ${health.reason}`);
-    return { started: true, selected: null, refused: health.reason, rule: health.rule };
-  }
-  if (health.streak > 0) {
-    ctx.log(
-      `note: runner "${runner.id}" produced nothing on its last ${health.streak} run(s); ` +
-        `at ${NO_OUTPUT_STREAK_LIMIT} it is refused until a run on it produces something.`,
-    );
+  //
+  // BOTH ROLES, because the requirement says both: "the loop SHALL refuse that
+  // runner for the `author` and `reviewer` roles". Only the author was gated
+  // here before, and the reviewer half is not a formality — measured on a
+  // throwaway repository with a healthy author and a dead reviewer, the loop
+  // selected a job, spent the author's whole run producing a diff, invoked the
+  // dead reviewer, got no verdict record, and failed the job at `no-record`.
+  // Every one of those minutes bought work that could not have merged, because
+  // nothing merges without a review. Refusing the run is therefore the cheaper
+  // and the honest outcome, and it happens before any executor is invoked.
+  for (const [role, who] of [['author', runner], ['reviewer', reviewer]]) {
+    const h = runnerHealthGate(ledger, who.id);
+    if (!h.ok) {
+      ctx.log(`REFUSED [${h.rule}]: (${role} role) ${h.reason}`);
+      return { started: true, selected: null, refused: `(${role} role) ${h.reason}`, rule: h.rule };
+    }
+    if (h.streak > 0) {
+      ctx.log(
+        `note: ${role} runner "${who.id}" produced nothing on its last ${h.streak} run(s); ` +
+          `at ${NO_OUTPUT_STREAK_LIMIT} it is refused until a run on it produces something.`,
+      );
+    }
   }
 
   const lane = lanePause(ledger, runner.provider, now);
@@ -443,7 +470,13 @@ export async function runLoop(ctx, opts = {}) {
     }
     const lastType = resumeTarget.last?.type;
     job = { type: lastType ?? 'machinery', source: 'resumed', title: `resume ${jobId}`, detail: '' };
-    briefText = resumeBrief(committed);
+    // The committed brief's spend figures are frozen at the run that wrote it.
+    // For a resumed job they are stale by construction, so the current ones go
+    // above it and say so.
+    briefText = resumeBrief(committed, {
+      capMinutes: cfg.job_caps_minutes[job.type],
+      ...jobSpendSoFar(ledger, jobId),
+    });
     ctx.log(`resuming ${branch} (${resumeTarget.reason}, ${resumeTarget.ageDays.toFixed(1)} days old) — no retry consumed`);
   } else {
     const sel = selectJob(ctx, { cfg, ledger, runner, dryRun: opts.dryRun });
@@ -487,6 +520,10 @@ export async function runLoop(ctx, opts = {}) {
       job,
       branch,
       capMinutes: cfg.job_caps_minutes[job.type],
+      // A new job: nothing spent, nothing invoked. Stated rather than omitted,
+      // because "0.00 across 0 invocations" is the figure that makes the cap
+      // read as per-invocation on the very first brief.
+      ...jobSpendSoFar(ledger, jobId),
     });
     ctx.log(`selected: ${job.type} from ${job.source} — ${job.title}`);
   }
@@ -538,6 +575,10 @@ export async function runLoop(ctx, opts = {}) {
       gates: opts.noGates ? false : opts.gates,
       ledger,
       base: mergeBaseSha,
+      // What this job cost BEFORE this run. Zero for a new job; for a resumed
+      // one, the sum of its earlier lines — without it every brief in a resumed
+      // job would restate the running total as though the job had just started.
+      prior: jobSpendSoFar(ledger, jobId),
     });
   } finally {
     unlinkNodeModules(worktree);

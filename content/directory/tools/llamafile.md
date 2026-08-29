@@ -4,6 +4,7 @@ url: "https://github.com/mozilla-ai/llamafile"
 pricing: "free, open source (Apache-2.0)"
 last_verified: "2026-08-28"
 entry: tool/llamafile
+category: local
 mentions: []
 ---
 

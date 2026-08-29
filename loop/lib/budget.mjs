@@ -103,12 +103,69 @@ export function warmUpJobs(cfg) {
  * window errs toward doing upkeep, which is the safe direction, and it already
  * binds only when an upkeep job is actually available. One upkeep job clears it.
  */
-export function warmUpMm(cfg) {
+export function largestCapMinutes(cfg) {
   const caps = Object.values(cfg?.job_caps_minutes ?? {}).filter(
     (n) => typeof n === 'number' && Number.isFinite(n) && n > 0,
   );
-  const maxCap = caps.length ? Math.max(...caps) : 60;
-  return warmUpJobs(cfg) * maxCap;
+  return caps.length ? Math.max(...caps) : 60;
+}
+
+export function warmUpMm(cfg) {
+  return warmUpJobs(cfg) * largestCapMinutes(cfg);
+}
+
+/**
+ * The arithmetic a refusal refused on: the numerator, the denominator, and
+ * WHERE THE DENOMINATOR CAME FROM (specs/loop delta, `A budget refusal states
+ * the arithmetic it refused on`; beads addictedtoai-tr8).
+ *
+ * A share is a percentage of something and the something is not always the
+ * number the reader assumes. This module measures ceilings against
+ * `max(observed total, warm-up)` while specs/loop says a category's share is its
+ * MM over the tier's rolling total. The divergence is defensible; it was
+ * invisible, because a refusal printed a percentage and a percentage hides its
+ * own denominator.
+ *
+ * This decides NOTHING about which denominator is correct — that is design D8,
+ * the maintainer's open decision. It makes the answer impossible to hide either
+ * way: a substituted denominator announces itself, names the value it replaced,
+ * and says where it came from, so a refusal is reconstructible from its own
+ * text. An origin that is merely true is not enough; the refusal has to be
+ * readable by whoever is looking at a job that did not run.
+ *
+ * @param {object} cfg
+ * @param {object} shares  from tierShares()
+ * @param {string} cat     the budget category being refused
+ * @param {'ceiling'|'floor'} against  a ceiling reads the warm-up; the floor
+ *   never does, deliberately — a floor measured on a thin window errs toward
+ *   doing upkeep, which is the safe direction.
+ */
+export function refusalArithmetic(cfg, shares, cat, against) {
+  const observed = Number(shares.total_mm) || 0;
+  const denominator =
+    against === 'ceiling' ? (shares.ceiling_denominator_mm ?? observed) : observed;
+  const substituted = denominator !== observed;
+  const observedOrigin = `the ${shares.tier} tier's observed rolling ${cfg.budget.window_days}-day total`;
+  return {
+    category_mm: shares.mm?.[cat] ?? null,
+    denominator_mm: denominator,
+    denominator_substituted: substituted,
+    denominator_origin: substituted
+      ? `SUBSTITUTED — the warm-up window (100 / ${tightestCeilingPct(cfg)}% tightest ceiling ` +
+        `× ${largestCapMinutes(cfg)}-minute largest per-type cap in data/config.json), used instead of ` +
+        `${observedOrigin} of ${observed} model-minutes because a share of a window that thin is not ` +
+        `a share of anything`
+      : observedOrigin,
+  };
+}
+
+/** The one sentence every budget refusal appends, so the arithmetic is printed and not merely recorded. */
+function arithmeticSentence(a, cat) {
+  return (
+    ` The arithmetic: ${a.category_mm} model-minutes of ${cat} ÷ ${a.denominator_mm} model-minutes ` +
+    `= ${a.denominator_mm ? ((a.category_mm / a.denominator_mm) * 100).toFixed(1) : 'n/a'}%; ` +
+    `denominator origin: ${a.denominator_origin}.`
+  );
 }
 
 /**
@@ -189,9 +246,11 @@ export function budgetGate(cfg, shares, type) {
   const pct = shares.ceiling_pct?.[cat] ?? shares.share_pct[cat];
   if (ceiling !== undefined && pct >= ceiling) {
     const warming = shares.warming_up && shares.ceiling_denominator_mm > shares.total_mm;
+    const a = refusalArithmetic(cfg, shares, cat, 'ceiling');
     return {
       ok: false,
       rule: `budget:${cat}-ceiling`,
+      ...a,
       reason:
         `${cat} is at ${pct.toFixed(1)}% of the ${shares.tier} tier's ` +
         (warming
@@ -201,7 +260,9 @@ export function budgetGate(cfg, shares, type) {
             `ceiling is measured against the warm-up instead)`
           : `rolling ${cfg.budget.window_days}-day model-minutes`) +
         `, at or over its ${ceiling}% ceiling — no ${type} job is selectable until ` +
-        (warming ? 'the window grows or rolls' : 'the window rolls'),
+        (warming ? 'the window grows or rolls' : 'the window rolls') +
+        '.' +
+        arithmeticSentence(a, cat),
     };
   }
   return { ok: true };
@@ -223,16 +284,21 @@ export function applyUpkeepFloor(cfg, shares, candidates) {
   if (upkeepShare === null || upkeepShare >= floor) return { candidates, refused: [] };
   const upkeep = candidates.filter((c) => categoryOf(cfg, c.type) === 'upkeep');
   if (upkeep.length === 0) return { candidates, refused: [] }; // floor binds only when upkeep is available
+  // The floor's denominator is the observed rolling total and never the warm-up
+  // — deliberate, and now stated in the refusal rather than only in a comment.
+  const a = refusalArithmetic(cfg, shares, 'upkeep', 'floor');
   const refused = candidates
     .filter((c) => categoryOf(cfg, c.type) !== 'upkeep')
     .map((c) => ({
       candidate: c,
       rule: 'budget:upkeep-floor',
+      ...a,
       reason:
         `upkeep is at ${upkeepShare.toFixed(1)}% of the ${shares.tier} tier's rolling ` +
         `${cfg.budget.window_days}-day model-minutes, below its ${floor}% floor, and an ` +
         `upkeep job is available — only upkeep jobs are selectable in this tier until the ` +
-        `floor is met`,
+        `floor is met.` +
+        arithmeticSentence(a, 'upkeep'),
     }));
   return { candidates: upkeep, refused };
 }

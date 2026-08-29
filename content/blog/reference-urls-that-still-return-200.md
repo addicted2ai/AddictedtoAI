@@ -93,12 +93,12 @@ stamp, and it still measures the wrong thing for the question a reader is
 asking. Editing a footnote in `index.md` advances the date; adding no model
 for a year does not retard it.
 
-The data underneath says something more specific. The page's HTML carries 68
+The data underneath says something more specific. The page's HTML carries 69
 distinct benchmark run identifiers, each of the form
 `<date>-<time>--<run name>`. The oldest is dated 2024-12-21. The three newest:
 
 ```text
-2025-08-25  gpt-5-medium
+2025-08-25  gpt-5-low
 2025-10-03  deepseek-v3.2-chat
 2025-10-03  deepseek-v3.2-reasoner
 ```

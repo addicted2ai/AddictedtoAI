@@ -4,57 +4,110 @@
  * specs/loop requires the loop to publish "through the same publish step the
  * Pulse uses". Same, not equivalent: a second implementation would drift, and
  * the drifted one would be the one that pushed. So this file checks the
- * handoff itself, against the real shared step in this repository — the cheap
- * direct check, rather than a fixture that would have passed even if the two
- * had never been wired together.
+ * handoff itself, against the real shared step — the cheap direct check,
+ * rather than a fixture that would have passed even if the two had never been
+ * wired together.
  *
- * `publish` was false throughout the build phase, so exercising the real step
- * here could not push anything: the flag is the shared step's to read, and it
- * printed one skip line and returned.
+ * ## The incident this file's shape comes from (addictedtoai-64y)
  *
- * ## That assumption expired on 2026-08-29
+ * The handoff used to be exercised by calling `publishStep` with a context
+ * whose `repoRoot` was `DEFAULT_REPO_ROOT` — this repository — on the reasoning
+ * that `publish` was false throughout the build phase, so the shared step would
+ * read the flag, print one skip line and return.
  *
- * The maintainer set `publish: true` in `data/config.json` when the site went
- * live. The second test below calls the real shared step with the **real**
- * repository root, and the shared step reads the flag itself — deliberately, so
- * that there is only ever one reading of it (`loop/lib/publish.mjs` does not
- * forward `cfg` to it). With the flag true, that call takes the true path:
- * `git push origin main` against the live remote, a ten-minute poll, and a
- * `HOLD.md` written into this repository. It did exactly that on 2026-08-29,
- * observed in a `npm test` run.
+ * That assumption expired on 2026-08-29, when the maintainer set
+ * `publish: true` once the site went live. Nothing re-checked it. `loop/lib/
+ * publish.mjs` deliberately does not forward a config override — the design is
+ * that the shared step is the single reader of the flag — so the call took the
+ * true path against the real repository: `git push origin main` at the live
+ * remote, a ten-minute poll, and `HOLD.md` written into the repository root.
+ * Measured in an `npm test` run that took 607.9 seconds. Nothing was published
+ * (the working tree matched HEAD under the staged paths, so no commit was made
+ * and the push was a no-op), but `npm test` must not be a command that can
+ * reach the remote at all.
  *
- * Nothing was published — no commit was created, because the step stages only
- * `data content public` and the working tree matched HEAD there, so the push
- * was a no-op — but `npm test` is not allowed to be a command that can push at
- * all. The repository's hard rule is that nothing reaches the remote until the
- * maintainer lifts it personally.
+ * ## What replaced it, and why this is structural rather than careful
  *
- * So that test is **guarded, not deleted**: it runs when the flag is false, and
- * refuses to run the real path when it is true, naming why. Restoring the
- * coverage under `publish: true` needs a decision this file cannot make on its
- * own — the shared step owns the flag by design, and the honest options
- * (forward an override, or point the handoff at a throwaway root that has no
- * shared step to find) each trade away part of what the test is for. Filed as
- * `addictedtoai-64y`.
+ * The tests below never hand the real repository root to `publishStep`. The
+ * handoff is asserted against a **throwaway repository** carrying a byte-for-
+ * byte copy of the real `pulse/lib/publish.mjs` (and the `core.mjs` it imports)
+ * at the path `findSharedStep` looks in, with its own `data/config.json` and no
+ * `origin` remote at all. So:
+ *
+ *   - the shared step under test is the shipped one, not a stub — a
+ *     reimplementation in `loop/` would print different lines and return a
+ *     different shape, and the last test below reads every source file under
+ *     `loop/` and fails if any of them contains a push;
+ *   - the flag stays the shared step's to read, and the fixture's copy of it
+ *     is what gets read, so `publish: true` can be exercised in full;
+ *   - the only reachable remote is one that does not exist, and the only
+ *     reachable site is a loopback server this file starts. What the real
+ *     `data/config.json` says cannot change any of that.
+ *
+ * The one thing a fixture root cannot assert — that the real repository
+ * actually contains a shared step where the loop looks for it — is the first
+ * test, and it is a read of the filesystem, not a call into anything.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { createServer } from 'node:http';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { join, relative } from 'node:path';
 
-import { DEFAULT_REPO_ROOT, makeContext } from '../lib/paths.mjs';
+import { DEFAULT_REPO_ROOT } from '../lib/paths.mjs';
 import { findSharedStep, publishStep, FALLBACK_SKIP_LINE } from '../lib/publish.mjs';
-import { makeRepo } from './helpers.mjs';
+import { makeRepo, DEFAULT_CONFIG } from './helpers.mjs';
 
-/** Is the real repository armed to publish? Read at run time, never cached. */
-function realRepoPublishes() {
-  try {
-    return JSON.parse(readFileSync(join(DEFAULT_REPO_ROOT, 'data', 'config.json'), 'utf8')).publish === true;
-  } catch {
-    // No readable config is not a licence to push.
-    return true;
-  }
+const REAL_STEP = join(DEFAULT_REPO_ROOT, 'pulse', 'lib', 'publish.mjs');
+const REAL_CORE = join(DEFAULT_REPO_ROOT, 'pulse', 'lib', 'core.mjs');
+
+const sha = (buf) => createHash('sha256').update(buf).digest('hex');
+
+/**
+ * A throwaway repository that really does contain the Pulse's publish step.
+ *
+ * The two files are copied rather than imported so that `findSharedStep` has
+ * something to find at the canonical relative path and `loop/lib/publish.mjs`
+ * performs its real dynamic import. `publish.mjs` imports only `./core.mjs`
+ * and node builtins, which is why two files are enough.
+ */
+function repoWithSharedStep(config) {
+  const step = readFileSync(REAL_STEP, 'utf8');
+  const core = readFileSync(REAL_CORE, 'utf8');
+  const ctx = makeRepo({
+    config: { ...DEFAULT_CONFIG, ...config },
+    files: { 'pulse/lib/publish.mjs': step, 'pulse/lib/core.mjs': core },
+  });
+  // The copy has to be the shipped step, not a paraphrase of it.
+  assert.equal(
+    sha(readFileSync(join(ctx.repoRoot, 'pulse', 'lib', 'publish.mjs'))),
+    sha(readFileSync(REAL_STEP)),
+    'the fixture must carry the real shared step byte for byte',
+  );
+  assert.notEqual(ctx.repoRoot, DEFAULT_REPO_ROOT);
+  return ctx;
+}
+
+const git = (dir, args) =>
+  execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+
+/** A loopback `/status.json` that 404s, so no test can reach the live domain. */
+async function loopbackSite(t) {
+  const server = createServer((_req, res) => {
+    res.writeHead(404);
+    res.end('');
+  });
+  await new Promise((r) => server.listen(0, '127.0.0.1', r));
+  const prior = process.env.SITE_URL;
+  process.env.SITE_URL = `http://127.0.0.1:${server.address().port}`;
+  t.after(async () => {
+    if (prior === undefined) delete process.env.SITE_URL;
+    else process.env.SITE_URL = prior;
+    await new Promise((r) => server.close(r));
+  });
 }
 
 test('the loop finds the Pulse\'s shared publish step where it actually lives', () => {
@@ -65,23 +118,112 @@ test('the loop finds the Pulse\'s shared publish step where it actually lives', 
 });
 
 test('the loop hands off to the real shared step, which prints its own skip line', async (t) => {
-  if (realRepoPublishes()) {
-    t.skip(
-      'data/config.json has publish: true, so calling the real shared step against the real ' +
-        'repository root would run `git push origin main` against the live remote and write ' +
-        'HOLD.md. Observed on 2026-08-29. See this file’s header and addictedtoai-64y.',
-    );
-    return;
-  }
-  const lines = [];
-  const ctx = makeContext({ log: (s) => lines.push(s) });
+  const ctx = repoWithSharedStep({ publish: false });
+  t.after(() => ctx.cleanup());
+
   const res = await publishStep(ctx, {});
   assert.equal(res.published, false);
-  const text = lines.join('\n');
+  assert.equal(res.result?.reason, 'disabled', 'the shared step read the flag and returned its own verdict');
+
+  const text = ctx.output();
   assert.match(text, /publish/);
   assert.match(text, /disabled|publish: false/i, text);
   // and it is the shared step's line, not the loop's own fallback
   assert.ok(!text.includes(FALLBACK_SKIP_LINE), 'the loop must not print its own skip line when the shared step exists');
+});
+
+test('with publish: true the handoff reaches the true path — pointed at the fixture, not this repository', async (t) => {
+  const ctx = repoWithSharedStep({ publish: true });
+  t.after(() => ctx.cleanup());
+  await loopbackSite(t);
+
+  const head = git(ctx.repoRoot, ['rev-parse', 'HEAD']);
+  const res = await publishStep(ctx, { dryRun: true });
+
+  // `commands` is produced by the shared step's dry-run branch and by nothing
+  // else, so its presence is the handoff, and its contents are the root the
+  // handoff passed.
+  const commands = res.result?.commands ?? [];
+  assert.equal(res.result?.reason, 'dry-run');
+  assert.ok(
+    commands.includes(`git -C ${ctx.repoRoot} push origin main`),
+    `the true path was printed against the fixture root; got:\n${commands.join('\n')}`,
+  );
+  for (const c of commands) {
+    assert.ok(!c.includes(DEFAULT_REPO_ROOT), `a command named this repository: ${c}`);
+  }
+  assert.match(ctx.output(), /DRY RUN — publish would run/);
+  assert.equal(git(ctx.repoRoot, ['rev-parse', 'HEAD']), head, 'a dry run commits nothing');
+  assert.equal(existsSync(join(ctx.repoRoot, 'HOLD.md')), false);
+});
+
+test('armed and not dry — the push it attempts is the fixture\'s, and there is no remote to reach', async (t) => {
+  // The strongest form of the guarantee: `publish: true`, no `--dry-run`, the
+  // real shared step, the real handoff — and it still cannot leave the fixture,
+  // because the fixture has no `origin` and the site is a loopback 404. What
+  // this repository's own `data/config.json` says is not consulted anywhere.
+  const ctx = repoWithSharedStep({ publish: true });
+  t.after(() => ctx.cleanup());
+  await loopbackSite(t);
+
+  const head = git(ctx.repoRoot, ['rev-parse', 'HEAD']);
+  await assert.rejects(
+    () => publishStep(ctx, {}),
+    (err) => {
+      assert.match(err.message, /push origin main/, err.message);
+      assert.ok(err.message.includes(ctx.repoRoot), `the push was aimed at the fixture: ${err.message}`);
+      assert.ok(!err.message.includes(DEFAULT_REPO_ROOT), `the push named this repository: ${err.message}`);
+      return true;
+    },
+  );
+  assert.equal(git(ctx.repoRoot, ['rev-parse', 'HEAD']), head, 'nothing was committed either');
+});
+
+test('nothing under loop/ runs a push, so the handoff cannot be quietly reimplemented', () => {
+  const offenders = [];
+  const skipLine = 'nothing committed, nothing pushed';
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === 'tests' || entry.name === 'node_modules') continue;
+        walk(full);
+      } else if (entry.name.endsWith('.mjs')) {
+        const rel = relative(DEFAULT_REPO_ROOT, full).replace(/\\/g, '/');
+        // Block comments and whole-line `//` comments go first; `loop/lib/
+        // publish.mjs` explains at length why it does not push, and an
+        // explanation is not an implementation. Trailing comments are left in
+        // deliberately — this check errs toward failing.
+        const code = readFileSync(full, 'utf8')
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .replace(/^[ \t]*\/\/.*$/gm, '');
+        if (/(['"`])push\1/.test(code) || /push origin/.test(code)) offenders.push(`${rel}: runs a push`);
+        if (code.includes(skipLine)) offenders.push(`${rel}: prints the shared step's own line`);
+      }
+    }
+  };
+  walk(join(DEFAULT_REPO_ROOT, 'loop'));
+  assert.deepEqual(
+    offenders,
+    [],
+    'publishing is the Pulse\'s step; a second implementation in loop/ is how a loop ends up pushing something nothing verified',
+  );
+});
+
+test('no test in this file can be pointed at the real repository', () => {
+  // `makeContext()` with no `repoRoot` resolves to `DEFAULT_REPO_ROOT`. That
+  // one default is the whole of addictedtoai-64y: a context built without a
+  // root, handed to a step whose job is to push. Every context here comes from
+  // `makeRepo`, which always passes a temp root, so the way this regresses is
+  // for a later edit to reach for `makeContext` again — and this fails if it
+  // does. Comments are stripped so the file may keep explaining itself.
+  const src = readFileSync(new URL(import.meta.url), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^[ \t]*\/\/.*$/gm, '');
+  assert.ok(
+    !/\bmakeContext\s*\(/.test(src),
+    'a context built without an explicit repoRoot is a context pointed at D:/AddictedtoAI',
+  );
 });
 
 test('with no shared step present, the loop prints the skip line and never improvises a push', async () => {

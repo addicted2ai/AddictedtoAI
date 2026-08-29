@@ -734,3 +734,112 @@ test('a declined status neither counts as a failure nor claims the link was veri
   assert.deepEqual(result.broken.map((b) => b.url), ['https://dead.fixture-vendor.net/'],
     'the 404 is still reported; only the declined one produces nothing');
 });
+
+/* ===========================================================================
+ * "this link is dead" and "this machine is out of ports" are not the same
+ * sentence (addictedtoai-a6s, the linkcheck half of addictedtoai-ar0)
+ *
+ * `fetch` collapses every connection-level failure into `TypeError: fetch
+ * failed` and hangs the only distinguishing detail off `err.cause`. This check
+ * is the most exposed thing in the Pulse to that, because a rolling run opens
+ * far more outbound connections than source fetching does — and unlike a source
+ * fetch, the sentence it records does not stop at a log: it persists into
+ * `data/linkcheck.json` and is quoted verbatim into the queue's repair reason
+ * (`pulse/lib/queue.mjs`). A misdiagnosed reason costs a whole job.
+ *
+ * WHAT WAS DECIDED ABOUT THE ENTRIES ALREADY COMMITTED: nothing, and the
+ * decision is measured rather than assumed. On 2026-08-29, `data/linkcheck.json`
+ * held 274 URLs and **zero** of them carried a non-null `error` — every record
+ * was a success or a status-code failure, and no string in the file was ever
+ * produced by this catch. So there is no old text to migrate, no mixed
+ * vocabulary for a reader to straddle, and no reason to make the reader
+ * tolerant of something that does not exist. The only compatibility this needs
+ * is the last test below: an error with no `cause` must still read exactly as
+ * it did, so a record written by the old code and one written by the new code
+ * are the same string whenever there is no errno to add.
+ * ======================================================================== */
+
+/** The shape undici actually produces for a failed connect. */
+function undiciConnectFailure(code, message) {
+  const cause = new Error(message ?? `connect ${code} 127.0.0.1:13513`);
+  cause.code = code;
+  cause.syscall = 'connect';
+  const err = new TypeError('fetch failed');
+  err.cause = cause;
+  return err;
+}
+
+test('a failed connect records its errno, so port exhaustion cannot read as a dead link', async (t) => {
+  const realFetch = globalThis.fetch;
+  t.after(() => (globalThis.fetch = realFetch));
+
+  globalThis.fetch = async () => {
+    throw undiciConnectFailure('EADDRINUSE');
+  };
+  const outOfPorts = await checkUrl('https://fixture-vendor.net/x');
+  assert.equal(outOfPorts.ok, false, 'the engine still records a failure — only the sentence gets longer');
+  assert.equal(outOfPorts.status, null);
+  assert.match(outOfPorts.error, /TypeError: fetch failed/, 'the original sentence is kept');
+  assert.match(outOfPorts.error, /EADDRINUSE/, 'and the errno that distinguishes it is not thrown away');
+
+  globalThis.fetch = async () => {
+    throw undiciConnectFailure('ECONNREFUSED', 'connect ECONNREFUSED 93.184.216.34:443');
+  };
+  const reallyDown = await checkUrl('https://fixture-vendor.net/x');
+  assert.match(reallyDown.error, /ECONNREFUSED/);
+
+  // The whole defect in one assertion: these two used to be byte-identical, and
+  // the second is a repair a job can act on while the first is not.
+  assert.notEqual(outOfPorts.error, reallyDown.error);
+});
+
+test('the errno survives all the way into data/linkcheck.json and the repair reason', async (t) => {
+  const root = makeRoot([]);
+  const realFetch = globalThis.fetch;
+  t.after(() => {
+    globalThis.fetch = realFetch;
+    cleanup(root);
+  });
+
+  globalThis.fetch = async () => {
+    throw undiciConnectFailure('EADDRINUSE');
+  };
+
+  const result = await rollingLinkCheck(root, [
+    { url: 'https://fixture-vendor.net/paper', cited_by: ['content/wiki/model/a.md'] },
+  ], { offline: false });
+
+  // Persisted state — the committed file, not just the in-memory result.
+  const onDisk = readJson(join(root, 'data', 'linkcheck.json'));
+  assert.match(onDisk.urls['https://fixture-vendor.net/paper'].error, /EADDRINUSE/,
+    'the string that gets committed carries the errno');
+
+  // And what queue.mjs quotes into the repair reason it files.
+  assert.match(result.broken[0].error, /EADDRINUSE/);
+  assert.equal(result.broken[0].state, 'failing-once',
+    `one blip still cannot file a repair — CONFIRM_AFTER_FAILURES is ${CONFIRM_AFTER_FAILURES}`);
+});
+
+test('an error with no cause reads exactly as it did before, so nothing already recorded is orphaned', async (t) => {
+  const realFetch = globalThis.fetch;
+  t.after(() => (globalThis.fetch = realFetch));
+
+  // A DNS failure and a timeout both arrive without a `cause`. These must not
+  // grow a trailing empty parenthesis, and must match what the old code wrote —
+  // which is what makes migrating `data/linkcheck.json` unnecessary rather than
+  // merely postponed.
+  globalThis.fetch = async () => {
+    throw new Error('getaddrinfo ENOTFOUND fixture-vendor.net');
+  };
+  const dns = await checkUrl('https://fixture-vendor.net/x');
+  assert.equal(dns.error, 'Error: getaddrinfo ENOTFOUND fixture-vendor.net');
+
+  globalThis.fetch = async () => {
+    const err = new Error('The operation was aborted due to timeout');
+    err.name = 'TimeoutError';
+    throw err;
+  };
+  const slow = await checkUrl('https://fixture-vendor.net/x');
+  assert.equal(slow.error, 'TimeoutError: The operation was aborted due to timeout');
+  assert.doesNotMatch(slow.error, /\(\)/);
+});

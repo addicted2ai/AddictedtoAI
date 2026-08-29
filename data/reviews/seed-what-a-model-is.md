@@ -34,3 +34,37 @@ Checklist: education page.
   tight throughout.
 
 Approve.
+
+## Recheck 2026-08-29 (addictedtoai-flh) — holds, verdict unchanged
+
+This pass hunts claims that a primary document would refute. **This page
+cites nothing and names nothing**, so there is no citation to refute — I
+re-read the full text and confirm round one's finding: no model name, no
+vendor, no version, no price, no benchmark figure, no date. The defect class
+that motivated the pass (a false claim sitting under an approved record
+because it was checked against a secondary source) cannot occur here, because
+there is no external claim to check.
+
+What I did check is the mechanism claims, since an explanatory page's failure
+mode is being confidently wrong rather than wrongly cited:
+
+- "a model does not remember your conversation ... the whole visible history
+  is fed in again from the beginning" — correct for a stateless deployed
+  model; the page is careful to attribute apparent memory to re-reading
+  rather than to weights.
+- "Telling a model it is wrong changes the text it is reading ... It changes
+  nothing about the model" — correct, and the page immediately gives the
+  right exception shape ("Systems that improve from usage do so by storing
+  data and running a separate training job later").
+- The seven-item stack list (system prompt, decoding settings, tools,
+  retrieval, filters, orchestration) is complete enough for the claim it
+  supports and contains nothing that is actually part of the weights.
+- "the order in which requests get grouped together on a server can perturb
+  floating-point arithmetic" — correct, and the page is unusual in stating it
+  as a qualification rather than claiming greedy decoding is exactly
+  reproducible.
+- A knowledge cutoff described as "not a policy, not a filter, just the fact
+  that the text it learned from stopped" — accurate.
+
+Nothing to correct. Recorded so a later pass does not spend a fetch budget
+looking for sources this page never claimed to have.

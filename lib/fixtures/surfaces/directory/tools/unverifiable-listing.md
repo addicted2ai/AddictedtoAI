@@ -4,6 +4,7 @@ url: "https://gone.example.org/"
 pricing: "was $9/month"
 last_verified: "2026-06-01"
 entry: tool/moved-subject
+category: coding
 mentions: []
 ---
 

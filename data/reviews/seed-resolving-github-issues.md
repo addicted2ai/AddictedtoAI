@@ -66,3 +66,41 @@ Caveat for future verification passes: a text-substring check against this
 URL will fail on "62.3" forever — the support is the chart image, verified
 here by reading the image itself. Do not "correct" the figure to the text's
 63.7%; that number is itself conditioned on the n=489 subset.
+
+## Recheck 2026-08-29 (addictedtoai-flh) — holds, no change
+
+Both ends re-verified independently, including re-reading the chart image
+rather than trusting the caveat above.
+
+- End A, arxiv.org/abs/2310.06770 (43,179 bytes): "[Submitted on 10 Oct
+  2023"; "an evaluation framework consisting of $2,294$ software engineering
+  problems drawn from real GitHub issues"; and the 1.96% claim. **The
+  false-absence trap fires here and is worth recording**: the abstract is
+  LaTeX-escaped, so the string "1.96%" does **not** appear — the page reads
+  "The best-performing model, Claude 2, is able to solve a mere `$1.96$%` of
+  the issues." A naive check would call this unsupported. It is exact,
+  including the source's own word "mere". The row counts are escaped the
+  same way (`$2,294$`, `$12$`).
+- End B, anthropic.com/news/claude-3-7-sonnet (183,388 bytes): re-confirmed
+  that "62.3" is absent from the page's text in every normalisation I tried
+  (raw, entity-decoded, tag-stripped, case-folded). The running text carries
+  only the two conditioned figures, both matched literally: "This results in
+  a score of 70.3% on the subset of n=489 verified tasks which work on our
+  infrastructure" and "Without this scaffold, Claude 3.7 Sonnet achieves
+  63.7% on SWE-bench Verified using this same subset."
+- **Chart image re-read, not taken on trust.** The asset hash the earlier
+  record names is still referenced in the page source
+  (`08bba4487fb5ac1ba52540ee656d7e4da10ca1be-1920x1145.png`, matched at
+  offset 21,673 in a `srcSet`). Downloaded it (57,253 bytes) and looked at
+  it: a bar chart titled "Software engineering / SWE-bench verified", y-axis
+  ACCURACY. The Claude 3.7 Sonnet bar is labelled **62.3%** with a lighter
+  extension above it labelled **70.3% with custom scaffold**; the other bars
+  are Claude 3.5 Sonnet (new) 49.0%, OpenAI o1 48.9%, OpenAI o3-mini (high)
+  49.3%, DeepSeek R1 49.2%. The delta's 62.3% is the announcement's own
+  unconditioned headline figure, exactly as the delta presents it.
+
+The caveat above is correct and is hereby confirmed a second time by a
+different pass: **do not refute this figure with a text search.** It lives
+only in the image.
+
+No claim in this delta required correction.

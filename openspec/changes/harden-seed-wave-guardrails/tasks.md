@@ -239,7 +239,7 @@ expectations, each taken by running the named command on this tree:
 
 ## 4. The undisputed floor of the three open loop gaps (specs/loop)
 
-- [ ] 4.1 Audit the runtime-refusal requirement clause by clause against
+- [x] 4.1 Audit the runtime-refusal requirement clause by clause against
       `loop/lib/health.mjs`, `loop/lib/select.mjs` and `loop/run.mjs`, and record
       which clauses the existing `loop/tests/runner-health.test.mjs` already
       asserts. Measured on 2026-08-28, before this change: the no-output ledger
@@ -253,7 +253,43 @@ expectations, each taken by running the named command on this tree:
       Verify: `npm test` green, and the audit records one line per clause naming
       the test file and case that asserts it — a clause with no named case is not
       audited, it is unimplemented.
-- [ ] 4.2 Add the one assertion the audit finds missing, measured rather than
+
+      **The audit, run 2026-08-29.** Every case named below is in
+      `loop/tests/runner-health.test.mjs`. "Before" is the state this pass found;
+      "after" names what now asserts it.
+
+      | Clause | Before | Case that asserts it now |
+      |---|---|---|
+      | C35 a no-output run is evidence about the runner, carried as a ledger signal | asserted | `a run that produces nothing at all is still \`interrupted\`, and says so on the ledger` (asserts `line.signal`), with the negative in `a run that produced real work carries no no-output signal, however it ended` and `detection does not depend on a declared pattern` |
+      | C36 refuse after three, for the `author` **and `reviewer`** roles | **author half asserted; reviewer half neither asserted nor implemented** | author: `a dead runner is refused rather than resumed forever`; reviewer: **new** `C36 the refusal covers the reviewer role, not only the author role` (task 4.1 fix, below) |
+      | C37 applied before invoking **and before resuming** | selector half asserted; resume half asserted only incidentally — the four-run case never checked that a resumption was *available* at the moment of refusal, so a refusal beating an empty queue would have satisfied it | selector: `the selector refuses a dead runner too, before any candidate is considered`; resume: **new** `C37 the refusal preempts a resumption that was genuinely available` |
+      | C38 names the cause and the exact clearing command | asserted | `a dead runner is refused rather than resumed forever`, `runner-health.test.mjs:109` |
+      | C39 one productive run clears the streak | asserted | `one run that produces anything clears the streak` |
+      | C40 non-invocation lines neither count toward the streak nor end it | asserted | `the 14-day abandon sweep does not re-arm the runner it just swept`, and `refusing a runner does not stop the 14-day abandon sweep` |
+      | C41 refusal writes no `HOLD.md` | **not asserted anywhere** | task 4.2, below |
+
+      **The audit's substantive finding, measured rather than reasoned.** C36
+      says the loop refuses the runner "for the `author` and `reviewer` roles".
+      Only the author-role pick was gated. Measured on a throwaway repository
+      with a healthy author and a reviewer holding a three-run no-output streak:
+      the loop selected a job, spent the author's whole run producing a diff,
+      invoked the dead reviewer, received no verdict record and failed the job at
+      `no-record` — every one of those minutes buying work that could not merge,
+      because nothing merges without a review. `loop/run.mjs` now applies the
+      existing `runnerHealthGate` to both role picks at the same point, before any
+      executor is invoked and after the abandon sweep, and the refusal names which
+      role it refused.
+
+      **Reported, not fixed — a residual limitation of C36.** A ledger line's
+      `runner` field records the *author* runner, so `noOutputStreak` can only
+      ever accumulate for a runner that has served as author. A runner used
+      **only** as a reviewer therefore accrues no streak and can never reach the
+      refusal, whatever this gate does. Closing that needs a no-output detection
+      for reviewer invocations, which does not exist — a reviewer that produces
+      nothing is caught as `no-record`, a different signal — and inventing one is
+      new mechanism, not this change's undisputed floor. Filed as
+      `addictedtoai-g8a`, discovered-from `addictedtoai-pfv`.
+- [x] 4.2 Add the one assertion the audit finds missing, measured rather than
       assumed: nothing anywhere in `loop/tests/` asserts that refusing a runner
       writes **no** `HOLD.md`, which is the clause that keeps D7 open — without
       it, adopting a fifth breaker later would silently satisfy the old test
@@ -261,7 +297,21 @@ expectations, each taken by running the named command on this tree:
       Verify: `loop/tests/runner-health.test.mjs` — after three no-output runs on
       the one configured runner in a throwaway repository, no `HOLD.md` exists at
       its root and the run's own log says the runner was refused.
-- [ ] 4.3 In `loop/lib/budget.mjs` and the selector's refusal path, carry
+
+      **Done 2026-08-29** as `C41 refusing a runner writes no HOLD.md — a refusal
+      is not a halt`. It checks the absence after each of the three streak-building
+      runs *and* after the refusing run, asserts the log carries
+      `REFUSED [runner:produced-nothing]`, and asserts the next run still starts
+      rather than finding a hold left behind.
+
+      **Proved by mutation, because a negative assertion passes on a tree that
+      never had the behaviour.** Making the refusal write `HOLD.md` — one line,
+      the shape D7's Option B would take — turns this test red with the message
+      naming D7. Reverted; the suite is green with the mutation removed. That is
+      the whole point of the assertion: it goes red the moment a fifth breaker is
+      adopted without amending the spec, which is exactly when the clause stops
+      being true.
+- [x] 4.3 In `loop/lib/budget.mjs` and the selector's refusal path, carry
       `category_mm`, `denominator` and `denominator_origin` on every ceiling and
       floor refusal, print all three, and state the substitution explicitly
       whenever the denominator is not the tier's observed rolling total.
@@ -271,14 +321,61 @@ expectations, each taken by running the named command on this tree:
       warm-up names the substituted denominator, its origin, and says it was
       substituted; a refusal on a ledger above it names the observed rolling
       total as the origin; both carry the category's MM.
-- [ ] 4.4 In `loop/lib/ledger.mjs`, record a job's model-minutes broken down by
+
+      **Done 2026-08-29.** `refusalArithmetic()` in `loop/lib/budget.mjs` returns
+      `category_mm`, `denominator_mm`, `denominator_substituted` and
+      `denominator_origin`; both `budgetGate()` (ceilings) and `applyUpkeepFloor()`
+      (the floor) spread it onto their refusal and append one sentence stating the
+      numerator, the denominator and the origin, so it is printed wherever `reason`
+      is printed. `loop/lib/select.mjs` now spreads the gate result instead of
+      copying three named fields, which is how a recorded value comes to exist
+      nowhere anyone reads it. `largestCapMinutes(cfg)` was extracted from
+      `warmUpMm()` so the origin string can name the same number the warm-up is
+      derived from rather than a second copy of it.
+
+      Four new cases in `loop/tests/budget.test.mjs`, **each measured red before
+      the source change and green after**: `C42 a ceiling refusal carries and
+      prints its numerator, denominator and origin` (450 ÷ 1000, origin =
+      observed); `C43 a substituted denominator announces itself, names what it
+      replaced, and says why` (60 ÷ 600, `SUBSTITUTED`, naming the 60 MM observed
+      total it replaced and the `100 / 10% tightest ceiling × 60-minute largest
+      per-type cap` derivation); `C42 the upkeep floor refusal states its
+      arithmetic too, and never claims a substitution` (the floor reads the
+      observed total at n=1 as well); `C42 the arithmetic survives the selector`
+      (the fields are still on the object `formatRefusals` prints, which is the
+      only place an operator sees them). The 13 pre-existing cases in the file
+      passed before and after — the added sentence extends each refusal rather
+      than rewording it.
+
+      **It decides nothing about D8.** Which denominator is correct is untouched;
+      the ceiling still reads `max(observed, warm-up)` and the floor still reads
+      the observed total. What changed is that the reading now announces itself.
+- [x] 4.4 In `loop/lib/ledger.mjs`, record a job's model-minutes broken down by
       invocation phase — `author`, `revision`, and each `review` pass — so the
       job total is the sum of recorded measurements. Implements **C44**
       (`addictedtoai-o5t`, settled half).
       Verify: `loop/tests/review.test.mjs` — a job driven through an author run,
       one revision and two review passes writes four phase entries, and their sum
       equals the line's `mm`; a job with one invocation writes one.
-- [ ] 4.5 In `loop/lib/brief.mjs` and `runShapeSection()` in
+
+      **Already implemented, verified rather than rebuilt.** The per-phase record
+      landed under `addictedtoai-59s` before this change: `loop/run.mjs` records a
+      `{role, runner, mm, killed, code, outcome}` entry per invocation and
+      `loop/lib/ledger.mjs` writes it as the optional additive `phases` key, with
+      `mm` left as the job total that `budget.mjs` sums. The four-phase half is
+      asserted by `59s the ledger records model-minutes PER INVOCATION`.
+
+      **The half that was missing** — "a job with one invocation writes one" — is
+      new: `C44 a job that makes one invocation records one phase, and it is the
+      whole total` in `loop/tests/review.test.mjs`, driven through a real
+      `blocked:` outcome, which ends a job after the author run with no review and
+      no revision. It catches a `phases` array padded with roles the loop did not
+      invoke, which the four-phase case cannot.
+
+      **Proved by mutation**, since the mechanism predates the task and the new
+      assertion is green on arrival: suppressing the `phases` write in
+      `makeLedgerLine` turns both `C44` and `59s` red. Reverted.
+- [x] 4.5 In `loop/lib/brief.mjs` and `runShapeSection()` in
       `loop/lib/review.mjs`, state the cap as this invocation's limit, state the
       job's total spend so far and how many invocations have already run, and
       remove any wording that presents the cap as the job's budget. Implements
@@ -289,25 +386,158 @@ expectations, each taken by running the named command on this tree:
       budget-implying phrasings being removed (a golden list of the exact strings
       replaced, so the assertion cannot pass by the phrase merely moving).
 
+      **Done 2026-08-29.** `invocationAccounting({capMinutes, mmSoFar,
+      invocations})` in `loop/lib/brief.mjs` is the one place the three figures are
+      worded, and `assembleBrief()` uses it in place of the bare cap bullet;
+      `runShapeSection()` in `loop/lib/review.mjs` states the same three for the
+      reviewer. The golden list, asserted **absent** from every brief:
+      `**Wall-clock cap**:` and `under a **wall-clock cap of` — each pattern
+      written so its replacement cannot match it, so the assertion cannot pass by
+      the phrase merely moving.
+
+      **Two briefs the task did not name had to be fixed too, because C46 says
+      *every* brief the loop assembles.** The revision brief is the author brief
+      plus the findings, and the resumed brief is the *committed* brief plus a
+      preamble — both would have restated figures frozen before anything ran,
+      telling the third invocation of a job that the job had spent nothing. That
+      is the precise misreading `addictedtoai-o5t` reported, arriving by a second
+      road. `loop/run.mjs` now appends the current accounting to the revision
+      brief and `resumeBrief()` takes it as an argument, each saying plainly that
+      it supersedes the stale figures it sits beside. `jobSpendSoFar()` in
+      `loop/lib/ledger.mjs` measures the prior spend for a resumed job from its
+      earlier ledger lines; where a line predates `phases` it contributes 1
+      invocation if it recorded minutes and 0 if it did not, which is a floor on
+      the count and never a guess — the brief says "recorded on the ledger" for
+      that reason.
+
+      Three new cases in `loop/tests/review.test.mjs`, **all three measured red
+      under a mutation restoring the two old phrasings, green with it reverted**:
+      the author brief case (via `--dry-run`, which returns the assembled brief),
+      the reviewer brief case (which also asserts the count is a measurement, not
+      a constant — by the delta review of a revised job it reads 3, and the ledger
+      line carries 4 phases), and the revision-brief case. Two pre-existing
+      assertions were updated to the new wording, not deleted:
+      `review.test.mjs`'s `/per-invocation wall-clock cap of\s+60 minutes/` (the
+      old regex failed only on the new line wrap) and `portability.test.mjs`'s
+      brief-shape check, which now also asserts the running total is present.
+
+      **It decides nothing about D9.** No total budget, no derived per-invocation
+      cap, no abandon path. The 480-minute worst case is intact; it is now stated
+      instead of implied.
+
 ## 5. Integrated verification
 
-- [ ] 5.1 Run the gates serially, never concurrently: `npm test`, then
+- [x] 5.1 Run the gates serially, never concurrently: `npm test`, then
       `npm run build`, then `node scripts/verify-launch.mjs`, then
       `openspec validate harden-seed-wave-guardrails --type change --strict
       --no-interactive`. Record the measured review-state counts
       (recorded/mismatched/unbound/missing) and the per-type coverage counts in
       this file beside this task, as measurements with the date — not as
       expectations.
-- [ ] 5.2 Re-run the traceability audit in section 6 against the implemented
+
+      **Measured 2026-08-29, after sections 4 and 5.** Serially, one at a time,
+      nothing else running (`addictedtoai-6s7`):
+
+      - `npm test` — **410 pass, 0 fail** (92s). The loop's own directory is 112
+        of those, also run alone: 112 pass, 0 fail.
+      - `npm run build` — **exit 0**, full static export.
+      - `node scripts/verify-launch.mjs` — **15 check(s) passed, "The launch
+        minimums are met."** Run WITHOUT `--no-build`, so the build row is a
+        measurement (`PASS npm run build exit 0 in 23s`) rather than a SKIP.
+      - `openspec validate harden-seed-wave-guardrails --type change --strict
+        --no-interactive` — **exit 0**, "Change 'harden-seed-wave-guardrails' is
+        valid".
+
+      **Review-state counts, from the prebuild's own line and from
+      verify-launch, over all 119 reviewable pieces**: `recorded 0, mismatched
+      0, unbound 119, missing 0`. Unchanged by sections 4 and 5, which is
+      correct — nothing in them writes a review record. 129 records, 10 claimed
+      by no piece.
+
+      **Per-type volatile-literal coverage, from the prebuild's own line**:
+      `delta 27 scanned / 0 none`, `learn 10 / 0`, `entry 0 / 495`, `post 0 /
+      5`, `tool 0 / 35`, `tutorial 0 / 4`. Also unchanged, and for the same
+      reason.
+- [x] 5.2 Re-run the traceability audit in section 6 against the implemented
       tree: every normative clause in this change's four spec deltas maps to a
       task in this file and to a check that measures it, and the count of
       clauses equals the count of table rows. A clause whose check exists only as
       a sentence in this file is not measured; name the test file and the case.
-- [ ] 5.3 Update `addictedtoai-pfv`, `-tr8` and `-o5t` in beads with a pointer to
+
+      **Re-audited 2026-08-29, by measuring the table rather than reading it.**
+      A script parsed the rows out of this file and checked each claim against
+      the tree: **47 rows, no duplicate clause ids, no gaps in C1..C47**, every
+      `*.test.mjs` the table names exists at the path it resolves to, and every
+      test case named for a section-4 clause is present **verbatim** in the file
+      the table names it in — 19 named cases across C35–C47, **0 not found**.
+
+      **The clause count still equals the row count, because this pass added no
+      normative text.** Sections 4 and 5 implement clauses that were already in
+      the four spec deltas; not one `SHALL` was written, so the deltas are
+      byte-unchanged and 47 remains 47. That is the trap this section exists for
+      — a round repairing untasked clauses routinely writes a fresh one while
+      writing the repair — and the way it was avoided here is that every gap the
+      audit found was closed with code and a test, never with a new requirement.
+
+      **Rows updated, not invented.** C35–C47 previously named their checks in
+      prose ("third-empty-run case", "brief assertion"). Each now names the test
+      file and the exact case title, which is what makes the row falsifiable by
+      the script above. C38's line reference moved 107 → 109 as cases were added
+      above it.
+- [x] 5.3 Update `addictedtoai-pfv`, `-tr8` and `-o5t` in beads with a pointer to
       `design.md` D7, D8 and D9 and the recommendation each carries, and note on
       each that only its settled floor was implemented. Do not implement a draft
       block. Close `addictedtoai-zlq`, `-48r` and `-473`'s machinery half against
       sections 1–3.
+
+      **Verified 2026-08-29 rather than redone.** All three of `-pfv`, `-tr8` and
+      `-o5t` already carry the note: each opens "UNDISPUTED FLOOR DRAFTED … THE
+      DECISION IS STILL YOURS", states what was written as settled, names its
+      open decision as D7 / D8 / D9 with the recommendation each carries, and
+      says the draft text sits behind a `DRAFT — NOT ADOPTED` fence in
+      `design.md` so adopting it is a paste. Nothing needed rewriting; the notes
+      hold as written. **No draft block was implemented — see the statement at
+      the end of this section.**
+
+      `addictedtoai-zlq` and `-48r` are **already CLOSED** against sections 1–2,
+      each with a close reason naming the modules and the measurements.
+
+      `addictedtoai-473` is **deliberately left IN_PROGRESS**, with a note
+      appended recording that its machinery half (3.1–3.3) is complete and that
+      its content half is not. Measured, not assumed: on
+      `content/wiki/model/deepseek-deepseek-v4-flash-0731.md`, line 55 still
+      carries the feed-bound `284B total …` and line 61 the cited `304B params`,
+      and **neither declares `corroborates:`** — so the very pair that motivated
+      the mechanism is not yet declared to it, and no queue item can be raised
+      for it. Closing the issue would claim a data defect was fixed when only the
+      apparatus for finding it was built.
+
+## 7. What was deliberately left to the maintainer
+
+Sections 4 and 5 implemented the **undisputed floor** of `addictedtoai-pfv`,
+`-tr8` and `-o5t` and nothing else. Nothing behind a `DRAFT — NOT ADOPTED` fence
+in `design.md` was implemented, and no fenced text was moved into a spec delta:
+
+- **D7 (a fifth breaker)** — not adopted. `HOLD.md` is still written by exactly
+  four breakers. The floor built instead is the assertion that refusing a runner
+  writes **no** `HOLD.md` (C41), which is the clause that keeps the question
+  open: it goes red the moment Option B is adopted without amending the spec.
+- **D8 (the low-n ceiling denominator)** — not adopted. Ceilings still read
+  `max(observed, warm-up)` and the floor still reads the observed total; not one
+  number changed. What changed is that a refusal now names its numerator, its
+  denominator and where that denominator came from, and announces a substitution
+  as a substitution.
+- **D9 (a bound on a job's total spend)** — not adopted. No job-total budget, no
+  cap derived from a remainder, no minimum-invocation floor, no abandon path, and
+  **no change to `data/config.json`**, which remains a reserved path this change
+  does not touch. The 480-minute worst case is intact; every brief now states it
+  instead of implying otherwise.
+
+One thing found and **reported rather than fixed**: `addictedtoai-g8a`, that a
+runner used only as a reviewer can never accumulate a no-output streak, because
+a ledger line attributes its `runner` to the author. Closing it needs a
+no-output detection for reviewer invocations, which does not exist — new
+mechanism, not this change's floor.
 
 ## 6. Traceability — every normative clause, its task, its check
 
@@ -352,16 +582,16 @@ are deliberately absent from this table.
 | C32 | pulse: corroboration | never edits, adjudicates, or fails the build | 3.3 | byte comparison + build exit 0 |
 | C33 | pulse: corroboration | the item leaves on agreement or removal | 3.3 | agreement case |
 | C34 | pulse: corroboration | it does not accumulate | 3.3 | byte-identical consecutive queues |
-| C35 | loop: runner refusal | a no-output run is evidence about the runner | 4.1 | `runner-health.test.mjs` ledger-signal case |
-| C36 | loop: runner refusal | refuse after three, on conformance's terms | 4.1 | third-empty-run case |
-| C37 | loop: runner refusal | refuse before invoking and before resuming | 4.1 | selector case + resume case |
-| C38 | loop: runner refusal | the refusal names cause and clearing command | 4.1 | `runner-health.test.mjs:107`, already asserted |
-| C39 | loop: runner refusal | one productive run clears the streak | 4.1 | streak-clears case |
-| C40 | loop: runner refusal | non-invocation lines neither count nor end it | 4.1 | abandon-sweep cases |
-| C41 | loop: runner refusal | refusal writes no `HOLD.md` | 4.2 | new no-`HOLD.md` assertion (none exists today) |
-| C42 | loop: budget refusal | record and print MM, denominator, origin | 4.3 | `loop/tests/budget.test.mjs` both cases |
-| C43 | loop: budget refusal | a substituted denominator announces itself | 4.3 | below-warm-up case |
-| C44 | loop: job total | ledger records per-phase model-minutes | 4.4 | four-phase sum case |
-| C45 | loop: job total | the brief states the cap as per-invocation | 4.5 | brief assertion |
-| C46 | loop: job total | the brief states total so far and invocation count | 4.5 | brief assertion |
-| C47 | loop: job total | no brief calls the cap a job budget | 4.5 | golden removed-phrase regex |
+| C35 | loop: runner refusal | a no-output run is evidence about the runner | 4.1 | `runner-health.test.mjs` — `a run that produces nothing at all is still \`interrupted\`, and says so on the ledger` |
+| C36 | loop: runner refusal | refuse after three, on conformance's terms, for both roles | 4.1 | `runner-health.test.mjs` — `a dead runner is refused rather than resumed forever` (author) + `C36 the refusal covers the reviewer role, not only the author role` |
+| C37 | loop: runner refusal | refuse before invoking and before resuming | 4.1 | `runner-health.test.mjs` — `the selector refuses a dead runner too, before any candidate is considered` + `C37 the refusal preempts a resumption that was genuinely available` |
+| C38 | loop: runner refusal | the refusal names cause and clearing command | 4.1 | `runner-health.test.mjs:109`, already asserted |
+| C39 | loop: runner refusal | one productive run clears the streak | 4.1 | `runner-health.test.mjs` — `one run that produces anything clears the streak` |
+| C40 | loop: runner refusal | non-invocation lines neither count nor end it | 4.1 | `runner-health.test.mjs` — `the 14-day abandon sweep does not re-arm the runner it just swept` |
+| C41 | loop: runner refusal | refusal writes no `HOLD.md` | 4.2 | `runner-health.test.mjs` — `C41 refusing a runner writes no HOLD.md — a refusal is not a halt` |
+| C42 | loop: budget refusal | record and print MM, denominator, origin | 4.3 | `budget.test.mjs` — `C42 a ceiling refusal carries and prints its numerator, denominator and origin`, `C42 the upkeep floor refusal states its arithmetic too`, `C42 the arithmetic survives the selector` |
+| C43 | loop: budget refusal | a substituted denominator announces itself | 4.3 | `budget.test.mjs` — `C43 a substituted denominator announces itself, names what it replaced, and says why` |
+| C44 | loop: job total | ledger records per-phase model-minutes | 4.4 | `review.test.mjs` — `59s the ledger records model-minutes PER INVOCATION` (four phases, sum = `mm`) + `C44 a job that makes one invocation records one phase` |
+| C45 | loop: job total | the brief states the cap as per-invocation | 4.5 | `review.test.mjs` — `C45/C46/C47 the author brief states the cap per invocation` + `C45/C46/C47 the reviewer brief does the same` |
+| C46 | loop: job total | the brief states total so far and invocation count | 4.5 | the two cases above + `C46 the revision brief supersedes the stale figures it inherits` |
+| C47 | loop: job total | no brief calls the cap a job budget | 4.5 | `BUDGET_IMPLYING_PHRASES` in `review.test.mjs`, asserted absent from the author, reviewer and revision briefs |

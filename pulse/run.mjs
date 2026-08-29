@@ -125,10 +125,16 @@ for (const source of sortedSources(registry)) {
 let corpus = readCorpus(root);
 if (corpus.unreadable.length) log.warn(`${corpus.unreadable.length} content file(s) could not be parsed; skipped`);
 
+// Hoisted out of the branch below because step 9 needs it: the paths minted
+// here are half of what this run declares it wrote, and `--no-mint` must
+// declare an empty list rather than an absent one. `[]` is the statement "I
+// wrote no content"; `null` would mean "I am not saying", which puts the
+// publish step back on wholesale staging (addictedtoai-ps3 / -y7d).
+let mints = { minted: [] };
 if (options.noMint) {
   log.step('mint', 'skipped (--no-mint)');
 } else {
-  const mints = mintStubs(root, registry, corpus, { date: today() });
+  mints = mintStubs(root, registry, corpus, { date: today() });
   log.step(
     'mint',
     `${mints.minted.length} stub(s) minted from ${mints.considered} undeclared row(s)` +
@@ -220,7 +226,16 @@ if (options.noBuild) {
 }
 
 // ---- 9. publish ----------------------------------------------------------
-await publishStep(root, { dryRun: options.dryRun, assumePublish: options.assumePublish, log });
+// What this run wrote under `content/`, declared to the publish step so it
+// stages this run's work instead of sweeping up whatever anyone left dirty
+// (addictedtoai-ps3). Both lists already carry repo-relative POSIX paths:
+// `mints.minted[].path` from `relPosix` in mint.mjs writeStub(), and
+// `timeline.appended[].path` from `relPosix` in corpus.mjs. Everything else
+// this run touches — data/changes.jsonl, data/linkcheck.json, data/derived/**,
+// data/sources/<id>/*, public/** — the step attributes by path on its own
+// (`isEngineWrite`), so it is deliberately not repeated here.
+const owned = [...mints.minted.map((m) => m.path), ...timeline.appended.map((a) => a.path)];
+await publishStep(root, { dryRun: options.dryRun, assumePublish: options.assumePublish, log, owned });
 
 const feedLines = readJsonl(p.changes).length;
 log.step('done', `changed feed holds ${feedLines} line(s); queue holds ${queue.count} item(s)`);

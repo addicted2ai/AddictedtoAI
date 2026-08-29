@@ -68,3 +68,62 @@ be the best value-per-intelligence model out there" — hedge intact — and its
 lead-in ("wrote that the release's pricing means this") mirrors the source's
 own construction instead of flattening a hedged assessment into a flat one.
 Nothing else in the piece changed; no new claim was introduced.
+
+## Recheck 2026-08-29 (wave addictedtoai-flh) — approve stands
+
+Re-examined because this entry was approved in the earlier seed round, which
+the 2026-08-29 seed wave never revisited, and because that round's one
+demonstrated failure was a **licence claim** (`org/moonshot-ai` asserted a
+"30% revenue share" clause that does not exist in the licence). This entry
+makes a licence claim of exactly that shape, so it was checked against the
+primary document rather than the model card or Wikipedia.
+
+**The licence claim holds, checked against the licence itself.** Fetched
+`https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731/raw/main/LICENSE`
+— HTTP 200, **1,084 bytes**, the unmodified MIT License text, opening
+`MIT License` / `Copyright (c) 2023 DeepSeek` and containing verbatim
+"Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software ... to deal in the Software **without restriction**,
+including without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or **sell** copies of the Software". Byte counts
+over those 1,084 bytes: the `%` character appears **0 times**, and the strings
+`revenue`, `Revenue`, `threshold`, `commercial`, `Commercial`, `monthly`,
+`users` and `share` are each absent. The entry's "weights, commercial use, no
+threshold clause" is therefore exactly right on all three counts. The model
+card carries "This repository and the model weights are licensed under the MIT
+License." verbatim, and the repo metadata names `licenseFilePath: "LICENSE"`,
+so "weights" is anchored too.
+
+**Everything else re-verified.** Wikipedia (fetched, 780,179 bytes) carries
+verbatim: "Founded 17 July 2023"; "Headquarters Hangzhou , Zhejiang , China";
+"Owner High-Flyer"; "In January 2025, DeepSeek released the DeepSeek-R1 model
+under the MIT License"; "The model was made open-weights under the DeepSeek
+License, which includes restrictions like open and responsible downstream
+usage" and "source-available DeepSeek License" (the entry's "proprietary
+DeepSeek License" is a defensible reading of a non-OSI, use-restricted
+licence, not a defect); "On 24 April 2026, DeepSeek released a preview of its
+V4 series, including the 284-billion parameter DeepSeek-V4-Flash and the
+1.6-trillion parameter DeepSeek-V4-Pro. Both feature a one million token
+context window , under the MIT License." and "The official versions of
+DeepSeek V4-Flash and V4-Pro were released on 31 July and 13 August,
+respectively." Every one of the five cited facts and both timeline rows are
+supported.
+
+Simon Willison's post re-fetched (18,125 bytes): "may currently be the best
+value-per-intelligence model out there" matches as a raw substring, hedge
+intact, exactly as the delta review recorded.
+
+The OpenRouter row's own description, read out of the committed
+`data/sources/openrouter-models/latest.json` (2026-08-29), reads "sparse
+mixture-of-experts model from DeepSeek, with 13B active parameters out of 284B
+total" — the body's paraphrase is exact.
+
+The two prose claims that reason *over* feed-bound values were re-measured
+against that same later snapshot, and both still hold with room:
+`deepseek/deepseek-v4-flash-0731` II 51.8 at 0.045/Mtok input,
+`openai/gpt-5.4` II 53.1 at 2.50, `google/gemini-3.5-flash` II 52.0 at 1.50 —
+a 1.3-point spread ("within about a point and a half") against a 55.6x input
+price spread ("more than an order of magnitude"). Note for a later pass: the
+flash row's input price has moved from 0.06 to 0.045/Mtok since the round-one
+measurement, which widens the price gap rather than narrowing it, so the prose
+is not at risk from that direction.

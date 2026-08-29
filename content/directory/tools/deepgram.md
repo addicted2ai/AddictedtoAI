@@ -4,6 +4,7 @@ url: "https://deepgram.com/"
 pricing: "pay-as-you-go, metered per minute of audio for speech-to-text and per character for text-to-speech, with a free starting credit"
 last_verified: "2026-08-28"
 entry: tool/deepgram
+category: audio
 mentions: []
 ---
 

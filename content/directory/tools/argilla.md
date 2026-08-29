@@ -4,6 +4,7 @@ url: "https://argilla.io/"
 pricing: "free, open source (Apache-2.0); no separate paid tier published"
 last_verified: "2026-08-28"
 entry: tool/argilla
+category: data
 mentions: []
 ---
 

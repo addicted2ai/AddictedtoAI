@@ -86,7 +86,8 @@ and points migrations at `kimi-k3`.
 The arithmetic is the story. Released 27 January 2026, off the vendor's
 platform on 31 August: 216 days of service for a model that shipped as a
 trillion-parameter flagship, trained on 15 trillion tokens of mixed image
-and text, and topped the HLE-Full evaluation on
+and text, and topped the tool-using HLE-Full evaluation — though not the
+plain one — on
 [the day it launched](https://siliconangle.com/2026/01/27/moonshot-ai-releases-open-source-kimi-k2-5-model-1t-parameters/).
 Its replacement in the same family, `moonshotai/kimi-k3`, arrived on
 16 July — 170 days after it.

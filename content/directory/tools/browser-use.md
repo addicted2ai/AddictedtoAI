@@ -4,6 +4,7 @@ url: "https://browser-use.com/"
 pricing: "library free, open source (MIT); commercial cloud products billed by token and by browser-hour"
 last_verified: "2026-08-28"
 entry: tool/browser-use
+category: agents
 mentions: []
 ---
 

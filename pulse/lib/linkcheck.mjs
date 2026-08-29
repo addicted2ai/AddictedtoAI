@@ -17,6 +17,7 @@
  */
 
 import { daysSince, paths, readJson, today, writeJson } from './core.mjs';
+import { describeFetchError } from './sources.mjs';
 
 export const LINK_INTERVAL_DAYS = 30;
 export const LISTING_INTERVAL_DAYS = 45; // specs/directory
@@ -461,7 +462,23 @@ export async function checkUrl(url) {
     return {
       ok: false,
       status: null,
-      error: `${err.name}: ${err.message}`,
+      // The errno, not just `TypeError: fetch failed` (beads addictedtoai-a6s).
+      //
+      // `fetch` collapses every connection-level failure into one sentence and
+      // hangs the only distinguishing detail off `err.cause`. Recording name
+      // and message alone made "this citation is dead" and "this machine has
+      // run out of ephemeral ports" byte-identical — and this check is MORE
+      // exposed to the second than source fetching is, because a rolling run
+      // opens far more outbound connections. Measured 2026-08-29 on Windows
+      // (addictedtoai-ar0): with ~7,000 loopback ports in TIME_WAIT, 688 of
+      // 3,000 fetches failed, every one of them `connect EADDRINUSE`.
+      //
+      // It matters more here than in `sources.mjs`, because this string is not
+      // just logged: it persists into `data/linkcheck.json` and is quoted
+      // verbatim in the queue's repair reason (`pulse/lib/queue.mjs`). A
+      // misdiagnosed reason costs a whole job. `describeFetchError` is imported
+      // rather than reimplemented so the two records cannot drift apart.
+      error: describeFetchError(err),
       finalUrl: null,
       bytes: null,
       metaRefresh: null,

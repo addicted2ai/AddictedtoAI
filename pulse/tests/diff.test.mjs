@@ -8,7 +8,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { cleanup, jsonSource, makeRoot, paths, readJson, readLines, runPulse, serve, writeJson } from './helpers.mjs';
-import { deriveStatus } from '../lib/diff.mjs';
+import { deriveStatus, isScheduled } from '../lib/diff.mjs';
 
 const ARGS = ['--no-build', '--no-mint'];
 
@@ -125,6 +125,150 @@ test('derived status treats a far-future sentinel expiry as active, not deprecat
   assert.equal(deriveStatus(source, { expiration_date: '2098-12-31' }), 'active', 'the sentinel OpenRouter serves must not fire a false deprecation');
   assert.equal(deriveStatus(source, { expiration_date: '2020-01-01' }), 'retired');
   assert.equal(deriveStatus(source, { expiration_date: '2026-09-30' }), 'deprecated');
+});
+
+// ── addictedtoai-8ho: a material field is a column, a fact, and maybe an event ──
+
+/** The registry's clock-window rule, as `openrouter-models` declares it. */
+const SCHEDULE_RULE = {
+  kind: 'utc_windows',
+  path: 'pricing.overrides',
+  window_keys: ['utc_start', 'utc_end', 'utc_days'],
+  governs: ['price_input'],
+};
+
+/**
+ * Three rows that differ only in what their `pricing.overrides` array holds:
+ * nothing, a clock schedule, and a long-context tier. Only the middle one is a
+ * value whose reading depends on the time of day.
+ */
+const OVERRIDE_ROWS = [
+  { id: 'acme/plain', name: 'Acme Plain', pricing: { prompt: '0.000001' }, context_length: 100000, expiration_date: null },
+  {
+    id: 'acme/clock',
+    name: 'Acme Clock',
+    pricing: {
+      prompt: '0.000002',
+      overrides: [
+        { prompt: '0.000002', utc_start: 0, utc_end: 1600 },
+        { prompt: '0.00000125', utc_start: 1600, utc_end: 0 },
+      ],
+    },
+    context_length: 200000,
+    expiration_date: null,
+  },
+  {
+    id: 'acme/tiered',
+    name: 'Acme Tiered',
+    pricing: { prompt: '0.000003', overrides: [{ prompt: '0.000006', min_prompt_tokens: 200000 }] },
+    context_length: 300000,
+    expiration_date: null,
+  },
+];
+
+test('a field marked event:false keeps its catalog column and stops producing feed lines', async (t) => {
+  // The control and the fix over identical worlds, so the only difference
+  // measured is the flag. The trap this guards is deleting the field instead:
+  // pulse/lib/derive.mjs builds catalog rows *from* material_fields.
+  const control = await serve(() => ({ status: 200, body: catalogBody(BASE_ROWS) }));
+  const fixed = await serve(() => ({ status: 200, body: catalogBody(BASE_ROWS) }));
+  const controlRoot = makeRoot([jsonSource('models', `${control.url}/models`)]);
+  const fixedRoot = makeRoot([
+    jsonSource('models', `${fixed.url}/models`, {
+      material_fields: [
+        { field: 'price_input', path: 'pricing.prompt', event: false },
+        { field: 'context_window', path: 'context_length' },
+        { field: 'status', path: '$status' },
+      ],
+    }),
+  ]);
+  t.after(async () => {
+    await control.close();
+    await fixed.close();
+    cleanup(controlRoot);
+    cleanup(fixedRoot);
+  });
+
+  for (const root of [controlRoot, fixedRoot]) {
+    assert.equal((await runPulse(root, ARGS)).status, 0);
+    const previous = readJson(paths.previous(root, 'models'));
+    previous.rows['acme/one'].pricing.prompt = '0.000009';
+    writeJson(paths.previous(root, 'models'), previous);
+    assert.equal((await runPulse(root, [...ARGS, '--offline'])).status, 0);
+  }
+
+  const before = readLines(paths.changes(controlRoot));
+  assert.equal(before.length, 1, 'without the flag the price movement is a feed line');
+  assert.equal(before[0].field, 'price_input');
+
+  assert.deepEqual(readLines(paths.changes(fixedRoot)), [], 'with event:false it is not');
+
+  // ...and the column is still there, byte for byte, which is the whole point.
+  const row = readJson(paths.catalog(fixedRoot)).rows.find((r) => r.row_id === 'acme/one');
+  const snapshot = readJson(paths.latest(fixedRoot, 'models'));
+  assert.equal(row.price_input, snapshot.rows['acme/one'].pricing.prompt, 'the catalog price column survives');
+  assert.equal(row.price_input, '0.000001');
+  assert.equal(row.context_window, '100000', 'an unflagged field is unaffected');
+});
+
+test('a clock-scheduled price produces no change line, while a tiered one still does', async (t) => {
+  // tencent/hy3 posts one rate for 00:00-16:00 UTC and another for 16:00-00:00;
+  // a fetch either side of 16:00 reads the same price sheet twice. A
+  // min_prompt_tokens tier does not move with the clock and is not suppressed.
+  const server = await serve(() => ({ status: 200, body: catalogBody(OVERRIDE_ROWS) }));
+  const root = makeRoot([
+    jsonSource('models', `${server.url}/models`, { schedule_rule: SCHEDULE_RULE }),
+  ]);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  assert.equal((await runPulse(root, ARGS)).status, 0);
+
+  // Move every row's price, so the only reason a row is missing is suppression.
+  const previous = readJson(paths.previous(root, 'models'));
+  for (const id of ['acme/plain', 'acme/clock', 'acme/tiered']) {
+    previous.rows[id].pricing.prompt = '0.000009';
+  }
+  writeJson(paths.previous(root, 'models'), previous);
+
+  const run = await runPulse(root, [...ARGS, '--offline']);
+  assert.equal(run.status, 0, run.out);
+  const priced = readLines(paths.changes(root)).filter((l) => l.field === 'price_input');
+  assert.deepEqual(
+    priced.map((l) => l.row_id).sort(),
+    ['acme/plain', 'acme/tiered'],
+    'the clock-windowed row is suppressed; the long-context tier is not',
+  );
+
+  // All three rows keep their catalog price regardless.
+  const rows = readJson(paths.catalog(root)).rows;
+  assert.deepEqual(
+    rows.map((r) => [r.row_id, r.price_input]),
+    [['acme/clock', '0.000002'], ['acme/plain', '0.000001'], ['acme/tiered', '0.000003']],
+  );
+});
+
+test('isScheduled fires on either side of a comparison, and only on governed fields', () => {
+  const source = { schedule_rule: SCHEDULE_RULE };
+  const clock = OVERRIDE_ROWS[1];
+  const tiered = OVERRIDE_ROWS[2];
+  const plain = OVERRIDE_ROWS[0];
+  const price = { field: 'price_input', path: 'pricing.prompt' };
+  const context = { field: 'context_window', path: 'context_length' };
+
+  assert.equal(isScheduled(source, clock, price), true);
+  assert.equal(isScheduled(source, tiered, price), false, 'min_prompt_tokens is not a clock window');
+  assert.equal(isScheduled(source, plain, price), false);
+  assert.equal(isScheduled(source, clock, context), false, 'the rule governs only the fields it names');
+  assert.equal(isScheduled({}, clock, price), false, 'no rule, no suppression');
+  assert.equal(isScheduled(source, null, price), false, 'a row that does not exist is not scheduled');
+  assert.equal(
+    isScheduled(source, { pricing: { prompt: '1', overrides: [{ prompt: '2', utc_days: [0, 6] }] } }, price),
+    true,
+    'utc_days alone is a window',
+  );
 });
 
 test('the catalog row matches the raw snapshot value it came from', async (t) => {
