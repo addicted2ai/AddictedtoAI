@@ -20,7 +20,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CONFIRM_AFTER_FAILURES, checkUrl, isCheckableUrl, isConfirmedBroken, rollingLinkCheck } from '../lib/linkcheck.mjs';
+import {
+  CONFIRM_AFTER_FAILURES,
+  checkUrl,
+  classifyRedirect,
+  isCheckableUrl,
+  isConfirmedBroken,
+  metaRefreshTarget,
+  referenceDrift,
+  rollingLinkCheck,
+} from '../lib/linkcheck.mjs';
 import { corpusLinks, extractLinks, readCorpus } from '../lib/corpus.mjs';
 import { REPO, cleanup, makeRoot, paths, readJson, runPulse, writeEntry, writeJson } from './helpers.mjs';
 
@@ -355,6 +364,271 @@ test('a 403 is retried as GET before it is believed, and each request gets its o
   // One shared AbortSignal made the 15s budget cover both requests, so a slow
   // HEAD left the GET no time and the check invented the timeout it reported.
   assert.notEqual(seen[0].signal, seen[1].signal, 'each request must carry its own timeout');
+});
+
+/* ===========================================================================
+ * A 200 is not an answer to "is this still the thing I cited?" (addictedtoai-557)
+ *
+ * Every URL and every destination below was measured live on 2026-08-29 and is
+ * quoted from `content/blog/reference-urls-that-still-return-200.md`, which
+ * found nine of twelve reference URLs returning 200 with four of them landing
+ * on unrelated content.
+ *
+ * The tests are two-sided throughout, and the second side is the load-bearing
+ * one: a check that reported every redirect would file repair items for
+ * http -> https and for two org renames the post explicitly calls correct.
+ * Those are the unrepairable rank-90 items that halted the loop on
+ * addictedtoai-5hn, one content file away.
+ * ======================================================================== */
+
+test('the redirect shapes the post calls legitimate are not drift, and the ones it calls rot are', () => {
+  // Legitimate — measured, and none of these may ever produce a finding.
+  const legitimate = [
+    ['http://arxiv.org/abs/1706.03762', 'https://arxiv.org/abs/1706.03762', 'same'],
+    ['https://www.addictedtoai.net/wiki', 'https://addictedtoai.net/wiki', 'same'],
+    ['https://aider.chat/docs/leaderboards', 'https://aider.chat/docs/leaderboards/', 'same'],
+    // Both org renames from the post: same host, same artifact, new owner.
+    [
+      'https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard',
+      'https://huggingface.co/spaces/lmarena-ai/arena-leaderboard',
+      'same-site-move',
+    ],
+    [
+      'https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard',
+      'https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard',
+      'same-site-move',
+    ],
+    // A domain that moved but kept the citation intact.
+    ['https://old.example-vendor.net/docs/api', 'https://new-vendor.dev/docs/api', 'cross-site-preserved'],
+    // The paper path the post singles out as done RIGHT: `paper` survives.
+    [
+      'https://paperswithcode.com/paper/attention-is-all-you-need',
+      'https://huggingface.co/papers/1706.03762',
+      'cross-site-related',
+    ],
+    // The plausible substitute. It IS rot, and it is deliberately not called
+    // rot here: it shares `imagenet`, and any rule sharp enough to catch it
+    // fires on every legitimate rename that keeps a word. See linkcheck.mjs.
+    [
+      'https://paperswithcode.com/dataset/imagenet',
+      'https://huggingface.co/datasets/zh-plus/tiny-imagenet',
+      'cross-site-related',
+    ],
+  ];
+  for (const [from, to, kind] of legitimate) {
+    assert.equal(classifyRedirect(from, to), kind, `${from} -> ${to}`);
+    assert.notEqual(classifyRedirect(from, to), 'cross-site-repath', `${from} must file no repair`);
+  }
+
+  // Rot: a different site, and not one word of the path requested survives.
+  for (const from of [
+    'https://paperswithcode.com/sota/image-classification-on-imagenet',
+    'https://paperswithcode.com/task/question-answering',
+  ]) {
+    assert.equal(classifyRedirect(from, 'https://huggingface.co/papers/trending'), 'cross-site-repath', from);
+  }
+
+  assert.equal(classifyRedirect('not a url', 'https://x.test/'), 'unknown', 'never throws on junk');
+});
+
+test('a meta refresh is read the way a browser reads it, including a relative target', () => {
+  // The exact tag `crfm.stanford.edu/helm/latest/` served, measured live.
+  const helm =
+    '<html><head><meta http-equiv="refresh" content="0; URL=https://crfm.stanford.edu/helm/classic/latest"></head></html>';
+  assert.equal(
+    metaRefreshTarget(helm, 'https://crfm.stanford.edu/helm/latest/'),
+    'https://crfm.stanford.edu/helm/classic/latest',
+  );
+  assert.equal(
+    metaRefreshTarget("<meta http-equiv='REFRESH' content='5;url=../elsewhere/'>", 'https://x.test/a/b/'),
+    'https://x.test/a/elsewhere/',
+    'relative targets resolve against the page, as a browser would',
+  );
+  assert.equal(metaRefreshTarget('<p>an ordinary page</p>', 'https://x.test/'), null);
+  assert.equal(metaRefreshTarget('<meta charset="utf-8">', 'https://x.test/'), null, 'other meta tags are not refreshes');
+});
+
+test('checkUrl follows a meta refresh and reports the destination, and leaves a real page alone', async (t) => {
+  const realFetch = globalThis.fetch;
+  t.after(() => (globalThis.fetch = realFetch));
+
+  const html = (body, extra = {}) =>
+    new Response(body, { status: 200, headers: { 'content-type': 'text/html; charset=utf-8', ...extra } });
+
+  // A 232-byte stub in front of a page that is GONE. Before this, the stub's
+  // own 200 was the whole answer and the citation read green.
+  const seen = [];
+  globalThis.fetch = async (url, opts) => {
+    seen.push(`${opts.method} ${url}`);
+    if (String(url).includes('/classic/')) return new Response(null, { status: 404 });
+    return html(
+      '<html><head><meta http-equiv="refresh" content="0; URL=https://helm.fixture-vendor.net/classic/latest"></head></html>',
+      { 'content-length': '232' },
+    );
+  };
+  const stub = await checkUrl('https://helm.fixture-vendor.net/latest/');
+  assert.equal(stub.metaRefresh, 'https://helm.fixture-vendor.net/classic/latest');
+  assert.equal(stub.status, 404, "the destination's status is the one that answers the question");
+  assert.equal(stub.ok, false);
+
+  // A real page must not cost a second hop, and must record no refresh.
+  seen.length = 0;
+  globalThis.fetch = async (url, opts) => {
+    seen.push(`${opts.method} ${url}`);
+    return html('<html><body><h1>A real article</h1></body></html>', { 'content-length': '900000' });
+  };
+  const page = await checkUrl('https://fixture-vendor.net/article');
+  assert.equal(page.ok, true);
+  assert.equal(page.metaRefresh, null);
+  assert.equal(page.bytes, 900000, 'the destination\'s byte length is recorded, as the post asks');
+  assert.deepEqual(seen, ['HEAD https://fixture-vendor.net/article'], 'a page too big to be a stub is never re-fetched');
+});
+
+test('a response with no content-length records unknown bytes, not zero bytes', async (t) => {
+  const realFetch = globalThis.fetch;
+  t.after(() => (globalThis.fetch = realFetch));
+  // Number(null) is 0, so reading the header straight through Number() writes
+  // "0 bytes" — a measurement of nothing, stored as if it were one. Measured
+  // live on www.anthropic.com/news, which sends no content-length.
+  globalThis.fetch = async () => new Response(null, { status: 200, headers: { 'content-type': 'text/html' } });
+  const res = await checkUrl('https://chunked.fixture-vendor.net/');
+  assert.equal(res.bytes, null);
+  assert.equal(res.ok, true);
+});
+
+test('distinct citations collapsing onto one page are drift; the same page cited once is not', () => {
+  const cited = ['content/wiki/concept/x.md'];
+  const rec = (final_url) => ({
+    last_checked: '2026-08-29',
+    status: 200,
+    ok: true,
+    error: null,
+    last_ok: '2026-08-29',
+    consecutive_failures: 0,
+    final_url,
+    bytes: 1504429,
+    meta_refresh: null,
+  });
+
+  // The measured state of paperswithcode on 2026-08-29, plus every legitimate
+  // redirect from the same post. Only the first three may produce findings.
+  const state = {
+    urls: {
+      'https://paperswithcode.com/': rec('https://huggingface.co/papers/trending'),
+      'https://paperswithcode.com/sota/image-classification-on-imagenet': rec('https://huggingface.co/papers/trending'),
+      'https://paperswithcode.com/task/question-answering': rec('https://huggingface.co/papers/trending'),
+      'https://paperswithcode.com/paper/attention-is-all-you-need': rec('https://huggingface.co/papers/1706.03762'),
+      'https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard': rec(
+        'https://huggingface.co/spaces/lmarena-ai/arena-leaderboard',
+      ),
+      'https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard': rec(
+        'https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard',
+      ),
+      'http://arxiv.org/abs/1706.03762': rec('https://arxiv.org/abs/1706.03762'),
+      'https://aider.chat/docs/leaderboards/': rec('https://aider.chat/docs/leaderboards/'),
+    },
+  };
+  const links = Object.keys(state.urls).map((url) => ({ url, cited_by: cited }));
+  const { redirected, drift } = referenceDrift(links, state);
+
+  assert.deepEqual(
+    drift.map((d) => d.url).sort(),
+    [
+      'https://paperswithcode.com/',
+      'https://paperswithcode.com/sota/image-classification-on-imagenet',
+      'https://paperswithcode.com/task/question-answering',
+    ],
+    'the three that collapse onto one feed, and nothing else',
+  );
+  assert.ok(drift.every((d) => d.kind === 'catch-all'));
+  assert.match(drift[0].detail, /3 distinct cited URL/);
+
+  // The moves that file nothing are still RECORDED — an honest observation is
+  // the point, and a destination nobody can see is what the post is about.
+  const observed = redirected.map((m) => m.url);
+  assert.ok(observed.includes('https://paperswithcode.com/paper/attention-is-all-you-need'));
+  assert.ok(observed.includes('https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard'));
+  assert.ok(!observed.includes('http://arxiv.org/abs/1706.03762'), 'http -> https is not a move a reader would notice');
+  assert.ok(!observed.includes('https://aider.chat/docs/leaderboards/'), 'a URL that did not move is not reported');
+
+  // One citation alone onto a catch-all page cannot be told from a rename.
+  const single = referenceDrift(
+    [{ url: 'https://paperswithcode.com/dataset/imagenet', cited_by: cited }],
+    { urls: { 'https://paperswithcode.com/dataset/imagenet': rec('https://huggingface.co/datasets/zh-plus/tiny-imagenet') } },
+  );
+  assert.equal(single.drift.length, 0, 'a plausible substitute needs the page read; it is recorded, not filed');
+  assert.equal(single.redirected.length, 1);
+});
+
+test('a broken link is not double-filed as drift — one URL, one finding', () => {
+  const state = {
+    urls: {
+      'https://huggingface.co/datasets/imagenet-1k': {
+        last_checked: '2026-08-29', status: 404, ok: false, error: null, last_ok: null,
+        consecutive_failures: 2, final_url: 'https://huggingface.co/imagenet-1k/datasets', bytes: 52283, meta_refresh: null,
+      },
+    },
+  };
+  const { drift, redirected } = referenceDrift(
+    [{ url: 'https://huggingface.co/datasets/imagenet-1k', cited_by: ['content/wiki/concept/x.md'] }],
+    state,
+  );
+  assert.deepEqual(drift, [], 'a 404 is already a broken-link repair; drift must not stack a second item on it');
+  assert.deepEqual(redirected, []);
+});
+
+test('end to end: a catch-all files one repair BELOW rank 90; an org rename files none', async (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+
+  writeEntry(
+    root,
+    'content/wiki/concept/citations.md',
+    { id: 'concept/citations', kind: 'concept', display_name: 'Citations', aliases: [], facts: [], mentions: [] },
+    'The table was at https://pwc.fixture-vendor.net/sota/image-classification-on-imagenet and the task\n' +
+      'page at https://pwc.fixture-vendor.net/task/question-answering. The arena moved to\n' +
+      'https://hf.fixture-vendor.net/spaces/lmsys/chatbot-arena-leaderboard.\n',
+  );
+
+  const alive = (final_url) => ({
+    last_checked: '2026-08-27', status: 200, ok: true, error: null, last_ok: '2026-08-27',
+    consecutive_failures: 0, final_url, bytes: 1504429, meta_refresh: null,
+  });
+  writeJson(join(root, 'data', 'linkcheck.json'), {
+    urls: {
+      'https://pwc.fixture-vendor.net/sota/image-classification-on-imagenet': alive('https://feed.fixture-host.net/papers/trending'),
+      'https://pwc.fixture-vendor.net/task/question-answering': alive('https://feed.fixture-host.net/papers/trending'),
+      'https://hf.fixture-vendor.net/spaces/lmsys/chatbot-arena-leaderboard': alive(
+        'https://hf.fixture-vendor.net/spaces/lmarena-ai/arena-leaderboard',
+      ),
+    },
+  });
+
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
+
+  const fresh = readJson(paths.freshness(root));
+  assert.deepEqual(
+    fresh.reference_drift.map((d) => d.url).sort(),
+    [
+      'https://pwc.fixture-vendor.net/sota/image-classification-on-imagenet',
+      'https://pwc.fixture-vendor.net/task/question-answering',
+    ],
+    'only the pair that collapsed onto one destination',
+  );
+  assert.equal(fresh.link_check.drifted, 2);
+  assert.equal(fresh.link_check.redirected, 3, 'the org rename is recorded even though it files nothing');
+
+  const items = readJson(paths.queue(root)).items;
+  const repairs = items.filter((i) => i.reason === 'reference-drift');
+  assert.equal(repairs.length, 2);
+  assert.equal(repairs[0].rank, 72);
+  assert.ok(repairs[0].rank < 90, 'drift must never outrank a dead link, nor sit where 5hn sat');
+  assert.match(repairs[0].detail, /Re-point the citation/, 'every finding names a fix that closes it');
+  assert.equal(
+    items.filter((i) => String(i.subject).includes('lmsys')).length,
+    0,
+    'an org rename is a legitimate redirect: recorded, never filed',
+  );
 });
 
 test('a declined status neither counts as a failure nor claims the link was verified', async (t) => {

@@ -15,7 +15,7 @@ not: build output is `.next/` and `out/`.
 | `sources/<id>/previous.json` | prior snapshot, the diff base | state |
 | `changes.jsonl` | append-only dated diff history, one JSON object per detected or seeded change, each embedding its source-row excerpt | state |
 | `ledger.jsonl` | append-only job ledger (id, type, runner, provider, tier, MM, outcome) | state |
-| `linkcheck.json` | rolling link-check dates — 30 days of accumulated check dates, derivable from nothing else | state |
+| `linkcheck.json` | rolling link-check dates, plus where each link actually lands (`final_url`, `bytes`, `meta_refresh`) — 30 days of accumulated observations, derivable from nothing else | state |
 | `launch.json` | the launch record: measured JS payloads, analytics verification, build verification, launch date | state |
 | `proposals/` | proposal files; `rejected/` is the rejection index | state |
 | `reviews/` | verdict records (`seed-<slug>.md`, `<job-id>.md`) | state |

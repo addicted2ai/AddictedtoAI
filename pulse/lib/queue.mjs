@@ -38,6 +38,13 @@ export const RANKS = {
   'vanished-feed-row': 85,
   'suspect-source': 80,
   'listing-could-not-verify': 75,
+  // A citation that resolves to something else is worth repairing and is not
+  // urgent: the page is up, and nothing on this site is broken until a reader
+  // follows the link. Ranked below every dead-resource repair deliberately —
+  // and the fix is always available (re-point the citation, or drop it), which
+  // is what keeps it from becoming the unrepairable top-of-queue item that
+  // halted the loop on addictedtoai-5hn.
+  'reference-drift': 72,
   'listing-verification-due': 60,
   'tutorial-demoted': 70,
   'tutorial-stale': 55,
@@ -116,6 +123,24 @@ export function computeQueue(root, { freshness, changesFile, wants = readWants(r
         l.url,
         `HTTP ${l.status ?? l.error ?? 'unreachable'} on ${l.consecutive_failures} consecutive check(s); cited by ${l.cited_by.length} file(s)`,
         l.cited_by[0] ?? null,
+      ),
+    );
+  }
+
+  // Only `reference_drift` files work. `freshness.redirected_links` holds
+  // every recorded move, most of them legitimate, and is deliberately not read
+  // here: a repair item for an http -> https or an org rename is an item no
+  // job can close.
+  for (const d of freshness.reference_drift ?? []) {
+    items.push(
+      item(
+        'repair',
+        'reference-drift',
+        d.url,
+        `${d.detail}; cited by ${d.cited_by.length} file(s)` +
+          (d.meta_refresh ? ` (reached through a meta refresh from ${d.meta_refresh})` : '') +
+          '. Re-point the citation at the resource it was citing, or remove the claim it supports.',
+        d.cited_by[0] ?? null,
       ),
     );
   }

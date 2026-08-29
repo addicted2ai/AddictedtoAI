@@ -43,7 +43,7 @@ data/sources/<id>/previous.json     the diff base     ┘ retained, which is why
 data/sources/<id>/state.json        fetch/refusal/seed state
 data/sources/<id>/minted.json       minting provenance (see below)
 data/changes.jsonl                  append-only dated diff history
-data/linkcheck.json                 rolling link-check dates — state
+data/linkcheck.json                 rolling link-check dates + destinations — state
 data/derived/catalog.json           model catalog rows
 data/derived/status-tables.json     deprecations + changed-in-30-days
 data/derived/sources.json           per-source public state (refusing, suspect)

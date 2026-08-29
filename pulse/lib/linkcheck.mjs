@@ -184,11 +184,206 @@ export function saveLinkState(root, state) {
 }
 
 /**
+ * ---------------------------------------------------------------------------
+ * REFERENCE ROT — a status code answers a different question than a citation
+ * asks.
+ *
+ * `content/blog/reference-urls-that-still-return-200.md` measured this site's
+ * own blind spot on 2026-08-28: of twelve reference URLs, nine returned 200
+ * and four of those landed on content with no relationship to the path
+ * requested. Every `paperswithcode.com/sota/*` and `/task/*` path 302s to
+ * `huggingface.co/papers/trending` and returns the identical page; one more,
+ * `crfm.stanford.edu/helm/latest/`, is a 232-byte document whose only content
+ * is a meta refresh, which no HTTP redirect follower sees. The site published
+ * that argument while its own checker read a status code and stopped.
+ *
+ * Two rules govern what is done about it, and the SECOND OUTRANKS THE FIRST.
+ *
+ *  1. Record the destination. `final_url`, `bytes` and any meta-refresh hop go
+ *     into the state file for every checked URL, so a reader can see where a
+ *     citation actually lands. This is the blog's first recommendation made
+ *     true of the checker.
+ *
+ *  2. **A legitimate redirect files no repair work.** http -> https, www ->
+ *     apex, a trailing slash, an org rename — all of these resolve correctly
+ *     and there is nothing for a job to fix. Filing one would produce exactly
+ *     the item that halted the loop on `http://localhost:8080/`
+ *     (addictedtoai-5hn): selected by the Desk, unrepairable, failing until a
+ *     breaker trips. So the classification below is deliberately reluctant,
+ *     and anything it cannot decide is RECORDED AND SURFACED WITHOUT A
+ *     FINDING. An honest observation beats a false alarm.
+ *
+ * What is therefore treated as drift, and why each is decidable without
+ * reading the page:
+ *
+ *  - `catch-all` — two or more distinct cited URLs resolve to ONE destination.
+ *    A legitimate redirect maps one resource to one new location; a catch-all
+ *    maps a whole path space onto a single page. This is the blog's own
+ *    detectable signal ("two different citations resolving to the same page")
+ *    and it needs no judgement about what the page is about.
+ *  - `cross-site-repath` — the destination is on a different site AND shares
+ *    no word with the path that was asked for. `/sota/image-classification-on-
+ *    imagenet` -> `/papers/trending` shares nothing; `/paper/attention-is-all-
+ *    you-need` -> `/papers/1706.03762` shares `paper`, so it is not a finding,
+ *    which is correct — that redirect works.
+ *
+ * What is deliberately NOT treated as drift, and is left visible instead:
+ *
+ *  - A move within one site, however far the path travels. Both org renames in
+ *    the post (`spaces/lmsys/...` -> `spaces/lmarena-ai/...`) are this shape.
+ *  - A meta refresh. It is followed and recorded — `helm/latest` -> `helm/
+ *    classic/latest` is now visible and its destination's status is the one
+ *    reported — but "latest means classic" is a judgement about words, not a
+ *    measurement, and no mechanical rule separates it from a legitimate stub.
+ *  - **A plausible substitute.** `/dataset/imagenet` -> `/datasets/zh-plus/
+ *    tiny-imagenet` is, per the post, the worst rot in the set: a different
+ *    dataset an order of magnitude smaller. It shares the word `imagenet`, so
+ *    the rule above does not fire, and that is a choice rather than an
+ *    oversight — any rule sharp enough to catch it would also fire on every
+ *    legitimate rename that keeps a word. Distinguishing "imagenet" from
+ *    "tiny-imagenet" needs the page read and understood. It is recorded as a
+ *    cross-site redirect with its destination named, and left for a human.
+ * ---------------------------------------------------------------------------
+ */
+
+/** A body this small is a redirect stub or an error page, never an article. */
+export const STUB_MAX_BYTES = 8192;
+
+/**
+ * Compare URLs the way a reader would: scheme, `www.`, a trailing slash and a
+ * fragment are not the identity of a resource. The query is, so it is kept.
+ * Returns `null` for anything unparseable — an unparseable URL is a content
+ * defect the status check already reports, not a redirect question.
+ */
+export function normalizeUrlKey(url) {
+  let u;
+  try {
+    u = new URL(url);
+  } catch {
+    return null;
+  }
+  const host = u.hostname.toLowerCase().replace(/^www\./, '');
+  const path = u.pathname.replace(/\/+$/, '') || '/';
+  return { host, path, key: `${host}${path}${u.search}` };
+}
+
+/**
+ * The site a host belongs to, approximated as its last two labels.
+ *
+ * This is wrong for multi-label public suffixes — `a.co.uk` and `b.co.uk` both
+ * reduce to `co.uk` and are read as one site. The error is deliberately in
+ * that direction: it makes the check call a move "same-site", which files
+ * NOTHING. Erring the other way would invent findings, and rule 2 above says
+ * a false alarm is the more expensive mistake.
+ */
+export function registrableDomain(host) {
+  const labels = String(host ?? '').toLowerCase().split('.').filter(Boolean);
+  return labels.length <= 2 ? labels.join('.') : labels.slice(-2).join('.');
+}
+
+/** Words a path is made of, for "does the destination still mention what was asked for?". */
+export function pathTokens(path) {
+  const tokens = new Set();
+  for (const raw of String(path ?? '').toLowerCase().split(/[^a-z0-9.]+/)) {
+    const t = raw.replace(/^\.+|\.+$/g, '');
+    if (t.length < 3) continue; // "v1", "en", "on" carry no meaning either way
+    tokens.add(t.replace(/s$/, '')); // paper / papers, dataset / datasets
+  }
+  return tokens;
+}
+
+/**
+ * What kind of move a redirect was. Only `cross-site-repath` is drift-worthy;
+ * every other kind is an observation. See the block comment above.
+ *
+ * @returns {'same'|'same-site-move'|'cross-site-preserved'|'cross-site-related'|'cross-site-repath'|'unknown'}
+ */
+export function classifyRedirect(requested, final) {
+  const a = normalizeUrlKey(requested);
+  const b = normalizeUrlKey(final);
+  if (!a || !b) return 'unknown';
+  if (a.key === b.key) return 'same';
+  if (registrableDomain(a.host) === registrableDomain(b.host)) return 'same-site-move';
+  if (a.path === b.path) return 'cross-site-preserved';
+  if (a.path === '/' || b.path === '/') return 'cross-site-related';
+  const asked = pathTokens(a.path);
+  for (const t of pathTokens(b.path)) if (asked.has(t)) return 'cross-site-related';
+  return 'cross-site-repath';
+}
+
+/** The absolute target of a `<meta http-equiv="refresh">`, or null. */
+export function metaRefreshTarget(html, base) {
+  const tag = /<meta\b[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*>/i.exec(String(html ?? ''));
+  if (!tag) return null;
+  const content = /content\s*=\s*["']([^"']*)["']/i.exec(tag[0]);
+  if (!content) return null;
+  const target = /(?:^|;)\s*url\s*=\s*["']?([^"';]+)/i.exec(content[1]);
+  if (!target) return null;
+  try {
+    return new URL(target[1].trim(), base).href;
+  } catch {
+    return null;
+  }
+}
+
+/** Read at most `max` bytes of a response body, then let the rest go. */
+async function readCapped(res, max = STUB_MAX_BYTES) {
+  if (!res.body) return '';
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder('utf-8', { fatal: false });
+  let text = '';
+  try {
+    while (text.length < max) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      text += decoder.decode(value, { stream: true });
+    }
+  } catch {
+    /* a truncated read is not a failure of the link — the status already spoke */
+  } finally {
+    try {
+      await reader.cancel();
+    } catch {
+      /* already closed */
+    }
+  }
+  return text.slice(0, max);
+}
+
+/**
+ * The destination's byte length, or null when the server did not say.
+ *
+ * `Number(null)` is 0, so reading the header straight through Number() records
+ * a chunked response as a zero-byte page — a measurement of nothing, printed
+ * as if it were a measurement. Measured live on `www.anthropic.com/news`,
+ * which sends no `content-length`.
+ */
+function contentLength(res) {
+  const raw = res.headers?.get?.('content-length');
+  if (raw === null || raw === undefined || raw === '') return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+/** Could this response be a redirect stub rather than a page? */
+function couldBeStub(res) {
+  if (res.status >= 400) return false;
+  const type = res.headers?.get?.('content-type') ?? '';
+  if (!/text\/html|application\/xhtml/i.test(type)) return false;
+  const len = contentLength(res);
+  // `null` means the server did not say. Unknown is exactly where a silent
+  // miss hides, so it is read (capped) rather than assumed large.
+  return len === null || len <= STUB_MAX_BYTES;
+}
+
+/**
  * One URL. A HEAD that the server rejects as a method is retried as GET.
  *
  * Returns `ok: true` (resolves), `ok: false` (failed — see
  * CONFIRM_AFTER_FAILURES before acting on one), or `ok: null` (the host
- * declined this requester; no verdict — see DECLINED_STATUSES).
+ * declined this requester; no verdict — see DECLINED_STATUSES), plus where the
+ * request actually landed: `finalUrl`, `bytes`, and `metaRefresh` when the
+ * destination was reached only through one.
  *
  * Each request gets its OWN timeout. One shared `AbortSignal.timeout` made the
  * 15s budget cover the HEAD and the retried GET together, so a slow-but-alive
@@ -196,8 +391,8 @@ export function saveLinkState(root, state) {
  * recorded as a timeout — the check manufacturing the failure it then reports.
  */
 export async function checkUrl(url) {
-  const request = (method) =>
-    fetch(url, {
+  const request = (method, target = url) =>
+    fetch(target, {
       method,
       redirect: 'follow',
       headers: { 'user-agent': USER_AGENT },
@@ -205,16 +400,133 @@ export async function checkUrl(url) {
     });
   try {
     let res = await request('HEAD');
+    let body = null;
     // Many hosts answer HEAD with a method error, or refuse it while serving
     // GET happily, so a refusal is retried once before it is believed.
     if (res.status === 405 || res.status === 501 || DECLINED_STATUSES.has(res.status)) {
       res = await request('GET');
+      body = couldBeStub(res) ? await readCapped(res) : '';
     }
-    if (DECLINED_STATUSES.has(res.status)) return { ok: null, status: res.status, error: null };
-    return { ok: res.status < 400, status: res.status, error: null };
+    if (DECLINED_STATUSES.has(res.status)) {
+      return {
+        ok: null,
+        status: res.status,
+        error: null,
+        finalUrl: res.url || url,
+        bytes: contentLength(res),
+        metaRefresh: null,
+      };
+    }
+
+    let finalUrl = res.url || url;
+    let bytes = contentLength(res);
+    let metaRefresh = null;
+
+    // The hop no link checker follows. A HEAD has no body, so the candidate is
+    // fetched once — only when it is small enough, or unmeasured, to be a stub.
+    if (body === null && couldBeStub(res)) {
+      try {
+        const g = await request('GET', finalUrl);
+        if (couldBeStub(g)) body = await readCapped(g);
+      } catch {
+        body = '';
+      }
+    }
+    const target = body ? metaRefreshTarget(body, finalUrl) : null;
+    if (target && normalizeUrlKey(target)?.key !== normalizeUrlKey(finalUrl)?.key) {
+      metaRefresh = target;
+      try {
+        // The destination's status is the one that answers "is this resource
+        // still there?" — a 200 stub in front of a 404 is not a live citation.
+        const hop = await request('HEAD', target);
+        res = hop;
+        finalUrl = hop.url || target;
+        bytes = contentLength(hop);
+      } catch {
+        /* the stub resolved; its target did not answer. Keep the stub's own
+           status rather than inventing a failure the request did not observe. */
+      }
+    }
+
+    if (DECLINED_STATUSES.has(res.status)) {
+      return { ok: null, status: res.status, error: null, finalUrl, bytes, metaRefresh };
+    }
+    return { ok: res.status < 400, status: res.status, error: null, finalUrl, bytes, metaRefresh };
   } catch (err) {
-    return { ok: false, status: null, error: `${err.name}: ${err.message}` };
+    return {
+      ok: false,
+      status: null,
+      error: `${err.name}: ${err.message}`,
+      finalUrl: null,
+      bytes: null,
+      metaRefresh: null,
+    };
   }
+}
+
+/**
+ * Where the corpus's citations actually land, and which of those landings this
+ * check is willing to call rot. Derived from current state on every run —
+ * never accumulated — so a repaired citation leaves both lists by itself.
+ *
+ * @returns {{redirected: object[], drift: object[]}} every recorded move, and
+ *          the subset a repair job can act on.
+ */
+export function referenceDrift(links, state) {
+  const urls = state?.urls ?? {};
+  const moved = [];
+
+  for (const link of links) {
+    const rec = urls[link.url];
+    if (!rec || rec.ok === false || !rec.final_url) continue;
+    const from = normalizeUrlKey(link.url);
+    const to = normalizeUrlKey(rec.final_url);
+    if (!from || !to) continue;
+    const kind = classifyRedirect(link.url, rec.final_url);
+    if (kind === 'same' && !rec.meta_refresh) continue;
+    moved.push({
+      url: link.url,
+      final_url: rec.final_url,
+      kind,
+      bytes: rec.bytes ?? null,
+      meta_refresh: rec.meta_refresh ?? null,
+      last_checked: rec.last_checked ?? null,
+      cited_by: link.cited_by ?? [],
+      fromKey: from.key,
+      toKey: to.key,
+    });
+  }
+
+  // The catch-all signal: distinct citations collapsing onto one destination.
+  const byDestination = new Map();
+  for (const m of moved) {
+    if (m.fromKey === m.toKey) continue;
+    if (!byDestination.has(m.toKey)) byDestination.set(m.toKey, new Set());
+    byDestination.get(m.toKey).add(m.fromKey);
+  }
+
+  const drift = [];
+  for (const m of moved) {
+    const collapsed = byDestination.get(m.toKey)?.size ?? 0;
+    const isCatchAll = m.fromKey !== m.toKey && collapsed >= 2;
+    if (!isCatchAll && m.kind !== 'cross-site-repath') continue;
+    drift.push({
+      url: m.url,
+      final_url: m.final_url,
+      kind: isCatchAll ? 'catch-all' : 'cross-site-repath',
+      bytes: m.bytes,
+      meta_refresh: m.meta_refresh,
+      last_checked: m.last_checked,
+      cited_by: m.cited_by,
+      detail: isCatchAll
+        ? `${collapsed} distinct cited URL(s) now resolve to ${m.final_url} — a destination serving a whole path space is not the resource any of them cited`
+        : `resolves to ${m.final_url}, on a different site and sharing no word with the path requested`,
+    });
+  }
+
+  const strip = ({ fromKey, toKey, ...rest }) => rest;
+  const order = (a, b) => (a.url < b.url ? -1 : 1);
+  return { redirected: moved.map(strip).sort(order), drift: drift.sort(order) };
 }
 
 /**
@@ -276,6 +588,12 @@ export async function rollingLinkCheck(root, allLinks, { offline = false, max = 
         error: res.error,
         last_ok: res.ok === true ? day : (prev.last_ok ?? null),
         consecutive_failures: declined ? (prev.consecutive_failures ?? 0) : res.ok ? 0 : (prev.consecutive_failures ?? 0) + 1,
+        // Where the request actually landed. The status alone cannot say
+        // whether the citation still points at what it cited, and the previous
+        // fields are the whole of what this file used to know.
+        final_url: res.finalUrl ?? null,
+        bytes: res.bytes ?? null,
+        meta_refresh: res.metaRefresh ?? null,
       };
       checked.push({ url: link.url, ...res });
     }
@@ -309,6 +627,13 @@ export async function rollingLinkCheck(root, allLinks, { offline = false, max = 
   // our user-agent should be visible in the derived data, never silently gone.
   const declined = links.filter((l) => state.urls[l.url]?.ok === null).length;
 
+  // Where the live citations land. `redirected` is every recorded move and
+  // files nothing; `drift` is the subset a repair job can act on. Computed
+  // over the whole state, not just this run's slice, because the catch-all
+  // signal is about the relationship BETWEEN citations and the rolling check
+  // only ever sees a few of them per run.
+  const { redirected, drift } = referenceDrift(links, state);
+
   return {
     total: links.length,
     excluded,
@@ -318,6 +643,8 @@ export async function rollingLinkCheck(root, allLinks, { offline = false, max = 
     pruned,
     offline,
     broken,
+    redirected,
+    drift,
     state,
   };
 }

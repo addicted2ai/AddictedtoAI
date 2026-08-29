@@ -163,6 +163,19 @@ log.step(
     (linkResult.declined ? `, ${linkResult.declined} declined our user-agent (no verdict)` : '') +
     (linkResult.excluded ? `, ${linkResult.excluded} loopback/private/reserved host(s) not checkable` : ''),
 );
+// Where the citations land, printed separately from whether they resolve —
+// nine of twelve URLs in the site's own reference-rot post returned 200, and a
+// line that only counts failures says nothing about any of them.
+const drifted = linkResult.drift?.length ?? 0;
+const redirected = linkResult.redirected?.length ?? 0;
+log.step(
+  'destinations',
+  `${redirected} link(s) land somewhere other than where they point` +
+    (drifted
+      ? `, ${drifted} of them on content this check can say is not what was cited (repair filed)`
+      : ', none of which this check will call rot without reading the page (no repair filed)'),
+);
+for (const d of linkResult.drift ?? []) log.warn(`reference drift: ${d.url} -> ${d.final_url} (${d.kind})`);
 
 // ---- 6. freshness --------------------------------------------------------
 const freshness = computeFreshness(root, { registry, corpus, derived, linkResult });

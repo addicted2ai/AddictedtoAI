@@ -131,6 +131,14 @@ export function computeFreshness(root, { registry, corpus, derived, linkResult }
     tutorials,
     listings,
     broken_links: linkResult?.broken ?? [],
+    // Reference rot, split by what the check can be right about. `drift` is
+    // the subset a repair job can close; `redirected_links` is every recorded
+    // move including the legitimate ones, carried so a destination is visible
+    // rather than only a status code (see linkcheck.mjs). Nothing in
+    // `redirected_links` files work — a legitimate redirect that produced a
+    // repair item would be an unfixable finding at the top of the queue.
+    reference_drift: linkResult?.drift ?? [],
+    redirected_links: linkResult?.redirected ?? [],
     // No `offline` marker here on purpose: how a run was invoked is not part
     // of the site's state, and recording it would make this file vary with
     // the flags rather than with the world. `checked` and `due` already say
@@ -146,6 +154,10 @@ export function computeFreshness(root, { registry, corpus, derived, linkResult }
       declined: linkResult?.declined ?? 0,
       due: linkResult?.due ?? 0,
       checked: linkResult?.checked ?? 0,
+      // Counted for the same reason `excluded` and `declined` are: a redirect
+      // the check decided not to act on must still be visible.
+      redirected: linkResult?.redirected?.length ?? 0,
+      drifted: linkResult?.drift?.length ?? 0,
       interval_days: 30,
       confirm_after_failures: CONFIRM_AFTER_FAILURES,
     },
