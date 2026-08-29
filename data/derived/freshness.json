@@ -6,10 +6,10 @@
     "confirm_after_failures": 2,
     "declined": 0,
     "drifted": 0,
-    "due": 190,
+    "due": 165,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 3,
+    "redirected": 5,
     "total": 339
   },
   "listings": [
@@ -190,7 +190,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/groq-cloud.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "groq-cloud",
       "state": "ok",
       "url": "https://groq.com/"
@@ -203,7 +203,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/guardrails-ai.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "guardrails-ai",
       "state": "ok",
       "url": "https://guardrailsai.com/"
@@ -229,7 +229,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/hugging-face-hub.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "hugging-face-hub",
       "state": "ok",
       "url": "https://huggingface.co/"
@@ -268,7 +268,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/llama-cpp.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "llama-cpp",
       "state": "ok",
       "url": "https://github.com/ggml-org/llama.cpp"
@@ -281,7 +281,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/llamafile.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "llamafile",
       "state": "ok",
       "url": "https://github.com/mozilla-ai/llamafile"
@@ -424,7 +424,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/unsloth.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "unsloth",
       "state": "ok",
       "url": "https://github.com/unslothai/unsloth"
@@ -450,7 +450,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/vllm.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "vllm",
       "state": "ok",
       "url": "https://github.com/vllm-project/vllm"
@@ -505,6 +505,30 @@
       "last_checked": "2026-08-29",
       "meta_refresh": null,
       "url": "https://docs.langchain.com/oss/python/langchain/rag",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/wiki/tool/comfyui.md"
+      ],
+      "final_url": "https://github.com/Comfy-Org/ComfyUI",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-29",
+      "meta_refresh": null,
+      "url": "https://github.com/comfyanonymous/ComfyUI",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": 460041,
+      "cited_by": [
+        "content/wiki/model/cohere-command-a.md"
+      ],
+      "final_url": "https://huggingface.co/CohereLabs/c4ai-command-a-03-2025",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-29",
+      "meta_refresh": null,
+      "url": "https://huggingface.co/CohereForAI/c4ai-command-a-03-2025",
       "verdict_recorded": true
     }
   ],
