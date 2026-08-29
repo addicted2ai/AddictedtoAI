@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 569,
+  "count": 576,
   "docs": [
     {
       "u": "/blog/reference-urls-that-still-return-200",
@@ -123,16 +123,6 @@
       "b": false
     },
     {
-      "u": "/impossible-routine/face-verification",
-      "t": "Face verification",
-      "k": "delta",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
       "u": "/impossible-routine/fine-tuning-on-one-gpu",
       "t": "Fine-tuning on one GPU",
       "k": "delta",
@@ -215,16 +205,6 @@
     {
       "u": "/impossible-routine/open-frontier-weights",
       "t": "Frontier weights you can download",
-      "k": "delta",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/impossible-routine/price-of-a-million-tokens",
-      "t": "The price of a million tokens",
       "k": "delta",
       "d": null,
       "s": null,
@@ -833,16 +813,6 @@
       "b": false
     },
     {
-      "u": "/tutorials/tokenizer-tax-measured",
-      "t": "Three models advertise 131,072 tokens of context. In Tamil they hold 98k, 120k and 387k characters.",
-      "k": "tutorial",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
       "u": "/wiki/concept/ai-winter",
       "t": "AI winter",
       "k": "entry",
@@ -856,7 +826,7 @@
     },
     {
       "u": "/wiki/concept/chain-of-thought",
-      "t": "Chain-of-thought prompting",
+      "t": "Chain-of-thought faithfulness",
       "k": "entry",
       "d": "concept",
       "s": "active",
@@ -1927,7 +1897,17 @@
         "DeepSeek-V4-Flash-0731",
         "deepseek/deepseek-v4-flash-0731"
       ],
-      "b": false
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v4-flash-0731-batch",
+      "t": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v4-flash-0731-batch",
+      "a": [],
+      "b": true
     },
     {
       "u": "/wiki/model/deepseek-deepseek-v4-flash-latest",
@@ -1966,6 +1946,16 @@
       "d": "model",
       "s": "active",
       "i": "model/deepseek-deepseek-v4-pro-0813",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/deepseek-deepseek-v4-pro-0813-batch",
+      "t": "DeepSeek: DeepSeek V4 Pro 0813 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/deepseek-deepseek-v4-pro-0813-batch",
       "a": [],
       "b": true
     },
@@ -2373,6 +2363,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/google-gemma-4-31b-it-batch",
+      "t": "Google: Gemma 4 31B (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/google-gemma-4-31b-it-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/google-gemma-4-31b-it-free",
       "t": "Google: Gemma 4 31B (free)",
       "k": "entry",
@@ -2616,6 +2616,16 @@
       "b": false
     },
     {
+      "u": "/wiki/model/meta-muse-glimmer-30b-batch",
+      "t": "Meta: Muse Glimmer 30B (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/meta-muse-glimmer-30b-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/meta-muse-spark-1-1",
       "t": "Meta: Muse Spark 1.1",
       "k": "entry",
@@ -2693,7 +2703,7 @@
       "s": "active",
       "i": "model/minimax-minimax-m2",
       "a": [],
-      "b": false
+      "b": true
     },
     {
       "u": "/wiki/model/minimax-minimax-m2-1",
@@ -3100,6 +3110,16 @@
         "moonshotai/kimi-k3"
       ],
       "b": false
+    },
+    {
+      "u": "/wiki/model/moonshotai-kimi-k3-batch",
+      "t": "MoonshotAI: Kimi K3 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/moonshotai-kimi-k3-batch",
+      "a": [],
+      "b": true
     },
     {
       "u": "/wiki/model/moonshotai-kimi-latest",
@@ -3796,12 +3816,32 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-oss-120b-batch",
+      "t": "OpenAI: gpt-oss-120b (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-oss-120b-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-oss-20b",
       "t": "OpenAI: gpt-oss-20b",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-oss-20b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-oss-20b-batch",
+      "t": "OpenAI: gpt-oss-20b (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-oss-20b-batch",
       "a": [],
       "b": true
     },
@@ -4242,6 +4282,16 @@
       "d": "model",
       "s": "active",
       "i": "model/qwen-qwen3-5-9b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/qwen-qwen3-5-9b-batch",
+      "t": "Qwen: Qwen3.5-9B (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/qwen-qwen3-5-9b-batch",
       "a": [],
       "b": true
     },
@@ -4826,6 +4876,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/thinkingmachines-inkling-small-batch",
+      "t": "Thinking Machines: Inkling Small (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/thinkingmachines-inkling-small-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/thinkingmachines-inkling-small-free",
       "t": "Thinking Machines: Inkling Small (free)",
       "k": "entry",
@@ -5099,6 +5159,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/z-ai-glm-5-3-flash-batch",
+      "t": "Z.ai: GLM 5.3 Flash (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-5-3-flash-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/z-ai-glm-5-turbo",
       "t": "Z.ai: GLM 5 Turbo",
       "k": "entry",
@@ -5233,7 +5303,7 @@
         "Moonshot",
         "月之暗面"
       ],
-      "b": false
+      "b": true
     },
     {
       "u": "/wiki/org/nvidia",
@@ -5273,7 +5343,7 @@
         "Perplexity",
         "Sonar"
       ],
-      "b": false
+      "b": true
     },
     {
       "u": "/wiki/org/spacexai",

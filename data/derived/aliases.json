@@ -766,12 +766,8 @@
     },
     {
       "name": "Chain-of-thought prompting",
-      "linkable": false,
+      "linkable": true,
       "claimed_by": [
-        {
-          "id": "concept/chain-of-thought",
-          "class": "shared"
-        },
         {
           "id": "technique/chain-of-thought-prompting",
           "class": "exclusive"
@@ -1193,6 +1189,16 @@
       ]
     },
     {
+      "name": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-flash-0731-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "DeepSeek: DeepSeek V4 Flash Vision Exp",
       "linkable": false,
       "claimed_by": [
@@ -1218,6 +1224,16 @@
       "claimed_by": [
         {
           "id": "model/deepseek-deepseek-v4-pro-0813",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek: DeepSeek V4 Pro 0813 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/deepseek-deepseek-v4-pro-0813-batch",
           "class": "manual"
         }
       ]
@@ -1858,6 +1874,16 @@
       "claimed_by": [
         {
           "id": "model/google-gemma-4-31b-it",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemma 4 31B (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemma-4-31b-it-batch",
           "class": "manual"
         }
       ]
@@ -2613,6 +2639,16 @@
       ]
     },
     {
+      "name": "Meta: Muse Glimmer 30B (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-glimmer-30b-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Meta: Muse Spark 1.1",
       "linkable": false,
       "claimed_by": [
@@ -3188,6 +3224,16 @@
       "claimed_by": [
         {
           "id": "model/moonshotai-kimi-k3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "MoonshotAI: Kimi K3 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/moonshotai-kimi-k3-batch",
           "class": "manual"
         }
       ]
@@ -4033,11 +4079,31 @@
       ]
     },
     {
+      "name": "OpenAI: gpt-oss-120b (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-oss-120b-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "OpenAI: gpt-oss-20b",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/openai-gpt-oss-20b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: gpt-oss-20b (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-oss-20b-batch",
           "class": "manual"
         }
       ]
@@ -4798,6 +4864,16 @@
       "claimed_by": [
         {
           "id": "model/qwen-qwen3-5-9b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.5-9B (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-5-9b-batch",
           "class": "manual"
         }
       ]
@@ -5663,6 +5739,16 @@
       ]
     },
     {
+      "name": "Thinking Machines: Inkling Small (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/thinkingmachines-inkling-small-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Thinking Machines: Inkling Small (free)",
       "linkable": false,
       "claimed_by": [
@@ -6038,6 +6124,16 @@
       "claimed_by": [
         {
           "id": "model/z-ai-glm-5-3-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM 5.3 Flash (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-5-3-flash-batch",
           "class": "manual"
         }
       ]

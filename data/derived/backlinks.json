@@ -77,7 +77,7 @@
     "concept/emergence": [
       {
         "url": "/wiki/concept/chain-of-thought",
-        "title": "Chain-of-thought prompting",
+        "title": "Chain-of-thought faithfulness",
         "type": "entry",
         "file": "content/wiki/concept/chain-of-thought.md"
       },
@@ -125,7 +125,7 @@
     "concept/in-context-learning": [
       {
         "url": "/wiki/concept/chain-of-thought",
-        "title": "Chain-of-thought prompting",
+        "title": "Chain-of-thought faithfulness",
         "type": "entry",
         "file": "content/wiki/concept/chain-of-thought.md"
       },
@@ -708,6 +708,14 @@
         "file": "content/wiki/technique/reinforcement-learning-with-verifiable-rewards.md"
       }
     ],
+    "model/deepseek-deepseek-v4-flash": [
+      {
+        "url": "/wiki/model/deepseek-deepseek-v4-flash-0731",
+        "title": "DeepSeek: DeepSeek V4 Flash 0731",
+        "type": "entry",
+        "file": "content/wiki/model/deepseek-deepseek-v4-flash-0731.md"
+      }
+    ],
     "model/deepseek-deepseek-v4-flash-0731": [
       {
         "url": "/wiki/model/cohere-command-a",
@@ -1036,6 +1044,12 @@
     ],
     "model/moonshotai-kimi-k2-5": [
       {
+        "url": "/wiki/model/minimax-minimax-m2",
+        "title": "MiniMax: MiniMax M2",
+        "type": "entry",
+        "file": "content/wiki/model/minimax-minimax-m2.md"
+      },
+      {
         "url": "/wiki/model/moonshotai-kimi-k3",
         "title": "MoonshotAI: Kimi K3",
         "type": "entry",
@@ -1190,12 +1204,6 @@
     ],
     "model/openai-gpt-4": [
       {
-        "url": "/impossible-routine/price-of-a-million-tokens",
-        "title": "The price of a million tokens",
-        "type": "delta",
-        "file": "content/deltas/price-of-a-million-tokens.md"
-      },
-      {
         "url": "/blog/same-catalog-same-day",
         "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
         "type": "post",
@@ -1238,6 +1246,12 @@
         "title": "OpenAI: GPT-5.4",
         "type": "entry",
         "file": "content/wiki/model/openai-gpt-5-4.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
       },
       {
         "url": "/blog/twelve-months-of-model-retirements",
@@ -1508,12 +1522,12 @@
         "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
       }
     ],
-    "model/openai-gpt-5-nano": [
+    "model/openai-gpt-5-pro": [
       {
-        "url": "/impossible-routine/price-of-a-million-tokens",
-        "title": "The price of a million tokens",
-        "type": "delta",
-        "file": "content/deltas/price-of-a-million-tokens.md"
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
       }
     ],
     "model/openai-gpt-oss-120b": [
@@ -1580,6 +1594,14 @@
         "file": "content/wiki/org/perplexity.md"
       }
     ],
+    "model/qwen-qwen3-6-27b": [
+      {
+        "url": "/wiki/model/qwen-qwen3-8-27b",
+        "title": "Qwen: Qwen3.8 27B",
+        "type": "entry",
+        "file": "content/wiki/model/qwen-qwen3-8-27b.md"
+      }
+    ],
     "model/qwen-qwen3-7-flash": [
       {
         "url": "/wiki/org/alibaba-cloud",
@@ -1597,6 +1619,12 @@
       }
     ],
     "model/qwen-qwen3-8-2-4t-a95b": [
+      {
+        "url": "/wiki/model/qwen-qwen3-8-27b",
+        "title": "Qwen: Qwen3.8 27B",
+        "type": "entry",
+        "file": "content/wiki/model/qwen-qwen3-8-27b.md"
+      },
       {
         "url": "/wiki/org/alibaba-cloud",
         "title": "Alibaba Cloud",
@@ -1820,7 +1848,29 @@
         "file": "content/wiki/org/z-ai.md"
       }
     ],
+    "model/z-ai-glm-4-6": [
+      {
+        "url": "/wiki/model/z-ai-glm-5-1",
+        "title": "Z.ai: GLM 5.1",
+        "type": "entry",
+        "file": "content/wiki/model/z-ai-glm-5-1.md"
+      }
+    ],
+    "model/z-ai-glm-4-7": [
+      {
+        "url": "/wiki/model/z-ai-glm-5-1",
+        "title": "Z.ai: GLM 5.1",
+        "type": "entry",
+        "file": "content/wiki/model/z-ai-glm-5-1.md"
+      }
+    ],
     "model/z-ai-glm-5": [
+      {
+        "url": "/wiki/model/z-ai-glm-5-1",
+        "title": "Z.ai: GLM 5.1",
+        "type": "entry",
+        "file": "content/wiki/model/z-ai-glm-5-1.md"
+      },
       {
         "url": "/wiki/org/z-ai",
         "title": "Z.ai",
@@ -1829,6 +1879,12 @@
       }
     ],
     "model/z-ai-glm-5-1": [
+      {
+        "url": "/wiki/model/minimax-minimax-m2",
+        "title": "MiniMax: MiniMax M2",
+        "type": "entry",
+        "file": "content/wiki/model/minimax-minimax-m2.md"
+      },
       {
         "url": "/wiki/org/z-ai",
         "title": "Z.ai",
@@ -2184,6 +2240,12 @@
     ],
     "technique/chain-of-thought-prompting": [
       {
+        "url": "/wiki/concept/chain-of-thought",
+        "title": "Chain-of-thought faithfulness",
+        "type": "entry",
+        "file": "content/wiki/concept/chain-of-thought.md"
+      },
+      {
         "url": "/wiki/technique/structured-generation",
         "title": "Structured generation",
         "type": "entry",
@@ -2291,7 +2353,7 @@
     "technique/reinforcement-learning-with-verifiable-rewards": [
       {
         "url": "/wiki/concept/chain-of-thought",
-        "title": "Chain-of-thought prompting",
+        "title": "Chain-of-thought faithfulness",
         "type": "entry",
         "file": "content/wiki/concept/chain-of-thought.md"
       },
@@ -2378,12 +2440,6 @@
         "title": "Read what is actually inside a 4.9 GB model file by downloading 0.16% of it",
         "type": "tutorial",
         "file": "content/tutorials/model-file-header-range-requests.md"
-      },
-      {
-        "url": "/tutorials/tokenizer-tax-measured",
-        "title": "Three models advertise 131,072 tokens of context. In Tamil they hold 98k, 120k and 387k characters.",
-        "type": "tutorial",
-        "file": "content/tutorials/tokenizer-tax-measured.md"
       }
     ],
     "tool/langchain": [
@@ -2460,12 +2516,6 @@
         "title": "Watch the OpenRouter model catalog change, with no key and no dependencies",
         "type": "tutorial",
         "file": "content/tutorials/openrouter-catalog-watch.md"
-      },
-      {
-        "url": "/tutorials/tokenizer-tax-measured",
-        "title": "Three models advertise 131,072 tokens of context. In Tamil they hold 98k, 120k and 387k characters.",
-        "type": "tutorial",
-        "file": "content/tutorials/tokenizer-tax-measured.md"
       }
     ],
     "tool/qdrant": [
@@ -2508,12 +2558,6 @@
         "title": "Two mirrors of Llama 3.1 ship identical weights and different prompts, and one tells the model it is July 2024",
         "type": "tutorial",
         "file": "content/tutorials/chat-template-is-not-the-model.md"
-      },
-      {
-        "url": "/tutorials/tokenizer-tax-measured",
-        "title": "Three models advertise 131,072 tokens of context. In Tamil they hold 98k, 120k and 387k characters.",
-        "type": "tutorial",
-        "file": "content/tutorials/tokenizer-tax-measured.md"
       }
     ],
     "tool/unsloth": [

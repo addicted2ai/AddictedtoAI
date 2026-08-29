@@ -329,6 +329,11 @@
     "entry_id": "model/deepseek-deepseek-v4-flash-0731",
     "path": "content/wiki/model/deepseek-deepseek-v4-flash-0731.md"
   },
+  "deepseek/deepseek-v4-flash-0731:batch": {
+    "date": "2026-08-29",
+    "entry_id": "model/deepseek-deepseek-v4-flash-0731-batch",
+    "path": "content/wiki/model/deepseek-deepseek-v4-flash-0731-batch.md"
+  },
   "deepseek/deepseek-v4-flash-vision-exp": {
     "date": "2026-08-28",
     "entry_id": "model/deepseek-deepseek-v4-flash-vision-exp",
@@ -343,6 +348,11 @@
     "date": "2026-08-28",
     "entry_id": "model/deepseek-deepseek-v4-pro-0813",
     "path": "content/wiki/model/deepseek-deepseek-v4-pro-0813.md"
+  },
+  "deepseek/deepseek-v4-pro-0813:batch": {
+    "date": "2026-08-29",
+    "entry_id": "model/deepseek-deepseek-v4-pro-0813-batch",
+    "path": "content/wiki/model/deepseek-deepseek-v4-pro-0813-batch.md"
   },
   "dots-studio/dots-3-note-preview:free": {
     "date": "2026-08-28",
@@ -534,6 +544,11 @@
     "entry_id": "model/google-gemma-4-31b-it",
     "path": "content/wiki/model/google-gemma-4-31b-it.md"
   },
+  "google/gemma-4-31b-it:batch": {
+    "date": "2026-08-29",
+    "entry_id": "model/google-gemma-4-31b-it-batch",
+    "path": "content/wiki/model/google-gemma-4-31b-it-batch.md"
+  },
   "google/gemma-4-31b-it:free": {
     "date": "2026-08-28",
     "entry_id": "model/google-gemma-4-31b-it-free",
@@ -653,6 +668,11 @@
     "date": "2026-08-28",
     "entry_id": "model/meta-muse-glimmer-30b",
     "path": "content/wiki/model/meta-muse-glimmer-30b.md"
+  },
+  "meta/muse-glimmer-30b:batch": {
+    "date": "2026-08-29",
+    "entry_id": "model/meta-muse-glimmer-30b-batch",
+    "path": "content/wiki/model/meta-muse-glimmer-30b-batch.md"
   },
   "meta/muse-spark-1.1": {
     "date": "2026-08-28",
@@ -893,6 +913,11 @@
     "date": "2026-08-28",
     "entry_id": "model/moonshotai-kimi-k3",
     "path": "content/wiki/model/moonshotai-kimi-k3.md"
+  },
+  "moonshotai/kimi-k3:batch": {
+    "date": "2026-08-29",
+    "entry_id": "model/moonshotai-kimi-k3-batch",
+    "path": "content/wiki/model/moonshotai-kimi-k3-batch.md"
   },
   "morph/morph-v3-fast": {
     "date": "2026-08-28",
@@ -1224,10 +1249,20 @@
     "entry_id": "model/openai-gpt-oss-120b",
     "path": "content/wiki/model/openai-gpt-oss-120b.md"
   },
+  "openai/gpt-oss-120b:batch": {
+    "date": "2026-08-29",
+    "entry_id": "model/openai-gpt-oss-120b-batch",
+    "path": "content/wiki/model/openai-gpt-oss-120b-batch.md"
+  },
   "openai/gpt-oss-20b": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-oss-20b",
     "path": "content/wiki/model/openai-gpt-oss-20b.md"
+  },
+  "openai/gpt-oss-20b:batch": {
+    "date": "2026-08-29",
+    "entry_id": "model/openai-gpt-oss-20b-batch",
+    "path": "content/wiki/model/openai-gpt-oss-20b-batch.md"
   },
   "openai/gpt-oss-safeguard-20b": {
     "date": "2026-08-28",
@@ -1534,6 +1569,11 @@
     "entry_id": "model/qwen-qwen3-5-9b",
     "path": "content/wiki/model/qwen-qwen3-5-9b.md"
   },
+  "qwen/qwen3.5-9b:batch": {
+    "date": "2026-08-29",
+    "entry_id": "model/qwen-qwen3-5-9b-batch",
+    "path": "content/wiki/model/qwen-qwen3-5-9b-batch.md"
+  },
   "qwen/qwen3.5-flash-02-23": {
     "date": "2026-08-28",
     "entry_id": "model/qwen-qwen3-5-flash-02-23",
@@ -1729,6 +1769,11 @@
     "entry_id": "model/thinkingmachines-inkling-small",
     "path": "content/wiki/model/thinkingmachines-inkling-small.md"
   },
+  "thinkingmachines/inkling-small:batch": {
+    "date": "2026-08-29",
+    "entry_id": "model/thinkingmachines-inkling-small-batch",
+    "path": "content/wiki/model/thinkingmachines-inkling-small-batch.md"
+  },
   "thinkingmachines/inkling-small:free": {
     "date": "2026-08-28",
     "entry_id": "model/thinkingmachines-inkling-small-free",
@@ -1873,6 +1918,11 @@
     "date": "2026-08-28",
     "entry_id": "model/z-ai-glm-5-3-flash",
     "path": "content/wiki/model/z-ai-glm-5-3-flash.md"
+  },
+  "z-ai/glm-5.3-flash:batch": {
+    "date": "2026-08-29",
+    "entry_id": "model/z-ai-glm-5-3-flash-batch",
+    "path": "content/wiki/model/z-ai-glm-5-3-flash-batch.md"
   },
   "z-ai/glm-5v-turbo": {
     "date": "2026-08-28",
