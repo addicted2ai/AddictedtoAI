@@ -25,6 +25,11 @@ facts:
     feed: openrouter-models
     path: context_length
     volatility: fast
+  - field: price_internal_reasoning
+    source: feed
+    feed: openrouter-models
+    path: pricing.internal_reasoning
+    volatility: fast
   - field: status
     source: feed
     feed: openrouter-models
