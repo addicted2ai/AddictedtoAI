@@ -1,55 +1,44 @@
 ---
 job: seed-impossible-routine-machine-checked-proofs
-verdict: revise
-reasons:
-  - overclaiming-summary
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone arguing formal theorem proving went from 29% to 89% of miniF2F in
-  under four years: the ends are real but the page currently hides that the
-  second number used a thousand times the sampling budget of the first.
-reviewer: r2-opus
+  Someone claiming the 29%-to-89% miniF2F jump is a sampling-budget artifact:
+  this delta states both budgets on both ends and shows the matched Pass@1
+  pair, 24.6% (2021) against 61.9% (2025), so the span survives the objection.
+reviewer: rr3
 date: 2026-08-28
 ---
 
-Checklist: Impossible-to-Routine delta, both ends primary preprints.
-Sources fetched 2026-08-28.
+Round 2, sealed. Findings written before opening round 1. Sources fetched
+2026-08-28, confirmed by literal substring match against saved bytes.
 
-- https://arxiv.org/html/2109.00110: confirmed. miniF2F is 488 formalised
-  olympiad-level statements drawn from AIME, AMC, IMO and MATH. Observed
-  verbatim the strongest baseline result: "a Pass@8 of 29.2% on miniF2F-test",
-  from GPT-f/PACT in Lean. The delta's prover name and pass setting are the
-  paper's. Submission history checked directly because the cited HTML serves a
-  later version: "[v1] Tue, 31 Aug 2021 23:21:12 UTC", "[v2] Mon, 28 Feb 2022"
-  — the front-matter date 2021-08-31 is the v1 date and is correct.
-- https://arxiv.org/abs/2504.21801: DeepSeek-Prover-V2 confirmed open-source
-  in the abstract, 88.9% on miniF2F-test, v1 submitted April 30, 2025 —
-  matching the front matter.
-- The defect, found by fetching the HTML for the sampling setting the abstract
-  page does not foreground: https://arxiv.org/html/2504.21801v1 gives the
-  88.9% as **DeepSeek-Prover-V2-671B at Pass@8192**, in CoT generation mode,
-  using Lean 4.9.0. End A is Pass@8. The delta's metric fields put "29.2% of
-  test problems (pass@8)" against "88.9% of test problems" — disclosing the
-  budget on the end where it is small and omitting it on the end where it is
-  1,024 times larger. Sampling budget is the single largest lever on a
-  pass-rate in theorem proving, so an undisclosed 8-to-8192 jump is not a
-  detail; it is a substantial part of the number the reader is being shown.
-- Second, smaller mismatch: "the same miniF2F test set" is doing more work
-  than it can carry. End A is Lean 3 via GPT-f/PACT; end B is Lean 4.9.0. The
-  problem statements are the same 244, but the Lean 4 port is a
-  re-formalisation, not the identical artifact, and "the same" invites a
-  precision the sources do not support.
-- Not independently verified: whether DeepSeek-Prover-V2 reports a low-budget
-  figure comparable to Pass@8. I did not find one and am deliberately not
-  supplying a substitute number — a replacement value I have not fetched would
-  be a hypothesis, not evidence, and the fix below does not require one.
+- arxiv.org/abs/2109.00110: "Submitted on 31 Aug 2021" — impossible date exact.
+- arxiv.org/html/2109.00110: "a Pass@1 of 24.6% and a Pass@8 of 29.2% on
+  miniF2F-test" for Lean GPT-f with the PACT methodology; Table 3 confirms it
+  is the strongest baseline (Metamath GPT-f 1.6%, tidy 18.0%); "244" present.
+- arxiv.org/abs/2504.21801: "Submitted on 30 Apr 2025"; "reaching 88.9% pass
+  ratio on the MiniF2F-test"; abstract calls it "an open-source large language
+  model", supporting "released as open weights".
+- arxiv.org/html/2504.21801 Table 1: 671B CoT, Pass@1 "61.9% ± 1.6%",
+  Pass@8192 "88.9%" — both routine metrics exact. "each containing 244
+  problems"; the paper adopts "the revised version of miniF2F released by
+  Wang et al. (2025)" with further revisions, supporting "a re-formalisation
+  rather than the same file". 8192/8 = 1024 — "1,024 times" exact.
+- One imprecision, recorded so nobody "fixes" the wrong thing: the paper says
+  results "are conducted with Lean 4.9.0-rc2"; the prose says "Lean 4.9.0".
+  Round 1's record used the same reading. The rc suffix only strengthens the
+  prose's actual point (end B is a different artifact from end A).
 
-What saves it, concretely. State the sampling budget on the routine end the
-way the impossible end already does: 88.9% at Pass@8192, DeepSeek-Prover-V2-671B,
-Lean 4.9.0. If the paper reports a comparable small-budget pass rate, quoting
-that alongside would make the span like-for-like and is the stronger fix. And
-soften "the same miniF2F test set" to name the Lean 4 port.
+Round 1 (r2-opus) found: routine metric omitted the Pass@8192 budget while
+the impossible end disclosed Pass@8 — fixed, and better than asked: both ends
+now state both budgets, and the prose leads with the mismatch. "The same
+miniF2F test set" overprecision — fixed ("a re-formalisation rather than the
+same file"). r2-opus reported not finding a comparable low-budget figure for
+end B; the fixer found Pass@1 61.9% and it is real — I verified it in the
+paper's Table 1, so the strongest fix r2-opus hoped for is the one that
+happened.
 
-Worth saving. Even at matched framing the shift is dramatic, and the delta
-picks a genuinely good impossible end — a benchmark's own debut baseline, in
-print, is the hardest kind of impossibility claim to argue with. The problem
-is one omitted parenthetical doing a lot of unearned work. Revise.
+Clears the bar as it stands: the budget caveat is now the delta's argument
+rather than its omission, both readings of the span are laid out with exact
+sourced numbers, and the two-artifacts caveat is stated. Publish.
