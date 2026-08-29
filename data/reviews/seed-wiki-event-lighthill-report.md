@@ -1,73 +1,65 @@
 ---
 job: seed-wiki-event-lighthill-report
-verdict: revise
-reasons:
-  - broken-reference
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone arguing British AI funding collapsed in 1973 because the research
-  had failed — this entry shows Lighthill endorsed two of his three
-  categories and recommended defunding none of them, and that McCarthy's
-  objection was that the taxonomy had no slot for AI at all.
-reviewer: r3-opus
+  Someone blaming the 1973 UK funding collapse on AI's failed results: this
+  entry documents that Lighthill endorsed two of his three categories, the
+  report ordered no defunding, and McCarthy's counter was that the taxonomy
+  left no slot for AI as a science — the collapse came from the reading, not
+  the recommendation.
+reviewer: rr3
 date: 2026-08-28
 ---
 
-Checklist: wiki entry (event). Sources fetched 2026-08-28.
+Round 2, sealed. Findings written before opening round 1. Sources fetched
+2026-08-28, confirmed by literal substring match against saved bytes.
 
-- chilton-computing.org.uk/.../lighthill_report/p001.htm: resolves to
-  "Artificial Intelligence: A General Survey" by Sir James Lighthill FRS
-  (dated July 1972 on the page). "In no part of the field have the
-  discoveries made so far produced the major impact that was then promised"
-  is verbatim. Categories A, B and C as the entry describes them: A is
-  advanced automation aimed at replacing humans for industrial, military,
-  mathematical or scientific purposes; C is computer-based CNS research; B is
-  the bridge activity, building robots, justified by what it carries between
-  A and C. "Combinatorial explosion" is Lighthill's named cause, described as
-  "a general obstacle to the construction of a self-organising system on a
-  large knowledge base" — the entry's paraphrase is faithful.
-- chilton-computing.org.uk/.../lighthill_report/overview.htm: resolves.
-  Verbatim and matching the entry: "Lighthill's report was commissioned by
-  the Science Research Council (SRC) to give an unbiased view of the state of
-  AI research primarily in the UK in 1973" (which carries the entry's opening
-  framing); "highly critical of basic research in the foundation areas";
-  "provoked a massive loss of confidence in AI by the academic establishment
-  in the UK including the funding body"; "persisted for almost a decade"; the
-  September 1982 Research Area Review Meeting on Intelligent Knowledge-Based
-  Systems becoming "the IKBS part of the Alvey Programme"; and the four reply
-  authors Sutherland, Needham, Longuet-Higgins and Michie.
-- aiai.ed.ac.uk/events/lighthill1973/: resolves. BBC TV, June 1973, Royal
-  Institution, Lighthill against Michie, Gregory and McCarthy, "81 minutes".
-  All four details confirmed.
-- **Defect 1 — an uncited primary document.** The entry quotes John
-  McCarthy's review twice. Both quotations are genuine: I found them at
-  www-formal.stanford.edu/jmc/reviews/lighthill/lighthill.html ("Review of
-  'Artificial Intelligence: A General Survey'"). But that document appears
-  nowhere in the entry — not in `facts`, not as a `source_url`, not inline.
-  Every other quoted source in this file is carried by a fact with a URL, so
-  this is an inconsistency within the piece as well as a gap: a reader cannot
-  check the two quotations the entry's central argument turns on.
-- **Defect 2 — a quotation truncated without an ellipsis.** The entry renders
-  McCarthy as "...studying the structure of information and the structure of
-  problem solving processes independently of applications." The sentence
-  continues: "...independently of applications and independently of its
-  realization in animals or humans." Nothing is misrepresented, but the
-  quotation is presented as complete when it is cut mid-clause.
-- **Defect 3 — a fact not supported by its own citation.** The `published`
-  fact sources the volume title "Artificial Intelligence: a paper symposium"
-  to overview.htm. I queried that page twice with different prompts; it
-  states "The Lighthill Report was published early in 1973" and lists the
-  four repliers, but never names the volume. The volume title is not in
-  dispute historically; the citation simply does not support it.
-- Not independently verified: that no other page in the Chilton archive names
-  the symposium volume — I checked the two pages the entry cites, not the
-  whole site. A different `source_url` may well fix Defect 3 outright.
+- chilton p001.htm: "Artificial Intelligence A general survey by Sir James
+  Lighthill FRS"; "In no part of the field have the discoveries made so far
+  produced the major impact that was then promised" verbatim; category A
+  "industrial or military on the one hand, and mathematical or scientific on
+  the other"; "letter C stands for Computer-based CNS research"; B as "Bridge
+  activity ... Building Robots ... justified primarily by what it can feed
+  into the work of categories A and C"; "failure to recognise the
+  implications of the combinatorial explosion ... a general obstacle to the
+  construction of a self-organising system on a large knowledge base".
+- chilton overview.htm: "commissioned by the Science Research Council (SRC)
+  to give an unbiased view"; "published early in 1973"; "it supported AI
+  research related to automation and to computer simulation of
+  neurophysiological and psychological processes, it was highly critical of
+  basic research in the foundation areas"; "provoked a massive loss of
+  confidence in AI by the academic establishment in the UK including the
+  funding body"; "It persisted for almost a decade"; "September 1982 Research
+  Area Review Meeting on Intelligent Knowledge-Based Systems ... became the
+  IKBS part of the Alvey Programme" — all verbatim.
+- chilton contents.htm: "paper symposium" present, with Sutherland, Needham,
+  Longuet-Higgins and Michie — the re-pointed volume fact is now supported by
+  its own URL. Byte-check also confirms overview.htm has zero hits for
+  "symposium", so round 1's mis-citation finding was correct.
+- www-formal.stanford.edu McCarthy review: both quotations verbatim,
+  including the previously elided clause "and independently of its
+  realization in animals or humans" and the full "missing these particular
+  points ..." sentence.
+- aiai.ed.ac.uk/events/lighthill1973/: "BBC TV - June 1973 - Lighthill
+  Controversy Debate at the Royal Institution" with all four named
+  participants and "[81 minutes]" verbatim; hosted by Edinburgh's AIAI.
+- Two things stand on judgment rather than bytes, recorded so they are not
+  later mistaken for verified: "no AI dispute had done before or has done
+  since" is an absence superlative that cannot be sourced (I know no
+  counterexample for a principals-on-both-sides broadcast debate, but it is
+  unprovable); and "nothing in it instructed anyone to stop funding that
+  middle" is an absence claim over the full report text, consistent with the
+  survey's framing but not byte-checked page by page. Both are framing, not
+  the entry's payload.
 
-Three cheap, precise fixes: add a fact for McCarthy's review with the
-Stanford URL; restore the elided clause or mark it with an ellipsis; and
-point the volume-title fact at a page that actually carries it. Nothing here
-is false — I verified every substantive claim — which is why this is a revise
-and not a reject.
+Round 1 (r3-opus) found: the McCarthy review quoted but uncited — fixed
+(mccarthy_review fact with the Stanford URL now in facts); a quotation
+truncated without ellipsis — fixed (full clause restored, verified verbatim);
+the volume-title fact cited to a page that does not carry it — fixed
+(re-pointed to contents.htm, which does). No new claims introduced by the
+fixes.
 
-The payload is real and unusual: the report recommended defunding nothing,
-and the collapse came from how a funding culture read a taxonomy. That is
-worth publishing once the document it quotes is named. Revise.
+Clears the bar: every substantive claim now sits on a checkable URL and
+matched today's bytes, and the taxonomy-defunds-a-field payload is real and
+unusual. Publish.

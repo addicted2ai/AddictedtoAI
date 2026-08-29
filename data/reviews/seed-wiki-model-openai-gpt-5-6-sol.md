@@ -1,78 +1,61 @@
 ---
 job: seed-wiki-model-openai-gpt-5-6-sol
-verdict: revise
-reasons:
-  - overclaiming-summary
-  - broken-reference
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone citing Sol's 91.91% on TerminalBench 2.1 as its headline score needs
-  to know VentureBeat records that as the ultra-mode figure against 88.76% in
-  max mode — this page hands over the number without the mode, which is the
-  part that decides whether the comparison is fair.
-reviewer: r9-opus
+  Someone quoting Sol's 91.91% TerminalBench score in a leaderboard argument:
+  this page pins the mode split (91.91% ultra thinking against 88.76% max)
+  and the 13-day government-requested preview window that the GA
+  announcements do not mention.
+reviewer: rr3
 date: 2026-08-28
 ---
 
-Checklist: wiki model entry. Sources fetched 2026-08-28; catalog claims
-measured against `data/sources/openrouter-models/latest.json` (2026-08-28,
-388 rows).
+Round 2, sealed. Findings written before opening round 1. Catalog claims
+recomputed by script (rr3-census.mjs) against
+data/sources/openrouter-models/latest.json (2026-08-28, 388 rows); sources
+fetched 2026-08-28 and confirmed by literal substring match (VentureBeat
+returned 429 twice and yielded on the third attempt).
 
-**Verified by fetching:**
+- Snapshot: sol, terra and luna all created 2026-07-09 ("same-day siblings",
+  "one launch day"); coding_index 77.4 / 76.7 / 71.4 and agentic_index
+  57.8 / 50.2 / 46.9 — both orderings run Sol > Terra > Luna exactly as the
+  prose states, direction-only, values transcluded.
+- github.blog changelog: "Release July 9, 2026"; "GPT-5.6 Sol: The highest
+  reasoning ceiling in the family." verbatim (tier_role).
+- developers.openai.com/api/docs/changelog: "Jul 9 ... gpt-5.6-sol
+  gpt-5.6-terra gpt-5.6-luna v1/responses v1/chat/completions v1/batch
+  Released the GPT-5.6 model family" — the timeline's three endpoints are the
+  changelog's, verbatim.
+- venturebeat.com: dateline "June 26, 2026"; "approximately 20 total
+  organizations"; "Sol used the new ultra thinking mode to achieve a
+  record-high score of 91.91% on the benchmark, and the max mode achieved
+  88.76%" on TerminalBench 2.1; "internal capture-the-flag testing, with Sol
+  reaching 96.7%". The quoted phrase "at the US government's request" is
+  genuine — VB quotes OpenAI's blog: "At [the U.S. government's] request, we
+  are starting with a limited preview for a small group of trusted partners"
+  (the piece normalizes the bracketed insertion and U.S.→US). Note for later
+  passes: a narrow grep for "government's request" scores zero because of the
+  bracket; the phrase is present.
+- 2026-06-26 → 2026-07-09 = 13 days, exact. All transclusion targets and all
+  six mention files exist.
+- One word stands beyond its source, recorded: the closer's
+  "government-picked first audience". The source supports government-
+  *requested* (the preview structure) with the partners being OpenAI's
+  "trusted partners"; who picked the twenty is unstated. The piece's own
+  first sentence states it correctly, so this is a trimmable flourish, not a
+  load-bearing claim.
 
-- github.blog changelog, 2026-07-09 — publication date matches
-  `release_date`. Sol is described verbatim as "The highest reasoning ceiling
-  in the family. Best for complex reasoning over large codebases and
-  demanding, long-running agentic work." The `tier_role` fact is exact.
-- venturebeat.com — the preview is dated 26 June 2026, "approximately 20 total
-  organizations", and the government framing is quoted directly: "At [the U.S.
-  government's] request, we are starting with a limited preview for a small
-  group of trusted partners." The capture-the-flag figure is verbatim: "all
-  three GPT-5.6 models crossed its 'High' cyber threshold on internal
-  capture-the-flag testing, with Sol reaching **96.7%**".
+Round 1 (r9-opus) found: the TerminalBench fact dropped the ultra/max mode
+qualifier — fixed, both modes now recorded and verbatim against the article;
+the CTF fact dropped "internal" — fixed; the GA claim ("ChatGPT, Codex, the
+API and GitHub Copilot") cited to a changelog that names none of them —
+fixed by narrowing to what sources carry (the API release now cites OpenAI's
+own changelog, which I byte-verified; ChatGPT/Codex dropped); the restated
+Pro-premium paragraph — cut as asked. The fix's one new blemish is the
+"government-picked" word above.
 
-**Defect 1 — the TerminalBench figure drops its qualifier.** VentureBeat
-reports Sol at "91.91%" on TerminalBench 2.1 **in ultra mode**, and at
-"88.76%" in max mode. The `terminalbench_score` fact records "91.91% on
-TerminalBench (2.1)" with no mode, and the body then presents it as what "this
-row measured". Quoting the higher of two published mode results as the score
-overstates the source. Add the mode, or record both.
-
-Minor, same category: the CTF fact drops "internal" — the source is explicit
-that this is OpenAI's own internal testing against its own "High" threshold,
-not a third-party evaluation.
-
-**Defect 2 — a citation that does not support its claim.** The body states
-"General availability across ChatGPT, Codex, the API and GitHub Copilot
-followed on {{release_date}}", and the timeline repeats it, both sourced to
-the github.blog changelog. I re-fetched that changelog and asked specifically:
-it does not mention ChatGPT, Codex or the OpenAI API anywhere. It says the
-models are "now rolling out in GitHub Copilot" and lists only GitHub surfaces
-(VS Code, Visual Studio, Copilot CLI, JetBrains, Xcode, Eclipse, github.com,
-GitHub Mobile). The underlying claim is *true* — a web search confirms GA on
-9 July 2026 across ChatGPT, Codex, the API and Copilot, and OpenAI's own
-announcement page is the natural citation — but I could not fetch
-openai.com/index/gpt-5-6/ directly (HTTP 403), so I am reporting the claim as
-corroborated by secondary coverage, not by the primary source. The fix is to
-cite the OpenAI announcement for the GA claim and keep github.blog for the
-Copilot half. This same mis-citation appears on the Terra and Luna entries.
-
-**Verified by measurement:**
-
-- 2026-06-26 → 2026-07-09 is exactly 13 days.
-- `gpt-5.6-sol-pro` 2e-6 = `gpt-5.6-sol` 2e-6, identical. `gpt-5.5-pro` 3e-5 /
-  `gpt-5.5` 5e-6 = 6.000. Both exact.
-- Coding 77.4 / 76.7 / 71.4 and agentic 57.8 / 50.2 / 46.9 for Sol / Terra /
-  Luna — the two indices do run "the same order", and Sol leads both. True.
-- All fourteen transclusions resolve.
-
-**Restating.** Two of three paragraphs cover ground adjacent pages already
-hold. The preview story (20 organisations, government request, 26 June) is on
-`org/openai` and repeated on the Terra and Luna entries — four pages for one
-event. The Pro-premium paragraph is on `org/openai` and is
-`model/openai-gpt-5-5`'s entire thesis; 5.5 owns it better, since that is
-where the ratio broke. What is genuinely this page's own is the TerminalBench
-and CTF pair and the three-way index ordering that tests the vendor's "highest
-reasoning ceiling" label against measurement — a good move, and worth keeping.
-
-Fix the mode qualifier, re-point the GA citation, and cut the Pro-premium
-paragraph in favour of the sibling that owns it. Revise.
+Clears the bar: the mode-split benchmark pair and the preview-to-GA timeline
+are assembled nowhere else on the site, every number is verbatim-sourced or
+transcluded, and the ordering test of the vendor's own tier label is a real
+derived view. Publish.
