@@ -111,6 +111,6 @@ catalog does not. The first: Terra
 that benchmark, the same model it undercuts on price. The second:
 {{fact:model/openai-gpt-5-6-terra#capture_the_flag_score}}, enough to put
 the mid-tier model across the same "High" cyber threshold all three
-siblings crossed. That preview reached roughly 20 organisations on 26 June 2026 at
+GPT-5.6 models crossed. That preview reached roughly 20 organisations on 26 June 2026 at
 the US government's request, thirteen days before this row's own
 {{fact:model/openai-gpt-5-6-terra#release_date}} general availability.

@@ -103,7 +103,7 @@ reads his collapse as the loss of "the mental battle with himself."
 
 Kasparov's demand at the final press conference was not for sympathy:
 "But I think it's very important for all of us to state today that Deep
-Blue now must enter competitive chess." It never did. Three weeks later
+Blue now must enter competitive chess." It never did. Four weeks later
 TWIC was already reporting the aftermath as routine: Kasparov's "first
 appearance since his debacle against Deep Blue" at a tournament in
 Novgorod, other grandmasters losing exhibition games to programs — matches

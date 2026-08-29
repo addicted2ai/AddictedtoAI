@@ -28,7 +28,7 @@ facts:
     volatility: slow
   - field: license_revenue_share
     source: cited
-    value: "revenue sharing required from providers generating more than US$50 million annually"
+    value: "larger Qwen releases often carry a revenue-sharing agreement for providers generating more than US$50 million annually"
     source_url: "https://en.wikipedia.org/wiki/Qwen"
     accessed: "2026-08-28"
     volatility: slow

@@ -76,7 +76,7 @@ identical input and output figures in the OpenRouter snapshot of 28 August
 2026 — {{fact:model/cohere-command-a#price_input}} and
 {{fact:model/cohere-command-a#price_output}} — and that is where the
 similarity stops. The newer row doubled the advertised window to
-{{fact:model/cohere-command-a#context_window}} and, unlike its predecessor,
+{{fact:model/cohere-command-a#context_window}} and
 came with downloadable weights: an
 [open-weights 111-billion-parameter model](https://openrouter.ai/cohere/command-a).
 Six and a half months, twice the window, weights included, same number on the
