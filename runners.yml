@@ -28,6 +28,28 @@
 #   roles                     which of `author`, `reviewer` this entry is
 #                             cleared for.
 #   command                   the shell command template that invokes it.
+# ---------------------------------------------------------------------------
+# Tool access — why the Claude entries carry an explicit --allowedTools list
+# ---------------------------------------------------------------------------
+# An unattended executor cannot answer a permission prompt. Found the hard way
+# on job j-20260828-02: with only `--permission-mode acceptEdits`, every
+# network-capable tool came back "requires approval" and the runner honestly
+# reported `blocked` — it could not fetch a single source_url, so it refused to
+# claim it had verified them. Correct behaviour, impossible job. Verification
+# is the loop's core upkeep work and the whole editorial discipline is "fetch
+# the source and confirm it says what you claim", so an executor without
+# network tools can only do work that needs no sources.
+#
+# The list is explicit rather than `--dangerously-skip-permissions`, which the
+# CLI itself documents as "recommended only for sandboxes with no internet
+# access" — the opposite of what this needs. Declaring the tools also states
+# what the executor contract actually requires, which belongs here.
+#
+# Containment is at the git and review layer, not the tool layer: jobs run in a
+# disposable worktree outside the repository, under a wall-clock cap, with a
+# reserved-path breaker and a mandatory review of a diff the loop computes
+# itself.
+#
 #   capacity_stderr_pattern   optional regex (JS syntax, matched
 #                             case-insensitively against the executor's
 #                             stderr). A match classifies the run `capacity`
@@ -72,7 +94,7 @@ runners:
     roles: [author, reviewer]
     model: opus
     harness: claude-code
-    command: 'claude --print --permission-mode acceptEdits --model opus < "{prompt_file}"'
+    command: 'claude --print --permission-mode acceptEdits --allowedTools "Read Write Edit Glob Grep WebFetch WebSearch Bash" --model opus < "{prompt_file}"'
     capacity_stderr_pattern: '(usage limit reached|rate.?limit|quota exceeded|overloaded_error)'
     conformance: unverified
     note: >-
@@ -87,7 +109,7 @@ runners:
     roles: [author, reviewer]
     model: sonnet
     harness: claude-code
-    command: 'claude --print --permission-mode acceptEdits --model sonnet < "{prompt_file}"'
+    command: 'claude --print --permission-mode acceptEdits --allowedTools "Read Write Edit Glob Grep WebFetch WebSearch Bash" --model sonnet < "{prompt_file}"'
     capacity_stderr_pattern: '(usage limit reached|rate.?limit|quota exceeded|overloaded_error)'
     conformance: unverified
     note: >-
