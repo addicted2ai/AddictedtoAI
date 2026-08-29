@@ -411,6 +411,91 @@ export async function runReview(ctx, { jobId, job, branch, diffText, runner, cap
   };
 }
 
+/**
+ * ---------------------------------------------------------------------------
+ * WHAT A RECORD SAYS IT REVIEWED (beads addictedtoai-sge).
+ *
+ * A loop-written record is named `<job-id>.md` and its front matter carries
+ * `job: j-2026...`. That names the JOB. `lib/reviews.mjs` joins a piece of
+ * content to its record by the piece's own identity — its URL-derived name,
+ * three alternates, or a front-matter field naming the file — and a job id is
+ * none of those, so from the build every loop-written record was an orphan and
+ * every loop-written entry looked unreviewed. Measured on 2026-08-29: 45
+ * records, 2 orphans, one of them `j-20260829-01.md`.
+ *
+ * That mattered more than it sounds. The build treats "no record the join
+ * recognises" as *not evaluable* rather than *not approved*, precisely so a
+ * naming mismatch cannot silently de-index approved work — so the count of
+ * unjoinable bodies was set to grow by one for every entry the loop ever
+ * merged, and a genuinely unreviewed direct commit hides inside a growing
+ * expected number.
+ *
+ * The merge step is the only place that knows both halves, so it writes the
+ * declaration: the content files that ACTUALLY MERGED, into the record that
+ * approved them. Not the files the job touched — the files that landed, after
+ * the merge succeeded, which is the claim the record can support.
+ * ---------------------------------------------------------------------------
+ */
+
+/** Content files a review record can be joined to. Others cannot be, and are not claimed. */
+export function joinableSubjects(changed) {
+  const out = [];
+  for (const c of changed ?? []) {
+    const p = String(typeof c === 'string' ? c : (c?.path ?? '')).replace(/\\/g, '/');
+    // A deletion is not a piece anything can review; `D` is the only status
+    // whose path does not exist on main after the merge.
+    if (typeof c === 'object' && c?.status === 'D') continue;
+    if (!p.startsWith('content/') || !p.endsWith('.md')) continue;
+    if (!out.includes(p)) out.push(p);
+  }
+  return out.sort();
+}
+
+/**
+ * Write `subject:` into an existing verdict record, naming what it reviewed.
+ *
+ * The edit is deliberately surgical — the front-matter block is rewritten with
+ * any prior `subject:` removed and one new key appended, and the reviewer's own
+ * keys, its notes and its byte-for-byte `would-cite` are left exactly as they
+ * were. Re-serialising the record through a YAML writer would reformat a
+ * document a human reads as evidence, and the duplicate-`would-cite` check
+ * compares that field after nothing but whitespace trimming.
+ *
+ * @returns {{ok: boolean, why?: string, subjects?: string[]}}
+ */
+export function writeRecordSubjects(path, subjects) {
+  if (!subjects?.length) return { ok: false, why: 'no joinable content file merged' };
+  if (!existsSync(path)) return { ok: false, why: `no record at ${path}` };
+  const text = readFileSync(path, 'utf8');
+  const m = /^(﻿?---[ \t]*\r?\n)([\s\S]*?)(\r?\n---[ \t]*(?:\r?\n|$))/.exec(text);
+  if (!m) return { ok: false, why: 'the record has no YAML front-matter block to add a key to' };
+
+  const eol = /\r\n/.test(m[1]) ? '\r\n' : '\n';
+  // Drop a previous `subject:` key and any list items indented under it, so
+  // re-running on the same record replaces rather than duplicates.
+  const kept = [];
+  let dropping = false;
+  for (const raw of m[2].split(/\r?\n/)) {
+    if (/^subject\s*:/.test(raw)) {
+      dropping = true;
+      continue;
+    }
+    if (dropping && /^\s*-\s+/.test(raw)) continue;
+    if (dropping && raw.trim() === '') continue;
+    dropping = false;
+    kept.push(raw);
+  }
+  while (kept.length && kept[kept.length - 1].trim() === '') kept.pop();
+
+  const block =
+    subjects.length === 1
+      ? `subject: ${JSON.stringify(subjects[0])}`
+      : ['subject:', ...subjects.map((s) => `  - ${JSON.stringify(s)}`)].join(eol);
+  const front = [...kept, block].join(eol);
+  writeFileSync(path, `${m[1]}${front}${m[3]}${text.slice(m[0].length)}`, 'utf8');
+  return { ok: true, subjects };
+}
+
 /** Used by the seed-review flow and by tests to write a record by hand. */
 export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCite = '', notes = '', pass = 1, reviewer = '' }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });

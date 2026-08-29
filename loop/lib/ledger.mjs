@@ -2,7 +2,12 @@
  * ledger.mjs — `data/ledger.jsonl`, append-only job state (design D5).
  *
  * One JSON object per line:
- *   { ts, id, type, runner, provider, tier, mm, outcome, note? }
+ *   { ts, id, type, runner, provider, tier, mm, outcome,
+ *     note?, signal?, phases? }
+ *
+ * The first eight are LEDGER_FIELDS and are required. The rest are additive and
+ * optional: a reader that does not know them is unaffected, and a line written
+ * before they existed stays valid.
  *
  * `provider` is load-bearing: it is the lane key, and lane pause state is
  * COMPUTED from these lines plus clock arithmetic. There is no pause file.
@@ -63,8 +68,20 @@ export function appendLedger(ctx, line) {
  * (beads addictedtoai-h5k). It is a field rather than prose in `note` because
  * health.mjs counts it, and counting free text is how a check comes to mean
  * whatever the last note happened to say.
+ *
+ * `phases` is optional and additive in the same way, and for the same reason
+ * (beads addictedtoai-59s): `mm` is the JOB total across the author, both
+ * review passes and the revision, while the cap that produced those runs is PER
+ * INVOCATION. A total cannot say where a per-invocation cap belongs, so each
+ * invocation records its own `{role, runner, mm, killed, code, outcome}`.
+ *
+ * `mm` REMAINS THE TOTAL and is unchanged. `budget.mjs` sums it — shares, the
+ * upkeep floor, the ceilings and the warm-up denominator are all that sum — and
+ * nothing here alters what it means. A line with no `phases` (the 14-day
+ * abandon sweep writes one: no process ran, so there is nothing to record) is
+ * as valid as it ever was, and LEDGER_FIELDS is deliberately not extended.
  */
-export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, note, ts, signal }) {
+export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, note, ts, signal, phases }) {
   const line = {
     ts: ts ?? new Date().toISOString(),
     id,
@@ -77,6 +94,7 @@ export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, 
   };
   if (note) line.note = note;
   if (signal) line.signal = signal;
+  if (Array.isArray(phases) && phases.length) line.phases = phases;
   return line;
 }
 

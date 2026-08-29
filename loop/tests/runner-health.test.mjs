@@ -24,6 +24,7 @@ import { classifyRun } from '../lib/result.mjs';
 import {
   noOutputStreak,
   runnerHealthGate,
+  NON_RUN_OUTCOMES,
   NO_OUTPUT_SIGNAL,
   NO_OUTPUT_STREAK_LIMIT,
 } from '../lib/health.mjs';
@@ -154,6 +155,44 @@ test('one run that produces anything clears the streak', () => {
   );
   assert.equal(runnerHealthGate([empty(1), empty(2)], 'mock-frontier').ok, true);
   assert.equal(runnerHealthGate([empty(1), empty(2), empty(3)], 'mock-frontier').ok, false);
+});
+
+test('the 14-day abandon sweep does not re-arm the runner it just swept', () => {
+  // The sweep writes its `abandoned` line with the DEAD runner's own id, zero
+  // model-minutes and no signal, because no process ran. Read as an ordinary
+  // line it says "this runner produced something", which is the one thing it
+  // cannot say — and it therefore ended the streak. MEASURED on the exact shape
+  // below before the fix: 0. A refused runner leaves an interrupted branch, the
+  // branch ages out, the sweep clears the refusal, and the dead runner gets
+  // three more empty runs before refusal re-fires — every fourteen days,
+  // forever.
+  const empty = (i) =>
+    ledgerLine({ id: `j-${i}`, runner: 'mock-frontier', outcome: 'interrupted', signal: NO_OUTPUT_SIGNAL, mm: 0 });
+  const swept = ledgerLine({ id: 'j-old', runner: 'mock-frontier', outcome: 'abandoned', mm: 0 });
+
+  const ledger = [empty(1), empty(2), empty(3), swept];
+  assert.equal(noOutputStreak(ledger, 'mock-frontier').count, 3, 'a sweep line is not the runner producing anything');
+  assert.equal(runnerHealthGate(ledger, 'mock-frontier').ok, false, 'so the refusal survives the sweep');
+  assert.deepEqual(noOutputStreak(ledger, 'mock-frontier').ids, ['j-3', 'j-2', 'j-1']);
+
+  // Skipped, not counted: a sweep line neither ends a streak nor extends one.
+  // Two empty runs plus a sweep is still two, and must NOT reach the limit.
+  const short = [empty(1), empty(2), swept];
+  assert.equal(noOutputStreak(short, 'mock-frontier').count, 2);
+  assert.equal(runnerHealthGate(short, 'mock-frontier').ok, true);
+  assert.equal(
+    noOutputStreak([swept, swept, swept], 'mock-frontier').count,
+    0,
+    'sweep lines alone can never refuse a runner that has not been observed to fail',
+  );
+
+  // And a real run still clears it, from either side of a sweep. This is the
+  // half that must not be lost: the fix makes refusal stickier, never looser.
+  const worked = ledgerLine({ id: 'j-9', runner: 'mock-frontier', outcome: 'blocked' });
+  assert.equal(noOutputStreak([empty(1), empty(2), empty(3), worked, swept], 'mock-frontier').count, 0);
+  assert.equal(noOutputStreak([empty(1), empty(2), empty(3), swept, worked], 'mock-frontier').count, 0);
+
+  assert.deepEqual([...NON_RUN_OUTCOMES], ['abandoned'], 'every other outcome records a real invocation');
 });
 
 test('the selector refuses a dead runner too, before any candidate is considered', () => {

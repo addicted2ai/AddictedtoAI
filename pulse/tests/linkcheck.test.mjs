@@ -560,6 +560,77 @@ test('distinct citations collapsing onto one page are drift; the same page cited
   assert.equal(single.redirected.length, 1);
 });
 
+test('a declined response files no drift, and cannot push a real one over the threshold', () => {
+  // MEASURED before this: two 403 citations whose requests both landed on one
+  // challenge URL filed two `catch-all` repair items. `checkUrl` records
+  // 401/403/407/429 as `ok: null` precisely because they answer a different
+  // question than the one asked, and a repair job has nothing to do with one —
+  // the URL is right, the content is right, and no edit to this site changes
+  // the answer. That is the unrepairable rank-90 shape of addictedtoai-5hn.
+  const cited = ['content/wiki/concept/x.md'];
+  // The challenge page shares the word `docs` with every path below, so
+  // `classifyRedirect` calls each move `cross-site-related` and files nothing on
+  // its own merits. The ONLY thing that can produce a finding here is the
+  // catch-all tally, which is exactly the mechanism under test.
+  const CHALLENGE = 'https://challenge.fixture-cdn.net/docs/challenge';
+  const rec = (ok, status, final_url) => ({
+    last_checked: '2026-08-29', status, ok, error: null, last_ok: ok === true ? '2026-08-29' : null,
+    consecutive_failures: 0, final_url, bytes: 3000, meta_refresh: null,
+  });
+
+  const declinedOnly = {
+    urls: {
+      'https://vendor.fixture-host.net/docs/a': rec(null, 403, CHALLENGE),
+      'https://vendor.fixture-host.net/docs/b': rec(null, 429, CHALLENGE),
+    },
+  };
+  const d = referenceDrift(
+    Object.keys(declinedOnly.urls).map((url) => ({ url, cited_by: cited })),
+    declinedOnly,
+  );
+  assert.deepEqual(d.drift, [], 'a response carrying no verdict files nothing');
+  // Rule 1 still holds: where the request landed is an honest observation and
+  // is still recorded, with the fact that it carries no verdict alongside it.
+  assert.deepEqual(d.redirected.map((m) => m.url).sort(), [
+    'https://vendor.fixture-host.net/docs/a',
+    'https://vendor.fixture-host.net/docs/b',
+  ]);
+  assert.equal(d.redirected[0].verdict_recorded, false);
+
+  // The side door: one REAL 200 collapsing onto the same page as one declined
+  // request. Counting the declined one would make two, and manufacture a
+  // catch-all finding against the record that does carry a verdict.
+  const mixed = {
+    urls: {
+      'https://vendor.fixture-host.net/docs/a': rec(null, 403, CHALLENGE),
+      'https://vendor.fixture-host.net/docs/c': rec(true, 200, CHALLENGE),
+    },
+  };
+  assert.deepEqual(
+    referenceDrift(Object.keys(mixed.urls).map((url) => ({ url, cited_by: cited })), mixed).drift,
+    [],
+    'one verdict-carrying citation alone onto a page cannot be told from a rename',
+  );
+
+  // And the guardrail is not weakened: two verdict-carrying citations onto the
+  // same destination are still drift, on the same fixture, with a declined
+  // third alongside them.
+  const real = {
+    urls: {
+      'https://vendor.fixture-host.net/docs/c': rec(true, 200, CHALLENGE),
+      'https://vendor.fixture-host.net/docs/d': rec(true, 200, CHALLENGE),
+      'https://vendor.fixture-host.net/docs/a': rec(null, 403, CHALLENGE),
+    },
+  };
+  const still = referenceDrift(Object.keys(real.urls).map((url) => ({ url, cited_by: cited })), real);
+  assert.deepEqual(still.drift.map((x) => x.url).sort(), [
+    'https://vendor.fixture-host.net/docs/c',
+    'https://vendor.fixture-host.net/docs/d',
+  ]);
+  assert.ok(still.drift.every((x) => x.kind === 'catch-all'));
+  assert.match(still.drift[0].detail, /2 distinct cited URL/, 'and the declined one is not in the count either');
+});
+
 test('a broken link is not double-filed as drift — one URL, one finding', () => {
   const state = {
     urls: {

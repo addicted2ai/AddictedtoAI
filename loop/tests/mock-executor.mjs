@@ -15,7 +15,7 @@
  * outcome tests observe the filesystem; none of them hands the loop a status.
  */
 
-import { writeFileSync, readFileSync, existsSync, appendFileSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync, appendFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const [, , mode, promptPath] = process.argv;
@@ -51,6 +51,30 @@ switch (mode) {
     write('site-note.md', '# a real edit\n\nWritten by the mock author.\n');
     result('done\n\nWrote site-note.md.\n');
     break;
+
+  // Writes a real file under content/, which is what makes a merged job's
+  // verdict record joinable to a piece (beads addictedtoai-sge). On the
+  // revision pass it appends, so the branch really changes twice.
+  case 'done-content-entry': {
+    const p = join(cwd, 'content', 'wiki', 'model', 'fixture-model.md');
+    mkdirSync(join(cwd, 'content', 'wiki', 'model'), { recursive: true });
+    mkdirSync(join(cwd, 'content', 'blog'), { recursive: true });
+    const revision = /Revision pass \(one only\)/.test(brief);
+    if (revision) {
+      appendFileSync(p, '\nThe revision named what it measured.\n');
+      result('done\n\nAddressed the findings.\n');
+    } else {
+      writeFileSync(
+        p,
+        '---\nid: model/fixture-model\nkind: model\ndisplay_name: Fixture Model\n---\n\nA prose body.\n',
+        'utf8',
+      );
+      write('content/blog/fixture-post.md', '---\nslug: fixture-post\n---\n\nA post body.\n');
+      write('notes.txt', 'not content, and must not be claimed as a reviewed piece\n');
+      result('done\n\nWrote the entry.\n');
+    }
+    break;
+  }
 
   case 'done-no-result': // really omits the file
     write('site-note.md', '# an edit with no result file\n');
@@ -130,6 +154,29 @@ switch (mode) {
     write('reviewer-was-here.txt', 'the reviewer edited the reviewed tree\n');
     write('site-note.md', 'the reviewer rewrote the work it was reviewing\n');
     writeVerdict({ verdict: 'approve', wouldCite: 'Someone comparing review mechanisms would cite this.' });
+    result('done\n');
+    break;
+
+  // `revise` on the first pass, `approve` on the delta review — the only shape
+  // that drives all four invocations of a job (author, review1, revision,
+  // review2) through the loop's real code path.
+  case 'review-revise-then-approve':
+    // The pass-2 marker must be one the pass-1 brief cannot carry: the ground
+    // rules mention "a delta review" in every brief, so the title is the tell.
+    if (/delta review, pass 2/i.test(brief)) {
+      writeVerdict({
+        verdict: 'approve',
+        wouldCite: 'Someone arguing that a per-invocation cap needs per-invocation evidence would link this.',
+        notes: 'The revision named what it measured.',
+      });
+    } else {
+      writeVerdict({
+        verdict: 'revise',
+        reasons: ['intent-not-measurement'],
+        wouldCite: 'Not yet: the note says what it meant to do, not what it did.',
+        notes: 'Name the measurement.',
+      });
+    }
     result('done\n');
     break;
 

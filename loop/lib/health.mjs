@@ -47,17 +47,43 @@ export const NO_OUTPUT_STREAK_LIMIT = 3;
 export const NO_OUTPUT_SIGNAL = 'no-output';
 
 /**
+ * Outcomes whose ledger line records no invocation at all.
+ *
+ * `abandoned` is written by the 14-day sweep in `run.mjs`, not by a run: it
+ * carries the last line's runner id, zero model-minutes and no signal, because
+ * no process was started. The streak below asks "did this runner produce
+ * anything?", and the honest answer for a sweep line is "this line is not
+ * evidence either way" — the sweep produced it; the runner did not.
+ *
+ * MEASURED before this was added: `noOutputStreak` on a ledger of
+ * `[no-output, no-output, no-output, abandoned]` for one runner returned 0.
+ * A dead runner leaves a resumable branch; after fourteen days the sweep writes
+ * that line with the dead runner's own id, which reset the streak and bought
+ * the dead runner roughly three more empty runs before the refusal re-fired.
+ * Bounded and loudly logged, but it contradicted this module's own rule.
+ *
+ * These lines are SKIPPED — they neither count toward the streak nor end it.
+ * That is the same treatment breaker 1 gives the outcomes that are not
+ * failures ("they neither count nor reset", budget.mjs), and it is the strictly
+ * STICKIER reading: refusal now survives a sweep instead of being cleared by
+ * it. A guardrail is only ever moved in that direction.
+ */
+export const NON_RUN_OUTCOMES = Object.freeze(['abandoned']);
+
+/**
  * Consecutive trailing runs on this runner that produced nothing at all.
  *
- * Only this runner's lines are considered, and any line without the signal ends
- * the streak — a runner that produced anything is working, whatever the outcome
- * of the job was.
+ * Only this runner's lines are considered, lines recording no invocation are
+ * skipped (see NON_RUN_OUTCOMES), and any remaining line without the signal
+ * ends the streak — a runner that produced anything is working, whatever the
+ * outcome of the job was.
  */
 export function noOutputStreak(ledger, runnerId) {
   const mine = ledger.filter((l) => l.runner === runnerId);
   let n = 0;
   const ids = [];
   for (let i = mine.length - 1; i >= 0; i--) {
+    if (NON_RUN_OUTCOMES.includes(mine[i].outcome)) continue;
     if (mine[i].signal === NO_OUTPUT_SIGNAL) {
       n++;
       ids.push(mine[i].id);

@@ -43,7 +43,7 @@ import {
 import { scanJobBranches, readCommittedBrief } from './lib/resume.mjs';
 import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './lib/health.mjs';
 import { runGates, unlinkNodeModules } from './lib/gates.mjs';
-import { mergeGate, runReview, verdictPath } from './lib/review.mjs';
+import { joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
 import {
   checkConsecutiveFailures,
   checkBuildRed,
@@ -128,6 +128,40 @@ async function executeJob(ctx, opts) {
   const capMinutes = cfg.job_caps_minutes[job.type];
   const base = opts.base;
 
+  // -------------------------------------------------------------------------
+  // PER-INVOCATION MODEL-MINUTES (beads addictedtoai-59s).
+  //
+  // The ledger's `mm` is the JOB total — author, review pass 1, revision,
+  // review pass 2 — and the cap is PER INVOCATION. A total therefore cannot
+  // say where the cap belongs: 20.87 MM is either one twenty-minute author with
+  // two half-minute reviews or four five-minute runs, and those want opposite
+  // caps. Every number here was already in memory (`runExecutor` returns
+  // `run.mm`, and the reviewer brief already prints the running total); only
+  // writing it down was missing. `mm` stays the total, untouched — `budget.mjs`
+  // sums it and must keep working unchanged.
+  //
+  // `outcome` is per invocation, and it means a different thing for each role
+  // because the loop learns a different thing from each: the author's is the
+  // result-protocol classification, a reviewer's is what the merge gate made of
+  // its verdict. The revision run is recorded `unclassified` because that is
+  // true — the loop reads no RESULT.md after it; the delta review that follows
+  // is where its work is judged. A guessed value there would be exactly the
+  // "written from intent rather than measurement" defect this repository keeps
+  // catching.
+  // -------------------------------------------------------------------------
+  const phases = [];
+  const phase = (role, who, r, outcome) =>
+    phases.push({
+      role,
+      runner: who.id,
+      mm: Math.round(r.mm * 100) / 100,
+      killed: Boolean(r.killed),
+      code: r.code ?? null,
+      outcome,
+    });
+  /** Every exit from this function carries the phases recorded up to it. */
+  const finish = (o) => ({ ...o, phases });
+
   ctx.log(`invoking runner "${runner.id}" (provider ${runner.provider}, tier ${runner.tier}) under a ${capMinutes}-minute cap`);
   const run = await runExecutor({
     command: runner.command,
@@ -147,6 +181,7 @@ async function executeJob(ctx, opts) {
   const fileResult = readResult(worktree);
   const classified = classifyRun(run, fileResult, runner);
   ctx.log(`result protocol: ${classified.status} — ${classified.evidence}`);
+  phase('author', runner, run, classified.status);
 
   // Commit whatever the executor left, INCLUDING on a kill: the branch, not
   // the scratch worktree, is what resumption reads.
@@ -165,11 +200,11 @@ async function executeJob(ctx, opts) {
   const reserved = checkReservedPaths(ctx, changed, jobId);
   if (reserved.tripped) {
     ctx.log(`BREAKER: ${reserved.reason}`);
-    return { outcome: 'failed', mm: run.mm, held: reserved, changed, note: 'reserved-path edit attempt' };
+    return finish({ outcome: 'failed', mm: run.mm, held: reserved, changed, note: 'reserved-path edit attempt' });
   }
 
   if (classified.status === 'capacity') {
-    return { outcome: 'capacity', mm: run.mm, changed, note: classified.evidence };
+    return finish({ outcome: 'capacity', mm: run.mm, changed, note: classified.evidence });
   }
   if (classified.status === 'interrupted') {
     // The outcome stays `interrupted` — specs/loop says an absent RESULT.md
@@ -189,24 +224,24 @@ async function executeJob(ctx, opts) {
           '.',
       );
     }
-    return {
+    return finish({
       outcome: 'interrupted',
       mm: run.mm,
       changed,
       note: classified.evidence,
       signal: producedNothing ? NO_OUTPUT_SIGNAL : undefined,
-    };
+    });
   }
   if (classified.status === 'blocked') {
     // A well-formed `blocked:` with a clean tree is a SUCCESSFUL honest
     // outcome. It is not retried with the same brief unchanged.
     ctx.log(`blocked (honest outcome): ${classified.reason}`);
-    return { outcome: 'blocked', mm: run.mm, changed, note: classified.reason };
+    return finish({ outcome: 'blocked', mm: run.mm, changed, note: classified.reason });
   }
 
   if (changed.length === 0) {
     ctx.log('the executor reported `done` but the branch diff is empty — nothing to review or merge');
-    return { outcome: 'failed', mm: run.mm, changed, note: 'done with an empty diff' };
+    return finish({ outcome: 'failed', mm: run.mm, changed, note: 'done with an empty diff' });
   }
 
   // Gates. `gateReport` is what the reviewer is told about them — a
@@ -230,7 +265,7 @@ async function executeJob(ctx, opts) {
       ctx.log('--- gate output ---');
       ctx.log(gateResult.output ?? '(no output captured)');
       ctx.log('--- end gate output ---');
-      return { outcome: 'failed', mm: run.mm, changed, note: 'gates failed', gateOutput: gateResult.output };
+      return finish({ outcome: 'failed', mm: run.mm, changed, note: 'gates failed', gateOutput: gateResult.output });
     }
   }
 
@@ -258,9 +293,10 @@ async function executeJob(ctx, opts) {
       ctx.log(`the reviewer changed its worktree; those changes were discarded (branch ${rev.branchUnchanged ? 'unchanged' : 'CHANGED — investigate'})`);
     }
     const gate = mergeGate(ctx, { jobId, type: job.type, pass });
+    phase(`review${pass}`, reviewer, rev.run, gate.ok ? 'approve' : gate.code);
     if (gate.ok) {
       ctx.log(`review: approve (would-cite recorded)`);
-      return { outcome: 'approve', mm, changed, verdict: gate.verdict, pass, diffText };
+      return finish({ outcome: 'approve', mm, changed, verdict: gate.verdict, pass, diffText });
     }
     ctx.log(`review: merge refused — [${gate.code}] ${gate.reason}`);
     if (gate.code === 'no-record' || gate.code === 'malformed-verdict') {
@@ -275,14 +311,14 @@ async function executeJob(ctx, opts) {
             : `ended on its own after ${rev.run.mm.toFixed(2)} model-minutes (exit ${rev.run.code})`
         } and left no usable verdict at ${rev.outPath}. Its log is at ${rev.run.logPath ?? '(not captured)'}.`,
       );
-      return { outcome: 'failed', mm, changed, note: gate.reason };
+      return finish({ outcome: 'failed', mm, changed, note: gate.reason });
     }
     if (gate.code === 'would-cite-empty' || gate.code === 'would-cite-duplicate') {
-      return { outcome: 'failed', mm, changed, note: gate.reason };
+      return finish({ outcome: 'failed', mm, changed, note: gate.reason });
     }
     if (pass >= 2) {
       ctx.log('a second non-approval discards the job: branch closed, reasons kept');
-      return { outcome: 'discarded', mm, changed, note: gate.reason, verdict: gate.verdict };
+      return finish({ outcome: 'discarded', mm, changed, note: gate.reason, verdict: gate.verdict });
     }
     // One revision pass against the named findings, then a delta review.
     findings = `${gate.verdict.reasons.join(', ')}\n\n${gate.verdict.notes}`;
@@ -299,6 +335,7 @@ async function executeJob(ctx, opts) {
       logPath: jobLogPath(ctx.worktreeRoot, jobId, 'revision'),
     });
     mm += run2.mm;
+    phase('revision', runner, run2, 'unclassified');
     unlinkNodeModules(worktree);
     commitAll(ctx.repoRoot, worktree, `job ${jobId}: revision`, { exclude: ['RESULT.md'] });
     pass = 2;
@@ -451,6 +488,12 @@ export async function runLoop(ctx, opts = {}) {
   if (opts.dryRun) {
     ctx.log('--- ledger line schema (written at the end of a real run) ---');
     ctx.log(ledgerSchemaLine(job, runner, jobId));
+    ctx.log(
+      'plus, when they apply: "note", "signal" (no-output), and "phases" — one ' +
+        '{role, runner, mm, killed, code, outcome} per invocation (author / review1 / ' +
+        'revision / review2). "mm" above stays the JOB TOTAL; "phases" is what says ' +
+        'where a per-invocation cap belongs.',
+    );
     ctx.log('--- assembled brief ---');
     ctx.log(briefText);
     ctx.log('--- end of brief (dry run: nothing was invoked, no branch was created) ---');
@@ -507,6 +550,24 @@ export async function runLoop(ctx, opts = {}) {
       mergedSha = merged.sha;
       outcome = 'done';
       ctx.log(`merged ${branch} into ${base} locally as ${mergedSha.slice(0, 8)} — nothing is pushed`);
+
+      // The record says what it reviewed, now that "what it reviewed" is a
+      // settled fact: these files are on `${base}`. Without this the record
+      // names only the job id, which `lib/reviews.mjs` cannot join to any
+      // piece, so every loop-written entry reads unreviewed from the build
+      // (beads addictedtoai-sge). Written before the records are staged below,
+      // so the declaration is committed with the verdict it belongs to.
+      //
+      // Measured from the branch at merge time, not from `result.changed`:
+      // that list was computed after the AUTHOR run and a revision pass can add
+      // a file to the branch afterwards. This is the diff that just merged.
+      const subjects = joinableSubjects(changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch));
+      const wrote = writeRecordSubjects(verdictPath(ctx, jobId, result.pass ?? 1), subjects);
+      if (wrote.ok) {
+        ctx.log(`recorded subject: ${subjects.join(', ')} on the verdict record — the join reads it as the piece(s) reviewed`);
+      } else if (subjects.length) {
+        ctx.log(`could not record the reviewed files on the verdict record: ${wrote.why}`);
+      }
       const built = opts.noGates ? { ok: true } : (typeof opts.gates === 'function' ? opts.gates(ctx, ctx.repoRoot) : runGates(ctx, ctx.repoRoot, { scripts: ['build'] }));
       const red = checkBuildRed(ctx, { ok: built.ok, output: built.output ?? '' });
       if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
@@ -543,6 +604,7 @@ export async function runLoop(ctx, opts = {}) {
       outcome,
       note: result.note,
       signal: result.signal,
+      phases: result.phases,
       ts: ctx.now().toISOString(),
     }),
   );

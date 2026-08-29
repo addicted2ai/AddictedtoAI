@@ -23,11 +23,35 @@ import { withinWindow } from './ledger.mjs';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
+ * The tightest ceiling in `data/config.json`, as a percentage.
+ *
+ * Every `*_ceiling_pct` bound is considered, so adding a third category's
+ * ceiling cannot silently leave this reading only the two that exist today.
+ * The fallback matters only for a hand-built config with no ceilings at all,
+ * where no ceiling binds and the warm-up denominator changes nothing.
+ */
+export function tightestCeilingPct(cfg) {
+  const pcts = Object.entries(cfg?.budget?.bounds ?? {})
+    .filter(([k, v]) => k.endsWith('_ceiling_pct') && typeof v === 'number' && Number.isFinite(v) && v > 0)
+    .map(([, v]) => v);
+  return pcts.length ? Math.min(...pcts) : 10;
+}
+
+/**
  * How many full-length jobs a rolling window must be able to hold before a
  * ceiling is measured against the window's own total rather than against this
- * floor. See warmUpMm() for the derivation; the number is not a taste.
+ * floor.
+ *
+ * DERIVED, not chosen, and now derived IN CODE rather than in a comment. It was
+ * the literal `10`, which is `100 / 10` for the 10% machinery ceiling — correct
+ * for today's config and silently wrong the moment that percentage is edited,
+ * which is exactly the drift the sibling `warmUpMm()` already avoids by reading
+ * the live caps. Nothing about the constant announced its dependency, so the
+ * dependency is now a function argument.
  */
-export const WARM_UP_JOBS = 10;
+export function warmUpJobs(cfg) {
+  return 100 / tightestCeilingPct(cfg);
+}
 
 /**
  * The warm-up denominator: the smallest window a *share* means anything in.
@@ -49,18 +73,31 @@ export const WARM_UP_JOBS = 10;
  * denominator IS the observed total and the rule is exactly the spec's rule,
  * unchanged. There is no cliff and no stored state.
  *
- * The number is derived, not chosen. `WARM_UP_JOBS` (10) times the largest
- * per-type wall-clock cap in `data/config.json` (60 minutes) is 600 MM. Ten is
- * the smallest window in which one maximum-length job does not by itself reach
- * the tightest ceiling: one 60-minute job is exactly 10% of 600, so the first
- * machinery job is allowed and the second is refused. Below ten, the arithmetic
- * is dominated by a single job's length rather than by a policy. 600 MM is also
- * far smaller than any plausible steady-state month for this Desk (one job a
- * day at 30–60 minutes is 900–1800 MM), so every allowance during warm-up is
- * SMALLER than the steady-state allowance it converges to — the ceiling's
- * purpose survives, which is the whole constraint. The machinery cap exists
- * because the previous site spent roughly seven lines of process per line of
- * site, and under warm-up machinery still gets one job before it binds.
+ * Both factors are derived, not chosen, and both are read from the live config:
+ * `warmUpJobs(cfg)` — `100 / tightest ceiling` — times the largest per-type
+ * wall-clock cap. At a 10% machinery ceiling and 60-minute caps that is 10 × 60
+ * = 600 MM; at the same ceiling and today's 120-minute caps it is 1200 MM.
+ *
+ * What `100 / tightest ceiling` is, MEASURED rather than intended. It is the
+ * LARGEST multiplier at which one maximum-length job still binds the tightest
+ * ceiling — the most permissive value that preserves it. One 60-minute job
+ * against a 600 MM denominator is exactly 10%, the gate is `>=`, so it IS at
+ * the ceiling: the first machinery job is allowed (machinery is at 0% when it
+ * is selected) and the second is refused. At 11 the same job would be 9.09%,
+ * under the ceiling, and machinery would get two jobs before anything bound;
+ * below 10 the ceiling binds harder, so the arithmetic is dominated by a single
+ * job's length rather than by a policy. An earlier version of this comment said
+ * ten was the *smallest* window in which one job "does not by itself reach" the
+ * ceiling. Both halves were false — it reaches it exactly, and reaching it is
+ * what refuses the second job, which the next clause always described
+ * correctly.
+ *
+ * 600 MM is also far smaller than any plausible steady-state month for this
+ * Desk (one job a day at 30–60 minutes is 900–1800 MM), so every allowance
+ * during warm-up is SMALLER than the steady-state allowance it converges to —
+ * the ceiling's purpose survives, which is the whole constraint. The machinery
+ * cap exists because the previous site spent roughly seven lines of process per
+ * line of site, and under warm-up machinery still gets one job before it binds.
  *
  * The upkeep FLOOR is deliberately left alone: a floor measured on a thin
  * window errs toward doing upkeep, which is the safe direction, and it already
@@ -71,7 +108,7 @@ export function warmUpMm(cfg) {
     (n) => typeof n === 'number' && Number.isFinite(n) && n > 0,
   );
   const maxCap = caps.length ? Math.max(...caps) : 60;
-  return WARM_UP_JOBS * maxCap;
+  return warmUpJobs(cfg) * maxCap;
 }
 
 /**

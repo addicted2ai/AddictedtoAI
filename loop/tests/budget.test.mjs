@@ -19,6 +19,9 @@ import {
   lanePause,
   shedState,
   tierShares,
+  tightestCeilingPct,
+  warmUpJobs,
+  warmUpMm,
 } from '../lib/budget.mjs';
 import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { readLedger } from '../lib/ledger.mjs';
@@ -124,6 +127,53 @@ test('the warm-up is a smaller allowance than the steady state, never a larger o
   assert.equal(budgetGate(cfg, at(59, 'machinery'), 'machinery').ok, true);
   assert.equal(budgetGate(cfg, at(60, 'machinery'), 'machinery').ok, false);
   assert.match(budgetGate(cfg, at(60, 'machinery'), 'machinery').reason, /warm-up window of 600 model-minutes/);
+  ctx.cleanup();
+});
+
+test('the warm-up multiplier is read from the ceilings, not written next to them', () => {
+  // It was the literal `10`, which is `100 / 10` for the 10% machinery ceiling.
+  // Correct for today's config, and silently wrong the moment the maintainer
+  // edits that percentage — the sibling `warmUpMm()` already reads the live
+  // caps and scaled to 1200 by itself when the caps went to 120.
+  const ctx = fixture([]);
+  const cfg = loadConfig(ctx);
+  assert.equal(tightestCeilingPct(cfg), 10, 'machinery, not new writing');
+  assert.equal(warmUpJobs(cfg), 10);
+  assert.equal(warmUpMm(cfg), 600, 'and the fixture config caps at 60 minutes');
+
+  // What the multiplier IS, measured: the LARGEST value at which one
+  // maximum-length job still binds the tightest ceiling. Move the ceiling and
+  // the multiplier must move with it — a hard-coded 10 would leave a 20%
+  // ceiling with a 600 MM window, where one 60-minute job is 10% and machinery
+  // would get a second job before anything bound.
+  const at20 = { ...cfg, budget: { ...cfg.budget, bounds: { ...cfg.budget.bounds, machinery_ceiling_pct: 20 } } };
+  assert.equal(warmUpJobs(at20), 5);
+  assert.equal(warmUpMm(at20), 300);
+
+  // One maximum-length job, measured through the real arithmetic, at each
+  // ceiling: it lands EXACTLY on the ceiling, and the gate is `>=`, so the
+  // second machinery job is refused. The old comment claimed the opposite —
+  // that one job "does not by itself reach" the ceiling — which is false, and
+  // reaching it is precisely what refuses the second.
+  const afterOneMaxJob = (config) =>
+    tierShares(config, [ledgerLine({ type: 'machinery', mm: 60, tier: 'frontier', ts: daysAgo(NOW, 1) })], 'frontier', NOW);
+  for (const c of [cfg, at20]) {
+    const s = afterOneMaxJob(c);
+    assert.equal(s.ceiling_denominator_mm, warmUpMm(c));
+    assert.equal(s.ceiling_pct.machinery, tightestCeilingPct(c), 'exactly on the ceiling, not under it');
+    assert.equal(budgetGate(c, s, 'machinery').ok, false, 'so the second machinery job is refused');
+    // And the FIRST was allowed: machinery is at 0% when it is selected.
+    assert.equal(budgetGate(c, tierShares(c, [ledgerLine({ type: 'verify', mm: 30, tier: 'frontier', ts: daysAgo(NOW, 1) })], 'frontier', NOW), 'machinery').ok, true);
+    // Largest, not smallest: one more job's room in the window and that same
+    // maximum job would sit UNDER the ceiling and bind nothing.
+    assert.ok(100 / (warmUpJobs(c) + 1) < tightestCeilingPct(c));
+    assert.ok(100 / warmUpJobs(c) >= tightestCeilingPct(c));
+  }
+
+  // No ceiling at all is not a crash and not a zero: nothing binds, so the
+  // denominator is irrelevant and the documented fallback stands.
+  assert.equal(tightestCeilingPct({ budget: { bounds: { upkeep_floor_pct: 40 } } }), 10);
+  assert.equal(tightestCeilingPct(undefined), 10);
   ctx.cleanup();
 });
 

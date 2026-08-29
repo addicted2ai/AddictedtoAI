@@ -13,18 +13,27 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import matter from 'gray-matter';
 
 import { runLoop } from '../run.mjs';
 import { readLedger } from '../lib/ledger.mjs';
+import { loadConfig } from '../lib/config.mjs';
+import { tierShares } from '../lib/budget.mjs';
 import {
   assembleReviewBrief,
   gatesSection,
+  joinableSubjects,
   mergeGate,
   parseVerdict,
   verdictPath,
+  writeRecordSubjects,
   writeVerdictRecord,
   REASONS,
 } from '../lib/review.mjs';
+// The site-side join, imported deliberately: what the loop writes has to be
+// what the build reads, and asserting that here is the only place the two ends
+// meet (beads addictedtoai-sge).
+import { subjectsOf } from '../../lib/reviews.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml, git, daysAgo } from './helpers.mjs';
 
 const NOW = new Date('2026-09-10T12:00:00.000Z');
@@ -270,6 +279,136 @@ test('the loop says WHY a verdict is missing, and still refuses the merge', asyn
     /the reviewer's run ended on its own after \d+\.\d\d model-minutes \(exit 0\) and left no usable verdict/,
     ctx.output(),
   );
+  ctx.cleanup();
+});
+
+/* ---------------------------------------------------------------------------
+ * What a merged job leaves behind: a record that says what it reviewed, and a
+ * ledger line that says where the minutes went (beads addictedtoai-sge, -59s).
+ *
+ * One real loop run drives all four invocations — author, review pass 1,
+ * revision, delta review — because that is the only shape that can show a
+ * per-invocation record differing from the job total. Nothing below is
+ * hand-written JSON: every field asserted was written by the loop's own code.
+ * ------------------------------------------------------------------------ */
+
+test('59s the ledger records model-minutes PER INVOCATION, and `mm` is still the job total', async () => {
+  const ctx = repo('done-content-entry', 'review-revise-then-approve');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  const line = readLedger(ctx).at(-1);
+  assert.equal(line.id, res.jobId);
+  assert.ok(Array.isArray(line.phases), `no phases on the ledger line: ${JSON.stringify(line)}`);
+  assert.deepEqual(
+    line.phases.map((p) => p.role),
+    ['author', 'review1', 'revision', 'review2'],
+    'every invocation, in the order the loop made them',
+  );
+  assert.deepEqual(
+    line.phases.map((p) => p.runner),
+    ['mock-frontier', 'mock-reviewer', 'mock-frontier', 'mock-reviewer'],
+    'and which runner each one cost — the author and the reviewer are not the same runner',
+  );
+  assert.deepEqual(
+    line.phases.map((p) => p.outcome),
+    ['done', 'revise', 'unclassified', 'approve'],
+    'the author\'s result protocol, each reviewer\'s merge-gate verdict, and an honest gap for the revision',
+  );
+  for (const p of line.phases) {
+    assert.equal(typeof p.mm, 'number');
+    assert.ok(p.mm >= 0);
+    assert.equal(p.killed, false, 'nothing here hit the cap');
+    assert.equal(p.code, 0);
+  }
+
+  // `mm` REMAINS THE TOTAL. This is the compatibility claim, measured rather
+  // than asserted: budget.mjs sums `mm` and must keep working unchanged.
+  // Every phase and the total are each rounded to 2dp independently, so four
+  // phases can drift from the total by at most 4 × 0.005 plus the total's own
+  // 0.005. Anything beyond that is a phase that was not counted.
+  const sum = line.phases.reduce((s, p) => s + p.mm, 0);
+  assert.ok(Math.abs(sum - line.mm) <= 0.025, `${sum} vs ${line.mm} — phases must add up to the total`);
+  const shares = tierShares(loadConfig(ctx), readLedger(ctx), 'frontier', NOW);
+  assert.equal(shares.total_mm, line.mm, 'the budget still reads one number per job, and it is the total');
+
+  // The line the maintainer actually reads, printed by the run itself.
+  assert.match(ctx.output(), /ledger: \{.*"phases":\[/);
+  ctx.cleanup();
+});
+
+test('sge a merged job writes into its verdict record which files it reviewed', async () => {
+  const ctx = repo('done-content-entry', 'review-revise-then-approve');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  // The approving record is the delta review's, and it is the one that gains
+  // the declaration.
+  const path = verdictPath(ctx, res.jobId, 2);
+  const rec = matter(readFileSync(path, 'utf8'));
+  assert.deepEqual(
+    rec.data.subject,
+    ['content/blog/fixture-post.md', 'content/wiki/model/fixture-model.md'],
+    'the content files that merged — and only those',
+  );
+  assert.ok(!JSON.stringify(rec.data.subject).includes('notes.txt'), 'a non-content file is not a piece anything reviews');
+
+  // The record is otherwise untouched: the verdict still parses, and the
+  // would-cite is byte-identical, which the duplicate check depends on.
+  const v = parseVerdict(readFileSync(path, 'utf8'));
+  assert.equal(v.verdict, 'approve');
+  assert.match(v.wouldCite, /per-invocation cap needs per-invocation evidence/);
+  assert.match(v.notes, /The revision named what it measured/);
+
+  // And it is what the site-side join reads: `subject` was already a
+  // SUBJECT_KEY, so the declaration is all that was missing.
+  assert.deepEqual(subjectsOf({ data: rec.data }).slice(0, 2), [
+    'content/blog/fixture-post.md',
+    'content/wiki/model/fixture-model.md',
+  ]);
+
+  // It is committed with the rest of the job's records, not left loose.
+  assert.match(ctx.output(), /recorded subject: content\/blog\/fixture-post\.md/);
+  assert.ok(!/data\/reviews/.test(git(ctx.repoRoot, ['status', '--porcelain'])), 'nothing left uncommitted');
+  ctx.cleanup();
+});
+
+test('sge writing the subject is idempotent and never invents one', () => {
+  const ctx = makeRepo({ now: () => NOW });
+  const p = writeVerdictRecord(ctx, 'j-3', { verdict: 'approve', wouldCite: 'someone', notes: 'notes here' });
+
+  assert.equal(joinableSubjects([]).length, 0);
+  assert.deepEqual(
+    joinableSubjects([
+      { status: 'A', path: 'content/wiki/model/a.md' },
+      { status: 'M', path: 'content\\blog\\b.md' },
+      { status: 'D', path: 'content/wiki/model/gone.md' },
+      { status: 'A', path: 'lib/thing.mjs' },
+      { status: 'A', path: 'content/wiki/model/a.md' },
+    ]),
+    ['content/blog/b.md', 'content/wiki/model/a.md'],
+    'merged content files only: no deletions, no machinery, no duplicates',
+  );
+
+  // No content file merged is not an error and not a lie — it writes nothing.
+  assert.equal(writeRecordSubjects(p, []).ok, false);
+  assert.ok(!/subject/.test(readFileSync(p, 'utf8')));
+
+  // Twice with different sets replaces rather than accumulates.
+  assert.equal(writeRecordSubjects(p, ['content/a.md', 'content/b.md']).ok, true);
+  assert.equal(writeRecordSubjects(p, ['content/c.md']).ok, true);
+  const data = matter(readFileSync(p, 'utf8')).data;
+  assert.equal(data.subject, 'content/c.md');
+  assert.equal(data.verdict, 'approve', 'and the reviewer\'s own keys survive');
+  assert.equal(parseVerdict(readFileSync(p, 'utf8')).notes, 'notes here');
+
+  // A record with no front matter at all is reported, not silently mangled.
+  const bare = join(ctx.reviewsDir, 'bare.md');
+  writeFileSync(bare, 'verdict: approve\n', 'utf8');
+  const r = writeRecordSubjects(bare, ['content/a.md']);
+  assert.equal(r.ok, false);
+  assert.match(r.why, /no YAML front-matter block/);
+  assert.equal(readFileSync(bare, 'utf8'), 'verdict: approve\n', 'and left exactly as it was');
   ctx.cleanup();
 });
 

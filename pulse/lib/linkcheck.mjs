@@ -229,6 +229,11 @@ export function saveLinkState(root, state) {
  *
  * What is deliberately NOT treated as drift, and is left visible instead:
  *
+ *  - **A landing this check could not judge.** A 401/403/407/429 is recorded
+ *    with `ok: null` precisely because it answers a different question (see
+ *    DECLINED_STATUSES); a request that was declined landed on a challenge or a
+ *    login page, not on the resource. Filing rot from it would state something
+ *    the check did not observe, which is rule 2 exactly. See referenceDrift.
  *  - A move within one site, however far the path travels. Both org renames in
  *    the post (`spaces/lmsys/...` -> `spaces/lmarena-ai/...`) are this shape.
  *  - A meta refresh. It is followed and recorded — `helm/latest` -> `helm/
@@ -492,14 +497,45 @@ export function referenceDrift(links, state) {
       meta_refresh: rec.meta_refresh ?? null,
       last_checked: rec.last_checked ?? null,
       cited_by: link.cited_by ?? [],
+      // Did a verdict about the RESOURCE arrive at all? `ok: true` is the only
+      // value that says one did: `ok: false` is filtered above (a dead link is
+      // already a broken-link repair), and `ok: null` is the DECLINED
+      // non-verdict — 401/403/407/429, which checkUrl itself records as
+      // answering a different question than the one asked. See below for why
+      // this is carried rather than filtered here. It is carried into the
+      // output too: a reader of `redirected_links` can then see which recorded
+      // landings the check was able to judge and which it was not.
+      verdict_recorded: rec.ok === true,
       fromKey: from.key,
       toKey: to.key,
     });
   }
 
+  // ---------------------------------------------------------------------------
+  // A NON-VERDICT FILES NOTHING, AND COUNTS TOWARD NOTHING.
+  //
+  // Rule 2 above outranks rule 1: anything the check cannot decide is recorded
+  // and surfaced WITHOUT a finding. A declined response is the purest case of
+  // that — the host told us about our own request, not about the resource — and
+  // a declined request lands on a challenge or login page, not on the resource.
+  //
+  // MEASURED before this: two 403 citations whose requests both landed on one
+  // challenge URL filed two `catch-all` repair items. There is nothing there to
+  // repair; the citations are fine and no edit to this site changes the answer.
+  // That is the shape that halted the loop on addictedtoai-5hn.
+  //
+  // So a record with no verdict is excluded from the catch-all tally as well as
+  // from `drift` — a destination two declined requests share is evidence about
+  // the requester, and letting it push a real record over the two-citation
+  // threshold would manufacture the finding through the side door. It stays in
+  // `redirected`, because where a citation lands is an honest observation and
+  // rule 1 asks for exactly that.
+  // ---------------------------------------------------------------------------
+
   // The catch-all signal: distinct citations collapsing onto one destination.
   const byDestination = new Map();
   for (const m of moved) {
+    if (!m.verdict_recorded) continue;
     if (m.fromKey === m.toKey) continue;
     if (!byDestination.has(m.toKey)) byDestination.set(m.toKey, new Set());
     byDestination.get(m.toKey).add(m.fromKey);
@@ -507,6 +543,7 @@ export function referenceDrift(links, state) {
 
   const drift = [];
   for (const m of moved) {
+    if (!m.verdict_recorded) continue;
     const collapsed = byDestination.get(m.toKey)?.size ?? 0;
     const isCatchAll = m.fromKey !== m.toKey && collapsed >= 2;
     if (!isCatchAll && m.kind !== 'cross-site-repath') continue;
