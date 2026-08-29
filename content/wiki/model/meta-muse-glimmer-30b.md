@@ -72,3 +72,31 @@ mentions:
   - org/meta-superintelligence-labs
   - model/meta-muse-spark-1-2
 ---
+
+Glimmer's own card puts the count at
+{{fact:model/meta-muse-glimmer-30b#parameters}} — most of a 30B model, but
+not all of it doing the same job. Strip the 1.8B vision encoder out and the
+text backbone is closer to 28B, small enough that the card's other claim,
+{{fact:model/meta-muse-glimmer-30b#local_hardware}}, is the ordinary case
+for this row rather than a stretch: a multimodal model sized to leave your
+account out of the loop entirely.
+
+That local-hardware claim is not just a spec-sheet line — this same row
+also carries an OpenRouter price, {{fact:model/meta-muse-glimmer-30b#price_input}}
+input against {{fact:model/meta-muse-glimmer-30b#price_output}} output over
+a {{fact:model/meta-muse-glimmer-30b#context_window}} context window. The
+identical weights are usable two ways: rented by the token through that
+API, or downloaded once and run on a single card for every request after.
+The licence governing the download is
+{{fact:model/meta-muse-glimmer-30b#license}}, which attaches no
+field-of-use or user-count condition to the second path — a hobbyist with
+one consumer GPU gets the same weights a paying API customer is billed for.
+
+Glimmer did not start as its own model. Per its card,
+{{fact:model/meta-muse-glimmer-30b#distilled_from}} is where it comes from,
+released {{fact:model/meta-muse-glimmer-30b#release_date}} — and the model
+it was distilled from is not offered either way. Meta Superintelligence
+Labs' own record of its flagship line states
+{{fact:org/meta-superintelligence-labs#flagship_weights}}. The lab kept the
+larger model behind the API and shipped only the smaller, distilled one as
+something you can also just own.

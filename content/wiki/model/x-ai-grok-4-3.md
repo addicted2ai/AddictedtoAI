@@ -30,11 +30,31 @@ facts:
     feed: openrouter-models
     path: benchmarks.artificial_analysis.intelligence_index
     volatility: fast
+  - field: coding_index
+    source: feed
+    feed: openrouter-models
+    path: benchmarks.artificial_analysis.coding_index
+    volatility: fast
+  - field: agentic_index
+    source: feed
+    feed: openrouter-models
+    path: benchmarks.artificial_analysis.agentic_index
+    volatility: fast
   - field: status
     source: feed
     feed: openrouter-models
     path: $status
     volatility: fast
+  - field: reasoning_mandatory
+    source: feed
+    feed: openrouter-models
+    path: reasoning.mandatory
+    volatility: slow
+  - field: default_reasoning_effort
+    source: feed
+    feed: openrouter-models
+    path: reasoning.default_effort
+    volatility: slow
 timeline: []
 mentions: []
 ---
