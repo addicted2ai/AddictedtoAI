@@ -34,11 +34,19 @@ Still requiring the maintainer, and still not the agent's to take:
 - **`bd dolt push`** — the beads remote is a separate decision he has not made.
 - **`gh pr create` / `gh pr merge`** — nothing writes to GitHub's API on an
   agent's judgment.
-- **`"publish": true` in `data/config.json`.** Deliberately still `false`.
-  That flag arms the *Pulse's and the loop's own* publish step — automated,
-  unattended pushes on a schedule — which is a much larger grant than one
-  reviewed launch push, and it belongs with task 9.5 when he schedules the
-  Pulse and can watch two consecutive runs change the live site.
+**`"publish": true` was set on 2026-08-29**, on the maintainer's explicit
+instruction, after the site went live. The Pulse and the loop may now commit
+and push their own work unattended.
+
+That is the larger of the two grants and it deserves its own line: a reviewed
+launch push is one human-checked act, while this arms a scheduled engine to
+push with nobody watching. What still stands between it and the remote is the
+same thing that stands between any run and the remote — **the publish step runs
+after the site rebuild, so a run that produces content the build rejects
+publishes nothing**. That ordering is load-bearing, and it was load-bearing
+within hours of being written: on 2026-08-29 the Pulse wrote a bare YAML date
+that failed the entry schema and broke its own rebuild, and the publish step
+correctly never ran (`addictedtoai-2v6`).
 
 **The original reason, kept because it explains what changed.** The remote is
 connected to Vercel and deploys on push. The working tree was deliberately

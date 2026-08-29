@@ -177,13 +177,22 @@ budget bounds (upkeep floor 40%, new-writing ceiling 45%, machinery ceiling
 thresholds. Both engines call the same publish step (`pulse/lib/publish.mjs`),
 so there is exactly one implementation of deploy and exactly one gate on it.
 
-**`publish` is `false`,** and it stays false even though the no-push rule was
-lifted on 2026-08-28. The two are separate grants: a reviewed launch push is
-one human-checked act, while `publish: true` arms *this* step — the Pulse's
-and the loop's own unattended push, on a schedule, with no one watching. With
-it false the step prints one skip line and does nothing else. Arming it is the
-maintainer's, at task 9.5, when he schedules the Pulse and can verify two
-consecutive runs actually change the live site.
+**`publish` is `true`** as of 2026-08-29, set on the maintainer's explicit
+instruction once the site was live. The Pulse and the loop now commit and push
+their own work, unattended.
+
+This was deliberately a separate decision from lifting the no-push rule the day
+before: a reviewed launch push is one human-checked act, while this arms a
+scheduled engine to push with nobody watching. The guard that remains is
+structural rather than procedural — **the publish step runs after the site
+rebuild, so a run that produces content the build rejects publishes nothing.**
+That ordering earned its keep immediately: on 2026-08-29 the Pulse wrote a bare
+YAML date that failed the entry schema and broke its own rebuild, and publish
+correctly never ran (`addictedtoai-2v6`).
+
+Verify it the way task 9.5 specifies — **by observing the live site change, not
+by runs completing**. Two consecutive scheduled runs whose `/status.json` build
+stamps are identical mean publishing is broken, whatever the logs say.
 
 ---
 
