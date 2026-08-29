@@ -22,25 +22,20 @@
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import matter from 'gray-matter';
 import { addWorktree, gitTry, headSha, removeWorktree } from './git.mjs';
 import { runExecutor, jobLogPath } from './exec.mjs';
 import { PROSE_TYPES } from './specs.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { GROUND_RULES } from './brief.mjs';
+import { REASONS, VERDICTS, parseVerdict, normalizeWouldCite } from './verdict.mjs';
 
-/** The closed reason list (specs/review). Verdicts are categorical, never numeric. */
-export const REASONS = Object.freeze([
-  'false-or-unsupported-claim',
-  'intent-not-measurement',
-  'not-worth-reading',
-  'overclaiming-summary',
-  'spec-violation',
-  'broken-reference',
-  'scope-violation',
-]);
-
-export const VERDICTS = Object.freeze(['approve', 'revise', 'reject']);
+/**
+ * Reading a verdict record lives in `verdict.mjs` — a leaf module with no
+ * dependency on git, worktrees or the executor — so the site build can share
+ * the one parser without importing the Desk. Re-exported here because this is
+ * where every caller already looks for it.
+ */
+export { REASONS, VERDICTS, parseVerdict, normalizeWouldCite };
 
 const CHECKLISTS = {
   entry: [
@@ -261,56 +256,6 @@ author's account of what changed.
 ${diffText.length > 200000 ? diffText.slice(0, 200000) + '\n... [diff truncated at 200 KB]' : diffText}
 \`\`\`
 `;
-}
-
-/** Parse a verdict record. Front matter first; a plain-text fallback keeps weaker runners usable. */
-export function parseVerdict(text) {
-  let data = {};
-  let body = text;
-  try {
-    const p = matter(text);
-    data = p.data ?? {};
-    body = p.content ?? '';
-  } catch {
-    data = {};
-  }
-  let verdict = String(data.verdict ?? '').trim().toLowerCase();
-  let wouldCite = data['would-cite'] ?? data.would_cite ?? data.wouldCite ?? '';
-  let reasons = data.reasons ?? [];
-
-  // The fallback scans the BODY only. Scanning the whole file would re-read the
-  // front matter it just parsed and turn a deliberately empty `would-cite: ""`
-  // into the two-character string `""` — a blank field passing the non-empty
-  // check, which is precisely the failure this field exists to prevent.
-  const hasFrontMatter = Object.keys(data).length > 0;
-  const fallbackText = hasFrontMatter ? body : text;
-  if (!verdict) {
-    const m = /^\s*(?:\*\*)?verdict(?:\*\*)?\s*:\s*`?([a-z]+)`?/im.exec(fallbackText);
-    if (m) verdict = m[1].toLowerCase();
-  }
-  if (!wouldCite && !hasFrontMatter) {
-    const m = /^\s*(?:\*\*)?would[-_ ]cite(?:\*\*)?\s*:\s*(.+)$/im.exec(fallbackText);
-    if (m) wouldCite = m[1];
-  }
-  if (!Array.isArray(reasons)) reasons = String(reasons).split(/[,\n]/);
-  if (reasons.length === 0) {
-    const m = /^\s*(?:\*\*)?reasons?(?:\*\*)?\s*:\s*(.+)$/im.exec(fallbackText);
-    if (m) reasons = m[1].split(',');
-  }
-  reasons = reasons.map((r) => String(r).trim().replace(/^[`'"]|[`'"]$/g, '')).filter(Boolean);
-
-  return {
-    verdict,
-    reasons,
-    wouldCite: String(wouldCite ?? '').trim(),
-    notes: body.trim(),
-    raw: text,
-  };
-}
-
-/** Normalisation for the duplicate check: "exactly identical (after whitespace trimming)". */
-export function normalizeWouldCite(s) {
-  return String(s ?? '').replace(/\r\n/g, '\n').trim();
 }
 
 /**

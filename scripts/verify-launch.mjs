@@ -41,6 +41,13 @@
  * is. A record nothing claims is reported as an orphan, because an orphan
  * beside a missing piece is a naming mismatch, not an absence.
  *
+ * The naming this script settled — the canonical URL-derived form, three
+ * accepted alternates, a front-matter subject field — now lives in
+ * `lib/reviews.mjs`, because the build needs the same join to enforce
+ * specs/wiki's "a prose body that passed review" and two resolutions of one
+ * question would drift. This script keeps every judgement it made about what a
+ * valid record IS; only the lookup moved.
+ *
  * Usage:
  *   node scripts/verify-launch.mjs              run every check, build included
  *   node scripts/verify-launch.mjs --no-build   skip `npm run build` (loudly)
@@ -54,12 +61,12 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import matter from 'gray-matter';
 
 import { ROOT, CONTENT_DIR, DATA_DIR, CONTENT_TYPES } from '../lib/paths.mjs';
 import { Diagnostics } from '../lib/errors.mjs';
 import { loadCorpus } from '../lib/corpus.mjs';
-import { parseVerdict, normalizeWouldCite, VERDICTS } from '../loop/lib/review.mjs';
+import { normalizeWouldCite, VERDICTS } from '../loop/lib/verdict.mjs';
+import { SUBJECT_KEYS, reviewCandidates, reviewJoin } from '../lib/reviews.mjs';
 
 // ---------------------------------------------------------------------------
 // The floors. One place, so the printed output and the exit code cannot drift.
@@ -89,9 +96,6 @@ const REQUIRED_THEMES = ['history', 'culture', 'argument'];
  * a target for authors — every real body in the corpus is 250+ words.
  */
 const MIN_PROSE_WORDS = 60;
-
-/** Front-matter keys a review record may use to name the piece it reviewed. */
-const SUBJECT_KEYS = ['subject', 'piece', 'file', 'path', 'target', 'slug', 'entry', 'id', 'job'];
 
 // ---------------------------------------------------------------------------
 // Reporting
@@ -172,61 +176,6 @@ export function themesOf(doc) {
 // ---------------------------------------------------------------------------
 // Review records
 // ---------------------------------------------------------------------------
-
-/**
- * Filenames that may hold the verdict for a piece, most-canonical first.
- *
- * `data/reviews/README.md` fixes the convention as `seed-<slug>.md` without
- * saying what `<slug>` is for a piece whose slug is not unique across
- * surfaces, so the canonical form here is derived from the piece's URL — the
- * one identifier that is unique by construction. The alternates are accepted
- * and reported, so a record written under a reasonable other name is matched
- * rather than reported missing.
- */
-export function reviewCandidates(doc) {
-  const names = [];
-  const push = (s) => {
-    const n = `seed-${s}.md`;
-    if (!names.includes(n)) names.push(n);
-  };
-  push(doc.url.replace(/^\//, '').replace(/\//g, '-'));
-  if (doc.type === 'entry') push(doc.data.id.replace(/\//g, '-'));
-  push(`${doc.type}-${doc.slug}`);
-  push(doc.slug);
-  return names;
-}
-
-function readReviewRecords(reviewsDir) {
-  const records = new Map();
-  if (!existsSync(reviewsDir)) return records;
-  for (const name of readdirSync(reviewsDir)) {
-    if (!name.endsWith('.md') || name === 'README.md') continue;
-    let text;
-    try {
-      text = readFileSync(join(reviewsDir, name), 'utf8');
-    } catch {
-      continue;
-    }
-    let data = {};
-    try {
-      data = matter(text).data ?? {};
-    } catch {
-      data = {};
-    }
-    records.set(name, { name, path: join(reviewsDir, name), verdict: parseVerdict(text), data });
-  }
-  return records;
-}
-
-/** Values a record's front matter offers as "the piece I reviewed". */
-function subjectsOf(rec) {
-  const out = [];
-  for (const k of SUBJECT_KEYS) {
-    const v = rec.data?.[k];
-    if (typeof v === 'string' && v.trim()) out.push(v.trim().replace(/\\/g, '/'));
-  }
-  return out;
-}
 
 // ---------------------------------------------------------------------------
 // Checks
@@ -491,39 +440,28 @@ function checkReviews(corpus, dataDir) {
     ...corpus.delta,
   ];
 
-  const records = readReviewRecords(reviewsDir);
-  const bySubject = new Map();
-  for (const rec of records.values()) {
-    for (const s of subjectsOf(rec)) if (!bySubject.has(s)) bySubject.set(s, rec);
-  }
+  // The join is `lib/reviews.mjs`'s, run over its whole fixed piece list —
+  // the build's list, which is a superset of the one checked below. Resolving
+  // the superset is what makes the orphan report mean what it says: a record
+  // attached to a short-bodied entry is claimed, so it is not reported as an
+  // orphan beside it.
+  const resolved = reviewJoin(corpus, { reviewsDir });
+  const records = resolved.records;
 
-  const claimed = new Map(); // filename -> piece file
   const problems = [];
   const nonCanonical = [];
   let approved = 0;
   const seenCite = new Map(); // normalized would-cite -> record name
 
+  for (const c of resolved.contended) {
+    problems.push(`data/reviews/${c} — one record cannot be the review of two pieces.`);
+  }
+
   for (const doc of pieces) {
     const candidates = reviewCandidates(doc);
-    let rec = null;
-    let how = '';
-    for (const name of candidates) {
-      if (records.has(name) && !claimed.has(name)) {
-        rec = records.get(name);
-        how = name === candidates[0] ? '' : name;
-        break;
-      }
-    }
-    if (!rec) {
-      for (const key of [doc.file, doc.url, doc.data?.id, doc.slug, doc.rel].filter(Boolean)) {
-        const hit = bySubject.get(String(key).replace(/\\/g, '/'));
-        if (hit && !claimed.has(hit.name)) {
-          rec = hit;
-          how = `${hit.name} (matched by front matter, not by name)`;
-          break;
-        }
-      }
-    }
+    const hit = resolved.byFile.get(doc.file);
+    const rec = hit?.record ?? null;
+    const how = hit?.matchedBy ?? '';
     if (!rec) {
       // Both forms are named: the canonical one is collision-free across
       // surfaces, the short one is what data/reviews/README.md documents.
@@ -534,7 +472,6 @@ function checkReviews(corpus, dataDir) {
       );
       continue;
     }
-    claimed.set(rec.name, doc.file);
     if (how) nonCanonical.push(how);
 
     const v = rec.verdict;
@@ -572,7 +509,7 @@ function checkReviews(corpus, dataDir) {
     approved += 1;
   }
 
-  const orphans = [...records.keys()].filter((n) => !claimed.has(n));
+  const orphans = resolved.orphans;
 
   record({
     id: 'reviews',
@@ -591,8 +528,10 @@ function checkReviews(corpus, dataDir) {
           ? ` ${orphans.length} claimed by no piece: ${orphans.join(', ')} — an orphan beside a ` +
             'missing piece means the naming does not match, not that a review is absent.'
           : ''),
-      'Verdict parsing and the duplicate rule come from loop/lib/review.mjs, so this check and ' +
-        "the loop's merge gate agree on what a valid record is.",
+      'Verdict parsing and the duplicate rule come from loop/lib/verdict.mjs, so this check and ' +
+        "the loop's merge gate agree on what a valid record is. The piece -> record lookup comes " +
+        'from lib/reviews.mjs, so this check and the build\'s indexability rule agree on which ' +
+        'record belongs to which piece.',
       nonCanonical.length
         ? `${nonCanonical.length} record(s) matched by an accepted alternate name rather than the ` +
           `canonical one: ${nonCanonical.slice(0, 6).join(', ')}` +
