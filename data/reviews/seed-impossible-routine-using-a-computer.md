@@ -1,62 +1,63 @@
 ---
 job: seed-impossible-routine-using-a-computer
-verdict: revise
-reasons:
-  - overclaiming-summary
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone arguing computer-use agents went from useless to superhuman in two
-  years: this is the delta that should settle it, but only once it discloses
-  that the 12.24% and the 86.1% were measured on different versions of
-  OSWorld.
-reviewer: r2-opus
-date: 2026-08-28
+  Someone citing the OSWorld jump as proof that agents now beat humans at
+  using a computer: this delta marks the benchmark version on both ends and
+  states why the 72.36% human baseline, measured in 2024 and never re-run,
+  cannot close that argument.
+reviewer: rr5b
+date: 2026-08-29
 ---
 
-Checklist: Impossible-to-Routine delta, primary preprint at end A, trade press
-at end B. Sources fetched 2026-08-28.
+Round 2, sealed. Findings written before opening round 1. Sources fetched
+2026-08-29, confirmed by literal substring match against the fetched bytes.
 
-- https://arxiv.org/abs/2404.07972: confirmed. 369 computer tasks, best model
-  12.24%, humans 72.36%. v1 submitted April 11, 2024, matching the front
-  matter. End A is accurately reported.
+- https://arxiv.org/abs/2404.07972: "Submitted on 11 Apr 2024 (v1)" fixes end
+  A's date. The abstract reads "While humans can accomplish over 72.36% of the
+  tasks, the best model achieves only 12.24% success" and "we create a
+  benchmark of 369 computer tasks". All three figures matched as literal
+  substrings, not as a summariser's paraphrase.
+- https://xlang.ai/blog/osworld-verified: dateline "Date Jul 28, 2025" →
+  "released on 28 July 2025". "We have collected, verified, validated, and
+  fixed 300+ pieces of feedback" → "300-plus community reports". "We primarily
+  modified only the evaluators to minimize changes to the tasks themselves and
+  maintain score continuity" → "changed the evaluators rather than the tasks in
+  order to preserve continuity", including the continuity rationale. "Please
+  compare your OSWorld results with the new benchmark results when running the
+  latest version" → "they ask people to compare against the new results".
+- The body's hardest claim is an absence — "they publish no per-model
+  before-and-after figure" — so I earned it at byte level rather than asserting
+  it. Searched the tag-stripped post for "before", "previous score", "original
+  score", "old score", "improved from", "score changes": the post carries only
+  new numbers (CoACT-1 60.76, Agent S2.5 w/ o3 56.0, GTA1 w/ o3 53.1) and no
+  paired old/new per model. The absence holds. The post also writes "human
+  performance estimated at ~72% from our original study", which independently
+  confirms the baseline was carried forward, not re-measured — exactly what the
+  page claims.
 - https://venturebeat.com/technology/qwen3-8-max-arrives-with-a-bold-claim-it-outperforms-gpt-5-6-sol-max-and-fable-5-on-agentic-computer-use:
-  resolves, dated August 3, 2026. Observed verbatim: "Qwen reports that
-  Qwen3.8-Max scores 86.1 on the OSWorld-Verified benchmark measuring how well
-  agents can use a computer operating system and applications on it, ahead of
-  GPT-5.6 Sol Max (83.2) and Fable 5 (85.0)." The 86.1 figure is correct, and
-  the delta's "competing agents from two other labs already above 83%" is
-  supported — 85.0 and 83.2, from two labs other than Qwen's.
-- The defect, verified against the benchmark's own maintainers rather than
-  inferred: end A is **OSWorld**, end B is **OSWorld-Verified**, and these are
-  not the same test set. Fetched https://github.com/xlang-ai/OSWorld, which
-  records a 2025-07-28 update — "We have made major updates, fixed several
-  issues reported by the community... making the benchmark signals more
-  effective" — and instructs "Please compare your OSWorld results with the new
-  benchmark results when running the latest version." The maintainers are
-  explicitly telling readers that pre- and post-verification scores are not
-  directly comparable, which is precisely what the metric fields do: they
-  render "12.24% success; humans 72.36%" against "86.1% success" as one
-  continuous progression with no version marker on either side.
-- Consequence, stated plainly: a reader takes from this that agents now beat
-  the 72.36% human baseline. That comparison crosses the revision too — the
-  human number was measured on the original 369-task set in 2024 and has not
-  been re-measured on OSWorld-Verified, so "agents now beat humans at using a
-  computer" is not established by these two sources.
-- Not independently verified: the size of the score shift attributable to the
-  repair itself. The repo announces the fix and disclaims comparability but
-  publishes no before/after delta per model, and I found no primary source
-  quantifying it. So I can state that the span is confounded; I cannot state
-  by how much, and this record does not.
+  returned 429 to a plain fetch and 200 with a browser user-agent — worth
+  recording, because a single 429 could be mistaken for a dead source. Verbatim:
+  "Qwen reports that Qwen3.8-Max scores 86.1 on the OSWorld-Verified benchmark
+  ... ahead of GPT-5.6 Sol Max (83.2) and Fable 5 (85.0)", byline "4:50 pm, PT,
+  August 3, 2026". End B, its date, and "three labs now clustered above 83%"
+  all hold.
 
-What saves it, concretely. First, mark the version on both ends: end A's
-metric should read as OSWorld (original 369-task set, April 2024) and end B's
-as OSWorld-Verified, noting the 2025-07-28 revision that repaired broken
-tasks. Second, either drop the 72.36% human baseline from the metric field or
-state that it was measured on the original set and not re-run on
-OSWorld-Verified, so the page stops implying a human-vs-agent crossing it
-cannot support.
+Round 1 (r2-opus) found: the two ends were scored on different versions of
+OSWorld with no version marker on either side — fixed; and the 72.36% human
+baseline implied a human-vs-agent crossing the sources cannot support — fixed.
+The version now appears in both `metric` fields, in both `what` fields and in
+the body's opening sentence, and the baseline paragraph states precisely why it
+is excluded. The fix also introduced new claims — the 28 July 2025 date, the
+300-plus reports, the evaluators-not-tasks choice and the maintainers' request
+— and all four verify against the maintainers' own post.
 
-Worth saving rather than rejecting: the underlying story is real and large.
-Going from one task in eight to the high eighties is not an artifact of a
-task-set repair, and three labs clustered above 83% is a genuinely
-interesting fact an enthusiast would not have assembled. The piece fails only
-on disclosure, and the disclosure is two clauses. Revise.
+It clears the bar, and it clears it on the quality round one asked for: it
+declines two conclusions its own numbers would flatter, and says so in the
+page rather than in a note. What it leaves standing is sourcing, not truth —
+the OSWorld-Verified claims are cited nowhere in the front matter, so a reader
+cannot walk from the page to xlang.ai. Every one of them is true; I checked
+each against the post. Given a failed delta is deleted outright rather than
+kept as a stub, an uncited-but-verified paragraph is nowhere near grounds to
+lose a piece this careful.

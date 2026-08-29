@@ -3,93 +3,81 @@ job: seed-wiki-model-minimax-minimax-m2
 verdict: revise
 reasons:
   - false-or-unsupported-claim
+  - broken-reference
 would-cite: >-
-  A startup counsel deciding whether MiniMax M2's weights are safe to ship in
-  a product needs the exact trigger this page quotes: the licence is MIT
-  until the product passes 100 million monthly active users or US$30 million
-  ARR, at which point the only obligation is displaying "MiniMax M2" in the
-  interface — no fee, no revenue share.
-reviewer: r8-opus
-date: 2026-08-28
+  The MiniMax M2 licence facts are worth citing on their own — plain MIT plus a
+  single display obligation above 100M MAU or US$30M ARR, with no fee and no
+  revenue share — but the counting sentence wrapped around them names the wrong
+  number of labs for the second review running, so the data should carry this
+  page rather than the prose.
+reviewer: rr4b
+date: 2026-08-29
 ---
 
-Checklist: model entry, three cited sources plus three cross-entry org and
-model facts. All re-fetched 2026-08-28; corpus licence census recomputed
-with a script over every model entry declaring a `license` field.
+Round 2, sealed. Findings written before opening round 1. Sources fetched
+2026-08-29, confirmed by literal substring match against raw bytes on disk.
 
-**Verified — and the licence quotation is exact:**
-- https://github.com/MiniMax-AI/MiniMax-M2/blob/main/LICENSE resolves. It is
-  standard MIT text with an appended clause, verbatim: "if the Software (or
-  any derivative works thereof) is used for any of your commercial products
-  or services that have more than 100 million monthly active users, or more
-  than 30 million US dollars (or equivalent in other currencies) in annual
-  recurring revenue, you shall prominently display 'MiniMax M2' on the user
-  interface of such product or service." The `license` fact reproduces both
-  thresholds and the obligation correctly.
-- https://huggingface.co/MiniMaxAI/MiniMax-M2 resolves; states "230 billion
-  total parameters with 10 billion active parameters" and "License:
-  modified-mit" — so both the `parameters` fact and the page's
-  "modified MIT" characterisation *of MiniMax* are right.
-- https://openrouter.ai/minimax/minimax-m2 resolves, gives "October 23,
-  2025" matching `listed_date` and the feed's `created`, plus 204,800
-  context and $0.255/M input matching the feed's 0.000000255.
-- "Scale-wise this is the smallest of the three": MiniMax 230B total,
-  DeepSeek V4 Flash 284B (per the transcluded fact; see the caveat below),
-  Kimi K3 2.8T total / 104B activated. Smallest holds under any of the
-  candidate DeepSeek figures.
-- All 7 transclusions resolve, including the two org facts.
+**Verified, and the licence work is genuinely good:**
 
-**The defect — "the third lab in this catalog to publish a flagship under a
-modified MIT licence" is unsupported under every reading, and the page's own
-examples refute it.**
-- DeepSeek is not one. The page itself says its licence is "plain MIT, no
-  clause attached at all" — a licence with no modification cannot be an
-  instance of "a modified MIT licence", so "each modification asks for
-  something different" has nothing to say about DeepSeek.
-- Moonshot's Kimi K3 is not one either. I fetched
-  https://en.wikipedia.org/wiki/Moonshot_AI: it verifies the revenue-share
-  fact verbatim ("revenue sharing of up to 30% for inference providers
-  generating over US$20 million annually") but describes K3's licence as a
-  "custom license", explicitly distinguishing it from **K2's** modified MIT
-  licence. This corpus agrees with Wikipedia: the `license` fact on
-  `model/moonshotai-kimi-k3` reads "Kimi K3 License — bespoke, with a
-  revenue-sharing clause".
-- The count is wrong even taken generously. I enumerated every model entry
-  declaring a `license` fact (nine). Exactly **two** carry a modified MIT:
-  `minimax-minimax-m2` and `moonshotai-kimi-k2-5` ("Modified MIT License,
-  code and weights"). So MiniMax is the second, not the third. And if the
-  intended category was "MIT-derived" rather than "modified MIT", the count
-  omits `z-ai-glm-5-1` (plain MIT), which would make four.
-- The fix is concrete and improves the paragraph: compare against
-  **Kimi K2.5**, which really does carry a modified MIT licence, rather than
-  K3; call MiniMax the second such lab; and reframe DeepSeek and Z.ai as the
-  unmodified-MIT baseline the two modifications depart from. The taxonomy
-  the paragraph is reaching for — a display requirement versus a revenue
-  share versus nothing — is genuinely interesting and survives the
-  correction intact.
+- github.com/MiniMax-AI/MiniMax-M2 `LICENSE` (1,453 b, read in full): titled "MIT
+  License", closing with "Our only modification is that, if the Software … more
+  than 100 million monthly active users, or more than 30 million US dollars (or
+  equivalent in other currencies) in annual recurring revenue, you shall
+  prominently display "MiniMax M2" on the user interface". The `license` fact
+  reproduces both thresholds and the obligation correctly.
+- **"asks for neither a fee nor a share of revenue" earns its absence**: across
+  all 1,453 bytes there is no "revenue share", no percentage, and the `%`
+  character does not occur once.
+- Parameters: the HF README states "(230 billion total parameters with 10 billion
+  active parameters)" — fact exact. "Smallest of the three" holds: 230B < 284B
+  (DeepSeek V4 Flash) < 1T (Kimi K2.5).
+- Price is transcluded and anchored to "the snapshot of 28 August 2026", matching
+  `$as_of`. The volatile-value and ratio rules are not re-broken here.
 
-**Secondary — "flagship" is doing unearned work.** M2 was listed 2025-10-23
-and is not MiniMax's current flagship; `minimax/minimax-m3` (2026-05-31,
-intelligence_index 45.4) is. Likewise `deepseek-v4-flash-0731` is the Flash
-tier, not DeepSeek's flagship — `deepseek-v4-pro-0813` outscores it (53.2 vs
-51.8) in the same snapshot. Only Kimi K3 is actually its lab's flagship.
-Either drop the word or pick the rows it is true of.
+**DEFECT 1 — `false-or-unsupported-claim`. The corrected count is still wrong.**
+"That makes MiniMax the second lab in this catalog to publish weights under a
+modified MIT licence rather than a plain one. The other is Moonshot." I fetched
+`mistralai/Mistral-Medium-3.5-128B`'s `LICENSE`: it is **literally titled
+"Modified MIT License"** (1,695 b), and `model/mistralai-mistral-medium-3-5` is a
+row in this catalog (`catalog.json`, 388 rows). Mistral is a third lab, so "the
+second … the other is Moonshot" is false. It fails on the stricter reading too:
+MiniMax's own file is titled plain "MIT License" and only *describes* a
+modification, whereas Moonshot's and Mistral's carry the title. The corpus refutes
+this in its own voice — the blog post published three days before the snapshot
+reads that exact Mistral file at length.
 
-**Inherited caveat:** the DeepSeek parameter comparison transcludes
-`model/deepseek-deepseek-v4-flash-0731#parameters` = "284B total". That
-figure comes from OpenRouter, but the checkpoint's own Hugging Face card
-says "Model size: 304B params" and the Simon Willison post cited on that
-entry independently says "304 billion parameters". I have filed this against
-the DeepSeek entry; here it changes no conclusion, since 230B is smallest
-either way. Flagging it so a fix there propagates.
+**DEFECT 2 — `broken-reference`, introduced by the fix.** The sentence
+"DeepSeek's `deepseek-ai/DeepSeek-V4-Flash-0731` ships under
+{{fact:org/deepseek#weights_license}} — plain MIT, no clause attached at all"
+transcludes an **org-level policy** fact whose value is "MIT License (since
+January 2025); earlier models used the proprietary DeepSeek License".
+`lib/transclude.mjs` splices the raw value inline, so the page publishes: "…ships
+under MIT License (since January 2025); earlier models used the proprietary
+DeepSeek License — plain MIT, no clause attached at all — and Z.ai's GLM 5.1
+carries MIT." That is broken as prose and false as attribution: a claim about
+DeepSeek's history is asserted as this checkpoint's terms. The correct fact exists
+and was not used — `model/deepseek-deepseek-v4-flash-0731#license` = "MIT License,
+repository and weights". (I verified the checkpoint's file directly: stock MIT,
+"Copyright (c) 2023 DeepSeek".)
 
-**Not a defect, but worth knowing:** the OpenRouter page shows the $0.255/M
-input rate as "15% off" a standard $0.30/M. The page describes this as "an
-ordinary paid API" price without noting the discount. The value is bound, so
-it will not rot — but the sibling gemini-3.7-flash entry made exactly this
-kind of promotional pricing its whole payload.
+Round 1 (r8-opus) found: "the third lab … under a modified MIT licence" is
+unsupported, DeepSeek and Kimi K3 are not instances, and MiniMax should be called
+**the second**; secondarily that "flagship" was unearned. The "flagship" point is
+**fixed** (the word now attaches only to Kimi K3, which r1 agreed is its lab's
+flagship). The counting defect is **not fixed — it was renumbered**, and the fix
+introduced Defect 2 while carrying out r1's instruction to reframe DeepSeek as the
+baseline.
 
-The licence quotation is exact and the underlying idea — three labs, three
-different things asked of you after you download the weights — is a real
-assembled finding. It is the counting sentence wrapped around it that fails,
-and it fails against the page's own examples. Revise.
+**A round-one finding I now believe was wrong.** r1 prescribed "second" from a
+census of "every model entry declaring a `license` field (nine)". That measures
+what this corpus has written down, not what labs publish, and the claim in the
+prose is the latter. The prescription was wrong and the fixer followed it
+faithfully, which is how a piece fails twice on one sentence.
+
+I judge this a piece with two fixable sentences rather than a rotten core: the
+licence reading is exact and the payload survives correction. But the assembled
+cross-lab taxonomy *is* the only thing here that a facts table does not already
+show, and it is the part that does not hold; the rest restates the transclusions.
+As a data-only stub it keeps everything I verified — the licence, the parameters,
+the listed date, the catalog row — and loses only the false count. That is the
+right trade. Revise.

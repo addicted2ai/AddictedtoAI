@@ -1,70 +1,61 @@
 ---
 job: seed-wiki-model-qwen-qwen3-8-27b
-verdict: reject
-reasons:
-  - false-or-unsupported-claim
-  - overclaiming-summary
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone arguing that Alibaba's open Qwen releases trail its closed flagship
-  on capability needs the open Qwen3.8-2.4T-A95B row scoring 57.7 against
-  Max's 58.1 — and this page, which omits that row entirely, would lose them
-  the argument rather than settle it.
-reviewer: r9-opus
-date: 2026-08-28
+  Someone claiming Qwen's open weights had been stuck at a 256K context window
+  for over a year — this row is where that ceiling broke: 262,144 held across all
+  32 Qwen open-weights listings from July 2025 to August 2026, then went twice in
+  two days, on the 2.4T flagship and on this 27B.
+reviewer: rr4b
+date: 2026-08-29
 ---
 
-Checklist: wiki model entry. Sources fetched 2026-08-28; catalog claims
-measured against `data/sources/openrouter-models/latest.json` (2026-08-28,
-388 rows).
+Round 2, sealed. Findings written before opening round 1. Sources fetched
+2026-08-29; catalog claims measured against `data/derived/feed-rows.json`
+(`$as_of` 2026-08-28), confirmed by literal substring match.
 
-**Verified by fetching:**
+- huggingface.co/Qwen/Qwen3.8-27B README: PRESENT verbatim — "Following the
+  widespread community adoption of the Qwen3.5 and Qwen3.6 series, we are pleased
+  to introduce Qwen3.8, the most capable generation in the Qwen open-model family
+  to date." The grammatical subject really is the **generation**. The entry's
+  opening claim — that the superlative on the card is not about this row — is
+  correct, and I confirmed it from the sentence rather than from the fact value.
+- Front matter declares `license: apache-2.0`; the repo's `LICENSE` (11,544 b) is
+  the Apache License, Version 2.0. **"no field-of-use and no user-count clause"
+  earns its absence**: "monthly active users", "revenue" and "field of use" are
+  each ABSENT from that file.
+- Two days apart: `qwen/qwen3.8-2.4t-a95b` created 2026-08-12, `qwen/qwen3.8-27b`
+  2026-08-14. "Open by the same test": the 2.4T row carries
+  `hugging_face_id` "Qwen/Qwen3.8-2.4T-A95B"; `qwen/qwen3.8-max` carries null.
+  Intelligence index 57.7 against 52 — "outscores this row", anchored to the
+  dated snapshot. All four measured, all true.
+- **The context-window claim, checked exhaustively rather than sampled.** 35
+  `qwen/*` rows carry a `hugging_face_id`; 32 of them were created before
+  2026-08-01, and the **maximum `context_length` across all 32 is exactly
+  262,144** — none exceeds it. The ceiling is first reached 2025-07-21
+  (`qwen3-235b-a22b-2507`) and holds to August 2026. So "every Qwen release with
+  published weights before August 2026 stops at the smaller of those two figures",
+  "the ceiling held from July 2025 to August 2026", "more than thirty rows" and
+  "broke twice, two days apart" are all true as written. (The only third row above
+  the ceiling is `qwen3.8-2.4t-a95b:batch`, the same weights on a batch endpoint —
+  counting two breaks is right.)
+- Volatile values: both context windows, both prices, the index and the parameter
+  count are `{{fact:…}}` transclusions, not literals; the one comparative is
+  anchored to "the 28 August 2026 snapshot". Both rules the brief asked me to
+  re-check are intact.
 
-- huggingface.co/Qwen/Qwen3.8-27B — license reads "apache-2.0" and the card
-  states "27B". Both cited facts supported.
-- The quoted self-description appears verbatim, but **not about this model**.
-  The full sentence is: "Following the widespread community adoption of the
-  Qwen3.5 and Qwen3.6 series, we are pleased to introduce **Qwen3.8, the most
-  capable generation in the Qwen open-model family to date**." The subject of
-  the superlative is the *generation*, not the 27B row.
+Round 1 (r9-opus) **rejected** it, finding: the body converted the card's
+generation-level superlative into a row-level claim Alibaba never made; and it
+omitted `qwen/qwen3.8-2.4t-a95b`, the open sibling that outscores this row and
+decides the open-versus-closed framing — **both fixed, and the rejection was
+correct**. The revision does not patch around either: it opens on the
+misattribution as the finding, names the omitted row in the second sentence, and
+replaces the falsified framing with a different, verified payload (the context
+ceiling). This is the rare case of a rejected piece rebuilt rather than repaired.
 
-**The load-bearing defect.** The body converts that generation-level claim
-into a row-level one: "the open model **Alibaba calls its most capable open
-release**". Alibaba does not call this row that. The card's claim is about
-Qwen3.8 as a generation, and the piece's closing verdict — that the model
-Alibaba calls its most capable open release is not the one that tops the
-scoreboard — is an argument against a claim the source never made.
-
-**The omitted row that decides the question.** The piece frames the tension as
-open-versus-closed: this open row scores 52.0, the closed `qwen/qwen3.8-max`
-scores 58.1, so the open model does not top the family. But the same snapshot
-holds `qwen/qwen3.8-2.4t-a95b` — created 2026-08-12, `hugging_face_id`
-"Qwen/Qwen3.8-2.4T-A95B", intelligence index **57.7**. It is open by the very
-test this piece applies to Max, it is in the same generation, and it beats
-this row by 5.7 points. Under either reading the piece fails: read at row
-level, the card's superlative is falsified by an open sibling the piece never
-mentions; read at generation level, the open/closed gap is 0.4 points and the
-piece's whole framing evaporates. `content/wiki/org/alibaba-cloud.md` already
-describes that row at length as "the open-weight variant of Qwen3.8 Max", so
-the decisive fact was one adjacent page away.
-
-**Verified and true:**
-
-- "Eleven days earlier" — `qwen3.8-max` created 2026-08-03, this row
-  2026-08-14. Exactly 11 days.
-- "`qwen/qwen3.8-max` ... carries no Hugging Face listing in the catalog's
-  feed at all" — measured, `hugging_face_id` is null. True.
-- Prices 4.25e-7 against Max's 2e-6; index gap 6.1 points ("a handful"). True.
-- Apache-2.0 carrying "no field-of-use or user-count clause" — correct.
-- `org/alibaba-cloud#weights_license` resolves; all nine transclusions resolve.
-
-**Not independently verified:** whether `qwen3.8-2.4t-a95b`'s weights are
-actually published under a permissive licence — I confirmed only that the feed
-carries a Hugging Face id for it, which is the same evidence the piece itself
-uses to classify rows as open or closed.
-
-The piece is accurate about prices and dates and wrong about the only thing it
-exists to argue. Fixing it means dropping the misattributed superlative,
-adding the open row that outscores this one, and inverting the conclusion —
-the honest version of this page says Alibaba's open flagship variant lands
-within half a point of its closed one, which is a better story and a different
-page. Reject.
+I checked the new payload harder than anything else in my slice precisely because
+it is new and was not reviewed in round 1, and it survives an exhaustive census
+rather than a spot check. It clears all three bar criteria — an assembled finding
+no vendor page shows, specific to the row, and worth pasting into an argument.
+Approve.

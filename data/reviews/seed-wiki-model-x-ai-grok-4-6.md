@@ -1,74 +1,66 @@
 ---
 job: seed-wiki-model-x-ai-grok-4-6
-verdict: reject
-reasons:
-  - false-or-unsupported-claim
-  - not-worth-reading
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone dating the release where Grok stopped letting you turn reasoning off
-  would be sent to the wrong model by this page — grok-4.5 already reads
-  mandatory true at high effort a month before 4.6, so the page misidentifies
-  the release it is written about.
-reviewer: r9-opus
-date: 2026-08-28
+  Someone dating the end of optional reasoning on Grok to the 4.6 release:
+  grok-4.5 already reads mandatory true at high effort five weeks earlier, and
+  the only reasoning change at 4.6 is an added xhigh tier — this page now makes
+  that correction its subject instead of its error.
+reviewer: rr5b
+date: 2026-08-29
 ---
 
-Checklist: wiki model entry. Sources fetched 2026-08-28; catalog claims
-measured against `data/sources/openrouter-models/latest.json` (2026-08-28,
-388 rows).
+Round 2, sealed. Findings written before opening round 1. Claims re-derived
+2026-08-29 from `data/sources/openrouter-models/latest.json` (2026-08-28, 388
+rows), with every x-ai row enumerated.
 
-**Verified by fetching:**
+- The opening comparison, anchored in the page to the 28 August 2026 snapshot:
+  grok-4.5 and grok-4.6 both list `context_length` 500000, `pricing.prompt`
+  0.000002 and `pricing.completion` 0.000006. Identical on all three, so "moved
+  the scoreboard without moving anything a buyer pays for" holds. Their
+  `max_completion_tokens` also match at 450000.
+- Intelligence index 55.8 → 60.9; this row's coding index 76.8 and agentic
+  index 58.7. grok-4.5 created 2026-07-08, grok-4.6 2026-08-12 — 35 days, so
+  "five weeks later" is exact.
+- grok-4.3: `context_length` 1000000, `pricing.prompt` 0.00000125,
+  `reasoning.mandatory` false, `default_effort` "low". This row: true, "high".
+  All four transclude correctly.
+- "The only reasoning difference left between the two is an extra `xhigh`
+  effort tier": I compared the full reasoning objects. 4.5 is
+  `{default_effort:"high", default_enabled:true, mandatory:true,
+  supported_efforts:["high","medium","low"]}`; 4.6 is identical but for
+  `supported_efforts:["xhigh","high","medium","low"]`. The claim is exact, and
+  correctly scoped to reasoning — the rows also differ in `supported_parameters`
+  (4.6 adds `stop` and `top_k`), which the sentence does not claim otherwise.
+- "Grok 4.5 is where that flipped": along the mainline the order reads 4.20
+  false → 4.3 false → 4.5 true → 4.6 true, so the flip is at 4.5 and "a month
+  late" is right (35 days). grok-4.20-multi-agent and grok-build-0.1 read
+  mandatory true earlier, but they are a variant and a separate line, and 4.3
+  post-dates the former with optional reasoning intact — the mainline claim
+  survives them.
+- The ratio rule is handled correctly: "the halved window" sits inside the
+  clause "in the same snapshot it already carries this row's pair", and "the
+  raised price" states direction only. `vendor_description` is a verbatim
+  substring of the row's description. All seventeen transclusions resolve.
 
-- openrouter.ai/x-ai/grok-4.6 — listing date "August 12, 2026" matches the
-  cited `listed_date`. The description reads "Grok 4.6 is SpaceXAI's smartest
-  model with frontier performance on coding, knowledge work, and STEM"; the
-  entry's `vendor_description` value is a verbatim substring. Both facts hold.
+Round 1 (r9-opus) rejected this on three grounds. The lede dated mandatory
+reasoning to 4.6 when the feed puts it at 4.5 — fixed, and fixed in the
+strongest available way: the falsified claim is now the correction the page
+exists to make, and it belongs here, because the reader liable to misdate the
+change is the one looking up 4.6. Paragraph two referred to the site's own org
+record, self-reference outside the colophon — gone; what remains describes the
+catalog's rows, which is this site's subject rather than itself. Paragraph
+three duplicated `org/spacexai`'s index-and-price paragraph — now a two-row
+comparison at constant price and window, which is a different claim from the
+org page's four-release arc where the index rose *alongside* the price; I read
+both pages to check. They share numbers, as two pages over one catalog must,
+but no longer share a point. The minor "on the requests that used it at all",
+which implied 4.3's reasoning was opt-in when `default_enabled` is true, is
+also gone.
 
-**Falsified by measurement — the piece's lede.** The body's organising claim
-is that reasoning "went from optional to compulsory" at this row, comparing
-`grok-4.3` directly against `grok-4.6` and concluding that "the catalog now
-records both happening on **the same release**". Measured, the reasoning
-objects read:
-
-- `x-ai/grok-4.3` (2026-04-30): `mandatory: false`, `default_effort: "low"`
-- `x-ai/grok-4.5` (2026-07-08): `mandatory: **true**`, `default_effort: "high"`
-- `x-ai/grok-4.6` (2026-08-12): `mandatory: true`, `default_effort: "high"`
-
-Mandatory reasoning at high effort arrived at **4.5**, a month before this
-row. The only reasoning change at 4.6 is the addition of `xhigh` to
-`supported_efforts`. The piece skips 4.5 entirely in all three paragraphs even
-though it is in this entry's own `mentions` list, so the row that falsifies
-the claim was already in hand.
-
-**True, and checked:**
-
-- "the setting 4.3 treated as its top tier" — `grok-4.3`'s
-  `supported_efforts` is ["high","medium","low","none"], so "high" is indeed
-  its ceiling, and "none" (the "skipping") existed. Exact and well observed.
-- Index moves 4.3 → 4.6: agentic 24.2 → 58.7, coding 42.2 → 76.8,
-  intelligence 37.9 → 60.9. All three rise. True.
-- "three months" — 2026-04-30 → 2026-08-12 is 104 days. Fair.
-- "the price increase" — input moved 1.25e-6 → 2e-6. True, though asserted in
-  prose with no transclusion and no number.
-- All ten transclusions resolve.
-
-**Two further defects.** Paragraph two is the site talking about its own
-records — "The org record for this lab already treats...", "Neither row states
-that one change bought the other" — which is self-reference outside the
-colophon, on the cut list. Paragraph three then re-runs `org/spacexai`'s third
-paragraph, which already reports the intelligence index rising across these
-releases alongside the input price; this body adds the coding and agentic
-columns but makes the same point about the same rows. The claimed distinct
-angle holds only for paragraph one, and paragraph one is the wrong one.
-
-**Also inaccurate, minor:** "with a default effort of low **on the requests
-that used it at all**" implies 4.3's reasoning was opt-in. Its
-`default_enabled` is true — reasoning was already on by default at 4.3, just
-not compulsory.
-
-All three paragraphs are impaired: the first misidentifies which release made
-the change it is named for, the second is self-referential, the third
-duplicates an adjacent org page. What survives is one genuinely sharp
-observation — that 4.3's ceiling became the later default while "none"
-disappeared — which belongs on `model/x-ai-grok-4-5`, the row where it
-actually happened. Reject.
+It clears the bar now. A reject was right in round one — the page was named for
+a change that happened elsewhere — and the rewrite did not paper over that; it
+inverted it into the page's payload and added the constant-price framing that
+makes the index move mean something. Nothing in it now rests on trust: every
+figure came out of the snapshot under my own script.

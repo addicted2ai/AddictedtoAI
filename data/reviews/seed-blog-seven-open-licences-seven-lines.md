@@ -1,103 +1,83 @@
 ---
 job: seed-blog-seven-open-licences-seven-lines
-verdict: revise
-reasons:
-  - false-or-unsupported-claim
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone calling a model "open source" because its card says open weights —
-  this post reads seven current licence files line by line and shows their
-  triggers span a factor of five hundred, with no two binding the same kind
-  of company.
-reviewer: r3-opus
-date: 2026-08-28
+  Someone drafting a compliance memo who assumes open-weights licences differ
+  only in threshold size — this post reads the files and shows they bind
+  different companies entirely: a coding-assistant vendor, a hyperscale
+  reseller, any employee of a large employer, and a model trainer, from a
+  US$20M/month cut-off to a US$10B security review.
+reviewer: rr4b
+date: 2026-08-29
 ---
 
-Checklist: blog post built on a census of licence files. Sources fetched
-2026-08-28. The method is stated (canonical `LICENSE` files, repository dates
-from the Hugging Face API's `createdAt`) and the limits section names three
-real ones, including that licence files can change in place.
+Round 2, sealed. Findings written before opening round 1. Every licence fetched
+to disk as raw bytes on 2026-08-29 and matched by literal substring; repository
+dates read from the Hugging Face API, the method the post itself names.
 
-- huggingface.co/moonshotai/Kimi-K3/raw/main/LICENSE: resolves. Display of
-  "Kimi K3" required above 100 million MAU or US$20,000,000 monthly revenue;
-  a Model-as-a-Service business above US$20,000,000 over twelve months must
-  "enter into a separate agreement with Moonshot AI"; and the carve-out for
-  use "accessed through Moonshot AI's official products or certified
-  inference partners". All three as described.
-- huggingface.co/Qwen/Qwen3.8-2.4T-A95B/raw/main/LICENSE: resolves. The
-  US$50,000,000 twelve-month gate on "a Model as a Service or AI Work
-  Assistant business" is verbatim, and so is the definition the post quotes:
-  "an independent AI-powered product primarily designed for AI-assisted
-  coding or office productivity (e.g., Qoder and QwenWork)". The exclusions
-  are real and are what the post says they are — a single-purpose AI
-  translation tool, a shopping assistant, and an AI feature inside a product
-  whose primary purpose is not coding or office productivity.
-- huggingface.co/Qwen/Qwen3.8-Flash-Next/raw/main/LICENSE: resolves as the
-  "Qwen Community License 1.0". Confirmed the post's key finding: the
-  separate-licence requirement — "the licensee shall obtain a separate
-  license from Qwen before Using the Software or its derivative works for any
-  commercial purpose" — is gated by no revenue or user threshold at all. The
-  smallest model does carry the strictest of the three Qwen terms.
-- huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE: resolves. Ten billion US
-  dollars over twelve consecutive months; "must pass Z.AI's security review
-  before using the Software or its derivative works for any commercial
-  purpose"; and "the scope and method of the security review shall be
-  reasonably determined by Z.AI". All verbatim, and the licence carries no
-  output restriction and no acceptable-use policy, which is what the post's
-  "Two absences" section depends on.
-- huggingface.co/mistralai/Mistral-Medium-3.5-128B/raw/main/LICENSE:
-  resolves, and **the post's sharpest catch is real**. The authorization
-  cut-off is verbatim ("You are not authorized to exercise any rights under
-  this license if the global consolidated monthly revenue of your company (or
-  that of your employer) exceeds $20 million ... for the preceding month"),
-  the remedy language ("at its sole discretion", or Mistral's hosted service)
-  is verbatim, the "or that of your employer" reading is correct — and the
-  licence does contain "This restriction in (b)" while containing no
-  subsection (b). I confirmed the drafting error independently; it is not the
-  author's inference.
-- huggingface.co/xai-org/grok-2/raw/main/LICENSE: resolves, last updated
-  4 November 2025. Revocable grant, the output/training restriction, the $100
-  aggregate liability cap, Tarrant County, Texas, and the acceptable-use
-  condition on commercial use all confirmed.
-- developer.meta.com/ai/llama4/license/ (the post's llama.com URL 301s here;
-  the link still resolves): "Llama 4 Version Effective Date: April 5, 2025".
-  The frozen test is verbatim — "If, on the Llama 4 version release date, the
-  monthly active users ... is greater than 700 million monthly active users
-  in the preceding calendar month". The "Llama" name prefix, "Built with
-  Llama", and the acceptable use policy "incorporated by reference" all
-  confirmed.
-- Control group spot-checked: DeepSeek-V4-Flash-0731 is stock MIT reading
-  "Copyright (c) 2023 DeepSeek" — the 2023 detail the post flags is real.
-  GLM-5.3-Flash is stock MIT with no added clause.
-- Repository dates checked against the API the post names as its method:
-  Qwen3.8-27B 2026-08-05, Qwen3.8-2.4T-A95B 2026-08-08, Qwen3.8-Flash-Next
-  2026-08-24 — so "three fences from one lab in nineteen days" is exact. The
-  newest `meta-llama` repository is 2025-04-28 (Llama-Prompt-Guard-2-86M),
-  confirming the sixteen-month claim, and `xai-org` has published nothing
-  since grok-2, created 2025-08-22. All five dates exact.
-- **Defect — a factual error the post contradicts two lines later.** Of
-  OpenAI's `gpt-oss-120b`, the post says the usage policy "is one sentence
-  long — 201 bytes, quoted here in full", then quotes two sentences: "We aim
-  for our tools to be used safely, responsibly, and democratically, while
-  maximizing your control over how you use them." and "By using OpenAI
-  gpt-oss-120b, you agree to comply with all applicable law." I fetched the
-  file; it is those two sentences. Fix: "two sentences".
-- Recorded so the byte count is not "corrected" to a wrong number: I
-  hand-counted the quoted text at exactly 201 characters (125 + 76 including
-  the joining space). **201 bytes is right.** An automated character count of
-  the fetched page may report ~222 by including a trailing newline and
-  wrapper whitespace; do not change 201 on that basis.
-- Not independently verified: Qwen3.8-27B's Apache-2.0 and
-  Mistral-Large-3-675B's Apache-2.0 declarations; the Gemma 3 vs Gemma 4
-  licence change; DeepSeek-V4-Pro-0813; the Kimi K2.5/K2.6 display-clause-only
-  history and the April-to-June appearance of the revenue gate; and the exact
-  parenthetical "(including generated data)" in the xAI output clause, which
-  my fetch returned in condensed form. Every one of the ten files I did open
-  matched the post exactly, which is the basis for treating these as low risk.
+**Licence texts — every operative clause PRESENT verbatim:**
 
-One word is wrong in a piece that is otherwise the most carefully evidenced
-thing in my slice: ten licence files opened, every operative clause verbatim,
-five repository dates exact, and a genuine drafting error in Mistral's licence
-found by reading rather than by assuming. It is a revise rather than an
-approve only because the error is a claim about how carefully a document was
-read, in the piece whose entire authority is careful reading — and because it
-costs one word to fix. Revise.
+- Kimi K3 (3,065 b): display clause at 100M MAU / US$20M monthly revenue; MaaS
+  above "20 million US dollars … over any consecutive 12 months" must "enter into
+  a separate agreement with Moonshot AI"; the carve-out for use "accessed through
+  Moonshot AI's official products or certified inference partners". K2.5 and K2.6
+  fetched too: both titled "Modified MIT License", both display-clause-only — so
+  "the revenue gate appeared between April and June" is measured on the files.
+- Qwen3.8-Max (3,390 b): "US$50,000,000"; "Model as a Service or AI Work
+  Assistant"; and the definition quoted in full — "an independent AI-powered
+  product primarily designed for AI-assisted coding or office productivity (e.g.,
+  Qoder and QwenWork)" — with the three carve-outs the post describes (translation
+  tool, shopping assistant, AI feature of a non-AI product).
+- Qwen Community License 1.0 (3,235 b): same two categories, **no threshold** —
+  confirmed by reading §2 in full, not by inference.
+- GLM-5.3 (4,263 b): "10 billion US dollars"; "must pass Z.AI's security review
+  before using the Software or its derivative works for any commercial purpose";
+  "scope and method of the security review shall be reasonably determined by
+  Z.AI". **US$10B ÷ US$20M = exactly 500** — "five hundred times Moonshot's" is
+  arithmetic, not rhetoric.
+- Mistral-Medium-3.5 (1,695 b): the authorization cut-off verbatim, "or that of
+  your employer" included, remedy "at its sole discretion". **The sharpest catch
+  re-confirmed independently:** the file says "This restriction in (b)" while
+  numbering its conditions 1 and 2, with no "(b)" anywhere in the document.
+- Grok 2 (5,467 b): "revocable"; the output clause verbatim including the
+  parenthetical round 1 could not resolve — "(including generated data)";
+  "AGGREGATE LIABILITY EXCEEDING $100"; "Tarrant County, Texas"; "Last Updated:
+  November 4, 2025".
+- Llama 4: "Llama 4 Version Effective Date: April 5, 2025"; §2 measures the 700M
+  MAU test "on the Llama 4 version release date" — the "frozen in time" reading is
+  exactly right; "Built with Llama"; the AUP "incorporated by reference".
+- gpt-oss-120b USAGE_POLICY: the response body is **exactly 201 bytes**, and the
+  post's full quotation matches it byte for byte. Two sentences.
+- Control group: DeepSeek-V4-Flash-0731 **and** V4-Pro-0813 both stock MIT, both
+  "Copyright (c) 2023 DeepSeek"; GLM-5.3-Flash stock MIT.
+
+**Dates (HF API `createdAt`), every one exact:** Qwen3.8-27B 2026-08-05,
+2.4T-A95B 2026-08-08, Flash-Next 2026-08-24 (05→24 = nineteen days); GLM-5.3 and
+GLM-5.3-Flash **both** 2026-08-25, so "the flagship left MIT on the same day its
+Flash sibling stayed" is literally true; GLM-5.2 2026-06-16 → 2026-08-25 = 70 days
+= ten weeks; Kimi-K2.5 2026-01-01, K2.6 2026-04-14, K3 2026-06-13;
+Mistral-Medium-3.5-128B 2026-03-31; newest `meta-llama` repo 2025-04-28; `xai-org`
+holds 2 repos, newest `grok-2` 2025-08-22.
+
+**Gemma — the post's strongest universal claim, and it holds.** Filtering strictly
+on the generation prefix (not `*gemma-4b`, which is a size): **38 `gemma-4-*`
+repos, all tagged `license:apache-2.0`, earliest 2026-03-02**; **27 `gemma-3-*`
+repos, all tagged `license:gemma`**. Zero non-conforming in either set. The
+Mistral-Large-3 line is `license:apache-2.0` throughout.
+
+**The two absences hold.** All four Chinese-lab licences carry only a
+comply-with-applicable-law line, never an incorporated AUP. Only xAI's restricts
+what outputs may be used for — Llama 4 imposes a *naming* condition on training
+with outputs, which is not the same thing, and the post does not claim otherwise.
+
+Round 1 (r3-opus) found one defect: "one sentence long" against a two-sentence
+policy — **fixed**; the text now reads "two sentences long — 201 bytes", and I
+re-measured 201 from the response body, so r1's warning not to "correct" the byte
+count is preserved. Round 1 explicitly left six things unverified; **I verified
+all six** (Qwen3.8-27B's Apache-2.0, Mistral-Large-3's Apache-2.0, the Gemma 3→4
+change, DeepSeek-V4-Pro-0813, the K2.5/K2.6 display-clause history, and the xAI
+parenthetical) and every one matched the post.
+
+Nothing was introduced by the fix. This is the most rigorously evidenced piece in
+my slice and I could not falsify a single claim in it. Approve.

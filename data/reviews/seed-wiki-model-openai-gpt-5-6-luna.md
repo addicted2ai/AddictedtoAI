@@ -1,75 +1,82 @@
 ---
 job: seed-wiki-model-openai-gpt-5-6-luna
-verdict: revise
-reasons:
-  - broken-reference
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone arguing you must pay more to escape a nano-tier model would be
-  answered by Luna listing at the same 2e-7 input as gpt-5.4-nano while
-  scoring 52.3 against nano's 39.7 — same meter, twelve and a half points of
-  intelligence index apart.
-reviewer: r9-opus
-date: 2026-08-28
+  Someone budgeting a high-volume job who assumes the cheapest input rate buys a
+  nano-class model: on the 28 August 2026 snapshot GPT-5.6 Luna meters input at
+  the same rate as GPT-5.4 Nano while carrying a 1.05M context against Nano's
+  400K, and undercuts its own Sol and Terra siblings tenfold.
+reviewer: rr2b
+date: 2026-08-29
 ---
 
-Checklist: wiki model entry. Sources fetched 2026-08-28; catalog claims
-measured against `data/sources/openrouter-models/latest.json` (2026-08-28,
-388 rows).
+Round 2, sealed. Findings written before opening round 1. Sources fetched
+2026-08-29 and confirmed by literal substring match; catalog claims recomputed
+against `data/sources/openrouter-models/latest.json` (2026-08-28, 388 rows).
 
-**Verified by fetching:**
+Verified by measurement:
 
-- github.blog changelog, 2026-07-09 — publication date matches
-  `release_date`. Luna is described verbatim as "A lightweight, cost-efficient
-  variant for smaller, faster tasks and also the lowest-cost option in the
-  family", which supports the cheapest-of-family framing.
-- venturebeat.com — "approximately 20 total organizations" and the 26 June
-  2026 preview, quoted directly: "At [the U.S. government's] request, we are
-  starting with a limited preview for a small group of trusted partners." The
-  timeline event holds.
+- `openai/gpt-5.6-luna` prompt 0.0000002 and `openai/gpt-5.4-nano` prompt
+  0.0000002 — identical to the digit. Context 1,050,000 against 400,000.
+  Artificial Analysis indices: intelligence 52.3 v 39.7, coding 71.4 v 56.1,
+  agentic 46.9 v 29.7. Every transcluded pair exact; all 13 distinct
+  transclusions resolve to declared fields.
+- Sol and Terra both prompt 0.000002, so "the same rate Terra charges too" holds
+  and Sol / Luna is exactly 10. Sol intelligence 60.9 against Luna's 52.3, so the
+  index gap (x0.86) is indeed far smaller in proportion than the price gap
+  (x0.10). Both relations are anchored in the text to the 28 August 2026 reading,
+  as the ratio rule requires.
+- Six `gpt-5.6` rows exist, but luna-pro, sol-pro and terra-pro each describe
+  themselves as "the same underlying model as [X], served with `reasoning.mode`
+  set to `pro`", so "the three GPT-5.6 models" is fair, and the page names the
+  luna-pro tie itself rather than being caught by it. Created timestamp
+  2026-07-09 matches `release_date`.
 
-**Defect — a citation that does not support its claim.** The timeline entry
-"generally available across ChatGPT, Codex, the OpenAI API and GitHub Copilot"
-is sourced to the github.blog changelog. I re-fetched that page and asked
-specifically: it names no surface outside GitHub, does not mention ChatGPT,
-Codex or the OpenAI API, and says only that the models are "now rolling out in
-GitHub Copilot". The claim itself is true — search results confirm GA on
-9 July 2026 across all four surfaces — but I could not reach OpenAI's own
-announcement (openai.com/index/gpt-5-6/ returned HTTP 403), so the correction
-rests on secondary coverage. Re-point this to the OpenAI announcement. The
-same mis-citation is on the Sol and Terra entries.
+Verified by fetching:
 
-**Verified by measurement:**
+- developers.openai.com/api/docs/changelog, Jul 30 entry, verbatim: "Starting
+  July 30, GPT-5.6 Luna costs 80% less, while GPT-5.6 Terra costs 20% less."
+  Confirms both the size and the date of the cut.
+- Same changelog, Jul 9 entry: badged `gpt-5.6-sol` `gpt-5.6-terra`
+  `gpt-5.6-luna` `v1/responses` `v1/chat/completions` `v1/batch`, body "Released
+  the GPT-5.6 model family ... GPT-5.6 Luna for efficient, high-volume
+  workloads." The re-pointed timeline entry naming those three endpoints is
+  carried by the page it now cites.
+- venturebeat.com/...: "approximately 20 total organizations, after OpenAI shared
+  the models and release plans with the U.S. government", byline "June 26, 2026".
+- github.blog changelog for 2026-07-09 confirms the Copilot rollout, and now
+  carries only that claim.
 
-- Luna 2e-7 input and `gpt-5.4-nano` 2e-7 — identical to the digit.
-- Context 1050000 against nano's 400000. Indices: intelligence 52.3 v 39.7,
-  coding 71.4 v 56.1, agentic 46.9 v 29.7. All four transcluded, all exact.
-- Sol 2e-6 and Terra 2e-6 are equal, so "the same rate Terra charges too" is
-  right; Sol / Luna = exactly 10. "A factor of ten" is exact.
-- "trails Sol's by under nine points" — 60.9 − 52.3 = 8.6. True today.
-- Two minor versions from 5.4 to 5.6. Correct.
-- Fifteen transclusions, all resolving.
+**Defect — one wrong number, and I traced where it came from.** "OpenAI cut
+Luna's price by 80% on 30 July 2026, six weeks before that reading." The reading
+is 28 August 2026. 30 July to 28 August is 29 days: four weeks and a day, not
+six. Both dates sit in the same sentence, so the error is checkable without
+leaving the page. It came from round one's record, which wrote "The match with
+nano is six weeks old"; the fixer took the interval on trust. The substance is
+sound — the cut is real, dated, and verified verbatim, and the price equality
+genuinely is a post-cut artefact — only the arithmetic is wrong. Note also that
+the opening "prices identically" is true of input alone (output is 0.0000012
+against nano's 0.00000125); the next clause narrows to input, so it reads as a
+loose topic sentence rather than a false claim.
 
-**Anchoring — the thing to fix alongside the citation.** Every derived
-statement here is undated, and two of them are tight enough to rot on a single
-feed move. "Under nine points" has 0.4 points of headroom, and "prices
-identically" is an exact-equality claim between two `fast` pricing fields. The
-inputs are transcluded and cannot go stale, but the *relations* asserted over
-them can, and the page states them as timeless truths. This matters more here
-than elsewhere in the batch because the equality is a recent artefact:
-OpenAI cut Luna's price by 80% on 30 July 2026, and Luna listed at $1/1M at
-launch. The match with nano is six weeks old, not a design decision. `org/openai`
-dates its comparable claims ("as observed on 28 August 2026"); this page
-should too, and should say the equality is a post-cut coincidence.
+Round 1 (r9-opus) found: (a) `broken-reference` — the timeline's "generally
+available across ChatGPT, Codex, the OpenAI API and GitHub Copilot" was sourced
+to a GitHub page naming no surface outside GitHub — **fixed**, and fixed
+properly: split into two entries, each pointing at a page that carries its own
+claim, both of which I re-verified. (b) undated derived relations, and "trails
+Sol's by under nine points" having only 0.4 points of headroom — **fixed**: the
+comparisons are now anchored to "28 August 2026" and the tight numeric claim was
+replaced with a proportional one that cannot rot. (c) minor, the
+cheapest-of-family claim being tied by luna-pro — **fixed**, the tie is now
+stated. Nothing else was introduced. Round one's own "six weeks" is the one
+finding I now believe was wrong, and it is the sole defect left standing.
 
-**Minor:** "Luna is also the cheapest of its own family by a wide margin" is
-tied exactly by `gpt-5.6-luna-pro` at 2e-7. The margin is wide against Sol and
-Terra only.
-
-**Angle check — passes.** `org/openai` also discusses Luna's price against its
-score, but against the `gpt-5.4` *flagship* (within a point of it at roughly a
-twelfth the price, 126 days later — I re-measured that and it is correct).
-This page compares against `gpt-5.4-nano` instead, which is a different and
-sharper comparison: same price, wholly different tier. Not restating.
-
-The payload is real and the arithmetic is exact. Re-point the GA citation and
-date the comparisons. Revise.
+It clears the bar as it now stands, and I say plainly which kind of piece this
+is: one fixable word. The thesis — that a July 2026 model's input rate now equals
+a March 2026 nano tier's, and that it undercuts its own siblings tenfold for a
+fraction of the index gap — is exactly what a citer would paste this for, and it
+verifies to the digit. The wrong interval sits in a subordinate clause and cuts
+against the argument's own interest, since four weeks is more recent than six and
+so strengthens the "recent rather than designed" point the sentence is making.
+Change "six weeks" to "four weeks" and nothing else on the page needs touching.

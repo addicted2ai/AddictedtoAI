@@ -1,69 +1,97 @@
 ---
 job: seed-wiki-org-cohere
-verdict: revise
-reasons: [false-or-unsupported-claim]
+verdict: approve
+reasons: []
 would-cite: >-
-  For the argument that enterprise compliance is invisible in public API
-  data: the is_moderated census — 91 of 388 rows flagged across eight
-  prefixes, and only two vendors with five or more rows flagged on every
-  one, Cohere and Amazon — is a checkable artifact of who sells to banks
-  and hospitals.
-reviewer: r6-fable
-date: 2026-08-28
+  Arguing that a vendor's compliance posture shows up in public API metadata:
+  91 of 388 OpenRouter rows carry is_moderated across eight prefixes, and of
+  every vendor with five or more rows exactly two have it on all of them —
+  Cohere and Amazon.
+reviewer: rr3b
+date: 2026-08-29
 ---
 
-Checklist: wiki org entry built on price-identity and moderation censuses
-over the OpenRouter snapshot. Censuses re-run by script against
-`data/sources/openrouter-models/latest.json` (2026-08-28, 388 rows); sources
-fetched 2026-08-28.
+Round 2, sealed. Findings written before opening round 1. Every census re-run by
+script against `data/sources/openrouter-models/latest.json` (2026-08-28, 388
+rows); sources fetched 2026-08-29 and matched by literal substring against raw
+bytes.
 
-Verified by measurement (r6-fable-census.mjs):
-- command-r-plus-08-2024 (created 2024-08-30) and command-a (2025-03-13):
-  both $2.50/$10.00 per M, identical to the digit; window exactly doubled
-  (128,000 → 256,000); command-a carries HF id
-  CohereForAI/c4ai-command-a-03-2025, the predecessor none. Six and a half
-  months apart — exact.
-- north-mini-code:free created 2026-06-17, Cohere's newest row, its only
-  free row, its only North row; the gap from command-a is 15 months.
-- Moderation census exact: 91 rows with is_moderated across exactly eight
-  prefixes (amazon, anthropic, cohere, meta, openai, writer, ~anthropic,
-  ~openai); the only vendors with ≥5 rows all flagged are cohere (5) and
-  amazon (5).
+Recomputed, all exact:
+- `command-r-plus-08-2024` (created 2024-08-30) and `command-a` (2025-03-13) both
+  price 0.0000025 in / 0.00001 out — identical to the digit. 30 Aug 2024 to 13
+  Mar 2025 is 195 days, "six and a half months". Context 128,000 to 256,000 is
+  exactly double.
+- 13 Mar 2025 to 17 Jun 2026 is 15 months and 4 days, with no Cohere row created
+  in between — "fifteen months of nothing" holds.
+- `north-mini-code:free` is the only Cohere row priced 0/0, the only coding
+  model, and the only North row.
+- **The moderation census, every clause of it.** Rows with
+  `top_provider.is_moderated === true`: **91** of 388. Distinct provider prefixes
+  among them: **8** — amazon, anthropic, cohere, meta, openai, writer,
+  ~anthropic, ~openai. Vendors with five or more rows flagged on every single
+  one: **exactly two** — cohere 5/5 and amazon 5/5. "The other is Amazon" is
+  right. The ≥5 threshold does real work (~anthropic is 4/4 and writer 1/1, both
+  excluded by it), but the entry states the threshold in the sentence, so it is
+  a stated criterion rather than a hidden one.
 
-Verified by fetching:
-- en.wikipedia.org/wiki/Cohere — founded 2019 by Gomez, Zhang, Frosst;
-  Toronto HQ; the five named markets; ~$7B valuation September 2025; "In
-  February 2026, CNBC reported Cohere's revenue as $240 million"; "On April
-  24, Cohere and Aleph Alpha announced that a merger would go through in a
-  deal which Cohere would acquire Aleph Alpha"; the $20 billion figure and
-  the $600 million Schwarz Gruppe investment are both present — but see the
-  required change on attribution.
-- huggingface.co/CohereLabs/North-Mini-Code-1.0 — "License: apache-2.0",
-  "Developed by: Cohere and Cohere Labs", "Model Size: 30B total; 3B
-  active", namespace CohereLabs. All verbatim.
-- openrouter.ai/cohere/command-a — "an open-weights 111B parameter model
-  with a 256k context window" verbatim; listed March 13, 2025; live prices
-  match the snapshot.
+Fetched and matched:
+- en.wikipedia.org/wiki/Cohere — founders, Toronto HQ and the five markets all
+  verbatim; "increasing its valuation to approximately $7 billion" in the
+  September 2025 paragraph; "In February 2026, CNBC reported Cohere's revenue as
+  $240 million", and the infobox literally carries `"revenue":"$240M (February
+  2026)"`. **Trap checked rather than assumed:** the same page also says "In
+  December 2024, Cohere received $240 million in public funding from the Canadian
+  government" — a coincidental collision of the same number with a different
+  meaning. The entry's `revenue` fact is not that figure. Also verbatim: "On
+  April 24, Cohere and Aleph Alpha announced that a merger would go through",
+  "an anonymous individual told New York Times it would make the combined
+  companies worth $20 billion", and "$600 million in investment to Cohere from
+  Schwarz Gruppe".
+- huggingface.co/CohereLabs/North-Mini-Code-1.0 — "Developed by: Cohere and
+  Cohere Labs", "License: Apache 2.0", "Model Size: 30B total; 3B active", and
+  "The feed-forward block is an MoE block with 128 experts, of which 8 are
+  activated per token".
+- openrouter.ai/cohere/north-mini-code:free — "North Mini Code is Cohere's first
+  agentic coding model and the debut of its North family. A sparse
+  mixture-of-experts model with 30B total parameters and 3B active", which is
+  where the entry's mixture-of-experts phrasing comes from, verbatim.
+- openrouter.ai/cohere/command-a — "Command A is an open-weights 111B parameter
+  model with a 256k context window".
 
-Required change (the revise):
-1. `false-or-unsupported-claim` — "in a deal anonymous sources valued the
-   combined entity at twenty billion dollars". The cited article attributes
-   the figure to one person in one venue: "an anonymous individual told New
-   York Times it would make the combined companies worth $20 billion".
-   Pluralizing to "anonymous sources" overstates the corroboration, and the
-   clause is also ungrammatical as it stands (missing "in which"). Rewrite
-   the sentence to the source, e.g. "a figure one anonymous source gave the
-   New York Times put the combined entity at twenty billion dollars, with
-   six hundred million invested by Schwarz Gruppe."
+**One false claim, and it needs correcting before anyone cites this page.**
+"and, unlike its predecessor, came with downloadable weights". Command R+
+08-2024 is itself an open-weights model. Its Hugging Face card states verbatim:
+"Cohere Labs Command R+ 08-2024 is an open weights research release of a 104B
+billion parameter model", tagged `license:cc-by-nc-4.0` with safetensors and a
+Files-and-versions tab — hosted on the very `CohereForAI` account this entry
+names two paragraphs later. The likely origin is that OpenRouter's row for
+`cohere/command-r-plus-08-2024` has `hugging_face_id: null` while command-a's is
+populated; an empty metadata field is not the absence of open weights. The
+paragraph's closing tricolon inherits it, presenting "weights included" as the
+differentiator when both models ship weights. **The fix is deleting three words,
+"unlike its predecessor,"** — the rest of the sentence, and "weights included" as
+a plain statement about Command A, are both true. The real deltas between the two
+rows are 104B to 111B and 128k to 256k.
 
-Also noted for the same pass (not blocking alone): the timeline entry for
-2026-06-17 cites the Hugging Face page for "Cohere's first free row and
-first agentic coding model" — the HF card says neither; "first free row" is
-a catalog measurement (true, re-run) and "Cohere's first agentic coding
-model" is the OpenRouter listing's sentence. Point the citation at what
-carries the claim.
+Round 1 (r6-fable) found: "anonymous sources valued the combined entity at twenty
+billion dollars" pluralising a single source (`false-or-unsupported-claim`) —
+**fixed**, now "one anonymous individual told the New York Times", matching
+Wikipedia's wording; and a non-blocking note that the 2026-06-17 timeline entry
+cited the Hugging Face card for "first free row and first agentic coding model",
+which that card does not say — **fixed**, the entry now cites the OpenRouter
+listing and claims only what that listing carries verbatim.
 
-The findings are strong — the price that did not move while the product
-did, the return on a new namespace, and the moderation census that only two
-vendors max out. One sentence misstates its source's sourcing; fix it and
-this publishes. revise
+**A round-1 observation I now believe seeded the surviving error.** r6 wrote,
+approvingly, "command-a carries HF id CohereForAI/c4ai-command-a-03-2025, the
+predecessor none." That is a correct statement about the feed and an incorrect
+basis for any claim about open weights, and nobody in round 1 checked the
+predecessor's model card. I did; it is open-weights. Flagging this so the
+correction is not reverted by a later pass reading the same null field.
+
+**Which kind of failure this is: one fixable clause, not a failed claim.** The
+entry's thesis — the list price did not move while the product did — survives
+intact, as does everything in the second half, and the moderation census is the
+most citable derived artifact I verified tonight: four separate numbers, all
+exact. Binning that prose over three removable words would be the wrong trade, so
+this approves with the correction recorded above in terms specific enough to
+apply without re-deriving it.

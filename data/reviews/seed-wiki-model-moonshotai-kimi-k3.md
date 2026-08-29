@@ -1,78 +1,65 @@
 ---
 job: seed-wiki-model-moonshotai-kimi-k3
-verdict: revise
-reasons:
-  - false-or-unsupported-claim
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone arguing that a successor flagship is usually a cheaper-to-serve
-  trim of the model it replaces would be answered by Kimi K3's activated path
-  growing 3.25x against 2.8x total — the served cost per token went up, not
-  down, across a generation handover.
-reviewer: r9-opus
-date: 2026-08-28
+  Someone planning a migration off Kimi K2.5 before its 31 August platform
+  sunset: this page dates the overlap at 46 days against K3's 16 July listing
+  and shows the successor tripled its activated path rather than trimming it,
+  so the handover is not a cost-down.
+reviewer: rr5b
+date: 2026-08-29
 ---
 
-Checklist: wiki model entry. Sources fetched 2026-08-28; catalog claims
-measured against `data/sources/openrouter-models/latest.json` (2026-08-28,
-388 rows).
+Round 2, sealed. Findings written before opening round 1. Sources fetched
+2026-08-29, confirmed by literal substring match; catalog claims re-derived
+from `data/sources/openrouter-models/latest.json` (2026-08-28, 388 rows).
 
-**Verified by fetching:**
+- **The licence, checked against the licence document rather than a model card
+  or an encyclopedia.** `huggingface.co/moonshotai/Kimi-K3/raw/main/LICENSE` is
+  3,065 bytes and titled "Kimi K3 License". §2 defines "Model as a Service" and
+  requires a separate agreement with Moonshot AI where "the aggregate revenue of
+  the Licensee and its affiliates exceeds 20 million US dollars ... in total
+  over any consecutive 12 months". §3 requires "Kimi K3" to be displayed
+  prominently above "more than 100 million monthly active users, or more than 20
+  million US dollars ... in monthly revenue". The `license` fact states both
+  conditions with the right numbers and calls neither a revenue share. Neither
+  "%" nor "revenue share" occurs anywhere in the file. The fact is accurate.
+  (Note for a later pass: a search for the literal "100 million monthly active
+  users" returns false because the licence wraps the line between "100 million"
+  and "monthly active users". That is a line break, not an absence.)
+- `huggingface.co/moonshotai/Kimi-K3`: "It is a 2.8T-parameter model"; the
+  parameter table carries "104B". `huggingface.co/moonshotai/Kimi-K2.5`:
+  "Activated Parameters 32B" and "... are released under the Modified MIT
+  License". Both transcluded K2.5 facts and K3's `parameters` hold.
+- 2.8T/1T = 2.8 ("nearly three"), 104B/32B = 3.25 ("just over three", "grew
+  faster still"). Exact, and both are ratios over `volatility: static` facts,
+  so they cannot rot.
+- `openrouter.ai/moonshotai/kimi-k3`: "Released ... Jul 16, 2026" confirms
+  `listed_date`; the page describes "a 2.8T parameter open-weight multimodal
+  reasoning model from Moonshot AI", matching the timeline event's wording.
+- 2026-07-16 → 2026-08-31 is 46 days exactly. k2.5's `expiration_date` is
+  2026-08-31 and both rows are live in the 2026-08-28 snapshot, so "both rows
+  are live in this catalog at once" is true as scoped. Index 59.7 against 36.0
+  is anchored to "the same snapshot". All seven transclusions resolve.
 
-- huggingface.co/moonshotai/Kimi-K3 — "Total Parameters 2.8T", "Activated
-  Parameters 104B" (MoE, 16 of 896 experts per token). The `parameters` fact
-  is exact.
-- huggingface.co/moonshotai/Kimi-K2.5 — "Both the code repository and the
-  model weights are released under the Modified MIT License"; 1T total, 32B
-  activated. Both transcluded K2.5 facts hold.
-- openrouter.ai/moonshotai/kimi-k3 — listing date "Jul 16, 2026", context
-  1,048,576, described as "a 2.8T parameter open-weight multimodal reasoning
-  model from Moonshot AI". `listed_date` and the timeline event both hold.
+Round 1 (r9-opus) found: the `license` fact claimed a "revenue-sharing clause"
+the licence does not contain — fixed, and I confirmed the replacement against
+the document itself before reading the record; the 46-day claim inferred that
+both models were live on *Moonshot's own platform* from an OpenRouter listing
+date — fixed, now narrowed to "live in this catalog"; and the endpoint-not-model
+passage restated `model/moonshotai-kimi-k2-5`'s payload — trimmed to a
+subordinate clause, though it remains the least original sentence on the page.
 
-**The defect — the licence fact is wrong.** The entry's `license` value reads
-"Kimi K3 License — bespoke, with a **revenue-sharing clause** for large
-inference providers", cited to the Hugging Face page. I fetched the actual
-licence at huggingface.co/moonshotai/Kimi-K3/raw/main/LICENSE. It contains no
-revenue share of any kind. It contains two different conditions:
-
-- §2, a **separate-agreement** trigger: "the aggregate revenue of the Licensee
-  and its affiliates exceeds 20 million US dollars (or the equivalent in other
-  currencies) in total over any consecutive 12 months" — above which the
-  licensee must negotiate a separate agreement with Moonshot AI before
-  commercial use.
-- §3, a **UI-branding** requirement at "more than 100 million monthly active
-  users, or more than 20 million US dollars (or equivalent in other
-  currencies) in monthly revenue" — above which "Kimi K3" must be displayed
-  prominently in the product interface.
-
-Asked directly whether any percentage revenue share exists, the licence text
-returns none. "Revenue-sharing" is a paraphrase into wrongness of a
-negotiate-separately threshold, and it is a legal claim on the page. Replace
-the value with the two real conditions and their real numbers.
-
-**Verified by measurement:**
-
-- 2.8T/1T = 2.8 ("nearly three") and 104B/32B = 3.25 ("just over three"). Both
-  exact, and both are ratios over `static` facts, so they cannot rot.
-- 2026-07-16 → 2026-08-31 is **46 days**. Exact. It is also the complement of
-  the sibling page's arithmetic (216 − 170), which is internally consistent.
-- Intelligence index 59.7 on K3 against 36 on K2.5; K2.5 `expiration_date`
-  2026-08-31. Paragraph three anchors explicitly to "the same snapshot", which
-  the rest of this batch mostly fails to do.
-- All seven transclusions resolve, including
-  `model/moonshotai-kimi-k2-5#api_sunset`.
-
-**Two smaller things to fix.** (1) The 46-day window runs from an *OpenRouter
-listing date* to a *Moonshot platform* sunset, but the conclusion drawn is
-"both were live on Moonshot's own platform at once" — which the OpenRouter
-listing does not establish. Either source K3's availability on Moonshot's own
-platform or narrow the claim to the catalog. (2) The second half of paragraph
-two — that what ends is the hosted endpoint and not the model, because the
-weights stay downloadable — restates `model/moonshotai-kimi-k2-5`'s closing
-paragraph, which is that page's payload and what its own review record singled
-out. Trim it to a clause.
-
-The piece deliberately cedes the licence angle to `org/moonshot-ai` and takes
-scale instead, which is the right call and genuinely different; the org page's
-parameter figures serve a comparison against Claude Opus 5, this one against
-the model's own predecessor. The payload is real. Fix the licence value, the
-platform inference and the restated clause. Revise.
+One line I argued with, and record as a weakness rather than a defect: the
+opener, "Scale, not the licence, is the plainest thing that changed". The
+licence did change materially — K2.5 ships a 1,465-byte Modified MIT with an
+attribution clause only, K3 a bespoke 3,065-byte licence adding a
+separate-agreement gate for large hosts — and the reader most likely to be here
+is the one migrating off K2.5, for whom that gate is the operative fact. Round 1
+endorsed ceding the licence angle to `org/moonshot-ai`, and the entry's own
+facts table carries the real terms, so the page asserts nothing false and the
+spec's rule against restating a table in prose cuts in its favour. Worth
+flagging that the ceded angle now depends on a neighbour whose licence
+paragraph was itself rewritten after its approval (`addictedtoai-zlq`), so
+whoever holds that page should confirm the contrast still lands somewhere.

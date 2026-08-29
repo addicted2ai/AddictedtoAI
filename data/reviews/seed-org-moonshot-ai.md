@@ -1,82 +1,96 @@
 ---
 job: seed-org-moonshot-ai
-verdict: approve
-reasons: []
+verdict: revise
+reasons:
+  - false-or-unsupported-claim
+  - spec-violation
 would-cite: >-
-  The licence paragraph is the citable evidence that "open weights" has
-  become a spectrum — a 30%-above-US$20M revenue-share clause mirrored by
-  Qwen's above-US$50M, documented across two labs — and the
-  January-flagship-sunset-in-August arithmetic is the number for arguments
-  about how fast a trillion-parameter release now depreciates.
-reviewer: task-6.5 seed reviewer (fresh invocation, no authorship of any seed content); delta review by a separate fresh invocation (no authorship of the entry or its revision)
-date: 2026-08-28
+  The Kimi K3 licence reading here is correct and rare — the file sets no fee and
+  never says "revenue share", so the widely-repeated 30% belongs to the separate
+  commercial agreement, not the licence — but the very next sentence repeats that
+  same error against Alibaba, so the page cannot yet be handed to someone
+  arguing about Chinese-lab licence terms.
+reviewer: rr4b
+date: 2026-08-29
 ---
 
-Checklist: wiki entry. Sources fetched, catalog claims measured against
-`data/sources/openrouter-models/latest.json` (2026-08-28, 388 rows).
+Round 2, sealed. Findings written before opening round 1. Sources fetched
+2026-08-29, confirmed by literal substring match against raw bytes on disk.
 
-**Verified by fetching:**
-- en.wikipedia.org/wiki/Moonshot_AI — confirms founded March 2023, Haidian
-  district HQ, US$35B valuation (30 July 2026 round), and "K3's custom
-  license requires revenue sharing of up to 30% for inference providers
-  generating over US$20 million annually."
-- huggingface.co/moonshotai/Kimi-K3 — confirms "released under the Kimi K3
-  License" (a custom licence file, not MIT), Total Parameters 2.8T,
-  Activated Parameters 104B.
-- huggingface.co/moonshotai/Kimi-K2.5 — confirms "Both the code repository
-  and the model weights are released under the Modified MIT License."
-- platform.kimi.ai/docs/models — confirms verbatim: "Following the Kimi K3
-  launch, kimi-k2.5 and the moonshot-v1 series are no longer available to
-  newly registered users (full platform sunset on August 31)", with kimi-k3
-  as the directed migration.
-- en.wikipedia.org/wiki/Qwen — confirms the transcluded Alibaba fact:
-  revenue sharing required from providers generating more than US$50
-  million annually. The two-lab pattern claim is therefore supported on
-  both legs.
-- siliconangle.com 2026/01/27 — confirms the 27 January 2026 K2.5 release
-  and 1T parameters, but see the required change.
+**Verified — and the central claim holds. This is the good part.**
 
-**Verified by measurement:**
-- Exactly seven `moonshotai/` rows, spanning `kimi-k2` (2025-07-11) to
-  `kimi-k3` (2026-07-16).
-- `kimi-k2.5` expiration_date 2026-08-31 in the feed (transcluded, not a
-  literal). Jan 27 → Aug 31 is seven months of vendor hosting, as written.
-- `kimi-k3` ctx 1048576, II 59.7; `anthropic/claude-opus-5` II 63.1 is the
-  highest intelligence_index among all 388 rows (measured: the top five are
-  opus-5 and its batch row at 63.1, fable-5 and batch at 62.1, gpt-5.6-sol
-  at 60.9) — "the highest-scoring row in the snapshot" is exact.
-- Transclusions resolve; aliases sane.
+- huggingface.co/moonshotai/Kimi-K3 `LICENSE` (3,065 b, read in full): it has
+  **exactly five numbered sections**, so "its five sections" is right. §2 requires
+  a MaaS operator above "20 million US dollars … over any consecutive 12 months"
+  to "enter into a separate agreement with Moonshot AI"; §3 requires "Kimi K3" to
+  be "prominently displayed" above 100M MAU or US$20M monthly revenue. Both
+  transcluded facts are accurate.
+- **"It sets no fee and takes no percentage, and the words 'revenue share' appear
+  nowhere in its five sections" — verified at byte level.** No "revenue share", no
+  percentage figure, and the `%` character does not occur anywhere in the file.
+- en.wikipedia.org/wiki/Moonshot_AI carries the contradiction described in the
+  brief, and I found both halves: the lead says "K3's custom license requires
+  revenue sharing of up to 30%" (**false** against the file), while the body says
+  "must enter a commercial agreement with Moonshot with revenue sharing of up to
+  30%" (**true**). The entry's fact tracks the **body**, and the prose says so
+  explicitly — "a claim about the commercial agreement, not a term of the
+  licence". That is the correct half, correctly labelled, and it is the reason
+  this page would be worth having.
+- Kimi K2.5 `LICENSE`: titled "Modified MIT License", display clause only —
+  `predecessor_license_condition` exact. Seven `moonshotai/` rows, `kimi-k2`
+  2025-07-11 → `kimi-k3` 2026-07-16. K2.5 listed 2026-01-27, `expiration_date`
+  2026-08-31 (transcluded) — "seven months" is arithmetic. Opus 5 at 63.1 is the
+  top intelligence index in the snapshot. Founded March 2023, Haidian district,
+  US$35 billion (July 2026) all confirmed.
 
-**Required change (the revise):**
-1. `false-or-unsupported-claim` — the timeline entry "2026-01-27 — Kimi
-   K2.5 released with published weights under a Modified MIT License" cites
-   only the SiliconANGLE article, which does not mention any licence
-   (fetched and asked directly: "The article contains no reference to a
-   Modified MIT License or any specific license type"). The claim itself is
-   true — the Hugging Face model card confirms it — so the fix is to cite
-   the HF page for the licence clause (or drop the licence words from this
-   timeline event; the body's licence sentence can rest on the HF source).
-   A true claim cited to a source that does not support it is still a
-   sourcing defect under the entry checklist.
+**DEFECT 1 — `false-or-unsupported-claim`, and it is the same error the piece was
+edited to remove, one sentence later.** "Alibaba Cloud attaches a comparable
+condition to its larger Qwen releases — {{fact:org/alibaba-cloud#license_revenue_share}}
+— so metered commerce on published weights is a pattern across at least two
+Chinese labs rather than one lab's experiment." That fact renders as "revenue
+sharing required from providers generating more than US$50 million annually". I
+fetched the actual Qwen3.8-Max License (3,390 b, read in full): §2 requires the
+licensee to "obtain a separate license from Qwen" above US$50,000,000 of
+twelve-month revenue. It requires **no revenue sharing**, names no percentage, and
+the `%` character does not appear in it. The fact is faithful to Wikipedia's Qwen
+article — "Larger versions often a revenue sharing agreement from providers
+generating more than US$50 million annually" — and false against the licence.
+*Faithful and false are not exclusive.* The dependent inference fails with it:
+neither licence meters anything, so "metered commerce … across at least two
+Chinese labs" is unsupported. Both documents withhold permission pending a
+separate agreement — which is exactly the distinction this entry draws so well one
+paragraph earlier, and then drops. The corpus's own blog post gets it right ("a
+separate agreement at twenty million dollars a year, a separate licence at fifty
+million").
 
-Everything else held. The closing arithmetic — a January flagship sunset in
-August — is the piece's real contribution and survives measurement.
+**DEFECT 2 — `spec-violation`, a volatile value typed rather than bound.** "with a
+million-token context window" for `moonshotai/kimi-k3`, whose feed
+`context_length` is 1,048,576 at `volatility: fast`. `model/moonshotai-kimi-k3`
+**does** declare a `context_window` fact, so the transclusion was available and was
+not used. This is one of the two rules the brief asked me to re-check.
 
-## Delta review (commit 6ba8b3b only) — approve
+Round 1 (the task-6.5 seed reviewer) approved, with one required change — the
+2026-01-27 timeline row citing SiliconANGLE for a licence the article never
+mentions. That is **fixed**: the row now cites the Hugging Face page, whose card
+carries the Modified MIT statement.
 
-The named finding is fixed exactly as the first pass prescribed: the
-2026-01-27 timeline row's source_url now points at
-https://huggingface.co/moonshotai/Kimi-K2.5. Fetched it and matched the
-substring myself — the card's License section states verbatim: "Both the
-code repository and the model weights are released under the Modified MIT
-License." The licence claim now rests on a source that carries it.
+**A round-one finding I now believe was wrong, in the permissive direction.**
+Round 1 wrote: "en.wikipedia.org/wiki/Qwen — confirms the transcluded Alibaba
+fact … **The two-lab pattern claim is therefore supported on both legs.**" It
+verified faithfulness to Wikipedia and stopped, without opening the licence.
+Round 1's own `would-cite` embeds the error twice over ("a 30%-above-US$20M
+revenue-share **clause** mirrored by Qwen's above-US$50M"). The root cause is not
+in this entry at all: `org/alibaba-cloud#license_revenue_share` is a bad fact,
+sourced to Wikipedia, and it will keep publishing wherever it is transcluded until
+that entry is corrected. **That is the fix worth making site-wide, and it should
+be filed against `org/alibaba-cloud` regardless of what happens to this body.**
 
-Residual, recorded but not blocking: the HF card does not state the
-27 January release date anywhere in its text (the repo's embedded createdAt
-metadata is 2026-01-01; the card's citation year is 2026). The date itself
-was fetch-verified in the first pass against the SiliconANGLE article and
-stands in this record; but the row's single cited source now supports the
-licence and the published weights, not the specific day. The first pass's
-own prescribed remedy created this trade, so it is not held against the
-revision — a maintenance pass could re-anchor the date if the row is ever
-re-touched.
+I want to be plain about the call, because it is the closest in my slice and the
+body does not get another round. This is **one false sentence on an otherwise
+excellent page**, not a rotten core — three and a half of four paragraphs are
+verified correct, and the licence disentangling is work I would want published. I
+withhold approval anyway: it is a false statement about what a licence requires,
+on a page whose entire authority is having read a licence properly, and approving
+it would repeat round one's mistake of accepting a Wikipedia-faithful,
+licence-false claim. The stub keeps every verified fact, including the correctly
+attributed 30%. Revise.

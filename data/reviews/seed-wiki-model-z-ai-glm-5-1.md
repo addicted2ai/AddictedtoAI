@@ -1,65 +1,70 @@
 ---
 job: seed-wiki-model-z-ai-glm-5-1
-verdict: reject
-reasons:
-  - false-or-unsupported-claim
+verdict: approve
+reasons: []
 would-cite: >-
-  Nobody could cite this for what it claims to settle — that GLM-5.1 was the
-  first downloadable row in the GLM-5 line — because the feed it cites records
-  Hugging Face weights for z-ai/glm-5 two months earlier, and this site's own
-  Z.ai org entry says so in as many words.
-reviewer: r9-opus
-date: 2026-08-28
+  Someone assuming a point release buys you more room: four main-line GLM
+  releases across six months all published 204,800 tokens, this row roughly
+  doubled the input price for that unchanged envelope, and ten weeks later
+  GLM-5.2 shipped 1,048,576 tokens for less money than this row charges.
+reviewer: rr1b
+date: 2026-08-29
 ---
 
-Checklist: wiki model entry. Sources fetched 2026-08-28; catalog claims
-measured against `data/sources/openrouter-models/latest.json` (2026-08-28,
-388 rows).
+Round 2, sealed. Findings written before opening round 1. This body is a
+different thesis from the one round 1 rejected, so I verified it from scratch
+against `data/sources/openrouter-models/latest.json` (snapshot 2026-08-28, 388
+rows) and re-fetched the model card on 2026-08-29.
 
-**Verified by fetching:**
+- The plateau: `context_length` 204800 on glm-4.6, glm-4.7, glm-5 and glm-5.1.
+  glm-4.5 was 131072, so 4.6 really is where it starts. The rows sitting
+  between them in time — glm-4.6v, glm-4.7-flash, glm-5-turbo, glm-5v-turbo —
+  are not main line, so "four consecutive main-line GLM releases" survives the
+  obvious objection. (`top_provider.context_length` varies across these rows;
+  the transcluded field is `context_length`, which does not.)
+- Dates, all from `created`: glm-4.6 2025-09-30, glm-4.7 2025-12-22, glm-5
+  2026-02-11, glm-5.1 2026-04-07, glm-5.2 2026-06-16. "from 30 September 2025
+  to 7 April 2026" exact; "listed 11 February 2026" exact; glm-5 → 5.1 is 55
+  days, so "eight weeks later" is right; 5.1 → 5.2 is **exactly 70 days**, so
+  "ten weeks after this row" is exact rather than rounded.
+- Price: 0.00000126 / 0.0000006 = **2.10**. "roughly double ... in the same
+  snapshot" is an anchored approximation, not a typed ratio.
+- "the largest single step anywhere in the GLM line" — true on either reading,
+  which is why I checked both: absolute, 204800 → 1048576 is +843,776 against
+  a next-largest +262,144 (5.2 → 5.3); by ratio, 5.12x against a next-largest
+  1.5625x (4.5 → 4.6).
+- glm-5.2 input 0.00000119 against this row's 0.00000126 — it does sit below,
+  and the entry states direction only rather than typing the gap.
+- Artificial Analysis intelligence_index 41 here, 52.6 on 5.2.
+- "This row is the last one that asked more money for the old envelope": no
+  z-ai row after 2026-04-07 lists a ~200k window, and among the rows that do,
+  this one is the priciest (glm-5-turbo and glm-5v-turbo are 0.0000012 and
+  both predate it).
+- https://huggingface.co/zai-org/GLM-5.1: the card carries "754B params"
+  verbatim in its Model size field, and the licence is the tag `mit`, present
+  both as `"license":"mit"` in the card data and as "License: mit" in the
+  sidebar. Recording the method so a later pass does not "correct" a correct
+  fact: the literal string `MIT` in capitals does **not** appear in that page;
+  rendering the SPDX identifier in caps is a formatting convention, not a
+  claim about the source.
 
-- huggingface.co/zai-org/GLM-5.1 — license badge reads "mit" and the card
-  reads "754B params". Both cited facts (`license: MIT`, `parameters: 754B
-  total`) are supported by the page they cite.
+Round 1 (r9-opus) rejected the previous body outright: its organising premise
+— that glm-5 carried no Hugging Face listing and that this row was the first
+in the GLM-5 line with weights to download — was falsified by one field lookup
+(`z-ai/glm-5` reads `hugging_face_id: "zai-org/GLM-5"`), and the site's own
+z-ai org entry said so. It also flagged "released a month earlier" (it is 55
+days) and an overstated borrowing about shrinking x-ai context windows. That
+verdict called for a rewrite on a different thesis rather than a revision, and
+that is what happened: the download premise is gone entirely, "eight weeks" is
+now correct, and the x-ai sentence is gone. The one paragraph round 1 marked
+as worth salvaging — the largest context jump in the line, with the
+intelligence index rising alongside rather than trading against it — survives
+and is now the page's closing move rather than an aside. **All fixed, nothing
+new introduced.**
 
-**Falsified by measurement — the piece's opening premise:**
-
-- "`z-ai/glm-5` ... carries no Hugging Face listing in the catalog's feed at
-  all" is **false**. In the cited snapshot `z-ai/glm-5` reads
-  `hugging_face_id: "zai-org/GLM-5"`. The rows in the Z.ai set that carry no
-  weights are `z-ai/glm-5-turbo` and `z-ai/glm-5v-turbo`, both of which read
-  an empty string, not `glm-5`.
-- "It is the first row in the GLM-5 line with anything to download" is
-  therefore **false** as well. `z-ai/glm-5` (created 2026-02-11) predates this
-  row (created 2026-04-07) and carries weights.
-- The site contradicts itself on this exact point. `content/wiki/org/z-ai.md`
-  states: "`z-ai/glm-5`, listed 11 February 2026, **carries a Hugging Face
-  id**". The org entry is right and this body is wrong; one of the two must
-  change, and it is this one.
-- "released a month earlier" is wrong: 2026-02-11 → 2026-04-07 is **55 days**.
-  The org entry's own timeline dates GLM-5 to 2026-02-12 and GLM-5.1 to
-  2026-04-07, which is also not "a month".
-
-**Measured and true — the material worth salvaging:**
-
-- Context window 204800 on this row → 1048576 on `z-ai/glm-5.2`, a factor of
-  5.12, and 5.2 is genuinely the next point release (created 2026-06-16,
-  70 days later — "two months later" is fair).
-- That 5.12x is the largest context jump anywhere in the GLM line: 4.6→4.7 and
-  4.7→5 are flat at 204800, and 5.2→5.3 is 1048576→1310720, only 1.25x. The
-  superlative "grew fastest" is measured and correct.
-- Intelligence index 41 → 52.6 across the same pair. True.
-
-**Overstated:** "the catalog's SpaceXAI rows show a context window shrinking
-release over release across 2026" — measured, x-ai runs 2,000,000 (4.20) →
-1,000,000 (4.3) → 500,000 (4.5) → 500,000 (4.6). The last step is flat, not
-shrinking. Also this sentence borrows `org/spacexai`'s central finding.
-
-Two of the three paragraphs rest on a premise the cited feed falsifies, and
-the falsification is one field lookup away in the file the piece is built on.
-The one sound paragraph — the 5.12x context jump being the largest in the
-line, with the intelligence index rising alongside it rather than trading
-against it — is a real finding, but it is a paragraph, not a page, and the
-"first row with weights to download" frame that organises everything around it
-has to go entirely. That is a rewrite with a different thesis, not a revision.
-Reject.
+It clears the bar as it stands. The new thesis is a better one than the old:
+six months of an unmoved window with a price that doubled anyway, then the
+envelope breaking and getting cheaper in the same step, is a shape a reader
+cannot see from any single row and would not guess. Every volatile value is
+transcluded and the two comparisons that are not — "roughly double", "sits
+below" — are anchored to the named snapshot or stated as direction only.

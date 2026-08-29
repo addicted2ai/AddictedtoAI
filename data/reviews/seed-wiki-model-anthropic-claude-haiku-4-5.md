@@ -1,64 +1,61 @@
 ---
 job: seed-wiki-model-anthropic-claude-haiku-4-5
-verdict: revise
-reasons:
-  - false-or-unsupported-claim
+verdict: approve
+reasons: []
 would-cite: >-
-  Someone insisting that the million-token context window is now table stakes
-  across a whole vendor's lineup would be corrected here: Anthropic's cheap
-  tier still ships the same 200k ceiling Claude 3 Haiku had in March 2024,
-  and it is the only current Anthropic tier that never moved.
-reviewer: r8-opus
-date: 2026-08-28
+  Someone reading Anthropic's 200k Haiku ceiling as a deliberate house policy
+  for the cheap tier: the listing dates put Haiku 4.5 between the two
+  million-token jumps — 146 days after Sonnet, 112 days before Opus — so it is
+  a row nobody has returned to rather than a decision taken against a standard.
+reviewer: rr5b
+date: 2026-08-29
 ---
 
-Checklist: model entry, no cited URLs — every claim is feed arithmetic.
-Recomputed against `data/sources/openrouter-models/latest.json`
-(snapshot 2026-08-28, 388 rows) with a script; all 28 Anthropic rows
-enumerated rather than sampled.
+Round 2, sealed. Findings written before opening round 1. Claims re-derived
+2026-08-29 from `data/sources/openrouter-models/latest.json` (snapshot
+2026-08-28, 388 rows) with my own script, enumerating all 28 Anthropic rows
+rather than sampling.
 
-**Verified:**
-- "Every other current Anthropic tier runs at a million-token context
-  window": the current row of each tier is haiku-4.5 (200000), sonnet-5
-  (1000000), opus-5 (1000000), fable-5 (1000000). True on the natural
-  reading of "current tier". The other sub-1M Anthropic rows are all
-  superseded (claude-3-haiku, opus-4, 4.1, 4.5) or `:batch` variants of the
-  same, so nothing current contradicts it.
-- haiku-4.5 `context_length` 200000, identical to claude-3-haiku's 200000,
-  and those are the only two Haiku rows in the feed — so "nothing about the
-  Haiku line's context window has moved since" is exhaustively true, not
-  true-of-a-sample.
-- claude-3-haiku carries no `intelligence_index` — "no recorded benchmark
-  index at all" holds.
-- sonnet-4 1000000 vs opus-4 200000 is exactly a fifth.
-- **The fifteen-minute claim is real.** sonnet-4 created
-  2025-05-22T16:12:51Z, opus-4 created 2025-05-22T16:27:25Z — 14.57 minutes
-  apart. I checked this expecting it to be the invented detail; it is exact.
-- Opus "caught up at 4.6": 4.6 is the first Opus row at 1000000, and 4.7,
-  4.8 and opus-5 all hold it.
-- All 6 transclusions resolve; every volatile value is bound.
+- haiku-4.5 `context_length` 200000; claude-3-haiku 200000 — "the same
+  ceiling" is exact. claude-3-haiku carries no `benchmarks` key at all, so
+  "no recorded benchmark index at all" is true of the whole object, not just
+  of one index.
+- The Haiku line is exactly three rows (claude-3-haiku, haiku-4.5,
+  haiku-4.5:batch), all at 200000, so "nothing about the Haiku line's context
+  window has moved since" is exhaustive rather than sampled.
+- sonnet-4 created 2025-05-22T16:12:51Z at 1000000; opus-4 created
+  2025-05-22T16:27:25Z at 200000. Gap 14.57 minutes → "within fifteen minutes"
+  holds with no rounding in its favour, and "essentially the same day" holds.
+- haiku-4.5 created 2025-10-15T17:00:38Z: 146.03 days after sonnet-4 ("146
+  days") and 111.94 days — exactly 112 calendar days — before opus-4.6 on
+  2026-02-04 ("112 days before ... 4 February 2026"). Both intervals check.
+- opus-4.6 is the first Opus row at 1000000 and every later Opus row (4.7,
+  4.7-fast, 4.8, 4.8-fast, 5, 5-fast) holds it → "held there ever since".
+- Listed after haiku-4.5: Opus 4.5, 4.6, 4.7, 4.8 and 5 (five revisions),
+  Sonnet 4.6 and 5 (two), Fable 5 (one), and no Haiku. The closing count is
+  right, and it is anchored to "the snapshot of 28 August 2026".
+- "Every other current Anthropic tier runs at a million" is true of each
+  tier's newest row (sonnet-5, opus-5, fable-5 all 1000000). Superseded rows
+  at 200k still list, so the sentence leans on "current"; that reading is the
+  natural one and the rest of the paragraph supports it.
+- All five transclusions resolve.
 
-**The defect — final sentence:**
-- "Haiku, released later than either jump, is the tier that never got one."
-  Half of this is false, and it is the load-bearing half. haiku-4.5 was
-  listed 2025-10-15T17:00:38Z. The Opus jump to 1M happened on
-  **claude-opus-4.6, created 2026-02-04T15:30:50Z** — roughly three and a
-  half months *after* Haiku 4.5 shipped, not before it. Haiku 4.5 was not
-  "released later than either jump"; it was released later than one of them
-  and earlier than the other. The sentence's rhetorical force — Anthropic had
-  already moved every other tier and declined to move this one — is not
-  supported by the dates.
-- The fix is small and makes the observation stronger, not weaker: Haiku 4.5
-  landed *between* the two jumps and has sat at 200k through the Opus jump
-  and two Sonnet releases since without being refreshed. The interesting fact
-  is the ten-month silence after the jump, not a false ordering.
-- Related wording to tighten while there: "Sonnet has run at 1M since at
-  least sonnet-4" is correctly hedged, because there is no earlier Sonnet row
-  in the feed — which means there is no observable Sonnet *jump* at all, and
-  "either jump" promises two events where the data shows one.
+Round 1 (r8-opus) found: the closing sentence "Haiku, released later than
+either jump, is the tier that never got one" reversed a checkable ordering,
+since the Opus jump came three and a half months *after* Haiku 4.5 — fixed;
+and "either jump" promised two observable jumps where the feed shows only one,
+Sonnet having never been below a million — fixed. The closing paragraph now
+says Haiku 4.5 "landed in between" and gives both intervals, and paragraph two
+now states outright that only one of the two tiers actually climbed. The
+replacement is the stronger observation r8 predicted it would be.
 
-The piece clears the bar on payload — "Haiku is the only current Anthropic
-tier still at 200k, and has been since March 2024" is a real assembled
-finding an enthusiast would not have to hand, and the 14-minute listing gap
-is the kind of detail only this site's data can produce. It fails on a
-checkable date ordering in its closing sentence. Worth saving; revise.
+It clears the bar as it stands: the 14-minute listing gap and the
+146/112-day sandwich are findings only this site's data produces, and every
+one of them survived independent recomputation. One clause to note rather than
+to fail on — "a fifth of the size" is a ratio between two `volatility: fast`
+transclusions and is not anchored to the snapshot date. It is exact today
+(1,000,000 / 200,000), round one checked it and let it stand, and the sentence
+is pinned to a dated launch event with both numbers rendering inside it, so a
+future feed change would contradict itself visibly rather than silently. It is
+the one clause I would anchor if there were a third round; it is not worth the
+body.
