@@ -36,10 +36,28 @@ facts:
     source_url: "https://huggingface.co/moonshotai/Kimi-K3"
     accessed: "2026-08-28"
     volatility: slow
-  - field: flagship_license_revenue_share
+  - field: flagship_license_commercial_trigger
     source: cited
-    value: "up to 30% revenue share for inference providers generating over US$20 million annually"
+    value: "a separate agreement with Moonshot AI, required before commercial use once a Model-as-a-Service operator's revenue passes US$20 million over any consecutive 12 months"
+    source_url: "https://huggingface.co/moonshotai/Kimi-K3/blob/main/LICENSE"
+    accessed: "2026-08-28"
+    volatility: slow
+  - field: flagship_license_attribution_trigger
+    source: cited
+    value: "the Kimi K3 name displayed prominently in the interface of any product above 100 million monthly active users or US$20 million in monthly revenue"
+    source_url: "https://huggingface.co/moonshotai/Kimi-K3/blob/main/LICENSE"
+    accessed: "2026-08-28"
+    volatility: slow
+  - field: flagship_negotiated_revenue_share
+    source: cited
+    value: "up to 30% revenue sharing in the commercial agreement that hosters above the threshold must negotiate"
     source_url: "https://en.wikipedia.org/wiki/Moonshot_AI"
+    accessed: "2026-08-28"
+    volatility: slow
+  - field: predecessor_license_condition
+    source: cited
+    value: "one modification to MIT — the Kimi K2.5 name displayed prominently in the interface of any product above 100 million monthly active users or US$20 million in monthly revenue"
+    source_url: "https://huggingface.co/moonshotai/Kimi-K2.5/blob/main/LICENSE"
     accessed: "2026-08-28"
     volatility: slow
   - field: flagship_parameters
@@ -67,18 +85,28 @@ mentions:
 ---
 
 Moonshot's weights are still published; the terms attached to them are not
-what they were. Kimi K2.5 shipped in January 2026 under a Modified MIT
-License — download it, serve it, sell it. Kimi K3, listed on 16 July, comes
-under a document called the
-[Kimi K3 License](https://huggingface.co/moonshotai/Kimi-K3), and it is not a
-standard one: it requires
-{{fact:org/moonshot-ai#flagship_license_revenue_share}}. The weights are
-open. The commerce around them is metered, and only above a threshold that
-no hobbyist and few startups will reach. Moonshot is not alone in this:
-Alibaba Cloud attaches a comparable condition to its larger Qwen releases —
-{{fact:org/alibaba-cloud#license_revenue_share}} — so a metered-commerce
-clause on published weights is now a pattern across at least two Chinese
-labs rather than one lab's experiment.
+what they were, though the shift is narrower than the headline version of it.
+Kimi K2.5 shipped in January 2026 under a Modified MIT License carrying
+exactly one condition:
+{{fact:org/moonshot-ai#predecessor_license_condition}}. Kimi K3, listed on
+16 July, comes under a bespoke document, the
+[Kimi K3 License](https://huggingface.co/moonshotai/Kimi-K3/blob/main/LICENSE).
+It keeps that credit requirement almost verbatim —
+{{fact:org/moonshot-ai#flagship_license_attribution_trigger}} — and adds a
+second that bites a far smaller company first:
+{{fact:org/moonshot-ai#flagship_license_commercial_trigger}}.
+
+What the licence does not contain is a price. It sets no fee and takes no
+percentage, and the words "revenue share" appear nowhere in its five
+sections; above the threshold it withholds permission rather than charging
+for it, and sends the licensee away to negotiate. What that negotiation
+costs is not public. Reporting puts it at
+{{fact:org/moonshot-ai#flagship_negotiated_revenue_share}} — a claim about
+the commercial agreement, not a term of the licence. Alibaba Cloud attaches
+a comparable condition to its larger Qwen releases —
+{{fact:org/alibaba-cloud#license_revenue_share}} — so metered commerce on
+published weights is a pattern across at least two Chinese labs rather than
+one lab's experiment.
 
 The thing being licensed is large enough to explain the interest.
 `moonshotai/kimi-k3` publishes at
