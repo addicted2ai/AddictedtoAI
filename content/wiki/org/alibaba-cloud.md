@@ -53,6 +53,43 @@ timeline:
     source_url: "https://en.wikipedia.org/wiki/Qwen"
 mentions:
   - model/qwen-qwen3-8-max
+  - model/qwen-qwen3-8-2-4t-a95b
   - model/qwen-qwen3-8-27b
+  - model/qwen-qwen3-8-flash
+  - model/qwen-qwen3-7-flash
   - model/qwen-qwen3-7-max
 ---
+
+Qwen tells you its licence in the model's name, and it has never once broken
+the rule. Alibaba Cloud has 52 rows in the OpenRouter snapshot of 28 August
+2026, second only to OpenAI's 58. Seventeen carry no Hugging Face id — and
+every one of those seventeen is named `max`, `plus` or `flash`. The other
+thirty-five are named by parameter count, and every one of them publishes
+weights. Not a single `max` row is downloadable; not a single
+parameter-named row is withheld. The tier vocabulary Alibaba uses for
+marketing is doing double duty as the open-source policy, which means you
+can settle the question about any Qwen model without opening its page.
+
+That makes the pair listed in August worth reading together.
+`qwen/qwen3.8-max` went up on 3 August 2026 as the closed flagship of the
+series. Nine days later Alibaba listed `qwen/qwen3.8-2.4t-a95b`, described
+on its own page as
+["the open-weight variant of Qwen3.8 Max"](https://openrouter.ai/qwen/qwen3.8-2.4t-a95b)
+— 95 billion active parameters out of 2.4 trillion — at
+{{fact:model/qwen-qwen3-8-2-4t-a95b#price_input}} for input, the same figure
+the closed row carries at {{fact:model/qwen-qwen3-8-max#price_input}}, with a
+marginally larger window:
+{{fact:model/qwen-qwen3-8-2-4t-a95b#context_window}} against
+{{fact:model/qwen-qwen3-8-max#context_window}}. Publishing the weights of the
+flagship cost the hosted flagship nothing on the price sheet, which is not
+how the trade-off is usually described.
+
+The tier names hold still; what they cost does not. `qwen/qwen3.7-flash`,
+listed 27 July 2026, lists at {{fact:model/qwen-qwen3-7-flash#price_input}}.
+Its successor `qwen/qwen3.8-flash`, listed 26 August, lists at
+{{fact:model/qwen-qwen3-8-flash#price_input}} — in the 28 August 2026
+snapshot, five times as much thirty days later, on the tier whose whole name
+is a promise about cost. Both are
+closed, both take text, images and video, and both advertise the same
+window, so the increase is not paying for a longer context or a new
+modality.

@@ -25,6 +25,11 @@ facts:
     feed: openrouter-models
     path: context_length
     volatility: fast
+  - field: expiration_date
+    source: feed
+    feed: openrouter-models
+    path: expiration_date
+    volatility: fast
   - field: status
     source: feed
     feed: openrouter-models
