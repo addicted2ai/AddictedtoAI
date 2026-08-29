@@ -6,10 +6,10 @@
     "confirm_after_failures": 2,
     "declined": 0,
     "drifted": 0,
-    "due": 140,
+    "due": 115,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 6,
+    "redirected": 8,
     "total": 339
   },
   "listings": [
@@ -307,7 +307,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/lm-studio.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "lm-studio",
       "state": "ok",
       "url": "https://lmstudio.ai/"
@@ -320,7 +320,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/ollama.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "ollama",
       "state": "ok",
       "url": "https://ollama.com/"
@@ -346,7 +346,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/openrouter.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "openrouter",
       "state": "ok",
       "url": "https://openrouter.ai/"
@@ -541,6 +541,30 @@
       "last_checked": "2026-08-29",
       "meta_refresh": null,
       "url": "https://huggingface.co/tencent/hy-mt2-7b",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/wiki/concept/model-context-protocol.md"
+      ],
+      "final_url": "https://modelcontextprotocol.io/docs/2026-07-28/learn/versioning",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-29",
+      "meta_refresh": null,
+      "url": "https://modelcontextprotocol.io/specification/versioning",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/wiki/event/dartmouth-workshop.md"
+      ],
+      "final_url": "https://ojs.aaai.org/aimagazine/index.php/aimagazine/article/download/1911/1809",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-29",
+      "meta_refresh": null,
+      "url": "https://ojs.aaai.org/aimagazine/index.php/aimagazine/article/view/1911/1809",
       "verdict_recorded": true
     }
   ],
