@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 476,
+  "count": 569,
   "docs": [
     {
       "u": "/blog/reference-urls-that-still-return-200",
@@ -16,6 +16,46 @@
       "u": "/blog/same-catalog-same-day",
       "t": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
       "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/seven-open-licences-seven-lines",
+      "t": "Open weights, read line by line: seven licences, and no two draw the same line",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/three-definitions-of-a-knowledge-cutoff",
+      "t": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/twelve-months-of-model-retirements",
+      "t": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/beating-poker-professionals",
+      "t": "No-limit poker",
+      "k": "delta",
       "d": null,
       "s": null,
       "i": null,
@@ -43,6 +83,16 @@
       "b": false
     },
     {
+      "u": "/impossible-routine/competitive-programming",
+      "t": "Competitive programming",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/impossible-routine/context-window",
       "t": "How much a model reads at once",
       "k": "delta",
@@ -53,8 +103,68 @@
       "b": false
     },
     {
+      "u": "/impossible-routine/diabetic-eye-screening",
+      "t": "Diabetic eye screening",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/impossible-routine/driverless-rides",
       "t": "A car with nobody in it",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/face-verification",
+      "t": "Face verification",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/fine-tuning-on-one-gpu",
+      "t": "Fine-tuning on one GPU",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/generating-songs",
+      "t": "A whole song, generated",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/google-proof-questions",
+      "t": "Google-proof questions",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/grandmaster-chess",
+      "t": "Grandmaster chess",
       "k": "delta",
       "d": null,
       "s": null,
@@ -83,8 +193,48 @@
       "b": false
     },
     {
+      "u": "/impossible-routine/machine-checked-proofs",
+      "t": "Machine-checked proofs",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/model-on-a-phone",
+      "t": "A capable model in a phone",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/impossible-routine/open-frontier-weights",
       "t": "Frontier weights you can download",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/price-of-a-million-tokens",
+      "t": "The price of a million tokens",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/professional-level-go",
+      "t": "Professional-level Go",
       "k": "delta",
       "d": null,
       "s": null,
@@ -113,6 +263,16 @@
       "b": false
     },
     {
+      "u": "/impossible-routine/reading-handwriting",
+      "t": "Reading handwriting",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/impossible-routine/resolving-github-issues",
       "t": "Real bugs in real repositories",
       "k": "delta",
@@ -133,6 +293,16 @@
       "b": false
     },
     {
+      "u": "/impossible-routine/training-imagenet",
+      "t": "Training ImageNet",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/impossible-routine/translation-between-languages",
       "t": "Translation at human accuracy",
       "k": "delta",
@@ -143,8 +313,28 @@
       "b": false
     },
     {
+      "u": "/impossible-routine/using-a-computer",
+      "t": "Real work on a real desktop",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/impossible-routine/video-with-sound",
       "t": "Video with sound from a sentence",
+      "k": "delta",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/impossible-routine/voice-conversation",
+      "t": "Conversation at speaking speed",
       "k": "delta",
       "d": null,
       "s": null,
@@ -183,6 +373,16 @@
       "b": false
     },
     {
+      "u": "/learn/what-a-benchmark-measures",
+      "t": "What a benchmark measures, and what it does not",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/learn/what-a-model-is",
       "t": "What a model is, and what it is not",
       "k": "learn",
@@ -193,8 +393,98 @@
       "b": false
     },
     {
+      "u": "/learn/what-an-agent-is",
+      "t": "What an agent is, mechanically",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/learn/what-safety-training-changes",
+      "t": "What safety training changes, and what it leaves in place",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/learn/why-context-is-not-memory",
+      "t": "Why context is not memory",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/learn/why-models-are-confidently-wrong",
+      "t": "Why a model is confidently wrong",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/learn/why-the-same-request-gives-different-answers",
+      "t": "Why the same request gives different answers",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/tools/aider",
       "t": "Aider",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/argilla",
+      "t": "Argilla",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/axolotl",
+      "t": "Axolotl",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/browser-use",
+      "t": "browser-use",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/chroma",
+      "t": "Chroma",
       "k": "tool",
       "d": null,
       "s": null,
@@ -223,8 +513,28 @@
       "b": false
     },
     {
+      "u": "/tools/crewai",
+      "t": "CrewAI",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/tools/cursor",
       "t": "Cursor",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/deepgram",
+      "t": "Deepgram",
       "k": "tool",
       "d": null,
       "s": null,
@@ -253,8 +563,38 @@
       "b": false
     },
     {
+      "u": "/tools/fireworks-ai",
+      "t": "Fireworks AI",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/tools/groq-cloud",
       "t": "GroqCloud",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/guardrails-ai",
+      "t": "Guardrails AI",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/helicone",
+      "t": "Helicone",
       "k": "tool",
       "d": null,
       "s": null,
@@ -295,6 +635,16 @@
     {
       "u": "/tools/llama-cpp",
       "t": "llama.cpp",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/llamafile",
+      "t": "llamafile",
       "k": "tool",
       "d": null,
       "s": null,
@@ -353,6 +703,26 @@
       "b": false
     },
     {
+      "u": "/tools/promptfoo",
+      "t": "promptfoo",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/promptlayer",
+      "t": "PromptLayer",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/tools/qdrant",
       "t": "Qdrant",
       "k": "tool",
@@ -373,8 +743,28 @@
       "b": false
     },
     {
+      "u": "/tools/ultralytics",
+      "t": "Ultralytics",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/tools/unsloth",
       "t": "Unsloth",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tools/unstructured",
+      "t": "Unstructured",
       "k": "tool",
       "d": null,
       "s": null,
@@ -393,6 +783,16 @@
       "b": false
     },
     {
+      "u": "/tools/weights-and-biases",
+      "t": "Weights & Biases",
+      "k": "tool",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/tutorials/browser-embeddings-no-server",
       "t": "Run a sentence-embedding model in the browser, with no server and no API key",
       "k": "tutorial",
@@ -403,8 +803,38 @@
       "b": false
     },
     {
+      "u": "/tutorials/chat-template-is-not-the-model",
+      "t": "Two mirrors of Llama 3.1 ship identical weights and different prompts, and one tells the model it is July 2024",
+      "k": "tutorial",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tutorials/model-file-header-range-requests",
+      "t": "Read what is actually inside a 4.9 GB model file by downloading 0.16% of it",
+      "k": "tutorial",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
       "u": "/tutorials/openrouter-catalog-watch",
       "t": "Watch the OpenRouter model catalog change, with no key and no dependencies",
+      "k": "tutorial",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/tutorials/tokenizer-tax-measured",
+      "t": "Three models advertise 131,072 tokens of context. In Tamil they hold 98k, 120k and 387k characters.",
       "k": "tutorial",
       "d": null,
       "s": null,
@@ -425,6 +855,32 @@
       "b": false
     },
     {
+      "u": "/wiki/concept/chain-of-thought",
+      "t": "Chain-of-thought prompting",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/chain-of-thought",
+      "a": [
+        "Chain of thought",
+        "CoT"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/distillation",
+      "t": "Distillation",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/distillation",
+      "a": [
+        "Knowledge distillation",
+        "Model distillation"
+      ],
+      "b": false
+    },
+    {
       "u": "/wiki/concept/effective-context-length",
       "t": "Effective context length",
       "k": "entry",
@@ -433,6 +889,71 @@
       "i": "concept/effective-context-length",
       "a": [
         "Effective context"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/embeddings",
+      "t": "Embeddings",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/embeddings",
+      "a": [
+        "Word embeddings",
+        "Vector embeddings",
+        "Embedding"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/emergence",
+      "t": "Emergent abilities",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/emergence",
+      "a": [
+        "Emergent abilities of large language models",
+        "Emergence"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/grokking",
+      "t": "Grokking",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/grokking",
+      "a": [
+        "Delayed generalization"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/hallucination",
+      "t": "Hallucination",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/hallucination",
+      "a": [
+        "Model hallucination",
+        "Confabulation"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/in-context-learning",
+      "t": "In-context learning",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/in-context-learning",
+      "a": [
+        "Few-shot prompting",
+        "ICL"
       ],
       "b": false
     },
@@ -449,6 +970,18 @@
       "b": false
     },
     {
+      "u": "/wiki/concept/model-collapse",
+      "t": "Model collapse",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/model-collapse",
+      "a": [
+        "The curse of recursion"
+      ],
+      "b": false
+    },
+    {
       "u": "/wiki/concept/model-context-protocol",
       "t": "Model Context Protocol",
       "k": "entry",
@@ -457,6 +990,19 @@
       "i": "concept/model-context-protocol",
       "a": [
         "MCP"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/reversal-curse",
+      "t": "The reversal curse",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/reversal-curse",
+      "a": [
+        "The Reversal Curse",
+        "Reversal curse"
       ],
       "b": false
     },
@@ -475,6 +1021,21 @@
       "b": false
     },
     {
+      "u": "/wiki/concept/temperature-and-top-p",
+      "t": "Temperature and top-p",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/temperature-and-top-p",
+      "a": [
+        "Nucleus sampling",
+        "Temperature",
+        "Top-p",
+        "Top-k"
+      ],
+      "b": false
+    },
+    {
       "u": "/wiki/concept/the-bitter-lesson",
       "t": "The Bitter Lesson",
       "k": "entry",
@@ -483,6 +1044,49 @@
       "i": "concept/the-bitter-lesson",
       "a": [
         "bitter lesson"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/tokenization",
+      "t": "Tokenization",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/tokenization",
+      "a": [
+        "Subword tokenization",
+        "Byte pair encoding",
+        "BPE",
+        "Glitch token"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/alpac-report",
+      "t": "The ALPAC Report",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/alpac-report",
+      "a": [
+        "ALPAC report",
+        "ALPAC",
+        "Language and Machines"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/alphafold-casp14",
+      "t": "AlphaFold at CASP14",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/alphafold-casp14",
+      "a": [
+        "CASP14",
+        "AlphaFold 2",
+        "AlphaFold"
       ],
       "b": false
     },
@@ -512,6 +1116,59 @@
       "b": false
     },
     {
+      "u": "/wiki/event/dartmouth-workshop",
+      "t": "Dartmouth Summer Research Project on Artificial Intelligence",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/dartmouth-workshop",
+      "a": [
+        "Dartmouth workshop",
+        "Dartmouth conference",
+        "Dartmouth"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/deep-blue-kasparov",
+      "t": "Deep Blue versus Kasparov",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/deep-blue-kasparov",
+      "a": [
+        "Deep Blue",
+        "Kasparov"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/eliza",
+      "t": "ELIZA",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/eliza",
+      "a": [
+        "the DOCTOR script"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/gpt-2-staged-release",
+      "t": "The GPT-2 Staged Release",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/gpt-2-staged-release",
+      "a": [
+        "GPT-2 staged release",
+        "staged release",
+        "GPT-2"
+      ],
+      "b": false
+    },
+    {
       "u": "/wiki/event/imagenet-2012",
       "t": "ILSVRC 2012",
       "k": "entry",
@@ -522,6 +1179,33 @@
         "ImageNet 2012",
         "SuperVision",
         "AlexNet"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/lighthill-report",
+      "t": "The Lighthill Report",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/lighthill-report",
+      "a": [
+        "Lighthill report",
+        "Lighthill Report",
+        "Lighthill"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/event/stable-diffusion-release",
+      "t": "The Stable Diffusion Release",
+      "k": "entry",
+      "d": "event",
+      "s": "dead",
+      "i": "event/stable-diffusion-release",
+      "a": [
+        "Stable Diffusion public release",
+        "Stable Diffusion"
       ],
       "b": false
     },
@@ -696,7 +1380,7 @@
       "s": "active",
       "i": "model/anthropic-claude-haiku-4-5",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/anthropic-claude-haiku-4-5-batch",
@@ -796,7 +1480,7 @@
       "s": "active",
       "i": "model/anthropic-claude-opus-4-7",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/anthropic-claude-opus-4-7-batch",
@@ -826,7 +1510,7 @@
       "s": "active",
       "i": "model/anthropic-claude-opus-4-8",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/anthropic-claude-opus-4-8-batch",
@@ -1090,7 +1774,7 @@
       "s": "active",
       "i": "model/cohere-command-a",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/cohere-command-r-08-2024",
@@ -1243,7 +1927,7 @@
         "DeepSeek-V4-Flash-0731",
         "deepseek/deepseek-v4-flash-0731"
       ],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/deepseek-deepseek-v4-flash-latest",
@@ -1453,7 +2137,7 @@
       "s": "active",
       "i": "model/google-gemini-3-1-pro-preview",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/google-gemini-3-1-pro-preview-batch",
@@ -1546,7 +2230,7 @@
         "Gemini 3.7 Flash",
         "google/gemini-3.7-flash"
       ],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/google-gemini-3-7-flash-batch",
@@ -1929,7 +2613,7 @@
         "Muse Glimmer 30B",
         "meta/muse-glimmer-30b"
       ],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/meta-muse-spark-1-1",
@@ -2009,7 +2693,7 @@
       "s": "active",
       "i": "model/minimax-minimax-m2",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/minimax-minimax-m2-1",
@@ -2415,7 +3099,7 @@
         "Kimi K3",
         "moonshotai/kimi-k3"
       ],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/moonshotai-kimi-latest",
@@ -2875,7 +3559,7 @@
       "s": "active",
       "i": "model/openai-gpt-5-4",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/openai-gpt-5-4-image-2",
@@ -2925,7 +3609,7 @@
       "s": "active",
       "i": "model/openai-gpt-5-5",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/openai-gpt-5-5-pro",
@@ -2945,7 +3629,7 @@
       "s": "active",
       "i": "model/openai-gpt-5-6-luna",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/openai-gpt-5-6-luna-pro",
@@ -2969,7 +3653,7 @@
         "openai/gpt-5.6-sol",
         "Sol"
       ],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/openai-gpt-5-6-sol-pro",
@@ -2989,7 +3673,7 @@
       "s": "active",
       "i": "model/openai-gpt-5-6-terra",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/openai-gpt-5-6-terra-pro",
@@ -3699,7 +4383,7 @@
       "s": "active",
       "i": "model/qwen-qwen3-8-27b",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/qwen-qwen3-8-flash",
@@ -4242,7 +4926,7 @@
         "Grok 4.6",
         "x-ai/grok-4.6"
       ],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/x-ai-grok-build-0-1",
@@ -4372,7 +5056,7 @@
       "s": "active",
       "i": "model/z-ai-glm-5-1",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/z-ai-glm-5-2",
@@ -4456,7 +5140,7 @@
         "Qwen",
         "Alibaba"
       ],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/org/anthropic",
@@ -4467,6 +5151,21 @@
       "i": "org/anthropic",
       "a": [
         "Anthropic PBC"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/cohere",
+      "t": "Cohere",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/cohere",
+      "a": [
+        "Cohere Labs",
+        "Cohere For AI",
+        "Command",
+        "North"
       ],
       "b": false
     },
@@ -4511,6 +5210,19 @@
       "b": false
     },
     {
+      "u": "/wiki/org/mistral-ai",
+      "t": "Mistral AI",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/mistral-ai",
+      "a": [
+        "Mistral",
+        "Le Chat"
+      ],
+      "b": false
+    },
+    {
       "u": "/wiki/org/moonshot-ai",
       "t": "Moonshot AI",
       "k": "entry",
@@ -4520,6 +5232,20 @@
       "a": [
         "Moonshot",
         "月之暗面"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/nvidia",
+      "t": "NVIDIA",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/nvidia",
+      "a": [
+        "NVIDIA Corporation",
+        "Nvidia",
+        "Nemotron"
       ],
       "b": false
     },
@@ -4537,6 +5263,19 @@
       "b": false
     },
     {
+      "u": "/wiki/org/perplexity",
+      "t": "Perplexity AI",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/perplexity",
+      "a": [
+        "Perplexity",
+        "Sonar"
+      ],
+      "b": false
+    },
+    {
       "u": "/wiki/org/spacexai",
       "t": "SpaceXAI",
       "k": "entry",
@@ -4546,6 +5285,33 @@
       "a": [
         "xAI",
         "Grok"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/tencent",
+      "t": "Tencent",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/tencent",
+      "a": [
+        "Tencent Hunyuan",
+        "Hunyuan",
+        "腾讯"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/thinking-machines-lab",
+      "t": "Thinking Machines Lab",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/thinking-machines-lab",
+      "a": [
+        "Thinking Machines",
+        "Inkling"
       ],
       "b": false
     },
@@ -4561,7 +5327,20 @@
         "智谱",
         "GLM"
       ],
-      "b": true
+      "b": false
+    },
+    {
+      "u": "/wiki/technique/chain-of-thought-prompting",
+      "t": "Chain-of-thought prompting",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/chain-of-thought-prompting",
+      "a": [
+        "Chain of thought",
+        "CoT"
+      ],
+      "b": false
     },
     {
       "u": "/wiki/technique/direct-preference-optimization",
@@ -4572,6 +5351,33 @@
       "i": "technique/direct-preference-optimization",
       "a": [
         "DPO"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/technique/flash-attention",
+      "t": "FlashAttention",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/flash-attention",
+      "a": [
+        "Flash attention",
+        "IO-aware attention"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/technique/low-rank-adaptation",
+      "t": "Low-Rank Adaptation",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/low-rank-adaptation",
+      "a": [
+        "LoRA",
+        "QLoRA",
+        "Low-rank adapters"
       ],
       "b": false
     },
@@ -4587,6 +5393,48 @@
         "MoE"
       ],
       "b": true
+    },
+    {
+      "u": "/wiki/technique/prompt-tuning",
+      "t": "Prompt tuning",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/prompt-tuning",
+      "a": [
+        "Prefix-Tuning",
+        "Soft prompts"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/technique/proximal-policy-optimization",
+      "t": "Proximal Policy Optimization",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/proximal-policy-optimization",
+      "a": [
+        "PPO",
+        "RLHF",
+        "Reinforcement learning from human feedback"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/technique/pruning",
+      "t": "Pruning",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/pruning",
+      "a": [
+        "Sparsity",
+        "One-shot pruning",
+        "SparseGPT",
+        "Wanda"
+      ],
+      "b": false
     },
     {
       "u": "/wiki/technique/quantization",
@@ -4615,6 +5463,34 @@
       "b": false
     },
     {
+      "u": "/wiki/technique/retrieval-augmented-generation",
+      "t": "Retrieval-Augmented Generation",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/retrieval-augmented-generation",
+      "a": [
+        "Retrieval augmented generation",
+        "RAG"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/technique/rotary-position-embedding",
+      "t": "Rotary Position Embedding",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/rotary-position-embedding",
+      "a": [
+        "Rotary position embeddings",
+        "RoPE",
+        "Position Interpolation",
+        "YaRN"
+      ],
+      "b": false
+    },
+    {
       "u": "/wiki/technique/speculative-decoding",
       "t": "Speculative decoding",
       "k": "entry",
@@ -4627,12 +5503,81 @@
       "b": false
     },
     {
+      "u": "/wiki/technique/structured-generation",
+      "t": "Structured generation",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/structured-generation",
+      "a": [
+        "Constrained decoding",
+        "Guided generation",
+        "Structured Outputs",
+        "JSON mode"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/technique/test-time-scaling",
+      "t": "Test-time scaling",
+      "k": "entry",
+      "d": "technique",
+      "s": "active",
+      "i": "technique/test-time-scaling",
+      "a": [
+        "Test-time compute",
+        "Inference-time scaling",
+        "Budget forcing"
+      ],
+      "b": false
+    },
+    {
       "u": "/wiki/tool/aider",
       "t": "Aider",
       "k": "entry",
       "d": "tool",
       "s": "active",
       "i": "tool/aider",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/argilla",
+      "t": "Argilla",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/argilla",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/axolotl",
+      "t": "Axolotl",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/axolotl",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/browser-use",
+      "t": "browser-use",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/browser-use",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/chroma",
+      "t": "Chroma",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/chroma",
       "a": [],
       "b": true
     },
@@ -4657,12 +5602,32 @@
       "b": true
     },
     {
+      "u": "/wiki/tool/crewai",
+      "t": "CrewAI",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/crewai",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/tool/cursor",
       "t": "Cursor",
       "k": "entry",
       "d": "tool",
       "s": "active",
       "i": "tool/cursor",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/deepgram",
+      "t": "Deepgram",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/deepgram",
       "a": [],
       "b": true
     },
@@ -4687,6 +5652,16 @@
       "b": true
     },
     {
+      "u": "/wiki/tool/fireworks-ai",
+      "t": "Fireworks AI",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/fireworks-ai",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/tool/groq-cloud",
       "t": "GroqCloud",
       "k": "entry",
@@ -4696,6 +5671,26 @@
       "a": [
         "Groq"
       ],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/guardrails-ai",
+      "t": "Guardrails AI",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/guardrails-ai",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/helicone",
+      "t": "Helicone",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/helicone",
+      "a": [],
       "b": true
     },
     {
@@ -4737,6 +5732,16 @@
       "d": "tool",
       "s": "active",
       "i": "tool/llama-cpp",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/llamafile",
+      "t": "llamafile",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/llamafile",
       "a": [],
       "b": true
     },
@@ -4803,6 +5808,26 @@
       "b": true
     },
     {
+      "u": "/wiki/tool/promptfoo",
+      "t": "promptfoo",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/promptfoo",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/promptlayer",
+      "t": "PromptLayer",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/promptlayer",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/tool/qdrant",
       "t": "Qdrant",
       "k": "entry",
@@ -4847,12 +5872,32 @@
       "b": true
     },
     {
+      "u": "/wiki/tool/ultralytics",
+      "t": "Ultralytics",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/ultralytics",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/tool/unsloth",
       "t": "Unsloth",
       "k": "entry",
       "d": "tool",
       "s": "active",
       "i": "tool/unsloth",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/unstructured",
+      "t": "Unstructured",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/unstructured",
       "a": [],
       "b": true
     },
@@ -4866,6 +5911,16 @@
       "a": [
         "PagedAttention"
       ],
+      "b": true
+    },
+    {
+      "u": "/wiki/tool/weights-and-biases",
+      "t": "Weights & Biases",
+      "k": "entry",
+      "d": "tool",
+      "s": "active",
+      "i": "tool/weights-and-biases",
+      "a": [],
       "b": true
     }
   ]

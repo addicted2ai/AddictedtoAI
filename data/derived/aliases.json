@@ -31,6 +31,26 @@
       ]
     },
     {
+      "name": "ALPAC",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/alpac-report",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "ALPAC report",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/alpac-report",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Aider",
       "linkable": false,
       "claimed_by": [
@@ -117,6 +137,36 @@
         {
           "id": "model/allenai-olmo-3-32b-think",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "AlphaFold",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/alphafold-casp14",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "AlphaFold 2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/alphafold-casp14",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "AlphaFold at CASP14",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/alphafold-casp14",
+          "class": "exclusive"
         }
       ]
     },
@@ -521,6 +571,16 @@
       ]
     },
     {
+      "name": "Argilla",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/argilla",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Attention Is All You Need",
       "linkable": false,
       "claimed_by": [
@@ -551,6 +611,26 @@
       ]
     },
     {
+      "name": "Axolotl",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/axolotl",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "BPE",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/tokenization",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Baidu: ERNIE 4.5 VL 424B A47B ",
       "linkable": false,
       "claimed_by": [
@@ -567,6 +647,26 @@
         {
           "id": "model/openrouter-bodybuilder",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Budget forcing",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/test-time-scaling",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Byte pair encoding",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/tokenization",
+          "class": "shared"
         }
       ]
     },
@@ -641,12 +741,60 @@
       ]
     },
     {
+      "name": "CASP14",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/alphafold-casp14",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Chain of thought",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/chain-of-thought",
+          "class": "shared"
+        },
+        {
+          "id": "technique/chain-of-thought-prompting",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Chain-of-thought prompting",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/chain-of-thought",
+          "class": "shared"
+        },
+        {
+          "id": "technique/chain-of-thought-prompting",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Chinchilla scaling",
       "linkable": false,
       "claimed_by": [
         {
           "id": "concept/scaling-laws",
           "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Chroma",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/chroma",
+          "class": "manual"
         }
       ]
     },
@@ -677,6 +825,50 @@
         {
           "id": "model/anthropic-claude-opus-5-batch",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "CoT",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/chain-of-thought",
+          "class": "manual"
+        },
+        {
+          "id": "technique/chain-of-thought-prompting",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Cohere",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/cohere",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Cohere For AI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/cohere",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Cohere Labs",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/cohere",
+          "class": "shared"
         }
       ]
     },
@@ -741,11 +933,51 @@
       ]
     },
     {
+      "name": "Command",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/cohere",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Confabulation",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/hallucination",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Constrained decoding",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/structured-generation",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Continue",
       "linkable": false,
       "claimed_by": [
         {
           "id": "tool/continue",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "CrewAI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/crewai",
           "class": "manual"
         }
       ]
@@ -777,6 +1009,66 @@
         {
           "id": "tool/dspy",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Dartmouth",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/dartmouth-workshop",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Dartmouth Summer Research Project on Artificial Intelligence",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/dartmouth-workshop",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Dartmouth conference",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/dartmouth-workshop",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Dartmouth workshop",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/dartmouth-workshop",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Deep Blue",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/deep-blue-kasparov",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Deep Blue versus Kasparov",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/deep-blue-kasparov",
+          "class": "exclusive"
         }
       ]
     },
@@ -961,6 +1253,26 @@
       ]
     },
     {
+      "name": "Deepgram",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/deepgram",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Delayed generalization",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/grokking",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Direct Preference Optimization",
       "linkable": true,
       "claimed_by": [
@@ -971,11 +1283,31 @@
       ]
     },
     {
+      "name": "Distillation",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/distillation",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Dots Studio: Dots3-Note Preview (free)",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/dots-studio-dots-3-note-preview-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "ELIZA",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/eliza",
           "class": "manual"
         }
       ]
@@ -1011,6 +1343,96 @@
       ]
     },
     {
+      "name": "Embedding",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/embeddings",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Embeddings",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/embeddings",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Emergence",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/emergence",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Emergent abilities",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/emergence",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Emergent abilities of large language models",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/emergence",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Few-shot prompting",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/in-context-learning",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Fireworks AI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/fireworks-ai",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Flash attention",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/flash-attention",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "FlashAttention",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/flash-attention",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Free Models Router",
       "linkable": false,
       "claimed_by": [
@@ -1031,6 +1453,26 @@
       ]
     },
     {
+      "name": "GPT-2",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/gpt-2-staged-release",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "GPT-2 staged release",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/gpt-2-staged-release",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "GPT-5.6 Sol",
       "linkable": true,
       "claimed_by": [
@@ -1047,6 +1489,16 @@
         {
           "id": "model/google-gemini-3-7-flash",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Glitch token",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/tokenization",
+          "class": "shared"
         }
       ]
     },
@@ -1521,6 +1973,16 @@
       ]
     },
     {
+      "name": "Grokking",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/grokking",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Groq",
       "linkable": false,
       "claimed_by": [
@@ -1536,6 +1998,46 @@
       "claimed_by": [
         {
           "id": "tool/groq-cloud",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Guardrails AI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/guardrails-ai",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Guided generation",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/structured-generation",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Hallucination",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/hallucination",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Helicone",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/helicone",
           "class": "manual"
         }
       ]
@@ -1571,6 +2073,16 @@
       ]
     },
     {
+      "name": "Hunyuan",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/tencent",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "IBM: Granite 4.0 Micro",
       "linkable": false,
       "claimed_by": [
@@ -1591,12 +2103,32 @@
       ]
     },
     {
+      "name": "ICL",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/in-context-learning",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "ILSVRC 2012",
       "linkable": true,
       "claimed_by": [
         {
           "id": "event/imagenet-2012",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "IO-aware attention",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/flash-attention",
+          "class": "shared"
         }
       ]
     },
@@ -1611,12 +2143,52 @@
       ]
     },
     {
+      "name": "In-context learning",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/in-context-learning",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Inception: Mercury 2",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/inception-mercury-2",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Inference-time scaling",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/test-time-scaling",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Inkling",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/thinking-machines-lab",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "JSON mode",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/structured-generation",
+          "class": "shared"
         }
       ]
     },
@@ -1637,6 +2209,16 @@
         {
           "id": "concept/kv-cache",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Kasparov",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/deep-blue-kasparov",
+          "class": "manual"
         }
       ]
     },
@@ -1667,6 +2249,16 @@
         {
           "id": "model/moonshotai-kimi-k3",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Knowledge distillation",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/distillation",
+          "class": "shared"
         }
       ]
     },
@@ -1731,6 +2323,56 @@
       ]
     },
     {
+      "name": "Language and Machines",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/alpac-report",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Le Chat",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/mistral-ai",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Lighthill",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/lighthill-report",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Lighthill Report",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/lighthill-report",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Lighthill report",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/lighthill-report",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Ling 3.0 Flash Fin (free)",
       "linkable": false,
       "claimed_by": [
@@ -1767,6 +2409,36 @@
         {
           "id": "tool/llamaindex",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "LoRA",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/low-rank-adaptation",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Low-Rank Adaptation",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/low-rank-adaptation",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Low-rank adapters",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/low-rank-adaptation",
+          "class": "shared"
         }
       ]
     },
@@ -2091,6 +2763,26 @@
       ]
     },
     {
+      "name": "Mistral",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/mistral-ai",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Mistral AI",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/mistral-ai",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Mistral Large",
       "linkable": false,
       "claimed_by": [
@@ -2371,6 +3063,36 @@
       ]
     },
     {
+      "name": "Model collapse",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/model-collapse",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Model distillation",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/distillation",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Model hallucination",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/hallucination",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Moonshot",
       "linkable": false,
       "claimed_by": [
@@ -2511,6 +3233,26 @@
       ]
     },
     {
+      "name": "NVIDIA",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/nvidia",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA Corporation",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/nvidia",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "NVIDIA: Nemotron 3 Nano 30B A3B",
       "linkable": false,
       "claimed_by": [
@@ -2611,6 +3353,16 @@
       ]
     },
     {
+      "name": "Nemotron",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/nvidia",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Nex AGI: Nex-N2-Mini",
       "linkable": false,
       "claimed_by": [
@@ -2637,6 +3389,16 @@
         {
           "id": "technique/quantization",
           "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "North",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/cohere",
+          "class": "manual"
         }
       ]
     },
@@ -2681,6 +3443,26 @@
       ]
     },
     {
+      "name": "Nucleus sampling",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/temperature-and-top-p",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Nvidia",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/nvidia",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "ONNX Runtime Web",
       "linkable": false,
       "claimed_by": [
@@ -2697,6 +3479,16 @@
         {
           "id": "tool/ollama",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "One-shot pruning",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/pruning",
+          "class": "shared"
         }
       ]
     },
@@ -3381,6 +4173,16 @@
       ]
     },
     {
+      "name": "PPO",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/proximal-policy-optimization",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "PagedAttention",
       "linkable": false,
       "claimed_by": [
@@ -3407,6 +4209,26 @@
         {
           "id": "model/perceptron-perceptron-mk1",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Perplexity",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/perplexity",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Perplexity AI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/perplexity",
+          "class": "shared"
         }
       ]
     },
@@ -3496,6 +4318,76 @@
       "claimed_by": [
         {
           "id": "model/poolside-laguna-xs-2-1-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Position Interpolation",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/rotary-position-embedding",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Prefix-Tuning",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/prompt-tuning",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Prompt tuning",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/prompt-tuning",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "PromptLayer",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/promptlayer",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Proximal Policy Optimization",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/proximal-policy-optimization",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Pruning",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/pruning",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "QLoRA",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/low-rank-adaptation",
           "class": "manual"
         }
       ]
@@ -4051,6 +4943,26 @@
       ]
     },
     {
+      "name": "RAG",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/retrieval-augmented-generation",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "RLHF",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/proximal-policy-optimization",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "RLVR",
       "linkable": false,
       "claimed_by": [
@@ -4087,6 +4999,16 @@
         {
           "id": "technique/reinforcement-learning-with-verifiable-rewards",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Reinforcement learning from human feedback",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/proximal-policy-optimization",
+          "class": "shared"
         }
       ]
     },
@@ -4137,6 +5059,66 @@
         {
           "id": "tool/replicate",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Retrieval augmented generation",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/retrieval-augmented-generation",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Retrieval-Augmented Generation",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/retrieval-augmented-generation",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Reversal curse",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/reversal-curse",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "RoPE",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/rotary-position-embedding",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Rotary Position Embedding",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "technique/rotary-position-embedding",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Rotary position embeddings",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/rotary-position-embedding",
+          "class": "shared"
         }
       ]
     },
@@ -4201,11 +5183,31 @@
       ]
     },
     {
+      "name": "Soft prompts",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/prompt-tuning",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Sol",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/openai-gpt-5-6-sol",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Sonar",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/perplexity",
           "class": "manual"
         }
       ]
@@ -4291,6 +5293,26 @@
       ]
     },
     {
+      "name": "SparseGPT",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/pruning",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Sparsity",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/pruning",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Speculative decoding",
       "linkable": true,
       "claimed_by": [
@@ -4307,6 +5329,26 @@
         {
           "id": "technique/speculative-decoding",
           "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Stable Diffusion",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/stable-diffusion-release",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Stable Diffusion public release",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "event/stable-diffusion-release",
+          "class": "exclusive"
         }
       ]
     },
@@ -4331,11 +5373,81 @@
       ]
     },
     {
+      "name": "Structured Outputs",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/structured-generation",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Structured generation",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/structured-generation",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Subword tokenization",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/tokenization",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "SuperVision",
       "linkable": false,
       "claimed_by": [
         {
           "id": "event/imagenet-2012",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Temperature",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/temperature-and-top-p",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Temperature and top-p",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/temperature-and-top-p",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Tencent",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/tencent",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Tencent Hunyuan",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/tencent",
           "class": "shared"
         }
       ]
@@ -4411,12 +5523,52 @@
       ]
     },
     {
+      "name": "Test-time compute",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/test-time-scaling",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Test-time scaling",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/test-time-scaling",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "The Bitter Lesson",
       "linkable": true,
       "claimed_by": [
         {
           "id": "concept/the-bitter-lesson",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "The Reversal Curse",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/reversal-curse",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "The curse of recursion",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/model-collapse",
+          "class": "shared"
         }
       ]
     },
@@ -4447,6 +5599,26 @@
         {
           "id": "model/thedrummer-unslopnemo-12b",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Thinking Machines",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/thinking-machines-lab",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Thinking Machines Lab",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/thinking-machines-lab",
+          "class": "exclusive"
         }
       ]
     },
@@ -4501,12 +5673,42 @@
       ]
     },
     {
+      "name": "Tokenization",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/tokenization",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Tongyi Qianwen",
       "linkable": true,
       "claimed_by": [
         {
           "id": "org/alibaba-cloud",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Top-k",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/temperature-and-top-p",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Top-p",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/temperature-and-top-p",
+          "class": "manual"
         }
       ]
     },
@@ -4521,11 +5723,31 @@
       ]
     },
     {
+      "name": "Ultralytics",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/ultralytics",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Unsloth",
       "linkable": false,
       "claimed_by": [
         {
           "id": "tool/unsloth",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Unstructured",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/unstructured",
           "class": "manual"
         }
       ]
@@ -4551,6 +5773,16 @@
       ]
     },
     {
+      "name": "Vector embeddings",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/embeddings",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Venice: Uncensored",
       "linkable": false,
       "claimed_by": [
@@ -4571,12 +5803,42 @@
       ]
     },
     {
+      "name": "Wanda",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/pruning",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Weights & Biases",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/weights-and-biases",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "WizardLM-2 8x22B",
       "linkable": false,
       "claimed_by": [
         {
           "id": "model/microsoft-wizardlm-2-8x22b",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Word embeddings",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "concept/embeddings",
+          "class": "shared"
         }
       ]
     },
@@ -4616,6 +5878,16 @@
       "claimed_by": [
         {
           "id": "model/xiaomi-mimo-v2-5-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "YaRN",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "technique/rotary-position-embedding",
           "class": "manual"
         }
       ]
@@ -4831,6 +6103,16 @@
       ]
     },
     {
+      "name": "browser-use",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/browser-use",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "deepseek/deepseek-v4-flash-0731",
       "linkable": true,
       "claimed_by": [
@@ -4857,6 +6139,16 @@
         {
           "id": "tool/llama-cpp",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "llamafile",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/llamafile",
+          "class": "manual"
         }
       ]
     },
@@ -4921,11 +6213,41 @@
       ]
     },
     {
+      "name": "promptfoo",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "tool/promptfoo",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "scaling laws",
       "linkable": false,
       "claimed_by": [
         {
           "id": "concept/scaling-laws",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "staged release",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/gpt-2-staged-release",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "the DOCTOR script",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "event/eliza",
           "class": "shared"
         }
       ]
@@ -5006,6 +6328,16 @@
       "claimed_by": [
         {
           "id": "org/deepseek",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "腾讯",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/tencent",
           "class": "shared"
         }
       ]

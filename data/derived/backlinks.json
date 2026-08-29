@@ -2,10 +2,36 @@
   "backlinks": {
     "concept/ai-winter": [
       {
+        "url": "/wiki/event/alpac-report",
+        "title": "The ALPAC Report",
+        "type": "entry",
+        "file": "content/wiki/event/alpac-report.md"
+      },
+      {
         "url": "/wiki/event/imagenet-2012",
         "title": "ILSVRC 2012",
         "type": "entry",
         "file": "content/wiki/event/imagenet-2012.md"
+      },
+      {
+        "url": "/wiki/event/lighthill-report",
+        "title": "The Lighthill Report",
+        "type": "entry",
+        "file": "content/wiki/event/lighthill-report.md"
+      }
+    ],
+    "concept/chain-of-thought": [
+      {
+        "url": "/wiki/concept/emergence",
+        "title": "Emergent abilities",
+        "type": "entry",
+        "file": "content/wiki/concept/emergence.md"
+      },
+      {
+        "url": "/wiki/concept/in-context-learning",
+        "title": "In-context learning",
+        "type": "entry",
+        "file": "content/wiki/concept/in-context-learning.md"
       }
     ],
     "concept/effective-context-length": [
@@ -14,6 +40,106 @@
         "title": "KV cache",
         "type": "entry",
         "file": "content/wiki/concept/kv-cache.md"
+      },
+      {
+        "url": "/wiki/technique/retrieval-augmented-generation",
+        "title": "Retrieval-Augmented Generation",
+        "type": "entry",
+        "file": "content/wiki/technique/retrieval-augmented-generation.md"
+      },
+      {
+        "url": "/wiki/technique/rotary-position-embedding",
+        "title": "Rotary Position Embedding",
+        "type": "entry",
+        "file": "content/wiki/technique/rotary-position-embedding.md"
+      },
+      {
+        "url": "/learn/what-an-agent-is",
+        "title": "What an agent is, mechanically",
+        "type": "learn",
+        "file": "content/learn/what-an-agent-is.md"
+      },
+      {
+        "url": "/learn/why-context-is-not-memory",
+        "title": "Why context is not memory",
+        "type": "learn",
+        "file": "content/learn/why-context-is-not-memory.md"
+      }
+    ],
+    "concept/embeddings": [
+      {
+        "url": "/wiki/concept/tokenization",
+        "title": "Tokenization",
+        "type": "entry",
+        "file": "content/wiki/concept/tokenization.md"
+      }
+    ],
+    "concept/emergence": [
+      {
+        "url": "/wiki/concept/chain-of-thought",
+        "title": "Chain-of-thought prompting",
+        "type": "entry",
+        "file": "content/wiki/concept/chain-of-thought.md"
+      },
+      {
+        "url": "/wiki/concept/grokking",
+        "title": "Grokking",
+        "type": "entry",
+        "file": "content/wiki/concept/grokking.md"
+      },
+      {
+        "url": "/wiki/concept/in-context-learning",
+        "title": "In-context learning",
+        "type": "entry",
+        "file": "content/wiki/concept/in-context-learning.md"
+      }
+    ],
+    "concept/grokking": [
+      {
+        "url": "/wiki/concept/emergence",
+        "title": "Emergent abilities",
+        "type": "entry",
+        "file": "content/wiki/concept/emergence.md"
+      }
+    ],
+    "concept/hallucination": [
+      {
+        "url": "/wiki/concept/reversal-curse",
+        "title": "The reversal curse",
+        "type": "entry",
+        "file": "content/wiki/concept/reversal-curse.md"
+      },
+      {
+        "url": "/wiki/concept/temperature-and-top-p",
+        "title": "Temperature and top-p",
+        "type": "entry",
+        "file": "content/wiki/concept/temperature-and-top-p.md"
+      },
+      {
+        "url": "/wiki/concept/tokenization",
+        "title": "Tokenization",
+        "type": "entry",
+        "file": "content/wiki/concept/tokenization.md"
+      }
+    ],
+    "concept/in-context-learning": [
+      {
+        "url": "/wiki/concept/chain-of-thought",
+        "title": "Chain-of-thought prompting",
+        "type": "entry",
+        "file": "content/wiki/concept/chain-of-thought.md"
+      },
+      {
+        "url": "/wiki/concept/emergence",
+        "title": "Emergent abilities",
+        "type": "entry",
+        "file": "content/wiki/concept/emergence.md"
+      },
+      {
+        "url": "/wiki/concept/reversal-curse",
+        "title": "The reversal curse",
+        "type": "entry",
+        "file": "content/wiki/concept/reversal-curse.md"
       }
     ],
     "concept/kv-cache": [
@@ -22,6 +148,18 @@
         "title": "Effective context length",
         "type": "entry",
         "file": "content/wiki/concept/effective-context-length.md"
+      },
+      {
+        "url": "/wiki/technique/flash-attention",
+        "title": "FlashAttention",
+        "type": "entry",
+        "file": "content/wiki/technique/flash-attention.md"
+      },
+      {
+        "url": "/wiki/technique/rotary-position-embedding",
+        "title": "Rotary Position Embedding",
+        "type": "entry",
+        "file": "content/wiki/technique/rotary-position-embedding.md"
       },
       {
         "url": "/wiki/technique/speculative-decoding",
@@ -40,9 +178,55 @@
         "title": "vLLM",
         "type": "entry",
         "file": "content/wiki/tool/vllm.md"
+      },
+      {
+        "url": "/learn/why-context-is-not-memory",
+        "title": "Why context is not memory",
+        "type": "learn",
+        "file": "content/learn/why-context-is-not-memory.md"
+      },
+      {
+        "url": "/learn/why-the-same-request-gives-different-answers",
+        "title": "Why the same request gives different answers",
+        "type": "learn",
+        "file": "content/learn/why-the-same-request-gives-different-answers.md"
+      }
+    ],
+    "concept/model-context-protocol": [
+      {
+        "url": "/learn/what-an-agent-is",
+        "title": "What an agent is, mechanically",
+        "type": "learn",
+        "file": "content/learn/what-an-agent-is.md"
+      }
+    ],
+    "concept/reversal-curse": [
+      {
+        "url": "/wiki/concept/hallucination",
+        "title": "Hallucination",
+        "type": "entry",
+        "file": "content/wiki/concept/hallucination.md"
       }
     ],
     "concept/scaling-laws": [
+      {
+        "url": "/wiki/concept/emergence",
+        "title": "Emergent abilities",
+        "type": "entry",
+        "file": "content/wiki/concept/emergence.md"
+      },
+      {
+        "url": "/wiki/concept/in-context-learning",
+        "title": "In-context learning",
+        "type": "entry",
+        "file": "content/wiki/concept/in-context-learning.md"
+      },
+      {
+        "url": "/wiki/concept/model-collapse",
+        "title": "Model collapse",
+        "type": "entry",
+        "file": "content/wiki/concept/model-collapse.md"
+      },
       {
         "url": "/wiki/concept/the-bitter-lesson",
         "title": "The Bitter Lesson",
@@ -54,6 +238,18 @@
         "title": "Attention Is All You Need",
         "type": "entry",
         "file": "content/wiki/event/attention-is-all-you-need.md"
+      },
+      {
+        "url": "/wiki/event/gpt-2-staged-release",
+        "title": "The GPT-2 Staged Release",
+        "type": "entry",
+        "file": "content/wiki/event/gpt-2-staged-release.md"
+      },
+      {
+        "url": "/wiki/technique/test-time-scaling",
+        "title": "Test-time scaling",
+        "type": "entry",
+        "file": "content/wiki/technique/test-time-scaling.md"
       },
       {
         "url": "/learn/how-a-language-model-works",
@@ -72,6 +268,12 @@
         "title": "How models are trained, and how they are changed afterwards",
         "type": "learn",
         "file": "content/learn/how-models-are-trained.md"
+      },
+      {
+        "url": "/learn/what-a-benchmark-measures",
+        "title": "What a benchmark measures, and what it does not",
+        "type": "learn",
+        "file": "content/learn/what-a-benchmark-measures.md"
       }
     ],
     "concept/the-bitter-lesson": [
@@ -94,6 +296,12 @@
         "file": "content/wiki/event/alphago-lee-sedol.md"
       },
       {
+        "url": "/wiki/event/deep-blue-kasparov",
+        "title": "Deep Blue versus Kasparov",
+        "type": "entry",
+        "file": "content/wiki/event/deep-blue-kasparov.md"
+      },
+      {
         "url": "/wiki/event/imagenet-2012",
         "title": "ILSVRC 2012",
         "type": "entry",
@@ -106,7 +314,27 @@
         "file": "content/learn/how-models-are-trained.md"
       }
     ],
+    "concept/tokenization": [
+      {
+        "url": "/wiki/concept/embeddings",
+        "title": "Embeddings",
+        "type": "entry",
+        "file": "content/wiki/concept/embeddings.md"
+      },
+      {
+        "url": "/wiki/concept/hallucination",
+        "title": "Hallucination",
+        "type": "entry",
+        "file": "content/wiki/concept/hallucination.md"
+      }
+    ],
     "event/alphago-lee-sedol": [
+      {
+        "url": "/impossible-routine/professional-level-go",
+        "title": "Professional-level Go",
+        "type": "delta",
+        "file": "content/deltas/professional-level-go.md"
+      },
       {
         "url": "/wiki/concept/the-bitter-lesson",
         "title": "The Bitter Lesson",
@@ -140,12 +368,46 @@
         "file": "content/learn/what-a-model-is.md"
       }
     ],
+    "event/dartmouth-workshop": [
+      {
+        "url": "/wiki/event/lighthill-report",
+        "title": "The Lighthill Report",
+        "type": "entry",
+        "file": "content/wiki/event/lighthill-report.md"
+      }
+    ],
+    "event/deep-blue-kasparov": [
+      {
+        "url": "/wiki/event/dartmouth-workshop",
+        "title": "Dartmouth Summer Research Project on Artificial Intelligence",
+        "type": "entry",
+        "file": "content/wiki/event/dartmouth-workshop.md"
+      }
+    ],
     "event/imagenet-2012": [
+      {
+        "url": "/impossible-routine/training-imagenet",
+        "title": "Training ImageNet",
+        "type": "delta",
+        "file": "content/deltas/training-imagenet.md"
+      },
       {
         "url": "/wiki/concept/ai-winter",
         "title": "AI winter",
         "type": "entry",
         "file": "content/wiki/concept/ai-winter.md"
+      },
+      {
+        "url": "/wiki/event/dartmouth-workshop",
+        "title": "Dartmouth Summer Research Project on Artificial Intelligence",
+        "type": "entry",
+        "file": "content/wiki/event/dartmouth-workshop.md"
+      },
+      {
+        "url": "/learn/what-a-benchmark-measures",
+        "title": "What a benchmark measures, and what it does not",
+        "type": "learn",
+        "file": "content/learn/what-a-benchmark-measures.md"
       }
     ],
     "model/all-minilm-l6-v2": [
@@ -157,6 +419,12 @@
       }
     ],
     "model/anthropic-claude-3-haiku": [
+      {
+        "url": "/wiki/model/anthropic-claude-haiku-4-5",
+        "title": "Anthropic: Claude Haiku 4.5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-haiku-4-5.md"
+      },
       {
         "url": "/blog/same-catalog-same-day",
         "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
@@ -176,17 +444,57 @@
         "title": "Anthropic",
         "type": "entry",
         "file": "content/wiki/org/anthropic.md"
+      },
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
+      },
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
+      }
+    ],
+    "model/anthropic-claude-haiku-4-5": [
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
+      }
+    ],
+    "model/anthropic-claude-opus-4": [
+      {
+        "url": "/wiki/model/anthropic-claude-haiku-4-5",
+        "title": "Anthropic: Claude Haiku 4.5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-haiku-4-5.md"
+      }
+    ],
+    "model/anthropic-claude-opus-4-1": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-4-8",
+        "title": "Anthropic: Claude Opus 4.8",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-8.md"
+      },
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
       }
     ],
     "model/anthropic-claude-opus-4-5": [
       {
-        "url": "/wiki/org/anthropic",
-        "title": "Anthropic",
+        "url": "/wiki/model/anthropic-claude-opus-4-8",
+        "title": "Anthropic: Claude Opus 4.8",
         "type": "entry",
-        "file": "content/wiki/org/anthropic.md"
-      }
-    ],
-    "model/anthropic-claude-opus-4-7": [
+        "file": "content/wiki/model/anthropic-claude-opus-4-8.md"
+      },
       {
         "url": "/wiki/org/anthropic",
         "title": "Anthropic",
@@ -194,7 +502,49 @@
         "file": "content/wiki/org/anthropic.md"
       }
     ],
+    "model/anthropic-claude-opus-4-6": [
+      {
+        "url": "/wiki/model/anthropic-claude-haiku-4-5",
+        "title": "Anthropic: Claude Haiku 4.5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-haiku-4-5.md"
+      },
+      {
+        "url": "/wiki/model/anthropic-claude-opus-4-8",
+        "title": "Anthropic: Claude Opus 4.8",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-8.md"
+      }
+    ],
+    "model/anthropic-claude-opus-4-7": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-4-8",
+        "title": "Anthropic: Claude Opus 4.8",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-8.md"
+      },
+      {
+        "url": "/wiki/org/anthropic",
+        "title": "Anthropic",
+        "type": "entry",
+        "file": "content/wiki/org/anthropic.md"
+      }
+    ],
+    "model/anthropic-claude-opus-4-7-fast": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-4-7",
+        "title": "Anthropic: Claude Opus 4.7",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-7.md"
+      }
+    ],
     "model/anthropic-claude-opus-4-8": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-4-7",
+        "title": "Anthropic: Claude Opus 4.7",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-7.md"
+      },
       {
         "url": "/wiki/model/anthropic-claude-opus-5",
         "title": "Claude Opus 5",
@@ -208,12 +558,44 @@
         "file": "content/wiki/org/anthropic.md"
       }
     ],
+    "model/anthropic-claude-opus-4-8-fast": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-4-7",
+        "title": "Anthropic: Claude Opus 4.7",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-7.md"
+      }
+    ],
     "model/anthropic-claude-opus-5": [
+      {
+        "url": "/wiki/model/anthropic-claude-opus-4-7",
+        "title": "Anthropic: Claude Opus 4.7",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-7.md"
+      },
+      {
+        "url": "/wiki/model/anthropic-claude-opus-4-8",
+        "title": "Anthropic: Claude Opus 4.8",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-8.md"
+      },
       {
         "url": "/wiki/org/anthropic",
         "title": "Anthropic",
         "type": "entry",
         "file": "content/wiki/org/anthropic.md"
+      },
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
+      },
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
       }
     ],
     "model/anthropic-claude-opus-5-batch": [
@@ -226,10 +608,78 @@
     ],
     "model/anthropic-claude-opus-5-fast": [
       {
+        "url": "/wiki/model/anthropic-claude-opus-4-7",
+        "title": "Anthropic: Claude Opus 4.7",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-7.md"
+      },
+      {
         "url": "/wiki/model/anthropic-claude-opus-5",
         "title": "Claude Opus 5",
         "type": "entry",
         "file": "content/wiki/model/anthropic-claude-opus-5.md"
+      }
+    ],
+    "model/anthropic-claude-sonnet-4": [
+      {
+        "url": "/wiki/model/anthropic-claude-haiku-4-5",
+        "title": "Anthropic: Claude Haiku 4.5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-haiku-4-5.md"
+      }
+    ],
+    "model/anthropic-claude-sonnet-5": [
+      {
+        "url": "/wiki/model/anthropic-claude-haiku-4-5",
+        "title": "Anthropic: Claude Haiku 4.5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-haiku-4-5.md"
+      },
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
+      }
+    ],
+    "model/cohere-command-a": [
+      {
+        "url": "/wiki/org/cohere",
+        "title": "Cohere",
+        "type": "entry",
+        "file": "content/wiki/org/cohere.md"
+      }
+    ],
+    "model/cohere-command-r-08-2024": [
+      {
+        "url": "/wiki/org/cohere",
+        "title": "Cohere",
+        "type": "entry",
+        "file": "content/wiki/org/cohere.md"
+      }
+    ],
+    "model/cohere-command-r-plus-08-2024": [
+      {
+        "url": "/wiki/org/cohere",
+        "title": "Cohere",
+        "type": "entry",
+        "file": "content/wiki/org/cohere.md"
+      }
+    ],
+    "model/cohere-command-r7b-12-2024": [
+      {
+        "url": "/wiki/org/cohere",
+        "title": "Cohere",
+        "type": "entry",
+        "file": "content/wiki/org/cohere.md"
+      }
+    ],
+    "model/cohere-north-mini-code-free": [
+      {
+        "url": "/wiki/org/cohere",
+        "title": "Cohere",
+        "type": "entry",
+        "file": "content/wiki/org/cohere.md"
       }
     ],
     "model/deepseek-deepseek-r1": [
@@ -238,6 +688,12 @@
         "title": "Competition mathematics",
         "type": "delta",
         "file": "content/deltas/competition-mathematics.md"
+      },
+      {
+        "url": "/impossible-routine/google-proof-questions",
+        "title": "Google-proof questions",
+        "type": "delta",
+        "file": "content/deltas/google-proof-questions.md"
       },
       {
         "url": "/wiki/org/deepseek",
@@ -254,10 +710,28 @@
     ],
     "model/deepseek-deepseek-v4-flash-0731": [
       {
+        "url": "/wiki/model/cohere-command-a",
+        "title": "Cohere: Command A",
+        "type": "entry",
+        "file": "content/wiki/model/cohere-command-a.md"
+      },
+      {
+        "url": "/wiki/model/minimax-minimax-m2",
+        "title": "MiniMax: MiniMax M2",
+        "type": "entry",
+        "file": "content/wiki/model/minimax-minimax-m2.md"
+      },
+      {
         "url": "/wiki/org/deepseek",
         "title": "DeepSeek",
         "type": "entry",
         "file": "content/wiki/org/deepseek.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
       }
     ],
     "model/deepseek-deepseek-v4-flash-latest": [
@@ -282,6 +756,52 @@
         "file": "content/wiki/org/deepseek.md"
       }
     ],
+    "model/google-gemini-2-5-flash-image": [
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
+      }
+    ],
+    "model/google-gemini-3-1-flash-image": [
+      {
+        "url": "/wiki/model/google-gemini-3-1-pro-preview",
+        "title": "Google: Gemini 3.1 Pro Preview",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-1-pro-preview.md"
+      }
+    ],
+    "model/google-gemini-3-1-flash-image-preview": [
+      {
+        "url": "/wiki/model/google-gemini-3-1-pro-preview",
+        "title": "Google: Gemini 3.1 Pro Preview",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-1-pro-preview.md"
+      }
+    ],
+    "model/google-gemini-3-1-flash-lite": [
+      {
+        "url": "/wiki/model/google-gemini-3-1-pro-preview",
+        "title": "Google: Gemini 3.1 Pro Preview",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-1-pro-preview.md"
+      },
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
+      }
+    ],
+    "model/google-gemini-3-1-flash-lite-preview": [
+      {
+        "url": "/wiki/model/google-gemini-3-1-pro-preview",
+        "title": "Google: Gemini 3.1 Pro Preview",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-1-pro-preview.md"
+      }
+    ],
     "model/google-gemini-3-1-pro-preview": [
       {
         "url": "/wiki/model/google-gemini-3-7-flash",
@@ -294,6 +814,22 @@
         "title": "Google DeepMind",
         "type": "entry",
         "file": "content/wiki/org/google-deepmind.md"
+      }
+    ],
+    "model/google-gemini-3-1-pro-preview-batch": [
+      {
+        "url": "/wiki/model/google-gemini-3-1-pro-preview",
+        "title": "Google: Gemini 3.1 Pro Preview",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-1-pro-preview.md"
+      }
+    ],
+    "model/google-gemini-3-1-pro-preview-customtools": [
+      {
+        "url": "/wiki/model/google-gemini-3-1-pro-preview",
+        "title": "Google: Gemini 3.1 Pro Preview",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-1-pro-preview.md"
       }
     ],
     "model/google-gemini-3-5-flash": [
@@ -330,6 +866,12 @@
         "title": "Google DeepMind",
         "type": "entry",
         "file": "content/wiki/org/google-deepmind.md"
+      },
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
       }
     ],
     "model/ibm-granite-granite-4-0-h-micro": [
@@ -354,6 +896,12 @@
         "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
         "type": "post",
         "file": "content/blog/same-catalog-same-day.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
       }
     ],
     "model/meta-muse-glimmer-30b": [
@@ -394,6 +942,14 @@
         "file": "content/wiki/org/meta-superintelligence-labs.md"
       }
     ],
+    "model/mistralai-devstral-2512": [
+      {
+        "url": "/wiki/org/mistral-ai",
+        "title": "Mistral AI",
+        "type": "entry",
+        "file": "content/wiki/org/mistral-ai.md"
+      }
+    ],
     "model/mistralai-mistral-large": [
       {
         "url": "/blog/same-catalog-same-day",
@@ -402,12 +958,64 @@
         "file": "content/blog/same-catalog-same-day.md"
       }
     ],
+    "model/mistralai-mistral-large-2512": [
+      {
+        "url": "/wiki/org/mistral-ai",
+        "title": "Mistral AI",
+        "type": "entry",
+        "file": "content/wiki/org/mistral-ai.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "model/mistralai-mistral-large-2512-batch": [
+      {
+        "url": "/wiki/org/mistral-ai",
+        "title": "Mistral AI",
+        "type": "entry",
+        "file": "content/wiki/org/mistral-ai.md"
+      }
+    ],
+    "model/mistralai-mistral-medium-3-5": [
+      {
+        "url": "/wiki/org/mistral-ai",
+        "title": "Mistral AI",
+        "type": "entry",
+        "file": "content/wiki/org/mistral-ai.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "model/mistralai-mistral-medium-3-5-batch": [
+      {
+        "url": "/wiki/org/mistral-ai",
+        "title": "Mistral AI",
+        "type": "entry",
+        "file": "content/wiki/org/mistral-ai.md"
+      }
+    ],
     "model/mistralai-mistral-nemo": [
       {
         "url": "/blog/same-catalog-same-day",
         "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
         "type": "post",
         "file": "content/blog/same-catalog-same-day.md"
+      }
+    ],
+    "model/mistralai-mistral-small-2603": [
+      {
+        "url": "/wiki/org/mistral-ai",
+        "title": "Mistral AI",
+        "type": "entry",
+        "file": "content/wiki/org/mistral-ai.md"
       }
     ],
     "model/mistralai-mixtral-8x22b-instruct": [
@@ -444,6 +1052,20 @@
         "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
         "type": "post",
         "file": "content/blog/same-catalog-same-day.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "model/moonshotai-kimi-k2-6": [
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
       }
     ],
     "model/moonshotai-kimi-k2-7-code": [
@@ -462,6 +1084,12 @@
     ],
     "model/moonshotai-kimi-k3": [
       {
+        "url": "/wiki/model/minimax-minimax-m2",
+        "title": "MiniMax: MiniMax M2",
+        "type": "entry",
+        "file": "content/wiki/model/minimax-minimax-m2.md"
+      },
+      {
         "url": "/wiki/model/moonshotai-kimi-k2-5",
         "title": "MoonshotAI: Kimi K2.5",
         "type": "entry",
@@ -472,6 +1100,84 @@
         "title": "Moonshot AI",
         "type": "entry",
         "file": "content/wiki/org/moonshot-ai.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "model/nvidia-nemotron-3-5-content-safety-free": [
+      {
+        "url": "/wiki/org/nvidia",
+        "title": "NVIDIA",
+        "type": "entry",
+        "file": "content/wiki/org/nvidia.md"
+      }
+    ],
+    "model/nvidia-nemotron-3-5-lightning": [
+      {
+        "url": "/wiki/org/nvidia",
+        "title": "NVIDIA",
+        "type": "entry",
+        "file": "content/wiki/org/nvidia.md"
+      }
+    ],
+    "model/nvidia-nemotron-3-5-lightning-free": [
+      {
+        "url": "/wiki/org/nvidia",
+        "title": "NVIDIA",
+        "type": "entry",
+        "file": "content/wiki/org/nvidia.md"
+      }
+    ],
+    "model/nvidia-nemotron-3-nano-30b-a3b": [
+      {
+        "url": "/wiki/org/nvidia",
+        "title": "NVIDIA",
+        "type": "entry",
+        "file": "content/wiki/org/nvidia.md"
+      }
+    ],
+    "model/nvidia-nemotron-3-super-120b-a12b": [
+      {
+        "url": "/wiki/org/nvidia",
+        "title": "NVIDIA",
+        "type": "entry",
+        "file": "content/wiki/org/nvidia.md"
+      }
+    ],
+    "model/nvidia-nemotron-3-super-120b-a12b-free": [
+      {
+        "url": "/wiki/org/nvidia",
+        "title": "NVIDIA",
+        "type": "entry",
+        "file": "content/wiki/org/nvidia.md"
+      }
+    ],
+    "model/nvidia-nemotron-3-ultra-550b-a55b": [
+      {
+        "url": "/wiki/org/nvidia",
+        "title": "NVIDIA",
+        "type": "entry",
+        "file": "content/wiki/org/nvidia.md"
+      }
+    ],
+    "model/nvidia-nemotron-3-ultra-550b-a55b-batch": [
+      {
+        "url": "/wiki/org/nvidia",
+        "title": "NVIDIA",
+        "type": "entry",
+        "file": "content/wiki/org/nvidia.md"
+      }
+    ],
+    "model/nvidia-nemotron-3-ultra-550b-a55b-free": [
+      {
+        "url": "/wiki/org/nvidia",
+        "title": "NVIDIA",
+        "type": "entry",
+        "file": "content/wiki/org/nvidia.md"
       }
     ],
     "model/openai-gpt-3-5-turbo": [
@@ -484,10 +1190,22 @@
     ],
     "model/openai-gpt-4": [
       {
+        "url": "/impossible-routine/price-of-a-million-tokens",
+        "title": "The price of a million tokens",
+        "type": "delta",
+        "file": "content/deltas/price-of-a-million-tokens.md"
+      },
+      {
         "url": "/blog/same-catalog-same-day",
         "title": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
         "type": "post",
         "file": "content/blog/same-catalog-same-day.md"
+      },
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
       }
     ],
     "model/openai-gpt-4-1-nano": [
@@ -506,7 +1224,73 @@
         "file": "content/blog/same-catalog-same-day.md"
       }
     ],
+    "model/openai-gpt-4o": [
+      {
+        "url": "/impossible-routine/voice-conversation",
+        "title": "Conversation at speaking speed",
+        "type": "delta",
+        "file": "content/deltas/voice-conversation.md"
+      }
+    ],
+    "model/openai-gpt-5": [
+      {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      },
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
+      }
+    ],
+    "model/openai-gpt-5-1": [
+      {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      }
+    ],
+    "model/openai-gpt-5-2": [
+      {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
+      }
+    ],
+    "model/openai-gpt-5-2-pro": [
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
+      }
+    ],
+    "model/openai-gpt-5-3-codex": [
+      {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      }
+    ],
     "model/openai-gpt-5-4": [
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
+      },
       {
         "url": "/wiki/org/deepseek",
         "title": "DeepSeek",
@@ -520,37 +1304,191 @@
         "file": "content/wiki/org/openai.md"
       }
     ],
+    "model/openai-gpt-5-4-mini": [
+      {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      }
+    ],
+    "model/openai-gpt-5-4-nano": [
+      {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-6-luna",
+        "title": "OpenAI: GPT-5.6 Luna",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-luna.md"
+      }
+    ],
+    "model/openai-gpt-5-4-pro": [
+      {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
+      }
+    ],
     "model/openai-gpt-5-5": [
+      {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-6-sol",
+        "title": "OpenAI: GPT-5.6 Sol",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-sol.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-6-terra",
+        "title": "OpenAI: GPT-5.6 Terra",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-terra.md"
+      },
       {
         "url": "/wiki/org/openai",
         "title": "OpenAI",
         "type": "entry",
         "file": "content/wiki/org/openai.md"
+      }
+    ],
+    "model/openai-gpt-5-5-pro": [
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-6-sol",
+        "title": "OpenAI: GPT-5.6 Sol",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-sol.md"
       }
     ],
     "model/openai-gpt-5-6-luna": [
       {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
+      },
+      {
         "url": "/wiki/model/openai-gpt-5-6-sol",
         "title": "OpenAI: GPT-5.6 Sol",
         "type": "entry",
         "file": "content/wiki/model/openai-gpt-5-6-sol.md"
       },
       {
+        "url": "/wiki/model/openai-gpt-5-6-terra",
+        "title": "OpenAI: GPT-5.6 Terra",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-terra.md"
+      },
+      {
         "url": "/wiki/org/openai",
         "title": "OpenAI",
         "type": "entry",
         "file": "content/wiki/org/openai.md"
+      },
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
       }
     ],
     "model/openai-gpt-5-6-sol": [
       {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-6-luna",
+        "title": "OpenAI: GPT-5.6 Luna",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-luna.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-6-terra",
+        "title": "OpenAI: GPT-5.6 Terra",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-terra.md"
+      },
+      {
         "url": "/wiki/org/openai",
         "title": "OpenAI",
         "type": "entry",
         "file": "content/wiki/org/openai.md"
+      },
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
+      }
+    ],
+    "model/openai-gpt-5-6-sol-pro": [
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-6-sol",
+        "title": "OpenAI: GPT-5.6 Sol",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-sol.md"
       }
     ],
     "model/openai-gpt-5-6-terra": [
+      {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-6-luna",
+        "title": "OpenAI: GPT-5.6 Luna",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-luna.md"
+      },
       {
         "url": "/wiki/model/openai-gpt-5-6-sol",
         "title": "OpenAI: GPT-5.6 Sol",
@@ -562,6 +1500,92 @@
         "title": "OpenAI",
         "type": "entry",
         "file": "content/wiki/org/openai.md"
+      },
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
+      }
+    ],
+    "model/openai-gpt-5-nano": [
+      {
+        "url": "/impossible-routine/price-of-a-million-tokens",
+        "title": "The price of a million tokens",
+        "type": "delta",
+        "file": "content/deltas/price-of-a-million-tokens.md"
+      }
+    ],
+    "model/openai-gpt-oss-120b": [
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "model/openai-o3": [
+      {
+        "url": "/impossible-routine/competitive-programming",
+        "title": "Competitive programming",
+        "type": "delta",
+        "file": "content/deltas/competitive-programming.md"
+      }
+    ],
+    "model/openai-o3-pro": [
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
+      }
+    ],
+    "model/perplexity-sonar": [
+      {
+        "url": "/wiki/org/perplexity",
+        "title": "Perplexity AI",
+        "type": "entry",
+        "file": "content/wiki/org/perplexity.md"
+      }
+    ],
+    "model/perplexity-sonar-deep-research": [
+      {
+        "url": "/wiki/org/perplexity",
+        "title": "Perplexity AI",
+        "type": "entry",
+        "file": "content/wiki/org/perplexity.md"
+      }
+    ],
+    "model/perplexity-sonar-pro": [
+      {
+        "url": "/wiki/org/perplexity",
+        "title": "Perplexity AI",
+        "type": "entry",
+        "file": "content/wiki/org/perplexity.md"
+      }
+    ],
+    "model/perplexity-sonar-pro-search": [
+      {
+        "url": "/wiki/org/perplexity",
+        "title": "Perplexity AI",
+        "type": "entry",
+        "file": "content/wiki/org/perplexity.md"
+      }
+    ],
+    "model/perplexity-sonar-reasoning-pro": [
+      {
+        "url": "/wiki/org/perplexity",
+        "title": "Perplexity AI",
+        "type": "entry",
+        "file": "content/wiki/org/perplexity.md"
+      }
+    ],
+    "model/qwen-qwen3-7-flash": [
+      {
+        "url": "/wiki/org/alibaba-cloud",
+        "title": "Alibaba Cloud",
+        "type": "entry",
+        "file": "content/wiki/org/alibaba-cloud.md"
       }
     ],
     "model/qwen-qwen3-7-max": [
@@ -572,7 +1596,35 @@
         "file": "content/wiki/org/alibaba-cloud.md"
       }
     ],
+    "model/qwen-qwen3-8-2-4t-a95b": [
+      {
+        "url": "/wiki/org/alibaba-cloud",
+        "title": "Alibaba Cloud",
+        "type": "entry",
+        "file": "content/wiki/org/alibaba-cloud.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
     "model/qwen-qwen3-8-27b": [
+      {
+        "url": "/wiki/org/alibaba-cloud",
+        "title": "Alibaba Cloud",
+        "type": "entry",
+        "file": "content/wiki/org/alibaba-cloud.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "model/qwen-qwen3-8-flash": [
       {
         "url": "/wiki/org/alibaba-cloud",
         "title": "Alibaba Cloud",
@@ -582,10 +1634,118 @@
     ],
     "model/qwen-qwen3-8-max": [
       {
+        "url": "/impossible-routine/using-a-computer",
+        "title": "Real work on a real desktop",
+        "type": "delta",
+        "file": "content/deltas/using-a-computer.md"
+      },
+      {
+        "url": "/wiki/model/qwen-qwen3-8-27b",
+        "title": "Qwen: Qwen3.8 27B",
+        "type": "entry",
+        "file": "content/wiki/model/qwen-qwen3-8-27b.md"
+      },
+      {
         "url": "/wiki/org/alibaba-cloud",
         "title": "Alibaba Cloud",
         "type": "entry",
         "file": "content/wiki/org/alibaba-cloud.md"
+      }
+    ],
+    "model/tencent-hunyuan-a13b-instruct": [
+      {
+        "url": "/wiki/org/tencent",
+        "title": "Tencent",
+        "type": "entry",
+        "file": "content/wiki/org/tencent.md"
+      }
+    ],
+    "model/tencent-hy-mt2-1-8b": [
+      {
+        "url": "/wiki/org/tencent",
+        "title": "Tencent",
+        "type": "entry",
+        "file": "content/wiki/org/tencent.md"
+      }
+    ],
+    "model/tencent-hy-mt2-30b-a3b": [
+      {
+        "url": "/wiki/org/tencent",
+        "title": "Tencent",
+        "type": "entry",
+        "file": "content/wiki/org/tencent.md"
+      }
+    ],
+    "model/tencent-hy-mt2-7b": [
+      {
+        "url": "/wiki/org/tencent",
+        "title": "Tencent",
+        "type": "entry",
+        "file": "content/wiki/org/tencent.md"
+      }
+    ],
+    "model/tencent-hy3": [
+      {
+        "url": "/wiki/org/tencent",
+        "title": "Tencent",
+        "type": "entry",
+        "file": "content/wiki/org/tencent.md"
+      }
+    ],
+    "model/tencent-hy3-preview": [
+      {
+        "url": "/wiki/org/tencent",
+        "title": "Tencent",
+        "type": "entry",
+        "file": "content/wiki/org/tencent.md"
+      }
+    ],
+    "model/tencent-hy4-preview": [
+      {
+        "url": "/wiki/org/tencent",
+        "title": "Tencent",
+        "type": "entry",
+        "file": "content/wiki/org/tencent.md"
+      }
+    ],
+    "model/thinkingmachines-inkling": [
+      {
+        "url": "/wiki/org/thinking-machines-lab",
+        "title": "Thinking Machines Lab",
+        "type": "entry",
+        "file": "content/wiki/org/thinking-machines-lab.md"
+      }
+    ],
+    "model/thinkingmachines-inkling-batch": [
+      {
+        "url": "/wiki/org/thinking-machines-lab",
+        "title": "Thinking Machines Lab",
+        "type": "entry",
+        "file": "content/wiki/org/thinking-machines-lab.md"
+      }
+    ],
+    "model/thinkingmachines-inkling-free": [
+      {
+        "url": "/wiki/org/thinking-machines-lab",
+        "title": "Thinking Machines Lab",
+        "type": "entry",
+        "file": "content/wiki/org/thinking-machines-lab.md"
+      }
+    ],
+    "model/thinkingmachines-inkling-small": [
+      {
+        "url": "/wiki/org/thinking-machines-lab",
+        "title": "Thinking Machines Lab",
+        "type": "entry",
+        "file": "content/wiki/org/thinking-machines-lab.md"
+      }
+    ],
+    "model/thinkingmachines-inkling-small-free": [
+      {
+        "url": "/wiki/org/thinking-machines-lab",
+        "title": "Thinking Machines Lab",
+        "type": "entry",
+        "file": "content/wiki/org/thinking-machines-lab.md"
       }
     ],
     "model/x-ai-grok-4-20": [
@@ -609,6 +1769,12 @@
       }
     ],
     "model/x-ai-grok-4-3": [
+      {
+        "url": "/wiki/model/x-ai-grok-4-6",
+        "title": "SpaceXAI: Grok 4.6",
+        "type": "entry",
+        "file": "content/wiki/model/x-ai-grok-4-6.md"
+      },
       {
         "url": "/wiki/org/spacexai",
         "title": "SpaceXAI",
@@ -638,6 +1804,22 @@
         "file": "content/wiki/org/spacexai.md"
       }
     ],
+    "model/z-ai-glm-4-5": [
+      {
+        "url": "/wiki/org/z-ai",
+        "title": "Z.ai",
+        "type": "entry",
+        "file": "content/wiki/org/z-ai.md"
+      }
+    ],
+    "model/z-ai-glm-4-5v": [
+      {
+        "url": "/wiki/org/z-ai",
+        "title": "Z.ai",
+        "type": "entry",
+        "file": "content/wiki/org/z-ai.md"
+      }
+    ],
     "model/z-ai-glm-5": [
       {
         "url": "/wiki/org/z-ai",
@@ -656,13 +1838,61 @@
     ],
     "model/z-ai-glm-5-2": [
       {
+        "url": "/wiki/model/z-ai-glm-5-1",
+        "title": "Z.ai: GLM 5.1",
+        "type": "entry",
+        "file": "content/wiki/model/z-ai-glm-5-1.md"
+      },
+      {
+        "url": "/wiki/org/z-ai",
+        "title": "Z.ai",
+        "type": "entry",
+        "file": "content/wiki/org/z-ai.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "model/z-ai-glm-5-3": [
+      {
+        "url": "/wiki/org/z-ai",
+        "title": "Z.ai",
+        "type": "entry",
+        "file": "content/wiki/org/z-ai.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "model/z-ai-glm-5-3-flash": [
+      {
+        "url": "/wiki/org/z-ai",
+        "title": "Z.ai",
+        "type": "entry",
+        "file": "content/wiki/org/z-ai.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "model/z-ai-glm-5-turbo": [
+      {
         "url": "/wiki/org/z-ai",
         "title": "Z.ai",
         "type": "entry",
         "file": "content/wiki/org/z-ai.md"
       }
     ],
-    "model/z-ai-glm-5-3": [
+    "model/z-ai-glm-5v-turbo": [
       {
         "url": "/wiki/org/z-ai",
         "title": "Z.ai",
@@ -672,34 +1902,130 @@
     ],
     "org/alibaba-cloud": [
       {
+        "url": "/wiki/model/qwen-qwen3-8-27b",
+        "title": "Qwen: Qwen3.8 27B",
+        "type": "entry",
+        "file": "content/wiki/model/qwen-qwen3-8-27b.md"
+      },
+      {
         "url": "/wiki/org/moonshot-ai",
         "title": "Moonshot AI",
         "type": "entry",
         "file": "content/wiki/org/moonshot-ai.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
       }
     ],
     "org/anthropic": [
+      {
+        "url": "/wiki/model/anthropic-claude-haiku-4-5",
+        "title": "Anthropic: Claude Haiku 4.5",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-haiku-4-5.md"
+      },
+      {
+        "url": "/wiki/model/anthropic-claude-opus-4-7",
+        "title": "Anthropic: Claude Opus 4.7",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-7.md"
+      },
+      {
+        "url": "/wiki/model/anthropic-claude-opus-4-8",
+        "title": "Anthropic: Claude Opus 4.8",
+        "type": "entry",
+        "file": "content/wiki/model/anthropic-claude-opus-4-8.md"
+      },
       {
         "url": "/wiki/model/anthropic-claude-opus-5",
         "title": "Claude Opus 5",
         "type": "entry",
         "file": "content/wiki/model/anthropic-claude-opus-5.md"
+      },
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
+      },
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
       }
     ],
     "org/deepseek": [
+      {
+        "url": "/impossible-routine/machine-checked-proofs",
+        "title": "Machine-checked proofs",
+        "type": "delta",
+        "file": "content/deltas/machine-checked-proofs.md"
+      },
+      {
+        "url": "/wiki/concept/distillation",
+        "title": "Distillation",
+        "type": "entry",
+        "file": "content/wiki/concept/distillation.md"
+      },
       {
         "url": "/wiki/model/deepseek-deepseek-v4-flash-0731",
         "title": "DeepSeek: DeepSeek V4 Flash 0731",
         "type": "entry",
         "file": "content/wiki/model/deepseek-deepseek-v4-flash-0731.md"
+      },
+      {
+        "url": "/wiki/model/minimax-minimax-m2",
+        "title": "MiniMax: MiniMax M2",
+        "type": "entry",
+        "file": "content/wiki/model/minimax-minimax-m2.md"
+      },
+      {
+        "url": "/wiki/org/thinking-machines-lab",
+        "title": "Thinking Machines Lab",
+        "type": "entry",
+        "file": "content/wiki/org/thinking-machines-lab.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
       }
     ],
     "org/google-deepmind": [
+      {
+        "url": "/wiki/event/alphafold-casp14",
+        "title": "AlphaFold at CASP14",
+        "type": "entry",
+        "file": "content/wiki/event/alphafold-casp14.md"
+      },
+      {
+        "url": "/wiki/model/google-gemini-3-1-pro-preview",
+        "title": "Google: Gemini 3.1 Pro Preview",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-1-pro-preview.md"
+      },
       {
         "url": "/wiki/model/google-gemini-3-7-flash",
         "title": "Google: Gemini 3.7 Flash",
         "type": "entry",
         "file": "content/wiki/model/google-gemini-3-7-flash.md"
+      },
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
+      },
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
       }
     ],
     "org/meta-superintelligence-labs": [
@@ -708,9 +2034,21 @@
         "title": "Meta: Muse Glimmer 30B",
         "type": "entry",
         "file": "content/wiki/model/meta-muse-glimmer-30b.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
       }
     ],
     "org/moonshot-ai": [
+      {
+        "url": "/wiki/model/minimax-minimax-m2",
+        "title": "MiniMax: MiniMax M2",
+        "type": "entry",
+        "file": "content/wiki/model/minimax-minimax-m2.md"
+      },
       {
         "url": "/wiki/model/moonshotai-kimi-k2-5",
         "title": "MoonshotAI: Kimi K2.5",
@@ -722,14 +2060,98 @@
         "title": "MoonshotAI: Kimi K3",
         "type": "entry",
         "file": "content/wiki/model/moonshotai-kimi-k3.md"
+      },
+      {
+        "url": "/wiki/org/thinking-machines-lab",
+        "title": "Thinking Machines Lab",
+        "type": "entry",
+        "file": "content/wiki/org/thinking-machines-lab.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
       }
     ],
     "org/openai": [
+      {
+        "url": "/wiki/concept/hallucination",
+        "title": "Hallucination",
+        "type": "entry",
+        "file": "content/wiki/concept/hallucination.md"
+      },
+      {
+        "url": "/wiki/event/eliza",
+        "title": "ELIZA",
+        "type": "entry",
+        "file": "content/wiki/event/eliza.md"
+      },
+      {
+        "url": "/wiki/event/gpt-2-staged-release",
+        "title": "The GPT-2 Staged Release",
+        "type": "entry",
+        "file": "content/wiki/event/gpt-2-staged-release.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-4",
+        "title": "OpenAI: GPT-5.4",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-4.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-5",
+        "title": "OpenAI: GPT-5.5",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-5.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-6-luna",
+        "title": "OpenAI: GPT-5.6 Luna",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-luna.md"
+      },
       {
         "url": "/wiki/model/openai-gpt-5-6-sol",
         "title": "OpenAI: GPT-5.6 Sol",
         "type": "entry",
         "file": "content/wiki/model/openai-gpt-5-6-sol.md"
+      },
+      {
+        "url": "/wiki/model/openai-gpt-5-6-terra",
+        "title": "OpenAI: GPT-5.6 Terra",
+        "type": "entry",
+        "file": "content/wiki/model/openai-gpt-5-6-terra.md"
+      },
+      {
+        "url": "/wiki/technique/proximal-policy-optimization",
+        "title": "Proximal Policy Optimization",
+        "type": "entry",
+        "file": "content/wiki/technique/proximal-policy-optimization.md"
+      },
+      {
+        "url": "/wiki/technique/structured-generation",
+        "title": "Structured generation",
+        "type": "entry",
+        "file": "content/wiki/technique/structured-generation.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      },
+      {
+        "url": "/blog/three-definitions-of-a-knowledge-cutoff",
+        "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
+        "type": "post",
+        "file": "content/blog/three-definitions-of-a-knowledge-cutoff.md"
+      },
+      {
+        "url": "/blog/twelve-months-of-model-retirements",
+        "title": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
+        "type": "post",
+        "file": "content/blog/twelve-months-of-model-retirements.md"
       }
     ],
     "org/spacexai": [
@@ -738,17 +2160,115 @@
         "title": "SpaceXAI: Grok 4.6",
         "type": "entry",
         "file": "content/wiki/model/x-ai-grok-4-6.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "org/z-ai": [
+      {
+        "url": "/wiki/model/z-ai-glm-5-1",
+        "title": "Z.ai: GLM 5.1",
+        "type": "entry",
+        "file": "content/wiki/model/z-ai-glm-5-1.md"
+      },
+      {
+        "url": "/blog/seven-open-licences-seven-lines",
+        "title": "Open weights, read line by line: seven licences, and no two draw the same line",
+        "type": "post",
+        "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "technique/chain-of-thought-prompting": [
+      {
+        "url": "/wiki/technique/structured-generation",
+        "title": "Structured generation",
+        "type": "entry",
+        "file": "content/wiki/technique/structured-generation.md"
+      },
+      {
+        "url": "/wiki/technique/test-time-scaling",
+        "title": "Test-time scaling",
+        "type": "entry",
+        "file": "content/wiki/technique/test-time-scaling.md"
       }
     ],
     "technique/direct-preference-optimization": [
+      {
+        "url": "/wiki/technique/proximal-policy-optimization",
+        "title": "Proximal Policy Optimization",
+        "type": "entry",
+        "file": "content/wiki/technique/proximal-policy-optimization.md"
+      },
       {
         "url": "/wiki/technique/reinforcement-learning-with-verifiable-rewards",
         "title": "Reinforcement Learning with Verifiable Rewards",
         "type": "entry",
         "file": "content/wiki/technique/reinforcement-learning-with-verifiable-rewards.md"
+      },
+      {
+        "url": "/learn/what-safety-training-changes",
+        "title": "What safety training changes, and what it leaves in place",
+        "type": "learn",
+        "file": "content/learn/what-safety-training-changes.md"
+      }
+    ],
+    "technique/low-rank-adaptation": [
+      {
+        "url": "/wiki/technique/prompt-tuning",
+        "title": "Prompt tuning",
+        "type": "entry",
+        "file": "content/wiki/technique/prompt-tuning.md"
+      }
+    ],
+    "technique/mixture-of-experts": [
+      {
+        "url": "/learn/why-the-same-request-gives-different-answers",
+        "title": "Why the same request gives different answers",
+        "type": "learn",
+        "file": "content/learn/why-the-same-request-gives-different-answers.md"
       }
     ],
     "technique/quantization": [
+      {
+        "url": "/impossible-routine/fine-tuning-on-one-gpu",
+        "title": "Fine-tuning on one GPU",
+        "type": "delta",
+        "file": "content/deltas/fine-tuning-on-one-gpu.md"
+      },
+      {
+        "url": "/impossible-routine/model-on-a-phone",
+        "title": "A capable model in a phone",
+        "type": "delta",
+        "file": "content/deltas/model-on-a-phone.md"
+      },
+      {
+        "url": "/wiki/concept/distillation",
+        "title": "Distillation",
+        "type": "entry",
+        "file": "content/wiki/concept/distillation.md"
+      },
+      {
+        "url": "/wiki/technique/flash-attention",
+        "title": "FlashAttention",
+        "type": "entry",
+        "file": "content/wiki/technique/flash-attention.md"
+      },
+      {
+        "url": "/wiki/technique/low-rank-adaptation",
+        "title": "Low-Rank Adaptation",
+        "type": "entry",
+        "file": "content/wiki/technique/low-rank-adaptation.md"
+      },
+      {
+        "url": "/wiki/technique/pruning",
+        "title": "Pruning",
+        "type": "entry",
+        "file": "content/wiki/technique/pruning.md"
+      },
       {
         "url": "/wiki/tool/llama-cpp",
         "title": "llama.cpp",
@@ -760,14 +2280,56 @@
         "title": "Ollama",
         "type": "entry",
         "file": "content/wiki/tool/ollama.md"
+      },
+      {
+        "url": "/tutorials/model-file-header-range-requests",
+        "title": "Read what is actually inside a 4.9 GB model file by downloading 0.16% of it",
+        "type": "tutorial",
+        "file": "content/tutorials/model-file-header-range-requests.md"
       }
     ],
     "technique/reinforcement-learning-with-verifiable-rewards": [
+      {
+        "url": "/wiki/concept/chain-of-thought",
+        "title": "Chain-of-thought prompting",
+        "type": "entry",
+        "file": "content/wiki/concept/chain-of-thought.md"
+      },
+      {
+        "url": "/wiki/technique/chain-of-thought-prompting",
+        "title": "Chain-of-thought prompting",
+        "type": "entry",
+        "file": "content/wiki/technique/chain-of-thought-prompting.md"
+      },
       {
         "url": "/wiki/technique/direct-preference-optimization",
         "title": "Direct Preference Optimization",
         "type": "entry",
         "file": "content/wiki/technique/direct-preference-optimization.md"
+      },
+      {
+        "url": "/wiki/technique/proximal-policy-optimization",
+        "title": "Proximal Policy Optimization",
+        "type": "entry",
+        "file": "content/wiki/technique/proximal-policy-optimization.md"
+      },
+      {
+        "url": "/wiki/technique/test-time-scaling",
+        "title": "Test-time scaling",
+        "type": "entry",
+        "file": "content/wiki/technique/test-time-scaling.md"
+      },
+      {
+        "url": "/learn/what-a-benchmark-measures",
+        "title": "What a benchmark measures, and what it does not",
+        "type": "learn",
+        "file": "content/learn/what-a-benchmark-measures.md"
+      },
+      {
+        "url": "/learn/why-models-are-confidently-wrong",
+        "title": "Why a model is confidently wrong",
+        "type": "learn",
+        "file": "content/learn/why-models-are-confidently-wrong.md"
       }
     ],
     "technique/speculative-decoding": [
@@ -782,6 +2344,54 @@
         "title": "vLLM",
         "type": "entry",
         "file": "content/wiki/tool/vllm.md"
+      },
+      {
+        "url": "/learn/why-the-same-request-gives-different-answers",
+        "title": "Why the same request gives different answers",
+        "type": "learn",
+        "file": "content/learn/why-the-same-request-gives-different-answers.md"
+      }
+    ],
+    "technique/test-time-scaling": [
+      {
+        "url": "/wiki/technique/chain-of-thought-prompting",
+        "title": "Chain-of-thought prompting",
+        "type": "entry",
+        "file": "content/wiki/technique/chain-of-thought-prompting.md"
+      }
+    ],
+    "tool/hugging-face-hub": [
+      {
+        "url": "/wiki/event/stable-diffusion-release",
+        "title": "The Stable Diffusion Release",
+        "type": "entry",
+        "file": "content/wiki/event/stable-diffusion-release.md"
+      },
+      {
+        "url": "/tutorials/chat-template-is-not-the-model",
+        "title": "Two mirrors of Llama 3.1 ship identical weights and different prompts, and one tells the model it is July 2024",
+        "type": "tutorial",
+        "file": "content/tutorials/chat-template-is-not-the-model.md"
+      },
+      {
+        "url": "/tutorials/model-file-header-range-requests",
+        "title": "Read what is actually inside a 4.9 GB model file by downloading 0.16% of it",
+        "type": "tutorial",
+        "file": "content/tutorials/model-file-header-range-requests.md"
+      },
+      {
+        "url": "/tutorials/tokenizer-tax-measured",
+        "title": "Three models advertise 131,072 tokens of context. In Tamil they hold 98k, 120k and 387k characters.",
+        "type": "tutorial",
+        "file": "content/tutorials/tokenizer-tax-measured.md"
+      }
+    ],
+    "tool/langchain": [
+      {
+        "url": "/wiki/technique/retrieval-augmented-generation",
+        "title": "Retrieval-Augmented Generation",
+        "type": "entry",
+        "file": "content/wiki/technique/retrieval-augmented-generation.md"
       }
     ],
     "tool/llama-cpp": [
@@ -796,6 +2406,18 @@
         "title": "Ollama",
         "type": "entry",
         "file": "content/wiki/tool/ollama.md"
+      },
+      {
+        "url": "/tutorials/chat-template-is-not-the-model",
+        "title": "Two mirrors of Llama 3.1 ship identical weights and different prompts, and one tells the model it is July 2024",
+        "type": "tutorial",
+        "file": "content/tutorials/chat-template-is-not-the-model.md"
+      },
+      {
+        "url": "/tutorials/model-file-header-range-requests",
+        "title": "Read what is actually inside a 4.9 GB model file by downloading 0.16% of it",
+        "type": "tutorial",
+        "file": "content/tutorials/model-file-header-range-requests.md"
       }
     ],
     "tool/ollama": [
@@ -838,6 +2460,20 @@
         "title": "Watch the OpenRouter model catalog change, with no key and no dependencies",
         "type": "tutorial",
         "file": "content/tutorials/openrouter-catalog-watch.md"
+      },
+      {
+        "url": "/tutorials/tokenizer-tax-measured",
+        "title": "Three models advertise 131,072 tokens of context. In Tamil they hold 98k, 120k and 387k characters.",
+        "type": "tutorial",
+        "file": "content/tutorials/tokenizer-tax-measured.md"
+      }
+    ],
+    "tool/qdrant": [
+      {
+        "url": "/wiki/technique/retrieval-augmented-generation",
+        "title": "Retrieval-Augmented Generation",
+        "type": "entry",
+        "file": "content/wiki/technique/retrieval-augmented-generation.md"
       }
     ],
     "tool/sglang": [
@@ -866,6 +2502,26 @@
         "title": "Run a sentence-embedding model in the browser, with no server and no API key",
         "type": "tutorial",
         "file": "content/tutorials/browser-embeddings-no-server.md"
+      },
+      {
+        "url": "/tutorials/chat-template-is-not-the-model",
+        "title": "Two mirrors of Llama 3.1 ship identical weights and different prompts, and one tells the model it is July 2024",
+        "type": "tutorial",
+        "file": "content/tutorials/chat-template-is-not-the-model.md"
+      },
+      {
+        "url": "/tutorials/tokenizer-tax-measured",
+        "title": "Three models advertise 131,072 tokens of context. In Tamil they hold 98k, 120k and 387k characters.",
+        "type": "tutorial",
+        "file": "content/tutorials/tokenizer-tax-measured.md"
+      }
+    ],
+    "tool/unsloth": [
+      {
+        "url": "/wiki/technique/low-rank-adaptation",
+        "title": "Low-Rank Adaptation",
+        "type": "entry",
+        "file": "content/wiki/technique/low-rank-adaptation.md"
       }
     ],
     "tool/vllm": [
@@ -874,6 +2530,12 @@
         "title": "KV cache",
         "type": "entry",
         "file": "content/wiki/concept/kv-cache.md"
+      },
+      {
+        "url": "/wiki/concept/temperature-and-top-p",
+        "title": "Temperature and top-p",
+        "type": "entry",
+        "file": "content/wiki/concept/temperature-and-top-p.md"
       },
       {
         "url": "/wiki/technique/speculative-decoding",
