@@ -86,5 +86,39 @@
         "result": "20 assertions, 0 failures, against out/ served by scripts/serve-static.mjs on :3212 — one page_view per direct load on 2 pages, matching tid, HTTP 204, plus the client-side click-through carrying the new path"
       }
     ]
+  },
+  "launch": {
+    "date": "2026-08-29",
+    "commit": "9870ffd",
+    "url": "https://www.addictedtoai.net/",
+    "status_json_commit": "9870ffd257de",
+    "status_json_built": "2026-08-29T07:40:39Z",
+    "method": "Pushed after every gate passed, then verified against the LIVE site rather than the push: /status.json returned the pushed commit, / returned 200 carrying the site title, and /wiki/concept/ai-winter rendered. A successful push and a deployed site are different claims.",
+    "gates": {
+      "npm test": "328/328",
+      "npm run build": "exit 0",
+      "verify-launch": "15/15 checks, 119/119 prose pieces approved",
+      "verify-zero-model": "exit 0",
+      "verify-design": "32 checks, 0 failures",
+      "verify-surfaces": "all passed",
+      "measure-payload": "109.3 KB gzipped against a 150 KB budget",
+      "verify-analytics (local)": "20 assertions, 0 failures",
+      "verify-analytics (live)": "20 assertions, 0 failures"
+    }
+  },
+  "analytics_live": {
+    "date": "2026-08-29",
+    "base": "https://www.addictedtoai.net",
+    "measurement_id": "G-KJPHKYL3XL",
+    "pages_tested": [
+      "/",
+      "/wiki/concept/ai-winter",
+      "click-through / → nav link"
+    ],
+    "assertions": 20,
+    "failures": 0,
+    "pass": true,
+    "method": "Playwright/Chromium against the deployed site. Assertions are on captured /g/collect requests and their response status (HTTP 204), never on markup — markup rendering a gtag loader is not evidence that an event was delivered, which is the precise failure mode of the previous site. This also confirms NEXT_PUBLIC_GA_MEASUREMENT_ID is set in the Vercel project: Vercel rebuilds from source on push, so a missing env var would have produced a live build with no analytics while every local check still passed.",
+    "realtime_confirmation": "NOT YET DONE — task 9.4 is the maintainer's: open the GA property, Reports, Realtime, visit the site and click through to a second page, and see at least one active user with both page_views within five minutes. Recorded as absent rather than assumed."
   }
 }
