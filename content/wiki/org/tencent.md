@@ -87,22 +87,27 @@ between two rows from one company inside a fortnight, and it is what a
 purpose-built model looks like next to a general one: a translator does not
 need to hold a codebase in mind.
 
-Tencent's release pattern is preview first, then weights and a price cut.
+Tencent's release pattern is preview first, then weights and a cheaper row.
 `tencent/hy3-preview` went up on 22 April 2026; `tencent/hy3` followed on
-6 July at {{fact:model/tencent-hy3#price_input}} for input against
+6 July, heading at {{fact:model/tencent-hy3#price_input}} for input against
 {{fact:model/tencent-hy3-preview#price_input}} on the preview, which is still
-listed beside it — the generally available row undercutting the preview it
+listed beside it — the generally available row listing below the preview it
 replaced — and Wikipedia records that
-{{fact:org/tencent#open_weight_release}}. The preview is the expensive way to
-use the same generation, and it stays on the shelf after the cheap one
-arrives.
+{{fact:org/tencent#open_weight_release}}. Both are the top listed provider's
+rate for their row rather than necessarily Tencent's own, so this is a gap
+between two listings and not between two prices Tencent set. The preview is
+the expensive way to use the same generation, and it stays on the shelf after
+the cheap one arrives.
 
 `tencent/hy4-preview` is the only one of Tencent's seven rows with no Hugging
 Face id. The other six all have one, `tencent/hy3-preview` included, which
 means Tencent shipped downloadable weights at preview stage last generation
-and has not this time. It is also the only Tencent row priced above a dollar
+and has not this time. It is also the only Tencent row listing above a dollar
 per million output tokens:
 {{fact:model/tencent-hy4-preview#price_output}} against
 {{fact:model/tencent-hy3#price_output}} for the generally available third
-generation. The oldest row in the set, `tencent/hunyuan-a13b-instruct` from
-8 July 2025, is still listed and still carries its weights.
+generation. The first of those is Tencent's own rate — with no published
+weights there is no third party to host the row — while the second is
+whichever provider currently heads a row several other companies also serve.
+The oldest row in the set, `tencent/hunyuan-a13b-instruct` from 8 July 2025,
+is still listed and still carries its weights.

@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 19,
+  "count": 3,
   "items": [
     {
       "detail": "declared row id absent from the latest snapshot; last seen 2026-08-28 — bound facts render last-known values with an as-of date",
@@ -25,135 +25,7 @@
       "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|z-ai/glm-4.5v|status",
       "target": "data/changes.jsonl",
       "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models deepseek/deepseek-v4-flash-0731 price_input: 0.00000006 -> 0.000000045 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|deepseek/deepseek-v4-flash-0731|price_input",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models deepseek/deepseek-v4-flash-0731 price_output: 0.00000012 -> 0.00000009 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|deepseek/deepseek-v4-flash-0731|price_output",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models deepseek/deepseek-v4-flash price_input: 0.0000000868 -> 0.00000008456 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|deepseek/deepseek-v4-flash|price_input",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models deepseek/deepseek-v4-flash price_output: 0.0000001736 -> 0.00000016912 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|deepseek/deepseek-v4-flash|price_output",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models deepseek/deepseek-v4-pro price_input: 0.000000751854 -> 0.000000670596 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|deepseek/deepseek-v4-pro|price_input",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models deepseek/deepseek-v4-pro price_output: 0.000001503708 -> 0.000001341192 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|deepseek/deepseek-v4-pro|price_output",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models meta/muse-glimmer-30b price_input: 0.00000035 -> 0.0000003 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|meta/muse-glimmer-30b|price_input",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models meta/muse-glimmer-30b price_output: 0.0000015 -> 0.0000012 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|meta/muse-glimmer-30b|price_output",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models qwen/qwen3-vl-30b-a3b-instruct price_input: 0.00000013 -> 0.00000015 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|qwen/qwen3-vl-30b-a3b-instruct|price_input",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models qwen/qwen3-vl-30b-a3b-instruct price_output: 0.00000052 -> 0.0000006 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|qwen/qwen3-vl-30b-a3b-instruct|price_output",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models qwen/qwen3.8-2.4t-a95b:batch price_input: 0.000002 -> 0.0000025 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|qwen/qwen3.8-2.4t-a95b:batch|price_input",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models qwen/qwen3.8-2.4t-a95b:batch price_output: 0.000006 -> 0.00000625 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|qwen/qwen3.8-2.4t-a95b:batch|price_output",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models tencent/hy3 price_input: 0.0000000825 -> 0.000000132 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|tencent/hy3|price_input",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models tencent/hy3 price_output: 0.00000033 -> 0.000000528 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|tencent/hy3|price_output",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models ~z-ai/glm-latest price_input: 0.00000125 -> 0.0000012 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|~z-ai/glm-latest|price_input",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
-      "detail": "openrouter-models ~z-ai/glm-latest price_output: 0.0000044 -> 0.000004 on 2026-08-29",
-      "rank": 40,
-      "reason": "uninterpreted-price-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|~z-ai/glm-latest|price_output",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
     }
   ],
-  "total_before_cap": 19
+  "total_before_cap": 3
 }

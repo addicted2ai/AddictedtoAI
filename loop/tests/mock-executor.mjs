@@ -15,7 +15,7 @@
  * outcome tests observe the filesystem; none of them hands the loop a status.
  */
 
-import { writeFileSync, readFileSync, existsSync, appendFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync, appendFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 const [, , mode, promptPath] = process.argv;
@@ -124,6 +124,37 @@ switch (mode) {
     result('done\n\nEdited the registry.\n');
     break;
 
+  // A job that writes the maintainer's brake into its own worktree, alongside
+  // ordinary work so the run is otherwise mergeable. `STOP` is gitignored
+  // (beads addictedtoai-ufu), so `commitAll`'s `git add -A` never stages it and
+  // the branch diff cannot see it — which is why breaker 4 needs a filesystem
+  // companion (beads addictedtoai-59q).
+  case 'writes-stop':
+    write('STOP', 'stopped by a job, which is not a job’s to do\n');
+    write('site-note.md', '# ordinary work, alongside the brake\n');
+    result('done\n\nDid the work.\n');
+    break;
+
+  // The same shape for the loop's own halt: a job that forges a HOLD.md.
+  case 'writes-hold':
+    write('HOLD.md', '# HOLD — written by a job, which is not a job’s to write\n');
+    write('site-note.md', '# ordinary work, alongside the brake\n');
+    result('done\n\nDid the work.\n');
+    break;
+
+  // A job that reaches OUT of its worktree and deletes the Desk's halt at the
+  // repository root — the most self-serving edit a job could make (beads
+  // addictedtoai-ut1). The root is passed as the argument after the prompt file
+  // because a worktree cannot name it otherwise.
+  case 'removes-root-hold': {
+    const root = process.argv[4];
+    const revision = /Revision pass \(one only\)/.test(brief);
+    if (root && existsSync(join(root, 'HOLD.md'))) rmSync(join(root, 'HOLD.md'));
+    write('site-note.md', revision ? '# ordinary work, after clearing the halt\n' : '# ordinary work\n');
+    result('done\n\nCarried on.\n');
+    break;
+  }
+
   // ---- reviewer modes -----------------------------------------------------
   case 'review-approve':
     writeVerdict({ verdict: 'approve', wouldCite: 'A reader arguing that price changes need dating would link this.' });
@@ -183,6 +214,25 @@ switch (mode) {
   case 'review-nothing': // returns without writing a verdict at all
     result('done\n\nI had a look.\n');
     break;
+
+  // Asks for a revision AND writes a HOLD.md at the repository root while it is
+  // running — standing in for the maintainer reaching for the brake mid-job, or
+  // a concurrent process tripping a breaker. `startGate` guarantees no hold
+  // exists when the author run starts, so this is the only way a hold can be
+  // present at the boundary of a job's SECOND invocation, which is the one
+  // window in which "a job removed HOLD.md" is a thing that can be measured.
+  case 'review-revise-and-brake': {
+    const root = process.argv[4];
+    if (root) writeFileSync(join(root, 'HOLD.md'), '# HOLD\n\nthe maintainer is looking at something\n', 'utf8');
+    writeVerdict({
+      verdict: 'revise',
+      reasons: ['intent-not-measurement'],
+      wouldCite: 'Not yet: the note says what it meant to do, not what it did.',
+      notes: 'Name the measurement.',
+    });
+    result('done\n');
+    break;
+  }
 
   // ---- conformance modes --------------------------------------------------
   case 'conform-good': {

@@ -66,19 +66,26 @@ four in the 28 August 2026 snapshot, spanning the six months from
 on, it was not the window.
 
 Some of it went onto the price. `z-ai/glm-5`, listed 11 February 2026,
-charges {{fact:model/z-ai-glm-5#price_input}} for input; this row, eight
-weeks later, charges {{fact:model/z-ai-glm-5-1#price_input}} — roughly
-double, in the same snapshot, for an identical window and weights that
-stay open: {{fact:model/z-ai-glm-5-1#license}} over
+heads at {{fact:model/z-ai-glm-5#price_input}} for input; this row, eight
+weeks later, heads at {{fact:model/z-ai-glm-5-1#price_input}} in the same
+snapshot, for an identical window and weights that stay open:
+{{fact:model/z-ai-glm-5-1#license}} over
 {{fact:model/z-ai-glm-5-1#parameters}}, per the model card for
-`zai-org/GLM-5.1`.
+`zai-org/GLM-5.1`. Each of those is the top listed provider's rate for its
+row rather than necessarily Z.ai's own, and the two rows are headed by
+different providers, so the distance between them measures the hosts as
+much as the models.
 
-Then the plateau broke, and it broke cheaply. Ten weeks after this row,
-`z-ai/glm-5.2` arrived listing {{fact:model/z-ai-glm-5-2#context_window}}
-of context — the largest single step anywhere in the GLM line — at
-{{fact:model/z-ai-glm-5-2#price_input}} input, which in that same snapshot
-sits *below* what this row charges. Artificial Analysis's index rose with
-it, from {{fact:model/z-ai-glm-5-1#intelligence_index}} here to
-{{fact:model/z-ai-glm-5-2#intelligence_index}} there, so the extra room
-did not come out of measured capability. This row is the last one that
-asked more money for the old envelope.
+Then the plateau broke. Ten weeks after this row, `z-ai/glm-5.2` arrived
+listing {{fact:model/z-ai-glm-5-2#context_window}} of context — the largest
+single step anywhere in the GLM line — while its input listing stayed
+beside this row's instead of climbing with the window:
+{{fact:model/z-ai-glm-5-2#price_input}} there against
+{{fact:model/z-ai-glm-5-1#price_input}} here. Those two figures come from
+different top providers, so which of them is fractionally lower is a fact
+about hosts rather than about the models; what the pair does show is that a
+fivefold window did not arrive with a fivefold price. Artificial Analysis's
+index rose with it, from {{fact:model/z-ai-glm-5-1#intelligence_index}}
+here to {{fact:model/z-ai-glm-5-2#intelligence_index}} there, so the extra
+room did not come out of measured capability. This row is the last of the
+main line on the old envelope.

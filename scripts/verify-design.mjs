@@ -7,17 +7,20 @@
  * measurement against a real browser rendering the real exported build; not
  * one assertion is derived from what the CSS was meant to do.
  *
- *   contrast     axe-core, in both themes, on the home page, one entry page
- *                and one table page. Zero violations required, and the
- *                whole axe ruleset runs, not only colour-contrast — a
- *                keyboard trap or an unlabelled control is the same failure.
- *   reflow       no horizontal page scroll at 320px on those three pages.
- *                Wide content scrolls inside its own container; the page
- *                never does.
+ *   contrast     axe-core, in both themes, on every route in A11Y_ROUTES.
+ *                Zero violations required, and the whole axe ruleset runs,
+ *                not only colour-contrast — a keyboard trap or an unlabelled
+ *                control is the same failure.
+ *   reflow       no horizontal page scroll at 320px on those routes. Wide
+ *                content scrolls inside its own container; the page never
+ *                does.
  *   payload      first-load JavaScript, gzipped, against the 150 KB bound,
  *                recorded in data/launch.json under `js_payload`.
  *   keyboard     a scripted Tab traversal that reaches AND activates the nav
- *                links, the search box and the theme toggle on those pages.
+ *                links, the search box and the theme toggle on those routes.
+ *   focus ring   a second traversal that does NOT stop at the header: every
+ *                tab stop must show a focus indicator. The first one quits at
+ *                stop 11, so nothing below the fold was ever checked.
  *   above fold   the home page shows real content — changed-feed lines — at
  *                1440x900 and 390x844, with no full-viewport hero.
  *
@@ -35,15 +38,65 @@ import { AxeBuilder } from '@axe-core/playwright';
 
 import { measureRoute, formatMeasurement, BUDGET_BYTES } from './measure-payload.mjs';
 import { ROOT } from '../lib/paths.mjs';
+// The build's own LOCAL `YYYY-MM-DD`, imported rather than reimplemented: the
+// dates this script records into data/launch.json are CALENDAR DATES in a
+// corpus whose stated rule is "every date is the LOCAL date of the machine
+// that wrote it". They were `new Date().toISOString().slice(0, 10)` — UTC — so
+// on this UTC-6 machine every run after 18:00 local stamped TOMORROW onto a
+// measurement (addictedtoai-nmr). Same fix and same shape as
+// `pulse/lib/core.mjs` `today()` (addictedtoai-4ih) and `lib/facts.mjs`
+// `todayIso()` (addictedtoai-aw6); a third implementation is how two
+// conventions get back into one repository.
+import { todayIso } from '../lib/facts.mjs';
 
 const LAUNCH_FILE = join(ROOT, 'data', 'launch.json');
 
-/** The three pages specs/site names for the payload and contrast bounds. */
+/**
+ * The three pages specs/site names for the **payload** bound. This list is not
+ * a route sample — it is the specified set, and adding a fourth page to it
+ * would invent a budget nobody wrote down.
+ */
 const SAMPLES = [
   { route: '/', label: 'home' },
   { route: null, label: 'entry' }, // filled in from the corpus below
   { route: '/catalog', label: 'table' },
 ];
+
+/**
+ * Routes the contrast, reflow and keyboard checks run against — a different
+ * question from the payload budget, and now a separate list (addictedtoai-9jj).
+ *
+ * ## The decision, written down because it had never been made
+ *
+ * These three checks had quietly INHERITED the payload's route list. Nobody
+ * chose it for them: the payload bound is specified for three named pages, and
+ * accessibility rode along. But contrast, focus and 320px overflow are
+ * properties of a LAYOUT, not of a budget, so the list that serves them is
+ * "one route per distinct layout", and the two lists have no reason to be the
+ * same one.
+ *
+ * The bound on growth is runtime, and it is real: each route costs two axe
+ * runs, a 320px reflow pass, and a keyboard traversal that types into the
+ * search box and follows a result. So a layout earns a place here when it
+ * renders interactive or structural markup the existing routes do not.
+ *
+ * `/tools` is the first addition on that rule. It stopped being a flat `<ul>`:
+ * it now renders a `<nav>` of jump links, twelve `<h2 class="section-title">`
+ * anchors, a `<p class="category-note">` per category, and a
+ * `<details>`/`<summary>` disclosure — `<summary>` being a natively focusable
+ * element the site had never shipped before, so whether it picks up the site's
+ * focus-visible treatment was untested by anything. `lib/listings.test.mjs`
+ * asserts that markup exists, which is a different claim from "it is reachable
+ * and readable".
+ *
+ * NOT added here, and deliberately: `/learn`, `/tutorials`, `/blog`,
+ * `/impossible-routine` and `/data`. Each is a heading-and-links layout built
+ * from the same components already covered by `/` and `/catalog`, so each would
+ * buy a fraction of what `/tools` buys at the same cost. When one of them grows
+ * a control of its own, it belongs here — that is what this rule is for
+ * (tracked as its own issue rather than left in this comment).
+ */
+const A11Y_EXTRA_ROUTES = ['/tools'];
 
 let failures = 0;
 const evidence = [];
@@ -204,6 +257,89 @@ async function checkKeyboard(page, base, route) {
   );
 }
 
+/** How far the focus sweep tabs before it stops and says so. */
+const FOCUS_SWEEP_CAP = 150;
+
+/**
+ * Every tab stop shows a visible focus indicator (addictedtoai-9jj).
+ *
+ * `checkKeyboard` above stops as soon as it has found the search box and the
+ * theme toggle — stop 11 on every route — so it only ever exercised the header.
+ * MEASURED on `/tools`: the `<details>`/`<summary>` disclosure is tab stop 24,
+ * fourteen stops past where that traversal quits. Adding a route to the sample
+ * list therefore did NOT test the one element the route was added for, and a
+ * check that cannot reach the thing it was extended to cover is the failure
+ * this repository keeps writing down: a guardrail is what it does when
+ * measured, not what it was built to do.
+ *
+ * The assertion is deliberately about PRESENCE, not colour: `:focus-visible`
+ * must match and the element must carry either an outline with real width or a
+ * box-shadow. Contrast of the ring is axe's job and axe already runs on both
+ * themes; this runs in one, because whether an indicator EXISTS does not vary
+ * with the palette.
+ *
+ * Both numbers are reported. `/catalog` has more focusable elements than the
+ * cap, and a truncated sweep printed as a clean one is indistinguishable from a
+ * complete one — so the evidence line always says "n of m".
+ */
+async function checkFocusIndicators(page, base, route) {
+  await page.goto(`${base}${route}`, { waitUntil: 'domcontentloaded' });
+  const total = await page.evaluate(
+    () =>
+      document.querySelectorAll(
+        'a[href], button, input, select, textarea, summary, details > summary, [tabindex]:not([tabindex="-1"])',
+      ).length,
+  );
+  await page.evaluate(() => document.body.focus());
+
+  const unindicated = [];
+  const tags = new Set();
+  let stops = 0;
+  for (let i = 0; i < FOCUS_SWEEP_CAP; i += 1) {
+    await page.keyboard.press('Tab');
+    const info = await page.evaluate(() => {
+      const el = document.activeElement;
+      if (!el || el === document.body || el === document.documentElement) return null;
+      const c = getComputedStyle(el);
+      return {
+        tag: el.tagName.toLowerCase(),
+        cls: el.className || '',
+        // A ring the browser draws but the page overrides to `outline: none`
+        // with nothing in its place is the defect; either mechanism counts.
+        indicated:
+          el.matches(':focus-visible') &&
+          ((c.outlineStyle !== 'none' && Number.parseFloat(c.outlineWidth) > 0) || c.boxShadow !== 'none'),
+        outline: `${c.outlineStyle} ${c.outlineWidth}`,
+        wrapped: el.classList.contains('skip'),
+      };
+    });
+    if (!info) break;
+    if (stops > 0 && info.wrapped) break; // tabbed off the end and back to the skip link
+    stops += 1;
+    tags.add(info.tag);
+    if (!info.indicated) unindicated.push(`${info.tag}.${info.cls || '(no class)'} — outline ${info.outline}`);
+  }
+
+  // Two ways this sweep can end, and they mean opposite things. Tabbing back
+  // round to the skip link means the WHOLE tab order was walked; hitting the
+  // cap means it was not. Printing one number for both would make a truncated
+  // sweep read exactly like a complete one.
+  const capped = stops >= FOCUS_SWEEP_CAP;
+  const scope = capped
+    ? `${stops} of ${total} focusable element(s) — STOPPED AT THE ${FOCUS_SWEEP_CAP}-STOP CAP, the rest unswept`
+    : `the complete tab order, ${stops} stop(s)` +
+      (total > stops
+        ? `; ${total} focusable element(s) in the DOM, ${total - stops} of them not currently ` +
+          'tabbable (a closed <details> hides its links)'
+        : '');
+  record(
+    unindicated.length === 0,
+    `every tab stop shows a focus indicator ${route}`,
+    `${scope}; element types ${[...tags].sort().join(', ')}` +
+      (unindicated.length ? ` — ${unindicated.slice(0, 4).join('; ')}` : ''),
+  );
+}
+
 /** Content above the fold: a changed-feed line must be inside the viewport. */
 async function checkAboveFold(page, base, size, label) {
   await page.setViewportSize(size);
@@ -229,7 +365,7 @@ async function main() {
   const base = `http://localhost:${port}`;
 
   SAMPLES[1].route = await pickEntry(out);
-  const routes = SAMPLES.map((s) => s.route);
+  const routes = [...SAMPLES.map((s) => s.route), ...A11Y_EXTRA_ROUTES];
 
   // ---- payload, from the files themselves --------------------------------
   process.stdout.write('\nfirst-load JavaScript (specs/site: at most 150 KB gzipped)\n');
@@ -264,6 +400,9 @@ async function main() {
     process.stdout.write('\nkeyboard traversal\n');
     for (const route of routes) await checkKeyboard(page, base, route);
 
+    process.stdout.write('\nfocus indicators, past the header (addictedtoai-9jj)\n');
+    for (const route of routes) await checkFocusIndicators(page, base, route);
+
     process.stdout.write('\ncontent above the fold (task 4.7)\n');
     await checkAboveFold(page, base, { width: 1440, height: 900 }, '1440x900');
     await checkAboveFold(page, base, { width: 390, height: 844 }, '390x844');
@@ -280,7 +419,7 @@ async function main() {
     /* first run */
   }
   launch.js_payload = {
-    measured_on: new Date().toISOString().slice(0, 10),
+    measured_on: todayIso(),
     budget_kb_gzipped: BUDGET_BYTES / 1024,
     method:
       'gzip -9 over every <script src> a modern browser fetches (nomodule excluded) plus every ' +
@@ -299,7 +438,7 @@ async function main() {
     ),
   };
   launch.design_verification = {
-    date: new Date().toISOString().slice(0, 10),
+    date: todayIso(),
     pass: failures === 0,
     failures,
     checks: evidence.length,

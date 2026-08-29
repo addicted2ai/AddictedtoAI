@@ -278,6 +278,25 @@ export function seedChanges(source, latest) {
     if (!parsed || Number.isNaN(parsed.getTime())) continue; // undated history is not history
     out.push({
       key: `seed|${source.id}|${rowId}`,
+      // UTC, DELIBERATELY — the one place in this repository where "make all
+      // dates local" is the WRONG answer (addictedtoai-3t8, left alone by the
+      // local-date change addictedtoai-4ih).
+      //
+      // `rawDate` is a THIRD PARTY'S OWN timestamp out of a feed row: when the
+      // source says a model was released. It is not a date this machine minted,
+      // and that is the whole difference. Rendering it in the local zone would
+      // make one immutable historical event carry a different date depending on
+      // which machine happened to run the Pulse — a release published at
+      // 2026-03-04T02:00:00Z would seed as 2026-03-03 here and 2026-03-04 in
+      // Berlin. Non-reproducible is worse than one frame away from the corpus.
+      // UTC is zone-independent and gives every machine the same answer.
+      //
+      // THE COST, acknowledged rather than hidden: these `date:` values land in
+      // the same column as `diffSnapshots`' locally-stamped dates and are read
+      // by `daysSince`, which counts LOCAL calendar days. So a seeded line for
+      // an event published late in the day can sit one day off a locally
+      // stamped one. That is inherent in reading a foreign timestamp at all —
+      // the alternative is not "no skew", it is "skew that varies by machine".
       date: parsed.toISOString().slice(0, 10),
       kind: 'release',
       seeded: true,
@@ -326,15 +345,57 @@ export function appendChanges(changesFile, candidates) {
 }
 
 /**
+ * Does the registry say this `(source, field)` pair is not an event?
+ *
+ * The same `spec.event === false` that `diffSnapshots` consults above, asked of
+ * a change line already on disk instead of a row about to become one. `null` or
+ * a missing source answers `false` — see `uninterpretedChanges`.
+ */
+export function isNonEventField(registry, sourceId, field) {
+  if (!registry || !sourceId || !field) return false;
+  const source = (registry.sources ?? []).find((s) => s?.id === sourceId);
+  if (!source) return false;
+  return (source.material_fields ?? []).some((spec) => spec?.field === field && spec.event === false);
+}
+
+/**
  * Material changes on price/licence/status from the trailing 14 days that no
  * annotation line refers to — the source of the loop's `interpret` jobs.
+ *
+ * ## Why this also reads `event: false` (addictedtoai-e31)
+ *
+ * `addictedtoai-8ho` stopped OpenRouter's price movements *becoming* change
+ * lines, because the headline price is one rotating provider's posted rate and
+ * a movement in it is a routing artifact. It could not touch the 16 price lines
+ * already written: `data/changes.jsonl` is append-only history and they sat
+ * inside this 14-day window, so the Desk kept proposing `interpret` jobs for
+ * them — measured at 16 of the 19 items in the queue. Model budget spent
+ * writing human interpretations of price movements nobody made.
+ *
+ * Suppressing emission and suppressing interpretation are different decisions,
+ * which is why they are different issues. But they should not be different
+ * *definitions*: this asks the registry the same question `diffSnapshots` asks,
+ * so a field is an event in one place or in neither.
+ *
+ * That is also what keeps `addictedtoai-ak9` cheap. When price events are
+ * re-keyed to vendor posted rates and become trustworthy, ak9 clears `event:
+ * false` in the registry and interpretation returns here by itself — with no
+ * second switch to find. For the same reason the price fields deliberately
+ * stay in `INTERPRET_FIELDS`: dropping them would delete the capability rather
+ * than gate it, and would also silence a *different* source's price field that
+ * nobody has any complaint about.
+ *
+ * `registry` is optional and defaults to no suppression, so a caller that does
+ * not pass one gets exactly the old behaviour. `pulse/run.mjs` passes it via
+ * `computeQueue`, which is the path that matters.
  */
-export function uninterpretedChanges(changesFile, { windowDays = 14, from = undefined } = {}) {
+export function uninterpretedChanges(changesFile, { windowDays = 14, from = undefined, registry = null } = {}) {
   const lines = readJsonl(changesFile);
   const annotated = new Set();
   for (const l of lines) if (l?.kind === 'annotation' && l.annotates) annotated.add(l.annotates);
   return lines.filter((l) => {
     if (!l || l.kind !== 'field_change' || l.seeded) return false;
+    if (isNonEventField(registry, l.source, l.field)) return false;
     if (!INTERPRET_FIELDS.has(l.field)) return false;
     if (annotated.has(l.key)) return false;
     const age = daysSince(l.date, from);

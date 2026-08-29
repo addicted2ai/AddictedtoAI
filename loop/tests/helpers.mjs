@@ -105,6 +105,13 @@ export function makeRepo(o = {}) {
   git(repo, ['config', 'core.autocrlf', 'false']);
 
   const files = {
+    // The fixture carries the working repository's own ignore rules for the two
+    // brakes, anchored the same way (beads addictedtoai-ufu). Without them a
+    // fixture job's `STOP` lands in the branch diff and breaker 4 trips on it —
+    // which is the OPPOSITE of what happens in the repository this loop runs
+    // against, and is precisely why breaker 4's STOP clause could go blind in
+    // production while every test here stayed green (beads addictedtoai-59q).
+    '.gitignore': o.gitignore ?? 'node_modules/\n*.log\n/HOLD.md\n/STOP\n',
     'data/config.json': JSON.stringify(o.config ?? DEFAULT_CONFIG, null, 2) + '\n',
     'runners.yml': o.runners ?? runnersYaml(o),
     'DIRECTIVES.md': o.directives ?? '# DIRECTIVES.md\n\n<!-- directives below this line -->\n',

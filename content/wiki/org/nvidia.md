@@ -113,14 +113,16 @@ the public page repeats. Nemotron 3 Ultra does the same;
 {{fact:model/nvidia-nemotron-3-super-120b-a12b-free#context_window}} against
 the paid row's
 {{fact:model/nvidia-nemotron-3-super-120b-a12b#context_window}}. And
-`nvidia/nemotron-3-ultra-550b-a55b:batch` is the
-only batch row in the snapshot dearer than the row it batches on both input
-and output —
+`nvidia/nemotron-3-ultra-550b-a55b:batch` heads
+higher than the row it batches on both input and output —
 {{fact:model/nvidia-nemotron-3-ultra-550b-a55b-batch#price_input}} against
 {{fact:model/nvidia-nemotron-3-ultra-550b-a55b#price_input}} in, and
 {{fact:model/nvidia-nemotron-3-ultra-550b-a55b-batch#price_output}} against
-{{fact:model/nvidia-nemotron-3-ultra-550b-a55b#price_output}} out. Every
-Anthropic and Google batch row is a discount. This one is a surcharge, and it
-comes with a longer window:
+{{fact:model/nvidia-nemotron-3-ultra-550b-a55b#price_output}} out, where the
+convention is a discount. Neither figure is necessarily NVIDIA's: each is the
+top listed provider's rate for its row, and two rows are not obliged to be
+headed by the same provider, so the inversion sits between two listings
+rather than being a surcharge anyone levied. It does come with a longer
+window:
 {{fact:model/nvidia-nemotron-3-ultra-550b-a55b-batch#context_window}} against
 {{fact:model/nvidia-nemotron-3-ultra-550b-a55b#context_window}}.

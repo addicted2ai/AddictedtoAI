@@ -9,13 +9,15 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { runLoop, attemptMergeWithoutReview } from '../run.mjs';
 import { readLedger } from '../lib/ledger.mjs';
 import {
   BREAKERS,
+  brakeScan,
+  brakeState,
   checkBuildRed,
   checkConsecutiveFailures,
   checkReservedPaths,
@@ -109,6 +111,136 @@ test('breaker 4 — a job that really edits runners.yml trips the breaker and do
   assert.match(hold, /The maintainer edits these freely; no job may/);
   // the edit never reached main
   assert.ok(!/edited by a job/.test(readFileSync(join(ctx.repoRoot, 'runners.yml'), 'utf8')));
+  ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// Breaker 4's filesystem companion (beads addictedtoai-59q, addictedtoai-ut1).
+//
+// Both brakes are gitignored, so neither can appear in a branch diff any more.
+// The STOP clause went blind when the ignore landed; the removal-of-HOLD.md
+// clause had never fired at all, because HOLD.md has been untracked its whole
+// life and `git diff --name-status` reports only tracked files.
+//
+// These tests do the thing the guardrail is supposed to prevent, and are
+// paired with a control: a guardrail that fires on an innocent run is noise,
+// and noise is how a guardrail gets switched off.
+// ---------------------------------------------------------------------------
+
+test('brakeScan — a STOP in the job worktree is a violation; a forged HOLD.md is a notice, not a fifth reserved path', () => {
+  const ctx = makeRepo({ now: () => NOW });
+  const wt = join(ctx.testRoot, 'fake-worktree');
+  mkdirSync(wt, { recursive: true });
+
+  assert.deepEqual(brakeScan(ctx, { worktree: wt }), { entries: [], notices: [] }, 'a clean worktree scans clean');
+
+  writeFileSync(join(wt, 'STOP'), '', 'utf8');
+  const withStop = brakeScan(ctx, { worktree: wt });
+  assert.deepEqual(withStop.entries, [{ status: 'A', path: 'STOP', where: 'the job worktree' }]);
+  // The entry is judged by the SAME function a real diff entry is.
+  const v = reservedPathViolations(withStop.entries);
+  assert.equal(v.length, 1);
+  assert.equal(v[0].reserved, 'STOP');
+  assert.equal(v[0].where, 'the job worktree');
+
+  writeFileSync(join(wt, 'HOLD.md'), '# HOLD\n', 'utf8');
+  const withBoth = brakeScan(ctx, { worktree: wt });
+  assert.equal(withBoth.entries.length, 1, 'a job-created HOLD.md is NOT a violation');
+  assert.equal(withBoth.notices.length, 1, 'it is reported as a notice instead');
+  assert.match(withBoth.notices[0], /not among the reserved paths/);
+  ctx.cleanup();
+});
+
+test('brakeScan — a brake that disappears from the repository root is a violation, and only a disappearance is', () => {
+  const ctx = makeRepo({ now: () => NOW });
+  assert.deepEqual(brakeState(ctx), { STOP: false, 'HOLD.md': false });
+
+  // present before, gone after: the removal clause, now reachable.
+  writeFileSync(ctx.holdPath, '# HOLD\n', 'utf8');
+  writeFileSync(ctx.stopPath, '', 'utf8');
+  const before = brakeState(ctx);
+  assert.deepEqual(before, { STOP: true, 'HOLD.md': true });
+  rmSync(ctx.holdPath);
+  rmSync(ctx.stopPath);
+  const gone = brakeScan(ctx, { before });
+  assert.deepEqual(
+    gone.entries.map((e) => `${e.status} ${e.path}`).sort(),
+    ['D HOLD.md', 'D STOP'],
+  );
+  assert.deepEqual(
+    reservedPathViolations(gone.entries).map((v) => v.reserved).sort(),
+    ['STOP', 'removal of HOLD.md'],
+  );
+
+  // absent before, appearing after — a breaker writing its own hold — is not.
+  const before2 = brakeState(ctx);
+  writeFileSync(ctx.holdPath, '# HOLD\n', 'utf8');
+  assert.deepEqual(brakeScan(ctx, { before: before2 }).entries, [], 'an appearance at the root is not a violation');
+  ctx.cleanup();
+});
+
+test('breaker 4 — a job that really writes STOP into its worktree trips the breaker (it did not before)', async () => {
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({ command: mockCommand('writes-stop'), reviewerCommand: mockCommand('review-approve') }),
+  });
+  writeQueue(ctx, [{ type: 'machinery', title: 'a job that reaches for the brake' }]);
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.ok(existsSync(ctx.holdPath), ctx.output());
+  const hold = readFileSync(ctx.holdPath, 'utf8');
+  assert.match(hold, /breaker-4-reserved-path-edit-attempt/);
+  assert.match(hold, /`STOP` \(A, reserved as STOP, found in the job worktree\)/);
+  // The branch diff genuinely could not see it — this is why the companion
+  // exists, and asserting it here keeps the test honest if the ignore is ever
+  // removed and the diff clause starts carrying the case again.
+  assert.ok(!/STOP/.test(ctx.output().match(/committed the executor's output[^\n]*/)?.[0] ?? ''));
+  // and the job's ordinary work never merged
+  assert.ok(!existsSync(join(ctx.repoRoot, 'site-note.md')));
+  // the maintainer's brake was never created at the root, only in the scratch tree
+  assert.ok(!existsSync(ctx.stopPath));
+  ctx.cleanup();
+});
+
+test('breaker 4 — a job that removes a HOLD.md written while it ran trips the removal clause', async () => {
+  // `startGate` refuses to start while a hold exists, so the ONLY window in
+  // which a job can remove one is between its own invocations: the reviewer
+  // here writes the hold mid-job and the revision pass deletes it.
+  const ctx = makeRepo({ now: () => NOW });
+  const root = ctx.repoRoot.replace(/\\/g, '/');
+  writeFileSync(
+    ctx.runnersPath,
+    runnersYaml({
+      command: mockCommand('removes-root-hold', ` "${root}"`),
+      reviewerCommand: mockCommand('review-revise-and-brake', ` "${root}"`),
+    }),
+    'utf8',
+  );
+  writeQueue(ctx, [{ type: 'machinery', title: 'a job that clears the halt and carries on' }]);
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+
+  assert.equal(res.outcome, 'failed', ctx.output());
+  const hold = readFileSync(ctx.holdPath, 'utf8');
+  assert.match(hold, /breaker-4-reserved-path-edit-attempt/);
+  assert.match(hold, /`HOLD\.md` \(D, reserved as removal of HOLD\.md, found in the repository root\)/);
+  assert.match(ctx.output(), /reserved-path edit attempt \(revision pass\)/);
+  ctx.cleanup();
+});
+
+test('breaker 4 — an innocent job runs clean: no notice, no hold, and it merges', async () => {
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({ command: mockCommand('done-edit'), reviewerCommand: mockCommand('review-approve') }),
+  });
+  writeQueue(ctx, [{ type: 'machinery', title: 'an ordinary job' }]);
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.ok(!existsSync(ctx.holdPath), `the filesystem companion must not fire on innocent work:\n${ctx.output()}`);
+  assert.ok(!/NOTICE:/.test(ctx.output()), ctx.output());
+  assert.ok(!/BREAKER/.test(ctx.output()), ctx.output());
+  assert.ok(existsSync(join(ctx.repoRoot, 'site-note.md')), 'and the work merged');
   ctx.cleanup();
 });
 

@@ -112,3 +112,55 @@ DeepMind", "merged with Google AI's Google Brain division to become Google
 DeepMind in April 2023". All four supported. The infobox also carries a
 distinct incorporation date of 23 September 2010; the entry uses the launch
 date and says "(as DeepMind)", which is the defensible choice.
+
+## Citation repointed 2026-08-29 (b6-citations) — `addictedtoai-qhm` closed
+
+The recheck above filed this rather than fixing it, because it is a front-matter
+edit and that pass could not run a build. Same constraint here, so the edit was
+kept to a value and not a shape: **one `timeline[].source_url` string changed,
+nothing added, nothing removed.** The `date:` and `event:` on that entry are
+untouched, and no front-matter key was introduced anywhere on the entry.
+
+**The absence re-verified independently, not taken on trust.** The 9to5google
+article re-fetched at **192,560 bytes** — the same size the recheck recorded.
+Probing raw bytes *and* a tag-stripped rendering (4,851 chars) defeats the two
+ways a naive search invents absence, tag interruption and newline wrap. Every
+plausible spelling of the date is absent from both: `July 21`, `Jul 21`,
+`July 21st`, `21 July`, `21st July`, `2026-07-21`, `20260721`, `07-21` — all
+**0/0**. The decisive one is broader than any spelling: **the bare string `July`
+occurs 0 times in the entire article, raw and stripped.** No rendering of a July
+date can be present in a document that never says July. The prior finding is
+confirmed, and confirmed by a stronger check than the one that produced it.
+
+**What the article does support, which is why the body's link stays.** `three
+weeks` occurs 3 times in the stripped text and `3.6 Flash` 3 times. The body's
+inline link is anchored on the words "three weeks apart", and that claim is
+carried by this article. Only the timeline's *date* was uncarried. The body was
+therefore left alone — the citation there is correctly scoped to the claim it is
+attached to, and the defect was one line of front matter, not a page-wide
+sourcing problem.
+
+**The replacement carries the date in visible text.** New `source_url`:
+`https://openrouter.ai/google/gemini-3.6-flash` (629,823 B, HTTP 200, no
+redirect). It has an FAQ section whose visible heading is **"When was Gemini 3.6
+Flash released?"** and whose answer reads, verbatim: **"Gemini 3.6 Flash was
+released on July 21, 2026."** — 1 occurrence in the tag-stripped visible text,
+4 in raw bytes, mirrored again in the page's `schema.org` `FAQPage` block. The
+page also carries `2026-07-21` 61 times in raw bytes and the permaslug
+`google/gemini-3.6-flash-20260721` 223 times. This is a citation that states the
+claim in prose a reader can see, not one a reader has to take on faith.
+
+**Cross-checked against the committed feed, which is where the date came from.**
+`data/sources/openrouter-models/latest.json` (2026-08-29 snapshot, 396 rows) has
+`rows["google/gemini-3.6-flash"].created` = `1784646733` = `2026-07-21T15:12:13Z`,
+and `canonical_slug` = `google/gemini-3.6-flash-20260721`, which spells the date
+into the row id itself. Feed and cited page agree, so the repointed URL and the
+underlying feed value are two independent carriers of the same date.
+
+**Why the URL and not a bound fact.** The obvious "bind it to the feed" fix is
+not available: `timelineEvent` in `lib/schema.mjs` is `.strict()` over exactly
+`{date, event, source_url}` with `source_url` a required `httpUrl`. A timeline
+row has no `source`/`feed`/`path` variant, so there is no way to express a
+feed-bound timeline date without a schema change. Repointing to a page that
+states the date is the correct fix inside the schema as it stands; a bound
+timeline date would be a spec change, and is filed rather than smuggled in.

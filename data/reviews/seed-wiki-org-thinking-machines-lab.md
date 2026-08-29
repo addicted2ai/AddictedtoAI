@@ -58,3 +58,64 @@ The lede finding — a Chinese architecture and Chinese training data inside
 the debut of the most-funded American startup of 2025, given away under
 Apache — is exactly the assembled-in-one-place material the bar asks for,
 and the batch-row anomaly is measured, not asserted. approve
+
+---
+
+## Recheck, 2026-08-29 (b2-prices) — `addictedtoai-sdh`
+
+Verdict unchanged: **approve**. The lede — a DeepSeek architecture and Moonshot
+training data inside the Murati lab's debut — re-verified and is untouched. The
+closing sentence was **false about its subject** and has been rewritten.
+
+### What was wrong
+
+The page ended: *"Batch pricing is a convention, not a guarantee, **and this lab
+did not follow it**."* Thinking Machines does not price either row.
+
+Measured 2026-08-29 against `https://openrouter.ai/api/v1/models/<row>/endpoints`,
+headlines from `data/sources/openrouter-models/latest.json` (`date: 2026-08-29`):
+
+- **`thinkingmachines/inkling`** — **3 endpoints, none of them Thinking
+  Machines**: DeepInfra `0.00000095` / `0.00000405`, Together `0.000001` /
+  `0.00000405`, BaseTen `0.000001` / `0.00000405`. Headline `0.00000095` is
+  **DeepInfra's**.
+- **`thinkingmachines/inkling:batch`** — **1 endpoint, Together**, `0.000001` /
+  `0.00000405`. Headline is **Together's**.
+
+The lab has no endpoint on either row, so it made no batch-pricing decision to
+follow or break. And the sharper finding: **Together serves both rows, and
+Together's rate is `0.000001` on each — identical.** The sole host of the batch
+row charges exactly what it charges for the standard row. The "surcharge" is
+`0.00000095` (DeepInfra, standard) against `0.000001` (Together, batch) — the
+distance between two companies. At the one provider present on both rows there
+is no batch premium at all.
+
+### What changed in the body
+
+Facts untouched; prose only.
+
+- "and **asks** X for input" → "and **heads at** X for input". The
+  vendor-attributing verb was doing the false work.
+- "one of only two batch listings in the 388-row snapshot that costs more than
+  the row it batches rather than less" — **deleted**. Two reasons: it framed a
+  cross-provider gap as a property of the listing, and it is **now stale**. In
+  `previous.json` (2026-08-28, 388 rows) exactly one batch row was dearer on
+  both sides and one on a single side. In `latest.json` (2026-08-29, 396 rows)
+  **ten** are dearer on both and **two** on a single side. Carrying the
+  superlative forward would have published a false count.
+- "and this lab did not follow it" — **withdrawn**. The page now says an
+  inversion visible only across two separately ranked rows is a fact about who
+  was listed first on each, not a decision the lab made.
+- The hedge names **no provider**, on purpose: naming DeepInfra or Together
+  pins a fact that rotates, which is the defect being fixed rather than a cure
+  for it.
+
+The observation that survives — the batch row lists above the row it batches,
+where the convention is a discount — is kept, because it is true of the
+listings and the page now says exactly that and no more.
+
+### Note for a later pass
+
+The `would-cite` above is unaffected (it cites the architecture-lineage
+finding, not the price). The neighbouring `org/nvidia` entry carried the same
+defect in the same shape and was corrected in this pass.

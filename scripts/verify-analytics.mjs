@@ -70,6 +70,15 @@ import { config as loadEnv } from 'dotenv';
 import { chromium } from 'playwright';
 
 import { ROOT } from '../lib/paths.mjs';
+// The build's own LOCAL `YYYY-MM-DD`, imported rather than reimplemented. The
+// `date` recorded into data/launch.json below is a CALENDAR DATE — a
+// measurement date — in a corpus whose stated rule is "every date is the LOCAL
+// date of the machine that wrote it". It was `new Date().toISOString().slice(0,
+// 10)`, so on this UTC-6 machine every run after 18:00 local dated the
+// measurement TOMORROW (addictedtoai-nmr). The `Date.now()` calls elsewhere in
+// this file are deadlines and durations — wall-clock instants, honestly
+// zone-free — and are deliberately left alone.
+import { todayIso } from '../lib/facts.mjs';
 import {
   ENV_VAR,
   GA_CONNECT_HOSTS,
@@ -574,7 +583,7 @@ async function main() {
       /* first run */
     }
     launch.analytics_local = {
-      date: new Date().toISOString().slice(0, 10),
+      date: todayIso(),
       base,
       measurement_id: expectedTid,
       pages_tested: ['/', contentRoute, `click-through / → nav link`],

@@ -38,13 +38,13 @@ facts:
   - field: license
     source: cited
     value: "CC-BY-NC, plus Cohere Labs' Acceptable Use Policy — commercial use is prohibited"
-    source_url: "https://huggingface.co/CohereForAI/c4ai-command-a-03-2025"
+    source_url: "https://huggingface.co/CohereLabs/c4ai-command-a-03-2025"
     accessed: "2026-08-29"
     volatility: slow
   - field: parameters
     source: cited
     value: "111B"
-    source_url: "https://huggingface.co/CohereForAI/c4ai-command-a-03-2025"
+    source_url: "https://huggingface.co/CohereLabs/c4ai-command-a-03-2025"
     accessed: "2026-08-29"
     volatility: static
   - field: listed_date
@@ -61,7 +61,7 @@ mentions:
 The word "open" does less work on this row than it does on most of this
 catalog's other open-weight releases. Command A's weights are
 downloadable, but under {{fact:model/cohere-command-a#license}}, per the
-model card for `CohereForAI/c4ai-command-a-03-2025`. That is not the MIT
+model card for `CohereLabs/c4ai-command-a-03-2025`. That is not the MIT
 or Apache terms most of this catalog's other open releases carry:
 downloading the weights is free, but the licence does not permit building
 a commercial product on them at all.

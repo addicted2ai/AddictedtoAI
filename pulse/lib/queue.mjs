@@ -85,7 +85,7 @@ function item(type, reason, subject, detail, target) {
  * Recompute the queue. Pure with respect to the queue file: it reads current
  * state only, never a previous queue.
  */
-export function computeQueue(root, { freshness, changesFile, wants = readWants(root), corroborations = [] }) {
+export function computeQueue(root, { freshness, changesFile, wants = readWants(root), corroborations = [], registry = null }) {
   const items = [];
 
   // A declared pair whose two sides disagree (specs/pulse, addictedtoai-473).
@@ -207,7 +207,11 @@ export function computeQueue(root, { freshness, changesFile, wants = readWants(r
     items.push(item('verify', reason, `${f.entry_id ?? f.path}#${f.field}`, `accessed ${f.accessed}, ${f.days_overdue}d past its ${f.interval_days}d ${f.volatility} interval`, f.path));
   }
 
-  for (const c of uninterpretedChanges(changesFile)) {
+  // The registry goes in so that a field it marks `event: false` stops
+  // producing `interpret` jobs as well as change lines — one definition of
+  // "is this an event", not two (addictedtoai-e31). Omitting it suppresses
+  // nothing, which is the old behaviour.
+  for (const c of uninterpretedChanges(changesFile, { registry })) {
     const reason =
       c.field === 'status'
         ? 'uninterpreted-status-change'

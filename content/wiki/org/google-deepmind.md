@@ -42,7 +42,7 @@ timeline:
     source_url: "https://en.wikipedia.org/wiki/Google_DeepMind"
   - date: "2026-07-21"
     event: "Gemini 3.6 Flash released"
-    source_url: "https://9to5google.com/2026/08/13/gemini-3-7-flash-launch/"
+    source_url: "https://openrouter.ai/google/gemini-3.6-flash"
   - date: "2026-08-13"
     event: "Gemini 3.7 Flash released; introductory pricing declared to run through 2026-12-31"
     source_url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-3-7-flash/"

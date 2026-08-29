@@ -139,6 +139,39 @@ test('an unannotated material change becomes an interpret item, and an annotatio
   assert.equal(items.length, 0, 'an interpreted change leaves the queue');
 });
 
+test('a field the registry marks event:false files no interpret job, per source (addictedtoai-e31)', async (t) => {
+  // addictedtoai-8ho stopped these lines being WRITTEN; it could not unwrite
+  // the ones already in append-only history, so the Desk kept proposing
+  // interpret jobs for routing noise. The queue now asks the registry the same
+  // question the diff asks, so one flag governs both.
+  const root = makeRoot([
+    jsonSource('models', 'http://fixture.invalid/m', {
+      material_fields: [
+        { field: 'price_input', path: 'pricing.prompt', event: false },
+        { field: 'status', path: '$status' },
+      ],
+    }),
+  ]);
+  t.after(() => cleanup(root));
+  writeJson(paths.state(root, 'models'), { source: 'models', last_fetch_date: '2026-08-28', last_change_date: '2026-08-28', seeded: true, refusing: null });
+
+  const lines = [
+    // Marked event:false on this source — suppressed.
+    { key: 'p', date: '2026-08-25', kind: 'field_change', source: 'models', source_url: 'u', row_id: 'acme/one', field: 'price_input', old: '1', new: '2' },
+    // Not marked — a real event, still interpreted. This is what proves the
+    // capability was gated rather than deleted from INTERPRET_FIELDS.
+    { key: 's', date: '2026-08-25', kind: 'field_change', source: 'models', source_url: 'u', row_id: 'acme/two', field: 'status', old: 'active', new: 'deprecated' },
+    // The SAME field from a source that says nothing about it — untouched, so
+    // the suppression cannot leak across sources.
+    { key: 'o', date: '2026-08-25', kind: 'field_change', source: 'elsewhere', source_url: 'u', row_id: 'acme/three', field: 'price_input', old: '1', new: '2' },
+  ];
+  writeFileSync(paths.changes(root), lines.map((l) => JSON.stringify(l)).join('\n') + '\n', 'utf8');
+
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
+  const subjects = readJson(paths.queue(root)).items.filter((i) => i.type === 'interpret').map((i) => i.subject).sort();
+  assert.deepEqual(subjects, ['o', 's'], 'the event:false price line files nothing; the status change and another source\'s price change still do');
+});
+
 test('a status change ranks above a price change in the interpret backlog', async (t) => {
   const root = makeRoot([]);
   t.after(() => cleanup(root));

@@ -141,3 +141,57 @@ into the prose, because "one provider" is a volatile fact and would rot.
 
 The comparison the approval flagged as a soft spot — a 29-point index gap across
 a sixteen-month age difference — is untouched and still a soft spot.
+
+---
+
+## Citations moved off a redirect, 2026-08-29 (b6-citations) — `addictedtoai-hu7`
+
+**The licence claim was not re-opened.** The recheck above verified it at the
+primary-document level and said to leave it alone; that instruction was followed.
+No fact `value:` on this entry changed. What changed is three strings naming a
+Hugging Face org that has been renamed: two `source_url`s and one prose mention.
+
+**The redirect measured, not assumed — and it is weaker than expected.** Fetching
+`https://huggingface.co/CohereForAI/c4ai-command-a-03-2025` with `redirect:
+'manual'` returns **HTTP 307 Temporary Redirect**, `location:
+/CohereLabs/c4ai-command-a-03-2025`. Not a 301. A *temporary* redirect is a
+promise of nothing at all — it is explicitly the status that says "do not update
+your links, this may change back" while in practice being what HF serves for a
+completed rename. Following it lands on
+`https://huggingface.co/CohereLabs/c4ai-command-a-03-2025`, HTTP 200, **460,033
+bytes** — byte-identical in size to the model card the recheck above measured, so
+this is the same document under its new path.
+
+**The old org name is gone from the page entirely.** In those 460,033 bytes,
+`CohereForAI` occurs **0 times**, raw and tag-stripped. `CohereLabs/c4ai-command-a-03-2025`
+occurs 58 times raw / 29 stripped, and `Cohere Labs` 22/13. Upstream has
+completed the rename; the corpus was reaching the page only through a
+307 that upstream has no obligation to keep.
+
+**Both facts still hold at the new URL, checked before repointing.** Swapping in
+a URL without re-verifying it would repeat the defect being fixed here, so:
+`CC-BY-NC` → 2 occurrences, `cc-by-nc` → 26 raw / 14 stripped, `Acceptable Use
+Policy` → 2, `111B` → 1. The `license` and `parameters` facts are carried by the
+canonical page exactly as they were by the redirecting one. `accessed:` on both
+stays **2026-08-29** — that is today's local date and the date the recheck above
+set, and re-fetching today does not move it.
+
+**What changed, exactly:**
+- `facts[].source_url` on `license` — `CohereForAI` → `CohereLabs`
+- `facts[].source_url` on `parameters` — `CohereForAI` → `CohereLabs`
+- body, first paragraph — "the model card for `CohereForAI/c4ai-command-a-03-2025`"
+  → "`CohereLabs/c4ai-command-a-03-2025`", so the path a reader is told to look
+  at is the path they will land on
+
+`listed_date` is unaffected: it cites `openrouter.ai/cohere/command-a`, not
+Hugging Face.
+
+**Found while doing this, and deliberately NOT fixed here — it is another
+entry's file.** `content/wiki/org/cohere.md` lines 92–96 argue that
+`CohereLabs/North-Mini-Code-1.0` sits at "a different Hugging Face namespace from
+the `CohereForAI` account that still hosts Command A", and concludes Cohere
+"re-entered the public catalog ... on a new account". The rename falsifies that
+argument, not just its links: `CohereForAI` does not "still host" Command A — it
+307s to `CohereLabs`, which serves the card with the old name appearing 0 times.
+`CohereLabs` is the *same* account renamed, not a new one, so there is no
+two-account contrast to draw. Reported rather than edited, and filed.

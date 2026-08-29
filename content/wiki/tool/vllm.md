@@ -30,9 +30,9 @@ facts:
     volatility: dated
   - field: speculative_decoding_methods
     source: cited
-    value: "ten proposer methods, including EAGLE, MTP, draft models, PARD, n-gram and suffix decoding"
+    value: "a range of speculation methods, model-based ones such as EAGLE, MTP, draft models, PARD and MLP alongside simpler ones such as n-gram and suffix decoding"
     source_url: "https://docs.vllm.ai/en/latest/features/speculative_decoding/"
-    accessed: "2026-08-28"
+    accessed: "2026-08-29"
     volatility: slow
 timeline:
   - date: "2023-06-20"

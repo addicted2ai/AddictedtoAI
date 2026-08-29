@@ -6,11 +6,11 @@
     "confirm_after_failures": 2,
     "declined": 2,
     "drifted": 0,
-    "due": 65,
+    "due": 42,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 9,
-    "total": 339
+    "total": 340
   },
   "listings": [
     {
@@ -463,7 +463,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/weights-and-biases.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "weights-and-biases",
       "state": "ok",
       "url": "https://wandb.ai/site"
@@ -520,18 +520,6 @@
       "verdict_recorded": true
     },
     {
-      "bytes": 460041,
-      "cited_by": [
-        "content/wiki/model/cohere-command-a.md"
-      ],
-      "final_url": "https://huggingface.co/CohereLabs/c4ai-command-a-03-2025",
-      "kind": "same-site-move",
-      "last_checked": "2026-08-29",
-      "meta_refresh": null,
-      "url": "https://huggingface.co/CohereForAI/c4ai-command-a-03-2025",
-      "verdict_recorded": true
-    },
-    {
       "bytes": 230985,
       "cited_by": [
         "content/wiki/org/tencent.md"
@@ -577,6 +565,18 @@
       "last_checked": "2026-08-29",
       "meta_refresh": "https://research.facebook.com/blog/2018/05/facebook-open-sources-elf-opengo/?_fb_noscript=1",
       "url": "https://research.facebook.com/blog/2018/05/facebook-open-sources-elf-opengo/",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": 0,
+      "cited_by": [
+        "content/blog/seven-open-licences-seven-lines.md"
+      ],
+      "final_url": "https://www.alibabacloud.com/notfound",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-29",
+      "meta_refresh": null,
+      "url": "https://www.alibabacloud.com/blog/introducing-qoder-agentic-coding-platform-for-real-software_603349",
       "verdict_recorded": true
     }
   ],

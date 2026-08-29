@@ -46,9 +46,9 @@ mentions:
 ---
 
 Five Opus releases in a row list at the same input price.
-`anthropic/claude-opus-4.1` billed at
-{{fact:model/anthropic-claude-opus-4-1#price_input}}; the next release cut
-two thirds off that, to
+`anthropic/claude-opus-4.1` heads at
+{{fact:model/anthropic-claude-opus-4-1#price_input}}; the next release lists
+two thirds below that, at
 {{fact:model/anthropic-claude-opus-4-5#price_input}} on
 `anthropic/claude-opus-4.5` —
 and every release since has matched that new number exactly:
@@ -56,14 +56,17 @@ and every release since has matched that new number exactly:
 {{fact:model/anthropic-claude-opus-4-7#price_input}} on 4.7, this row's own
 {{fact:model/anthropic-claude-opus-4-8#price_input}}, and
 {{fact:model/anthropic-claude-opus-5#price_input}} on Opus 5. Same number,
-five times running.
+five times running. Each of those is the top listed provider's rate for its
+row rather than necessarily Anthropic's own, and the 4.1 row is headed by
+resellers, so the step down sits between listings rather than being a price
+Anthropic announced.
 
 Nothing about the model stayed flat over that stretch. The Artificial
 Analysis intelligence index reads
 {{fact:model/anthropic-claude-opus-4-7#intelligence_index}} on 4.7,
 {{fact:model/anthropic-claude-opus-4-8#intelligence_index}} on this row,
 and {{fact:model/anthropic-claude-opus-5#intelligence_index}} on Opus 5 two
-releases later — eight points of climb while the row billed the same five
+releases later — eight points of climb while the row listed the same five
 times running.
 
 The context window moved on a different schedule than the price.

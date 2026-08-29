@@ -72,3 +72,77 @@ hedged around, and no new ratio was introduced anywhere in the rewrite.
 It clears the bar comfortably, and it is the piece in my slice whose payload is
 hardest to get any other way: four separate censuses over 388 rows, each of
 which I re-derived independently and each of which came out exactly as written.
+
+---
+
+## Recheck, 2026-08-29 (b2-prices) — `addictedtoai-sdh`
+
+Verdict unchanged: **approve**. The open-artifacts lede and the Gemma-derived
+guardrail finding re-verified and are untouched. The batch-row paragraph was
+**false twice over** — wrong about who set the prices, and now also wrong about
+its census — and has been rewritten.
+
+### What was wrong
+
+The page called the Nemotron 3 Ultra batch row *"the only batch row in the
+snapshot dearer than the row it batches on both input and output"*, then
+contrasted it with *"Every Anthropic and Google batch row is a discount. This
+one is a surcharge."*
+
+Measured 2026-08-29 against `https://openrouter.ai/api/v1/models/<row>/endpoints`,
+headlines from `data/sources/openrouter-models/latest.json` (`date: 2026-08-29`):
+
+- **`nvidia/nemotron-3-ultra-550b-a55b`** — **3 endpoints, none of them
+  NVIDIA**: DeepInfra `0.0000005` / `0.0000022`, BaseTen `0.0000006` /
+  `0.0000024`, Venice `0.000000625` / `0.000003125`. Headline is **DeepInfra's**.
+- **`nvidia/nemotron-3-ultra-550b-a55b:batch`** — **1 endpoint, Together**,
+  `0.0000006` / `0.0000036`. Headline is **Together's**.
+
+**No provider serves both rows.** Together is absent from the standard row and
+DeepInfra from the batch row, so the "surcharge" cannot be computed at any
+single host — it is the distance between two companies that never quote against
+each other. NVIDIA prices neither.
+
+The contrast made it worse by construction: `anthropic/claude-opus-4.5` and
+`anthropic/claude-opus-4.8` both carry an **`anthropic` endpoint at the headline
+rate** (`0.000005` / `0.000025`), so the Anthropic batch discounts really are
+vendor decisions. The sentence set two third-party listings against a set of
+vendor-set prices and read the difference as NVIDIA's behaviour.
+
+**The superlative has also gone stale.** Counted over both committed snapshots:
+in `previous.json` (2026-08-28, 388 rows) this was indeed the **only** batch row
+dearer on both sides. In `latest.json` (2026-08-29, 396 rows) there are **ten** —
+`deepseek-v4-flash-0731`, `deepseek-v4-pro-0813`, `gemma-4-31b-it`,
+`muse-glimmer-30b`, this row, `gpt-oss-120b`, `gpt-oss-20b`, `qwen3.5-9b`,
+`qwen3.8-2.4t-a95b` and `glm-5.3-flash`. Restating it would have shipped a
+false count.
+
+### What changed in the body
+
+Facts untouched; prose only.
+
+- "is the only batch row in the snapshot dearer than the row it batches on both
+  input and output" → "heads higher than the row it batches on both input and
+  output ... where the convention is a discount". The superlative is **deleted**,
+  not re-counted, because a census over a snapshot that advances daily is the
+  wrong shape for this sentence.
+- "Every Anthropic and Google batch row is a discount. This one is a surcharge."
+  — **deleted**. That was the apples-to-oranges contrast.
+- Added the house hedge: neither figure is necessarily NVIDIA's, each is the top
+  listed provider's rate for its row, and two rows are not obliged to be headed
+  by the same provider — so the inversion sits between two listings rather than
+  being a surcharge anyone levied.
+- The longer-window observation is kept; it is a `context_length` claim and
+  unaffected.
+
+No provider is named in the prose, deliberately: DeepInfra and Together will
+rotate, and pinning them would reintroduce the defect.
+
+### Flagged rather than edited
+
+**The `would-cite` in the front matter above still asserts the withdrawn
+superlative** ("the only one in the 28 August 2026 snapshot that costs more than
+its base on both input and output, while every Anthropic and Google batch row
+discounts"). Front matter was out of scope for this pass, so it is recorded here:
+that `would-cite` no longer matches the body and its census is now false against
+`latest.json`.

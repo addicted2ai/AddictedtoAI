@@ -122,6 +122,22 @@ export function isDue(source, state, { force = false } = {}) {
   }
   if (force) return { due: true, why: 'forced' };
   if (!state.last_fetch_date) return { due: true, why: 'never fetched' };
+  // VERIFIED CORRECT, AND DELIBERATELY NOT "FIXED" TO LOCAL (addictedtoai-3t8).
+  // This is the only hand-rolled date arithmetic left in `pulse/`, so it looks
+  // like something the local-date change (addictedtoai-4ih) missed. It is not.
+  // Both operands are calendar dates in the SAME frame — `day` comes from
+  // `today()`, which is local, and `last_fetch_date` was written by `today()`
+  // on an earlier run — and parsing both at UTC midnight cancels the frame out.
+  // UTC midnight also has no DST, so the subtraction is exact where a local
+  // parse would miscount a 23- or 25-hour day. `daysSince(state.last_fetch_date)`
+  // computes the same number and would be the tidier spelling; it is left alone
+  // because it is correct and this file is not the place to relitigate it.
+  //
+  // ONE TRANSITIONAL WRINKLE, worth knowing before debugging it from scratch:
+  // a `last_fetch_date` written by an evening run under the OLD UTC convention
+  // is one day AHEAD of the new local day, so `elapsed` comes out -1 and the
+  // source reads as not due for one extra cycle. Self-correcting on the next
+  // fetch, and one time only.
   const elapsed = Math.floor((new Date(`${day}T00:00:00Z`) - new Date(`${state.last_fetch_date}T00:00:00Z`)) / 86400000);
   if (elapsed >= source.fetch_every_days) return { due: true, why: `${elapsed}d since last fetch` };
   return { due: false, why: `fetched ${elapsed}d ago, cadence ${source.fetch_every_days}d` };
@@ -199,6 +215,21 @@ export async function ingestSource(root, source, { force = false, offline = fals
 
   const res = await fetchSource(source);
   const day = today();
+  // UTC HERE IS DELIBERATE, and is not an oversight of the local-date change
+  // (addictedtoai-4ih / -3t8). These two are different kinds of value and the
+  // distinction is the rule, not an exception to it (see core.mjs, rule 2):
+  //
+  //   `day` is a CALENDAR DATE the Pulse mints for the corpus, so it is LOCAL —
+  //        it gets compared against `accessed:`, `verified_on:` and every other
+  //        hand-authored date, and those are local.
+  //   `at`  is a WALL-CLOCK INSTANT — the moment this fetch happened. An
+  //        instant has no calendar frame to share with anything; rendering it
+  //        in UTC is honest and reproducible on any machine, and it is never
+  //        compared against a corpus date.
+  //
+  // `last_fetch_at` is the only consumer, and it is displayed, never differenced
+  // against a local date. Making this local would gain nothing and would put a
+  // zone-less local timestamp into state that another machine could not read.
   const at = now().toISOString();
 
   if (res.outcome === 'refused') {

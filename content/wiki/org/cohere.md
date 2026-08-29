@@ -90,10 +90,10 @@ North product line. It is a 30-billion-parameter mixture-of-experts with 3
 billion active, published under
 {{fact:org/cohere#newest_model_license}} at
 [CohereLabs/North-Mini-Code-1.0](https://huggingface.co/CohereLabs/North-Mini-Code-1.0)
-— a different Hugging Face namespace from the `CohereForAI` account that
-still hosts Command A. A company that sells into
+— the same Hugging Face namespace that now carries Command A, which moved
+there from `CohereForAI`. A company that sells into
 {{fact:org/cohere#market}} re-entered the public catalog with a free agentic
-coding model on a new account.
+coding model given away.
 
 The gap was not idleness. Cohere's revenue was reported at
 {{fact:org/cohere#revenue}}, and on 24 April 2026 it

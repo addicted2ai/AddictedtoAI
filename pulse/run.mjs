@@ -207,11 +207,22 @@ log.step(
     (corroborations.length ? `: ${corroborations.map((c) => `${c.entry_id} ${c.a.field}/${c.b.field}`).join(', ')}` : ''),
 );
 
-const queue = computeQueue(root, { freshness, changesFile: p.changes, corroborations });
+// `registry` is passed so the queue applies the same `event: false` decision
+// the diff already applies: a field the registry says is not an event stops
+// producing `interpret` jobs, including for lines append-only history has
+// already recorded (addictedtoai-e31).
+const queue = computeQueue(root, { freshness, changesFile: p.changes, corroborations, registry });
 writeQueue(root, queue);
 log.step('queue', `${queue.count} item(s) of ${queue.total_before_cap} (cap ${queue.cap}) — recomputed from state, never accumulated`);
 
 // ---- 8. site rebuild -----------------------------------------------------
+// A failed build skips the publish rather than exiting here, and that ordering
+// is load-bearing: publish runs *after* the rebuild precisely so a run that
+// produced content the build rejects publishes nothing. `process.exitCode`
+// rather than `process.exit()` for the same reason as the note at the foot of
+// this file — by this point the run has fetched, and `process.exit()` would
+// replace the build's own status with 0xC0000409.
+let buildFailed = false;
 if (options.noBuild) {
   log.step('build', 'skipped (--no-build)');
 } else if (!existsSync(`${root}/package.json`)) {
@@ -220,23 +231,94 @@ if (options.noBuild) {
   const res = spawnSync('npm', ['run', 'build'], { cwd: root, stdio: 'inherit', shell: process.platform === 'win32' });
   if (res.status !== 0) {
     log.error(`site rebuild failed with exit code ${res.status}`);
-    process.exit(res.status ?? 1);
+    process.exitCode = res.status ?? 1;
+    buildFailed = true;
+  } else {
+    log.step('build', 'ok');
   }
-  log.step('build', 'ok');
 }
 
-// ---- 9. publish ----------------------------------------------------------
-// What this run wrote under `content/`, declared to the publish step so it
-// stages this run's work instead of sweeping up whatever anyone left dirty
-// (addictedtoai-ps3). Both lists already carry repo-relative POSIX paths:
-// `mints.minted[].path` from `relPosix` in mint.mjs writeStub(), and
-// `timeline.appended[].path` from `relPosix` in corpus.mjs. Everything else
-// this run touches — data/changes.jsonl, data/linkcheck.json, data/derived/**,
-// data/sources/<id>/*, public/** — the step attributes by path on its own
-// (`isEngineWrite`), so it is deliberately not repeated here.
-const owned = [...mints.minted.map((m) => m.path), ...timeline.appended.map((a) => a.path)];
-await publishStep(root, { dryRun: options.dryRun, assumePublish: options.assumePublish, log, owned });
+if (!buildFailed) {
+  // ---- 9. publish --------------------------------------------------------
+  // What this run wrote under `content/`, declared to the publish step so it
+  // stages this run's work instead of sweeping up whatever anyone left dirty
+  // (addictedtoai-ps3). Both lists already carry repo-relative POSIX paths:
+  // `mints.minted[].path` from `relPosix` in mint.mjs writeStub(), and
+  // `timeline.appended[].path` from `relPosix` in corpus.mjs. Everything else
+  // this run touches — data/changes.jsonl, data/linkcheck.json,
+  // data/derived/**, data/sources/<id>/*, public/** — the step attributes by
+  // path on its own (`isEngineWrite`), so it is deliberately not repeated here.
+  const owned = [...mints.minted.map((m) => m.path), ...timeline.appended.map((a) => a.path)];
+  await publishStep(root, { dryRun: options.dryRun, assumePublish: options.assumePublish, log, owned });
 
-const feedLines = readJsonl(p.changes).length;
-log.step('done', `changed feed holds ${feedLines} line(s); queue holds ${queue.count} item(s)`);
-process.exit(0);
+  const feedLines = readJsonl(p.changes).length;
+  log.step('done', `changed feed holds ${feedLines} line(s); queue holds ${queue.count} item(s)`);
+}
+
+// ---- how this program ends, and why it is not `process.exit(0)` ----------
+//
+// It ends by running off the end and letting the event loop drain. That is a
+// deliberate choice with a measurement behind it (addictedtoai-9bh).
+//
+// THE BUG. This file used to finish with `process.exit(0)`. Every run that
+// reached the deploy poll printed `pulse: done` and then died on
+//
+//   Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c
+//
+// exiting 3221226505 (0xC0000409). `process.exit()` tears the libuv loop down
+// synchronously; the sockets Node's `fetch` leaves in undici's keep-alive pool
+// are closed during that teardown, and their completion is posted back to the
+// loop's `wq_async` handle after it has already been flagged closing. That is
+// the assertion. It is a teardown race, invisible above the last log line, and
+// it fired on the SUCCESS path — so a scheduler reading `LastTaskResult` could
+// not tell a complete run from a hard crash, which is the only signal an
+// unattended engine has.
+//
+// MEASURED 2026-08-29, Node v24.13.0, Windows 10. First in isolation, 5 runs
+// per cell across three stdio modes (piped, inherited, ignored):
+//
+//   no fetch  + process.exit(0)   ->  clean, 15/15
+//   a fetch   + process.exit(0)   ->  0xC0000409, 14/15
+//   a fetch   + return normally   ->  clean, 15/15
+//
+// Then on this file itself, HEAD against the fix, against a throwaway repo with
+// a bare origin and a loopback /status.json — 6 runs per cell:
+//
+//   --offline, deploy poll is the run's only fetch   HEAD 6/6 crash   fix 0/6
+//   ONLINE, nothing due, poll is the only fetch      HEAD 6/6 crash   fix 0/6
+//   ONLINE, a source was fetched earlier this run    HEAD 0/6         fix 0/6
+//   ONLINE, poll took three requests (~20s)          HEAD 0/3         fix 0/3
+//
+// THE DISCRIMINATOR, because it is not "any run that publishes": the assertion
+// fires when the deploy poll is the *only* fetch the process makes. A run that
+// already fetched a source earlier does not trip it — whatever undici sets up
+// on first use has settled by then. That is why the original report saw it four
+// times out of four under `--offline`.
+//
+// It is emphatically NOT an offline-only defect, which is the trap here. The
+// third line above is an ordinary scheduled run with no `--offline` anywhere:
+// every source inside its `fetch_every_days` cadence and no link due for
+// re-checking, so nothing fetches until the publish step. That is what most
+// runs look like once the corpus settles, and it crashed 6 times out of 6.
+//
+// It also explains the STOP-file and `--help` exits above, which are left as
+// they are: both are reached before any network call, and both measured clean.
+//
+// WHAT WAS RULED OUT, so nobody re-derives it: closing undici's global
+// dispatcher first and confirming zero pooled sockets remained did NOT help —
+// still 0xC0000409, 15/15. Destroying the sockets by hand did not either.
+// Nothing short of not calling `process.exit()` fixed it.
+//
+// WHY DRAINING IS SAFE HERE, rather than a hang traded for a crash. Every
+// outbound request in `pulse/` is bounded by `AbortSignal.timeout` and awaited
+// (`sources.mjs` fetchSource, `linkcheck.mjs` request, `publish.mjs`
+// fetchLiveStamp), the only timer is the awaited one in the publish poll, and
+// undici unrefs a pooled socket once it goes idle. Measured: the loop drained
+// in 1ms after the last fetch, for 1, 2 and 5 requests alike.
+//
+// DO NOT "FIX" A FUTURE HANG WITH `process.exit(0)`. It would restore this
+// crash, and worse, it would also flatten every genuine failure to 0 — the
+// build failure above sets `process.exitCode` exactly so that a real problem
+// still leaves with a non-zero status. If something one day keeps the loop
+// alive, find that handle; `process._getActiveHandles()` after the last step
+// names it in one line.

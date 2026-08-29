@@ -62,3 +62,72 @@ nobody fills, used two distinct ways) and the only public number for a closed
 premium at this vendor. Every "zero exceptions"-shaped claim re-ran clean,
 the ratio claims are anchored to the dated snapshot in the prose, and the
 one claim about live pages held when fetched. approve
+
+---
+
+## Recheck, 2026-08-29 (b2-prices) — `addictedtoai-sdh`
+
+Verdict unchanged: **approve**. The expiration-date census — the page's real
+payload — re-verified and is untouched. The closed-premium claim beside it was
+**false as an attribution** and has been rewritten.
+
+### What was wrong
+
+The approval calls "the only public number for a closed premium at this
+vendor" a payload. It was comparing a Z.ai price against a reseller's price.
+
+Measured 2026-08-29 against `https://openrouter.ai/api/v1/models/<row>/endpoints`,
+headlines from `data/sources/openrouter-models/latest.json` (`date: 2026-08-29`):
+
+- **`z-ai/glm-5`** (open, 11 endpoints) — headline `0.0000006` in / `0.00000192`
+  out is **GMICloud's**, tied with StreamLake and DeepInfra. **Z.ai's own
+  endpoint posts `0.000001` in / `0.0000032` out.**
+- **`z-ai/glm-5-turbo`** (closed, **1 endpoint: Z.AI**) — `0.0000012` in /
+  `0.000004` out. The headline **is** Z.ai's own rate.
+- **`z-ai/glm-5v-turbo`** (closed, **1 endpoint: Z.AI**) — `0.0000012` /
+  `0.000004`. Same.
+
+So "exactly double on input and a shade over double on output" was arithmetic
+on `0.0000012 / 0.0000006` = **2.0** and `0.000004 / 0.00000192` = **2.083** —
+correct arithmetic on a mismatched pair. **Z.ai against Z.ai it is
+`0.0000012 / 0.000001` = 1.2x input and `0.000004 / 0.0000032` = 1.25x
+output.** The superlative was the tell: an "exactly double" that falls to 1.2x
+under a like-for-like reading was never measuring a pricing decision.
+
+### What changed in the body
+
+Facts untouched; prose only.
+
+- "both list at twice the price of the open model they shadow" — **deleted**.
+- "the closed price is exactly double the open one on input and a shade over
+  double on output" — **deleted**. No replacement ratio was typed, because the
+  honest one cannot be transcluded: there is no fact for a non-top provider's
+  rate.
+- "That gap is the only public figure anywhere for what this company charges to
+  keep a checkpoint to itself" — **withdrawn**, and replaced with why the gap
+  cannot mean that: the open row's figure is whichever host currently heads it.
+- Added the one structural point that is genuinely durable and explains the
+  whole asymmetry: **a checkpoint with no published weights has no third party
+  able to host it, so on the two Turbo rows the listed price is Z.ai's own, and
+  on the open rows it need not be.** That is reasoned from a premise the page
+  itself states two clauses earlier ("carries no weights"), not from an endpoint
+  count — deliberately, because a count rots and a reason does not.
+
+### Re-verified and untouched
+
+The third paragraph (`glm-5.3` vs `glm-5.3-flash`, "around a nineteenth as
+much") was checked and is **not** an instance of this defect: **both** rows are
+Z.ai-served at the headline — `glm-5.3` headline `0.0000014` matches Z.ai's own
+endpoint, and `glm-5.3-flash` headline `0.000000075` matches Z.ai's own (tied
+with four others). `0.0000014 / 0.000000075` = **18.67**, so "around a
+nineteenth" holds at the vendor's own rates. Left alone.
+
+### Flagged rather than edited
+
+Two counting claims in this file have gone stale and are **not** part of this
+defect, so they were left as found: "thirteen of its fifteen rows" (the
+2026-08-29 snapshot carries **16** z-ai rows, 14 with a `hugging_face_id`) and
+"Of the 388 rows in that snapshot" (`latest.json` is now 396 rows;
+`previous.json` is the 388-row 2026-08-28 one the prose names). The prose
+anchors itself to 28 August while the transclusions render from the current
+snapshot. Filed separately rather than half-fixed here.

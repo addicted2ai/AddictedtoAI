@@ -45,6 +45,8 @@ import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './li
 import { runGates, unlinkNodeModules } from './lib/gates.mjs';
 import { joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
 import {
+  brakeScan,
+  brakeState,
   checkConsecutiveFailures,
   checkBuildRed,
   checkReviewBypass,
@@ -164,6 +166,9 @@ async function executeJob(ctx, opts) {
   const finish = (o) => ({ ...o, phases });
 
   ctx.log(`invoking runner "${runner.id}" (provider ${runner.provider}, tier ${runner.tier}) under a ${capMinutes}-minute cap`);
+  // Breaker 4's filesystem companion needs a "before" for the two brakes, and
+  // the window that matters is the executor's own run, not the whole job.
+  let brakesBefore = brakeState(ctx);
   const run = await runExecutor({
     command: runner.command,
     cwd: worktree,
@@ -198,7 +203,15 @@ async function executeJob(ctx, opts) {
   );
 
   // Breaker 4 — before anything is judged on its merits.
-  const reserved = checkReservedPaths(ctx, changed, jobId);
+  //
+  // Two channels, one judgement. The branch diff sees the reserved paths git
+  // can see; `brakeScan` sees `STOP` and `HOLD.md`, which are gitignored and so
+  // can never appear in a diff again (beads addictedtoai-59q, addictedtoai-ut1).
+  // Both feed the same `reservedPathViolations`, so there is one definition of a
+  // violation rather than two that can drift apart.
+  const brakes = brakeScan(ctx, { worktree, before: brakesBefore });
+  for (const n of brakes.notices) ctx.log(`NOTICE: ${n}`);
+  const reserved = checkReservedPaths(ctx, [...changed, ...brakes.entries], jobId);
   if (reserved.tripped) {
     ctx.log(`BREAKER: ${reserved.reason}`);
     return finish({ outcome: 'failed', mm: run.mm, held: reserved, changed, note: 'reserved-path edit attempt' });
@@ -348,6 +361,13 @@ async function executeJob(ctx, opts) {
       `this brief, which were written before the author run and the review:\n\n` +
       `${invocationAccounting({ capMinutes, mmSoFar: prior.mm + mm, invocations: prior.invocations + phases.length })}\n\n` +
       `The reviewer did not approve. Address exactly these findings, change nothing\nelse, and end by writing RESULT.md again:\n\n${findings}\n`;
+    // A revision is a second executor invocation into the same worktree, so it
+    // gets the same brake window as the author run. This is also the ONLY place
+    // the "a brake disappeared from the repository root" test is not vacuous:
+    // `startGate` guarantees neither file exists when the author run starts, but
+    // the maintainer can write one while the review is running, and a revision
+    // that removes it is exactly the self-serving act breaker 4 names.
+    brakesBefore = brakeState(ctx);
     const run2 = await runExecutor({
       command: runner.command,
       cwd: worktree,
@@ -362,6 +382,23 @@ async function executeJob(ctx, opts) {
     phase('revision', runner, run2, 'unclassified');
     unlinkNodeModules(worktree);
     commitAll(ctx.repoRoot, worktree, `job ${jobId}: revision`, { exclude: ['RESULT.md'] });
+
+    // Both channels again, not just the brakes. Breaker 4 ran once, after the
+    // AUTHOR run, and a revision is a second unattended invocation into the same
+    // worktree — a revision that edited `runners.yml` reached the merge gate
+    // unexamined. Checking only the brakes here would look like coverage of the
+    // revision pass while being half of one, which is the failure mode this
+    // whole repair is about.
+    const changed2 = changedPathsWithStatus(ctx.repoRoot, base, branch).filter(
+      (e) => e.path !== '.job/brief.md' && !e.path.startsWith('.job/'),
+    );
+    const brakes2 = brakeScan(ctx, { worktree, before: brakesBefore });
+    for (const n of brakes2.notices) ctx.log(`NOTICE: ${n}`);
+    const reserved2 = checkReservedPaths(ctx, [...changed2, ...brakes2.entries], jobId);
+    if (reserved2.tripped) {
+      ctx.log(`BREAKER: ${reserved2.reason}`);
+      return finish({ outcome: 'failed', mm, held: reserved2, changed, note: 'reserved-path edit attempt (revision pass)' });
+    }
     pass = 2;
   }
 }

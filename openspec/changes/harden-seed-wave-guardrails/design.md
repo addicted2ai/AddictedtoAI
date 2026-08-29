@@ -209,11 +209,11 @@ queue item on disagreement. No tolerance. Both sides have to resolve or there is
 no comparison. Nothing is edited and nothing fails.
 
 **Why declared.** Field names differ by necessity — the repair for the observed
-case named its cited facts `card_parameters` and `preview_parameters` precisely
-so they would not collide with the feed-bound `parameters` — so a same-name join
-finds nothing. Normalising names to find pairs is the fuzzy matching this design
-refuses everywhere else, for the reason `wiki` gives about feed binding: name
-matching is guessing.
+case named its cited facts `repository_tensor_total` and `preview_parameters`,
+neither of which can collide with the feed-bound `parameters` and the first of
+which shares no word with it — so a same-name join finds nothing. Normalising
+names to find pairs is the fuzzy matching this design refuses everywhere else,
+for the reason `wiki` gives about feed binding: name matching is guessing.
 
 **Why no tolerance.** A tolerance is a policy nobody has set, and the observed
 disagreement (`284B` against `304B`) needs none. Numeric normalisation already

@@ -92,9 +92,12 @@ The three ways to call the same model do not rank the way the names suggest.
 `thinkingmachines/inkling:free` serves the full window at no cost. The
 standard row serves the same
 {{fact:model/thinkingmachines-inkling#context_window}}. The batch row halves
-it to {{fact:model/thinkingmachines-inkling-batch#context_window}} and asks
-{{fact:model/thinkingmachines-inkling-batch#price_input}} for input against
-{{fact:model/thinkingmachines-inkling#price_input}} on the standard row — one
-of only two batch listings in the 388-row snapshot that costs more than the
-row it batches rather than less. Batch pricing is a convention, not a
-guarantee, and this lab did not follow it.
+it to {{fact:model/thinkingmachines-inkling-batch#context_window}} and heads
+at {{fact:model/thinkingmachines-inkling-batch#price_input}} for input
+against {{fact:model/thinkingmachines-inkling#price_input}} on the standard
+row — a batch listing above the row it batches, where the convention is a
+discount. Neither figure is necessarily this lab's, though: each is the top
+listed provider's rate for its row, and two rows are not obliged to be headed
+by the same provider. Batch pricing is a convention and not a guarantee, but
+an inversion visible only across two separately ranked rows is a fact about
+who was listed first on each, not a decision the lab made.

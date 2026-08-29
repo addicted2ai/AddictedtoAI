@@ -73,16 +73,18 @@ mentions:
 ---
 
 Z.ai publishes weights for thirteen of its fifteen rows in the OpenRouter
-catalog. The two it does not are both called Turbo, and both list at twice
-the price of the open model they shadow. `z-ai/glm-5`, listed 11 February
-2026, carries a Hugging Face id and lists at
-{{fact:model/z-ai-glm-5#price_input}} for input;
+catalog. The two it does not are both called Turbo, and a checkpoint with no
+published weights has no third party able to host it — so on those two rows
+the listed price is Z.ai's own, and on the open rows it need not be.
+`z-ai/glm-5`, listed 11 February 2026, carries a Hugging Face id and heads
+at {{fact:model/z-ai-glm-5#price_input}} for input;
 `z-ai/glm-5-turbo`, listed a month later on 15 March, carries no weights and
 lists at {{fact:model/z-ai-glm-5-turbo#price_input}}. `z-ai/glm-5v-turbo`,
-the multimodal one listed 1 April, matches it to the digit. In the snapshot
-of 28 August 2026 the closed price is exactly double the open one on input
-and a shade over double on output. That gap is the only public figure
-anywhere for what this company charges to keep a checkpoint to itself.
+the multimodal one listed 1 April, matches it to the digit. The open row's
+figure is the top listed provider's rate rather than necessarily Z.ai's own,
+so the distance between the two is not a measure of what this company
+charges to keep a checkpoint to itself: it is a closed price quoted against
+whichever host happens to head an open row.
 
 The other field Z.ai fills in that almost nobody does is the death date. Of
 the 388 rows in that snapshot, eight carry a non-null expiration date and

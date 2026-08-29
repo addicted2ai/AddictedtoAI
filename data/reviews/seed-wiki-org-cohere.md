@@ -95,3 +95,51 @@ most citable derived artifact I verified tonight: four separate numbers, all
 exact. Binning that prose over three removable words would be the wrong trade, so
 this approves with the correction recorded above in terms specific enough to
 apply without re-deriving it.
+
+---
+
+## Recheck 2026-08-29 — the two-namespace contrast was false, corrected
+
+Raised as `addictedtoai-sti` by an agent repointing citations on a neighbouring
+entry. Its conclusion was right and its stated mechanism was not, so the
+correction below rests on a direct measurement rather than on the report.
+
+**What the entry said.** North-Mini-Code was published "at CohereLabs/… — a
+different Hugging Face namespace from the `CohereForAI` account that still
+hosts Command A", concluding that Cohere "re-entered the public catalog with a
+free agentic coding model on a new account."
+
+**The issue's mechanism, which does not hold.** It reported CohereLabs as
+CohereForAI renamed, so that no two-account contrast exists. Measured, both org
+pages return HTTP 200 and neither names the other:
+
+    huggingface.co/CohereForAI   200   75,174 B   "CohereLabs"  x0
+    huggingface.co/CohereLabs    200  490,177 B   "CohereForAI" x0
+
+A renamed org serving a soft redirect would not answer with a page that never
+mentions its new name. So "the same account renamed" is not established, and
+rewriting the entry to say so would have replaced one unsupported claim with
+another.
+
+**What is measurable, and what actually falsifies the sentence.** The Hugging
+Face API answers the ownership question directly:
+
+    api/models?author=CohereForAI   count = 0
+    api/models?author=CohereLabs    count = 49   (incl. Command A)
+    CohereForAI/c4ai-command-a-03-2025 -> 307 -> /CohereLabs/c4ai-command-a-03-2025
+    Command A card: "CohereLabs" x76 · "Cohere Labs" x22 · "CohereForAI" x0 · "formerly" x0
+
+`CohereForAI` hosts **nothing**. The claim that it "still hosts Command A" is
+false however the move is characterised, and both models the sentence contrasts
+now live in one namespace — so the contrast is not available at all, and the
+conclusion resting on it ("on a new account") goes with it.
+
+**The correction.** The namespace clause now says CohereLabs is the same
+namespace that carries Command A, which moved there from `CohereForAI` — the
+observable fact, stated without asserting whether the move was a rename or a
+migration, because that is not established and nothing in the paragraph needs
+it. The closing phrase drops "on a new account" for "given away", which is what
+the paragraph was actually about: a company selling into the enterprise market
+publishing a free model.
+
+The entry's thesis is untouched. Verdict stands.
