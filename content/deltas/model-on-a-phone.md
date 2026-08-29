@@ -14,3 +14,17 @@ routine:
 mentions:
   - technique/quantization
 ---
+
+The routine end quotes the paper directly: "We tested the quantized model
+by deploying phi-3-mini on iPhone 14 with A16 Bionic chip running natively
+on-device and fully offline achieving more than 12 tokens per second."
+
+One inconsistency inside that sentence belongs to the paper rather than to
+this page, and is recorded here so it is not mistaken for a transcription
+error and quietly "corrected". Apple shipped the A16 Bionic in the iPhone
+14 Pro and Pro Max; the base iPhone 14 carries the A15. The paper's own
+figure caption drops the model number and says only "an iPhone with A16
+Bionic chip". The device is named above as published.
+
+The 69% is likewise the paper's headline figure, stated in its abstract;
+the results table gives 68.8% at 5-shot.

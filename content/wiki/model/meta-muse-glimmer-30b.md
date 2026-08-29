@@ -58,6 +58,12 @@ facts:
     source_url: "https://en.wikipedia.org/wiki/Muse_Spark"
     accessed: "2026-08-28"
     volatility: slow
+  - field: quantization
+    source: cited
+    value: "compresses the weights to roughly 4-bit precision, shrinking the language model to under 20 GB"
+    source_url: "https://huggingface.co/meta-models/Muse-Glimmer-30B"
+    accessed: "2026-08-28"
+    volatility: static
   - field: release_date
     source: cited
     value: "2026-08-10"
@@ -66,7 +72,7 @@ facts:
     volatility: dated
 timeline:
   - date: "2026-08-10"
-    event: "released under the Apache License 2.0 — Meta's first open-weight release since the Llama line ended"
+    event: "released under the Apache License 2.0, distilled from Muse Spark and built for agentic tasks on consumer hardware"
     source_url: "https://huggingface.co/meta-models/Muse-Glimmer-30B"
 mentions:
   - org/meta-superintelligence-labs
@@ -75,11 +81,16 @@ mentions:
 
 Glimmer's own card puts the count at
 {{fact:model/meta-muse-glimmer-30b#parameters}} — most of a 30B model, but
-not all of it doing the same job. Strip the 1.8B vision encoder out and the
-text backbone is closer to 28B, small enough that the card's other claim,
-{{fact:model/meta-muse-glimmer-30b#local_hardware}}, is the ordinary case
-for this row rather than a stretch: a multimodal model sized to leave your
-account out of the loop entirely.
+not all of it doing the same job; strip the 1.8B vision encoder out and the
+text backbone is closer to 28B. Size alone is not what gets it onto one
+card, though. At full precision a 28B backbone is more than twice a 24 GB
+budget, and the card is explicit about the step that closes the gap: it
+{{fact:model/meta-muse-glimmer-30b#quantization}}, which is what leaves
+headroom for the KV cache, the perception encoder and the drafter inside a
+single 24 GB envelope. Wikipedia's summary of the result — that Glimmer
+{{fact:model/meta-muse-glimmer-30b#local_hardware}} — is a claim about that
+quantized build, not a consequence of the parameter count: a multimodal
+model compressed to leave your account out of the loop entirely.
 
 That local-hardware claim is not just a spec-sheet line — this same row
 also carries an OpenRouter price, {{fact:model/meta-muse-glimmer-30b#price_input}}
@@ -93,9 +104,12 @@ field-of-use or user-count condition to the second path — a hobbyist with
 one consumer GPU gets the same weights a paying API customer is billed for.
 
 Glimmer did not start as its own model. Per its card,
-{{fact:model/meta-muse-glimmer-30b#distilled_from}} is where it comes from,
-released {{fact:model/meta-muse-glimmer-30b#release_date}} — and the model
-it was distilled from is not offered either way. Meta Superintelligence
+{{fact:model/meta-muse-glimmer-30b#distilled_from}} is where it comes from;
+Glimmer itself was released
+{{fact:model/meta-muse-glimmer-30b#release_date}}. Only one of those two
+paths is open on the teacher, though. Muse Spark is rented by the token
+like any hosted model — `meta/muse-spark-1.2` is a row in this same catalog
+— but it does not come with a download. Meta Superintelligence
 Labs' own record of its flagship line states
 {{fact:org/meta-superintelligence-labs#flagship_weights}}. The lab kept the
 larger model behind the API and shipped only the smaller, distilled one as

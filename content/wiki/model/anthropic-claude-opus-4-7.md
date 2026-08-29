@@ -49,22 +49,28 @@ mentions:
 debut in this line, priced at
 {{fact:model/anthropic-claude-opus-4-7-fast#price_input}} input against
 this row's own {{fact:model/anthropic-claude-opus-4-7#price_input}} — six
-times over. Two releases later the ratio had fallen by two thirds:
+times over. In the next release the ratio fell by two thirds:
 `anthropic/claude-opus-4.8-fast` lists at
 {{fact:model/anthropic-claude-opus-4-8-fast#price_input}} against
 {{fact:model/anthropic-claude-opus-4-8#price_input}}, twice over rather
 than six, and Opus 5 kept that same rate
 ({{fact:model/anthropic-claude-opus-5-fast#price_input}} against
-{{fact:model/anthropic-claude-opus-5#price_input}}).
+{{fact:model/anthropic-claude-opus-5#price_input}}). Those are the
+multipliers as the catalog stands in the snapshot of 28 August 2026.
 
-Nothing else about the option is recorded as having changed between the
-two releases — same context window, same base rate — only the multiplier
-sitting on top of it. And once it dropped, it stayed dropped: Opus 5's
-fast row still bills at that same two-times rate, one full generation
-after this row introduced the option at three times that multiplier.
+The six-times option had a short life. `anthropic/claude-opus-4.7-fast` was
+listed on 12 May 2026 and `anthropic/claude-opus-4.8-fast` replaced it
+fifteen days later — and nothing else about the option is recorded as
+having changed across that handover: same context window, same base rate,
+only the multiplier sitting on top of it. Once it dropped, it stayed
+dropped, and Opus 5's fast row still bills at the two-times rate one full
+generation later.
 
 This row's base price is itself part of a longer plateau —
 {{fact:model/anthropic-claude-opus-4-7#price_input}}, unchanged from
-`anthropic/claude-opus-4.5` through `anthropic/claude-opus-5` — so the
-fast-mode cut is the one number in the family that actually moved during
-that stretch.
+`anthropic/claude-opus-4.5` through `anthropic/claude-opus-5`, with the
+batch rate alongside it flat across the same five releases. So among the
+*prices* in this family the fast-mode cut is the only one that moved.
+Other things did move in that stretch — the context window at 4.6, and the
+Artificial Analysis intelligence index at each release after 4.7 — which
+is what makes the flat price line worth pointing at rather than assuming.

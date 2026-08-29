@@ -182,12 +182,13 @@ shard-by-shard, do the two mirrors match?
    model-00004-of-00004.safetensors  size same   header same
 ```
 
-Eight range requests, 33,856 bytes read. All four shards agree on file size to
-the byte and on the `sha256` of the tensor index — same tensors, same shapes,
-same dtypes, same byte offsets. This does not hash 16 GB of weights, so it is
-not proof that every weight is equal; it is proof that the two repositories
-describe the same model laid out identically, which is as far as anyone gets
-without downloading both.
+Sixteen range requests, 67,760 bytes read — eight per mirror, an 8-byte length
+probe and then the header itself for each of four shards. All four shards agree
+on file size to the byte and on the `sha256` of the tensor index — same
+tensors, same shapes, same dtypes, same byte offsets. This does not hash 16 GB
+of weights, so it is not proof that every weight is equal; it is proof that the
+two repositories describe the same model laid out identically, which is as far
+as anyone gets without downloading both.
 
 The difference between the two downloads is in a JSON field.
 
@@ -281,10 +282,11 @@ $ node render.mjs
 
 **The double BOS is right there in the ids.** `128000,128000` on both Llamas;
 `1,1` on Mistral. The template emits the beginning-of-text token itself, and
-`encode()` adds another by default, so the model receives a two-token sequence
-it never saw in training. Qwen is unaffected — its template emits no BOS, so
-the default is harmless. That is why this bug is silent: it depends on which
-model you are using, and nothing warns you. The fix is one argument,
+`encode()` adds another by default, so the model receives a two-token opening
+that neither the template nor `encode()` produces on its own. Qwen is
+unaffected — its template emits no BOS, so the default is harmless. That is why
+this bug is silent: it depends on which model you are using, and nothing warns
+you. The fix is one argument,
 `add_special_tokens: false`, and the reason to check rather than to always pass
 it is that on a template which does *not* emit BOS, passing it would remove a
 token the model needs.

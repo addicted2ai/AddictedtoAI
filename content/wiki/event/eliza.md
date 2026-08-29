@@ -31,10 +31,10 @@ facts:
     source_url: "https://arxiv.org/abs/2501.06707"
     accessed: "2026-08-28"
     volatility: static
-  - field: turing_test_2023_success_rate
+  - field: turing_test_success_rate
     source: cited
-    value: "22%, against 20% for GPT-3.5 (Jones and Bergen)"
-    source_url: "https://arxiv.org/abs/2310.20216"
+    value: "22%, against 20% for GPT-3.5 (Jones and Bergen, revised version of 20 April 2024)"
+    source_url: "https://arxiv.org/abs/2310.20216v2"
     accessed: "2026-08-28"
     volatility: static
 timeline:
@@ -42,8 +42,11 @@ timeline:
     event: "Weizenbaum's ELIZA paper appears in the January 1966 Communications of the ACM"
     source_url: "https://courses.cs.umbc.edu/331/papers/eliza.html"
   - date: "2023-10-31"
-    event: "Jones and Bergen post a public Turing test in which ELIZA passes as human in 22% of games, ahead of GPT-3.5 at 20%"
-    source_url: "https://arxiv.org/abs/2310.20216"
+    event: "Jones and Bergen post the first version of their public Turing test, in which ELIZA passes as human in 27% of games, ahead of GPT-3.5 at 14%"
+    source_url: "https://arxiv.org/abs/2310.20216v1"
+  - date: "2024-04-20"
+    event: "the revised version restates the figures: ELIZA passes as human in 22% of games, ahead of GPT-3.5 at 20%"
+    source_url: "https://arxiv.org/abs/2310.20216v2"
   - date: "2025-01-12"
     event: "the ELIZA Reanimated team reports running the rediscovered original MAD-SLIP ELIZA on a restored CTSS on an emulated IBM 7094"
     source_url: "https://arxiv.org/abs/2501.06707"
@@ -92,12 +95,15 @@ reanimation of this original ELIZA on a restored CTSS, itself running on an
 emulated IBM 7094. The entire stack is open source." The first chatbot now
 runs again on an emulation of the machine it was written for.
 
-The strangest entry in ELIZA's record is recent. In a public online Turing
-test run by Cameron Jones and Benjamin Bergen and posted 31 October 2023,
-"the best-performing GPT-4 prompt passed in 49.7% of games, outperforming
-ELIZA (22%) and GPT-3.5 (20%), but falling short of the baseline set by
-human participants (66%)." Read that middle clause again: in 2023, a
-keyword-matching script from 1966 was judged human slightly more often than
-GPT-3.5, the model behind the original ChatGPT. Weizenbaum's playwright
-framing holds: the relation of appearance to reality stayed in the domain
-of the playwright, and the audience kept doing half the work.
+The strangest entry in ELIZA's record is recent. Cameron Jones and Benjamin
+Bergen ran a public online Turing test, first posted on 31 October 2023; in
+the revised version of 20 April 2024, "the best-performing GPT-4 prompt
+passed in 49.7% of games, outperforming ELIZA (22%) and GPT-3.5 (20%), but
+falling short of the baseline set by human participants (66%)." Read that
+middle clause again: a keyword-matching script from 1966 was judged human
+slightly more often than GPT-3.5, the model behind the original ChatGPT.
+The first posting had put ELIZA ahead by a wider margin still — 27% against
+GPT-3.5's 14% — so the version you read changes the gap, not the order.
+Weizenbaum's playwright framing holds: the relation of appearance to
+reality stayed in the domain of the playwright, and the audience kept
+doing half the work.

@@ -60,8 +60,8 @@ timeline:
     event: "Cohere and Aleph Alpha announced a merger in which Cohere would acquire Aleph Alpha"
     source_url: "https://en.wikipedia.org/wiki/Cohere"
   - date: "2026-06-17"
-    event: "North Mini Code listed — Cohere's first free row and first agentic coding model, under the Apache License 2.0"
-    source_url: "https://huggingface.co/CohereLabs/North-Mini-Code-1.0"
+    event: "North Mini Code listed — optimized for agentic software engineering and released open-weight under the Apache 2.0 license"
+    source_url: "https://openrouter.ai/cohere/north-mini-code:free"
 mentions:
   - model/cohere-command-a
   - model/cohere-command-r-plus-08-2024
@@ -98,8 +98,9 @@ coding model on a new account.
 The gap was not idleness. Cohere's revenue was reported at
 {{fact:org/cohere#revenue}}, and on 24 April 2026 it
 [announced it would acquire the German lab Aleph Alpha](https://en.wikipedia.org/wiki/Cohere),
-in a deal anonymous sources valued the combined entity at twenty billion
-dollars, with six hundred million invested by Schwarz Gruppe. One structural
+in a deal that one anonymous individual told the New York Times would make
+the combined companies worth twenty billion dollars, with six hundred million
+dollars invested in Cohere by Schwarz Gruppe. One structural
 detail separates Cohere from nearly every vendor in the catalog:
 ninety-one of the 388 rows carry the router's `is_moderated` flag, spread
 across eight provider prefixes, and Cohere is one of only two vendors with

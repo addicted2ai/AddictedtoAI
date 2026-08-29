@@ -87,34 +87,34 @@ mentions:
   - model/x-ai-grok-4-20
 ---
 
-Reasoning went from optional to compulsory in the same window this lab
-already has an unexplained architecture change on record. `x-ai/grok-4.3`'s
-own `reasoning.mandatory` value reads
-{{fact:model/x-ai-grok-4-3#reasoning_mandatory}}, with a default effort of
-{{fact:model/x-ai-grok-4-3#default_reasoning_effort}} on the requests that
-used it at all. This row's same two fields read
-{{fact:model/x-ai-grok-4-6#reasoning_mandatory}} and
-{{fact:model/x-ai-grok-4-6#default_reasoning_effort}}: reasoning can no
-longer be switched off, and by default it now runs at the setting 4.3
-treated as its top tier rather than skipping.
+This release moved the scoreboard without moving anything a buyer pays
+for. In the 28 August 2026 snapshot this row and `x-ai/grok-4.5` list the
+same context window — {{fact:model/x-ai-grok-4-5#context_window}} there
+against {{fact:model/x-ai-grok-4-6#context_window}} here — the same input
+price, {{fact:model/x-ai-grok-4-5#price_input}} against
+{{fact:model/x-ai-grok-4-6#price_input}}, and the same output price,
+{{fact:model/x-ai-grok-4-5#price_output}} against
+{{fact:model/x-ai-grok-4-6#price_output}}.
 
-The org record for this lab already treats a matching contraction in
-advertised context window, across these same four releases, as an
-unexplained change that was never marketed as a trade. This is a second
-change landing in the same stretch: a request that used to default to no
-reasoning at all now defaults to the heaviest setting on offer. Neither
-row states that one change bought the other — only that the catalog now
-records both happening on the same release.
+What separates them is measurement. Artificial Analysis's intelligence
+index reads {{fact:model/x-ai-grok-4-5#intelligence_index}} on the July
+row and {{fact:model/x-ai-grok-4-6#intelligence_index}} on this one, five
+weeks later, with this row's coding index at
+{{fact:model/x-ai-grok-4-6#coding_index}} and its agentic index at
+{{fact:model/x-ai-grok-4-6#agentic_index}}. Same window, same meter,
+higher numbers.
 
-What the mandatory-reasoning setting bought, if anything, shows up in the
-same three-index scoreboard both rows carry. Between the two releases the
-Artificial Analysis agentic index moved from
-{{fact:model/x-ai-grok-4-3#agentic_index}} to
-{{fact:model/x-ai-grok-4-6#agentic_index}}, the coding index from
-{{fact:model/x-ai-grok-4-3#coding_index}} to
-{{fact:model/x-ai-grok-4-6#coding_index}}, and the intelligence index from
-{{fact:model/x-ai-grok-4-3#intelligence_index}} to
-{{fact:model/x-ai-grok-4-6#intelligence_index}}. All three moved the same
-direction as the reasoning setting — whether that is the setting's effect,
-the price increase's effect, or three months of everything else changing
-at once is not something either row can separate out on its own.
+The envelope moved a release earlier, and so did the reasoning settings
+this row is often credited with. `x-ai/grok-4.3` listed
+{{fact:model/x-ai-grok-4-3#context_window}} of context at
+{{fact:model/x-ai-grok-4-3#price_input}} input, and read
+{{fact:model/x-ai-grok-4-3#reasoning_mandatory}} for
+`reasoning.mandatory` at an effort of
+{{fact:model/x-ai-grok-4-3#default_reasoning_effort}}; this row reads
+{{fact:model/x-ai-grok-4-6#reasoning_mandatory}} at
+{{fact:model/x-ai-grok-4-6#default_reasoning_effort}}. Grok 4.5 is where
+that flipped — in the same snapshot it already carries this row's pair,
+along with the halved window and the raised price — and the only reasoning
+difference left between the two is an extra `xhigh` effort tier here.
+Anyone dating the end of optional reasoning to
+{{fact:model/x-ai-grok-4-6#listed_date}} is a month late.

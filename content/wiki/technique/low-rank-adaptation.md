@@ -75,7 +75,7 @@ timeline:
     event: "LoRA published by Hu, Shen, Wallis, Allen-Zhu, Li, Wang, Wang and Chen at Microsoft"
     source_url: "https://arxiv.org/abs/2106.09685"
   - date: "2023-05-23"
-    event: "QLoRA adds 4-bit NormalFloat, double quantization and paged optimizers, putting 65B finetuning on one consumer-class card"
+    event: "QLoRA adds 4-bit NormalFloat, double quantization and paged optimizers, putting 65B finetuning on a single 48GB GPU"
     source_url: "https://arxiv.org/abs/2305.14314"
   - date: "2024-05-15"
     event: "a controlled comparison finds LoRA substantially behind full finetuning on code and maths, and better at not forgetting"

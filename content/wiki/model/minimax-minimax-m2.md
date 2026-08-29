@@ -54,6 +54,8 @@ mentions:
   - org/moonshot-ai
   - model/deepseek-deepseek-v4-flash-0731
   - model/moonshotai-kimi-k3
+  - model/moonshotai-kimi-k2-5
+  - model/z-ai-glm-5-1
 ---
 
 MiniMax's own weights carry a licence that behaves like MIT until a
@@ -63,20 +65,29 @@ that threshold, the permissions are the ordinary MIT ones — use, modify,
 sell, fork, strip the name off entirely — and owe MiniMax nothing but the
 copyright notice.
 
-That makes MiniMax the third lab in this catalog to publish a flagship
-under a modified MIT licence, and each modification asks for something
-different. DeepSeek's `deepseek-ai/DeepSeek-V4-Flash-0731` ships under
+That makes MiniMax the second lab in this catalog to publish weights under
+a modified MIT licence rather than a plain one. The other is Moonshot,
+whose `moonshotai/kimi-k2.5` ships under
+{{fact:model/moonshotai-kimi-k2-5#license}}. The unmodified baseline both
+depart from is the more common case here: DeepSeek's
+`deepseek-ai/DeepSeek-V4-Flash-0731` ships under
 {{fact:org/deepseek#weights_license}} — plain MIT, no clause attached at
-all. Moonshot's `moonshotai/kimi-k3` ships under a licence that instead
-asks for {{fact:org/moonshot-ai#flagship_license_revenue_share}}. MiniMax's
-version asks for neither a percentage nor a flat threshold on the licence
-itself — only a name on a user interface, and only once the product
-carrying it is already too large for that to cost anything.
+all — and Z.ai's GLM 5.1 carries {{fact:model/z-ai-glm-5-1#license}}.
+MiniMax's modification asks for neither a fee nor a share of revenue: only
+a name on a user interface, and only once the product carrying it is
+already too large for that to cost anything.
 
-Scale-wise this is the smallest of the three: {{fact:model/minimax-minimax-m2#parameters}},
-against DeepSeek's {{fact:model/deepseek-deepseek-v4-flash-0731#parameters}}
-and Moonshot's {{fact:model/moonshotai-kimi-k3#parameters}}. All three are
-still routed through an ordinary paid API on this catalog —
-{{fact:model/minimax-minimax-m2#price_input}} input on this row — so the
-licence clause is a condition on what happens after someone downloads the
-weights, not a discount on what the hosted endpoint charges today.
+Moonshot has since left the family altogether. Its current flagship,
+`moonshotai/kimi-k3`, dropped the modified MIT that K2.5 carried in favour
+of {{fact:org/moonshot-ai#flagship_license}} — which is worth knowing
+before treating "open weights from a Chinese lab" as one category of terms.
+
+Scale-wise MiniMax's is the smallest of the three sets of weights named
+here: {{fact:model/minimax-minimax-m2#parameters}}, against Kimi K2.5's
+{{fact:model/moonshotai-kimi-k2-5#parameters}} and the
+{{fact:model/deepseek-deepseek-v4-flash-0731#parameters}} OpenRouter records
+for DeepSeek's V4 Flash. All three are also sold by the token on this
+catalog — {{fact:model/minimax-minimax-m2#price_input}} input on this row in
+the snapshot of 28 August 2026 — so the licence clause is a condition on
+what happens after someone downloads the weights, not a discount on what
+the hosted endpoint charges.

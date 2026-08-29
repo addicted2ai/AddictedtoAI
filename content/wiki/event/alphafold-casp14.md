@@ -88,7 +88,7 @@ CASP14 domains, "AlphaFold structures had a median backbone accuracy of
 0.96 Å r.m.s.d.95 ... whereas the next best performing method had a median
 backbone accuracy of 2.8 Å r.m.s.d.95" — an error DeepMind's announcement
 had described, at an average of about 1.6 angstroms across targets, as
-"comparable to atomic width." Structures the system had never seen,
+"comparable to the width of an atom." Structures the system had never seen,
 predicted from sequence alone, to within roughly an atom.
 
 What makes this event different from a benchmark being beaten is that the

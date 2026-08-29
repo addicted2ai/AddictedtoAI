@@ -83,8 +83,10 @@ shard-by-shard, do the two mirrors match?
    model-00004-of-00004.safetensors  size same   header same
 ```
 
-Eight range requests, 33,856 bytes read (8 bytes + header, per shard, per
-mirror). This hashes the tensor index, not the weights. The tutorial states
+Sixteen range requests, 67,760 bytes read: an 8-byte length probe plus the
+header itself, per shard, per mirror — 8 x 8 probe bytes plus
+2 x (9,512 + 12,120 + 11,656 + 560) header bytes. This hashes the tensor index,
+not the weights. The tutorial states
 that limit explicitly: it is proof the two repositories describe the same model
 laid out identically, not that all 16 GB of weight bytes are equal.
 
@@ -174,8 +176,9 @@ The first probe of this subject was written expecting Llama 3.1's template to
 call `strftime_now` and inject the *real* current date, and the plan was to
 report that a chat template makes a prompt non-reproducible day to day. Two
 things falsified that in one run: the template searched contains no
-`strftime_now` at all (the marker table above reports `strftime_now=false` on
-every template checked), and the repository first reached for,
+`strftime_now` at all (the five-marker table above does not test for it —
+searching each fetched template for the string directly returns `false` on
+both), and the repository first reached for,
 `NousResearch/…`, has no date block whatsoever — it ships a 348-character
 template with no knowledge-cutoff line, no tool support and no `date_string`.
 The real finding — two mirrors of one model shipping different prompt formats,

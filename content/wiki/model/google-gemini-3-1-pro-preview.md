@@ -55,18 +55,22 @@ mentions:
 This row first appeared in OpenRouter's catalog on
 {{fact:model/google-gemini-3-1-pro-preview#listed_date}} — confirmed
 against [the model's own listing](https://openrouter.ai/google/gemini-3.1-pro-preview)
-today, which still shows no non-preview release. That's 189 days ago as of
-this writing, and this tier has never shipped a plain row: the
-catalog carries three separate Pro variants — this one, a batch tier, and
-a custom-tools variant — and every one of them still carries "preview" in
-its slug.
+today, which still shows no non-preview release. That is more than six
+months before the snapshot of 28 August 2026 this page reads, and in all
+that time the tier has never shipped a plain row: the catalog carries three
+Pro rows — this one, a batch billing tier, and a custom-tools variant — and
+every one of them still carries "preview" in its slug.
 
-Its siblings didn't stay there. `google/gemini-3.1-flash-lite-preview` and
-`google/gemini-3.1-flash-image-preview` both eventually got a plain,
-non-preview row in the same generation —
-{{fact:model/google-gemini-3-1-flash-lite#price_input}} and
-{{fact:model/google-gemini-3-1-flash-image#price_input}} respectively —
-while the Pro tier, priced at
+Its siblings didn't stay there. `google/gemini-3.1-flash-lite-preview` got
+its plain row 65 days after listing, and
+`google/gemini-3.1-flash-image-preview` got one 112 days after listing —
+and for the second of them graduation was not merely a change of slug: the
+plain row's context window is
+{{fact:model/google-gemini-3-1-flash-image#context_window}} against the
+preview's {{fact:model/google-gemini-3-1-flash-image-preview#context_window}},
+which in the 28 August 2026 snapshot is twice the room at an unchanged
+input price. The Pro tier, priced at
 {{fact:model/google-gemini-3-1-pro-preview#price_input}} input and
 carrying an Artificial Analysis intelligence index of
-{{fact:model/google-gemini-3-1-pro-preview#intelligence_index}}, has not.
+{{fact:model/google-gemini-3-1-pro-preview#intelligence_index}}, has had no
+such row at all.

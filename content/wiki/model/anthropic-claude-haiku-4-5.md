@@ -48,14 +48,21 @@ ceiling {{fact:model/anthropic-claude-3-haiku#context_window}} carried on
 carries no recorded benchmark index at all. Nothing about the Haiku line's
 context window has moved since.
 
-Every other tier did move. Sonnet has run at
-{{fact:model/anthropic-claude-sonnet-5#context_window}} tokens since at
-least `anthropic/claude-sonnet-4`, which itself listed that same figure —
+The other tiers reached the ceiling by two different routes, and only one
+of them was a climb. Sonnet was never below it: `anthropic/claude-sonnet-4`
+is the oldest Sonnet row in the catalog and it already listed
 {{fact:model/anthropic-claude-sonnet-4#context_window}} — on essentially
 the same day `anthropic/claude-opus-4` launched at
 {{fact:model/anthropic-claude-opus-4#context_window}}, a fifth of the
 size; the two rows were added to the catalog within fifteen minutes of
-each other. Opus caught up at 4.6, moving to
-{{fact:model/anthropic-claude-opus-4-6#context_window}} and holding there
-ever since. Haiku, released later than either jump, is the tier that
-never got one.
+each other. Opus is the tier that actually moved, at 4.6, to
+{{fact:model/anthropic-claude-opus-4-6#context_window}}, and it has held
+there ever since.
+
+Haiku 4.5 landed in between, which is the part that makes it interesting.
+It was listed on 15 October 2025 — 146 days after Sonnet was already
+running at a million, and 112 days *before* Opus got there on 4 February
+2026. So the 200k ceiling is not a decision taken against a settled house
+standard; it is a row nobody has been back to. In the snapshot of 28 August
+2026, five further Opus revisions, two Sonnets and a Fable have been listed
+since that date, and not one new Haiku.

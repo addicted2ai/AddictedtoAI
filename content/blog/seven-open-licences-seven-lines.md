@@ -55,7 +55,7 @@ dropped its custom terms between generations without ceremony.
 
 And OpenAI's `gpt-oss-120b` is Apache-2.0 with a
 [usage policy](https://huggingface.co/openai/gpt-oss-120b/raw/main/USAGE_POLICY)
-that is one sentence long — 201 bytes, quoted here in full: "We aim for our
+that is two sentences long — 201 bytes, quoted here in full: "We aim for our
 tools to be used safely, responsibly, and democratically, while maximizing
 your control over how you use them. By using OpenAI gpt-oss-120b, you agree
 to comply with all applicable law."

@@ -50,29 +50,35 @@ facts:
 timeline: []
 mentions:
   - org/z-ai
+  - model/z-ai-glm-4-6
+  - model/z-ai-glm-4-7
+  - model/z-ai-glm-5
   - model/z-ai-glm-5-2
 ---
 
-The row before this one had no weights to publish. `z-ai/glm-5` — GLM-5
-without a decimal, released a month earlier — carries no Hugging Face
-listing in the catalog's feed at all. This row does:
-{{fact:model/z-ai-glm-5-1#license}}, per the model card for
-`zai-org/GLM-5.1`, on {{fact:model/z-ai-glm-5-1#parameters}}. It is the
-first row in the GLM-5 line with anything to download.
+Four consecutive main-line GLM releases published the same context window.
+`z-ai/glm-4.6` lists {{fact:model/z-ai-glm-4-6#context_window}},
+`z-ai/glm-4.7` lists {{fact:model/z-ai-glm-4-7#context_window}},
+`z-ai/glm-5` lists {{fact:model/z-ai-glm-5#context_window}}, and this row
+lists {{fact:model/z-ai-glm-5-1#context_window}} — the same figure on all
+four in the 28 August 2026 snapshot, spanning the six months from
+30 September 2025 to 7 April 2026. Whatever Z.ai spent those six months
+on, it was not the window.
 
-What it did not ship with was room. This row's context window is
-{{fact:model/z-ai-glm-5-1#context_window}} — not small for a model this
-size, but not the number Z.ai would use two months later either.
-`z-ai/glm-5.2`'s own context window is
-{{fact:model/z-ai-glm-5-2#context_window}}, arriving in the very next
-point release. Where the catalog's SpaceXAI rows show a context window
-shrinking release over release across 2026, Z.ai's GLM line ran the other
-way, and grew fastest in the release right after the one that opened the
-weights.
+Some of it went onto the price. `z-ai/glm-5`, listed 11 February 2026,
+charges {{fact:model/z-ai-glm-5#price_input}} for input; this row, eight
+weeks later, charges {{fact:model/z-ai-glm-5-1#price_input}} — roughly
+double, in the same snapshot, for an identical window and weights that
+stay open: {{fact:model/z-ai-glm-5-1#license}} over
+{{fact:model/z-ai-glm-5-1#parameters}}, per the model card for
+`zai-org/GLM-5.1`.
 
-The intelligence gain kept pace with the context increase rather than
-trading against it. Artificial Analysis's index moves from
-{{fact:model/z-ai-glm-5-1#intelligence_index}} on this row to
-{{fact:model/z-ai-glm-5-2#intelligence_index}} two months later — the same
-release that multiplied the context window also raised the measured
-capability, not one at the other's expense.
+Then the plateau broke, and it broke cheaply. Ten weeks after this row,
+`z-ai/glm-5.2` arrived listing {{fact:model/z-ai-glm-5-2#context_window}}
+of context — the largest single step anywhere in the GLM line — at
+{{fact:model/z-ai-glm-5-2#price_input}} input, which in that same snapshot
+sits *below* what this row charges. Artificial Analysis's index rose with
+it, from {{fact:model/z-ai-glm-5-1#intelligence_index}} here to
+{{fact:model/z-ai-glm-5-2#intelligence_index}} there, so the extra room
+did not come out of measured capability. This row is the last one that
+asked more money for the old envelope.

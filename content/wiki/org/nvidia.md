@@ -101,21 +101,26 @@ and responses for other systems, is
 competitor's acceptable-use policy, and anyone deploying it to enforce
 policy is bound by Google's.
 
-Then there are the rows that argue with each other. Five of the fifteen free
-listings in the whole snapshot are NVIDIA's, and two of them advertise a
-larger window than the paid row of the same model:
+Then there are the rows that argue with each other. Five of the eighteen free
+listings in the whole snapshot are NVIDIA's — more than any other vendor — and
+two of them advertise a larger window than the paid row of the same model:
 `nvidia/nemotron-3.5-lightning` lists
 {{fact:model/nvidia-nemotron-3-5-lightning#context_window}} while
 `nvidia/nemotron-3.5-lightning:free` lists
 {{fact:model/nvidia-nemotron-3-5-lightning-free#context_window}}, a figure
 the public page repeats. Nemotron 3 Ultra does the same;
-`nvidia/nemotron-3-super-120b-a12b` runs the other way, its free row a
-quarter of the paid one. And `nvidia/nemotron-3-ultra-550b-a55b:batch` is the
+`nvidia/nemotron-3-super-120b-a12b` runs the other way, its free row at
+{{fact:model/nvidia-nemotron-3-super-120b-a12b-free#context_window}} against
+the paid row's
+{{fact:model/nvidia-nemotron-3-super-120b-a12b#context_window}}. And
+`nvidia/nemotron-3-ultra-550b-a55b:batch` is the
 only batch row in the snapshot dearer than the row it batches on both input
 and output —
 {{fact:model/nvidia-nemotron-3-ultra-550b-a55b-batch#price_input}} against
 {{fact:model/nvidia-nemotron-3-ultra-550b-a55b#price_input}} in, and
 {{fact:model/nvidia-nemotron-3-ultra-550b-a55b-batch#price_output}} against
 {{fact:model/nvidia-nemotron-3-ultra-550b-a55b#price_output}} out. Every
-Anthropic and Google batch row is a discount. This one is a surcharge, with
-twice the context window attached to it.
+Anthropic and Google batch row is a discount. This one is a surcharge, and it
+comes with a longer window:
+{{fact:model/nvidia-nemotron-3-ultra-550b-a55b-batch#context_window}} against
+{{fact:model/nvidia-nemotron-3-ultra-550b-a55b#context_window}}.

@@ -60,15 +60,21 @@ mentions:
   - model/qwen-qwen3-7-max
 ---
 
-Qwen tells you its licence in the model's name, and it has never once broken
-the rule. Alibaba Cloud has 52 rows in the OpenRouter snapshot of 28 August
-2026, second only to OpenAI's 58. Seventeen carry no Hugging Face id — and
-every one of those seventeen is named `max`, `plus` or `flash`. The other
-thirty-five are named by parameter count, and every one of them publishes
-weights. Not a single `max` row is downloadable; not a single
-parameter-named row is withheld. The tier vocabulary Alibaba uses for
-marketing is doing double duty as the open-source policy, which means you
-can settle the question about any Qwen model without opening its page.
+Qwen tells you its licence in the model's name, and the tier vocabulary has
+never once broken the rule. Alibaba Cloud has 52 rows in the OpenRouter
+snapshot of 28 August 2026, second only to OpenAI's 58. Seventeen carry no
+Hugging Face id — and every one of those seventeen is named `max`, `plus` or
+`flash`. The tier-named rows and the closed rows are the same seventeen: not
+a single `max`, `plus` or `flash` row is downloadable, and not a single row
+without one of those three words is withheld. Thirty-three of the other
+thirty-five are named by parameter count as well, but that half of the
+convention does break — `qwen/qwen3-coder` carries its 480B only in its
+display name, and `qwen/qwen3-coder-next` carries no parameter count in its
+id, display name or slug at all. Both publish weights, which is what the
+tier test predicts for a row with no tier word in it. The tier vocabulary
+Alibaba uses for marketing is doing double duty as the open-source policy,
+which means you can settle the question about any Qwen row in the snapshot
+by looking for one of three words.
 
 That makes the pair listed in August worth reading together.
 `qwen/qwen3.8-max` went up on 3 August 2026 as the closed flagship of the

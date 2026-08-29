@@ -65,7 +65,7 @@ arms: one keeps none of the original data, one keeps a random tenth of it each
 generation. The published sample is the readable part of the finding. A passage
 about English Perpendicular Revival church architecture survives generation 0
 roughly intact; by generation 1 it has drifted to basilicas and an invented claim
-about Pope Innocent III; by generation 7 the model is enumerating "black-tailed
+about Pope Innocent III; by generation 9 the model is enumerating "black-tailed
 jackrabbits, white-tailed jackrabbits, blue-tailed jackrabbits, red-tailed
 jackrabbits, yellow-". The tails go first — rare constructions, rare facts — and
 what remains is the mode, repeated.

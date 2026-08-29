@@ -92,9 +92,14 @@ Ten months without a new row is unremarkable for a company whose product
 improves when other laboratories ship.
 
 What Perplexity does own is the index, which is where its record is
-contested. {{fact:org/perplexity#crawling_finding}}, and The New York Times,
-the BBC, Dow Jones and Japanese newspaper publishers have filed copyright
-suits against it. In February 2026 the company dropped its advertising
+contested. {{fact:org/perplexity#crawling_finding}}. The publishers that have
+taken it to court are
+[Dow Jones and the New York Post, in June 2024](https://en.wikipedia.org/wiki/Perplexity_AI),
+and three Japanese newspaper companies — the Yomiuri Shimbun in August 2025,
+The Asahi Shimbun and The Nikkei later that month — all for copyright
+infringement. The New York Times sent a cease-and-desist notice in October
+2024 and the BBC threatened legal action in June 2025; neither of those is a
+filed suit. In February 2026 the company dropped its advertising
 business for subscriptions. A search product assembled entirely from other
 labs' weights competes on retrieval rather than on training, which is exactly
 why its disputes are about crawling and not about datasets — and why the

@@ -29,8 +29,20 @@ facts:
     volatility: static
   - field: published
     source: cited
-    value: "early 1973, in 'Artificial Intelligence: a paper symposium' with replies by Sutherland, Needham, Longuet-Higgins and Michie"
+    value: "early 1973"
     source_url: "https://www.chilton-computing.org.uk/inf/literature/reports/lighthill_report/overview.htm"
+    accessed: "2026-08-28"
+    volatility: static
+  - field: volume
+    source: cited
+    value: "Artificial Intelligence: a paper symposium, with replies by Sutherland, Needham, Longuet-Higgins and Michie"
+    source_url: "https://www.chilton-computing.org.uk/inf/literature/reports/lighthill_report/contents.htm"
+    accessed: "2026-08-28"
+    volatility: static
+  - field: mccarthy_review
+    source: cited
+    value: "John McCarthy, 'Review of Artificial Intelligence: A General Survey'"
+    source_url: "https://www-formal.stanford.edu/jmc/reviews/lighthill/lighthill.html"
     accessed: "2026-08-28"
     volatility: static
   - field: debate_broadcast
@@ -70,7 +82,8 @@ obstacle to any self-organising system working over a large knowledge base.
 John McCarthy's review says exactly what the classification cost: "his
 three categories have no place for what is or should be our main scientific
 activity - studying the structure of information and the structure of
-problem solving processes independently of applications." And the
+problem solving processes independently of applications and independently
+of its realization in animals or humans." And the
 consequence: "missing these particular points is a consequence of missing
 the existence of the AI problem as distinct from automation and study of
 the central nervous system." The two were not arguing about results. They

@@ -55,7 +55,7 @@ timeline:
     event: "Hy3 preview listed, with published weights at preview stage"
     source_url: "https://openrouter.ai/tencent/hy3-preview"
   - date: "2026-07-06"
-    event: "Hy3 listed generally available, under the Apache License and at under half the preview's list price"
+    event: "Hy3 listed generally available, under the Apache License and priced below the preview it replaced"
     source_url: "https://openrouter.ai/tencent/hy3"
   - date: "2026-08-19"
     event: "the Hy-MT2 translation family listed — the shortest context windows of any 2026 row in the catalog"

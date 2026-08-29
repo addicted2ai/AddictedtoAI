@@ -1,31 +1,17 @@
 ---
 id: concept/chain-of-thought
 kind: concept
-display_name: "Chain-of-thought prompting"
+display_name: "Chain-of-thought faithfulness"
 status: active
 maintenance: stable
 themes:
   - argument
 aliases:
-  - name: "Chain-of-thought prompting"
-    class: shared
   - name: "Chain of thought"
     class: shared
   - name: "CoT"
     class: manual
 facts:
-  - field: gsm8k_gain
-    source: cited
-    value: "PaLM 540B on GSM8K: 17.9% with standard prompting, 56.9% with eight chain-of-thought exemplars"
-    source_url: "https://ar5iv.labs.arxiv.org/html/2201.11903"
-    accessed: "2026-08-28"
-    volatility: dated
-  - field: small_model_harm
-    source: cited
-    value: "models below roughly 100B parameters produced \"fluent but illogical chains of thought, leading to lower performance than standard prompting\""
-    source_url: "https://ar5iv.labs.arxiv.org/html/2201.11903"
-    accessed: "2026-08-28"
-    volatility: dated
   - field: bias_induced_accuracy_drop
     source: cited
     value: "reordering multiple-choice options so the answer is always \"(A)\" dropped accuracy by as much as 36% across 13 BIG-Bench Hard tasks, without the explanations mentioning the reordering"
@@ -34,7 +20,7 @@ facts:
     volatility: dated
   - field: faithfulness_and_scale
     source: cited
-    value: "\"as models become larger and more capable, they produce less faithful reasoning on most tasks\""
+    value: "\"as models become larger and more capable, they produce less faithful reasoning on most tasks we study\""
     source_url: "https://arxiv.org/abs/2307.13702"
     accessed: "2026-08-28"
     volatility: dated
@@ -49,23 +35,17 @@ timeline:
     event: "faithfulness measured by intervening on the chain; found to fall as models get larger"
     source_url: "https://arxiv.org/abs/2307.13702"
 mentions:
+  - technique/chain-of-thought-prompting
   - concept/emergence
   - concept/in-context-learning
   - technique/reinforcement-learning-with-verifiable-rewards
 ---
 
-Jason Wei and eight co-authors published the technique on 28 January 2022: put a
-handful of worked examples in the prompt, each showing intermediate steps rather
-than only the answer, and the model produces steps too. On grade-school word
-problems, PaLM 540B went from 17.9% with standard prompting to 56.9% with eight
-chain-of-thought exemplars — better than a finetuned GPT-3 with a verifier.
-
-Two claims from that paper are worth keeping separate from the technique's later
-reputation. The first is that the gain is scale-dependent: "chain-of-thought
-prompting is an emergent ability of model scale," with no benefit and often harm
-below roughly 100 billion parameters, where models produce "fluent but illogical
-chains of thought, leading to lower performance than standard prompting." The
-second is what the paper does not claim — that the steps are the model's reasons.
+Chain-of-thought prompting puts worked steps in the few-shot exemplars and the
+model produces steps too; what it buys in accuracy, and where that gain does and
+does not hold, is the technique entry's subject. This page is about the claim the
+January 2022 paper never made, and that its reputation acquired anyway: that the
+steps are the model's reasons.
 
 Miles Turpin, Julian Michael, Ethan Perez and Samuel Bowman tested that on 7 May
 2023 with an intervention that is hard to argue with. They added a biasing feature
@@ -84,7 +64,7 @@ mistakes, truncating it, paraphrasing it — and checking whether the final answ
 moves. Models "show large variation across tasks in how strongly they condition on
 the CoT when predicting their answer." Their most uncomfortable result is
 directional: "as models become larger and more capable, they produce less faithful
-reasoning on most tasks."
+reasoning on most tasks we study."
 
 Both things are true at once, and the resolution is in what generating text does.
 The chain is an intervention on the computation, not a report of it: writing

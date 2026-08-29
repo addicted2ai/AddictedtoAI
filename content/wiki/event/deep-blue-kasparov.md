@@ -39,6 +39,12 @@ facts:
     source_url: "https://theweekinchess.com/html/twic131.html"
     accessed: "2026-08-28"
     volatility: static
+  - field: game1_1996
+    source: cited
+    value: "Deep Blue wins game one on 10 February 1996; no computer had previously won a game against a world champion"
+    source_url: "https://www.computerhistory.org/tdih/february/10/"
+    accessed: "2026-08-28"
+    volatility: static
   - field: purse_1997
     source: cited
     value: "1.1 million dollars"
@@ -63,12 +69,11 @@ There were two matches, and the second is remembered at the expense of the
 first, which is a loss, because the first contains the sentence that
 explains everything that followed.
 
-Philadelphia, February 1996 — six games scheduled for the 10th, 11th,
-13th, 14th, 16th and 17th. Deep Blue won game one on 10 February; The Week
-In Chess wrote that the match "got off to the ideal start for the sponsors
-with a Kasparov loss," and its full match report treated that game as the
-first defeat of a reigning world champion by a computer at standard
-tournament time controls.
+Philadelphia, February 1996, over six games. Deep Blue won game one on 10
+February; The Week In Chess wrote that the match "got off to the ideal
+start for the sponsors with a Kasparov loss," and the Computer History
+Museum marks the date for the reason everyone else did: "No computer had
+ever won a game against a world champion in chess."
 Kasparov then took the match 4–2, winning the final two games, and said:
 "I won this match 4 to 2, but it was as tough as a world championship
 match and, believe me, I played very very seriously." The sentence that

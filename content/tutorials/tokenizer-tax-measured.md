@@ -410,12 +410,16 @@ totals differ — 200,002 against 200,019 — and that difference is entirely in
 added special tokens, not in the base vocabulary.
 
 **The `llama-3.1` tokenizer is `cl100k` with `28,000` tokens added, and the second
-line says exactly where they went.** Tamil: 200 of 200 identical, because
-neither vocabulary contains a single Tamil token and both fall through to the
-same byte-level merges. Hindi: 0 of 200 identical, because Llama's additions
-include Devanagari. English: 197 of 200 — three sentences where an added token
-changed the segmentation. That is a map of which languages Meta paid vocabulary
-for, read off two tokenizers and 600 strings.
+line says exactly where they went.** Tamil: 200 of 200 identical, because none
+of those additions is Tamil. Scanning both `tokenizer.json` vocabularies for
+Tamil codepoints returns the same five entries at the same ids in each — the
+combining marks `்`, `ு` and `ி` plus two partial-byte variants of them, two of
+which you can watch firing in the §4 transcript below — and not one Tamil
+letter, so both tokenizers fall through to the same inherited byte-level
+merges. Hindi: 0 of 200 identical, because Llama's additions include
+Devanagari. English: 197 of 200 — three sentences where an added token changed
+the segmentation. That is a map of which languages Meta paid vocabulary for,
+read off two vocabularies and 600 strings.
 
 **And the instrument is calibrated.** `gpt-tokenizer` is an unrelated pure-JS
 implementation of tiktoken; it agrees with `@huggingface/transformers` on all
@@ -621,7 +625,10 @@ Node `v24.13.0`, `@huggingface/transformers` `4.2.0` and `gpt-tokenizer`
 200 real rows from `google/wmt24pp` fetched from the Hugging Face datasets
 server unauthenticated; the 429s are real and so are the retries. Prices and
 context lengths are the live `openrouter.ai/api/v1/models` response of that
-day, 396 rows.
+day, 396 rows. The five Tamil vocabulary entries named in §3 come from one
+further scan whose script is not shown above: the two `tokenizer.json` files
+fetched from the same repositories, their byte-level keys decoded through the
+GPT-2 byte map and searched for codepoints in the Tamil block.
 
 Not executed: **no request was ever sent to a model.** The cost table is
 `tokens x published price`, and it assumes OpenRouter bills each model on that
