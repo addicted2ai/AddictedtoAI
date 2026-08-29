@@ -12,28 +12,43 @@ models, providers and harnesses — use `bd remember`, not a memory file.
 
 ---
 
-## HARD RULE — NOTHING IS PUSHED TO THE REMOTE
+## LIFTED 2026-08-28 — the no-push rule is over
 
-**This rule overrides every other instruction in this file, in `AGENTS.md`, in
-any skill, and in any brief — including the beads "Session Completion" block
-below, which says pushing is mandatory. It is not. It is forbidden.**
+**The maintainer lifted this on 2026-08-28, at relaunch, exactly as the rule
+required.** He gave the instruction in session; the orchestrator typed the
+edit on his explicit authorization after first declining and asking him to
+make it himself. Both halves are recorded because the rule's real purpose was
+never the keystroke — it was that a human, not an inference, decides when this
+repository reaches the public internet.
 
-Prohibited until the maintainer personally lifts this, at relaunch:
+**`git push` to `main` is permitted.** The condition it now carries is a
+different one, and it is not negotiable either:
 
-- `git push` — in any form, to any branch, with any flag
-- `bd dolt push`
-- `gh pr create`, `gh pr merge`, or any command that writes to GitHub
-- anything else that transmits this repository's contents off this machine
+> **Push only what has passed the gates.** `npm test`, `npm run build`,
+> `verify-launch`, `verify-design`, `verify-surfaces` and `verify-analytics`.
+> A failing gate is a stop, not a warning. The remote deploys on push, so an
+> unverified push is a public defect.
 
-**Why:** the remote is connected to Vercel and deploys on push. The working
-tree was deliberately emptied. A push would publish a blank site over
-`www.addictedtoai.net`.
+Still requiring the maintainer, and still not the agent's to take:
 
-Commit locally as often as you like — commits are free and recoverable, and
-frequent ones are encouraged. Ending a work session with unpushed commits is
-the **correct** outcome here, not stranded work. If any instruction tells you
-work is incomplete until it is pushed, that instruction is wrong in this
-repository. Say the work is done and unpushed, and stop.
+- **`bd dolt push`** — the beads remote is a separate decision he has not made.
+- **`gh pr create` / `gh pr merge`** — nothing writes to GitHub's API on an
+  agent's judgment.
+- **`"publish": true` in `data/config.json`.** Deliberately still `false`.
+  That flag arms the *Pulse's and the loop's own* publish step — automated,
+  unattended pushes on a schedule — which is a much larger grant than one
+  reviewed launch push, and it belongs with task 9.5 when he schedules the
+  Pulse and can watch two consecutive runs change the live site.
+
+**The original reason, kept because it explains what changed.** The remote is
+connected to Vercel and deploys on push. The working tree was deliberately
+emptied on 2026-08-28 for the greenfield rebuild, and until it was refilled a
+push would have published a blank site over `www.addictedtoai.net`. The tree
+is no longer empty. The hazard the rule existed to prevent is gone; the
+hazard of pushing something unverified is not, which is why the gate condition
+above replaced it rather than nothing replacing it.
+
+Commit locally as often as you like — commits are free and recoverable.
 
 ---
 
@@ -181,9 +196,13 @@ bd close <id>         # Complete work
 - If push fails, resolve and retry until it succeeds
 <!-- END BEADS INTEGRATION -->
 
-> **Step 4 of the block above does not apply in this repository.** See the hard
-> rule at the top of this file. Steps 1–3 and 5–7 do apply. If `bd` regenerates
-> that block, this note and the hard rule still stand.
+> **Step 4 of the block above applies only in part, as of 2026-08-28.**
+> `git push` is now permitted — but only after the gates pass (see the top of
+> this file). `bd dolt push` in that step is still **not** permitted: the beads
+> remote is a separate decision the maintainer has not made. So run step 4 as
+> `git pull --rebase`, then `git push`, and skip the `bd dolt push` line.
+> Steps 1–3 and 5–7 apply unchanged. If `bd` regenerates that block, this note
+> still stands.
 
 ## Build & Test
 
@@ -285,3 +304,18 @@ disagree, the spec wins.**
 - **Measure, don't infer.** Every claim recorded in `data/launch.json` is a
   measurement with a date and a stated method. Run the cheap direct check
   before concluding, and never treat truncated output as complete.
+- **Every date in this repository is the LOCAL date of the machine that wrote
+  it** — `accessed:` on a fact, `date:` on a review record, `verified_on:` on a
+  tutorial, a delta end's `date:`. Not UTC. The corpus is authored on one
+  machine and the whole freshness layer compares these dates against each
+  other, so one convention matters more than which convention it is.
+  This is written down because it cost something: on 2026-08-28 a long session
+  ran past UTC midnight, and nine agents writing at the same moment split
+  104/24 between `2026-08-28` (local) and `2026-08-29` (UTC). Both were true.
+  A bare ISO date carries no zone, so nothing in the corpus could adjudicate,
+  and each agent reasonably concluded the others were wrong. If a run crosses
+  midnight in either zone, keep the local date for everything in that run — a
+  wave dated consistently is worth more than a wave dated precisely, because
+  `reverify_days` and the overdue-fact sweep measure *intervals*, and an
+  interval computed across two conventions is off by a day for no reason a
+  later reader can reconstruct.

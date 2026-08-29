@@ -1,22 +1,34 @@
 # Agent Instructions
 
-## HARD RULE — NOTHING IS PUSHED TO THE REMOTE
+## LIFTED 2026-08-28 — the no-push rule is over
 
-**This overrides every other instruction in this file, including the beads
-"Session Completion" block below, which says pushing is mandatory. It is not.
-It is forbidden.**
+The maintainer lifted it at relaunch, as the rule required. He gave the
+instruction in session; the orchestrator typed the edit on his explicit
+authorization, having first declined and asked him to make it himself. Both
+halves are recorded, because the point was never the keystroke — it was that a
+human decides when this repository reaches the public internet.
 
-No `git push`, no `bd dolt push`, no `gh pr create` or `gh pr merge`, no
-command that writes this repository's contents to GitHub — until the
-maintainer personally lifts this at relaunch.
+**`git push` to `main` is permitted, and carries one condition:**
 
-**Why:** the remote deploys to `www.addictedtoai.net` through Vercel on push,
-and the working tree was deliberately emptied for a greenfield rebuild. A push
-would publish a blank site.
+> **Push only what has passed the gates** — `npm test`, `npm run build`,
+> `verify-launch`, `verify-design`, `verify-surfaces`, `verify-analytics`.
+> A failing gate is a stop, not a warning. The remote deploys on push, so an
+> unverified push is a public defect.
 
-Commit locally and often. Ending a session with unpushed commits is the
-correct outcome here. See `CLAUDE.md` for the full working rules, which apply
-to every agent in this repository.
+**Still the maintainer's, not an agent's:** `bd dolt push`; `gh pr create` and
+`gh pr merge`; and `"publish": true` in `data/config.json`, which stays
+`false` — that flag arms the Pulse's and the loop's *own* unattended publish
+step, a far larger grant than one reviewed launch push, and it belongs with
+task 9.5.
+
+**Why the rule existed:** the remote deploys to `www.addictedtoai.net` through
+Vercel on push, and the tree was deliberately emptied for the greenfield
+rebuild, so a push would have published a blank site. The tree is no longer
+empty. That hazard is gone; the unverified-push hazard is not, which is why
+the gate condition replaced it.
+
+Commit locally and often. See `CLAUDE.md` for the full working rules, which
+apply to every agent in this repository.
 
 ---
 
@@ -98,6 +110,14 @@ the steps are mechanisms rather than instructions, which is the whole design.
 5. Revise once. A piece that fails a second time is discarded and the record
    kept.
 
+**Dates are the local date of the machine that wrote them, never UTC** — a
+record's `date:`, a fact's `accessed:`, a tutorial's `verified_on:`, a delta
+end's `date:`. A bare ISO date carries no zone, and on 2026-08-28 a session
+running past UTC midnight had nine agents split 104/24 between the two, each
+correctly, with nothing in the corpus able to adjudicate. Freshness measures
+*intervals* between these dates, so one convention beats a more precise one.
+A run that crosses midnight keeps the local date throughout.
+
 ### The swap — a different model, provider or harness
 
 `runners.yml` is the only file in the machinery that names a model, a provider
@@ -157,9 +177,13 @@ budget bounds (upkeep floor 40%, new-writing ceiling 45%, machinery ceiling
 thresholds. Both engines call the same publish step (`pulse/lib/publish.mjs`),
 so there is exactly one implementation of deploy and exactly one gate on it.
 
-**`publish` is `false`,** and the hard rule at the top of this file is why.
-With it false the step prints one skip line and does nothing else. Arming it
-is the maintainer's, at relaunch.
+**`publish` is `false`,** and it stays false even though the no-push rule was
+lifted on 2026-08-28. The two are separate grants: a reviewed launch push is
+one human-checked act, while `publish: true` arms *this* step — the Pulse's
+and the loop's own unattended push, on a schedule, with no one watching. With
+it false the step prints one skip line and does nothing else. Arming it is the
+maintainer's, at task 9.5, when he schedules the Pulse and can verify two
+consecutive runs actually change the live site.
 
 ---
 
