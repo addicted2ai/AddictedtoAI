@@ -26,7 +26,7 @@ import { addWorktree, gitTry, headSha, removeWorktree } from './git.mjs';
 import { runExecutor, jobLogPath } from './exec.mjs';
 import { PROSE_TYPES } from './specs.mjs';
 import { rejectionIndexText } from './proposals.mjs';
-import { GROUND_RULES } from './brief.mjs';
+import { GROUND_RULES, subjectLines } from './brief.mjs';
 import { REASONS, VERDICTS, parseVerdict, normalizeWouldCite } from './verdict.mjs';
 import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
 import { reviewedOf } from '../../lib/reviews.mjs';
@@ -196,6 +196,16 @@ You have **no edit rights** — any change you make to this worktree is thrown
 away, so do not try to fix anything. Your only accepted output is the verdict
 record.
 
+## What this job was asked to do
+
+You are judging the diff against THIS and nothing wider. \`scope-violation\` is
+one of the verdicts you may return, and this is the outcome the scope is
+measured against — a diff that goes beyond it earns that verdict even if every
+line of it is correct work.
+
+${job.title}
+
+${subjectLines(job)}${job.detail && job.detail !== job.title ? `\n${job.detail}\n` : ''}
 ${runShapeSection({ capMinutes, mmSoFar, invocations })}
 ${gatesSection(gates, sha)}
 ${pass > 1 ? `## What this delta review covers\n\nThe previous verdict asked for revisions. Review **only what changed since
@@ -368,7 +378,7 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects }) {
     const hashed = Object.keys(reviewedOf({ data: v.data })).sort();
     if (hashed.length) {
       const measured = [...subjects].sort();
-      if (hashed.join(' ') !== measured.join(' ')) {
+      if (hashed.join('\0') !== measured.join('\0')) {
         return {
           ok: false,
           code: 'reviewed-subject-mismatch',

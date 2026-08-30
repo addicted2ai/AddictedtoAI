@@ -153,6 +153,34 @@ export const CONTINUE_PREAMBLE =
  * @param {number} args.capMinutes
  * @param {boolean} [args.resumed]
  */
+/**
+ * The lines that say WHICH thing this job is about (beads addictedtoai-1md).
+ *
+ * A queue item carries `target` (the file) and `id` (the subject the Pulse
+ * keyed the item on, e.g. `openrouter-models:allenai/olmo-3-32b-think`), and
+ * both used to be dropped here: the outcome section rendered only `title` and
+ * `detail`. Since `loop/lib/queue.mjs` sets `title` to `it.title ?? it.detail`
+ * and queue items carry no `title`, the title WAS the detail and the
+ * `detail !== title` guard suppressed the duplicate — so for a queue job the
+ * section could only ever print the REASON, never the subject.
+ *
+ * That is not terseness, it is unworkable: the queue routinely holds several
+ * items with an identical detail string (two `vanished-feed-row` repairs at
+ * rank 85 on 2026-08-29), so the executor could not disambiguate by searching
+ * for the condition either. And `.job/brief.md` is self-contained by contract —
+ * no session, no memory across invocations, nothing to fall back on.
+ *
+ * Emitted only when present: directive, proposal and resumed jobs set these
+ * null, and `- **Target**: null` would be worse than no line at all.
+ */
+export function subjectLines(job) {
+  const out = [];
+  if (job.target) out.push(`- **Target**: \`${job.target}\``);
+  if (job.id && job.id !== job.target) out.push(`- **Subject**: \`${job.id}\``);
+  if (job.field) out.push(`- **Field**: \`${job.field}\``);
+  return out.length ? `${out.join('\n')}\n` : '';
+}
+
 export function assembleBrief(ctx, { jobId, job, branch, capMinutes, resumed = false, mmSoFar = 0, invocations = 0 }) {
   const ex = excerptsFor(ctx.repoRoot, job.type);
   const checks = ACCEPTANCE_BY_TYPE[job.type] ?? [];
@@ -172,7 +200,7 @@ ${invocationAccounting({ capMinutes, mmSoFar, invocations })}
 
 ${job.title}
 
-${job.detail && job.detail !== job.title ? `\n${job.detail}\n` : ''}
+${subjectLines(job)}${job.detail && job.detail !== job.title ? `\n${job.detail}\n` : ''}
 This is **one job with one outcome**. It ends in exactly one merge or one
 discard. Do not widen it: a diff that exceeds the stated outcome is a
 \`scope-violation\` at review and the whole job is rejected for it.
