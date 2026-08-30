@@ -599,7 +599,18 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   jumps versus metric thresholds, connected to the benchmark page's
   smooth-loss/jagged-metric section; what scaling never bought (the failure
   modes of `why-models-are-confidently-wrong` persist at every size); the
-  walls (data, power, money) as dated asides pointing at the costs page.
+  walls (data, power, money) as dated asides pointing at the costs page;
+  and the epistemic state the rest of the page rests on — scaling laws are
+  **measured regularities, not derived results**. The field can predict
+  that loss falls with compute and cannot say why the capabilities that
+  accompany it appear at all: the training objective is next-token
+  prediction, and no accepted theory explains why optimising it yields what
+  it yields. Say this plainly and cite it — the emergence claim and its
+  metric-artifact rebuttal both named and sourced, so the reader sees a
+  live scientific dispute rather than a settled story or a mystery. This is
+  prediction without explanation, which is a real and unusual position for
+  a mature engineering field to be in, and it is the honest reason forecasts
+  built on extrapolation deserve the scepticism the capstone gives them.
 - **Must not**: equations; forecasting (the capstone's job); benchmark
   score citations.
 - **Mentions**: `concept/scaling-laws`, `concept/the-bitter-lesson`,
@@ -842,7 +853,16 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   as interpretability's proof that a behaviour can have an address; what
   the field can and cannot promise yet (auditing dreams versus current
   reach — honest, dated); why it matters beyond curiosity (the debates
-  page will lean on whether inspection can ever certify behaviour).
+  page will lean on whether inspection can ever certify behaviour); and
+  the "true" half of the outcome's "true and shrinking", given its full
+  weight and cited. Interpretability has genuinely shrunk *we cannot say
+  what this neuron does*. It has not touched *why training a next-token
+  predictor on text produces something that generalises like this*, and the
+  page must not let progress on the first imply progress on the second.
+  Name honestly which parts of the opacity are yielding to research and
+  which are not yet well-posed as questions — that distinction is more
+  interesting than either "black box, nobody knows" or "we are steadily
+  solving it", and drawing it is this page's hardest work.
 - **Must not**: equations; overclaiming in either direction — this page
   must model the site's calibration or it teaches the wrong lesson twice.
 - **Mentions**: `concept/grokking`.
