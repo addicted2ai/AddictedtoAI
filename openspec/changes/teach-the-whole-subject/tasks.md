@@ -11,7 +11,7 @@ through the ordinary review gate; nothing here bypasses it.
 
 ## 1. Machinery
 
-- [ ] **1.1 — Prerequisites may never point up the ladder.** Add
+- [x] **1.1 — Prerequisites may never point up the ladder.** Add
   `checkPrerequisiteLevels(learnDocs, diags)` to `lib/learn.mjs` beside
   `checkPrerequisiteCycles`: for each page, each prerequisite whose
   `LEARN_LEVELS.indexOf(level)` is greater than the page's own is a
@@ -19,7 +19,7 @@ through the ordinary review gate; nothing here bypasses it.
   levels. Call it from `lib/site.mjs` beside the cycle check. Tests in
   `lib/surfaces.test.mjs`: an up-pointing prerequisite errors naming both
   levels; same-level and down-level pass; the real corpus is clean.
-- [ ] **1.2 — The rung purposes on the index.** Rewrite `LEVEL_BLURBS` in
+- [x] **1.2 — The rung purposes on the index.** Rewrite `LEVEL_BLURBS` in
   `lib/render/learn.mjs` to state each rung's purpose in reader terms, taken
   from curriculum §2 (assumed reader and end-capability, one line each) —
   not topic lists, which break as coverage widens. No test pins the current
