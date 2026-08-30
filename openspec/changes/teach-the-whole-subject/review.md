@@ -69,12 +69,33 @@ executor they do not need. Not missing: **actively steered away from.** Correct
 it to the measured range while moving it; live pages run 735–1192 words, so
 D3's floor excludes two of them and its ceiling is 17% above the real maximum.
 
-**3. Re-anchor "the curriculum of record."** `spec.md:61` points at
+**3. Re-anchor "the curriculum of record."** ~~`spec.md:61` points at
 `curriculum.md` *in this change*, while requirement 2 is a permanent
 `SHALL NOT`. On archive the requirement merges into `openspec/specs/` and the
 curriculum moves to `openspec/changes/archive/`, so within one cycle a standing
 obligation points into an archive directory and quietly stops being followed.
-`openspec/specs/` is empty today, so the pattern is untested.
+`openspec/specs/` is empty today, so the pattern is untested.~~
+
+**FIXED 2026-08-30.** The curriculum now lives at `openspec/curriculum/learn.md`
+and the requirement anchors there. The path is outside `openspec/changes/`, so
+archiving cannot move it, and outside `openspec/specs/`, because that path is
+reserved and this requirement obliges *amending* the curriculum — a rule
+demanding edits to a file no job may edit would be unfollowable in the other
+direction.
+
+The reviewer noted the pattern was untested because `openspec/specs/` was
+empty. **It is not untested any more.** `build-initial-site` and
+`harden-seed-wave-guardrails` were archived the same night, which populated
+`openspec/specs/` with eleven capabilities and moved both changes into
+`openspec/changes/archive/2026-08-30-*` — exactly the mechanism the finding
+predicted, observed rather than reasoned about.
+
+One trap ruled out while choosing the new home, worth recording because it is
+the obvious place to put it: **not** under `content/`. `lib/corpus.mjs` excludes
+non-content by `NOT_CONTENT = /^(readme|_.*)\.md$/i`, but `pulse/lib/corpus.mjs`
+ignores only `**/README.md`. Two readers, two different exclusion rules — a
+curriculum living there would be invisible to one and a parse failure to the
+other.
 
 ## Land before the surface is called complete
 

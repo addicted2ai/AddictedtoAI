@@ -2,7 +2,7 @@
 
 This document is the argument. The operative text an executing model works
 from — rung definitions, tone tests, the page catalog — lives in
-`curriculum.md`, and `tasks.md` is the spine. A future model that disagrees
+`openspec/curriculum/learn.md`, and `tasks.md` is the spine. A future model that disagrees
 with a choice should find its reasons here and weigh them, rather than
 silently reorganise.
 

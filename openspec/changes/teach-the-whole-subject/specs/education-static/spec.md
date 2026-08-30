@@ -59,7 +59,13 @@ The learn surface SHALL be developed against a written curriculum that
 divides the subject into named areas and enumerates every planned page with
 its level, outcome, prerequisites, and coverage bounds (what it must cover,
 what it must not drift into). The curriculum of record is
-`curriculum.md` in this change. A learn page SHALL NOT publish unless it
+`openspec/curriculum/learn.md` — a path chosen because this requirement
+outlives the change that introduces it: archiving moves a change's own files
+into `openspec/changes/archive/`, so a permanent `SHALL NOT` anchored to one
+would quietly start pointing into an archive directory and stop being
+followed. It sits outside `openspec/specs/` as well, because that path is
+reserved and the curriculum must stay editable — this requirement obliges
+amending it. A learn page SHALL NOT publish unless it
 appears in the curriculum; a page worth writing that the curriculum lacks
 SHALL be added to the curriculum — visibly, with its area, rung and
 prerequisites — in the same change that adds the page. Silent drift is the

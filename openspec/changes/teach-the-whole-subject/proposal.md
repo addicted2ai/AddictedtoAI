@@ -56,7 +56,7 @@ tree rather than assumed:
 **A curriculum for the whole subject: 37 pages, of which 27 are new.** The
 subject is divided into six areas — the thing itself, where it came from, how
 it is made, how it runs and is used, how to judge it, and the world around it
-(design D1) — and every page in the catalog (`curriculum.md`) serves a named
+(design D1) — and every page in the catalog (`openspec/curriculum/learn.md`) serves a named
 area at a named rung. Proposed distribution: **orientation 8, foundations 11,
 mechanics 11, advanced 7** (today: 2 / 2 / 3 / 3). Every catalog entry carries
 the working title, level, a schema-compliant `outcome` sentence, its

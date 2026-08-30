@@ -1,6 +1,6 @@
 # Tasks: teach-the-whole-subject
 
-**How to work this list.** One page per task. Your brief is `curriculum.md`:
+**How to work this list.** One page per task. Your brief is `openspec/curriculum/learn.md`:
 §0 (how to use it), §2 (your rung), §3 (how to write, and what "done"
 means), and your page's §4 entry. **The order below is load-bearing**: a
 prerequisite naming a page that does not exist under `content/learn/` fails
@@ -111,7 +111,7 @@ through the ordinary review gate; nothing here bypasses it.
 
 | Normative clause | Task | Check that measures it |
 |---|---|---|
-| a written curriculum divides the subject and enumerates every page | `curriculum.md` (this change) | 6.2(a) reads it against the tree |
+| a written curriculum divides the subject and enumerates every page | `openspec/curriculum/learn.md` | 6.2(a) reads it against the tree |
 | no learn page publishes outside the curriculum; additions amend it visibly | curriculum §0 step 5; every page task | review: `spec-violation` per the delta's scenario |
 | coverage checkable when the spine completes | 6.2 | 6.2(a) is the check, recorded with date and method |
 
