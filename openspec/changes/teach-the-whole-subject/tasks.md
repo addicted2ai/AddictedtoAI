@@ -45,7 +45,7 @@ through the ordinary review gate; nothing here bypasses it.
   untouched. Needs: 3.1.
 - [x] **3.3 — `the-kinds-of-models`** (foundations). Needs: 3.1.
 - [x] **3.4 — `how-machines-represent-meaning`** (foundations). Needs: 3.1.
-- [ ] **3.5 — `what-models-are-trained-on`** (foundations). Needs: 2.2.
+- [x] **3.5 — `what-models-are-trained-on`** (foundations). Needs: 2.2.
 - [ ] **3.6 — `getting-good-answers`** (foundations). Prerequisites already
   published.
 - [ ] **3.7 — `open-weights-and-closed-models`** (foundations).
