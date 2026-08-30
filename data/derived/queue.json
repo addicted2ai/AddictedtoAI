@@ -1,15 +1,6 @@
 {
   "cap": 50,
-  "count": 1,
-  "items": [
-    {
-      "detail": "openrouter-models z-ai/glm-4.5v status: deprecated -> active on 2026-08-29",
-      "rank": 50,
-      "reason": "uninterpreted-status-change",
-      "subject": "openrouter-models|a56a5acd5698a11a|bde830d7800a4672|z-ai/glm-4.5v|status",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    }
-  ],
-  "total_before_cap": 1
+  "count": 0,
+  "items": [],
+  "total_before_cap": 0
 }
