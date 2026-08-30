@@ -2,14 +2,14 @@
   "broken_links": [],
   "date": "2026-08-29",
   "link_check": {
-    "checked": 25,
+    "checked": 17,
     "confirm_after_failures": 2,
     "declined": 2,
     "drifted": 0,
-    "due": 42,
+    "due": 17,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 9,
+    "redirected": 11,
     "total": 340
   },
   "listings": [
@@ -73,7 +73,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/chroma.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "chroma",
       "state": "ok",
       "url": "https://www.trychroma.com/"
@@ -216,7 +216,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/helicone.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "helicone",
       "state": "ok",
       "url": "https://www.helicone.ai/"
@@ -242,7 +242,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/langchain.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "langchain",
       "state": "ok",
       "url": "https://www.langchain.com/"
@@ -294,7 +294,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/llamaindex.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "llamaindex",
       "state": "ok",
       "url": "https://www.llamaindex.ai/"
@@ -359,7 +359,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/promptfoo.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "promptfoo",
       "state": "ok",
       "url": "https://www.promptfoo.dev/"
@@ -372,7 +372,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/promptlayer.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "promptlayer",
       "state": "ok",
       "url": "https://www.promptlayer.com/"
@@ -411,7 +411,7 @@
       "interval_days": 45,
       "last_verified": "2026-08-28",
       "path": "content/directory/tools/ultralytics.md",
-      "since": null,
+      "since": "2026-08-29",
       "slug": "ultralytics",
       "state": "ok",
       "url": "https://www.ultralytics.com/"
@@ -577,6 +577,30 @@
       "last_checked": "2026-08-29",
       "meta_refresh": null,
       "url": "https://www.alibabacloud.com/blog/introducing-qoder-agentic-coding-platform-for-real-software_603349",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/blog/seven-open-licences-seven-lines.md"
+      ],
+      "final_url": "https://developer.meta.com/ai/llama4/license/",
+      "kind": "cross-site-related",
+      "last_checked": "2026-08-29",
+      "meta_refresh": null,
+      "url": "https://www.llama.com/llama4/license/",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": 3038,
+      "cited_by": [
+        "content/deltas/professional-level-go.md"
+      ],
+      "final_url": "https://idp.nature.com/transit?redirect_uri=https%3A%2F%2Fwww.nature.com%2Farticles%2Fnature16961&code=448c9ae8-94dd-46ec-9d78-383cdcb62209",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-29",
+      "meta_refresh": null,
+      "url": "https://www.nature.com/articles/nature16961",
       "verdict_recorded": true
     }
   ],

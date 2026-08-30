@@ -3330,6 +3330,193 @@
       "meta_refresh": null,
       "ok": true,
       "status": 200
+    },
+    "https://www.greaterwrong.com/posts/aPeJE8bSo6rAFoLqg/solidgoldmagikarp-plus-prompt-generation": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.greaterwrong.com/posts/aPeJE8bSo6rAFoLqg/solidgoldmagikarp-plus-prompt-generation",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.helicone.ai/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.helicone.ai/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.hiarcs.com/games/mercosur2009/mercosur09.html": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.hiarcs.com/games/mercosur2009/mercosur09.html",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.image-net.org/challenges/LSVRC/2012/results.html": {
+      "bytes": 22545,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.image-net.org/challenges/LSVRC/2012/results.html",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.jonesday.com/en/insights/2018/05/fda-permits-marketing-of-first-autonomous-artifici": {
+      "bytes": 13172,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.jonesday.com/en/insights/2018/05/fda-permits-marketing-of-first-autonomous-artifici",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.langchain.com/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.langchain.com/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.llama.com/llama4/license/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://developer.meta.com/ai/llama4/license/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.llamaindex.ai/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llamaindex.ai/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.microsoft.com/en-us/translator/blog/2018/03/14/human-parity-for-chinese-to-english-translations/": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.microsoft.com/en-us/translator/blog/2018/03/14/human-parity-for-chinese-to-english-translations/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.nationalacademies.org/read/9547/chapter/1": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.nationalacademies.org/read/9547/chapter/1",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.nature.com/articles/nature16961": {
+      "bytes": 3038,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://idp.nature.com/transit?redirect_uri=https%3A%2F%2Fwww.nature.com%2Farticles%2Fnature16961&code=448c9ae8-94dd-46ec-9d78-383cdcb62209",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.promptfoo.dev/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.promptfoo.dev/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.promptlayer.com/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.promptlayer.com/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.trychroma.com/": {
+      "bytes": 314648,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.trychroma.com/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.ultralytics.com/": {
+      "bytes": 385820,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.ultralytics.com/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.wilmerhale.com/en/insights/client-alerts/20260602-new-executive-order-addressing-early-government-access-to-frontier-ai-models": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.wilmerhale.com/en/insights/client-alerts/20260602-new-executive-order-addressing-early-government-access-to-frontier-ai-models",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://xkcd.com/1425/": {
+      "bytes": 2716,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://xkcd.com/1425/",
+      "last_checked": "2026-08-29",
+      "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
     }
   }
 }
