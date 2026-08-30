@@ -62,7 +62,7 @@ through the ordinary review gate; nothing here bypasses it.
 - [x] **4.2 — `what-a-reasoning-model-does`** (mechanics). Needs: 3.6.
 - [x] **4.3 — `how-image-generation-works`** (mechanics). Needs: 3.3, 3.4.
 - [x] **4.4 — `how-a-model-uses-your-documents`** (mechanics). Needs: 3.4.
-- [ ] **4.5 — `how-ai-systems-get-attacked`** (mechanics). Prerequisites
+- [x] **4.5 — `how-ai-systems-get-attacked`** (mechanics). Prerequisites
   already published.
 - [ ] **4.6 — `running-a-model-yourself`** (mechanics). Needs: 3.7, 3.8.
 - [x] **4.7 — `the-hardware-that-runs-ai`** (mechanics). Prerequisites
