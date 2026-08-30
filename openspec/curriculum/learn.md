@@ -91,17 +91,36 @@ the awe; the voice stays plain (`specs/editorial`).
 
 ### How long a page is
 
-One idea, driven to the point where the reader can use it, runs **about 650
-to 1,150 words**. That is the measured band of the pages already on the
-surface, not a target invented for this change: on 2026-08-30 the ten live
-bodies ran 662 to 1,107 words, median 938.
+One idea, driven to the point where the reader can use it, runs **somewhere
+around a thousand words**. Treat that as an order of magnitude, not a gate.
 
-Nothing enforces this and nothing should. Do not pad to reach the floor or
-amputate to meet the ceiling — the length is a symptom, not the disease. A
-draft well under the floor is usually a paragraph that was mistaken for a
-page, and the sendable-sentence test below will say so. A draft well over the
-ceiling is usually two ideas sharing a file, or survey prose, which is the
-pile. Fix the cause; the count follows.
+**The numbers here are descriptive, and they describe two different
+populations.** Measured 2026-08-30: the seed-wave pages run 627 to 1,046
+words, median about 900. The pages written against this curriculum run 979 to
+1,321, median about 1,170. The second group is longer because these entries
+mandate more — a must-cover list with four or six beats produces a longer page
+than one driving a single mechanism, and that is the curriculum's doing, not
+the writer's.
+
+So do not trim to hit a number measured on pages with different instructions.
+Nine consecutive writers flagged going over a band derived from the older
+population, and every one of them was right to flag it and wrong to spend
+passes on it.
+
+**The test is a diagnosis, not a threshold.** A draft well under is usually a
+paragraph that was mistaken for a page, and the sendable-sentence test below
+will say so. A draft well over is usually two ideas sharing a file, or survey
+prose, which is the pile. Ask which of those is true. If neither is, the page
+is the length it is — say so in your report and move on. Do not pad to reach a
+floor or amputate to meet a ceiling; the length is a symptom, not the disease.
+
+One warning about re-measuring this section. If a later reader recalculates the
+band from the pages written under this guidance and writes that number down as
+the standard, the number will only be describing itself. That already happened
+once on this surface with a punctuation figure, which was derived from pages
+written under the guidance quoting it and then cited back to later writers as
+a fact about the exemplars. Measure against something the guidance did not
+shape, or record the number as descriptive and leave it descriptive.
 
 ### Six failure modes, by name
 
