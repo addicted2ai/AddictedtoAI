@@ -27,7 +27,7 @@ through the ordinary review gate; nothing here bypasses it.
 
 ## 2. Orientation — the reader gets the map of the world
 
-- [ ] **2.1 — `what-ai-actually-is`** (orientation). The surface's new root;
+- [x] **2.1 — `what-ai-actually-is`** (orientation). The surface's new root;
   every orientation page hangs off it.
 - [ ] **2.2 — `learning-from-examples`** (orientation). Needs: 2.1.
 - [ ] **2.3 — Edit `what-a-model-is`**: front matter only, `prerequisites:
@@ -50,7 +50,7 @@ through the ordinary review gate; nothing here bypasses it.
   published.
 - [ ] **3.7 — `open-weights-and-closed-models`** (foundations).
   Prerequisites already published.
-- [ ] **3.8 — `where-your-words-go`** (foundations). Prerequisites already
+- [x] **3.8 — `where-your-words-go`** (foundations). Prerequisites already
   published.
 - [ ] **3.9 — `when-you-cannot-trust-your-eyes`** (foundations). Needs: 3.3.
 - [ ] **3.10 — `ai-and-work`** (foundations). Needs: 2.5.
