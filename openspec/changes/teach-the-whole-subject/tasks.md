@@ -76,7 +76,7 @@ through the ordinary review gate; nothing here bypasses it.
 - [x] **5.2 — `looking-inside-a-model`** (advanced). Prerequisites already
   published.
 - [x] **5.3 — `the-safety-debates`** (advanced). Needs: 2.7, 4.1.
-- [ ] **5.4 — `how-to-think-about-what-comes-next`** (advanced, the
+- [x] **5.4 — `how-to-think-about-what-comes-next`** (advanced, the
   capstone — lands last in the generated reading order by prerequisite
   depth, and is written knowing it). Needs: 3.10, 4.1, 5.3.
 
