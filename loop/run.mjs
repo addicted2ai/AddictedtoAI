@@ -26,7 +26,7 @@ import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LED
 import { lanePause } from './lib/budget.mjs';
 import { selectJob, formatRefusals } from './lib/select.mjs';
 import { assembleBrief, invocationAccounting, resumeBrief } from './lib/brief.mjs';
-import { readResult, classifyRun } from './lib/result.mjs';
+import { readResult, classifyRun, RESULT_FILENAME } from './lib/result.mjs';
 import { runExecutor, jobLogPath } from './lib/exec.mjs';
 import {
   addWorktree,
@@ -627,7 +627,14 @@ export async function runLoop(ctx, opts = {}) {
 
   if (outcome === 'approve') {
     // Housekeeping so job scaffolding never reaches main; the branch keeps it.
-    gitTry(worktree, ['rm', '-r', '-q', '--ignore-unmatch', '.job']);
+    //
+    // RESULT.md is scaffolding too, and it was missing from this list until
+    // j-20260830-01 became the first job to MERGE successfully and carried it
+    // into the repository root, tracked and pushed. Every earlier run either
+    // failed or was discarded, so the leak had never had a chance to land —
+    // the bug was as old as the loop and invisible until the first success.
+    // Named from the constant rather than the string so the two cannot drift.
+    gitTry(worktree, ['rm', '-r', '-q', '--ignore-unmatch', '.job', RESULT_FILENAME]);
     gitTry(worktree, ['commit', '--no-verify', '-m', `job ${jobId}: remove job scaffolding before merge`]);
     const merged = mergeLocal(ctx.repoRoot, branch, `job ${jobId} (${job.type}): ${String(job.title).slice(0, 60)}`);
     if (!merged.ok) {

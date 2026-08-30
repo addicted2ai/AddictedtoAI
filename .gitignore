@@ -56,6 +56,15 @@ node_modules/
 /HOLD.md
 /STOP
 
+# A job's RESULT.md, for the same reason and by the same argument. It is the
+# executor's output channel (loop/lib/result.mjs), read from the worktree and
+# never repo content. loop/run.mjs removes it before merging, but that removal
+# is an instruction; this is the mechanism, and the two together are what stops
+# it reaching main. It landed once — j-20260830-01, the first job ever to merge
+# successfully, carried it into the root tracked and pushed, because every
+# earlier run had failed before reaching the merge.
+/RESULT.md
+
 # Environment — never commit these
 .env
 .env.local
