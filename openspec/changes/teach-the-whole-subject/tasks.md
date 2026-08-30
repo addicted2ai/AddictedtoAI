@@ -53,7 +53,7 @@ through the ordinary review gate; nothing here bypasses it.
 - [x] **3.8 — `where-your-words-go`** (foundations). Prerequisites already
   published.
 - [x] **3.9 — `when-you-cannot-trust-your-eyes`** (foundations). Needs: 3.3.
-- [ ] **3.10 — `ai-and-work`** (foundations). Needs: 2.5.
+- [x] **3.10 — `ai-and-work`** (foundations). Needs: 2.5.
 
 ## 4. Mechanics — the parts get their names
 
