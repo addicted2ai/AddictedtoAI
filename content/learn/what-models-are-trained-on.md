@@ -35,8 +35,17 @@ one per cent. That is the geography of a single language inside a pile meant to
 carry it.
 
 The same lopsidedness runs through everything else the web is uneven about.
-Nobody writes down what everyone already knows; a trade practised by a million
-people can leave less text behind than a controversy followed by a thousand.
+Public argument leaves enormous text behind; ordinary competence leaves almost
+none, because nobody writes down what everyone already knows. A trade practised
+by a million people can leave less behind than a controversy followed by a
+thousand.
+
+Register skews the same way, and the shape of it is stranger than it sounds.
+The most represented single site in that collection was not a news outlet or an
+encyclopedia but Google Patents, and patent text on that site arrives partly
+machine-translated from other languages. A pile gathered to teach a machine how
+people write is substantially filled with patent prose, some of it put into
+English by another machine.
 
 ## Most of the work is throwing text away
 
@@ -45,12 +54,17 @@ Collecting the crawl is the cheap part. The 2020 paper describing GPT-3
 compressed plaintext before filtering, 570GB after. About one part in eighty
 survived, and the choosing was done by software.
 
-Two jobs account for most of that. One is removing duplicates: the same text
-sits on the web thousands of times over, and a pile holding one document ten
-thousand times teaches it ten thousand times.
+Two jobs account for most of that. One is removing duplicates. The same text
+sits on the web thousands of times over, in syndicated articles, mirrored
+pages, template boilerplate and scraped copies of scraped copies, and a pile
+holding one document ten thousand times teaches that document ten thousand
+times. A [2021 paper on
+deduplication](https://arxiv.org/abs/2107.06499) reports finding, in the same
+collection studied above, a single 61-word English sentence repeated over
+60,000 times.
 
 The other is deciding what counts as good writing, and this is where a filter
-acquires an author. The method that paper describes is to train a small
+acquires an author. The method the GPT-3 paper describes is to train a small
 classifier to tell a reference collection of good text apart from raw crawl,
 then keep crawl documents according to how closely they resemble the reference.
 That collection was built around WebText, and WebText in turn was built by
@@ -62,9 +76,9 @@ had already voted it worth reading.
 that somebody already decided was good.**
 
 That was a real problem solved cheaply, and the paper presents the result as an
-improvement, which it plausibly was. But "high quality" had become an
-operational definition with a pedigree, and good writing unlike that pedigree
-scores low.
+improvement, which it plausibly was. The point is not that anyone cheated. It
+is that "high quality" had become an operational definition with a pedigree,
+and good writing unlike that pedigree scores low with nothing to appeal to.
 
 A second filter in that study makes the point with sharper edges: the
 collection had also been cleaned by deleting any document containing a word
@@ -78,7 +92,8 @@ difference.
 
 The survivors are then mixed, and not in proportion to their size: the GPT-3
 paper sampled the collections it judged higher quality two or three times each,
-the crawl itself less than once.
+the crawl itself less than once. A pile's composition is a set of dials, and
+somebody set them.
 
 ## The smaller pile, written to order
 
@@ -107,16 +122,17 @@ Two newer layers sit on top of the crawl. The first is text that was paid for:
 the Associated Press and OpenAI announced an agreement in July 2023 under
 which, [in AP's own
 words](https://www.ap.org/media-center/press-releases/2023/ap-open-ai-agree-to-share-select-news-content-and-technology-in-new-collaboration/),
-OpenAI licenses part of AP's text archive. A market in permission now exists
-beside the crawl, though whether the scraped layer underneath ever needed
-permission is being fought over in courts in several countries and is settled
-nowhere.
+OpenAI licenses part of AP's text archive. One deal proves one thing, and it is
+the thing that matters: a market in permission now exists beside the crawl,
+where before there was only the crawl. Whether the scraped layer underneath
+ever needed permission is being fought over in courts in several countries and
+is settled nowhere.
 
 The second is text a model wrote. It is cheap and can be aimed at gaps, and it
 carries a documented hazard called [model
 collapse](/wiki/concept/model-collapse): train each generation only on the last
-one's output and the rare things go first, until what comes out is a few
-patterns repeated. The demonstration replaced the real data every round,
+one's output and the rare things go first, then more, until what comes out is a
+few patterns repeated. The demonstration replaced the real data every round,
 and a later result found that accumulating synthetic text alongside the
 original avoids the collapse. So the open question is whether the real anchor
 stays in, and no lab publishes that.
