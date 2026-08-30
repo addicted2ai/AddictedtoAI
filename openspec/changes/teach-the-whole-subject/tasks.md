@@ -32,7 +32,7 @@ through the ordinary review gate; nothing here bypasses it.
 - [x] **2.2 — `learning-from-examples`** (orientation). Needs: 2.1.
 - [x] **2.3 — Edit `what-a-model-is`**: front matter only, `prerequisites:
   [what-ai-actually-is]`. Body untouched. Needs: 2.1.
-- [ ] **2.4 — `where-ai-came-from`** (orientation). Needs: 2.1.
+- [x] **2.4 — `where-ai-came-from`** (orientation). Needs: 2.1.
 - [x] **2.5 — `what-ai-is-used-for`** (orientation). Needs: 2.1.
 - [ ] **2.6 — `who-builds-ai`** (orientation). Needs: 2.1.
 - [ ] **2.7 — `where-ai-fails-people`** (orientation). Needs: 2.2, 2.5.
