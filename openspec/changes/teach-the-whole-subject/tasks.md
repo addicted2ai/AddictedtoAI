@@ -35,7 +35,7 @@ through the ordinary review gate; nothing here bypasses it.
 - [x] **2.4 — `where-ai-came-from`** (orientation). Needs: 2.1.
 - [x] **2.5 — `what-ai-is-used-for`** (orientation). Needs: 2.1.
 - [x] **2.6 — `who-builds-ai`** (orientation). Needs: 2.1.
-- [ ] **2.7 — `where-ai-fails-people`** (orientation). Needs: 2.2, 2.5.
+- [x] **2.7 — `where-ai-fails-people`** (orientation). Needs: 2.2, 2.5.
 
 ## 3. Foundations — the metaphors become causal models
 
