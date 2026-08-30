@@ -91,8 +91,16 @@ the awe; the voice stays plain (`specs/editorial`).
 
 ### How long a page is
 
-One idea, driven to the point where the reader can use it, runs **somewhere
-around a thousand words**. Treat that as an order of magnitude, not a gate.
+**A page is as long as its content requires. There is no ceiling.**
+
+This is the maintainer's instruction, given 2026-08-30 after watching writers
+discard real work to hit a number: *"I don't want to lose quality to be
+concise."* If a page needs eighteen hundred words to do its job properly, it
+is an eighteen-hundred-word page. Write it and say so.
+
+Most pages here land somewhere around a thousand to fifteen hundred words,
+which is a fact about what these entries ask for rather than a target. Treat
+it as an order of magnitude and nothing more.
 
 **The numbers here are descriptive, and they describe two different
 populations.** Measured 2026-08-30: the seed-wave pages run 627 to 1,046
@@ -107,12 +115,22 @@ Nine consecutive writers flagged going over a band derived from the older
 population, and every one of them was right to flag it and wrong to spend
 passes on it.
 
-**The test is a diagnosis, not a threshold.** A draft well under is usually a
-paragraph that was mistaken for a page, and the sendable-sentence test below
-will say so. A draft well over is usually two ideas sharing a file, or survey
-prose, which is the pile. Ask which of those is true. If neither is, the page
-is the length it is — say so in your report and move on. Do not pad to reach a
-floor or amputate to meet a ceiling; the length is a symptom, not the disease.
+**The remaining test is a diagnosis, not a threshold, and length is not
+evidence for it.** Two real failure modes exist: two ideas sharing a file, and
+survey prose that lists rather than argues. Both are identifiable directly, by
+reading the draft and asking whether it has one argument and whether its
+examples are evidence or content. A long page can be free of both, and a short
+page can have either.
+
+So do not reason from word count to a defect. If a page is long, ask whether
+either failure is actually present; if neither is, it is finished, and the
+length is the answer rather than the problem. **Never cut something that is
+doing work in order to reach a number** — that is the failure this section
+exists to prevent, and it is the one that has actually happened here.
+
+A draft that comes in very short is worth a second look for the opposite
+reason: a paragraph mistaken for a page. The sendable-sentence test below will
+usually say so before the word count does.
 
 One warning about re-measuring this section. If a later reader recalculates the
 band from the pages written under this guidance and writes that number down as
