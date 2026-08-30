@@ -211,69 +211,6 @@
         "max_completion_tokens": 29491
       }
     },
-    "allenai/olmo-3-32b-think": {
-      "$as_of": "2026-08-28",
-      "$status": "active",
-      "$vanished": true,
-      "architecture": {
-        "input_modalities": [
-          "text"
-        ],
-        "instruct_type": null,
-        "modality": "text->text",
-        "output_modalities": [
-          "text"
-        ],
-        "tokenizer": "Other"
-      },
-      "canonical_slug": "allenai/olmo-3-32b-think-20251121",
-      "context_length": 65536,
-      "created": 1763758276,
-      "default_parameters": {
-        "frequency_penalty": null,
-        "temperature": 0.6,
-        "top_p": 0.95
-      },
-      "description": "Olmo 3 32B Think is a large-scale, 32-billion-parameter model purpose-built for deep reasoning, complex logic chains and advanced instruction-following scenarios. Its capacity enables strong performance on demanding evaluation tasks and...",
-      "expiration_date": null,
-      "hugging_face_id": "allenai/Olmo-3-32B-Think",
-      "id": "allenai/olmo-3-32b-think",
-      "knowledge_cutoff": null,
-      "links": {
-        "details": "/api/v1/models/allenai/olmo-3-32b-think-20251121/endpoints"
-      },
-      "name": "AllenAI: Olmo 3 32B Think",
-      "per_request_limits": null,
-      "pricing": {
-        "completion": "0.0000005",
-        "prompt": "0.00000015"
-      },
-      "reasoning": {
-        "mandatory": true
-      },
-      "supported_parameters": [
-        "frequency_penalty",
-        "include_reasoning",
-        "logit_bias",
-        "max_tokens",
-        "presence_penalty",
-        "reasoning",
-        "repetition_penalty",
-        "response_format",
-        "seed",
-        "stop",
-        "structured_outputs",
-        "temperature",
-        "top_k",
-        "top_p"
-      ],
-      "supported_voices": null,
-      "top_provider": {
-        "context_length": 65536,
-        "is_moderated": false,
-        "max_completion_tokens": 58982
-      }
-    },
     "amazon/nova-2-lite-v1": {
       "$as_of": "2026-08-29",
       "$status": "active",

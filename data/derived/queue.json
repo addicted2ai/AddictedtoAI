@@ -1,15 +1,7 @@
 {
   "cap": 50,
-  "count": 3,
+  "count": 2,
   "items": [
-    {
-      "detail": "declared row id absent from the latest snapshot; last seen 2026-08-28 — bound facts render last-known values with an as-of date",
-      "rank": 85,
-      "reason": "vanished-feed-row",
-      "subject": "openrouter-models:allenai/olmo-3-32b-think",
-      "target": "content/wiki/model/allenai-olmo-3-32b-think.md",
-      "type": "repair"
-    },
     {
       "detail": "declared row id absent from the latest snapshot; last seen 2026-08-28 — bound facts render last-known values with an as-of date",
       "rank": 85,
@@ -27,5 +19,5 @@
       "type": "interpret"
     }
   ],
-  "total_before_cap": 3
+  "total_before_cap": 2
 }

@@ -2,11 +2,11 @@
   "broken_links": [],
   "date": "2026-08-29",
   "link_check": {
-    "checked": 17,
+    "checked": 0,
     "confirm_after_failures": 2,
     "declined": 2,
     "drifted": 0,
-    "due": 17,
+    "due": 0,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 11,
@@ -669,14 +669,6 @@
   ],
   "unreadable_content": [],
   "vanished_feed_rows": [
-    {
-      "entry_id": "model/allenai-olmo-3-32b-think",
-      "has_last_known": true,
-      "last_seen_date": "2026-08-28",
-      "path": "content/wiki/model/allenai-olmo-3-32b-think.md",
-      "row_id": "allenai/olmo-3-32b-think",
-      "source": "openrouter-models"
-    },
     {
       "entry_id": "model/arcee-ai-virtuoso-large",
       "has_last_known": true,
