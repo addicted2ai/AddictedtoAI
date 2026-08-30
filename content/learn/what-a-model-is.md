@@ -5,7 +5,7 @@ outcome: >-
   You can point at any AI product and say which part of it is the model and
   which part is not, and predict which changes need a new model and which do
   not.
-prerequisites: []
+prerequisites: [what-ai-actually-is]
 mentions:
   - event/attention-is-all-you-need
 ---

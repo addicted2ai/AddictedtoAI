@@ -29,8 +29,8 @@ through the ordinary review gate; nothing here bypasses it.
 
 - [x] **2.1 — `what-ai-actually-is`** (orientation). The surface's new root;
   every orientation page hangs off it.
-- [ ] **2.2 — `learning-from-examples`** (orientation). Needs: 2.1.
-- [ ] **2.3 — Edit `what-a-model-is`**: front matter only, `prerequisites:
+- [x] **2.2 — `learning-from-examples`** (orientation). Needs: 2.1.
+- [x] **2.3 — Edit `what-a-model-is`**: front matter only, `prerequisites:
   [what-ai-actually-is]`. Body untouched. Needs: 2.1.
 - [ ] **2.4 — `where-ai-came-from`** (orientation). Needs: 2.1.
 - [ ] **2.5 — `what-ai-is-used-for`** (orientation). Needs: 2.1.
@@ -73,7 +73,7 @@ through the ordinary review gate; nothing here bypasses it.
 
 - [ ] **5.1 — `what-it-costs-to-build-and-run-ai`** (advanced). Needs: 2.6,
   4.1, 4.7.
-- [ ] **5.2 — `looking-inside-a-model`** (advanced). Prerequisites already
+- [x] **5.2 — `looking-inside-a-model`** (advanced). Prerequisites already
   published.
 - [ ] **5.3 — `the-safety-debates`** (advanced). Needs: 2.7, 4.1.
 - [ ] **5.4 — `how-to-think-about-what-comes-next`** (advanced, the

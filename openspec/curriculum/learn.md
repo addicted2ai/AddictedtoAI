@@ -843,9 +843,12 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 - **Outcome**: You can say what interpretability researchers actually do,
   name results where a behaviour was genuinely located in the weights, and
   state why "we don't know how it works" is both true and shrinking.
-- **Must cover**: why inspection is hard — `what-a-neural-network-is` said
-  nobody can read the numbers; this page is the research program that
-  refuses to accept that; probing (asking whether a concept is decodable
+- **Must cover**: why inspection is hard — the behaviour is smeared across
+  the numbers rather than written anywhere a person can read, a premise the
+  page establishes for itself from `what-a-model-is` (writer's note:
+  `what-a-neural-network-is` covers this on the foundations rung, but it is
+  not a prerequisite here, so this page may not lean on it); this page is
+  the research program that refuses to accept that; probing (asking whether a concept is decodable
   from activations); superposition in prose — more concepts than neurons,
   so single neurons disappoint by necessity; features and circuits as the
   units that are working better; the worked example the reader already
