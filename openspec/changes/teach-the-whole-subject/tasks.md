@@ -39,8 +39,8 @@ through the ordinary review gate; nothing here bypasses it.
 
 ## 3. Foundations — the metaphors become causal models
 
-- [ ] **3.1 — `what-a-neural-network-is`** (foundations). Needs: 2.2, 2.3.
-- [ ] **3.2 — Edit `how-a-language-model-works`**: front matter only,
+- [x] **3.1 — `what-a-neural-network-is`** (foundations). Needs: 2.2, 2.3.
+- [x] **3.2 — Edit `how-a-language-model-works`**: front matter only,
   `prerequisites: [what-a-model-is, what-a-neural-network-is]`. Body
   untouched. Needs: 3.1.
 - [ ] **3.3 — `the-kinds-of-models`** (foundations). Needs: 3.1.

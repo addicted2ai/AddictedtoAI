@@ -8,6 +8,7 @@ outcome: >-
   own tokens.
 prerequisites:
   - what-a-model-is
+  - what-a-neural-network-is
 mentions:
   - event/attention-is-all-you-need
   - concept/scaling-laws
