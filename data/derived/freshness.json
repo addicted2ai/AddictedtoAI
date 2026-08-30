@@ -668,14 +668,5 @@
     }
   ],
   "unreadable_content": [],
-  "vanished_feed_rows": [
-    {
-      "entry_id": "model/arcee-ai-virtuoso-large",
-      "has_last_known": true,
-      "last_seen_date": "2026-08-28",
-      "path": "content/wiki/model/arcee-ai-virtuoso-large.md",
-      "row_id": "arcee-ai/virtuoso-large",
-      "source": "openrouter-models"
-    }
-  ]
+  "vanished_feed_rows": []
 }
