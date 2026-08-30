@@ -71,7 +71,7 @@ through the ordinary review gate; nothing here bypasses it.
 
 ## 5. Advanced — the load-bearing details and the live arguments
 
-- [ ] **5.1 — `what-it-costs-to-build-and-run-ai`** (advanced). Needs: 2.6,
+- [x] **5.1 — `what-it-costs-to-build-and-run-ai`** (advanced). Needs: 2.6,
   4.1, 4.7.
 - [x] **5.2 — `looking-inside-a-model`** (advanced). Prerequisites already
   published.
