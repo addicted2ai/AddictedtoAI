@@ -471,7 +471,7 @@ refuted by a change two other sources record.
 
 The comparison is cheap. What is missing is a way to say *these two facts
 measure the same thing* — field names differ by necessity, since the repair for
-that entry named its cited facts `card_parameters` and `preview_parameters`
+that entry named its cited facts `repository_tensor_total` and `preview_parameters`
 precisely so they would not collide with the feed-bound `parameters`.
 
 - A fact MAY declare `corroborates: <field>`, naming another fact on the same
@@ -489,7 +489,7 @@ precisely so they would not collide with the feed-bound `parameters`.
 #### Scenario: A declared pair binds
 
 - **WHEN** an entry carries a feed-bound `parameters` fact and a cited
-  `card_parameters` fact declaring `corroborates: parameters`
+  `repository_tensor_total` fact declaring `corroborates: parameters`
 - **THEN** the build accepts both and renders each exactly as it would without
   the declaration
 

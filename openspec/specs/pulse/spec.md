@@ -296,7 +296,7 @@ judgment, and it costs nothing on top of a run that already resolves both.
 #### Scenario: Two sources disagree and a verify job is proposed
 
 - **WHEN** an entry's feed-bound `parameters` resolves to `284B total` and its
-  cited `card_parameters` declaring `corroborates: parameters` says `304B params`
+  cited `repository_tensor_total` declaring `corroborates: parameters` says `304B params`
 - **THEN** the next Pulse run's queue carries a `verify` item naming the entry,
   both fields, both values and both sources, and neither fact is changed
 
