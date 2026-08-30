@@ -54,6 +54,7 @@ import {
   startGate,
 } from './lib/breakers.mjs';
 import { publishStep } from './lib/publish.mjs';
+import { rederiveStep, DERIVED_PATHS } from './lib/rederive.mjs';
 import { markDirectiveDone } from './lib/directives.mjs';
 
 const USAGE = `node loop/run.mjs — one Desk run
@@ -624,6 +625,8 @@ export async function runLoop(ctx, opts = {}) {
   // --- Merge, publish, ledger. --------------------------------------------
   let outcome = result.outcome;
   let mergedSha = null;
+  /** Set when the derived tree was recomputed after a merge (addictedtoai-942). */
+  let rederived = false;
 
   if (outcome === 'approve') {
     // Housekeeping so job scaffolding never reaches main; the branch keeps it.
@@ -636,6 +639,30 @@ export async function runLoop(ctx, opts = {}) {
     // Named from the constant rather than the string so the two cannot drift.
     gitTry(worktree, ['rm', '-r', '-q', '--ignore-unmatch', '.job', RESULT_FILENAME]);
     gitTry(worktree, ['commit', '--no-verify', '-m', `job ${jobId}: remove job scaffolding before merge`]);
+
+    // The branch contributes NO derived state (beads addictedtoai-dgj).
+    //
+    // `data/derived/` is an output, not content, and a three-way merge of two
+    // derivations is not the derivation of the merge:
+    //     branch  = derive(OLD snapshot + this job's work)
+    //     base    = derive(NEW snapshot + without this job's work)
+    //     correct = derive(NEW snapshot + this job's work)   <- neither has it
+    // A conflict there discards an approved job — j-20260829-03 lost 18.77
+    // model-minutes that way, after passing its gates and being approved. A
+    // CLEAN auto-merge would have been worse: a tree matching no real state.
+    //
+    // So the branch is reset to the base's derived tree before merging. The
+    // job's authored files merge normally; the derived tree is recomputed from
+    // the merged result immediately below.
+    const droppedDerived = gitTry(worktree, ['checkout', base, '--', ...DERIVED_PATHS]);
+    if (droppedDerived.ok) {
+      const c = gitTry(worktree, [
+        'commit', '--no-verify', '-m',
+        `job ${jobId}: drop derived state before merge — recomputed from the merged tree`,
+      ]);
+      if (c.ok) ctx.log('dropped the branch\'s data/derived/ before merging — it is an output, not content (addictedtoai-dgj)');
+    }
+
     const merged = mergeLocal(ctx.repoRoot, branch, `job ${jobId} (${job.type}): ${String(job.title).slice(0, 60)}`);
     if (!merged.ok) {
       ctx.log(`merge failed: ${merged.reason}`);
@@ -644,6 +671,20 @@ export async function runLoop(ctx, opts = {}) {
       mergedSha = merged.sha;
       outcome = 'done';
       ctx.log(`merged ${branch} into ${base} locally as ${mergedSha.slice(0, 8)} — nothing is pushed`);
+
+      // Recompute the derived tree from the MERGED state (addictedtoai-942).
+      // Without this the queue keeps advertising the work this job just
+      // finished, and the next run is dispatched at it — spending an author
+      // AND a review invocation to discover there is nothing to do. Observed
+      // on j-20260830-01 and -02, both of which had correctly retired their
+      // own queue items; only the file was stale.
+      //
+      // This is the other half of the same idea as dropping derived above: the
+      // merge carries authored files, and the derivation happens once, here,
+      // over the result. Any change it makes is committed with the job's
+      // records below, so the tree is never left half-derived.
+      const rederiveResult = await rederiveStep(ctx);
+      rederived = rederiveResult.ok;
 
       // The record says what it reviewed, now that "what it reviewed" is a
       // settled fact: these files are on `${base}`. Without this the record
@@ -694,6 +735,11 @@ export async function runLoop(ctx, opts = {}) {
     relative(ctx.repoRoot, verdictPath(ctx, jobId, 1)),
     relative(ctx.repoRoot, verdictPath(ctx, jobId, 2)),
     relative(ctx.repoRoot, ctx.directivesPath),
+    // The recomputed derived tree, when there was one. It is the derivation of
+    // the merged state and must land in the same commit as the records, or the
+    // repository is left holding a queue that describes the tree from before
+    // this job (addictedtoai-942). Still staged by exact path — never `add -A`.
+    ...(rederived ? DERIVED_PATHS : []),
   ].map((p) => p.replace(/\\/g, '/'));
 
   const line = appendLedger(
