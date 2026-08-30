@@ -76,7 +76,27 @@ analysis](https://arxiv.org/abs/2502.04878): train a second autoencoder on the
 first and a latent for "Einstein" comes apart into "scientist", "Germany" and
 "famous person". And [put to work on a downstream probing
 task](https://arxiv.org/abs/2502.16681), they could not be made to beat simple
-baselines consistently.
+baselines consistently. Neither critique comes from outside the programme: an
+author of the original sparse-autoencoder paper is also an author of the
+canonical-units result.
+
+## Circuits: a whole account of one behaviour
+
+A feature is a unit. A circuit is units wired into a computation, and circuits
+are what the field reaches for when it wants to explain a behaviour rather than
+label a component. A worked one covers [indirect object
+identification](https://arxiv.org/abs/2211.00593): how a small language model
+completes "When Mary and John went to the store, John gave a drink to" with the
+other name. The account, assembled with causal interventions throughout, comes
+to twenty-six attention heads grouped into seven classes, each class doing an
+identifiable job, and between them they carry the bulk of the task.
+
+What makes that paper worth reading is what it does next. Instead of declaring
+the behaviour explained, the authors score their own account against three
+criteria they name faithfulness, completeness and minimality, and report that
+while those criteria support it, "they also point to remaining gaps in our
+understanding". So a behaviour can have an address. Twenty-six heads is what one
+address cost, in a small model, on a task you can state in a sentence.
 
 ## The refusal direction, read as evidence
 
@@ -91,12 +111,36 @@ Look at the shape of that evidence rather than the finding. Nothing is being
 decoded. Two interventions run in opposite directions and both land where the
 account predicts, which closes off the failure the control tasks exposed: a
 direction that is merely readable cannot also be a direction that, added to a
-request about baking, produces a refusal.
+request about baking, produces a refusal. The same paper then makes a prediction
+about something else entirely, that adversarial suffixes work by suppressing the
+propagation of that direction, and finds it.
 
 What it does not say is worth as much. It does not say refusal is one direction
 in every model; it says it is in the ones tested. And it does not make refusal
 certifiable, because the address that lets a researcher study the behaviour lets
 anyone holding the weights delete it.
+
+## Where a fact lives is not where to change it
+
+Causal evidence gets over-read too, and the cleanest demonstration is a pair of
+papers about stored facts. [Locating and Editing Factual Associations in
+GPT](https://arxiv.org/abs/2202.05262) developed causal tracing: corrupt the
+input, restore individual activations one at a time, and see which restorations
+bring the right answer back. It localised factual recall to middle-layer
+feed-forward modules, and its authors built an editing method on that
+localisation.
+
+Then [Does Localization Inform Editing?](https://arxiv.org/abs/2301.04213)
+tested the step in between. It found you can change how a fact is stored by
+editing weights in a different location from the one tracing points at, and
+reported that tracing results "do not provide any insight into which model MLP
+layer would be best to edit". The authors' own summary is the sentence to keep:
+"better mechanistic understanding of how pretrained language models work may not
+always translate to insights about how to best change their behavior."
+
+Nothing was wrong with the localisation. What failed was an unchecked move
+between two questions, where a computation happens and where to intervene on it,
+that everyone had been treating as one.
 
 ## Two kinds of not knowing
 
@@ -106,8 +150,9 @@ reaches comes from the people with the best tools. Anthropic's
 [attribution-graph work](https://transformer-circuits.pub/2025/attribution-graphs/biology.html)
 of 27 March 2025 reports "satisfying insight for about a quarter of the prompts
 we've tried", and says that even the successes "only capture a small fraction of
-the mechanisms of the model". A quarter is not nothing. It is also not a model
-you could audit.
+the mechanisms of the model". What the method cannot reach arrives as error
+nodes the authors call dark matter. A quarter is not nothing. It is also not a
+model you could audit.
 
 That paper carries the finding that sits worst with everything you know about
 how these models run. Before it writes the first word of a line of verse, the
@@ -149,7 +194,11 @@ This is not a reason to shrug. *What safety training changes* ended on the gap
 between a model that is unlikely to do something and one that cannot, and only
 the second is a guarantee. Interpretability is the only programme that could
 supply it, which is why its practitioners keep publishing the tests their own
-methods fail.
+methods fail. The paper that found the Golden Gate feature also found features
+relating to lying, deception and power-seeking, and then cautioned its readers
+not to read too much into their mere existence: "there's a difference (for
+example) between knowing about lies, being capable of lying, and actually lying
+in the real world."
 
 So the question to bring to the next result you read is not whether the picture
 looks compelling. It is what got intervened on, and what happened when it did. A

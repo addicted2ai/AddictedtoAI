@@ -65,7 +65,7 @@ through the ordinary review gate; nothing here bypasses it.
 - [ ] **4.5 — `how-ai-systems-get-attacked`** (mechanics). Prerequisites
   already published.
 - [ ] **4.6 — `running-a-model-yourself`** (mechanics). Needs: 3.7, 3.8.
-- [ ] **4.7 — `the-hardware-that-runs-ai`** (mechanics). Prerequisites
+- [x] **4.7 — `the-hardware-that-runs-ai`** (mechanics). Prerequisites
   already published.
 - [ ] **4.8 — `ai-and-the-law`** (mechanics). Needs: 2.7, 3.3, 3.5.
 
