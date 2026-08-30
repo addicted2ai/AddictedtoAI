@@ -1237,7 +1237,7 @@
       "t": "AllenAI: Olmo 3 32B Think",
       "k": "entry",
       "d": "model",
-      "s": "active",
+      "s": "retired",
       "i": "model/allenai-olmo-3-32b-think",
       "a": [],
       "b": true
