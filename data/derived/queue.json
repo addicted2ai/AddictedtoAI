@@ -1,15 +1,7 @@
 {
   "cap": 50,
-  "count": 2,
+  "count": 1,
   "items": [
-    {
-      "detail": "declared row id absent from the latest snapshot; last seen 2026-08-28 — bound facts render last-known values with an as-of date",
-      "rank": 85,
-      "reason": "vanished-feed-row",
-      "subject": "openrouter-models:arcee-ai/virtuoso-large",
-      "target": "content/wiki/model/arcee-ai-virtuoso-large.md",
-      "type": "repair"
-    },
     {
       "detail": "openrouter-models z-ai/glm-4.5v status: deprecated -> active on 2026-08-29",
       "rank": 50,
@@ -19,5 +11,5 @@
       "type": "interpret"
     }
   ],
-  "total_before_cap": 2
+  "total_before_cap": 1
 }

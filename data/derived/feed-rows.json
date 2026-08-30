@@ -5101,60 +5101,6 @@
         "max_completion_tokens": 235929
       }
     },
-    "arcee-ai/virtuoso-large": {
-      "$as_of": "2026-08-28",
-      "$status": "active",
-      "$vanished": true,
-      "architecture": {
-        "input_modalities": [
-          "text"
-        ],
-        "instruct_type": null,
-        "modality": "text->text",
-        "output_modalities": [
-          "text"
-        ],
-        "tokenizer": "Other"
-      },
-      "canonical_slug": "arcee-ai/virtuoso-large",
-      "context_length": 131072,
-      "created": 1746478885,
-      "default_parameters": {},
-      "description": "Virtuoso‑Large is Arcee's top‑tier general‑purpose LLM at 72 B parameters, tuned to tackle cross‑domain reasoning, creative writing and enterprise QA. Unlike many 70 B peers, it retains the 128 k...",
-      "expiration_date": null,
-      "hugging_face_id": "",
-      "id": "arcee-ai/virtuoso-large",
-      "knowledge_cutoff": "2025-03-31",
-      "links": {
-        "details": "/api/v1/models/arcee-ai/virtuoso-large/endpoints"
-      },
-      "name": "Arcee AI: Virtuoso Large",
-      "per_request_limits": null,
-      "pricing": {
-        "completion": "0.0000012",
-        "prompt": "0.00000075"
-      },
-      "supported_parameters": [
-        "frequency_penalty",
-        "logit_bias",
-        "max_tokens",
-        "min_p",
-        "presence_penalty",
-        "repetition_penalty",
-        "stop",
-        "temperature",
-        "tool_choice",
-        "tools",
-        "top_k",
-        "top_p"
-      ],
-      "supported_voices": null,
-      "top_provider": {
-        "context_length": 131072,
-        "is_moderated": false,
-        "max_completion_tokens": 64000
-      }
-    },
     "baidu/ernie-4.5-vl-424b-a47b": {
       "$as_of": "2026-08-29",
       "$status": "active",
