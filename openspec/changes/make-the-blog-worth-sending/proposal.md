@@ -3,113 +3,111 @@
 ## Why
 
 The maintainer asked, on 2026-08-30, for the blog to be overhauled into an
-award-winning blog, seen through the lens of this site and its mission — not a
-plumbing fix, and not the execution of a settled list. The question this
-change answers first is what an award-winning blog *on this subject, on this
-site, written by this machinery* would be, and the answer worked backwards
-into specs.
+award-winning blog, and then directed the shape of the answer in his own
+words: *"one pulse per day spawns a scout that looks for content that
+clears the bar, and then if it finds worthwhile material to cover or
+synthesize from, creates job in the desk queue"* — with a cap of three per
+day chosen by ranking ("have it make a judgment on the 3 most worthy and
+discard the others"), a high bar ("0 posts is acceptable if there really
+is nothing to write about"), a quiet day as "an opportunity to synthesize",
+a blog that is never about this site, prose with no tell-tale signs of
+machine writing (craft, not concealment — the AI-authorship disclosure
+stands), full autonomy ("NO HUMAN judgment"), and the five existing posts
+used "as examples of what not to do" — deleted.
 
-**The answer, in one sentence:** the blog of record for the observable AI
-economy — every post either a **news note** (a dated event, witnessed with
-primary evidence, that says who it lands on and what changes for them) or a
-**synthesis** (recorded evidence assembled into a shape no single event
-shows), both held to the test of whether a reader would *send* the piece to a
-specific person, not merely concede its accuracy.
+The measured state this lands on, every claim re-verified at HEAD:
 
-The blog today fails that description in a precise, measured way. Every claim
-below was re-measured on 2026-08-30 rather than carried over from the
-conversation that prompted this change:
+1. **The blog has no producer.** `post` appears nowhere in
+   `pulse/lib/queue.mjs`; the proposals channel's consuming side is built
+   and tested while its producing side does not exist
+   (`loop/lib/proposals.mjs` exports three readers and one mover — none
+   creates a proposal; `data/proposals/` holds a README and a `rejected/`
+   holding another; `addictedtoai-6ov`). Every published sentence on the
+   site came from the human-directed seed wave (`addictedtoai-3zf`).
+2. **The five posts are one genre, human-directed** — derived-view surveys
+   of catalog data, several well-crafted, none about something that
+   happened to somebody, none naming an affected party.
+3. **The bar cannot name the thing the maintainer wants.** The live
+   editorial spec carries would-cite (the predecessor charter's test 2)
+   and nothing for test 1 — *"Would this be worth a stranger's attention
+   if they never learned an AI made it?"* The predecessor's own amendment
+   log records what that asymmetry does: a vocabulary that cannot name
+   test 1 files only test-2 work, silently, for its entire life.
+4. **The predecessor is the standard for judgment and the anti-standard
+   for prose.** Its docket discipline (44 candidates over 9 active days,
+   57% killed with recorded reasons, `expires:` on every item) and its
+   author charge ("publish something a stranger would send"; "correct,
+   sourced, and forgettable" a real failure) are worth adopting outright.
+   Its prose is the maintainer's own negative example — "obviously AI
+   generated" — measured in this change at 13.0 em-dashes per 1,000 words
+   against a human-journalism sample's 4.4, with the full six-family
+   inventory in `design.md` D6.
 
-1. **One genre, human-directed, five posts.** All five published posts
-   (`content/blog/`, dates 2026-08-14 to 2026-08-28) are surveys of a catalog
-   or a document set — derived-view censuses, several of them excellent. Not
-   one is about something that happened to somebody; not one names an
-   affected party; every one exists because a human directed it. The craft is
-   there. The genre monoculture is the defect.
-2. **No producer.** The string `post` appears nowhere in
-   `pulse/lib/queue.mjs` (the whole file was read; the queue emits only
-   `repair`, `verify`, `interpret` and `entry` items). The blog has no queue
-   trigger. Its only other route, proposals, has a consuming side that is
-   complete and tested and a producing side that does not exist:
-   `loop/lib/proposals.mjs` exports exactly four functions, all readers, and
-   `data/proposals/` has held nothing but a README and an empty `rejected/`
-   since 2026-08-28 (`addictedtoai-6ov`).
-3. **The supply the producer would draw on already exists.**
-   `data/changes.jsonl` holds 90 lines: 60 seeded `release` events spanning
-   2026-06-29 to 2026-08-24 (30 of those 57 calendar days carried at least
-   one), and 30 live lines from the Pulse's first real diff on 2026-08-29 —
-   2 retirements, 10 arrivals, 17 field changes (8 input-price, 8
-   output-price, 1 status), 1 annotation. Every line carries a date, a source
-   URL, an excerpt and a kind. That is dated, actor-shaped, primary-sourced
-   news, recorded by deterministic machinery, feeding nothing but the changed
-   feed and `interpret` jobs.
-4. **The bar selects the wrong genre for a blog.** The editorial spec's third
-   test is would-cite — "could paste this URL as support" — and contains no
-   send test (the string `send` appears nowhere in
-   `openspec/specs/editorial/spec.md`). You cite a reference; you send a
-   story. All three editorial tests are satisfiable by a well-made table with
-   no actor and no reader stake, which is what the five posts are
-   (`addictedtoai-18c`). The old site's author track carried the missing
-   half explicitly: *"You fail if what you publish is correct, sourced, and
-   forgettable."*
-
-The maintainer values both ends — the news note and the synthesis — and
-argues the rate controls (the 3-in-7 ceiling, any floor) are the wrong
-instruments: the right control is a worthiness bar. This change agrees about
-the variable and disagrees about the instrument: a bar with no mechanism
-fails this repository's own stated preference, so the control here is moved
-to a variable a model cannot game — **the evidence class of the post** (see
-`design.md` D4).
+A sealed adversarial review of this change's first draft (its `review.md`)
+defeated that draft's load-bearing rate-control claim and gutted its
+mechanical candidate deriver on measurement; this revision disposes of
+every finding (design D8), mostly by removing the machinery the findings
+were about.
 
 ## What Changes
 
-**Two forms, named, each with its own finish line** (`specs/blog`). A news
-note leads with what happened and who it lands on, has no minimum length, and
-is finished when the affected reader knows what to do; a synthesis states its
-derivation method and rests on enumerable dated evidence. Posts link their
-predecessors on the same subject — a blog with no memory of itself is a stack
-of press releases.
+**A daily scout, triggered by the Pulse, run by the Desk** (`specs/pulse`,
+`specs/loop`). The Pulse — still model-free — derives one scout item per
+local day, deterministically from the ledger and the clock, carrying the
+trailing week's uncovered feed events as assembled context. The scout job
+sweeps **outward** — its charge, verbatim from the predecessor's track:
+bring back work the site could not have thought of by looking at itself —
+judges everything against the two-test bar, files at most **three**
+candidates per day as expiring proposals with docket discipline (slug,
+type, `expires:`, why-now, retrieval-dated evidence, done-when), and
+records every declined story in `data/proposals/dropped/` with the failed
+test and a refile condition. A quiet day opens the synthesis branch; a day
+where nothing clears either branch ends `blocked: nothing cleared the bar`
+— a recorded success. The cap and the drop records are mechanisms at the
+merge, not instructions.
 
-**News notes are anchored in evidence the author cannot create**
-(`specs/blog`). A note declares its anchor in front matter: change-feed keys
-resolved against `data/changes.jsonl` (written only by the deterministic,
-model-free Pulse), or an external primary source with a date, which review
-fetches. The build fails an anchor that does not resolve or is stale. This is
-the mechanism that keeps the uncapped lane honest.
+**The proposals channel gains its producing side and an expiry rule**
+(`specs/loop`, resolving `addictedtoai-6ov`). Briefs state each job's
+filing rule; reviewers can note proposals and the loop transcribes them;
+proposals declaring `expires:` skip the 3-day cooling and die at expiry,
+swept to `dropped/`; same-type proposals are auto-discarded (one-hop
+guard, named as one-hop). `scout` joins the closed job-type list, the
+new-writing budget category, and the first shed level.
 
-**The rate control moves from counting posts to classing evidence**
-(`specs/blog`). No floor, unchanged. Anchored notes carry **no count
-ceiling** — their rate is limited by the world (one candidate group, one
-note; candidates expire in 7 days) and by the existing model-minute budget
-and capacity shedding, which this change does not touch. Unanchored posts —
-the manufacturable genre — drop from 3-in-7 to **1 in any rolling 7 days**,
-enforced at the same named point (the selector) with the same build warning.
+**Two forms with finish lines, and four blog requirements**
+(`specs/blog`). News notes lead with the event and who it lands on, carry
+an anchor the author cannot forge (feed keys resolved against
+`data/changes.jsonl`, or a fetched external primary source; every anchor
+inside a two-sided 7-day window; the anchor rendered on the page).
+Syntheses state their derivation method. Posts with an affected party name
+them. The blog is about AI, never about this site. And no count ceiling
+survives anywhere: the scout's filing cap, the bar, and the untouched
+model-minute budget bound volume; the 3-in-7 machinery (both constants,
+the gate, the warning) is removed.
 
-**The Pulse derives post candidates, and they expire** (`specs/pulse`).
-Event lines of kinds `release`, `arrival`, `retirement` and material
-`field_change` from the trailing 7 days, grouped deterministically so
-same-day related events form one story, minus groups any published post
-already covers, become queue items proposing `post` jobs — ranked below every
-repair and verify, carrying their evidence. An uncovered candidate expiring
-is a normal outcome: news the bar declined decays instead of accumulating.
+**The stranger test enters the editorial bar** (`specs/editorial`). Clause
+3 becomes "worth a stranger's attention" — judged by someone who never
+learns an AI made it — with would-cite and would-send as its operational
+forms and "correct, sourced, and forgettable" a named failure. The blog
+requires the send form.
 
-**The proposal producer is wired** (`specs/loop`, resolving
-`addictedtoai-6ov` for its two model-originated routes). Every brief states
-the job may end with at most one proposal; the review brief asks the reviewer
-to note one; the loop transcribes and stamps them. "At most one" and "never
-your own job type" are mechanisms — mechanical discard, spending no
-inference — not instructions. This is the synthesis end's producer: a
-synthesis is caused by a model noticing accumulated shape, which is exactly
-"a Desk run ending by writing a proposal about whatever it noticed."
+**Posts must read human, mechanically where possible** (`specs/blog`,
+`specs/review`, `openspec/style/blog-voice.md`). A house-voice document —
+written on its own terms, because no positive exemplar exists in this
+repository — plus a voice lint whose closed marker list was researched,
+graded for reliability, and **calibrated in both directions**: it fires on
+all twelve predecessor posts and on none of nine human-written pieces on
+the same beat, with every threshold derived from the measured
+distributions (design D6). What no lint settles, the model-run review
+settles: a new closed reason `reads-as-generated` and a forced own-words
+`reads-human` field on post verdicts, with `would-cite`'s exact mechanics.
+The disclosure of AI authorship is explicitly out of this requirement's
+reach.
 
-**The bar gains its missing half** (`specs/editorial`, `specs/review`). The
-third editorial test becomes worth-linking-**or**-worth-sending, with both
-tests defined, and "correct, sourced, and forgettable" named as a failure.
-Posts specifically must pass the send test — citable alone does not publish a
-post. The blog-post review checklist verifies the form, the anchor, and the
-affected party, and the post's `would-cite` record answers the send question
-in the reviewer's own words; the field's mechanics (non-empty,
-non-duplicate) are untouched.
+**The five posts are deleted** with their dependencies handled:
+`FLOORS.posts` drops to 0 in `scripts/verify-launch.mjs`, their five seed
+review records go with them, inbound links are fixed where the build names
+them, and the blog index gets an honest empty state.
 
 ## Capabilities
 
@@ -119,36 +117,44 @@ None.
 
 ### Modified Capabilities
 
-- `blog`: one modified requirement (the rate control), three added (the two
-  forms; the anchor; the affected party).
-- `pulse`: one added requirement (post candidates derive and expire), one
-  modified (the derived-queue enumeration gains them).
-- `loop`: one modified requirement (work-source 3 gains its producing side
-  and the self-amplification guard).
-- `editorial`: one modified requirement (the earn-your-reader bar's third
-  test widens; the forgettable failure is named).
-- `review`: one modified requirement (the blog-post checklist).
+- `blog`: five added requirements (two forms; the anchor; the affected
+  party; never about this site; reads human with disclosure standing), one
+  modified (quality-gated, never quota-driven — now with no count ceiling).
+- `pulse`: one added (the daily scout item), one modified (the queue
+  enumeration).
+- `loop`: one added (the scout's charge and mechanics), four modified (the
+  closed job-type list; work sources with the producing side and expiry;
+  the budget table; the degradation order).
+- `editorial`: one modified (the stranger test).
+- `review`: two modified (the reason list and `reads-human` field; the
+  checklist with post-form and scout entries).
 
 ## Impact
 
-- **Machinery**: `lib/schema.mjs` (post front-matter keys `covers:` and
-  `anchor:` — unknown keys fail the build by design, so this is a named
-  edit), a build check for anchor resolution and staleness,
-  `pulse/lib/queue.mjs` (candidate derivation, coverage join, expiry, rank),
-  `loop/lib/config.mjs` (ceiling constants), `loop/lib/surfaces.mjs` (the
-  reshaped gate), `loop/lib/brief.mjs` (post acceptance checks, the proposal
-  section, prior-post surfacing), `loop/lib/review.mjs` (reviewer proposal
-  noting), the merge step (proposal transcription, stamping, at-most-one),
-  and tests beside each. No new dependency, no `package.json` edit, no
-  `data/config.json` edit (the ceiling constants are deliberately code, per
-  `data/README.md`).
-- **Content**: none. This change writes no posts; it builds the thing that
-  does. `content/blog/README.md` is updated to describe the two lanes.
-- **Data**: `data/changes.jsonl` is read, never written, by everything here.
-  `data/proposals/` begins receiving files through the wired routes.
-- **Specs**: deltas against five capabilities in `openspec/specs/`, listed
-  above. Nothing anchors a permanent requirement to a path archiving moves:
-  every standing obligation added here points at `openspec/specs/`,
-  `content/`, `lib/`, `pulse/` or `loop/` paths.
+- **Machinery**: `pulse/lib/queue.mjs` (the daily scout item),
+  `loop/lib/config.mjs` (`scout` in `JOB_TYPES`; ceiling constants
+  removed), `loop/lib/surfaces.mjs` (`blogCeilingGate` removed),
+  `lib/posts.mjs` (ceiling warning removed), `lib/render/blog.mjs` (anchor
+  rendering, index copy, empty state), `lib/schema.mjs` (`covers:` and
+  `anchor:` post keys), a new anchor build check and a new voice lint in
+  the prebuild `STEPS`, `loop/lib/brief.mjs` (scout acceptance checks,
+  per-job proposal rule), `loop/lib/review.mjs` (checklists, proposal
+  noting), `loop/lib/verdict.mjs` (`reads-as-generated`; `reads-human`),
+  the merge step (candidate caps, stamping, transcription, expiry sweep,
+  `reads-human` gate), and tests beside each — including the lint's pinned
+  two-corpus validation. No `package.json` edit.
+- **Content**: five files deleted from `content/blog/`, five records
+  deleted from `data/reviews/`, `content/blog/README.md` rewritten. No
+  content is written by this change.
+- **Data**: `data/proposals/dropped/` comes into existence as the drop
+  record. `data/changes.jsonl` is read, never written, by everything here.
+- **Config**: at execution, `data/config.json` gains a `scout` wall-clock
+  cap (proposed: 30) and `scout` in the new-writing category — a reserved
+  path, applied by the orchestrator executing this approved change, never
+  by a Desk job (design D9).
+- **Specs**: deltas against five capabilities; the voice document lands at
+  `openspec/style/blog-voice.md`, outside both the archive-moved and the
+  reserved paths, for the same reasons the learn curriculum lives beside
+  it.
 - **Deployment**: nothing here pushes. The gate condition in `CLAUDE.md`
   stands for whoever executes this change.

@@ -1,11 +1,15 @@
 # editorial — delta for make-the-blog-worth-sending
 
-One requirement is modified: the bar's third test widens from
-worth-linking to worth-linking-or-worth-sending, and the failure the
-previous site's author track named — correct, sourced, and forgettable —
-becomes a named failure here. Nothing is removed: would-cite was written
-against a real failure (accurate and unread reference prose) and stays;
-the cut list is untouched.
+One requirement is modified: the bar's third test becomes the predecessor
+charter's test 1 — worth a stranger's attention — with two operational
+forms, and the failure the predecessor's author track named becomes a named
+failure here. Nothing is removed: would-cite was written against a real
+failure (accurate and unread reference prose) and survives as one of the
+two forms; the cut list is untouched. The precedent this closes is
+recorded: the predecessor's `serves:` vocabulary held four values, all
+naming test 2, and for its entire twelve-day life nothing arguing test 1
+could be filed without failing a front-matter check — a bar whose
+vocabulary cannot name its own first test selects against it silently.
 
 ## MODIFIED Requirements
 
@@ -22,8 +26,10 @@ post) publishes, it MUST satisfy all three:
 2. **It is specific.** Dates, numbers, names, sources, mechanisms — never
    "many believe", "rapidly evolving", "in recent years". Every paragraph
    survives the question "what exactly is this telling me?"
-3. **It would be worth linking or worth sending.** Two tests, and passing
-   either satisfies this clause:
+3. **It would be worth a stranger's attention.** The judge is a stranger
+   who does not know or care that an AI made this site; the novelty of the
+   site's construction counts for nothing in this judgment. Two
+   operational forms, and passing either satisfies this clause:
    - the **would-cite test**: a reasonable person arguing about this topic
      online could paste this URL as support — pages that answer a question
      completely pass; pages that gesture at a topic fail;
@@ -31,7 +37,7 @@ post) publishes, it MUST satisfy all three:
      this piece to a specific person with no more explanation than "look
      at this" — the test that selects stories, where would-cite selects
      references.
-   A surface's own spec MAY require one test in particular (the blog
+   A surface's own spec MAY require one form in particular (the blog
    requires would-send — see `blog`); this clause sets the floor, not the
    assignment.
 
@@ -39,8 +45,9 @@ post) publishes, it MUST satisfy all three:
 names, usable as-is in review. Rejecting a piece as boring requires no
 disguise as a factual objection. **Correct, sourced, and forgettable is a
 failure of this requirement, not a near miss**: a piece failing only clause
-3 SHALL be treated exactly as one failing any other clause — accuracy and
-sourcing earn no publication by themselves.
+3 SHALL be treated exactly as one failing any other clause — being true and
+checkable earns no publication by itself, and a scrupulously honest site
+nobody visits is the named outcome this clause exists to prevent.
 
 #### Scenario: Accurate but empty
 
