@@ -892,8 +892,13 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   owns — the refusal direction from `what-safety-training-changes`, reread
   as interpretability's proof that a behaviour can have an address; what
   the field can and cannot promise yet (auditing dreams versus current
-  reach — honest, dated); why it matters beyond curiosity (the debates
-  page will lean on whether inspection can ever certify behaviour); and
+  reach — honest, dated); why it matters beyond curiosity, namely whether
+  inspection can ever certify that a behaviour is present or absent (writer's
+  note: `the-safety-debates` sorts that same question as fact-shaped, but it
+  does **not** declare this page as a prerequisite and may not lean on it — it
+  reaches the certification gap through `what-safety-training-changes`
+  instead. Do not write this clause as though the debates page depends on
+  yours); and
   the "true" half of the outcome's "true and shrinking", given its full
   weight and cited. Interpretability has genuinely shrunk *we cannot say
   what this neuron does*. It has not touched *why training a next-token
