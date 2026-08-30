@@ -57,7 +57,7 @@ through the ordinary review gate; nothing here bypasses it.
 
 ## 4. Mechanics — the parts get their names
 
-- [ ] **4.1 — `why-bigger-got-better`** (mechanics). Prerequisites already
+- [x] **4.1 — `why-bigger-got-better`** (mechanics). Prerequisites already
   published.
 - [ ] **4.2 — `what-a-reasoning-model-does`** (mechanics). Needs: 3.6.
 - [ ] **4.3 — `how-image-generation-works`** (mechanics). Needs: 3.3, 3.4.
