@@ -64,21 +64,21 @@ through the ordinary review gate; nothing here bypasses it.
 - [ ] **4.4 — `how-a-model-uses-your-documents`** (mechanics). Needs: 3.4.
 - [ ] **4.5 — `how-ai-systems-get-attacked`** (mechanics). Prerequisites
   already published.
-- [ ] **4.6 — `running-a-model-yourself`** (mechanics). Needs: 3.7.
+- [ ] **4.6 — `running-a-model-yourself`** (mechanics). Needs: 3.7, 3.8.
 - [ ] **4.7 — `the-hardware-that-runs-ai`** (mechanics). Prerequisites
   already published.
-- [ ] **4.8 — `ai-and-the-law`** (mechanics). Needs: 3.3, 3.5.
+- [ ] **4.8 — `ai-and-the-law`** (mechanics). Needs: 2.7, 3.3, 3.5.
 
 ## 5. Advanced — the load-bearing details and the live arguments
 
-- [ ] **5.1 — `what-it-costs-to-build-and-run-ai`** (advanced). Needs: 4.1,
-  4.7.
+- [ ] **5.1 — `what-it-costs-to-build-and-run-ai`** (advanced). Needs: 2.6,
+  4.1, 4.7.
 - [ ] **5.2 — `looking-inside-a-model`** (advanced). Prerequisites already
   published.
 - [ ] **5.3 — `the-safety-debates`** (advanced). Needs: 2.7, 4.1.
 - [ ] **5.4 — `how-to-think-about-what-comes-next`** (advanced, the
   capstone — lands last in the generated reading order by prerequisite
-  depth, and is written knowing it). Needs: 4.1, 5.3.
+  depth, and is written knowing it). Needs: 3.10, 4.1, 5.3.
 
 ## 6. Verification
 

@@ -97,10 +97,16 @@ document.
 
 **Why 37 and not 15:** the maintainer's bar is a reader with "a thorough
 understanding" of the subject from reading the whole surface. The existing
-corpus establishes the unit: one page teaches one idea to completion, ~900 to
-1,400 words, with a quotable structural sentence at its heart ("attention is
-the only operation that moves information sideways"; "what looks like memory
-is re-reading"). Covering six areas at that unit costs about this many pages.
+corpus establishes the unit: one page teaches one idea to completion, about
+650 to 1,150 words, with a quotable structural sentence at its heart
+("attention is the only operation that moves information sideways"; "what
+looks like memory is re-reading"). Covering six areas at that unit costs
+about this many pages. **The operative statement of that band is curriculum
+§3, not this line** — the range originally recorded here was ~900 to 1,400
+words, which excluded two live pages at the floor and sat 17% above the
+real maximum at the ceiling, and it lived in the one document §0 tells an
+executing model it does not need to read. Re-measured 2026-08-30: the ten
+live bodies run 662 to 1,107 words, median 938.
 The alternative shapes both fail: fewer, longer survey pages violate the
 one-idea pattern and the editorial spec's cut list (survey prose is padding
 by construction); many more, finer pages (one per wiki concept) would

@@ -51,9 +51,9 @@ stating as plainly as the defects below.
 
 ## Land before task 2.1 — these change what every writer does
 
-**1. Declare the leaning prerequisites (~8 edges).** The spec delta says a page
-*"SHALL assume, among learn pages, only its transitive prerequisites"* and that
-leaning on an undeclared page is a `spec-violation`. Ten must-cover items
+**1. Declare the leaning prerequisites (~8 edges).** ~~The spec delta says a
+page *"SHALL assume, among learn pages, only its transitive prerequisites"* and
+that leaning on an undeclared page is a `spec-violation`. Ten must-cover items
 instruct exactly that — "the argument `how-models-are-trained` makes, applied",
 "privacy (`where-your-words-go` pays off)", "`ai-and-work`'s lesson,
 generalised". `design.md` D4 legitimately rescues two of them (a useful link is
@@ -61,13 +61,68 @@ not a load-bearing assumption), leaving ~8. The gap is that **the delta's
 sentence is stricter than D4's rule, and the catalog lives between them.**
 Verified: all remaining edges are down- or same-rung, so declaring them is
 legal under the very check task 1.1 adds, and doing so keeps the graph acyclic
-with 0 up-edges and leaves first/last unchanged.
+with 0 up-edges and leaves first/last unchanged.~~
 
-**2. Move the word-count target into `curriculum.md` §3.** It exists —
+**FIXED 2026-08-30. Nine edges declared, not eight.** Every entry body in §4
+was scanned by script for a slug-named learn page outside that entry's
+transitive closure: 22 hits, of which **10** are must-cover items instructing
+a lean — this review's ten, reproduced exactly — and 12 are `must not`
+deferrals ("`ai-and-the-law` owns it"), forward seeds ("seeds
+`what-a-model-is`") or D8 fallback notes. A second pass over pages referred
+to in prose without their slug found an eleventh lean, described below. Two
+of the 11 were left undeclared
+under D4 as useful-but-not-load-bearing: `ai-and-work` → `what-models-are-trained-on`
+("connect to") and `how-a-model-uses-your-documents` →
+`why-models-are-confidently-wrong` ("connecting", with no specific argument
+named — unlike the two pages that lean on *"the failure modes … persist at
+every size"* and *"the asymmetry it ends on"*, which were declared). The
+remaining nine are now in §4 and in the §5 edge block:
+`what-models-are-trained-on` ← `why-models-are-confidently-wrong`;
+`why-bigger-got-better` ← `what-a-benchmark-measures`,
+`why-models-are-confidently-wrong`; `what-a-reasoning-model-does` ←
+`why-models-are-confidently-wrong`; `how-a-model-uses-your-documents` ←
+`how-models-are-trained`; `running-a-model-yourself` ← `where-your-words-go`;
+`ai-and-the-law` ← `where-ai-fails-people`; `what-it-costs-to-build-and-run-ai`
+← `who-builds-ai`; `how-to-think-about-what-comes-next` ← `ai-and-work`.
+
+The ninth is the one this review's own scan missed, and it is worth naming:
+`why-bigger-got-better` ← `what-a-benchmark-measures`. Its must-cover item
+refers to the page in prose — *"connected to the benchmark page's
+smooth-loss/jagged-metric section"* — rather than by slug, so a
+backtick-slug scan does not see it, which is exactly how ten rather than
+eleven were counted. It is a lean: the emergence dispute's "metric thresholds"
+half is that section's argument.
+
+Recomputed after the edits, by replicating `ladder()` over the amended
+curriculum: **37 pages, 0 up-edges, 0 cycles, first `what-ai-actually-is`,
+last `how-to-think-about-what-comes-next`** — the capstone now sits alone at
+depth 8 rather than depth 7, so the sort argument is stronger, not weaker.
+The rung distribution is unchanged (8 / 11 / 11 / 7). Four `Needs` lines in
+`tasks.md` gained a within-change dependency and were updated (4.6 +3.8,
+4.8 +2.7, 5.1 +2.6, 5.4 +3.10); the wave order was re-checked by script and
+remains a valid topological order with no task reordering required.
+
+**2. Move the word-count target into `curriculum.md` §3.** ~~It exists —
 `design.md:100`, "~900 to 1,400 words" — in the one document §0 tells the
 executor they do not need. Not missing: **actively steered away from.** Correct
 it to the measured range while moving it; live pages run 735–1192 words, so
-D3's floor excludes two of them and its ceiling is 17% above the real maximum.
+D3's floor excludes two of them and its ceiling is 17% above the real maximum.~~
+
+**FIXED 2026-08-30.** Curriculum §3 now carries a "How long a page is" block
+between the voice section and the six failure modes, so a writer meets it in
+the document they are told to work from. The band was re-measured rather than
+copied: stripping front matter, code fences, link targets and transclusions
+from the ten live `content/learn/*.md` bodies gives **662 to 1,107 words,
+median 938, mean 894**, and §3 states the band as **about 650 to 1,150
+words**. (This review's 735–1192 was a different method — counting the whole
+file, front matter included, gives 711–1167 here; the direction of the
+finding is unaffected either way.) It is written as guidance, not a gate,
+with the reason a draft lands outside the band named in each direction — a
+paragraph mistaken for a page below it, two ideas or survey prose above it —
+because nothing enforces the number and padding to it would be the worse
+defect. `design.md` D3 was updated to the same range and now says in so many
+words that curriculum §3 is the operative statement, so the two cannot drift
+apart silently.
 
 **3. Re-anchor "the curriculum of record."** ~~`spec.md:61` points at
 `curriculum.md` *in this change*, while requirement 2 is a permanent

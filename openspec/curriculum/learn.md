@@ -89,6 +89,20 @@ exclamation, no "let's dive in", no summary-of-what-we-learned closers (the
 existing pages end on a working takeaway, not a recap). The subject carries
 the awe; the voice stays plain (`specs/editorial`).
 
+### How long a page is
+
+One idea, driven to the point where the reader can use it, runs **about 650
+to 1,150 words**. That is the measured band of the pages already on the
+surface, not a target invented for this change: on 2026-08-30 the ten live
+bodies ran 662 to 1,107 words, median 938.
+
+Nothing enforces this and nothing should. Do not pad to reach the floor or
+amputate to meet the ceiling — the length is a symptom, not the disease. A
+draft well under the floor is usually a paragraph that was mistaken for a
+page, and the sendable-sentence test below will say so. A draft well over the
+ceiling is usually two ideas sharing a file, or survey prose, which is the
+pile. Fix the cause; the count follows.
+
 ### Six failure modes, by name
 
 1. **The lecture** — defining terms before the reader has a reason to want
@@ -412,7 +426,7 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 
 #### `what-models-are-trained-on` — "What models are trained on"
 - **Status**: new · **Area**: C · **Prerequisites**:
-  `learning-from-examples`
+  `learning-from-examples`, `why-models-are-confidently-wrong`
 - **Outcome**: You can say where training data actually comes from, what
   gets filtered out and by whom, and why the data sets the ceiling on what
   any model can learn.
@@ -569,7 +583,9 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   `how-a-language-model-works`, `why-context-is-not-memory` (unchanged).
 
 #### `why-bigger-got-better` — "Why bigger kept getting better"
-- **Status**: new · **Area**: C · **Prerequisites**: `how-models-are-trained`
+- **Status**: new · **Area**: C · **Prerequisites**:
+  `how-models-are-trained`, `what-a-benchmark-measures`,
+  `why-models-are-confidently-wrong`
 - **Outcome**: You can state what a scaling law actually predicts, what the
   bitter lesson claims, and why buying more compute was the winning move for
   a decade without ever being the whole story.
@@ -594,7 +610,8 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 
 #### `what-a-reasoning-model-does` — "What a reasoning model actually does"
 - **Status**: new · **Area**: D · **Prerequisites**:
-  `how-models-are-trained`, `getting-good-answers`
+  `how-models-are-trained`, `getting-good-answers`,
+  `why-models-are-confidently-wrong`
 - **Outcome**: You can say what changed between a chat model and a
   reasoning model, why buying thinking time helps on some tasks and not
   others, and read a hidden-work answer with the right suspicion.
@@ -642,7 +659,8 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 
 #### `how-a-model-uses-your-documents` — "How a model reads your documents"
 - **Status**: new · **Area**: D · **Prerequisites**:
-  `how-machines-represent-meaning`, `why-context-is-not-memory`
+  `how-machines-represent-meaning`, `why-context-is-not-memory`,
+  `how-models-are-trained`
 - **Outcome**: You can trace a question through retrieval — chunking,
   embedding, search and pasting — and say which stage failed when a
   document-grounded answer is wrong.
@@ -691,7 +709,7 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 
 #### `running-a-model-yourself` — "Running a model on your own computer"
 - **Status**: new · **Area**: D · **Prerequisites**: `what-a-model-is`,
-  `open-weights-and-closed-models`
+  `open-weights-and-closed-models`, `where-your-words-go`
 - **Outcome**: You can say what it takes to run a model on hardware you
   own, what quantisation trades away, and when local genuinely beats an
   API.
@@ -742,7 +760,8 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 
 #### `ai-and-the-law` — "The legal questions AI actually raises"
 - **Status**: new · **Area**: F · **Prerequisites**:
-  `what-models-are-trained-on`, `the-kinds-of-models`
+  `what-models-are-trained-on`, `the-kinds-of-models`,
+  `where-ai-fails-people`
 - **Outcome**: You can name the legal questions AI genuinely raises, say
   why training-data copyright is the load-bearing fight, and tell a
   settled rule from an open one.
@@ -782,7 +801,7 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 #### `what-it-costs-to-build-and-run-ai` — "What it costs to build and run AI"
 - **Status**: new · **Area**: C · **Prerequisites**:
   `the-hardware-that-runs-ai`, `why-bigger-got-better`,
-  `how-inference-is-served`
+  `how-inference-is-served`, `who-builds-ai`
 - **Outcome**: You can separate the one-time cost of training from the
   forever cost of serving, say where the electricity actually goes, and
   read an AI business story with the unit economics in view.
@@ -863,7 +882,8 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 
 #### `how-to-think-about-what-comes-next` — "How to think about what comes next"
 - **Status**: new · **Area**: F · **Prerequisites**:
-  `why-bigger-got-better`, `what-a-benchmark-measures`, `the-safety-debates`
+  `why-bigger-got-better`, `what-a-benchmark-measures`, `the-safety-debates`,
+  `ai-and-work`
 - **Outcome**: You can weigh a confident AI forecast, name the walls
   scaling has hit before and what happened to each, and watch the few
   indicators that actually move before the headlines do.
@@ -913,25 +933,36 @@ what-a-neural-network-is      ← learning-from-examples, what-a-model-is
 how-a-language-model-works (edit) ← what-a-model-is, what-a-neural-network-is
 the-kinds-of-models           ← what-a-neural-network-is
 how-machines-represent-meaning ← what-a-neural-network-is
-what-models-are-trained-on    ← learning-from-examples
+what-models-are-trained-on    ← learning-from-examples, why-models-are-confidently-wrong
 getting-good-answers          ← how-a-language-model-works, why-context-is-not-memory
 open-weights-and-closed-models ← what-a-model-is
 where-your-words-go           ← what-a-model-is
 when-you-cannot-trust-your-eyes ← the-kinds-of-models
 ai-and-work                   ← what-ai-is-used-for
-why-bigger-got-better         ← how-models-are-trained
-what-a-reasoning-model-does   ← how-models-are-trained, getting-good-answers
+why-bigger-got-better         ← how-models-are-trained, what-a-benchmark-measures, why-models-are-confidently-wrong
+what-a-reasoning-model-does   ← how-models-are-trained, getting-good-answers, why-models-are-confidently-wrong
 how-image-generation-works    ← the-kinds-of-models, how-machines-represent-meaning
-how-a-model-uses-your-documents ← how-machines-represent-meaning, why-context-is-not-memory
+how-a-model-uses-your-documents ← how-machines-represent-meaning, why-context-is-not-memory, how-models-are-trained
 how-ai-systems-get-attacked   ← why-context-is-not-memory, what-an-agent-is
-running-a-model-yourself      ← what-a-model-is, open-weights-and-closed-models
+running-a-model-yourself      ← what-a-model-is, open-weights-and-closed-models, where-your-words-go
 the-hardware-that-runs-ai     ← how-a-language-model-works, how-models-are-trained
-ai-and-the-law                ← what-models-are-trained-on, the-kinds-of-models
-what-it-costs-to-build-and-run-ai ← the-hardware-that-runs-ai, why-bigger-got-better, how-inference-is-served
+ai-and-the-law                ← what-models-are-trained-on, the-kinds-of-models, where-ai-fails-people
+what-it-costs-to-build-and-run-ai ← the-hardware-that-runs-ai, why-bigger-got-better, how-inference-is-served, who-builds-ai
 looking-inside-a-model        ← how-a-language-model-works, what-safety-training-changes
 the-safety-debates            ← what-safety-training-changes, why-bigger-got-better, where-ai-fails-people
-how-to-think-about-what-comes-next ← why-bigger-got-better, what-a-benchmark-measures, the-safety-debates
+how-to-think-about-what-comes-next ← why-bigger-got-better, what-a-benchmark-measures, the-safety-debates, ai-and-work
 ```
+
+**Nine of these edges exist because a "must cover" item leans on the page.**
+When an entry tells you to apply, generalise or pay off another page's
+argument — "the argument `how-models-are-trained` makes, applied", "privacy
+(`where-your-words-go` pays off)", "`ai-and-work`'s lesson, generalised" —
+that page is a true assumption and is declared, because the spec says a page
+may assume, among learn pages, only its transitive prerequisites, and leaning
+on an undeclared one is rejected as `spec-violation`. Cross-references that a
+reader would merely find useful are *not* declared and stay inline links; the
+entries that only defer to another page ("one sentence, deferring to …") or
+that seed a later one are those, not prerequisites.
 
 The wave order in `tasks.md` is a valid topological order of this graph with
 the two front-matter edits sequenced after the pages they point to. Any
