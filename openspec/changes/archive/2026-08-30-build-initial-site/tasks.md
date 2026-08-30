@@ -593,7 +593,7 @@ minimum). Specs referenced below live in
       feed). Two runs whose stamps are identical mean publishing is
       broken — investigate before calling launch done, whatever the run
       logs say.
-- [ ] 9.6 Record the launch date in `data/launch.json`; sync the delta
+- [x] 9.6 Record the launch date in `data/launch.json`; sync the delta
       specs to `openspec/specs/` (archive the change per the OpenSpec
       workflow) so the constitution is in its permanent home. Verify:
       `openspec/specs/` contains the eleven capabilities and the change is
