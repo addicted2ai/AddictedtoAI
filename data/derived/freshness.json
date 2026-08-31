@@ -1,15 +1,28 @@
 {
-  "broken_links": [],
+  "broken_links": [
+    {
+      "cited_by": [
+        "content/learn/what-it-costs-to-build-and-run-ai.md"
+      ],
+      "consecutive_failures": 1,
+      "error": null,
+      "last_checked": "2026-08-31",
+      "last_ok": null,
+      "state": "failing-once",
+      "status": 404,
+      "url": "https://ourworldindata.org/grapher/data-centers-share-electricity-demand"
+    }
+  ],
   "date": "2026-08-31",
   "link_check": {
-    "checked": 0,
+    "checked": 25,
     "confirm_after_failures": 2,
     "declined": 2,
     "drifted": 0,
     "due": 57,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 12,
+    "redirected": 13,
     "total": 440
   },
   "listings": [
@@ -601,6 +614,18 @@
       "last_checked": "2026-08-29",
       "meta_refresh": "https://research.facebook.com/blog/2018/05/facebook-open-sources-elf-opengo/?_fb_noscript=1",
       "url": "https://research.facebook.com/blog/2018/05/facebook-open-sources-elf-opengo/",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/learn/the-safety-debates.md"
+      ],
+      "final_url": "https://safe.ai/work/statement-on-ai-extinction-risk",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-31",
+      "meta_refresh": null,
+      "url": "https://safe.ai/work/statement-on-ai-risk",
       "verdict_recorded": true
     },
     {

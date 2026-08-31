@@ -1897,6 +1897,17 @@
       "ok": true,
       "status": 200
     },
+    "https://blog.redwoodresearch.org/p/brief-independent-investigation-of": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://blog.redwoodresearch.org/p/brief-independent-investigation-of",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://blogs.microsoft.com/blog/2016/10/18/historic-milestone-microsoft-researchers-achieve-human-parity-conversational-speech-recognition/": {
       "consecutive_failures": 0,
       "error": null,
@@ -2008,6 +2019,39 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://cyberpress.org/infostealer-malware-steals-claude-session-cookies/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://cyberpress.org/infostealer-malware-steals-claude-session-cookies/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://cyberscoop.com/openai-hugging-face-agent-breach-report/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://cyberscoop.com/openai-hugging-face-agent-breach-report/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://cybersecuritynews.com/hackers-steal-claude-login-sessions/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://cybersecuritynews.com/hackers-steal-claude-login-sessions/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -2432,6 +2476,39 @@
       "ok": true,
       "status": 200
     },
+    "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 202
+    },
+    "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32019L0790": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32019L0790",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 202
+    },
+    "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32024R1689": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32024R1689",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 202
+    },
     "https://fireworks.ai/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -2439,6 +2516,39 @@
       "final_url": "https://fireworks.ai/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://fortune.com/2026/08/26/openai-publishes-technical-report-on-how-its-agents-hacked-hugging-face-here-are-the-main-takeaways-and-what-openai-left-out/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://fortune.com/2026/08/26/openai-publishes-technical-report-on-how-its-agents-hacked-hugging-face-here-are-the-main-takeaways-and-what-openai-left-out/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://fortune.com/2026/08/28/anthropic-pentagon-ruling-rita-lin-arrogance/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://fortune.com/2026/08/28/anthropic-pentagon-ruling-rita-lin-arrogance/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://genai.owasp.org/llmrisk/llm01-prompt-injection/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -2696,6 +2806,17 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/blog/agent-intrusion-technical-timeline": {
+      "bytes": 675220,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/blog/agent-intrusion-technical-timeline",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/blog/open-llm-leaderboard-mmlu": {
       "bytes": 196248,
       "consecutive_failures": 0,
@@ -2839,6 +2960,17 @@
       "ok": true,
       "status": 200
     },
+    "https://knightcolumbia.org/content/ai-as-normal-technology": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://knightcolumbia.org/content/ai-as-normal-technology",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://langfuse.com/": {
       "bytes": 564517,
       "consecutive_failures": 0,
@@ -2857,6 +2989,17 @@
       "final_url": "https://lmstudio.ai/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://metr.org/blog/2026-08-26-openai-hugging-face-incident-investigation/": {
+      "bytes": 100989,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://metr.org/blog/2026-08-26-openai-hugging-face-incident-investigation/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3213,6 +3356,17 @@
       "ok": true,
       "status": 200
     },
+    "https://opensource.org/ai/open-source-ai-definition": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://opensource.org/ai/open-source-ai-definition",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openwebui.com/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3223,6 +3377,17 @@
       "meta_refresh": null,
       "ok": true,
       "status": 200
+    },
+    "https://ourworldindata.org/grapher/data-centers-share-electricity-demand": {
+      "bytes": null,
+      "consecutive_failures": 1,
+      "error": null,
+      "final_url": "https://ourworldindata.org/grapher/data-centers-share-electricity-demand",
+      "last_checked": "2026-08-31",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": false,
+      "status": 404
     },
     "https://papers.nips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf": {
       "bytes": 1418820,
@@ -3279,6 +3444,17 @@
       "ok": true,
       "status": 200
     },
+    "https://proceedings.mlr.press/v81/buolamwini18a.html": {
+      "bytes": 3902,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://proceedings.mlr.press/v81/buolamwini18a.html",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://proceedings.neurips.cc/paper/1989/hash/53c3bce66e43be4f209556518c2fcb54-Abstract.html": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3308,6 +3484,17 @@
       "final_url": "https://raw.githubusercontent.com/CompVis/stable-diffusion/main/README.md",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://reason.com/2026/08/28/judge-says-trumps-clampdown-on-anthropic-violates-the-first-amendment/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://reason.com/2026/08/28/judge-says-trumps-clampdown-on-anthropic-violates-the-first-amendment/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3400,6 +3587,17 @@
       "ok": true,
       "status": 200
     },
+    "https://safe.ai/work/statement-on-ai-risk": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://safe.ai/work/statement-on-ai-extinction-risk",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://siliconangle.com/2026/01/27/moonshot-ai-releases-open-source-kimi-k2-5-model-1t-parameters/": {
       "bytes": 176052,
       "consecutive_failures": 0,
@@ -3418,6 +3616,39 @@
       "final_url": "https://simonwillison.net/2022/Aug/29/stable-diffusion/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://simonwillison.net/2022/Sep/12/prompt-injection/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://simonwillison.net/2022/Sep/12/prompt-injection/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://simonwillison.net/2024/Mar/5/prompt-injection-jailbreaking/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://simonwillison.net/2024/Mar/5/prompt-injection-jailbreaking/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3455,6 +3686,28 @@
       "ok": true,
       "status": 200
     },
+    "https://storage.courtlistener.com/recap/gov.uscourts.cand.415175/gov.uscourts.cand.415175.598.0.pdf": {
+      "bytes": 349841,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://storage.courtlistener.com/recap/gov.uscourts.cand.415175/gov.uscourts.cand.415175.598.0.pdf",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://storage.courtlistener.com/recap/gov.uscourts.cand.434709/gov.uscourts.cand.434709.231.0.pdf": {
+      "bytes": 308689,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://storage.courtlistener.com/recap/gov.uscourts.cand.434709/gov.uscourts.cand.434709.231.0.pdf",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://suno.com/blog/v3": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3462,6 +3715,17 @@
       "final_url": "https://suno.com/blog/v3",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://support.claude.com/en/articles/9528712-exceptions-to-our-usage-policy": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://support.claude.com/en/articles/9528712-exceptions-to-our-usage-policy",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3484,6 +3748,17 @@
       "final_url": "https://techcrunch.com/2023/09/25/openai-chatgpt-voice/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://techcrunch.com/2026/08/26/openai-releases-its-official-report-on-the-hugging-face-breach/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://techcrunch.com/2026/08/26/openai-releases-its-official-report-on-the-hugging-face-breach/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
