@@ -224,8 +224,8 @@ merge step, which writes `subject:` for exactly this reason:
   the opposite of the outcome this requirement is for.
 
 A record with no `reviewed:` key is not invalid — every record written before
-this change is one. It is a distinct, reported state, defined in the next
-requirement.
+the merge began writing that key is one. It is a distinct, reported state,
+defined in the next requirement.
 
 #### Scenario: The merge binds the record to what it merged
 
@@ -270,10 +270,10 @@ cannot tell it from the other two.
   piece, the record, and the fact that the reviewed surface changed after the
   verdict.
 - **Unbound** SHALL be counted and reported and SHALL NOT fail anything. Every
-  record from the seed wave is unbound; failing on it would mean this change
-  cannot land, and an unbound record is exactly as informative as it was before
-  this requirement existed — no worse. The number to watch is that it only ever
-  falls.
+  record written before the merge began binding hashes is unbound, so failing on
+  unbound would refuse the whole corpus of records that predate the mechanism —
+  and an unbound record is exactly as informative as a record was before binding
+  existed, no worse. The number to watch is that it only ever falls.
 - A **mismatched** state SHALL NOT change a page's indexability. The build's
   review gate continues to read the verdict alone. Suppressing a page because
   its bytes moved would silently de-index approved work over a whitespace edit,

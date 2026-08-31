@@ -125,7 +125,7 @@ become unverifiable.
 
 #### Scenario: Coverage is checkable when the spine completes
 
-- **WHEN** every task in this change's spine is complete
+- **WHEN** every page the curriculum enumerates has been published
 - **THEN** every named area of the curriculum's map has published pages
   serving it, and the check is a read of the curriculum against
   `content/learn/`, not anyone's recollection
