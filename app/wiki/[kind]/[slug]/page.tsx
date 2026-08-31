@@ -36,10 +36,14 @@ export async function generateMetadata({ params }: { params: Promise<{ kind: str
   const { doc } = await find(kind, slug);
   if (!doc) return {};
   const facts = (doc.data.facts ?? []).length;
+  // doc.currentStatus (addictedtoai-ij4h): the presented status, never raw
+  // front matter — see build-content.mjs. Keeps the meta description in step
+  // with the badge the page itself renders.
+  const status = doc.currentStatus ?? doc.data.status;
   return {
     title: doc.data.display_name,
     description:
-      `${doc.data.display_name} — ${doc.data.kind}, status ${doc.data.status}. ` +
+      `${doc.data.display_name} — ${doc.data.kind}, status ${status}. ` +
       `${facts} sourced fact${facts === 1 ? '' : 's'} and a dated timeline.`,
     robots: doc.index.indexed ? 'index,follow' : 'noindex,follow',
   };

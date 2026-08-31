@@ -2,7 +2,7 @@
 id: model/z-ai-glm-4-5v
 kind: model
 display_name: "Z.ai: GLM 4.5V"
-status: deprecated
+status: active
 maintenance: living
 aliases:
   - name: "Z.ai: GLM 4.5V"
