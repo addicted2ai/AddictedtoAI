@@ -41,11 +41,30 @@ Checklist: wiki entry. All five cited sources fetched.
   the precision limits of hardware numerics" (the numerics_caveat fact,
   near-verbatim) and "Real gains depend on your model family, traffic
   pattern, hardware, and sampling settings" (the body's closing quote,
-  verbatim). The page documents ten proposer methods including N-Gram and
-  Suffix Decoding — the transcluded tool/vllm fact ("ten proposer methods,
-  including EAGLE, MTP, draft models, PARD, n-gram and suffix decoding")
-  matches, and the body's "several of which ... use no neural draft at
-  all" holds for n-gram and suffix decoding.
+  verbatim). The transcluded `tool/vllm` fact, **as it read on the date of
+  this review**, was "ten proposer methods, including EAGLE, MTP, draft
+  models, PARD, n-gram and suffix decoding", and this review recorded it as
+  matching the page. The body's "several of which ... use no neural draft at
+  all" holds for n-gram and suffix decoding, and still does.
+
+  **Superseded 2026-08-29 by `addictedtoai-4nq`, recorded here rather than
+  overwritten (`addictedtoai-hul`).** The count was withdrawn: the docs page
+  publishes no count at all — in 622,789 bytes, "proposer methods" occurs 0
+  times, "ten" 0 times and "twelve" 0 times, and the page's own two lists
+  disagree (12 bullet items against 10 table rows). The fact now reads "a
+  range of speculation methods, model-based ones such as EAGLE, MTP, draft
+  models, PARD and MLP alongside simpler ones such as n-gram and suffix
+  decoding" — no number, which is what the source supports. So the "matches"
+  verdict above was true of the value it was given and is not true of the
+  value that ships today; the sentence in the entry that hosts the
+  transclusion still reads correctly with the new value, checked at the time.
+  This is a record-accuracy correction, not a content defect.
+
+  The original wording is left standing above rather than edited away,
+  because a review record is a dated account of what a reviewer concluded
+  and rewriting it would destroy the only evidence that the count was ever
+  asserted — which is precisely the thing `4nq` needed in order to withdraw
+  it.
 
 **Also checked:** the acceptance rule min(1, p/q) with resampling from the
 normalized residual max(0, p - q) is the papers' actual algorithm;
@@ -100,7 +119,10 @@ the same document.
   without increasing workload during peak traffic."
 
 Outside this slice, so reported rather than touched: the transcluded
-`tool/vllm#speculative_decoding_methods` fact says "ten proposer methods".
+`tool/vllm#speculative_decoding_methods` fact **said, on 2026-08-28**, "ten
+proposer methods". *(It no longer does — the count was withdrawn on 2026-08-29
+by `addictedtoai-4nq`. The paragraph below is the finding that prompted the
+withdrawal, and is left as written.)*
 The page's current list reads EAGLE, MTP, Draft Model, PARD, MLP, N-Gram,
 Suffix Decoding, Hidden State Extraction, Custom Proposer Backend
 (Experimental), then Dynamic Speculative Decoding, Adaptive Verification and
