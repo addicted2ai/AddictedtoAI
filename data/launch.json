@@ -1,15 +1,15 @@
 {
   "js_payload": {
-    "measured_on": "2026-08-30",
+    "measured_on": "2026-08-31",
     "budget_kb_gzipped": 150,
     "method": "gzip -9 over every <script src> a modern browser fetches (nomodule excluded) plus every inline <script> body, measured on the exported build in out/",
     "pages": {
       "/": {
         "label": "home",
         "chunks_kb_gzipped": 104.1,
-        "inline_kb_gzipped": 5.3,
-        "total_kb_gzipped": 109.3,
-        "html_kb_gzipped": 8.2
+        "inline_kb_gzipped": 5.7,
+        "total_kb_gzipped": 109.7,
+        "html_kb_gzipped": 8.6
       },
       "/wiki/concept/ai-winter": {
         "label": "entry",
@@ -21,14 +21,14 @@
       "/catalog": {
         "label": "table",
         "chunks_kb_gzipped": 104.5,
-        "inline_kb_gzipped": 17.7,
+        "inline_kb_gzipped": 17.6,
         "total_kb_gzipped": 122.4,
         "html_kb_gzipped": 33.7
       }
     }
   },
   "design_verification": {
-    "date": "2026-08-30",
+    "date": "2026-08-31",
     "pass": true,
     "failures": 0,
     "checks": 45
