@@ -20,10 +20,40 @@
  * Keyboard: Tab reaches the field, typing filters, Up/Down move the
  * selection, Enter opens the selected result, Escape closes. The listbox is
  * an ARIA combobox so a screen reader is told how many results there are.
+ *
+ * ---------------------------------------------------------------------------
+ * A QUERY THAT IS A TOOL CATEGORY, NOT A NAME (addictedtoai-bju).
+ *
+ * `/tools` groups 35 listings under twelve closed categories (`agents`,
+ * `audio`, ... `training`), and a reader who learnt that vocabulary from the
+ * directory page types it in here expecting results. This index is names and
+ * titles only, by design (specs/site's "Client-side name search" requirement
+ * enumerates exactly four matched dimensions — entry ids, display names,
+ * aliases, page titles — and a listing's category is none of them), so
+ * widening `matchIndex` to score against category would be a quiet change to
+ * a normative, closed enumeration this repository does not own the authority
+ * to edit unilaterally. DECISION: no, category does not become a fifth
+ * matched dimension.
+ *
+ * What changes instead is the empty state, at the exact point the reader
+ * discovers the gap: when the name matcher finds nothing AND the query is
+ * one of the twelve category tokens, a single synthetic result is offered in
+ * its place — same `<li role="option">` shape as a real hit, so it is
+ * reachable by Up/Down and Enter exactly like one, rather than a second,
+ * unkeyboardable affordance bolted beside the list. `categoryFallback()`
+ * (`lib/search-category-fallback.mjs`) builds it and links to that
+ * category's section on `/tools` (`categoryId()` in `lib/render/tools.mjs`
+ * defines the same `tools-<category>` anchor format; duplicated there as a
+ * plain string template because that module renders server-side HTML
+ * strings and has no business in a client bundle). It never appears beside
+ * a real name match — only when `matchIndex` found nothing at all. A reader
+ * who types "audio" still reaches the audio tools — just not through the
+ * name matcher.
  */
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { matchIndex, TYPE_LABELS } from '../../lib/search-match.mjs';
+import { categoryFallback } from '../../lib/search-category-fallback.mjs';
 
 type Doc = {
   u: string;
@@ -60,7 +90,8 @@ export default function SearchBox({ indexUrl = '/search-index.json' }: { indexUr
   };
 
   useEffect(() => {
-    setHits(index ? (matchIndex(index, query) as Hit[]) : []);
+    const matched = index ? (matchIndex(index, query) as Hit[]) : [];
+    setHits(matched.length === 0 ? categoryFallback(query) : matched);
     setActive(-1);
   }, [index, query]);
 
