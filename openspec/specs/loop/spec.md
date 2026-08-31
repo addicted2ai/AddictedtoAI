@@ -505,14 +505,11 @@ settle which denominator is right — that question is open and tracked as
 
 ### Requirement: A job's total spend is measured, and the cap is named for what it is
 
-`data/config.json` maps each job type to one wall-clock cap and the loop passes
-it unchanged to every invocation: the author, the revision, and each review
-pass. A job revised once therefore makes four invocations, each entitled to the
-full cap — with the caps as configured, 480 minutes for one job. A brief that
-printed only "wall clock cap: N minutes" would state something true of the run
-reading it and read like a budget for the job. Whether a job's total should be
-*bounded* is a question this requirement leaves open, tracked as
-`addictedtoai-o5t`; that it should be *known and honestly named* is not open.
+`data/config.json` maps each job type to one wall-clock cap. A job revised once
+makes four invocations — the author, the revision, and each review pass — and a
+brief that printed only "wall clock cap: N minutes" would state something true
+of the run reading it and read like a budget for the job. A job's total spend is
+both **bounded** and **honestly named**.
 
 - The ledger SHALL record a job's model-minutes broken down by invocation phase
   — authoring, revision, and each review pass — so that a job's total spend is
@@ -521,6 +518,31 @@ reading it and read like a budget for the job. Whether a job's total should be
   per-invocation limit on that invocation, SHALL state the job's total spend so
   far and how many invocations have already run, and SHALL NOT describe the cap
   as a budget for the job.
+- A job SHALL have a total wall-clock budget, **derived** from its per-type cap
+  in `data/config.json` rather than separately configured, so that editing a cap
+  cannot leave the two disagreeing. The multiple SHALL be the smallest one that
+  leaves **the author and one review pass each their full per-invocation guard
+  unconditionally** — a smaller multiple would let an author consume the budget
+  a review must have, and a multiple as large as the number of invocations a job
+  can make would bound nothing.
+- Before each invocation the loop SHALL compute the job's remaining budget as
+  its total minus the model-minutes already recorded against that job on the
+  ledger plus those spent in the current run, and SHALL cap that invocation at
+  the smaller of the per-type per-invocation cap and that remainder. This SHALL
+  only ever lower an invocation's cap and never raise it: the per-invocation cap
+  remains a runaway-process guard and keeps that meaning. Where the remainder
+  falls below a minimum invocation length, the invocation SHALL NOT be started
+  and the job SHALL be recorded `abandoned`, naming the spend, the total and the
+  remainder. A bound that stopped a job *after* letting one more invocation run
+  to its full cap would overstate itself by exactly one cap.
+- `abandoned` SHALL NOT count toward the consecutive-failure breaker: a job that
+  ran out of budget says nothing about whether its type is sound.
+- A resumed job SHALL inherit its accumulated spend from the ledger and SHALL
+  NOT receive a fresh allowance. Where a resumable branch's job has no budget
+  left, the loop SHALL abandon it in the same sweep that abandons branches past
+  the resumable age limit — before selection — rather than resuming it. The
+  bound counts what the ledger records; a run whose process ends before writing
+  its ledger line contributes nothing to it.
 
 #### Scenario: The total is recoverable from the ledger
 
@@ -536,6 +558,27 @@ reading it and read like a budget for the job. Whether a job's total should be
 - **THEN** the brief states the cap as this invocation's limit, states the 20.9
   already spent and the number of invocations so far, and calls the cap nothing
   else
+
+#### Scenario: A revised job cannot spend its cap four times
+
+- **WHEN** a job has spent its total budget across an author run, a revision and
+  a review pass
+- **THEN** the next invocation is not started, and the job is abandoned with a
+  ledger line naming the exhausted budget
+
+#### Scenario: A resumed job does not start again at zero
+
+- **WHEN** a branch is resumable and the ledger records spend against its job id
+  that leaves less than the minimum invocation length
+- **THEN** the branch is not resumed, and an `abandoned` line is written naming
+  the spend, the total and the remainder
+
+#### Scenario: A job inside its budget is untouched
+
+- **WHEN** a job makes an author run, two review passes and a revision, and
+  their sum stays below its total
+- **THEN** every invocation runs under the full per-type per-invocation cap and
+  nothing is refused
 
 ### Requirement: A job's ledger line is written before anything recomputes the queue from it
 
