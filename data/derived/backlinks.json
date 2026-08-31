@@ -2032,12 +2032,6 @@
         "title": "Anthropic emailed Claude users about stolen sessions. What was taken was not a password.",
         "type": "post",
         "file": "content/blog/claude-session-theft-infostealers.md"
-      },
-      {
-        "url": "/blog/eu-ai-office-first-enforcement-rfis",
-        "title": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
-        "type": "post",
-        "file": "content/blog/eu-ai-office-first-enforcement-rfis.md"
       }
     ],
     "org/deepseek": [
@@ -2108,12 +2102,6 @@
         "title": "Who builds AI",
         "type": "learn",
         "file": "content/learn/who-builds-ai.md"
-      },
-      {
-        "url": "/blog/eu-ai-office-first-enforcement-rfis",
-        "title": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
-        "type": "post",
-        "file": "content/blog/eu-ai-office-first-enforcement-rfis.md"
       }
     ],
     "org/meta-superintelligence-labs": [
@@ -2244,12 +2232,6 @@
         "title": "Who builds AI",
         "type": "learn",
         "file": "content/learn/who-builds-ai.md"
-      },
-      {
-        "url": "/blog/eu-ai-office-first-enforcement-rfis",
-        "title": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
-        "type": "post",
-        "file": "content/blog/eu-ai-office-first-enforcement-rfis.md"
       },
       {
         "url": "/blog/three-accounts-hugging-face-intrusion",
