@@ -68,7 +68,7 @@ Qwen3.8 generation, not the 27B row carrying the sentence. Within that
 generation the open lead belongs elsewhere: `qwen/qwen3.8-2.4t-a95b`,
 listed two days before this row, is open by the same test — it carries a
 Hugging Face id where the cloud-only `qwen/qwen3.8-max` carries none — and
-in the 28 August 2026 snapshot it outscores this row on the Artificial
+in the 31 August 2026 snapshot it outscores this row on the Artificial
 Analysis intelligence index. A reader who takes the card's line as a claim
 about the 27B is reading past the model that beats it.
 

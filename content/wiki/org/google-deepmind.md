@@ -54,7 +54,7 @@ mentions:
 ---
 
 Google's cheap tier has overtaken its expensive one. In the OpenRouter
-catalog on 28 August 2026, the newest Gemini row on the Pro line is
+catalog on 31 August 2026, the newest Gemini row on the Pro line is
 `google/gemini-3.1-pro-preview`, listed on 19 February 2026 and still
 carrying `preview` in its name. The Flash line has shipped three times since:
 `google/gemini-3.5-flash` in May, `google/gemini-3.6-flash` on 21 July,

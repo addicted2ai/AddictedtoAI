@@ -61,7 +61,7 @@ Four consecutive main-line GLM releases published the same context window.
 `z-ai/glm-4.7` lists {{fact:model/z-ai-glm-4-7#context_window}},
 `z-ai/glm-5` lists {{fact:model/z-ai-glm-5#context_window}}, and this row
 lists {{fact:model/z-ai-glm-5-1#context_window}} — the same figure on all
-four in the 28 August 2026 snapshot, spanning the six months from
+four in the 31 August 2026 snapshot, spanning the six months from
 30 September 2025 to 7 April 2026. Whatever Z.ai spent those six months
 on, it was not the window.
 

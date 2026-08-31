@@ -99,7 +99,8 @@ between two listings and not between two prices Tencent set. The preview is
 the expensive way to use the same generation, and it stays on the shelf after
 the cheap one arrives.
 
-`tencent/hy4-preview` is the only one of Tencent's seven rows with no Hugging
+As of the 31 August 2026 snapshot, `tencent/hy4-preview` is the only one of
+Tencent's seven rows with no Hugging
 Face id. The other six all have one, `tencent/hy3-preview` included, which
 means Tencent shipped downloadable weights at preview stage last generation
 and has not this time. It is also the only Tencent row listing above a dollar

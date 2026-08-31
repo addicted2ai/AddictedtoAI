@@ -78,9 +78,11 @@ mentions:
   - model/moonshotai-kimi-k2-7-code
 ---
 
-This row had a death date on it, which almost none do. Of the 388 rows in
-the OpenRouter snapshot of 28 August 2026, eight carry a non-null
-`expiration_date`, and this one's date has since come due: Moonshot's
+This row had a death date on it, which almost none do: only a handful of
+the several hundred rows in the OpenRouter catalog carry a non-null
+`expiration_date` at any given time — a count and a membership that shift
+from one snapshot to the next — and this one's date has since come due:
+Moonshot's
 platform record reads {{fact:model/moonshotai-kimi-k2-5#api_sunset}}, and
 the vendor's model list has now moved to the past tense — "`kimi-k2.5` and
 the `moonshot-v1` series were officially retired on August 31, 2026. Calls

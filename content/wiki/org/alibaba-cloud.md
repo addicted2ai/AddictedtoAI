@@ -61,13 +61,13 @@ mentions:
 ---
 
 Qwen tells you its licence in the model's name, and the tier vocabulary has
-never once broken the rule. Alibaba Cloud has 52 rows in the OpenRouter
-snapshot of 28 August 2026, second only to OpenAI's 58. Seventeen carry no
+never once broken the rule. Alibaba Cloud has 53 rows in the OpenRouter
+snapshot of 31 August 2026, second only to OpenAI's 60. Seventeen carry no
 Hugging Face id — and every one of those seventeen is named `max`, `plus` or
 `flash`. The tier-named rows and the closed rows are the same seventeen: not
 a single `max`, `plus` or `flash` row is downloadable, and not a single row
-without one of those three words is withheld. Thirty-three of the other
-thirty-five are named by parameter count as well, but that half of the
+without one of those three words is withheld. Thirty-four of the other
+thirty-six are named by parameter count as well, but that half of the
 convention does break — `qwen/qwen3-coder` carries its 480B only in its
 display name, and `qwen/qwen3-coder-next` carries no parameter count in its
 id, display name or slug at all. Both publish weights, which is what the
@@ -93,7 +93,7 @@ how the trade-off is usually described.
 The tier names hold still; what they cost does not. `qwen/qwen3.7-flash`,
 listed 27 July 2026, lists at {{fact:model/qwen-qwen3-7-flash#price_input}}.
 Its successor `qwen/qwen3.8-flash`, listed 26 August, lists at
-{{fact:model/qwen-qwen3-8-flash#price_input}} — in the 28 August 2026
+{{fact:model/qwen-qwen3-8-flash#price_input}} — in the 31 August 2026
 snapshot, five times as much thirty days later, on the tier whose whole name
 is a promise about cost. Both are
 closed, both take text, images and video, and both advertise the same

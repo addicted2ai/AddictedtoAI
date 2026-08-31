@@ -56,7 +56,7 @@ This row first appeared in OpenRouter's catalog on
 {{fact:model/google-gemini-3-1-pro-preview#listed_date}} — confirmed
 against [the model's own listing](https://openrouter.ai/google/gemini-3.1-pro-preview)
 today, which still shows no non-preview release. That is more than six
-months before the snapshot of 28 August 2026 this page reads, and in all
+months before the snapshot of 31 August 2026 this page reads, and in all
 that time the tier has never shipped a plain row: the catalog carries three
 Pro rows — this one, a batch billing tier, and a custom-tools variant — and
 every one of them still carries "preview" in its slug.
@@ -68,7 +68,7 @@ and for the second of them graduation was not merely a change of slug: the
 plain row's context window is
 {{fact:model/google-gemini-3-1-flash-image#context_window}} against the
 preview's {{fact:model/google-gemini-3-1-flash-image-preview#context_window}},
-which in the 28 August 2026 snapshot is twice the room at an unchanged
+which in the 31 August 2026 snapshot is twice the room at an unchanged
 input price. The Pro tier, heading at
 {{fact:model/google-gemini-3-1-pro-preview#price_input}} input — the top
 listed provider's rate for that row rather than necessarily Google's own —

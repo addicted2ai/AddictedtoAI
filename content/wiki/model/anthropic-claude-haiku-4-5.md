@@ -63,6 +63,6 @@ Haiku 4.5 landed in between, which is the part that makes it interesting.
 It was listed on 15 October 2025 — 146 days after Sonnet was already
 running at a million, and 112 days *before* Opus got there on 4 February
 2026. So the 200k ceiling is not a decision taken against a settled house
-standard; it is a row nobody has been back to. In the snapshot of 28 August
+standard; it is a row nobody has been back to. In the snapshot of 31 August
 2026, five further Opus revisions, two Sonnets and a Fable have been listed
 since that date, and not one new Haiku.

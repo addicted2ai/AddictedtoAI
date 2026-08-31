@@ -84,16 +84,18 @@ own page as ["Mistral's most capable model to date"](https://openrouter.ai/mistr
 `mistralai/mistral-medium-3-5`, listed five months later on 30 April 2026, is
 [a dense 128-billion-parameter model, also available under open weights](https://openrouter.ai/mistralai/mistral-medium-3-5),
 and lists at {{fact:model/mistralai-mistral-medium-3-5#price_input}} and
-{{fact:model/mistralai-mistral-medium-3-5#price_output}} — in the 28 August
+{{fact:model/mistralai-mistral-medium-3-5#price_output}} — in the 31 August
 2026 snapshot, three times the input and five times the output of the far
 larger model above it in the range. Mistral's ladder runs backwards at the
 top: the flagship is the
 bargain, and the mid-tier is the premium product.
 
-The `:batch` suffix is worth checking before you plan around it. Every one of
-Anthropic's eleven batch rows in the snapshot prices at exactly half its
-standard twin, and so do nine of Google's ten, with the tenth at a quarter.
-Mistral lists six batch rows and five of them —
+The `:batch` suffix is worth checking before you plan around it. As of the
+31 August 2026 snapshot, every one of Anthropic's eleven batch rows prices
+at exactly half its standard twin, and so do nine of Google's eleven, with
+one at a quarter and one — `google/gemma-4-31b-it:batch` — listing above
+its standard twin instead of below it. Mistral lists six
+batch rows and five of them —
 `mistralai/mistral-large-2512:batch`, `mistralai/codestral-2508:batch`,
 `mistralai/ministral-8b-2512:batch`, `mistralai/mistral-medium-3.1:batch` and
 `mistralai/mistral-small-2603:batch` — carry the same input and output prices

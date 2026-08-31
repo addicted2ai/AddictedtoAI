@@ -72,8 +72,9 @@ mentions:
   - model/z-ai-glm-4-5v
 ---
 
-Z.ai publishes weights for thirteen of its fifteen rows in the OpenRouter
-catalog. The two it does not are both called Turbo, and a checkpoint with no
+Z.ai publishes weights for fourteen of its sixteen rows in the OpenRouter
+catalog, as of the 31 August 2026 snapshot. The two it does not are both
+called Turbo, and a checkpoint with no
 published weights has no third party able to host it — so on those two rows
 the listed price is Z.ai's own, and on the open rows it need not be.
 `z-ai/glm-5`, listed 11 February 2026, carries a Hugging Face id and heads
@@ -87,12 +88,15 @@ charges to keep a checkpoint to itself: it is a closed price quoted against
 whichever host happens to head an open row.
 
 The other field Z.ai fills in that almost nobody does is the death date. Of
-the 388 rows in that snapshot, eight carry a non-null expiration date and
-six of them are Z.ai's; no other vendor carries more than one. It uses the
-field two ways. `z-ai/glm-4.5` and `z-ai/glm-4.5v` — the July and August
-2025 pair that carried the company's reputation abroad — both read
+the 396 rows in that same 31 August 2026 snapshot, six carry a non-null
+expiration date and five of them are Z.ai's; no other vendor carries more
+than one. It uses the
+field two ways. `z-ai/glm-4.5`, one half of the July and August 2025 pair
+that carried the company's reputation abroad, reads
 {{fact:model/z-ai-glm-4-5#expiration_date}}, a real retirement seventeen
-months after listing. The four current rows, both Turbos plus
+months after listing; its sibling `z-ai/glm-4.5v` no longer carries a
+non-null expiration date in this snapshot, so the pair no longer agrees.
+The four current rows, both Turbos plus
 `z-ai/glm-5.3` and `z-ai/glm-5.3-flash`, read
 {{fact:model/z-ai-glm-5-3#expiration_date}}: a sentinel seventy-two years
 out, meaning nothing is planned. Neither date is printed on the listing page

@@ -72,7 +72,7 @@ mentions:
 
 Cohere's list price did not move while its model did. `cohere/command-r-plus-08-2024`,
 listed 30 August 2024, and `cohere/command-a`, listed 13 March 2025, carry
-identical input and output figures in the OpenRouter snapshot of 28 August
+identical input and output figures in the OpenRouter snapshot of 31 August
 2026 — {{fact:model/cohere-command-a#price_input}} and
 {{fact:model/cohere-command-a#price_output}} — and that is where the
 similarity stops. The newer row doubled the advertised window to
@@ -101,9 +101,10 @@ The gap was not idleness. Cohere's revenue was reported at
 in a deal that one anonymous individual told the New York Times would make
 the combined companies worth twenty billion dollars, with six hundred million
 dollars invested in Cohere by Schwarz Gruppe. One structural
-detail separates Cohere from nearly every vendor in the catalog:
-ninety-one of the 388 rows carry the router's `is_moderated` flag, spread
-across eight provider prefixes, and Cohere is one of only two vendors with
+detail separates Cohere from nearly every vendor in the catalog: as of the
+31 August 2026 snapshot, ninety-three of the 396 rows carry the router's
+`is_moderated` flag, spread across eight provider prefixes, and Cohere is
+one of only two vendors with
 five or more rows flagged on every single one. The other is Amazon. Selling
 to banks and hospitals shows up in the metadata before it shows up anywhere
 else.
