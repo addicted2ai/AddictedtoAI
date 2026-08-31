@@ -17,8 +17,8 @@ mentions:
 
 In August 2021 Jacob Steinhardt, a Berkeley statistician, [paid professional
 forecasters](https://bounded-regret.ghost.io/ai-forecasting-one-year-in/) to
-predict progress on four AI benchmarks, with a $5,000 prize pool per question
-so that accuracy would cost something to get wrong. Professional forecasters
+predict progress on four AI benchmarks, with a $5,000 prize pool for each
+benchmark so that accuracy would cost something to get wrong. Professional forecasters
 are people whose living depends on being calibrated rather than interesting.
 On MATH, a competition-mathematics benchmark where the best system of 2021
 scored 6.9 per cent and most humans stay below 50, their prediction for June

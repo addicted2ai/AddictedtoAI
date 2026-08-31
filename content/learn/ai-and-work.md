@@ -46,8 +46,8 @@ the job was now expected to sell.
 That story gets repeated as proof that automation creates work. It proves
 nothing of the kind, because every step of it was contingent on something other
 than the technology. It ran on a bank's appetite for branches, and that appetite
-is gone. The US Bureau of Labor Statistics [counted about 347,400 tellers in
-2024](https://www.bls.gov/ooh/office-and-administrative-support/tellers.htm),
+is gone. The US Bureau of Labor Statistics [counted about 339,200 tellers in
+2025](https://www.bls.gov/ooh/office-and-administrative-support/tellers.htm),
 and says branch numbers have been falling because of technological change, as
 customers moved to banking on their phones. **The cash machine never
 decided whether tellers kept their jobs. What decided was whether cheaper
@@ -137,8 +137,11 @@ In the occupations they rank as most exposed, workers aged 22 to 25 showed a 16
 per cent employment decline measured against comparable workers elsewhere, while
 employment for experienced people in those same occupations stayed stable. The
 split inside that result is the useful part. Employment fell in the occupations
-where the software does the task, and rose in the ones where it assists the
-person doing it. Two opposite outcomes, one technology, the same year.
+where the software does the task, and the authors report only muted effects
+where it assists the person doing it — young workers' employment changes, they
+say, are not ordered by how exposed an occupation is to being assisted. One
+direction shows a decline and the other shows no clear pattern at all, which is
+a weaker and more honest finding than a mirror image would have been.
 
 Notice what kind of claim that is. It is a comparison between groups inside one
 payroll provider's records rather than a count of jobs destroyed, the exposure
