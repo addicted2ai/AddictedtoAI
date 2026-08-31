@@ -78,6 +78,43 @@ test('no file in the Pulse names a model-provider inference endpoint', () => {
   assert.deepEqual(offenders, []);
 });
 
+test('verify-zero-model.mjs cannot publish: the disarming flags are forced and unremovable', () => {
+  // addictedtoai-r8k. Running this verifier once pushed to origin/main, because
+  // it spawns the real `pulse/run.mjs` and the config flag happened to be true.
+  //
+  // Asserted STRUCTURALLY on purpose. The obvious behavioural test — run it and
+  // check nothing was pushed — has an unacceptable failure mode: if the guard
+  // ever regresses, the test itself deploys the site. A check whose red path is
+  // a live push is the defect, not the detector. `verify-zero-model.mjs` also
+  // hardcodes its root to this repository, so it cannot be aimed at a throwaway
+  // repo the way publish.test.mjs aims the step.
+  const src = readFileSync(join(PULSE, 'verify-zero-model.mjs'), 'utf8');
+
+  assert.match(
+    src,
+    /const NEVER_PUBLISH = \[\s*'--dry-run',\s*'--assume-publish',?\s*\]/,
+    'the forced flags must stay declared together, so removing one is visible',
+  );
+
+  // The flags must be spread AFTER the caller's arguments. `run.mjs` parses
+  // argv into a Set, so appended flags are additive and no caller can unset
+  // them; prepending would leave the same property but the order is what makes
+  // the intent legible, and this is the line a future edit is likely to touch.
+  assert.match(
+    src,
+    /\[RUN, \.\.\.process\.argv\.slice\(2\), \.\.\.NEVER_PUBLISH\]/,
+    'forced flags must be appended after caller arguments',
+  );
+
+  // The spawn must use those args and nothing else.
+  assert.match(src, /spawn\(process\.execPath, childArgs,/, 'the child must be spawned with childArgs');
+  assert.doesNotMatch(
+    src,
+    /spawn\(process\.execPath, \[RUN, \.\.\.process\.argv\.slice\(2\)\]/,
+    'the pre-r8k spawn, which published, must not return',
+  );
+});
+
 test('the four vetted packages are themselves inference-free by nature', () => {
   // Recorded as an explicit statement rather than an assumption: cheerio is
   // an HTML/XML parser, fast-glob a file matcher, gray-matter a front-matter
