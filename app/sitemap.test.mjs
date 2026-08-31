@@ -47,3 +47,57 @@ test('3u1 the resolution logic is imported from lib/sitemap-dates.mjs, not reimp
     'contentChangedOn/reviewedOn must not be redefined locally',
   );
 });
+
+// ── addictedtoai-1r7: the twelve index routes each carry an honest lastModified ──
+
+test('1r7 the old no-date loop over all twelve index routes is gone', () => {
+  assert.ok(
+    !/for \(const path of \[/.test(CODE_ONLY),
+    'a loop that called add(path) with no second argument for every index route must not come back',
+  );
+});
+
+test('1r7 newest is imported from lib/sitemap-dates.mjs, not reimplemented inline', () => {
+  assert.match(SRC, /\bnewest\b.*from ['"]\.\.\/lib\/sitemap-dates\.mjs['"]/);
+  assert.ok(!/function\s+newest/.test(SRC) && !/const\s+newest\s*=/.test(SRC), 'newest must not be redefined locally');
+});
+
+test('1r7 each index route passes its own member-max expression', () => {
+  const expected = {
+    '/': 'feedChangedOn',
+    '/wiki': 'wikiChangedOn',
+    '/catalog': 'catalogChangedOn',
+    '/catalog/deprecations': 'deprecationsChangedOn',
+    '/catalog/changed': 'feedChangedOn',
+    '/tools': 'toolsChangedOn',
+    '/learn': 'learnChangedOn',
+    '/tutorials': 'tutorialsChangedOn',
+    '/blog': 'blogChangedOn',
+    '/impossible-routine': 'deltasChangedOn',
+    '/data': 'dataChangedOn',
+  };
+  for (const [path, variable] of Object.entries(expected)) {
+    const re = new RegExp(`add\\('${path.replace(/\//g, '\\/')}',\\s*${variable}\\)`);
+    assert.match(SRC, re, `${path} must pass ${variable}`);
+  }
+});
+
+test('1r7 / and /catalog/changed share the SAME feed-date variable, not two computations of "changed"', () => {
+  assert.match(SRC, /add\('\/', feedChangedOn\)/);
+  assert.match(SRC, /add\('\/catalog\/changed', feedChangedOn\)/);
+});
+
+test('1r7 /colophon deliberately gets no lastModified argument', () => {
+  assert.match(SRC, /add\('\/colophon'\);/, 'colophon has no corpus doc and no review record to join to');
+});
+
+test('1r7 catalog and deprecations read the shared changedOn map by the row\'s joined entry id, not a new date source', () => {
+  assert.match(
+    SRC,
+    /site\.catalog\.map\(\(row: any\) => \(row\.entry \? changedOn\.get\(row\.entry\.id\) : undefined\)\)/,
+  );
+  assert.match(
+    SRC,
+    /site\.deprecations\.map\(\(row: any\) => \(row\.entry \? changedOn\.get\(row\.entry\.id\) : undefined\)\)/,
+  );
+});
