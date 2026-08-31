@@ -1,23 +1,67 @@
 /**
- * publish.mjs — the shared publish step (specs/pulse, task 3.9).
+ * publish.mjs — the shared commit-and-publish step (specs/pulse, task 3.9).
  *
  * "A local rebuild is not publication." This is the one place in the codebase
  * that pushes, and it is shared: `pulse/run.mjs` calls it at the end of its
  * pipeline and `loop/run.mjs` calls it after a merge (design D2), so there is
  * exactly one implementation of deploy and exactly one gate on it.
  *
+ * ## COMMITTING IS NOT PUBLISHING — the two phases, and why they were one
+ *
+ * This step used to return on the first line of `publish: false`, printing
+ * *"disabled … nothing committed, nothing pushed"*. But the Pulse **writes**
+ * its state into the working tree before it gets here — `data/changes.jsonl`,
+ * the snapshots under `data/sources/`, `data/linkcheck.json`, `data/derived/`,
+ * and the front matter a lifecycle append touches — and this step is the only
+ * thing that commits any of it. So with publishing held down, a whole run's
+ * state stayed uncommitted.
+ *
+ * MEASURED, 2026-08-30. A Pulse run appended a 91st line to
+ * `data/changes.jsonl` and left it there. The derived queue was computed from
+ * that *working tree* and duly offered an `interpret` job for the new line. The
+ * Desk branches jobs from committed `main` — 90 lines — so the executor could
+ * not find the record it was told to annotate and correctly reported
+ * `blocked: the change record this job annotates is not on this branch`. 15.47
+ * model-minutes, no output. `git log -S … -- data/changes.jsonl` returned
+ * nothing, proving the line had never been committed.
+ *
+ * The conflation is the defect. A run's state belongs in git the moment it is
+ * computed; whether the *remote* hears about it is a separate decision, and it
+ * is the only one `publish` governs. It bites exactly when someone follows
+ * CLAUDE.md's own advice to hold publishing down while a larger change is in
+ * flight.
+ *
+ * So the step is two phases:
+ *
+ *   1. **COMMIT** — stage and commit what this run can attribute to itself.
+ *      Runs whatever `data/config.json` says, and whatever `HOLD.md` says.
+ *      Only for a caller that declared `owned`: an undeclared caller cannot
+ *      say what is its own, and a wholesale `git add data content public` on
+ *      every run — publishing or not — would sweep up every dirty file in the
+ *      tree (see "What gets staged" below). Undeclared callers therefore keep
+ *      the old behaviour exactly: they commit only on a real publish.
+ *   2. **PUBLISH** — push `main` and poll the live `/status.json` build stamp.
+ *      Gated by `publish`, by `HOLD.md`, and by having something to say.
+ *
+ * `HOLD.md` still suspends phase 2 completely and nothing here removes it. It
+ * does not suspend phase 1, which is what the hold file itself has always said:
+ * *"The Pulse keeps running; only its deploy step is suspended."*
+ *
+ * The structural guard is unchanged and is load-bearing for both phases:
+ * `pulse/run.mjs` runs this step **after** the site rebuild, so a run that
+ * produced content the build rejects neither commits nor publishes it.
+ *
  * ## The gate
  *
- * `data/config.json`'s `publish` flag decides, and nothing else does:
+ * `data/config.json`'s `publish` flag decides whether anything reaches the
+ * remote, and nothing else does:
  *
  *   - `publish: false` — the whole build phase, and any time the maintainer
- *     wants local-only mode. The step prints **one** line and does nothing
- *     else. Nothing else in the pipeline changes.
- *   - `publish: true` — commit, push `main`, then poll the live
- *     `/status.json` build stamp for up to 10 minutes. A stamp that does not
- *     advance is a deploy failure, not a shrug: `HOLD.md` is written naming
- *     it (breaker 2 in specs/loop) and no further publish is attempted until
- *     the hold clears.
+ *     wants local-only mode. Phase 2 prints **one** line and does nothing else.
+ *   - `publish: true` — push `main`, then poll the live `/status.json` build
+ *     stamp for up to 10 minutes. A stamp that does not advance is a deploy
+ *     failure, not a shrug: `HOLD.md` is written naming it (breaker 2 in
+ *     specs/loop) and no further publish is attempted until the hold clears.
  *
  * Detection is a plain HTTPS fetch of the live page. No hosting-provider API,
  * no GitHub API (design D4).
@@ -63,9 +107,16 @@
  * quietly stop publishing the Pulse's own mints. The line names the issue so
  * the gap is visible in the log of every run that still has it.
  *
- * Nothing here removes `HOLD.md`. The hold check runs before any of it and
- * returns; clearing a hold is the maintainer's, and removing the file is
- * itself a reserved-path violation (specs/loop).
+ * That distinction now decides phase 1 as well, and the asymmetry is the
+ * point: an undeclared caller gets wholesale staging **only on a run that is
+ * publishing anyway**, which is exactly the blast radius it has always had.
+ * Extending an unattributable `git add data content public` to every
+ * non-publishing run would be a new hazard invented while fixing an old one.
+ * The Desk is the undeclared caller, and it loses nothing — `loop/run.mjs`
+ * commits its own records by exact path before it ever calls this step.
+ *
+ * Nothing here removes `HOLD.md`. Clearing a hold is the maintainer's, and
+ * removing the file is itself a reserved-path violation (specs/loop).
  */
 
 import { execFileSync } from 'node:child_process';
@@ -156,6 +207,16 @@ export function normalizeOwned(owned, root) {
   return out;
 }
 
+/** Is `root` a git repository at all? Answered without reading its state. */
+function isRepository(root) {
+  try {
+    execFileSync('git', ['-C', root, 'rev-parse', '--git-dir'], { stdio: ['ignore', 'ignore', 'ignore'] });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Every path git considers dirty under the staging directories.
  *
@@ -168,22 +229,42 @@ export function normalizeOwned(owned, root) {
  *
  * Returns `null` — "cannot tell" — rather than throwing when `root` is not a
  * git repository, which is the case in several fixture roots.
+ *
+ * ## Why a failed `git status` is retried once inside a real repository
+ *
+ * "Not a repository" is a permanent, correct answer; "the git invocation
+ * failed" is not the same thing, and this function used to return the same
+ * `null` for both. That conflation cost nothing while it only ran on a
+ * publishing run — the run simply did not publish and the next one would. It
+ * costs a whole run's state now that it decides whether the run COMMITS.
+ * Observed 2026-08-31: one `npm test` under heavy parallel load left a fixture
+ * uncommitted here, and the same file passed alone five times over. So a
+ * failure inside a directory that IS a repository is treated as transient and
+ * tried once more; a second failure still answers "cannot tell", and the caller
+ * still errs toward doing nothing.
  */
 export function dirtyPaths(root, dirs = STAGE_DIRS) {
   const present = dirs.filter((d) => existsSync(`${root}/${d}`));
   if (present.length === 0) return [];
-  let out;
-  try {
-    // NOT through `git()`: that helper trims, and porcelain's first status
-    // column is a space for "modified in the worktree only", so trimming eats
-    // one character off the first record's path. Caught by
-    // `pulse/tests/publish.test.mjs` before it ever ran for real.
-    out = execFileSync('git', ['-C', root, 'status', '--porcelain=v1', '-z', '-uall', '--', ...present], {
+  // NOT through `git()`: that helper trims, and porcelain's first status
+  // column is a space for "modified in the worktree only", so trimming eats
+  // one character off the first record's path. Caught by
+  // `pulse/tests/publish.test.mjs` before it ever ran for real.
+  const status = () =>
+    execFileSync('git', ['-C', root, 'status', '--porcelain=v1', '-z', '-uall', '--', ...present], {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     });
+  let out;
+  try {
+    out = status();
   } catch {
-    return null;
+    if (!isRepository(root)) return null;
+    try {
+      out = status();
+    } catch {
+      return null;
+    }
   }
   const fields = out.split('\0');
   const found = [];
@@ -309,7 +390,53 @@ function writeHold(root, reason) {
 }
 
 /**
- * Run the publish step.
+ * PHASE 1 — commit exactly the paths this run attributed to itself.
+ *
+ * Separated from `publishStep` because it is separately governed: this runs
+ * whether or not the run is publishing, and its failure is reported rather
+ * than thrown. Before the split, `git commit` could only ever run on a
+ * publishing run, so a `throw` here reached a caller that was already deep in
+ * a push; now it can run on every scheduled Pulse, and a repository that
+ * refuses a commit (an unconfigured identity, a hook) must leave the run's
+ * state in the working tree rather than take the whole Pulse down with it.
+ *
+ * @returns {{attempted: boolean, committed: boolean, paths: string[], reason: string, sha?: string, error?: string}}
+ */
+function commitOwned(root, ownedPaths, message, say) {
+  if (ownedPaths.length === 0) {
+    say('commit', "nothing of this run's own to commit — no path this run wrote is dirty");
+    return { attempted: true, committed: false, paths: [], reason: 'nothing-owned' };
+  }
+  // `--pathspec-from-file` rather than argv: an exact-path stage can be
+  // hundreds of entries long, and NUL separation is the only encoding that
+  // survives every filename git will hand back.
+  const spec = ownedPaths.join('\0');
+  try {
+    // `add` first, because a minted stub is untracked and `commit -- <path>`
+    // refuses a pathspec git has never seen.
+    git(root, ['add', '--pathspec-from-file=-', '--pathspec-file-nul'], { input: spec });
+    // Then commit with the SAME pathspec rather than committing the index.
+    // Several agents share this working tree; something else may have left
+    // changes staged, and a bare `git commit` would commit them. A pathspec
+    // commit takes only these paths and leaves anyone else's index entries
+    // exactly where they were.
+    git(root, ['commit', '-m', message, '--pathspec-from-file=-', '--pathspec-file-nul'], { input: spec });
+  } catch (err) {
+    const first = String(err?.message ?? err).split('\n')[0];
+    say('commit', `git refused this run's commit (${first}) — the state stays in the working tree, uncommitted`);
+    return { attempted: true, committed: false, paths: ownedPaths, reason: 'commit-failed', error: first };
+  }
+  const sha = git(root, ['rev-parse', 'HEAD']).toLowerCase();
+  say(
+    'commit',
+    `committed ${ownedPaths.length} path(s) this run wrote as ${sha.slice(0, 12)}: ` +
+      `${ownedPaths.slice(0, 8).join(', ')}${ownedPaths.length > 8 ? ', …' : ''}`,
+  );
+  return { attempted: true, committed: true, paths: ownedPaths, reason: 'committed', sha };
+}
+
+/**
+ * Run the commit-and-publish step.
  *
  * @param {string} root repository root
  * @param {object} opts
@@ -319,9 +446,10 @@ function writeHold(root, reason) {
  * @param {string[]|null} opts.owned  repo-relative paths THIS run wrote. Passing
  *   it switches the step from staging `data content public` wholesale to
  *   staging only what the run can attribute to itself, and arms the refusal on
- *   foreign uncommitted `content/` (addictedtoai-ps3). `null` — the default —
- *   means the caller declared nothing and gets the old wholesale behaviour,
- *   announced on every run.
+ *   foreign uncommitted `content/` (addictedtoai-ps3). It also arms phase 1:
+ *   a declaring caller has its state committed on every run, publishing or
+ *   not. `null` — the default — means the caller declared nothing and gets the
+ *   old wholesale behaviour, announced on every run, on publishing runs only.
  * @param {number}  opts.pollBudgetMs    how long to wait for the deploy (tests only)
  * @param {number}  opts.pollIntervalMs  how often to re-fetch (tests only)
  */
@@ -359,27 +487,87 @@ export async function publishStep(
 
   const configSaysPublish = config.publish === true;
   const effective = configSaysPublish || (assumePublish && dryRun);
+  const held = existsSync(p.hold);
+  const message = `pulse: ${today()} data and content update`;
 
-  if (!effective) {
-    // Exactly one line, per specs/pulse.
-    say('publish', 'disabled (data/config.json has publish: false) — nothing committed, nothing pushed');
-    return { published: false, reason: 'disabled' };
-  }
-
-  if (existsSync(p.hold)) {
-    say('publish', `HOLD.md present at ${p.hold} — publish suspended until the hold clears`);
-    return { published: false, reason: 'hold' };
-  }
-
-  // ---- what this run is allowed to stage (addictedtoai-ps3) ---------------
+  // =========================================================================
+  // PHASE 1 — THE COMMIT. Governed by attribution, not by `publish` or a hold.
+  //
+  // Only a caller that declared `owned` reaches it: see the header. An
+  // undeclared caller falls through with `ownedPaths === null` and stages
+  // wholesale inside phase 2, exactly as it always has.
+  // =========================================================================
   const declared = normalizeOwned(owned, root);
   /** Exact paths this run may stage; null while the caller has declared nothing. */
   let ownedPaths = null;
   /** The pathspecs handed to `git add`: whole directories, or exact paths. */
   let stagePaths;
+  /** What phase 1 did. `attempted: false` for an undeclared caller. */
+  let commit = { attempted: false, committed: false, paths: [], reason: 'undeclared' };
+  /** Set when phase 1 could not do its job, so phase 2 must not push either. */
+  let commitBlocked = null;
 
   if (declared === null) {
     stagePaths = STAGE_DIRS.filter((d) => existsSync(`${root}/${d}`));
+  } else {
+    const tree = classifyWorkingTree(root, declared);
+    if (!tree.known) {
+      say('commit', `cannot read the working tree at ${root} with git, so nothing can be attributed to this run — nothing committed`);
+      commit = { attempted: true, committed: false, paths: [], reason: 'tree-unreadable' };
+      commitBlocked = 'tree-unreadable';
+      stagePaths = [];
+    } else if (tree.foreignContent.length) {
+      const shown = tree.foreignContent.slice(0, 10).join(', ');
+      say(
+        'commit',
+        `refusing: ${tree.foreignContent.length} uncommitted file(s) under content/ that this run did not write ` +
+          `(${shown}${tree.foreignContent.length > 10 ? ', …' : ''}). The build gate catches broken work; it cannot ` +
+          'catch unfinished work, so this run stops rather than deciding for their author (addictedtoai-ps3).',
+      );
+      // NOT an early return, though it was one before phase 1 existed. Falling
+      // through to phase 2 is what keeps the disabled/hold line printing on a
+      // run that also has a foreign content file in the tree — specs/pulse
+      // requires that line on every `publish: false` run, and returning here
+      // would make a stray dirty file suppress it.
+      commit = { attempted: true, committed: false, paths: [], reason: 'foreign-content', foreign: tree.foreignContent };
+      commitBlocked = 'foreign-content';
+      stagePaths = [];
+    } else {
+      for (const f of tree.foreign) {
+        say('commit', `not staging ${f} — dirty, but not this run's to commit`);
+      }
+      ownedPaths = tree.own;
+      stagePaths = tree.own;
+      if (dryRun) {
+        commit = { attempted: false, committed: false, paths: ownedPaths, reason: 'dry-run' };
+      } else {
+        commit = commitOwned(root, ownedPaths, message, say);
+        if (commit.reason === 'commit-failed') commitBlocked = 'commit-failed';
+      }
+    }
+  }
+
+  // =========================================================================
+  // PHASE 2 — THE PUBLISH. Everything below is gated on reaching the remote.
+  // =========================================================================
+  if (!effective) {
+    // Exactly one line mentioning publishing, per specs/pulse. What phase 1
+    // did is phase 1's to report, under its own step name.
+    say('publish', 'disabled (data/config.json has publish: false) — nothing pushed; committing is separate and this flag does not gate it');
+    return { published: false, reason: 'disabled', commit };
+  }
+
+  if (held) {
+    say('publish', `HOLD.md present at ${p.hold} — publish suspended until the hold clears`);
+    return { published: false, reason: 'hold', commit };
+  }
+
+  if (commitBlocked) {
+    say('publish', `not pushing: the commit above stopped at \`${commitBlocked}\` — a run that could not commit its own state has nothing it can honestly publish`);
+    return { published: false, reason: commitBlocked, commit, ...(commit.foreign ? { foreign: commit.foreign } : {}) };
+  }
+
+  if (declared === null) {
     say(
       'publish',
       'the caller declared no writes of its own — staging ' +
@@ -392,30 +580,8 @@ export async function publishStep(
     for (const f of seen.foreignContent) {
       warn(`publish will commit ${f}, which this run did not write — nothing here can tell whether it is finished`);
     }
-  } else {
-    const tree = classifyWorkingTree(root, declared);
-    if (!tree.known) {
-      say('publish', `cannot read the working tree at ${root} with git, so nothing can be attributed to this run — nothing committed, nothing pushed`);
-      return { published: false, reason: 'tree-unreadable' };
-    }
-    if (tree.foreignContent.length) {
-      const shown = tree.foreignContent.slice(0, 10).join(', ');
-      say(
-        'publish',
-        `refusing: ${tree.foreignContent.length} uncommitted file(s) under content/ that this run did not write ` +
-          `(${shown}${tree.foreignContent.length > 10 ? ', …' : ''}). The build gate catches broken work; it cannot ` +
-          'catch unfinished work, so this publish stops rather than deciding for their author (addictedtoai-ps3).',
-      );
-      return { published: false, reason: 'foreign-content', foreign: tree.foreignContent };
-    }
-    for (const f of tree.foreign) {
-      say('publish', `not staging ${f} — dirty, but not this run's to publish`);
-    }
-    ownedPaths = tree.own;
-    stagePaths = tree.own;
   }
 
-  const message = `pulse: ${today()} data and content update`;
   const commands = [
     `git -C ${root} add ${stagePaths.length ? stagePaths.join(' ') : '(nothing — this run wrote nothing of its own)'}`,
     `git -C ${root} commit -m "${message}"`,
@@ -435,8 +601,18 @@ export async function publishStep(
         '(read with git rev-parse HEAD after committing — it does not exist yet)\n',
     );
     process.stdout.write(`pulse: publish   would write ${p.hold} if the stamp does not advance\n`);
+    if (declared !== null) {
+      // The commit half is not conditional on any of the above. Saying so here
+      // is what stops a reader of a dry run concluding that a `publish: false`
+      // run leaves its state uncommitted, which is the belief this whole split
+      // exists to correct.
+      process.stdout.write(
+        `pulse: publish   note: the first of those commands is phase 1 and a real run performs it whatever ` +
+          `\`publish\` says — this dry run is what suppressed it\n`,
+      );
+    }
     process.stdout.write('pulse: publish   DRY RUN — nothing was committed and nothing was pushed\n');
-    return { published: false, reason: 'dry-run', commands, poll: statusUrl() };
+    return { published: false, reason: 'dry-run', commands, poll: statusUrl(), commit };
   }
 
   // ---- real path. Reached only when data/config.json says publish: true. --
@@ -447,14 +623,16 @@ export async function publishStep(
   // a command capable of reaching the live remote (addictedtoai-64y).
   if (ownedPaths !== null && ownedPaths.length === 0 && !aheadOfOrigin(root)) {
     say('publish', 'nothing of this run\'s own to publish — no attributable change in the working tree and nothing here that origin/main lacks; not pushing');
-    return { published: false, reason: 'nothing-owned' };
+    return { published: false, reason: 'nothing-owned', commit };
   }
 
   const before = await fetchLiveStamp();
   const baseline = before.ok ? stampId(before.stamp) : null;
 
   if (ownedPaths === null) {
-    // Undeclared: exactly the staging this step has always done.
+    // Undeclared: exactly the staging this step has always done, and still
+    // only on a publishing run. Phase 1 skipped this caller precisely because
+    // `git add data content public` cannot attribute anything.
     git(root, ['add', ...stagePaths]);
     const staged = git(root, ['diff', '--cached', '--name-only']);
     if (staged === '') {
@@ -462,23 +640,8 @@ export async function publishStep(
     } else {
       git(root, ['commit', '-m', message]);
     }
-  } else if (ownedPaths.length === 0) {
-    say('publish', 'nothing of this run\'s own to commit — publishing what is already committed');
-  } else {
-    // `--pathspec-from-file` rather than argv: an exact-path stage can be
-    // hundreds of entries long, and NUL separation is the only encoding that
-    // survives every filename git will hand back.
-    const spec = ownedPaths.join('\0');
-    // `add` first, because a minted stub is untracked and `commit -- <path>`
-    // refuses a pathspec git has never seen.
-    git(root, ['add', '--pathspec-from-file=-', '--pathspec-file-nul'], { input: spec });
-    // Then commit with the SAME pathspec rather than committing the index.
-    // Eight agents share this working tree; something else may have left
-    // changes staged, and a bare `git commit` would publish them. A pathspec
-    // commit takes only these paths and leaves anyone else's index entries
-    // exactly where they were.
-    git(root, ['commit', '-m', message, '--pathspec-from-file=-', '--pathspec-file-nul'], { input: spec });
-    say('publish', `committed ${ownedPaths.length} path(s) this run wrote: ${ownedPaths.slice(0, 8).join(', ')}${ownedPaths.length > 8 ? ', …' : ''}`);
+  } else if (!commit.committed) {
+    say('publish', 'nothing of this run\'s own was committed above — publishing what is already committed');
   }
 
   // Read AFTER the commit, never from a stamp written before it. This one line
@@ -500,7 +663,10 @@ export async function publishStep(
       lastSeen = id;
       if (stampMatchesCommit(id, expected)) {
         say('publish', `live build stamp carries ${id} — the commit this run pushed`);
-        return { published: true, stamp: id, commit: expected };
+        // `commit` here is the SHA the site is serving, which is what every
+        // caller of this result has always read. Phase 1's own report rides
+        // alongside it under `committed`.
+        return { published: true, stamp: id, commit: expected, committed: commit };
       }
     }
     await new Promise((r) => setTimeout(r, pollIntervalMs));
@@ -515,5 +681,5 @@ export async function publishStep(
       '.',
   );
   say('publish', `deploy did not land — wrote ${file}`);
-  return { published: false, reason: 'stamp-did-not-advance', hold: file, expected, last_seen: lastSeen ?? null };
+  return { published: false, reason: 'stamp-did-not-advance', hold: file, expected, last_seen: lastSeen ?? null, commit };
 }

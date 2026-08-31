@@ -77,7 +77,11 @@ function hasCommits(root) {
   }
 }
 
-test('with publish: false the step prints one line and does nothing else', async (t) => {
+test('with publish: false the step prints one line about publishing and pushes nothing', async (t) => {
+  // specs/pulse, "Build phase publishes nothing": *no push occurs, and the run
+  // log contains one line stating publishing is disabled*. Still exactly one
+  // line — the commit half reports under its own step name, because it is a
+  // different decision and the spec's "one line" is about publishing.
   const root = makeRoot([], { publish: false });
   t.after(() => cleanup(root));
 
@@ -85,8 +89,36 @@ test('with publish: false the step prints one line and does nothing else', async
   assert.equal(run.status, 0, run.out);
   const publishLines = run.out.split('\n').filter((l) => l.includes('publish'));
   assert.equal(publishLines.length, 1, `expected exactly one publish line, got:\n${publishLines.join('\n')}`);
-  assert.match(publishLines[0], /publish — disabled \(data\/config\.json has publish: false\) — nothing committed, nothing pushed/);
+  assert.match(publishLines[0], /publish — disabled \(data\/config\.json has publish: false\) — nothing pushed/);
   assert.equal(existsSync(join(root, 'HOLD.md')), false);
+});
+
+test('END TO END: a real publish: false run leaves its own state in git, not in the working tree', async (t) => {
+  // The incident, through the shipped program rather than through the step.
+  // A Pulse run computes state (`data/changes.jsonl`, the snapshots,
+  // `data/linkcheck.json`, `data/derived/`) and the publish step is the only
+  // thing that commits it. With publishing held down it committed nothing, the
+  // queue was derived from an uncommitted working tree, and the Desk — which
+  // branches from committed `main` — was dispatched at a record it could not
+  // see. 15.47 model-minutes, no output.
+  const root = gitInit(makeRoot([], { publish: false }));
+  t.after(() => cleanup(root));
+  // A base commit, so the run's own commit is a diff rather than the repo's first.
+  execFileSync('git', ['-C', root, 'add', '-A'], { stdio: 'ignore' });
+  execFileSync('git', ['-C', root, 'commit', '-m', 'fixture: base'], { stdio: 'ignore' });
+  const base = execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+
+  const run = await runPulse(root, ARGS);
+  assert.equal(run.status, 0, run.out);
+
+  const dirty = execFileSync('git', ['-C', root, 'status', '--porcelain', '--', 'data'], { encoding: 'utf8' }).trim();
+  assert.equal(dirty, '', `the run computed state and left it uncommitted:\n${dirty}\n\n${run.out}`);
+  assert.notEqual(execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), base);
+  const names = execFileSync('git', ['-C', root, 'log', '-1', '--name-only', '--pretty=format:'], { encoding: 'utf8' });
+  assert.match(names, /data\/derived\/queue\.json/, names);
+  // And nothing was pushed: the fixture has no `origin`, so a push would have
+  // failed the run outright, and the log says what it did instead.
+  assert.match(run.out, /publish — disabled .* nothing pushed/);
 });
 
 test('--dry-run with publish assumed prints the exact commands and the poll target, and executes nothing', async (t) => {
@@ -136,8 +168,8 @@ test('the run declares its own writes, so the step never falls back to wholesale
   assert.doesNotMatch(addLine, /add data content public\s*$/, 'wholesale staging is what the fix removed');
   assert.match(addLine, /data\/derived\/queue\.json/, 'the run stages the derived files it just recomputed');
   // Attribution by path covers the engine's own writes and stops there:
-  // data/config.json is reserved and nobody's to publish on another's behalf.
-  assert.match(run.out, /not staging data\/config\.json — dirty, but not this run's to publish/);
+  // data/config.json is reserved and nobody's to commit on another's behalf.
+  assert.match(run.out, /not staging data\/config\.json — dirty, but not this run's to commit/);
 });
 
 test('--dry-run alone respects publish: false — the config is the gate', async (t) => {
@@ -178,6 +210,24 @@ test('publishing is suspended while HOLD.md stands', async (t) => {
 /** Milliseconds. The deploy never lands in these tests; the commit is the subject. */
 const FAST = { pollBudgetMs: 300, pollIntervalMs: 25 };
 const QUIET = { log: { step: () => {}, warn: () => {} } };
+
+/**
+ * A logger that keeps what the step said, so a failure can print it.
+ *
+ * `QUIET` is right for a test asserting on the filesystem alone, and wrong for
+ * one asserting that a commit happened: the step reports a refused `git commit`
+ * through its logger and nowhere else, so under `QUIET` that failure arrives as
+ * an unexplained unchanged HEAD. Measured 2026-08-31 — this file passed alone
+ * and failed inside `npm test`, and the reason was in a line nobody kept.
+ */
+function recorder() {
+  const lines = [];
+  return {
+    lines,
+    log: { step: (n, d) => lines.push(`${n} — ${d}`), warn: (m) => lines.push(`WARN ${m}`) },
+    said: () => lines.join('\n'),
+  };
+}
 
 function git(dir, args, opts = {}) {
   return execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], ...opts }).trim();
@@ -351,32 +401,160 @@ test('a run with nothing of its own to publish says so and does not push', async
   assert.equal(existsSync(join(root, 'HOLD.md')), false);
 });
 
-test('publish: false still means nothing committed and nothing pushed, declared writes or not', async (t) => {
+// ---------------------------------------------------------------------------
+// COMMITTING IS NOT PUBLISHING.
+//
+// THE DEFECT, measured 2026-08-30. The step returned on the first line of
+// `publish: false`, printing "nothing committed, nothing pushed" — but the
+// Pulse WRITES its state into the working tree (`data/changes.jsonl`, the
+// snapshots, `data/linkcheck.json`, `data/derived/`, lifecycle appends) and
+// this step is the only thing that commits any of it. A run appended a 91st
+// line to `changes.jsonl` and left it uncommitted; the queue was derived from
+// that working tree and offered an `interpret` job for it; the Desk branches
+// from committed `main` — 90 lines — and the executor correctly reported
+// `blocked: the change record this job annotates is not on this branch`. 15.47
+// model-minutes for nothing.
+//
+// Every test below runs against a repository with NO `origin`, so a push could
+// only throw. A clean return is therefore proof that phase 2 did not run, and
+// the assertions on HEAD are proof that phase 1 did. That pairing is the whole
+// point: it is not enough to show something was committed, it has to be shown
+// that the commit happened WITHOUT a publish.
+//
+// Each has its positive control in the same block, because a step that commits
+// unconditionally passes every "was it committed?" assertion and is exactly the
+// `addictedtoai-ps3` regression this file already exists to prevent.
+// ---------------------------------------------------------------------------
+
+test('publish: false commits the run\'s own state and pushes nothing', async (t) => {
   const { root } = makeGitRoot({ publish: false, remote: false });
   t.after(() => dropRoot(root));
 
   const head = git(root, ['rev-parse', 'HEAD']);
+  // The two shapes the incident involved: an engine write attributed by path,
+  // and a content file the run declares.
+  write(root, 'data/derived/queue.json', JSON.stringify({ items: [{ id: 'q' }] }, null, 2) + '\n');
   write(root, 'content/wiki/model/minted.md', '---\nid: minted\n---\n');
+
   const res = await publishStep(root, { owned: ['content/wiki/model/minted.md'], ...FAST, ...QUIET });
 
-  assert.equal(res.reason, 'disabled');
-  assert.equal(git(root, ['rev-parse', 'HEAD']), head);
-  assert.equal(git(root, ['diff', '--cached', '--name-only']), '');
+  assert.equal(res.reason, 'disabled', 'the publish half still reads the flag and still refuses');
+  assert.equal(res.published, false);
+  assert.equal(res.commit.committed, true, 'the commit half is not gated by the flag');
+
+  assert.notEqual(git(root, ['rev-parse', 'HEAD']), head, 'the run\'s state reached git');
+  assert.deepEqual(commitPaths(root), ['content/wiki/model/minted.md', 'data/derived/queue.json']);
+  assert.equal(git(root, ['status', '--porcelain']), '', 'and nothing of the run\'s is left dirty');
 });
 
-test('HOLD.md still suspends the publish, and nothing here removes it', async (t) => {
-  const { root, bare } = makeGitRoot();
-  t.after(() => dropRoot(root, bare));
+test('POSITIVE CONTROL — publish: false commits only what the run declared, never a foreign edit', async (t) => {
+  // A step that committed everything would satisfy the test above and would be
+  // `addictedtoai-ps3` reintroduced through the new phase. The foreign file is
+  // the exact one swept into the Pulse's commit 998ee0a on 2026-08-29.
+  const { root } = makeGitRoot({ publish: false, remote: false });
+  t.after(() => dropRoot(root));
+
+  write(root, 'data/derived/queue.json', JSON.stringify({ items: [{ id: 'q' }] }, null, 2) + '\n');
+  write(root, 'data/launch.json', JSON.stringify({ measurements: ['half-written'] }, null, 2) + '\n');
+
+  const res = await publishStep(root, { owned: [], ...FAST, ...QUIET });
+
+  assert.equal(res.reason, 'disabled');
+  assert.deepEqual(commitPaths(root), ['data/derived/queue.json']);
+  assert.match(
+    git(root, ['status', '--porcelain', '--', 'data/launch.json']),
+    /^M data\/launch\.json$/,
+    'somebody else\'s work in progress is still theirs, unstaged and uncommitted',
+  );
+});
+
+test('POSITIVE CONTROL — publish: false with nothing dirty commits nothing at all', async (t) => {
+  // A phase that commits on every run regardless would pass the first test and
+  // would fill the history with empty commits. Nothing dirty, nothing written.
+  const { root } = makeGitRoot({ publish: false, remote: false });
+  t.after(() => dropRoot(root));
+
+  const head = git(root, ['rev-parse', 'HEAD']);
+  const res = await publishStep(root, { owned: [], ...FAST, ...QUIET });
+
+  assert.equal(res.reason, 'disabled');
+  assert.equal(res.commit.committed, false);
+  assert.equal(res.commit.reason, 'nothing-owned');
+  assert.equal(git(root, ['rev-parse', 'HEAD']), head);
+});
+
+test('POSITIVE CONTROL — publish: false still refuses outright on a foreign uncommitted content file', async (t) => {
+  // The refusal `addictedtoai-ps3` added has to survive the split, or the new
+  // phase becomes a way to commit somebody's unfinished prose.
+  const { root } = makeGitRoot({ publish: false, remote: false });
+  t.after(() => dropRoot(root));
+
+  const head = git(root, ['rev-parse', 'HEAD']);
+  write(root, 'data/derived/queue.json', JSON.stringify({ items: [{ id: 'q' }] }, null, 2) + '\n');
+  write(root, 'content/wiki/model/half.md', '---\nid: half\n---\n');
+
+  const rec = recorder();
+  const res = await publishStep(root, { owned: [], ...FAST, log: rec.log });
+
+  // The publish outcome is still `disabled` — that is what the flag decided —
+  // and the commit half reports its own refusal separately.
+  assert.equal(res.reason, 'disabled');
+  assert.equal(res.commit.reason, 'foreign-content');
+  assert.deepEqual(res.commit.foreign, ['content/wiki/model/half.md']);
+  assert.equal(git(root, ['rev-parse', 'HEAD']), head, 'not even the attributable half was committed');
+  assert.equal(git(root, ['diff', '--cached', '--name-only']), '', 'nothing was even staged');
+  // specs/pulse asks for the disabled line on EVERY publish: false run. A
+  // stray dirty file in someone else's directory must not suppress it.
+  assert.match(rec.said(), /publish — disabled \(data\/config\.json has publish: false\)/, rec.said());
+});
+
+test('an undeclared caller commits nothing on a non-publishing run — it cannot attribute anything', async (t) => {
+  // The Desk (`loop/lib/publish.mjs`) passes no `owned`, so its staging is
+  // `git add data content public`. Running THAT on every non-publishing run
+  // would be a new hazard invented while fixing an old one, and the Desk needs
+  // nothing from it: `loop/run.mjs` commits its own records by exact path.
+  const { root } = makeGitRoot({ publish: false, remote: false });
+  t.after(() => dropRoot(root));
+
+  const head = git(root, ['rev-parse', 'HEAD']);
+  write(root, 'data/launch.json', JSON.stringify({ measurements: ['someone else\'s'] }, null, 2) + '\n');
+
+  const res = await publishStep(root, { ...FAST, ...QUIET });
+
+  assert.equal(res.reason, 'disabled');
+  assert.equal(res.commit.attempted, false);
+  assert.equal(res.commit.reason, 'undeclared');
+  assert.equal(git(root, ['rev-parse', 'HEAD']), head, 'wholesale staging stays a publishing-run behaviour');
+});
+
+test('HOLD.md suspends the publish and nothing removes it — but the run\'s state is still committed', async (t) => {
+  // The hold file's own text: "The Pulse keeps running; only its deploy step is
+  // suspended." A hold is a deploy failure needing the maintainer; it is not a
+  // reason to leave a computed run uncommitted, which is the same conflation
+  // this whole split is about. Phase 2 is suspended completely, and the hold is
+  // untouched.
+  const { root } = makeGitRoot({ remote: false });
+  t.after(() => dropRoot(root));
 
   const head = git(root, ['rev-parse', 'HEAD']);
   write(root, 'HOLD.md', '# HOLD\n\nan earlier deploy failed\n');
   write(root, 'data/derived/queue.json', JSON.stringify({ items: [{ id: 'z' }] }, null, 2) + '\n');
 
-  const res = await publishStep(root, { owned: [], ...FAST, ...QUIET });
+  const rec = recorder();
+  const res = await publishStep(root, { owned: [], ...FAST, log: rec.log });
 
-  assert.equal(res.reason, 'hold');
-  assert.equal(existsSync(join(root, 'HOLD.md')), true, 'the hold is the maintainer\'s to clear');
-  assert.equal(git(root, ['rev-parse', 'HEAD']), head);
+  assert.equal(res.reason, 'hold', 'the publish is suspended');
+  assert.equal(res.published, false);
+  assert.equal(
+    existsSync(join(root, 'HOLD.md')),
+    true,
+    'the hold is the maintainer\'s to clear — a run that removed it would be clearing its own brake',
+  );
+  assert.equal(res.commit.committed, true, rec.said());
+  assert.notEqual(git(root, ['rev-parse', 'HEAD']), head, rec.said());
+  assert.deepEqual(commitPaths(root), ['data/derived/queue.json']);
+  // No `origin` exists, so reaching `git push origin main` would have thrown.
+  // Returning cleanly is the proof that phase 2 never started.
 });
 
 test('attribution by path: the engine\'s own files, and nobody else\'s', () => {
@@ -414,5 +592,22 @@ test('classifyWorkingTree reports "cannot tell" rather than guessing outside a r
     assert.deepEqual(seen.own, []);
   } finally {
     cleanup(root);
+  }
+});
+
+test('POSITIVE CONTROL — inside a repository the same call reads the tree rather than shrugging', () => {
+  // The retry added on 2026-08-31 must not turn "not a repository" into a
+  // second wasted invocation, and must not turn a readable tree into a shrug.
+  // Both halves in one place: the test above is the non-repository answer, this
+  // is the repository one, on a tree whose dirty file is known.
+  const { root } = makeGitRoot({ publish: false, remote: false });
+  try {
+    write(root, 'data/derived/queue.json', JSON.stringify({ items: [{ id: 'k' }] }, null, 2) + '\n');
+    const seen = classifyWorkingTree(root, []);
+    assert.equal(seen.known, true);
+    assert.deepEqual(seen.own, ['data/derived/queue.json']);
+    assert.deepEqual(seen.foreign, []);
+  } finally {
+    dropRoot(root);
   }
 });

@@ -5,8 +5,17 @@ The Pulse: the deterministic, model-free engine (`specs/pulse`, design D2).
 `node pulse/run.mjs` performs, in order: stop-file check, source fetching,
 snapshot/hash/diff, data-layer update (including mechanical stub minting and
 lifecycle timeline appends), rolling link check, freshness computation,
-derived-queue recomputation, site rebuild, and — only when
-`data/config.json` has `publish: true` — the publish step.
+derived-queue recomputation, site rebuild, and the commit-and-publish step.
+
+**Committing is not publishing.** That last step has two halves and only the
+second is gated by `data/config.json`'s `publish` flag: the run's own state —
+the changed feed, the snapshots, the link-check record, the derived tree, the
+lifecycle appends — is committed on every run that produced it, and the push
+and deploy verification happen only when `publish: true` and no `HOLD.md`
+stands. Both halves come after the site rebuild, so a run producing content
+the build rejects neither commits nor publishes it. Holding publishing down
+used to mean holding the whole run's state out of git, which then cost the
+Desk a 15.47-minute job dispatched at a record that was not on `main`.
 
 **No model invocation on any path.** Nothing in this directory's dependency
 graph may import a model SDK; the property is verified by running with every

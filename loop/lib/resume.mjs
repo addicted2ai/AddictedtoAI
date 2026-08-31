@@ -42,6 +42,31 @@ export function readCommittedBrief(repo, branch) {
 }
 
 /**
+ * The job's committed source record — `{source, type, slug, path}` — or null.
+ *
+ * "The branch carries everything resumption needs" is this module's whole
+ * premise, and until now the brief was the only thing it carried. That was
+ * enough while nothing downstream needed to know WHERE a job came from; it
+ * stopped being enough when a merged job has to retire the proposal it was
+ * selected from, because the synthetic job object a resumed run rebuilds
+ * (`source: 'resumed'`) has no proposal in it. Rather than parse the prose of
+ * the committed brief, the selection writes the fact down beside it.
+ *
+ * Absent on every branch created before this existed, and on every job that did
+ * not come from a proposal — so `null` is an ordinary answer, not an error.
+ */
+export function readCommittedJobSource(repo, branch) {
+  const r = gitTry(repo, ['show', `${branch}:.job/source.json`]);
+  if (!r.ok) return null;
+  try {
+    const parsed = JSON.parse(r.stdout);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Classify every `job/*` branch.
  *
  * @returns {{resumable: Array, abandonable: Array, other: Array}}

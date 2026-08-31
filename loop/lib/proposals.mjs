@@ -385,6 +385,86 @@ export function sweepExpiredProposals(ctx, { dryRun = false } = {}) {
 }
 
 // ---------------------------------------------------------------------------
+// Retiring a CONSUMED proposal
+// ---------------------------------------------------------------------------
+
+/**
+ * `data/proposals/consumed/` — a RECORD, never a block, on the same terms as
+ * `dropped/`. `rejectionIndex` reads `rejectedDir` and nothing else, so a slug
+ * that appears only here does not auto-discard a later filing. Being written
+ * about once is not a reason a subject may never be written about again.
+ */
+export function consumedDir(ctx) {
+  return ctx.consumedDir ?? join(ctx.proposalsDir, 'consumed');
+}
+
+/**
+ * Retire the proposal a merged job was selected from.
+ *
+ * THE DEFECT, observed 2026-08-30. A proposal selected, written, reviewed and
+ * merged into a published post stayed in `data/proposals/` and stayed
+ * selectable. The next run selected THE SAME PROPOSAL again; its `expires:` was
+ * a week out, so the loop would have rewritten that post on every run until
+ * then. Three were retired by hand (commit `5e226a6`); this is the mechanism.
+ *
+ * `readProposals` reads `ctx.proposalsDir` top-level `.md` files only, so
+ * moving the file into a subdirectory is what removes it from selection —
+ * exactly how `discardDuplicate` and `sweepExpired` work, and this deliberately
+ * matches their shape: same `dryRun` option, same appended note, same "record,
+ * never a block" semantics.
+ *
+ * WHAT IS NOT HERE, and why. Consumption is not judgment: it says only that
+ * this candidate produced merged work. So it does not touch the rejection
+ * index, and it fires ONLY on a merged, done outcome — a discarded job's
+ * proposal stays selectable, because the idea was not what was rejected.
+ *
+ * @param {object} ctx
+ * @param {object} o
+ * @param {string} o.path      absolute path to the proposal file
+ * @param {string} o.slug
+ * @param {string} o.jobId
+ * @param {string} o.jobType
+ * @param {string[]} [o.artifacts]  repo-relative paths the merge produced
+ * @param {string} [o.mergedSha]
+ * @returns {{moved: boolean, dest: string, why: string}}
+ */
+export function consumeProposal(ctx, { path, slug, jobId, jobType, artifacts = [], mergedSha = null }, { dryRun = false } = {}) {
+  const dir = consumedDir(ctx);
+  const name = basename(path);
+  const stamp = ctx.now().toISOString().replace(/[-:]/g, '').replace(/\..*/, '');
+  const dest = join(dir, `${slug}.consumed-${stamp}.md`);
+  const made = artifacts.length ? artifacts.map((a) => `\`${a}\``).join(', ') : '(the merge produced no joinable artifact)';
+  const why =
+    `proposal "${slug}" was selected by job ${jobId} (${jobType}), which merged; it is retired to ` +
+    `data/proposals/consumed/ so no later run can be dispatched at work that is already done`;
+  if (dryRun) return { moved: false, dest, why };
+  if (!existsSync(path)) {
+    return { moved: false, dest, why: `${why} — except that ${path} no longer exists, so there was nothing to move` };
+  }
+  mkdirSync(dir, { recursive: true });
+  const original = readFileSync(path, 'utf8');
+  const note =
+    `\n\n---\n\n## Consumed: this candidate produced merged work\n\n` +
+    // The LOCAL date, like every other date in this repository (CLAUDE.md).
+    `- date: ${localDate(ctx.now())}\n` +
+    `- job: ${jobId} (${jobType})\n` +
+    `- merged as: ${mergedSha ? `\`${mergedSha}\`` : '(local merge commit not recorded)'}\n` +
+    `- produced: ${made}\n` +
+    `- was: \`${name}\` (slug \`${slug}\`)\n\n` +
+    `A proposal that has been written, reviewed and merged is finished work. It ` +
+    `was left selectable, and the run after the first post selected it again — ` +
+    `which would have rewritten the same piece on every run until its \`expires:\` ` +
+    `arrived. Retiring it is mechanical: no model was invoked and no inference ` +
+    `was spent.\n\n` +
+    `\`data/proposals/consumed/\` is a record, never a block. This slug does not ` +
+    `feed the rejection index, so the subject may be proposed again — being ` +
+    `written about once is not a reason it may never be written about again.\n`;
+  writeFileSync(dest, original + note, 'utf8');
+  unlinkSync(path);
+  return { moved: true, dest, why };
+}
+
+// ---------------------------------------------------------------------------
 // Merge mechanics for candidate files (specs/loop, task 2.4)
 // ---------------------------------------------------------------------------
 

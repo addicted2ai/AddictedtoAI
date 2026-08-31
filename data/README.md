@@ -17,7 +17,7 @@ not: build output is `.next/` and `out/`.
 | `ledger.jsonl` | append-only job ledger (id, type, runner, provider, tier, MM, outcome) | state |
 | `linkcheck.json` | rolling link-check dates, plus where each link actually lands (`final_url`, `bytes`, `meta_refresh`) — 30 days of accumulated observations, derivable from nothing else | state |
 | `launch.json` | the launch record: measured JS payloads, analytics verification, build verification, launch date | state |
-| `proposals/` | proposal files; `rejected/` is the rejection index | state |
+| `proposals/` | proposal files; `rejected/` is the rejection index, `dropped/` and `consumed/` are records | state |
 | `reviews/` | verdict records (`seed-<slug>.md`, `<job-id>.md`) | state |
 | `analytics/summary.json` | maintainer-supplied aggregate; absent is fine | state |
 | `derived/` | **strictly recomputable** on every Pulse run | derived |
@@ -32,10 +32,14 @@ JSON carries no comments, so the shape is documented here. It is a
 **reserved path**: the maintainer edits it freely, no job may
 (`specs/loop`). Four groups of keys, and only these four:
 
-1. **`publish`** — the publish flag. `false` for the whole build phase: the
-   Pulse's and the loop's publish step prints one skip line and does nothing.
-   The launch checklist (task 9.1) is what flips it, by the maintainer's own
-   hand.
+1. **`publish`** — the publish flag. It governs **the push, and nothing else**.
+   With `publish: false` the shared step prints one line saying so and reaches
+   no remote; a Pulse run still **commits the state it computed**, because
+   committing is not publishing and a run's state belongs in git the moment it
+   exists. (It cost 15.47 model-minutes to learn otherwise: a queue derived
+   from an uncommitted working tree dispatched the Desk at a record that was
+   not on `main`.) The launch checklist (task 9.1) is what flips it, by the
+   maintainer's own hand.
 2. **`budget`** — the rolling window (`window_days`: 30), the category
    membership of every job type, and the three bounds from `specs/loop`:
    upkeep floor 40%, new-writing ceiling 45%, machinery ceiling 10%. Shares

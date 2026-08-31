@@ -181,7 +181,16 @@ test('armed and not dry — the push it attempts is the fixture\'s, and there is
 
 test('nothing under loop/ runs a push, so the handoff cannot be quietly reimplemented', () => {
   const offenders = [];
-  const skipLine = 'nothing committed, nothing pushed';
+  // The shared step's own disabled line, kept in step with `pulse/lib/
+  // publish.mjs` by hand. It changed on 2026-08-31 when committing stopped
+  // being gated by the publish flag; if it changes again and this string does
+  // not, this check goes quietly blind rather than failing, which is why the
+  // assertion below names it.
+  const skipLine = 'nothing pushed; committing is separate';
+  assert.ok(
+    readFileSync(join(DEFAULT_REPO_ROOT, 'pulse', 'lib', 'publish.mjs'), 'utf8').includes(skipLine),
+    'the line this check looks for is no longer the shared step\'s — update it here',
+  );
   const walk = (dir) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, entry.name);

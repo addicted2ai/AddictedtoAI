@@ -58,7 +58,28 @@ break the one-file-change property the swap depends on).
 
 Job worktrees are created **outside** the repository (default: the OS temp
 directory, override with `--worktree-root` or `LOOP_WORKTREE_ROOT`). They are
-scratch: everything resumption needs is committed to the branch.
+scratch: everything resumption needs is committed to the branch — the brief at
+`.job/brief.md`, and `.job/source.json` naming the work source the job was
+selected from. `.job/` is stripped from the branch before the merge, so it
+never reaches `main`.
+
+## Retiring what a run consumed
+
+Three directories beside `data/proposals/`, all read as records rather than
+selection state (`readProposals` reads top-level `.md` only, so a file in any
+of them is out of the pool):
+
+| Directory | Written by | Blocks a later filing of the same slug? |
+|---|---|---|
+| `rejected/` | the reviewer, the duplicate check, the self-amplification rule | **yes** — this one is the rejection index |
+| `dropped/` | the expiry sweep and the per-job candidate cap | no |
+| `consumed/` | a merged job retiring the proposal it was selected from | no |
+
+`consumed/` is the newest and the reason is measured: a proposal that had been
+written, reviewed and merged into a published post stayed selectable, and the
+next run picked the same one up again. Only a merged `done` outcome consumes a
+proposal; a discarded job's proposal stays in the pool, because what the
+reviewer rejected was the work and not the idea.
 
 ## What the loop reads from derived state
 

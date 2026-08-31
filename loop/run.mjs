@@ -40,7 +40,7 @@ import {
   mergeLocal,
   removeWorktree,
 } from './lib/git.mjs';
-import { scanJobBranches, readCommittedBrief } from './lib/resume.mjs';
+import { scanJobBranches, readCommittedBrief, readCommittedJobSource } from './lib/resume.mjs';
 import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './lib/health.mjs';
 import { runGates, unlinkNodeModules } from './lib/gates.mjs';
 import { isReissueRefusal, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
@@ -58,6 +58,7 @@ import { rederiveStep, DERIVED_PATHS } from './lib/rederive.mjs';
 import { markDirectiveDone } from './lib/directives.mjs';
 import {
   applyProposalMergeRules,
+  consumeProposal,
   sweepExpiredProposals,
   transcribeNotedProposal,
 } from './lib/proposals.mjs';
@@ -528,6 +529,13 @@ export async function runLoop(ctx, opts = {}) {
   let branch;
   let briefText;
   let resumed = false;
+  /**
+   * The proposal this job was selected from, if any — `{slug, path}` with an
+   * absolute `path`. Carried all the way to the merge, where a done outcome
+   * retires it (see `consumeProposal`). Null for directives, queue items, and
+   * for a resumed branch whose selection predates `.job/source.json`.
+   */
+  let proposalOrigin = null;
 
   if (resumeTarget) {
     resumed = true;
@@ -548,6 +556,14 @@ export async function runLoop(ctx, opts = {}) {
       ...jobSpendSoFar(ledger, jobId),
     });
     ctx.log(`resuming ${branch} (${resumeTarget.reason}, ${resumeTarget.ageDays.toFixed(1)} days old) — no retry consumed`);
+    // Where this job came from, read off the branch rather than remembered.
+    // Without it a resumed proposal job merges and leaves its proposal
+    // selectable, which is the same defect through the resumption door.
+    const origin = readCommittedJobSource(ctx.repoRoot, branch);
+    if (origin?.source === 'proposal' && origin.slug && origin.path) {
+      proposalOrigin = { slug: origin.slug, path: join(ctx.repoRoot, origin.path) };
+      ctx.log(`this branch records that it was selected from proposal \`${origin.slug}\` (${origin.path})`);
+    }
   } else {
     const sel = selectJob(ctx, { cfg, ledger, runner, dryRun: opts.dryRun });
     for (const w of sel.warnings) ctx.log(`WARNING ${w}`);
@@ -596,6 +612,9 @@ export async function runLoop(ctx, opts = {}) {
       ...jobSpendSoFar(ledger, jobId),
     });
     ctx.log(`selected: ${job.type} from ${job.source} — ${job.title}`);
+    if (job.source === 'proposal' && job.slug && job.path) {
+      proposalOrigin = { slug: job.slug, path: job.path };
+    }
   }
 
   ctx.log(`job id: ${jobId}`);
@@ -625,8 +644,30 @@ export async function runLoop(ctx, opts = {}) {
     mkdirSync(join(worktree, '.job'), { recursive: true });
     writeFileSync(join(worktree, '.job', 'brief.md'), briefText, 'utf8');
     gitTry(worktree, ['add', '.job/brief.md']);
+    // Where this job came from, written down rather than remembered. The brief
+    // is prose and says it too, but a mechanism that had to parse the prose of
+    // a brief to find a file path would be guessing. Repo-relative and POSIX,
+    // so it survives being read from a different worktree on a different
+    // machine. `.job/` is removed from the branch before the merge, so this
+    // never reaches `main`.
+    writeFileSync(
+      join(worktree, '.job', 'source.json'),
+      JSON.stringify(
+        {
+          job: jobId,
+          type: job.type,
+          source: job.source ?? null,
+          slug: proposalOrigin?.slug ?? null,
+          path: proposalOrigin ? relative(ctx.repoRoot, proposalOrigin.path).replace(/\\/g, '/') : null,
+        },
+        null,
+        2,
+      ) + '\n',
+      'utf8',
+    );
+    gitTry(worktree, ['add', '.job/source.json']);
     gitTry(worktree, ['commit', '--no-verify', '-m', `job ${jobId}: brief`]);
-    ctx.log(`committed .job/brief.md to ${branch} — the branch now carries everything resumption needs`);
+    ctx.log(`committed .job/brief.md and .job/source.json to ${branch} — the branch now carries everything resumption needs`);
   }
   const mergeBaseSha = mergeBase(ctx.repoRoot, base, branch);
 
@@ -659,6 +700,55 @@ export async function runLoop(ctx, opts = {}) {
   let mergedSha = null;
   /** Set when the derived tree was recomputed after a merge (addictedtoai-942). */
   let rederived = false;
+  /** Both halves of the consumed-proposal move, staged with the job's records. */
+  const consumedPaths = [];
+
+  // -------------------------------------------------------------------------
+  // THE LEDGER LINE IS WRITTEN BEFORE ANYTHING RECOMPUTES THE QUEUE FROM IT.
+  //
+  // It used to be written at the very end of the run, after `rederiveStep`. So
+  // the queue was recomputed from a ledger that did not yet contain the job
+  // that had just finished — and the derived queue is a function of the ledger
+  // for at least one item.
+  //
+  // MEASURED, 2026-08-30: the daily scout ran; its post-merge rederive
+  // recomputed a queue that still advertised `scout-due`, because
+  // `pulse/lib/queue.mjs` `scoutRanToday` reads the ledger and the scout's line
+  // was not in it yet; and the very next Desk run selected the scout AGAIN.
+  // 20.7 model-minutes on a duplicate daily sweep, and the "once per day"
+  // requirement in specs/pulse violated by the mechanism that implements it.
+  //
+  // The alternative — teaching the derivation about an in-flight job — would
+  // put a second, special-cased notion of "what has happened" beside the
+  // ledger, which is the file whose whole job is to be that notion. Writing the
+  // record when the outcome is known is the smaller and truer change.
+  //
+  // Idempotent, because it is called from two places: the merge path calls it
+  // before the rederive, and every other path falls through to the call at the
+  // foot of this function. The line is appended exactly once either way.
+  // -------------------------------------------------------------------------
+  let ledgerLine = null;
+  const recordOutcome = () => {
+    if (ledgerLine) return ledgerLine;
+    ledgerLine = appendLedger(
+      ctx,
+      makeLedgerLine({
+        id: jobId,
+        type: job.type,
+        runner: runner.id,
+        provider: runner.provider,
+        tier: runner.tier,
+        mm: result.mm ?? 0,
+        outcome,
+        note: result.note,
+        signal: result.signal,
+        phases: result.phases,
+        ts: ctx.now().toISOString(),
+      }),
+    );
+    ctx.log(`ledger: ${JSON.stringify(ledgerLine)}`);
+    return ledgerLine;
+  };
 
   if (outcome === 'approve') {
     // Housekeeping so job scaffolding never reaches main; the branch keeps it.
@@ -751,6 +841,13 @@ export async function runLoop(ctx, opts = {}) {
       // merge carries authored files, and the derivation happens once, here,
       // over the result. Any change it makes is committed with the job's
       // records below, so the tree is never left half-derived.
+      //
+      // The ledger line goes in FIRST. Part of the queue is derived from the
+      // ledger — `scoutRanToday` is read straight out of it — so a rederive
+      // that ran before the append would recompute the queue from a record of
+      // the world that omits the job that just finished, and re-advertise its
+      // work. See `recordOutcome` above for the measurement.
+      recordOutcome();
       const rederiveResult = await rederiveStep(ctx);
       rederived = rederiveResult.ok;
 
@@ -781,6 +878,49 @@ export async function runLoop(ctx, opts = {}) {
       } else if (subjects.length) {
         ctx.log(`could not record the reviewed files on the verdict record: ${wrote.why}`);
       }
+
+      // RETIRE THE PROPOSAL THIS JOB CONSUMED (observed 2026-08-30).
+      //
+      // A proposal selected, written, reviewed and merged into a published post
+      // stayed in `data/proposals/` and stayed selectable. The next `--dry-run`
+      // after the first post selected THE SAME PROPOSAL again; its `expires:`
+      // was a week out, so the loop would have rewritten that post on every run
+      // until then. Three were retired by hand in commit `5e226a6`; this is the
+      // mechanism that makes it stop being by hand.
+      //
+      // Only on a merged, DONE outcome, and `outcome` is already `'done'` here.
+      // A discarded job's proposal deliberately stays selectable: what was
+      // rejected was the work, not the idea.
+      //
+      // Placed before the build gate and the publish so that a publishing run
+      // pushes the retirement with the piece it produced; the move is also
+      // staged by exact path with the job's records at the foot of this
+      // function, which is what commits it on a run that does not publish.
+      if (proposalOrigin) {
+        const consumed = consumeProposal(ctx, {
+          path: proposalOrigin.path,
+          slug: proposalOrigin.slug,
+          jobId,
+          jobType: job.type,
+          artifacts: subjects,
+          mergedSha,
+        });
+        ctx.log(
+          consumed.moved
+            ? `retired the consumed proposal to ${consumed.dest}: ${consumed.why}`
+            : `the consumed proposal was not retired: ${consumed.why}`,
+        );
+        if (consumed.moved) {
+          // BOTH halves of the move, like the expiry sweep: staging only the
+          // destination leaves the deletion uncommitted and the proposal
+          // appears to exist in two places in the history.
+          consumedPaths.push(
+            relative(ctx.repoRoot, proposalOrigin.path).replace(/\\/g, '/'),
+            relative(ctx.repoRoot, consumed.dest).replace(/\\/g, '/'),
+          );
+        }
+      }
+
       const built = opts.noGates ? { ok: true } : (typeof opts.gates === 'function' ? opts.gates(ctx, ctx.repoRoot) : runGates(ctx, ctx.repoRoot, { scripts: ['build'] }));
       const red = checkBuildRed(ctx, { ok: built.ok, output: built.output ?? '' });
       if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
@@ -850,23 +990,9 @@ export async function runLoop(ctx, opts = {}) {
     ...transcribedPaths,
   ].map((p) => p.replace(/\\/g, '/'));
 
-  const line = appendLedger(
-    ctx,
-    makeLedgerLine({
-      id: jobId,
-      type: job.type,
-      runner: runner.id,
-      provider: runner.provider,
-      tier: runner.tier,
-      mm: result.mm ?? 0,
-      outcome,
-      note: result.note,
-      signal: result.signal,
-      phases: result.phases,
-      ts: ctx.now().toISOString(),
-    }),
-  );
-  ctx.log(`ledger: ${JSON.stringify(line)}`);
+  // A no-op on the merge path, which already recorded the outcome before its
+  // rederive; the append for every other path.
+  const line = recordOutcome();
 
   // Commit the loop's OWN records — the ledger line, the verdict record(s), the
   // directive marker — by exact path. The entire data/ tree is committed
@@ -875,9 +1001,10 @@ export async function runLoop(ctx, opts = {}) {
   // only: never `add -A` in the main working tree, which the maintainer or
   // another process may be mid-edit in.
   // `existsSync` is the right filter for every record the loop WRITES, and the
-  // wrong one for a file it MOVED: the sweep's source is gone by construction,
-  // and dropping it here would stage the addition without the deletion.
-  const staged = recordPaths.filter((p) => existsSync(join(ctx.repoRoot, p))).concat(sweptPaths);
+  // wrong one for a file it MOVED: the source of an expiry sweep or a consumed
+  // proposal is gone by construction, and dropping it here would stage the
+  // addition without the deletion.
+  const staged = recordPaths.filter((p) => existsSync(join(ctx.repoRoot, p))).concat(sweptPaths, consumedPaths);
   if (staged.length) {
     gitTry(ctx.repoRoot, ['add', '--', ...staged]);
     const has = gitTry(ctx.repoRoot, ['diff', '--cached', '--name-only']).stdout.trim();
