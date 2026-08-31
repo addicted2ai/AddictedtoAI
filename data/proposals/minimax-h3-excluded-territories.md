@@ -29,6 +29,8 @@ evidence: >
   returned HTTP 403 to direct fetch on 2026-08-31 and is cited here only as an
   unverified pointer to the weights' publication date.
 expires: 2026-09-07
+proposed_by_job: j-20260831-01
+proposed_by_type: scout
 ---
 
 ## Why now

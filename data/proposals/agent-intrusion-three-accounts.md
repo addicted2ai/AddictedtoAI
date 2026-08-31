@@ -28,6 +28,8 @@ evidence: >
   retrieved 2026-08-31. Fortune, https://fortune.com/2026/08/26/openai-publishes-technical-report-on-how-its-agents-hacked-hugging-face-here-are-the-main-takeaways-and-what-openai-left-out/
   retrieved 2026-08-31.
 expires: 2026-09-07
+proposed_by_job: j-20260831-01
+proposed_by_type: scout
 ---
 
 ## Why now
