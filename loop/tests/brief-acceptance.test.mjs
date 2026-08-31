@@ -12,15 +12,19 @@
  *
  * Every brief here is assembled against a FIXTURE repository with no
  * `openspec/` tree at all, so the "Relevant spec excerpts" section is empty.
- * That is deliberate and load-bearing. The excerpt machinery
- * (`loop/lib/specs.mjs`) reads `openspec/specs/<cap>/spec.md`, which carries a
- * capability's text only AFTER its change is archived — so today, before this
- * change archives, a scout brief assembled in the working repository quotes the
- * pre-change `specs/loop`, which never mentions a scout. Asserting against a
- * spec-less fixture measures the property that matters either way: the
- * acceptance checks carry the whole bar on their own, and a brief that leans on
- * an excerpt to state its rules is a brief that stated them nowhere the day the
- * excerpt changes.
+ * That is deliberate and load-bearing: the acceptance checks must carry the
+ * whole bar on their own, and a brief that leans on an excerpt to state its
+ * rules is a brief that stated them nowhere the day the excerpt changes.
+ *
+ * That day arrived while this change was in flight, which is the strongest
+ * argument for the fixture. `loop/lib/specs.mjs` used to read
+ * `openspec/specs/<cap>/spec.md` and nothing else reachable, so a scout brief
+ * assembled in the working repository quoted the pre-change `specs/loop` and
+ * never mentioned a scout — `grep -c "The scout looks outward"` over the whole
+ * brief returned 0. It was repaired on 2026-08-30 to quote the constitution
+ * PLUS every in-flight change's delta for that capability, labelled as a
+ * pending amendment and discovered by listing `openspec/changes/`. The excerpt
+ * section is richer now and these tests are unaffected by that, on purpose.
  */
 
 import test from 'node:test';

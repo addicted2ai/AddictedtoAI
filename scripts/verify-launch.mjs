@@ -36,10 +36,22 @@
  * The review check is deliberately strict about the same thing: it does not
  * count files in `data/reviews/`, it matches every seed prose piece to a
  * record, requires the verdict to be `approve`, requires `would-cite` to be
- * non-empty, and re-applies the loop's duplicate-`would-cite` rule — so this
- * check and `loop/lib/review.mjs`'s merge gate agree on what a valid record
- * is. A record nothing claims is reported as an orphan, because an orphan
- * beside a missing piece is a naming mismatch, not an absence.
+ * non-empty, re-applies the loop's duplicate-`would-cite` rule, and — on the
+ * job types the merge gate scopes the voice question to — requires the same of
+ * `reads-human`. So this check and `loop/lib/review.mjs`'s merge gate agree on
+ * what a valid record is. A record nothing claims is reported as an orphan,
+ * because an orphan beside a missing piece is a naming mismatch, not an
+ * absence.
+ *
+ * That sentence was FALSE by one rule between the `reads-human` gate landing
+ * and this being written, and the way it was false is the thing to keep in
+ * view: nothing was measurably wrong, because `content/blog/` held no posts, so
+ * the launch check had no post record to be lenient about. A drift with no
+ * present symptom is still a drift, and the symptom arrives with the first
+ * post. The scope (`READS_HUMAN_TYPES`) and the predicate (`needsReadsHuman`)
+ * are IMPORTED from the gate rather than restated here, so the next time the
+ * two rules differ it will be because someone changed one file, not because two
+ * copies quietly stopped matching.
  *
  * The naming this script settled — the canonical URL-derived form, three
  * accepted alternates, a front-matter subject field — now lives in
@@ -65,7 +77,11 @@ import { spawnSync } from 'node:child_process';
 import { ROOT, CONTENT_DIR, DATA_DIR, CONTENT_TYPES } from '../lib/paths.mjs';
 import { Diagnostics } from '../lib/errors.mjs';
 import { loadCorpus } from '../lib/corpus.mjs';
-import { normalizeWouldCite, VERDICTS } from '../loop/lib/verdict.mjs';
+import { normalizeField, normalizeWouldCite, VERDICTS } from '../loop/lib/verdict.mjs';
+// The voice bar's SCOPE, from the merge gate that enforces it. Importing the
+// predicate rather than testing `doc.type === 'post'` here is the whole point:
+// if the gate ever widens the rule, this check widens with it in the same edit.
+import { READS_HUMAN_TYPES, needsReadsHuman } from '../loop/lib/review.mjs';
 import {
   SUBJECT_KEYS,
   mismatchProblems,
@@ -471,6 +487,22 @@ function checkReviews(corpus, dataDir) {
   let approved = 0;
   const seenCite = new Map(); // normalized would-cite -> record name
 
+  // The voice bar's duplicate sweep. Built from EVERY record rather than
+  // accumulated across the loop the way `seenCite` is, because that is what the
+  // gate does: `existingFieldValues(ctx, jobId, 'readsHuman')` reads every file
+  // in `data/reviews/` and excludes only the record under judgment, so a post
+  // whose `reads-human` repeats the sentence in an entry's review is refused at
+  // merge. A sweep scoped to the posts alone would miss exactly that case and
+  // pass a record the gate rejects — which is the drift, in the other direction.
+  const voiceByValue = new Map(); // normalized reads-human -> record names
+  for (const rec of records.values()) {
+    const val = normalizeField(rec.verdict.readsHuman);
+    if (!val) continue;
+    if (!voiceByValue.has(val)) voiceByValue.set(val, []);
+    voiceByValue.get(val).push(rec.name);
+  }
+  const voiceHeld = pieces.filter((d) => needsReadsHuman(d.type)).length;
+
   for (const c of resolved.contended) {
     problems.push(`data/reviews/${c} — one record cannot be the review of two pieces.`);
   }
@@ -533,7 +565,46 @@ function checkReviews(corpus, dataDir) {
       );
       continue;
     }
+    // Recorded here, before the voice checks below, rather than after them: a
+    // sentence a record actually carries is taken by that record whether or not
+    // the record clears the rest of the gate, and the merge gate's sweep reads
+    // it the same way. Registering it only on a fully clean piece would let a
+    // later piece recycle a sentence the gate would have refused.
     seenCite.set(norm, rec.name);
+
+    // The voice question — `post` only, on the gate's own scope. specs/review
+    // holds a post's verdict to a non-empty, non-duplicate `reads-human` on the
+    // same terms and at the same point as `would-cite`, and the two rules are
+    // applied in that order here for the same reason the gate applies them in
+    // that order: a record missing both should say so once.
+    //
+    // This is the only place in the launch check where a rule bites a surface
+    // that is currently empty. That is not a reason to soften it — the check
+    // exists to be right on the day the surface fills, and the prebuild voice
+    // lint is advisory, so this field is the entire mechanical bar between
+    // machine-made prose and the live site.
+    if (needsReadsHuman(doc.type)) {
+      if (!v.readsHuman) {
+        problems.push(
+          `${doc.file}: ${rec.name} approves a ${doc.type} with an EMPTY \`reads-human\`. ` +
+            'specs/review: the voice question is asked, not merely available, and the merge gate ' +
+            'refuses this record (`reads-human-empty`). The prebuild voice lint only warns, so ' +
+            'this field is the bar.',
+        );
+        continue;
+      }
+      const twins = (voiceByValue.get(normalizeField(v.readsHuman)) ?? []).filter(
+        (n) => n !== rec.name,
+      );
+      if (twins.length) {
+        problems.push(
+          `${doc.file}: ${rec.name}'s \`reads-human\` is identical (after trimming) to the field ` +
+            `in ${twins.join(', ')}. specs/review refuses a recycled sentence at merge ` +
+            '(`reads-human-duplicate`); it does not become valid at launch.',
+        );
+        continue;
+      }
+    }
     approved += 1;
   }
 
@@ -566,6 +637,15 @@ function checkReviews(corpus, dataDir) {
         "the loop's merge gate agree on what a valid record is. The piece -> record lookup comes " +
         'from lib/reviews.mjs, so this check and the build\'s indexability rule agree on which ' +
         'record belongs to which piece.',
+      `The voice bar — a non-empty, non-duplicated \`reads-human\` — is applied to ${voiceHeld} ` +
+        `piece(s): the ${READS_HUMAN_TYPES.join(' / ')} type(s) loop/lib/review.mjs scopes it to, ` +
+        'imported rather than restated. Its duplicate sweep reads all ' +
+        `${voiceByValue.size} distinct \`reads-human\` value(s) across every record, not just the ` +
+        'post ones, because the merge gate does.' +
+        (voiceHeld === 0
+          ? ' NOTHING IS HELD TO IT THIS RUN — the surface is empty, so this rule is verified by ' +
+            'its tests and not by this corpus.'
+          : ''),
       nonCanonical.length
         ? `${nonCanonical.length} record(s) matched by an accepted alternate name rather than the ` +
           `canonical one: ${nonCanonical.slice(0, 6).join(', ')}` +

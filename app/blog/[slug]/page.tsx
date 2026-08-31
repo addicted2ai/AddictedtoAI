@@ -33,7 +33,16 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   if (!doc) notFound();
   return (
     <article>
-      <div dangerouslySetInnerHTML={{ __html: renderPostPage(doc) }} />
+      {/*
+        `changes` is what turns an anchor from "Recorded in this site's change
+        feed" into the event's own name plus the source it was read from
+        (lib/render/blog.mjs, specs/blog task 3.6). `site.changeLines` is the
+        raw `data/changes.jsonl` array the renderer indexes by `key` — not
+        `site.changes`, which is the rendered feed view.
+      */}
+      <div
+        dangerouslySetInnerHTML={{ __html: renderPostPage(doc, { changes: site.changeLines }) }}
+      />
       <div
         className="rails"
         dangerouslySetInnerHTML={{ __html: renderReferencedHere(doc, site.corpus.byId) }}

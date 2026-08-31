@@ -71,7 +71,14 @@ Every named file, symbol and line was verified to exist at HEAD on
 
 ## 2. The scout
 
-- [ ] **2.1 — Config first, then the closed list.** The `data/config.json`
+- [x] **2.1 — Config first, then the closed list.** *(Done 2026-08-30 at
+  `896ad93`; verified in `data/config.json` by reading the file:
+  `job_caps_minutes.scout` is `60`, `budget.categories.new_writing`
+  contains `scout`, and all three `degradation.shed_levels[]
+  .exclude_types` arrays contain it. `loop/lib/config.mjs` lists `scout`
+  in `JOB_TYPES`, and `selector-rules.test.mjs` asserts both directions —
+  a level-1 shed refuses it naming the rule, and with nothing shed the
+  selector selects it.)* The `data/config.json`
   half is a reserved path — the orchestrator's, never a Desk job's — and
   it is three edits, one already applied:
   - **Done 2026-08-30, verified**: `scout` added to all three
@@ -80,8 +87,8 @@ Every named file, symbol and line was verified to exist at HEAD on
     per-level `exclude_types` lists; budget categories feed only the
     ceiling — so without it `scout` stayed selectable at every shed
     level.
-  - **At execution start**: add `job_caps_minutes.scout: 60` (60, not the
-    30 first proposed — reason recorded in design D9.2) and `scout` to
+  - **Done 2026-08-30**: `job_caps_minutes.scout: 60` (60, not the
+    30 first proposed — reason recorded in design D9.2) and `scout` in
     the `budget.categories.new_writing` list.
   Then, and only then, `loop/lib/config.mjs` adds `scout` to `JOB_TYPES`.
   Order matters: `loadConfig` throws on any `JOB_TYPES` entry lacking a
@@ -90,7 +97,14 @@ Every named file, symbol and line was verified to exist at HEAD on
   Tests: config fixtures gain the key; a fixture lacking it still throws,
   naming `scout`; a degradation test asserts a level-1 shed excludes a
   `scout` candidate via the config's own arrays.
-- [ ] **2.2 — The Pulse derives the daily scout item.** In
+- [x] **2.2 — The Pulse derives the daily scout item.** *(Done 2026-08-30
+  at `896ad93`; verified: `pulse/lib/queue.mjs` exports `scoutItems` and
+  `scoutRanToday`, ranks `'scout-due': 62`, and sets
+  `SCOUT_CONTEXT_DAYS = 7`. `pulse/tests/scout-queue.test.mjs` — 22 tests,
+  all passing — covers derives-once, second-same-day-derives-nothing,
+  next-local-date-derives-again, the covers: join, and byte-identity on
+  unchanged state, including four timezone tests that straddle UTC
+  midnight in both directions.)* In
   `pulse/lib/queue.mjs`: derive one item of `type: 'scout'` exactly when
   `data/ledger.jsonl` records no `scout` job started on the current local
   date; rank constant 62 (below `corroboration` 68, above
@@ -101,7 +115,13 @@ Every named file, symbol and line was verified to exist at HEAD on
   event). Tests (fixture tree, pinned clock): derives once; second
   same-day run derives nothing; next local date derives again; the
   coverage join excludes covered lines; byte-identical on unchanged state.
-- [ ] **2.3 — The scout brief.** `ACCEPTANCE_BY_TYPE.scout` in
+- [x] **2.3 — The scout brief.** *(Done 2026-08-30 at `fa39d35`; verified:
+  `ACCEPTANCE_BY_TYPE.scout` exists in `loop/lib/brief.mjs` and the
+  assembled brief carries the charge, the two tests, the cap of three, the
+  docket fields, the drop-record rule and the `blocked: nothing cleared
+  the bar` sentinel — asserted against the assembled markdown, not the
+  table, by `loop/tests/brief-acceptance.test.mjs`.)*
+  `ACCEPTANCE_BY_TYPE.scout` in
   `loop/lib/brief.mjs`: the charge (bring back work the site could not
   have thought of by looking at itself — every candidate carries
   externally retrieved evidence with URLs and retrieval dates); judge
@@ -114,7 +134,15 @@ Every named file, symbol and line was verified to exist at HEAD on
   the recorded evidence; when nothing clears either branch, end
   `RESULT.md` with `blocked: nothing cleared the bar` — a success. Test:
   the assembled scout brief carries each of these.
-- [ ] **2.4 — Merge mechanics for candidates.** At the loop's merge step:
+- [x] **2.4 — Merge mechanics for candidates.** *(Done 2026-08-30 at
+  `fa39d35`; verified by `loop/tests/proposal-merge.test.mjs`, 13 tests
+  passing over throwaway git repositories, including the positive controls
+  the refusals need: a four-candidate scout merge keeps three and drops one
+  with a note, a three-candidate one drops nothing, a `post` job's `post`
+  proposal lands in `rejected/` with the pointer while the cross-type path
+  lands in `data/proposals/`, a discarded job's proposals die with the
+  branch, and a noting verdict produces a well-formed file where a
+  non-noting one produces none.)* At the loop's merge step:
   keep at most the job's allowed number of added proposal files (three
   for `scout`, one otherwise) by the job's stated ranking else filename,
   moving excess to `data/proposals/dropped/` with a note; stamp the
@@ -128,7 +156,13 @@ Every named file, symbol and line was verified to exist at HEAD on
   `post` job's `post` proposal lands in `rejected/` with the pointer; a
   discarded job's proposal vanishes with its branch; a noting verdict
   produces a well-formed file, a non-noting one produces nothing.
-- [ ] **2.5 — Expiry semantics in the proposals reader.** In
+- [x] **2.5 — Expiry semantics in the proposals reader.** *(Done 2026-08-30
+  at `fa39d35`; verified by `loop/tests/proposal-expiry.test.mjs`, 12 tests
+  passing: ripe immediately with an expiry and cooled without one, not
+  selectable at expiry and swept with a note, a dry run that moves nothing,
+  a malformed `expires:` skipped rather than read as "no expiry", and a
+  slug in `dropped/` that does not auto-discard a refiling where the same
+  slug in `rejected/` does. Three timezone tests hold the boundary.)* In
   `loop/lib/proposals.mjs`: a proposal with `expires:` is ripe without
   the 3-day cooling and never selectable at or past expiry; at expiry the
   reader sweeps it to `data/proposals/dropped/` with a note naming the
@@ -136,12 +170,22 @@ Every named file, symbol and line was verified to exist at HEAD on
   `rejected/` blocks slugs. Tests: fresh expiring proposal ripe
   immediately; expired one swept, not selectable; a slug present only in
   `dropped/` does not auto-discard a new filing.
-- [ ] **2.6 — The scout review checklist.** `CHECKLISTS.scout` in
+- [x] **2.6 — The scout review checklist.** *(Done 2026-08-30 at `fa39d35`;
+  verified: `CHECKLISTS.scout` exists in `loop/lib/review.mjs` and the
+  assembled scout review brief carries the charge-first ordering, the
+  evidence spot-fetch, the docket fields, the drop records and the cap.)*
+  `CHECKLISTS.scout` in
   `loop/lib/review.mjs`, from the review delta: charge first (all-inward
   candidates fail it as `spec-violation`), evidence spot-fetched, docket
   fields present, drop records name their tests, at most three filed.
   Test: the assembled scout review brief carries these.
-- [ ] **2.7 — The blocked streak gets its witness.** Per the loop delta's
+- [x] **2.7 — The blocked streak gets its witness.** *(Done 2026-08-30 at
+  `fa39d35`; verified: `lib/stamp.mjs` exports `blockedScoutStreak` and
+  `buildStamp` writes `blocked_scout_streak` after the four deploy-check
+  fields, leaving their names, order and values untouched — re-measured
+  2026-08-30 while repairing the `dirty` field beside it, and
+  `verify-surfaces`' `checkStamp()` still passes. Nothing in the repository
+  imports the number, which is the point.)* Per the loop delta's
   "blocked streak SHALL have a witness" clause: the build derives, from
   `data/ledger.jsonl`, the count of consecutive `scout` jobs whose
   recorded outcome is a `blocked:` result (reset by any scout run that
@@ -155,13 +199,35 @@ Every named file, symbol and line was verified to exist at HEAD on
 
 ## 3. The bar and the voice
 
-- [ ] **3.1 — The reason list and the voice field.** `REASONS` in
+- [x] **3.1 — The reason list and the voice field.** *(Done 2026-08-30 at
+  `fa39d35`; verified by `loop/tests/review-blog-bar.test.mjs` — blank
+  refused (`reads-human-empty`), duplicate refused
+  (`reads-human-duplicate`), every non-post type unaffected, and an
+  end-to-end loop run in which a post approved with a blank field does not
+  reach main. **Completed 2026-08-30 (wave 3)**: `scripts/verify-launch.mjs`
+  now applies the same two rules, importing `READS_HUMAN_TYPES` and
+  `needsReadsHuman` from the gate rather than restating the scope. Until
+  then the launch check and the merge gate disagreed by exactly this rule
+  while `verify-launch`'s own header claimed they agreed — invisible only
+  because `content/blog/` holds no posts. Measured across seven cases on
+  two fixture corpora: blank refused, duplicate refused, a near-duplicate
+  differing by one clause allowed, learn/tutorial records with no
+  `reads-human` untouched, and a post's field duplicating a *learn*
+  record's refused, because the gate's sweep reads every record and so does
+  this one.)* `REASONS` in
   `loop/lib/verdict.mjs` gains `reads-as-generated`. The merge gate
   requires, on `post` verdicts only, a non-empty `reads-human` field that
   is not an exact duplicate (after trimming) of any existing record's —
   the same two checks, at the same refusal point, as `would-cite`. Tests:
   blank refused; duplicate refused; non-post verdicts unaffected.
-- [ ] **3.2 — The post checklist.** `CHECKLISTS.post` in
+- [x] **3.2 — The post checklist.** *(Done 2026-08-30 at `fa39d35`;
+  verified: `CHECKLISTS.post` exists in `loop/lib/review.mjs`, the
+  assembled post review brief carries both forms and their finish lines,
+  points at `openspec/style/blog-voice.md`, and asks both questions in
+  those words — "the send question in `would-cite` ... and the voice
+  question in `reads-human`". A non-post brief carries no `reads-human`
+  demand it cannot be refused for, which is asserted type by type against
+  `needsReadsHuman`.)* `CHECKLISTS.post` in
   `loop/lib/review.mjs`, from the review delta: identify the form and
   apply its finish line (note: anchor holds with external anchors
   fetched, affected party named where one exists, brevity never a defect;
@@ -170,7 +236,13 @@ Every named file, symbol and line was verified to exist at HEAD on
   reads machine-made; answer the send question in `would-cite` and the
   voice question in `reads-human`. Test: the assembled post review brief
   carries these.
-- [ ] **3.3 — The post brief.** Rewrite `ACCEPTANCE_BY_TYPE.post` in
+- [x] **3.3 — The post brief.** *(Done 2026-08-30 at `fa39d35`; verified:
+  `ACCEPTANCE_BY_TYPE.post` is rewritten and the assembled post brief
+  carries the two forms and their finish lines, the anchor declaration, the
+  affected-party rule, "the world's AI, never this site", the voice
+  reference, and the unchanged final check — write nothing and report
+  `blocked:`. Asserted against the assembled markdown.)* Rewrite
+  `ACCEPTANCE_BY_TYPE.post` in
   `loop/lib/brief.mjs`: the two forms and their finish lines; declare the
   anchor (`covers:` and/or `anchor:`) for a note; name the affected party
   and what changes for them where one exists; the subject is the world's
@@ -179,24 +251,62 @@ Every named file, symbol and line was verified to exist at HEAD on
   stays what it is today — not worth an enthusiast's time means write
   nothing and report `blocked:`. Test: the assembled post brief carries
   each.
-- [ ] **3.4 — Anchor front-matter keys.** `postSchema` in `lib/schema.mjs`
+- [x] **3.4 — Anchor front-matter keys.** *(Done 2026-08-30 at `fa39d35`;
+  verified by `lib/render/blog.test.mjs`: both keys validate, each
+  malformed value fails naming its field, and all four new string-valued
+  paths are classified in `NON_PROSE_FIELDS` so the build's
+  field-classification gate stays satisfied rather than being trusted to
+  catch it elsewhere.)* `postSchema` in `lib/schema.mjs`
   (strict, so absent this task the keys fail the build) gains `covers:`
   (a list of `{key, date}` change-feed references) and `anchor:`
   (`{url, date}`). Tests: each validates; malformed values fail naming
   the field.
-- [ ] **3.5 — The anchor build check.** A prebuild `STEPS` check: a
+- [x] **3.5 — The anchor build check.** *(Done 2026-08-30 at `fa39d35`;
+  verified: `{ name: 'anchors', run: anchorCheckStep }` is registered in
+  `scripts/prebuild.mjs` between `content` and `post-voice`, and
+  `lib/anchors.test.mjs` covers both failures, the compliant post, and the
+  zero-post corpus. It ran in every `npm run build` below.)* A prebuild
+  `STEPS` check: a
   `covers:` reference resolving to no `data/changes.jsonl` line fails
   naming the post file and the reference; any declared anchor date
   outside the 7 days ending on the post's `date` — either direction —
   fails naming the post, the anchor, and the window. Tests: both
   failures; a compliant post passes; the post-deletion corpus (zero
   posts) is trivially clean.
-- [ ] **3.6 — The anchor renders.** `renderPostPage` in
+- [x] **3.6 — The anchor renders.** *(Done 2026-08-30 at `fa39d35`;
+  verified by `lib/render/blog.test.mjs`: a `covers:` post and an `anchor:`
+  post each render the dated, linked evidence line, a post declaring both
+  renders both with the unforgeable evidence first, and a synthesis renders
+  no block at all rather than an empty one. **Completed 2026-08-30 (wave
+  3)**: `app/blog/[slug]/page.tsx` now passes `{ changes: site.changeLines }`.
+  Until then the renderer accepted the option and the only call site never
+  supplied it, so every covered anchor on a real page would have rendered
+  the generic "Recorded in this site's change feed" instead of the event's
+  name and source. Measured on the `blog-anchors` fixture against the live
+  90-line feed: without the argument, two placeholder lines and no source
+  URL; with it, both keys resolve, the event is named and
+  `openai.com/index/gpt-5-6` is cited.)* `renderPostPage` in
   `lib/render/blog.mjs` shows a note's anchor — the primary evidence,
   dated, linked — on the page. Test: a fixture post with `covers:` and
   one with `anchor:` each render the evidence line; a synthesis renders
   none.
-- [ ] **3.7 — The voice lint, advisory.** New
+- [x] **3.7 — The voice lint, advisory.** *(Done 2026-08-30 at `3ecd581` /
+  `fa39d35`; verified by `scripts/check-post-voice.test.mjs`, 17 tests
+  passing: a post tripping every marker still leaves the step successful,
+  the step never throws whatever it is handed, entities are decoded before
+  counting, and the pinned corpora reproduce the calibration record's
+  per-document table **exactly — 0 mismatches of 12** across word counts,
+  semicolons, em-dashes, self-narration and What/Why/How headers, firing 12
+  of 12 at the union and 1 of 9 on the human sample. **Completed 2026-08-30
+  (wave 3)**: the third instrument artifact is now recorded in
+  `openspec/style/blog-voice-calibration.md` beside the other two, with the
+  headline result the record did not yet state. Re-measured before writing
+  it: joining multi-word markers with a literal space misses six
+  occurrences — `this post` five times and `labelled as such` once — and
+  puts four per-document self-narration counts below the record's; sparing
+  the one marker a coder would spell with `\s+` by habit gives five and
+  three, which is why the arithmetic is stated rather than the number
+  quoted.)* New
   `scripts/check-post-voice.mjs`, run from the prebuild `STEPS` array,
   **warning — never failing the build** — for `content/blog/` posts on
   the closed marker list documented in `openspec/style/blog-voice.md` §3
@@ -220,7 +330,13 @@ Every named file, symbol and line was verified to exist at HEAD on
   calibration record's recorded counts — 12 of 12 and 1 of 9 (the
   documented chrome artifact) at the union. A lint edit that silently
   moves either count fails these tests.
-- [ ] **3.8 — The brief's proposal rule.** Every assembled brief states
+- [x] **3.8 — The brief's proposal rule.** *(Done 2026-08-30 at `fa39d35`;
+  verified: `proposalRule` is exported from `loop/lib/brief.mjs` and
+  asserted in the assembled text for an ordinary type and for `scout`, with
+  the front-matter contract including `expires:`; the review brief asks the
+  reviewer to note a proposal its review surfaced, and
+  `proposal-merge.test.mjs` carries that noting through to a well-formed
+  file naming the reviewing job.)* Every assembled brief states
   the proposal rule binding its job — at most one as a side-output for
   ordinary jobs, the scout's own rule for `scout` — with the front-matter
   contract including `expires:`. The review brief asks the reviewer to
@@ -229,12 +345,35 @@ Every named file, symbol and line was verified to exist at HEAD on
 
 ## 4. Verification
 
-- [ ] **4.1 — Gates.** `npm test` and `npm run build` green at each
+- [x] **4.1 — Gates.** `npm test` and `npm run build` green at each
   section boundary;
   `openspec validate make-the-blog-worth-sending --type change --strict
   --no-interactive` passes; whoever publishes runs the full gate set per
   `CLAUDE.md`.
-- [ ] **4.2 — The machine end-to-end, on fixtures.** With a pinned clock
+
+  **Run 2026-08-30, wave 3, on `fa39d35` plus this wave's working tree.
+  Serially, never concurrently — two `next build` processes race over one
+  `.next/` (`addictedtoai-6s7`).**
+
+  | gate | command | result |
+  |---|---|---|
+  | tests | `npm test` | **652 pass, 0 fail**, 0 skipped, 117s |
+  | spec artifacts | `openspec validate make-the-blog-worth-sending --type change --strict --no-interactive` | `Change 'make-the-blog-worth-sending' is valid` |
+  | build | `npm run build` | exit 0; 599 pages exported; first-load JS 103 kB shared |
+  | launch minimums | `node scripts/verify-launch.mjs` | **15 checks passed, 0 failed**, its own build exit 0 in 29s |
+
+  `verify-launch` reported the blog surface honestly rather than
+  vacuously: `blog posts 0 (floor 0) — NO FLOOR`, and on the new voice
+  bar, *"applied to 0 piece(s) ... NOTHING IS HELD TO IT THIS RUN — the
+  surface is empty, so this rule is verified by its tests and not by this
+  corpus."* A check that says which of its rules had nothing to measure
+  is the difference between a green line and a measurement.
+
+  `verify-design`, `verify-surfaces`, `measure-payload` and
+  `verify-analytics` are the publisher's, per `CLAUDE.md`, and were not
+  run by this wave — stated rather than left to be assumed from the row
+  list above.
+- [x] **4.2 — The machine end-to-end, on fixtures.** With a pinned clock
   and a fixture tree: a Pulse run derives the scout item (and only one);
   a Desk dry-run selects it and its brief carries the context lines; a
   simulated scout branch with four candidates and two drop records merges
@@ -242,6 +381,45 @@ Every named file, symbol and line was verified to exist at HEAD on
   `dropped/`; an expiring candidate is ripe immediately and swept at
   expiry. Record the run — date, method, observed output — against this
   task when it is done.
+
+  **Run 2026-08-30, wave 3.** Method: the four legs as one invocation over
+  their own throwaway git repositories and fixture trees, each with a
+  pinned clock —
+
+  ```
+  node --test pulse/tests/scout-queue.test.mjs \
+              loop/tests/selector-rules.test.mjs \
+              loop/tests/brief-acceptance.test.mjs \
+              loop/tests/proposal-merge.test.mjs \
+              loop/tests/proposal-expiry.test.mjs
+  ```
+
+  Observed: **83 tests, 83 pass, 0 fail, 47.3s.** Leg by leg —
+
+  - *derivation*: with no scout in the ledger exactly one item is derived
+    at rank 62, between a corroboration disagreement and a due listing; a
+    scout recorded today derives nothing and the re-run is byte-identical;
+    the next local date derives one again. Four timezone tests straddle
+    UTC midnight in both directions, and a fifth asserts the fixture zones
+    really do straddle it — without which the four prove nothing.
+  - *selection and brief*: with nothing shed the selector selects a
+    `scout` item — the type is accepted end to end — and at shed level 1
+    it is refused by the config's own arrays, naming the rule in the
+    printed text. The assembled brief carries the charge, the two tests,
+    the cap, the docket and the drop-record rule.
+  - *merge*: a four-candidate scout merge keeps three by the job's
+    ranking and drops one with a note; the positive control, a
+    three-candidate merge, drops nothing.
+  - *expiry*: an expiring candidate is ripe the day it is filed while an
+    ordinary one of the same age is not; at expiry it stops being
+    selectable and is swept, and its neighbour is not.
+
+  Run **through the library over fixtures, never through `pulse/run.mjs`
+  or `loop/run.mjs`.** That is a constraint, not a shortcut, and it is
+  recorded because it bounds the claim: the production entry points would
+  invoke a real Pulse whose publish step pushes when publishing is armed.
+  What is measured here is every mechanism those entry points call, on
+  trees built for the purpose.
 
 ## 5. The record
 

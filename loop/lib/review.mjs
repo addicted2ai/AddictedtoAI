@@ -70,26 +70,23 @@ export function needsReadsHuman(type) {
  * revision pass against a reviewer's clerical failure spends an executor
  * invocation to fix a field.
  *
- * OPEN, AND MEASURED — a note left here because a note in a finished report
- * dies at compaction. `loop/run.mjs` still selects that branch by comparing
- * `gate.code` against the two would-cite literals by hand:
+ * CLOSED, AND THE MEASUREMENT IS KEPT because it is the reason the predicate
+ * exists. `loop/run.mjs` used to select that branch by comparing `gate.code`
+ * against the two would-cite literals by hand:
  *
  *     if (gate.code === 'would-cite-empty' || gate.code === 'would-cite-duplicate')
  *
- * so a `reads-human-*` refusal falls through to the revision path instead.
+ * so a `reads-human-*` refusal fell through to the revision path instead.
  * Measured on 2026-08-30 against a real fixture loop run: a `post` whose
  * reviewer approved with a blank `reads-human` was correctly refused
  * (`reads-human-empty`, nothing merged) but only after a wasted author
  * invocation and a second review, ending `discarded` rather than `failed`. The
- * refusal is right in both shapes and specs/review is satisfied either way —
- * what is wrong is spending an executor run to fix a reviewer's blank field.
+ * refusal was right in both shapes and specs/review was satisfied either way —
+ * what was wrong is spending an executor run to fix a reviewer's blank field.
  *
- * The whole fix is one line in `loop/run.mjs`:
- *
- *     if (isReissueRefusal(gate.code)) { ... }
- *
- * That file belonged to another lane while this landed, which is why the
- * predicate is exported and the literals are not repeated anywhere.
+ * `loop/run.mjs` now calls `isReissueRefusal(gate.code)`. The literals live
+ * here and nowhere else, so a fifth refusal code joins that branch by being
+ * added to this list.
  */
 export const REISSUE_CODES = Object.freeze([
   'would-cite-empty',
@@ -575,13 +572,14 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects }) {
   // else, because the voice lint is advisory and this verdict is the only thing
   // between machine-made prose and the live site.
   //
-  // NOT YET MIRRORED IN `scripts/verify-launch.mjs`, and recorded here because
-  // that file's own comment claims it and this gate "agree on what a valid
-  // record is": its review check re-applies the `approve`, non-empty
-  // `would-cite` and duplicate-`would-cite` rules, and knows nothing about
-  // `reads-human`. Nothing is measurably wrong today — `content/blog/` holds no
-  // posts, so the check has no post record to be lenient about — but the two
-  // ends have drifted by one rule and the drift grows the day a post lands.
+  // MIRRORED IN `scripts/verify-launch.mjs` since 2026-08-30. It was not, for
+  // the window between this gate landing and that repair, and the note is kept
+  // because the shape of the miss is worth keeping: nothing was measurably
+  // wrong, since `content/blog/` held no posts and the launch check therefore
+  // had no post record to be lenient about. The launch check now imports
+  // `READS_HUMAN_TYPES` and `needsReadsHuman` from this file rather than
+  // restating the scope, so the two ends can only differ by an edit to one of
+  // them.
   if (needsReadsHuman(type)) {
     if (!v.readsHuman) {
       return {

@@ -23,6 +23,7 @@ import { siteAssetsStep } from '../lib/site-assets.mjs';
 import { anchorCheckStep } from '../lib/anchors.mjs';
 import { checkPostVoiceStep } from './check-post-voice.mjs';
 import { acquireBuildLock, DEFAULT_WAIT_MS } from './build-lock.mjs';
+import { isDirty } from '../lib/stamp.mjs';
 
 /**
  * One build at a time (beads addictedtoai-6s7). This is the right place for it
@@ -52,6 +53,27 @@ try {
   process.stderr.write(`prebuild: BUILD LOCK\n${err?.message ?? err}\n`);
   process.exit(1);
 }
+
+/**
+ * THE CHECKOUT'S STATE, MEASURED BEFORE ANY STEP WRITES (beads addictedtoai-4w2).
+ *
+ * `dirty` in the build stamp means "this site was built from an uncommitted
+ * tree". It was measuring something else. The `content` step below rewrites
+ * eleven git-TRACKED files under `data/derived/` and regenerates
+ * `vercel.json`; only afterwards did `assets` run `git status --porcelain`, so
+ * the build dirtied the tree and then measured it. `data/derived/
+ * freshness.json` carries a local date and per-listing `age_days`, which makes
+ * that diff near-certain on any build that runs on a different calendar day
+ * from the last committed Pulse run — so a production build from a perfectly
+ * clean commit stamped itself `+dirty`.
+ *
+ * One line, here, before the loop: the answer is about the CHECKOUT, so it is
+ * taken while the checkout is still what git last saw. `built_at` and `commit`
+ * are untouched — `built_at` remains a wall-clock instant honestly carrying
+ * `Z`, one of this repository's three deliberate exceptions to its local-date
+ * rule, and `verify-surfaces`'s `checkStamp()` asserts all three unchanged.
+ */
+const checkoutDirty = isDirty();
 
 /** @type {{ name: string, run: () => Promise<void> | void }[]} */
 const STEPS = [
@@ -84,7 +106,7 @@ const STEPS = [
   // the pages: the build stamp, the search index, the standing tables' JSON
   // siblings, the feeds and the open dataset. Second, because every one of
   // them is derived from the corpus the step above just validated.
-  { name: 'assets', run: siteAssetsStep },
+  { name: 'assets', run: () => siteAssetsStep({ dirty: checkoutDirty }) },
 ];
 
 let failed = false;

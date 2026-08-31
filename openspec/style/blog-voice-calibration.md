@@ -88,8 +88,10 @@ entities (named and numeric); count words as whitespace-separated tokens
 containing an alphanumeric. For the human sample: the fetched text as-is,
 entities decoded, `#`-prefixed lines as headers.
 
-Two instrument artifacts were found and corrected during this derivation,
-recorded so the next measurer does not repeat them:
+Three instrument artifacts were found and corrected, recorded so the next
+measurer does not repeat them. The first two were found during this
+derivation; the third was found on 2026-08-30 while coding the lint against
+this table, which is what an implementation is for.
 
 - **The JSX closer leaks.** An extractor that keeps text past the last
   closing tag counts the `); }` of the component as one semicolon per post.
@@ -99,6 +101,27 @@ recorded so the next measurer does not repeat them:
   a real 3.28/1k to a reported 11.1/1k in the first derivation and 9.39/1k
   in the second. **Both previously reported semicolon maxima were this
   artifact.** Decode entities before counting.
+- **A phrase split over a line break is the same phrase.** Multi-word
+  markers joined with a literal space miss every occurrence a wrap has
+  broken. Measured over these twelve documents: **six occurrences missed —
+  `this post` five times and `labelled as such` once — putting four
+  per-document self-narration counts below the numbers in the table below**
+  (`california-detection-mandate` 23 against 26, and
+  `cyber-eval-cascade`, `gemini-3-7-flash` and `gpt-5-6-price-drop` one
+  low each). Match across arbitrary whitespace, newlines included. The
+  arithmetic is worth stating because it is easy to get a smaller answer
+  and think the artifact is smaller than it is: sparing the one marker a
+  coder is likely to spell with `\s+` anyway — `labelled as such` — leaves
+  five missed occurrences and three low documents, not six and four.
+
+**Closing this last gap made the table below exactly reproducible.** The
+lint (`scripts/check-post-voice.mjs`) measures the pinned extraction of
+these twelve documents and reproduces every per-document row — word count,
+semicolons, em-dashes, self-narration, What/Why/How headers — with **0
+mismatches of 12**, and reproduces the firing table below it too. That is
+asserted by `scripts/check-post-voice.test.mjs` against this file's numbers
+transcribed, so an edit to either side that breaks the agreement fails the
+suite rather than going unnoticed. Re-measured 2026-08-30.
 
 ## Per-document measurements
 
