@@ -32,6 +32,8 @@ evidence: >
   one-off. The RSP itself was not fetched during this job and is the entry
   job's first task; a `{{fact:...}}`-bound version and date belong on the entry
   rather than in prose, since the RSP is revised periodically.
+proposed_by_job: j-20260831-06
+proposed_by_type: post
 ---
 
 ## The gap, concretely
