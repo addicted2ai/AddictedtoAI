@@ -29,4 +29,6 @@ evidence: >
   after a binding — an edit made before binding is approved by osmosis. Fixed
   in j-20260831-11 by citing the model card's table (50.2 with tools vs 30.1
   plain, Gemini 3 Pro 37.5 top).
+proposed_by_job: j-20260831-11
+proposed_by_type: entry
 ---
