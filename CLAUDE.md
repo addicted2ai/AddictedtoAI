@@ -45,6 +45,22 @@ it back on when the tree is coherent again. Turning it *off* needs no
 justification at all; the honest bar for turning it back *on* is the same one
 that governs any push — **the gates pass**.
 
+**BROADENED 2026-08-30 to all of `data/config.json`.** The maintainer was asked
+for a narrow, one-edit grant to add `scout` to the three `degradation.shed_levels
+.exclude_types` arrays — a fix `make-the-blog-worth-sending`'s second review
+found, which no Desk job could make because the file is reserved. He granted the
+general form instead: **the orchestrator may edit `data/config.json` at its own
+judgment, between runs, without asking.**
+
+The bar and the boundary are unchanged from the publishing grant. Any edit that
+loosens a constraint carries the push bar — **the gates pass**. Any edit that
+tightens one needs no justification, exactly as turning publishing *off* needs
+none. And the rule this does **not** touch is the one below: a **job** still may
+not edit this file, and a job that tries still writes `HOLD.md`. That rule was
+never about permission — it exists so a run cannot rewrite its own budget,
+shedding or publishing mid-flight, which is a conflict of interest no grant to a
+different actor can transfer.
+
 **This does not weaken the reserved-path rule, and the difference is worth
 keeping straight.** `data/config.json` remains reserved: **no Desk job may edit
 it**, and a job that tries writes `HOLD.md`. That rule exists so a job cannot

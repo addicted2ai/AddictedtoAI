@@ -1,5 +1,5 @@
 {
-  "publish": true,
+  "publish": false,
   "budget": {
     "window_days": 30,
     "categories": {
@@ -43,7 +43,8 @@
         "capacity_events": 1,
         "exclude_types": [
           "post",
-          "education"
+          "education",
+          "scout"
         ],
         "interpret_material_only": false
       },
@@ -52,6 +53,7 @@
         "exclude_types": [
           "post",
           "education",
+          "scout",
           "entry",
           "tutorial"
         ],
@@ -62,6 +64,7 @@
         "exclude_types": [
           "post",
           "education",
+          "scout",
           "entry",
           "tutorial",
           "prune",
