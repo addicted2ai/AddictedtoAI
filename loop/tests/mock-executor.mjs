@@ -247,6 +247,16 @@ switch (mode) {
     result('done\n\nI had a look.\n');
     break;
 
+  // The reviewer analogue of the author's `produces-nothing` (beads
+  // addictedtoai-g8a): no verdict record, nothing on stdout, a non-zero
+  // exit — the unambiguous shape of a dead reviewer credential, as distinct
+  // from `review-nothing` above (which exits 0 having "had a look", standing
+  // in for a reviewer that engaged but forgot the record).
+  case 'review-produces-nothing':
+    process.stderr.write('MOCK-AUTH-FAILURE: the credential for this runner has expired\n');
+    process.exit(1);
+    break;
+
   // Asks for a revision AND writes a HOLD.md at the repository root while it is
   // running — standing in for the maintainer reaching for the brake mid-job, or
   // a concurrent process tripping a breaker. `startGate` guarantees no hold

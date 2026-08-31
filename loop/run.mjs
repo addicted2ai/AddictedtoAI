@@ -26,7 +26,7 @@ import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LED
 import { invocationAllowance, jobTotalMinutes, lanePause, minInvocationMinutes } from './lib/budget.mjs';
 import { selectJob, formatRefusals } from './lib/select.mjs';
 import { assembleBrief, invocationAccounting, resumeBrief } from './lib/brief.mjs';
-import { readResult, classifyRun, RESULT_FILENAME } from './lib/result.mjs';
+import { readResult, classifyRun, reviewProducedNothing, RESULT_FILENAME } from './lib/result.mjs';
 import { runExecutor, jobLogPath } from './lib/exec.mjs';
 import {
   addWorktree,
@@ -202,8 +202,17 @@ async function executeJob(ctx, opts) {
   // "written from intent rather than measurement" defect this repository keeps
   // catching.
   // -------------------------------------------------------------------------
+  // `signal` on a phase entry is optional and additive, the same way `signal`
+  // is on the ledger line itself (ledger.mjs) — and for the identical reason:
+  // it says something about the INVOCATION the outcome cannot carry. The one
+  // in use, again, is `no-output` (beads addictedtoai-g8a: a runner serving
+  // only as REVIEWER accrued no ledger lines at its own id, because the
+  // line-level `runner`/`signal` fields always name the AUTHOR — so its streak
+  // could never move however dead it was). health.mjs's `noOutputStreak` now
+  // reads a `review*`-role phase's own `signal` field the same way it reads
+  // the line's, per runner id.
   const phases = [];
-  const phase = (role, who, r, outcome) =>
+  const phase = (role, who, r, outcome, signal) =>
     phases.push({
       role,
       runner: who.id,
@@ -211,6 +220,7 @@ async function executeJob(ctx, opts) {
       killed: Boolean(r.killed),
       code: r.code ?? null,
       outcome,
+      ...(signal ? { signal } : {}),
     });
   /** Every exit from this function carries the phases recorded up to it. */
   const finish = (o) => ({ ...o, phases });
@@ -394,7 +404,21 @@ async function executeJob(ctx, opts) {
       pass,
       subjects: joinableSubjects(changedPathsWithStatus(ctx.repoRoot, base, branch)),
     });
-    phase(`review${pass}`, reviewer, rev.run, gate.ok ? 'approve' : gate.code);
+    // The reviewer analogue of the author's no-output detection (beads
+    // addictedtoai-g8a): no verdict record, not killed, and nothing on stdout
+    // — the shape of a reviewer that never really ran. Measured from `rev`,
+    // which already carries both halves (`recordWritten` from `runReview`'s
+    // own `existsSync`, and `run.stdout` from the executor). See
+    // `reviewProducedNothing`'s doc comment for why a malformed-but-present
+    // record does NOT count, and why `no-record` alone is not enough either.
+    const reviewerProducedNothing = reviewProducedNothing(rev.run, rev.recordWritten, reviewer);
+    if (reviewerProducedNothing) {
+      ctx.log(
+        `review pass ${pass} produced nothing at all: no verdict record and nothing on stdout. ` +
+          `Recording signal \`${NO_OUTPUT_SIGNAL}\` on this phase.`,
+      );
+    }
+    phase(`review${pass}`, reviewer, rev.run, gate.ok ? 'approve' : gate.code, reviewerProducedNothing ? NO_OUTPUT_SIGNAL : undefined);
     if (gate.ok) {
       ctx.log(`review: approve (would-cite recorded)`);
       return finish({ outcome: 'approve', mm, changed, verdict: gate.verdict, pass, diffText });

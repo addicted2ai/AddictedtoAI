@@ -71,15 +71,79 @@ export const NO_OUTPUT_SIGNAL = 'no-output';
 export const NON_RUN_OUTCOMES = Object.freeze(['abandoned']);
 
 /**
- * Consecutive trailing runs on this runner that produced nothing at all.
+ * THE RESIDUAL GAP (beads addictedtoai-g8a, found by the clause-by-clause
+ * audit that opened addictedtoai-pfv). A ledger LINE's own `runner` field
+ * always names the AUTHOR of that Desk run — `run.mjs` writes it from the
+ * `runner` variable, never the `reviewer` one — so a runner configured ONLY
+ * as a reviewer never once appears as `l.runner`. Filtering on that field
+ * alone, as this function used to, meant such a runner accrued no evidence at
+ * all: its streak was permanently zero and the refusal specs/loop promises
+ * "for the `author` and `reviewer` roles" could never fire for it.
  *
- * Only this runner's lines are considered, lines recording no invocation are
- * skipped (see NON_RUN_OUTCOMES), and any remaining line without the signal
- * ends the streak — a runner that produced anything is working, whatever the
- * outcome of the job was.
+ * MEASURED before this fix, on a ledger with a healthy author and three lines
+ * whose `phases` each carried a `review1` entry naming a reviewer id that
+ * never appears at the line level: `noOutputStreak(ledger,
+ * reviewerId).count === 0`.
+ *
+ * THE FIX READS `phases` TOO, which already carries what was missing —
+ * per-invocation `runner` and `outcome` — because `phases` was added for an
+ * unrelated reason (per-invocation budget caps, beads addictedtoai-59s) and
+ * happens to be exactly the record this needed. Only the writer
+ * (`run.mjs`'s `phase()`) needed one addition: a per-invocation `signal`
+ * field, set on a `review*`-role phase the same way the line-level `signal`
+ * is set for the author (see `reviewProducedNothing` in `result.mjs`) — the
+ * reader below was the only other thing that had to change.
+ *
+ * WHY ONLY `review*`-ROLE PHASES ARE READ, not `author` or `revision` ones.
+ * The author's own streak is, and remains, computed purely from the LINE
+ * level (`l.runner` / `l.outcome` / `l.signal`) exactly as before — that is
+ * the "author-side behaviour must be unchanged" bar, and it is met by never
+ * touching that code path. Also reading the `author` and `revision` phase
+ * entries for the author's own id would add a SECOND record per line for a
+ * runner that already gets one from the line itself, changing what a streak
+ * of "3" means for the author role. `review*` entries carry no such
+ * duplicate: nothing else in a ledger line ever represents a reviewer
+ * invocation, so adding them is pure gap-filling, not double-counting.
+ *
+ * WHY A MALFORMED VERDICT RECORD DOES NOT COUNT. `reviewProducedNothing`
+ * (`result.mjs`) requires an ABSENT record, not merely a bad one: a
+ * malformed `verdict:` field means a file was written, which is output, and
+ * proves the runner ran. The streak exists to catch a runner that CANNOT run
+ * at all (see the parent issue, addictedtoai-pfv) — a runner that writes a
+ * bad verdict is a quality problem, and `mergeGate`'s `malformed-verdict`
+ * code already fails that job, honestly, every time. Counting it toward this
+ * streak would let one poorly-formed review start disabling a runner that
+ * plainly works, which is a heavier and stickier consequence than the
+ * quality problem it would be punishing.
+ *
+ * Only this runner's records are considered — a line-level one when this
+ * runner served as author, plus any `review*`-role phase whose own `runner`
+ * matches, in the order they actually happened (line order, and within a
+ * line, phase order, since `phases` is pushed chronologically). Records
+ * carrying a NON_RUN_OUTCOMES outcome are skipped (see its doc comment); any
+ * remaining record without the signal ends the streak — a runner that
+ * produced anything, in any role, is working, whatever the outcome of the
+ * job was.
  */
+function invocationsFor(ledger, runnerId) {
+  const out = [];
+  for (const l of ledger) {
+    if (l.runner === runnerId) {
+      out.push({ id: l.id, outcome: l.outcome, signal: l.signal });
+    }
+    if (Array.isArray(l.phases)) {
+      for (const p of l.phases) {
+        if (!/^review/.test(p.role ?? '')) continue; // author/revision: see doc comment above
+        if (p.runner !== runnerId) continue;
+        out.push({ id: l.id, outcome: p.outcome, signal: p.signal });
+      }
+    }
+  }
+  return out;
+}
+
 export function noOutputStreak(ledger, runnerId) {
-  const mine = ledger.filter((l) => l.runner === runnerId);
+  const mine = invocationsFor(ledger, runnerId);
   let n = 0;
   const ids = [];
   for (let i = mine.length - 1; i >= 0; i--) {

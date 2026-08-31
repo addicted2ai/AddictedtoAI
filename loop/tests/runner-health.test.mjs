@@ -22,7 +22,7 @@ import { join } from 'node:path';
 
 import { runLoop } from '../run.mjs';
 import { readLedger } from '../lib/ledger.mjs';
-import { classifyRun } from '../lib/result.mjs';
+import { classifyRun, reviewProducedNothing } from '../lib/result.mjs';
 import {
   noOutputStreak,
   runnerHealthGate,
@@ -355,4 +355,227 @@ test('classifyRun tells an executor that never ran apart one that was cut off mi
   // A malformed RESULT.md means the executor got far enough to write a file.
   const wrote = classifyRun({ stderr: '', stdout: '', killed: false, code: 0 }, malformed, runner);
   assert.equal(wrote.producedNothing, false);
+});
+
+/* ---------------------------------------------------------------------------
+ * addictedtoai-g8a — a reviewer-only runner can never accumulate a no-output
+ * streak (found by the audit that opened addictedtoai-pfv, task 4.1).
+ *
+ * THE GAP. A ledger LINE's `runner` field always names the AUTHOR of that
+ * Desk run (`run.mjs` writes it from the `runner` variable, never
+ * `reviewer`), so `noOutputStreak`'s old `ledger.filter(l => l.runner ===
+ * runnerId)` could never match a runner used ONLY as reviewer — its streak
+ * stayed 0 forever, however dead it was. MEASURED against the pre-fix code,
+ * in a throwaway script outside this suite (not preserved as a test, since
+ * the code it measured no longer exists): three ledger lines exactly like
+ * `reviewerOnlyRepo` below produce, with a healthy author and `mock-reviewer`
+ * appearing only inside `phases`, `noOutputStreak(ledger,
+ * 'mock-reviewer').count === 0`.
+ *
+ * THE FIX. `phases` already carried a per-invocation `runner` and `outcome`
+ * for an unrelated reason (addictedtoai-59s, per-invocation budget caps) —
+ * real ledger lines on 2026-08-29/30 already show a `{"role":"review1",
+ * "runner":<some runner id>, ..., "outcome":"approve"}` phase entry naming
+ * the REVIEWER, not the author (verified against data/ledger.jsonl, not
+ * restated here by name: the runner id is runners.yml's alone to name — see
+ * portability.test.mjs). The only thing missing was a per-invocation
+ * `signal`, mirroring the line-level one, so
+ * `noOutputStreak` has something to read. `reviewProducedNothing`
+ * (`lib/result.mjs`) computes it for the reviewer role, `run.mjs`'s `phase()`
+ * writes it onto `review*`-role entries, and `noOutputStreak` (`lib/health.mjs`)
+ * now reads BOTH the line level (author, unchanged) and `review*`-role phase
+ * entries (new) for the runner id it is asked about.
+ * ------------------------------------------------------------------------ */
+
+/** A reviewer configured ONLY for the `reviewer` role — `runnersYaml`'s `mock-reviewer`. */
+function reviewerOnlyRepo(reviewerMode, authorMode = 'done-edit') {
+  const ctx = makeRepo({
+    runners: runnersYaml({ command: mockCommand(authorMode), reviewerCommand: mockCommand(reviewerMode) }),
+  });
+  writeQueue(ctx, [{ type: 'repair', title: 'a repair that would otherwise qualify' }]);
+  return ctx;
+}
+
+test('G8A the residual gap is real: a reviewer-only runner id never appears at the ledger-line level', async () => {
+  const ctx = reviewerOnlyRepo('review-produces-nothing');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'failed', ctx.output());
+  assert.match(ctx.output(), /no reviewer verdict recorded/);
+  const line = readLedger(ctx).at(-1);
+  assert.equal(line.runner, 'mock-frontier', 'the line names the AUTHOR, never the reviewer');
+  assert.notEqual(line.runner, 'mock-reviewer');
+  ctx.cleanup();
+});
+
+test('G8A a real reviewer-only invocation that produces nothing writes a per-phase no-output signal', async () => {
+  const ctx = reviewerOnlyRepo('review-produces-nothing');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'failed', ctx.output());
+  const line = readLedger(ctx).at(-1);
+  const review = (line.phases ?? []).find((p) => p.role === 'review1');
+  assert.ok(review, `a review1 phase was recorded: ${JSON.stringify(line)}`);
+  assert.equal(review.runner, 'mock-reviewer');
+  assert.equal(review.outcome, 'no-record');
+  assert.equal(review.signal, NO_OUTPUT_SIGNAL, 'the reviewer phase now carries the same signal the author phase would');
+  assert.match(ctx.output(), /review pass 1 produced nothing at all/);
+  assert.match(ctx.output(), /startup_failure_stderr_pattern matched|no verdict record and nothing on stdout/);
+  ctx.cleanup();
+});
+
+test('G8A three consecutive real reviewer-only failures build a streak the reader now sees, and the fourth attempt is refused', async () => {
+  const ctx = reviewerOnlyRepo('review-produces-nothing');
+  // Breaker 1 (three consecutive FAILED/DISCARDED jobs of the SAME type) is a
+  // real, independent guardrail and every `no-record` outcome below is
+  // `failed` — three of the same type would trip it first and halt the Desk
+  // with HOLD.md before this test ever reaches the fourth attempt. That is not
+  // this defect; rotate the queued job's TYPE for each attempt (breaker 1 is
+  // scoped per type, `budget.mjs` `consecutiveFailures`) so only the
+  // REVIEWER's cross-type streak is what gets exercised, exactly as
+  // `noOutputStreak` computes it — per RUNNER, not per job type.
+  const types = ['repair', 'verify', 'prune'];
+  for (let i = 1; i <= NO_OUTPUT_STREAK_LIMIT; i++) {
+    writeQueue(ctx, [{ type: types[i - 1], title: `a ${types[i - 1]} that would otherwise qualify` }]);
+    const r = await go(ctx);
+    assert.equal(r.outcome, 'failed', ctx.output());
+  }
+  const ledger = readLedger(ctx);
+  assert.equal(ledger.length, NO_OUTPUT_STREAK_LIMIT);
+  const streak = noOutputStreak(ledger, 'mock-reviewer');
+  assert.equal(streak.count, NO_OUTPUT_STREAK_LIMIT, ctx.output());
+  assert.equal(runnerHealthGate(ledger, 'mock-reviewer').ok, false);
+  // The author ran real work every time (a genuine diff, `done`) — its own
+  // streak must stay clean. This is not the author gate firing under another
+  // name (mirrors the C36 assertion in the h5k suite above).
+  assert.equal(runnerHealthGate(ledger, 'mock-frontier').ok, true);
+
+  // The fourth attempt refuses BEFORE either runner is invoked: no new branch,
+  // no new ledger line. (The three branches from the three REAL runs above are
+  // failed jobs' own branches, kept for inspection like any `failed` outcome —
+  // what must NOT grow by one more is the count itself.)
+  const branchesBefore = git(ctx.repoRoot, ['branch', '--list', 'job/*']).trim();
+  const refused = await go(ctx);
+  assert.equal(refused.rule, 'runner:produced-nothing', ctx.output());
+  assert.match(refused.refused, /mock-reviewer/, 'names the runner it refused');
+  assert.match(ctx.output(), /REFUSED \[runner:produced-nothing\]/);
+  assert.equal(readLedger(ctx).length, NO_OUTPUT_STREAK_LIMIT, 'the refused attempt appends no ledger line');
+  assert.equal(
+    git(ctx.repoRoot, ['branch', '--list', 'job/*']).trim(),
+    branchesBefore,
+    'no fourth branch was created for the refused attempt',
+  );
+  ctx.cleanup();
+});
+
+test('G8A reviewProducedNothing: silence and no record is nothing; a malformed record, a kill, or chatty stdout are not', () => {
+  const silent = { stdout: '', stderr: '', killed: false, code: 1 };
+  assert.equal(reviewProducedNothing(silent, false, {}), true, 'no record, not killed, silent stdout -> produced nothing');
+  assert.equal(reviewProducedNothing(silent, true, {}), false, 'a record exists (even a malformed one) -> not nothing: a file was written');
+  assert.equal(reviewProducedNothing({ ...silent, killed: true }, false, {}), false, 'killed at the cap is not "produced nothing"');
+  assert.equal(
+    reviewProducedNothing({ ...silent, stdout: 'thinking about the diff...' }, false, {}),
+    false,
+    'chatty stdout is output, even with no record written',
+  );
+  // A runner's own declared startup-failure pattern still forces it, exactly
+  // as classifyRun does for the author role.
+  const runner = { startup_failure_stderr_pattern: 'MOCK-AUTH-FAILURE' };
+  assert.equal(
+    reviewProducedNothing({ stdout: '', stderr: 'MOCK-AUTH-FAILURE: expired', killed: false, code: 1 }, false, runner),
+    true,
+  );
+});
+
+test('G8A a malformed verdict record is output, not silence — it does not feed the streak', () => {
+  // outcome `malformed-verdict` with NO `signal`: `mergeGate` found a file, it
+  // just did not parse. That is exactly the case `reviewProducedNothing` is
+  // built to exclude — see its doc comment in lib/result.mjs.
+  const malformed = (i) =>
+    ledgerLine({
+      id: `j-${i}`,
+      runner: 'mock-frontier',
+      outcome: 'failed',
+      phases: [
+        { role: 'author', runner: 'mock-frontier', mm: 3, killed: false, code: 0, outcome: 'done' },
+        { role: 'review1', runner: 'mock-reviewer', mm: 1, killed: false, code: 0, outcome: 'malformed-verdict' },
+      ],
+    });
+  const ledger = [malformed(1), malformed(2), malformed(3)];
+  assert.equal(noOutputStreak(ledger, 'mock-reviewer').count, 0);
+  assert.equal(runnerHealthGate(ledger, 'mock-reviewer').ok, true);
+});
+
+test('G8A one reviewer invocation that produces real output clears the reviewer-only streak — and the streak resumes correctly afterward', () => {
+  const noOut = (i) =>
+    ledgerLine({
+      id: `j-${i}`,
+      runner: 'mock-frontier',
+      outcome: 'failed',
+      phases: [
+        { role: 'author', runner: 'mock-frontier', mm: 3, killed: false, code: 0, outcome: 'done' },
+        { role: 'review1', runner: 'mock-reviewer', mm: 1, killed: false, code: 1, outcome: 'no-record', signal: NO_OUTPUT_SIGNAL },
+      ],
+    });
+  const worked = ledgerLine({
+    id: 'j-9',
+    runner: 'mock-frontier',
+    outcome: 'discarded',
+    phases: [
+      { role: 'author', runner: 'mock-frontier', mm: 3, killed: false, code: 0, outcome: 'done' },
+      { role: 'review1', runner: 'mock-reviewer', mm: 1, killed: false, code: 0, outcome: 'reject' },
+    ],
+  });
+  assert.equal(noOutputStreak([noOut(1), noOut(2), noOut(3)], 'mock-reviewer').count, 3);
+  // A real verdict (however unfavourable) ends the streak completely...
+  assert.equal(noOutputStreak([noOut(1), noOut(2), worked], 'mock-reviewer').count, 0);
+  // ...and one no-output invocation after it starts counting again from 1, not
+  // from wherever it left off. An off-by-one here would refuse a reviewer that
+  // just proved it works.
+  assert.equal(noOutputStreak([noOut(1), worked, noOut(2)], 'mock-reviewer').count, 1);
+});
+
+test('G8A old ledger lines with no `phases` field at all are inert for a reviewer id, and do not throw', () => {
+  const old = ledgerLine({ id: 'j-old-1', runner: 'mock-frontier', outcome: 'done' }); // genuinely no `phases` key
+  assert.equal(Object.prototype.hasOwnProperty.call(old, 'phases'), false);
+  assert.doesNotThrow(() => noOutputStreak([old, old, old], 'mock-reviewer'));
+  assert.equal(noOutputStreak([old, old, old], 'mock-reviewer').count, 0);
+  assert.equal(runnerHealthGate([old, old, old], 'mock-reviewer').ok, true);
+});
+
+test('G8A author-side streak behaviour is byte-for-byte unchanged: line-level only, unaffected by other runners\' review phases', () => {
+  const authorEmpty = (i) =>
+    ledgerLine({ id: `j-a${i}`, runner: 'mock-frontier', outcome: 'interrupted', signal: NO_OUTPUT_SIGNAL });
+  // The exact fixture the pre-existing "one run that produces anything clears
+  // the streak" test above uses, reproduced here to anchor this test to that
+  // one rather than merely asserting a number.
+  const worked = ledgerLine({ id: 'j-9', runner: 'mock-frontier', outcome: 'blocked' });
+  assert.equal(noOutputStreak([authorEmpty(1), authorEmpty(2), authorEmpty(3)], 'mock-frontier').count, 3);
+  assert.equal(noOutputStreak([authorEmpty(1), authorEmpty(2), worked], 'mock-frontier').count, 0);
+  assert.equal(noOutputStreak([authorEmpty(1), worked, authorEmpty(2)], 'mock-frontier').count, 1);
+
+  // And now with an UNRELATED runner's review-phase noise riding along on
+  // every line — the whole point of the fix is that this noise is read for
+  // ITS OWN runner id, never folded into the author's count.
+  const withOtherReviewNoise = (i) =>
+    ledgerLine({
+      id: `j-a${i}`,
+      runner: 'mock-frontier',
+      outcome: 'interrupted',
+      signal: NO_OUTPUT_SIGNAL,
+      phases: [
+        { role: 'author', runner: 'mock-frontier', mm: 0, killed: false, code: 1, outcome: 'interrupted' },
+        { role: 'review1', runner: 'mock-other-lane', mm: 4, killed: false, code: 0, outcome: 'approve' },
+      ],
+    });
+  assert.equal(
+    noOutputStreak([withOtherReviewNoise(1), withOtherReviewNoise(2), withOtherReviewNoise(3)], 'mock-frontier').count,
+    3,
+    'a review phase for a DIFFERENT runner id does not change the author streak',
+  );
+  // And that other runner's OWN streak reads its review phase, unaffected by
+  // the author-level `mock-frontier` signal riding on the same lines.
+  assert.equal(
+    noOutputStreak([withOtherReviewNoise(1), withOtherReviewNoise(2), withOtherReviewNoise(3)], 'mock-other-lane').count,
+    0,
+    'mock-other-lane produced a real approve every time',
+  );
 });

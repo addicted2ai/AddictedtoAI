@@ -202,3 +202,45 @@ export function classifyRun(run, fileResult, runner) {
     startupFailure,
   };
 }
+
+/**
+ * The REVIEWER-role analogue of `classifyRun`'s `producedNothing` (beads
+ * addictedtoai-g8a). A reviewer has no `RESULT.md` and no branch diff to read
+ * — its worktree is thrown away unconditionally (`runReview`, "no edit
+ * rights, as a mechanism") — so its only durable output is the verdict record
+ * at `outPath`, and its only other channel is what it said on stdout before
+ * exiting. Silence on both is the same shape `classifyRun` treats as "did not
+ * run at all": no file, not killed, nothing said.
+ *
+ * `recordWritten` is the caller's own `existsSync(outPath)` measurement
+ * (`runReview` already returns it), not re-derived here, for the same reason
+ * `classifyRun` takes `fileResult` rather than reading the filesystem itself:
+ * one measurement, used by both the merge gate and this.
+ *
+ * DELIBERATELY NOT the same as "the merge gate refused with `no-record`".
+ * `no-record` also fires for a reviewer that talked at length on stdout and
+ * simply forgot to write the file — that reviewer plainly ran, so it is a
+ * protocol/quality problem for the review gate to keep failing honestly, not
+ * evidence the runner cannot run. Requiring BOTH an absent record AND silence
+ * is what keeps that case out.
+ *
+ * A MALFORMED verdict record (the file exists but does not parse into
+ * `approve`/`revise`/`reject`) is further still — it is not "produced
+ * nothing" at all: a file was written. `recordWritten` is `existsSync`, not
+ * "parses", precisely
+ * so a malformed record scores as output here — a bad verdict is a quality
+ * problem the review gate already handles (`mergeGate`'s `malformed-verdict`
+ * code), and conflating "wrote something bad" with "never ran" would let one
+ * poorly-formed verdict start disabling a runner that plainly works.
+ *
+ * @param {object} run   result of runExecutor(): { killed, code, stderr, stdout }
+ * @param {boolean} recordWritten  whether a verdict file exists at the path the review brief named
+ * @param {object} runner  the runners.yml entry for the REVIEWER role
+ */
+export function reviewProducedNothing(run, recordWritten, runner) {
+  const silent = String(run.stdout ?? '').trim() === '';
+  const producedNothing = !recordWritten && !run.killed && silent;
+  const startPattern = runner?.startup_failure_stderr_pattern;
+  const startLine = startPattern ? matchingLine(run.stderr, startPattern) : null;
+  return producedNothing || Boolean(startLine);
+}
