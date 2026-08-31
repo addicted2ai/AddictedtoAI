@@ -40,6 +40,75 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * They read no clock and no window. Their only input beyond the config is the
  * job's own accumulated spend, which the caller gets from `jobSpendSoFar()` —
  * the ledger, which is the only durable record of what an earlier run cost.
+ *
+ * RULED 2026-08-31 (beads addictedtoai-z7a, the maintainer's delegated
+ * decision): THE GUARANTEE IS HONEST ONLY IF STATED PRECISELY. "A job cannot
+ * spend more than its total, counting what the ledger records" is true of the
+ * mechanism above; "counting what the job cost" is not, and this paragraph is
+ * that distinction written down where the bound is defined, per the issue's
+ * own framing.
+ *
+ * THE HOLE, restated: `run.mjs` writes the job's ledger line (via its
+ * `recordOutcome()`) only after an invocation returns. Model-minutes are
+ * measured by the loop's own clock, inside the loop's own process
+ * (`lib/exec.mjs`). A process that dies before that write — SIGKILL from
+ * outside, a machine reboot, power loss — contributes ZERO recorded spend for
+ * that invocation, even though it may have run for most of its cap and left
+ * partial work committed to the branch (which `scanJobBranches` correctly
+ * finds resumable). The measurement and the process that would record it die
+ * together.
+ *
+ * WHAT WAS MEASURED BEFORE RULING, per the issue's own instruction to price
+ * this against what remains rather than what it used to be. `addictedtoai-1yt`
+ * removed `loop/run.mjs`'s `process.exit()` call the same day this issue was
+ * filed, and the issue text suggested that removal closed "one real way to
+ * die before writing". Read against `run.mjs`'s actual control flow, it does
+ * not, for a narrower and more precise reason than "the crash was fixed":
+ * that `process.exit()` was called exactly once, at the top of `main()`'s
+ * `.then()`, strictly AFTER `runLoop()` returns — and on the only path that
+ * ever reaches a `fetch()` call (`publishStep`, inside the merged/`done`
+ * branch), `recordOutcome()` is called explicitly BEFORE `rederiveStep()` and
+ * BEFORE `publishStep()` (see the "THE LEDGER LINE IS WRITTEN BEFORE ANYTHING
+ * RECOMPUTES THE QUEUE FROM IT" comment lower in `run.mjs`). So even under the
+ * pre-1yt code, that specific crash could only fire after the ledger line for
+ * the run in question had already been written to disk and already committed
+ * to git — it could not have been the cause of a lost line. What 1yt actually
+ * fixed is a DIFFERENT harm: a run that crashed there reported the wrong EXIT
+ * CODE (0xC0000409 instead of the real one), not a lost ledger line. Recorded
+ * here rather than as an edit to `addictedtoai-1yt`'s own (closed) text, per
+ * this repository's rule that a note inside something already closed is a
+ * note that is already lost — this comment, in a file this loop actually
+ * reads, is the durable place for it.
+ *
+ * So the residual risk this bound cannot close is unchanged by 1yt: a process
+ * killed from OUTSIDE this program — not by anything `loop/` itself does —
+ * during the awaited span between an invocation starting and `recordOutcome()`
+ * running. No application-level mechanism inside this process can close that
+ * gap in general, because the same kill that loses the spend record would
+ * just as readily lose a heartbeat line written to try to capture it first —
+ * the write and the process that would make it die together either way.
+ *
+ * OPTIONS WEIGHED, per the issue, and why none is taken:
+ *  - A heartbeat line at invocation START, superseded by the real line at the
+ *    end. Closes SOME of the gap (a heartbeat's own write is smaller and
+ *    earlier, so it is less likely to race the kill) but introduces a SECOND
+ *    notion of "what has happened" beside the ledger — exactly what the
+ *    ledger-before-rederive fix (`addictedtoai-942`) argued against adding,
+ *    for the same reason: two records of history that can disagree is worse
+ *    than one record with a known, stated limit.
+ *  - A flat penalty charged to a resumed branch for each ledger line missing
+ *    relative to its commit count. It is an ESTIMATE, and this repository's
+ *    rule (`data/derived/` is a pure function of state; nothing here is a
+ *    prediction) does not put estimates on the ledger — the whole reason MM is
+ *    measured wall-clock rather than modelled from tokens.
+ *  - RULED: accept it, and state the limit here, where the bound is defined —
+ *    which is what this paragraph is. No measured incident supports building
+ *    machinery for this: no resumed branch has ever shown evidence of spend
+ *    the ledger did not record (checked against `data/ledger.jsonl` and the
+ *    live `job/*` branches, 2026-08-31 — every branch with a job id has a
+ *    matching ledger line). Building either alternative would be inventing
+ *    machinery for a risk this repository cannot currently measure, which the
+ *    ruling above this one (dyw) declines to do for the same reason.
  * ------------------------------------------------------------------------ */
 
 /**
@@ -177,13 +246,38 @@ export function warmUpJobs(cfg) {
 /**
  * The warm-up denominator: the smallest window a *share* means anything in.
  *
- * READING, recorded rather than hidden — this is the fix for the defect found
- * by running the loop (beads addictedtoai-3on), and it is a reading of
- * specs/loop rather than a quotation of it. specs/loop says a category's share
- * is its MM divided by the tier's total MM over the rolling 30 days. After
- * exactly one real job that arithmetic said `new_writing 100.0%`, so the 45%
- * ceiling refused every subsequent entry, tutorial, post and education job for
- * a month. The rule is right; at n=1 it has no meaning, because a share is a
+ * RULED 2026-08-31 (design D8, beads addictedtoai-tr8 — the maintainer's
+ * delegated decision, adopted as Option A from design.md: "adopt the
+ * implemented reading"). This was carried for a day as "a reading, recorded
+ * rather than hidden... this decides NOTHING about which denominator is
+ * correct" while D8 stayed open; it no longer is. The mechanism below is
+ * UNCHANGED by the ruling — it was already the recommended shape — what
+ * changed is that it is now the decided answer, not a placeholder for one.
+ * WHY THIS READING AND NOT THE TWO ALTERNATIVES design.md weighed: (B) revert
+ * to the literal spec arithmetic reintroduces the exact defect
+ * addictedtoai-3on measured — one job saturating a category for 30 days —
+ * which is a worse failure than a stated substitution; (C) suspend ceilings
+ * until the window holds N jobs trades a smooth warm-up for a cliff, binding
+ * on nothing and then fully at job N+1, which is a harder thing to explain to
+ * an operator than "measured against the larger of two denominators, both
+ * named". WHERE THE WARM-UP NUMBER LIVES, ALSO RULED: derived from
+ * `job_caps_minutes` and the tightest configured ceiling, exactly as
+ * implemented, not a `data/config.json` key — both inputs are already
+ * configuration, so a maintainer who edits a cap or a ceiling gets a coherent
+ * warm-up without editing a third number, and a config key would add a fifth
+ * key group to the four `build-initial-site` task 1.3 verifies. The
+ * corresponding requirement text (drafted in the archived
+ * `harden-seed-wave-guardrails` design.md as "DRAFT — NOT ADOPTED") belongs in
+ * `openspec/specs/loop/spec.md`, a reserved path this file may not edit; the
+ * OpenSpec change to land it is filed separately as beads addictedtoai-fq4a.
+ *
+ * WHAT FOLLOWS BELOW is the reasoning as it was recorded while the question
+ * was still open, kept because the arithmetic and its motivation have not
+ * changed — only its status has. specs/loop says a category's share is its MM
+ * divided by the tier's total MM over the rolling 30 days. After exactly one
+ * real job that arithmetic said `new_writing 100.0%`, so the 45% ceiling
+ * refused every subsequent entry, tutorial, post and education job for a
+ * month. The rule is right; at n=1 it has no meaning, because a share is a
  * share OF something and one job is not a something.
  *
  * The existing code already took this reading for the empty case (`0/0` is
@@ -223,6 +317,61 @@ export function warmUpJobs(cfg) {
  * The upkeep FLOOR is deliberately left alone: a floor measured on a thin
  * window errs toward doing upkeep, which is the safe direction, and it already
  * binds only when an upkeep job is actually available. One upkeep job clears it.
+ *
+ * RULED 2026-08-31 (beads addictedtoai-dyw, tied to D8 above): what
+ * `largestCapMinutes(cfg)` MEASURES, corrected. Every "one maximum-length job"
+ * above was written before `addictedtoai-o5t` bounded a job's TOTAL spend at
+ * `JOB_TOTAL_CAP_MULTIPLIER` (2) times its per-invocation cap — before that, a
+ * job's length was open-ended (four invocations at the cap, unbounded), so
+ * "one maximum-length job" was a reasonable stand-in for "one maximum-length
+ * invocation", the two having no exact relationship worth stating. `o5t` made
+ * the gap exact and nameable: a maximum-length JOB (author + revision + two
+ * reviews, each possibly at the full per-invocation cap until the total bites)
+ * can now reach `largestCapMinutes(cfg) × JOB_TOTAL_CAP_MULTIPLIER` — 240
+ * minutes against today's config, not 120 — while this function still returns
+ * the length of one INVOCATION at the largest per-type cap. The property this
+ * comment claimed — "one maximum-length job still binds the tightest ceiling"
+ * — has therefore been overstated since `o5t` landed: measured against a true
+ * maximum-length JOB, `warmUpMm(cfg)` (600 MM at today's config) is only 2.5
+ * such jobs, not 10, and the ceiling binds roughly twice as hard during
+ * warm-up as the words above claim.
+ *
+ * TWO WAYS TO SETTLE IT, per the issue: (a) redefine "maximum-length job" to
+ * mean `jobTotalMinutes(cfg, type)` and re-derive `warmUpJobs()` so the stated
+ * property holds exactly again — which would DOUBLE the warm-up denominator
+ * (1200 MM instead of 600 at today's config), a real loosening of every
+ * ceiling during warm-up, not a wording fix; or (b) declare the denominator's
+ * unit is deliberately one INVOCATION at the largest per-type cap, not one
+ * whole job with its possible revision and delta review, and correct the
+ * words rather than the arithmetic.
+ *
+ * RULING: (b). NO NUMBER CHANGES — `warmUpMm(cfg)` is unchanged, still
+ * `warmUpJobs(cfg) × largestCapMinutes(cfg)` (600 MM / 1200 MM at today's cheap
+ * / frontier configs, per `job-budget.test.mjs` and `budget.test.mjs`'s own
+ * fixtures). No ceiling loosens or tightens: BEFORE this ruling and AFTER it,
+ * `warmUpMm()` returns the identical value for every config measured
+ * (`tightestCeilingPct`, `warmUpJobs`, `largestCapMinutes` are all read-only
+ * here — nothing below this comment was edited). The reasons: (1) doubling
+ * the warm-up window is a budget-POLICY change — it lets a category spend
+ * twice as much before its ceiling binds during warm-up — and `o5t`'s mandate
+ * was to ADD a bound on a job's total, not to relax three unrelated ceilings;
+ * a decision with that effect deserves its own measurement of what it costs
+ * upkeep and new-writing headroom, which nobody has made. (2) The direction of
+ * the existing overstatement is safe, not merely tolerable: a SMALLER
+ * denominator makes every ceiling bind HARDER, so the warm-up window is
+ * currently stricter than the (corrected) property intends, never looser —
+ * the same direction `tierShares`' own `0/0` handling and the whole warm-up
+ * mechanism already err in. (3) The warm-up window is temporary by
+ * construction: the moment a tier's observed total exceeds it, the
+ * denominator becomes the observed total and this whole question stops
+ * applying — a category that finds warm-up too tight for long is, by
+ * definition, no longer in warm-up. (4) No measured harm exists to weigh
+ * against the cost: nothing on `data/ledger.jsonl` has ever been refused by
+ * the warm-up ceiling binding "too hard" — there is no incident to fix, only
+ * a comment that overstated its own guarantee. So this is a documentation
+ * correction, not a behaviour change: `largestCapMinutes(cfg)` below measures
+ * one maximum-length INVOCATION at the largest per-type wall-clock cap, and
+ * every "job" in the paragraphs above should be read that way now.
  */
 export function largestCapMinutes(cfg) {
   const caps = Object.values(cfg?.job_caps_minutes ?? {}).filter(
@@ -247,12 +396,15 @@ export function warmUpMm(cfg) {
  * invisible, because a refusal printed a percentage and a percentage hides its
  * own denominator.
  *
- * This decides NOTHING about which denominator is correct — that is design D8,
- * the maintainer's open decision. It makes the answer impossible to hide either
- * way: a substituted denominator announces itself, names the value it replaced,
- * and says where it came from, so a refusal is reconstructible from its own
- * text. An origin that is merely true is not enough; the refusal has to be
- * readable by whoever is looking at a job that did not run.
+ * Design D8 (beads addictedtoai-tr8) — which denominator is correct — is now
+ * RULED (see `warmUpMm()` above): the warm-up substitution below is the
+ * decided answer, not an undecided reading. What this function does is
+ * independent of that ruling either way and would be worth keeping even if D8
+ * had gone the other way: it makes the answer impossible to hide — a
+ * substituted denominator announces itself, names the value it replaced, and
+ * says where it came from, so a refusal is reconstructible from its own text.
+ * An origin that is merely true is not enough; the refusal has to be readable
+ * by whoever is looking at a job that did not run.
  *
  * @param {object} cfg
  * @param {object} shares  from tierShares()

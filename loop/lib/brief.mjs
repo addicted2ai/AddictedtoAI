@@ -13,7 +13,7 @@
 
 import { RESULT_PROTOCOL_INSTRUCTION } from './result.mjs';
 import { excerptsFor, PROSE_TYPES } from './specs.mjs';
-import { JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
+import { BRIEF_EXCERPT_MAX_CHARS, JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
 
 /** The reserved paths, exactly (specs/loop breaker 4). */
 export const RESERVED_PATHS = Object.freeze([
@@ -396,7 +396,13 @@ export function assembleBrief(ctx, {
   totalMinutes = null,
   floorMinutes = null,
 }) {
-  const ex = excerptsFor(ctx.repoRoot, job.type);
+  // BRIEF_EXCERPT_MAX_CHARS, not specs.mjs's own 14,000 default (beads
+  // addictedtoai-ccs, config.mjs has the measurement and the reasoning): a
+  // job type whose capabilities carry an in-flight OpenSpec delta doubles its
+  // source count, and 14,000 measurably cut a normative requirement
+  // mid-sentence for three job types on the live tree. 20,000 did not, for
+  // any of them.
+  const ex = excerptsFor(ctx.repoRoot, job.type, { maxChars: BRIEF_EXCERPT_MAX_CHARS });
   const checks = acceptanceChecksFor(job.type);
   const prose = PROSE_TYPES.includes(job.type);
 

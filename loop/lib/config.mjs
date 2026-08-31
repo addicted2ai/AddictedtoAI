@@ -146,6 +146,73 @@ export const JOB_TOTAL_CAP_MULTIPLIER = 2;
  * bound that deadlocks a job type is worse than no bound.
  */
 export const MIN_INVOCATION_MINUTES = 15;
+
+/**
+ * The per-brief spec-excerpt budget, in characters (design decision, beads
+ * addictedtoai-ccs — RULED 2026-08-31, the maintainer's delegated decision).
+ *
+ * `loop/lib/specs.mjs` `excerptsFor()` defaults to 14,000 and would keep that
+ * default for any caller that does not override it. This is the override, and
+ * `loop/lib/brief.mjs` `assembleBrief()` is the only caller inside the loop, so
+ * this constant is what every real brief actually gets.
+ *
+ * THE TENSION IT RESOLVES. specs/loop rule 3 is "no minimum context window":
+ * the loop must not require a large context to run at all. 14,000 characters
+ * (~3,500 tokens) honoured that literally — until a job type's briefed
+ * capabilities carry an in-flight OpenSpec delta alongside their constitution
+ * (`specs.mjs` `specSources`, added when a hardcoded fallback to one archived
+ * change was repaired), which doubles the number of sources sharing one
+ * budget. MEASURED against the live tree 2026-08-31, with
+ * `make-the-blog-worth-sending` amending `loop`, `editorial`, `review` and
+ * `blog`: at 14,000 chars, three of ten job types (`entry`, `post`, `scout`)
+ * had at least one `### Requirement:` section cut mid-sentence — the scout's
+ * own defining requirement ("The scout looks outward") quoted at 40% of its
+ * 5,799 characters. `specs.mjs` already marks every cut with a `[... CUT ...]`
+ * note naming the file to read in the worktree, so this was never a SILENT
+ * truncation (the sharper defect addictedtoai-ccs's own repair already
+ * closed) — but a normative SHALL a reader has to leave the brief to finish
+ * reading is still a worse brief than one that does not need to.
+ *
+ * THE NUMBER, MEASURED RATHER THAN GUESSED. Re-run against the same live tree
+ * at 20,000 characters: every one of the ten job types' excerpts has ZERO
+ * sections cut mid-requirement — every `### Requirement:` quoted is quoted
+ * whole. (`truncated` can still read `true` at 20,000 for some types: that
+ * flag also fires when a lower-scoring section is left out ENTIRELY, which
+ * this budget does not try to eliminate and should not — a whole section
+ * omitted, with the "read the full file in this worktree" note `excerptsFor`
+ * already attaches, is a legitimate failure mode; a section chopped
+ * mid-requirement, leaving a fragment that reads as complete, is the one this
+ * number exists to stop.) 14,000 was tight enough to cut on today's tree;
+ * 20,000 was not, for any type measured.
+ *
+ * WHY THIS DOES NOT REOPEN "NO MINIMUM CONTEXT WINDOW". 20,000 characters is
+ * still on the order of 5,000 tokens. Rule 2 already requires an executor
+ * that can read files, run shell commands, and act unattended — an agentic
+ * coding harness — and any harness meeting that bar needs many times this for
+ * its own tool-use scaffolding and system prompt; `loop/conformance.mjs`
+ * already exercises every registered runner against briefs of this shape.
+ * Raising the shared budget by 43% does not create a dependency rule 3
+ * forbids; it stops the budget from being tighter than the
+ * constitution-plus-delta shape rule 4 ("every brief carries... the relevant
+ * spec excerpts") already produces once more than one source exists per
+ * capability — a shape this loop's own repair introduced, not one this number
+ * invented a reason to grow into.
+ *
+ * WHY A CONSTANT HERE RATHER THAN A NEW DEFAULT IN `specs.mjs`. The same
+ * reasoning as `JOB_TOTAL_CAP_MULTIPLIER` above: one declared, documented
+ * value the loop passes in, rather than a bare number changed at its point of
+ * use with no reasoning attached. `excerptsFor`'s own default (14,000) is
+ * UNCHANGED by this — only what `brief.mjs` passes to it changes.
+ *
+ * WHAT WAS CONSIDERED AND NOT DONE. Weighting a source's share by relevance
+ * instead of splitting it evenly — so the single highest-scoring section in
+ * the whole plan is quoted whole before any source takes a second — would use
+ * a fixed budget more precisely. It is a more invasive change to
+ * `excerptsFor`'s own allocation algorithm in `specs.mjs`, which this ruling
+ * does not touch, and it is unneeded once the flat raise alone measures at
+ * zero mid-requirement cuts across every job type today.
+ */
+export const BRIEF_EXCERPT_MAX_CHARS = 20000;
 // `BLOG_CEILING_POSTS` / `BLOG_CEILING_DAYS` stood here and are gone
 // (make-the-blog-worth-sending, task 1.3). Publishing is quality-gated, never
 // quota-driven: no selector rule counts published posts. What limits volume now

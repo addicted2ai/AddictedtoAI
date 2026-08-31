@@ -33,6 +33,34 @@
  *
  * The state is computed from `data/ledger.jsonl`, like every other predicate in
  * this design. Nothing is stored.
+ *
+ * D7 — RULED 2026-08-31 (beads addictedtoai-pfv, the maintainer's delegated
+ * decision). The question this file's own header leaves open ("is a refusal
+ * enough?") is decided: no, not fully — a fifth breaker (design.md's Option B,
+ * the narrowest form: `HOLD.md` when EVERY runner cleared for `author` is
+ * refused, by conformance or by this module) remains the right target, for
+ * the reason design.md gives — it is the only option under which total Desk
+ * paralysis reaches the maintainer without a log read, and its firing
+ * condition (measured 2026-08-31: 3 of 4 registered runners currently pass
+ * conformance) is nowhere close to live today. It is NOT implemented here:
+ * specs/loop's breaker list is closed ("No other condition halts the loop")
+ * and `openspec/specs/` is reserved — writing the breaker into code before
+ * the spec names it would make the code violate the CURRENT spec, which this
+ * repository's guardrails exist to prevent regardless of direction. The
+ * requirement text and the whole-registry usable-runner predicate (this
+ * refusal is scoped to the two runners ONE invocation was given, not every
+ * `author`-cleared entry in `runners.yml`) are filed as their own beads
+ * issue, addictedtoai-8wm0, to be built once that spec change lands.
+ *
+ * What DID land, without waiting on the spec: `loop/run.mjs`'s `exitCodeFor()`
+ * gives a refusal from this gate a distinct exit code (2) instead of the 0
+ * every other outcome — including "nothing qualified" and a merged job — used
+ * to share. It is a strictly narrower claim than the fifth breaker would be
+ * (it says nothing about whether some OTHER runner in the registry is
+ * healthy), but it needs no OpenSpec change, writes no `HOLD.md`, and is real
+ * today: whatever schedules `node loop/run.mjs` and watches its exit code can
+ * now tell a refusal apart from a working run without reading the log —
+ * which was exactly the residual complaint this file's own header describes.
  */
 
 /**

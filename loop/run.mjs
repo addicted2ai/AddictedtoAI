@@ -1316,6 +1316,69 @@ export function attemptMergeWithoutReview(ctx, jobId, detail = '') {
   return checkReviewBypass(ctx, `job ${jobId}: ${detail}`);
 }
 
+/**
+ * The Desk's exit code, computed from what one run actually did (beads
+ * addictedtoai-pfv, design decision D7 — RULED 2026-08-31, the maintainer's
+ * delegated decision, PARTIAL implementation; see below for the part this
+ * cannot cover).
+ *
+ * D7 asked whether a Desk with no usable runner should halt (a fifth
+ * breaker, writing `HOLD.md`) rather than merely refuse. RULING: yes in
+ * principle — design.md's Option B (the narrowest form, firing only when
+ * EVERY runner cleared for `author` is refused) remains the right target,
+ * for the reason its own analysis gives: it is the only option under which
+ * "the Desk cannot do anything" reaches the maintainer without a log read,
+ * and its firing condition is tight enough it cannot become the breaker
+ * that cries wolf (measured 2026-08-30 in `data/conformance.json`: 3 of 4
+ * registered runners pass conformance today, so the condition is currently
+ * far from live).
+ *
+ * WHY IT IS NOT IMPLEMENTED HERE. specs/loop's breaker list is closed —
+ * "No other condition halts the loop" — and `openspec/specs/` is a reserved
+ * path (breaker 4) no job, and no ruling made outside the OpenSpec workflow,
+ * may edit. Writing code that halts the Desk on a fifth condition the spec
+ * does not yet name would make the CODE violate the CURRENT spec, which is
+ * the same defect this repository's guardrails exist to prevent in the
+ * other direction. The requirement text (drafted in the archived
+ * `harden-seed-wave-guardrails` design.md as "DRAFT — NOT ADOPTED") and the
+ * usable-runner predicate across the WHOLE registry (not just the two
+ * runners this invocation was given) are filed as their own beads issue,
+ * addictedtoai-8wm0, to be built once the spec change lands.
+ *
+ * WHAT IS DONE HERE, WITHOUT WAITING. `runLoop()`'s refusal paths
+ * (conformance FAIL, or `runnerHealthGate` FAIL after three no-output runs —
+ * see `health.mjs`) set `res.refused` but leave `res.started` `true`, and
+ * `main()` used to map ANY `started !== false` result to exit 0 — the SAME
+ * code a run that merged a job returns. A scheduled process invoking
+ * `node loop/run.mjs` and watching only its exit code would see "success" on
+ * a run that refused a dead runner and did nothing, indistinguishable from a
+ * run that worked. This closes THAT gap, and only that gap: a refusal for
+ * THIS invocation's chosen runner(s) is now a distinct exit code. It is
+ * honestly a narrower claim than D7's — it says nothing about whether some
+ * OTHER runner in the registry would have worked, because nothing here
+ * enumerates the registry — but it is real, needs no spec change (exit codes
+ * are not normative anywhere in specs/loop, checked by grep before this was
+ * written), and it is available today rather than gated on the maintainer's
+ * OpenSpec review.
+ *
+ * `main()` calls this instead of inlining the mapping so the mapping is
+ * independently testable without spawning a process — matching the
+ * structural-assertion precedent `exit-code.test.mjs` set for addictedtoai-1yt.
+ *
+ *  0 — the run attempted something, or genuinely found nothing to do.
+ *      "nothing qualified" is a normal, healthy outcome (specs/loop), not a
+ *      failure, and is deliberately NOT distinguished from a merged job here.
+ *  1 — the loop did not even start (a `STOP` file, an existing `HOLD.md`) or
+ *      `main()`'s own try/catch caught an error. Unchanged from before.
+ *  2 — REFUSED before any work was attempted: the runner this invocation was
+ *      given (author or reviewer role) is not usable right now.
+ */
+export function exitCodeFor(res) {
+  if (res.started === false) return 1;
+  if (res.refused) return 2;
+  return 0;
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) {
@@ -1330,7 +1393,7 @@ async function main() {
       dryRun: args.dryRun,
       noGates: args.noGates,
     });
-    return res.started === false ? 1 : 0;
+    return exitCodeFor(res);
   } catch (e) {
     ctx.log(`loop error: ${e.message}`);
     if (process.env.LOOP_DEBUG) ctx.log(e.stack ?? '');

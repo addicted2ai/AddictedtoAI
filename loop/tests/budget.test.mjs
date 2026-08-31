@@ -10,13 +10,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { loadConfig } from '../lib/config.mjs';
+import { loadConfig, JOB_TOTAL_CAP_MULTIPLIER } from '../lib/config.mjs';
 import {
   applyUpkeepFloor,
   budgetGate,
   consecutiveFailures,
   degradationGate,
+  jobTotalMinutes,
   lanePause,
+  largestCapMinutes,
   shedState,
   tierShares,
   tightestCeilingPct,
@@ -174,6 +176,34 @@ test('the warm-up multiplier is read from the ceilings, not written next to them
   // denominator is irrelevant and the documented fallback stands.
   assert.equal(tightestCeilingPct({ budget: { bounds: { upkeep_floor_pct: 40 } } }), 10);
   assert.equal(tightestCeilingPct(undefined), 10);
+  ctx.cleanup();
+});
+
+test('dyw the warm-up denominator measures one invocation, not one job-total-bounded job, and that is unchanged', () => {
+  // beads addictedtoai-dyw: `largestCapMinutes(cfg)` is one INVOCATION at the
+  // largest per-type cap. `JOB_TOTAL_CAP_MULTIPLIER` (o5t) means a job's own
+  // total can reach `largestCapMinutes(cfg) * JOB_TOTAL_CAP_MULTIPLIER` — more
+  // than this function returns. The ruling was to correct the COMMENT, not the
+  // arithmetic: this test pins the arithmetic so a future "fix" that makes
+  // `warmUpMm()` track `jobTotalMinutes()` instead — doubling the warm-up
+  // denominator and loosening three ceilings — cannot land silently.
+  const ctx = fixture([]);
+  const cfg = loadConfig(ctx);
+  assert.ok(JOB_TOTAL_CAP_MULTIPLIER > 1, 'precondition: a job-total bound wider than one invocation exists at all');
+
+  const oneInvocation = largestCapMinutes(cfg);
+  const oneJobTotal = jobTotalMinutes(cfg, 'machinery'); // machinery sets the tightest ceiling
+  assert.ok(oneJobTotal > oneInvocation, 'a job-total-bounded job really can spend more than one invocation');
+
+  // The ruled value: warmUpMm is still `warmUpJobs(cfg) * largestCapMinutes(cfg)`
+  // — the INVOCATION number — never the job-total number.
+  assert.equal(warmUpMm(cfg), warmUpJobs(cfg) * oneInvocation);
+  assert.equal(warmUpMm(cfg), 600, 'unchanged from before this ruling, at the fixture\'s 60-minute caps');
+  assert.notEqual(
+    warmUpMm(cfg),
+    warmUpJobs(cfg) * oneJobTotal,
+    'the denominator this ruling declined to adopt would be double the ruled one',
+  );
   ctx.cleanup();
 });
 
