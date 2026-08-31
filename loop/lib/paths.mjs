@@ -53,6 +53,13 @@ export function makeContext(opts = {}) {
     rejectedDir:
       opts.rejectedDir ?? join(repoRoot, 'data', 'proposals', 'rejected'),
     reviewsDir: opts.reviewsDir ?? join(repoRoot, 'data', 'reviews'),
+    // Findings a reviewer carried but did not block on (beads addictedtoai-2bo,
+    // loop/lib/carry.mjs). One file per entry; a file's PRESENCE is what a
+    // Pulse run reads into the queue (`pulse/lib/queue.mjs`), and the fixing
+    // job's own diff deletes the file — that is what retires the item, the same
+    // "leaves the queue the moment the underlying state is fixed" rule every
+    // other queue class already follows, with no extra merge-step bookkeeping.
+    carriedDir: opts.carriedDir ?? join(repoRoot, 'data', 'carried'),
     conformancePath:
       opts.conformancePath ?? join(repoRoot, 'data', 'conformance.json'),
     blogDir: opts.blogDir ?? join(repoRoot, 'content', 'blog'),

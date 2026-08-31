@@ -39,6 +39,56 @@ export const REASONS = Object.freeze([
 
 export const VERDICTS = Object.freeze(['approve', 'revise', 'reject']);
 
+/**
+ * `carry:` — findings a reviewer recorded but did not block on (specs/review,
+ * beads addictedtoai-2bo). Distinct from `proposal:`: a proposal is a job-sized
+ * unit of work with its own type, summary and evidence; a carry is a single
+ * small correction — "change six weeks to four weeks" — that would flood the
+ * proposal queue with items too small to dispatch. `approve` used to be the end
+ * of the road for this class of finding: it was written into the record's free
+ * text, which nothing reads except the piece-to-record join, and the join only
+ * cares about the verdict and `would-cite`. This is the route out.
+ *
+ * Zero or more entries, each requiring a non-empty `title` — the SHORT line a
+ * queue item and a job brief render as their outcome heading — and a non-empty
+ * `detail` — the finding itself, as long as it needs to be. `title` is
+ * mandatory rather than falling back to `detail` (the way an ordinary queue
+ * item's title does) because a carried finding's detail can run to the length
+ * of a review paragraph, and a job brief that renders a paragraph as its own
+ * heading is not dispatchable. `subject` is optional: the content file the
+ * finding concerns, when there is one file it is about.
+ *
+ * An empty or absent `carry:` is the ordinary case — most reviews carry
+ * nothing — and is not a warning of any kind.
+ */
+export function parseCarry(data) {
+  const raw = data?.carry;
+  if (raw === undefined || raw === null) return { carry: [], carryWarnings: [] };
+  const list = Array.isArray(raw) ? raw : [raw];
+  const carry = [];
+  const carryWarnings = [];
+  list.forEach((entry, i) => {
+    const at = `carry[${i}]`;
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      carryWarnings.push(`${at}: not a mapping with title/detail — skipped`);
+      return;
+    }
+    const title = String(entry.title ?? '').trim();
+    const detail = String(entry.detail ?? '').trim();
+    const subject = entry.subject !== undefined && entry.subject !== null ? String(entry.subject).trim() : '';
+    if (!title) {
+      carryWarnings.push(`${at}: no non-empty \`title\` — skipped (a carry needs its own short title; it is not a fallback for \`detail\`)`);
+      return;
+    }
+    if (!detail) {
+      carryWarnings.push(`${at} ${JSON.stringify(title)}: no non-empty \`detail\` — skipped`);
+      return;
+    }
+    carry.push({ title, detail, subject });
+  });
+  return { carry, carryWarnings };
+}
+
 /** Parse a verdict record. Front matter first; a plain-text fallback keeps weaker runners usable. */
 export function parseVerdict(text) {
   let data = {};
@@ -88,11 +138,20 @@ export function parseVerdict(text) {
   }
   reasons = reasons.map((r) => String(r).trim().replace(/^[`'"]|[`'"]$/g, '')).filter(Boolean);
 
+  // `carry:` is read from front matter only — the same restriction as
+  // `would-cite`/`reads-human`'s fallback scan, and for the same reason: a
+  // plain-text fallback here would need its own list syntax, and a runner weak
+  // enough to need the plain-text path is exactly the runner most likely to
+  // produce a carry entry that parses into something it did not mean.
+  const { carry, carryWarnings } = parseCarry(hasFrontMatter ? data : {});
+
   return {
     verdict,
     reasons,
     wouldCite: String(wouldCite ?? '').trim(),
     readsHuman: String(readsHuman ?? '').trim(),
+    carry,
+    carryWarnings,
     notes: body.trim(),
     // The record's front matter as parsed, so a caller that needs a key this
     // parser does not interpret — `subject:`, `reviewed:`, `job:`, `date:` —

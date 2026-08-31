@@ -62,6 +62,7 @@ import {
   sweepExpiredProposals,
   transcribeNotedProposal,
 } from './lib/proposals.mjs';
+import { transcribeCarriedFindings } from './lib/carry.mjs';
 
 const USAGE = `node loop/run.mjs — one Desk run
 
@@ -1173,6 +1174,29 @@ export async function runLoop(ctx, opts = {}) {
     }
   }
 
+  // Findings the reviewer CARRIED — recorded but did not block on (beads
+  // addictedtoai-2bo). Same channel and same "any outcome the merge gate
+  // parsed a verdict for" scope as the noted proposal above, and for the same
+  // reason: the reviewer's edits to the reviewed tree are discarded, so
+  // `carry:` in its own record is the only way one of these reaches work.
+  if (result.verdict) {
+    const c = transcribeCarriedFindings(ctx, {
+      jobId,
+      verdictPath: verdictPath(ctx, jobId, result.pass ?? 1),
+      reviewer: reviewer.id,
+    });
+    for (const t of c.transcribed) {
+      transcribedPaths.push(relative(ctx.repoRoot, t.dest));
+      ctx.log(`carried finding transcribed to ${t.dest}: ${JSON.stringify(t.title)}`);
+    }
+    for (const s of c.skipped) {
+      ctx.log(`a carried finding was not transcribed: ${s.why}`);
+    }
+    for (const w of c.warnings) {
+      ctx.log(`the verdict record's carry: block ${w}`);
+    }
+  }
+
   removeWorktree(ctx.repoRoot, worktree);
   rmSync(worktree, { recursive: true, force: true });
 
@@ -1186,10 +1210,11 @@ export async function runLoop(ctx, opts = {}) {
     // repository is left holding a queue that describes the tree from before
     // this job (addictedtoai-942). Still staged by exact path — never `add -A`.
     ...(rederived ? DERIVED_PATHS : []),
-    // A proposal transcribed from the verdict record is written into the main
-    // working tree after the merge, so it is not carried by any branch. It is
-    // committed here with the record it came from, or it would sit untracked
-    // and the next run would read a proposal nothing in the history explains.
+    // A proposal or a carried finding transcribed from the verdict record is
+    // written into the main working tree after the merge, so it is not
+    // carried by any branch. Both are committed here with the record they
+    // came from, or they would sit untracked and the next run would read
+    // work nothing in the history explains.
     ...transcribedPaths,
   ].map((p) => p.replace(/\\/g, '/'));
 

@@ -33,7 +33,7 @@
  * See the scout section below.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import fg from 'fast-glob';
 import matter from 'gray-matter';
@@ -97,6 +97,18 @@ export const RANKS = {
   'uninterpreted-licence-change': 42,
   'uninterpreted-price-change': 40,
   'want-eligible-mint': 30,
+  // A finding a reviewer carried but did not block on (beads addictedtoai-2bo,
+  // loop/lib/carry.mjs). Ranked deliberately LOW — below every timer and below
+  // `want-eligible-mint` — because there is no automatic way to tell a fixed
+  // carried finding from an unfixed one (the fixing job's own diff has to
+  // delete the file that names it; see `carriedFindingItems` below). An item
+  // this rank cannot retire on its own is precisely the failure
+  // addictedtoai-cct documents for a declared corroboration and the failure
+  // addictedtoai-5hn already caused once at a HIGH rank — reference-drift sits
+  // low in this same table for the identical reason. A carried finding waiting
+  // one extra day behind real breakage costs little; a stuck one dominating
+  // the queue would cost a great deal.
+  'carried-finding': 25,
 };
 
 /** Read `data/derived/wants.json` (written by the build, task 2.8) tolerantly. */
@@ -294,6 +306,60 @@ export function scoutItems(root, { changesFile, at = now() } = {}) {
 }
 
 /**
+ * Findings a reviewer carried but did not block on (beads addictedtoai-2bo),
+ * one queue item per file under `data/carried/` (`loop/lib/carry.mjs` writes
+ * them; nothing else does). Each file's own `title:` becomes the item's
+ * `title` — never the `detail ?? title` fallback the loop's reader otherwise
+ * applies, because a carried finding's detail is review prose and can run
+ * long enough to make an undispatchable job heading.
+ *
+ * A malformed file (no front matter, no `title:`) is skipped rather than
+ * queued with a guessed title — the same "do not manufacture a name" rule
+ * every other reader in this file follows. It is not reported as a queue
+ * warning: `readQueue` in the loop already reports whatever this function
+ * omits by omitting it, the same way an unreadable proposal is reported by
+ * `readProposals`, not by the Pulse.
+ */
+export function carriedFindingItems(root) {
+  const dir = join(paths(root).root, 'data', 'carried');
+  if (!existsSync(dir)) return [];
+  let names;
+  try {
+    names = readdirSync(dir, { withFileTypes: true })
+      .filter((e) => e.isFile() && e.name.endsWith('.md') && e.name !== 'README.md')
+      .map((e) => e.name)
+      .sort();
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const name of names) {
+    let text;
+    try {
+      text = readFileSync(join(dir, name), 'utf8');
+    } catch {
+      continue;
+    }
+    let data = {};
+    let body = text;
+    try {
+      const p = matter(text);
+      data = p.data ?? {};
+      body = p.content ?? '';
+    } catch {
+      continue;
+    }
+    const title = String(data.title ?? '').trim();
+    if (!title) continue;
+    const subject = data.subject ? String(data.subject).trim() : null;
+    out.push(
+      item('repair', 'carried-finding', subject ?? `data/carried/${name}`, body.trim(), subject ?? `data/carried/${name}`, title),
+    );
+  }
+  return out;
+}
+
+/**
  * Recompute the queue. Pure with respect to the queue file: it reads current
  * state only, never a previous queue.
  */
@@ -457,6 +523,11 @@ export function computeQueue(root, { freshness, changesFile, wants = readWants(r
     if (w.count < WANT_ELIGIBLE_AT) continue;
     items.push(item('entry', 'want-eligible-mint', w.name, `wanted by ${w.count} distinct pages`, w.pages[0] ?? null));
   }
+
+  // Findings a reviewer carried but did not block on (beads addictedtoai-2bo).
+  // One item per file under data/carried/ — see `carriedFindingItems` above
+  // for why the rank is low and how an item retires.
+  for (const it of carriedFindingItems(root)) items.push(it);
 
   // Total order: rank descending, then reason, then subject. Deterministic
   // without giving any item an identity.

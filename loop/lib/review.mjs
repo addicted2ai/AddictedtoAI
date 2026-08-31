@@ -419,6 +419,36 @@ proposal:
            proposal skips the 3-day cooling and is swept once it expires>
 \`\`\`
 
+## If you noticed something you are not blocking on
+
+A one-word error, a dropped source qualifier, a citation that resolves to a
+login wall instead of the page it cites — real, and not worth \`revise\` on a
+piece that is otherwise sound. \`approve\` used to be the end of the road for
+this: written into your free-form notes below, which nothing but a human
+re-reading this file will ever see again. It does not have to be.
+
+List each such finding under \`carry:\` in the front matter — zero or more
+entries, each a separate small correction, never a job-sized idea (that is
+what \`proposal:\` above is for). Each needs a short \`title\` — one line, what
+needs doing, not a restatement of the finding — and a \`detail\` naming what
+you found and what would fix it. \`subject\` is optional: the one content file
+the finding concerns, when there is one.
+
+\`\`\`
+carry:
+  - title: <one line — what needs doing>
+    detail: <the finding — quote the wrong text, name what is wrong, say what
+             would fix it>
+    subject: <optional — the content file this concerns, e.g.
+             "content/wiki/model/example.md">
+  # - title: ...              # a second entry, if there is a second finding
+  #   detail: ...
+\`\`\`
+
+Carrying nothing is the normal case, same as noting no proposal — most reviews
+have nothing to carry. A finding invented to fill the field is worse than an
+empty list.
+
 ## Write your verdict here
 
 Write the verdict record to this exact absolute path — it is deliberately
@@ -439,6 +469,9 @@ ${voice ? `reads-human: >-
   <your own-words answer: where does this read machine-made, or why does it not>
 ` : ''}# proposal:                # optional, at most one — omit the key entirely if
 #   slug: ...               # your review surfaced nothing
+# carry:                    # optional, zero or more — omit the key entirely
+#   - title: ...             # if you are carrying nothing forward
+#     detail: ...
 ---
 
 Free-form notes: what you checked, what you fetched, what you ran, and what

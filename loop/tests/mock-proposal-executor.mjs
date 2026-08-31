@@ -80,6 +80,7 @@ function writeVerdict({
   readsHuman = 'It reads like a person wrote it: the sentences vary and nothing is announced.',
   notes = 'mock reviewer notes',
   proposalBlock = '',
+  carryBlock = '',
 }) {
   const p = verdictPathFromBrief();
   if (!p) return false;
@@ -87,7 +88,7 @@ function writeVerdict({
     p,
     `---\njob: mock\nverdict: ${verdict}\nreasons: [${reasons.join(', ')}]\n` +
       `would-cite: ${JSON.stringify(wouldCite)}\n` +
-      `reads-human: ${JSON.stringify(readsHuman)}\n${proposalBlock}---\n\n${notes}\n`,
+      `reads-human: ${JSON.stringify(readsHuman)}\n${proposalBlock}${carryBlock}---\n\n${notes}\n`,
     'utf8',
   );
   return true;
@@ -99,6 +100,18 @@ const NOTED = [
   '  type: interpret',
   '  summary: three weeks of licence changes want one interpretation line each.',
   '  evidence: data/changes.jsonl lines 41-63, read while reviewing this diff.',
+  '',
+].join('\n');
+
+// beads addictedtoai-2bo — a reviewer carrying two findings it did not block
+// on. Deliberately includes one malformed entry (no title) so the loop's
+// warning path is exercised by a real run, not only by a unit test.
+const CARRIED = [
+  'carry:',
+  '  - title: fix the date arithmetic',
+  '    detail: 30 July to 28 August is 29 days, not six weeks.',
+  '    subject: content/wiki/model/fixture.md',
+  '  - detail: no title on this one, so it must be dropped rather than guessed at',
   '',
 ].join('\n');
 
@@ -188,6 +201,16 @@ switch (mode) {
       verdict: 'approve',
       wouldCite: 'Someone arguing that caps must be mechanical would link this diff.',
       notes: 'Nothing else surfaced.',
+    });
+    result('done\n');
+    break;
+
+  case 'review-approve-carrying':
+    writeVerdict({
+      verdict: 'approve',
+      wouldCite: 'Someone arguing that caps must be mechanical would link this diff.',
+      carryBlock: CARRIED,
+      notes: 'Sound overall. Two small things I am not blocking on, noted below.',
     });
     result('done\n');
     break;
