@@ -37,7 +37,9 @@ retrieved 31 August 2026: "We recently signed you out of Claude and removed the
 payment method saved on your account, so you'll need to log back in and re-add
 your card." On why the sign-out is the operative act rather than a precaution:
 "Signing you out cancels that session everywhere, so the stolen copy stops
-working." Anthropic also refunded charges it identified as unauthorized.
+working." A third action shows up only in BleepingComputer's reporting, nowhere
+in the email text Search Engine Journal reproduces: the company is "refunding
+charges it identifies as unauthorized."
 
 Then the sentence worth forwarding, which BleepingComputer carries:
 
@@ -59,7 +61,7 @@ The malware is unremarkable, which is the interesting part. Anthropic named
 Vidar, LummaC2, StealC, RedLine and Acreed on Windows, plus Atomic Stealer (AMOS)
 on a small number of Macs. Not one of them was built for this. They are commodity
 credential thieves that arrive, in BleepingComputer's description, through
-ordinary downloads and malicious apps, and sweep up "browser passwords, login
+downloads or malicious apps, and sweep up "browser passwords, login
 cookies, and credentials belonging to other apps." A Claude cookie is a line item
 in that haul, not the objective. What is new sits on the other side: a
 subscription that converts into inference is now worth stealing on the same terms
@@ -73,8 +75,7 @@ Reddit and reproduced by reporters. And there are no figures: not how many
 accounts, not how much usage, not who the bad actor is. The notice does not say,
 and nobody outside Anthropic is positioned to.
 
-All four accounts below were retrieved on 31 August 2026, and the malware list
-and the three response actions appear in every one.
+All four accounts below were retrieved on 31 August 2026.
 [BleepingComputer](https://www.bleepingcomputer.com/news/artificial-intelligence/anthropic-warns-infostealer-malware-is-hijacking-claude-sessions-to-drain-usage/)
 published on 30 August 2026.
 [Cybersecurity News](https://cybersecuritynews.com/hackers-steal-claude-login-sessions/)
