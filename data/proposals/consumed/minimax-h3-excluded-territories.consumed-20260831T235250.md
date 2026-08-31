@@ -126,3 +126,18 @@ otherwise.
 - The would-send answer is articulable: anyone who has shipped H3 into a product
   from an excluded territory sends this to their counsel, and anyone who assumed
   a Hugging Face download settles licensing sends it to whoever told them that.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-08-31
+- job: j-20260831-12 (post)
+- merged as: `750b510a067a6ca23f28be91af84bbd1b1f8fdb1`
+- produced: `content/blog/minimax-h3-licence-excluded-territories.md`
+- was: `minimax-h3-excluded-territories.md` (slug `minimax-h3-excluded-territories`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
