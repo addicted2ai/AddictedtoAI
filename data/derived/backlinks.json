@@ -112,6 +112,12 @@
         "file": "content/wiki/concept/tokenization.md"
       },
       {
+        "url": "/learn/how-a-language-model-works",
+        "title": "How a language model turns text into text",
+        "type": "learn",
+        "file": "content/learn/how-a-language-model-works.md"
+      },
+      {
         "url": "/learn/how-a-model-uses-your-documents",
         "title": "How a model reads your documents",
         "type": "learn",
@@ -212,6 +218,12 @@
         "title": "Where AI fails people",
         "type": "learn",
         "file": "content/learn/where-ai-fails-people.md"
+      },
+      {
+        "url": "/learn/why-models-are-confidently-wrong",
+        "title": "Why a model is confidently wrong",
+        "type": "learn",
+        "file": "content/learn/why-models-are-confidently-wrong.md"
       }
     ],
     "concept/in-context-learning": [
@@ -276,6 +288,12 @@
         "title": "vLLM",
         "type": "entry",
         "file": "content/wiki/tool/vllm.md"
+      },
+      {
+        "url": "/learn/how-inference-is-served",
+        "title": "How inference is served, and why it is priced the way it is",
+        "type": "learn",
+        "file": "content/learn/how-inference-is-served.md"
       },
       {
         "url": "/learn/running-a-model-yourself",
@@ -370,24 +388,6 @@
         "file": "content/wiki/technique/test-time-scaling.md"
       },
       {
-        "url": "/learn/how-a-language-model-works",
-        "title": "How a language model turns text into text",
-        "type": "learn",
-        "file": "content/learn/how-a-language-model-works.md"
-      },
-      {
-        "url": "/learn/how-inference-is-served",
-        "title": "How inference is served, and why it is priced the way it is",
-        "type": "learn",
-        "file": "content/learn/how-inference-is-served.md"
-      },
-      {
-        "url": "/learn/how-models-are-trained",
-        "title": "How models are trained, and how they are changed afterwards",
-        "type": "learn",
-        "file": "content/learn/how-models-are-trained.md"
-      },
-      {
         "url": "/learn/how-to-think-about-what-comes-next",
         "title": "How to think about what comes next",
         "type": "learn",
@@ -410,6 +410,14 @@
         "title": "Why bigger kept getting better",
         "type": "learn",
         "file": "content/learn/why-bigger-got-better.md"
+      }
+    ],
+    "concept/temperature-and-top-p": [
+      {
+        "url": "/learn/how-a-language-model-works",
+        "title": "How a language model turns text into text",
+        "type": "learn",
+        "file": "content/learn/how-a-language-model-works.md"
       }
     ],
     "concept/the-bitter-lesson": [
@@ -444,12 +452,6 @@
         "file": "content/wiki/event/imagenet-2012.md"
       },
       {
-        "url": "/learn/how-models-are-trained",
-        "title": "How models are trained, and how they are changed afterwards",
-        "type": "learn",
-        "file": "content/learn/how-models-are-trained.md"
-      },
-      {
         "url": "/learn/where-ai-came-from",
         "title": "Where AI came from",
         "type": "learn",
@@ -474,6 +476,12 @@
         "title": "Hallucination",
         "type": "entry",
         "file": "content/wiki/concept/hallucination.md"
+      },
+      {
+        "url": "/learn/how-a-language-model-works",
+        "title": "How a language model turns text into text",
+        "type": "learn",
+        "file": "content/learn/how-a-language-model-works.md"
       },
       {
         "url": "/learn/how-image-generation-works",
@@ -536,12 +544,6 @@
         "title": "How inference is served, and why it is priced the way it is",
         "type": "learn",
         "file": "content/learn/how-inference-is-served.md"
-      },
-      {
-        "url": "/learn/what-a-model-is",
-        "title": "What a model is, and what it is not",
-        "type": "learn",
-        "file": "content/learn/what-a-model-is.md"
       },
       {
         "url": "/learn/where-ai-came-from",
@@ -2628,6 +2630,12 @@
         "file": "content/wiki/technique/reinforcement-learning-with-verifiable-rewards.md"
       },
       {
+        "url": "/learn/how-models-are-trained",
+        "title": "How models are trained, and how they are changed afterwards",
+        "type": "learn",
+        "file": "content/learn/how-models-are-trained.md"
+      },
+      {
         "url": "/learn/what-safety-training-changes",
         "title": "What safety training changes, and what it leaves in place",
         "type": "learn",
@@ -2640,6 +2648,12 @@
         "title": "Prompt tuning",
         "type": "entry",
         "file": "content/wiki/technique/prompt-tuning.md"
+      },
+      {
+        "url": "/learn/how-models-are-trained",
+        "title": "How models are trained, and how they are changed afterwards",
+        "type": "learn",
+        "file": "content/learn/how-models-are-trained.md"
       }
     ],
     "technique/mixture-of-experts": [
@@ -2704,6 +2718,12 @@
         "title": "Ollama",
         "type": "entry",
         "file": "content/wiki/tool/ollama.md"
+      },
+      {
+        "url": "/learn/how-inference-is-served",
+        "title": "How inference is served, and why it is priced the way it is",
+        "type": "learn",
+        "file": "content/learn/how-inference-is-served.md"
       },
       {
         "url": "/learn/running-a-model-yourself",
@@ -2800,6 +2820,12 @@
         "title": "vLLM",
         "type": "entry",
         "file": "content/wiki/tool/vllm.md"
+      },
+      {
+        "url": "/learn/how-inference-is-served",
+        "title": "How inference is served, and why it is priced the way it is",
+        "type": "learn",
+        "file": "content/learn/how-inference-is-served.md"
       },
       {
         "url": "/learn/why-the-same-request-gives-different-answers",

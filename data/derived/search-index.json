@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 603,
+  "count": 604,
   "docs": [
     {
       "u": "/blog/reference-urls-that-still-return-200",
@@ -445,6 +445,16 @@
     {
       "u": "/learn/looking-inside-a-model",
       "t": "Looking inside a model",
+      "k": "learn",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/learn/machines-that-act-in-the-world",
+      "t": "Machines that act in the world",
       "k": "learn",
       "d": null,
       "s": null,
