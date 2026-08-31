@@ -346,6 +346,370 @@ export function refusalMessage(finding) {
   return lines.join('\n');
 }
 
+/* =====================================================================
+ * THE POWERSHELL ARM (beads addictedtoai-pxj).
+ *
+ * The Bash arm above parses POSIX shell. This harness also exposes a
+ * PowerShell tool — Windows PowerShell 5.1 on this machine — as a second,
+ * unguarded route to the same approval-prompt stall, and PowerShell's
+ * grammar differs from POSIX in ways that would make the Bash matcher
+ * either miss real cases or refuse real work if reused unchanged. This arm
+ * is a separate matcher, dispatched by `tool_name` in `main()`, and the
+ * Bash arm above is untouched: same `TOKEN`, same `findForbiddenToken`,
+ * same `refusalMessage`, same tests, same behaviour.
+ *
+ * WHERE POWERSHELL'S GRAMMAR ACTUALLY DIFFERS, and what this arm does
+ * about each:
+ *   - The backtick is the ESCAPE character, not command substitution.
+ *     `` `c`d `` de-escapes to the literal word "cd" (exactly as Bash's
+ *     `\c\d` does) and is refused; a backtick is never treated as opening
+ *     a command position.
+ *   - Statement separators are `;` `|` newline `&` `(` `$(` `{` (and, on
+ *     PowerShell 7 only — a parse error on this machine's 5.1 — `&&` and
+ *     `||`, which a lone `&` already covers character-by-character and so
+ *     costs nothing to also treat as safe here).
+ *   - Command-position keywords: `if` `else` `elseif` `foreach` `while`
+ *     `do` `switch` `try` `catch` `finally` `begin` `process` `end`, and
+ *     the `&` call operator. `function` is ADDED beyond that list: it is
+ *     PowerShell's own analogue of the shell-function-definition hazard
+ *     that was 5 of the Bash arm's 8 recorded violations, and skipping it
+ *     would leave the single closest PowerShell shape to that pattern
+ *     unguarded. `function cd { ... }` is reported with the same
+ *     `form: 'function'` explanation as a pasted `cd() { }`.
+ *   - PowerShell is CASE-INSENSITIVE for command names and keywords. `CD`,
+ *     `Cd`, `cD` all invoke the same alias `cd` does, so the token
+ *     comparison here lower-cases before comparing. The Bash arm does not
+ *     do this, correctly — Bash is case-sensitive and `CD` is a different,
+ *     unrelated (and almost certainly nonexistent) command there.
+ *   - `powershell.exe -Command "..."` / `pwsh -c "..."` arguments are
+ *     shell code and are re-scanned as PowerShell, exactly as the Bash arm
+ *     re-scans `bash -c`. As a bonus this arm also recognises a *POSIX*
+ *     shell invoked from PowerShell (`bash -c "..."`, `sh -c "..."`) and
+ *     re-scans that argument with the Bash arm's own `findForbiddenToken`
+ *     instead — it is POSIX code once handed to `bash`, not PowerShell
+ *     code, regardless of which shell launched it.
+ *   - Here-string BODIES (`@'...'@` and `@"..."@`) are never scanned. THIS
+ *     IS THE SINGLE MOST IMPORTANT CASE: this repository's own ground
+ *     rules push multi-line prose into here-strings, and its commit
+ *     messages and beads notes discuss this very rule by name, so a naive
+ *     guard would refuse the commit that documents the rule it is part
+ *     of. The opener `@'` / `@"` is detected, its closer (`'@` / `"@`)
+ *     recorded as pending, and the body is skipped at the next newline by
+ *     scanning forward for a line whose content — after stripping only
+ *     leading whitespace — starts with that closer; scanning resumes
+ *     right after the two-character closer rather than discarding the
+ *     rest of that line, so a real command chained after the closing
+ *     marker on the same line (`@'...'@ | Set-Content x.txt`) is still
+ *     checked.
+ *   - `<# ... #>` block comments and `#` line comments are skipped whole,
+ *     the same permissive trade the Bash arm makes for a `#` comment —
+ *     a false positive on prose costs more than the (unmeasured) risk that
+ *     the classifier also trips inside a comment. See addictedtoai-6m3.
+ *
+ * THE ALIAS DECISION, made deliberately rather than left implicit: this
+ * arm refuses only the literal two-letter token `cd`, not `chdir` and not
+ * `sl` — even though both are real PowerShell aliases for `Set-Location`.
+ * The guard's entire purpose is preventing the approval classifier's
+ * stall, and that classifier — on all available evidence, including the
+ * Bash arm this one mirrors — matches the TOKEN, not the semantic action
+ * of changing directory. `chdir` and `sl` do not contain the substring
+ * "cd" at all, so refusing them buys no protection against the actual
+ * failure mode and only adds false-positive surface (e.g. `sl` is short
+ * enough to collide with an unrelated flag or variable name). This is the
+ * same choice the Bash arm already made by never refusing `pushd`/`popd`.
+ * `Set-Location` itself — the full cmdlet name, not an alias — is likewise
+ * never refused, and is offered below as the substitute PowerShell users
+ * actually want when they truly need to change location.
+ *
+ * A DELIBERATE, DOCUMENTED GAP shared with the Bash arm: a `$(...)`
+ * subexpression embedded INSIDE a double-quoted string (`"result: $(cd
+ * C:\x)"`) is not recursively re-scanned — the whole double-quoted string
+ * is read as one opaque value, exactly as the Bash arm reads `"$(cd /x)"`
+ * as one opaque word today. Fixing this is out of scope for pxj; it is a
+ * pre-existing property of the design this arm mirrors, not a regression.
+ * ===================================================================== */
+
+/** Characters that end a PowerShell command and open the next one. */
+const PS_OPENS_COMMAND = new Set([';', '&', '|', '(', '{', '\n', '\r']);
+
+/** Characters that end a word without opening a new command position. */
+const PS_CLOSES_WORD = new Set([')', '}', '<', '>']);
+
+/**
+ * Words that leave the next word still at a command position: the
+ * PowerShell keywords that syntactically precede a command or block, plus
+ * `function` (see the header — added beyond the minimum list on purpose).
+ */
+const PS_KEEPS_COMMAND_POSITION = new Set([
+  'if', 'else', 'elseif', 'foreach', 'while', 'do', 'switch',
+  'try', 'catch', 'finally', 'begin', 'process', 'end', 'function',
+]);
+
+/** Interpreters whose `-c`/`-Command` argument is PowerShell code. */
+const PS_INTERPRETERS = new Set(['powershell', 'powershell.exe', 'pwsh', 'pwsh.exe']);
+
+/** Interpreters whose `-c` argument is POSIX shell code even from PowerShell. */
+const PS_POSIX_INTERPRETERS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh', 'ash', 'bash.exe', 'sh.exe']);
+
+/** `-c` or `-Command`, the two real forms this repo's own examples use. */
+const PS_TAKES_CODE = /^-(c|command)$/i;
+
+/**
+ * Read one PowerShell "word" starting at `start`.
+ *
+ * The backtick escapes the NEXT character and is stripped, so `` `c`d ``
+ * and `cd` compare equal — the PowerShell equivalent of the Bash reader
+ * unescaping `\c\d`. A single quote doubles (`''`) to escape a literal
+ * quote inside a single-quoted string. A double-quoted string keeps
+ * backtick escapes and is otherwise copied verbatim (see the header note
+ * on `$(...)` inside double quotes — deliberately not specially handled,
+ * matching the Bash arm's identical treatment of `"$(...)"`).
+ */
+function readPsWord(src, start) {
+  let i = start;
+  let value = '';
+  while (i < src.length) {
+    const c = src[i];
+    if (c === '`') {
+      if (i + 1 >= src.length) { i += 1; continue; }
+      if (src[i + 1] === '\n') { i += 2; continue; } // backtick line continuation
+      if (src[i + 1] === '\r' && src[i + 2] === '\n') { i += 3; continue; }
+      value += src[i + 1];
+      i += 2;
+      continue;
+    }
+    if (c === "'") {
+      let j = i + 1;
+      while (j < src.length) {
+        if (src[j] === "'" && src[j + 1] === "'") { value += "'"; j += 2; continue; }
+        if (src[j] === "'") { j += 1; break; }
+        value += src[j];
+        j += 1;
+      }
+      i = j;
+      continue;
+    }
+    if (c === '"') {
+      let j = i + 1;
+      while (j < src.length && src[j] !== '"') {
+        if (src[j] === '`' && j + 1 < src.length) { value += src[j + 1]; j += 2; continue; }
+        value += src[j];
+        j += 1;
+      }
+      i = j < src.length ? j + 1 : j;
+      continue;
+    }
+    if (isSpace(c) || isNewline(c) || PS_OPENS_COMMAND.has(c) || PS_CLOSES_WORD.has(c)) break;
+    value += c;
+    i += 1;
+  }
+  return { value, end: i };
+}
+
+/**
+ * Skip the bodies of the here-strings whose openers (`@'` / `@"`) were seen
+ * on the line that just ended. `i` is the index just past that newline.
+ *
+ * Unlike the Bash arm's heredoc skip, this resumes scanning right after the
+ * two-character closer rather than discarding the rest of its line — a
+ * here-string's closer can be followed by real command on the same line
+ * (`@'...'@ | Set-Content x.txt`), and swallowing that would be a hole in
+ * the guard, not just an imprecision.
+ */
+function skipPsHereStringBodies(src, i, delimiters) {
+  for (const delimiter of delimiters) {
+    let cursor = i;
+    let resumeAt = null;
+    while (cursor < src.length) {
+      let lineEnd = src.indexOf('\n', cursor);
+      if (lineEnd === -1) lineEnd = src.length;
+      const line = src.slice(cursor, lineEnd).replace(/\r$/, '');
+      const trimmed = line.replace(/^[ \t]+/, '');
+      if (trimmed.startsWith(delimiter)) {
+        resumeAt = cursor + (line.length - trimmed.length) + delimiter.length;
+        break;
+      }
+      cursor = lineEnd + 1;
+    }
+    i = resumeAt !== null ? resumeAt : src.length;
+  }
+  return i;
+}
+
+/**
+ * Find the first command-position occurrence of the token in a PowerShell
+ * command. Same shape and return value as `findForbiddenToken` above.
+ */
+export function findForbiddenTokenPowerShell(command, depth = 0) {
+  if (typeof command !== 'string' || command.length === 0) return null;
+  if (depth > 3) return null;
+
+  const src = command;
+  let i = 0;
+  let atCommandPosition = true;
+  let wordIndex = 0;
+  let inShellInvocation = false;
+  let shellKind = null; // 'powershell' | 'posix'
+  let nextWordIsShellCode = false;
+  let pendingHereStrings = [];
+  let prevWordLower = null;
+
+  while (i < src.length) {
+    const c = src[i];
+
+    if (isSpace(c)) { i += 1; continue; }
+
+    if (isNewline(c)) {
+      i += 1;
+      if (pendingHereStrings.length > 0) {
+        i = skipPsHereStringBodies(src, i, pendingHereStrings);
+        pendingHereStrings = [];
+      }
+      atCommandPosition = true;
+      wordIndex = 0;
+      inShellInvocation = false;
+      shellKind = null;
+      nextWordIsShellCode = false;
+      prevWordLower = null;
+      continue;
+    }
+
+    // `<# ... #>` block comment — skipped whole, never scanned.
+    if (c === '<' && src[i + 1] === '#') {
+      const end = src.indexOf('#>', i + 2);
+      i = end === -1 ? src.length : end + 2;
+      continue;
+    }
+
+    // `#` line comment — skipped to end of line, same trade as the Bash arm.
+    if (c === '#') {
+      while (i < src.length && src[i] !== '\n') i += 1;
+      continue;
+    }
+
+    // `@'` / `@"` — here-string opener. Its body is never scanned; see header.
+    if (c === '@' && (src[i + 1] === "'" || src[i + 1] === '"')) {
+      pendingHereStrings.push(src[i + 1] === "'" ? "'@" : '"@');
+      i += 2;
+      atCommandPosition = false;
+      wordIndex += 1;
+      continue;
+    }
+
+    if (PS_OPENS_COMMAND.has(c)) {
+      atCommandPosition = true;
+      wordIndex = 0;
+      inShellInvocation = false;
+      shellKind = null;
+      nextWordIsShellCode = false;
+      prevWordLower = null;
+      i += 1;
+      continue;
+    }
+
+    if (PS_CLOSES_WORD.has(c)) { i += 1; continue; }
+
+    // A backtick at line end, outside a word, is a line continuation: the
+    // logical line keeps going, so command position must NOT reset.
+    if (c === '`' && (src[i + 1] === '\n' || (src[i + 1] === '\r' && src[i + 2] === '\n'))) {
+      i += src[i + 1] === '\r' ? 3 : 2;
+      continue;
+    }
+
+    const word = readPsWord(src, i);
+    if (word.end === i) { i += 1; continue; } // never fail to advance
+    const start = i;
+    i = word.end;
+
+    if (nextWordIsShellCode) {
+      nextWordIsShellCode = false;
+      const nested = shellKind === 'posix'
+        ? findForbiddenToken(word.value, depth + 1)
+        : findForbiddenTokenPowerShell(word.value, depth + 1);
+      if (nested) return { ...nested, nested: true };
+      atCommandPosition = false;
+      wordIndex += 1;
+      prevWordLower = word.value.toLowerCase();
+      continue;
+    }
+
+    const lower = word.value.toLowerCase();
+
+    if (atCommandPosition && lower === TOKEN) {
+      let j = i;
+      while (j < src.length && isSpace(src[j])) j += 1;
+      const form = (prevWordLower === 'function' || src[j] === '(') ? 'function' : 'command';
+      return { index: start, fragment: fragmentAround(src, start), form, nested: false };
+    }
+
+    if (atCommandPosition) {
+      const base = basename(word.value).toLowerCase();
+      if (wordIndex === 0 && PS_INTERPRETERS.has(base)) {
+        inShellInvocation = true;
+        shellKind = 'powershell';
+      } else if (wordIndex === 0 && PS_POSIX_INTERPRETERS.has(base)) {
+        inShellInvocation = true;
+        shellKind = 'posix';
+      }
+      if (!PS_KEEPS_COMMAND_POSITION.has(lower)) atCommandPosition = false;
+    } else if (inShellInvocation && PS_TAKES_CODE.test(word.value)) {
+      nextWordIsShellCode = true;
+    }
+
+    wordIndex += 1;
+    prevWordLower = lower;
+  }
+
+  return null;
+}
+
+/**
+ * The PowerShell refusal text. Same shape and rules as `refusalMessage`:
+ * names the token and fragment, never proposes a rewritten command, and
+ * offers `Set-Location` (the full cmdlet, not the `cd`/`chdir`/`sl` alias)
+ * as the substitute for a genuine need to change location — see the
+ * header's alias decision.
+ */
+export function refusalMessagePowerShell(finding) {
+  const lines = [];
+  lines.push(`BLOCKED: this PowerShell command contains the forbidden \`${TOKEN}\` token at a command position.`);
+  lines.push('');
+  lines.push(`  ${finding.fragment}`);
+  lines.push('');
+  if (finding.nested) {
+    lines.push('It is inside code passed to an interpreter (-Command / -c), which is still executable code.');
+    lines.push('');
+  }
+  if (finding.form === 'function') {
+    lines.push('This is the function-definition form — PowerShell `function cd { ... }`, or a pasted');
+    lines.push('Bash-style `cd() { }` — and it is the shape that kept happening in the Bash arm too.');
+    lines.push('You are almost certainly not trying to change directory — you are defensively');
+    lines.push('disarming a builtin you think might be lurking in a command. That does not help:');
+    lines.push('the approval classifier matches the TOKEN, not the intent, so defining it IS the');
+    lines.push('violation. Delete it. If the command you were guarding against really contains the');
+    lines.push('token, that command is the thing to rewrite.');
+  } else {
+    lines.push('The approval classifier matches the TOKEN, not the intent, in PowerShell exactly as');
+    lines.push('in Bash. In an unattended run this does not stall a turn — it raises an approval');
+    lines.push('prompt that wakes the maintainer at night. That is the whole reason for the rule.');
+  }
+  lines.push('');
+  lines.push('Substitutes, in order of how often they are the answer here:');
+  lines.push('  - git:   git -C D:/AddictedtoAI <subcommand>');
+  lines.push('  - npm:   npm --prefix D:/AddictedtoAI run <script>');
+  lines.push('  - node:  node D:/AddictedtoAI/<path>.mjs   (absolute path, no working directory needed)');
+  lines.push('  - files: use Read / Write / Edit / Grep / Glob, which take absolute paths');
+  lines.push('  - genuinely need to change location: the full cmdlet name Set-Location does the same');
+  lines.push('    thing as the cd/chdir/sl alias without spelling the token the classifier matches.');
+  lines.push('  - anything that genuinely needs a working directory or an exit code:');
+  lines.push('    write a .mjs and spawn the command from it with `{ cwd }`.');
+  lines.push('');
+  lines.push('Rewrite the command yourself and run it again. This guard will not rewrite');
+  lines.push('it for you, deliberately: a silent fix teaches nothing.');
+  lines.push('(beads addictedtoai-pxj, addictedtoai-4tk · D:/AddictedtoAI/scripts/shell-token-guard.mjs)');
+  return lines.join('\n');
+}
+
 /** Read all of stdin as UTF-8. */
 async function readStdin() {
   const chunks = [];
@@ -370,10 +734,16 @@ async function main() {
   const command = payload?.tool_input?.command;
   if (typeof command !== 'string') process.exit(0);
 
-  const finding = findForbiddenToken(command);
+  // The settings.json matcher this hook is wired under determines which
+  // tool invocations reach it at all ("Bash" today; "Bash|PowerShell" once
+  // widened). Dispatch on tool_name rather than guessing from the command
+  // text, and default to the Bash arm so its existing behaviour — and
+  // every test that predates this dispatch — is untouched.
+  const isPowerShell = payload?.tool_name === 'PowerShell';
+  const finding = isPowerShell ? findForbiddenTokenPowerShell(command) : findForbiddenToken(command);
   if (!finding) process.exit(0);
 
-  const message = refusalMessage(finding);
+  const message = isPowerShell ? refusalMessagePowerShell(finding) : refusalMessage(finding);
   process.stdout.write(
     JSON.stringify({
       hookSpecificOutput: {
