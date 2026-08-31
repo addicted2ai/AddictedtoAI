@@ -161,3 +161,23 @@ snippet is exactly the failure this repository's review exists to catch.
 - It passes the would-send test in a form the reviewer can restate: who would
   send this, and to whom. The intended answer is that anyone running agentic
   evaluations sends it to whoever owns their sandbox.
+
+---
+
+RETIRED 2026-08-31 by the orchestrator, by hand, because the loop has no
+mechanism to do it.
+
+This proposal was selected, written, reviewed (revise, then approve on pass 2)
+and merged as job j-20260831-05. The post is
+`content/blog/three-accounts-hugging-face-intrusion.md`.
+
+It was still sitting in `data/proposals/` afterwards, and the very next
+`--dry-run` selected it again. Its `expires:` is 2026-09-07, so without this move
+the loop would have re-written the same post on every run for a week, each time
+spending a full author-plus-review cycle to produce a duplicate the merge would
+then have to deal with.
+
+Filed as its own issue with the mechanical fix. This directory is not part of the
+design: `readProposals` reads top-level `.md` only, so any subdirectory removes a
+file from selection, and `consumed/` says what happened where `dropped/` (the
+scout declined it) and `rejected/` (same-type discard) would both be lies.

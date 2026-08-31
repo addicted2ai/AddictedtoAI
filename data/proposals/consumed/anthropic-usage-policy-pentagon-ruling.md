@@ -141,3 +141,15 @@ writing:
 - The would-send answer is articulable: anyone who drafts or relies on an AI
   acceptable-use policy sends this to whoever negotiates their enterprise terms,
   and anyone selling AI into government sends it to their counsel.
+
+---
+
+RETIRED 2026-08-31 by the orchestrator, by hand, because the loop has no
+mechanism to do it. Selected, written, reviewed and merged as job j-20260831-06.
+The post is `content/blog/anthropic-usage-policy-government-exceptions.md`.
+
+Left in place it stays selectable until its `expires:` date, and the loop
+rewrites the same post on every run until then. `readProposals` reads
+top-level `.md` only, so this subdirectory removes it from selection;
+`consumed/` because `dropped/` (the scout declined it) and `rejected/`
+(same-type discard) would both misdescribe what happened.

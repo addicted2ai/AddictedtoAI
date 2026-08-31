@@ -119,3 +119,15 @@ plainly without inflating it into a trend piece.
 - The would-send answer is articulable: anyone who pays for Claude sends this to
   whoever else has the login, and anyone running a team on AI subscriptions sends
   it to whoever owns endpoint security.
+
+---
+
+RETIRED 2026-08-31 by the orchestrator, by hand, because the loop has no
+mechanism to do it. Selected, written, reviewed and merged as job j-20260831-07.
+The post is `content/blog/claude-session-theft-infostealers.md`.
+
+Left in place it stays selectable until its `expires:` date, and the loop
+rewrites the same post on every run until then. `readProposals` reads
+top-level `.md` only, so this subdirectory removes it from selection;
+`consumed/` because `dropped/` (the scout declined it) and `rejected/`
+(same-type discard) would both misdescribe what happened.
