@@ -15,21 +15,21 @@ mentions:
 
 A benchmark score measures a procedure, not a model. The procedure is the
 items, the prompt format, the scoring rule, how many examples were shown first,
-the decoding settings, and the software that ran the whole thing. Change any of
-them and the number changes, legitimately, with nobody lying. Most apparent
+the decoding settings, and the software that ran the whole thing. That last
+piece has a name in the field: the program that feeds the items to a model and
+scores what comes back is the harness. Change any of them and the number
+changes, legitimately, with nobody lying. Most apparent
 disagreement between published scores is disagreement about the procedure, and
 the procedure is usually not published beside the number.
 
 ## The scoring rule is part of the measurement
 
 Take a multiple-choice test, the most standardised artefact in the field. There
-are at least three ways to score it, and they are three different tests:
-
-- compare the model's probability for each option **letter** and take the
-  highest;
-- compare its probability for each option's **full text**, usually normalised
-  by length;
-- make it **generate** an answer as text, and parse what comes out.
+are at least three ways to score it, and they are three different tests. You
+can compare the model's probability for each option letter and take the
+highest. You can compare its probability for each option's full text, usually
+normalised by its length. Or you can make the model generate an answer as text
+and parse what comes out.
 
 The first can never fail to parse and can never refuse. The third can fail for
 reasons unrelated to knowing the answer — a preamble, an unexpected format, a
@@ -86,7 +86,8 @@ is right.
 
 ## A difference smaller than the interval is not a difference
 
-A benchmark has a finite number of items, so a score is an estimate with a
+A benchmark has a finite number of items, so a score is an estimate, and every
+estimate drawn from a finite sample carries a margin. That margin is the
 standard error, and comparisons are usually published without one. Where the
 score comes from sampled generations rather than probabilities, run-to-run
 variance stacks on top of item variance. Two numbers differing in the first
@@ -96,8 +97,10 @@ precision.
 
 ## The smooth thing is the loss; the jagged thing is the metric
 
-Pretraining loss falls predictably with compute and data — that regularity is
-what scaling laws describe. Benchmark accuracy does not inherit the smoothness,
+Training scores a model on how wrong its next-token predictions were, averaged
+over everything it read. The field calls that number the loss. In pretraining
+it falls predictably with compute and data, and that regularity is what scaling
+laws describe. Benchmark accuracy does not inherit the smoothness,
 because a benchmark applies a threshold to a continuous quantity: the model's
 probability of the correct answer can climb steadily for a long time while the
 answer it actually emits stays wrong, and then flip.
@@ -113,14 +116,15 @@ pass@k asks whether any of k samples passes a checker; pass@1 asks about one
 sample. Training that concentrates probability on the model's best answer
 raises pass@1 and can lower pass@k, because it spends the diversity that a
 larger k was harvesting. That is the measured pattern for models trained
-against verifiable rewards:
+against verifiable rewards, meaning rewards a checker settles rather than a
+person:
 {{fact:technique/reinforcement-learning-with-verifiable-rewards#pass_at_k_finding}}.
 
 How to read it matters. If the base model already produces a passing solution
-within k tries, the training did not add the capability — it moved probability
-mass onto it. Whether that counts as an improvement depends on how many tries
-your deployment gets, which is a fact about your product rather than about the
-model.
+within k tries, the training did not add the capability. It concentrated the
+model's probability onto it. Whether that counts as an improvement depends on
+how many tries your deployment gets, which is a fact about your product rather
+than about the model.
 
 ## Preference arenas measure preference
 
@@ -130,8 +134,8 @@ confident register all move votes. A model tuned to produce longer,
 better-organised answers climbs such a ranking with no change in what it knows.
 
 That is not cheating. It is what the instrument measures, and it measures it
-well — which is a reason to read the ranking as what raters chose, and not as
-an accuracy result by another name.
+well, which is a reason to read the ranking as what raters chose and not as an
+accuracy result by another name.
 
 ## What benchmarks are actually for
 

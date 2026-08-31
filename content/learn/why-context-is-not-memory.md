@@ -31,20 +31,21 @@ the claim and the objection, and produces its next token from the pair.
 
 So "I already told you not to do that" is not a retraction. It is a second
 instruction competing with the first, and with everything the model has since
-written in the first's direction — several turns of text all agreeing with the
-thing you are trying to remove. Interfaces that let you edit a message and
-resend are doing the only thing that actually removes text: rebuilding the
+written in the first's direction. That is several turns of text, all agreeing
+with the thing you are trying to remove. Interfaces that let you edit a message
+and resend are doing the only thing that actually removes text: rebuilding the
 sequence without it. Starting a new conversation is the blunt version of the
 same move, which is why it so often works when arguing does not.
 
 ## The same words do different work depending on where they sit
 
-Position is part of a token's representation, so the model is not reading a set
-of facts; it is reading an ordered document. The measured consequence is
-consistent across models: [Lost in the
+Where a token sits is folded into what the model receives for it, before any of
+the arithmetic runs. So the model is not reading a set of facts. It is reading
+an ordered document, and the measured consequence is consistent across models:
+[Lost in the
 Middle](https://arxiv.org/abs/2307.03172) varied where the needed passage sat
 in a long input and found accuracy highest when it was near the beginning or
-the end and lowest in the middle — including for models built specifically for
+the end and lowest in the middle, including for models built specifically for
 long inputs.
 
 There is a structural reason to expect dilution alongside it. Attention weights
@@ -58,11 +59,12 @@ identical.
 
 An advertised length states how many positions a model will accept without
 erroring. Whether it can find the relevant span among them is a separate
-question with a separately measured answer — that is what [effective context
+question with a separately measured answer. That is what [effective context
 length](/wiki/concept/effective-context-length) is, and the benchmarks built to
 test it live there with their results. The short form: retrieval that a keyword
-search would also solve survives long inputs, and retrieval that needs a
-semantic hop degrades well before the advertised limit.
+search would also solve survives long inputs. Retrieval that has to match on
+meaning, where the wording of the question and the wording of the passage do
+not line up, degrades well before the advertised limit.
 
 ## Every turn pays for the whole conversation
 
@@ -88,10 +90,12 @@ listed, edited and deleted, and why they can be wrong in a way the model has no
 means of detecting: a retrieved memory arrives in the same channel as the
 sentence you typed a second ago, carrying the same standing.
 
-That property is also the root of prompt injection. A document the model was
-asked to summarise and an instruction from you are both text in one sequence.
+That property is also the root of the attack called prompt injection: an
+instruction reaches the model hidden inside content it was only asked to read.
+A document the model was asked to summarise and an instruction from you are
+both text in one sequence.
 An "ignore your instructions" sitting inside a fetched web page is, to the
-arithmetic, an instruction in the input — there is no field marking one as data
+arithmetic, an instruction in the input. There is no field marking one as data
 and the other as command, because there is only one field. Every defence
 against this is built outside the model: delimiters the model is trained to
 respect, classifiers on the way in, and limits on what tools may do while
@@ -106,8 +110,8 @@ record, and every subsequent answer reasons from it.
 
 An error introduced by a summary cannot be corrected by pointing at the earlier
 message, because that message is no longer present. This is the specific and
-underrated failure of very long sessions — the model is not contradicting
-itself, it is faithfully continuing a compressed history that dropped the
+underrated failure of very long sessions. The model is not contradicting
+itself. It is faithfully continuing a compressed history that dropped the
 detail you now need.
 
 ## The working model

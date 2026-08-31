@@ -41,13 +41,10 @@ choice are separate problems, and only one of them has a cheap fix.
 
 Tools are described to the model in its input, as prose or a schema. Adding a
 tool means adding text to every request for the rest of the run. Two things
-follow:
-
-- the descriptions compete for room with the task, the history, and every tool
-  result so far;
-- a long list of similar-looking tools is a harder selection problem than a
-  short list of distinct ones, for the same reason near-duplicate options are
-  always harder.
+follow. The descriptions compete for room with the task, the history, and every
+tool result so far. And a long list of similar-looking tools is a harder
+selection problem than a short list of distinct ones, for the same reason
+near-duplicate options are always harder.
 
 The [Model Context Protocol](/wiki/concept/model-context-protocol) standardises
 how a harness discovers tools and describes them, which removes a large amount
@@ -58,9 +55,9 @@ arrive as tokens in the prompt and are paid for at every step.
 
 If each step succeeds independently with some probability, a task requiring
 many steps succeeds with that probability raised to the number of steps. A
-nineteen-in-twenty per-step success rate — which would be a very good model —
+nineteen-in-twenty per-step success rate, which would be a very good model,
 comes out worse than a coin flip after fourteen steps. Nothing in that
-arithmetic is specific to language models; it is why long uninterrupted
+arithmetic is specific to language models. It is why long uninterrupted
 pipelines are hard in every field.
 
 What matters is what it implies about fixes. Raising per-step reliability helps,
@@ -76,7 +73,7 @@ checker converts a compounding failure into a retry.
 ## The sequence grows, and it grows with machine output
 
 Every step appends three things: what the model wrote, the call it made, and
-whatever the tool returned. Tool returns are large and mostly irrelevant — a
+whatever the tool returned. Tool returns are large and mostly irrelevant: a
 directory listing, a stack trace, a page of structured data of which one field
 mattered. After enough steps the input is mostly machine output, and the
 instruction that defined the task is a small, distant fraction of it, competing
@@ -86,8 +83,8 @@ That is where long runs drift. The model did not get worse; its input stopped
 resembling the input it started with. Both failures from the rung below apply
 here at speed: the wrong turn at step three is still in the sequence at step
 thirty, and where the harness compacts the history to fit, that compaction is
-lossy and one-way. A generous advertised length does not rescue it — see
-[effective context length](/wiki/concept/effective-context-length) — because
+lossy and one-way. A generous advertised length does not rescue it (see
+[effective context length](/wiki/concept/effective-context-length)), because
 what degrades is finding the relevant span, and an agent's sequence is exactly
 a long input in which one early instruction is the span that matters.
 
@@ -111,9 +108,7 @@ proceed, not a sentence the model wrote about intending not to skip it.
 
 ## When an agent fails
 
-Three questions, in order, and none of them is about the model.
-
-- What is in the sequence that should not be — a stale error, an abandoned
-  wrong turn, a tool result nobody needed?
-- What was the harness permitted to do, and what did it check before doing it?
-- Which step had a checker available and did not use it?
+Three questions, in order, and none of them is about the model. What is in the
+sequence that should not be — a stale error, an abandoned wrong turn, a tool
+result nobody needed? What was the harness permitted to do, and what did it
+check before doing it? Which step had a checker available and did not use it?

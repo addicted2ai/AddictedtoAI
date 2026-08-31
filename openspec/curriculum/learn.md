@@ -777,9 +777,23 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 
 ### Mechanics
 
-#### `how-models-are-trained` — existing, untouched
-- **Status**: existing (mechanics) · **Area**: C ·
-  **Prerequisites**: `how-a-language-model-works` (unchanged).
+#### `how-models-are-trained` — existing, rewritten 2026-08-30
+- **Status**: **rewritten 2026-08-30** (mechanics) · **Area**: C ·
+  **Prerequisites**: `how-a-language-model-works` (unchanged). The line here
+  previously read "existing, untouched"; corrected per §0.5.
+- **This page is declared by seven others across three rungs**, which makes it
+  the most load-bearing page on the surface. It was also, before the rewrite,
+  the second-shortest on its rung and carried its worst jargon defects — the
+  rung's vocabulary ran backwards from here, with `loss` used undefined on two
+  mechanics pages and only defined on the last page of the rung in reading
+  order. That cannot be fixed with a prerequisite edge: the pages that teach
+  those terms already declare this one, so the reverse edge is a cycle, proved
+  by script rather than asserted. **The definitions have to live here**, and
+  now do.
+- **Anyone editing this page reads its dependents first.** What they lean on is
+  what this page owes them, and a page that assumes a definition this one never
+  wrote is a defect this one caused. The 2026-08-30 rewrite read six of the
+  seven and preserved verbatim the phrases they quote.
 
 #### `what-a-benchmark-measures` — existing, untouched
 - **Status**: existing (mechanics) · **Area**: E ·

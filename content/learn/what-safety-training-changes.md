@@ -35,15 +35,22 @@ page.
 
 ## Refusal is mediated by a single direction
 
-The most useful result here is mechanistic. In [Refusal in Language Models Is
-Mediated by a Single Direction](https://arxiv.org/abs/2406.11717), the authors
-found across thirteen open-weight chat models that refusal is carried by one
-direction in the residual stream: erase that direction from the activations and
-the model stops refusing harmful instructions, while its other capabilities
-stay largely intact. Add the direction on a harmless request and it refuses
-that instead. The same paper analyses adversarial suffixes and finds them
-working by suppressing the propagation of that same signal — a very different
-looking attack with an identical target.
+The most useful result here is mechanistic, and it needs two of the field's
+words first. The activations are the numbers flowing through the network on one
+particular input, as against the weights, which are fixed and the same whatever
+you ask. Those numbers travel upward through the stack of blocks as a running
+total that each block reads from and adds back into, and that running total is
+the residual stream.
+
+In [Refusal in Language Models Is Mediated by a Single
+Direction](https://arxiv.org/abs/2406.11717), the authors found across thirteen
+open-weight chat models that refusal is carried by one direction in that
+stream: erase that direction from the activations and the model stops refusing
+harmful instructions, while its other capabilities stay largely intact. Add the
+direction on a harmless request and it refuses that instead. The same paper
+analyses adversarial suffixes, the odd-looking strings appended to a request to
+force it through, and finds them working by suppressing the propagation of that
+same signal. A very different looking attack, with an identical target.
 
 Read structurally, this says safety training did not distribute the behaviour
 throughout the network. It installed something with a location, and a behaviour
@@ -59,17 +66,15 @@ concentrated in the first few tokens of the response. [Safety Alignment Should
 Be Made More Than Just a Few Tokens
 Deep](https://arxiv.org/abs/2406.05946) names the phenomenon and shows how much
 rides on it. Once a compliant opening exists in the sequence, the continuation
-follows something much closer to the base distribution — and no operation in
+follows something much closer to the base distribution. And no operation in
 the architecture revises an emitted token, so the model cannot back out of an
 opening it has already produced.
 
-That one fact accounts for techniques that otherwise look like a list:
-
-- prefilling the assistant's turn with the first words of a compliant answer;
-- requiring the reply to begin with a fixed phrase;
-- filling the input with many examples of compliant exchanges, so the pattern
-  in progress is compliance;
-- anything else that gets past the first sentence.
+That one fact accounts for techniques that otherwise look like a list.
+Prefilling the assistant's turn with the first words of a compliant answer.
+Requiring the reply to begin with a fixed phrase. Filling the input with many
+examples of compliant exchanges, so that the pattern in progress is compliance.
+Anything else at all that gets past the first sentence.
 
 They are not four techniques. They are one technique — get the model past the
 shallow region — approached from four directions.
@@ -82,7 +87,7 @@ moves that distribution moves the safety behaviour, intent notwithstanding.
 Intend To!](https://arxiv.org/abs/2310.03693) measured both halves: a handful
 of adversarial examples was enough to strip the guardrails from a hosted
 fine-tuning endpoint, at a cost the authors report in cents, and fine-tuning on
-ordinary harmless task data degraded them too — less severely, and with nobody
+ordinary harmless task data degraded them too, less severely and with nobody
 trying.
 
 This is the practically important one, because it is not an attack. It is the
@@ -96,13 +101,13 @@ Preference optimisation maximises agreement with raters' choices between
 responses. That is a proxy for a policy, and the gap between the two shows up
 in both directions.
 
-**Over-refusal.** Requests sharing surface features with disallowed ones get
-declined. The model learned the features that co-occurred with refusal during
-training, not a rule anybody wrote down.
+In one direction it over-refuses. Requests sharing surface features with
+disallowed ones get declined, because the model learned the features that
+co-occurred with refusal during training, not a rule anybody wrote down.
 
-**Under-refusal on a rephrasing.** The same request in a different frame,
-register or language passes, because the features that triggered the learned
-behaviour are absent even though the request is not.
+In the other it under-refuses on a rephrasing. The same request in a different
+frame, register or language passes, because the features that triggered the
+learned behaviour are absent even though the request is not.
 
 A model that declines to explain how a lock works and complies when the request
 is framed as fiction has not applied a policy inconsistently. It never had a
