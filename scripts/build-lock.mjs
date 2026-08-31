@@ -140,6 +140,58 @@ import { hostname, tmpdir } from 'node:os';
  */
 export const LOCK_SUFFIX = '.atai-build.lock';
 
+/**
+ * The suffix for the TEST-SUITE lock (beads addictedtoai-ngz), kept as its own
+ * file rather than sharing `LOCK_SUFFIX`.
+ *
+ * THE DEFECT THIS EXISTS FOR: a Desk gate's `npm test` was failed by
+ * `pulse/tests/publish-verify.test.mjs` — a real assertion, tripped by a fake
+ * cause. Three unrelated `npm test` callers (subagents) were running
+ * concurrently with the gate; several `pulse` tests stand up HTTP fixtures on
+ * loopback, and on this machine `fetch failed` from undici on 127.0.0.1 is
+ * usually `EADDRINUSE` from machine-wide ephemeral-port exhaustion (range
+ * 1025-14999, `TIME_WAIT` holds for minutes) — not a dead server. Re-run alone
+ * minutes later, the same file passed 8/8. The ledger recorded `outcome:
+ * failed, note: "gates failed"` — indistinguishable from a real content
+ * defect, and a third of the way to Breaker 1 disabling that job type.
+ *
+ * `npm test` runs `scripts/run-tests.mjs`, so THAT is where the lock has to be
+ * taken — not in `loop/lib/gates.mjs`, which only the Desk's own gate runs
+ * through. The three colliding subagents in the incident above called
+ * `npm test` directly and never touched `gates.mjs`; a lock placed there would
+ * have been invisible to exactly the processes that caused the collision. A
+ * lock only serialises the parties that take it, so it has to sit where every
+ * caller — the Desk's gate, a subagent, the maintainer typing `npm test` —
+ * converges, whatever invoked them. `run-tests.mjs` is that point.
+ *
+ * SHARING `LOCK_SUFFIX` WAS CONSIDERED AND REJECTED. It is one line and needs
+ * no change here at all — but the build and the test suite do not actually
+ * contend for the same resource. `next build` fights over `.next/` and `out/`;
+ * the suite fights over loopback ports. `buildSurfaceKey`'s header makes the
+ * opposite case for the BUILD lock — that a wider key is worth a wait rather
+ * than a wrong answer — but that argument is about a surface the measurement
+ * there could not rule out. Here the two surfaces are known and distinct, so
+ * widening buys nothing and only costs wall time: a root `npm run build` and a
+ * Desk gate's `npm test` would serialise against each other for no reason,
+ * every time the two happen to overlap. A separate suffix costs one small
+ * generalisation (`buildLockPath` and `acquireBuildLock` both take the suffix
+ * as a parameter now, defaulting to `LOCK_SUFFIX` so every existing caller is
+ * unaffected) and buys locks that only ever contend with their own kind.
+ *
+ * NOT REENTRANT, same as the build lock, and this is where it would bite if
+ * ever ignored: `loop/lib/gates.mjs` runs `['test', 'build']` as two separate
+ * `npm run` child processes, one after the other — `run-tests.mjs` acquires
+ * this lock, runs the suite, and releases in a `finally` before the `build`
+ * script's process even starts, so nothing here is ever held while the build
+ * lock is requested, in either order, by one caller. That has to stay true.
+ * The failure mode if it stops being true is not "slow" but "wedged": a future
+ * change that nests a test run inside a build (or vice versa) inside one
+ * process holding the other's lock would block for the full `waitMs` and then
+ * fail a gate for a reason that has nothing to do with the code under test —
+ * this exact issue, reintroduced by its own fix.
+ */
+export const TEST_LOCK_SUFFIX = '.atai-test.lock';
+
 /** The temp-directory subdirectory holding every lock for this user. */
 export const LOCK_DIR_PREFIX = 'atai-build-locks';
 
@@ -197,11 +249,18 @@ export function buildSurfaceKey(dir) {
 /**
  * The lock file for the build surface `dir` shares.
  *
+ * `suffix` picks which lock family the path belongs to — `LOCK_SUFFIX` (the
+ * default, for `next build`) or `TEST_LOCK_SUFFIX` (for `npm test`, see its
+ * doc comment above for why the two are separate files rather than one). Both
+ * live in the same lock directory and hash the same `buildSurfaceKey`, so a
+ * build and a test run over one surface get two independent files that never
+ * contend with each other, only with their own kind.
+ *
  * Pure: it creates nothing. `acquireBuildLock` makes the directory.
  */
-export function buildLockPath(dir) {
+export function buildLockPath(dir, suffix = LOCK_SUFFIX) {
   const digest = createHash('sha256').update(buildSurfaceKey(dir)).digest('hex').slice(0, 32);
-  return join(buildLockDir(), `${digest}${LOCK_SUFFIX}`);
+  return join(buildLockDir(), `${digest}${suffix}`);
 }
 
 /**
@@ -321,6 +380,18 @@ function createLockFile(path, body) {
  * @param {string} o.dir          the tree about to be built
  * @param {number} [o.holderPid]  the pid that will live for the whole build
  * @param {string} [o.label]
+ * @param {string} [o.suffix]     which lock family — `LOCK_SUFFIX` (default)
+ *   or `TEST_LOCK_SUFFIX`. See `TEST_LOCK_SUFFIX`'s doc comment for why the
+ *   build and the test suite get independent files rather than one lock.
+ * @param {string} [o.activity]   the word used in "another ${activity} holds…"
+ *   and "waiting for … to finish its ${activity}". Defaults to 'build'; a
+ *   caller locking something other than a build (e.g. `run-tests.mjs` passes
+ *   'test run') should override it so the message says what is actually
+ *   contended.
+ * @param {string} [o.contentionNote]  one sentence explaining what breaks
+ *   when two of this activity overlap, folded into both the wait log and the
+ *   refusal error. Defaults to the ENOENT/pages-manifest failure this module
+ *   was built for; override it for a different lock family's own failure mode.
  * @param {number} [o.waitMs]     0 means "do not wait", fail on contention
  * @param {number} [o.staleMs]
  * @param {number} [o.pollMs]
@@ -332,13 +403,17 @@ export function acquireBuildLock({
   dir,
   holderPid = process.pid,
   label = 'build',
+  suffix = LOCK_SUFFIX,
+  activity = 'build',
+  contentionNote = 'Two builds sharing one output directory fail with ENOENT on ' +
+    '.next/server/pages-manifest.json AFTER the pages generate, which looks like a content defect and is not',
   waitMs = DEFAULT_WAIT_MS,
   staleMs = DEFAULT_STALE_MS,
   pollMs = 500,
   unreadableGraceMs = 5000,
   log = () => {},
 } = {}) {
-  const path = buildLockPath(dir);
+  const path = buildLockPath(dir, suffix);
   const surface = buildSurfaceKey(dir);
   // 0o700 matters only on POSIX, where the parent (/tmp) is world-writable.
   mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
@@ -413,19 +488,17 @@ export function acquireBuildLock({
     const waited = Date.now() - started;
     if (waited >= waitMs) {
       throw new Error(
-        `another build holds ${path}: ${describe(holder)}. Waited ${(waited / 1000).toFixed(0)}s.\n` +
+        `another ${activity} holds ${path}: ${describe(holder)}. Waited ${(waited / 1000).toFixed(0)}s.\n` +
           `That file is the lock for the build surface ${surface}.\n` +
-          `Two builds sharing one output directory fail with ENOENT on .next/server/pages-manifest.json ` +
-          `AFTER the pages generate, which looks like a content defect and is not — so this refuses ` +
-          `rather than racing. Wait for the other build, or delete the lock file if you know its ` +
-          `process is gone.`,
+          `${contentionNote} — so this refuses rather than racing. Wait for the other ${activity}, ` +
+          `or delete the lock file if you know its process is gone.`,
       );
     }
     if (!announced) {
       announced = true;
       log(
-        `build-lock: waiting for ${describe(holder)} to finish its build. ` +
-          `Two builds sharing one output directory fail spuriously; this waits instead.`,
+        `build-lock: waiting for ${describe(holder)} to finish its ${activity}. ` +
+          `${contentionNote}; this waits instead.`,
       );
     }
     sleepSync(Math.min(pollMs, Math.max(0, waitMs - waited)));
@@ -440,7 +513,14 @@ export function releaseBuildLock(path, holderPid = process.pid) {
   return true;
 }
 
-/** Acquire, run, release — for a caller that lives for the whole build. */
+/**
+ * Acquire, run, release — for a caller that lives for the whole locked
+ * activity (a build, or since addictedtoai-ngz, a test run — see `suffix` on
+ * `acquireBuildLock`). Unlike `prebuild.mjs`, which exits before the build it
+ * protects even starts and so must record its parent's pid as the holder,
+ * this releases honestly in the `finally` because the caller is still here
+ * when the work finishes.
+ */
 export function withBuildLock(opts, fn) {
   const lock = acquireBuildLock(opts);
   try {

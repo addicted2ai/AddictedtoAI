@@ -48,6 +48,7 @@ import {
   releaseBuildLock,
   LOCK_DIR_PREFIX,
   LOCK_SUFFIX,
+  TEST_LOCK_SUFFIX,
 } from './build-lock.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -372,6 +373,64 @@ test('a lock written by another machine is reclaimed, because its pid cannot be 
   const lock = acquireBuildLock({ dir, waitMs: 0 });
   assert.equal(lock.reclaimed, true, 'a foreign-host lock must not block this machine');
   releaseBuildLock(path);
+  removeTree(root);
+});
+
+/**
+ * addictedtoai-ngz: `LOCK_SUFFIX` had to become a parameter so `run-tests.mjs`
+ * could get its own lock family (`TEST_LOCK_SUFFIX`) without duplicating this
+ * module. Asserted as a property of `buildLockPath`, not read off the source.
+ */
+test('buildLockPath: a different suffix is a different file for the same tree, and the default is unchanged', () => {
+  const root = tmp();
+  const dir = join(root, 'tree');
+  mkdirSync(join(dir, 'node_modules'), { recursive: true });
+
+  assert.equal(buildLockPath(dir), buildLockPath(dir, LOCK_SUFFIX), 'the default suffix is still LOCK_SUFFIX');
+  assert.notEqual(
+    buildLockPath(dir, TEST_LOCK_SUFFIX),
+    buildLockPath(dir, LOCK_SUFFIX),
+    'the test lock and the build lock must not collide on one file',
+  );
+  assert.ok(buildLockPath(dir, TEST_LOCK_SUFFIX).endsWith(TEST_LOCK_SUFFIX));
+  // Same surface either way — only the file differs, not what it is keyed on.
+  const digestOf = (p) => p.split(/[\\/]/).pop().replace(TEST_LOCK_SUFFIX, '').replace(LOCK_SUFFIX, '');
+  assert.equal(digestOf(buildLockPath(dir, TEST_LOCK_SUFFIX)), digestOf(buildLockPath(dir, LOCK_SUFFIX)));
+
+  removeTree(root);
+});
+
+/**
+ * `acquireBuildLock`'s `activity`/`contentionNote` parameters exist so a
+ * non-build caller's refusal message tells the truth about what is actually
+ * contended, instead of talking about `next build` and `pages-manifest.json`
+ * when nobody involved is building anything. Checked against the message a
+ * real refusal produces, not merely that the parameters are accepted.
+ */
+test('acquireBuildLock: a custom activity and contentionNote replace the build-specific wording in the refusal', () => {
+  const root = tmp();
+  const dir = join(root, 'tree');
+  mkdirSync(dir, { recursive: true });
+  const held = acquireBuildLock({ dir, suffix: TEST_LOCK_SUFFIX, label: 'a test run already in progress' });
+
+  assert.throws(
+    () =>
+      acquireBuildLock({
+        dir,
+        suffix: TEST_LOCK_SUFFIX,
+        waitMs: 0,
+        activity: 'test run',
+        contentionNote: 'ephemeral ports run out',
+      }),
+    (err) => {
+      assert.match(err.message, /another test run holds/);
+      assert.match(err.message, /ephemeral ports run out/);
+      assert.doesNotMatch(err.message, /pages-manifest\.json/, 'the build-specific explanation must not leak into a test-lock refusal');
+      return true;
+    },
+  );
+
+  releaseBuildLock(held.path, held.holderPid);
   removeTree(root);
 });
 
