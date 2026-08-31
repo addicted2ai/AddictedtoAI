@@ -32,6 +32,8 @@ evidence: >
   fetched from any page. Treat every item in that last sentence as unverified.
   No Huntress URL was located during the post job; none was searched for, since
   the campaign was outside that job's outcome.
+proposed_by_job: j-20260831-07
+proposed_by_type: post
 ---
 
 ## What the scout job actually has to settle first
