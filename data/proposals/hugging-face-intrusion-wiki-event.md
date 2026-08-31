@@ -32,6 +32,8 @@ evidence: >
   Corpus checks run 2026-08-31 in this worktree: content/wiki/org/ holds 15
   entries and none is Hugging Face; content/wiki/event/ holds 11 and the most
   recent is stable-diffusion-release.md.
+proposed_by_job: j-20260831-05
+proposed_by_type: post
 ---
 
 The blog note this came out of is dated and stays dated, which is correct for a
