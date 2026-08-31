@@ -744,6 +744,28 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2211.00241v1": {
+      "bytes": 43127,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2211.00241v1",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2211.00241v4": {
+      "bytes": 42959,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2211.00241v4",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2211.00593": {
       "bytes": 42646,
       "consecutive_failures": 0,
@@ -2193,6 +2215,28 @@
       "ok": true,
       "status": 200
     },
+    "https://digital-strategy.ec.europa.eu/en/faqs/general-purpose-ai-models-ai-act-questions-answers": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://digital-strategy.ec.europa.eu/en/faqs/general-purpose-ai-models-ai-act-questions-answers",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://digital-strategy.ec.europa.eu/en/policies/enforcement-ai-act": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://digital-strategy.ec.europa.eu/en/policies/enforcement-ai-act",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://digitaleconomy.stanford.edu/wp-content/uploads/2025/08/Canaries_BrynjolfssonChandarChen.pdf": {
       "bytes": 2292240,
       "consecutive_failures": 0,
@@ -2228,6 +2272,17 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://ecosistemastartup.com/bruselas-pide-datos-a-openai-anthropic-y-google-por-ai-act/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://ecosistemastartup.com/bruselas-pide-datos-a-openai-anthropic-y-google-por-ai-act/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -3791,6 +3846,17 @@
       "ok": true,
       "status": 200
     },
+    "https://tokenstead.ai/guides/eu-ai-act-first-enforcement-security-rfis": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://tokenstead.ai/guides/eu-ai-act-first-enforcement-security-rfis",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3798,6 +3864,39 @@
       "final_url": "https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://transformer-circuits.pub/2022/toy_model/index.html": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://transformer-circuits.pub/2022/toy_model/index.html",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html": {
+      "bytes": 16314122,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://transformer-circuits.pub/2025/attribution-graphs/biology.html": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://transformer-circuits.pub/2025/attribution-graphs/biology.html",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3890,6 +3989,17 @@
       "ok": true,
       "status": 200
     },
+    "https://www.aclu.org/news/privacy-technology/wrongfully-arrested-because-face-recognition-cant-tell-black-people-apart": {
+      "bytes": 17485,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.aclu.org/news/privacy-technology/wrongfully-arrested-because-face-recognition-cant-tell-black-people-apart",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.aiai.ed.ac.uk/events/lighthill1973/": {
       "bytes": 747,
       "consecutive_failures": 0,
@@ -3901,6 +4011,28 @@
       "ok": true,
       "status": 200
     },
+    "https://www.aisi.gov.uk/work/pre-deployment-evaluation-of-openais-o1-model": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.aisi.gov.uk/blog/pre-deployment-evaluation-of-openais-o1-model",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.aljazeera.com/economy/2026/8/27/openai-says-it-detected-malign-activity-months-before-hugging-face-attack": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.aljazeera.com/economy/2026/8/27/openai-says-it-detected-malign-activity-months-before-hugging-face-attack",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.anthropic.com/claude/mythos": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3908,6 +4040,17 @@
       "final_url": "https://www.anthropic.com/claude/mythos",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.anthropic.com/legal/aup": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.anthropic.com/legal/aup",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3956,6 +4099,50 @@
       "ok": true,
       "status": 200
     },
+    "https://www.ap.org/media-center/press-releases/2023/ap-open-ai-agree-to-share-select-news-content-and-technology-in-new-collaboration/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.ap.org/media-center/press-releases/2023/ap-open-ai-agree-to-share-select-news-content-and-technology-in-new-collaboration/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.bleepingcomputer.com/news/artificial-intelligence/anthropic-warns-infostealer-malware-is-hijacking-claude-sessions-to-drain-usage/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.bleepingcomputer.com/news/artificial-intelligence/anthropic-warns-infostealer-malware-is-hijacking-claude-sessions-to-drain-usage/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.bls.gov/ooh/office-and-administrative-support/tellers.htm": {
+      "bytes": 37789,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.bls.gov/ooh/office-and-administrative-support/tellers.htm",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.bls.gov/soc/2028/2028_soc_revision.htm": {
+      "bytes": 20,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.bls.gov/soc/2028/2028_soc_revision.htm",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.britgo.org/deepmind2016/press1": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3963,6 +4150,17 @@
       "final_url": "https://www.britgo.org/deepmind2016/press1",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.californialawreview.org/print/deep-fakes-a-looming-challenge-for-privacy-democracy-and-national-security": {
+      "bytes": 132011,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.californialawreview.org/print/deep-fakes-a-looming-challenge-for-privacy-democracy-and-national-security",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4029,6 +4227,61 @@
       "final_url": "https://www.computerhistory.org/tdih/may/11/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.copyright.gov/ai/Copyright-and-Artificial-Intelligence-Part-2-Copyrightability-Report.pdf": {
+      "bytes": 1471826,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.copyright.gov/ai/Copyright-and-Artificial-Intelligence-Part-2-Copyrightability-Report.pdf",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.copyright.gov/ai/Copyright-and-Artificial-Intelligence-Part-3-Generative-AI-Training-Report-Pre-Publication-Version.pdf": {
+      "bytes": 1565957,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.copyright.gov/ai/Copyright-and-Artificial-Intelligence-Part-3-Generative-AI-Training-Report-Pre-Publication-Version.pdf",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.courtlistener.com/opinion/3124896/authors-guild-v-google-inc/": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.courtlistener.com/opinion/3124896/authors-guild-v-google-inc/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 202
+    },
+    "https://www.courtlistener.com/opinion/790529/bridgeport-music-inc-westbound-records-inc-southfield-music-inc-nine/": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.courtlistener.com/opinion/790529/bridgeport-music-inc-westbound-records-inc-southfield-music-inc-nine/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 202
+    },
+    "https://www.dair-institute.org/blog/letter-statement-March2023/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://dair-institute.org/blog/letter-statement-March2023/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4117,6 +4370,28 @@
       "final_url": "https://www.image-net.org/challenges/LSVRC/2012/results.html",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.imf.org/external/pubs/ft/fandd/2015/03/bessen.htm": {
+      "bytes": 15905,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.imf.org/external/pubs/ft/fandd/2015/03/bessen.htm",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.japaneselawtranslation.go.jp/en/laws/view/4207": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.japaneselawtranslation.go.jp/en/laws/view/4207",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200

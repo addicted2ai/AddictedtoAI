@@ -15,14 +15,14 @@
   ],
   "date": "2026-08-31",
   "link_check": {
-    "checked": 0,
+    "checked": 25,
     "confirm_after_failures": 2,
     "declined": 2,
     "drifted": 0,
     "due": 40,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 13,
+    "redirected": 14,
     "total": 446
   },
   "listings": [
@@ -626,6 +626,18 @@
       "last_checked": "2026-08-31",
       "meta_refresh": null,
       "url": "https://safe.ai/work/statement-on-ai-risk",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/learn/the-safety-debates.md"
+      ],
+      "final_url": "https://www.aisi.gov.uk/blog/pre-deployment-evaluation-of-openais-o1-model",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-31",
+      "meta_refresh": null,
+      "url": "https://www.aisi.gov.uk/work/pre-deployment-evaluation-of-openais-o1-model",
       "verdict_recorded": true
     },
     {
