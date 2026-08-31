@@ -45,7 +45,7 @@ break the one-file-change property the swap depends on).
 | `lib/budget.mjs` | tier shares, ceilings, the upkeep floor, lane pause, shed level |
 | `lib/select.mjs` | the three work sources, every gate, every named refusal |
 | `lib/directives.mjs` / `queue.mjs` / `proposals.mjs` | the three sources |
-| `lib/surfaces.mjs` | the blog ceiling and the tutorial rules |
+| `lib/surfaces.mjs` | the tutorial rules (the blog ceiling was removed — nothing counts posts) |
 | `lib/brief.mjs` / `specs.mjs` | the self-contained brief and its spec excerpts |
 | `lib/exec.mjs` | the executor contract: one prompt in, files out, killed at the cap |
 | `lib/result.mjs` | the `RESULT.md` protocol |

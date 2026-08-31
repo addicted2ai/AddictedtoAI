@@ -85,7 +85,12 @@ const FLOORS = {
   themedBodies: 3,
   learn: 4,
   tutorials: 2,
-  posts: 2,
+  // 0, not 2 (make-the-blog-worth-sending, task 1.2). The five seed posts were
+  // deleted with that change and the blog restarts empty by decision: the scout
+  // finds the stories and the review gate decides whether one is worth
+  // publishing, so a week with nothing worth sending publishes nothing. A floor
+  // that fails the gates on an intended state is a false alarm, not a check.
+  posts: 0,
   deltas: 12,
   tools: 20,
   catalogRows: 1,
@@ -281,7 +286,13 @@ function checkCorpusFloors(corpus, mint) {
       label,
       actual: String(n),
       floor: `floor ${floor}`,
-      weight: `LOAD-BEARING — all hand-authored. Margin over the floor: ${n - floor}.`,
+      // A floor of 0 is a deliberate absence of a floor, not a bar this surface
+      // is scraping past — say so rather than printing "LOAD-BEARING" over a
+      // count nothing requires (make-the-blog-worth-sending, task 1.2).
+      weight:
+        floor === 0
+          ? `NO FLOOR — this surface is quality-gated, not quota-driven; ${n} is a valid count.`
+          : `LOAD-BEARING — all hand-authored. Margin over the floor: ${n - floor}.`,
       shortfall: `only ${n} ${label} in content/${CONTENT_TYPES[type].dir}/, need ${floor}`,
     });
   }

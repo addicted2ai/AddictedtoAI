@@ -18,7 +18,6 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   CONFIRM_AFTER_FAILURES,
@@ -31,7 +30,7 @@ import {
   rollingLinkCheck,
 } from '../lib/linkcheck.mjs';
 import { corpusLinks, extractLinks, readCorpus } from '../lib/corpus.mjs';
-import { REPO, cleanup, makeRoot, paths, readJson, runPulse, writeEntry, writeJson } from './helpers.mjs';
+import { cleanup, makeRoot, paths, readJson, runPulse, writeEntry, writeJson } from './helpers.mjs';
 
 const ARGS = ['--no-build', '--no-mint', '--offline'];
 const NOW = { PULSE_NOW: '2026-08-28' };
@@ -250,22 +249,43 @@ test('front-matter citations are never touched — that is where source_url live
   );
 });
 
-test('the committed corpus: quoted dead URLs are not repair jobs, and the post\'s own citations still are links', () => {
-  const rel = 'content/blog/reference-urls-that-still-return-200.md';
-  const raw = readFileSync(join(REPO, rel), 'utf8');
+/*
+ * This test used to read `content/blog/reference-urls-that-still-return-200.md`
+ * out of the committed corpus, because that post really did quote three dead
+ * URLs inside a fenced transcript while citing five live ones in prose — the
+ * exact two-sided shape, already in the tree. The post was deleted with the
+ * rest of the seed blog on 2026-08-30 (`make-the-blog-worth-sending`, task
+ * 1.1) and is at `9d6019a`.
+ *
+ * The shape is pinned as a fixture rather than dropped. Its URLs are the
+ * post's own, so what is asserted is still the case that motivated the rule,
+ * and the test now holds whatever the blog contains — including nothing, which
+ * is what it contains today. Nothing here touches the network: `corpusLinks`
+ * only extracts.
+ */
+test('quoted dead URLs are not repair jobs, while prose citations next to them still are links', (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
 
-  // URLs the post quotes inside a fenced transcript and reports as DEAD. They
-  // are the post's evidence. Checked as links they become permanent rank-90
-  // repairs no job can close without deleting the proof.
+  // Reported DEAD by the post itself, inside its fenced transcript. Checked as
+  // links they become permanent rank-90 repairs no job can close without
+  // deleting the proof.
   const quotedDead = ['https://chat.lmsys.org/', 'https://www.paperswithcode.com/', 'https://huggingface.co/imagenet-1k/datasets'];
-  // URLs the same post cites in prose, as links a reader follows.
+  // Cited in the same post's prose, as links a reader follows.
   const prose = ['https://aider.chat/docs/leaderboards/', 'https://huggingface.co/papers/1706.03762', 'https://huggingface.co/datasets/ILSVRC/imagenet-1k'];
 
-  for (const url of [...quotedDead, ...prose]) {
-    assert.ok(raw.includes(url), `${rel} no longer contains ${url} — re-anchor this test against the current post`);
-  }
+  writeEntry(
+    root,
+    'content/blog/quoted-transcript.md',
+    { title: 'A post that quotes a transcript', date: '2026-08-28' },
+    `Checked the leaderboards at ${prose[0]}, the paper at ${prose[1]} and the ` +
+      `dataset at ${prose[2]}.\n\n` +
+      '```\n' +
+      quotedDead.map((u) => `GET ${u} -> DEAD`).join('\n') +
+      '\n```\n',
+  );
 
-  const found = new Set(corpusLinks(readCorpus(REPO)).map((l) => l.url));
+  const found = new Set(corpusLinks(readCorpus(root)).map((l) => l.url));
   for (const url of quotedDead) assert.equal(found.has(url), false, `${url} is quoted evidence in a code fence, not a link this site offers`);
   for (const url of prose) assert.equal(found.has(url), true, `${url} is cited in prose and must still be checked`);
 });

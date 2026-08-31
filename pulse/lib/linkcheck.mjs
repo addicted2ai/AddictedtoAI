@@ -198,6 +198,12 @@ export function saveLinkState(root, state) {
  * is a meta refresh, which no HTTP redirect follower sees. The site published
  * that argument while its own checker read a status code and stopped.
  *
+ * That post was deleted on 2026-08-30 with the rest of the seed blog (change
+ * `make-the-blog-worth-sending`, task 1.1) and is at `9d6019a`. The
+ * measurements it made are the reason this code is shaped the way it is, and
+ * every URL and destination below was re-measured live on 2026-08-29 in
+ * `pulse/tests/linkcheck.test.mjs`, which is where they are pinned now.
+ *
  * Two rules govern what is done about it, and the SECOND OUTRANKS THE FIRST.
  *
  *  1. Record the destination. `final_url`, `bytes` and any meta-refresh hop go

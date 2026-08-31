@@ -1,3 +1,29 @@
 {
-  "redirects": []
+  "redirects": [
+    {
+      "source": "/blog/reference-urls-that-still-return-200",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/same-catalog-same-day",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/seven-open-licences-seven-lines",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/three-definitions-of-a-knowledge-cutoff",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/twelve-months-of-model-retirements",
+      "destination": "/blog",
+      "permanent": true
+    }
+  ]
 }

@@ -9,7 +9,7 @@
  *
  * SPEC GAP, handled explicitly rather than guessed: specs/loop describes a
  * directive as free text, but every selector rule (budget category, wall-clock
- * cap, capacity shedding, the blog ceiling) is keyed by job type. So the file's
+ * cap, capacity shedding, the tutorial gates) is keyed by job type. So the file's
  * documented form is `- <job-type>: <instruction>`, and a line whose type is
  * not from the closed list is SKIPPED WITH A LOUD WARNING naming the line,
  * never guessed at. Guessing would spend the wrong budget under the wrong cap

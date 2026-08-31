@@ -61,15 +61,21 @@ function globMd(dir) {
  * "it never operates inside code blocks, headings, or existing links" — and
  * the same one `lib/linker.mjs` enforces by skipping `code` and `pre`.
  *
- * The corpus proves the need rather than merely suggesting it.
- * `content/blog/reference-urls-that-still-return-200.md` quotes a transcript
- * of twelve fetches, and three of those URLs are reported dead *by the post
+ * A real corpus file once proved the need rather than merely suggesting it.
+ * `content/blog/reference-urls-that-still-return-200.md` quoted a transcript
+ * of twelve fetches, and three of those URLs were reported dead *by the post
  * itself*: `chat.lmsys.org` (ENOTFOUND), `www.paperswithcode.com` (TLS
- * failure), `huggingface.co/imagenet-1k/datasets` (404). They are evidence,
+ * failure), `huggingface.co/imagenet-1k/datasets` (404). They were evidence,
  * quoted as evidence. Scanned as links they become three permanent rank-90
  * repair jobs that no job can close without deleting the post's proof —
- * addictedtoai-5hn's deadlock again, three times over, already in the tree.
- * The same file cites five URLs in prose, and those stay checked.
+ * addictedtoai-5hn's deadlock again, three times over, in the tree at the
+ * time. The same file cited five URLs in prose, and those stayed checked.
+ *
+ * **That post was deleted with the rest of the seed blog on 2026-08-30**
+ * (change `make-the-blog-worth-sending`, task 1.1); it is at `9d6019a`. The
+ * rule outlives it: the shape it demonstrated is now a fixture in
+ * `pulse/tests/linkcheck.test.mjs`, and the next post quoting a dead URL as
+ * evidence will hit exactly this boundary.
  *
  * Citations are unaffected: they live in front-matter `source_url` fields
  * (specs/wiki: a `cited` fact needs a `source_url` and an `accessed` date) and

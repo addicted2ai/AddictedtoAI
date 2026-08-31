@@ -1,57 +1,7 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 604,
+  "count": 599,
   "docs": [
-    {
-      "u": "/blog/reference-urls-that-still-return-200",
-      "t": "Nine of twelve AI reference URLs return 200. Four of them are not what was cited.",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/blog/same-catalog-same-day",
-      "t": "Same catalog, same day: 1,000x on price and 160x on context, 1,161 days apart",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/blog/seven-open-licences-seven-lines",
-      "t": "Open weights, read line by line: seven licences, and no two draw the same line",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/blog/three-definitions-of-a-knowledge-cutoff",
-      "t": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/blog/twelve-months-of-model-retirements",
-      "t": "Twelve months of model retirements: 79 ids across three vendors, and the one-year lifespan keeps landing exactly",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
     {
       "u": "/impossible-routine/beating-poker-professionals",
       "t": "No-limit poker",

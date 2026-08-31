@@ -15,7 +15,6 @@ import { loadConfig } from '../lib/config.mjs';
 import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { readLedger } from '../lib/ledger.mjs';
 import { selectJob, formatRefusals } from '../lib/select.mjs';
-import { recentPosts } from '../lib/surfaces.mjs';
 import { readProposals } from '../lib/proposals.mjs';
 import {
   makeRepo,
@@ -42,10 +41,17 @@ function post(date, slug) {
 }
 
 // ---------------------------------------------------------------------------
-// (a) the blog ceiling — specs/blog
+// (a) no count controls the blog — specs/blog, "publishing is quality-gated,
+// never quota-driven" (make-the-blog-worth-sending, task 1.3)
+//
+// Three tests stood here and asserted the rolling ceiling: three posts in the
+// trailing seven days refused a fourth, two allowed a third, and older posts
+// and drafts did not spend it. The ceiling is gone, so the assertion that
+// replaces them is the one that would catch it coming back — the corpus that
+// used to trip it selects the post job, and no refusal counts published posts.
 // ---------------------------------------------------------------------------
 
-test('(a) a post job is refused while 3 published posts carry dates within the trailing 7 days', () => {
+test('(a) a week already holding three posts does not refuse a fourth post job', () => {
   const files = Object.fromEntries([
     post('2026-09-09', 'one'),
     post('2026-09-07', 'two'),
@@ -53,36 +59,16 @@ test('(a) a post job is refused while 3 published posts carry dates within the t
   ]);
   const ctx = makeRepo({ now: () => NOW, files });
   writeQueue(ctx, [{ type: 'post', title: 'a fourth post this week' }]);
-  assert.equal(recentPosts(ctx).length, 3);
 
-  const sel = select(ctx);
-  assert.equal(sel.selected, null);
-  assert.equal(sel.refusals[0].rule, 'blog:rolling-ceiling');
-  assert.match(sel.text, /\[blog:rolling-ceiling\]/);
-  assert.match(sel.text, /2026-09-05, 2026-09-07, 2026-09-09/);
-  assert.match(sel.text, /depth rather than volume/);
-  ctx.cleanup();
-});
-
-test('(a) two recent posts allow a third', () => {
-  const files = Object.fromEntries([post('2026-09-09', 'one'), post('2026-09-07', 'two')]);
-  const ctx = makeRepo({ now: () => NOW, files });
-  writeQueue(ctx, [{ type: 'post', title: 'a third post this week' }]);
-  assert.equal(recentPosts(ctx).length, 2);
   const sel = select(ctx);
   assert.equal(sel.selected?.type, 'post', sel.text);
-  ctx.cleanup();
-});
-
-test('(a) posts older than 7 days, and drafts, do not spend the ceiling', () => {
-  const files = Object.fromEntries([
-    post('2026-09-01', 'old-one'),
-    post('2026-08-20', 'old-two'),
-    post('2026-09-09', 'recent'),
-    ['content/blog/draft.md', '---\ntitle: draft\ndate: 2026-09-08\ndraft: true\n---\n\nBody.\n'],
-  ]);
-  const ctx = makeRepo({ now: () => NOW, files });
-  assert.deepEqual(recentPosts(ctx).map((p) => p.date), ['2026-09-09']);
+  // Named narrowly on purpose: `budget:new_writing-ceiling` counts
+  // model-minutes and is untouched. What must not exist is a rule that counts
+  // *posts*, and every such rule lived under the `blog:` prefix.
+  assert.ok(
+    !sel.refusals.some((r) => String(r.rule ?? '').startsWith('blog:')),
+    `no selector rule counts published posts, but one refused: ${sel.text}`,
+  );
   ctx.cleanup();
 });
 

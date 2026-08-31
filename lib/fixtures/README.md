@@ -14,7 +14,6 @@ of the loader would prove nothing about the build.
 | `currency/` | the currency-literal warning names the file and line (task 2.10) |
 | `wants/` | two pages wanting one name give a count of 2 (task 2.8) |
 | `surfaces/` | every page template's shapes at once (tasks 4.1–4.7, 4.14): a full entry, a stub, a dormant/retired entry, a two-rung learn ladder whose within-level order is a dependency order and not an alphabetical one, the five tutorial states, a corrected post, three listing states, two dated deltas |
-| `blog-ceiling/` | four posts inside one seven-day window warn; three do not (task 4.6) |
 | `origin/` | a stray CDN script fails the build naming page and origin (task 4.10) |
 | `delta-unsourced/` | a delta whose second end has a date but no source cannot publish (task 4.14) |
 | `bad/<case>/` | one violation each, and the exact error it must produce |

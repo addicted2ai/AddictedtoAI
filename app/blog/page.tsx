@@ -15,9 +15,11 @@ export default async function BlogIndex() {
       <p className="eyebrow">blog</p>
       <h1 className="page-title">Dated, and honest about it</h1>
       <p className="page-lede">
-        There is no posting schedule here: a week with nothing worth an enthusiast&rsquo;s time
-        publishes nothing, and the ceiling is three posts in any seven days. A post is true as of
-        its date; corrections are appended and dated, never smuggled into the body.
+        Two kinds of thing get published here: a note, when something happens and somebody is
+        affected by it, and a longer piece, when several things add up to something none of them
+        said alone. There is no posting schedule &mdash; a week with nothing worth an
+        enthusiast&rsquo;s time publishes nothing. A post is true as of its date; corrections are
+        appended and dated, never smuggled into the body.
       </p>
       <p className="sort-note">
         Sorted by publication date, newest first. <a href="/feeds/blog.xml">RSS</a>

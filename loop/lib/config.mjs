@@ -53,8 +53,11 @@ export const LANE_BACKOFF_FIRST_MS = 60 * 60 * 1000; // 1 hour
 export const LANE_BACKOFF_MAX_MS = 6 * 60 * 60 * 1000; // 6 hours
 export const PROPOSAL_COOLING_DAYS = 3;
 export const RESUMABLE_MAX_AGE_DAYS = 14;
-export const BLOG_CEILING_POSTS = 3;
-export const BLOG_CEILING_DAYS = 7;
+// `BLOG_CEILING_POSTS` / `BLOG_CEILING_DAYS` stood here and are gone
+// (make-the-blog-worth-sending, task 1.3). Publishing is quality-gated, never
+// quota-driven: no selector rule counts published posts. What limits volume now
+// is the scout's filing cap at merge, the review gate, and the model-minute
+// budget — none of which needs to know how many posts the blog already holds.
 
 /** Material fields for `interpret` shedding (specs/pulse, specs/loop). */
 export const MATERIAL_FIELDS = Object.freeze(['price', 'licence', 'license', 'status']);

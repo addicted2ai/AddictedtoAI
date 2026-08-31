@@ -16,7 +16,7 @@ import { applyUpkeepFloor, budgetGate, degradationGate, lanePause, shedState, ti
 import { readDirectives } from './directives.mjs';
 import { isTutorialVerify, readQueue } from './queue.mjs';
 import { readProposals, discardDuplicate } from './proposals.mjs';
-import { blogCeilingGate, tutorialDemotionGate, tutorialPriorityGate } from './surfaces.mjs';
+import { tutorialDemotionGate, tutorialPriorityGate } from './surfaces.mjs';
 import { conformanceGate, loadConformance } from './runners.mjs';
 import { runnerHealthGate } from './health.mjs';
 
@@ -120,7 +120,8 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
   const gates = [
     (c) => degradationGate(cfg, shed, c),
     (c) => budgetGate(cfg, shares, c.type),
-    (c) => blogCeilingGate(ctx, c),
+    // `blogCeilingGate` stood here and was removed with the ceiling itself
+    // (make-the-blog-worth-sending, task 1.3): no gate counts published posts.
     (c) => tutorialDemotionGate(ctx, c),
     (c) => tutorialPriorityGate(c, candidates),
   ];
