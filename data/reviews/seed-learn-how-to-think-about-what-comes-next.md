@@ -148,17 +148,22 @@ me to say plainly if it was not, and it is not.
   corroborates the claimed as-of date, but replay returned 503 on three attempts
   across two timestamps, so I could not verify the snapshot's contents. Recorded
   as corroborated, not verified.
-- **The prize pool was per benchmark, not per question.** The page says "a $5,000
-  prize pool per question". The post says both "Each forecasting question had a
-  $5000 prize pool" and, clarifying, "The overall prize pool was only $5000 for
-  each benchmark (which itself consists of four questions for 2022-2025)". The
-  page followed the first and the second corrects it, so the per-question stake
-  is overstated about fourfold. No earlier review caught this. The clause it
-  supports — that accuracy cost something to get wrong — is unaffected.
+- **The prize pool was per benchmark, not per question — now fixed.** The page
+  had said "a $5,000 prize pool per question". The post says both "Each
+  forecasting question had a $5000 prize pool" and, clarifying, "The overall
+  prize pool was only $5000 for each benchmark (which itself consists of four
+  questions for 2022-2025)". The page had followed the first where the second
+  corrects it, overstating the per-question stake about fourfold. No earlier
+  review caught this.
 
-Both are in `addictedtoai-bc0`. Neither is rejection-grade: one is a date the
-source has since overwritten, the other a stake figure the argument does not rest
-on.
+  **Corrected in commit `752f2f2`**, which I verified against the source rather
+  than the commit message: the page now reads "a $5,000 prize pool for each
+  benchmark", which is the post's clarifying sentence almost word for word. The
+  clause's purpose — that accuracy cost something to get wrong — is intact.
+
+The remaining item is in `addictedtoai-bc0`, and it is not rejection-grade: it is
+a date the source has since overwritten, on figures that all still match the live
+page.
 
 ## Judgment
 

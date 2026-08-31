@@ -68,13 +68,27 @@ cross-reference rather than an edge. Legal.
 
 The claim that "the forensics of why the two fits disagreed took until 2024 to
 finish" is carried by an internal link to `/wiki/concept/scaling-laws` and I did
-not open that entry's own sources. Likewise "Sutton himself has since argued that
-language models sit on the human-knowledge side of his own dichotomy" is
-attributed through the wiki entry rather than to a fetched primary source; it is
-the one named-person attribution on this page I did not close at source, and I
-name it because it is the strongest claim on the page about a living person's
-current position. Nothing in the page's argument collapses if it is wrong, but
-someone should close it.
+not open that entry's own sources.
+
+**Addendum, same day: the one attribution I had left open is now closed at
+source.** This record originally flagged "Sutton himself has since argued that
+language models sit on the human-knowledge side of his own dichotomy" as the
+strongest claim on the page about a living person's current position, reached
+through the wiki rather than a primary source, and said someone should close it.
+I closed it. `/wiki/concept/the-bitter-lesson` sources it to the Dwarkesh
+Podcast; I fetched that transcript (HTTP 200, 465,492 bytes) and matched the
+passage literally:
+
+> In some ways it's a classic case of the bitter lesson. The more human knowledge
+> we put into the large language models, the better they can do. So it feels
+> good. Yet, I expect there to be systems that can learn from experience.
+
+The episode title ("Father of RL thinks LLMs are a dead end") and date (Sep 26,
+2025) both match the wiki entry. Sutton is explicitly filing language models
+under the human-knowledge side of his own dichotomy, and doing it by naming the
+bitter lesson himself, so the page's sentence is exact rather than an
+interpretation. **The page's strongest named-person claim is verified at source
+and no attribution on this page is now taken on trust.**
 
 The grokking sentence rests on `/wiki/concept/grokking`, not re-verified here; I
 did verify the same underlying result independently while reviewing
