@@ -5,8 +5,22 @@ measurements with a date and a stated method, per the house rule that a claim
 is a measurement. Everything below was measured on **2026-08-30 (local)**
 against the working tree at commit `5dcf76b`, by a script that reads
 `content/learn/*.md` front matter through `gray-matter` and replicates
-`ladder()`'s sort — level index, then prerequisite depth, then slug — rather
-than reading the rendered page. Re-runnable; nothing here is a recollection.
+`ladder()`'s sort — level index, then prerequisite depth, then **title** —
+rather than reading the rendered page. Re-runnable; nothing here is a
+recollection.
+
+> **Corrected 2026-08-30.** The first version of this record said the final
+> tiebreak was the **slug**. It is the title: `lib/learn.mjs:114` sorts on
+> `d.get(a.slug) - d.get(b.slug) || a.data.title.localeCompare(b.data.title)`.
+> The orientation reviewer caught it by checking the code rather than trusting
+> the brief it was given, which had the same error.
+>
+> Every result below is unchanged — first page, last page, zero in-order
+> violations, zero up-the-ladder edges and exact coverage are all determined by
+> level and depth, not by the tiebreak. What *was* wrong is the printed reading
+> order in two depth bands: foundations d2 and mechanics d4 each reorder under
+> the correct sort. The figures were right for the wrong reason, which is worth
+> recording as plainly as a wrong figure would be.
 
 ## (a) Coverage
 
