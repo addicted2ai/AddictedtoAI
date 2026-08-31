@@ -1,15 +1,6 @@
 {
   "cap": 50,
-  "count": 1,
-  "items": [
-    {
-      "detail": "openrouter-models moonshotai/kimi-k2.5 status: deprecated -> active on 2026-08-31",
-      "rank": 50,
-      "reason": "uninterpreted-status-change",
-      "subject": "openrouter-models|7ddcd368c2b6d52e|13514954c61b0211|moonshotai/kimi-k2.5|status",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    }
-  ],
-  "total_before_cap": 1
+  "count": 0,
+  "items": [],
+  "total_before_cap": 0
 }
