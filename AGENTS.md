@@ -70,12 +70,22 @@ maintainer's, first in line — lines already carrying `[done <date> <job-id>]`
 are skipped), then `data/derived/queue.json` (written by the Pulse, already
 ranked — file order *is* the ranking), then ripe proposals in
 `data/proposals/`. It assigns `j-<yyyymmdd>-<seq>`, commits a self-contained
-`.job/brief.md` to `job/<job-id>`, invokes the runner under that job type's
-wall-clock cap from `data/config.json`, and classifies the outcome from the
-first line of `RESULT.md` — `done` / `blocked: <reason>` / `capacity`, with
-absent-or-malformed meaning `interrupted`. Every run appends one line to
-`data/ledger.jsonl`, which is the only state the 30-day budget is computed
-from. Job worktrees are created **outside** the repository; they are scratch,
+`.job/brief.md` to `job/<job-id>`, invokes the runner under a wall-clock cap,
+and classifies the outcome from the first line of `RESULT.md` — `done` /
+`blocked: <reason>` / `capacity`, with absent-or-malformed meaning
+`interrupted`. Every run appends one line to `data/ledger.jsonl`, which is the
+only state the 30-day budget is computed from.
+
+**Two caps, and the difference matters.** `data/config.json`'s
+`job_caps_minutes` is a **per-invocation** runaway-process guard, and a job
+makes up to four invocations — author, review 1, revision, review 2. The
+**job's total** is bounded separately, at twice its per-type cap, and each
+invocation is capped at the smaller of the two. When what remains falls below
+the minimum invocation length the loop starts no further invocation and records
+the job `abandoned`: a review too short to judge anything is not a cheaper
+review. A resumed job inherits its accumulated spend from the ledger — it does
+not start again at zero — and a resumable branch with no budget left is
+abandoned in the same sweep that abandons branches past the 14-day limit. Job worktrees are created **outside** the repository; they are scratch,
 and everything resumption needs is committed to the branch.
 
 ### Where the specs live

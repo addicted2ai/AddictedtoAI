@@ -180,6 +180,11 @@ export function ledgerLine(o) {
   };
   if (o.note) line.note = o.note;
   if (o.signal) line.signal = o.signal;
+  // Optional and additive, exactly as `makeLedgerLine` writes it. A fixture that
+  // could not carry `phases` could not reconstruct a real four-invocation job,
+  // and `jobSpendSoFar` counts invocations from this array (beads
+  // addictedtoai-59s, addictedtoai-o5t).
+  if (Array.isArray(o.phases) && o.phases.length) line.phases = o.phases;
   return line;
 }
 

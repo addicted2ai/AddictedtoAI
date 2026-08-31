@@ -272,8 +272,20 @@ is not that, and it is the one way this review can run out of time.
  * The reviewer's own run, stated: it has a cap, it gets one shot, and the record
  * is the only thing that survives it.
  */
-export function runShapeSection({ capMinutes, mmSoFar, invocations = 0 }) {
+export function runShapeSection({ capMinutes, mmSoFar, invocations = 0, totalMinutes = null }) {
   const n = Number(invocations) || 0;
+  const total = Number(totalMinutes) || 0;
+  const spent = Number(mmSoFar) || 0;
+  // The job's whole budget, when the caller knows it (beads addictedtoai-o5t).
+  // The cap above is already `min(per-invocation guard, remainder)`, so this
+  // says where the number came from rather than announcing a second one.
+  const budget = total
+    ? ` The whole job — authoring, the
+revision and both review passes — has a budget of ${total} minutes, of which
+${Math.max(0, total - spent).toFixed(2)} are left, and the cap above is the smaller of the
+per-invocation guard and that remainder.`
+    : ` Authoring, a
+revision and each review pass are each charged to this same job.`;
   return `## How this run ends — read this before you start
 
 This is a single non-interactive run under a **per-invocation wall-clock cap of
@@ -283,10 +295,9 @@ will wake you, and anything still running is killed with you. If you start a
 long-running command, wait for it and read its output **in this same run** — never
 end your turn intending to come back to it.${
     typeof mmSoFar === 'number'
-      ? `\n\nThis job has already cost ${mmSoFar.toFixed(2)} model-minutes across ${n} completed
-invocation${n === 1 ? '' : 's'}, and your minutes are added to the same job. Authoring, a
-revision and each review pass each get the cap above, so the job's total is the sum
-of them. Spend yours on judgment, not on repetition.`
+      ? `\n\nThis job has already cost ${spent.toFixed(2)} model-minutes across ${n} completed
+invocation${n === 1 ? '' : 's'}, and your minutes are added to the same job.${budget}
+Spend yours on judgment, not on repetition.`
       : ''
   }
 
@@ -304,7 +315,7 @@ everything spent on it is lost. Do not leave the writing until last.
  */
 export function assembleReviewBrief(
   ctx,
-  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar, invocations = 0 },
+  { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar, invocations = 0, totalMinutes = null },
 ) {
   const prose = isProse(job.type);
   const voice = needsReadsHuman(job.type);
@@ -331,7 +342,7 @@ line of it is correct work.
 ${job.title}
 
 ${subjectLines(job)}${job.detail && job.detail !== job.title ? `\n${job.detail}\n` : ''}
-${runShapeSection({ capMinutes, mmSoFar, invocations })}
+${runShapeSection({ capMinutes, mmSoFar, invocations, totalMinutes })}
 ${gatesSection(gates, sha)}
 ${pass > 1 ? `## What this delta review covers\n\nThe previous verdict asked for revisions. Review **only what changed since
 then**, against these findings:\n\n${findings}\n\nThis is the last pass. A second non-approval discards the job.\n` : ''}
@@ -635,7 +646,7 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects }) {
  * @returns {Promise<{run: object, discarded: object, branchShaBefore: string,
  *                    branchShaAfter: string, recordWritten: boolean}>}
  */
-export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0 }) {
+export async function runReview(ctx, { jobId, job, branch, diffText, runner, capMinutes, pass = 1, findings = '', gates = null, mmSoFar, invocations = 0, totalMinutes = null }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const outPath = verdictPath(ctx, jobId, pass);
   const reviewDir = join(ctx.worktreeRoot, `${jobId}-review-${pass}`);
@@ -660,6 +671,7 @@ export async function runReview(ctx, { jobId, job, branch, diffText, runner, cap
     capMinutes,
     mmSoFar,
     invocations,
+    totalMinutes,
   });
   const run = await runExecutor({
     command: runner.command,

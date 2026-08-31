@@ -267,6 +267,19 @@ const BUDGET_IMPLYING_PHRASES = [
   // was: `a single non-interactive run under a **wall-clock cap of 60 minutes**`
   // in the reviewer brief — true of the run, silent about the job.
   { re: /under a \*\*wall-clock cap of/, was: 'under a **wall-clock cap of N minutes**' },
+  // The two sentences THIS list's own change added, removed in turn by
+  // addictedtoai-o5t's bound. They were the honest reading while a job's total
+  // was unbounded; a job's total is now bounded, and a brief that still said
+  // "the cap does not bound it" would be telling an executor it has an
+  // entitlement the loop will refuse it — the same defect class, inverted.
+  {
+    re: /the cap does not bound it/,
+    was: "the job's total is the sum of them — the cap does not bound it",
+  },
+  {
+    re: /each get the cap above, so the job's total is the sum/,
+    was: 'each review pass each get the cap above, so the job\'s total is the sum of them',
+  },
 ];
 
 test('C45/C46/C47 the author brief states the cap per invocation, with the running total and count', async () => {
@@ -283,7 +296,12 @@ test('C45/C46/C47 the author brief states the cap per invocation, with the runni
   assert.match(brief, /\*\*not a budget for the job\*\*/);
   // C46 — the running total and the invocation count, both present, both numbers.
   assert.match(brief, /\*\*Spent on this job so far\*\*: 0\.00 model-minutes across 0\s+completed invocations/);
-  assert.match(brief, /the job's total is the sum of them — the cap does not bound it/);
+  // And the third number, which the cap and the running total together could
+  // not supply: what the JOB may spend (beads addictedtoai-o5t). The fixture's
+  // `entry` cap is 60, so the total is 120.
+  assert.match(brief, /\*\*Total budget for THIS JOB\*\*: 120 minutes across every invocation/);
+  assert.match(brief, /\*\*120\.00 remain\*\*/);
+  assert.match(brief, /the loop starts no further invocation and records the job `abandoned`/);
 
   for (const { re, was } of BUDGET_IMPLYING_PHRASES) {
     assert.ok(!re.test(brief), `the author brief still carries the removed phrasing ${was}`);
@@ -299,7 +317,8 @@ test('C45/C46/C47 the reviewer brief does the same, with the spend the job has a
 
   assert.match(brief, /\*\*per-invocation wall-clock cap of\n60 minutes\*\* — the limit on THIS run, not a budget for the job/);
   assert.match(brief, /This job has already cost \d+\.\d\d model-minutes across 1 completed\ninvocation\b/);
-  assert.match(brief, /the job's total is the sum\nof them/);
+  assert.match(brief, /has a budget of 120 minutes, of which\n\d+\.\d\d are left/);
+  assert.match(brief, /the cap above is the smaller of the\nper-invocation guard and that remainder/);
 
   for (const { re, was } of BUDGET_IMPLYING_PHRASES) {
     assert.ok(!re.test(brief), `the reviewer brief still carries the removed phrasing ${was}`);

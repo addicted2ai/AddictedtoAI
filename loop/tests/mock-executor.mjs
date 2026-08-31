@@ -20,6 +20,25 @@ import { join } from 'node:path';
 
 const [, , mode, promptPath] = process.argv;
 const cwd = process.cwd();
+
+/**
+ * `--sleep-ms N` — spend a KNOWN number of milliseconds before exiting.
+ *
+ * Model-minutes are measured by the loop's own clock from invocation to return,
+ * so a mock that returns in a fraction of a second cannot straddle a budget
+ * boundary that lies between two invocations: any threshold a sub-second author
+ * run clears, the same run's own cost immediately crosses. Making the spend an
+ * argument is what lets a fixture place a boundary BETWEEN two invocations
+ * rather than inside the noise of one (beads addictedtoai-o5t).
+ *
+ * Read from anywhere in argv, so it composes with the modes that already take a
+ * positional repository root at argv[4].
+ */
+const sleepMs = (() => {
+  const i = process.argv.indexOf('--sleep-ms');
+  const n = i === -1 ? 0 : Number.parseInt(process.argv[i + 1], 10);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+})();
 const brief = promptPath && existsSync(promptPath) ? readFileSync(promptPath, 'utf8') : '';
 const write = (name, text) => writeFileSync(join(cwd, name), text, 'utf8');
 const result = (text) => write('RESULT.md', text);
@@ -295,4 +314,13 @@ switch (mode) {
   default:
     result(`blocked: unknown mock mode ${JSON.stringify(mode)}\n`);
     break;
+}
+
+// After the work, never instead of it: a mode that writes RESULT.md and then
+// spends time is the shape of a real executor, and it keeps every existing
+// mode's observable output identical when no sleep is asked for. A real
+// synchronous wait rather than a busy loop, so the measurement is wall clock
+// and not CPU.
+if (sleepMs > 0) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, sleepMs);
 }

@@ -70,5 +70,17 @@ JSON carries no comments, so the shape is documented here. It is a
 Constants that are normative in `specs/loop` but deliberately **not** here,
 because task 1.3 names exactly four groups: the lane backoff schedule (1h,
 doubling per consecutive `capacity` line, 6h maximum), the proposal cooling
-period (3 days), the resumable-branch age limit (14 days), and the derived
-queue's cap (50). Read those from the spec.
+period (3 days), the resumable-branch age limit (14 days), the derived queue's
+cap (50), and — added 2026-08-31, beads `addictedtoai-o5t` — a job's **total**
+budget multiple (2) and the minimum invocation length (15 minutes). Read those
+from the spec; they live in `loop/lib/config.mjs`.
+
+That last pair is worth a sentence here, because the number above it is the one
+people read. `job_caps_minutes` is **per invocation**, and a job makes up to
+four — author, review 1, revision, review 2 — so a job's entitlement used to be
+four caps with nothing adding them up. A job's total is now bounded at twice its
+per-type cap, and each invocation is capped at the smaller of the two; when what
+remains falls below the minimum invocation length the loop starts no further
+invocation and records the job `abandoned`. **Editing a cap here therefore moves
+both numbers**, which is why the total is derived rather than configured
+separately: the two cannot drift apart.

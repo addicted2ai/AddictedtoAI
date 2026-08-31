@@ -23,7 +23,7 @@ import { makeContext } from './lib/paths.mjs';
 import { loadConfig } from './lib/config.mjs';
 import { loadRunners, pickRunner, conformanceGate, loadConformance } from './lib/runners.mjs';
 import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LEDGER_FIELDS } from './lib/ledger.mjs';
-import { lanePause } from './lib/budget.mjs';
+import { invocationAllowance, jobTotalMinutes, lanePause, minInvocationMinutes } from './lib/budget.mjs';
 import { selectJob, formatRefusals } from './lib/select.mjs';
 import { assembleBrief, invocationAccounting, resumeBrief } from './lib/brief.mjs';
 import { readResult, classifyRun, RESULT_FILENAME } from './lib/result.mjs';
@@ -139,6 +139,49 @@ async function executeJob(ctx, opts) {
   const prior = opts.prior ?? { mm: 0, invocations: 0 };
 
   // -------------------------------------------------------------------------
+  // THE JOB'S TOTAL BUDGET (beads addictedtoai-o5t).
+  //
+  // `capMinutes` above is per INVOCATION and stays exactly what it was: a
+  // runaway-process guard. What was missing is anything bounding their SUM. A
+  // job makes up to four invocations — author, review 1, revision, review 2 —
+  // and each was handed the full cap, so a job's entitlement was four caps and
+  // no line of code anywhere ever added them up. Measured on the real ledger,
+  // j-20260831-08 spent 54.55 model-minutes across exactly that shape.
+  //
+  // Two numbers now travel together through this function:
+  //   `mm`      — what THIS RUN has spent so far, accumulated from the first
+  //               invocation onward rather than from the review loop onward.
+  //   `spent()` — what the JOB has spent, which is `prior.mm` (every earlier
+  //               run of this job, read off the ledger) plus `mm`.
+  //
+  // `spent()` is the number the bound is measured against, and it is the whole
+  // reason a resumed job cannot get a fresh allowance: `prior` comes from
+  // `jobSpendSoFar(ledger, jobId)`, the ledger being the only durable record of
+  // what an earlier run cost. Nothing here remembers anything.
+  //
+  // Before EVERY invocation, `allowance()` answers two questions at once: may
+  // this one start, and how long may it be. The cap it returns is
+  // `min(capMinutes, what is left)`, so the bound is exact rather than
+  // exceeded-and-then-noticed — the alternative (per-invocation caps untouched,
+  // check afterwards) lets the invocation that crosses the line run to its own
+  // full cap first, which is a bound that lies about its own value by one cap.
+  // -------------------------------------------------------------------------
+  const totalMinutes = jobTotalMinutes(cfg, job.type);
+  const floorMinutes = minInvocationMinutes(cfg, job.type);
+  /** This RUN's model-minutes, across every invocation it makes. */
+  let mm = 0;
+  /** The JOB's model-minutes: earlier runs (from the ledger) plus this one. */
+  const spent = () => prior.mm + mm;
+  const allowance = (role) => invocationAllowance(cfg, { type: job.type, spentMm: spent(), role });
+  /** Said out loud only when the JOB's remainder, not the runaway guard, set the cap. */
+  const capNote = (a) =>
+    a.derived
+      ? ` (the per-invocation cap is ${a.per_invocation_cap_minutes} minutes; this job has ` +
+        `${a.remaining_minutes} of its ${a.total_minutes}-minute total budget left, and the ` +
+        `smaller of the two is what binds)`
+      : '';
+
+  // -------------------------------------------------------------------------
   // PER-INVOCATION MODEL-MINUTES (beads addictedtoai-59s).
   //
   // The ledger's `mm` is the JOB total — author, review pass 1, revision,
@@ -172,7 +215,17 @@ async function executeJob(ctx, opts) {
   /** Every exit from this function carries the phases recorded up to it. */
   const finish = (o) => ({ ...o, phases });
 
-  ctx.log(`invoking runner "${runner.id}" (provider ${runner.provider}, tier ${runner.tier}) under a ${capMinutes}-minute cap`);
+  // Defence in depth, and it is not decorative: `runLoop` sweeps an exhausted
+  // resumable branch before it ever gets here, and a NEW job has spent nothing,
+  // so in the loop's own path this cannot fire. It fires for a caller that
+  // builds a job by hand — and a guardrail whose only enforcement point is
+  // upstream of itself is one refactor away from being gone.
+  const authorAllowance = allowance('author run');
+  if (!authorAllowance.ok) {
+    ctx.log(`BUDGET: ${authorAllowance.reason}`);
+    return finish({ outcome: 'abandoned', mm, changed: [], note: authorAllowance.reason });
+  }
+  ctx.log(`invoking runner "${runner.id}" (provider ${runner.provider}, tier ${runner.tier}) under a ${authorAllowance.capMinutes}-minute cap${capNote(authorAllowance)}`);
   // Breaker 4's filesystem companion needs a "before" for the two brakes, and
   // the window that matters is the executor's own run, not the whole job.
   let brakesBefore = brakeState(ctx);
@@ -181,11 +234,12 @@ async function executeJob(ctx, opts) {
     cwd: worktree,
     promptText: briefText,
     promptPath: join(ctx.worktreeRoot, `${jobId}-brief.md`),
-    timeoutMs: capMinutes * 60 * 1000,
+    timeoutMs: authorAllowance.capMinutes * 60 * 1000,
     role: 'author',
     jobId,
     logPath: jobLogPath(ctx.worktreeRoot, jobId, 'author'),
   });
+  mm += run.mm;
   ctx.log(`runner returned after ${run.mm.toFixed(2)} model-minutes (exit ${run.code}${run.killed ? ', killed at cap' : ''})`);
 
   // Read the protocol file from the FILESYSTEM before anything else touches
@@ -221,11 +275,11 @@ async function executeJob(ctx, opts) {
   const reserved = checkReservedPaths(ctx, [...changed, ...brakes.entries], jobId);
   if (reserved.tripped) {
     ctx.log(`BREAKER: ${reserved.reason}`);
-    return finish({ outcome: 'failed', mm: run.mm, held: reserved, changed, note: 'reserved-path edit attempt' });
+    return finish({ outcome: 'failed', mm, held: reserved, changed, note: 'reserved-path edit attempt' });
   }
 
   if (classified.status === 'capacity') {
-    return finish({ outcome: 'capacity', mm: run.mm, changed, note: classified.evidence });
+    return finish({ outcome: 'capacity', mm, changed, note: classified.evidence });
   }
   if (classified.status === 'interrupted') {
     // The outcome stays `interrupted` — specs/loop says an absent RESULT.md
@@ -247,7 +301,7 @@ async function executeJob(ctx, opts) {
     }
     return finish({
       outcome: 'interrupted',
-      mm: run.mm,
+      mm,
       changed,
       note: classified.evidence,
       signal: producedNothing ? NO_OUTPUT_SIGNAL : undefined,
@@ -257,12 +311,12 @@ async function executeJob(ctx, opts) {
     // A well-formed `blocked:` with a clean tree is a SUCCESSFUL honest
     // outcome. It is not retried with the same brief unchanged.
     ctx.log(`blocked (honest outcome): ${classified.reason}`);
-    return finish({ outcome: 'blocked', mm: run.mm, changed, note: classified.reason });
+    return finish({ outcome: 'blocked', mm, changed, note: classified.reason });
   }
 
   if (changed.length === 0) {
     ctx.log('the executor reported `done` but the branch diff is empty — nothing to review or merge');
-    return finish({ outcome: 'failed', mm: run.mm, changed, note: 'done with an empty diff' });
+    return finish({ outcome: 'failed', mm, changed, note: 'done with an empty diff' });
   }
 
   // Gates. `gateReport` is what the reviewer is told about them — a
@@ -286,31 +340,45 @@ async function executeJob(ctx, opts) {
       ctx.log('--- gate output ---');
       ctx.log(gateResult.output ?? '(no output captured)');
       ctx.log('--- end gate output ---');
-      return finish({ outcome: 'failed', mm: run.mm, changed, note: 'gates failed', gateOutput: gateResult.output });
+      return finish({ outcome: 'failed', mm, changed, note: 'gates failed', gateOutput: gateResult.output });
     }
   }
 
   // Review — the loop computes the diff itself.
   const diffText = diffAgainst(ctx.repoRoot, base, branch);
-  let mm = run.mm;
   let pass = 1;
   let findings = '';
   for (;;) {
-    ctx.log(`review pass ${pass}: invoking reviewer "${reviewer.id}" with fresh context and no edit rights`);
+    // THE REVIEW IS WHERE THE BOUND MOST OFTEN BINDS, and where refusing is
+    // least comfortable: the author's work is already on the branch and nothing
+    // merges without an approval, so an abandon here loses that work. It is
+    // still the right answer. The alternative is a review capped at whatever
+    // scraps are left, and a review killed at its cap writes no verdict record
+    // at all — the merge gate then fails the job at `no-record`, which spends
+    // the reviewer's minutes AND loses the work. A stub review is not a cheaper
+    // review; it is the same loss with a worse record of why.
+    const reviewAllowance = allowance(`review pass ${pass}`);
+    if (!reviewAllowance.ok) {
+      ctx.log(`BUDGET: ${reviewAllowance.reason}`);
+      ctx.log(`the work on ${branch} is left where it is; nothing merges without a review`);
+      return finish({ outcome: 'abandoned', mm, changed, note: reviewAllowance.reason });
+    }
+    ctx.log(`review pass ${pass}: invoking reviewer "${reviewer.id}" with fresh context and no edit rights, under a ${reviewAllowance.capMinutes}-minute cap${capNote(reviewAllowance)}`);
     const rev = await runReview(ctx, {
       jobId,
       job,
       branch,
       diffText,
       runner: reviewer,
-      capMinutes,
+      capMinutes: reviewAllowance.capMinutes,
       pass,
       findings,
       gates: gateReport,
       // The job's spend, not this run's: a resumed job carries what its earlier
       // runs cost, and the reviewer is told the number the ledger would show.
-      mmSoFar: prior.mm + mm,
+      mmSoFar: spent(),
       invocations: prior.invocations + phases.length,
+      totalMinutes,
     });
     mm += rev.run.mm; // "Review MM counts toward the job it reviews."
     if (rev.discarded.discardedAnything) {
@@ -340,7 +408,10 @@ async function executeJob(ctx, opts) {
       ctx.log(
         `  the reviewer's run ${
           rev.run.killed
-            ? `was killed at the ${capMinutes}-minute cap`
+            ? `was killed at the ${reviewAllowance.capMinutes}-minute cap` +
+              (reviewAllowance.derived
+                ? ` (which was the job's remaining total budget, not the ${capMinutes}-minute per-invocation cap)`
+                : '')
             : `ended on its own after ${rev.run.mm.toFixed(2)} model-minutes (exit ${rev.run.code})`
         } and left no usable verdict at ${rev.outPath}. Its log is at ${rev.run.logPath ?? '(not captured)'}.`,
       );
@@ -361,7 +432,17 @@ async function executeJob(ctx, opts) {
     }
     // One revision pass against the named findings, then a delta review.
     findings = `${gate.verdict.reasons.join(', ')}\n\n${gate.verdict.notes}`;
-    ctx.log('one revision pass against the named findings');
+    // And the revision is an invocation like any other, so it is asked for the
+    // same permission. Refusing HERE rather than at the delta review is the
+    // cheaper stop of the two: the job ends one invocation earlier and the
+    // findings are already on the verdict record either way.
+    const revisionAllowance = allowance('revision pass');
+    if (!revisionAllowance.ok) {
+      ctx.log(`BUDGET: ${revisionAllowance.reason}`);
+      ctx.log(`the reviewer's findings are kept at ${verdictPath(ctx, jobId, pass)}; the revision is not invoked`);
+      return finish({ outcome: 'abandoned', mm, changed, note: revisionAllowance.reason, verdict: gate.verdict, pass });
+    }
+    ctx.log(`one revision pass against the named findings, under a ${revisionAllowance.capMinutes}-minute cap${capNote(revisionAllowance)}`);
     // The revision brief is the author brief plus the findings, and the author
     // brief's spend figures were true when it was assembled and are stale now —
     // the author run and at least one review have happened since. A brief that
@@ -372,7 +453,7 @@ async function executeJob(ctx, opts) {
       `${briefText}\n\n---\n\n## Revision pass (one only)\n\n` +
       `**This job's accounting, as of now** — these supersede the figures near the top of\n` +
       `this brief, which were written before the author run and the review:\n\n` +
-      `${invocationAccounting({ capMinutes, mmSoFar: prior.mm + mm, invocations: prior.invocations + phases.length })}\n\n` +
+      `${invocationAccounting({ capMinutes: revisionAllowance.capMinutes, mmSoFar: spent(), invocations: prior.invocations + phases.length, totalMinutes, floorMinutes })}\n\n` +
       `The reviewer did not approve. Address exactly these findings, change nothing\nelse, and end by writing RESULT.md again:\n\n${findings}\n`;
     // A revision is a second executor invocation into the same worktree, so it
     // gets the same brake window as the author run. This is also the ONLY place
@@ -386,7 +467,7 @@ async function executeJob(ctx, opts) {
       cwd: worktree,
       promptText: revisionBrief,
       promptPath: join(ctx.worktreeRoot, `${jobId}-revision-brief.md`),
-      timeoutMs: capMinutes * 60 * 1000,
+      timeoutMs: revisionAllowance.capMinutes * 60 * 1000,
       role: 'author',
       jobId,
       logPath: jobLogPath(ctx.worktreeRoot, jobId, 'revision'),
@@ -486,6 +567,76 @@ export async function runLoop(ctx, opts = {}) {
     }
   }
 
+  // -------------------------------------------------------------------------
+  // THE SAME HOUSEKEEPING FOR A JOB THAT HAS SPENT ITS TOTAL BUDGET
+  // (beads addictedtoai-o5t).
+  //
+  // THIS IS WHERE THE DEFECT ACTUALLY LIVED. Spend accumulates across
+  // invocations, and resumption is where an accumulated total is easiest to
+  // lose: `resume.mjs` rebuilds a job object from its branch and by design
+  // remembers nothing, so without this a job could be interrupted at its bound
+  // and handed a fresh allowance on the next run, and again on the one after
+  // that — an unbounded total by a slower road than four caps in one run.
+  //
+  // The ledger is the only durable record of what an earlier run cost, and
+  // `jobSpendSoFar` already sums every line a job id carries. Nothing new is
+  // stored, and nothing is remembered: the branch says which job, the ledger
+  // says what it has cost, and this is the arithmetic between them.
+  //
+  // Shaped exactly like the 14-day sweep above, and placed beside it for the
+  // same two reasons. Before the health gate, because housekeeping that stops
+  // when a runner is refused stops exactly when it is needed. As a SWEEP rather
+  // than a check on the one branch about to be resumed, because a second
+  // exhausted branch behind the first would otherwise sit unexamined until it
+  // reached the front of the queue.
+  //
+  // `abandoned` is the outcome, and the choice is load-bearing. It is not a
+  // failure outcome, so breaker 1 neither counts it nor is reset by it — a job
+  // that ran out of budget says nothing about whether its TYPE is broken, and
+  // counting it would disable a whole job type for a reason unrelated to its
+  // quality. And a branch whose last line is `abandoned` is not resumable, so
+  // this cannot spin: the sweep fires once per branch, ever.
+  // -------------------------------------------------------------------------
+  const resumable = [];
+  for (const b of scan.resumable) {
+    const type = b.last?.type ?? 'machinery';
+    const spend = jobSpendSoFar(ledger, b.id);
+    const allow = invocationAllowance(cfg, {
+      type,
+      spentMm: spend.mm,
+      role: 'next invocation of this resumed job',
+    });
+    if (allow.ok) {
+      resumable.push(b);
+      continue;
+    }
+    ctx.log(`abandoning ${b.branch}: ${allow.reason}`);
+    ctx.log(
+      `  its spend is the sum of ${spend.invocations} recorded invocation(s) across every ledger ` +
+        `line carrying id ${b.id} — a resumed job inherits what it has already cost, it does not ` +
+        `start again at zero`,
+    );
+    if (!opts.dryRun) {
+      appendLedger(
+        ctx,
+        makeLedgerLine({
+          id: b.id,
+          type,
+          runner: b.last?.runner ?? runner.id,
+          provider: b.last?.provider ?? runner.provider,
+          tier: b.last?.tier ?? runner.tier,
+          // Zero, because no process ran. The spend is already on the lines this
+          // was computed from and counting it twice would inflate the budget
+          // shares that read `mm`.
+          mm: 0,
+          outcome: 'abandoned',
+          note: allow.reason,
+          ts: now.toISOString(),
+        }),
+      );
+    }
+  }
+
   // Runner health, after the 14-day abandon sweep and BEFORE resumption. The
   // placement is both halves of the fix. Before resumption, because a dead
   // credential leaves an interrupted branch, an interrupted branch is resumable,
@@ -521,7 +672,9 @@ export async function runLoop(ctx, opts = {}) {
 
   const lane = lanePause(ledger, runner.provider, now);
   let resumeTarget = null;
-  if (!lane.paused && scan.resumable.length > 0) resumeTarget = scan.resumable[0];
+  // `resumable`, not `scan.resumable`: a branch swept above for an exhausted
+  // total budget is no longer a resumption candidate on this run either.
+  if (!lane.paused && resumable.length > 0) resumeTarget = resumable[0];
   if (lane.paused) ctx.log(`lane paused: ${lane.reason}`);
 
   let jobId;
@@ -551,10 +704,28 @@ export async function runLoop(ctx, opts = {}) {
     // The committed brief's spend figures are frozen at the run that wrote it.
     // For a resumed job they are stale by construction, so the current ones go
     // above it and say so.
-    briefText = resumeBrief(committed, {
-      capMinutes: cfg.job_caps_minutes[job.type],
-      ...jobSpendSoFar(ledger, jobId),
-    });
+    // The cap this brief prints is the one the invocation will actually get:
+    // `min(per-invocation cap, what the job has left)`. A resumed job is the
+    // one case where those two routinely differ, so printing the raw per-type
+    // cap here would restate the exact falsehood addictedtoai-o5t is about.
+    briefText = resumeBrief(committed, (() => {
+      const spend = jobSpendSoFar(ledger, jobId);
+      const allow = invocationAllowance(cfg, { type: job.type, spentMm: spend.mm, role: 'resumed run' });
+      return {
+        capMinutes: allow.capMinutes,
+        // `mmSoFar`, NAMED, not `...spend`. `jobSpendSoFar` returns `{mm,
+        // invocations}` and `invocationAccounting` reads `mmSoFar`, so spreading
+        // it set the invocation count and silently left the spend at its default
+        // of 0 — every resumed brief said "0.00 model-minutes across 4 completed
+        // invocations", which is the stale-figure misreading addictedtoai-o5t
+        // exists to end, reappearing inside its own disclosure. Found by the
+        // resumption test below, not by reading.
+        mmSoFar: spend.mm,
+        invocations: spend.invocations,
+        totalMinutes: jobTotalMinutes(cfg, job.type),
+        floorMinutes: minInvocationMinutes(cfg, job.type),
+      };
+    })());
     ctx.log(`resuming ${branch} (${resumeTarget.reason}, ${resumeTarget.ageDays.toFixed(1)} days old) — no retry consumed`);
     // Where this job came from, read off the branch rather than remembered.
     // Without it a resumed proposal job merges and leaves its proposal
@@ -609,7 +780,15 @@ export async function runLoop(ctx, opts = {}) {
       // A new job: nothing spent, nothing invoked. Stated rather than omitted,
       // because "0.00 across 0 invocations" is the figure that makes the cap
       // read as per-invocation on the very first brief.
-      ...jobSpendSoFar(ledger, jobId),
+      //
+      // Named rather than spread, for the reason the resume path above records:
+      // `jobSpendSoFar` returns `mm` and this reads `mmSoFar`. Here the two are
+      // both zero by construction, which is exactly why the same defect was
+      // invisible on this path and visible on that one.
+      mmSoFar: jobSpendSoFar(ledger, jobId).mm,
+      invocations: jobSpendSoFar(ledger, jobId).invocations,
+      totalMinutes: jobTotalMinutes(cfg, job.type),
+      floorMinutes: minInvocationMinutes(cfg, job.type),
     });
     ctx.log(`selected: ${job.type} from ${job.source} — ${job.title}`);
     if (job.source === 'proposal' && job.slug && job.path) {

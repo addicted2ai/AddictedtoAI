@@ -2,8 +2,11 @@
  * budget.mjs — the selector's arithmetic: budget shares, the upkeep floor,
  * lane pauses, and capacity degradation.
  *
- * All four read `data/ledger.jsonl` and the clock. Nothing here is stored
- * state; nothing here is a prediction. specs/loop is explicit that a
+ * Those four read `data/ledger.jsonl` and the clock; the job-total bound at the
+ * top of the file reads the ledger and nothing else, because a budget that
+ * accumulates across runs cannot be a function of what time it is now.
+ *
+ * Nothing here is stored state; nothing here is a prediction. specs/loop is explicit that a
  * provider's window is unknowable for consumer subscriptions, so the only
  * honest inputs are what already happened and what time it is now.
  *
@@ -15,12 +18,130 @@
 import {
   categoryOf,
   FAILURE_OUTCOMES,
+  JOB_TOTAL_CAP_MULTIPLIER,
   LANE_BACKOFF_FIRST_MS,
   LANE_BACKOFF_MAX_MS,
+  MIN_INVOCATION_MINUTES,
 } from './config.mjs';
 import { withinWindow } from './ledger.mjs';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/* ---------------------------------------------------------------------------
+ * A JOB'S TOTAL SPEND (beads addictedtoai-o5t).
+ *
+ * Everything else in this module is the SELECTOR's arithmetic: it answers "may
+ * a job of this type start at all", once, before anything runs. The three
+ * functions below answer a different question at a different moment — "may this
+ * job make another invocation, and how long may it be" — and they are here
+ * because this is the file whose job is what a job may spend, and because a
+ * second home for that would be two definitions that can drift.
+ *
+ * They read no clock and no window. Their only input beyond the config is the
+ * job's own accumulated spend, which the caller gets from `jobSpendSoFar()` —
+ * the ledger, which is the only durable record of what an earlier run cost.
+ * ------------------------------------------------------------------------ */
+
+/**
+ * The TOTAL wall-clock budget for one job of `type`, covering every invocation
+ * it makes: authoring, the revision, and each review pass.
+ *
+ * Null when the type has no cap. `loadConfig` refuses such a config outright, so
+ * this is reachable only from a hand-built one, and the honest answer there is
+ * "no bound is defined" rather than an invented default.
+ */
+export function jobTotalMinutes(cfg, type) {
+  const cap = cfg?.job_caps_minutes?.[type];
+  if (typeof cap !== 'number' || !Number.isFinite(cap) || cap <= 0) return null;
+  return cap * JOB_TOTAL_CAP_MULTIPLIER;
+}
+
+/** The shortest invocation worth starting for a job of `type`, clamped to its cap. */
+export function minInvocationMinutes(cfg, type) {
+  const cap = cfg?.job_caps_minutes?.[type];
+  if (typeof cap !== 'number' || !Number.isFinite(cap) || cap <= 0) return MIN_INVOCATION_MINUTES;
+  return Math.min(MIN_INVOCATION_MINUTES, cap);
+}
+
+/**
+ * What the NEXT invocation of this job may spend.
+ *
+ * TWO THINGS AT ONCE, and both matter:
+ *
+ *  - `capMinutes` is `min(per-invocation cap, what the job has left)`. The
+ *    per-invocation cap is UNTOUCHED as an upper bound — it is a runaway-process
+ *    guard and this never raises it, only ever lowers it. That is what makes the
+ *    number a brief prints and the number the budget spends the same number.
+ *  - `ok: false` when what is left is below the minimum-invocation floor. The
+ *    refusal happens BEFORE the invocation, so the bound is exact rather than
+ *    exceeded-then-noticed: a job cannot spend past its total, because no
+ *    invocation is ever started with more than the remainder.
+ *
+ * @param {object} cfg
+ * @param {string} type      the job type
+ * @param {number} spentMm   model-minutes already charged to this job, across
+ *                           every run of it — `jobSpendSoFar()` plus whatever
+ *                           the current run has spent so far
+ * @param {string} [role]    what is about to be invoked, for the refusal text
+ * @returns {{ok: true, capMinutes: number, derived: boolean, ...} |
+ *           {ok: false, rule: string, reason: string, ...}}
+ */
+export function invocationAllowance(cfg, { type, spentMm = 0, role = 'invocation' } = {}) {
+  const cap = cfg?.job_caps_minutes?.[type];
+  const total = jobTotalMinutes(cfg, type);
+  const spent = Number(spentMm) || 0;
+  if (total === null) {
+    return {
+      ok: true,
+      capMinutes: typeof cap === 'number' && cap > 0 ? cap : null,
+      derived: false,
+      per_invocation_cap_minutes: cap ?? null,
+      total_minutes: null,
+      spent_mm: Math.round(spent * 100) / 100,
+      remaining_minutes: null,
+      floor_minutes: null,
+    };
+  }
+  const floor = minInvocationMinutes(cfg, type);
+  const remaining = total - spent;
+  const common = {
+    per_invocation_cap_minutes: cap,
+    total_minutes: total,
+    spent_mm: Math.round(spent * 100) / 100,
+    remaining_minutes: Math.round(remaining * 100) / 100,
+    floor_minutes: floor,
+  };
+  if (remaining < floor) {
+    return {
+      ...common,
+      ok: false,
+      rule: 'job:total-budget',
+      reason:
+        `this ${type} job has spent ${spent.toFixed(2)} of its ${total}-minute total budget ` +
+        `(the ${cap}-minute per-invocation cap × ${JOB_TOTAL_CAP_MULTIPLIER}), leaving ` +
+        `${remaining.toFixed(2)} minutes — below the ${floor}-minute minimum for an invocation ` +
+        `worth starting. The ${role} is not invoked and the job is recorded \`abandoned\`: an ` +
+        `invocation too short to do its work is not a cheaper invocation, and a truncated ` +
+        `review is not a cheaper review.`,
+    };
+  }
+  return {
+    ...common,
+    ok: true,
+    // Never above the per-invocation cap: the runaway guard is an upper bound
+    // this only ever tightens.
+    //
+    // Rounded DOWN to 2dp, and down rather than to-nearest deliberately: this
+    // number is both a kill deadline and a figure printed in a brief, and
+    // `70 - 54.55` is `15.450000000000003` in binary floating point. Rounding up
+    // would grant a few milliseconds more than the job has left, which is a
+    // bound that does not quite hold; rounding down cannot.
+    capMinutes: Math.floor(Math.min(cap, remaining) * 100) / 100,
+    // True when the JOB's remainder, not the runaway guard, is what set the cap
+    // — which is the only case worth saying out loud in a log or a brief.
+    derived: remaining < cap,
+  };
+}
 
 /**
  * The tightest ceiling in `data/config.json`, as a percentage.

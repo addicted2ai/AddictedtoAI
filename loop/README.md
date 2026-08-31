@@ -7,7 +7,8 @@ The Desk: the agentic loop that produces and maintains content
   the oldest resumable `job/*` branch, else select one job (directives, then
   the derived queue, then ripe proposals), assign `j-<yyyymmdd>-<seq>`, commit
   a self-contained `.job/brief.md` to `job/<id>`, invoke the runner under the
-  job type's wall-clock cap, classify the outcome from `RESULT.md`, require a
+  smaller of the job type's per-invocation wall-clock cap and what is left of
+  the job's total budget, classify the outcome from `RESULT.md`, require a
   recorded review verdict before merging, and write the ledger line.
 - `node loop/conformance.mjs --runner <id>` — the four canned checks a
   model/provider/harness combination must pass before it may author or

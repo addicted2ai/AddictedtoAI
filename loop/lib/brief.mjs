@@ -288,35 +288,60 @@ date it stops being news. Carry whichever one fits what you found.`;
  * delta, `A job's total spend is measured, and the cap is named for what it is`;
  * beads addictedtoai-o5t).
  *
- * `data/config.json` maps each job type to ONE wall-clock cap and the loop
- * passes it unchanged to every invocation: the author, the revision, and each
- * review pass. A job revised once therefore makes four invocations, each
- * entitled to the full cap — with today's caps, 480 minutes for one job. Every
+ * `data/config.json` maps each job type to ONE wall-clock cap, and the loop USED
+ * TO pass it unchanged to every invocation: the author, the revision, and each
+ * review pass. A job revised once makes four invocations, so each was entitled
+ * to the full cap — 480 minutes for one job under the caps as configured. Every
  * brief printed "Wall-clock cap: N minutes", which is true of the run reading it
  * and reads like a budget for the job. That misreading is the concrete harm the
  * issue reported: the cap applied four times over.
  *
- * Whether a job's total should be BOUNDED is design decision D9 and is the
- * maintainer's; nothing here bounds anything. What this does is stop the brief
- * implying a bound that does not exist, and state the two numbers that let a
- * reader tell the difference: what this invocation may spend, and what the job
- * has already spent across how many invocations.
+ * The job's total IS now bounded (beads addictedtoai-o5t, design D9 option A):
+ * `JOB_TOTAL_CAP_MULTIPLIER` times the per-type cap, with each invocation capped
+ * at the smaller of the per-invocation guard and what the job has left. So there
+ * are now three numbers, not two, and the third is the one that used to be
+ * missing entirely: what this invocation may spend, what the job has already
+ * spent across how many invocations, and what the JOB may spend in total.
  *
- * @param {number} capMinutes    this invocation's wall-clock limit
- * @param {number} mmSoFar       model-minutes already recorded against this job
- * @param {number} invocations   invocations already completed for this job
+ * The `totalMinutes` bullet is emitted only when a total is supplied, which
+ * keeps every hand-caller and fixture that has no config to derive one from
+ * valid. Every caller inside the loop supplies it.
+ *
+ * @param {number} capMinutes      this invocation's wall-clock limit
+ * @param {number} mmSoFar         model-minutes already recorded against this job
+ * @param {number} invocations     invocations already completed for this job
+ * @param {number} [totalMinutes]  the job's whole budget, across every invocation
+ * @param {number} [floorMinutes]  the shortest invocation the loop will start
  */
-export function invocationAccounting({ capMinutes, mmSoFar = 0, invocations = 0 }) {
+export function invocationAccounting({
+  capMinutes,
+  mmSoFar = 0,
+  invocations = 0,
+  totalMinutes = null,
+  floorMinutes = null,
+}) {
   const n = Number(invocations) || 0;
   const spent = Number(mmSoFar) || 0;
+  const total = Number(totalMinutes) || 0;
+  const budget = total
+    ? `
+- **Total budget for THIS JOB**: ${total} minutes across every invocation it
+  makes, of which **${Math.max(0, total - spent).toFixed(2)} remain**. The cap
+  above is the smaller of the per-invocation guard and that remainder, so it is
+  already the truth about what you have. When the remainder falls below${
+    floorMinutes ? ` ${floorMinutes} minutes` : ' the minimum invocation length'
+  }
+  the loop starts no further invocation and records the job \`abandoned\` — an
+  invocation too short to do its work is not a cheaper invocation.`
+    : '';
   return `- **Wall-clock cap for THIS invocation**: ${capMinutes} minutes. It is a
   per-invocation runaway guard, **not a budget for the job**. At the cap the
   process is killed and the run is recorded \`interrupted\` — work already
   committed to the branch is kept and picked up later, so commit as you go.
 - **Spent on this job so far**: ${spent.toFixed(2)} model-minutes across ${n}
   completed invocation${n === 1 ? '' : 's'} recorded on the ledger. Authoring, a
-  revision and each review pass are separate invocations and each is given the
-  cap above, so the job's total is the sum of them — the cap does not bound it.`;
+  revision and each review pass are separate invocations, and every one of them
+  is charged to this same job.${budget}`;
 }
 
 export const CONTINUE_PREAMBLE =
@@ -360,7 +385,17 @@ export function subjectLines(job) {
   return out.length ? `${out.join('\n')}\n` : '';
 }
 
-export function assembleBrief(ctx, { jobId, job, branch, capMinutes, resumed = false, mmSoFar = 0, invocations = 0 }) {
+export function assembleBrief(ctx, {
+  jobId,
+  job,
+  branch,
+  capMinutes,
+  resumed = false,
+  mmSoFar = 0,
+  invocations = 0,
+  totalMinutes = null,
+  floorMinutes = null,
+}) {
   const ex = excerptsFor(ctx.repoRoot, job.type);
   const checks = acceptanceChecksFor(job.type);
   const prose = PROSE_TYPES.includes(job.type);
@@ -372,7 +407,7 @@ ${resumed ? CONTINUE_PREAMBLE + '\n\n' : ''}You are working alone, unattended, i
 you. There is no prior conversation to recall and no session to resume.
 
 - **Branch**: \`${branch}\`
-${invocationAccounting({ capMinutes, mmSoFar, invocations })}
+${invocationAccounting({ capMinutes, mmSoFar, invocations, totalMinutes, floorMinutes })}
 - **Work source**: ${job.source}${job.slug ? ` (proposal \`${job.slug}\`)` : ''}${job.lineNumber ? ` (DIRECTIVES.md line ${job.lineNumber})` : ''}
 
 ## The outcome
