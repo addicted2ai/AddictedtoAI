@@ -105,6 +105,9 @@ trillion-parameter flagship, trained on 15 trillion tokens of mixed image
 and text, and topped the tool-using HLE-Full evaluation — though not the
 plain one — on
 [the day it launched](https://siliconangle.com/2026/01/27/moonshot-ai-releases-open-source-kimi-k2-5-model-1t-parameters/).
+The [model card](https://huggingface.co/moonshotai/Kimi-K2.5) lists the
+split: 50.2 on HLE-Full with tools, and 30.1 on the plain variant, where
+Gemini 3 Pro's 37.5 is the top of the table.
 Its replacement in the same family, `moonshotai/kimi-k3`, arrived on
 16 July — 170 days after it.
 
