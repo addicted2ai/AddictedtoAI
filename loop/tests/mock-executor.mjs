@@ -30,12 +30,25 @@ function verdictPathFromBrief() {
   return m ? m[1] : null;
 }
 
-function writeVerdict({ verdict, reasons = [], wouldCite = '', notes = 'mock reviewer notes' }) {
+function writeVerdict({ verdict, reasons = [], wouldCite = '', readsHuman = null, notes = 'mock reviewer notes' }) {
   const p = verdictPathFromBrief();
   if (!p) return false;
+  // The brief is the reviewer's only channel, so the mock obeys it rather than
+  // a hard-coded guess about the job type: a `post` brief carries "Required,
+  // non-empty: `reads-human`" and this supplies one. The value is derived from
+  // the record's own filename so two records can never collide on the merge
+  // gate's duplicate check — the same property a real reviewer's own-words
+  // answer has, for the same reason. Modes that want a blank or a duplicate
+  // pass `readsHuman` explicitly.
+  const asked = /Required, non-empty: `reads-human`/.test(brief);
+  const value =
+    readsHuman === null
+      ? `The prose in ${p.replace(/\\/g, '/').split('/').pop()} varies its rhythm and is willing to be blunt; nothing here reads assembled.`
+      : readsHuman;
+  const voiceLine = asked ? `reads-human: ${JSON.stringify(value)}\n` : '';
   writeFileSync(
     p,
-    `---\njob: mock\nverdict: ${verdict}\nreasons: [${reasons.join(', ')}]\nwould-cite: ${JSON.stringify(wouldCite)}\n---\n\n${notes}\n`,
+    `---\njob: mock\nverdict: ${verdict}\nreasons: [${reasons.join(', ')}]\nwould-cite: ${JSON.stringify(wouldCite)}\n${voiceLine}---\n\n${notes}\n`,
     'utf8',
   );
   return true;

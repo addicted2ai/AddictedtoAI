@@ -18,6 +18,15 @@
  *     judgment — a reviewer writing a fresh-but-vacuous sentence each time
  *     passes them, and specs/review accepts that explicitly. The field's job
  *     is to make the question asked.
+ *  4. **On a `post`, the voice question is asked the same way**, through
+ *     `reads-human` and the same two refusals. It is the fourth mechanism and
+ *     not a variation of the third, because of where it sits: the prebuild
+ *     voice lint over `content/blog/` is ADVISORY by decision — it warns and
+ *     never fails the build, since the house model trips the punctuation-rate
+ *     markers in every register it writes and a fail-closed lint would have
+ *     silently stopped all post work while every component reported success.
+ *     Nothing mechanical downstream of the lint stops machine-made prose. The
+ *     model-run verdict is the gate, and this field is what makes it look.
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync } from 'node:fs';
@@ -25,9 +34,10 @@ import { join } from 'node:path';
 import { addWorktree, gitTry, headSha, removeWorktree } from './git.mjs';
 import { runExecutor, jobLogPath } from './exec.mjs';
 import { PROSE_TYPES } from './specs.mjs';
+import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { GROUND_RULES, subjectLines } from './brief.mjs';
-import { REASONS, VERDICTS, parseVerdict, normalizeWouldCite } from './verdict.mjs';
+import { REASONS, VERDICTS, parseVerdict, normalizeWouldCite, normalizeField } from './verdict.mjs';
 import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
 import { reviewedOf } from '../../lib/reviews.mjs';
 
@@ -37,7 +47,60 @@ import { reviewedOf } from '../../lib/reviews.mjs';
  * the one parser without importing the Desk. Re-exported here because this is
  * where every caller already looks for it.
  */
-export { REASONS, VERDICTS, parseVerdict, normalizeWouldCite };
+export { REASONS, VERDICTS, parseVerdict, normalizeWouldCite, normalizeField };
+
+/**
+ * Job types whose verdict must additionally answer the VOICE question
+ * (specs/review: "For a blog post, the voice question is asked the same way").
+ *
+ * Deliberately not `PROSE_TYPES`: `reads-human` is the blog's bar, and the
+ * requirement scopes it to `post` in those words. A wiki entry is prose and is
+ * not held to it.
+ */
+export const READS_HUMAN_TYPES = Object.freeze(['post']);
+
+export function needsReadsHuman(type) {
+  return READS_HUMAN_TYPES.includes(type);
+}
+
+/**
+ * Refusal codes that mean **the record is unusable, not the work** — the
+ * reviewer left a forced-judgment field blank or recycled someone else's
+ * sentence. The fix is to re-issue the verdict; sending the AUTHOR into a
+ * revision pass against a reviewer's clerical failure spends an executor
+ * invocation to fix a field.
+ *
+ * OPEN, AND MEASURED — a note left here because a note in a finished report
+ * dies at compaction. `loop/run.mjs` still selects that branch by comparing
+ * `gate.code` against the two would-cite literals by hand:
+ *
+ *     if (gate.code === 'would-cite-empty' || gate.code === 'would-cite-duplicate')
+ *
+ * so a `reads-human-*` refusal falls through to the revision path instead.
+ * Measured on 2026-08-30 against a real fixture loop run: a `post` whose
+ * reviewer approved with a blank `reads-human` was correctly refused
+ * (`reads-human-empty`, nothing merged) but only after a wasted author
+ * invocation and a second review, ending `discarded` rather than `failed`. The
+ * refusal is right in both shapes and specs/review is satisfied either way —
+ * what is wrong is spending an executor run to fix a reviewer's blank field.
+ *
+ * The whole fix is one line in `loop/run.mjs`:
+ *
+ *     if (isReissueRefusal(gate.code)) { ... }
+ *
+ * That file belonged to another lane while this landed, which is why the
+ * predicate is exported and the literals are not repeated anywhere.
+ */
+export const REISSUE_CODES = Object.freeze([
+  'would-cite-empty',
+  'would-cite-duplicate',
+  'reads-human-empty',
+  'reads-human-duplicate',
+]);
+
+export function isReissueRefusal(code) {
+  return REISSUE_CODES.includes(code);
+}
 
 const CHECKLISTS = {
   entry: [
@@ -57,6 +120,23 @@ const CHECKLISTS = {
     'The title and excerpt read against the body: does either claim more than the body proves?',
     'Company-conduct claims are held to the news-fact-checking standard.',
     'Dates are explicit.',
+    '**Identify the form first — news note or synthesis — and apply that form\'s finish line.** They are not the same piece and they do not fail in the same way.',
+    '**Note:** the declared anchor holds. **Fetch every external `anchor:` yourself** and confirm the page documents both the event and its date; an anchor that does not hold is `false-or-unsupported-claim`. A post about a dated event that declares no anchor at all is `spec-violation`, naming the missing anchor.',
+    '**Note:** the affected party is named where one exists — who breaks, what changes for them, what to do, and by when where a date exists. An actor-event post that never says who it lands on is `revise` with reason `not-worth-reading`, naming the missing party. A synthesis whose subject has no affected party is not required to invent one.',
+    '**Note: brevity alone is never a defect.** A note has no minimum length; it is finished when an affected reader knows what happened, what changes for them, and where the primary evidence is. Do not revise a complete 150-word note for shortness.',
+    '**Synthesis:** the derivation method is stated — what was fetched, filtered, sorted or counted, concretely enough that a skeptical reader could reproduce it — and the evidence is enumerable and dated, never impressions. A trend asserted without its method is `revise`, naming the missing method.',
+    "The subject is the world's AI, never this site. A post whose subject is this site's machinery, corpus, build, process or history is `spec-violation` naming that rule, however well written. Using the site's own data layer as *evidence* about the world is fine — the subject is the vendor's change, not the snapshot.",
+    '**Judge the prose against the house voice of record at `openspec/style/blog-voice.md`, and reject `reads-as-generated` where it reads machine-made** — uniform rhythm and paragraph shape, structure signposted rather than felt, meta-commentary narrating its own method, no willingness to be blunt. The prebuild voice lint is ADVISORY: it warns and never fails the build, so it stopped nothing. You may cite its warnings as evidence; the verdict is yours, not the count\'s, and a draft that trips no marker and still reads machine-made is still `reads-as-generated`.',
+    "The site's disclosure of AI authorship stands. A diff that hides, softens or qualifies it so posts \"feel human\" is `spec-violation`. The writing must not read machine-made; the site must not pretend human-made. Both, always.",
+    '**Answer both questions in your own words: the send question in `would-cite` (who would send this, and to whom?) and the voice question in `reads-human` (where does this read machine-made, or why does it not?).** For a post, being worth citing alone does not publish — a correct, sourced, forgettable draft is `not-worth-reading`, in those words.',
+  ],
+  scout: [
+    "**The charge is checked first, before anything else: bring back work the site could not have thought of by looking at itself.** If every filed candidate could have been written without leaving this repository — from the change feed, the snapshots, the corpus — reject the run `spec-violation` naming the charge. An inward run that is otherwise flawless still fails this.",
+    "**Spot-fetch the evidence URLs yourself.** A URL in a candidate is a claim until you open it: confirm the page exists and says what the candidate says it says. Externally *retrieved* is the point; a plausible-looking link is not retrieval.",
+    'Every candidate carries the docket discipline in full: a kebab-case `slug`, a proposed job `type` from the closed list, an `expires:` date (at most 7 days out for an event-driven candidate, at most 14 for a synthesis), a why-now, externally retrieved evidence with URLs **and retrieval dates**, and done-when acceptance lines written at filing time. A missing field is a missing field — say which candidate and which field.',
+    'Every declined story has one record in `data/proposals/dropped/` naming **which test it failed** and **what would make it worth refiling**. A drop record that names neither is not a record. (These prove the *form* of the bar, never its *rate*: nothing measures how many stories were considered, so do not read three drop records as evidence of a wide sweep.)',
+    '**At most three candidates are filed.** Count the added proposal files. The merge enforces this mechanically, so a fourth is a signal about the run, not a thing you must stop.',
+    'Zero candidates is not a defect. A run that swept honestly and found nothing that clears the bar is the bar working — judge what was filed and what was declined, never the count.',
   ],
   education: [
     'No perishable literals.',
@@ -81,10 +161,57 @@ const CHECKLIST_FOR_TYPE = {
   repair: 'directory',
   prune: 'entry',
   machinery: 'machinery',
+  scout: 'scout',
 };
 
+/**
+ * Which `JOB_TYPES` entries have no checklist mapping, and which mappings point
+ * at a checklist that does not exist. Both are empty in a correct tree; the test
+ * beside this file asserts that, so a new job type cannot reach a review without
+ * one.
+ */
+export function checklistCoverage(types = JOB_TYPES) {
+  return {
+    unmapped: types.filter((t) => !CHECKLIST_FOR_TYPE[t]),
+    danglingMappings: Object.entries(CHECKLIST_FOR_TYPE)
+      .filter(([, k]) => !CHECKLISTS[k])
+      .map(([t, k]) => `${t} -> ${k}`),
+  };
+}
+
+/**
+ * The checklist for a job type — and a THROW for a type that has none.
+ *
+ * This used to be `CHECKLISTS[CHECKLIST_FOR_TYPE[type] ?? 'entry']`, and the
+ * default was not a convenience, it was a silent wrong answer. `scout` was
+ * added to `JOB_TYPES` before this map knew about it, and the effect was not a
+ * missing checklist — it was a scout run reviewed against the WIKI ENTRY
+ * checklist ("volatile values are transclusions", "aliases sanely classed"),
+ * with every component reporting success and no line of output anywhere saying
+ * the wrong criteria had been applied. A reviewer cannot notice a checklist it
+ * was never given.
+ *
+ * So the fallback is gone. specs/review is explicit that what is checked depends
+ * on what the work is, and a review constituted against the wrong list is not a
+ * weaker review, it is a different one. Refusing to assemble the brief fails the
+ * job closed, which is the outcome this repository takes everywhere else a
+ * closed list is violated. It is also unreachable in a correct tree —
+ * `checklistCoverage()` and its test are what keep it that way, and they fail at
+ * `npm test`, long before any run.
+ */
 export function checklistFor(type) {
-  return CHECKLISTS[CHECKLIST_FOR_TYPE[type] ?? 'entry'];
+  const key = CHECKLIST_FOR_TYPE[type];
+  const list = key ? CHECKLISTS[key] : null;
+  if (!list) {
+    throw new Error(
+      `review: no checklist for job type ${JSON.stringify(type)}. specs/review: what is ` +
+        `checked depends on what the work is, so there is no default — a review assembled ` +
+        `against another type's list would be silently wrong. Add ${JSON.stringify(type)} to ` +
+        `CHECKLIST_FOR_TYPE (and a CHECKLISTS entry if it needs its own) in loop/lib/review.mjs. ` +
+        `Known types: ${Object.keys(CHECKLIST_FOR_TYPE).join(', ')}.`,
+    );
+  }
+  return list;
 }
 
 export function isProse(type) {
@@ -183,6 +310,7 @@ export function assembleReviewBrief(
   { jobId, job, diffText, pass, findings, outPath, gates = null, sha = '', capMinutes = 0, mmSoFar, invocations = 0 },
 ) {
   const prose = isProse(job.type);
+  const voice = needsReadsHuman(job.type);
   const fromProposal = job.source === 'proposal';
   const rejection = fromProposal
     ? `\n## The rejection index\n\nThis job originated from a proposal. Part of your checklist is the judgment\nhalf of duplicate suppression: confirm this piece is not a differently-worded\nre-tread of an idea already rejected. The mechanical half — exact slug match —\nalready ran and passed. Fuzzy matching is guessing, so this half is yours.\n\n${rejectionIndexText(ctx)}\n`
@@ -238,7 +366,51 @@ ${prose ? `**Required, non-empty: \`would-cite\`.** In your own words: who would
 this, and in what argument? An \`approve\` with this field blank, or with text
 identical to another review record's, is refused at merge and you will be
 asked to re-issue the verdict. Answer the question; do not fill the field.
+` : ''}${voice ? `
+**Required, non-empty: \`reads-human\`.** In your own words: where does this
+post read machine-made, or why does it not? Same two mechanics as
+\`would-cite\` — an \`approve\` with this field blank, or with text identical to
+another record's, is refused at merge.
+
+Read this before you fill it in, because the field is load-bearing in a way the
+others are not. The prebuild voice lint over \`content/blog/\` is **advisory**:
+it warns, naming each tripped marker with its measured value and threshold, and
+it **never fails the build**. That was a deliberate decision — the house model
+trips the punctuation-rate markers in every register it writes, so a
+fail-closed lint would have silently stopped all post work while every
+component reported success. The consequence is this: **your verdict is the only
+thing standing between machine-made prose and the live site.** No other check
+in this repository will catch it after you.
+
+So judge the prose, not the counters. You may cite the lint's warnings as
+evidence; a draft that trips no marker and still reads machine-made is still
+\`reads-as-generated\`, and a draft that trips several and reads like a person
+wrote it is not.
 ` : ''}
+## If your review surfaced a proposal
+
+You may note **at most one** proposal in the verdict record — an idea this
+review made visible that is not this job's work to do. You have no edit rights,
+so do not write a file: note it in the front matter below and the loop
+transcribes it into \`data/proposals/\` as a well-formed proposal naming this
+review's job as its origin. Noting nothing is the normal case and is not a gap;
+a proposal manufactured to fill the field is worse than an empty one.
+
+The front-matter contract a proposal must satisfy, restated here because this
+brief is the only channel you have:
+
+\`\`\`
+proposal:
+  slug: kebab-case-name-for-the-idea
+  type: <one job type from the closed list — a proposal proposes a job of an
+        existing type, never a new kind of work>
+  date: <today, YYYY-MM-DD>
+  summary: <one paragraph>
+  evidence: <what in this diff or its sources prompted it>
+  expires: <optional, YYYY-MM-DD — only for evidence that decays; an expiring
+           proposal skips the 3-day cooling and is swept once it expires>
+\`\`\`
+
 ## Write your verdict here
 
 Write the verdict record to this exact absolute path — it is deliberately
@@ -255,6 +427,10 @@ verdict: approve            # or revise / reject
 reasons: []                 # from the closed list above; required unless approve
 would-cite: >-
   <your own-words answer: who would link this, and in what argument>
+${voice ? `reads-human: >-
+  <your own-words answer: where does this read machine-made, or why does it not>
+` : ''}# proposal:                # optional, at most one — omit the key entirely if
+#   slug: ...               # your review surfaced nothing
 ---
 
 Free-form notes: what you checked, what you fetched, what you ran, and what
@@ -285,6 +461,22 @@ ${diffText.length > 200000 ? diffText.slice(0, 200000) + '\n... [diff truncated 
  * that is what this implements.
  */
 export function existingWouldCites(ctx, excludeJobId) {
+  return existingFieldValues(ctx, excludeJobId, 'wouldCite').map((e) => ({
+    file: e.file,
+    wouldCite: e.value,
+  }));
+}
+
+/**
+ * The same sweep for either forced-judgment field. ONE reader, because
+ * specs/review words the `reads-human` duplicate rule as "on the same terms"
+ * as `would-cite`'s — and two sweeps that agree today are how the two rules
+ * stop agreeing later.
+ *
+ * @param {'wouldCite'|'readsHuman'} field the parsed key to collect
+ * @returns {Array<{file: string, value: string}>}
+ */
+export function existingFieldValues(ctx, excludeJobId, field) {
   if (!existsSync(ctx.reviewsDir)) return [];
   const out = [];
   for (const name of readdirSync(ctx.reviewsDir)) {
@@ -297,7 +489,7 @@ export function existingWouldCites(ctx, excludeJobId) {
       continue;
     }
     const v = parseVerdict(text);
-    if (v.wouldCite) out.push({ file: name, wouldCite: normalizeWouldCite(v.wouldCite) });
+    if (v[field]) out.push({ file: name, value: normalizeField(v[field]) });
   }
   return out;
 }
@@ -361,8 +553,8 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects }) {
         verdict: v,
       };
     }
-    const mine = normalizeWouldCite(v.wouldCite);
-    const dup = existingWouldCites(ctx, jobId).find((e) => e.wouldCite === mine);
+    const mine = normalizeField(v.wouldCite);
+    const dup = existingFieldValues(ctx, jobId, 'wouldCite').find((e) => e.value === mine);
     if (dup) {
       return {
         ok: false,
@@ -370,6 +562,49 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects }) {
         reason:
           `\`approve\` whose \`would-cite\` is exactly identical (after whitespace trimming) to ` +
           `the field in ${dup.file}. A recycled sentence is not an answer to the question.`,
+        verdict: v,
+      };
+    }
+  }
+  // The voice question, on `post` verdicts only — the same two checks, at the
+  // same refusal point, as `would-cite` (specs/review: "on the same terms and at
+  // the same point it refuses a blank `would-cite`"). Same honesty about the
+  // limit, too: a reviewer writing a fresh-but-vacuous sentence each time passes
+  // both, and that is accepted. No mechanical check compels judgment. What this
+  // one does is make the question ASKED — which matters more here than anywhere
+  // else, because the voice lint is advisory and this verdict is the only thing
+  // between machine-made prose and the live site.
+  //
+  // NOT YET MIRRORED IN `scripts/verify-launch.mjs`, and recorded here because
+  // that file's own comment claims it and this gate "agree on what a valid
+  // record is": its review check re-applies the `approve`, non-empty
+  // `would-cite` and duplicate-`would-cite` rules, and knows nothing about
+  // `reads-human`. Nothing is measurably wrong today — `content/blog/` holds no
+  // posts, so the check has no post record to be lenient about — but the two
+  // ends have drifted by one rule and the drift grows the day a post lands.
+  if (needsReadsHuman(type)) {
+    if (!v.readsHuman) {
+      return {
+        ok: false,
+        code: 'reads-human-empty',
+        reason:
+          `\`approve\` on a post with an empty \`reads-human\` is not a valid verdict ` +
+          `(specs/review). The voice question is asked, not merely available: where does this ` +
+          `read machine-made, or why does it not? The prebuild voice lint only warns, so this ` +
+          `field is the bar. Re-issue the verdict with it answered.`,
+        verdict: v,
+      };
+    }
+    const mine = normalizeField(v.readsHuman);
+    const dup = existingFieldValues(ctx, jobId, 'readsHuman').find((e) => e.value === mine);
+    if (dup) {
+      return {
+        ok: false,
+        code: 'reads-human-duplicate',
+        reason:
+          `\`approve\` whose \`reads-human\` is exactly identical (after whitespace trimming) to ` +
+          `the field in ${dup.file}. A sentence pasted from another post's review is not a ` +
+          `judgment about this one's prose.`,
         verdict: v,
       };
     }
@@ -590,8 +825,15 @@ export function writeRecordSubjects(path, subjects, { repoRoot = '' } = {}) {
   return { ok: true, subjects, reviewed, hashWhy };
 }
 
-/** Used by the seed-review flow and by tests to write a record by hand. */
-export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCite = '', notes = '', pass = 1, reviewer = '' }) {
+/**
+ * Used by the seed-review flow and by tests to write a record by hand.
+ *
+ * `readsHuman` is written only when given. An empty string must produce a
+ * record with NO `reads-human` key rather than an empty one, because both are
+ * refused by the merge gate for a post and only the first is honest about what
+ * the caller supplied.
+ */
+export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCite = '', readsHuman = '', notes = '', pass = 1, reviewer = '' }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const p = verdictPath(ctx, jobId, pass);
   const fm = [
@@ -600,6 +842,7 @@ export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCit
     `verdict: ${verdict}`,
     `reasons: [${reasons.join(', ')}]`,
     `would-cite: ${JSON.stringify(wouldCite)}`,
+    readsHuman ? `reads-human: ${JSON.stringify(readsHuman)}` : null,
     reviewer ? `reviewer: ${reviewer}` : null,
     `date: ${ctx.now().toISOString().slice(0, 10)}`,
     '---',

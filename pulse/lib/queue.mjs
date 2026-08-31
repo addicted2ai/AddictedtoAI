@@ -23,14 +23,27 @@
  * Ranks are fixed constants, highest first. They express one judgement: a
  * source that has stopped answering, or a link that is dead, damages the
  * site's claim to be current more than an overdue re-check does.
+ *
+ * Every item but one is derived from *site state* — a fact's age, a dead link,
+ * a feed row that vanished. The exception is the daily scout item, whose two
+ * inputs are `data/ledger.jsonl` and the clock, and which therefore leaves the
+ * queue when the day's scout has run rather than when anything on the site is
+ * fixed. All three properties above still hold of it: the ledger is state, the
+ * item has no identity, and two runs on one local day produce the same bytes.
+ * See the scout section below.
  */
 
-import { paths, readJson, writeJson } from './core.mjs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import fg from 'fast-glob';
+import matter from 'gray-matter';
+import { daysSince, now, paths, readJson, readJsonl, today, writeJson } from './core.mjs';
 import { uninterpretedChanges } from './diff.mjs';
 import { isConfirmedBroken } from './linkcheck.mjs';
 
 export const QUEUE_CAP = 50;
 export const WANT_ELIGIBLE_AT = 3; // specs/wiki: "a name wanted by 3 or more distinct pages"
+export const SCOUT_CONTEXT_DAYS = 7; // specs/pulse: the scout item's trailing window
 
 export const RANKS = {
   'refusing-source': 100,
@@ -51,6 +64,22 @@ export const RANKS = {
   // this value are measured to differ, today". It sits under `tutorial-demoted`
   // and `reference-drift`, which are things already visibly wrong on a page.
   corroboration: 68,
+  // The daily scout (specs/pulse, "Once per day, the Pulse queues the scout").
+  // Its position is normative, not a preference: *below* confirmed breakage and
+  // a corroboration disagreement — the site's claim to be true outranks
+  // discovery — and *above* the routine timers, because discovery outranks
+  // re-checking things that were true last week. The upkeep floor in `loop` is
+  // what stops that ordering starving upkeep: rank decides within a run, the
+  // floor guarantees upkeep's share across runs.
+  //
+  // One consequence, stated because the cap is a truncation and not a deferral:
+  // on a day when 50 items outrank 62 the scout item is not offered at all, and
+  // there is no backlog to carry it. Only `overdue-fact-fast` (65) can
+  // plausibly reach 50 instances — the eight classes above it are all confirmed
+  // breakage or a declared disagreement — so this is a "the site is on fire"
+  // state, in which discovery waiting is the right answer. Measured, not
+  // assumed: `pulse/tests/queue.test.mjs` runs 60 overdue facts against it.
+  'scout-due': 62,
   'listing-verification-due': 60,
   'tutorial-demoted': 70,
   'tutorial-stale': 55,
@@ -77,16 +106,198 @@ export function readWants(root) {
   return out.sort((a, b) => (a.name < b.name ? -1 : 1));
 }
 
-function item(type, reason, subject, detail, target) {
-  return { type, reason, rank: RANKS[reason] ?? 0, subject, detail, target };
+/**
+ * `title` is optional and is emitted only when given, so every item that had
+ * none before is byte-identical to what it was. The loop's reader documents the
+ * two fields as different things — "title: one line, what needs doing" and
+ * "detail: free text for the brief" (`loop/lib/queue.mjs`) — and falls back to
+ * `title: it.title ?? it.detail` when a title is absent. That fallback is right
+ * for a one-line detail and wrong for a long one: the selection log prints the
+ * title whole (`loop/run.mjs:598`) and the brief renders it as the job's
+ * outcome heading, so an item whose detail is many lines needs to say its
+ * outcome in one.
+ */
+function item(type, reason, subject, detail, target, title) {
+  const out = { type, reason, rank: RANKS[reason] ?? 0, subject, detail, target };
+  if (title) out.title = title;
+  return out;
+}
+
+/* ===========================================================================
+ * The daily scout item (specs/pulse, "Once per day, the Pulse queues the
+ * scout"; this change's design D2).
+ *
+ * The Pulse does not become the scout — it stays model-free, structurally
+ * (`pulse/verify-zero-model.mjs`). It *triggers* the scout, from two inputs
+ * and no others: the ledger and the clock. Nothing here scores an event,
+ * ranks one above another, or says which is worth writing about. The context
+ * it assembles is a **join**, and the join's output is an input to the
+ * scout's judgment rather than a bound on it: the scout's charge is the world
+ * beyond this repository, and these lines are only what the site already
+ * knows about that world.
+ * ======================================================================== */
+
+/** The loop's append-only job record. Read tolerantly; absent means empty. */
+function ledgerPath(root) {
+  return join(paths(root).root, 'data', 'ledger.jsonl');
+}
+
+/**
+ * Has a `scout` job been recorded on the run's own LOCAL calendar date?
+ *
+ * ## Why this compares local days rather than slicing the timestamp
+ *
+ * A ledger line's `ts` is an *instant* — `new Date().toISOString()`, UTC by
+ * construction (`loop/lib/ledger.mjs`). Its first ten characters are a UTC
+ * calendar date, and "the current local date" is what this repository means by
+ * a date everywhere else (CLAUDE.md; `pulse/lib/core.mjs` rule 2). West of
+ * Greenwich those two disagree every evening and east of it every morning, so
+ * `String(l.ts).slice(0, 10) === today()` would be the *fifth* UTC-vs-local
+ * bug here: it would both re-derive a scout item hours after one ran, and
+ * suppress tomorrow's because yesterday's UTC stamp happened to match. Going
+ * through `daysSince`, which resolves a datetime to the local calendar day it
+ * falls on, is the whole fix — and `pulse/tests/scout-queue.test.mjs` forces
+ * `TZ` in a child process in both directions, because a test on a UTC box
+ * cannot tell the two implementations apart.
+ *
+ * The job **id** (`j-YYYYMMDD-NN`) is deliberately not used either: it is
+ * minted from `getUTC*` in `loop/lib/ledger.mjs`, so matching on it would
+ * reintroduce the same bug through a different door.
+ *
+ * Any `scout` line counts, whatever its outcome. `blocked: nothing cleared the
+ * bar` is a success (specs/loop), and a `failed` scout still started — this
+ * asks whether the day's scout has run, not whether it went well.
+ *
+ * `ts` is when the line was *recorded*, which is the closest thing the ledger
+ * holds to when the job started; it carries no start field, and `ts - mm` is
+ * an approximation (`mm` sums invocations, not wall-clock) that would put a
+ * guess inside a mechanism.
+ */
+export function scoutRanToday(root, { at = now(), file = ledgerPath(root) } = {}) {
+  for (const line of readJsonl(file)) {
+    if (!line || line.type !== 'scout') continue;
+    if (daysSince(line.ts, at) === 0) return true;
+  }
+  return false;
+}
+
+/**
+ * Every `data/changes.jsonl` key a published post declares it covers.
+ *
+ * Read straight off `content/blog/` rather than through `readCorpus`, for the
+ * reason that module states about itself: the Pulse is tolerant where the
+ * build is strict. A post that will not parse is skipped, not fatal — a
+ * malformed file must not stop the engine, and the consequence of skipping one
+ * is at worst a line offered to the scout that a post already covered.
+ */
+export function coveredKeys(root, { dir = join(paths(root).content, 'blog') } = {}) {
+  const keys = new Set();
+  if (!existsSync(dir)) return keys;
+  let files = [];
+  try {
+    files = fg.sync('**/*.md', { cwd: dir, absolute: true, dot: false, ignore: ['**/README.md'] }).sort();
+  } catch {
+    return keys;
+  }
+  for (const file of files) {
+    let data;
+    try {
+      data = matter(readFileSync(file, 'utf8')).data ?? {};
+    } catch {
+      continue;
+    }
+    if (!Array.isArray(data.covers)) continue;
+    for (const ref of data.covers) {
+      // `covers:` is `[{key, date}]` (lib/schema.mjs). A bare string is
+      // accepted too: this reader must not be the thing that decides the shape.
+      const key = typeof ref === 'string' ? ref : ref && typeof ref === 'object' ? ref.key : null;
+      if (typeof key === 'string' && key !== '') keys.add(key);
+    }
+  }
+  return keys;
+}
+
+/**
+ * The change feed's event lines from the trailing 7 days that no published
+ * post covers, in the feed's own order.
+ *
+ * Annotation lines are excluded because they carry no event — they are an
+ * `interpret` job's commentary *on* a line, keyed to it (`kind: 'annotation'`,
+ * `annotates`). Nothing else is filtered: a seeded release inside the window is
+ * a real dated event from a real source, and deciding that some kinds of event
+ * are less interesting is exactly the judgment this file does not make.
+ */
+export function uncoveredEvents(changesFile, { at = now(), windowDays = SCOUT_CONTEXT_DAYS, covered = new Set() } = {}) {
+  return readJsonl(changesFile).filter((l) => {
+    if (!l || l.kind === 'annotation') return false;
+    if (l.key && covered.has(l.key)) return false;
+    const age = daysSince(l.date, at);
+    return age !== null && age >= 0 && age <= windowDays;
+  });
+}
+
+/** One assembled context line: enough to look the event up and to cite it. */
+function eventLine(l) {
+  const parts = [`- ${l.date ?? 'undated'} ${l.kind ?? 'change'}`];
+  if (l.display_name) parts.push(`— ${l.display_name}`);
+  const where = [l.source, l.row_id].filter(Boolean).join(' ');
+  if (where) parts.push(`(${where})`);
+  if (l.field) parts.push(`${l.field}: ${l.old} -> ${l.new}`);
+  // Both URLs are labelled and neither stands in for the other. `item_url` is
+  // the row's own link; `source_url` is per-row for a seeded line (the vendor's
+  // announcement) but the *feed endpoint* for a diffed one — measured on the
+  // live corpus, where 25 openrouter lines carry the same `/api/v1/models`.
+  // Emitting whichever exists as a bare URL would hand the scout an API
+  // endpoint labelled as the evidence for an event.
+  if (l.item_url) parts.push(`url: ${l.item_url}`);
+  if (l.source_url) parts.push(`source-url: ${l.source_url}`);
+  // Verbatim, because a post's `covers:` must copy it verbatim (lib/schema.mjs).
+  if (l.key) parts.push(`key: ${l.key}`);
+  return parts.join(' ');
+}
+
+/** The one-line outcome. The charge and the filing rules are the brief's. */
+const SCOUT_TITLE =
+  'The daily outward sweep — bring back work this site could not have thought of by looking at itself';
+
+/** The scout item's detail: what the join found, and what it does not mean. */
+function scoutDetail(events) {
+  const preamble =
+    events.length === 0
+      ? `No change-feed line from the trailing ${SCOUT_CONTEXT_DAYS} days is uncovered by a published post. ` +
+        'That is a fact about this repository, not about the world, and it bounds nothing.'
+      : `Assembled context — the ${events.length} change-feed line(s) from the trailing ${SCOUT_CONTEXT_DAYS} ` +
+        "days that no published post's `covers:` declares. A mechanical join of `data/changes.jsonl` " +
+        'against those declarations, in the feed\'s own order: no score, no shortlist, and no claim that ' +
+        'any of it is worth writing about. It is what the site already knows, offered as an input — the ' +
+        'search is the world beyond this repository, and these lines do not bound it.';
+  return [preamble, ...(events.length ? ['', ...events.map(eventLine)] : [])].join('\n');
+}
+
+/**
+ * The daily scout item, or nothing. Exactly one item or none, ever: the
+ * derivation is a function of the ledger and the clock, so a re-run on a day
+ * whose scout is already recorded derives nothing at all.
+ */
+export function scoutItems(root, { changesFile, at = now() } = {}) {
+  if (scoutRanToday(root, { at })) return [];
+  const events = uncoveredEvents(changesFile, { at, covered: coveredKeys(root) });
+  return [item('scout', 'scout-due', today(at), scoutDetail(events), null, SCOUT_TITLE)];
 }
 
 /**
  * Recompute the queue. Pure with respect to the queue file: it reads current
  * state only, never a previous queue.
  */
-export function computeQueue(root, { freshness, changesFile, wants = readWants(root), corroborations = [], registry = null }) {
+export function computeQueue(root, { freshness, changesFile, wants = readWants(root), corroborations = [], registry = null, at = now() }) {
   const items = [];
+
+  // One scout a day, from the ledger and the clock alone. Taken once, at the
+  // top, and with a single `at` shared by every date comparison in this
+  // function's scout path — a run that straddled local midnight between two
+  // `now()` calls could otherwise suppress today's item against tomorrow's
+  // date.
+  items.push(...scoutItems(root, { changesFile, at }));
 
   // A declared pair whose two sides disagree (specs/pulse, addictedtoai-473).
   // The item proposes a `verify` job and carries everything that job needs to

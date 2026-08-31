@@ -20,6 +20,8 @@
 
 import { contentBuildStep } from '../lib/build-content.mjs';
 import { siteAssetsStep } from '../lib/site-assets.mjs';
+import { anchorCheckStep } from '../lib/anchors.mjs';
+import { checkPostVoiceStep } from './check-post-voice.mjs';
 import { acquireBuildLock, DEFAULT_WAIT_MS } from './build-lock.mjs';
 
 /**
@@ -58,6 +60,25 @@ const STEPS = [
   // check. Runs before `next build` so a violation stops the build rather
   // than failing only the pages that happened to import the checker.
   { name: 'content', run: contentBuildStep },
+
+  // make-the-blog-worth-sending task 3.5 — the anchor check. A `covers:`
+  // reference that resolves to no line in `data/changes.jsonl`, or any declared
+  // anchor date outside the 7 days ending on the post's own `date`, FAILS the
+  // build naming the post and the reference (specs/blog). It sits next to
+  // `content` because it is the same kind of claim about the same front matter,
+  // and so its failure prints beside the other content failures rather than
+  // after a screen of asset output. (Ordering is presentation only: this loop
+  // runs every step and exits 1 at the end, so a later step is not skipped by
+  // an earlier failure.)
+  { name: 'anchors', run: anchorCheckStep },
+
+  // make-the-blog-worth-sending task 3.7 — the voice lint. **ADVISORY: it
+  // warns and never fails the build**, by the spec's own emphasis and for a
+  // measured reason (see the header of scripts/check-post-voice.mjs). It joins
+  // the currency-literal warning as a deliberate warn-not-fail check. If this
+  // step ever starts failing builds, that is a defect in it, not a strict
+  // reading of it.
+  { name: 'post-voice', run: checkPostVoiceStep },
 
   // tasks 4.2, 4.9, 4.12, 4.13 — the static files that are served alongside
   // the pages: the build stamp, the search index, the standing tables' JSON

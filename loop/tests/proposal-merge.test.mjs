@@ -1,0 +1,460 @@
+/**
+ * proposal-merge.test.mjs — task 2.4, the merge mechanics for candidates.
+ *
+ * specs/loop: "The caps SHALL be mechanisms". A mechanism is what it does when
+ * measured, so every test here runs the REAL loop against a REAL executor
+ * process that REALLY writes proposal files, and then reads the working tree
+ * and the git history. Nothing below stubs the merge or hands the loop a set of
+ * paths to cap.
+ *
+ * Each guardrail carries its positive control in the same file, because a cap
+ * that drops everything passes a drop test and is useless:
+ *
+ *   - four candidates keep three     ← three candidates keep three, drop none
+ *   - ranking beats filename         ← unranked candidates fall back to filename
+ *   - a `post` proposing `post` is   ← a `post` proposing `interpret` lands in
+ *     rejected                         `data/proposals/`
+ *   - a noting verdict transcribes   ← a non-noting verdict writes nothing
+ */
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync, readdirSync, readFileSync, utimesSync } from 'node:fs';
+import { join } from 'node:path';
+import matter from 'gray-matter';
+
+import { runLoop } from '../run.mjs';
+import {
+  addedProposalPaths,
+  applyProposalMergeRules,
+  proposalCapFor,
+  setFrontMatterKeys,
+  notedProposal,
+} from '../lib/proposals.mjs';
+import { makeRepo, writeQueue, runnersYaml, mockCommand, git, HERE } from './helpers.mjs';
+
+const PMOCK = join(HERE, 'mock-proposal-executor.mjs').replace(/\\/g, '/');
+const pmock = (mode) => `node "${PMOCK}" ${mode} "{prompt_file}"`;
+
+function repo(authorMode, { reviewerMode = 'review-approve-plain', type = 'scout', files } = {}) {
+  const ctx = makeRepo({
+    files,
+    runners: runnersYaml({ command: pmock(authorMode), reviewerCommand: pmock(reviewerMode) }),
+  });
+  writeQueue(ctx, [{ type, title: `a ${type} job for the proposal mechanics` }]);
+  return ctx;
+}
+
+const go = (ctx, o = {}) =>
+  runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true, ...o });
+
+const active = (ctx) =>
+  (existsSync(ctx.proposalsDir) ? readdirSync(ctx.proposalsDir, { withFileTypes: true }) : [])
+    .filter((e) => e.isFile())
+    .map((e) => e.name)
+    .sort();
+
+const inDir = (ctx, sub) => {
+  const d = join(ctx.proposalsDir, sub);
+  return existsSync(d) ? readdirSync(d).sort() : [];
+};
+
+const fmOf = (ctx, name, sub = '') =>
+  matter(readFileSync(join(ctx.proposalsDir, sub, name), 'utf8')).data;
+
+// ---------------------------------------------------------------------------
+// The cap, and its positive control
+// ---------------------------------------------------------------------------
+
+test('a four-candidate scout merge keeps three by the job’s ranking and drops one with a note', async () => {
+  const ctx = repo('scout-4-ranked');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  // Three kept — and the three the SCOUT ranked, not the three the alphabet
+  // would have chosen. The fixture's filenames run opposite to its ranks
+  // precisely so those two answers cannot coincide.
+  assert.deepEqual(active(ctx), ['b-third.md', 'c-second.md', 'd-best.md']);
+
+  // The fourth is a record, with the note the requirement asks for.
+  const dropped = inDir(ctx, 'dropped');
+  assert.ok(dropped.includes('a-weakest.md'), dropped.join(', '));
+  const note = readFileSync(join(ctx.proposalsDir, 'dropped', 'a-weakest.md'), 'utf8');
+  assert.match(note, /## Dropped: over this job's candidate cap/);
+  assert.match(note, /may add at most 3 proposal files; it added 4/);
+  assert.match(note, /- ranked: rank 4/);
+  assert.match(note, /kept instead: `d-best\.md`, `c-second\.md`, `b-third\.md`/);
+  assert.match(note, /record, never a block/);
+  assert.match(ctx.output(), /proposal cap: the scout job added 4 proposal files and may add 3/);
+
+  // The scout's OWN drop records are not candidates and were not capped: the
+  // cap counts files added directly to `data/proposals/`, and `dropped/` is a
+  // record directory.
+  assert.ok(dropped.includes('considered-and-declined.md'), dropped.join(', '));
+  assert.ok(dropped.includes('also-declined.md'), dropped.join(', '));
+  assert.equal(dropped.length, 3);
+
+  // And it really merged: the mechanics are in the history, not just on disk.
+  const merged = git(ctx.repoRoot, ['log', '--oneline', '-6']);
+  assert.match(merged, /proposal caps, stamps and discards/);
+  ctx.cleanup();
+});
+
+test('POSITIVE CONTROL — a three-candidate scout merge keeps all three and drops nothing', async () => {
+  const ctx = repo('scout-3-ranked');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.deepEqual(active(ctx), ['b-third.md', 'c-second.md', 'd-best.md']);
+  assert.deepEqual(inDir(ctx, 'dropped'), [], 'a cap that drops at the limit is dropping unconditionally');
+  assert.ok(!/proposal cap:/.test(ctx.output()), ctx.output());
+  ctx.cleanup();
+});
+
+test('with no stated ranking the cap falls back to filename, and says which it used', async () => {
+  const ctx = repo('scout-4-unranked');
+  await go(ctx);
+  assert.deepEqual(active(ctx), ['a-one.md', 'b-two.md', 'c-three.md']);
+  const note = readFileSync(join(ctx.proposalsDir, 'dropped', 'd-four.md'), 'utf8');
+  assert.match(note, /- ranked: no `rank:` declared; ordered by filename/);
+  ctx.cleanup();
+});
+
+test('an ordinary job’s cap is one: a second proposal is dropped with the same note', async () => {
+  // An `entry` job filing two `interpret` proposals: the cap is the only rule
+  // that can fire here, which is what makes the assertion about the cap.
+  const ctx = repo('proposes-two', { type: 'entry' });
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.deepEqual(active(ctx), ['a-first.md']);
+  assert.deepEqual(inDir(ctx, 'dropped'), ['b-second.md']);
+  assert.match(
+    readFileSync(join(ctx.proposalsDir, 'dropped', 'b-second.md'), 'utf8'),
+    /may add at most 1 proposal file; it added 2/,
+  );
+  ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// The stamp, and the same-type discard
+// ---------------------------------------------------------------------------
+
+test('the stamp overwrites the origin the executor wrote, and the same-type proposal is discarded', async () => {
+  // The executor forges `proposed_by_type: scout` on a proposal filed by a
+  // `post` job — the exact move that would launder a self-amplifying candidate
+  // past the rule. The stamp is written first and the rule reads it back.
+  const ctx = repo('proposes-post', { type: 'post', reviewerMode: 'review-approve-plain' });
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  assert.deepEqual(active(ctx), [], 'a post job’s post proposal must not reach data/proposals/');
+  assert.deepEqual(inDir(ctx, 'rejected'), ['more-of-the-same.md']);
+
+  const text = readFileSync(join(ctx.proposalsDir, 'rejected', 'more-of-the-same.md'), 'utf8');
+  assert.match(text, /## Auto-discarded: a job may not propose more of itself/);
+  assert.match(text, /cannot self-amplify/, 'the pointer names the rule');
+  assert.match(text, /No model was invoked and no inference was spent/);
+
+  const fm = fmOf(ctx, 'more-of-the-same.md', 'rejected');
+  assert.equal(fm.proposed_by_type, 'post', 'the forged `scout` origin was overwritten');
+  assert.equal(fm.proposed_by_job, res.jobId);
+  assert.match(fm.rejection_reason, /may not propose another post job/);
+  assert.match(ctx.output(), /proposal auto-discarded to data\/proposals\/rejected\/more-of-the-same\.md/);
+  ctx.cleanup();
+});
+
+test('POSITIVE CONTROL — the cross-type path is the designed one and lands in data/proposals/', async () => {
+  const ctx = repo('proposes-interpret', { type: 'post' });
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  assert.deepEqual(active(ctx), ['licence-churn.md']);
+  assert.deepEqual(inDir(ctx, 'rejected'), []);
+  const fm = fmOf(ctx, 'licence-churn.md');
+  assert.equal(fm.type, 'interpret');
+  assert.equal(fm.proposed_by_type, 'post', 'stamped with the PROPOSING job’s type');
+  assert.equal(fm.proposed_by_job, res.jobId);
+  ctx.cleanup();
+});
+
+test('every kept candidate carries the proposing job’s stamp', async () => {
+  const ctx = repo('scout-3-ranked');
+  const res = await go(ctx);
+  for (const name of active(ctx)) {
+    const fm = fmOf(ctx, name);
+    assert.equal(fm.proposed_by_type, 'scout', name);
+    assert.equal(fm.proposed_by_job, res.jobId, name);
+  }
+  ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// A discarded branch takes its proposals with it
+// ---------------------------------------------------------------------------
+
+test('a discarded job’s proposals never reach data/proposals/ — they die with the branch', async () => {
+  // Two non-approvals discard the job (a `reject`, a revision pass, a second
+  // `reject`). The branch still holds the proposal the executor filed.
+  // A reviewer that notes NOTHING, so the only thing that could put a file in
+  // `data/proposals/` is the branch.
+  const ctx = repo('scout-4-ranked', { reviewerMode: 'review-reject-plain' });
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'discarded', ctx.output());
+
+  assert.deepEqual(active(ctx), [], 'ideas do not outlive the rejection of the work that produced them');
+  assert.deepEqual(inDir(ctx, 'dropped'), []);
+
+  // Measured, not assumed: the files really exist on the branch that was not
+  // merged. Without this the assertion above would also pass if the executor
+  // had never written anything.
+  const onBranch = git(ctx.repoRoot, ['ls-tree', '-r', '--name-only', res.branch])
+    .split('\n')
+    .filter((l) => l.startsWith('data/proposals/'));
+  assert.equal(onBranch.length, 6, onBranch.join(', '));
+  ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// Transcribing a reviewer-noted proposal
+// ---------------------------------------------------------------------------
+
+test('a noting verdict produces a well-formed proposal file naming the reviewing job', async () => {
+  const ctx = repo('proposes-interpret', { type: 'post', reviewerMode: 'review-approve-noting' });
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  // The job's own proposal AND the reviewer's noted one.
+  assert.deepEqual(active(ctx), ['dated-licence-churn.md', 'licence-churn.md']);
+
+  const text = readFileSync(join(ctx.proposalsDir, 'dated-licence-churn.md'), 'utf8');
+  const fm = matter(text).data;
+  assert.equal(fm.slug, 'dated-licence-churn');
+  assert.equal(fm.type, 'interpret');
+  assert.equal(fm.origin, `review of job ${res.jobId}`);
+  assert.match(String(fm.noted_by), new RegExp(`reviewer of job ${res.jobId}`));
+  assert.match(String(fm.noted_by), /mock-reviewer/);
+  assert.match(text, /three weeks of licence changes/);
+  assert.match(text, /## Origin/);
+  assert.match(ctx.output(), /transcribed the reviewer's noted proposal/);
+
+  // Committed with the records it came from, not left untracked. Scoped to
+  // `data/proposals` because the fixture's own `data/derived/` is untracked by
+  // construction and has nothing to do with this.
+  assert.equal(git(ctx.repoRoot, ['status', '--porcelain', '--', 'data/proposals']).trim(), '', ctx.output());
+  assert.match(git(ctx.repoRoot, ['log', '-1', '--name-only']), /data\/proposals\/dated-licence-churn\.md/);
+  ctx.cleanup();
+});
+
+test('POSITIVE CONTROL — a verdict that notes nothing produces no proposal file', async () => {
+  const ctx = repo('proposes-interpret', { type: 'post', reviewerMode: 'review-approve-plain' });
+  await go(ctx);
+  assert.deepEqual(active(ctx), ['licence-churn.md'], 'only the job’s own proposal');
+  assert.ok(!/transcribed the reviewer's noted proposal/.test(ctx.output()));
+  ctx.cleanup();
+});
+
+test('a rejecting reviewer’s noticing is still transcribed — the work was rejected, the idea was not', async () => {
+  const ctx = repo('proposes-interpret', { type: 'post', reviewerMode: 'review-reject-noting' });
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'discarded', ctx.output());
+  // The job's own proposal died with the branch; the reviewer's note did not.
+  assert.deepEqual(active(ctx), ['dated-licence-churn.md']);
+  ctx.cleanup();
+});
+
+test('a reviewer noting the type it just reviewed is self-amplification through a side channel', async () => {
+  // `review-approve-noting` notes an `interpret` proposal; reviewing an
+  // `interpret` job makes the stamped origin type equal the proposed type.
+  const ctx = repo('proposes-post', { type: 'interpret', reviewerMode: 'review-approve-noting' });
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.ok(!active(ctx).includes('dated-licence-churn.md'), active(ctx).join(', '));
+  assert.ok(inDir(ctx, 'rejected').includes('dated-licence-churn.md'), inDir(ctx, 'rejected').join(', '));
+  assert.match(ctx.output(), /written straight to the rejection index/);
+  ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// The expiry sweep, through a real run (task 2.5's other half is the reader;
+// this is the wiring in run.mjs that calls it)
+// ---------------------------------------------------------------------------
+
+const SWEEP_NOW = new Date(2026, 8, 10, 12, 0, 0); // 2026-09-10, local by construction
+
+function sweepRepo(extra = {}) {
+  const ctx = makeRepo({
+    now: () => SWEEP_NOW,
+    runners: runnersYaml({ command: pmock('plain-edit'), reviewerCommand: pmock('review-approve-plain') }),
+    files: {
+      // Expired yesterday, unselected.
+      'data/proposals/stale-news.md':
+        '---\nslug: stale-news\ntype: post\ndate: 2026-09-02\nexpires: 2026-09-09\n---\n\nA story whose evidence has stopped being current.\n',
+      // Still live — the control. A sweep that took this too would satisfy
+      // every "was it swept?" assertion and destroy the mechanism.
+      'data/proposals/live-news.md':
+        '---\nslug: live-news\ntype: post\ndate: 2026-09-09\nexpires: 2026-09-14\n---\n\nA story that is still current.\n',
+    },
+    ...extra,
+  });
+  writeQueue(ctx, [{ type: 'repair', title: 'an ordinary repair, so the run reaches its record commit' }]);
+  return ctx;
+}
+
+test('a real run sweeps the expired candidate, leaves the live one, and commits the move', async () => {
+  const ctx = sweepRepo();
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  assert.deepEqual(active(ctx), ['live-news.md'], 'the live candidate must survive the sweep');
+  assert.deepEqual(inDir(ctx, 'dropped').map((f) => f.split('.')[0]), ['stale-news']);
+  assert.match(ctx.output(), /expired proposal swept to .*dropped/);
+  assert.match(ctx.output(), /expired on 2026-09-09; today is 2026-09-10 \(local date\)/);
+
+  const note = readFileSync(join(ctx.proposalsDir, 'dropped', inDir(ctx, 'dropped')[0]), 'utf8');
+  assert.match(note, /## Swept: the expiry it declared has arrived/);
+  assert.match(note, /- expires: 2026-09-09/);
+
+  // Both halves of the move are in the history, and nothing is left dirty:
+  // staging only the destination would leave the deletion uncommitted and the
+  // proposal would appear to exist in two places at once.
+  assert.equal(git(ctx.repoRoot, ['status', '--porcelain', '--', 'data/proposals']).trim(), '', ctx.output());
+  const names = git(ctx.repoRoot, ['log', '-1', '--name-status']);
+  assert.match(names, /D\s+data\/proposals\/stale-news\.md/);
+  assert.match(names, /A\s+data\/proposals\/dropped\/stale-news\./);
+  ctx.cleanup();
+});
+
+test('a dry run reports the sweep and moves nothing', async () => {
+  const ctx = sweepRepo();
+  const res = await go(ctx, { dryRun: true });
+  assert.equal(res.dryRun, true, ctx.output());
+  assert.match(ctx.output(), /expired proposal swept \(dry run: not moved\)/);
+  assert.deepEqual(active(ctx).sort(), ['live-news.md', 'stale-news.md']);
+  assert.deepEqual(inDir(ctx, 'dropped'), []);
+  ctx.cleanup();
+});
+
+test('an expiring candidate is selectable the day it is filed; an ordinary one of the same age is not', async () => {
+  const ctx = makeRepo({
+    now: () => SWEEP_NOW,
+    runners: runnersYaml({ command: pmock('plain-edit'), reviewerCommand: pmock('review-approve-plain') }),
+    files: {
+      'data/proposals/filed-today-expiring.md':
+        '---\nslug: filed-today-expiring\ntype: repair\ndate: 2026-09-10\nexpires: 2026-09-14\n---\n\nFiled today.\n',
+      'data/proposals/filed-today-ordinary.md':
+        '---\nslug: filed-today-ordinary\ntype: repair\ndate: 2026-09-10\n---\n\nFiled today.\n',
+    },
+  });
+  writeQueue(ctx, []);
+  // Cooling reads FILE AGE against the run's clock, and this run's clock is
+  // pinned to 2026-09-10 while the fixture's files were written at the real
+  // wall clock — which would make both of them days old and neither of them
+  // cooling. Both mtimes are set to the pinned instant so each file is 0 days
+  // old to this run, and the only difference left between them is the
+  // `expires:` line. (This is the mistake this test made first, and it made the
+  // pair look like proof of something it was not testing.)
+  for (const f of ['filed-today-expiring.md', 'filed-today-ordinary.md']) {
+    utimesSync(join(ctx.proposalsDir, f), SWEEP_NOW, SWEEP_NOW);
+  }
+  const res = await go(ctx, { dryRun: true });
+  assert.equal(res.job.source, 'proposal', ctx.output());
+  assert.equal(res.job.slug, 'filed-today-expiring', ctx.output());
+  assert.match(ctx.output(), /"filed-today-ordinary" is .* days old; it cools for 3 days/);
+  ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// The pieces, directly
+// ---------------------------------------------------------------------------
+
+test('the cap is three for scout and one for everything else', () => {
+  assert.equal(proposalCapFor('scout'), 3);
+  for (const t of ['post', 'entry', 'interpret', 'machinery', 'repair', undefined]) {
+    assert.equal(proposalCapFor(t), 1, String(t));
+  }
+});
+
+test('only files ADDED directly under data/proposals/ are candidates', () => {
+  const changed = [
+    { status: 'A', path: 'data/proposals/a.md' },
+    { status: 'A', path: 'data/proposals/dropped/b.md' },
+    { status: 'A', path: 'data/proposals/rejected/c.md' },
+    { status: 'A', path: 'data/proposals/README.md' },
+    { status: 'M', path: 'data/proposals/already-there.md' },
+    { status: 'D', path: 'data/proposals/gone.md' },
+    { status: 'A', path: 'content/blog/post.md' },
+    { status: 'A', path: 'data/proposals/notes.txt' },
+  ];
+  assert.deepEqual(addedProposalPaths(changed), ['data/proposals/a.md']);
+});
+
+test('setFrontMatterKeys replaces a key rather than appending a second one', () => {
+  const out = setFrontMatterKeys('---\nslug: x\nproposed_by_type: scout\ntype: post\n---\n\nBody.\n', {
+    proposed_by_type: 'post',
+    proposed_by_job: 'j-1',
+  });
+  assert.equal((out.match(/proposed_by_type:/g) ?? []).length, 1);
+  const fm = matter(out).data;
+  assert.equal(fm.proposed_by_type, 'post');
+  assert.equal(fm.proposed_by_job, 'j-1');
+  assert.equal(fm.slug, 'x');
+  assert.equal(fm.type, 'post');
+  assert.match(out, /Body\./);
+});
+
+test('setFrontMatterKeys gives a file with no front matter one', () => {
+  const out = setFrontMatterKeys('Just a body.\n', { proposed_by_type: 'scout' });
+  assert.equal(matter(out).data.proposed_by_type, 'scout');
+  assert.match(matter(out).content, /Just a body\./);
+});
+
+test('a noted proposal is read from front matter or from a body section, and refused when unusable', () => {
+  const fm = notedProposal(
+    '---\nverdict: approve\nproposal:\n  slug: a-good-idea\n  type: interpret\n  summary: one line.\n---\n\nNotes.\n',
+  );
+  assert.equal(fm.ok, true);
+  assert.equal(fm.slug, 'a-good-idea');
+  assert.equal(fm.type, 'interpret');
+
+  const body = notedProposal(
+    '---\nverdict: approve\n---\n\n## Proposal\n\n- slug: from-the-body\n- type: repair\n- summary: a line.\n\n## Other\n\n- slug: not-this-one\n',
+  );
+  assert.equal(body.ok, true);
+  assert.equal(body.slug, 'from-the-body');
+  assert.equal(body.type, 'repair');
+
+  assert.equal(notedProposal('---\nverdict: approve\n---\n\nNothing noted.\n'), null);
+  assert.equal(
+    notedProposal('---\nproposal:\n  slug: fine\n  type: newsletter\n---\n').why,
+    'the noted proposal\'s `type` "newsletter" is not in the closed job-type list',
+  );
+  assert.match(
+    notedProposal('---\nproposal:\n  slug: Not Kebab\n  type: repair\n---\n').why,
+    /no kebab-case `slug`/,
+  );
+});
+
+test('applyProposalMergeRules reports what it did without a loop run', () => {
+  const ctx = makeRepo({
+    files: {
+      'data/proposals/a.md': '---\nslug: a\ntype: entry\n---\n\nA.\n',
+      'data/proposals/b.md': '---\nslug: b\ntype: entry\n---\n\nB.\n',
+    },
+  });
+  const r = applyProposalMergeRules(ctx, {
+    worktree: ctx.repoRoot,
+    jobId: 'j-test-01',
+    jobType: 'entry',
+    changed: [
+      { status: 'A', path: 'data/proposals/a.md' },
+      { status: 'A', path: 'data/proposals/b.md' },
+    ],
+  });
+  assert.equal(r.cap, 1);
+  assert.deepEqual(r.added, ['a.md', 'b.md']);
+  assert.deepEqual(r.kept, []);
+  assert.deepEqual(r.dropped.map((d) => d.name), ['b.md']);
+  // `a.md` proposes `entry` from an `entry` job, so it is kept by the cap and
+  // then discarded by the self-amplification rule — the task's stated order.
+  assert.deepEqual(r.rejected.map((x) => x.name), ['a.md']);
+  ctx.cleanup();
+});

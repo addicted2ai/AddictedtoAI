@@ -43,7 +43,7 @@ import {
 import { scanJobBranches, readCommittedBrief } from './lib/resume.mjs';
 import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './lib/health.mjs';
 import { runGates, unlinkNodeModules } from './lib/gates.mjs';
-import { joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
+import { isReissueRefusal, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
 import {
   brakeScan,
   brakeState,
@@ -56,6 +56,11 @@ import {
 import { publishStep } from './lib/publish.mjs';
 import { rederiveStep, DERIVED_PATHS } from './lib/rederive.mjs';
 import { markDirectiveDone } from './lib/directives.mjs';
+import {
+  applyProposalMergeRules,
+  sweepExpiredProposals,
+  transcribeNotedProposal,
+} from './lib/proposals.mjs';
 
 const USAGE = `node loop/run.mjs — one Desk run
 
@@ -340,7 +345,13 @@ async function executeJob(ctx, opts) {
       );
       return finish({ outcome: 'failed', mm, changed, note: gate.reason });
     }
-    if (gate.code === 'would-cite-empty' || gate.code === 'would-cite-duplicate') {
+    // A blank or recycled forced-judgment field means THE RECORD is unusable,
+    // not the work. Sending the author into a revision pass against a
+    // reviewer's clerical failure spends an executor on nothing. The list is
+    // `review.mjs`'s (`REISSUE_CODES`) rather than two codes written out here:
+    // the `reads-human` refusals joined it, and a hard-coded pair would have
+    // sent every post whose reviewer left that field blank into a revision.
+    if (isReissueRefusal(gate.code)) {
       return finish({ outcome: 'failed', mm, changed, note: gate.reason });
     }
     if (pass >= 2) {
@@ -417,6 +428,27 @@ export async function runLoop(ctx, opts = {}) {
   const reviewer = pickRunner(registry, { id: opts.reviewer, role: 'reviewer' });
   const ledger = readLedger(ctx);
   const now = ctx.now();
+
+  // The expiry sweep, before anything can refuse the run.
+  //
+  // Placed here for the same reason the 14-day abandon sweep sits ahead of the
+  // health gate: housekeeping that stops when a runner is refused is
+  // housekeeping that stops exactly when it is needed. A candidate whose
+  // evidence has stopped being current must leave the pool whether or not this
+  // run goes on to select anything, and it must leave it BEFORE selection, so
+  // that no run can be dispatched at a story the clock has already retired.
+  // `--dry-run` reports the sweep without performing it (specs/loop).
+  const swept = sweepExpiredProposals(ctx, { dryRun: opts.dryRun });
+  for (const n of swept.notes) ctx.log(`note: ${n}`);
+  // The sweep moves files inside `data/`, which is committed in full, so the
+  // move is staged with the run's own records at the end. Both halves are
+  // named — the vanished source as well as the new record — because staging
+  // only the destination leaves the deletion uncommitted and the proposal
+  // appears to exist in two places in the history.
+  const sweptPaths = swept.swept
+    .filter((s) => s.moved)
+    .flatMap((s) => [relative(ctx.repoRoot, s.path), relative(ctx.repoRoot, s.dest)])
+    .map((p) => p.replace(/\\/g, '/'));
 
   ctx.log(`runner: ${runner.id} (provider ${runner.provider}, tier ${runner.tier}) — the only file naming a model, provider or harness is runners.yml`);
   const conf = conformanceGate(loadConformance(ctx), runner.id);
@@ -640,6 +672,42 @@ export async function runLoop(ctx, opts = {}) {
     gitTry(worktree, ['rm', '-r', '-q', '--ignore-unmatch', '.job', RESULT_FILENAME]);
     gitTry(worktree, ['commit', '--no-verify', '-m', `job ${jobId}: remove job scaffolding before merge`]);
 
+    // The proposal caps, the stamp, and the same-type discard (specs/loop).
+    //
+    // Applied ON THE BRANCH, before the merge, so that what reaches
+    // `data/proposals/` is already capped and stamped and the drop records
+    // ride in with the work that produced them. Doing it after the merge would
+    // mean the uncapped set existed on `main`, however briefly, and "however
+    // briefly" is how a mechanism becomes a race.
+    //
+    // The changed list is re-read from the branch here rather than reused from
+    // `result.changed`: that list was computed after the AUTHOR run, and a
+    // revision pass can add a proposal file afterwards. A cap that a revision
+    // could walk around is not a cap.
+    const proposals = applyProposalMergeRules(ctx, {
+      worktree,
+      jobId,
+      jobType: job.type,
+      changed: changedPathsWithStatus(ctx.repoRoot, mergeBaseSha, branch),
+    });
+    for (const n of proposals.notes) ctx.log(n);
+    if (proposals.dropped.length || proposals.rejected.length) {
+      gitTry(worktree, ['add', '-A', '--', 'data/proposals']);
+      const c = gitTry(worktree, [
+        'commit', '--no-verify', '-m',
+        `job ${jobId}: proposal caps, stamps and discards`,
+      ]);
+      if (c.ok) ctx.log(`committed the proposal mechanics to ${branch} before merging`);
+    } else if (proposals.kept.length) {
+      // Nothing moved, but every kept file was stamped with the proposing job.
+      gitTry(worktree, ['add', '-A', '--', 'data/proposals']);
+      const c = gitTry(worktree, [
+        'commit', '--no-verify', '-m',
+        `job ${jobId}: stamp the proposing job onto ${proposals.kept.length} proposal(s)`,
+      ]);
+      if (c.ok) ctx.log(`stamped proposed_by_type: ${job.type} onto ${proposals.kept.join(', ')}`);
+    }
+
     // The branch contributes NO derived state (beads addictedtoai-dgj).
     //
     // `data/derived/` is an output, not content, and a three-way merge of two
@@ -725,6 +793,41 @@ export async function runLoop(ctx, opts = {}) {
     }
   } else if (outcome === 'discarded') {
     ctx.log(`discarding ${branch}; the record of the reasons is kept at ${verdictPath(ctx, jobId, result.pass ?? 1)}`);
+    // The branch is not merged and is not deleted here, so the proposal files
+    // it added exist only on it. Nothing moves them into `data/proposals/`:
+    // ideas do not outlive the rejection of the work that produced them
+    // (specs/loop). That is an absence of code, which is why it is written
+    // down — and it is measured by a test that plants a proposal on a branch
+    // the reviewer rejects and then reads the working tree.
+  }
+
+  // A proposal the REVIEWER noted, transcribed from the verdict record.
+  //
+  // Attempted on any outcome the merge gate parsed a verdict for — approved or
+  // not. A reviewer that rejects a piece and says "the real work here is an
+  // `interpret` job on X" has produced the most valuable noticing of the run,
+  // and losing it because the work it reviewed was rejected would throw away
+  // the judgment along with the diff. Its edits to the reviewed tree are
+  // discarded; this record is its only channel.
+  const transcribedPaths = [];
+  if (result.verdict) {
+    const t = transcribeNotedProposal(ctx, {
+      jobId,
+      jobType: job.type,
+      verdictPath: verdictPath(ctx, jobId, result.pass ?? 1),
+      reviewer: reviewer.id,
+    });
+    if (t.transcribed) {
+      transcribedPaths.push(relative(ctx.repoRoot, t.dest));
+      ctx.log(
+        t.selfAmplifying
+          ? `the reviewer noted a \`${t.noted.type}\` proposal while reviewing a \`${job.type}\` job — ` +
+            `written straight to the rejection index at ${t.dest}: ${t.reason}`
+          : `transcribed the reviewer's noted proposal to ${t.dest}, naming job ${jobId} as its origin`,
+      );
+    } else if (t.malformed || (t.why && !/notes no proposal|no verdict record/.test(t.why))) {
+      ctx.log(`the verdict record's noted proposal was not transcribed: ${t.why}`);
+    }
   }
 
   removeWorktree(ctx.repoRoot, worktree);
@@ -740,6 +843,11 @@ export async function runLoop(ctx, opts = {}) {
     // repository is left holding a queue that describes the tree from before
     // this job (addictedtoai-942). Still staged by exact path — never `add -A`.
     ...(rederived ? DERIVED_PATHS : []),
+    // A proposal transcribed from the verdict record is written into the main
+    // working tree after the merge, so it is not carried by any branch. It is
+    // committed here with the record it came from, or it would sit untracked
+    // and the next run would read a proposal nothing in the history explains.
+    ...transcribedPaths,
   ].map((p) => p.replace(/\\/g, '/'));
 
   const line = appendLedger(
@@ -766,7 +874,10 @@ export async function runLoop(ctx, opts = {}) {
   // uncommitted would lose the ledger the budget is computed from. Exact paths
   // only: never `add -A` in the main working tree, which the maintainer or
   // another process may be mid-edit in.
-  const staged = recordPaths.filter((p) => existsSync(join(ctx.repoRoot, p)));
+  // `existsSync` is the right filter for every record the loop WRITES, and the
+  // wrong one for a file it MOVED: the sweep's source is gone by construction,
+  // and dropping it here would stage the addition without the deletion.
+  const staged = recordPaths.filter((p) => existsSync(join(ctx.repoRoot, p))).concat(sweptPaths);
   if (staged.length) {
     gitTry(ctx.repoRoot, ['add', '--', ...staged]);
     const has = gitTry(ctx.repoRoot, ['diff', '--cached', '--name-only']).stdout.trim();

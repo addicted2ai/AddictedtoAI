@@ -13,6 +13,7 @@
 
 import { RESULT_PROTOCOL_INSTRUCTION } from './result.mjs';
 import { excerptsFor, PROSE_TYPES } from './specs.mjs';
+import { JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
 
 /** The reserved paths, exactly (specs/loop breaker 4). */
 export const RESERVED_PATHS = Object.freeze([
@@ -51,7 +52,7 @@ ${RESERVED_PATHS.map((p) => `  - \`${p}\``).join('\n')}
   a change was *meant* to do, rather than from a measurement of what it does,
   is the defect this whole site's review exists to catch.`;
 
-const ACCEPTANCE_BY_TYPE = {
+export const ACCEPTANCE_BY_TYPE = {
   interpret: [
     'The annotation is appended as a NEW line keyed to the change it interprets — `data/changes.jsonl` stays append-only, and no existing line is edited.',
     'The annotation says what the change means and whether it matters, in one or two sentences, and cites the change record it annotates.',
@@ -77,10 +78,24 @@ const ACCEPTANCE_BY_TYPE = {
     'No credential was sought and no software was installed.',
   ],
   post: [
+    'The post is ONE OF TWO FORMS, and `RESULT.md` says which. A **note**: something happened and somebody is affected — lead with the event and who it lands on, and reference the wiki for identity and background rather than restating it. A note has **no minimum length**; it is finished when an affected reader knows what happened, what changes for them, and where the primary evidence is, and brevity alone is never a defect in one. A **synthesis**: recorded, dated evidence assembled into a shape no single event shows — state the method (what was fetched, filtered, sorted or counted, concretely enough that a skeptical reader could reproduce the derivation) and rest on enumerable dated evidence, never on impressions.',
+    'A note DECLARES ITS ANCHOR in front matter — `covers:` (one or more `{key, date}` references to lines in `data/changes.jsonl`, for events the Pulse observed) and/or `anchor:` (`{url, date}`, a primary source for an event outside the Pulse’s aperture). Every declared anchor date falls inside the 7 days ENDING on the post’s own `date`: an anchor dated after the post is as mislabeled as one more than 7 days before it, the build fails on either, and one fresh anchor beside a stale one launders nothing. An older event referred to in passing is a link in prose, never a declared anchor. A dated-event post with no anchor comes back `spec-violation`; a synthesis declares none and is judged as a synthesis.',
+    'Where the subject has an identifiable AFFECTED PARTY — users of a retiring model, holders of a licence that changed, subscribers to a repriced tier — the post names them and what changes for them, concretely: what breaks or changes, what to do about it, and by when where a date exists. A post about an actor-event that never says who it lands on is returned `revise` with reason `not-worth-reading`. A synthesis whose subject has no affected party (a shape of the catalog, a property of a document set) is not required to invent one.',
+    'The subject is the world’s AI — its models, vendors, prices, licences, incidents, methods and people-facing consequences. **This site is never the subject**: not its machinery, its corpus, its build, its process, or its history. The site’s own data layer IS fair evidence, because that layer records the world — a vendor’s price change documented from a snapshot diff is a post about the vendor. A post whose subject is this site is rejected `spec-violation` however well it is written.',
+    'The prose is written to the house voice of record at `openspec/style/blog-voice.md` — read that file in this worktree before writing a sentence. A post that reads machine-made is rejected `reads-as-generated`, with the reviewer’s own words recorded for where. The build’s voice lint is ADVISORY — it warns, naming each tripped marker with its measured value and threshold, and never fails the build — so a green build is not a passed voice check, and quality outranks sounding human where the two ever pull apart.',
     'Every external claim was source-checked by fetching the source during this job.',
     'The title and excerpt claim no more than the body proves.',
     'Dates are explicit; nothing reads as current that is merely recent.',
     'It is worth an enthusiast’s time. If it is not, write nothing and report `blocked:` — a post exists because something happened, never because a slot was open.',
+  ],
+  scout: [
+    'THE CHARGE IS OUTWARD: bring back work the site could not have thought of by looking at itself. Sweep the world beyond this repository and beyond its registered sources — vendor announcements and documentation, papers, incidents, pricing and licence pages, community signal. The queue item’s assembled feed context is one input among them, never the sweep. Every filed candidate carries externally retrieved evidence: URLs you actually fetched during this job, each with the date you retrieved it. A run in which every filed candidate could have been written without leaving this repository is rejected in review as `spec-violation` naming this charge.',
+    'Everything you found is judged against the two tests before anything is filed: **worth a stranger’s attention** — for a post, in its would-SEND form, someone who follows the topic would send it to a specific person with no more explanation than "look at this" — and **true, checkable and current**. Correct, sourced and forgettable fails the bar; it is not a near miss.',
+    'AT MOST THREE candidates are filed per run — the most worthy three, not the first three — as proposal files in `data/proposals/`. State your ranking in `RESULT.md`. The cap is mechanical, not a request: at merge the loop keeps three, by your stated ranking where you gave one and by filename where you did not, and moves the excess to `data/proposals/dropped/` with a note. Three bounds a burst; nothing anywhere treats it as a target, and filing one candidate or none is a complete run.',
+    'Each candidate carries the full docket, written at filing time and not left to the job that picks it up: a kebab-case `slug`, a `type` from the closed job-type list, an `expires:` date — **at most 7 days out for an event-driven candidate, at most 14 for a synthesis** — a why-now, the retrieved evidence with URLs and retrieval dates, and done-when acceptance lines.',
+    'EVERY STORY CONSIDERED AND DECLINED becomes one record in `data/proposals/dropped/`, naming which of the two tests it failed and what would make it worth refiling. Declines are recorded, never silently dropped, and `dropped/` is a record rather than a block — a slug there does not suppress a later filing, so a story returns when its refile condition arrives. Stated honestly: these records prove the FORM of the bar, not its rate — nothing measures how many stories you considered.',
+    'A QUIET DAY OPENS THE SYNTHESIS BRANCH, and never a floor. When no external story clears the bar, consider whether the accumulated recorded evidence — `data/changes.jsonl`, the snapshots, the corpus’s data layer — supports a synthesis candidate instead. That branch is an opportunity, not an obligation: a candidate filed to fill a day is the failure it exists to prevent.',
+    'WHEN NOTHING CLEARS THE BAR ON EITHER BRANCH, file nothing and end `RESULT.md` with the first line exactly `blocked: nothing cleared the bar`. That is a **success**, recorded as one — the ledger keeps it, no breaker counts it, and nothing anywhere treats the day as a failure. Zero candidates on a quiet day is the bar working.',
   ],
   education: [
     'No perishable literal appears anywhere on the page.',
@@ -103,6 +118,133 @@ const ACCEPTANCE_BY_TYPE = {
     'The diff stays inside the machinery; it does not touch content or reserved paths.',
   ],
 };
+
+/**
+ * The acceptance checks for a job type — LOUDLY, because the quiet version
+ * shipped a defect.
+ *
+ * This was `ACCEPTANCE_BY_TYPE[job.type] ?? []`, and the empty array fell
+ * through to the generic "the outcome above is achieved and the build still
+ * passes" line. `scout` was added to `JOB_TYPES` (`loop/lib/config.mjs`) before
+ * it was added here, and for that window every scout brief would have shipped
+ * with ZERO per-type acceptance checks while every component reported success:
+ * the brief assembles, the executor runs, the reviewer's checklist is a
+ * different table in a different file, and nothing anywhere would have said the
+ * charge, the cap of three, the drop records or the expiry windows were missing.
+ * A brief is the executor's ONLY channel — no session, no memory, no way to ask
+ * — so an unfilled type is not a degraded brief, it is a job with no stated bar.
+ *
+ * "Fail the build, don't warn" is this repository's rule for exactly this
+ * shape, so the fallback throws instead. Where it throws matters: `run.mjs`
+ * calls `assembleBrief` after selection and BEFORE the branch, the worktree or
+ * any invocation exist, so a missing entry aborts the run having created
+ * nothing and spent nothing, naming the type and this file. The parity test in
+ * `loop/tests/brief-acceptance.test.mjs` catches it earlier still — the moment
+ * a type is added to `JOB_TYPES` — which is where the cost of noticing is
+ * lowest.
+ */
+export function acceptanceChecksFor(type) {
+  const checks = ACCEPTANCE_BY_TYPE[type];
+  if (!Array.isArray(checks) || checks.length === 0) {
+    throw new Error(
+      `loop/lib/brief.mjs: no acceptance checks for job type "${type}". ` +
+        `Every type in JOB_TYPES needs an ACCEPTANCE_BY_TYPE entry — a brief is the ` +
+        `executor's only channel, so a job type with no checks is a job with no ` +
+        `stated bar. Add the entry (and its review checklist in loop/lib/review.mjs) ` +
+        `before running a job of this type.`,
+    );
+  }
+  return checks;
+}
+
+/**
+ * The proposal rule, stated in every brief (specs/loop, "Work comes from three
+ * sources and cannot self-amplify": *every brief the loop assembles SHALL state
+ * the proposal rule that binds its job … because a self-contained brief is the
+ * only channel a job has and an untold job cannot know*).
+ *
+ * The producing side of work source 3 was three MAYs in the spec and nothing in
+ * any brief (`addictedtoai-6ov`): `proposals.mjs` exported three readers and one
+ * mover and no writer, and no executor was ever told it could file one. A
+ * permission nobody is told about is not a permission.
+ *
+ * Two rules, and the difference is the whole point: for an ordinary job filing
+ * is a side-output capped at one, and for `scout` filing IS the outcome, capped
+ * at three by its own requirement. Both restate the front-matter contract,
+ * `expires:` included, because the contract is what makes a filed proposal
+ * machine-readable and a malformed one is discarded unread.
+ */
+export function proposalRule(type) {
+  const scout = type === 'scout';
+  const heading = scout
+    ? `## Filing candidates — this job's outcome, and its mechanical cap`
+    : `## Proposals — the one thing you may file beside this job`;
+
+  const body = scout
+    ? `Filing candidates **is** this job's outcome, not a side-output: at most three
+per run, the most worthy three, as proposal files in \`data/proposals/\`, plus one
+record in \`data/proposals/dropped/\` for every story you considered and declined.
+The acceptance checks above are the bar each candidate must clear; this section
+is the file format they must be written in.`
+    : `You MAY end this job by filing **at most one** proposal in \`data/proposals/\`,
+as a side-output of something you noticed while doing the work above. It is
+optional and most jobs file none. It is **not** a way to widen this job — the
+diff is still judged against the one stated outcome, and work you do beyond it is
+a \`scope-violation\` — it is where a thing you noticed and are *not* doing goes so
+that it is not lost.`;
+
+  const n = scout ? 'three' : 'one';
+  const mechanics = `The cap is a mechanism, not a request. If this branch adds more than ${n}
+proposal file${scout ? 's' : ''}, the loop keeps ${n} — by your stated ranking where you gave
+one in \`RESULT.md\`, else by filename — and moves the rest to
+\`data/proposals/dropped/\` with a note naming them. A proposal on a branch that
+is DISCARDED dies with the branch: ideas do not
+outlive the rejection of the work that produced them. At merge the loop stamps
+this job's type (\`${type}\`) onto each kept proposal, overwriting whatever you
+wrote there, and a proposal whose stamped origin type equals the type it proposes
+is auto-discarded with a pointer to the self-amplification rule — so this job
+cannot propose another \`${type}\`. Noticing across types is the designed path.`;
+
+  return `${heading}
+
+${body}
+
+${mechanics}
+
+One markdown file per proposal, front matter exactly:
+
+\`\`\`
+---
+date: <YYYY-MM-DD>        # today's local date on this machine
+slug: <kebab-case-name>   # names the idea. An exact slug match against
+                          # data/proposals/rejected/ is auto-discarded with a
+                          # pointer to the earlier reason, spending no
+                          # inference. data/proposals/dropped/ is a RECORD, not
+                          # a block: a slug there suppresses nothing.
+type: <job type>          # the type of job proposed, from the closed list:
+                          # ${JOB_TYPES.slice(0, 5).join(', ')},
+                          # ${JOB_TYPES.slice(5).join(', ')}.
+                          # A proposal proposes a job of an EXISTING type,
+                          # never a new kind of work.
+summary: >                # one paragraph: what the proposed job would do
+  ...
+evidence: >               # what prompted it — sources, with URLs and the
+  ...                     # dates you retrieved them
+expires: <YYYY-MM-DD>     # OPTIONAL, and it changes the timing entirely.
+                          # WITHOUT it a proposal cools for ${PROPOSAL_COOLING_DAYS} days (file
+                          # age) before it can be selected at all. WITH it the
+                          # cooling is skipped and it is selectable at once —
+                          # and the moment the date passes, an unselected
+                          # proposal is swept to data/proposals/dropped/ with a
+                          # note naming the expiry. Use it for evidence with a
+                          # shelf life; nothing carries forward unjudged.
+---
+\`\`\`
+
+The body below the front matter is the proposal's own argument. Cooling filters
+ideas by whether they still look good in ${PROPOSAL_COOLING_DAYS} days; an expiry filters evidence by the
+date it stops being news. Carry whichever one fits what you found.`;
+}
 
 /**
  * What the cap actually is, and what the job has actually cost (specs/loop
@@ -183,7 +325,7 @@ export function subjectLines(job) {
 
 export function assembleBrief(ctx, { jobId, job, branch, capMinutes, resumed = false, mmSoFar = 0, invocations = 0 }) {
   const ex = excerptsFor(ctx.repoRoot, job.type);
-  const checks = ACCEPTANCE_BY_TYPE[job.type] ?? [];
+  const checks = acceptanceChecksFor(job.type);
   const prose = PROSE_TYPES.includes(job.type);
 
   return `# Job ${jobId} — \`${job.type}\`
@@ -207,7 +349,7 @@ discard. Do not widen it: a diff that exceeds the stated outcome is a
 
 ## Acceptance checks
 
-${checks.map((c) => `- ${c}`).join('\n') || '- The outcome above is achieved and the build still passes.'}
+${checks.map((c) => `- ${c}`).join('\n')}
 - The repository still builds (\`npm run build\`) and \`npm test\` still passes.
 - The diff contains nothing you cannot defend from a source or a run.
 ${prose ? '- A reviewer with fresh context, seeing only your diff, can check every claim in it.\n' : ''}
@@ -219,6 +361,8 @@ no edit rights, and no sight of your reasoning then judges that diff against
 the checklist for this kind of work and returns one verdict: \`approve\`,
 \`revise\`, or \`reject\`. There is one revision pass, then a delta review, then
 the job is discarded. Nothing publishes without an \`approve\`.
+
+${proposalRule(job.type)}
 
 ${GROUND_RULES}
 

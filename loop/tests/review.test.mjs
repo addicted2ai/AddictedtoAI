@@ -634,7 +634,15 @@ test('zlq the merge refuses a record whose `reviewed:` names a different set tha
     now: () => NOW,
     files: { 'content/blog/one.md': PIECE(1), 'content/blog/two.md': PIECE(2) },
   });
-  const p = writeVerdictRecord(ctx, 'j-gate', { verdict: 'approve', wouldCite: 'gate', notes: 'n' });
+  // `type: 'post'` below, so the record needs BOTH forced-judgment fields —
+  // this test is about the `reviewed:` set, and a record refused for a blank
+  // `reads-human` would never reach that check.
+  const p = writeVerdictRecord(ctx, 'j-gate', {
+    verdict: 'approve',
+    wouldCite: 'gate',
+    readsHuman: 'reads like a person wrote it: the second paragraph is blunt.',
+    notes: 'n',
+  });
   const measured = ['content/blog/one.md'];
 
   // Matching sets merge.
@@ -661,7 +669,12 @@ test('zlq the merge refuses a record whose `reviewed:` names a different set tha
 
   // A record with NO `reviewed:` is not refused — every record written before
   // this mechanism existed is one, and the normal path writes it AFTER the merge.
-  const p2 = writeVerdictRecord(ctx, 'j-unbound', { verdict: 'approve', wouldCite: 'unbound', notes: 'n' });
+  const p2 = writeVerdictRecord(ctx, 'j-unbound', {
+    verdict: 'approve',
+    wouldCite: 'unbound',
+    readsHuman: 'no signposting, no self-narration; the lede is a fact.',
+    notes: 'n',
+  });
   assert.ok(p2);
   assert.equal(mergeGate(ctx, { jobId: 'j-unbound', type: 'post', subjects: measured }).ok, true);
   ctx.cleanup();

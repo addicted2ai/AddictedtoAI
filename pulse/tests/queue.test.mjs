@@ -59,10 +59,20 @@ test('re-running with no state change produces a byte-identical queue', async (t
   const second = readFileSync(paths.queue(root), 'utf8');
   assert.equal(second, first, 'recomputation produces no accumulation and no drift — byte for byte');
 
-  // Nothing in the file gives an item an identity or a history.
+  // Nothing in the file gives an item an identity or a history. `title` is the
+  // one optional key (the scout item carries it; nothing else does) and it is
+  // neither: it is the one-line outcome the loop's reader documents, and it
+  // says nothing about when the item appeared or what has been done to it.
   const queue = readJson(paths.queue(root));
+  const ALLOWED = ['detail', 'rank', 'reason', 'subject', 'target', 'title', 'type'];
   for (const item of queue.items) {
-    assert.deepEqual(Object.keys(item).sort(), ['detail', 'rank', 'reason', 'subject', 'target', 'type']);
+    for (const key of Object.keys(item)) assert.ok(ALLOWED.includes(key), `unexpected item key ${key}`);
+    for (const key of ['detail', 'rank', 'reason', 'subject', 'target', 'type']) {
+      assert.ok(key in item, `every item carries ${key}`);
+    }
+    for (const key of ['id', 'created', 'created_at', 'status', 'state', 'seen']) {
+      assert.equal(key in item, false, `an item must never carry ${key}`);
+    }
   }
   assert.equal('generated_at' in queue, false, 'no timestamp: the queue is a snapshot, not a ledger');
 });
@@ -80,7 +90,10 @@ test('fixing the state removes the item, with no close or archive action by anyo
   assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
   queue = readJson(paths.queue(root));
   assert.equal(queue.items.filter((i) => i.subject === 'model/alpha#price_input').length, 0);
-  assert.equal(queue.count, 0);
+  // The daily scout item remains: it is a function of the ledger and the clock,
+  // not of the fact that was just re-verified. Its own idempotence is measured
+  // in scout-queue.test.mjs.
+  assert.deepEqual(queue.items.map((i) => i.reason), ['scout-due']);
 });
 
 test('the queue is capped at 50 and reports what it dropped', async (t) => {
@@ -92,7 +105,17 @@ test('the queue is capped at 50 and reports what it dropped', async (t) => {
   const queue = readJson(paths.queue(root));
   assert.equal(queue.count, 50);
   assert.equal(queue.cap, 50);
-  assert.equal(queue.total_before_cap, 60, 'the queue is bounded by the size of the site, not by time passing');
+  assert.equal(queue.total_before_cap, 61, 'the queue is bounded by the size of the site, not by time passing');
+
+  // 60 overdue facts rank 65; the scout ranks 62. The cap is a truncation, not
+  // a deferral — the queue has no backlog by construction — so on a day when
+  // 50 items outrank it the scout item is simply not offered. Asserted rather
+  // than left implicit: this is the one place the normative rank (below
+  // corroboration, above the routine timers) meets QUEUE_CAP, and anyone who
+  // later exempts the scout from the cap should have to change this line
+  // deliberately.
+  assert.equal(queue.items.filter((i) => i.type === 'scout').length, 0);
+  assert.equal(queue.items.filter((i) => i.rank === 65).length, 50);
 });
 
 test('a vanished feed row produces a repair item', async (t) => {
@@ -207,8 +230,10 @@ test('a stale queue file is overwritten whole, never merged', async (t) => {
   writeJson(paths.queue(root), { cap: 50, count: 1, total_before_cap: 1, items: [{ type: 'repair', reason: 'ghost', rank: 999, subject: 'from a previous run', detail: '', target: null }] });
   assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
   const queue = readJson(paths.queue(root));
-  assert.equal(queue.count, 0, 'nothing is ever "filed" into the queue');
-  assert.equal(queue.items.length, 0);
+  assert.equal(queue.items.filter((i) => i.reason === 'ghost').length, 0, 'nothing is ever "filed" into the queue');
+  // What IS there is recomputed from current state, not carried over: this
+  // fixture's ledger records no scout today, so the scout item derives.
+  assert.deepEqual(queue.items.map((i) => i.reason), ['scout-due']);
 });
 
 // ── a declared corroboration that disagrees (specs/pulse, addictedtoai-473) ──
