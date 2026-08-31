@@ -17,6 +17,8 @@ evidence: >
   2026-08-16 already uses as its primary source — so the Pulse's existing
   source machinery (registry.json: a JSON feed, row_id_field, material_fields,
   expected_change_days) fits it without new code paths.
+proposed_by_job: j-20260831-12
+proposed_by_type: post
 ---
 
 The Pulse has exactly one model-catalog source today, openrouter-models, and
