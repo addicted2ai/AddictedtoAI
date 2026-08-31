@@ -86,7 +86,7 @@ arithmetic is almost never what you are waiting for.**
 Time is not the only thing the fetching costs. A 2016 paper proposing hardware
 built around this asymmetry stated the other half of it flatly: fetching
 weights from memory
-["is two orders of magnitude more expensive than ALU operations"](https://arxiv.org/abs/1602.01528)
+["is two orders of magnitude more expensive than ALU operations"](https://arxiv.org/abs/1602.01528v2)
 — the arithmetic units' own work — "and dominates the required power." Roughly
 a hundred times more energy goes into carrying a number to the multiplier than
 into the multiplication itself. The arithmetic is not merely fast. On this

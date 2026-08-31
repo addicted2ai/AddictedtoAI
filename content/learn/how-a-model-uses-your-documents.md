@@ -56,7 +56,7 @@ Why not train the model on the handbook and skip the search? [The training
 page](/learn/how-models-are-trained) gives the reason in principle: facts belong
 in retrieval, where they can be corrected without a training run and cited when
 used. There is also a measurement. In December 2023, [Fine-Tuning or
-Retrieval?](https://arxiv.org/abs/2312.05934) compared the two approaches across
+Retrieval?](https://arxiv.org/abs/2312.05934v3) compared the two approaches across
 knowledge-intensive tasks and reported that "while unsupervised fine-tuning
 offers some improvement, RAG consistently outperforms it, both for existing
 knowledge encountered during training and entirely new knowledge." The same
@@ -117,7 +117,7 @@ of containing an answer.
 
 How much that costs was measured, and the number runs the wrong way from
 intuition. In January 2024, [The Power of
-Noise](https://arxiv.org/abs/2401.14887) varied what went into the retrieved set
+Noise](https://arxiv.org/abs/2401.14887v4) varied what went into the retrieved set
 and found that "the retriever's highest-scoring documents that are not directly
 relevant to the query (e.g., do not contain the answer) negatively impact the
 effectiveness of the LLM." Then the finding that makes the point: "adding random

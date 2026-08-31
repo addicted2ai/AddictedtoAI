@@ -23,6 +23,7 @@ import { siteAssetsStep } from '../lib/site-assets.mjs';
 import { anchorCheckStep } from '../lib/anchors.mjs';
 import { checkPostVoiceStep } from './check-post-voice.mjs';
 import { checkSpecDeltasStep } from './check-spec-deltas.mjs';
+import { arxivPinStep } from '../lib/arxiv-pin.mjs';
 import { acquireBuildLock, DEFAULT_WAIT_MS } from './build-lock.mjs';
 import { isDirty, dirtyPaths } from '../lib/stamp.mjs';
 
@@ -100,6 +101,21 @@ const STEPS = [
   // runs every step and exits 1 at the end, so a later step is not skipped by
   // an earlier failure.)
   { name: 'anchors', run: anchorCheckStep },
+
+  // beads addictedtoai-2xh — the versioned-citation check. `arxiv.org/abs/<id>`
+  // serves the LATEST version, so an unversioned URL beside a VERBATIM
+  // quotation names a document that moves; this corpus already carries a
+  // sentence that is in v1's abstract and gone from v2's. It FAILS on a
+  // quotation cited to an unversioned abstract and WARNS on the recorded debt
+  // in `data/arxiv-pin-debt.json`, which may only shrink. It deliberately does
+  // NOT touch citations that merely refer to a paper without quoting it —
+  // those must stay unversioned so they track the live document. See the
+  // header of lib/arxiv-pin.mjs for the measurement behind both halves.
+  //
+  // A step of its own rather than a call inside `contentBuildStep` because it
+  // reads the corpus and nothing else, and because this file's own header names
+  // STEPS as the registration point for a new build step.
+  { name: 'arxiv-pins', run: arxivPinStep },
 
   // make-the-blog-worth-sending task 3.7 — the voice lint. **ADVISORY: it
   // warns and never fails the build**, by the spec's own emphasis and for a

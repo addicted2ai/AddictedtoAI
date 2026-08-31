@@ -49,7 +49,7 @@ data is read by the model as instruction, because the application concatenated
 trusted and untrusted text into one input and there was no second place to put
 the untrusted half. The researchers who first mapped the remote version of the
 attack [put it in one
-line](https://arxiv.org/abs/2302.12173): "LLM-Integrated Applications blur the
+line](https://arxiv.org/abs/2302.12173v2): "LLM-Integrated Applications blur the
 line between data and instructions." Willison's own compressed version, written
 [years later](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/), is
 mechanical rather than legal: "Everything eventually gets glued together into a
@@ -206,7 +206,7 @@ as one attack paper puts it, "often trained on distributed, web-scale datasets
 crawled from the internet", and those datasets are frequently distributed as
 lists of addresses rather than as content, which is the opening. In February
 2023 a group [demonstrated two
-attacks](https://arxiv.org/abs/2302.10149) exploiting exactly that: split-view
+attacks](https://arxiv.org/abs/2302.10149v2) exploiting exactly that: split-view
 poisoning, which "exploits the mutable nature of internet content to ensure a
 dataset annotator's initial view of the dataset differs from the view downloaded
 by subsequent clients", and frontrunning poisoning, which targets datasets built
@@ -233,7 +233,7 @@ The nearest is inside the weights themselves. The observation behind the
 instruction hierarchy is that models "often consider system prompts (e.g., text
 from an application developer) to be the same priority as text from untrusted
 users and third parties", so [the April 2024
-proposal](https://arxiv.org/abs/2404.13208) trains a priority ordering into
+proposal](https://arxiv.org/abs/2404.13208v1) trains a priority ordering into
 them, teaching a model to "selectively ignore lower-privileged instructions",
 and reports that this "drastically increases robustness". Real, and worth
 having. What gets installed is a learned tendency measured against a
@@ -252,10 +252,10 @@ them](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/) is blunt.
 They advertise capture rates in the mid-nineties, he notes, "but in web
 application security 95% is very much a failing grade." The measured picture is worse than the marketing and also
 worse than a fair reading of the research. In February 2025 a team [evaluated
-eight published defences](https://arxiv.org/abs/2503.00061) against attacks
+eight published defences](https://arxiv.org/abs/2503.00061v2) against attacks
 adapted to each one and bypassed all eight, "consistently achieving an attack
 success rate of over 50%". In October 2025 a larger effort, [The Attacker Moves
-Second](https://arxiv.org/abs/2510.09023), bypassed twelve recent defences with
+Second](https://arxiv.org/abs/2510.09023v1), bypassed twelve recent defences with
 success "above 90% for most", and recorded the finding that should govern how
 anyone reads a defence's published numbers: "the majority of defenses originally
 reported near-zero attack success rates." A score is a measurement against the

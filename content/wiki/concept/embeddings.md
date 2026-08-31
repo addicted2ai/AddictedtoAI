@@ -37,7 +37,7 @@ facts:
   - field: cosine_similarity_warning
     source: cited
     value: "cosine similarity of embeddings from regularized linear models \"can yield arbitrary and therefore meaningless 'similarities'\" — for some models not even unique, for others implicitly controlled by the regularization"
-    source_url: "https://arxiv.org/abs/2403.05440"
+    source_url: "https://arxiv.org/abs/2403.05440v1"
     accessed: "2026-08-28"
     volatility: static
 timeline:

@@ -70,7 +70,7 @@ the answering rather than the asking. Format and register come from here, at a
 cost that is a rounding error beside pretraining.
 
 How little it can take was measured directly. In May 2023, an experiment
-called [LIMA](https://arxiv.org/abs/2305.11206) took a "65B parameter LLaMa
+called [LIMA](https://arxiv.org/abs/2305.11206v1) took a "65B parameter LLaMa
 language model", "fine-tuned with the standard supervised loss on only 1,000
 carefully curated prompts and responses" — no comparisons, "without any
 reinforcement learning or human preference modeling" — and got strong
@@ -112,7 +112,7 @@ near the model it started from: the leash exists because the judge can be
 flattered.
 
 None of this began with language models. In June 2017, [researchers trained
-simulated robots](https://arxiv.org/abs/1706.03741) against goals "defined in
+simulated robots](https://arxiv.org/abs/1706.03741v4) against goals "defined in
 terms of (non-expert) human preferences between pairs of trajectory segments"
 — a person watching pairs of short clips and clicking the better-looking one —
 and reported learning "complex novel behaviors with about an hour of human
@@ -122,7 +122,7 @@ pipeline, before there was language anywhere in it.
 Assembled end to end on a language model, the pipeline is called reinforcement
 learning from human feedback — RLHF wherever you meet it. The March 2022 paper
 [describing how GPT-3 was turned into an
-instruction-follower](https://arxiv.org/abs/2203.02155) walks this same
+instruction-follower](https://arxiv.org/abs/2203.02155v1) walks this same
 staircase in its abstract — "fine-tune GPT-3 using supervised learning", then
 "further fine-tune this supervised model using reinforcement learning from
 human feedback" — and reports the measurement that made post-training's case:

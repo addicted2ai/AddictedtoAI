@@ -33,7 +33,7 @@ turned the frontier from a gamble into a calculable bet.
 
 The bet stayed calculable and the calculation changed. In March 2022,
 [Training Compute-Optimal Large Language
-Models](https://arxiv.org/abs/2203.15556) re-measured the trade-off and put
+Models](https://arxiv.org/abs/2203.15556v1) re-measured the trade-off and put
 the compute-optimal balance somewhere else: "current large language models
 are significantly undertrained," with budgets favouring parameters over the
 data to feed them. The corrected prescription was to grow both together,
@@ -85,7 +85,7 @@ Nobody wanted loss. [The objective is a proxy](/learn/how-models-are-trained),
 and the winnings were what came with it: as loss fell, models began
 translating, doing arithmetic, writing working code, none of it the thing
 trained for. In June 2022, [Emergent Abilities of Large Language
-Models](https://arxiv.org/abs/2206.07682) gave the surprises their
+Models](https://arxiv.org/abs/2206.07682v2) gave the surprises their
 definition: an ability is emergent "if it is not present in smaller models
 but is present in larger models," and such abilities "cannot be predicted
 simply by extrapolating the performance of smaller models." Smooth curve in,
@@ -93,7 +93,7 @@ surprises out.
 
 Ten months later a rebuttal arrived titled as a question. [Are Emergent
 Abilities of Large Language Models a
-Mirage?](https://arxiv.org/abs/2304.15004) held the models' outputs fixed
+Mirage?](https://arxiv.org/abs/2304.15004v2) held the models' outputs fixed
 and varied only the scoring rule: "nonlinear or discontinuous metrics
 produce apparent emergent abilities, whereas linear or continuous metrics
 produce smooth, continuous predictable changes in model performance." An exact-match score awards

@@ -76,7 +76,8 @@ needs only a sentence here: an embedder takes anything at all — a word, a
 photo, a song — and puts out coordinates, a position on a learned map where
 similar things sit near each other, the trick called
 [embeddings](/wiki/concept/embeddings) that serves inside search and
-recommendation alike.
+recommendation alike and that [how machines represent
+meaning](/learn/how-machines-represent-meaning) is entirely about.
 
 ## The same pile, read backwards
 

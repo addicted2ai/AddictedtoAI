@@ -15,25 +15,25 @@ facts:
   - field: celebrity_asymmetry
     source: cited
     value: "GPT-4 answered \"Who is Tom Cruise's mother?\" correctly 79% of the time and the reverse, \"Who is Mary Lee Pfeiffer's son?\", 33% of the time"
-    source_url: "https://arxiv.org/abs/2309.12288"
+    source_url: "https://arxiv.org/abs/2309.12288v4"
     accessed: "2026-08-28"
     volatility: dated
   - field: likelihood_claim
     source: cited
     value: "after finetuning on \"A is B\", the likelihood of the correct answer to the reversed question is not higher than for a random name"
-    source_url: "https://arxiv.org/abs/2309.12288"
+    source_url: "https://arxiv.org/abs/2309.12288v4"
     accessed: "2026-08-28"
     volatility: static
   - field: robustness
     source: cited
     value: "\"robust across model sizes and model families and is not alleviated by data augmentation\""
-    source_url: "https://arxiv.org/abs/2309.12288"
+    source_url: "https://arxiv.org/abs/2309.12288v4"
     accessed: "2026-08-28"
     volatility: static
   - field: in_context_exception
     source: cited
     value: "\"if 'A is B' appears in-context, models can deduce the reverse relationship\""
-    source_url: "https://arxiv.org/abs/2309.12288"
+    source_url: "https://arxiv.org/abs/2309.12288v4"
     accessed: "2026-08-28"
     volatility: static
 timeline:

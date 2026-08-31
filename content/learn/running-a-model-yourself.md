@@ -103,7 +103,7 @@ a couple of them for each token, an arrangement called a
 [mixture of experts](/wiki/technique/mixture-of-experts). Every sub-network has
 to be in memory, because the router's choice is not known in advance, but only
 the chosen ones get read. The [2024 paper that popularised the design in open
-weights](https://arxiv.org/abs/2401.04088) described a model where "each token
+weights](https://arxiv.org/abs/2401.04088v1) described a model where "each token
 has access to 47B parameters, but only uses 13B active parameters during
 inference". Inference is the field's name for running a finished model rather
 than training one. So the memory bill and
@@ -146,7 +146,7 @@ advertised width is a floor rather than a description.
 
 What it costs is accuracy, and the useful version of that question is not how
 much accuracy but how to spend a fixed pool of memory.
-[A study published in 2022](https://arxiv.org/abs/2212.09720) ran that
+[A study published in 2022](https://arxiv.org/abs/2212.09720v2) ran that
 comparison at "3 to 8-bit precision" across four model families and "at scales
 of 19M to 176B parameters", scoring each on tasks it had been shown no worked
 examples of. It reported four bits a weight to be "almost universally optimal

@@ -1274,6 +1274,56 @@ reader would merely find useful are *not* declared and stay inline links; the
 entries that only defer to another page ("one sentence, deferring to …") or
 that seed a later one are those, not prerequisites.
 
+**Amended 2026-08-31 — the missing half of that rule: a cross-reference must
+be aimed at the page that OWNS its subject.** The paragraph above says when a
+cross-reference is a prerequisite and when it is an inline link. It never said
+where an inline link may point, and that gap is what let `addictedtoai-bd1`
+through two review passes. The rule now has both halves:
+
+- A **signpost** — naming where a subject is owned, so a reader who wants more
+  knows where to go — is legitimate **in either direction**, forward or back,
+  and needs no edge. Mutual signposts between two pages on the same rung are
+  correct hypertext, not a defect: each page names the other for the subject
+  the other owns, which is what a wiki is for.
+- An **assumption** — leaning on what another page taught — is a prerequisite
+  and must be declared, exactly as above.
+- A signpost aimed at a page that does **not** own the subject is the defect,
+  and it is invisible in a single-page review because the sentence reads fine.
+
+`bd1` was ruled on 2026-08-31 with that test, and the two halves came out
+differently, which is the point of having a test rather than an instinct:
+
+1. `the-kinds-of-models`' embedder sentence deferred to
+   `concept/embeddings`, a wiki entry, when §4 above mandates deferring to
+   `how-machines-represent-meaning`. Correct when written — the learn page did
+   not exist and a link to a missing page fails the build — and simply never
+   landed after it did (recorded as a deferred cross-link in
+   `addictedtoai-ckn`). **Landed 2026-08-31**: the sentence now names both, the
+   wiki entry for the term and the learn page for the subject. Nothing in this
+   file changes, because §4 already said this and the page now obeys it.
+2. `how-machines-represent-meaning` links FORWARD to `the-kinds-of-models`,
+   which the reviewer flagged as its mirror image. **It is not a defect and it
+   stays.** `the-kinds-of-models` is the page that owns "the families of
+   model", which is exactly the phrase the link carries, so it passes the
+   ownership test. Its being forward in the generated order is not an
+   objection: a signpost is not an assumption, and the reader is not asked to
+   have read it. The two pages pointing at each other is the correct outcome
+   once both point at the right thing, and the finding's real content was that
+   one of the two arrows was aimed wrong — not that there were two arrows.
+
+Both pages sit on `foundations`, both declare only `what-a-neural-network-is`,
+and neither is a prerequisite of the other; the generated order puts
+`how-machines-represent-meaning` first, by `ladder()`'s equal-depth tiebreak on
+title ("How…" before "The…"). Verified against `lib/learn.mjs` rather than
+recalled. No edge is added: neither page assumes what the other teaches.
+
+**A defect can be invisible in every single-page review and obvious the moment
+two pages are read side by side.** That is `bd1`'s general lesson and it is
+recorded here because it is the reason the rule above was half-written for a
+month. `addictedtoai-fc8` proposes a mechanical check over curriculum
+cross-references; a check over MUTUAL references between published pages is the
+same kind of cheap and would have surfaced this pair.
+
 **Amended 2026-08-30 — four edges added, one refused.** Three of the four are
 `machines-that-act-in-the-world`'s, and they have exactly the basis the
 paragraph above describes: its must-cover leans on all three. The fourth,

@@ -33,7 +33,7 @@ facts:
   - field: three_phases
     source: cited
     value: "memorization, circuit formation, cleanup — \"grokking, rather than being a sudden shift, arises from the gradual amplification of structured mechanisms encoded in the weights\""
-    source_url: "https://arxiv.org/abs/2301.05217"
+    source_url: "https://arxiv.org/abs/2301.05217v3"
     accessed: "2026-08-28"
     volatility: static
 timeline:

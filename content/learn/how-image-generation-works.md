@@ -68,7 +68,7 @@ tell the difference and treats it as a picture with everything taken away. Ask
 for the noise. Subtract a fraction of what it names. Ask again at the next
 level down. Twenty or fifty rounds of that and a picture is standing there.
 
-The shape of this was set out [in 2015](https://arxiv.org/abs/1503.03585) by
+The shape of this was set out [in 2015](https://arxiv.org/abs/1503.03585v8) by
 researchers borrowing from statistical physics, who proposed to
 "systematically and slowly destroy structure in a data distribution through an
 iterative forward diffusion process" and then to "learn a reverse diffusion
@@ -137,7 +137,7 @@ have probably dragged. Ask the network twice at each step, once with your
 prompt and once with nothing, and the difference between the two answers is the
 part of the estimate your words are responsible for. Amplify that difference
 and the picture obeys you harder. The [2022 paper that introduced
-this](https://arxiv.org/abs/2207.12598) describes jointly training "a
+this](https://arxiv.org/abs/2207.12598v1) describes jointly training "a
 conditional and an unconditional diffusion model" and combining their estimates
 "to attain a trade-off between sample quality and diversity", and the trade-off
 is the part to keep. Turn the dial up and the pictures track your words more
@@ -154,7 +154,7 @@ is what fell out on the way to the position.
 
 None of this has stayed as bad as it was, and the improvement arrived on the
 reading side rather than the painting side. A [result published in May
-2022](https://arxiv.org/abs/2205.11487) reported that "increasing the size of
+2022](https://arxiv.org/abs/2205.11487v1) reported that "increasing the size of
 the language model" in a text-to-image system "boosts both sample fidelity and
 image-text alignment much more than increasing the size of the image diffusion
 model". A better reader of the sentence bought more than a better painter of
@@ -197,7 +197,7 @@ Lettering has a second cause stacked on the first, and that one was measured.
 Text reaches the model in pieces drawn from a fixed vocabulary, common words
 arriving whole, a step called [tokenisation](/wiki/concept/tokenization).
 Nothing in that input tells the model that OPEN is made of O, P, E and N. A
-[December 2022 paper](https://arxiv.org/abs/2212.10562) found that "popular
+[December 2022 paper](https://arxiv.org/abs/2212.10562v2) found that "popular
 text-to-image models lack character-level input features, making it much harder
 to predict a word's visual makeup as a series of glyphs", and closed much of
 the gap by letting the part of the system that reads the prompt see individual
@@ -217,7 +217,7 @@ The noise levels form a ladder, and pure noise is only the top rung. Add noise
 to a real photograph at some middling strength and you get a field still
 arranged like the photograph and stripped of its details. Hand that to the loop
 with a new prompt and it denoises down to a picture carrying the old
-arrangement and the new subject. A [2021 method](https://arxiv.org/abs/2108.01073)
+arrangement and the new subject. A [2021 method](https://arxiv.org/abs/2108.01073v2)
 that set this out describes it in a line: it "first adds noise to the input,
 then subsequently denoises the resulting image". Your tool calls this
 image-to-image, and the slider marked strength is doing something very literal.
@@ -234,7 +234,7 @@ Inpainting is what you reach for instead, and it changes less than you would
 expect. Mask the region you want redone and run the same loop, with one
 addition: at every step, everything outside the mask is overwritten by the
 original picture, noised to that step's level. A [2022
-method](https://arxiv.org/abs/2201.09865) describes altering nothing else about
+method](https://arxiv.org/abs/2201.09865v4) describes altering nothing else about
 the process: to steer it, "we only alter the reverse diffusion iterations by
 sampling the unmasked regions using the given image information".
 The model's freedom is confined to the mask while it sees the correctly noised
@@ -250,7 +250,7 @@ time. You changed the tie-breaks. You did not change what is being graded.
 Video is this machinery with one more axis. What gets denoised is a stack of
 frames rather than a single image, the score sums across the whole stack, and
 so the network's estimate at any point is conditioned on its neighbours in time
-as well as in space. A [2022 paper](https://arxiv.org/abs/2204.03458)
+as well as in space. A [2022 paper](https://arxiv.org/abs/2204.03458v2)
 introducing this called its design "a natural extension of the standard image
 diffusion architecture".
 

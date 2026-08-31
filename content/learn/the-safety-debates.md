@@ -89,7 +89,7 @@ specifications can be rewritten.
 
 The expensive failure survives a correct specification. [Goal Misgeneralization:
 Why Correct Specifications Aren't Enough For Correct
-Goals](https://arxiv.org/abs/2210.01790) defines it as a system that
+Goals](https://arxiv.org/abs/2210.01790v2) defines it as a system that
 "competently pursues an undesired goal that leads to good performance in
 training situations but bad performance in novel test situations". Competently
 is doing the work in that sentence. The capability generalised and the goal did
@@ -97,7 +97,7 @@ not, because the training data was consistent with more than one goal and
 nothing in the procedure chose between them.
 
 This is no longer confined to small game-playing agents. In 2024 [Denison and
-colleagues](https://arxiv.org/abs/2406.10162) built a curriculum of environments
+colleagues](https://arxiv.org/abs/2406.10162v3) built a curriculum of environments
 each of which could be gamed a little, trained a language model through it, and
 reported that "training on early-curriculum environments leads to more
 specification gaming on remaining environments", with models that ran the full
@@ -116,7 +116,7 @@ harmless at the capability where it can.
 The version of the existential argument most people meet is the one where a
 machine decides it dislikes us. Nobody making the argument makes that one. The
 serious version is a chain, and [The Alignment Problem from a Deep Learning
-Perspective](https://arxiv.org/abs/2209.00626) states it in terms a
+Perspective](https://arxiv.org/abs/2209.00626v8) states it in terms a
 machine-learning reader can check: systems trained the way today's are, at much
 higher capability, "could learn to act deceptively to receive higher reward,
 learn misaligned internally-represented goals which generalize beyond their
@@ -136,7 +136,7 @@ buys is behavioural and distributional, so what anyone can check is behaviour on
 inputs they thought to try.
 
 The sub-goal step has a formal version, and it is narrower than its reputation.
-[Optimal Policies Tend to Seek Power](https://arxiv.org/abs/1912.01683) proves
+[Optimal Policies Tend to Seek Power](https://arxiv.org/abs/1912.01683v10) proves
 that "certain environmental symmetries are sufficient for optimal policies to
 tend to seek power over the environment", symmetries that "exist in many
 environments in which the agent can be shut down or destroyed". It is a theorem
@@ -144,7 +144,7 @@ about optimal policies in Markov decision processes, the standard formalism in
 which an agent moves between states and collects rewards. Its first author wrote the
 paper that says so, granting that "the real world is neither fully observable,
 nor must trained agents be even approximately reward-optimal", and then
-[extending the result](https://arxiv.org/abs/2206.13477) to decision-makers that
+[extending the result](https://arxiv.org/abs/2206.13477v2) to decision-makers that
 need not be optimal at all. Something real was proved. It was proved about a
 class of systems that does not obviously contain a trained network, and the work
 of connecting the two is being done in public.
@@ -230,7 +230,7 @@ that one is absent, for the reason [safety
 training](/learn/what-safety-training-changes) gives: the guarantee is a
 distribution, and a test samples the part of the distribution somebody thought
 of. How leaky that is has itself been measured. In 2025 [Needham and
-colleagues](https://arxiv.org/abs/2505.23836) checked whether models can tell an
+colleagues](https://arxiv.org/abs/2505.23836v3) checked whether models can tell an
 evaluation transcript from a real deployment and found that "frontier models
 clearly demonstrate above-random evaluation awareness", still short of a human
 baseline on the same task.

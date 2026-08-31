@@ -6,10 +6,11 @@ mentions: []
 
 ## The remedy is the exemption
 
-Priced Model charges {{fact:model/priced-model#price_input}} for input against
-Other Model's {{fact:model/other-model#price_input}}. Both are the top listed
-provider's rate for their row rather than necessarily either company's own, so
-this is a gap between two listings and not between two prices anyone set.
+Priced Model charges {{fact:model/priced-model#price_input}} for input, against
+the {{fact:model/other-model#price_input}} that Other Model's row lists. Both
+are the top listed provider's rate for their row rather than necessarily either
+company's own, so this is a gap between two listings and not between two prices
+anyone set.
 
 ## A second section does not inherit the first one's hedge
 

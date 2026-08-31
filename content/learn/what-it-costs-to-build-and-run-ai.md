@@ -73,7 +73,7 @@ the thing bought is not.
 What that price is made of is not what the coverage suggests. Cottier and
 colleagues assembled cost estimates for the largest published runs and found
 [the amortised cost "has grown precipitously at a rate of 2.4x per year since
-2016"](https://arxiv.org/abs/2405.21015). Their breakdown puts the weight on
+2016"](https://arxiv.org/abs/2405.21015v2). Their breakdown puts the weight on
 chips and people. "For key frontier models, such as GPT-4 and Gemini, the most
 significant expenses are AI accelerator chips and staff costs, each costing tens
 of millions of dollars", with server components at 15 to 22 percent of the
@@ -191,7 +191,7 @@ was unusually explicit about the boundary, counting "active AI accelerator
 power, host system energy, idle machine capacity, and data center energy
 overhead" and reporting
 that ["the median Gemini Apps text prompt consumes 0.24 Wh of
-energy"](https://arxiv.org/abs/2508.15734) along with "the equivalent of five
+energy"](https://arxiv.org/abs/2508.15734v1) along with "the equivalent of five
 drops of water (0.26 mL)". The same paper reports "a 33x reduction in energy
 consumption" for that prompt across a single year.
 
@@ -215,7 +215,7 @@ per-prompt figure is a disclosure by the company being measured, with its method
 attached, which is the strongest form available and still an interested party
 describing itself. The most-quoted water figure is a different kind of object
 entirely: researchers estimating that training GPT-3 ["can directly evaporate
-700,000 liters of clean freshwater"](https://arxiv.org/abs/2304.03271) note in
+700,000 liters of clean freshwater"](https://arxiv.org/abs/2304.03271v5) note in
 the same sentence that "such information has been kept a secret". One number is
 a measurement you can argue with. The other exists because there is nothing to
 argue with.

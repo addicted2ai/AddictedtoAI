@@ -17,7 +17,7 @@ facts:
   - field: original_definition
     source: cited
     value: "\"We consider an ability to be emergent if it is not present in smaller models but is present in larger models.\""
-    source_url: "https://arxiv.org/abs/2206.07682"
+    source_url: "https://arxiv.org/abs/2206.07682v2"
     accessed: "2026-08-28"
     volatility: static
   - field: metric_concentration

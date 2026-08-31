@@ -1,0 +1,78 @@
+{
+  "note": "Verbatim quotations cited to an UNVERSIONED arxiv.org/abs/ page (beads addictedtoai-2xh). Each is a DEBT, not an exemption: it warns on every build and the check fails the moment a new one appears. This list has one legal direction, down. Every entry here was measured on 2026-08-31 to be ABSENT from the cited paper's current abstract, after ruling out the comparison itself (case, arXiv's `--` for an em dash, a quotation ending in a comma where the source has a full stop, single vs double quote marks). They are therefore quotations from the paper's BODY, not its abstract, and export.arxiv.org's API cannot confirm them. Pinning them to the current version would assert a provenance nobody checked, which is the one thing this repository forbids more firmly than leaving a debt recorded. Repay by verifying each against that version's full text and then pinning; addictedtoai-vt2 carries that work. The 40 sites whose quotations WERE verified present in the abstract were pinned rather than recorded here.",
+  "recorded": "2026-08-31",
+  "issue": "addictedtoai-2xh",
+  "method": "export.arxiv.org/api/query?id_list=<id> (the version suffix is honoured; verified by checking the returned <id> ends in the requested vN). Literal substring match against the returned <summary> bytes, normalised only for whitespace, case, unicode dashes and quote marks, and trailing punctuation.",
+  "known": [
+    {
+      "file": "content/learn/how-ai-systems-get-attacked.md",
+      "id": "2506.08837",
+      "where": "line 267",
+      "current_version": "v3",
+      "quote": "once an LLM agent has ingested untrusted input, it must be constrained so that it is impossible for that input to trigger any consequential actions."
+    },
+    {
+      "file": "content/learn/how-image-generation-works.md",
+      "id": "2006.11239",
+      "where": "line 50",
+      "current_version": "v2",
+      "quote": "a function approximator intended to predict"
+    },
+    {
+      "file": "content/learn/looking-inside-a-model.md",
+      "id": "2211.00593",
+      "where": "line 88",
+      "current_version": "v1",
+      "quote": "When Mary and John went to the store, John gave a drink to"
+    },
+    {
+      "file": "content/learn/what-it-costs-to-build-and-run-ai.md",
+      "id": "2211.02001",
+      "where": "line 168",
+      "current_version": "v1",
+      "quote": "433,195 kWh of electricity during training"
+    },
+    {
+      "file": "content/learn/what-it-costs-to-build-and-run-ai.md",
+      "id": "2311.16863",
+      "where": "line 210",
+      "current_version": "v3",
+      "quote": "can vary by a factor of over 1450"
+    },
+    {
+      "file": "content/learn/what-it-costs-to-build-and-run-ai.md",
+      "id": "2407.21783",
+      "where": "line 26",
+      "current_version": "v3",
+      "quote": "During training, tens of thousands of GPUs may increase or decrease power consumption at the same time, for example, due to all GPUs waiting for checkpointing or collective communications to finish"
+    },
+    {
+      "file": "content/learn/what-it-costs-to-build-and-run-ai.md",
+      "id": "2302.13971",
+      "where": "line 148",
+      "current_version": "v1",
+      "quote": "given a target level of performance, the preferred model is not the fastest to train but the fastest at inference, and although it may be cheaper to train a large model to reach a certain level of performance, a smaller one trained longer will ultimately be cheaper at inference."
+    },
+    {
+      "file": "content/learn/what-it-costs-to-build-and-run-ai.md",
+      "id": "2407.21783",
+      "where": "line 26",
+      "current_version": "v3",
+      "quote": "tens of megawatts, stretching the limits of the power grid"
+    },
+    {
+      "file": "content/learn/when-you-cannot-trust-your-eyes.md",
+      "id": "1806.02877",
+      "where": "line 16",
+      "current_version": "v2",
+      "quote": "most training datasets do not contain faces with eyes closed."
+    },
+    {
+      "file": "content/wiki/concept/hallucination.md",
+      "id": "2509.04664",
+      "where": "facts.singleton_lower_bound",
+      "current_version": "v1",
+      "quote": "hallucination rate, after pretraining, should be at least the fraction of training facts that appear once"
+    }
+  ]
+}

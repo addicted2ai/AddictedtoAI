@@ -21,7 +21,7 @@ facts:
   - field: faithfulness_and_scale
     source: cited
     value: "\"as models become larger and more capable, they produce less faithful reasoning on most tasks we study\""
-    source_url: "https://arxiv.org/abs/2307.13702"
+    source_url: "https://arxiv.org/abs/2307.13702v1"
     accessed: "2026-08-28"
     volatility: dated
 timeline:

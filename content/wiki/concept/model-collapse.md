@@ -15,7 +15,7 @@ facts:
   - field: definition
     source: cited
     value: "\"use of model-generated content in training causes irreversible defects in the resulting models, where tails of the original content distribution disappear\""
-    source_url: "https://arxiv.org/abs/2305.17493"
+    source_url: "https://arxiv.org/abs/2305.17493v3"
     accessed: "2026-08-28"
     volatility: static
   - field: journal_publication
@@ -33,7 +33,7 @@ facts:
   - field: accumulation_result
     source: cited
     value: "\"accumulating the successive generations of synthetic data alongside the original real data avoids model collapse\"; test error acquires a finite upper bound independent of the number of iterations"
-    source_url: "https://arxiv.org/abs/2404.01413"
+    source_url: "https://arxiv.org/abs/2404.01413v2"
     accessed: "2026-08-28"
     volatility: static
 timeline:

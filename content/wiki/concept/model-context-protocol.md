@@ -66,6 +66,13 @@ revision — {{fact:concept/model-context-protocol#current_revision}} — most o
 launch protocol is gone, and the two revisions that removed it were pursuing one
 decision: make MCP stateless.
 
+The timeline above shows those two and not the others, which is a choice and
+worth naming as one. The specification keeps its own complete history: the
+[versioning page](https://modelcontextprotocol.io/specification/versioning)
+lists every revision, and each revision's changelog opens by naming the one it
+follows. Revisions sit between the two named here. They are absent because they
+are not part of this entry's argument, not because the history stops.
+
 What was removed, and what replaced it:
 
 - **The handshake.** The `initialize` / `notifications/initialized` exchange no

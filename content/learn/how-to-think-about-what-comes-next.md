@@ -97,7 +97,7 @@ measures the inputs to AI progress, estimated the
 stock of text on the internet against the growth of training datasets and
 concluded that "the stock of high-quality language data will be exhausted
 soon; likely before 2026." In 2024 [the same team
-re-measured](https://arxiv.org/abs/2211.04325), and the revised paper finds
+re-measured](https://arxiv.org/abs/2211.04325v2), and the revised paper finds
 instead that models will be trained on datasets roughly the size of "the
 available stock of public human text data between 2026 and 2032, or slightly
 earlier if models are overtrained." The wall is real on both fits. What moved
@@ -199,7 +199,7 @@ standard suite of language-understanding tests, reported that performance
 had "recently surpassed the level of non-expert humans, suggesting limited
 headroom for further research" on a benchmark "introduced a little over one
 year ago", and [published its harder successor
-themselves](https://arxiv.org/abs/1905.00537). A test being worn out and
+themselves](https://arxiv.org/abs/1905.00537v3). A test being worn out and
 replaced within a year is itself a measurement. [Everything you know about
 scores](/learn/what-a-benchmark-measures) still applies: near the ceiling a
 score measures the test, a jump can live in the metric rather than the

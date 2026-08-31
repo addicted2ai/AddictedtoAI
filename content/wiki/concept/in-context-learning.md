@@ -29,7 +29,7 @@ facts:
   - field: flipped_label_scale_dependence
     source: cited
     value: "\"overriding semantic priors is an emergent ability of model scale\" — small models ignore flipped in-context labels, large models can follow them"
-    source_url: "https://arxiv.org/abs/2303.03846"
+    source_url: "https://arxiv.org/abs/2303.03846v2"
     accessed: "2026-08-28"
     volatility: dated
   - field: induction_head_definition

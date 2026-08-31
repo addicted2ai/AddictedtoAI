@@ -23,7 +23,7 @@ facts:
   - field: origin_as_binary_error
     source: cited
     value: "\"Hallucinations need not be mysterious — they originate simply as errors in binary classification.\""
-    source_url: "https://arxiv.org/abs/2509.04664"
+    source_url: "https://arxiv.org/abs/2509.04664v1"
     accessed: "2026-08-28"
     volatility: static
   - field: benchmark_abstention_credit
