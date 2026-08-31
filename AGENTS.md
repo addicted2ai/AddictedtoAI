@@ -80,13 +80,31 @@ and everything resumption needs is committed to the branch.
 
 ### Where the specs live
 
-`openspec/changes/build-initial-site/specs/<capability>/` holds the eleven
-capability specs — `analytics`, `blog`, `directory`, `editorial`,
-`education-dynamic`, `education-static`, `loop`, `pulse`, `review`, `site`,
-`wiki` — with `proposal.md`, `design.md` and `tasks.md` beside them. They move
-to `openspec/specs/` only when the change is archived, which has not happened
-yet, so **the change directory is the constitution today**. Validate with
-`openspec validate --change build-initial-site --strict`.
+`openspec/specs/<capability>/spec.md` holds the eleven capability specs —
+`analytics`, `blog`, `directory`, `editorial`, `education-dynamic`,
+`education-static`, `loop`, `pulse`, `review`, `site`, `wiki`. **That tree is
+the constitution, it is a reserved path, and it is written by exactly one
+operation: `openspec archive <change>`.** A change under `openspec/changes/`
+carries a *delta* — `## ADDED` / `## MODIFIED` / `## REMOVED` / `## RENAMED`
+sections — which archiving merges in. Validate a change with
+`openspec validate --change <name> --strict`.
+
+Two things about a delta that the reader has to know before writing one:
+
+- **A `MODIFIED` block replaces the WHOLE requirement body**, and the delta
+  file's preamble — everything above the first `## … Requirements` heading — is
+  **never archived**. So rationale about why an edit is being made goes in the
+  preamble; only what the system *does* goes under a `### Requirement:` heading.
+  A body saying "this change amends…" is meaningless to the reader who finds it
+  in the constitution years later, and seven such sentences are already in there
+  (`addictedtoai-n2g`).
+- **Before you archive, run `node scripts/check-spec-deltas.mjs --strict`.**
+  Archiving is a one-way door into a path no job may correct, and `openspec`
+  checks one change at a time — it cannot see that two unarchived changes touch
+  the same requirement heading, which is last-writer-wins and silent. The same
+  check runs on every build (warning-level for the judgment calls, fatal for a
+  heading that resolves to nothing); `--strict` promotes the warnings, because
+  at the moment of archiving there is no later.
 
 ### The review flow
 

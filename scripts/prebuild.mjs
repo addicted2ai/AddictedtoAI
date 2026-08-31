@@ -22,6 +22,7 @@ import { contentBuildStep } from '../lib/build-content.mjs';
 import { siteAssetsStep } from '../lib/site-assets.mjs';
 import { anchorCheckStep } from '../lib/anchors.mjs';
 import { checkPostVoiceStep } from './check-post-voice.mjs';
+import { checkSpecDeltasStep } from './check-spec-deltas.mjs';
 import { acquireBuildLock, DEFAULT_WAIT_MS } from './build-lock.mjs';
 import { isDirty, dirtyPaths } from '../lib/stamp.mjs';
 
@@ -107,6 +108,23 @@ const STEPS = [
   // step ever starts failing builds, that is a defect in it, not a strict
   // reading of it.
   { name: 'post-voice', run: checkPostVoiceStep },
+
+  // beads addictedtoai-vl9 — the pre-archive check on spec deltas. `openspec
+  // archive` merges a change's delta into `openspec/specs/`, the reserved
+  // constitution, and reads neither the world the delta describes nor the other
+  // changes waiting to be archived. It is a third-party CLI with no hook, so
+  // the only mechanism available is this one: every merged change passes
+  // `npm run build`, so a delta that would poison the constitution fails here
+  // the day it is authored rather than at the one-way door days later. It
+  // FAILS on a MODIFIED/REMOVED/RENAMED heading that resolves to nothing, and
+  // WARNS on cross-change collisions, archive-order dependencies,
+  // change-relative narration and stale identifiers — see the header of
+  // scripts/check-spec-deltas.mjs for why each is where it is.
+  //
+  // It reads `openspec/` only, so it is independent of the content corpus and
+  // is placed after the content steps for that reason: its output is about a
+  // different tree and reads better on its own.
+  { name: 'spec-deltas', run: checkSpecDeltasStep },
 
   // tasks 4.2, 4.9, 4.12, 4.13 — the static files that are served alongside
   // the pages: the build stamp, the search index, the standing tables' JSON
