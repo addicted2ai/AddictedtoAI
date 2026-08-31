@@ -1228,6 +1228,34 @@ async function main() {
   }
 }
 
+// ---- how this program ends, and why it is not `process.exit(code)` --------
+//
+// It ends by setting `process.exitCode` and letting the event loop drain,
+// exactly as `pulse/run.mjs` does (addictedtoai-9bh) and for the same reason
+// (addictedtoai-1yt). By the time this line runs, the process may have
+// reached `publishStep` -> `pulse/lib/publish.mjs` `fetchLiveStamp`, which
+// polls the live `/status.json` build stamp with `fetch`. `process.exit()`
+// in a process that has used `fetch` can die on Windows on
+//
+//   Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c
+//
+// exiting 3221226505 (0xC0000409) instead of the code `main()` returned.
+// Unlike the Pulse's constant 0, this file's code is MEANINGFUL — 0 (done),
+// 1 (refused/error), or whatever `runLoop` reports — so the assertion would
+// not just flip success to failure, it would erase which outcome happened.
+//
+// Draining is safe here, not just convenient: every fetch reachable from this
+// file (the deploy poll in `fetchLiveStamp`) is bounded by
+// `AbortSignal.timeout(15000)` and awaited, and the poll loop's own delay is
+// an awaited `setTimeout`, not a bare timer — confirmed 2026-08-31 by reading
+// `pulse/lib/publish.mjs` for addictedtoai-1yt. Nothing else in `loop/`'s own
+// process calls `fetch` (the runner and reviewer are separate child
+// processes via `spawn`, not this process's network activity).
+//
+// DO NOT "fix" a future hang by putting `process.exit()` back. It would
+// restore this crash and flatten every real exit code to one number.
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main().then((code) => process.exit(code));
+  main().then((code) => {
+    process.exitCode = code;
+  });
 }
