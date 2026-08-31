@@ -36,6 +36,8 @@ evidence: >
   data-field="expiration_date" data-state="absent" with the literal text "not
   published", beside a badge reading "deprecated".
 expires: 2026-09-07
+proposed_by_job: j-20260831-04
+proposed_by_type: interpret
 ---
 
 ## What is wrong on the live page
