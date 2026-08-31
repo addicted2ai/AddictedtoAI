@@ -60,8 +60,12 @@ line of attack was not that machines could not translate but that the premise
 of urgent unmet demand — the thing the funding rested on — had not been
 established.
 
-**Lighthill, 1972, graded three categories and failed only the middle one.**
-Sir James Lighthill's survey for the Science Research Council divided the field
+**Lighthill's survey, dated July 1972 and published early in 1973, graded
+three categories and failed only the middle one.** Both dates are correct and
+the report is cited under each, which is why the same document turns up in one
+account as a 1972 verdict and in another as a 1973 one; the later date is when
+the argument actually reached anyone.
+Sir James Lighthill's report for the Science Research Council divided the field
 into category A (advanced automation — machines built to do specific
 industrial, military or scientific jobs), category C (computer-based modelling
 of the central nervous system, checked against neurobiology and psychology),

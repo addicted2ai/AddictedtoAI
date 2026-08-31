@@ -246,10 +246,11 @@ This is the oldest idea here, old enough that the 2022 post already covers a
 proposal to detect injections with a second model prompt, alongside a
 demonstration that the detector's input is also just text and can be addressed
 directly by the content it was asked to judge. Modern detectors are
-considerably better and the structural problem is unchanged. Willison's warning
-about the products built on them is blunt. They advertise capture rates in the
-mid-nineties, he notes, "but in web application security 95% is very much a
-failing grade." The measured picture is worse than the marketing and also
+considerably better and the structural problem is unchanged. [Willison's
+warning about the products built on
+them](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/) is blunt.
+They advertise capture rates in the mid-nineties, he notes, "but in web
+application security 95% is very much a failing grade." The measured picture is worse than the marketing and also
 worse than a fair reading of the research. In February 2025 a team [evaluated
 eight published defences](https://arxiv.org/abs/2503.00061) against attacks
 adapted to each one and bypassed all eight, "consistently achieving an attack

@@ -167,8 +167,10 @@ tool serving a purpose the books never served, and the completeness of the
 copying is a necessity rather than an aggravation.
 
 Sampling points the other way. Dealing with copying from a sound recording, the
-Sixth Circuit in Bridgeport Music, Inc. v. Dimension Films produced one of the
-bluntest lines in American copyright: "Get a license or do not sample." If training is that, scale is no defence and
+Sixth Circuit in [Bridgeport Music, Inc. v. Dimension
+Films](https://www.courtlistener.com/opinion/790529/bridgeport-music-inc-westbound-records-inc-southfield-music-inc-nine/)
+produced one of the bluntest lines in American copyright: "Get a license or do
+not sample." If training is that, scale is no defence and
 neither is transformation, because the rule attaches to the taking itself
 rather than to what the taker did afterwards.
 

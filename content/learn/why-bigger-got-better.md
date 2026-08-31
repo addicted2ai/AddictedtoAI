@@ -131,7 +131,7 @@ arguments about the next order of magnitude are mostly arguments about
 inputs: whether enough uncollected text remains, and whether the electricity
 and the money keep arriving ahead of the returns. Those are questions of
 infrastructure and patience as much as of learning, and their arithmetic is
-a subject of its own.
+[a subject of its own](/learn/what-it-costs-to-build-and-run-ai).
 
 ## Prediction without explanation
 

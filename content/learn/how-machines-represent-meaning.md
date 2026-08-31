@@ -89,9 +89,12 @@ The fourth should strike you as strange. Nothing says a map may hold only one
 kind of thing. Train on photographs paired with their captions, pushing each
 caption toward the photograph it describes, and pictures and sentences come to
 share a single map. A typed phrase then has a position among photographs. That
-is the bridge under every image generator that takes words: your prompt
-becomes a place, and the generator is steered toward pictures that belong
-there.
+is the bridge under most image generators that take words: your prompt becomes
+a place, and the generator is steered toward pictures that belong there. Some
+are wired differently, reading the prompt with an encoder trained on nothing
+but text, which never shared a map with a photograph at all. What survives
+every version is the steering rather than the shared map: the words become a
+position, and a position is something the generator can be pulled towards.
 
 ## Where near is not alike
 

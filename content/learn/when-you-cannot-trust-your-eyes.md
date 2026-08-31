@@ -14,8 +14,8 @@ mentions:
 In 2018 three researchers published a way to catch a faked video of a person,
 and it came down to watching the eyes. The faces did not blink. [Their
 paper](https://arxiv.org/abs/1806.02877) gives the reason in a line, and the
-reason is the whole of this page: "training datasets do not contain faces with
-eyes closed." Nobody uploads the frame where the subject was mid-blink. The
+reason is the whole of this page: "most training datasets do not contain faces
+with eyes closed." Nobody uploads the frame where the subject was mid-blink. The
 collections of photographs those machines learned from held almost no closed
 eyes, so the faces they produced never closed theirs.
 

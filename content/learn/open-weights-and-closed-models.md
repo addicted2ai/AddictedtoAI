@@ -77,10 +77,12 @@ Weights arrive with terms attached, and the terms are where the surprises are.
 That Llama agreement grants a "non-exclusive, worldwide, non-transferable and
 royalty-free limited license" to use, modify and redistribute. It also does
 three things a reader who heard the word open would not expect. Any company
-whose products had more than "700 million monthly active users in the preceding
-calendar month" must "request a license from Meta, which Meta may grant to you
-in its sole discretion". Anyone distributing it must display "Built with Llama"
-and put "Llama" at the front of the name of anything trained from it. And
+whose products had, on the day that version of Llama was released, more than
+"700 million monthly active users in the preceding calendar month" must
+"request a license from Meta, which Meta may grant to you in its sole
+discretion" — a test taken once, at release, rather than a ceiling you can
+later grow into. Anyone distributing it must display "Built with Llama" and
+put "Llama" at the front of the name of anything trained from it. And
 adherence to a separate acceptable-use policy — a list of things you promise
 not to do — becomes a condition of the licence by pointing at a web page and
 declaring it "hereby incorporated by reference into this Agreement".

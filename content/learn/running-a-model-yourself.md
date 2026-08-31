@@ -51,10 +51,10 @@ more expensive desktop of the first kind refuses, and the price of the machine
 has nothing to do with it.
 
 A model file does nothing by itself. Some program has to load it, hand it to the
-right chip and run the arithmetic. That program is called a runtime, and most of
-many of the friendly desktop applications are windows built around a small
-number of runtimes rather than separate engines of their own. This page has no
-commands in it. Which programs exist is a question for [the directory](/tools),
+right chip and run the arithmetic. That program is called a runtime, and many of
+the friendly desktop applications are windows built around a small number of
+runtimes rather than separate engines of their own. This page has no commands
+in it. Which programs exist is a question for [the directory](/tools),
 and step-by-step procedure is what [the tutorials](/tutorials) are for. Both of
 those change more often than anything here does.
 
@@ -102,10 +102,11 @@ built as a set of parallel sub-networks with a small router in front that picks
 a couple of them for each token, an arrangement called a
 [mixture of experts](/wiki/technique/mixture-of-experts). Every sub-network has
 to be in memory, because the router's choice is not known in advance, but only
-the chosen ones get read. The 2024 paper that popularised the design in open
-weights described a model where "each token has access to 47B parameters, but
-only uses 13B active parameters during inference". Inference is the field's name
-for running a finished model rather than training one. So the memory bill and
+the chosen ones get read. The [2024 paper that popularised the design in open
+weights](https://arxiv.org/abs/2401.04088) described a model where "each token
+has access to 47B parameters, but only uses 13B active parameters during
+inference". Inference is the field's name for running a finished model rather
+than training one. So the memory bill and
 the reading bill come apart. Such a model asks for room like a large one and
 writes at closer to the speed of a small one, which is exactly the trade a
 machine with plenty of memory and modest bandwidth wants.

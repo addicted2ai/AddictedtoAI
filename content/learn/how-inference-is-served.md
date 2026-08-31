@@ -10,7 +10,9 @@ prerequisites:
   - how-models-are-trained
 mentions:
   - event/attention-is-all-you-need
-  - concept/scaling-laws
+  - concept/kv-cache
+  - technique/quantization
+  - technique/speculative-decoding
 ---
 
 Almost every pricing rule, latency quirk and capacity limit in served language

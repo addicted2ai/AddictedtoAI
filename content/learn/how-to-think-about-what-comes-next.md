@@ -43,11 +43,14 @@ forecast to it. It is about how to weigh everyone who offers one.
 
 An episode like that invites a cheap conclusion: the doubters are always
 wrong, believe the hype. The field's own history blocks it, because the
-doubters have been paid out twice. Funding for machine translation collapsed
-after a 1966 government review, and a wider withdrawal followed a 1972 one.
-Both freezes lasted years, and [the record of the
-winters](/wiki/concept/ai-winter) rewards reading in full, not least because
-each document behind the folklore is narrower and stranger than "they
+doubters have been paid out twice. The first reckoning came as budgets:
+funding for machine translation collapsed after a 1966 government review, and
+a wider withdrawal followed the British survey published early in 1973. The
+second came in the 1980s, when researchers warned in 1984 that expectations
+had run ahead of the results and the industry those expectations were attached
+to turned a couple of years later. Both freezes lasted years, and [the record
+of the winters](/wiki/concept/ai-winter) rewards reading in full, not least
+because each document behind the folklore is narrower and stranger than "they
 overpromised": one asked whether the demand for the product even existed, and
 the other graded two of the field's three categories respectable while
 failing the claim that connected them into a field.
@@ -253,8 +256,8 @@ because the method predicts anything. Because it is the only way to be
 usefully wrong about a subject that has embarrassed confident people in both
 directions for seventy years.
 
-Next year there will be a headline about a system that does not exist today,
-doing something nobody can currently demonstrate. You will not be able to
+When the next headline arrives about a system that does not exist today,
+doing something nobody can currently demonstrate, you will not be able to
 tell whether it is true, and you do not need to. Ask what it extrapolates,
 which curve it lives on, and what its author would accept as a miss, then
 file whatever survives onto the watchlist. The future of this field has

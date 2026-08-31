@@ -46,9 +46,8 @@ the job was now expected to sell.
 That story gets repeated as proof that automation creates work. It proves
 nothing of the kind, because every step of it was contingent on something other
 than the technology. It ran on a bank's appetite for branches, and that appetite
-is gone. The US Bureau of Labor Statistics [puts the number of tellers at
-339,200 in
-2025](https://www.bls.gov/ooh/office-and-administrative-support/tellers.htm),
+is gone. The US Bureau of Labor Statistics [counted about 347,400 tellers in
+2024](https://www.bls.gov/ooh/office-and-administrative-support/tellers.htm),
 and says branch numbers have been falling because of technological change, as
 customers moved to banking on their phones. **The cash machine never
 decided whether tellers kept their jobs. What decided was whether cheaper
@@ -90,9 +89,9 @@ never a forecast, and it was quoted as one for a decade.
 Then there is the distance between what a thing can do and how much of it anyone
 has actually installed. The US Census Bureau started asking firms directly, and
 between September 2023 and February 2024, months when this was the loudest
-subject in the world, [the share of American businesses using AI for any
-business
-purpose](https://www2.census.gov/library/working-papers/2024/adrm/ces/CES-WP-24-16.pdf)
+subject in the world, [the share of American businesses using AI in producing
+goods or
+services](https://www2.census.gov/library/working-papers/2024/adrm/ces/CES-WP-24-16.pdf)
 rose from 3.7 to 5.4 per cent. The same survey found that firms using it often
 did so to substitute for worker tasks, and that few of them reported cutting
 employment because of it.
@@ -143,8 +142,9 @@ person doing it. Two opposite outcomes, one technology, the same year.
 
 Notice what kind of claim that is. It is a comparison between groups inside one
 payroll provider's records rather than a count of jobs destroyed, the exposure
-ranking is built from what people were observed asking an assistant to do rather
-than from anything the occupations themselves report, and it is a working paper
+ranking is not a record of AI being used at all but a model's rating of how
+exposed each occupation's listed tasks are, checked afterwards against what
+people were observed asking an assistant to do, and it is a working paper
 rather than a reviewed and settled finding. The authors say as much, writing
 that the facts they document may in part be influenced by factors other than
 generative AI. It is still one of the few direct measurements of employment that

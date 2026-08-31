@@ -2,15 +2,15 @@
   "broken_links": [],
   "date": "2026-08-30",
   "link_check": {
-    "checked": 0,
+    "checked": 25,
     "confirm_after_failures": 2,
     "declined": 2,
     "drifted": 0,
-    "due": 0,
+    "due": 114,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 11,
-    "total": 340
+    "total": 454
   },
   "listings": [
     {

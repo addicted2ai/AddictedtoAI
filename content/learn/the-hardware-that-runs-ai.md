@@ -174,11 +174,12 @@ single company was the only producer and seller of them, with a prototype built
 in China reported that December.
 
 Bandwidth is bought another way entirely. Moving bytes that fast requires the
-memory to be physically close, so memory chips are stacked in towers of as many
-as thirty-two, wired to each other by vertical connections driven straight
+memory to be physically close, so memory chips are stacked in towers — [as of
+2026](https://en.wikipedia.org/wiki/High_Bandwidth_Memory), as many as
+thirty-two high — wired to each other by vertical connections driven straight
 through each chip, and the finished tower is mounted beside the processor on a
-[shared base](https://en.wikipedia.org/wiki/High_Bandwidth_Memory). That
-assembly step is called packaging, and it has its own scarce capacity and its
+shared base. That assembly step is called packaging, and it has its own scarce
+capacity and its
 own queue. An accelerator company can have every logic die it ordered and still
 ship nothing.
 

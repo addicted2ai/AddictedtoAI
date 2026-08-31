@@ -18,6 +18,18 @@
         "title": "The Lighthill Report",
         "type": "entry",
         "file": "content/wiki/event/lighthill-report.md"
+      },
+      {
+        "url": "/learn/how-to-think-about-what-comes-next",
+        "title": "How to think about what comes next",
+        "type": "learn",
+        "file": "content/learn/how-to-think-about-what-comes-next.md"
+      },
+      {
+        "url": "/learn/where-ai-came-from",
+        "title": "Where AI came from",
+        "type": "learn",
+        "file": "content/learn/where-ai-came-from.md"
       }
     ],
     "concept/chain-of-thought": [
@@ -32,6 +44,26 @@
         "title": "In-context learning",
         "type": "entry",
         "file": "content/wiki/concept/in-context-learning.md"
+      },
+      {
+        "url": "/learn/getting-good-answers",
+        "title": "Getting better answers out of a model",
+        "type": "learn",
+        "file": "content/learn/getting-good-answers.md"
+      },
+      {
+        "url": "/learn/what-a-reasoning-model-does",
+        "title": "What a reasoning model actually does",
+        "type": "learn",
+        "file": "content/learn/what-a-reasoning-model-does.md"
+      }
+    ],
+    "concept/distillation": [
+      {
+        "url": "/learn/what-it-costs-to-build-and-run-ai",
+        "title": "What it costs to build and run AI",
+        "type": "learn",
+        "file": "content/learn/what-it-costs-to-build-and-run-ai.md"
       }
     ],
     "concept/effective-context-length": [
@@ -54,6 +86,12 @@
         "file": "content/wiki/technique/rotary-position-embedding.md"
       },
       {
+        "url": "/learn/how-a-model-uses-your-documents",
+        "title": "How a model reads your documents",
+        "type": "learn",
+        "file": "content/learn/how-a-model-uses-your-documents.md"
+      },
+      {
         "url": "/learn/what-an-agent-is",
         "title": "What an agent is, mechanically",
         "type": "learn",
@@ -72,6 +110,30 @@
         "title": "Tokenization",
         "type": "entry",
         "file": "content/wiki/concept/tokenization.md"
+      },
+      {
+        "url": "/learn/how-a-model-uses-your-documents",
+        "title": "How a model reads your documents",
+        "type": "learn",
+        "file": "content/learn/how-a-model-uses-your-documents.md"
+      },
+      {
+        "url": "/learn/how-image-generation-works",
+        "title": "How image generation works",
+        "type": "learn",
+        "file": "content/learn/how-image-generation-works.md"
+      },
+      {
+        "url": "/learn/how-machines-represent-meaning",
+        "title": "How machines represent meaning",
+        "type": "learn",
+        "file": "content/learn/how-machines-represent-meaning.md"
+      },
+      {
+        "url": "/learn/the-kinds-of-models",
+        "title": "The kinds of models, beyond chat",
+        "type": "learn",
+        "file": "content/learn/the-kinds-of-models.md"
       }
     ],
     "concept/emergence": [
@@ -92,6 +154,18 @@
         "title": "In-context learning",
         "type": "entry",
         "file": "content/wiki/concept/in-context-learning.md"
+      },
+      {
+        "url": "/learn/what-a-neural-network-is",
+        "title": "What a neural network actually is",
+        "type": "learn",
+        "file": "content/learn/what-a-neural-network-is.md"
+      },
+      {
+        "url": "/learn/why-bigger-got-better",
+        "title": "Why bigger kept getting better",
+        "type": "learn",
+        "file": "content/learn/why-bigger-got-better.md"
       }
     ],
     "concept/grokking": [
@@ -100,6 +174,18 @@
         "title": "Emergent abilities",
         "type": "entry",
         "file": "content/wiki/concept/emergence.md"
+      },
+      {
+        "url": "/learn/looking-inside-a-model",
+        "title": "Looking inside a model",
+        "type": "learn",
+        "file": "content/learn/looking-inside-a-model.md"
+      },
+      {
+        "url": "/learn/why-bigger-got-better",
+        "title": "Why bigger kept getting better",
+        "type": "learn",
+        "file": "content/learn/why-bigger-got-better.md"
       }
     ],
     "concept/hallucination": [
@@ -120,6 +206,12 @@
         "title": "Tokenization",
         "type": "entry",
         "file": "content/wiki/concept/tokenization.md"
+      },
+      {
+        "url": "/learn/where-ai-fails-people",
+        "title": "Where AI fails people",
+        "type": "learn",
+        "file": "content/learn/where-ai-fails-people.md"
       }
     ],
     "concept/in-context-learning": [
@@ -140,6 +232,12 @@
         "title": "The reversal curse",
         "type": "entry",
         "file": "content/wiki/concept/reversal-curse.md"
+      },
+      {
+        "url": "/learn/getting-good-answers",
+        "title": "Getting better answers out of a model",
+        "type": "learn",
+        "file": "content/learn/getting-good-answers.md"
       }
     ],
     "concept/kv-cache": [
@@ -180,6 +278,12 @@
         "file": "content/wiki/tool/vllm.md"
       },
       {
+        "url": "/learn/running-a-model-yourself",
+        "title": "Running a model on your own computer",
+        "type": "learn",
+        "file": "content/learn/running-a-model-yourself.md"
+      },
+      {
         "url": "/learn/why-context-is-not-memory",
         "title": "Why context is not memory",
         "type": "learn",
@@ -192,7 +296,21 @@
         "file": "content/learn/why-the-same-request-gives-different-answers.md"
       }
     ],
+    "concept/model-collapse": [
+      {
+        "url": "/learn/what-models-are-trained-on",
+        "title": "What models are trained on",
+        "type": "learn",
+        "file": "content/learn/what-models-are-trained-on.md"
+      }
+    ],
     "concept/model-context-protocol": [
+      {
+        "url": "/learn/how-ai-systems-get-attacked",
+        "title": "How AI systems get attacked",
+        "type": "learn",
+        "file": "content/learn/how-ai-systems-get-attacked.md"
+      },
       {
         "url": "/learn/what-an-agent-is",
         "title": "What an agent is, mechanically",
@@ -270,10 +388,28 @@
         "file": "content/learn/how-models-are-trained.md"
       },
       {
+        "url": "/learn/how-to-think-about-what-comes-next",
+        "title": "How to think about what comes next",
+        "type": "learn",
+        "file": "content/learn/how-to-think-about-what-comes-next.md"
+      },
+      {
         "url": "/learn/what-a-benchmark-measures",
         "title": "What a benchmark measures, and what it does not",
         "type": "learn",
         "file": "content/learn/what-a-benchmark-measures.md"
+      },
+      {
+        "url": "/learn/what-it-costs-to-build-and-run-ai",
+        "title": "What it costs to build and run AI",
+        "type": "learn",
+        "file": "content/learn/what-it-costs-to-build-and-run-ai.md"
+      },
+      {
+        "url": "/learn/why-bigger-got-better",
+        "title": "Why bigger kept getting better",
+        "type": "learn",
+        "file": "content/learn/why-bigger-got-better.md"
       }
     ],
     "concept/the-bitter-lesson": [
@@ -312,6 +448,18 @@
         "title": "How models are trained, and how they are changed afterwards",
         "type": "learn",
         "file": "content/learn/how-models-are-trained.md"
+      },
+      {
+        "url": "/learn/where-ai-came-from",
+        "title": "Where AI came from",
+        "type": "learn",
+        "file": "content/learn/where-ai-came-from.md"
+      },
+      {
+        "url": "/learn/why-bigger-got-better",
+        "title": "Why bigger kept getting better",
+        "type": "learn",
+        "file": "content/learn/why-bigger-got-better.md"
       }
     ],
     "concept/tokenization": [
@@ -326,6 +474,28 @@
         "title": "Hallucination",
         "type": "entry",
         "file": "content/wiki/concept/hallucination.md"
+      },
+      {
+        "url": "/learn/how-image-generation-works",
+        "title": "How image generation works",
+        "type": "learn",
+        "file": "content/learn/how-image-generation-works.md"
+      }
+    ],
+    "event/alpac-report": [
+      {
+        "url": "/learn/where-ai-came-from",
+        "title": "Where AI came from",
+        "type": "learn",
+        "file": "content/learn/where-ai-came-from.md"
+      }
+    ],
+    "event/alphafold-casp14": [
+      {
+        "url": "/learn/what-ai-is-used-for",
+        "title": "Where AI already does real work",
+        "type": "learn",
+        "file": "content/learn/what-ai-is-used-for.md"
       }
     ],
     "event/alphago-lee-sedol": [
@@ -340,6 +510,12 @@
         "title": "The Bitter Lesson",
         "type": "entry",
         "file": "content/wiki/concept/the-bitter-lesson.md"
+      },
+      {
+        "url": "/learn/where-ai-came-from",
+        "title": "Where AI came from",
+        "type": "learn",
+        "file": "content/learn/where-ai-came-from.md"
       }
     ],
     "event/attention-is-all-you-need": [
@@ -366,6 +542,12 @@
         "title": "What a model is, and what it is not",
         "type": "learn",
         "file": "content/learn/what-a-model-is.md"
+      },
+      {
+        "url": "/learn/where-ai-came-from",
+        "title": "Where AI came from",
+        "type": "learn",
+        "file": "content/learn/where-ai-came-from.md"
       }
     ],
     "event/dartmouth-workshop": [
@@ -374,6 +556,12 @@
         "title": "The Lighthill Report",
         "type": "entry",
         "file": "content/wiki/event/lighthill-report.md"
+      },
+      {
+        "url": "/learn/where-ai-came-from",
+        "title": "Where AI came from",
+        "type": "learn",
+        "file": "content/learn/where-ai-came-from.md"
       }
     ],
     "event/deep-blue-kasparov": [
@@ -382,6 +570,52 @@
         "title": "Dartmouth Summer Research Project on Artificial Intelligence",
         "type": "entry",
         "file": "content/wiki/event/dartmouth-workshop.md"
+      },
+      {
+        "url": "/learn/what-ai-actually-is",
+        "title": "What people mean when they say AI",
+        "type": "learn",
+        "file": "content/learn/what-ai-actually-is.md"
+      },
+      {
+        "url": "/learn/where-ai-came-from",
+        "title": "Where AI came from",
+        "type": "learn",
+        "file": "content/learn/where-ai-came-from.md"
+      }
+    ],
+    "event/eliza": [
+      {
+        "url": "/learn/what-ai-actually-is",
+        "title": "What people mean when they say AI",
+        "type": "learn",
+        "file": "content/learn/what-ai-actually-is.md"
+      },
+      {
+        "url": "/learn/where-ai-came-from",
+        "title": "Where AI came from",
+        "type": "learn",
+        "file": "content/learn/where-ai-came-from.md"
+      }
+    ],
+    "event/gpt-2-staged-release": [
+      {
+        "url": "/learn/open-weights-and-closed-models",
+        "title": "Open weights, closed weights",
+        "type": "learn",
+        "file": "content/learn/open-weights-and-closed-models.md"
+      },
+      {
+        "url": "/learn/the-safety-debates",
+        "title": "The safety arguments, steelmanned",
+        "type": "learn",
+        "file": "content/learn/the-safety-debates.md"
+      },
+      {
+        "url": "/learn/what-models-are-trained-on",
+        "title": "What models are trained on",
+        "type": "learn",
+        "file": "content/learn/what-models-are-trained-on.md"
       }
     ],
     "event/imagenet-2012": [
@@ -404,10 +638,68 @@
         "file": "content/wiki/event/dartmouth-workshop.md"
       },
       {
+        "url": "/learn/learning-from-examples",
+        "title": "How software learns from examples",
+        "type": "learn",
+        "file": "content/learn/learning-from-examples.md"
+      },
+      {
+        "url": "/learn/the-hardware-that-runs-ai",
+        "title": "The hardware AI runs on",
+        "type": "learn",
+        "file": "content/learn/the-hardware-that-runs-ai.md"
+      },
+      {
+        "url": "/learn/the-kinds-of-models",
+        "title": "The kinds of models, beyond chat",
+        "type": "learn",
+        "file": "content/learn/the-kinds-of-models.md"
+      },
+      {
         "url": "/learn/what-a-benchmark-measures",
         "title": "What a benchmark measures, and what it does not",
         "type": "learn",
         "file": "content/learn/what-a-benchmark-measures.md"
+      },
+      {
+        "url": "/learn/where-ai-came-from",
+        "title": "Where AI came from",
+        "type": "learn",
+        "file": "content/learn/where-ai-came-from.md"
+      }
+    ],
+    "event/lighthill-report": [
+      {
+        "url": "/learn/where-ai-came-from",
+        "title": "Where AI came from",
+        "type": "learn",
+        "file": "content/learn/where-ai-came-from.md"
+      }
+    ],
+    "event/stable-diffusion-release": [
+      {
+        "url": "/learn/how-image-generation-works",
+        "title": "How image generation works",
+        "type": "learn",
+        "file": "content/learn/how-image-generation-works.md"
+      },
+      {
+        "url": "/learn/the-kinds-of-models",
+        "title": "The kinds of models, beyond chat",
+        "type": "learn",
+        "file": "content/learn/the-kinds-of-models.md"
+      },
+      {
+        "url": "/learn/what-ai-is-used-for",
+        "title": "Where AI already does real work",
+        "type": "learn",
+        "file": "content/learn/what-ai-is-used-for.md"
+      },
+      {
+        "url": "/learn/when-you-cannot-trust-your-eyes",
+        "title": "When you cannot trust your eyes",
+        "type": "learn",
+        "file": "content/learn/when-you-cannot-trust-your-eyes.md"
       }
     ],
     "model/all-minilm-l6-v2": [
@@ -2002,6 +2294,12 @@
         "file": "content/wiki/model/anthropic-claude-opus-5.md"
       },
       {
+        "url": "/learn/who-builds-ai",
+        "title": "Who builds AI",
+        "type": "learn",
+        "file": "content/learn/who-builds-ai.md"
+      },
+      {
         "url": "/blog/three-definitions-of-a-knowledge-cutoff",
         "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
         "type": "post",
@@ -2046,6 +2344,18 @@
         "file": "content/wiki/org/thinking-machines-lab.md"
       },
       {
+        "url": "/learn/open-weights-and-closed-models",
+        "title": "Open weights, closed weights",
+        "type": "learn",
+        "file": "content/learn/open-weights-and-closed-models.md"
+      },
+      {
+        "url": "/learn/who-builds-ai",
+        "title": "Who builds AI",
+        "type": "learn",
+        "file": "content/learn/who-builds-ai.md"
+      },
+      {
         "url": "/blog/seven-open-licences-seven-lines",
         "title": "Open weights, read line by line: seven licences, and no two draw the same line",
         "type": "post",
@@ -2072,6 +2382,12 @@
         "file": "content/wiki/model/google-gemini-3-7-flash.md"
       },
       {
+        "url": "/learn/who-builds-ai",
+        "title": "Who builds AI",
+        "type": "learn",
+        "file": "content/learn/who-builds-ai.md"
+      },
+      {
         "url": "/blog/three-definitions-of-a-knowledge-cutoff",
         "title": "One vendor publishes two knowledge cutoffs, one publishes one, one publishes none in its API docs",
         "type": "post",
@@ -2096,6 +2412,20 @@
         "title": "Open weights, read line by line: seven licences, and no two draw the same line",
         "type": "post",
         "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "org/mistral-ai": [
+      {
+        "url": "/learn/open-weights-and-closed-models",
+        "title": "Open weights, closed weights",
+        "type": "learn",
+        "file": "content/learn/open-weights-and-closed-models.md"
+      },
+      {
+        "url": "/learn/who-builds-ai",
+        "title": "Who builds AI",
+        "type": "learn",
+        "file": "content/learn/who-builds-ai.md"
       }
     ],
     "org/moonshot-ai": [
@@ -2128,6 +2458,20 @@
         "title": "Open weights, read line by line: seven licences, and no two draw the same line",
         "type": "post",
         "file": "content/blog/seven-open-licences-seven-lines.md"
+      }
+    ],
+    "org/nvidia": [
+      {
+        "url": "/learn/the-hardware-that-runs-ai",
+        "title": "The hardware AI runs on",
+        "type": "learn",
+        "file": "content/learn/the-hardware-that-runs-ai.md"
+      },
+      {
+        "url": "/learn/who-builds-ai",
+        "title": "Who builds AI",
+        "type": "learn",
+        "file": "content/learn/who-builds-ai.md"
       }
     ],
     "org/openai": [
@@ -2190,6 +2534,12 @@
         "title": "Structured generation",
         "type": "entry",
         "file": "content/wiki/technique/structured-generation.md"
+      },
+      {
+        "url": "/learn/who-builds-ai",
+        "title": "Who builds AI",
+        "type": "learn",
+        "file": "content/learn/who-builds-ai.md"
       },
       {
         "url": "/blog/seven-open-licences-seven-lines",
@@ -2256,6 +2606,12 @@
         "title": "Test-time scaling",
         "type": "entry",
         "file": "content/wiki/technique/test-time-scaling.md"
+      },
+      {
+        "url": "/learn/getting-good-answers",
+        "title": "Getting better answers out of a model",
+        "type": "learn",
+        "file": "content/learn/getting-good-answers.md"
       }
     ],
     "technique/direct-preference-optimization": [
@@ -2287,6 +2643,12 @@
       }
     ],
     "technique/mixture-of-experts": [
+      {
+        "url": "/learn/running-a-model-yourself",
+        "title": "Running a model on your own computer",
+        "type": "learn",
+        "file": "content/learn/running-a-model-yourself.md"
+      },
       {
         "url": "/learn/why-the-same-request-gives-different-answers",
         "title": "Why the same request gives different answers",
@@ -2344,6 +2706,24 @@
         "file": "content/wiki/tool/ollama.md"
       },
       {
+        "url": "/learn/running-a-model-yourself",
+        "title": "Running a model on your own computer",
+        "type": "learn",
+        "file": "content/learn/running-a-model-yourself.md"
+      },
+      {
+        "url": "/learn/the-hardware-that-runs-ai",
+        "title": "The hardware AI runs on",
+        "type": "learn",
+        "file": "content/learn/the-hardware-that-runs-ai.md"
+      },
+      {
+        "url": "/learn/what-it-costs-to-build-and-run-ai",
+        "title": "What it costs to build and run AI",
+        "type": "learn",
+        "file": "content/learn/what-it-costs-to-build-and-run-ai.md"
+      },
+      {
         "url": "/tutorials/model-file-header-range-requests",
         "title": "Read what is actually inside a 4.9 GB model file by downloading 0.16% of it",
         "type": "tutorial",
@@ -2388,10 +2768,24 @@
         "file": "content/learn/what-a-benchmark-measures.md"
       },
       {
+        "url": "/learn/what-a-reasoning-model-does",
+        "title": "What a reasoning model actually does",
+        "type": "learn",
+        "file": "content/learn/what-a-reasoning-model-does.md"
+      },
+      {
         "url": "/learn/why-models-are-confidently-wrong",
         "title": "Why a model is confidently wrong",
         "type": "learn",
         "file": "content/learn/why-models-are-confidently-wrong.md"
+      }
+    ],
+    "technique/retrieval-augmented-generation": [
+      {
+        "url": "/learn/how-a-model-uses-your-documents",
+        "title": "How a model reads your documents",
+        "type": "learn",
+        "file": "content/learn/how-a-model-uses-your-documents.md"
       }
     ],
     "technique/speculative-decoding": [
@@ -2420,6 +2814,12 @@
         "title": "Chain-of-thought prompting",
         "type": "entry",
         "file": "content/wiki/technique/chain-of-thought-prompting.md"
+      },
+      {
+        "url": "/learn/what-a-reasoning-model-does",
+        "title": "What a reasoning model actually does",
+        "type": "learn",
+        "file": "content/learn/what-a-reasoning-model-does.md"
       }
     ],
     "tool/hugging-face-hub": [
@@ -2464,6 +2864,12 @@
         "file": "content/wiki/tool/ollama.md"
       },
       {
+        "url": "/learn/running-a-model-yourself",
+        "title": "Running a model on your own computer",
+        "type": "learn",
+        "file": "content/learn/running-a-model-yourself.md"
+      },
+      {
         "url": "/tutorials/chat-template-is-not-the-model",
         "title": "Two mirrors of Llama 3.1 ship identical weights and different prompts, and one tells the model it is July 2024",
         "type": "tutorial",
@@ -2476,12 +2882,26 @@
         "file": "content/tutorials/model-file-header-range-requests.md"
       }
     ],
+    "tool/lm-studio": [
+      {
+        "url": "/learn/running-a-model-yourself",
+        "title": "Running a model on your own computer",
+        "type": "learn",
+        "file": "content/learn/running-a-model-yourself.md"
+      }
+    ],
     "tool/ollama": [
       {
         "url": "/wiki/technique/quantization",
         "title": "Quantization",
         "type": "entry",
         "file": "content/wiki/technique/quantization.md"
+      },
+      {
+        "url": "/learn/running-a-model-yourself",
+        "title": "Running a model on your own computer",
+        "type": "learn",
+        "file": "content/learn/running-a-model-yourself.md"
       }
     ],
     "tool/onnx-runtime-web": [

@@ -91,9 +91,9 @@ dialects and whole subjects, and nothing in the process could notice the
 difference.
 
 The survivors are then mixed, and not in proportion to their size: the GPT-3
-paper sampled the collections it judged higher quality two or three times each,
-the crawl itself less than once. A pile's composition is a set of dials, and
-somebody set them.
+paper sampled three of the collections it judged higher quality two or three
+times over, and the crawl — along with the larger of its two book collections —
+less than once. A pile's composition is a set of dials, and somebody set them.
 
 ## The smaller pile, written to order
 
