@@ -137,6 +137,46 @@ test('a vanished feed row produces a repair item', async (t) => {
   assert.equal(item.subject, 'models:acme/gone');
 });
 
+test('a re-listed row that slug-collides with a retired entry files a repair item, and restoring the binding removes it (addictedtoai-2wa)', async (t) => {
+  const root = makeRoot([jsonSource('models', 'http://fixture.invalid/models', { mints: { kind: 'model', slug_from: 'row_id' } })]);
+  t.after(() => cleanup(root));
+
+  const row = { id: 'allenai/olmo-3-32b-think', name: 'AllenAI: Olmo 3 32B Think', pricing: { prompt: '0' }, context_length: 65536, expiration_date: null };
+  writeJson(paths.latest(root, 'models'), { source: 'models', url: 'http://fixture.invalid/models', date: '2026-08-29', row_count: 1, rows: { 'allenai/olmo-3-32b-think': row } });
+  writeJson(paths.state(root, 'models'), { source: 'models', last_fetch_date: '2026-08-29', last_change_date: '2026-08-29', seeded: true, refusing: null });
+
+  const entry = (feeds) => ({
+    id: 'model/allenai-olmo-3-32b-think',
+    kind: 'model',
+    display_name: 'AllenAI: Olmo 3 32B Think',
+    status: 'retired',
+    maintenance: 'dormant',
+    aliases: [],
+    feeds,
+    facts: [],
+    timeline: [],
+    mentions: [],
+  });
+  writeEntry(root, 'content/wiki/model/allenai-olmo-3-32b-think.md', entry({}));
+
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
+  let item = readJson(paths.queue(root)).items.find((i) => i.reason === 'slug-collision');
+  assert.ok(item, 'a re-listed row colliding with a non-declaring entry files a repair finding');
+  assert.equal(item.type, 'repair');
+  assert.equal(item.subject, 'models:allenai/olmo-3-32b-think');
+  assert.equal(item.target, 'content/wiki/model/allenai-olmo-3-32b-think.md');
+  assert.equal(item.title, 'Feed row live again but slug-collides with an entry that does not declare it', 'a short real title, not a fallback to detail');
+  assert.match(item.detail, /allenai\/olmo-3-32b-think/);
+  assert.match(item.detail, /model\/allenai-olmo-3-32b-think/);
+
+  // Fix the state exactly as the Desk would — restore the feed binding — and
+  // the item vanishes with no close or archive action by anyone.
+  writeEntry(root, 'content/wiki/model/allenai-olmo-3-32b-think.md', entry({ models: 'allenai/olmo-3-32b-think' }));
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
+  item = readJson(paths.queue(root)).items.find((i) => i.reason === 'slug-collision');
+  assert.equal(item, undefined, 'fix the state and the item vanishes, matching every other queue finding');
+});
+
 test('an unannotated material change becomes an interpret item, and an annotation removes it', async (t) => {
   const root = makeRoot([]);
   t.after(() => cleanup(root));

@@ -154,6 +154,75 @@ export function mintStubs(root, registry, corpus, { date = today(), limit = Infi
 }
 
 /**
+ * Rows in a minting source's latest snapshot that would land on a path an
+ * existing entry already occupies, where that entry does not declare them —
+ * the same condition `writeStub` above reports as `outcome: 'slug-collision'`
+ * at mint time, recomputed here as a pure read so the condition can become a
+ * derived-queue finding instead of only a warning line nobody reads
+ * (addictedtoai-2wa: a retired entry — `feeds:` binding removed after its row
+ * vanished from a feed — leaves `writeStub` permanently refusing to mint that
+ * row if the source ever lists it again, with no trace but a per-run log
+ * line).
+ *
+ * Pure with respect to the filesystem beyond what is already loaded: every
+ * input is the source's own latest snapshot (`loadSnapshot`, already read
+ * elsewhere in a run) and `corpus` (already read by the caller, and — when
+ * called after `mintStubs` in the same run — already reflecting anything that
+ * run itself minted). No clock, and no `minted.json` read: the corpus's
+ * declared feed bindings are the single source of truth for "does anything
+ * already claim this row", exactly as `declaredRowIds` is for minting itself.
+ * A row that has never been minted before and happens to collide with a
+ * hand-authored entry is exactly as real a finding as a re-listed row
+ * colliding with the entry retired for it — both are "a live row cannot
+ * mint because its slug is taken by an entry that does not declare it".
+ *
+ * Three things must all hold for one row to be reported, and each is a
+ * separate, independently falsifiable gate:
+ *
+ *   1. the row is a key of the LATEST snapshot's `rows` — not merely
+ *      remembered from a previous snapshot or from minting provenance. A row
+ *      genuinely still absent from the feed is `vanished-feed-row`'s
+ *      condition, not this one, and must never also fire this one.
+ *   2. `declaredRowIds` does not contain it — nothing already declares it, so
+ *      minting would otherwise be attempted.
+ *   3. the path a stub would be written to (`<kind>/<slug>.md` under
+ *      `content/wiki/`) is occupied by an entry in the corpus.
+ *
+ * Gate 2 alone already proves the entry found in gate 3, if any, does not
+ * declare the row: `declaredRowIds` scans every entry's `feeds`, so an entry
+ * occupying the expected path that DID declare this row under this source
+ * would have put the row in that set, contradicting gate 2. No second
+ * per-entry check is needed or performed.
+ */
+export function findSlugCollisions(root, registry, corpus) {
+  const byPath = new Map(corpus.entries.filter((e) => e.path).map((e) => [e.path, e]));
+  const out = [];
+  for (const source of registry.sources) {
+    if (!source.mints) continue;
+    const latest = loadSnapshot(root, source.id, 'latest');
+    if (!latest) continue;
+    const kind = source.mints.kind;
+    const declared = declaredRowIds(corpus, source.id);
+    for (const rowId of Object.keys(latest.rows ?? {}).sort()) {
+      if (declared.has(rowId)) continue; // gate 2: already declared — the ordinary case
+      const slug = slugFromRowId(rowId);
+      const expectedPath = relPosix(root, join(paths(root).wiki, kind, `${slug}.md`));
+      const entry = byPath.get(expectedPath); // gate 3
+      if (!entry) continue; // no file at that path: mints normally
+      out.push({
+        source: source.id,
+        row_id: rowId,
+        entry_id: entry.id ?? null,
+        path: entry.path,
+        entry_status: entry.status ?? null,
+      });
+    }
+  }
+  out.sort((a, b) => (a.source + '\0' + a.row_id < b.source + '\0' + b.row_id ? -1 : 1));
+  return out;
+}
+
+/**
  * Provenance for mechanically minted stubs, kept beside the source's own
  * state rather than inside the entry.
  *

@@ -49,6 +49,14 @@ export const RANKS = {
   'refusing-source': 100,
   'broken-link': 90,
   'vanished-feed-row': 85,
+  // A live feed row that cannot mint because its slug lands on an existing
+  // entry that does not declare it (addictedtoai-2wa). Ranked beside its
+  // mirror case `vanished-feed-row` and deliberately just under it: there, a
+  // fact the site already asserts is now stale; here, the site asserts
+  // nothing yet, which is missing rather than wrong. Both outrank a merely
+  // suspect source, because both are a corpus/world mismatch measured today,
+  // not a source that has gone quiet.
+  'slug-collision': 82,
   'suspect-source': 80,
   'listing-could-not-verify': 75,
   // A citation that resolves to something else is worth repairing and is not
@@ -391,6 +399,19 @@ export function computeQueue(root, { freshness, changesFile, wants = readWants(r
         `${v.source}:${v.row_id}`,
         `declared row id absent from the latest snapshot; last seen ${v.last_seen_date ?? 'never'} — bound facts render last-known values with an as-of date`,
         v.path,
+      ),
+    );
+  }
+
+  for (const c of freshness.slug_collisions ?? []) {
+    items.push(
+      item(
+        'repair',
+        'slug-collision',
+        `${c.source}:${c.row_id}`,
+        `${c.source} row "${c.row_id}" is present in the latest snapshot; its slug would land on ${c.path} (${c.entry_id ?? 'unknown id'}, status ${c.entry_status ?? 'unknown'}), which does not declare it — minting refuses to overwrite an existing entry, so this row mints nothing and the refusal repeats every run. If the entry covers the same subject, restore its feeds: binding; if this is a genuine collision between two different subjects, resolve it (rename the entry, or otherwise disambiguate) rather than leaving the row permanently unminted.`,
+        c.path,
+        'Feed row live again but slug-collides with an entry that does not declare it',
       ),
     );
   }

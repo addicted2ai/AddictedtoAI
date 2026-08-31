@@ -13,8 +13,8 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import YAML from 'yaml';
-import { cleanup, jsonSource, makeRoot, readLines, paths, runPulse, serve, writeEntry } from './helpers.mjs';
-import { slugFromRowId } from '../lib/mint.mjs';
+import { cleanup, jsonSource, makeRoot, readLines, paths, runPulse, serve, writeEntry, writeJson } from './helpers.mjs';
+import { findSlugCollisions, slugFromRowId } from '../lib/mint.mjs';
 
 const NO_BUILD = ['--no-build'];
 
@@ -340,4 +340,117 @@ test('an appended timeline date survives a round trip as a string, not a Date', 
     );
     assert.match(entry.date, /^\d{4}-\d{2}-\d{2}$/, 'and it must still be an ISO day');
   }
+});
+
+/**
+ * findSlugCollisions (addictedtoai-2wa).
+ *
+ * j-20260829-03 retired `model/allenai-olmo-3-32b-think` by removing its
+ * `feeds:` binding after the row vanished from OpenRouter. `minted.json`
+ * still records the row, but that is not what this function reads — it
+ * reads the corpus's declared feed bindings, exactly as `declaredRowIds`
+ * does for minting itself. If OpenRouter ever re-lists the row, `writeStub`
+ * silently refuses to mint it forever (a `slug-collision` outcome, logged
+ * once per run and otherwise invisible); this function is what turns that
+ * condition into a derived-queue finding the Desk can act on.
+ *
+ * Unit-tested directly against the pure function — no subprocess, no real
+ * HTTP source, no real minting — because the property under test is
+ * arithmetic over already-loaded state (a snapshot already on disk and a
+ * hand-built corpus). The wiring into `freshness.json` and `queue.json` is
+ * covered end to end in freshness.test.mjs and queue.test.mjs.
+ */
+
+const OLMO_ROW_ID = 'allenai/olmo-3-32b-think';
+const OLMO_ROW = { id: OLMO_ROW_ID, name: 'AllenAI: Olmo 3 32B Think', pricing: { prompt: '0' }, context_length: 65536, expiration_date: null };
+const OLMO_ENTRY_ID = 'model/allenai-olmo-3-32b-think';
+const OLMO_ENTRY_PATH = 'content/wiki/model/allenai-olmo-3-32b-think.md';
+
+function slugSnapshot(rows) {
+  return { source: 'models', url: 'http://fixture.invalid/models', date: '2026-08-29', body_hash: 'x', row_count: Object.keys(rows).length, rows };
+}
+
+function slugRegistry() {
+  return { sources: [jsonSource('models', 'http://fixture.invalid/models', MINTS)] };
+}
+
+test('a re-listed row that slug-collides with a retired entry not declaring it is reported', (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+  writeJson(paths.latest(root, 'models'), slugSnapshot({ [OLMO_ROW_ID]: OLMO_ROW }));
+
+  const corpus = {
+    entries: [
+      { id: OLMO_ENTRY_ID, path: OLMO_ENTRY_PATH, status: 'retired', feeds: {} }, // the binding j-20260829-03 removed
+    ],
+  };
+
+  const found = findSlugCollisions(root, slugRegistry(), corpus);
+  assert.equal(found.length, 1);
+  assert.deepEqual(found[0], {
+    source: 'models',
+    row_id: OLMO_ROW_ID,
+    entry_id: OLMO_ENTRY_ID,
+    path: OLMO_ENTRY_PATH,
+    entry_status: 'retired',
+  });
+});
+
+test('negative (a): a row already declared by its own entry is not a collision — it mints/joins normally', (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+  writeJson(paths.latest(root, 'models'), slugSnapshot({ [OLMO_ROW_ID]: OLMO_ROW }));
+
+  const corpus = {
+    entries: [{ id: OLMO_ENTRY_ID, path: OLMO_ENTRY_PATH, status: 'active', feeds: { models: OLMO_ROW_ID } }],
+  };
+
+  assert.deepEqual(findSlugCollisions(root, slugRegistry(), corpus), []);
+});
+
+test('negative (b): a row with no colliding entry at all reports nothing — it mints normally', (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+  const freshRow = { id: 'acme/brand-new', name: 'Brand New', pricing: { prompt: '0' }, context_length: 1000, expiration_date: null };
+  writeJson(paths.latest(root, 'models'), slugSnapshot({ 'acme/brand-new': freshRow }));
+
+  assert.deepEqual(findSlugCollisions(root, slugRegistry(), { entries: [] }), []);
+});
+
+test('negative (c): an entry whose feed binding was removed while the row is genuinely still absent reports nothing', (t) => {
+  // The case a careless implementation gets wrong: it is tempting to treat "an
+  // entry with an empty feeds binding" as the signal by itself, or to widen
+  // the candidate rows using `minted.json`'s historical record (exactly the
+  // file addictedtoai-2wa's defect centres on). The condition is about the
+  // SNAPSHOT — the row must be a key of `latest.rows` — not about an entry's
+  // history or minting provenance. A row that vanished and simply has not
+  // come back is `vanished-feed-row`'s condition (freshness.mjs), not this
+  // one, and the two must never both fire for the same row. `minted.json` is
+  // seeded here with exactly the real repository's record for this row (see
+  // `data/sources/openrouter-models/minted.json`) so an implementation that
+  // carelessly reads it as a candidate source, instead of only `latest.rows`,
+  // is caught rather than accidentally passing because the fixture omitted it.
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+  const otherRow = { id: 'acme/still-here', name: 'Still Here', pricing: { prompt: '0' }, context_length: 1000, expiration_date: null };
+  writeJson(paths.latest(root, 'models'), slugSnapshot({ 'acme/still-here': otherRow })); // no olmo row in latest
+  writeJson(join(root, 'data', 'sources', 'models', 'minted.json'), {
+    [OLMO_ROW_ID]: { entry_id: OLMO_ENTRY_ID, path: OLMO_ENTRY_PATH, date: '2026-08-28' },
+  });
+
+  const corpus = {
+    entries: [{ id: OLMO_ENTRY_ID, path: OLMO_ENTRY_PATH, status: 'retired', feeds: {} }],
+  };
+
+  assert.deepEqual(findSlugCollisions(root, slugRegistry(), corpus), []);
+});
+
+test('a source with no `mints` mapping is never scanned for collisions', (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+  writeJson(paths.latest(root, 'plain'), { source: 'plain', url: 'http://fixture.invalid/plain', date: '2026-08-29', body_hash: 'x', row_count: 1, rows: { [OLMO_ROW_ID]: OLMO_ROW } });
+  const registry = { sources: [jsonSource('plain', 'http://fixture.invalid/plain')] }; // no `mints`
+  const corpus = { entries: [{ id: OLMO_ENTRY_ID, path: OLMO_ENTRY_PATH, status: 'retired', feeds: {} }] };
+
+  assert.deepEqual(findSlugCollisions(root, registry, corpus), []);
 });

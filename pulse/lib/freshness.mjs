@@ -25,6 +25,7 @@
 import { daysSince, paths, today, writeJson } from './core.mjs';
 import { volatilityInterval } from './corpus.mjs';
 import { CONFIRM_AFTER_FAILURES, LISTING_INTERVAL_DAYS, isConfirmedBroken } from './linkcheck.mjs';
+import { findSlugCollisions } from './mint.mjs';
 
 export function computeFreshness(root, { registry, corpus, derived, linkResult }) {
   const p = paths(root);
@@ -163,6 +164,11 @@ export function computeFreshness(root, { registry, corpus, derived, linkResult }
     },
     sources,
     vanished_feed_rows: derived?.vanished ?? [],
+    // A live feed row that cannot mint because its slug lands on an existing
+    // entry that does not declare it (addictedtoai-2wa) — the mirror case of
+    // `vanished_feed_rows` above: there, a declared row went missing from the
+    // world; here, a row the world still has cannot enter the corpus at all.
+    slug_collisions: findSlugCollisions(root, registry, corpus),
     unreadable_content: corpus.unreadable ?? [],
   };
 

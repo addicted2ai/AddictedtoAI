@@ -187,6 +187,40 @@ test('a declared row absent from the latest snapshot is vanished, and its last-k
   assert.equal(row.pricing.prompt, '0.000004', 'and the last-known value it must render instead of a current one');
 });
 
+test('a re-listed row that slug-collides with a retired entry not declaring it is a freshness finding (addictedtoai-2wa)', async (t) => {
+  const root = makeRoot([jsonSource('models', 'http://fixture.invalid/models', { mints: { kind: 'model', slug_from: 'row_id' } })]);
+  t.after(() => cleanup(root));
+
+  const row = { id: 'allenai/olmo-3-32b-think', name: 'AllenAI: Olmo 3 32B Think', pricing: { prompt: '0' }, context_length: 65536, expiration_date: null };
+  writeJson(paths.latest(root, 'models'), { source: 'models', url: 'http://fixture.invalid/models', date: '2026-08-29', body_hash: 'x', row_count: 1, rows: { 'allenai/olmo-3-32b-think': row } });
+  writeJson(paths.state(root, 'models'), { source: 'models', last_fetch_date: '2026-08-29', last_change_date: '2026-08-29', seeded: true, refusing: null, consecutive_no_change_fetches: 0 });
+
+  // Exactly the shape j-20260829-03 left behind: the entry survives, retired,
+  // with its `feeds:` binding removed — `data/sources/openrouter-models/
+  // minted.json` still remembers the row, but the entry no longer declares it.
+  writeEntry(root, 'content/wiki/model/allenai-olmo-3-32b-think.md', {
+    id: 'model/allenai-olmo-3-32b-think',
+    kind: 'model',
+    display_name: 'AllenAI: Olmo 3 32B Think',
+    status: 'retired',
+    maintenance: 'dormant',
+    aliases: [],
+    feeds: {},
+    facts: [],
+    timeline: [],
+    mentions: [],
+  });
+
+  assert.equal((await runPulse(root, ARGS, NOW)).status, 0);
+  const fresh = readJson(paths.freshness(root));
+  assert.equal(fresh.slug_collisions.length, 1);
+  assert.equal(fresh.slug_collisions[0].source, 'models');
+  assert.equal(fresh.slug_collisions[0].row_id, 'allenai/olmo-3-32b-think');
+  assert.equal(fresh.slug_collisions[0].entry_id, 'model/allenai-olmo-3-32b-think');
+  assert.equal(fresh.slug_collisions[0].path, 'content/wiki/model/allenai-olmo-3-32b-think.md');
+  assert.equal(fresh.slug_collisions[0].entry_status, 'retired');
+});
+
 test('an unparseable content file is counted and skipped, never fatal', async (t) => {
   const root = makeRoot([]);
   t.after(() => cleanup(root));

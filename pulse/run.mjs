@@ -140,7 +140,10 @@ if (options.noMint) {
     `${mints.minted.length} stub(s) minted from ${mints.considered} undeclared row(s)` +
       (mints.collisions.length ? `, ${mints.collisions.length} slug collision(s) left untouched` : ''),
   );
-  for (const c of mints.collisions) log.warn(`slug collision: row "${c.row_id}" would land on existing ${c.path} — not overwritten`);
+  // The reviewable job lives in the derived queue's 'slug-collision' finding
+  // (queue.mjs, computed from freshness.slug_collisions) — this line stays a
+  // same-run heads-up, not the record of the condition (addictedtoai-2wa).
+  for (const c of mints.collisions) log.warn(`slug collision: row "${c.row_id}" would land on existing ${c.path} — not overwritten; see the derived queue's 'slug-collision' finding for the reviewable job`);
   if (mints.minted.length) corpus = readCorpus(root);
 }
 
