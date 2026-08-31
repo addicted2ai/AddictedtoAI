@@ -453,13 +453,20 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   with zero notation — the textbook version starts with the math, the pop
   version skips the substance.
 
-#### `how-a-language-model-works` — existing, front-matter edit
-- **Status**: **edit** — front matter only: `prerequisites` becomes
+#### `how-a-language-model-works` — existing, rewritten 2026-08-30
+- **Status**: **rewritten** — `prerequisites` are
   `[what-a-model-is, what-a-neural-network-is,
-  how-machines-represent-meaning]`. Body untouched. · **Area**: A.
-- **Amended 2026-08-30 (third prerequisite added; not yet landed on the
-  page, which still carries the first two).** The reason is measured, not
-  editorial. The page writes "Each token id is looked up in a table, giving a
+  how-machines-represent-meaning]`, all three landed, and the **body was
+  rewritten**, not carried over. · **Area**: A.
+- **The status line above used to say "front matter only, body untouched",
+  and that stopped being true the moment the page was repaired.** It is
+  corrected here rather than left, because §0.5 requires the map to be
+  amended in the same breath as the deviation, and a map that misstates the
+  territory gets believed — this document has already been wrong about its
+  own edges once today. The page's own writer caught this and could not fix
+  it, being forbidden the curriculum; recording that is the point of §0.5.
+- **Amended 2026-08-30 (third prerequisite added, since landed).** The reason
+  is measured, not editorial. The page writes "Each token id is looked up in a table, giving a
   vector" and heads a section "Embeddings: positions, not meanings yet".
   `vector` and `embedd*` occur zero times in the page's entire transitive
   closure — `what-a-model-is`, `what-a-neural-network-is`,
