@@ -201,14 +201,6 @@
       "ok": true,
       "status": 200
     },
-    "https://ar5iv.labs.arxiv.org/html/2211.00241": {
-      "consecutive_failures": 0,
-      "error": null,
-      "last_checked": "2026-08-28",
-      "last_ok": "2026-08-28",
-      "ok": true,
-      "status": 200
-    },
     "https://argilla.io/": {
       "bytes": 48328,
       "consecutive_failures": 0,
@@ -749,14 +741,6 @@
       "last_checked": "2026-08-30",
       "last_ok": "2026-08-30",
       "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2211.00241": {
-      "consecutive_failures": 0,
-      "error": null,
-      "last_checked": "2026-08-28",
-      "last_ok": "2026-08-28",
       "ok": true,
       "status": 200
     },
