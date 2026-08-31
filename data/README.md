@@ -44,10 +44,18 @@ JSON carries no comments, so the shape is documented here. It is a
    ceilings. Changing a bound requires an OpenSpec change.
 3. **`job_caps_minutes`** — the per-type wall-clock cap. An executor still
    running at its cap is killed and the job classifies `interrupted`. The
-   caps are per-type; the defaults are merely tier-derived (cheap-tier types
-   30, frontier authoring types 60). `machinery` is set to 60: it is
-   frontier-tier work, and the spec's two named defaults do not cover it
-   explicitly — recorded here so the choice is visible rather than inferred.
+   caps are per-type; the spec's defaults are merely tier-derived (cheap-tier
+   types 30, frontier authoring types 60), and `machinery` was set by hand
+   because those two defaults do not cover it — recorded so the choice is
+   visible rather than inferred. **Read the file for the live numbers**: as of
+   2026-08-30 every type is 120 except `scout`, which is 60. `scout` is
+   deliberately the short one, and deliberately not the 30 first proposed: a
+   fetch-bound job killed at its cap ends `interrupted`, and `interrupted` is
+   an outcome the breakers exclude — so a cap set too low fails silently and
+   repeatedly rather than tripping anything (make-the-blog-worth-sending,
+   design D9.2). Every type `loop/lib/config.mjs` lists in `JOB_TYPES` needs
+   an entry here or `loadConfig` refuses the whole config, which is why adding
+   a job type is two edits in a fixed order — this file first.
 4. **`degradation`** — the trailing-48h capacity-event thresholds.
    `shed_levels` is ordered by `capacity_events`; a tier's shed level is the
    count of `capacity` classifications recorded for that tier inside

@@ -9,7 +9,18 @@
 
 import { readFileSync } from 'node:fs';
 
-/** Every job type, closed list (specs/loop). Adding one needs an OpenSpec change. */
+/**
+ * Every job type, closed list (specs/loop). Adding one needs an OpenSpec change.
+ *
+ * `scout` is the daily outward sweep (make-the-blog-worth-sending, task 2.1;
+ * specs/loop, "The scout looks outward"). Adding it here is the SECOND half of
+ * a two-step edit and the order is load-bearing: `loadConfig` below refuses a
+ * config with no `job_caps_minutes` entry for a listed type, so this line
+ * landing before `data/config.json` gains `scout: 60` breaks every loop
+ * invocation, not just a scout one. `data/config.json` is a reserved path — the
+ * maintainer's, never a job's — so the two halves are written by two actors and
+ * `loop/tests/config.test.mjs` measures that the config half is really there.
+ */
 export const JOB_TYPES = Object.freeze([
   'interpret',
   'verify',
@@ -17,6 +28,7 @@ export const JOB_TYPES = Object.freeze([
   'tutorial',
   'post',
   'education',
+  'scout',
   'repair',
   'prune',
   'machinery',

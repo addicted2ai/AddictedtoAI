@@ -198,6 +198,10 @@ test('(c) a proposal with a job type outside the closed list is skipped, not gue
 const CAPACITY_QUEUE = [
   { type: 'post', title: 'a post', rank: 1 },
   { type: 'education', title: 'an education page', rank: 2 },
+  // `scout` sheds at level 1 alongside post and education
+  // (make-the-blog-worth-sending, task 2.1): discovery is the first thing to
+  // stop when the provider's allowance is running out.
+  { type: 'scout', title: 'the daily outward sweep', rank: 2.5 },
   { type: 'entry', title: 'an entry', rank: 3 },
   { type: 'tutorial', title: 'a tutorial', rank: 4 },
   { type: 'interpret', title: 'an immaterial interpret', rank: 5, field: 'description' },
@@ -221,14 +225,19 @@ function withCapacityEvents(n) {
   return ctx;
 }
 
-test('(d) shed level 1 refuses post and education, naming the rule', () => {
+test('(d) shed level 1 refuses post, education and scout, naming the rule', () => {
   const ctx = withCapacityEvents(1);
   const sel = select(ctx);
   assert.equal(sel.shed.level, 1);
   assert.equal(sel.selected.type, 'entry', sel.text);
   const refused = sel.refusals.filter((r) => r.rule === 'degradation:shed').map((r) => r.candidate.type);
-  assert.deepEqual(refused, ['post', 'education']);
+  assert.deepEqual(refused, ['post', 'education', 'scout']);
   assert.match(sel.text, /\[degradation:shed\].*excludes post jobs/s);
+  // The scout refusal is asserted through the printed text as well: a rule that
+  // refuses without naming what it refused is indistinguishable from silence,
+  // and this is the whole observable behaviour of task 2.1's config half.
+  assert.match(sel.text, /\[degradation:shed\] scout: the daily outward sweep/);
+  assert.match(sel.text, /excludes scout jobs/);
   ctx.cleanup();
 });
 
@@ -238,7 +247,7 @@ test('(d) shed level 2 also refuses entry and tutorial', () => {
   assert.equal(sel.shed.level, 2);
   assert.equal(sel.selected.type, 'interpret', sel.text);
   const refused = sel.refusals.filter((r) => r.rule === 'degradation:shed').map((r) => r.candidate.type);
-  assert.deepEqual(refused, ['post', 'education', 'entry', 'tutorial']);
+  assert.deepEqual(refused, ['post', 'education', 'scout', 'entry', 'tutorial']);
   ctx.cleanup();
 });
 
@@ -251,6 +260,20 @@ test('(d) shed level 3 leaves only verify, repair and material interpret', () =>
   const immaterial = sel.refusals.find((r) => r.rule === 'degradation:interpret-material-only');
   assert.ok(immaterial, sel.text);
   assert.match(immaterial.reason, /price \/ licence \/ status/);
+  ctx.cleanup();
+});
+
+test('(d) with nothing shed, the selector selects a scout item — the type is accepted end to end', () => {
+  // The positive control for the two tests above. A closed-list addition that
+  // only ever shows up in refusals would be indistinguishable from a type the
+  // selector silently drops, which is exactly what an unknown type does.
+  const ctx = makeRepo({ now: () => NOW });
+  writeQueue(ctx, [{ type: 'scout', title: 'the daily outward sweep', rank: 62 }]);
+  const sel = select(ctx);
+  assert.equal(sel.shed.level, 0);
+  assert.equal(sel.selected?.type, 'scout', sel.text);
+  assert.equal(sel.selected.source, 'queue');
+  assert.deepEqual(sel.warnings, [], 'and no reader warned about an unknown type');
   ctx.cleanup();
 });
 

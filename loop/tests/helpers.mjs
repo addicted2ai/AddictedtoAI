@@ -29,13 +29,23 @@ export function git(dir, args) {
   return execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8' }).toString();
 }
 
+/**
+ * The fixture config MIRRORS `data/config.json`'s shape and its category, shed
+ * and closed-list membership; only the caps are smaller, which is what keeps
+ * the warm-up arithmetic in `budget.test.mjs` readable (largest cap 60 → a
+ * 600 MM warm-up rather than 1200). `scout` is here in all four places the real
+ * config carries it — the cap, the new-writing category, and each of the three
+ * shed levels — because a fixture that omits a type `JOB_TYPES` lists does not
+ * load at all (`loadConfig`), and one that omits it from the shed arrays would
+ * let a degradation test pass while production shed nothing.
+ */
 export const DEFAULT_CONFIG = {
   publish: false,
   budget: {
     window_days: 30,
     categories: {
       upkeep: ['interpret', 'verify', 'repair', 'prune'],
-      new_writing: ['entry', 'tutorial', 'post', 'education'],
+      new_writing: ['entry', 'tutorial', 'post', 'education', 'scout'],
       machinery: ['machinery'],
     },
     bounds: { upkeep_floor_pct: 40, new_writing_ceiling_pct: 45, machinery_ceiling_pct: 10 },
@@ -43,13 +53,14 @@ export const DEFAULT_CONFIG = {
   job_caps_minutes: {
     interpret: 30, verify: 30, repair: 30, prune: 30,
     entry: 60, tutorial: 60, post: 60, education: 60, machinery: 60,
+    scout: 60,
   },
   degradation: {
     window_hours: 48,
     shed_levels: [
-      { capacity_events: 1, exclude_types: ['post', 'education'], interpret_material_only: false },
-      { capacity_events: 2, exclude_types: ['post', 'education', 'entry', 'tutorial'], interpret_material_only: false },
-      { capacity_events: 3, exclude_types: ['post', 'education', 'entry', 'tutorial', 'prune', 'machinery'], interpret_material_only: true },
+      { capacity_events: 1, exclude_types: ['post', 'education', 'scout'], interpret_material_only: false },
+      { capacity_events: 2, exclude_types: ['post', 'education', 'scout', 'entry', 'tutorial'], interpret_material_only: false },
+      { capacity_events: 3, exclude_types: ['post', 'education', 'scout', 'entry', 'tutorial', 'prune', 'machinery'], interpret_material_only: true },
     ],
   },
 };

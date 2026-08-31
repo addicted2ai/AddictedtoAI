@@ -94,7 +94,7 @@ test('one job does not saturate its category for a month — the n=1 defect, wit
   assert.equal(shares.warming_up, true);
   assert.equal(shares.warm_up_mm, 600, 'ten times the largest per-type cap in data/config.json');
 
-  for (const t of ['entry', 'tutorial', 'post', 'education']) {
+  for (const t of ['entry', 'tutorial', 'post', 'education', 'scout']) {
     const g = budgetGate(cfg, shares, t);
     assert.equal(g.ok, true, `${t} must still be selectable after one job: ${g.reason ?? ''}`);
   }
@@ -296,11 +296,14 @@ test('capacity degradation sheds in the specified order, read from the trailing 
   assert.equal(l1.level, 1);
   assert.equal(degradationGate(cfg, l1, { type: 'post' }).ok, false);
   assert.equal(degradationGate(cfg, l1, { type: 'education' }).ok, false);
+  // make-the-blog-worth-sending, task 2.1: the scout sheds first, with the
+  // other two new-writing types that cost the most and wait the best.
+  assert.equal(degradationGate(cfg, l1, { type: 'scout' }).ok, false);
   assert.equal(degradationGate(cfg, l1, { type: 'entry' }).ok, true);
 
   const l2 = shedState(cfg, [cap(4), cap(8)], 'frontier', NOW);
   assert.equal(l2.level, 2);
-  for (const t of ['post', 'education', 'entry', 'tutorial']) {
+  for (const t of ['post', 'education', 'scout', 'entry', 'tutorial']) {
     assert.equal(degradationGate(cfg, l2, { type: t }).ok, false, `${t} is shed at level 2`);
   }
   assert.equal(degradationGate(cfg, l2, { type: 'verify' }).ok, true);
@@ -309,6 +312,7 @@ test('capacity degradation sheds in the specified order, read from the trailing 
   const l3 = shedState(cfg, [cap(4), cap(8), cap(12)], 'frontier', NOW);
   assert.equal(l3.level, 3);
   assert.equal(l3.interpret_material_only, true);
+  assert.equal(degradationGate(cfg, l3, { type: 'scout' }).ok, false);
   assert.equal(degradationGate(cfg, l3, { type: 'interpret', material: false }).ok, false);
   assert.equal(degradationGate(cfg, l3, { type: 'interpret', material: true }).ok, true);
   assert.equal(degradationGate(cfg, l3, { type: 'verify' }).ok, true);

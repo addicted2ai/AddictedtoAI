@@ -36,6 +36,11 @@ export const SPECS_FOR_TYPE = Object.freeze({
   repair: ['pulse', 'site', 'review'],
   prune: ['editorial', 'review'],
   machinery: ['loop', 'review'],
+  // The scout's normative requirement — the outward charge, the cap of three,
+  // the drop records, the expiry windows — lives in specs/loop, so a scout
+  // brief that fell through to the `?? ['review']` default below would carry
+  // review's spec and not one line of its own.
+  scout: ['loop', 'editorial', 'review'],
 });
 
 /** Prose job types — the ones whose review record needs a non-empty `would-cite`. */
@@ -67,6 +72,7 @@ const TYPE_KEYWORDS = {
   repair: ['link', 'broken', 'repair', 'refus', 'freshness'],
   prune: ['prune', 'worth reading', 'bar'],
   machinery: ['machinery', 'reserved', 'breaker', 'budget', 'portab', 'result protocol'],
+  scout: ['scout', 'outward', 'proposal', 'expires', 'candidate', 'worth reading'],
 };
 
 /**
