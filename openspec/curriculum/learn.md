@@ -32,7 +32,8 @@ of the map is that an empty area is visible; when all spine tasks are done,
 no area is empty.
 
 - **A. The thing itself** — models, networks, language models, other model
-  families, meaning-as-geometry, internals.
+  families, meaning-as-geometry, systems that act on the physical world,
+  internals.
 - **B. Where it came from** — the seventy-year story that makes the present
   legible.
 - **C. How it is made** — data, training, safety training, scaling, hardware,
@@ -139,6 +140,28 @@ once on this surface with a punctuation figure, which was derived from pages
 written under the guidance quoting it and then cited back to later writers as
 a fact about the exemplars. Measure against something the guidance did not
 shape, or record the number as descriptive and leave it descriptive.
+
+### The title is a lever, and most writers never learn it holds one
+
+The ladder index is generated, and the sort is: rung, then how deep the page
+sits in the prerequisite graph, then **title** — `data.title` from your front
+matter, compared with `localeCompare` (`lib/learn.mjs`). Not the slug, not the
+filename, not the order the pages were written in. The distinction between
+title and slug is not academic: `ai-and-the-law` sorts under *T*, because its
+title is "The legal questions AI actually raises", so it lands second in its
+band where the slug would have put it first.
+
+Within a depth band, then, the working title decides the seat, and the bands
+are wide enough for that to matter. Measured 2026-08-30: the twelve foundations
+entries sit in five depth bands and the widest holds four.
+
+This is a lever, not a rule. Nothing is wrong with a page because of where it
+sorts, and no title should be bent out of shape to move one. But you are
+choosing a title anyway and you usually have two or three honest ones, so
+compute where each of them lands and prefer the one that seats your page beside
+the pages it talks to. What you may not do is reach for the other lever: an
+edge is a claim about what your page assumes, and declaring one to fix an
+ordering is a lie about your own page that the build will happily accept.
 
 ### Six failure modes, by name
 
@@ -262,13 +285,32 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   already touches daily without naming it (spam filter, feed ranking,
   speech-to-text, photo search, chatbot, image generator); the moving label
   — yesterday's AI becomes today's ordinary software (chess, directions,
-  autocomplete), so "AI" tracks novelty as much as technology.
+  autocomplete), so "AI" tracks novelty as much as technology; and, in that
+  same section because that is the only place on the surface that has earned
+  it, what **AGI** names — artificial general intelligence, the destination
+  the moving label keeps receding from: a system general across the range of
+  things people do, rather than one that is superhuman at a task and then
+  renamed after the task. Two sentences, no section, no history of the term.
 - **Must not**: history (its own page); any mechanism beyond
-  "learned from examples" (next page's job); model families (foundations).
+  "learned from examples" (next page's job); model families (foundations);
+  any position on whether AGI arrives, when, or what would count as arrival —
+  the capstone owns the weighing and takes the handoff. This page owes the
+  reader exactly enough to parse the word in a headline.
 - **Mentions**: `event/eliza`, `event/deep-blue-kasparov`.
 - **Beats the alternative by**: being written for the person who arrived
   from a chatbot, not for a category page; the daily-life map is the angle
   encyclopedias do not take.
+- **Amended 2026-08-30 (AGI)**: added because it was measured absent.
+  "AGI" and "artificial general intelligence" occur zero times across all
+  thirty-seven published pages, which is the one gap that contradicts a
+  promise this rung makes in its own §2 purpose — *look at any AI headline and
+  know what kind of thing is being talked about* — for the term that appears
+  in more of those headlines than any other. It lands here rather than on a
+  page of its own or on `the-safety-debates`, because this page already
+  teaches that the label moves off a task once software does it reliably, and
+  AGI is the name of the destination that motion is measured against. That is
+  a payoff of an argument the page has already made, not a definition bolted
+  to it. The `outcome` string does not change.
 
 #### `learning-from-examples` — "How software learns from examples"
 - **Status**: new · **Area**: A · **Prerequisites**: `what-ai-actually-is`
@@ -411,10 +453,31 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   with zero notation — the textbook version starts with the math, the pop
   version skips the substance.
 
-#### `how-a-language-model-works` — existing, one-line edit
+#### `how-a-language-model-works` — existing, front-matter edit
 - **Status**: **edit** — front matter only: `prerequisites` becomes
-  `[what-a-model-is, what-a-neural-network-is]`. Body untouched. ·
-  **Area**: A.
+  `[what-a-model-is, what-a-neural-network-is,
+  how-machines-represent-meaning]`. Body untouched. · **Area**: A.
+- **Amended 2026-08-30 (third prerequisite added; not yet landed on the
+  page, which still carries the first two).** The reason is measured, not
+  editorial. The page writes "Each token id is looked up in a table, giving a
+  vector" and heads a section "Embeddings: positions, not meanings yet".
+  `vector` and `embedd*` occur zero times in the page's entire transitive
+  closure — `what-a-model-is`, `what-a-neural-network-is`,
+  `learning-from-examples`, `what-ai-actually-is` — and the section does not
+  define either term. It argues *against* them: the claim is that the vector
+  encodes the token and not yet its meaning, which is a claim only a reader
+  who already holds what an embedding is *for* can receive. That is leaning on
+  an undeclared page, which the spec rejects as `spec-violation`, and the page
+  leaned on is `how-machines-represent-meaning`, which supplies the missing
+  definition in as many words — "vector being the field's word for the list of
+  numbers" — one position **later** in the generated order.
+  Declaring the true edge fixes the violation and the ordering in one move,
+  because depth sorts before title: the teaching page goes from 14 to 13 and
+  the using page from 13 to 16. Foundations to foundations, so the edge points
+  sideways and not up; it closes no cycle. Both facts were verified by script
+  rather than by reading (see §5). A gloss on the page would have closed the
+  vocabulary half and left the section arguing against an idea the reader was
+  never given.
 
 #### `the-kinds-of-models` — "The kinds of models, beyond chat"
 - **Status**: new · **Area**: A · **Prerequisites**:
@@ -460,6 +523,90 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   in this field that genuinely carries wonder without needing adjectives.
 - **Note**: the sendable sentence wants to be about meaning becoming
   geometry; find the version of it that is true.
+
+#### `machines-that-act-in-the-world` — "Machines that act in the world"
+- **Status**: new, added 2026-08-30 — **no task in `tasks.md`** (see §5) ·
+  **Area**: A · **Prerequisites**: `the-kinds-of-models`,
+  `why-models-are-confidently-wrong`, `what-ai-is-used-for`
+- **Outcome**: You can say why a system that moves something is a different
+  problem from a system that writes something, name what such a system has to
+  be trained on and where those examples come from, and ask the question that
+  separates a demonstration from a deployment.
+- **Must cover**: the family the reader was not shown —
+  `the-kinds-of-models` sorted the zoo by what goes in and what comes out, and
+  every family on that page comes out as something a person then reads (a
+  label, a ranking, a transcript, a paragraph, a picture), while this one comes
+  out as a movement; the machinery underneath is the same machinery, so what
+  changed is not the model but where its output lands; **the examples have to
+  be performed** — the text and the photographs were already lying there to be
+  collected, and no pile of situations paired with the right movement is lying
+  anywhere, so the examples have to be produced one at a time at the speed of
+  the world (a person driving, a person working the machine's controls by hand,
+  a run in simulation), which is the far pole of the axis
+  `the-kinds-of-models` put the recommender on when it said that pile writes
+  itself; what follows and is this page's payoff — the abundant supply that
+  made scale the winning move everywhere else is the one thing this corner of
+  the subject does not have, so the bet that has paid for a decade does not
+  transfer for free, and that is the honest reason this family moves at a
+  different speed rather than any claim about its difficulty; simulation as the
+  standing attempted fix and the gap between the practice world and the real
+  one, in a paragraph, with no taxonomy of simulators; **the output is an
+  event, not a proposal** — everywhere else on this surface the remedy for an
+  output that nothing checked (`why-models-are-confidently-wrong`) is that a
+  person reads it before it counts, and a movement deletes that interval, so
+  the checking has to be built in and has to finish inside the time the
+  physical situation allows, which is why the load-bearing engineering is the
+  bounded speed, the limits that were never learned, and the stop — the parts
+  around the model rather than the model; and the demo–deployment gap
+  (`what-ai-is-used-for`) at the widest it gets anywhere, ending on the
+  question the reader keeps: at what rate, over what exposure, under conditions
+  chosen by whom?
+- **Must not**: a survey of robots, vehicles, or the companies making them;
+  the autonomy levels (a taxonomy is not a mechanism, and that one rots); a
+  verdict on how close anything is, or any forecast; control, planning and
+  sensor nomenclature — the page holds the altitude `the-kinds-of-models`
+  holds, which is what goes in and what comes out, and annexes no neighbour's
+  internals; the labour question (`ai-and-work`) and the accountability
+  question (`where-ai-fails-people`), each of which may be acknowledged in one
+  sentence and pointed at, never argued here.
+- **Mentions**: none required. Checked 2026-08-30: no wiki entry serves
+  embodiment, so there is nothing yet for this page to resolve to. Add
+  resolvable ones if the prose earns them; if the page teaches a concept the
+  wiki lacks, filing that stub is wiki work and not yours.
+- **Beats the alternative by**: refusing both of the two things anyone writes
+  about robots — the showreel and the ethics essay — and handing the reader a
+  supply-side mechanism instead, so they can predict which demonstration will
+  not become a product and say why, which is a thing no amount of watching the
+  demonstrations teaches.
+- **Why foundations, and why these three**: the rung is set by what a page
+  assumes, and this one assumes only that behaviour comes from a pile of
+  examples and that nothing checks a model's output — orientation and
+  foundations material, no notation, no parts named, so it passes the
+  foundations admission test and fails no lower one. It is also the rung where
+  the reader who arrives asking *is a self-driving car AI?* can reach it; that
+  reader does not get to mechanics. `the-kinds-of-models` is the page this one
+  extends and it cannot be written without it, because the whole argument is
+  that every family there ends in an artifact and this one does not.
+  `why-models-are-confidently-wrong` is load-bearing for the second half: *a
+  movement deletes the interval in which somebody checks* only lands for a
+  reader already holding *nothing in the process that produces an answer checks
+  the answer*. `what-ai-is-used-for` carries the demo–deployment distinction
+  the last beat spends. `learning-from-examples` is not declared because it is
+  already in the closure through `the-kinds-of-models`.
+- **Note on the title**: chosen under §3's lever rather than for the sentence.
+  Three prerequisites put the page at depth 4, so it cannot sit next to
+  `the-kinds-of-models` whatever it is called; "Machines that act in the world"
+  seats it second in that band, directly behind `how-a-language-model-works`,
+  so the reader meets the fullest case of an output that is an artifact and
+  then immediately the family where the output is not one. A title beginning
+  after *When* would have put it last in the band instead.
+- **Decision recorded**: the prior sealed review asked for embodiment to be
+  scoped in or out visibly, either way, and the review of the whole surface
+  found the decision still unmade and the coverage still zero — no mention of
+  robotics, self-driving, drones or anything that acts, across thirty-seven
+  pages, while `the-kinds-of-models` enumerates six families of which none
+  moves anything. **It is in.** A reader who finishes four hours of this
+  surface should not be unable to answer whether the car is AI.
 
 #### `what-models-are-trained-on` — "What models are trained on"
 - **Status**: new · **Area**: C · **Prerequisites**:
@@ -837,6 +984,23 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 #### `how-inference-is-served` — existing, untouched
 - **Status**: existing (advanced) · **Area**: D · **Prerequisites**:
   `how-a-language-model-works`, `how-models-are-trained` (unchanged).
+- **Decision recorded 2026-08-30 — prerequisites deliberately unchanged.**
+  The advanced review found the page using "accelerator" three times with no
+  gloss and no page in its closure teaching the word, and offered two fixes:
+  declare `the-hardware-that-runs-ai` (a legal mechanics→advanced edge) or
+  gloss the word. **The gloss is right and the edge is wrong**, and the
+  distinction is worth keeping because it recurs. What the page assumes is the
+  *distinction* between a chip busy with arithmetic and a chip waiting on
+  memory, and the page teaches that distinction itself, in the two sentences
+  that introduce each phase: "The accelerator is saturated with arithmetic"
+  against an accelerator that "spends most of its time waiting for weights to
+  arrive, not computing". A reader who has never met the word can follow both
+  states. Only the noun is missing. Declaring an edge to supply one noun also costs the rung its
+  order: measured, it moves
+  `why-the-same-request-gives-different-answers` from fourth on the rung to
+  sixth, seating a compressed seed-wave page between two long essays and the
+  capstone. An edge is a claim about what a page assumes, not a device for
+  seating it, and six words on the page close this.
 
 #### `what-safety-training-changes` — existing, untouched
 - **Status**: existing (advanced) · **Area**: C ·
@@ -882,9 +1046,14 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   state why "we don't know how it works" is both true and shrinking.
 - **Must cover**: why inspection is hard — the behaviour is smeared across
   the numbers rather than written anywhere a person can read, a premise the
-  page establishes for itself from `what-a-model-is` (writer's note:
-  `what-a-neural-network-is` covers this on the foundations rung, but it is
-  not a prerequisite here, so this page may not lean on it); this page is
+  page establishes for itself from `what-a-model-is` (writer's note, corrected
+  2026-08-30: `what-a-neural-network-is` covers this on the foundations rung
+  and **is** in this page's transitive closure — it arrives through
+  `how-a-language-model-works` — so the earlier instruction that it is not a
+  prerequisite and may not be leaned on was simply false about the graph. The
+  published page establishes the premise for itself anyway and needs no change;
+  the note is corrected because a map that misstates its own edges gets
+  believed); this page is
   the research program that refuses to accept that; probing (asking whether a concept is decodable
   from activations); superposition in prose — more concepts than neurons,
   so single neurons disappoint by necessity; features and circuits as the
@@ -961,17 +1130,31 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   years apart (`ai-and-work`'s lesson, generalised); what a reader can
   actually watch — compute trends, benchmark saturation-and-replacement
   cycles (with every caveat `what-a-benchmark-measures` installed), the
-  open-versus-frontier gap, prices — indicators, not predictions; the
-  discipline as the takeaway: dated claims, named indicators, revisable
+  open-versus-frontier gap, prices — indicators, not predictions; one clause,
+  never a section, spending the term `what-ai-actually-is` now hands up the
+  ladder — **AGI** as the destination the moving label keeps receding from,
+  and an AGI timeline as the canonical claim that fails the third of this
+  page's three questions, because the term fixes no threshold anyone has
+  agreed on, which makes *what would you accept as arrival* the first thing to
+  ask its author rather than a rhetorical flourish; the discipline as the
+  takeaway: dated claims, named indicators, revisable
   beliefs — which is this site's own method, handed to the reader as the
   last thing the surface teaches.
-- **Must not**: a forecast of its own; timelines; the word "inevitable".
+- **Must not**: a forecast of its own; timelines; the word "inevitable"; a
+  definition of AGI (the root page owns it) or a threshold for it (supplying
+  one would be committing the error the clause exists to expose).
   This page is the capstone — by prerequisite depth it lands last in the
   generated reading order, and its entry records that as intent (design
   D5).
 - **Mentions**: `concept/scaling-laws`, `concept/ai-winter`.
 - **Beats the alternative by**: refusing to predict, and teaching the
   reader to evaluate everyone who does.
+- **Amended 2026-08-30 (AGI)**: this is the matching beat to the root page's
+  two sentences, and the division of labour is deliberate — the orientation
+  page defines the term because that is where the receding-label argument was
+  earned, and the capstone spends it because that is where forecasts get
+  weighed. It is one clause because the page is finished and works; a section
+  would buy nothing the three questions do not already do.
 
 ## §5 — The dependency graph and the wave order
 
@@ -995,9 +1178,10 @@ what-ai-is-used-for           ← what-ai-actually-is
 who-builds-ai                 ← what-ai-actually-is
 where-ai-fails-people         ← learning-from-examples, what-ai-is-used-for
 what-a-neural-network-is      ← learning-from-examples, what-a-model-is
-how-a-language-model-works (edit) ← what-a-model-is, what-a-neural-network-is
 the-kinds-of-models           ← what-a-neural-network-is
 how-machines-represent-meaning ← what-a-neural-network-is
+how-a-language-model-works (edit) ← what-a-model-is, what-a-neural-network-is, how-machines-represent-meaning
+machines-that-act-in-the-world ← the-kinds-of-models, why-models-are-confidently-wrong, what-ai-is-used-for
 what-models-are-trained-on    ← learning-from-examples, why-models-are-confidently-wrong
 getting-good-answers          ← how-a-language-model-works, why-context-is-not-memory
 open-weights-and-closed-models ← what-a-model-is
@@ -1029,8 +1213,56 @@ reader would merely find useful are *not* declared and stay inline links; the
 entries that only defer to another page ("one sentence, deferring to …") or
 that seed a later one are those, not prerequisites.
 
-The wave order in `tasks.md` is a valid topological order of this graph with
-the two front-matter edits sequenced after the pages they point to. Any
+**Amended 2026-08-30 — four edges added, one refused.** Three of the four are
+`machines-that-act-in-the-world`'s, and they have exactly the basis the
+paragraph above describes: its must-cover leans on all three. The fourth,
+`how-a-language-model-works ← how-machines-represent-meaning`, has a different
+basis and is the more important one, because it was found by measurement
+rather than by reading an entry — two terms of art used on a page, zero
+occurrences of either anywhere in that page's transitive closure, and the page
+that supplies them sitting one position later in the generated order. Six
+ordering lurches were audited for that shape, across all four rung reviews and
+the whole-surface review; **one** turned out to be a missing edge and five did
+not, and the five are not edges for five different reasons worth knowing:
+`open-weights-and-closed-models` opening the foundations rung defers to two
+later pages and leans on neither; `ai-and-work`'s data-labour beat likewise
+defers and stands without the link; `running-a-model-yourself` opening
+mechanics ahead of `how-models-are-trained` re-derives the token loop for
+itself on purpose, which is why its closure is thin; the mechanics rung's
+"loss" and "reinforcement learning" arriving undefined at positions 3 and 7
+and defined at 10 and 11 **cannot** be fixed with an edge at all, because both
+teaching pages already declare `how-models-are-trained` and the edge would
+close a cycle the build rejects — that one is a parenthetical the page owes,
+not a prerequisite; and `how-inference-is-served`'s undeclared "accelerator"
+is a missing noun rather than a missing assumption, recorded in its own entry
+above. **Declaring an edge is how the ordering gets fixed only when the edge is
+true.** The lurches that remain are the title lever's business (§3), and two of
+them — the mechanics rung's opening and `ai-and-the-law`'s seat mid-run — are
+still open.
+
+Verified by script on 2026-08-30 against the actual front matter in
+`content/learn/`, replicating `ladder()`, `checkPrerequisiteCycles` and
+`checkPrerequisiteLevels` from `lib/learn.mjs` rather than reasoning about
+them: with all four edges and the new page applied, the graph is acyclic,
+every edge points down or sideways, no page appears before one of its
+prerequisites, the first page is still `what-ai-actually-is` and the last is
+still `how-to-think-about-what-comes-next`. The amendment also moves pages the
+audit was not aiming at, which is recorded rather than hidden:
+`how-models-are-trained` slips one place later and `ai-and-the-law` one place
+earlier, so the mechanics rung's two open lurches change shape without
+closing.
+
+The wave order in `tasks.md` was a valid topological order of this graph with
+the two front-matter edits sequenced after the pages they point to, and the
+2026-08-30 amendment breaks that for exactly one task: `tasks.md` sequences
+the `how-a-language-model-works` edit at 3.2, ahead of
+`how-machines-represent-meaning` at 3.4, and the edit now names it. Nothing
+turns on it — all thirty-seven pages are published, so the new prerequisite
+exists on disk today and the edit is safe to land whenever someone lands it —
+and it is written down only because the sentence would otherwise be false, and
+`tasks.md` belongs to the change rather than to this file.
+`machines-that-act-in-the-world` has no task for the same reason: its three
+prerequisites are all published, so it can land whenever it is written. Any
 executor picking tasks out of order must re-check this property; the cheap
 way is to confirm every slug in your page's `prerequisites` already exists
 under `content/learn/`.
