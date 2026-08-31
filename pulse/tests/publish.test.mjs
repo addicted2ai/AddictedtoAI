@@ -121,6 +121,39 @@ test('END TO END: a real publish: false run leaves its own state in git, not in 
   assert.match(run.out, /publish — disabled .* nothing pushed/);
 });
 
+test('a run whose site rebuild fails never reaches the publish step, so it commits nothing either', async (t) => {
+  // The load-bearing ordering, measured rather than asserted from the source:
+  // `pulse/run.mjs` rebuilds at step 8 and publishes at step 9, and step 9 is
+  // guarded by the build's exit code. Both phases live behind that guard, so a
+  // run producing content the build rejects neither commits nor publishes it.
+  //
+  // `publish: false`, so the discriminating observation is the ABSENCE of the
+  // disabled line — a publish step that ran would have printed it — rather than
+  // the absence of a push, which this fixture could not have made anyway.
+  const root = gitInit(makeRoot([], { publish: false }));
+  t.after(() => cleanup(root));
+  writeFileSync(
+    join(root, 'package.json'),
+    JSON.stringify({ name: 'pulse-fixture', private: true, scripts: { build: 'exit 1' } }, null, 2) + '\n',
+    'utf8',
+  );
+  execFileSync('git', ['-C', root, 'add', '-A'], { stdio: 'ignore' });
+  execFileSync('git', ['-C', root, 'commit', '-m', 'fixture: base'], { stdio: 'ignore' });
+  const head = git(root, ['rev-parse', 'HEAD']);
+
+  // Deliberately WITHOUT --no-build: the build is the step under test.
+  const run = await runPulse(root, ['--no-mint', '--offline']);
+
+  assert.notEqual(run.status, 0, 'a failed rebuild is a failed run');
+  assert.match(run.out, /site rebuild failed/, run.out);
+  assert.equal(
+    run.out.split('\n').filter((l) => l.includes('publish')).length,
+    0,
+    `the publish step ran after a failed build:\n${run.out}`,
+  );
+  assert.equal(git(root, ['rev-parse', 'HEAD']), head, 'and nothing the run computed was committed');
+});
+
 test('--dry-run with publish assumed prints the exact commands and the poll target, and executes nothing', async (t) => {
   const root = gitInit(makeRoot([], { publish: false }));
   t.after(() => cleanup(root));
@@ -555,6 +588,68 @@ test('HOLD.md suspends the publish and nothing removes it — but the run\'s sta
   assert.deepEqual(commitPaths(root), ['data/derived/queue.json']);
   // No `origin` exists, so reaching `git push origin main` would have thrown.
   // Returning cleanly is the proof that phase 2 never started.
+});
+
+test('a repository that refuses the commit reports it, keeps the state, and does not push', async (t) => {
+  // The `commit-failed` branch, which had no test of its own until now.
+  //
+  // Before the split, `git commit` could only ever run on a publishing run, so
+  // a throw here reached a caller already deep in a push. Phase 1 now runs on
+  // every scheduled Pulse, and a repository that refuses a commit — a hook, an
+  // unconfigured identity — must (a) leave the run's state in the working tree
+  // rather than take the whole Pulse down, and (b) stop phase 2, because a run
+  // that could not commit its own state has nothing it can honestly publish.
+  //
+  // `publish: true` with a real fixture remote, so the push is armed and its
+  // absence means something. Nothing reaches the network: the `commitBlocked`
+  // return happens before the first `fetchLiveStamp`.
+  const { root, bare } = makeGitRoot();
+  t.after(() => dropRoot(root, bare));
+
+  const hooks = join(root, 'refusing-hooks');
+  mkdirSync(hooks, { recursive: true });
+  writeFileSync(join(hooks, 'pre-commit'), '#!/bin/sh\nexit 1\n', 'utf8');
+  git(root, ['config', 'core.hooksPath', hooks.replace(/\\/g, '/')]);
+
+  const head = git(root, ['rev-parse', 'HEAD']);
+  write(root, 'data/derived/queue.json', JSON.stringify({ items: [{ id: 'q' }] }, null, 2) + '\n');
+
+  const rec = recorder();
+  const res = await publishStep(root, { owned: [], ...FAST, log: rec.log });
+
+  assert.equal(res.commit.committed, false, rec.said());
+  assert.equal(res.commit.reason, 'commit-failed', rec.said());
+  assert.equal(res.published, false);
+  assert.equal(res.reason, 'commit-failed', rec.said());
+  assert.equal(git(root, ['rev-parse', 'HEAD']), head, 'no commit was made');
+  assert.match(
+    git(root, ['status', '--porcelain', '--', 'data/derived']),
+    /queue\.json/,
+    'the run\'s state stays in the working tree rather than vanishing',
+  );
+  assert.match(rec.said(), /git refused this run's commit/, rec.said());
+  assert.equal(git(bare, ['rev-parse', 'main']), head, 'and the remote never heard about it');
+});
+
+test('POSITIVE CONTROL — the same repository with the hook removed commits and pushes', async (t) => {
+  // Without this, a step that refused every commit for any reason would pass
+  // the test above. The only difference here is that the hook is gone.
+  const { root, bare } = makeGitRoot();
+  t.after(() => dropRoot(root, bare));
+  await deadSite(t);
+
+  const head = git(root, ['rev-parse', 'HEAD']);
+  write(root, 'data/derived/queue.json', JSON.stringify({ items: [{ id: 'q' }] }, null, 2) + '\n');
+
+  const rec = recorder();
+  const res = await publishStep(root, { owned: [], ...FAST, log: rec.log });
+
+  assert.equal(res.commit.committed, true, rec.said());
+  assert.notEqual(git(root, ['rev-parse', 'HEAD']), head);
+  // The dead site never serves the stamp, so breaker 2 fires — but the push
+  // itself happened, which is what separates this from the case above.
+  assert.equal(res.reason, 'stamp-did-not-advance', rec.said());
+  assert.notEqual(git(bare, ['rev-parse', 'main']), head, 'the remote did hear about it');
 });
 
 test('attribution by path: the engine\'s own files, and nobody else\'s', () => {

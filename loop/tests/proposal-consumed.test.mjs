@@ -126,6 +126,39 @@ test('a merged job retires the proposal it was selected from, and the next run d
   assert.equal(second.nothingQualified, true, ctx.output());
 });
 
+test('`consumed/` is a record, never a block: the same slug may be proposed again', async (t) => {
+  // The test above asserts that the retirement NOTE says "record, never a
+  // block". That is a claim about text. This is the behaviour: a guardrail is
+  // not what it was built to do, it is what it does when measured.
+  //
+  // `rejected/` suppresses a later proposal carrying the same slug. `consumed/`
+  // must not — being written about once is not a reason a subject may never be
+  // written about again — so the mechanism is checked from the other side, by
+  // planting a retired file and asking the selector what it sees.
+  const ctx = repo({
+    files: {
+      'data/proposals/consumed/dated-repair.consumed-20260910T120000.md': RIPE,
+      'data/proposals/dated-repair.md': RIPE,
+    },
+  });
+  t.after(() => ctx.cleanup());
+
+  const seen = readProposals(ctx);
+  assert.deepEqual(seen.ripe.map((p) => p.slug), ['dated-repair'], 'a consumed slug must not suppress a refiling');
+  assert.deepEqual(seen.duplicates.map((d) => d.slug ?? d), [], 'and it must not be reported as a duplicate either');
+
+  // The control that makes the assertion mean something: the SAME file under
+  // `rejected/` does suppress it.
+  const blocked = repo({
+    files: {
+      'data/proposals/rejected/dated-repair.md': RIPE,
+      'data/proposals/dated-repair.md': RIPE,
+    },
+  });
+  t.after(() => blocked.cleanup());
+  assert.deepEqual(readProposals(blocked).ripe.map((p) => p.slug), [], 'the rejection index still blocks');
+});
+
 test('POSITIVE CONTROL — a discarded job leaves its proposal selectable', async (t) => {
   // Two non-approvals discard the job. What was rejected is the work; the idea
   // is untouched, and a mechanism that retired the proposal here would be
