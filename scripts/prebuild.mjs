@@ -23,7 +23,7 @@ import { siteAssetsStep } from '../lib/site-assets.mjs';
 import { anchorCheckStep } from '../lib/anchors.mjs';
 import { checkPostVoiceStep } from './check-post-voice.mjs';
 import { acquireBuildLock, DEFAULT_WAIT_MS } from './build-lock.mjs';
-import { isDirty } from '../lib/stamp.mjs';
+import { isDirty, dirtyPaths } from '../lib/stamp.mjs';
 
 /**
  * One build at a time (beads addictedtoai-6s7). This is the right place for it
@@ -74,6 +74,12 @@ try {
  * rule, and `verify-surfaces`'s `checkStamp()` asserts all three unchanged.
  */
 const checkoutDirty = isDirty();
+// Taken at the same instant, and for the reason the ordering fix above did not
+// settle: production went on stamping `+dirty` after it (addictedtoai-4w2), so
+// the remaining cause lives in the BUILDER's checkout, which nothing in this
+// repository can read. The stamp now names the files and the next deploy
+// answers it. Empty whenever the checkout is clean.
+const checkoutDirtyPaths = checkoutDirty ? dirtyPaths() : [];
 
 /** @type {{ name: string, run: () => Promise<void> | void }[]} */
 const STEPS = [
@@ -106,7 +112,10 @@ const STEPS = [
   // the pages: the build stamp, the search index, the standing tables' JSON
   // siblings, the feeds and the open dataset. Second, because every one of
   // them is derived from the corpus the step above just validated.
-  { name: 'assets', run: () => siteAssetsStep({ dirty: checkoutDirty }) },
+  {
+    name: 'assets',
+    run: () => siteAssetsStep({ dirty: checkoutDirty, dirtyPaths: checkoutDirtyPaths }),
+  },
 ];
 
 let failed = false;
