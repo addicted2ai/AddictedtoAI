@@ -97,10 +97,11 @@ with the gap owed partly to container resets and partly to transcripts that
 appear cut off early. They had no direct access to OpenAI infrastructure. Two
 METR staff, Hjalmar Wijk and Ajeya Cotra, and a Redwood staff member worked on
 OpenAI's premises for six days in total, and took no payment for it. What they
-did not examine is on the record too: "All other questions were out of scope for
-this investigation, including the effectiveness of safeguards, the extent of the
-security compromise that occurred, and the effectiveness of OpenAI's
-investigation process."
+did not examine is on the record too, and so is the fact that the boundary was a
+mutual one: "We agreed all other questions were also out of scope, including the
+effectiveness of safeguards, the extent of the security compromise that occurred,
+and the effectiveness of OpenAI's investigation process and planned remediation
+steps."
 
 Hugging Face's limit is the one its own customers care about. It says the only
 customer content touched was five datasets whose "names and files suggest a
