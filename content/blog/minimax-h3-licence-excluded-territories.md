@@ -25,7 +25,7 @@ Section V.4 states the other side:
 
 That sentence is the one that lands on an existing download. The agreement takes effect on acceptance, which the preamble defines as clicking accept, or using, reproducing, modifying, distributing, running or displaying any part of the model. A reader in the EU, the UK, South Korea or the US who already pulled the weights and ran them is using the model outside the territory the grant covers, and the licence says that use is not authorized.
 
-It does not say what happens next. The document carries no enforcement clause, no audit right, and nothing about what MiniMax does with use outside the territory. What it does say about the excluded territories is the offer in Section II, which follows.
+It does say what happens next. Section VIII.2: "If you breach any term or condition of this Agreement, we have the right to terminate this Agreement. Upon termination, you must immediately cease accessing, using, and distributing the MiniMax H3 Works; delete or destroy all copies within your possession or control; and notify each downstream recipient that your authorization has ended." Territorial use is a breach by two routes: Section V.4, quoted above, and Exhibit A, whose first prohibition is "Use outside the Applicable Territory" and which Section V.1 incorporates into the agreement by reference. The licence grants no audit right, and nothing in the record shows MiniMax invoking termination against anyone. What the document does say about the excluded territories is the offer in Section II, which follows.
 
 ## The route out, in the licence's own words
 
