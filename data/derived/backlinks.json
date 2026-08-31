@@ -2220,12 +2220,6 @@
         "title": "Who builds AI",
         "type": "learn",
         "file": "content/learn/who-builds-ai.md"
-      },
-      {
-        "url": "/blog/three-accounts-hugging-face-intrusion",
-        "title": "Three accounts of the Hugging Face intrusion, and they begin on three different dates",
-        "type": "post",
-        "file": "content/blog/three-accounts-hugging-face-intrusion.md"
       }
     ],
     "org/spacexai": [
@@ -2508,12 +2502,6 @@
         "title": "The Stable Diffusion Release",
         "type": "entry",
         "file": "content/wiki/event/stable-diffusion-release.md"
-      },
-      {
-        "url": "/blog/three-accounts-hugging-face-intrusion",
-        "title": "Three accounts of the Hugging Face intrusion, and they begin on three different dates",
-        "type": "post",
-        "file": "content/blog/three-accounts-hugging-face-intrusion.md"
       },
       {
         "url": "/tutorials/chat-template-is-not-the-model",
