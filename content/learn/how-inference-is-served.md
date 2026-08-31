@@ -23,8 +23,9 @@ hardware characteristics.
 
 **Prefill** processes the entire prompt. Because the whole input is known
 before it starts, every position runs at once as a few large matrix
-multiplications. The accelerator is saturated with arithmetic. This phase is
-compute-bound, and its cost per token of input is low.
+multiplications: arithmetic over whole grids of numbers. The accelerator, the
+chip doing that arithmetic, is saturated with it. This phase is compute-bound,
+and its cost per token of input is low.
 
 **Decode** produces the answer, one token at a time. Each new token needs the
 previous one, so the work cannot be parallelised across the sequence. For each

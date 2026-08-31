@@ -243,10 +243,13 @@ author agreed to be wrong about, by when?
 
 Most claims fail the third question, and the failure is itself the finding,
 because it means the claim was built so that no arriving fact could embarrass
-it. Steinhardt's forecasters were wrong by a factor of four and still
-produced more knowledge than a year of unfalsifiable commentary, because the
-miss had a size, a direction and a date, and all three became public property
-the day the grade came in.
+it. An AGI timeline is the clearest case: the term fixes no threshold anyone
+has agreed on, which makes "what would you accept as arrival?" the first
+question to put to its author rather than the last. Steinhardt's
+forecasters were wrong by a factor of four and still produced more knowledge
+than a year of unfalsifiable commentary, because the miss had a size, a
+direction and a date, and all three became public property the day the grade
+came in.
 
 The gradeable claims are the ones worth your attention, and grading is also
 the method of the site you are reading: a fact carries its date and its

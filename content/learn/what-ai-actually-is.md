@@ -78,7 +78,12 @@ The pattern only runs one way. While software struggles with a task, the task
 belongs to artificial intelligence. Once software does it reliably, cheaply
 and everywhere, the task gets renamed after the job. AI is the name software
 carries while it still surprises us; afterwards it is called a spam filter, a
-chess engine, or directions.
+chess engine, or directions. Artificial general intelligence, or AGI, is the
+name for the destination that motion is measured against: a system general
+across the range of things people do, rather than one that is superhuman at a
+single task and then renamed after the job. In a headline, AI is a claim about
+how a piece of software was built, and AGI is a claim about how much of what
+people do one system could cover.
 
 So the map above has a time axis. Some of what is loudly AI today will keep
 the name; some will fade into the furniture and lose it, the way chess did.
