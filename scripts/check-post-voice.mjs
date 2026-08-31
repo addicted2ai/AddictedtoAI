@@ -43,11 +43,17 @@
  *    so the artifact is pinned out of them rather than out of here.
  *
  * A third, found while implementing this and worth the same treatment:
- * **phrases split over a line break are the same phrase.** Matching
- * `this post` with a literal space missed six occurrences across the twelve
- * pinned documents and put four of their per-document self-narration counts
- * below the calibration record's. Every multi-word marker matches across any
- * whitespace, newlines included.
+ * **phrases split over a line break are the same phrase.** Joining multi-word
+ * markers with a literal space missed six occurrences across the twelve pinned
+ * documents — `this post` five times and `labelled as such` once — and put four
+ * of their per-document self-narration counts below the calibration record's.
+ * Every multi-word marker matches across any whitespace, newlines included, and
+ * that means EVERY one: sparing `labelled as such`, which a coder is likely to
+ * spell with `\s+` by habit, gives five and three instead of six and four, and
+ * a smaller number here reads as a smaller problem than it is.
+ * It is now the third artifact recorded in the calibration file, alongside the
+ * headline it made possible: this lint reproduces that file's per-document
+ * table with 0 mismatches of 12.
  *
  * ## Scope
  *
