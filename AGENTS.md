@@ -110,6 +110,24 @@ the steps are mechanisms rather than instructions, which is the whole design.
 5. Revise once. A piece that fails a second time is discarded and the record
    kept.
 
+**One paper is several documents, and they disagree.** A landing/abstract page
+and the PDF it links; an arXiv `/abs/` page and its `/pdf/`; and on arXiv,
+every version behind one unversioned URL. The corpus **cites and quotes the
+PDF** where a landing page and the PDF differ, because the published artefact
+is what the paper says; a record that quotes the landing page instead **says
+so explicitly**. On arXiv, `/abs/<id>` serves the latest version and quoting
+what it serves is correct — but a claim tied to a **date** must **pin the
+version** (`/abs/<id>v1`), because `/abs/` shows the latest abstract above a
+submission history that opens with v1's date, and reading the date and the
+abstract off one screen attributes them to different documents. Where both
+versions matter, carry both as separate dated rows;
+`content/wiki/event/eliza.md` is the worked example. A quote absent from the PDF is
+**misattribution until proven fabrication** — the naive "unsupported" finding
+is wrong more often than the quote is invented. The operative copy of this
+rule lives in `GROUND_RULES` in `loop/lib/brief.mjs`, which is the text
+actually delivered to every author and reviewer; `addictedtoai-dd5` records
+the two measured instances.
+
 **Dates are the local date of the machine that wrote them, never UTC** — a
 record's `date:`, a fact's `accessed:`, a tutorial's `verified_on:`, a delta
 end's `date:`. A bare ISO date carries no zone, and on 2026-08-28 a session

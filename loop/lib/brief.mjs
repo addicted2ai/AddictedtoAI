@@ -50,7 +50,44 @@ ${RESERVED_PATHS.map((p) => `  - \`${p}\``).join('\n')}
   the one unrecoverable failure.
 - **Run the cheap direct check before concluding.** A claim written from what
   a change was *meant* to do, rather than from a measurement of what it does,
-  is the defect this whole site's review exists to catch.`;
+  is the defect this whole site's review exists to catch.
+- **Quote the document you name, and name the document you quoted.** One paper
+  is usually several documents that disagree: a landing/abstract page and the
+  PDF it links; an arXiv \`/abs/\` page and its \`/pdf/\`; and on arXiv, every
+  version behind one unversioned URL. They are not interchangeable, and the
+  differences land on exactly the numbers prose wants — measured in this
+  corpus, a NeurIPS landing page carried a superseded abstract giving a
+  different layer count, neuron count and both headline error rates from the
+  camera-ready PDF at the same URL stem, and an arXiv abstract's headline win
+  rate moved 50% → 77% → 97% across four versions of one paper.
+  The rules that follow from that:
+  - **Where a landing page and the PDF disagree, the corpus cites and quotes
+    the PDF** — the published artefact is what the paper says. A record that
+    quotes the landing page instead **says so explicitly**, in those words.
+  - **On arXiv, \`/abs/<id>\` serves the LATEST version.** Quoting what it
+    serves is correct and needs no version. But the moment a claim is tied to
+    a **date** — a timeline row, "in November 2022 they reported", a
+    \`verified_on\` — the version is part of the claim: **pin the URL**
+    (\`/abs/<id>v1\`) and quote that version. \`/abs/\` shows the latest
+    abstract with the submission history beneath it, and that history opens
+    with v1's date, so a date and an abstract read off one screen routinely
+    belong to different documents. That is the whole trap; it has caught two
+    reviewers here.
+  - Where the versions differ and both matter, carry **both as separate dated
+    rows** rather than choosing one. \`content/wiki/event/eliza.md\` is the
+    worked example.
+  - **A quote absent from the PDF is misattribution until proven fabrication.**
+    Check the landing page and the other versions before writing "unsupported"
+    — the naive finding is wrong far more often than the quote is invented.
+  - **Absence is never proven until you have ruled out your own instrument.**
+    Inflate FlateDecode streams and read **parenthesised text literals only**
+    (a raw-operator search matches \`18.9\` inside \`/F318.9664Tf\`); expect
+    ligatures (\`five\`→\`\\002ve\`, \`final\`→\`\\002nal\`) and LaTeX escaping
+    (\`39.7\\%\`, \`$1.96$%\`). Search distinctive fragments that straddle
+    neither. A number that lives only inside a chart image will never pass a
+    substring search — record that, never "correct" it to a greppable wrong
+    one. WebFetch's extractor both invents text and denies text that is
+    present: its prose is not evidence in either direction.`;
 
 export const ACCEPTANCE_BY_TYPE = {
   interpret: [

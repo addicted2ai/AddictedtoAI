@@ -35,11 +35,14 @@ Verified and supported:
   previously published version of AlphaGo ... by 100 games to 0." Verbatim.
 - ABC News 29 Nov 2019: both Lee retirement quotes verbatim as attributed to
   Yonhap.
-- arXiv 2211.00241 (v1 1 Nov 2022): abstract contains "achieving a >97% win
+- arXiv 2211.00241: abstract contains "achieving a >97% win
   rate against KataGo running at superhuman settings" and "The core
   vulnerability uncovered by our attack persists even in KataGo agents
   adversarially trained to defend against our attack" — the 97% figure and
   the adversarial-training sentence are supported.
+  **Corrected 2026-08-31 (addictedtoai-dd5): this line originally read "(v1 1
+  Nov 2022)". Both strings are v4 (13 Jul 2023), and neither is in v1.** See
+  the version note at the foot of this record.
 - TechCrunch 13 Mar 2016: Hassabis quote "was too good for us today and
   pressured #AlphaGo into a mistake that it couldn't recover from" verbatim;
   move 78 as the pressure point supported.
@@ -204,3 +207,60 @@ sources were re-fetched and every quotation re-matched literally.
 
 Also re-derived: "Nineteen months later" for March 2016 → 18 October 2017 is
 right. Nothing changed.
+
+## Version note 2026-08-31 (addictedtoai-dd5) — the >97% figure is not the November 2022 figure
+
+**This record named the wrong version of its own source, and the entry
+inherited the error as a date.** The defect class is `addictedtoai-dd5`: a real
+URL and a real quoted string that are not from each other. On arXiv the two
+documents are two *versions* at one unversioned URL rather than a landing page
+and a PDF, but the failure is identical.
+
+`https://arxiv.org/abs/2211.00241` serves the **latest** version. What the page
+shows is the v4 abstract with the submission history beneath it, and that
+history *opens* with "[Submitted on 1 Nov 2022]". Reading the date from the
+history and the abstract from the top of the same page yields "v1 says >97%",
+which is false. That is the exact mechanism, and it is worth naming because the
+page gives no other cue.
+
+Measured 2026-08-31 against `export.arxiv.org/api/query?id_list=2211.00241vN`,
+which honours the version suffix (verified: the request for `v1` returns
+`<id>…2211.00241v1</id>` with `updated: 2022-11-01T03:13:20Z`, while the
+unversioned request returns `…v4`, `2023-07-13T06:37:29Z`). The headline number
+changed in every revision:
+
+- **v1** (2022-11-01): "Our attack achieves a >99% win-rate against KataGo
+  without search, and a **>50% win-rate when KataGo uses enough search to be
+  near-superhuman**." Also "the adversary wins by tricking KataGo into ending
+  the game prematurely".
+- **v2** (2023-01-09): ">99% win rate when KataGo uses no tree-search, and a
+  **>77% win rate** when KataGo uses enough search to be superhuman".
+- **v3** (2023-02-18): ">99% … no tree search, and a **>97% win rate** when
+  KataGo uses enough search to be superhuman".
+- **v4** (2023-07-13): "achieving a **>97% win rate against KataGo running at
+  superhuman settings**. Our adversaries do not win by playing Go well. …
+  The core vulnerability uncovered by our attack persists even in KataGo agents
+  adversarially trained to defend against our attack."
+
+So three strings this entry quotes — the >97% clause, "Our adversaries do not
+win by playing Go well", and the adversarial-training sentence — are **v4 text
+and appear in no earlier version**. v1 has none of them; its near-superhuman
+number is >50%, forty-seven points away.
+
+**Fixed in the entry.** The timeline row dated 2022-11-01 asserted "beat
+superhuman KataGo in over 97% of games" — a claim the paper did not make until
+v3, four months later. Following the precedent already set by
+`seed-wiki-event-eliza.md` (which carries the two Turing-test postings as
+separate dated rows rather than choosing between them), the row now states v1's
+own numbers and pins `…/abs/2211.00241v1`, and a second row dated 2023-07-13
+carries the >97% result pinned to `…/abs/2211.00241v4`. The body paragraph no
+longer dates the >97% quote to November 2022; it gives v1's figure, says the
+attack was strengthened across three revisions, and attributes the >97% quote
+to July 2023. The `cyclic_adversary_win_rate` fact is version-sensitive, so its
+`source_url` moved from the unversioned ar5iv render to `…/abs/2211.00241v4`,
+the document that actually carries the value.
+
+**What is unchanged and why.** The other quoted strings are body text, not
+abstract text, and were verified against the full render; nothing here shows
+them to be version-specific, so they are left attributed to "the paper" as
+before. This note does not claim they are in v1 — it claims nothing about them.

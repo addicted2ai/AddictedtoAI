@@ -48,7 +48,7 @@ facts:
   - field: cyclic_adversary_win_rate
     source: cited
     value: ">97% against KataGo at superhuman settings"
-    source_url: "https://ar5iv.labs.arxiv.org/html/2211.00241"
+    source_url: "https://arxiv.org/abs/2211.00241v4"
     accessed: "2026-08-28"
     volatility: static
 timeline:
@@ -71,8 +71,11 @@ timeline:
     event: "Lee Sedol's retirement from professional Go reported, citing AI"
     source_url: "https://www.abc.net.au/news/2019-11-29/go-grandmaster-lee-se-dol-retires-computers-cannot-be-defeated/11745872"
   - date: "2022-11-01"
-    event: "adversarial policies published that beat superhuman KataGo in over 97% of games"
-    source_url: "https://arxiv.org/abs/2211.00241"
+    event: "adversarial policies against KataGo first published, reporting a >99% win rate against KataGo without search and >50% when its search is strong enough to be near-superhuman"
+    source_url: "https://arxiv.org/abs/2211.00241v1"
+  - date: "2023-07-13"
+    event: "the revised paper reports a >97% win rate against KataGo running at superhuman settings, and that the vulnerability survives adversarial training"
+    source_url: "https://arxiv.org/abs/2211.00241v4"
 mentions:
   - concept/the-bitter-lesson
 ---
@@ -119,10 +122,14 @@ defeated."
 
 That last sentence is now known to be false in a specific and strange way. In
 November 2022 a group including Tony Wang, Adam Gleave, Kellin Pelrine, Sergey
-Levine and Stuart Russell published adversarial policies achieving "a >97% win
-rate against KataGo running at superhuman settings" — KataGo being, in the
-paper's words, "the strongest publicly available Go AI system at the time of
-writing." "Our adversaries do not win by playing Go well." They exploit a
+Levine and Stuart Russell published adversarial policies against KataGo —
+which is, in the paper's words, "the strongest publicly available Go AI system
+at the time of writing." How badly they beat it is a number that moved. That
+first version reported "a >99% win-rate against KataGo without search, and a
+>50% win-rate when KataGo uses enough search to be near-superhuman"; the
+attack was strengthened across three revisions, and by July 2023 the paper
+reported "a >97% win rate against KataGo running at superhuman settings."
+"Our adversaries do not win by playing Go well." They exploit a
 blind spot around large cyclically connected groups: "first, set up an
 'inside' group and let or lure the victim to surround it, creating a cyclic
 group. Second, surround the cyclic group. Third, guarantee the capture before
