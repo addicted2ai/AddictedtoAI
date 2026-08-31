@@ -69,8 +69,9 @@ plain row's context window is
 {{fact:model/google-gemini-3-1-flash-image#context_window}} against the
 preview's {{fact:model/google-gemini-3-1-flash-image-preview#context_window}},
 which in the 28 August 2026 snapshot is twice the room at an unchanged
-input price. The Pro tier, priced at
-{{fact:model/google-gemini-3-1-pro-preview#price_input}} input and
-carrying an Artificial Analysis intelligence index of
+input price. The Pro tier, heading at
+{{fact:model/google-gemini-3-1-pro-preview#price_input}} input — the top
+listed provider's rate for that row rather than necessarily Google's own —
+and carrying an Artificial Analysis intelligence index of
 {{fact:model/google-gemini-3-1-pro-preview#intelligence_index}}, has had no
 such row at all.

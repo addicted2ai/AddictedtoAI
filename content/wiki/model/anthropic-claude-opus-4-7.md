@@ -46,7 +46,7 @@ mentions:
 ---
 
 `anthropic/claude-opus-4.7-fast` is where the fast-mode option makes its
-debut in this line, priced at
+debut in this line, heading at
 {{fact:model/anthropic-claude-opus-4-7-fast#price_input}} input against
 this row's own {{fact:model/anthropic-claude-opus-4-7#price_input}} — six
 times over. In the next release the ratio fell by two thirds:
@@ -55,15 +55,18 @@ times over. In the next release the ratio fell by two thirds:
 {{fact:model/anthropic-claude-opus-4-8#price_input}}, twice over rather
 than six, and Opus 5 kept that same rate
 ({{fact:model/anthropic-claude-opus-5-fast#price_input}} against
-{{fact:model/anthropic-claude-opus-5#price_input}}). Those are the
-multipliers as the catalog stands in the snapshot of 28 August 2026.
+{{fact:model/anthropic-claude-opus-5#price_input}}). Each of those six
+figures is the top listed provider's rate for its row rather than
+necessarily Anthropic's own, and two rows are not obliged to be headed by
+the same provider, so these are the multipliers between listings as the
+catalog stands in the snapshot of 28 August 2026.
 
 The six-times option had a short life. `anthropic/claude-opus-4.7-fast` was
 listed on 12 May 2026 and `anthropic/claude-opus-4.8-fast` replaced it
 fifteen days later — and nothing else about the option is recorded as
 having changed across that handover: same context window, same base rate,
 only the multiplier sitting on top of it. Once it dropped, it stayed
-dropped, and Opus 5's fast row still bills at the two-times rate one full
+dropped, and Opus 5's fast row still lists at the two-times rate one full
 generation later.
 
 This row's base price is itself part of a longer plateau —

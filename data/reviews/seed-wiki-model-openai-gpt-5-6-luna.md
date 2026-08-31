@@ -80,3 +80,54 @@ verifies to the digit. The wrong interval sits in a subordinate clause and cuts
 against the argument's own interest, since four weeks is more recent than six and
 so strengthens the "recent rather than designed" point the sentence is making.
 Change "six weeks" to "four weeks" and nothing else on the page needs touching.
+
+## Superseded in part 2026-08-31 by `addictedtoai-sng` — annotated, not overwritten
+
+**What this record said, on its date.** The second finding reads: *"Sol and Terra
+both prompt 0.000002, so **'the same rate Terra charges too'** holds and Sol /
+Luna is exactly 10."* It quotes prose that no longer exists in that form. The
+closing paragraph also quotes the opening as *"prices identically"*, which has
+likewise been reworded.
+
+**What superseded it.** `addictedtoai-l6j` established that an OpenRouter
+`pricing.prompt` is the **top listed provider's** rate for a row, re-chosen on a
+rolling 30-second window — so "the same rate Terra *charges*" makes a company the
+payee of a listing. This page carried two of the fifteen transclusions recorded
+as debt in `data/price-attribution-debt.json`; `addictedtoai-sng` repaid them.
+
+**The measurement above was re-derived live and held.** All 22 rows the four debt
+files touch were fetched from
+`https://openrouter.ai/api/v1/models/<row>/endpoints` on 2026-08-31 (all HTTP
+200) and read per-provider rather than off the headline, because the ten-fold
+Sol/Luna gap was one of the two claims suspected of being an *inversion* — two
+different resellers topping two rows — rather than merely unhedged. **It is not.**
+At OpenAI's own standard endpoint Sol is $2.00/M, Terra $2.00/M and Luna
+$0.20/M, so the factor of ten and the Terra equality both hold at the vendor's
+own rate, exactly as this record measured them off the snapshot. **Nothing was
+withdrawn and no value changed.**
+
+**The current text.**
+
+- was: Sol's Y — **the same rate Terra charges too** — by a factor of ten
+  now: Sol's Y — **the number Terra's row lists too** — by a factor of ten
+- was: **Luna prices identically to** a much smaller, much older tier
+  now: **Luna's row lists identically to** a much smaller, much older tier
+
+plus the house hedge: "Both of those rates are the top listed provider's for
+their row rather than necessarily OpenAI's own, and two rows need not be headed
+by the same provider, so the ten-fold gap is one between listings."
+
+**The defect this record left standing is still standing, and is now filed.**
+"six weeks" where 30 July to 28 August is 29 days remains in the page. `sng`
+did not fix it inline — it is not a price-attribution defect and would have
+muddied that diff — so it is now `addictedtoai-kdw`, carrying this record's own
+diagnosis and its one-word remedy. It had lived only inside this approved review
+since 2026-08-29, which is precisely the shape CLAUDE.md warns goes unread.
+
+**Also recorded:** the headline is one *service tier* among several the same
+provider lists for a row — OpenAI lists Luna at $0.10/M (`openai/flex`), $0.20/M
+(`openai`) and $0.40/M (`openai/fast`). Note this bears on round 2's own quotation
+of the 21 August changelog, *"GPT-5.6 Sol now costs $4 per million input
+tokens"*: $4.00/M is Sol's `openai/fast` tier, while its standard tier is
+$2.00/M — so a vendor changelog figure and a headline figure need not name the
+same tier. Filed as `addictedtoai-pfc`.

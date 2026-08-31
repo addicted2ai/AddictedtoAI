@@ -71,8 +71,8 @@ mentions:
   - model/openai-gpt-5-4-nano
 ---
 
-Luna prices identically to a much smaller, much older tier. As observed on
-28 August 2026, this row lists
+Luna's row lists identically to a much smaller, much older tier. As
+observed on 28 August 2026, this row lists
 {{fact:model/openai-gpt-5-6-luna#price_input}} input, the same number
 `openai/gpt-5.4-nano` lists —
 {{fact:model/openai-gpt-5-4-nano#price_input}} — despite arriving two
@@ -94,11 +94,14 @@ Luna is also the cheapest of the three GPT-5.6 models by a wide margin —
 only its own `openai/gpt-5.6-luna-pro` sibling matches it. In the same
 28 August 2026 reading its
 {{fact:model/openai-gpt-5-6-luna#price_input}} input undercuts Sol's
-{{fact:model/openai-gpt-5-6-sol#price_input}} — the same rate Terra
-charges too — by a factor of ten, while its intelligence index
+{{fact:model/openai-gpt-5-6-sol#price_input}} — the number Terra's row
+lists too — by a factor of ten, while its intelligence index
 ({{fact:model/openai-gpt-5-6-luna#intelligence_index}}) trails Sol's
 ({{fact:model/openai-gpt-5-6-sol#intelligence_index}}) by a far smaller
-proportion than its price does. It shipped inside the same government-requested
+proportion than its price does. Both of those rates are the top listed
+provider's for their row rather than necessarily OpenAI's own, and two
+rows need not be headed by the same provider, so the ten-fold gap is one
+between listings. It shipped inside the same government-requested
 preview as its two pricier siblings, reaching roughly 20 organisations on
 26 June 2026 before its own
 {{fact:model/openai-gpt-5-6-luna#release_date}} general release.

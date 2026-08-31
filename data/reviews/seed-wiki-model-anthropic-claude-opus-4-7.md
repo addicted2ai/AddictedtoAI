@@ -63,3 +63,52 @@ and then holding for a full generation — and the flat-price paragraph earns
 its place by naming what did move rather than implying nothing did. Every
 volatile value in the body is a transclusion and every ratio is anchored to a
 dated snapshot.
+
+## Superseded in part 2026-08-31 by `addictedtoai-sng` — annotated, not overwritten
+
+**What this record said, on its date.** The first finding quotes the prose as
+*"six times over", "fell by two thirds", "twice over" and "that same rate" all
+land exactly*. The opening sentence it was reviewing read "…**priced at** X input
+against this row's own Y", and the second paragraph read "Opus 5's fast row still
+**bills at** the two-times rate". Both of those verbs are gone; the record above
+is a dated account, not a description of what ships today.
+
+**What superseded it.** `addictedtoai-l6j` established that an OpenRouter
+`pricing.prompt` is the **top listed provider's** rate for a row, re-chosen on a
+rolling 30-second window. This page carried two of the fifteen transclusions
+recorded as debt in `data/price-attribution-debt.json`; `addictedtoai-sng` repaid
+them. The neighbouring `anthropic-claude-opus-4-8.md` had already been repaired
+by hand under `addictedtoai-sdh` and carried the hedge at its own :59, so until
+now the corpus said it both ways; it no longer does.
+
+**Re-derived live, and held.** All 22 rows the four debt files touch were fetched
+from `https://openrouter.ai/api/v1/models/<row>/endpoints` on 2026-08-31 (all
+HTTP 200). On every Opus row the headline equals Anthropic's own endpoint rate —
+4.7 $5.00/M, 4.7-fast $30.00/M, 4.8 $5.00/M, 4.8-fast $10.00/M, 5 $5.00/M,
+5-fast $10.00/M — so 6.000x, 2.000x and 2.000x hold at the vendor's own rate.
+**Nothing was withdrawn and no value changed.**
+
+**This record's second finding turned out to be load-bearing, and it caught an
+error in the repair itself.** The corroboration recorded above — that
+OpenRouter's `description` field carries the literal strings "premium 6x pricing"
+and "2x pricing relative to regular Opus 4.8" — was re-checked on 2026-08-31 and
+**still holds verbatim** on all three fast rows (Opus 5's reads "2x pricing
+relative to regular Opus 5"). A first draft of the hedge closed "…not multipliers
+Anthropic announced". That is **false**, and this record is why it was caught
+before merge: Anthropic states the multipliers in its own row text, so the
+figures being top-provider rates does not make the *ratio* a listing artifact
+here. The merged hedge therefore states only the mechanism and stops:
+
+- was: …**priced at** X input against this row's own Y — six times over
+  now: …**heading at** X input against this row's own Y — six times over
+- was: Opus 5's fast row still **bills at** the two-times rate
+  now: Opus 5's fast row still **lists at** the two-times rate
+- added: "Each of those six figures is the top listed provider's rate for its row
+  rather than necessarily Anthropic's own, and two rows are not obliged to be
+  headed by the same provider, so these are the multipliers between listings as
+  the catalog stands in the snapshot of 28 August 2026."
+
+**Also recorded:** the headline is one *service tier* among several — Opus 4.8
+lists at $5.00/M from Anthropic, Bedrock, Vertex, Azure and Claude-on-AWS, but at
+$5.50/M from the `amazon-bedrock/eu-west-1`, `google-vertex/europe` and
+`google-vertex/us` regional endpoints. Filed as `addictedtoai-pfc`.

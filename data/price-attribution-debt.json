@@ -2,96 +2,20 @@
   "note": "Price transclusions that already read as vendor attributions when the price-attribution check was written (beads addictedtoai-l6j). Each is a DEBT, not an exemption: it warns on every build and fails the moment a new one appears. This list has one legal direction, down. Repair is the clause the corpus uses -- that the figure is the top listed provider's rate for that row rather than necessarily that company's own -- or a reword to what the listing does (\"the row lists at\"). Never name the provider: it rotates. sdh swept and fixed six other files by hand; these four it never looked at.",
   "recorded": "2026-08-31",
   "issue": "addictedtoai-l6j",
-  "known": [
+  "known": [],
+  "repaid": [
     {
-      "file": "content/wiki/model/anthropic-claude-opus-4-7.md",
-      "id": "model/anthropic-claude-opus-4-7",
-      "field": "price_input",
-      "sentence": "`anthropic/claude-opus-4.7-fast` is where the fast-mode option makes its debut in this line, priced at {{fact:model/anthropic-claude-opus-4-7-fast#price_input}} input against this row's own {{fact:model/anthropic-claude-opus-4-7#price_input}} — six times over."
-    },
-    {
-      "file": "content/wiki/model/anthropic-claude-opus-4-7.md",
-      "id": "model/anthropic-claude-opus-4-7-fast",
-      "field": "price_input",
-      "sentence": "`anthropic/claude-opus-4.7-fast` is where the fast-mode option makes its debut in this line, priced at {{fact:model/anthropic-claude-opus-4-7-fast#price_input}} input against this row's own {{fact:model/anthropic-claude-opus-4-7#price_input}} — six times over."
-    },
-    {
-      "file": "content/wiki/model/google-gemini-3-1-pro-preview.md",
-      "id": "model/google-gemini-3-1-pro-preview",
-      "field": "price_input",
-      "sentence": "The Pro tier, priced at {{fact:model/google-gemini-3-1-pro-preview#price_input}} input and carrying an Artificial Analysis intelligence index of {{fact:model/google-gemini-3-1-pro-preview#intelligence_index}}, has had no such row at all."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-5.md",
-      "id": "model/openai-gpt-5",
-      "field": "price_input",
-      "sentence": "`openai/gpt-5-pro` billed {{fact:model/openai-gpt-5-pro#price_input}} against plain `openai/gpt-5`'s {{fact:model/openai-gpt-5#price_input}}; GPT-5.2 Pro repeated the ratio ({{fact:model/openai-gpt-5-2-pro#price_input}} against {{fact:model/openai-gpt-5-2#price_input}}), and GPT-5.4 Pro repeated it again ({{fact:model/openai-gpt-5-4-pro#price_input}} against {{fact:model/openai-gpt-5-4#price_input}})."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-5.md",
-      "id": "model/openai-gpt-5-2",
-      "field": "price_input",
-      "sentence": "`openai/gpt-5-pro` billed {{fact:model/openai-gpt-5-pro#price_input}} against plain `openai/gpt-5`'s {{fact:model/openai-gpt-5#price_input}}; GPT-5.2 Pro repeated the ratio ({{fact:model/openai-gpt-5-2-pro#price_input}} against {{fact:model/openai-gpt-5-2#price_input}}), and GPT-5.4 Pro repeated it again ({{fact:model/openai-gpt-5-4-pro#price_input}} against {{fact:model/openai-gpt-5-4#price_input}})."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-5.md",
-      "id": "model/openai-gpt-5-2-pro",
-      "field": "price_input",
-      "sentence": "`openai/gpt-5-pro` billed {{fact:model/openai-gpt-5-pro#price_input}} against plain `openai/gpt-5`'s {{fact:model/openai-gpt-5#price_input}}; GPT-5.2 Pro repeated the ratio ({{fact:model/openai-gpt-5-2-pro#price_input}} against {{fact:model/openai-gpt-5-2#price_input}}), and GPT-5.4 Pro repeated it again ({{fact:model/openai-gpt-5-4-pro#price_input}} against {{fact:model/openai-gpt-5-4#price_input}})."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-5.md",
-      "id": "model/openai-gpt-5-4",
-      "field": "price_input",
-      "sentence": "`openai/gpt-5-pro` billed {{fact:model/openai-gpt-5-pro#price_input}} against plain `openai/gpt-5`'s {{fact:model/openai-gpt-5#price_input}}; GPT-5.2 Pro repeated the ratio ({{fact:model/openai-gpt-5-2-pro#price_input}} against {{fact:model/openai-gpt-5-2#price_input}}), and GPT-5.4 Pro repeated it again ({{fact:model/openai-gpt-5-4-pro#price_input}} against {{fact:model/openai-gpt-5-4#price_input}})."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-5.md",
-      "id": "model/openai-gpt-5-4-pro",
-      "field": "price_input",
-      "sentence": "`openai/gpt-5-pro` billed {{fact:model/openai-gpt-5-pro#price_input}} against plain `openai/gpt-5`'s {{fact:model/openai-gpt-5#price_input}}; GPT-5.2 Pro repeated the ratio ({{fact:model/openai-gpt-5-2-pro#price_input}} against {{fact:model/openai-gpt-5-2#price_input}}), and GPT-5.4 Pro repeated it again ({{fact:model/openai-gpt-5-4-pro#price_input}} against {{fact:model/openai-gpt-5-4#price_input}})."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-5.md",
-      "id": "model/openai-gpt-5-5",
-      "field": "price_input",
-      "sentence": "This row is where the multiplier broke: `openai/gpt-5.5-pro` lists at {{fact:model/openai-gpt-5-5-pro#price_input}} against this row's own {{fact:model/openai-gpt-5-5#price_input}} — half the premium the three releases before it charged."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-5.md",
-      "id": "model/openai-gpt-5-5-pro",
-      "field": "price_input",
-      "sentence": "This row is where the multiplier broke: `openai/gpt-5.5-pro` lists at {{fact:model/openai-gpt-5-5-pro#price_input}} against this row's own {{fact:model/openai-gpt-5-5#price_input}} — half the premium the three releases before it charged."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-5.md",
-      "id": "model/openai-gpt-5-6-sol",
-      "field": "price_input",
-      "sentence": "One generation later, each of the three GPT-5.6 variants — Sol, Terra, Luna — prices its Pro sibling at exactly the same rate as the plain row: `openai/gpt-5.6-sol-pro` lists at {{fact:model/openai-gpt-5-6-sol-pro#price_input}}, identical to {{fact:model/openai-gpt-5-6-sol#price_input}} for Sol itself, and Terra and Luna match their own base rows the same way."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-5.md",
-      "id": "model/openai-gpt-5-6-sol-pro",
-      "field": "price_input",
-      "sentence": "One generation later, each of the three GPT-5.6 variants — Sol, Terra, Luna — prices its Pro sibling at exactly the same rate as the plain row: `openai/gpt-5.6-sol-pro` lists at {{fact:model/openai-gpt-5-6-sol-pro#price_input}}, identical to {{fact:model/openai-gpt-5-6-sol#price_input}} for Sol itself, and Terra and Luna match their own base rows the same way."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-5.md",
-      "id": "model/openai-gpt-5-pro",
-      "field": "price_input",
-      "sentence": "`openai/gpt-5-pro` billed {{fact:model/openai-gpt-5-pro#price_input}} against plain `openai/gpt-5`'s {{fact:model/openai-gpt-5#price_input}}; GPT-5.2 Pro repeated the ratio ({{fact:model/openai-gpt-5-2-pro#price_input}} against {{fact:model/openai-gpt-5-2#price_input}}), and GPT-5.4 Pro repeated it again ({{fact:model/openai-gpt-5-4-pro#price_input}} against {{fact:model/openai-gpt-5-4#price_input}})."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-6-luna.md",
-      "id": "model/openai-gpt-5-6-luna",
-      "field": "price_input",
-      "sentence": "In the same 28 August 2026 reading its {{fact:model/openai-gpt-5-6-luna#price_input}} input undercuts Sol's {{fact:model/openai-gpt-5-6-sol#price_input}} — the same rate Terra charges too — by a factor of ten, while its intelligence index ({{fact:model/openai-gpt-5-6-luna#intelligence_index}}) trails Sol's ({{fact:model/openai-gpt-5-6-sol#intelligence_index}}) by a far smaller proportion than its price does."
-    },
-    {
-      "file": "content/wiki/model/openai-gpt-5-6-luna.md",
-      "id": "model/openai-gpt-5-6-sol",
-      "field": "price_input",
-      "sentence": "In the same 28 August 2026 reading its {{fact:model/openai-gpt-5-6-luna#price_input}} input undercuts Sol's {{fact:model/openai-gpt-5-6-sol#price_input}} — the same rate Terra charges too — by a factor of ten, while its intelligence index ({{fact:model/openai-gpt-5-6-luna#intelligence_index}}) trails Sol's ({{fact:model/openai-gpt-5-6-sol#intelligence_index}}) by a far smaller proportion than its price does."
+      "date": "2026-08-31",
+      "issue": "addictedtoai-sng",
+      "count": 15,
+      "files": [
+        "content/wiki/model/openai-gpt-5-5.md",
+        "content/wiki/model/openai-gpt-5-6-luna.md",
+        "content/wiki/model/anthropic-claude-opus-4-7.md",
+        "content/wiki/model/google-gemini-3-1-pro-preview.md"
+      ],
+      "note": "All 15 recorded debts repaid; the list reached the empty state build-content.mjs calls \"the state the file is supposed to reach\". Nothing was withdrawn. Before repairing, every ratio the four files assert was re-derived from the LIVE per-provider endpoint lists (https://openrouter.ai/api/v1/models/<row>/endpoints, 22 rows, all HTTP 200, fetched 2026-08-31) rather than from the headline alone, because two of these were suspected INVERTED rather than merely unhedged. They were not: on every one of the 22 rows the snapshot headline equals the vendor's own standard-tier endpoint rate, so all thirteen ratios (the 12x Pro premium on GPT-5/5.2/5.4, the 6x on 5.5, the 1x on all three GPT-5.6 variants, the 10x Sol-to-Luna gap, and Opus 4.7-fast 6x / 4.8-fast 2x / 5-fast 2x) hold identically at the vendor's own rate. The repair is therefore additive and no claim changed value. Each of the four files was repaired twice over: the attributing verb was replaced with a listing verb AND the house hedge added, so zero sentences depend on the section-wide hedge exemption -- which matters here because none of these bodies carries an ATX heading, so sectionAround() spans the whole file and one stray \"provider\" would otherwise have silenced it.",
+      "residual_hazard": "addictedtoai-pfc -- the fetch also showed the headline is one SERVICE TIER among several the SAME provider lists for the row (openai/flex at 0.5x, openai standard at 1x, openai/fast at 2x; google-ai-studio/flex 1x/2x/3.6x priority; azure/eu and azure/us at +10%). So \"OpenAI charges $2/M\" is under-specified even when OpenAI is the top provider and the check is satisfied. Not modelled by lib/price-attribution.mjs and out of scope for sng."
     }
   ]
 }

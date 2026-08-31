@@ -66,8 +66,8 @@ mentions:
   - model/openai-gpt-5-6-luna
 ---
 
-For three releases running, "Pro" meant twelve times the price.
-`openai/gpt-5-pro` billed {{fact:model/openai-gpt-5-pro#price_input}}
+For three releases running, "Pro" listed at twelve times the price.
+`openai/gpt-5-pro` heads at {{fact:model/openai-gpt-5-pro#price_input}}
 against plain `openai/gpt-5`'s {{fact:model/openai-gpt-5#price_input}};
 GPT-5.2 Pro repeated the ratio
 ({{fact:model/openai-gpt-5-2-pro#price_input}} against
@@ -76,20 +76,25 @@ again ({{fact:model/openai-gpt-5-4-pro#price_input}} against
 {{fact:model/openai-gpt-5-4#price_input}}). This row is where the
 multiplier broke: `openai/gpt-5.5-pro` lists at
 {{fact:model/openai-gpt-5-5-pro#price_input}} against this row's own
-{{fact:model/openai-gpt-5-5#price_input}} — half the premium the three
-releases before it charged.
+{{fact:model/openai-gpt-5-5#price_input}} — half the premium of the three
+releases before it. Each of those eight figures is the top listed
+provider's rate for its row rather than necessarily OpenAI's own, and two
+rows are not obliged to be headed by the same provider, so every ratio
+here is a gap between two listings.
 
 The slide didn't stop there. One generation later, each of the three
-GPT-5.6 variants — Sol, Terra, Luna — prices its Pro sibling at exactly
-the same rate as the plain row: `openai/gpt-5.6-sol-pro` lists at
+GPT-5.6 variants — Sol, Terra, Luna — has its Pro sibling listing at
+exactly the same rate as the plain row: `openai/gpt-5.6-sol-pro` lists at
 {{fact:model/openai-gpt-5-6-sol-pro#price_input}}, identical to
 {{fact:model/openai-gpt-5-6-sol#price_input}} for Sol itself, and Terra
 and Luna match their own base rows the same way. Across the five releases
 that shipped a Pro row — GPT-5, 5.2, 5.4, 5.5 and 5.6 — the premium
-OpenAI charges for its own "Pro" label went from twelve times the base
-rate to nothing, as observed on 28 August 2026. These are not launch
-prices: OpenAI cut Luna 80% and Terra 20% on 30 July 2026, though base
-and Pro moved together and the ratios are undisturbed.
+attached to the "Pro" label in these listings went from twelve times the
+base rate to nothing, as observed on 28 August 2026 — again a comparison
+between top-listed-provider rates rather than between two rates one
+company is known to have set. These are not launch prices: OpenAI cut Luna
+80% and Terra 20% on 30 July 2026, though base and Pro moved together and
+the ratios are undisturbed.
 
 Reasoning followed a similar on/off pattern. The `reasoning.default_enabled`
 flag reads {{fact:model/openai-gpt-5-5#reasoning_on_by_default}} on this
