@@ -116,3 +116,18 @@ could move, the row could vanish and take the facts to last-known-value
 rendering. If nobody picks this up within a week, the honest move is to
 re-derive it from whatever state exists then, not to run it from a description
 of 2026-08-31.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-08-31
+- job: j-20260831-10 (entry)
+- merged as: `dbd7502099faa04e665854155d9498d8877bbe5c`
+- produced: `content/wiki/model/moonshotai-kimi-k2-5.md`
+- was: `kimi-k2-5-entry-contradicts-its-own-feed.md` (slug `kimi-k2-5-entry-contradicts-its-own-feed`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

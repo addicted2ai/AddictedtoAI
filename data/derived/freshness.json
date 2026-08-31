@@ -642,6 +642,7 @@
     }
   ],
   "reference_drift": [],
+  "slug_collisions": [],
   "sources": [
     {
       "days_since_change": 3,
