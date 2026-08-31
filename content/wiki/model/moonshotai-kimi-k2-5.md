@@ -78,13 +78,24 @@ mentions:
   - model/moonshotai-kimi-k2-7-code
 ---
 
-This row has a death date on it, which almost none do. Of the 388 rows in
+This row had a death date on it, which almost none do. Of the 388 rows in
 the OpenRouter snapshot of 28 August 2026, eight carry a non-null
-`expiration_date`; this one reads
-{{fact:model/moonshotai-kimi-k2-5#expiration_date}}. Moonshot's own model
-list is blunter — "`kimi-k2.5` and the `moonshot-v1` series are no longer
-available to newly registered users (full platform sunset on August 31)" —
-and points migrations at `kimi-k3`.
+`expiration_date`, and this one's date has since come due: Moonshot's
+platform record reads {{fact:model/moonshotai-kimi-k2-5#api_sunset}}, and
+the vendor's model list has now moved to the past tense — "`kimi-k2.5` and
+the `moonshot-v1` series were officially retired on August 31, 2026. Calls
+to these models now return a 404 (model not found) error" — pointing
+migrations at `kimi-k3`.
+
+The catalog reads this row `active`; this page reads it `deprecated`, and
+the disagreement is which signal counts. OpenRouter cleared the expiry from
+its own row, {{fact:model/moonshotai-kimi-k2-5#expiration_date}}, and the
+catalog's status is derived from that field — a cleared expiry reads
+`active`. The `deprecated` badge follows Moonshot's own documentation,
+which files `kimi-k2.5` under "Deprecated Models" — "officially
+discontinued on August 31, 2026 and is no longer maintained or supported".
+The router's data stopped carrying a date; the vendor's page says the model
+is discontinued.
 
 The arithmetic is the story. Released 27 January 2026, off the vendor's
 platform on 31 August: 216 days of service for a model that shipped as a
