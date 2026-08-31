@@ -45,6 +45,54 @@ export const QUEUE_CAP = 50;
 export const WANT_ELIGIBLE_AT = 3; // specs/wiki: "a name wanted by 3 or more distinct pages"
 export const SCOUT_CONTEXT_DAYS = 7; // specs/pulse: the scout item's trailing window
 
+/**
+ * Every job type the DERIVED QUEUE may produce — a closed list and a stated
+ * decision (specs/pulse, "Which job types the queue may produce is a stated
+ * decision"). `computeQueue` may not emit an item of any other type, and
+ * `pulse/tests/curriculum-queue.test.mjs` measures that.
+ *
+ * The loop can RUN ten types (`loop/lib/config.mjs` `JOB_TYPES`). This list has
+ * six. The four that are absent are absent BY DECISION, not because nobody got
+ * to them — which was the state `addictedtoai-3zf` part (d) called out as the
+ * thing that is actually wrong: capacity with no trigger and no record of why.
+ * Adding a seventh means editing this list, which is the visible decision point.
+ *
+ *   `post`       — reachable by proposal, and demonstrably so: the scout files
+ *                  event-anchored candidates and four post jobs merged from
+ *                  them on 2026-08-31. A derived "we are due a post" trigger is
+ *                  the cadence that filled the previous site's blog with
+ *                  censuses nobody asked for (addictedtoai-18c).
+ *   `tutorial`   — excluded for a different reason from the two below: the
+ *                  declared-coverage shape would fit it, but
+ *                  specs/education-dynamic names no curriculum of record to
+ *                  measure against. Writing one is an editorial decision about
+ *                  what this site should teach by doing, not a machinery
+ *                  decision (addictedtoai-kat1).
+ *   `prune`      — NEVER. Removal is the one irreversible act here, and a
+ *                  derived trigger would need a measurement of "this is the
+ *                  weakest content" that does not exist; the closest available
+ *                  thing is a model scoring the corpus on a rubric, which is
+ *                  unfalsifiable. Every other queue item that fires wrongly
+ *                  wastes a job; this one 404s a published URL. See
+ *                  let-the-site-see-its-own-gaps, design D4.
+ *   `machinery`  — NEVER from the queue, for the same reason: "the machinery is
+ *                  deficient" has no committed-state measurement. The inward
+ *                  channel that works is evidence-driven and already runs — a
+ *                  reviewer noticing a defect while reviewing other work and
+ *                  writing it into its verdict record
+ *                  (`loop/lib/proposals.mjs` `transcribeNotedProposal`), which
+ *                  produced four machinery proposals in one day. See
+ *                  let-the-site-see-its-own-gaps, design D5.
+ */
+export const QUEUE_PRODUCIBLE_TYPES = Object.freeze([
+  'education',
+  'entry',
+  'interpret',
+  'repair',
+  'scout',
+  'verify',
+]);
+
 export const RANKS = {
   'refusing-source': 100,
   'broken-link': 90,
@@ -97,6 +145,29 @@ export const RANKS = {
   'uninterpreted-licence-change': 42,
   'uninterpreted-price-change': 40,
   'want-eligible-mint': 30,
+  // The learn surface declares a page its curriculum of record enumerates and
+  // `content/learn/` does not publish (specs/education-static; specs/pulse, "A
+  // surface's unmet declared coverage is queue input"). The first queue reason
+  // that looks INWARD: every other one answers "the world changed" or "a timer
+  // elapsed", and this one answers "the site said it would do this and has not".
+  //
+  // Ranked below every breakage and every timer because nothing is wrong — no
+  // page is stale, no link is dead, no reader sees anything false. A surface
+  // that has not finished growing has not rotted, and this whole table is
+  // ordered by damage to the site's claim to be current.
+  //
+  // Below `want-eligible-mint` (30) specifically: that reason means three or
+  // more published pages already link to a name that does not exist, so a
+  // reader is hitting the gap today, and it mints a cheap stub. This is a
+  // standing intention nobody is currently walking into, and it costs a
+  // 120-minute `education` job.
+  //
+  // Above `carried-finding` (25) for the reason that entry's own comment gives
+  // for sitting where it does: a carried finding cannot retire on its own, so
+  // it is ranked low enough that a stuck one can never dominate the queue. This
+  // item has the opposite property — publishing the page removes it at the next
+  // recomputation — so it does not need that protection.
+  'curriculum-gap': 28,
   // A finding a reviewer carried but did not block on (beads addictedtoai-2bo,
   // loop/lib/carry.mjs). Ranked deliberately LOW — below every timer and below
   // `want-eligible-mint` — because there is no automatic way to tell a fixed
@@ -359,6 +430,111 @@ export function carriedFindingItems(root) {
   return out;
 }
 
+/* ===========================================================================
+ * Declared coverage: the gap between what a surface says it will teach and
+ * what it has published (specs/pulse, "A surface's unmet declared coverage is
+ * queue input"; specs/education-static, the curriculum of record).
+ *
+ * THE PULSE PARSES THE CURRICULUM ITSELF rather than importing
+ * `lib/learn.mjs`. That is the boundary `pulse/lib/corpus.mjs` states in its
+ * own header — *"The build owns schema validation and fails loudly on a
+ * malformed file. The Pulse deliberately does not share that code and
+ * deliberately does not throw"* — and the same reason `coveredKeys` above reads
+ * `content/blog/` directly instead of going through the build's loader. An
+ * absent, unreadable or catalog-less curriculum yields NO items and halts
+ * nothing: the engine has to keep the data layer true on a day the build fails.
+ *
+ * The cost of two parsers is that they can drift apart. That is answered by
+ * measuring it rather than by breaking the boundary: `lib/learn.test.mjs` reads
+ * the real curriculum through both and asserts the slug lists are identical.
+ * ======================================================================== */
+
+/** The curriculum of record, relative to a repository root. */
+function curriculumPath(root) {
+  return join(paths(root).root, 'openspec', 'curriculum', 'learn.md');
+}
+
+/**
+ * Every page slug the curriculum's `## §4` catalog enumerates, in document
+ * order. Scoped to that section deliberately: a `#### \`term\`` written
+ * anywhere else in the document would otherwise become a phantom entry, and a
+ * phantom entry is a permanent queue item for a page that must never be
+ * written.
+ *
+ * Tolerant throughout — an absent file, an unreadable one, or one with no
+ * catalog section all return `[]`, which produces no work and no complaint.
+ */
+export function readCurriculumSlugs(root, { file = curriculumPath(root) } = {}) {
+  let text;
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    return [];
+  }
+  const start = /^## §4\b/m.exec(text);
+  if (!start) return [];
+  const after = text.slice(start.index + start[0].length);
+  const end = /^## §/m.exec(after);
+  const section = end ? after.slice(0, end.index) : after;
+
+  const seen = new Set();
+  const out = [];
+  for (const m of section.matchAll(/^#### `([a-z0-9]+(?:-[a-z0-9]+)*)`/gm)) {
+    if (seen.has(m[1])) continue;
+    seen.add(m[1]);
+    out.push(m[1]);
+  }
+  return out;
+}
+
+/** The slugs `content/learn/` actually publishes. `README.md` is not a page. */
+export function publishedLearnSlugs(root, { dir = join(paths(root).content, 'learn') } = {}) {
+  if (!existsSync(dir)) return new Set();
+  try {
+    return new Set(
+      readdirSync(dir, { withFileTypes: true })
+        .filter((e) => e.isFile() && e.name.endsWith('.md') && e.name !== 'README.md')
+        .map((e) => e.name.replace(/\.md$/, '')),
+    );
+  } catch {
+    return new Set();
+  }
+}
+
+/**
+ * One `education` item per declared-but-unpublished page, in curriculum order.
+ *
+ * A SET DIFFERENCE AND NOTHING MORE. Nothing here scores a gap, ranks one above
+ * another, or decides which missing page matters most — the order is the
+ * curriculum's own, because any other order would be this file making an
+ * editorial judgment it has no basis for. The result is falsifiable by anyone
+ * who can read two directory listings, which is the property that makes it a
+ * legitimate queue reason rather than a rubric.
+ *
+ * It retires by recomputation like everything else: publish the page and the
+ * item is gone on the next run, with nothing to close.
+ */
+export function curriculumGapItems(root, { declared = readCurriculumSlugs(root), published = publishedLearnSlugs(root) } = {}) {
+  const out = [];
+  for (const slug of declared) {
+    if (published.has(slug)) continue;
+    out.push(
+      item(
+        'education',
+        'curriculum-gap',
+        slug,
+        `the learn curriculum of record enumerates "${slug}" and content/learn/${slug}.md does not ` +
+          `exist. Its entry in openspec/curriculum/learn.md carries the level, the outcome string, ` +
+          `the prerequisites, what to cover and what to refuse to cover — write the page to that ` +
+          `entry, and amend the entry rather than deviating from it silently.`,
+        `content/learn/${slug}.md`,
+        `Write the declared learn page "${slug}", which the curriculum enumerates and the site has not published`,
+      ),
+    );
+  }
+  return out;
+}
+
 /**
  * Recompute the queue. Pure with respect to the queue file: it reads current
  * state only, never a previous queue.
@@ -528,6 +704,9 @@ export function computeQueue(root, { freshness, changesFile, wants = readWants(r
   // One item per file under data/carried/ — see `carriedFindingItems` above
   // for why the rank is low and how an item retires.
   for (const it of carriedFindingItems(root)) items.push(it);
+
+  // A page the learn curriculum declares and the corpus does not publish.
+  for (const it of curriculumGapItems(root)) items.push(it);
 
   // Total order: rank descending, then reason, then subject. Deterministic
   // without giving any item an identity.
