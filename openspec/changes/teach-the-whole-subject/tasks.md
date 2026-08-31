@@ -82,11 +82,11 @@ through the ordinary review gate; nothing here bypasses it.
 
 ## 6. Verification
 
-- [ ] **6.1 — After each wave**: `npm test`; then whoever publishes runs the
+- [x] **6.1 — After each wave**: `npm test`; then whoever publishes runs the
   full gate set per `CLAUDE.md` (the publish step already requires it). The
   ladder index must show every landed page on its rung with no new
   diagnostics, and the two edited pages must show their new "Assumes" lines.
-- [ ] **6.2 — At spine completion, measure the surface**: (a) coverage —
+- [x] **6.2 — At spine completion, measure the surface**: (a) coverage —
   read curriculum §4 against `content/learn/` and confirm every entry
   published and every area of §1 served; (b) distribution — 37 pages,
   orientation 8 / foundations 11 / mechanics 11 / advanced 7; (c) order —
