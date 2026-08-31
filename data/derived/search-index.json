@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 603,
+  "count": 604,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -25,6 +25,16 @@
     {
       "u": "/blog/eu-ai-office-first-enforcement-rfis",
       "t": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/minimax-h3-licence-excluded-territories",
+      "t": "MiniMax H3's licence excludes the EU, the UK, South Korea and the US",
       "k": "post",
       "d": null,
       "s": null,
@@ -5323,7 +5333,7 @@
       "t": "Z.ai: GLM 4.5V",
       "k": "entry",
       "d": "model",
-      "s": "deprecated",
+      "s": "active",
       "i": "model/z-ai-glm-4-5v",
       "a": [],
       "b": true

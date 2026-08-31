@@ -234,17 +234,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/1503.03585": {
-      "bytes": 44286,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/1503.03585",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/1508.07909": {
       "bytes": 42500,
       "consecutive_failures": 0,
@@ -252,17 +241,6 @@
       "final_url": "https://arxiv.org/abs/1508.07909",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/1602.01528": {
-      "bytes": 45215,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/1602.01528",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -283,17 +261,6 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://arxiv.org/abs/1611.03530",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/1706.03741": {
-      "bytes": 41763,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/1706.03741",
       "last_checked": "2026-08-30",
       "last_ok": "2026-08-30",
       "meta_refresh": null,
@@ -341,17 +308,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/1905.00537": {
-      "bytes": 42590,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/1905.00537",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/1905.09866": {
       "bytes": 42045,
       "consecutive_failures": 0,
@@ -379,17 +335,6 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://arxiv.org/abs/1909.03368",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/1912.01683": {
-      "bytes": 42392,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/1912.01683",
       "last_checked": "2026-08-30",
       "last_ok": "2026-08-30",
       "meta_refresh": null,
@@ -530,17 +475,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2108.01073": {
-      "bytes": 43723,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2108.01073",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2112.10752": {
       "bytes": 43929,
       "consecutive_failures": 0,
@@ -559,17 +493,6 @@
       "final_url": "https://arxiv.org/abs/2201.02177",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2201.09865": {
-      "bytes": 43380,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2201.09865",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -648,28 +571,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2204.03458": {
-      "bytes": 40729,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2204.03458",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2205.11487": {
-      "bytes": 43825,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2205.11487",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2205.14135": {
       "bytes": 43989,
       "consecutive_failures": 0,
@@ -692,55 +593,11 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2206.13477": {
-      "bytes": 41114,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2206.13477",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2207.04672": {
       "consecutive_failures": 0,
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2207.12598": {
-      "bytes": 41121,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2207.12598",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2209.00626": {
-      "bytes": 41879,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2209.00626",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2210.01790": {
-      "bytes": 42347,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2210.01790",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -788,17 +645,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2211.04325": {
-      "bytes": 42248,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2211.04325",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2211.04325v1": {
       "bytes": 42874,
       "consecutive_failures": 0,
@@ -823,28 +669,6 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2212.09720": {
-      "bytes": 42210,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2212.09720",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2212.10562": {
-      "bytes": 41483,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2212.10562",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -900,28 +724,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2302.10149": {
-      "bytes": 41621,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2302.10149",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2302.12173": {
-      "bytes": 44313,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2302.12173",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2302.13971": {
       "consecutive_failures": 0,
       "error": null,
@@ -937,17 +739,6 @@
       "final_url": "https://arxiv.org/abs/2303.03846",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2304.03271": {
-      "bytes": 43343,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2304.03271",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -993,14 +784,6 @@
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
       "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2305.11206": {
-      "consecutive_failures": 0,
-      "error": null,
-      "last_checked": "2026-08-28",
-      "last_ok": "2026-08-28",
       "ok": true,
       "status": 200
     },
@@ -1250,17 +1033,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2312.05934": {
-      "bytes": 41474,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2312.05934",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2312.07104": {
       "consecutive_failures": 0,
       "error": null,
@@ -1282,17 +1054,6 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2401.14887": {
-      "bytes": 44876,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2401.14887",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1394,17 +1155,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2404.13208": {
-      "bytes": 41066,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2404.13208",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2405.05417": {
       "bytes": 40764,
       "consecutive_failures": 0,
@@ -1427,17 +1177,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2405.21015": {
-      "bytes": 41006,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2405.21015",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2406.04127": {
       "bytes": 42728,
       "consecutive_failures": 0,
@@ -1456,17 +1195,6 @@
       "final_url": "https://arxiv.org/abs/2406.05946",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2406.10162": {
-      "bytes": 44602,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2406.10162",
-      "last_checked": "2026-08-30",
-      "last_ok": "2026-08-30",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1654,17 +1382,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2503.00061": {
-      "bytes": 40892,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2503.00061",
-      "last_checked": "2026-08-31",
-      "last_ok": "2026-08-31",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2503.01840": {
       "consecutive_failures": 0,
       "error": null,
@@ -1714,17 +1431,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2505.23836": {
-      "bytes": 42610,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2505.23836",
-      "last_checked": "2026-08-31",
-      "last_ok": "2026-08-31",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2506.08837": {
       "bytes": 42797,
       "consecutive_failures": 0,
@@ -1758,17 +1464,6 @@
       "ok": true,
       "status": 200
     },
-    "https://arxiv.org/abs/2508.15734": {
-      "bytes": 44054,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2508.15734",
-      "last_checked": "2026-08-31",
-      "last_ok": "2026-08-31",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://arxiv.org/abs/2509.04664": {
       "bytes": 41152,
       "consecutive_failures": 0,
@@ -1785,17 +1480,6 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://arxiv.org/abs/2510.07192",
-      "last_checked": "2026-08-31",
-      "last_ok": "2026-08-31",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://arxiv.org/abs/2510.09023": {
-      "bytes": 44282,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://arxiv.org/abs/2510.09023",
       "last_checked": "2026-08-31",
       "last_ok": "2026-08-31",
       "meta_refresh": null,
