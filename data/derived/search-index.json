@@ -1,7 +1,17 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 599,
+  "count": 600,
   "docs": [
+    {
+      "u": "/blog/three-accounts-hugging-face-intrusion",
+      "t": "Three accounts of the Hugging Face intrusion, and they begin on three different dates",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
     {
       "u": "/impossible-routine/beating-poker-professionals",
       "t": "No-limit poker",
