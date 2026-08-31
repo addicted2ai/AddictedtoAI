@@ -56,6 +56,7 @@ import {
 import { publishStep } from './lib/publish.mjs';
 import { rederiveStep, DERIVED_PATHS, dirtyDerivedInputs } from './lib/rederive.mjs';
 import { markDirectiveDone } from './lib/directives.mjs';
+import { isIssueId, mergeIssueIds } from './lib/issues.mjs';
 import {
   applyProposalMergeRules,
   consumeProposal,
@@ -714,6 +715,14 @@ export async function runLoop(ctx, opts = {}) {
    * for a resumed branch whose selection predates `.job/source.json`.
    */
   let proposalOrigin = null;
+  /**
+   * The beads issues this job serves, as a list (`addictedtoai-occ0`). Set from
+   * the selected candidate below, or recovered from `.job/source.json` on a
+   * resumed branch — a job that spans two runs serves the same issues in both,
+   * and re-deriving them from a directives file the maintainer may have edited
+   * since would be a guess.
+   */
+  let jobIssues = [];
 
   if (resumeTarget) {
     resumed = true;
@@ -756,6 +765,10 @@ export async function runLoop(ctx, opts = {}) {
     // Without it a resumed proposal job merges and leaves its proposal
     // selectable, which is the same defect through the resumption door.
     const origin = readCommittedJobSource(ctx.repoRoot, branch);
+    if (Array.isArray(origin?.issues) && origin.issues.length) {
+      jobIssues = origin.issues.filter(isIssueId);
+      ctx.log(`this branch records that it serves ${jobIssues.join(', ')}`);
+    }
     if (origin?.source === 'proposal' && origin.slug && origin.path) {
       proposalOrigin = { slug: origin.slug, path: join(ctx.repoRoot, origin.path) };
       ctx.log(`this branch records that it was selected from proposal \`${origin.slug}\` (${origin.path})`);
@@ -816,6 +829,8 @@ export async function runLoop(ctx, opts = {}) {
       floorMinutes: minInvocationMinutes(cfg, job.type),
     });
     ctx.log(`selected: ${job.type} from ${job.source} — ${job.title}`);
+    jobIssues = mergeIssueIds(job.issues);
+    if (jobIssues.length) ctx.log(`this job serves ${jobIssues.join(', ')}`);
     if (job.source === 'proposal' && job.slug && job.path) {
       proposalOrigin = { slug: job.slug, path: job.path };
     }
@@ -828,10 +843,12 @@ export async function runLoop(ctx, opts = {}) {
     ctx.log('--- ledger line schema (written at the end of a real run) ---');
     ctx.log(ledgerSchemaLine(job, runner, jobId));
     ctx.log(
-      'plus, when they apply: "note", "signal" (no-output), and "phases" — one ' +
+      'plus, when they apply: "note", "signal" (no-output), "phases" — one ' +
         '{role, runner, mm, killed, code, outcome} per invocation (author / review1 / ' +
-        'revision / review2). "mm" above stays the JOB TOTAL; "phases" is what says ' +
-        'where a per-invocation cap belongs.',
+        'revision / review2) — and "issues", the beads ids this job serves. "mm" above ' +
+        'stays the JOB TOTAL; "phases" is what says where a per-invocation cap belongs. ' +
+        '"issues" is omitted when the job serves none, which is the common case: routine ' +
+        'upkeep has nothing behind it and an id per job would manufacture backlog noise.',
     );
     ctx.log('--- assembled brief ---');
     ctx.log(briefText);
@@ -863,6 +880,11 @@ export async function runLoop(ctx, opts = {}) {
           source: job.source ?? null,
           slug: proposalOrigin?.slug ?? null,
           path: proposalOrigin ? relative(ctx.repoRoot, proposalOrigin.path).replace(/\\/g, '/') : null,
+          // The issues this job serves, written down rather than remembered, on
+          // exactly the terms the proposal path above records: a resumed run
+          // must not re-derive them from a directives file the maintainer may
+          // have edited in between.
+          issues: jobIssues,
         },
         null,
         2,
@@ -947,6 +969,10 @@ export async function runLoop(ctx, opts = {}) {
         note: result.note,
         signal: result.signal,
         phases: result.phases,
+        // The join, carried from whatever source this job was selected from
+        // (`addictedtoai-occ0`). Omitted when the job serves no issue, which is
+        // the common and healthy case.
+        issues: jobIssues,
         ts: ctx.now().toISOString(),
       }),
     );
@@ -1108,6 +1134,7 @@ export async function runLoop(ctx, opts = {}) {
           jobType: job.type,
           artifacts: subjects,
           mergedSha,
+          issues: jobIssues,
         });
         ctx.log(
           consumed.moved

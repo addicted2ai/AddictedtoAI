@@ -105,8 +105,13 @@ test('ccs assembleBrief passes BRIEF_EXCERPT_MAX_CHARS, not specs.mjs\'s own sma
   ctx.cleanup();
 });
 
-test('ccs BRIEF_EXCERPT_MAX_CHARS is 20,000 — the measured number, not a placeholder', () => {
-  assert.equal(BRIEF_EXCERPT_MAX_CHARS, 20000);
+test('ccs BRIEF_EXCERPT_MAX_CHARS is 24,000 — the measured number, not a placeholder', () => {
+  // Re-measured 2026-08-31 when a third in-flight delta began amending `loop`
+  // and the per-source share fell to a third of the budget: at 20,000 the
+  // `scout` type cut two sections mid-requirement. The measured floor for
+  // today's tree is 21,500; 24,000 is set for headroom, because a value at the
+  // floor is re-broken by the next delta. See `loop/lib/config.mjs`.
+  assert.equal(BRIEF_EXCERPT_MAX_CHARS, 24000);
 });
 
 /* ---------------------------------------------------------------------------

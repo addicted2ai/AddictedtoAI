@@ -59,6 +59,7 @@ import {
 import { join, basename } from 'node:path';
 import matter from 'gray-matter';
 import { JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
+import { declaredIssueIds, ISSUE_PREFIX } from './issues.mjs';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -222,6 +223,22 @@ export function readProposals(ctx) {
       });
       continue;
     }
+    // The beads join, format-checked here beside `slug` and `type` and never
+    // resolved against the store (`addictedtoai-occ0`). A DECLARED field is a
+    // promise about its own shape, so a malformed one is reported and the
+    // proposal is skipped — `issue: see the tracker` that parsed as "no issue"
+    // would be a link that reads as present and joins nothing.
+    const issues = declaredIssueIds(p.fm.issue ?? p.fm.issues);
+    if (issues.present && issues.malformed.length) {
+      malformed.push({
+        path: p.path,
+        why:
+          `\`issue\` ${issues.malformed.map((t) => JSON.stringify(t)).join(', ')} is not a ` +
+          `well-formed beads id (${ISSUE_PREFIX}-<id>); the format is checked here and the ` +
+          `existence of the issue is not — that is scripts/verify-issue-links.mjs's, locally`,
+      });
+      continue;
+    }
     const exp = readExpiry(p.raw, p.fm);
     if (exp.present && exp.invalid) {
       // Fail closed, and name the value. An `expires: soon` that parsed as
@@ -247,6 +264,9 @@ export function readProposals(ctx) {
       title: p.fm.title ?? p.fm.summary ?? slug,
       detail: `${p.fm.summary ?? ''}\n\n${p.body}`.trim(),
       evidence: p.fm.evidence ?? null,
+      // Carried to the ledger line the run appends, so "what did the machine
+      // ever do about addictedtoai-X" is one grep of one file.
+      issues: issues.ids,
     };
     if (exp.present) {
       // AT or PAST the expiry, never selectable. String comparison on two
@@ -345,10 +365,17 @@ export function sweepExpired(ctx, item, { dryRun = false } = {}) {
   if (dryRun) return { moved: false, dest, why: item.why };
   mkdirSync(dir, { recursive: true });
   const original = readFileSync(item.path, 'utf8');
+  // An id the proposal already declared is carried into the record, so a swept
+  // idea names the issue it served rather than leaving the reader to grep for
+  // it (`addictedtoai-occ0`). This PROPAGATES an id that exists; it does not
+  // demand one that does not, which would require filing an issue per sweep and
+  // manufacture exactly the backlog noise the requirement is scoped to avoid.
+  const issueLine = item.issues?.length ? `- issue: ${item.issues.join(', ')}\n` : '';
   const note =
     `\n\n---\n\n## Swept: the expiry it declared has arrived\n\n` +
     `- date: ${localDate(ctx.now())}\n` +
     `- expires: ${item.expires}\n` +
+    issueLine +
     `- swept on: ${localDate(ctx.now())} (the LOCAL date of the machine that swept it)\n` +
     `- was: \`${item.file ?? basename(item.path)}\` (slug \`${item.slug}\`)\n\n` +
     `An expiring proposal is selectable without cooling and stops being ` +
@@ -428,7 +455,7 @@ export function consumedDir(ctx) {
  * @param {string} [o.mergedSha]
  * @returns {{moved: boolean, dest: string, why: string}}
  */
-export function consumeProposal(ctx, { path, slug, jobId, jobType, artifacts = [], mergedSha = null }, { dryRun = false } = {}) {
+export function consumeProposal(ctx, { path, slug, jobId, jobType, artifacts = [], mergedSha = null, issues = [] }, { dryRun = false } = {}) {
   const dir = consumedDir(ctx);
   const name = basename(path);
   const stamp = ctx.now().toISOString().replace(/[-:]/g, '').replace(/\..*/, '');
@@ -448,6 +475,7 @@ export function consumeProposal(ctx, { path, slug, jobId, jobType, artifacts = [
     // The LOCAL date, like every other date in this repository (CLAUDE.md).
     `- date: ${localDate(ctx.now())}\n` +
     `- job: ${jobId} (${jobType})\n` +
+    (issues?.length ? `- issue: ${issues.join(', ')}\n` : '') +
     `- merged as: ${mergedSha ? `\`${mergedSha}\`` : '(local merge commit not recorded)'}\n` +
     `- produced: ${made}\n` +
     `- was: \`${name}\` (slug \`${slug}\`)\n\n` +

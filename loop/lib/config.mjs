@@ -211,8 +211,39 @@ export const MIN_INVOCATION_MINUTES = 15;
  * `excerptsFor`'s own allocation algorithm in `specs.mjs`, which this ruling
  * does not touch, and it is unneeded once the flat raise alone measures at
  * zero mid-requirement cuts across every job type today.
+ *
+ * ---------------------------------------------------------------------------
+ * RE-MEASURED 2026-08-31, raised 20,000 -> 24,000
+ * (`link-the-machines-work-to-beads`, `addictedtoai-occ0`).
+ *
+ * A THIRD in-flight delta now amends `loop`, and the even split is per SOURCE,
+ * so each source's share fell from a half to a third of the budget. At 20,000
+ * the `scout` type had TWO sections cut mid-requirement; every other type had
+ * none. This is the same structural cause the 14,000 -> 20,000 raise recorded,
+ * one source further along, and it is worth being precise about what did NOT
+ * cause it: the delta that tipped it is 6,078 characters, the SMALLEST of the
+ * three `loop` sources by a wide margin (the constitution is 36,978 and
+ * `make-the-blog-worth-sending`'s delta is 21,976). Trimming the new delta
+ * would have been treating the symptom — it is not the large source, it is
+ * merely the third one.
+ *
+ * THE NUMBER, MEASURED RATHER THAN GUESSED, by scanning every budget from
+ * 14,000 upward in 500-character steps and recording the smallest at which
+ * each job type has zero mid-requirement cuts:
+ *
+ *     scout      21,500      interpret  16,500      education  15,500
+ *     entry      15,000      post       15,000      verify     14,000
+ *     tutorial   14,000      repair     14,000      prune      14,000
+ *     machinery  14,000
+ *
+ * 21,500 is therefore the measured floor for the tree as it stands today.
+ * 24,000 is what is set, and the headroom is deliberate rather than rounding:
+ * a value at the floor is re-broken by the next delta that lands, and this
+ * constant has now been re-measured twice for exactly that reason. The gap is
+ * roughly one more source's share for the capability under heaviest amendment.
+ * ---------------------------------------------------------------------------
  */
-export const BRIEF_EXCERPT_MAX_CHARS = 20000;
+export const BRIEF_EXCERPT_MAX_CHARS = 24000;
 // `BLOG_CEILING_POSTS` / `BLOG_CEILING_DAYS` stood here and are gone
 // (make-the-blog-worth-sending, task 1.3). Publishing is quality-gated, never
 // quota-driven: no selector rule counts published posts. What limits volume now

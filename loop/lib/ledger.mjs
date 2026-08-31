@@ -3,7 +3,7 @@
  *
  * One JSON object per line:
  *   { ts, id, type, runner, provider, tier, mm, outcome,
- *     note?, signal?, phases? }
+ *     note?, signal?, phases?, issues? }
  *
  * The first eight are LEDGER_FIELDS and are required. The rest are additive and
  * optional: a reader that does not know them is unaffected, and a line written
@@ -81,7 +81,7 @@ export function appendLedger(ctx, line) {
  * abandon sweep writes one: no process ran, so there is nothing to record) is
  * as valid as it ever was, and LEDGER_FIELDS is deliberately not extended.
  */
-export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, note, ts, signal, phases }) {
+export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, note, ts, signal, phases, issues }) {
   const line = {
     ts: ts ?? new Date().toISOString(),
     id,
@@ -95,7 +95,30 @@ export function makeLedgerLine({ id, type, runner, provider, tier, mm, outcome, 
   if (note) line.note = note;
   if (signal) line.signal = signal;
   if (Array.isArray(phases) && phases.length) line.phases = phases;
+  // `issues` is optional and additive on the same terms as `signal` and
+  // `phases`, and it is A LIST rather than a scalar (design D2,
+  // `addictedtoai-occ0`). One job can serve more than one issue — a directive
+  // line naming two, a proposal filed against a pair — and a scalar that later
+  // has to become a list is a migration across an append-only file that nobody
+  // wants. The list costs nothing today: it is omitted entirely when empty, so
+  // no line grows without cause and every line written before this existed
+  // stays exactly as valid as it was.
+  //
+  // LEDGER_FIELDS is deliberately NOT extended. Requiring an id per job would
+  // manufacture backlog noise — a `verify` job triggered by an overdue fact is
+  // routine upkeep with nothing behind it, and the requirement belongs where
+  // work would otherwise be lost, not everywhere.
+  if (Array.isArray(issues) && issues.length) line.issues = issues;
   return line;
+}
+
+/**
+ * Every job the ledger records against one issue id — the join this file exists
+ * to make answerable. Before it, "what did the machine ever do about
+ * `addictedtoai-X`" could not be asked of any artifact at all.
+ */
+export function jobsForIssue(ledger, issueId) {
+  return (ledger ?? []).filter((l) => Array.isArray(l.issues) && l.issues.includes(issueId));
 }
 
 /**

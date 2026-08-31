@@ -19,6 +19,7 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { JOB_TYPES } from './config.mjs';
+import { harvestIssueIds } from './issues.mjs';
 
 const DONE_MARKER_RE = /\[done\s+[^\]]+\]/;
 const ITEM_RE = /^\s*[-*]\s+(.*)$/;
@@ -47,6 +48,20 @@ export function parseDirectives(text) {
       type,
       task: type ? typeMatch[2].replace(DONE_MARKER_RE, '').trim() : body,
       done,
+      // THE BEADS JOIN, AND WHY IT IS NOT A NEW SYNTAX (design D1,
+      // `addictedtoai-occ0`). A directive is prose the maintainer types, and he
+      // can already name an issue in it. Harvesting the id from wherever it
+      // appears makes that existing habit mechanical without asking him to
+      // learn a form: `- post: write up X (addictedtoai-abc)` just works, every
+      // line already in the file stays valid, and there is no syntax to collide
+      // with the `[done <date> <job-id>]` marker appended to the same line.
+      //
+      // Scanned from `body`, which is the line WITHOUT its done marker only for
+      // `task`; `body` still carries it. That is deliberate — an id inside a
+      // done marker is a job id, never an issue id, so the two cannot be
+      // confused by shape, and re-reading a completed line still reports the
+      // issue it served.
+      issues: harvestIssueIds(body),
     });
   });
   return out;
@@ -79,6 +94,7 @@ export function readDirectives(ctx) {
       detail: d.task,
       lineNumber: d.lineNumber,
       raw: d.raw,
+      issues: d.issues,
     });
   }
   return { directives, warnings };
