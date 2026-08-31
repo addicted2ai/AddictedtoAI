@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getSite } from '../lib/site.mjs';
 import { absoluteUrl } from '../lib/site-config.mjs';
-import { recencyOf } from '../lib/reviews.mjs';
+import { buildChangedOnMap, contentChangedOn as resolveContentChangedOn } from '../lib/sitemap-dates.mjs';
 
 /**
  * The sitemap (task 4.9, specs/site).
@@ -56,15 +56,31 @@ import { recencyOf } from '../lib/reviews.mjs';
  *
  * MEASURED 2026-08-29 over the 176 URLs: 156 now carry a date, up from 71.
  * The wiki's 83 browsable entries go from 0 to 75; `learn`'s 10 from 0 to 10.
+ *
+ * ---------------------------------------------------------------------------
+ * DELTAS GET THE SAME TREATMENT, NOT A THIRD ONE (addictedtoai-3u1).
+ *
+ * The delta loop used to pass `view.routine.date` — the date the ROUTINE end
+ * of the impossible/routine pair happened, e.g. `2009-08-27`. That is a fact
+ * about the subject the page describes, exactly like the timeline dates
+ * rejected above (both run from the 1900s-2000s to past the build date), not
+ * a fact about the page. A crawler reading `lastmod 2009-08-27` was told the
+ * page had not changed in seventeen years when it was authored in the
+ * 2026-08-28 greenfield wave.
+ *
+ * `corpus.delta` is already in `reviewablePieces` (`lib/reviews.mjs`) and a
+ * delta's body is prose like any other, so it takes the exact same
+ * `contentChangedOn` used above rather than a second resolution path — the
+ * routine/impossible dates stay in the page body, where they are a fact about
+ * the subject, not the page.
+ *
+ * `later`, `reviewedOn`, `factsMovedOn` and `contentChangedOn` live in
+ * `../lib/sitemap-dates.mjs`, not here — a decision buried inside a page
+ * component is only provable by running `next build`; moved out, it is a
+ * plain function `lib/sitemap-dates.test.mjs` calls directly.
  */
 
 export const dynamic = 'force-static';
-
-/** The later of two `YYYY-MM-DD` strings; either may be absent. */
-function later(a?: string, b?: string): string | undefined {
-  if (a && b) return a > b ? a : b;
-  return a ?? b ?? undefined;
-}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const site = await getSite();
@@ -72,31 +88,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const add = (path: string, lastModified?: string) =>
     urls.push({ url: absoluteUrl(path), lastModified: lastModified ? new Date(`${lastModified}T12:00:00Z`) : undefined });
 
-  // Entry id -> the newest changed-feed line that joins to it. Built from the
-  // feed the home page renders, so materiality is defined in exactly one place.
-  const changedOn = new Map<string, string>();
-  for (const line of site.changes) {
-    if (!line.entry?.id || !line.date) continue;
-    const prev = changedOn.get(line.entry.id);
-    if (!prev || line.date > prev) changedOn.set(line.entry.id, line.date);
-  }
-
-  /** The `date:` of the review record that bound to this file — the prose date. */
-  const reviewedOn = (doc: any): string | undefined => {
-    const hit = site.reviews.byFile.get(doc.file);
-    const r = hit ? recencyOf(hit.record) : null;
-    return r ? `${r.day.slice(0, 4)}-${r.day.slice(4, 6)}-${r.day.slice(6, 8)}` : undefined;
-  };
-
-  /** The newest material change in anything this page renders — its own bound
-   *  facts, and any fact it transcluded from another entry. */
-  const factsMovedOn = (doc: any): string | undefined => {
-    let best = doc.data?.id ? changedOn.get(doc.data.id) : undefined;
-    for (const ref of doc.transcluded?.facts ?? []) best = later(best, changedOn.get(String(ref).split('#')[0]));
-    return best;
-  };
-
-  const contentChangedOn = (doc: any) => later(reviewedOn(doc), factsMovedOn(doc));
+  const changedOn = buildChangedOnMap(site.changes);
+  const contentChangedOn = (doc: any) => resolveContentChangedOn(doc, site.reviews.byFile, changedOn);
 
   for (const path of [
     '/',
@@ -122,7 +115,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const doc of site.corpus.learn) add(doc.url, contentChangedOn(doc));
   for (const { doc, state } of site.tutorials) if (state.indexed) add(doc.url, doc.data.verified_on);
   for (const doc of site.posts) add(doc.url, doc.data.date);
-  for (const view of site.deltas) add(view.url, view.routine.date);
+  for (const view of site.deltas) add(view.url, contentChangedOn(view.doc));
 
   return urls;
 }
