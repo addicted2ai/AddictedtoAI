@@ -9,7 +9,12 @@ For the record, outside any requirement body: the machinery that enforced
 the previous 3-in-7 count ceiling — both constants, the selector gate, and
 the build warning — is removed by this change, not left disabled. The
 modified quality-gated requirement below states the timeless rule that
-results.
+results. Removing that ceiling touches nothing in `loop`: the new-writing
+model-minute ceiling and the capacity-shedding order are owned there and
+are neither relaxed nor restated by this change. The requirement body
+below names them as standing bounds, in the constitution's voice, without
+narrating that fact — a reader who finds that body after archiving cannot
+reach this preamble, and does not need to.
 
 ## ADDED Requirements
 
@@ -259,7 +264,8 @@ its own named point:
   success) and by review's kill discipline, with declined candidates
   recorded rather than deferred;
 - the new-writing model-minute ceiling and the capacity-shedding order in
-  `loop`, which this change leaves untouched.
+  `loop`, which bound volume from outside the blog's own rules and are
+  owned by `loop`, not by anything here.
 
 A post exists because something happened worth an enthusiast's time, or
 because accumulated evidence shows a shape worth a stranger's attention —

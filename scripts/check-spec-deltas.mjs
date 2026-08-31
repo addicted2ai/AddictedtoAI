@@ -87,6 +87,7 @@
  */
 
 import { readFile, readdir, stat } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
 
@@ -410,7 +411,7 @@ const OPS = {
  */
 const keyOf = (capability, name) => JSON.stringify([capability, foldName(name)]);
 
-export function checkDeltas({ changes, specs, haystack = null }) {
+export function checkDeltas({ changes, specs, haystack = null, root = null }) {
   const findings = [];
   const add = (f) => findings.push(f);
 
@@ -501,6 +502,21 @@ export function checkDeltas({ changes, specs, haystack = null }) {
         }
         if (haystack !== null) {
           for (const tok of codeTokens(block.raw)) {
+            // A token that IS a real path is not stale, whether or not any file
+            // happens to mention it by name. Measured 2026-08-31, first run
+            // against a real change: all three stale-id warnings were false —
+            // `openspec/curriculum/learn.md` (outside SOURCE_DIRS entirely),
+            // `loop/lib/health.mjs` and `content/wiki/org/moonshot-ai.md` (both
+            // inside it) all exist on disk. The content scan answers "is this
+            // string written down anywhere", which is a different question from
+            // "does this thing exist", and a module nothing references BY NAME
+            // is the normal case rather than the suspicious one.
+            //
+            // This matters more than three lines of noise: a warning that fires
+            // on things that plainly exist teaches its reader to skip the whole
+            // category, and the categories beside it are the ones that stop a
+            // bad delta reaching the constitution.
+            if (root !== null && existsSync(join(root, tok))) continue;
             if (!haystack.includes(tok)) {
               add({
                 rule: 'stale-id',
@@ -669,7 +685,7 @@ export async function checkSpecDeltasStep(opts = {}) {
         ? null
         : await buildSourceHaystack(root);
 
-  const { findings } = checkDeltas({ changes, specs, haystack });
+  const { findings } = checkDeltas({ changes, specs, haystack, root });
 
   const diags = new Diagnostics();
   for (const f of findings) {

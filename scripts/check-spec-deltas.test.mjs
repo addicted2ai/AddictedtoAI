@@ -523,3 +523,52 @@ test("this repository's own live deltas parse, and every one carries an operatio
     }
   }
 });
+
+/* ── check 4b: a token that IS a real path is not stale ───────────────────── */
+//
+// Measured on the first real run: all three stale-id warnings were FALSE.
+// `openspec/curriculum/learn.md`, `loop/lib/health.mjs` and
+// `content/wiki/org/moonshot-ai.md` all exist on disk. The haystack answers
+// "is this string written down anywhere in the source", which is a different
+// question from "does this thing exist" — and a module that nothing references
+// BY NAME is the normal case, not the suspicious one. A warning that fires on
+// things that plainly exist teaches its reader to skip the whole category.
+
+test('PASSES: a path that exists on disk is not stale, even when nothing names it', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'spec-deltas-exists-'));
+  await mkdir(join(root, 'lib'), { recursive: true });
+  await writeFile(join(root, 'lib', 'health.mjs'), 'export const ok = true;\n', 'utf8');
+
+  const d = deltaFile({ modified: [req(GATE, 'The runner SHALL use `lib/health.mjs`.')] });
+  // Haystack deliberately does NOT mention the file: nothing imports it by name.
+  const findings = checkDeltas({
+    changes: [change('c', { demo: d })],
+    specs: LIVE,
+    haystack: 'const unrelated = 1;\n',
+    root,
+  }).findings;
+  assert.deepEqual(findings, [], 'the file exists, so the identifier is not stale');
+});
+
+test('TRIPS: the control — the same token when the file does NOT exist', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'spec-deltas-absent-'));
+
+  const d = deltaFile({ modified: [req(GATE, 'The runner SHALL use `lib/health.mjs`.')] });
+  const findings = checkDeltas({
+    changes: [change('c', { demo: d })],
+    specs: LIVE,
+    haystack: 'const unrelated = 1;\n',
+    root,
+  }).findings;
+  assert.deepEqual(rulesOf(findings), ['stale-id'], 'no file and no mention: still stale');
+});
+
+test('the existence escape hatch needs a root — without one the scan is unchanged', () => {
+  const d = deltaFile({ modified: [req(GATE, 'The runner SHALL use `lib/health.mjs`.')] });
+  const findings = checkDeltas({
+    changes: [change('c', { demo: d })],
+    specs: LIVE,
+    haystack: 'const unrelated = 1;\n',
+  }).findings;
+  assert.deepEqual(rulesOf(findings), ['stale-id'], 'root defaults to null and nothing resolves');
+});
