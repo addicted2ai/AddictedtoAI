@@ -39,9 +39,10 @@ The measured state this lands on, every claim re-verified at HEAD:
    author charge ("publish something a stranger would send"; "correct,
    sourced, and forgettable" a real failure) are worth adopting outright.
    Its prose is the maintainer's own negative example — "obviously AI
-   generated" — measured in this change at 13.0 em-dashes per 1,000 words
-   against a human-journalism sample's 4.4, with the full six-family
-   inventory in `design.md` D6.
+   generated" — measured in this change at 13.3 em-dashes per 1,000 words
+   against a human sample's 4.5, with the full six-family inventory in
+   `design.md` D6 and the per-document record in
+   `openspec/style/blog-voice-calibration.md`.
 
 A sealed adversarial review of this change's first draft (its `review.md`)
 defeated that draft's load-bearing rate-control claim and gutted its
@@ -63,8 +64,13 @@ type, `expires:`, why-now, retrieval-dated evidence, done-when), and
 records every declined story in `data/proposals/dropped/` with the failed
 test and a refile condition. A quiet day opens the synthesis branch; a day
 where nothing clears either branch ends `blocked: nothing cleared the bar`
-— a recorded success. The cap and the drop records are mechanisms at the
-merge, not instructions.
+— a recorded success, with the consecutive-blocked count surfaced in the
+published `/status.json` so a long quiet spell is visible without
+obligating anything. The cap is a mechanism at the merge; the drop
+records make each decline auditable in form (nothing measures how many
+stories were considered, and the spec says so); the bar itself is a model
+instruction checked by model-run review — the same honest split as
+`would-cite`.
 
 **The proposals channel gains its producing side and an expiry rule**
 (`specs/loop`, resolving `addictedtoai-6ov`). Briefs state each job's
@@ -91,17 +97,23 @@ learns an AI made it — with would-cite and would-send as its operational
 forms and "correct, sourced, and forgettable" a named failure. The blog
 requires the send form.
 
-**Posts must read human, mechanically where possible** (`specs/blog`,
-`specs/review`, `openspec/style/blog-voice.md`). A house-voice document —
-written on its own terms, because no positive exemplar exists in this
-repository — plus a voice lint whose closed marker list was researched,
-graded for reliability, and **calibrated in both directions**: it fires on
-all twelve predecessor posts and on none of nine human-written pieces on
-the same beat, with every threshold derived from the measured
-distributions (design D6). What no lint settles, the model-run review
-settles: a new closed reason `reads-as-generated` and a forced own-words
-`reads-human` field on post verdicts, with `would-cite`'s exact mechanics.
-The disclosure of AI authorship is explicitly out of this requirement's
+**Posts must be worth reading first, and read human as craft — with an
+advisory lint and a judging review** (`specs/blog`, `specs/review`,
+`openspec/style/blog-voice.md`). Quality outranks sounding human, per the
+maintainer's own priority. A house-voice document — written on its own
+terms, because no positive exemplar exists in this repository, and
+followable by a weaker model — plus a voice lint whose closed marker list
+was researched, graded for reliability, and calibrated against a labeled
+negative corpus and a human sample (per-document measurements, fitted
+thresholds and honest limits in
+`openspec/style/blog-voice-calibration.md`). **The lint warns and never
+fails the build** — the measured fact that decided this is that the house
+model trips the punctuation-rate markers in every register it writes, so
+a fail-closed gate's stable outcome was an empty blog with every
+component reporting success. The gate is the model-run review: a new
+closed reason `reads-as-generated` and a forced own-words `reads-human`
+field on post verdicts, with `would-cite`'s exact mechanics. The
+disclosure of AI authorship is explicitly out of this requirement's
 reach.
 
 **The five posts are deleted** with their dependencies handled:
@@ -141,20 +153,30 @@ None.
   per-job proposal rule), `loop/lib/review.mjs` (checklists, proposal
   noting), `loop/lib/verdict.mjs` (`reads-as-generated`; `reads-human`),
   the merge step (candidate caps, stamping, transcription, expiry sweep,
-  `reads-human` gate), and tests beside each — including the lint's pinned
-  two-corpus validation. No `package.json` edit.
+  `reads-human` gate), the blocked-streak field in `/status.json`
+  (derived from the ledger by the build; `lib/stamp.mjs` writes that
+  file), and tests beside each — including the lint's pinned two-corpus
+  calibration tests and its warn-not-fail assertion. No `package.json`
+  edit.
 - **Content**: five files deleted from `content/blog/`, five records
   deleted from `data/reviews/`, `content/blog/README.md` rewritten. No
   content is written by this change.
 - **Data**: `data/proposals/dropped/` comes into existence as the drop
   record. `data/changes.jsonl` is read, never written, by everything here.
-- **Config**: at execution, `data/config.json` gains a `scout` wall-clock
-  cap (proposed: 30) and `scout` in the new-writing category — a reserved
-  path, applied by the orchestrator executing this approved change, never
-  by a Desk job (design D9).
+- **Config**: `data/config.json` already carries `scout` in all three
+  `degradation.shed_levels[].exclude_types` arrays (applied by the
+  orchestrator 2026-08-30 — the arrays are what the selector actually
+  sheds on); at execution it additionally gains
+  `job_caps_minutes.scout: 60` (reason for 60 in design D9.2) and `scout`
+  in the new-writing category — a reserved path, applied by the
+  orchestrator executing this approved change, never by a Desk job
+  (design D9).
 - **Specs**: deltas against five capabilities; the voice document lands at
-  `openspec/style/blog-voice.md`, outside both the archive-moved and the
-  reserved paths, for the same reasons the learn curriculum lives beside
-  it.
+  `openspec/style/blog-voice.md` with its measurement record beside it at
+  `openspec/style/blog-voice-calibration.md`, outside both the
+  archive-moved and the reserved paths, for the same reasons the learn
+  curriculum lives beside them — and so the voice document's own
+  recalibration rule keeps pointing at evidence that exists after this
+  change is archived.
 - **Deployment**: nothing here pushes. The gate condition in `CLAUDE.md`
   stands for whoever executes this change.

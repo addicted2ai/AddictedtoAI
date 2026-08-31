@@ -1,11 +1,16 @@
 # Design: make-the-blog-worth-sending
 
-This document is the argument and the measurement record. The operative
+This document is the argument and the derivation history. The operative
 text is the five spec deltas, `tasks.md`, and the voice document at
-`openspec/style/blog-voice.md`. Every number below was measured on
-2026-08-30 by the method stated beside it; the derivation scripts' logic is
-described precisely enough to re-run, and the lint tasks pin both corpora
-into tests so the two-direction validation outlives this document.
+`openspec/style/blog-voice.md`; the **measurement record of record** is
+`openspec/style/blog-voice-calibration.md`, which lives outside the paths
+archiving moves because the voice document's recalibration rule anchors
+to it. Every number below was measured on 2026-08-30 by the method stated
+beside it, and the voice numbers were re-derived that day from raw
+sources after the second sealed review showed the first derivation's
+semicolon distribution was an instrument artifact (D6, "the correction
+record"). The lint tasks pin both corpora into tests so the calibration
+outlives this document.
 
 ## D1 — What an award-winning blog is, on this site
 
@@ -130,13 +135,28 @@ points:
 4. **Event-driven candidates expire in at most 7 days**, syntheses 14 —
    the predecessor's one-month `expires:` was its loosest setting and its
    queue rotted; the strict windows encode "news decays" directly.
-5. **The voice lint fails the build** rather than warning — the
-   fail-don't-warn house rule, applied because the marker list is closed,
-   calibrated, and quote-exempting, so a legitimate use has an escape
-   (blockquote, correction block) that a warning would not need.
-6. **Self-narration fires at one occurrence**, the tightest calibrated
+5. **The voice lint warns and never fails the build** — the one named
+   exception to the strict-reading rule, decided after the second sealed
+   review and on the maintainer's own directive that feeling human "is
+   stylistic preference and can only be measured so accurately" while
+   quality is what matters. An earlier revision chose fail-don't-warn on
+   the premise that the markers fire only on illegitimate use; the second
+   review measured the house model tripping the punctuation rates in 15
+   of 15 of its long-form repository documents — including the voice
+   document itself — and none of those can reach for a blockquote to fix
+   a semicolon rate. A fail-closed gate would have had a stable silent
+   failure mode: post job writes, build fails on the lint, job ends
+   `failed`, three failures trip breaker 1, `post` work stops, scout
+   candidates expire unselected, and the blog stays empty while every
+   component reports success at its own contract. The lint joins the
+   repository's two deliberate warn-not-fail cases (a currency literal in
+   prose; the old over-ceiling post rate). The voice gate that binds is
+   the model-run review verdict `reads-as-generated` — a named rejection
+   reason, which is what "NO HUMAN judgment" requires — and the reviewer
+   may cite the lint's warnings as evidence.
+6. **Self-narration warns at one occurrence**, the tightest calibrated
    threshold in the lint (10 of 12 negative-corpus posts carry it; 0 of 9
-   human pieces do).
+   human pieces do, on every sample measured).
 
 ## D4 — What this revision removed, and why
 
@@ -218,54 +238,72 @@ single substituted word.
 
 ## D6 — The voice: research, calibration, and the honest gaps
 
-**The problem.** The maintainer requires posts that "feel human when
-read", with the site's AI-authorship disclosure untouched — craft, not
-concealment. The predecessor's twelve posts, initially offered as the
-voice standard, are the opposite: his own verdict is "obviously AI
-generated," confirmed by measurement below. So **no positive exemplar of
-the target voice exists in this repository.** The compensation is
-threefold: the voice document defines the voice on its own terms with
-fresh before/after pairs (`openspec/style/blog-voice.md` §2); the
-mechanical half is a lint calibrated against a labeled negative corpus and
-a human sample, its tests asserting both directions; and the judgment half
-is a model-run review rejection (`reads-as-generated`) with a forced
-own-words field (`reads-human`), the same shape as `would-cite`.
+**The problem, ordered the way the maintainer ordered it.** Quality
+outranks sounding human: his instruction is that feeling human is a
+stylistic preference that "can only be measured so accurately", so the
+voice work serves the quality bar rather than gating it, and nothing in
+it is concealment — the AI-authorship disclosure stands untouched
+(`addictedtoai-18c`'s scope correction, applied). The predecessor's
+twelve posts, initially offered as the voice standard, are the opposite:
+his own verdict is "obviously AI generated," confirmed by measurement
+below. So **no positive exemplar of the target voice exists in this
+repository**, and nothing yet demonstrates the target voice is reachable
+by the house model — the second review measured its long-form output
+tripping the punctuation markers in every register. The response is
+threefold, with the weight on the third: the voice document defines the
+voice on its own terms with fresh before/after pairs, written to be
+followable by a weaker model (`openspec/style/blog-voice.md` §2); the
+mechanical half is an **advisory** lint calibrated against a labeled
+negative corpus and a human sample, warning with named markers and never
+failing the build; and the gate is the model-run review rejection
+(`reads-as-generated`) with a forced own-words field (`reads-human`), the
+same shape as `would-cite`.
 
-**The corpora.** Negative: the twelve predecessor posts at `d34040b`
-(`app/blog/*/page.js`, prose extracted by stripping JSX/tags with
-paragraph and header boundaries preserved; 19,017 body words). Human: nine
-by-lined pieces of technology journalism on the same beat — model
-releases, pricing, policy — 16,480 body words, six outlets, four pieces
-pre-ChatGPT and so uncontaminated by assistance (all fetched and measured
-2026-08-30):
+**The corpora, and where their record now lives.** Negative: the twelve
+predecessor posts at `d34040b` (`app/blog/*/page.js`; 18,600 body words
+under the corrected instrument). Human: nine by-lined pieces on the same
+beat — model releases, pricing, policy — 16,107 body words, five outlets,
+three pieces pre-ChatGPT and so uncontaminated by assistance (fetched
+2026-08-30). The full manifest — per-piece sources, dates, word counts,
+per-document measured values, the instrument, and the limits — is
+**`openspec/style/blog-voice-calibration.md`**, beside the voice document
+and outside every path archiving moves, because the voice document's
+recalibration rule must keep pointing at its evidence after this change is
+archived. This design section is the history of the derivation; that file
+is the record of record.
 
-| piece | outlet / author | words |
-|---|---|---|
-| llms-in-2024 (2024-12-31) | simonwillison.net | 7,122 |
-| the-gpt-4-barrier (2024-03-08) | simonwillison.net | 847 |
-| GPT-4 launch (2023-03-14) | The Verge | 1,001 |
-| Claude 3 launch (2024-03-04) | The Verge | 529 |
-| GitHub Copilot (2021-06-29) | The Verge | 620 |
-| GPT-3 explainer (2020) | The Verge (J. Vincent) | 3,760 |
-| GPT-4 announce (2023-03) | Ars Technica | 920 |
-| GPT-5 pricing (2025-08-08) | TechCrunch | 757 |
-| GPT-3 (2020-07-20) | MIT Tech Review | 924 |
+Known limits, stated there in full and summarized here: two of the nine
+human pieces are a personal technical blog, not journalism; one author
+(Willison) contributes 47% of the human words; the human pieces run
+2020–2025 against a wholly-2026 negative corpus; lengths are not matched
+(519–6,835 words against 790–2,423); at least one fetch carries site
+chrome that trips a marker; prose extraction from live HTML is
+approximate, and extraction variance alone was measured moving a
+semicolon verdict from 7/12 to 12/12 across instrument variants. The
+lint task pins both corpora so growing either re-runs the calibration.
 
-Known limits, stated: one author (Willison) contributes 48% of the human
-words; the corpus is nine pieces, not ninety; and prose extraction from
-live HTML is approximate. The thresholds carry margins, and the lint task
-pins both corpora so growing either re-runs the whole calibration.
+**The correction record.** This section's first version reported semicolon
+distributions (min 2.7, max 11.1, "fires on 12/12, the strongest
+separator") that did not survive independent re-measurement. Two
+instrument artifacts were found, both inflating semicolon counts: the JSX
+component's closing `); }` leaked one semicolon into every post, and
+undecoded `&sect;` entities counted one statute citation per `;` — the
+reported maximum (a legal-analysis post citing twelve section numbers)
+was that artifact, in the first derivation and in the second review's
+re-measurement alike. The numbers below are from the corrected
+instrument, described in the calibration record precisely enough to
+re-run.
 
 **The inventory.** Six families measured; per-1k-word rates unless noted.
 "AI med/max" and "human med/max" are per-piece medians and extremes.
 
 | marker | AI corpus | human corpus | disposition |
 |---|---|---|---|
-| semicolons | med 4.2, min 2.7, max 11.1 | med 0.3, max 2.1 | **lint: > 2.5/1k** — fires on 12/12, 0/9. The strongest separator measured |
-| em-dashes | w-avg 13.3, med 15.9, range 5.0–21.6; 9/12 > 10 | w-avg 4.4, med 2.7, max 9.4 | **lint: > 10/1k** — fires on 9/12, 0/9. Density, never presence; also the most meme-recognized tell (reception counts) |
-| self-narration ("this post/piece", "labelled as such", "measured here"…) | 10/12 posts ≥ 1; median 3; max 22 | 0/9 | **lint: ≥ 1 occurrence**, outside correction blocks — fires 10/12, 0/9 |
-| What/Why/How headers | 22 of 76 headers; 12/12 posts ≥ 1 | 0 of 25 headers | **lint: ≥ 2 per post** — fires 5/12, 0/9 (kept conservative singly; coverage comes from the union) |
-| focal-word family (delve, robust, pivotal, tapestry, …) | **0.1/1k** — the corpus is nearly clean | **0.9/1k** — robust, pivotal, crucial, leverage, comprehensive all occur | **lint at ≥ 3/1k as a register guard only** (double the human max of 1.3). At presence level this famous family fails BOTH validation directions here — it fires on good human journalism and passes the labeled AI corpus. The house model does not delve; the next runner might, which is the only reason it stays at all |
+| semicolons | med 3.22, min 1.85, max 5.98 | med 0, max 2.15 | **lint (advisory): > 2.5/1k** — warns on 10/12, 0/9. The margin is one mark: `gemini-3-7-flash` clears the line at 2.53 |
+| em-dashes | w-avg 13.33, med 15.0, range 4.96–21.22; 9/12 > 10 | w-avg 4.53, med 2.69, max 9.90 | **lint (advisory): > 10/1k** — warns on 9/12, 0/9, the human max one dash under the line. Density, never presence; also the most meme-recognized tell (reception counts) |
+| self-narration ("this post/piece", "labelled as such", "measured here"…) | 10/12 posts ≥ 1; median 3.5; max 26 | 0/9, and 0/8 on the fresh sample | **lint (advisory): ≥ 1 occurrence**, outside correction blocks — warns 10/12, 0/9. The cleanest marker measured |
+| What/Why/How headers | 22 of 76 headers; 12/12 posts ≥ 1 | 0 of 24 headers | **lint (advisory): ≥ 2 per post** — warns 5/12, 0/9 (kept conservative singly; coverage comes from the union) |
+| focal-word family (delve, robust, pivotal, tapestry, …) | **0.05/1k** — the corpus is nearly clean | **0.87/1k** — ordinary journalistic use | **lint (advisory) at ≥ 3/1k as a register guard only** (over double the human per-piece max of 1.34). At presence level this famous family fails BOTH validation directions here — it fires on good human journalism and passes the labeled AI corpus. The house model does not delve; the next runner might, which is the only reason it stays at all. Measured false-positive mode: one quoted word in a short piece clears the rate |
 | "not just X, but Y" | 0.11/1k | 0.24/1k — twice the AI rate | **cut from lint; review judges density**. Measured folklore for this register |
 | "is not X, it's Y" antithesis | 0.16/1k | 0.06/1k | too rare to mechanize; **review** |
 | ellipses | 0.26/1k | 0.42/1k | no signal; **named folklore** |
@@ -273,34 +311,56 @@ pins both corpora so growing either re-runs the whole calibration.
 | paragraph-length CV | med 0.83 | med 0.44 | separated in the **inverted** direction from theory (news grafs are uniformly short); cut, recorded so nobody re-adds it the right way round without re-measuring |
 | type-token ratio | med 0.45, min 0.37 | med 0.51, min 0.48 | thin margin, confounded by bound-fact repetition; **review** |
 | "The" as sentence opener | med 24% | med 8%, max 23% | margin too thin; **review** |
-| Conclusion/Key-takeaways headers, "let's dive", "deep dive", "only time will tell", "stands as a testament", "navigate the complexities", "it's worth noting that", "in today's rapidly evolving" | 0 | 0 | **lint, presence** — zero-cost register guards with catalog evidence (Wikipedia AISIGNS), for the model-swap case |
-| bold-lead bullet runs | present (coordinator-measured on gpt-5-6-price-drop) | not measurable in news HTML | **lint on our own markdown**, validated against the negative corpus and the catalog only — stated as such |
+| Conclusion/Key-takeaways headers, "let's dive", "deep dive", "only time will tell", "stands as a testament", "navigate the complexities", "it's worth noting that", "in today's rapidly evolving" | 0 | **1** — MIT TR's "Deep Dive" section label, fetched as page chrome | **lint (advisory), presence** — register guards with catalog evidence (Wikipedia AISIGNS), for the model-swap case. The one human fire is a chrome artifact, and it is also the demonstration that presence guards false-positive on quoted or foreign material |
+| bold-lead bullet runs | present (coordinator-measured on gpt-5-6-price-drop) | not measurable in news HTML | **lint (advisory) on our own markdown**, validated against the negative corpus and the catalog only — stated as such |
 
-**Two-direction validation of the assembled lint** (union of the lint rows
-above): fires on **12 of 12** negative-corpus posts (semicolon density
-alone covers all twelve; em-dash, self-narration and What-headers overlap
-it) and on **0 of 9** human pieces. Both numbers are the assertion the
-lint's own tests must keep true against the pinned corpora — a lint change
-that breaks either direction fails its tests.
+Provenance, row by row: the semicolon, em-dash, self-narration,
+What/Why/How, focal and register-guard rows were re-derived 2026-08-30
+with the corrected instrument and are the calibration record's numbers.
+The burstiness, paragraph-CV, type-token, "The"-opener, "not just X, but
+Y", antithesis and ellipsis rows carry the first derivation's numbers,
+not independently re-measured — kept because their dispositions (cut, or
+sent to review) are direction-level calls that do not hang on the exact
+values, and marked so nobody cites them as verified.
+
+**How the assembled union performs** (measured with the corrected
+instrument): at least one marker trips on **12 of 12** negative-corpus
+posts and on **1 of 9** human pieces — the chrome artifact above. No
+single marker covers all twelve (`frontier-cyber` is carried by the
+What/Why/How count alone), the closest margins are one punctuation mark
+in either direction, and the thresholds are **fitted** to these two
+samples — the honest claim is that they separate the house model's
+measured register from edited technology writing on the corpora measured,
+plus one adversarially chosen fresh sample (eight era-matched TechCrunch
+pieces: no punctuation or narration marker fires on any). They are not a
+validated general AI detector, and the second review measured the same
+model tripping the punctuation rates in 15 of 15 of its long-form
+repository documents — the fact that decided D3.5's warn-not-fail. The
+lint's tests pin both corpora and assert the calibration record's firing
+counts, so a lint edit that silently changes either direction fails its
+tests.
 
 **Reliability grading, per the instruction to separate evidence from
 folklore:**
 
-- *Evidenced and mechanized*: semicolon density, em-dash density (both
-  locally calibrated, zero measured false positives; em-dash additionally
-  carries reception evidence — the "ChatGPT hyphen" is a named meme with
-  mainstream coverage, so readers run the check regardless of its
-  statistical merit); self-narration; What-headers; the zero-cost register
-  guards (Wikipedia's AISIGNS catalog, maintained from thousands of
-  flagged instances, plus Kobak et al.'s excess-vocabulary measurements —
-  the strongest external evidence in this literature).
+- *Evidenced and mechanized as advisory markers*: semicolon density,
+  em-dash density (locally calibrated with single-mark margins; em-dash
+  additionally carries reception evidence — the "ChatGPT hyphen" is a
+  named meme with mainstream coverage, so readers run the check
+  regardless of its statistical merit); self-narration (the cleanest:
+  zero human occurrences on every sample measured); What-headers; the
+  register guards (Wikipedia's AISIGNS catalog, maintained from thousands
+  of flagged instances, plus Kobak et al.'s excess-vocabulary
+  measurements — the strongest external evidence in this literature —
+  with one measured chrome false positive on the human sample).
 - *Evidenced elsewhere, failed locally, sent to review*: burstiness and
   uniformity (real in the literature, wrong shape on professionally
   edited journalism); lexical family at presence level (Kobak's effect is
   register-dependent and this house register does not show it).
 - *Folklore, named so nobody re-adds it*: em-dash **presence** (the meme's
   strong form — banning the dash — would have flagged a human maximum of
-  9.4/1k while the real signal is density an order of magnitude higher);
+  9.9/1k while the real signal is density; the dash-loving human sits one
+  dash under the density line);
   "not just X, but Y" (human journalism uses it more than this AI corpus);
   ellipsis habit (no signal either direction).
 
@@ -329,6 +389,17 @@ doi:10.1093/llc/fqag064; Know Your Meme, "ChatGPT Em Dash"; Rolling Stone,
   replaces it at the point volume is created.
 - **A `news` job type** — both forms are `post` jobs distinguished by
   their evidence; the closed list grows by `scout` only.
+- **A build-failing voice gate** — an earlier revision chose it; the
+  second sealed review's measurement reversed it (the house model trips
+  the punctuation markers in every register it writes, so fail-closed had
+  a stable silent-empty-blog failure mode — D3.5). The lint warns; the
+  review verdict gates.
+- **A pass-case fixture proving the target voice reachable before
+  execution** — the second review's proposed fix for the fail-closed
+  gate. Mooted by making the lint advisory: no build gate now needs a
+  demonstrated pass case, and the first honest test of reachability is
+  the first real post through review, which task 5.1's follow-up issue
+  records.
 - **Salvaging proposals from discarded branches** — laundering; they die
   with the branch.
 - **A human anywhere in the runtime loop** — per the maintainer's
@@ -345,7 +416,7 @@ doi:10.1093/llc/fqag064; Know Your Meme, "ChatGPT Em Dash"; Rolling Stone,
 | finding | disposition |
 |---|---|
 | 1 grouping key undefined for `release` | deriver removed (D4); story-forming is now scout judgment |
-| 2 `event: false` empties field list | deriver removed; no spec text anchors to registry field sets any more (the archive-trap lesson, applied) |
+| 2 `event: false` empties field list | deriver removed, and with it the deriver's own anchoring to registry field sets. Two restated live requirement bodies still carry "price/licence/status" verbatim (the pulse queue enumeration; the loop `interpret` bullet) — inherited from the live spec unchanged, neither introduced nor worsened by this change |
 | 3 directive anchor syntax existed nowhere | lanes removed; no anchor classification exists to declare |
 | 4 draft-post fixture forbidden by schema | the task requiring it is gone with the coverage join's old consumer; no task references `draft:` |
 | 5 uncapped lane escapable via `covers:` | dissolved: no lane, no count gate to escape; `covers:` is evidence and feed-coverage marking only (D4) |
@@ -355,12 +426,12 @@ doi:10.1093/llc/fqag064; Know Your Meme, "ChatGPT Em Dash"; Rolling Stone,
 | 9 newest-anchor laundering; one-sided window | strict fix: every declared anchor, two-sided window |
 | 10 self-linking degenerates into a chain | requirement killed outright, not weakened |
 | 11 `QUEUE_CAP` truncation of rank-35 items | deriver removed; the scout item is one high-ranked line per day |
-| 12 self-amplification blocked at one hop only | wording now says exactly that: the guard closes the tight loop, not every loop, with cooling and the rejection index named as the bounds |
+| 12 self-amplification blocked at one hop only | the requirement body now says exactly that: the guard closes the tight loop, not every loop, with cooling and the rejection index named as the bounds. The requirement title — live text, restated — still reads "cannot self-amplify"; the body's one-hop honesty is the operative text, and retitling a live requirement is not this change's to do |
 | C1 "all readers" | corrected: three readers and one mover; none creates a proposal |
 | C2 "empty rejected/" | corrected: it holds a README |
 | C3 "every line carries…" | corrected: 89 of 90; the annotation line has neither source URL nor excerpt |
 | C4 curly-apostrophe "verbatim" trap | the task no longer quotes `brief.mjs` text as a search string |
-| archive trap: "the 3-in-7 ceiling it replaces" inside a requirement | comparison prose lives here and in preambles now, not in requirement bodies |
+| archive trap: "the 3-in-7 ceiling it replaces" inside a requirement | comparison prose lives here and in delta preambles now, not in requirement bodies. The second review found two sites this claim had missed — "removed with this change" in the blog quota requirement, the predecessor's 57% kill rate in the scout requirement — both moved to preambles 2026-08-30 |
 | archive trap: registry-defined field sets in requirement text | gone with the deriver |
 | E: 3zf never updated | task 6.3 updates all three issues, not only files new ones |
 | E: rank 35 above mints unauthorized | the scout item's relative rank is now normative in the pulse delta |
@@ -377,15 +448,53 @@ Kept to what the change cannot decide for itself:
    load-bearing invariant; if he meant the literal thing, that is a
    different and larger change, and this document is where the difference
    is recorded.
-2. **The execution-time `data/config.json` edit** (a `scout` wall-clock
-   cap — the change proposes 30 minutes — and `scout` in the new-writing
-   category list). A reserved path: not a Desk job's edit, so it is
-   applied by the orchestrator when this approved change is executed, on
-   the same authority as any approved-change application. Named here
-   because it is the one step of execution no Desk job may perform — a
-   property of the reserved-path rule, not a runtime human dependency:
-   nothing operates the loop by hand afterward.
+2. **The execution-time `data/config.json` edit** — a reserved path:
+   never a Desk job's edit, applied by the orchestrator on the same
+   authority as any approved-change application. Its actual shape,
+   corrected after the second sealed review measured that the selector
+   sheds by the literal `degradation.shed_levels[].exclude_types` arrays
+   (`loop/lib/budget.mjs:372`), not by budget categories, which feed only
+   the ceiling:
+   - **Done, 2026-08-30, by the orchestrator**: `scout` added to all
+     three `exclude_types` arrays — without which the loop delta's own
+     shed-order sentence was unimplemented and `scout` stayed selectable
+     at every shed level.
+   - **Remaining at execution start (task 2.1)**:
+     `job_caps_minutes.scout: 60` and `scout` in the
+     `budget.categories.new_writing` list. Order matters:
+     `loadConfig` throws on any `JOB_TYPES` entry without a cap
+     (`loop/lib/config.mjs:99`), so the config gains the cap before
+     `loop/lib/config.mjs` gains the type. The cap is 60, not the 30
+     first proposed: every live cap is 120, the scout is the one job
+     defined by fetching the outside world, and a network-slow night
+     under a 30-minute cap ends `interrupted` — which breakers exclude —
+     silently and repeatedly. 60 keeps a real bound at half the universal
+     cap while leaving fetch room; the second review flagged the
+     unexplained 30, and this is the recorded reason for its
+     replacement.
 
 Everything else this document once held as open — the ceiling constant,
 the send test's strictness, grouping, directive lanes — is decided above,
 with reasons, per the instruction to choose rather than defer.
+
+## D10 — The second sealed review's findings, disposed
+
+Disposed 2026-08-30, before execution, with every number re-derived from
+raw sources rather than carried from either prior document (`review2.md`
+is the finding record; the corrected measurements live in
+`openspec/style/blog-voice-calibration.md`).
+
+| finding | disposition |
+|---|---|
+| 1 config edit incomplete; traceability row false | the three `exclude_types` edits applied by the orchestrator 2026-08-30 and verified against `budget.mjs:372`; task 2.1 and the traceability row corrected; D9.2 rewritten (cap 60, reason recorded) |
+| 2 three distributions do not reproduce | re-measured from `d34040b` with a third instrument; **both** prior semicolon reports carried instrument artifacts (the first derivation's `&sect;` miscount produced the 11.1 max; the second review's own numbers carried the same entity gap, and this derivation's first pass leaked the JSX closer). Corrected numbers — 1.85–5.98, 10/12, no single covering marker — now in the calibration record, the voice document, and D6 |
+| 3 thresholds fitted, reported as validated | stated as fitted, with the single-mark margins named, everywhere the numbers appear; "validation" language removed |
+| 4 comparison corpus misdescribed | the limits (genre, era, length, chrome, one-author share, five-not-six outlets, three-not-four pre-ChatGPT) moved into the permanent calibration record; "technology journalism" corrected |
+| 5 corpora not in the lint's format | disclosed in the calibration record with the measured size of the effect; moot as a gate risk — the lint no longer gates |
+| 6 no demonstrated pass case | dissolved by decision, not by fixture: the lint is advisory (D3.5 reversed, maintainer's directive cited); the voice gate is the review verdict; the fail-then-breaker-then-empty-blog chain cannot start from a warning |
+| 7 voice doc anchors maintenance to an archived path | corpora manifest moved to `openspec/style/blog-voice-calibration.md` beside the voice document (the education-static curriculum pattern); `design.md` cited as history only; task 3.7's pointer updated |
+| 8 blocked streak has no witness | one normative clause in the loop delta: the build derives the consecutive-blocked count from the ledger into the published `/status.json` — observability without obligation; tasked |
+| 9 drop records prove form, never rate | the scout requirement now says so in `would-cite`'s own idiom — the records make the check auditable, nothing measures the considered count; the 57% comparison moved to the delta preamble |
+| 10 freshness window floats on the author's date | one sentence of honesty in the anchor requirement: the check guarantees internal consistency; absolute recency is held by `expires:` and review's dates check |
+| 11 "exactly three" is four | preamble re-counted by word-diff and now discloses four, naming the budget-rationale sentence |
+| 12 smaller | §7→§6 cite fixed; task 1.1 names the actual five review records and the two orphaned evidence files; `pulse/lib/corpus.mjs`'s comment referencing a deleted post handled in task 1.1; the scout cap reasoned at 60 (D9.2) |

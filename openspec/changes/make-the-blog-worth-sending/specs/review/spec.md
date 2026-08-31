@@ -29,8 +29,9 @@ this closed list:
 - `reads-as-generated` — the prose reads machine-made: uniform rhythm and
   paragraph shape, structure signposted rather than felt, meta-commentary
   narrating its own method, no willingness to be blunt (see `blog` and the
-  voice document it names). A complete reason in its own right, for the
-  half of the voice bar no lint can measure;
+  voice document it names). A complete reason in its own right, and the
+  voice bar's one gate — the voice lint only advises, so this verdict is
+  where machine-made prose actually stops;
 - `overclaiming-summary` — title/excerpt claims more than the body proves;
 - `spec-violation` — violates a named requirement in these specs;
 - `broken-reference` — a transclusion, mention, or link that does not hold;
@@ -105,7 +106,9 @@ wiki entry, a tutorial, and a machinery change are not the same job:
   brevity alone is never a defect; for a synthesis, the derivation method
   is stated and the evidence enumerable. The reviewer SHALL judge the
   prose against the voice document `blog` names, rejecting
-  `reads-as-generated` where it reads machine-made, and SHALL answer the
+  `reads-as-generated` where it reads machine-made — the advisory voice
+  lint's build warnings MAY be cited as evidence, but the judgment is the
+  reviewer's, not the count's — and SHALL answer the
   send question in the record's `would-cite` field — who would send this,
   and to whom — in its own words.
 - **Scout run**: the charge's failure condition applied first — a run

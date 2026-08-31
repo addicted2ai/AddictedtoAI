@@ -33,6 +33,8 @@ nothing, and that is a success, not a gap.
 **The subject is AI, never this site.** The data layer is usable as evidence;
 it is not the story.
 
-The prose bar is `openspec/style/blog-voice.md`, and it is enforced: a post
-that reads as machine-made is rejected at review, and the voice lint fails the
-build on the markers listed there.
+The prose bar is `openspec/style/blog-voice.md`, and it is enforced at
+review: a post that reads as machine-made is rejected `reads-as-generated`.
+The voice lint warns at build time on the markers listed there — advisory
+by design, never a build failure; the measurements behind the thresholds
+are in `openspec/style/blog-voice-calibration.md`.

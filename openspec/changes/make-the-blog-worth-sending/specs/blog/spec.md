@@ -1,9 +1,15 @@
 # blog — delta for make-the-blog-worth-sending
 
-Every normative sentence below names, in `tasks.md` §7, the task that
+Every normative sentence below names, in `tasks.md` §6, the task that
 implements it and the check that measures it. A SHALL with no task is
 invisible twice over: a literal implementer never builds it and the
 integrated verification passes without it.
+
+For the record, outside any requirement body: the machinery that enforced
+the previous 3-in-7 count ceiling — both constants, the selector gate, and
+the build warning — is removed by this change, not left disabled. The
+modified quality-gated requirement below states the timeless rule that
+results.
 
 ## ADDED Requirements
 
@@ -69,7 +75,12 @@ not:
   mislabeled as one more than 7 days before it. An older event a note
   refers to in passing is a link in prose, never a declared anchor, so
   freshness cannot be laundered by adding one fresh line beside a stale
-  one.
+  one. Stated honestly: the window is anchored to the post's own declared
+  `date`, which the author writes — nothing compares either date to the
+  build clock, so this check guarantees internal consistency, not absolute
+  recency. Absolute recency is held by the machinery around it: the
+  scout's 7/14-day `expires:` windows keep candidates fresh, and review's
+  existing dates check reads the dates against the world.
 - For an external anchor, review SHALL fetch the source and confirm it
   documents both the event and its date; an anchor that does not hold is
   `false-or-unsupported-claim`.
@@ -161,9 +172,12 @@ touch.
 
 ### Requirement: Posts read as human writing, and the disclosure of AI authorship stands
 
-The prose bar, split the way this repository splits everything: mechanism
-where mechanism is cheap, model-run review where it is not — and a hard
-boundary around disclosure.
+The prose bar, ordered the way the maintainer ordered it: quality first —
+a post earns publication by being worth a stranger's attention, and
+reading human is craft in service of that, a stylistic preference that
+can only be measured so accurately. Measurement where measurement is
+cheap (advisory), model-run judgment where it is not (the gate) — and a
+hard boundary around disclosure.
 
 - Every post SHALL be written to the house voice of record at
   `openspec/style/blog-voice.md` — the lede a fact, specifics over
@@ -172,35 +186,49 @@ boundary around disclosure.
   evidence supports one. The path is outside `openspec/changes/` (which
   archiving moves) and outside `openspec/specs/` (which is reserved, and
   the voice document must stay amendable as ordinary editorial work).
-- A voice lint SHALL fail the build on a post that trips the closed marker
-  list documented in the voice document — density thresholds and presence
-  tells calibrated against a labeled negative corpus and a human sample,
-  with every threshold derived from the measured corpora rather than
-  chosen. The lint's own tests SHALL pin both corpora and assert both
-  directions: it fires on every one of the twelve predecessor posts, and
-  on none of the human sample. A lint change that breaks either direction
-  fails its own tests.
-- What the lint cannot settle, the review job settles: a post that reads
-  as generated SHALL be rejected `reads-as-generated` (see `review`), with
+- A voice lint SHALL run in the prebuild over `content/blog/` posts,
+  measuring the closed marker list documented in the voice document —
+  density thresholds and presence tells calibrated against a labeled
+  negative corpus and a human sample, with the corpora, per-document
+  values and honest limits recorded in
+  `openspec/style/blog-voice-calibration.md`. **The lint is advisory: it
+  SHALL warn, naming for every tripped marker the post, the marker, the
+  measured value and the threshold, and it SHALL NOT fail the build.**
+  This is deliberate, and it joins the repository's two existing
+  warn-not-fail cases (a currency literal in prose; the old over-ceiling
+  post rate): the maintainer's own instruction is that feeling human is a
+  stylistic preference that can only be measured so accurately, and the
+  measured fact is that the house model trips the punctuation-rate markers
+  in every register it writes — a fail-closed gate here would silently
+  stop all `post` work while every component reported success. The lint's
+  own tests SHALL pin both corpora as fixtures and assert the calibration
+  record's measured firing counts against them, and SHALL assert that a
+  tripped marker warns without failing the build.
+- The gate the lint is not, the review job is: a post that reads as
+  generated SHALL be rejected `reads-as-generated` (see `review`), with
   the reviewer's own-words answer recorded in the verdict's `reads-human`
-  field.
+  field. The reviewer MAY cite the lint's warnings as evidence; the
+  verdict, not the count, decides.
 - This requirement governs craft, never disclosure: the site's disclosure
   of AI authorship SHALL stand, and a change that hides, softens or
   qualifies that disclosure so posts "feel human" SHALL be rejected as
   `spec-violation`. The writing must not read machine-made; the site must
   not pretend human-made. Both, always.
 
-#### Scenario: A tell-dense draft fails the build
+#### Scenario: A tell-dense draft is warned on and rejected in review
 
 - **WHEN** a draft post runs 15 semicolons per 1,000 words and narrates
   that "every number in this post is the vendor's own"
-- **THEN** the voice lint fails the build naming each fired marker, its
-  measured value, and its threshold, before review spends a minute on it
+- **THEN** the voice lint warns, naming each tripped marker, its measured
+  value, and its threshold — the build does not fail — and the reviewer,
+  who sees the same prose and may cite the warnings, rejects it
+  `reads-as-generated`
 
 #### Scenario: Smooth, signposted prose is a named rejection
 
-- **WHEN** a draft passes the lint but every paragraph is the same shape,
-  the structure is signposted, and nothing in it would ever be blunt
+- **WHEN** a draft trips no lint marker but every paragraph is the same
+  shape, the structure is signposted, and nothing in it would ever be
+  blunt
 - **THEN** review rejects it `reads-as-generated`, and the record's
   `reads-human` field says where it reads machine-made in the reviewer's
   own words
@@ -222,9 +250,8 @@ day with no qualifying headline opens the scout's synthesis branch (see
 `loop`); it never lowers the bar.
 
 There SHALL be no count ceiling on published posts, and no selector gate or
-build warning SHALL count them; the machinery that enforced the previous
-3-in-7 ceiling is removed with this change, not left disabled. What bounds
-volume instead, each already enforced at its own named point:
+build warning SHALL count them. What bounds volume, each bound enforced at
+its own named point:
 
 - the scout's cap of three candidates per day, mechanical at its merge
   (see `loop`);

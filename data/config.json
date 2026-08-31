@@ -13,7 +13,8 @@
         "entry",
         "tutorial",
         "post",
-        "education"
+        "education",
+        "scout"
       ],
       "machinery": [
         "machinery"
@@ -34,7 +35,8 @@
     "tutorial": 120,
     "post": 120,
     "education": 120,
-    "machinery": 120
+    "machinery": 120,
+    "scout": 60
   },
   "degradation": {
     "window_hours": 48,

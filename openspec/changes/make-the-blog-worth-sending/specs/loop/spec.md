@@ -8,9 +8,20 @@ founding change as three MAYs and never tasked (`addictedtoai-6ov`:
 mover, and none of them creates a proposal) — plus the expiring-candidate
 rules the scout needs; the budget table and the degradation order place
 `scout` in the new-writing category and shed it first. Deliberate edits
-inside restated blocks are exactly three, disclosed here: the side-output
-sentence gains the scout exception, the proposal front-matter list gains
-an optional `expires:`, and the degradation lists gain `scout`.
+inside restated blocks are exactly four, disclosed here and re-counted by
+word-diff against the live text on 2026-08-30: the side-output sentence
+gains the scout exception; the proposal front-matter list gains an
+optional `expires:`; the degradation lists (the shed-order sentence, the
+level-1 list, and their scenario) gain `scout`; and the budget requirement
+gains one rationale sentence — `scout` spends from the new-writing share —
+beside the table row that places it there.
+
+One comparison lives here rather than in any requirement body, because it
+names a predecessor that requirement text should not anchor to: the
+predecessor site's docket showed a 57% kill rate that was legible only
+because every kill was filed, and the drop-record discipline below adopts
+that form. What the records can and cannot prove is stated in the
+requirement itself.
 
 ## MODIFIED Requirements
 
@@ -313,10 +324,14 @@ itself.**
 - What the scout declines SHALL be recorded, never silently dropped: each
   considered-and-declined story becomes one record in
   `data/proposals/dropped/`, naming which test it failed and what would
-  make it worth refiling. The drop records are the proof the bar is real —
-  a high kill rate that leaves no trace is indistinguishable from no bar
-  at all, and the predecessor's measured 57% kill rate was legible only
-  because every kill was filed.
+  make it worth refiling. Stated honestly, the way this repository states
+  it about `would-cite`: the records prove the **form** of the bar, not
+  its **rate** — nothing measures how many stories the scout considered,
+  so a scout that sweeps forty sources and writes three drop records is
+  mechanically indistinguishable from one that considered six. The bar
+  itself is an instruction to a model, checked by a model-run review from
+  its checklist; the records are what make that check auditable after the
+  fact, and that is all they are claimed to do.
 - A day with no external story that clears the bar SHALL open the
   **synthesis branch**: the scout considers whether the accumulated
   recorded evidence — the change feed, the snapshots, the corpus's data
@@ -329,6 +344,16 @@ itself.**
   outcome the ledger records as such, and a success. Zero candidates on a
   quiet day is the bar working; a candidate manufactured to fill a day is
   the failure.
+- **The blocked streak SHALL have a witness.** A `blocked:` scout outcome
+  is a success everywhere it is counted — breakers exclude it, health
+  streaks end on it — so nothing in the loop can distinguish a year of
+  honest quiet from a bar nothing can clear. The build SHALL therefore
+  derive, from `data/ledger.jsonl`, the count of consecutive scout runs
+  ending `blocked:` (reset by any scout run that files a candidate) and
+  record it in the published `/status.json` alongside the build stamp.
+  Observability without obligation: no threshold, no floor, no breaker
+  reads it — it exists so that a person or a later job can see the streak
+  without excavating the ledger, and it obliges nothing.
 - A scout run's diff — candidates and drop records, all model-written —
   SHALL pass the ordinary review gate before it merges, like every other
   Desk job's.
@@ -354,6 +379,14 @@ itself.**
 - **THEN** the scout ends `blocked: nothing cleared the bar`, the ledger
   records it, no candidate is filed, and nothing anywhere treats the day
   as a failure
+
+#### Scenario: A long quiet spell is visible without being punished
+
+- **WHEN** fourteen consecutive scout runs end `blocked: nothing cleared
+  the bar`
+- **THEN** `/status.json` reports the streak of 14, no breaker trips, no
+  floor opens, nothing selects differently — and anyone reading the
+  published status can see the quiet without opening the ledger
 
 #### Scenario: A quiet day yields a synthesis instead
 

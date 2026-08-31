@@ -18,12 +18,21 @@ ordinary editorial work, recorded in git, not an OpenSpec change.
 - For **prose voice** they are the **negative corpus**. The maintainer's own
   verdict: *"The quality was very good, but obviously AI generated."* Their
   measured tells are §3's labeled examples, and the voice lint's tests
-  assert it fires on them.
+  assert it warns on them.
 
 There is therefore **no positive exemplar of the target voice in this
 repository**. §2 defines the voice on its own terms, with fresh
 before/after pairs, because "write like X" is not available and pretending
 otherwise would launder the negative corpus back in.
+
+One ordering rule governs everything below, per the maintainer's own
+priority: **quality outranks sounding human.** A post is judged first on
+whether it is worth a stranger's attention — feeling human is a stylistic
+preference that can only be measured so accurately, which is why §3's
+mechanical half advises rather than gates. Never trade a specific,
+well-evidenced sentence for one that merely scores better against the
+tells; and nothing here is a reason to conceal AI authorship, which the
+site discloses on every page.
 
 ## §1 — The reader, and the one boundary
 
@@ -78,56 +87,78 @@ qualify that. The writing must not *read* machine-made; the site must not
 
 ## §3 — The tells
 
-Every threshold below was **measured, not chosen**: calibrated 2026-08-30
-against the twelve-post negative corpus and a nine-piece human sample of
-technology journalism on the same beat, so that each marker fires on the
-former and on none of the latter. The distributions, the corpora, and the
-derivation method are recorded in the `make-the-blog-worth-sending` change's
-`design.md`; recalibrating means re-running that derivation on a new
-corpus, never re-deciding a number by hand.
+Every number below was measured, 2026-08-30, against the twelve-post
+negative corpus and a nine-piece human sample on the same beat. The
+corpora, the instrument, the per-document values, and the honest limits —
+fitted thresholds, single-punctuation-mark margins, a sample that is
+neither era- nor length-matched — are recorded in
+`openspec/style/blog-voice-calibration.md`, beside this file;
+recalibrating means re-running that derivation on a new corpus and
+rewriting that record, never re-deciding a number by hand. (The
+`make-the-blog-worth-sending` change's `design.md` is the history of the
+first derivation, not its record of record — archiving moves it.)
 
-**Mechanical — the voice lint fails the build on these, for posts.** The
-closed list lives in the lint script; this is its documentation. Counted
-outside code fences, blockquotes, and dated correction blocks:
+**Advisory — the voice lint warns on these, for posts, and never fails the
+build.** The closed list lives in the lint script; this is its
+documentation. Counted outside code fences, blockquotes, and dated
+correction blocks. The thresholds separate the house model's measured
+default register from edited technology writing on the corpora measured —
+they are not a validated AI detector, and the same model trips the
+punctuation rates in every register it writes, which is exactly why they
+advise instead of gate. The build-failing voice gate is the review verdict
+(`reads-as-generated`), a model's judgment with a named reason; the
+warnings are the writer's checklist and a signal the reviewer may cite:
 
 - **Semicolons above 2.5 per 1,000 words** (the negative corpus runs
-  2.7–11.1; the human sample tops out at 2.1). The strongest separator
-  measured — every one of the twelve fired, no human piece did.
-- **Em-dashes above 10 per 1,000 words** (negative corpus median 15.9;
-  human maximum 9.4 — a dash-loving human stays under this). Density, not
-  presence: the dash itself is not banned, the habit is. It is also the
-  most widely meme-recognized tell there is, so readers now run this check
-  whether or not it is statistically sound — perceived tells are tells.
+  1.85–5.98 per piece, ten of twelve above the line; the human sample tops
+  out at 2.15). The habit to replace: clauses glued with semicolons where
+  a full stop would be blunter. An earlier version of this file reported
+  2.7–11.1 firing twelve of twelve; the maximum was a statute-citation
+  entity miscount, corrected in the calibration record.
+- **Em-dashes above 10 per 1,000 words** (negative corpus median 15.0,
+  nine of twelve above the line; human maximum 9.9 — a dash-loving human
+  stays under this, by one dash). Density, not presence: the dash itself is
+  not banned, the habit is. It is also the most widely meme-recognized tell
+  there is, so readers now run this check whether or not it is
+  statistically sound — perceived tells are tells.
 - **Self-narration, any occurrence**: "this post", "this piece",
   "labelled/labeled as such", "as claims here", "measured here",
-  "attributed here". Ten of the twelve carried these (one carried 22);
-  zero human pieces did. Show the discipline (§2.2); never narrate it.
+  "attributed here". Ten of the twelve carried these (one carried 26);
+  zero human pieces did, on every sample measured — the cleanest marker in
+  the list, and the most directly fixable. Show the discipline (§2.2);
+  never narrate it.
 - **Two or more headers beginning "What", "Why" or "How"** — 22 of the
   negative corpus's 76 headers caption their own function this way; 0 of
-  the human sample's 25 do.
-- **Register guards, zero-tolerance**: a "Conclusion" / "Key takeaways" /
+  the human sample's 24 do.
+- **Register guards, presence-level**: a "Conclusion" / "Key takeaways" /
   "In summary" / "Final thoughts" header; the phrases "let's dive",
   "deep dive", "only time will tell", "in today's rapidly evolving",
   "stands as a testament", "navigate the complexities", "it's worth noting
   that"; the focal-word family (delve, tapestry, showcase, underscore,
   boast, pivotal, crucial, robust, seamless, landscape, realm, testament,
   vibrant, foster, garner, leverage, intricate, comprehensive, notably,
-  moreover, furthermore, additionally) above **3 per 1,000 words**. None of
-  these fire on either corpus today — the house model does not delve. They
-  exist because the author model is swappable by design (`runners.yml`),
-  and the next model may; the rate threshold sits at double the human
-  sample's maximum (1.3/1k) so ordinary use of ordinary words never trips.
+  moreover, furthermore, additionally) above **3 per 1,000 words**. None
+  fire on the negative corpus — the house model does not delve. They exist
+  because the author model is swappable by design (`runners.yml`), and the
+  next model may. Two false-positive modes are measured and recorded in
+  the calibration file: quoted material (a spokesperson's "robustly" is
+  their word, not the writer's) and short pieces, where a single word can
+  clear a rate threshold — a note has no minimum length, so a rate warning
+  on a short note is a prompt to read, not a verdict.
 - **A list of three or more items, every one opening bold** — validated
   against the negative corpus and the literature only; human news HTML
   does not use markdown lists, so the two-direction test does not apply
   and this marker stays deliberately narrow.
 
-The list is deliberately short. A lint that bans ordinary connectives
-produces stilted prose, which is its own tell — and two famous markers are
-**excluded because they failed validation**: the "delve"-family at
-presence level fires on good human journalism more than on the negative
-corpus, and "not just X, but Y" occurs at *twice* the rate in the human
-sample. Do not re-add a marker without re-running the two-direction check.
+The list is deliberately short, and it is written to be followable by a
+weaker model than the one that derived it: every marker is a literal count
+with a stated substitute habit, never a quality judgment in disguise. A
+lint that bans ordinary connectives produces stilted prose, which is its
+own tell — and two famous markers are **excluded because they failed
+validation**: the "delve"-family at presence level fires on good human
+journalism more than on the negative corpus, and "not just X, but Y"
+occurs at *twice* the rate in the human sample. Do not re-add a marker
+without re-running the two-direction check.
 
 **Judgment — the review job rejects as `reads-as-generated`.** What no
 string or rate check settles, the reviewer settles, in its own words, in
