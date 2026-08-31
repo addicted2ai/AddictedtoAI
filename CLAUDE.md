@@ -29,6 +29,32 @@ different one, and it is not negotiable either:
 > A failing gate is a stop, not a warning. The remote deploys on push, so an
 > unverified push is a public defect.
 
+**CLEARING `HOLD.md` — granted 2026-08-30, SCOPED to the execution of
+`make-the-blog-worth-sending`.** The maintainer's words: *"I would rather grant
+you authority to clear the halt you'd diagnosed, for this change at least. If
+this goes like all the other changes, you will encounter several unforeseen
+issues, I want you to work through them!"* He also accepted scope creep needed
+to resolve them, asking only that actions and decisions be documented — in the
+change artifacts or in beads, whichever fits.
+
+**The word `diagnosed` is the whole grant, and it is not a formality.** The
+order is fixed and never varies:
+
+1. Read `HOLD.md` and find out what actually tripped.
+2. **Fix the cause.** Not the symptom, and not the detector.
+3. Record what tripped, what you found and what you changed — artifacts or beads.
+4. *Then* remove the file, and only then.
+
+Clearing a halt to get past a guardrail is the precise thing this repository
+forbids everywhere else — *"a run blocked by a guardrail reports it and stops; it
+does not loosen the guardrail to get past it."* That still stands. This grant
+changes who may clear a **diagnosed and repaired** halt; it does not make the
+halt skippable, and a halt you cannot diagnose is a halt you must leave standing
+and report. The grant is also the orchestrator's between runs, never a job's:
+a job that clears its own halt is the conflict of interest the brake exists for.
+
+Outside this change, `HOLD.md` removal remains reserved.
+
 Still requiring the maintainer, and still not the agent's to take:
 
 - **`bd dolt push`** — the beads remote is a separate decision he has not made.
