@@ -200,9 +200,10 @@ directive](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32019L
 added text and data mining, meaning the automated analysis of large bodies of
 material to extract patterns from it, and allowed reproductions of "lawfully
 accessible works" for that purpose. Then it attached a switch. The exception
-does not apply where use "has been expressly reserved by their rightholders in
-an appropriate manner, such as machine-readable means in the case of content
-made publicly available online." That changes the question completely. It stops
+applies only on condition that the use "has not been expressly reserved by
+their rightholders in an appropriate manner, such as machine-readable means in
+the case of content made publicly available online." That changes the question
+completely. It stops
 being whether the use was fair and becomes whether a reservation was made and
 whether it was made in a form a crawler could read, which is settled by file
 formats and headers rather than by argument about purpose.
