@@ -89,6 +89,66 @@ export function parseCarry(data) {
   return { carry, carryWarnings };
 }
 
+/**
+ * `corrections:` — the answer to "is a review record's front matter
+ * append-only history, or a live claim?" (beads addictedtoai-4fo).
+ *
+ * HISTORY. A record's `date:` already marks it as what a specific reviewer
+ * concluded on a specific day; `would-cite` is that reviewer's own-words
+ * answer to a question asked once, not a standing promise the field keeps
+ * re-answering as the world moves. Measured, not assumed: neither
+ * `loop/lib/review.mjs`'s merge gate nor `scripts/verify-launch.mjs` ever
+ * re-checks a `would-cite` against anything but emptiness and exact-duplicate
+ * text against OTHER records, once, at merge/launch time — nothing here reads
+ * it as current, so nothing here had to change for that half of the decision.
+ *
+ * What was missing is a correctable path for when a `would-cite` (or any
+ * other front-matter judgment) is later found wrong, that does not erase what
+ * was actually approved — an in-place edit destroys the only evidence of what
+ * the reviewer originally concluded, which is precisely the harm this repo's
+ * own practice already avoids in record BODIES: `seed-technique-speculative-
+ * decoding.md` and the `b2-prices` recheck sections (`addictedtoai-sdh`) both
+ * append a dated, sourced correction next to the original wording rather than
+ * rewriting it. `corrections:` is that same rule, made structured and
+ * mechanically checkable, reusing the EXACT shape `lib/schema.mjs` already
+ * uses for the identical problem on published `post` prose —
+ * `corrections: [{date, text}]` — rather than inventing a second one: two
+ * conventions for "a dated claim was later found wrong, append rather than
+ * edit" would drift apart the moment someone learns only one of them.
+ *
+ * Read from front matter only, like `carry:` and for the same reason: a
+ * runner too weak to need would-cite's plain-text fallback is exactly the
+ * runner most likely to produce a corrections entry that parses into
+ * something it did not mean.
+ */
+export function parseCorrections(data) {
+  const raw = data?.corrections;
+  if (raw === undefined || raw === null) return { corrections: [], correctionWarnings: [] };
+  const list = Array.isArray(raw) ? raw : [raw];
+  const corrections = [];
+  const correctionWarnings = [];
+  const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  list.forEach((entry, i) => {
+    const at = `corrections[${i}]`;
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      correctionWarnings.push(`${at}: not a mapping with date/text — skipped`);
+      return;
+    }
+    const date = String(entry.date ?? '').trim();
+    const text = String(entry.text ?? '').trim();
+    if (!ISO_DATE_RE.test(date)) {
+      correctionWarnings.push(`${at}: \`date\` is ${JSON.stringify(date)}, not an ISO date (YYYY-MM-DD) — skipped`);
+      return;
+    }
+    if (!text) {
+      correctionWarnings.push(`${at} (${date}): no non-empty \`text\` — skipped`);
+      return;
+    }
+    corrections.push({ date, text });
+  });
+  return { corrections, correctionWarnings };
+}
+
 /** Parse a verdict record. Front matter first; a plain-text fallback keeps weaker runners usable. */
 export function parseVerdict(text) {
   let data = {};
@@ -144,6 +204,7 @@ export function parseVerdict(text) {
   // enough to need the plain-text path is exactly the runner most likely to
   // produce a carry entry that parses into something it did not mean.
   const { carry, carryWarnings } = parseCarry(hasFrontMatter ? data : {});
+  const { corrections, correctionWarnings } = parseCorrections(hasFrontMatter ? data : {});
 
   return {
     verdict,
@@ -152,6 +213,8 @@ export function parseVerdict(text) {
     readsHuman: String(readsHuman ?? '').trim(),
     carry,
     carryWarnings,
+    corrections,
+    correctionWarnings,
     notes: body.trim(),
     // The record's front matter as parsed, so a caller that needs a key this
     // parser does not interpret — `subject:`, `reviewed:`, `job:`, `date:` —

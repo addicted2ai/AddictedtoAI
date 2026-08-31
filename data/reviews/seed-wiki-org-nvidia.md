@@ -9,6 +9,20 @@ would-cite: >-
   every Anthropic and Google batch row discounts.
 reviewer: rr5b
 date: 2026-08-29
+corrections:
+  - date: "2026-08-31"
+    text: >-
+      The `would-cite` above is wrong on two counts. It is stale as a count:
+      the 28 August snapshot (`previous.json`) had exactly one batch row
+      dearer on both meters, but the 29 August snapshot (`latest.json`) has
+      ten, so "the only one" is no longer true even of the dated claim it
+      names. It also attributes the inversion to NVIDIA: the standard and
+      batch Nemotron 3 Ultra rows are headed by two different resellers
+      (DeepInfra, Together) that never quote against each other, and NVIDIA
+      prices neither. See "Recheck, 2026-08-29 (b2-prices)" below for the
+      measurement. `would-cite` is left as originally written, per
+      addictedtoai-4fo: a review record's front matter is append-only
+      history, corrected by appending here rather than by editing the field.
 ---
 
 Round 2, sealed. Findings written before opening round 1. Every census re-run

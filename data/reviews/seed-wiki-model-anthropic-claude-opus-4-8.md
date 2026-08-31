@@ -10,6 +10,18 @@ would-cite: >-
   sticker ever moving, which is the distinction that argument keeps eliding.
 reviewer: r8-opus
 date: 2026-08-28
+corrections:
+  - date: "2026-08-31"
+    text: >-
+      Cosmetic, not a false figure: the $5/M is correct and is Anthropic's own
+      rate on four of the five releases named. But "has billed" over-attributes
+      — the opus-4.1 comparator in the same five-release run is headed by two
+      resellers (Amazon Bedrock, Google Vertex), not Anthropic, so the verb
+      claims a pricing decision Anthropic did not make on that row. See
+      "Recheck, 2026-08-29 (b2-prices)" below. `would-cite` is left as
+      originally written, per addictedtoai-4fo: a review record's front
+      matter is append-only history, corrected by appending here rather than
+      by editing the field.
 ---
 
 Checklist: model entry, no cited URLs — every claim is feed arithmetic.

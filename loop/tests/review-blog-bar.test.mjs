@@ -261,12 +261,13 @@ test('3.1 one normaliser and one sweep serve both fields', () => {
   ctx.cleanup();
 });
 
-test('3.1 the four re-issue refusals are named together, so callers need not list them by hand', () => {
+test('3.1 the five re-issue refusals are named together, so callers need not list them by hand', () => {
   assert.deepEqual([...REISSUE_CODES], [
     'would-cite-empty',
     'would-cite-duplicate',
     'reads-human-empty',
     'reads-human-duplicate',
+    'corrections-malformed',
   ]);
   for (const c of REISSUE_CODES) assert.equal(isReissueRefusal(c), true);
   for (const c of ['no-record', 'malformed-verdict', 'reviewed-subject-mismatch', 'revise', 'reject']) {

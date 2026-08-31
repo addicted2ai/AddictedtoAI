@@ -87,12 +87,19 @@ export function needsReadsHuman(type) {
  * `loop/run.mjs` now calls `isReissueRefusal(gate.code)`. The literals live
  * here and nowhere else, so a fifth refusal code joins that branch by being
  * added to this list.
+ *
+ * `corrections-malformed` (beads addictedtoai-4fo) joins on the same
+ * argument: a reviewer's `corrections:` block with a missing date or text is
+ * the reviewer's own clerical slip in an optional field, not a defect in the
+ * work under review, so it is fixed by re-issuing the verdict rather than by
+ * sending the author into a revision pass.
  */
 export const REISSUE_CODES = Object.freeze([
   'would-cite-empty',
   'would-cite-duplicate',
   'reads-human-empty',
   'reads-human-duplicate',
+  'corrections-malformed',
 ]);
 
 export function isReissueRefusal(code) {
@@ -669,6 +676,24 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects }) {
         };
       }
     }
+  }
+  // `corrections:` (specs/review, beads addictedtoai-4fo): front matter is
+  // append-only history, and this is its correction path — same shape as
+  // `postSchema.corrections` in `lib/schema.mjs`, `[{date, text}]`, so the two
+  // places this repo solves "a dated claim was later found wrong" cannot drift
+  // into two different rules. Refused here on the same terms as an empty
+  // `would-cite`: a malformed entry is a record the merge should not accept,
+  // not a warning to notice later.
+  if (v.correctionWarnings?.length) {
+    return {
+      ok: false,
+      code: 'corrections-malformed',
+      reason:
+        `the record's \`corrections:\` entries do not all carry a non-empty ISO \`date\` and ` +
+        `\`text\`: ${v.correctionWarnings.join('; ')}. A correction that cannot itself be read ` +
+        'is not a correction.',
+      verdict: v,
+    };
   }
   return { ok: true, verdict: v, path };
 }

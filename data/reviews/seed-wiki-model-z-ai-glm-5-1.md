@@ -9,6 +9,18 @@ would-cite: >-
   GLM-5.2 shipped 1,048,576 tokens for less money than this row charges.
 reviewer: rr1b
 date: 2026-08-29
+corrections:
+  - date: "2026-08-31"
+    text: >-
+      The `would-cite` above is wrong on both pricing claims: at Z.ai's own
+      endpoint, glm-5.1 and glm-5.2 charge the identical rate (0.0000014 in /
+      0.0000044 out), so 5.2 did not ship "for less money" and this row did
+      not "roughly double" the input price — both readings were an artifact
+      of two different resellers (AtlasCloud, SiliconFlow) heading the two
+      rows. See "Recheck, 2026-08-29 (b2-prices)" below for the measurement.
+      `would-cite` is left as originally written, per addictedtoai-4fo: a
+      review record's front matter is append-only history, corrected by
+      appending here rather than by editing the field.
 ---
 
 Round 2, sealed. Findings written before opening round 1. This body is a

@@ -507,6 +507,22 @@ function checkReviews(corpus, dataDir) {
     problems.push(`data/reviews/${c} — one record cannot be the review of two pieces.`);
   }
 
+  // `corrections:` shape (specs/review, beads addictedtoai-4fo): front matter
+  // is append-only history, and this is the mechanically-checked correction
+  // path — reusing the `[{date, text}]` shape `lib/schema.mjs` already uses
+  // for `post.corrections`. Checked over EVERY record in data/reviews/, not
+  // just the ones joined to a reviewable piece: the shape can be wrong on a
+  // record for a machinery job or an unjoined subject too, and the same rule
+  // the merge gate refuses at (`corrections-malformed`) applies here so a
+  // malformed correction cannot become valid merely by predating this check.
+  let withCorrections = 0;
+  for (const rec of records.values()) {
+    if (rec.verdict.corrections?.length) withCorrections += 1;
+    for (const w of rec.verdict.correctionWarnings ?? []) {
+      problems.push(`data/reviews/${rec.name}: malformed \`corrections:\` entry — ${w}`);
+    }
+  }
+
   // The four states, from the one join (specs/review, beads addictedtoai-zlq).
   // MISMATCHED fails: a record exists, it carries a hash for this piece, and
   // the piece's reviewed surface has moved since — the approval describes text
@@ -651,6 +667,10 @@ function checkReviews(corpus, dataDir) {
           `canonical one: ${nonCanonical.slice(0, 6).join(', ')}` +
           (nonCanonical.length > 6 ? `, +${nonCanonical.length - 6} more` : '')
         : '',
+      `${withCorrections} record(s) in data/reviews/ carry a well-formed \`corrections:\` entry — ` +
+        'front matter is append-only history (addictedtoai-4fo): a stale `would-cite` is corrected ' +
+        'by appending a dated `{date, text}` entry, never by editing the field, and a malformed ' +
+        'entry fails this check by name.',
     ].filter(Boolean),
     shortfall:
       problems.length === 0
