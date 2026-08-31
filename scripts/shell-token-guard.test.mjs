@@ -99,6 +99,27 @@ const MUST_REFUSE = [
   `dash -c "${T} /x"`,
   `bash -c "git -C D:/AddictedtoAI status; ${T} /x"`,
   `bash -c 'bash -c "${T} /x"'`,
+  // cmd.exe wrapped shell code, typed from a Bash command line — the exact
+  // gap addictedtoai-1ho4 measured: `cmd //c "..."` from Git Bash, where the
+  // doubled slash is just the MSYS escape for a single slash and so does
+  // not even look unusual
+  `cmd //c "${T} /x"`,
+  `cmd /c "${T} /x"`,
+  `cmd.exe /c "${T} /x"`,
+  `cmd //k "${T} /x"`,
+  `cmd /k "${T} /x"`,
+  // a benign flag (disable AutoRun) sitting between the wrapper and its /c
+  // switch must not defeat detection
+  `cmd /d /c "${T} /x"`,
+  `cmd //d //c "${T} /x"`,
+  // the exact real-world violation this issue was opened from
+  `cmd //c "${T} /d D:/AddictedtoAI && npm test"`,
+  // powershell / pwsh invoked FROM a Bash command line — distinct from the
+  // PowerShell arm, which handles these when PowerShell is the tool itself
+  `powershell -Command "${T} C:/x"`,
+  `powershell.exe -Command "${T} C:/x"`,
+  `pwsh -c '${T} /x'`,
+  `pwsh -Command "${T} /x"`,
 ];
 
 /**
@@ -201,6 +222,29 @@ const MUST_ALLOW = [
   'curl -s "https://example.com/x?a=1&b=2#frag"',
   'PATH=/usr/bin:$PATH node --version',
   'sed -n \'1,20p\' D:/AddictedtoAI/AGENTS.md',
+  // a cmd.exe wrapper whose content is itself clean — the wrapper alone
+  // must not be blocked
+  'cmd /c "npm --prefix D:/AddictedtoAI test"',
+  'cmd //c "git -C D:/AddictedtoAI status"',
+  'cmd.exe /c "node D:/AddictedtoAI/scripts/x.mjs"',
+  'cmd /d /c "npm --prefix D:/AddictedtoAI test"',
+  // "cmd" as a bare word, or followed by a flag that is not /c or /k, opens
+  // no shell code to rescan and refuses nothing on its own
+  'cmd',
+  'cmd /?',
+  'cmd --version',
+  // the letters as a path segment under a cmd-look-alike directory
+  'ls src/cmd/',
+  'ls D:/AddictedtoAI/src/cmd-utils/',
+  // powershell/pwsh invoked from Bash with clean content, or with a flag
+  // that is not -Command/-c and so is not re-scanned as code at all
+  'powershell -Command "Get-ChildItem D:/AddictedtoAI"',
+  'pwsh -c "Write-Output hello"',
+  'powershell -File D:/AddictedtoAI/scripts/x.ps1',
+  'pwsh.exe -NoProfile -Command "git status"',
+  // the probe controls this issue's own measurement used
+  'npm --prefix D:/AddictedtoAI test',
+  'some-tool --cdn-check',
   // the empty and trivial cases
   '',
   'true',
@@ -273,6 +317,38 @@ test('shell code inside a shell invocation is reported as nested', () => {
 test('the first occurrence is reported, not the last', () => {
   const command = `ls && ${T} /a && ${T} /b`;
   assert.equal(findForbiddenToken(command).index, command.indexOf(T));
+});
+
+/**
+ * addictedtoai-1ho4: the cmd.exe wrapper gap, and the powershell/pwsh
+ * mirror of `bash -c`, both typed from a Bash command line.
+ */
+test('a cmd.exe wrapper is recognised as shell code, from Bash', () => {
+  assert.equal(findForbiddenToken(`cmd //c "${T} /x"`).nested, true);
+  assert.equal(findForbiddenToken(`cmd /c "${T} /x"`).nested, true);
+  assert.equal(findForbiddenToken(`cmd.exe /k "${T} /x"`).nested, true);
+  assert.equal(findForbiddenToken(`cmd /c "npm --prefix D:/AddictedtoAI test"`), null);
+});
+
+test('a flag between the cmd wrapper and its /c switch does not defeat detection', () => {
+  assert.ok(findForbiddenToken(`cmd /d /c "${T} /x"`), '/d must not close shell-invocation tracking');
+  assert.ok(findForbiddenToken(`cmd //d //c "${T} /x"`), 'the MSYS-doubled-slash form of /d must not either');
+});
+
+test('powershell/pwsh invoked from Bash is re-scanned with the PowerShell grammar, not the Bash one', () => {
+  // Backtick means something different in each grammar: PowerShell's escape
+  // character versus Bash's command-substitution boundary. Bash's own
+  // quote-reader does not touch a backtick inside a double-quoted string
+  // (only backslash is special there), so the literal backticks survive
+  // into the nested content unchanged. `c`d de-escapes to the literal token
+  // under PowerShell rules and must be refused; under Bash's rules the same
+  // text would split into two harmless words "c" and "d" and slip through.
+  // Finding it here proves the nested scan used the PowerShell reader.
+  const command = `powershell -Command "\`${T[0]}\`${T[1]} C:/x"`;
+  const finding = findForbiddenToken(command);
+  assert.ok(finding, 'the nested PowerShell content must be scanned with PowerShell rules');
+  assert.equal(finding.nested, true);
+  assert.equal(findForbiddenToken(`powershell -Command "Get-ChildItem D:/AddictedtoAI"`), null);
 });
 
 /**

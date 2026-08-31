@@ -132,6 +132,17 @@ const MUST_REFUSE_PS = [
   // after the closer instead of discarding the rest of that line
   `@'\nharmless prose about the rule\n'@; ${T} C:/x`,
   `Set-Content -Path D:/AddictedtoAI/x.txt -Value @"\nprose\n"@; ${T} C:/x`,
+
+  // cmd.exe wrapped shell code, typed from a PowerShell command line — the
+  // mirror case addictedtoai-1ho4 asked to check: the same real hole as the
+  // Bash arm's `cmd //c "..."`, just via the PowerShell tool instead. `&`
+  // is already a command-position opener, so it needs no separate handling.
+  `cmd /c "${T} C:/x"`,
+  `cmd.exe /c "${T} C:/x"`,
+  `cmd /k "${T} C:/x"`,
+  `& cmd /c "${T} C:/x"`,
+  // a benign flag (disable AutoRun) between the wrapper and its /c switch
+  `cmd /d /c "${T} C:/x"`,
 ];
 
 /**
@@ -257,6 +268,24 @@ const MUST_ALLOW_PS = [
   // "always opens a new one" (also wrong) would both mis-handle this
   `Get-ChildItem \`\n${T} C:/x`,
 
+  // a cmd.exe wrapper whose content is itself clean — the wrapper alone
+  // must not be blocked (addictedtoai-1ho4's mirror case)
+  `cmd /c "npm --prefix D:/AddictedtoAI test"`,
+  `& cmd /c "git -C D:/AddictedtoAI status"`,
+  `cmd.exe /c "Write-Output hello"`,
+  `cmd /d /c "npm --prefix D:/AddictedtoAI test"`,
+  // `Start-Process cmd`, bare, opens an interactive shell with no code
+  // argument — nothing here to rescan, so it is correctly left alone.
+  // `Start-Process cmd -ArgumentList ...` is a documented gap, not this.
+  `Start-Process cmd`,
+  // "cmd" as a bare word, or followed by a flag that is not /c or /k, opens
+  // no shell code to rescan and refuses nothing on its own
+  `cmd`,
+  `cmd /?`,
+  // the letters as a path segment under a cmd-look-alike directory
+  `Get-ChildItem D:/AddictedtoAI/src/cmd/`,
+  `& D:/AddictedtoAI/cmd-helpers.ps1`,
+
   // the empty and trivial cases
   '',
   `'Get-ChildItem'`,
@@ -321,6 +350,38 @@ test('shell code inside an interpreter invocation is reported as nested, and rou
 test('the here-string closer is not a blind spot: a real command after it on the same line is still caught', () => {
   const finding = findForbiddenTokenPowerShell(`@'\nharmless prose\n'@; ${T} C:/x`);
   assert.ok(finding, 'a command chained after the here-string closer must still be scanned');
+});
+
+/**
+ * addictedtoai-1ho4's mirror case: `cmd /c "..."` typed inside the
+ * PowerShell tool, and the routing decision that its content — like a POSIX
+ * shell's — goes to the Bash-grammar scanner, not this PowerShell one.
+ */
+test('a cmd.exe wrapper is recognised as shell code, from PowerShell', () => {
+  assert.equal(findForbiddenTokenPowerShell(`cmd /c "${T} C:/x"`).nested, true);
+  assert.equal(findForbiddenTokenPowerShell(`& cmd /c "${T} C:/x"`).nested, true);
+  assert.equal(findForbiddenTokenPowerShell(`cmd.exe /k "${T} C:/x"`).nested, true);
+  assert.equal(findForbiddenTokenPowerShell(`cmd /c "npm --prefix D:/AddictedtoAI test"`), null);
+  assert.equal(findForbiddenTokenPowerShell(`Start-Process cmd`), null);
+});
+
+test('a flag between the cmd wrapper and its /c switch does not defeat detection, from PowerShell', () => {
+  assert.ok(findForbiddenTokenPowerShell(`cmd /d /c "${T} C:/x"`), '/d must not close shell-invocation tracking');
+});
+
+test('cmd.exe content, from PowerShell, is re-scanned with the Bash grammar, not the PowerShell one', () => {
+  // Backslash means something different in each grammar: Bash's escape
+  // character versus an ordinary literal character in PowerShell (which
+  // escapes with a backtick instead). Inside a SINGLE-quoted argument
+  // neither grammar's own quote-reader touches a backslash, so what happens
+  // next depends entirely on which scanner re-reads the unescaped content:
+  // the Bash reader un-escapes \c\d into the literal token and refuses it;
+  // the PowerShell reader would leave the backslashes in place and allow
+  // it. Refusing here proves cmd's content was handed to the Bash reader.
+  const command = `cmd /c '\\${T[0]}\\${T[1]} C:/x'`;
+  const finding = findForbiddenTokenPowerShell(command);
+  assert.ok(finding, 'cmd content must be scanned with Bash rules, where a backslash escapes');
+  assert.equal(finding.nested, true);
 });
 
 test('the refusal names the token, the substitutes, and no rewritten command', () => {

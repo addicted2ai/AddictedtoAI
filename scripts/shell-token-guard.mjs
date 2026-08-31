@@ -56,6 +56,27 @@
  * rather than treated as an opaque string. Otherwise the guard would teach the
  * one-line workaround as it refused.
  *
+ * WIDENED FOR ADDICTEDTOAI-1HO4: `cmd //c "..."` / `cmd /c "..."` /
+ * `cmd.exe /c "..."` / `cmd //k "..."` / `cmd /k "..."`, and
+ * `powershell -Command "..."` / `pwsh -c "..."`, typed from a BASH command
+ * line, are recognised as wrappers whose quoted argument is executable code
+ * and re-scanned rather than treated as an opaque string, exactly as
+ * `bash -c` already was. This is the measured gap: `cmd //c "..."` from Git
+ * Bash is an ordinary thing to write — the doubled slash is just the MSYS
+ * escape for a single slash, so it does not even look unusual — and the
+ * matcher never looked inside it because it did not know `cmd` as a wrapper
+ * at all. A benign flag such as `/d` (disable AutoRun) may sit between the
+ * `cmd` wrapper and its `/c`/`/k` switch and is simply not matched by the
+ * switch pattern rather than closing shell-invocation tracking, so the
+ * switch is still found when it arrives. `cmd`'s own content has no
+ * dedicated grammar here — it is closer to POSIX word-splitting than to
+ * PowerShell's, and building a third grammar for it is out of scope — so it
+ * is re-scanned with this same Bash-grammar function; a genuine
+ * `powershell`/`pwsh` wrapper routes to the PowerShell arm's grammar below
+ * instead, because PowerShell's rules (case-insensitive names, backtick as
+ * escape rather than substitution) are different enough that reusing the
+ * Bash reader would both miss and mis-scan real cases.
+ *
  * It never rewrites a command. A hook that "fixes" the command hides the
  * failure and teaches nothing; this one refuses, names the token, quotes the
  * fragment, and names the substitutes.
@@ -106,6 +127,28 @@ const SHELLS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh', 'ash', 'bash.exe', '
 
 /** `-c`, `-lc`, `-lec`, … — a flag cluster ending in c takes the code. */
 const TAKES_CODE = /^-[A-Za-z]*c$/;
+
+/**
+ * cmd.exe wrappers recognised from a Bash command line (addictedtoai-1ho4).
+ *
+ * `cmd //c "..."` from Git Bash is an ordinary thing to write — the doubled
+ * slash is just the MSYS escape for a single slash, so it does not even look
+ * unusual — and the matcher below never looked inside it: it did not know
+ * `cmd` as a wrapper at all. Matched case-insensitively (`CMD`, `Cmd.EXE`
+ * all resolve to the same real binary); `SHELLS` above stays case-sensitive
+ * on purpose, this set does not need to.
+ */
+const CMD_WRAPPERS = new Set(['cmd', 'cmd.exe']);
+
+/**
+ * cmd.exe's `/c` and `/k` switches — single- or MSYS-doubled-slash, either
+ * letter case: `/c` `/C` `//c` `//C` `/k` `/K` `//k` `//K`. Both take a
+ * command string to run; a benign flag such as `/d` (disable AutoRun) may
+ * sit between the wrapper and this switch — `cmd /d /c "..."` — and is
+ * simply not matched by this pattern rather than closing shell-invocation
+ * tracking, so the switch is still found when it arrives.
+ */
+const CMD_TAKES_CODE = /^\/{1,2}[ck]$/i;
 
 const isSpace = (c) => c === ' ' || c === '\t';
 const isNewline = (c) => c === '\n' || c === '\r';
@@ -206,6 +249,7 @@ export function findForbiddenToken(command, depth = 0) {
   let atCommandPosition = true;
   let wordIndex = 0;
   let inShellInvocation = false;
+  let shellKind = null; // 'posix' | 'cmd' | 'powershell' — which grammar an open shell invocation's code argument gets re-scanned with
   let nextWordIsShellCode = false;
   let pendingHeredocs = [];
 
@@ -223,6 +267,7 @@ export function findForbiddenToken(command, depth = 0) {
       atCommandPosition = true;
       wordIndex = 0;
       inShellInvocation = false;
+      shellKind = null;
       nextWordIsShellCode = false;
       continue;
     }
@@ -231,6 +276,7 @@ export function findForbiddenToken(command, depth = 0) {
       atCommandPosition = true;
       wordIndex = 0;
       inShellInvocation = false;
+      shellKind = null;
       nextWordIsShellCode = false;
       i += 1;
       continue;
@@ -270,7 +316,15 @@ export function findForbiddenToken(command, depth = 0) {
 
     if (nextWordIsShellCode) {
       nextWordIsShellCode = false;
-      const nested = findForbiddenToken(word.value, depth + 1);
+      // `cmd`'s content has no dedicated grammar of its own — it is closer
+      // to POSIX word-splitting than to PowerShell's — so it is re-scanned
+      // with this same Bash-grammar function, exactly as the PowerShell arm
+      // does for its own `cmd` wrapper below. Only a genuine PowerShell
+      // interpreter (`powershell -Command` / `pwsh -c`) routes to the
+      // PowerShell grammar instead (addictedtoai-1ho4).
+      const nested = shellKind === 'powershell'
+        ? findForbiddenTokenPowerShell(word.value, depth + 1)
+        : findForbiddenToken(word.value, depth + 1);
       if (nested) return { ...nested, nested: true };
       atCommandPosition = false;
       wordIndex += 1;
@@ -289,12 +343,30 @@ export function findForbiddenToken(command, depth = 0) {
     }
 
     if (atCommandPosition) {
-      if (wordIndex === 0 && SHELLS.has(basename(word.value))) inShellInvocation = true;
+      if (wordIndex === 0) {
+        const base = basename(word.value);
+        const baseLower = base.toLowerCase();
+        if (SHELLS.has(base)) {
+          inShellInvocation = true;
+          shellKind = 'posix';
+        } else if (CMD_WRAPPERS.has(baseLower)) {
+          inShellInvocation = true;
+          shellKind = 'cmd';
+        } else if (PS_INTERPRETERS.has(baseLower)) {
+          // `powershell -Command "..."` / `pwsh -c "..."` typed from a Bash
+          // command line — the mirror of the PowerShell arm's own
+          // recognition of `bash -c` (addictedtoai-1ho4).
+          inShellInvocation = true;
+          shellKind = 'powershell';
+        }
+      }
       if (!KEEPS_COMMAND_POSITION.has(word.value) && !ASSIGNMENT.test(word.value)) {
         atCommandPosition = false;
       }
-    } else if (inShellInvocation && TAKES_CODE.test(word.value)) {
-      nextWordIsShellCode = true;
+    } else if (inShellInvocation) {
+      if (shellKind === 'cmd' && CMD_TAKES_CODE.test(word.value)) nextWordIsShellCode = true;
+      else if (shellKind === 'powershell' && PS_TAKES_CODE.test(word.value)) nextWordIsShellCode = true;
+      else if (shellKind === 'posix' && TAKES_CODE.test(word.value)) nextWordIsShellCode = true;
     }
 
     wordIndex += 1;
@@ -427,6 +499,40 @@ export function refusalMessage(finding) {
  * is read as one opaque value, exactly as the Bash arm reads `"$(cd /x)"`
  * as one opaque word today. Fixing this is out of scope for pxj; it is a
  * pre-existing property of the design this arm mirrors, not a regression.
+ *
+ * WIDENED FOR ADDICTEDTOAI-1HO4 — THE MIRROR CASE. `cmd /c "..."` /
+ * `cmd.exe /c "..."` / `cmd /k "..."`, bare or preceded by the `&` call
+ * operator (`& cmd /c "..."`), is now recognised here too: it is the same
+ * real hole as the Bash arm's `cmd //c "..."`, just typed inside the
+ * PowerShell tool instead of the Bash one. `&` is already in
+ * `PS_OPENS_COMMAND`, so it opens a fresh command position on its own and
+ * needs no separate case. The wrapper belongs to whichever arm the TOOL is
+ * — this one, since PowerShell is the tool — but `cmd`'s content is
+ * re-scanned with the Bash-grammar `findForbiddenToken`, not this
+ * PowerShell one, exactly like a POSIX shell invoked from PowerShell:
+ * `cmd`'s content has no dedicated grammar of its own and is closer to
+ * POSIX word-splitting than to PowerShell's, and building a third grammar
+ * for it is out of scope.
+ *
+ * `Start-Process cmd`, bare, opens an interactive shell with no code
+ * argument at all, so there is nothing here to re-scan and it is correctly
+ * left alone. `Start-Process cmd -ArgumentList '/c', '...'` is a DELIBERATE,
+ * DOCUMENTED GAP, NOT covered: its code argument arrives through a
+ * `-ArgumentList` parameter (a string or a string array) with a shape this
+ * simple word-scanner does not parse, and a half-built parser for it risks
+ * either missing the real case or refusing an unrelated `-ArgumentList`
+ * value — worse than the gap. Filed separately as its own follow-up rather
+ * than attempted here: addictedtoai-d3mq.
+ *
+ * A SECOND DELIBERATE, DOCUMENTED GAP: `cmd`'s content is re-scanned with
+ * the Bash arm's grammar, which is case-SENSITIVE, but real cmd.exe — like
+ * PowerShell — is case-INSENSITIVE, so `cmd /c "CD C:\x"` slips through
+ * where lowercase `cd` would not. The measured violation that opened
+ * addictedtoai-1ho4 used lowercase, and reusing the Bash reader unchanged
+ * (rather than adding a case-folding special case used nowhere else) keeps
+ * this arm's own behaviour, and its own test suite, untouched by a change
+ * that is really about `cmd`, not about PowerShell. Filed separately:
+ * addictedtoai-d3mq.
  * ===================================================================== */
 
 /** Characters that end a PowerShell command and open the next one. */
@@ -453,6 +559,18 @@ const PS_POSIX_INTERPRETERS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh', 'ash'
 
 /** `-c` or `-Command`, the two real forms this repo's own examples use. */
 const PS_TAKES_CODE = /^-(c|command)$/i;
+
+/**
+ * cmd.exe wrappers recognised from a PowerShell command line — the mirror
+ * case addictedtoai-1ho4 asked to check. See the header note above for the
+ * routing decision (cmd's content goes to the Bash grammar, not this one)
+ * and the two documented gaps (`Start-Process -ArgumentList`, and cmd's own
+ * case-insensitivity).
+ */
+const PS_CMD_WRAPPERS = new Set(['cmd', 'cmd.exe']);
+
+/** cmd.exe's `/c` and `/k` switches, exactly as the Bash arm recognises them. */
+const PS_CMD_TAKES_CODE = /^\/{1,2}[ck]$/i;
 
 /**
  * Read one PowerShell "word" starting at `start`.
@@ -623,9 +741,13 @@ export function findForbiddenTokenPowerShell(command, depth = 0) {
 
     if (nextWordIsShellCode) {
       nextWordIsShellCode = false;
-      const nested = shellKind === 'posix'
-        ? findForbiddenToken(word.value, depth + 1)
-        : findForbiddenTokenPowerShell(word.value, depth + 1);
+      // POSIX and cmd content both lack a PowerShell grammar of their own,
+      // so both route to the Bash-grammar scanner; only a genuine nested
+      // PowerShell interpreter re-scans with this same function
+      // (addictedtoai-1ho4 added the cmd case; posix was pxj's original).
+      const nested = shellKind === 'powershell'
+        ? findForbiddenTokenPowerShell(word.value, depth + 1)
+        : findForbiddenToken(word.value, depth + 1);
       if (nested) return { ...nested, nested: true };
       atCommandPosition = false;
       wordIndex += 1;
@@ -650,10 +772,18 @@ export function findForbiddenTokenPowerShell(command, depth = 0) {
       } else if (wordIndex === 0 && PS_POSIX_INTERPRETERS.has(base)) {
         inShellInvocation = true;
         shellKind = 'posix';
+      } else if (wordIndex === 0 && PS_CMD_WRAPPERS.has(base)) {
+        // `cmd /c "..."` / `cmd.exe /c "..."`, bare or after `&` — the
+        // mirror case addictedtoai-1ho4 asked to check.
+        inShellInvocation = true;
+        shellKind = 'cmd';
       }
       if (!PS_KEEPS_COMMAND_POSITION.has(lower)) atCommandPosition = false;
-    } else if (inShellInvocation && PS_TAKES_CODE.test(word.value)) {
-      nextWordIsShellCode = true;
+    } else if (inShellInvocation) {
+      const takesCode = shellKind === 'cmd'
+        ? PS_CMD_TAKES_CODE.test(word.value)
+        : PS_TAKES_CODE.test(word.value);
+      if (takesCode) nextWordIsShellCode = true;
     }
 
     wordIndex += 1;
