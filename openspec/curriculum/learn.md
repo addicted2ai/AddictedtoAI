@@ -331,11 +331,23 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   write) every later page stands on, in a thousand words with no notation.
 
 #### `what-a-model-is` — "What a model is, and what it is not"
-- **Status**: **edit** — front matter only: `prerequisites` becomes
-  `[what-ai-actually-is]`. Body untouched. · **Area**: A
+- **Status**: **rewritten 2026-08-30** — `prerequisites` are
+  `[what-ai-actually-is]`, and the **body was rewritten** to clear the
+  orientation admission test. The line here previously read "front matter
+  only, body untouched"; it is corrected rather than left, per §0.5. ·
+  **Area**: A
 - Already published (orientation). Records its place in the map: the
   model / stack / product distinction, "a model does not remember your
   conversation", training happened once.
+- **The rewrite dropped `event/attention-is-all-you-need` from `mentions`,
+  and the reasoning generalises.** `mentions` drives the backlink graph, so
+  a mention a body never earns makes a wiki entry point at a page that does
+  not discuss it. This body teaches product architecture and contains
+  nothing about attention or transformers; earning the mention would mean
+  teaching mechanics material on an orientation page, which the rung
+  forbids. `where-ai-came-from` keeps the identical mention because its body
+  does teach that moment. Same rule, opposite outcomes — the test is what a
+  page teaches, never what it is adjacent to.
 
 #### `where-ai-came-from` — "Where AI came from"
 - **Status**: new · **Area**: B · **Prerequisites**: `what-ai-actually-is`
@@ -423,9 +435,13 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   coverage is case-first and mechanism-free, so it neither predicts nor
   transfers.
 
-#### `why-models-are-confidently-wrong` — existing, untouched
-- **Status**: existing (orientation) · **Area**: E ·
-  **Prerequisites**: `what-a-model-is` (unchanged).
+#### `why-models-are-confidently-wrong` — existing, rewritten 2026-08-30
+- **Status**: **rewritten 2026-08-30** (orientation) · **Area**: E ·
+  **Prerequisites**: `what-a-model-is` (unchanged). The line here previously
+  read "existing, untouched"; the body was rewritten to clear the
+  orientation admission test, and it is corrected rather than left, per
+  §0.5. `mentions` gained `concept/hallucination`, earned by a naming
+  sentence the rewrite added.
 
 ---
 
