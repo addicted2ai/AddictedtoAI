@@ -2020,6 +2020,12 @@
         "title": "Who builds AI",
         "type": "learn",
         "file": "content/learn/who-builds-ai.md"
+      },
+      {
+        "url": "/blog/anthropic-usage-policy-government-exceptions",
+        "title": "Anthropic publishes one government exception to its usage policy. Weapons and domestic surveillance are not in it.",
+        "type": "post",
+        "file": "content/blog/anthropic-usage-policy-government-exceptions.md"
       }
     ],
     "org/deepseek": [
