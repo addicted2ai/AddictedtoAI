@@ -1,6 +1,29 @@
 {
   "changed_30d": [
     {
+      "date": "2026-08-31",
+      "display_name": "MoonshotAI: Kimi K2.5",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "moonshotai/kimi-k2.5-0127",
+        "context_length": 262144,
+        "created": 1769487076,
+        "expiration_date": null,
+        "id": "moonshotai/kimi-k2.5",
+        "name": "MoonshotAI: Kimi K2.5",
+        "pricing.completion": "0.00000225",
+        "pricing.prompt": "0.00000045"
+      },
+      "field": "status",
+      "key": "openrouter-models|7ddcd368c2b6d52e|13514954c61b0211|moonshotai/kimi-k2.5|status",
+      "kind": "field_change",
+      "new": "active",
+      "old": "deprecated",
+      "row_id": "moonshotai/kimi-k2.5",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
       "date": "2026-08-29",
       "display_name": "Z.ai: GLM Latest",
       "excerpt": {
@@ -1264,52 +1287,6 @@
       "seeded": true,
       "source": "llm-releases",
       "source_url": "https://www.marktechpost.com/2026/08/03/alibaba-qwen-releases-qwen3-8-max/"
-    },
-    {
-      "date": "2026-07-31",
-      "display_name": "V4-Flash API upgraded to the 0731 build",
-      "excerpt": {
-        "description": "DeepSeek - The deepseek-v4-flash API endpoint is silently upgraded to the retrained DeepSeek-V4-Flash-0731 production build. Same endpoint, key, and model name; pricing unchanged at $0.14/$0.28 per Mtok.",
-        "guid": "fe1a87b9-a459-4824-b35b-326c47b01a9f",
-        "link": "https://llm-releases.com/models/deepseek-v4-flash",
-        "pubDate": "Fri, 31 Jul 2026 00:00:00 GMT",
-        "source_name": "DeepSeek",
-        "source_url": "https://api-docs.deepseek.com/news",
-        "title": "V4-Flash API upgraded to the 0731 build"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/deepseek-v4-flash",
-      "key": "seed|llm-releases|fe1a87b9-a459-4824-b35b-326c47b01a9f",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "fe1a87b9-a459-4824-b35b-326c47b01a9f",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://api-docs.deepseek.com/news"
-    },
-    {
-      "date": "2026-07-31",
-      "display_name": "DeepSeek promotes V4-Flash-0731 to production",
-      "excerpt": {
-        "description": "DeepSeek - DeepSeek ships DeepSeek-V4-Flash-0731, the production build of V4-Flash: the April preview retrained on an improved post-training pipeline for coding, agents, reasoning, and tool use, with the architecture untouched (284B total / 13B active MoE, 1M context). DeepSeek reports it beating its own larger V4-Pro-Preview on all nine published agent and coding benchmarks. Weights on Hugging Face under MIT; API pricing held at $0.14/$0.28 per Mtok, and the swap is silent for existing deepseek-v4-flash callers.",
-        "guid": "907530fa-9ffc-4ddd-aefb-8ee8e879604c",
-        "link": "https://llm-releases.com/models/deepseek-v4-flash-0731",
-        "pubDate": "Fri, 31 Jul 2026 00:00:00 GMT",
-        "source_name": "DeepSeek",
-        "source_url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731",
-        "title": "DeepSeek promotes V4-Flash-0731 to production"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/deepseek-v4-flash-0731",
-      "key": "seed|llm-releases|907530fa-9ffc-4ddd-aefb-8ee8e879604c",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "907530fa-9ffc-4ddd-aefb-8ee8e879604c",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731"
     }
   ],
   "deprecations": [
@@ -1323,20 +1300,6 @@
       "price_output": "0",
       "provider": "dots-studio",
       "row_id": "dots-studio/dots-3-note-preview:free",
-      "source": "openrouter-models",
-      "source_url": "https://openrouter.ai/api/v1/models",
-      "status": "deprecated"
-    },
-    {
-      "context_window": "262144",
-      "created": 1769487076,
-      "display_name": "MoonshotAI: Kimi K2.5",
-      "entry_id": "model/moonshotai-kimi-k2-5",
-      "expiration_date": "2026-08-31",
-      "price_input": "0.0000006",
-      "price_output": "0.000003",
-      "provider": "moonshotai",
-      "row_id": "moonshotai/kimi-k2.5",
       "source": "openrouter-models",
       "source_url": "https://openrouter.ai/api/v1/models",
       "status": "deprecated"
@@ -1356,7 +1319,7 @@
       "status": "deprecated"
     }
   ],
-  "generated_on": "2026-08-30",
+  "generated_on": "2026-08-31",
   "sort_criterion": {
     "catalog": "source then row id, ascending",
     "changed_30d": "date, newest first",

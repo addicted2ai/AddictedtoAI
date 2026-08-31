@@ -1,20 +1,20 @@
 {
   "broken_links": [],
-  "date": "2026-08-30",
+  "date": "2026-08-31",
   "link_check": {
-    "checked": 25,
+    "checked": 0,
     "confirm_after_failures": 2,
     "declined": 2,
     "drifted": 0,
-    "due": 114,
+    "due": 41,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 11,
-    "total": 454
+    "redirected": 12,
+    "total": 424
   },
   "listings": [
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/aider",
@@ -27,7 +27,7 @@
       "url": "https://aider.chat/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/argilla",
@@ -40,7 +40,7 @@
       "url": "https://argilla.io/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/axolotl",
@@ -53,7 +53,7 @@
       "url": "https://axolotl.ai/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/browser-use",
@@ -66,7 +66,7 @@
       "url": "https://browser-use.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/chroma",
@@ -79,7 +79,7 @@
       "url": "https://www.trychroma.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/comfyui",
@@ -92,7 +92,7 @@
       "url": "https://comfy.org/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/continue",
@@ -105,7 +105,7 @@
       "url": "https://continue.dev/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/crewai",
@@ -118,7 +118,7 @@
       "url": "https://crewai.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/cursor",
@@ -131,7 +131,7 @@
       "url": "https://cursor.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/deepgram",
@@ -144,7 +144,7 @@
       "url": "https://deepgram.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/dspy",
@@ -157,7 +157,7 @@
       "url": "https://dspy.ai/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/elevenlabs",
@@ -170,7 +170,7 @@
       "url": "https://elevenlabs.io/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/fireworks-ai",
@@ -183,7 +183,7 @@
       "url": "https://fireworks.ai/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/groq-cloud",
@@ -196,7 +196,7 @@
       "url": "https://groq.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/guardrails-ai",
@@ -209,7 +209,7 @@
       "url": "https://guardrailsai.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/helicone",
@@ -222,7 +222,7 @@
       "url": "https://www.helicone.ai/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/hugging-face-hub",
@@ -235,7 +235,7 @@
       "url": "https://huggingface.co/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/langchain",
@@ -248,7 +248,7 @@
       "url": "https://www.langchain.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/langfuse",
@@ -261,7 +261,7 @@
       "url": "https://langfuse.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/llama-cpp",
@@ -274,7 +274,7 @@
       "url": "https://github.com/ggml-org/llama.cpp"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/llamafile",
@@ -287,7 +287,7 @@
       "url": "https://github.com/mozilla-ai/llamafile"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/llamaindex",
@@ -300,7 +300,7 @@
       "url": "https://www.llamaindex.ai/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/lm-studio",
@@ -313,7 +313,7 @@
       "url": "https://lmstudio.ai/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/ollama",
@@ -326,7 +326,7 @@
       "url": "https://ollama.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/open-webui",
@@ -339,7 +339,7 @@
       "url": "https://openwebui.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/openrouter",
@@ -352,7 +352,7 @@
       "url": "https://openrouter.ai/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/promptfoo",
@@ -365,7 +365,7 @@
       "url": "https://www.promptfoo.dev/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/promptlayer",
@@ -378,7 +378,7 @@
       "url": "https://www.promptlayer.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/qdrant",
@@ -391,7 +391,7 @@
       "url": "https://qdrant.tech/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/replicate",
@@ -404,7 +404,7 @@
       "url": "https://replicate.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/ultralytics",
@@ -417,7 +417,7 @@
       "url": "https://www.ultralytics.com/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/unsloth",
@@ -430,7 +430,7 @@
       "url": "https://github.com/unslothai/unsloth"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/unstructured",
@@ -443,7 +443,7 @@
       "url": "https://unstructured.io/"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/vllm",
@@ -456,7 +456,7 @@
       "url": "https://github.com/vllm-project/vllm"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "consecutive_failures": 0,
       "discontinued": null,
       "entry": "tool/weights-and-biases",
@@ -472,18 +472,6 @@
   "overdue_facts": [],
   "redirected_links": [
     {
-      "bytes": 147595,
-      "cited_by": [
-        "content/blog/three-definitions-of-a-knowledge-cutoff.md"
-      ],
-      "final_url": "https://ai.google.dev/gemini-api/docs/models?hl=ko",
-      "kind": "same-site-move",
-      "last_checked": "2026-08-29",
-      "meta_refresh": null,
-      "url": "https://ai.google.dev/gemini-api/docs/models",
-      "verdict_recorded": true
-    },
-    {
       "bytes": 140588,
       "cited_by": [
         "content/wiki/event/alphafold-casp14.md"
@@ -496,6 +484,42 @@
       "verdict_recorded": true
     },
     {
+      "bytes": 154678,
+      "cited_by": [
+        "content/learn/the-safety-debates.md"
+      ],
+      "final_url": "https://deepmind.google/blog/specification-gaming-the-flip-side-of-ai-ingenuity/",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-31",
+      "meta_refresh": null,
+      "url": "https://deepmind.google/discover/blog/specification-gaming-the-flip-side-of-ai-ingenuity/",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": 144146,
+      "cited_by": [
+        "content/learn/the-safety-debates.md"
+      ],
+      "final_url": "https://deepmind.google/blog/strengthening-our-frontier-safety-framework/",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-31",
+      "meta_refresh": null,
+      "url": "https://deepmind.google/discover/blog/strengthening-our-frontier-safety-framework/",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": 2292240,
+      "cited_by": [
+        "content/learn/ai-and-work.md"
+      ],
+      "final_url": "https://digitaleconomy.stanford.edu/app/uploads/2025/11/CanariesintheCoalMine_Nov25.pdf",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-31",
+      "meta_refresh": null,
+      "url": "https://digitaleconomy.stanford.edu/wp-content/uploads/2025/08/Canaries_BrynjolfssonChandarChen.pdf",
+      "verdict_recorded": true
+    },
+    {
       "bytes": null,
       "cited_by": [
         "content/wiki/technique/retrieval-augmented-generation.md"
@@ -505,6 +529,18 @@
       "last_checked": "2026-08-29",
       "meta_refresh": null,
       "url": "https://docs.langchain.com/oss/python/langchain/rag",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/learn/how-to-think-about-what-comes-next.md"
+      ],
+      "final_url": "https://epoch.ai/publications/can-ai-scaling-continue-through-2030",
+      "kind": "same-site-move",
+      "last_checked": "2026-08-31",
+      "meta_refresh": null,
+      "url": "https://epoch.ai/blog/can-ai-scaling-continue-through-2030",
       "verdict_recorded": true
     },
     {
@@ -568,30 +604,6 @@
       "verdict_recorded": true
     },
     {
-      "bytes": 0,
-      "cited_by": [
-        "content/blog/seven-open-licences-seven-lines.md"
-      ],
-      "final_url": "https://www.alibabacloud.com/notfound",
-      "kind": "same-site-move",
-      "last_checked": "2026-08-29",
-      "meta_refresh": null,
-      "url": "https://www.alibabacloud.com/blog/introducing-qoder-agentic-coding-platform-for-real-software_603349",
-      "verdict_recorded": true
-    },
-    {
-      "bytes": null,
-      "cited_by": [
-        "content/blog/seven-open-licences-seven-lines.md"
-      ],
-      "final_url": "https://developer.meta.com/ai/llama4/license/",
-      "kind": "cross-site-related",
-      "last_checked": "2026-08-29",
-      "meta_refresh": null,
-      "url": "https://www.llama.com/llama4/license/",
-      "verdict_recorded": true
-    },
-    {
       "bytes": 3038,
       "cited_by": [
         "content/deltas/professional-level-go.md"
@@ -607,13 +619,13 @@
   "reference_drift": [],
   "sources": [
     {
-      "days_since_change": 2,
-      "display_date": "2026-08-30",
+      "days_since_change": 3,
+      "display_date": "2026-08-31",
       "display_date_label": "last checked",
       "expected_change_days": 3,
       "id": "llm-releases",
       "last_change_date": "2026-08-28",
-      "last_fetch_date": "2026-08-30",
+      "last_fetch_date": "2026-08-31",
       "refusing": null,
       "snapshot_date": "2026-08-28",
       "suspect": false,
@@ -621,21 +633,21 @@
     },
     {
       "days_since_change": 0,
-      "display_date": "2026-08-30",
+      "display_date": "2026-08-31",
       "display_date_label": "last checked",
       "expected_change_days": 3,
       "id": "openrouter-models",
-      "last_change_date": "2026-08-30",
-      "last_fetch_date": "2026-08-30",
+      "last_change_date": "2026-08-31",
+      "last_fetch_date": "2026-08-31",
       "refusing": null,
-      "snapshot_date": "2026-08-30",
+      "snapshot_date": "2026-08-31",
       "suspect": false,
       "suspect_after_days": 9
     }
   ],
   "tutorials": [
     {
-      "age_days": 2,
+      "age_days": 3,
       "path": "content/tutorials/browser-embeddings-no-server.md",
       "reverify_days": 30,
       "slug": "browser-embeddings-no-server",
@@ -643,7 +655,7 @@
       "verified_on": "2026-08-28"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "path": "content/tutorials/chat-template-is-not-the-model.md",
       "reverify_days": 60,
       "slug": "chat-template-is-not-the-model",
@@ -651,7 +663,7 @@
       "verified_on": "2026-08-28"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "path": "content/tutorials/model-file-header-range-requests.md",
       "reverify_days": 60,
       "slug": "model-file-header-range-requests",
@@ -659,7 +671,7 @@
       "verified_on": "2026-08-28"
     },
     {
-      "age_days": 2,
+      "age_days": 3,
       "path": "content/tutorials/openrouter-catalog-watch.md",
       "reverify_days": 30,
       "slug": "openrouter-catalog-watch",
