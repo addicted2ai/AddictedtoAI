@@ -266,9 +266,19 @@ ordering is a lie about your own page that the build will happily accept.
 ## §4 — The catalog
 
 Entries are grouped by rung, in dependency order (the order `tasks.md`
-lands them). **Status** marks what exists: `new`, `existing` (untouched), or
-`edit` (front matter only). Suggested mentions were verified to resolve on
-2026-08-29.
+lands them). **Status** marks what exists: `new`, `existing` (untouched),
+`edit` (front matter only), `glossed <date>` (body edited in place to define a
+term or close a review finding, argument unchanged), or `rewritten <date>`.
+Suggested mentions were verified to resolve on 2026-08-29.
+
+> **`glossed` was added 2026-08-30, and the reason is the §0 rule rather than
+> tidiness.** Six entries still read `existing, untouched` while git showed
+> real body edits of 9 to 97 lines, made by the very commits that closed the
+> reviews' findings (`3d61355`, `79466a8`, `3bbd945`). Nothing was concealed —
+> every gloss is commit-logged — but the three-value vocabulary had no way to
+> say what actually happened, so six entries said something false instead. A
+> map that misstates the territory gets believed. Found by the final review,
+> which checked the lines against `git log` rather than reading them.
 
 ---
 
@@ -654,9 +664,11 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 - **Beats the alternative by**: connecting data composition to observed
   model behaviour — the two are almost never in the same article.
 
-#### `why-context-is-not-memory` — existing, untouched
-- **Status**: existing (foundations) · **Area**: D ·
-  **Prerequisites**: `how-a-language-model-works` (unchanged).
+#### `why-context-is-not-memory` — existing, glossed 2026-08-30
+- **Status**: **glossed 2026-08-30** (foundations) · **Area**: D ·
+  **Prerequisites**: `how-a-language-model-works` (unchanged). The line here
+  previously read "existing, untouched"; the body was glossed in `3d61355`
+  (+19/-15) and the argument is unchanged.
 
 #### `getting-good-answers` — "Getting better answers out of a model"
 - **Status**: new · **Area**: D · **Prerequisites**:
@@ -795,13 +807,17 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   wrote is a defect this one caused. The 2026-08-30 rewrite read six of the
   seven and preserved verbatim the phrases they quote.
 
-#### `what-a-benchmark-measures` — existing, untouched
-- **Status**: existing (mechanics) · **Area**: E ·
-  **Prerequisites**: `how-models-are-trained` (unchanged).
+#### `what-a-benchmark-measures` — existing, glossed 2026-08-30
+- **Status**: **glossed 2026-08-30** (mechanics) · **Area**: E ·
+  **Prerequisites**: `how-models-are-trained` (unchanged). The line here
+  previously read "existing, untouched"; the body was glossed in `3d61355`
+  (+23/-19) and the argument is unchanged.
 
-#### `what-an-agent-is` — existing, untouched
-- **Status**: existing (mechanics) · **Area**: D · **Prerequisites**:
-  `how-a-language-model-works`, `why-context-is-not-memory` (unchanged).
+#### `what-an-agent-is` — existing, glossed 2026-08-30
+- **Status**: **glossed 2026-08-30** (mechanics) · **Area**: D ·
+  **Prerequisites**: `how-a-language-model-works`, `why-context-is-not-memory`
+  (unchanged). The line here previously read "existing, untouched"; the body was
+  glossed in `3d61355` (+13/-18) and the argument is unchanged.
 
 #### `why-bigger-got-better` — "Why bigger kept getting better"
 - **Status**: new · **Area**: C · **Prerequisites**:
@@ -1018,9 +1034,13 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
 
 ### Advanced
 
-#### `how-inference-is-served` — existing, untouched
-- **Status**: existing (advanced) · **Area**: D · **Prerequisites**:
-  `how-a-language-model-works`, `how-models-are-trained` (unchanged).
+#### `how-inference-is-served` — existing, glossed 2026-08-30
+- **Status**: **glossed 2026-08-30** (advanced) · **Area**: D · **Prerequisites**:
+  `how-a-language-model-works`, `how-models-are-trained` (unchanged). The line
+  here previously read "existing, untouched" while the entry's own prose below
+  recorded the accelerator gloss — the entry contradicted itself, which is why
+  the final review flagged this one specifically. Glossed in `79466a8` and
+  `3bbd945` (+3/-2 in the latter); the argument is unchanged.
 - **Decision recorded 2026-08-30 — prerequisites deliberately unchanged.**
   The advanced review found the page using "accelerator" three times with no
   gloss and no page in its closure teaching the word, and offered two fixes:
@@ -1039,13 +1059,17 @@ lands them). **Status** marks what exists: `new`, `existing` (untouched), or
   capstone. An edge is a claim about what a page assumes, not a device for
   seating it, and six words on the page close this.
 
-#### `what-safety-training-changes` — existing, untouched
-- **Status**: existing (advanced) · **Area**: C ·
-  **Prerequisites**: `how-models-are-trained` (unchanged).
+#### `what-safety-training-changes` — existing, glossed 2026-08-30
+- **Status**: **glossed 2026-08-30** (advanced) · **Area**: C ·
+  **Prerequisites**: `how-models-are-trained` (unchanged). The line here
+  previously read "existing, untouched"; the body was glossed in `3d61355`
+  (+29/-24) and the argument is unchanged.
 
-#### `why-the-same-request-gives-different-answers` — existing, untouched
-- **Status**: existing (advanced) · **Area**: E · **Prerequisites**:
-  `how-a-language-model-works`, `how-inference-is-served` (unchanged).
+#### `why-the-same-request-gives-different-answers` — existing, glossed 2026-08-30
+- **Status**: **glossed 2026-08-30** (advanced) · **Area**: E · **Prerequisites**:
+  `how-a-language-model-works`, `how-inference-is-served` (unchanged). The line
+  here previously read "existing, untouched"; the body was glossed in `3d61355`
+  (+53/-44), the largest of the six, and the argument is unchanged.
 
 #### `what-it-costs-to-build-and-run-ai` — "What it costs to build and run AI"
 - **Status**: new · **Area**: C · **Prerequisites**:

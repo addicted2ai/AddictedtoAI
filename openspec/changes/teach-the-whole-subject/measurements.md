@@ -2,12 +2,23 @@
 
 Task 6.2(d) requires the surface's completion claims to be recorded as
 measurements with a date and a stated method, per the house rule that a claim
-is a measurement. Everything below was measured on **2026-08-30 (local)**
-against the working tree at commit `5dcf76b`, by a script that reads
-`content/learn/*.md` front matter through `gray-matter` and replicates
-`ladder()`'s sort — level index, then prerequisite depth, then **title** —
-rather than reading the rendered page. Re-runnable; nothing here is a
-recollection.
+is a measurement. Everything below was **re-measured at HEAD on 2026-08-30
+(local)**, by a script that reads `content/learn/*.md` front matter through
+`gray-matter` and replicates `ladder()`'s sort — level index, then prerequisite
+depth, then **title** — rather than reading the rendered page. Re-runnable;
+nothing here is a recollection.
+
+> **Re-run 2026-08-30 after the final review.** The first version of this record
+> measured commit `5dcf76b` and reported **37** pages. That was honest when
+> written and stale within hours: `machines-that-act-in-the-world` was added to
+> the curriculum and written afterwards, and nothing forced this file to catch
+> up. Three figures moved — the total (37 → **38**), the foundations row
+> (11 → **12**), and the capstone's depth (8 → **9**). Every *conclusion* below
+> survived the change, which is the point worth recording: the coverage
+> equality, the in-order guarantee and the capstone's position follow from level
+> and depth, not from the totals. The final review caught the staleness by
+> re-running the script instead of reading the table; the numbers here are that
+> re-run, independently reproduced.
 
 > **Corrected 2026-08-30.** The first version of this record said the final
 > tiebreak was the **slug**. It is the title: `lib/learn.mjs:114` sorts on
@@ -26,8 +37,8 @@ recollection.
 
 | | |
 |---|---|
-| Entries named in curriculum §4 (`^#### \`slug\``) | **37** |
-| Pages published in `content/learn/` | **37** |
+| Entries named in curriculum §4 (`^#### \`slug\``) | **38** |
+| Pages published in `content/learn/` | **38** |
 | Named but unpublished | **0** |
 | Published but unnamed | **0** |
 
@@ -40,13 +51,17 @@ against `content/learn/`, not anyone's recollection."*
 | Rung | Measured | Required by 6.2(b) |
 |---|---|---|
 | orientation | 8 | 8 |
-| foundations | 11 | 11 |
+| foundations | 12 | 11 |
 | mechanics | 11 | 11 |
 | advanced | 7 | 7 |
-| **total** | **37** | **37** |
+| **total** | **38** | **37** |
 
-Exact on every rung. This matches the figure the sealed review derived
-independently before any page of this change was written.
+Exact on every rung except foundations, which carries one more page than 6.2(b)
+required. The extra is `machines-that-act-in-the-world`, added to the curriculum
+on 2026-08-30 to cover embodiment — a named gap in area A that the original
+catalog did not fill. The task's figure is left as written rather than
+back-edited, so the difference between what was planned and what shipped stays
+visible.
 
 ## (c) Order
 
@@ -58,7 +73,7 @@ independently before any page of this change was written.
 | Prerequisites pointing up the ladder | **0** |
 | Unresolvable prerequisite slugs | **0** |
 
-The capstone lands last at **depth 8, alone in its band** — deeper than any
+The capstone lands last at **depth 9, alone in its band** — deeper than any
 other page, so its position is a consequence of the graph rather than of the
 alphabet. That is stronger than the change originally claimed: at the time the
 sealed review checked, the capstone shared a depth band and the tie was broken
@@ -66,7 +81,7 @@ by title.
 
 The in-order guarantee is the one the delta states as a scenario — *"every
 prerequisite of every page they reach has already appeared earlier in the
-order"* — and it holds for all 37 pages with no exceptions.
+order"* — and it holds for all 38 pages with no exceptions.
 
 ## Gates
 

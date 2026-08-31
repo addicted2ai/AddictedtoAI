@@ -139,8 +139,8 @@ won were the general ones able to absorb more computing power, and the work of
 teaching machines what people already know was overtaken every time. That is
 the argument under the current spending, and why the bet keeps being placed on
 bigger rather than cleverer. It is also contested. A rebuttal appeared within a
-week of its publication in 2019, and its author has since put today's chatbots
-on the wrong side of his own distinction.
+week of its publication in 2019, and the lesson's own author has since put
+today's chatbots on the wrong side of his own distinction.
 
 So put today's systems where they are: on the learned side of a bet made in a
 1955 budget request, running on a design built for translation and scaled past

@@ -24,9 +24,9 @@ transcript, a paragraph, a picture: whatever arrives, somebody reads it.
 These machines are the family that page did not show. What they put out is a
 movement, and nobody reads a movement. It happens.
 
-So the car holding its lane is exactly as much AI as the chatbot. Underneath
-is the machinery you know, weighted sums stacked in layers, trained by
-computed blame, and none of it changed on the way to the steering wheel. What
+So the car holding its lane is exactly as much AI as the chatbot. The learned
+part of it is the machinery you know, weighted sums stacked in layers, trained
+by computed blame, and none of that changed on the way to the steering wheel. What
 changed is where the output lands. Everywhere else it lands in front of a
 person. Here it lands on the world. That one relocation produces both of the
 facts this page is for: what this family has to be trained on, and what
