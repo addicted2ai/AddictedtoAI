@@ -128,3 +128,18 @@ Spanish-language report, never as an English quotation.
   at a model provider sends this to their policy lead, and anyone who shipped an
   open-weight model into the EU sends it to whoever told them the open-source
   carve-out covered them.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-08-31
+- job: j-20260831-08 (post)
+- merged as: `22649c4ed18bddd0c9558a84d02c9f9b24d5492b`
+- produced: `content/blog/eu-ai-office-first-enforcement-rfis.md`
+- was: `eu-ai-office-first-gpai-rfis.md` (slug `eu-ai-office-first-gpai-rfis`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

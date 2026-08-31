@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 602,
+  "count": 603,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -15,6 +15,16 @@
     {
       "u": "/blog/claude-session-theft-infostealers",
       "t": "Anthropic emailed Claude users about stolen sessions. What was taken was not a password.",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/eu-ai-office-first-enforcement-rfis",
+      "t": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
       "k": "post",
       "d": null,
       "s": null,
