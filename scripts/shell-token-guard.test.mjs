@@ -121,7 +121,13 @@ const MUST_ALLOW = [
   'node scripts/run-tests.mjs',
   'node pulse/run.mjs',
   'node loop/run.mjs',
-  'node loop/conformance.mjs --runner claude-code-opus',
+  // The runner id is deliberately a placeholder, not a real one. `scripts/` is
+  // a machinery path, and `runners.yml` is the only file in the machinery that
+  // may name a model, provider or harness — `loop/tests/portability.test.mjs`
+  // enforces it and caught the real id that first stood here. What this case
+  // actually tests is the SHAPE, `--runner <word>`, which a placeholder gives
+  // just as well.
+  'node loop/conformance.mjs --runner a-runner-id',
   'node pulse/verify-zero-model.mjs',
   'node D:/AddictedtoAI/scripts/verify-launch.mjs --no-build',
   'openspec validate --change build-initial-site --strict',
