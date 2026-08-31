@@ -87,28 +87,6 @@
       "ok": true,
       "status": 200
     },
-    "https://ai.google.dev/gemini-api/docs/deprecations": {
-      "bytes": 115524,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://ai.google.dev/gemini-api/docs/deprecations",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://ai.google.dev/gemini-api/docs/models": {
-      "bytes": 147595,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://ai.google.dev/gemini-api/docs/models?hl=ko",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://ai.meta.com/blog/meta-llama-3-1/": {
       "consecutive_failures": 0,
       "error": null,
@@ -118,14 +96,6 @@
       "status": 200
     },
     "https://aider.chat/": {
-      "consecutive_failures": 0,
-      "error": null,
-      "last_checked": "2026-08-28",
-      "last_ok": "2026-08-28",
-      "ok": true,
-      "status": 200
-    },
-    "https://aider.chat/docs/leaderboards/": {
       "consecutive_failures": 0,
       "error": null,
       "last_checked": "2026-08-28",
@@ -321,6 +291,17 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://arxiv.org/abs/1611.03530",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/1706.03741": {
+      "bytes": 41763,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/1706.03741",
       "last_checked": "2026-08-30",
       "last_ok": "2026-08-30",
       "meta_refresh": null,
@@ -790,6 +771,39 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2211.02001": {
+      "bytes": 41451,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2211.02001",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2211.04325": {
+      "bytes": 42248,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2211.04325",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2211.04325v1": {
+      "bytes": 42874,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2211.04325v1",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2211.17192": {
       "consecutive_failures": 0,
       "error": null,
@@ -806,6 +820,28 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2212.09720": {
+      "bytes": 42210,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2212.09720",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2212.10562": {
+      "bytes": 41483,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2212.10562",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2301.00774": {
       "bytes": 41311,
       "consecutive_failures": 0,
@@ -813,6 +849,17 @@
       "final_url": "https://arxiv.org/abs/2301.00774",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2301.04213": {
+      "bytes": 44302,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2301.04213",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -836,6 +883,39 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2302.06590": {
+      "bytes": 39028,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2302.06590",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2302.10149": {
+      "bytes": 41621,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2302.10149",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2302.12173": {
+      "bytes": 44313,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2302.12173",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2302.13971": {
       "consecutive_failures": 0,
       "error": null,
@@ -851,6 +931,39 @@
       "final_url": "https://arxiv.org/abs/2303.03846",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2304.03271": {
+      "bytes": 43343,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2304.03271",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2304.09848": {
+      "bytes": 41885,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2304.09848",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2304.11771": {
+      "bytes": 40611,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2304.11771",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -901,6 +1014,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2305.15324": {
+      "bytes": 42935,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2305.15324",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2305.17493": {
       "bytes": 44028,
       "consecutive_failures": 0,
@@ -917,6 +1041,17 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2306.01953": {
+      "bytes": 43015,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2306.01953",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1016,6 +1151,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2309.08600": {
+      "bytes": 43681,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2309.08600",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2309.12288": {
       "bytes": 44410,
       "consecutive_failures": 0,
@@ -1087,6 +1233,28 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2311.16863": {
+      "bytes": 44507,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2311.16863",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2312.05934": {
+      "bytes": 41474,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2312.05934",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2312.07104": {
       "consecutive_failures": 0,
       "error": null,
@@ -1111,11 +1279,33 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2401.14887": {
+      "bytes": 44876,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2401.14887",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2402.03300": {
       "consecutive_failures": 0,
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2402.14531": {
+      "bytes": 40760,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2402.14531",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1126,6 +1316,28 @@
       "final_url": "https://arxiv.org/abs/2403.05440",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2403.14123": {
+      "bytes": 41253,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2403.14123",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2403.14380": {
+      "bytes": 44566,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2403.14380",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1176,6 +1388,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2404.13208": {
+      "bytes": 41066,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2404.13208",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2405.05417": {
       "bytes": 40764,
       "consecutive_failures": 0,
@@ -1198,6 +1421,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2405.21015": {
+      "bytes": 41006,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2405.21015",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2406.04127": {
       "bytes": 42728,
       "consecutive_failures": 0,
@@ -1216,6 +1450,17 @@
       "final_url": "https://arxiv.org/abs/2406.05946",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2406.10162": {
+      "bytes": 44602,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2406.10162",
+      "last_checked": "2026-08-30",
+      "last_ok": "2026-08-30",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1246,6 +1491,17 @@
       "final_url": "https://arxiv.org/abs/2407.08608",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2407.21783": {
+      "bytes": 134776,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2407.21783",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1302,6 +1558,28 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2412.14093": {
+      "bytes": 46135,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2412.14093",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2412.16720": {
+      "bytes": 84888,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2412.16720",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2412.19437": {
       "consecutive_failures": 0,
       "error": null,
@@ -1340,6 +1618,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2502.04878": {
+      "bytes": 44623,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2502.04878",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2502.05167": {
       "consecutive_failures": 0,
       "error": null,
@@ -1348,11 +1637,44 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2502.16681": {
+      "bytes": 43244,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2502.16681",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2503.00061": {
+      "bytes": 40892,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2503.00061",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2503.01840": {
       "consecutive_failures": 0,
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2503.18813": {
+      "bytes": 41910,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2503.18813",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1375,6 +1697,72 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2505.05410": {
+      "bytes": 43104,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2505.05410",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2505.23836": {
+      "bytes": 42610,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2505.23836",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2506.08837": {
+      "bytes": 42797,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2506.08837",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2507.11473": {
+      "bytes": 46197,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2507.11473",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2508.00614": {
+      "bytes": 41638,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2508.00614",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2508.15734": {
+      "bytes": 44054,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2508.15734",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2509.04664": {
       "bytes": 41152,
       "consecutive_failures": 0,
@@ -1382,6 +1770,28 @@
       "final_url": "https://arxiv.org/abs/2509.04664",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2510.07192": {
+      "bytes": 44129,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2510.07192",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2510.09023": {
+      "bytes": 44282,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2510.09023",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1495,6 +1905,17 @@
       "ok": true,
       "status": 200
     },
+    "https://bounded-regret.ghost.io/ai-forecasting-one-year-in/": {
+      "bytes": 10198,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://bounded-regret.ghost.io/ai-forecasting-one-year-in/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://braddelong.substack.com/p/hoistedcrosspost-richard-s-sutton": {
       "consecutive_failures": 0,
       "error": null,
@@ -1510,6 +1931,17 @@
       "final_url": "https://browser-use.com/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://c2pa.org/": {
+      "bytes": 28395,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://c2pa.org/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1641,6 +2073,28 @@
       "ok": true,
       "status": 200
     },
+    "https://deepmind.google/discover/blog/specification-gaming-the-flip-side-of-ai-ingenuity/": {
+      "bytes": 154678,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://deepmind.google/blog/specification-gaming-the-flip-side-of-ai-ingenuity/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://deepmind.google/discover/blog/strengthening-our-frontier-safety-framework/": {
+      "bytes": 144146,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://deepmind.google/blog/strengthening-our-frontier-safety-framework/",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://deepmind.google/discover/blog/wavenet-a-generative-model-for-raw-audio/": {
       "consecutive_failures": 0,
       "error": null,
@@ -1654,17 +2108,6 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
-      "ok": true,
-      "status": 200
-    },
-    "https://deepmind.google/models/model-cards/gemini-3-7-flash/": {
-      "bytes": 157640,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://deepmind.google/models/model-cards/gemini-3-7-flash/",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1703,17 +2146,6 @@
       "ok": true,
       "status": 200
     },
-    "https://developers.openai.com/api/docs/deprecations": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://developers.openai.com/api/docs/deprecations",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://developers.openai.com/api/docs/guides/prompt-caching": {
       "consecutive_failures": 0,
       "error": null,
@@ -1733,13 +2165,13 @@
       "ok": true,
       "status": 200
     },
-    "https://developers.openai.com/api/docs/models": {
-      "bytes": null,
+    "https://digitaleconomy.stanford.edu/wp-content/uploads/2025/08/Canaries_BrynjolfssonChandarChen.pdf": {
+      "bytes": 2292240,
       "consecutive_failures": 0,
       "error": null,
-      "final_url": "https://developers.openai.com/api/docs/models",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
+      "final_url": "https://digitaleconomy.stanford.edu/app/uploads/2025/11/CanariesintheCoalMine_Nov25.pdf",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1825,11 +2257,33 @@
       "ok": true,
       "status": 200
     },
+    "https://en.wikipedia.org/wiki/Extreme_ultraviolet_lithography": {
+      "bytes": 158934,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/Extreme_ultraviolet_lithography",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://en.wikipedia.org/wiki/Google_DeepMind": {
       "consecutive_failures": 0,
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/High_Bandwidth_Memory": {
+      "bytes": 61808,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/High_Bandwidth_Memory",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1941,6 +2395,39 @@
       "final_url": "https://en.wikipedia.org/wiki/Zhipu_AI",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://epoch.ai/blog/can-ai-scaling-continue-through-2030": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://epoch.ai/publications/can-ai-scaling-continue-through-2030",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://epoch.ai/data-insights/llm-inference-price-trends": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://epoch.ai/data-insights/llm-inference-price-trends",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://epoch.ai/data-insights/open-closed-eci-gap": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://epoch.ai/data-insights/open-closed-eci-gap",
+      "last_checked": "2026-08-31",
+      "last_ok": "2026-08-31",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -2165,44 +2652,11 @@
       "ok": true,
       "status": 200
     },
-    "https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B/raw/main/LICENSE": {
-      "bytes": 3390,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B/raw/main/LICENSE",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://huggingface.co/Qwen/Qwen3.8-27B": {
       "bytes": 526586,
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://huggingface.co/Qwen/Qwen3.8-27B",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://huggingface.co/Qwen/Qwen3.8-27B/raw/main/LICENSE": {
-      "bytes": 11544,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/Qwen/Qwen3.8-27B/raw/main/LICENSE",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://huggingface.co/Qwen/Qwen3.8-Flash-Next/raw/main/LICENSE": {
-      "bytes": 3235,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next/raw/main/LICENSE",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
       "meta_refresh": null,
@@ -2253,44 +2707,11 @@
       "ok": true,
       "status": 200
     },
-    "https://huggingface.co/datasets/ILSVRC/imagenet-1k": {
-      "bytes": 344906,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/datasets/ILSVRC/imagenet-1k",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://huggingface.co/datasets/zh-plus/tiny-imagenet": {
-      "bytes": 522303,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/datasets/zh-plus/tiny-imagenet",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731": {
       "bytes": 277744,
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731/raw/main/LICENSE": {
-      "bytes": 1084,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731/raw/main/LICENSE",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
       "meta_refresh": null,
@@ -2313,17 +2734,6 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://huggingface.co/meta-models/Muse-Glimmer-30B",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://huggingface.co/mistralai/Mistral-Medium-3.5-128B/raw/main/LICENSE": {
-      "bytes": 1695,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/mistralai/Mistral-Medium-3.5-128B/raw/main/LICENSE",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
       "meta_refresh": null,
@@ -2374,17 +2784,6 @@
       "ok": true,
       "status": 200
     },
-    "https://huggingface.co/moonshotai/Kimi-K3/raw/main/LICENSE": {
-      "bytes": 3065,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/moonshotai/Kimi-K3/raw/main/LICENSE",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16": {
       "bytes": 528560,
       "consecutive_failures": 0,
@@ -2401,39 +2800,6 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://huggingface.co/nvidia/Nemotron-3.5-Content-Safety",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://huggingface.co/openai/gpt-oss-120b/raw/main/USAGE_POLICY": {
-      "bytes": 201,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/openai/gpt-oss-120b/raw/main/USAGE_POLICY",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://huggingface.co/papers/1706.03762": {
-      "bytes": 292240,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/papers/1706.03762",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://huggingface.co/papers/trending": {
-      "bytes": 1501787,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/papers/trending",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
       "meta_refresh": null,
@@ -2462,44 +2828,11 @@
       "ok": true,
       "status": 200
     },
-    "https://huggingface.co/xai-org/grok-2/raw/main/LICENSE": {
-      "bytes": 5467,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/xai-org/grok-2/raw/main/LICENSE",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://huggingface.co/zai-org/GLM-5.1": {
       "bytes": 372106,
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://huggingface.co/zai-org/GLM-5.1",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://huggingface.co/zai-org/GLM-5.3-Flash/raw/main/LICENSE": {
-      "bytes": 1070,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/zai-org/GLM-5.3-Flash/raw/main/LICENSE",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE": {
-      "bytes": 4263,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
       "meta_refresh": null,
@@ -2693,28 +3026,6 @@
       "ok": true,
       "status": 200
     },
-    "https://openrouter.ai/ibm-granite/granite-4.0-h-micro": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://openrouter.ai/ibm-granite/granite-4.0-h-micro",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://openrouter.ai/inclusionai/ling-3.0-flash": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://openrouter.ai/inclusionai/ling-3.0-flash",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://openrouter.ai/meta/muse-spark-1.2-contributor": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -2759,28 +3070,6 @@
       "ok": true,
       "status": 200
     },
-    "https://openrouter.ai/mistralai/mistral-nemo": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://openrouter.ai/mistralai/mistral-nemo",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://openrouter.ai/moonshotai/kimi-k2.5": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://openrouter.ai/moonshotai/kimi-k2.5",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://openrouter.ai/moonshotai/kimi-k3": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -2808,28 +3097,6 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://openrouter.ai/nvidia/nemotron-3.5-lightning:free",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://openrouter.ai/openai/gpt-4": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://openrouter.ai/openai/gpt-4",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://openrouter.ai/openai/gpt-4.1-nano": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://openrouter.ai/openai/gpt-4.1-nano",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
       "meta_refresh": null,
@@ -2968,44 +3235,11 @@
       "ok": true,
       "status": 200
     },
-    "https://platform.claude.com/docs/en/about-claude/model-deprecations": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://platform.claude.com/docs/en/about-claude/model-deprecations",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://platform.claude.com/docs/en/build-with-claude/prompt-caching": {
       "bytes": null,
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://platform.claude.com/docs/en/models/fable-5/overview": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://platform.claude.com/docs/en/models/fable-5/overview",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://platform.claude.com/docs/en/models/overview": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://platform.claude.com/docs/en/models/overview",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
       "meta_refresh": null,
@@ -3408,17 +3642,6 @@
       "ok": true,
       "status": 200
     },
-    "https://www.alibabacloud.com/blog/introducing-qoder-agentic-coding-platform-for-real-software_603349": {
-      "bytes": 0,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://www.alibabacloud.com/notfound",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://www.anthropic.com/claude/mythos": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3468,17 +3691,6 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://www.anthropic.com/news/model-context-protocol",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://www.anthropic.com/research/deprecation-commitments": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://www.anthropic.com/research/deprecation-commitments",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
       "meta_refresh": null,
@@ -3666,17 +3878,6 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://www.langchain.com/",
-      "last_checked": "2026-08-29",
-      "last_ok": "2026-08-29",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
-    "https://www.llama.com/llama4/license/": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://developer.meta.com/ai/llama4/license/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
       "meta_refresh": null,
