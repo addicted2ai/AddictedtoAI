@@ -14,7 +14,7 @@
       "/wiki/concept/ai-winter": {
         "label": "entry",
         "chunks_kb_gzipped": 104.1,
-        "inline_kb_gzipped": 5.4,
+        "inline_kb_gzipped": 5.3,
         "total_kb_gzipped": 109.3,
         "html_kb_gzipped": 7.5
       },
@@ -22,7 +22,7 @@
         "label": "table",
         "chunks_kb_gzipped": 104.5,
         "inline_kb_gzipped": 17.6,
-        "total_kb_gzipped": 122.4,
+        "total_kb_gzipped": 122.3,
         "html_kb_gzipped": 33.7
       }
     }
@@ -31,7 +31,7 @@
     "date": "2026-08-31",
     "pass": true,
     "failures": 0,
-    "checks": 45
+    "checks": 46
   },
   "analytics_local": {
     "date": "2026-08-31",

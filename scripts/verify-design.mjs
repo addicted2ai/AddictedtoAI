@@ -18,9 +18,19 @@
  *                recorded in data/launch.json under `js_payload`.
  *   keyboard     a scripted Tab traversal that reaches AND activates the nav
  *                links, the search box and the theme toggle on those routes.
- *   focus ring   a second traversal that does NOT stop at the header: every
- *                tab stop must show a focus indicator. The first one quits at
- *                stop 11, so nothing below the fold was ever checked.
+ *   focus ring   a second traversal that does NOT stop at the header, and
+ *                does NOT stop early at all (addictedtoai-t6d): it walks to
+ *                the end of the page's real tab order and every stop must
+ *                show a focus indicator. A fixed 150-stop cap used to
+ *                truncate this on /catalog's 817 stops and still print PASS;
+ *                MEASURED cost of walking all 817 was ~4-6s against a
+ *                ~31s baseline run, so the cap bought speed nobody needed and
+ *                cost coverage everybody assumed they had.
+ *   coverage     a static, no-browser sweep of every EXPORTED route
+ *                (addictedtoai-0qs): fails when a route outside the sampled
+ *                set renders a focusable element type no sampled route
+ *                renders, so a route that grows a control (like /tools did)
+ *                no longer needs a human reading a diff to notice.
  *   above fold   the home page shows real content — changed-feed lines — at
  *                1440x900 and 390x844, with no full-viewport hero.
  *
@@ -32,9 +42,12 @@
 
 import { spawn } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { join, resolve, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { AxeBuilder } from '@axe-core/playwright';
+import fg from 'fast-glob';
+import * as cheerio from 'cheerio';
 
 import { measureRoute, formatMeasurement, BUDGET_BYTES } from './measure-payload.mjs';
 import { ROOT } from '../lib/paths.mjs';
@@ -93,10 +106,26 @@ const SAMPLES = [
  * `/impossible-routine` and `/data`. Each is a heading-and-links layout built
  * from the same components already covered by `/` and `/catalog`, so each would
  * buy a fraction of what `/tools` buys at the same cost. When one of them grows
- * a control of its own, it belongs here — that is what this rule is for
- * (tracked as its own issue rather than left in this comment).
+ * a control of its own, it belongs here — and now something besides a human
+ * reading a diff notices: `findUnsampledFocusableTags` below runs over EVERY
+ * exported route (not a sample — it costs a cheerio parse, not a browser round
+ * trip) and fails the build the day an unsampled route renders a focusable
+ * element type no route in this list, or in SAMPLES, renders. That is exactly
+ * how `/tools`'s `<summary>` would have been caught before a person found it
+ * (addictedtoai-0qs).
  */
 const A11Y_EXTRA_ROUTES = ['/tools'];
+
+/**
+ * The single definition of "focusable" shared by the browser sweep
+ * (`checkFocusIndicators`) and the static route-coverage scan
+ * (`findUnsampledFocusableTags`) below, so the two mechanisms can never
+ * quietly drift onto different questions. Verified against cheerio directly
+ * (its selector engine is `css-select`, which handles `:not([attr="v"])`
+ * correctly) rather than assumed.
+ */
+const FOCUSABLE_SELECTOR =
+  'a[href], button, input, select, textarea, summary, details > summary, [tabindex]:not([tabindex="-1"])';
 
 let failures = 0;
 const evidence = [];
@@ -257,11 +286,87 @@ async function checkKeyboard(page, base, route) {
   );
 }
 
-/** How far the focus sweep tabs before it stops and says so. */
-const FOCUS_SWEEP_CAP = 150;
+/**
+ * The loop below no longer stops at a fixed prefix (addictedtoai-t6d). It
+ * used to: a 150-stop cap swept `/catalog`'s first 150 of 817 tab stops — 18%
+ * — and still printed PASS, because "n of m" read as thorough even though
+ * five sixths were never touched. That was chosen on an ASSUMED cost: "817
+ * stops is roughly 1600 round trips, a large addition to a gate that already
+ * drives a browser over four routes."  That assumption was never measured.
+ *
+ * MEASURED 2026-08-31, against this build's real `/catalog` (817 focusable
+ * elements) on a warm local server: walking every stop with the exact
+ * per-stop `page.evaluate` this function runs took 3.9-6.4s across two runs.
+ * The whole `verify-design.mjs` run (four routes, axe in two themes, reflow,
+ * keyboard, the old capped focus sweep, above-the-fold) took ~31s BEFORE this
+ * change. Uncapping the sweep — the only route it changes materially is
+ * `/catalog`, since every other sampled route's tab order is already under
+ * 150 stops — adds single-digit seconds to a ~31s run. That is "affordable,"
+ * not "the gate now takes twenty minutes."
+ *
+ * The rejected alternative was signature-based sampling: group focusable
+ * elements by tagName+className and tab to one representative of each
+ * distinct signature rather than to all of them. It was rejected for two
+ * reasons, not one:
+ *   1. It bought nothing once exhaustive traversal was shown to be cheap —
+ *      the whole point of sampling is to avoid a cost that, measured, isn't
+ *      there.
+ *   2. Its own mechanics were unresolved: reaching a chosen representative
+ *      still means COUNTING stops to it (Tab is the only way to move focus
+ *      that also updates `:focus-visible`), so the walk happens either way —
+ *      unless the check calls `.focus()` directly and accepts that
+ *      `:focus-visible` after `.focus()` is a Chromium heuristic keyed on
+ *      the last input modality, which the issue that proposed this flagged
+ *      as needing verification BEFORE relying on it. Exhaustive traversal
+ *      sidesteps that unverified assumption entirely rather than resting on
+ *      it.
+ *
+ * So instead of a fixed cap, the loop bound is DERIVED from the page's own
+ * counted focusable-element total, generously past it. Under normal
+ * operation `stops` never approaches that bound — it exists as a safety
+ * valve against a genuine non-terminating sweep (a focus trap, or a tab
+ * order that never returns focus to `document.body`), not as a coverage
+ * limit. Hitting it is treated as a FAILURE and reported as an anomaly, never
+ * as a quiet truncation.
+ */
+const FOCUS_SWEEP_SAFETY_MARGIN = 25;
+
+/** Pure: the loop bound for a page counting `total` focusable elements. */
+export function focusSweepBound(total) {
+  return total + FOCUS_SWEEP_SAFETY_MARGIN;
+}
 
 /**
- * Every tab stop shows a visible focus indicator (addictedtoai-9jj).
+ * Pure: the human-readable scope of a completed sweep, and whether it should
+ * be treated as a pass. Split out from `checkFocusIndicators` so the
+ * scope-reporting logic — the exact thing addictedtoai-t6d is about — is
+ * unit-testable without a browser.
+ */
+export function describeFocusSweep({ stops, total, safetyBoundHit }) {
+  if (safetyBoundHit) {
+    return {
+      ok: false,
+      scope:
+        `${stops} stop(s) and STILL GOING past ${total} counted focusable element(s) plus a ` +
+        `${FOCUS_SWEEP_SAFETY_MARGIN}-stop safety margin — the sweep was stopped rather than trusted; ` +
+        'this usually means a focus trap or a tab order that never returns focus to <body>',
+    };
+  }
+  return {
+    ok: true,
+    scope:
+      `the complete tab order, ${stops} stop(s)` +
+      (total > stops
+        ? `; ${total} focusable element(s) in the DOM, ${total - stops} of them not currently ` +
+          'tabbable (a closed <details> hides its links)'
+        : ''),
+  };
+}
+
+/**
+ * Every tab stop shows a visible focus indicator (addictedtoai-9jj), and now
+ * every stop means EVERY stop (addictedtoai-t6d) — see FOCUS_SWEEP_SAFETY_MARGIN
+ * above for why an exhaustive walk is affordable here.
  *
  * `checkKeyboard` above stops as soon as it has found the search box and the
  * theme toggle — stop 11 on every route — so it only ever exercised the header.
@@ -277,25 +382,17 @@ const FOCUS_SWEEP_CAP = 150;
  * box-shadow. Contrast of the ring is axe's job and axe already runs on both
  * themes; this runs in one, because whether an indicator EXISTS does not vary
  * with the palette.
- *
- * Both numbers are reported. `/catalog` has more focusable elements than the
- * cap, and a truncated sweep printed as a clean one is indistinguishable from a
- * complete one — so the evidence line always says "n of m".
  */
 async function checkFocusIndicators(page, base, route) {
   await page.goto(`${base}${route}`, { waitUntil: 'domcontentloaded' });
-  const total = await page.evaluate(
-    () =>
-      document.querySelectorAll(
-        'a[href], button, input, select, textarea, summary, details > summary, [tabindex]:not([tabindex="-1"])',
-      ).length,
-  );
+  const total = await page.evaluate((sel) => document.querySelectorAll(sel).length, FOCUSABLE_SELECTOR);
   await page.evaluate(() => document.body.focus());
 
+  const bound = focusSweepBound(total);
   const unindicated = [];
   const tags = new Set();
   let stops = 0;
-  for (let i = 0; i < FOCUS_SWEEP_CAP; i += 1) {
+  for (let i = 0; i < bound; i += 1) {
     await page.keyboard.press('Tab');
     const info = await page.evaluate(() => {
       const el = document.activeElement;
@@ -320,20 +417,10 @@ async function checkFocusIndicators(page, base, route) {
     if (!info.indicated) unindicated.push(`${info.tag}.${info.cls || '(no class)'} — outline ${info.outline}`);
   }
 
-  // Two ways this sweep can end, and they mean opposite things. Tabbing back
-  // round to the skip link means the WHOLE tab order was walked; hitting the
-  // cap means it was not. Printing one number for both would make a truncated
-  // sweep read exactly like a complete one.
-  const capped = stops >= FOCUS_SWEEP_CAP;
-  const scope = capped
-    ? `${stops} of ${total} focusable element(s) — STOPPED AT THE ${FOCUS_SWEEP_CAP}-STOP CAP, the rest unswept`
-    : `the complete tab order, ${stops} stop(s)` +
-      (total > stops
-        ? `; ${total} focusable element(s) in the DOM, ${total - stops} of them not currently ` +
-          'tabbable (a closed <details> hides its links)'
-        : '');
+  const safetyBoundHit = stops >= bound;
+  const { ok: sweepOk, scope } = describeFocusSweep({ stops, total, safetyBoundHit });
   record(
-    unindicated.length === 0,
+    unindicated.length === 0 && sweepOk,
     `every tab stop shows a focus indicator ${route}`,
     `${scope}; element types ${[...tags].sort().join(', ')}` +
       (unindicated.length ? ` — ${unindicated.slice(0, 4).join('; ')}` : ''),
@@ -359,6 +446,60 @@ async function checkAboveFold(page, base, size, label) {
   );
 }
 
+/**
+ * Static half of the coverage gap (addictedtoai-0qs). Parses every exported
+ * route with cheerio — no browser, no server — and returns each route's set
+ * of focusable-element TAG NAMES, using the exact same `FOCUSABLE_SELECTOR`
+ * the browser sweep uses, so the two mechanisms can never answer a subtly
+ * different question. MEASURED over this build's 616 exported HTML files:
+ * 1.4s. Cheap enough to run over EVERY route rather than a sample, which is
+ * the whole point — it is what the browser checks above cannot afford to do.
+ */
+export async function scanFocusableTagsByRoute(out) {
+  const files = await fg(`${out.split('\\').join('/')}/**/*.html`, { onlyFiles: true });
+  const routeTags = new Map();
+  for (const file of files) {
+    const rel = relative(out, file).split('\\').join('/');
+    const route = rel === 'index.html' ? '/' : '/' + rel.replace(/\.html$/, '');
+    const $ = cheerio.load(await readFile(file, 'utf8'));
+    const tags = new Set($(FOCUSABLE_SELECTOR).map((_, el) => (el.tagName || el.name || '').toLowerCase()).get());
+    routeTags.set(route, tags);
+  }
+  return routeTags;
+}
+
+/**
+ * Pure: given every route's focusable-tag set and the routes the browser
+ * checks actually sample, finds each focusable TAG that appears only outside
+ * the sample — the trigger addictedtoai-0qs asked for. Grouped by tag rather
+ * than listed per route: if a shared template change put a new tag on
+ * hundreds of routes at once, that is one finding ("this tag is unsampled"),
+ * not hundreds of identical lines burying the one that matters.
+ *
+ * This is deliberately coarser than the browser sweep: it asks "does any
+ * unsampled route use an element TYPE the sample has never seen", not "is
+ * every unsampled route itself accessible" — the latter is what earns a route
+ * a place in A11Y_EXTRA_ROUTES, a judgment call this keeps a mechanism for
+ * triggering, not a mechanism for making automatically.
+ */
+export function findUnsampledFocusableTags(routeTags, sampledRoutes) {
+  const sampled = new Set(sampledRoutes);
+  const union = new Set();
+  for (const route of sampled) for (const t of routeTags.get(route) ?? []) union.add(t);
+
+  const byTag = new Map();
+  for (const [route, tags] of routeTags) {
+    if (sampled.has(route)) continue;
+    for (const tag of tags) {
+      if (union.has(tag)) continue;
+      const entry = byTag.get(tag) ?? { tag, firstRoute: route, count: 0 };
+      entry.count += 1;
+      byTag.set(tag, entry);
+    }
+  }
+  return [...byTag.values()].sort((a, b) => a.tag.localeCompare(b.tag));
+}
+
 async function main() {
   const out = resolve(process.argv[2] ?? join(ROOT, 'out'));
   const port = Number.parseInt(process.argv[3] ?? '3111', 10);
@@ -366,6 +507,20 @@ async function main() {
 
   SAMPLES[1].route = await pickEntry(out);
   const routes = [...SAMPLES.map((s) => s.route), ...A11Y_EXTRA_ROUTES];
+
+  // ---- route coverage, static, no browser (addictedtoai-0qs) -------------
+  process.stdout.write('\nunsampled-route coverage (static, every exported route)\n');
+  const routeTags = await scanFocusableTagsByRoute(out);
+  const gaps = findUnsampledFocusableTags(routeTags, routes);
+  record(
+    gaps.length === 0,
+    `every exported route's focusable element types are covered by the ${routes.length}-route sample`,
+    gaps.length === 0
+      ? `${routeTags.size} route(s) checked`
+      : gaps
+          .map((g) => `<${g.tag}> appears on ${g.count} unsampled route(s), e.g. ${g.firstRoute}`)
+          .join('; '),
+  );
 
   // ---- payload, from the files themselves --------------------------------
   process.stdout.write('\nfirst-load JavaScript (specs/site: at most 150 KB gzipped)\n');
@@ -451,4 +606,12 @@ async function main() {
   process.exit(failures === 0 ? 0 : 1);
 }
 
-await main();
+/* ── standalone ──────────────────────────────────────────────────────────── */
+//
+// Guarded so `verify-design.test.mjs` can import the pure functions above
+// (focusSweepBound, describeFocusSweep, scanFocusableTagsByRoute,
+// findUnsampledFocusableTags) without `main()` spawning a server, launching a
+// browser and calling `process.exit()` as a side effect of the import.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  await main();
+}
