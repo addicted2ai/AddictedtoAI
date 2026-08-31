@@ -20,7 +20,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { DERIVED_PATHS, findSharedDerive, rederiveStep } from '../lib/rederive.mjs';
+import { DERIVED_PATHS, findSharedDerive, rederiveStep, dirtyDerivedInputs, DERIVED_INPUT_PATHS } from '../lib/rederive.mjs';
 import { DERIVED_PATHS as PULSE_DERIVED_PATHS } from '../../pulse/lib/rederive.mjs';
 
 const git = (dir, args) => execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8', stdio: 'pipe' });
@@ -136,4 +136,132 @@ test('a failed derivation is reported, never thrown into the caller', async (t) 
 
   assert.equal(out.ok, false, 'a merge must not be undone by a derivation failure');
   assert.match(out.reason, /derivation failed: boom/);
+});
+
+// -----------------------------------------------------------------------------
+// addictedtoai-djd — `data/derived/` must not be committed disconnected from
+// the state it was computed from. `dirtyDerivedInputs` is the guard's read of
+// "is any of it dirty right now"; `loop/run.mjs` is what acts on the answer
+// (covered end to end in `derived-commit-dirty-inputs.test.mjs`). These tests
+// are the unit-level measurement of the guard's own read of the tree, plus
+// one git-mechanism reproduction of the hazard it exists to prevent — in the
+// same style as the dgj THE DEFECT/THE FIX pair above.
+// -----------------------------------------------------------------------------
+
+function initedRepo() {
+  const dir = mkdtempSync(join(tmpdir(), 'derived-inputs-'));
+  git(dir, ['init', '-q', '-b', 'main']);
+  git(dir, ['config', 'user.email', 'test@example.invalid']);
+  git(dir, ['config', 'user.name', 'test']);
+  git(dir, ['config', 'core.autocrlf', 'false']);
+  writeFileSync(join(dir, 'README.md'), 'fixture\n');
+  git(dir, ['add', '-A']);
+  git(dir, ['commit', '-qm', 'base']);
+  return dir;
+}
+
+test('dirtyDerivedInputs: a clean tree reports nothing dirty', (t) => {
+  const dir = initedRepo();
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  mkdirSync(join(dir, 'data'), { recursive: true });
+  writeFileSync(join(dir, 'data', 'changes.jsonl'), '{"subject":"a"}\n');
+  git(dir, ['add', '-A']);
+  git(dir, ['commit', '-qm', 'seed changes.jsonl']);
+
+  assert.deepEqual(dirtyDerivedInputs(dir), []);
+});
+
+test('dirtyDerivedInputs: a modified data/changes.jsonl is named', (t) => {
+  const dir = initedRepo();
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  mkdirSync(join(dir, 'data'), { recursive: true });
+  writeFileSync(join(dir, 'data', 'changes.jsonl'), '{"subject":"a"}\n');
+  git(dir, ['add', '-A']);
+  git(dir, ['commit', '-qm', 'seed changes.jsonl']);
+
+  writeFileSync(join(dir, 'data', 'changes.jsonl'), '{"subject":"a"}\n{"subject":"b"}\n');
+  assert.deepEqual(dirtyDerivedInputs(dir), ['data/changes.jsonl']);
+});
+
+test('dirtyDerivedInputs: an UNTRACKED file under data/sources/ is named too (-uall matters)', (t) => {
+  // A brand-new snapshot file is untracked, not modified. `--untracked-files=
+  // normal` (git's default) would report the containing directory instead of
+  // the file, which for a per-source directory would read as "dirty" forever.
+  const dir = initedRepo();
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  mkdirSync(join(dir, 'data', 'sources', 'a-source'), { recursive: true });
+  writeFileSync(join(dir, 'data', 'sources', 'a-source', 'latest.json'), '{}\n');
+
+  const dirty = dirtyDerivedInputs(dir);
+  assert.deepEqual(dirty, ['data/sources/a-source/latest.json']);
+});
+
+test('dirtyDerivedInputs: an untracked content/ file is named', (t) => {
+  const dir = initedRepo();
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  mkdirSync(join(dir, 'content'), { recursive: true });
+  writeFileSync(join(dir, 'content', 'draft.md'), 'half-written\n');
+
+  assert.deepEqual(dirtyDerivedInputs(dir), ['content/draft.md']);
+});
+
+test('dirtyDerivedInputs: a dirty file OUTSIDE the input set is not named', (t) => {
+  const dir = initedRepo();
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  mkdirSync(join(dir, 'data'), { recursive: true });
+  writeFileSync(join(dir, 'data', 'launch.json'), '{}\n');
+
+  assert.deepEqual(dirtyDerivedInputs(dir), [], 'data/launch.json is not part of DERIVED_INPUT_PATHS');
+});
+
+test('dirtyDerivedInputs: "cannot tell" (not a repository) is null, not an empty array', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'not-a-repo-'));
+  try {
+    mkdirSync(join(dir, 'data'), { recursive: true });
+    writeFileSync(join(dir, 'data', 'changes.jsonl'), '{}\n');
+    assert.equal(dirtyDerivedInputs(dir), null, 'null must read differently than an empty array — "cannot tell" is not "nothing is dirty"');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('THE DEFECT (git level, addictedtoai-djd): data/derived/ committed alone pairs it with state a branch cut from it cannot see', (t) => {
+  const dir = initedRepo();
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  mkdirSync(join(dir, 'data', 'derived'), { recursive: true });
+  writeFileSync(join(dir, 'data', 'changes.jsonl'), '{"subject":"a"}\n');
+  writeFileSync(join(dir, 'data', 'derived', 'queue.json'), JSON.stringify({ items: ['a'] }, null, 2) + '\n');
+  git(dir, ['add', '-A']);
+  git(dir, ['commit', '-qm', 'base with one change record']);
+
+  // The shape of the incident: a second line lands on disk and is never
+  // committed (a concurrent Pulse mid-run), and the re-derive recomputes
+  // data/derived/ from it anyway — because the derivation reads the
+  // filesystem, not git.
+  writeFileSync(join(dir, 'data', 'changes.jsonl'), '{"subject":"a"}\n{"subject":"b"}\n');
+  writeFileSync(join(dir, 'data', 'derived', 'queue.json'), JSON.stringify({ items: ['a', 'b'] }, null, 2) + '\n');
+
+  // The UNGUARDED commit this issue is about: data/derived/ only, by exact
+  // path — exactly what loop/run.mjs did before this fix.
+  git(dir, ['add', '--', 'data/derived']);
+  git(dir, ['commit', '-qm', 'job x: records (done)']);
+
+  // data/changes.jsonl is still dirty after that commit.
+  assert.match(git(dir, ['status', '--porcelain', '--', 'data/changes.jsonl']), /^ M/);
+
+  // The next job's branch is cut from exactly that commit.
+  git(dir, ['branch', 'job/next']);
+
+  // What a fresh checkout of that branch actually carries — read from the
+  // committed blobs, the way `git worktree add` populates a new worktree,
+  // never from this working tree's leftover dirty file.
+  const branchChanges = git(dir, ['show', 'job/next:data/changes.jsonl']);
+  const branchQueue = JSON.parse(git(dir, ['show', 'job/next:data/derived/queue.json']));
+
+  assert.equal(branchChanges, '{"subject":"a"}\n', 'the branch cannot see subject "b"');
+  assert.deepEqual(branchQueue.items, ['a', 'b'], 'yet the committed queue names it — the exact defect addictedtoai-djd reports');
+});
+
+test('the two DERIVED_INPUT_PATHS lists agree with the beads issue\'s own enumerable set', () => {
+  assert.deepEqual([...DERIVED_INPUT_PATHS], ['data/changes.jsonl', 'data/sources', 'content']);
 });

@@ -54,7 +54,7 @@ import {
   startGate,
 } from './lib/breakers.mjs';
 import { publishStep } from './lib/publish.mjs';
-import { rederiveStep, DERIVED_PATHS } from './lib/rederive.mjs';
+import { rederiveStep, DERIVED_PATHS, dirtyDerivedInputs } from './lib/rederive.mjs';
 import { markDirectiveDone } from './lib/directives.mjs';
 import {
   applyProposalMergeRules,
@@ -1200,16 +1200,77 @@ export async function runLoop(ctx, opts = {}) {
   removeWorktree(ctx.repoRoot, worktree);
   rmSync(worktree, { recursive: true, force: true });
 
+  // -------------------------------------------------------------------------
+  // GUARD: do not commit `data/derived/` disconnected from what it was
+  // computed from (addictedtoai-djd).
+  //
+  // `rederiveStep` above (when it ran) recomputed `data/derived/` from
+  // whatever `data/changes.jsonl`, `data/sources/*` and `content/` hold ON
+  // DISK right now — including any of it that is dirty in this main working
+  // tree because a concurrent Pulse run or another agent is mid-edit. That is
+  // the right thing for the WORKING TREE: the recomputed files are the true
+  // reflection of the current state, useful to this process's own view of the
+  // world. It is the wrong thing to COMMIT: committing `data/derived/` by
+  // exact path while its own inputs stay uncommitted pairs it, in git
+  // history, with a `data/changes.jsonl`/`data/sources/`/`content/` the
+  // COMMITTED state does not carry — and the next job's branch is cut from
+  // exactly that commit, inheriting a queue item naming a record the branch
+  // cannot see. Measured 2026-08-31 on commit `8f83b04`: a recomputed
+  // `queue.json` named an `interpret` item over a change record that lived
+  // only in a still-dirty `data/changes.jsonl`, and the branch cut from that
+  // commit blocked, unable to find it.
+  //
+  // The alternative — bring the inputs along, committing them together with
+  // `data/derived/` — was rejected. Those files are not this run's to commit:
+  // `data/changes.jsonl` and `data/sources/*` are the Pulse's state, and a
+  // dirty `content/` file may be another agent's unfinished edit. Sweeping
+  // them into a commit here is the exact attribution failure addictedtoai-ps3
+  // fixed for the Pulse's own publish step — a mechanism must not commit what
+  // it cannot honestly say it wrote. So there is no third option: either the
+  // derived tree travels with inputs this run does not own, or it is left
+  // uncommitted until whoever owns them commits them. This takes the second.
+  //
+  // Guarded HERE, at the commit, rather than at the branch cut where the
+  // damage lands: refusing here stops the bad pairing from ever reaching
+  // history, so every later reader (every future branch cut from this commit,
+  // `git show`, the Pulse's own next run) sees a `data/derived/` git can
+  // actually explain — one refusal instead of one detection per branch cut
+  // from it. `HOLD.md` is not written: this is a normal operating condition
+  // in a working tree several agents share, not a breaker-level halt, and the
+  // rest of this run's records (the ledger line, the verdict, the directive
+  // marker) do not depend on the invariant this guards and still commit.
+  // -------------------------------------------------------------------------
+  const dirtyInputs = rederived ? dirtyDerivedInputs(ctx.repoRoot) : [];
+  if (rederived && dirtyInputs === null) {
+    ctx.log(
+      'rederive: could not read the state of data/derived/\'s own inputs (git status failed) — ' +
+        'not committing the recomputed tree; it stays in the working tree, uncommitted, matching ' +
+        'whatever it was computed from (addictedtoai-djd)',
+    );
+  } else if (rederived && dirtyInputs.length) {
+    ctx.log(
+      `rederive: data/derived/ was recomputed, but its own inputs are uncommitted in the working ` +
+        `tree (${dirtyInputs.join(', ')}) — committing it now would pair it, in history, with a ` +
+        `data/changes.jsonl / data/sources/ / content/ the commit itself does not carry, and the ` +
+        `next job branched from this commit would inherit a queue item naming a record it cannot ` +
+        `see (addictedtoai-djd). Leaving data/derived/ uncommitted; whoever commits those inputs ` +
+        `(the next Pulse run, or the agent mid-edit) carries it forward correctly.`,
+    );
+  }
+  /** Only when `rederiveStep` ran AND its inputs are confirmed clean. */
+  const derivedCommittable = rederived && Array.isArray(dirtyInputs) && dirtyInputs.length === 0;
+
   const recordPaths = [
     relative(ctx.repoRoot, ctx.ledgerPath),
     relative(ctx.repoRoot, verdictPath(ctx, jobId, 1)),
     relative(ctx.repoRoot, verdictPath(ctx, jobId, 2)),
     relative(ctx.repoRoot, ctx.directivesPath),
-    // The recomputed derived tree, when there was one. It is the derivation of
-    // the merged state and must land in the same commit as the records, or the
+    // The recomputed derived tree, when there was one AND the guard above
+    // confirmed its own inputs are clean. It is the derivation of the merged
+    // state and must land in the same commit as the records, or the
     // repository is left holding a queue that describes the tree from before
     // this job (addictedtoai-942). Still staged by exact path — never `add -A`.
-    ...(rederived ? DERIVED_PATHS : []),
+    ...(derivedCommittable ? DERIVED_PATHS : []),
     // A proposal or a carried finding transcribed from the verdict record is
     // written into the main working tree after the merge, so it is not
     // carried by any branch. Both are committed here with the record they

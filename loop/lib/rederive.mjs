@@ -40,6 +40,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { gitTry } from './git.mjs';
 
 /** Where the Pulse's step lives. Both spellings are checked so a move does not silently disable this. */
 export const SHARED_DERIVE_CANDIDATES = ['pulse/lib/rederive.mjs', 'pulse/rederive.mjs'];
@@ -53,6 +54,64 @@ export const SHARED_DERIVE_CANDIDATES = ['pulse/lib/rederive.mjs', 'pulse/rederi
  * asserted equal by test so the two cannot drift.
  */
 export const DERIVED_PATHS = Object.freeze(['data/derived']);
+
+/**
+ * The repo-relative paths `data/derived/` is a pure function OF — addictedtoai-djd.
+ *
+ * Not every input the shared derive step happens to read (`data/sources/
+ * registry.json` is hand-authored and rarely changes; the ledger and
+ * `linkcheck.json` are read too), but the ones CLAUDE.md itself names as the
+ * non-derivable state a re-derive is computed from: "the state that tree was
+ * computed from (`data/changes.jsonl`, the source snapshots, the corpus)".
+ * This is the same enumerable set the beads issue's own suggested fix names,
+ * kept as a list rather than re-derived from `isEngineWrite` in
+ * `pulse/lib/publish.mjs` — that function answers a different question ("did
+ * an engine write this") and would happily call `data/derived/` itself an
+ * input, which is exactly backwards here.
+ */
+export const DERIVED_INPUT_PATHS = Object.freeze(['data/changes.jsonl', 'data/sources', 'content']);
+
+/**
+ * Is any of `data/derived/`'s own inputs dirty in the MAIN working tree right
+ * now — uncommitted, and therefore not something the committed history beside
+ * a `data/derived/` commit could reproduce?
+ *
+ * MEASURED, 2026-08-31 (addictedtoai-djd). Commit `8f83b04` ("job
+ * j-20260831-01: records (done)") committed a recomputed `data/derived/queue.json`
+ * naming an `interpret` item over a change record that lived only in a still-
+ * dirty `data/changes.jsonl` — 91 lines in the working tree, 90 committed. The
+ * very next job's branch, cut from that commit, inherited the queue item
+ * without the record it names: `pulse/lib/queue.mjs` derives those items from
+ * `data/changes.jsonl`, and the branch's copy of that file had no such line.
+ * `blocked: the change record this job annotates is not on this branch` was
+ * the correct, honest outcome — 15.47 model-minutes spent finding that out.
+ *
+ * `-uall`, like `pulse/lib/publish.mjs`'s `dirtyPaths`: a newly-appended
+ * source snapshot or a brand-new `content/` file is untracked, not modified,
+ * and the default `--untracked-files=normal` would report its directory
+ * rather than the file — which for `data/sources/<id>/` would report the
+ * whole source as "dirty" on every run, forever.
+ *
+ * @returns {string[]|null} the dirty repo-relative paths, or `null` — "cannot
+ *   tell" — when `git status` itself fails (not a repository, or a transient
+ *   failure). The caller errs toward NOT committing on `null`, the same
+ *   direction every guard in this codebase errs when it cannot read the tree.
+ */
+export function dirtyDerivedInputs(repoRoot) {
+  const present = DERIVED_INPUT_PATHS.filter((p) => existsSync(join(repoRoot, p)));
+  if (present.length === 0) return [];
+  const r = gitTry(repoRoot, ['status', '--porcelain=v1', '-uall', '--', ...present]);
+  if (!r.ok) return null;
+  return r.stdout
+    .split('\n')
+    .map((l) => l.trimEnd())
+    .filter(Boolean)
+    // porcelain's first two columns are status codes; the path starts at
+    // column 4. Not `-z`-decoded: this is a report for a log line, not a
+    // pathspec fed back to `git add`, and every path in this repository's own
+    // input set is plain ASCII.
+    .map((l) => l.slice(3).replace(/^"|"$/g, ''));
+}
 
 /** Loader seams, so the corpus and registry readers are also the Pulse's. */
 const REGISTRY_CANDIDATES = ['pulse/lib/registry.mjs'];
