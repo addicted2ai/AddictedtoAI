@@ -17360,6 +17360,88 @@
         "max_completion_tokens": 209715
       }
     },
+    "mistralai/mistral-small-2603:batch": {
+      "$as_of": "2026-08-31",
+      "$status": "active",
+      "$vanished": true,
+      "architecture": {
+        "input_modalities": [
+          "text",
+          "image"
+        ],
+        "instruct_type": null,
+        "modality": "text+image->text",
+        "output_modalities": [
+          "text"
+        ],
+        "tokenizer": "Mistral"
+      },
+      "benchmarks": {
+        "artificial_analysis": {
+          "agentic_index": 4.6,
+          "coding_index": 26.6,
+          "intelligence_index": 19.7
+        },
+        "design_arena": []
+      },
+      "canonical_slug": "mistralai/mistral-small-2603",
+      "context_length": 262144,
+      "created": 1773695685,
+      "default_parameters": {
+        "frequency_penalty": null,
+        "presence_penalty": null,
+        "repetition_penalty": null,
+        "temperature": null,
+        "top_k": null,
+        "top_p": null
+      },
+      "description": "Mistral Small 4 is the next major release in the Mistral Small family, unifying the capabilities of several flagship Mistral models into a single system. It combines strong reasoning from...",
+      "expiration_date": null,
+      "hugging_face_id": "mistralai/Mistral-Small-4-119B-2603",
+      "id": "mistralai/mistral-small-2603:batch",
+      "knowledge_cutoff": null,
+      "links": {
+        "details": "/api/v1/models/mistralai/mistral-small-2603/endpoints"
+      },
+      "name": "Mistral: Mistral Small 4 (batch)",
+      "per_request_limits": null,
+      "pricing": {
+        "completion": "0.0000006",
+        "input_cache_read": "0.000000015",
+        "prompt": "0.00000015"
+      },
+      "reasoning": {
+        "default_effort": "high",
+        "default_enabled": false,
+        "mandatory": false,
+        "supported_efforts": [
+          "high",
+          "none"
+        ]
+      },
+      "supported_parameters": [
+        "frequency_penalty",
+        "include_reasoning",
+        "max_tokens",
+        "presence_penalty",
+        "reasoning",
+        "reasoning_effort",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ],
+      "supported_voices": null,
+      "top_provider": {
+        "context_length": 262144,
+        "is_moderated": false,
+        "max_completion_tokens": 209715
+      }
+    },
     "mistralai/mistral-small-3.1-24b-instruct": {
       "$as_of": "2026-09-01",
       "$status": "active",

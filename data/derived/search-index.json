@@ -3280,7 +3280,7 @@
       "t": "Mistral: Mistral Small 4 (batch)",
       "k": "entry",
       "d": "model",
-      "s": "retired",
+      "s": "active",
       "i": "model/mistralai-mistral-small-2603-batch",
       "a": [],
       "b": true
