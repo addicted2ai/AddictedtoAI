@@ -39,7 +39,9 @@
  * defensible is the SHAPE of its failure: a missed ping degrades to the status
  * quo — the crawler finds the page from the sitemap on its own schedule — and
  * it never submits a URL that did not change. It is never wrong; it is
- * occasionally silent. Filed as its own issue.
+ * occasionally silent. **Filed as `addictedtoai-en3s`**, which also records the
+ * shape of the real fix (an append-only submission ledger, and where it can
+ * live without sitting dirty between runs).
  *
  * ## WHY THIS CANNOT FIRE FROM A TEST OR A VERIFIER
  *
