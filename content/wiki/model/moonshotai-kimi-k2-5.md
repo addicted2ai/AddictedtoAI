@@ -48,13 +48,13 @@ facts:
     source: cited
     value: "Modified MIT License, code and weights"
     source_url: "https://huggingface.co/moonshotai/Kimi-K2.5"
-    accessed: "2026-08-28"
+    accessed: "2026-09-01"
     volatility: slow
   - field: parameters
     source: cited
     value: "1T total, 32B activated"
     source_url: "https://huggingface.co/moonshotai/Kimi-K2.5"
-    accessed: "2026-08-28"
+    accessed: "2026-09-01"
     volatility: static
   - field: api_sunset
     source: cited
