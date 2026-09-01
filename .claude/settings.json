@@ -11,6 +11,19 @@
         "matcher": ""
       }
     ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "node D:/AddictedtoAI/scripts/shell-token-guard.mjs",
+            "statusMessage": "checking the command for the forbidden shell token",
+            "timeout": 15,
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash|PowerShell"
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [
