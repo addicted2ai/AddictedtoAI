@@ -6,24 +6,24 @@
     "pages": {
       "/": {
         "label": "home",
-        "chunks_kb_gzipped": 104.1,
-        "inline_kb_gzipped": 5.5,
-        "total_kb_gzipped": 109.5,
-        "html_kb_gzipped": 8.3
+        "chunks_kb_gzipped": 104.4,
+        "inline_kb_gzipped": 5.7,
+        "total_kb_gzipped": 109.9,
+        "html_kb_gzipped": 8.7
       },
       "/wiki/concept/ai-winter": {
         "label": "entry",
-        "chunks_kb_gzipped": 104.1,
-        "inline_kb_gzipped": 5.1,
-        "total_kb_gzipped": 109.1,
-        "html_kb_gzipped": 7.2
+        "chunks_kb_gzipped": 104.4,
+        "inline_kb_gzipped": 5.4,
+        "total_kb_gzipped": 109.6,
+        "html_kb_gzipped": 7.5
       },
       "/catalog": {
         "label": "table",
-        "chunks_kb_gzipped": 104.5,
-        "inline_kb_gzipped": 17.4,
-        "total_kb_gzipped": 122.2,
-        "html_kb_gzipped": 33.3
+        "chunks_kb_gzipped": 104.8,
+        "inline_kb_gzipped": 17.7,
+        "total_kb_gzipped": 122.8,
+        "html_kb_gzipped": 33.9
       }
     }
   },
