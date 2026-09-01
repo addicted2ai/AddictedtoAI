@@ -374,24 +374,50 @@ test('o5t the revision is not invoked once the job has spent its total', async (
   // cannot reach: it lies BETWEEN two invocations, so the fixture has to make
   // each invocation cost a known amount rather than an unmeasurable one.
   //
-  // The arithmetic, chosen so both margins are seconds rather than milliseconds:
-  // an `entry` cap of 0.15 minutes is a 9-second per-invocation guard, a
-  // 0.30-minute (18-second) job total, and — because the floor is clamped to the
-  // cap — a 9-second minimum invocation. Author and reviewer each spend about
-  // 6.5 seconds, so:
-  //   before the author   18.0s left ≥ 9s  → runs, and is not killed (2.5s spare)
-  //   before review 1     11.5s left ≥ 9s  → runs, returns `revise`
-  //   before the revision  5.0s left <  9s → REFUSED (4s inside the boundary)
+  // The arithmetic. `jobTotalMinutes` is cap × 2 and the floor is clamped to
+  // the cap, so with a cap of C the whole shape is fixed: the author always
+  // runs, review 1 runs iff its cost ≤ C, and the revision is refused iff the
+  // two costs together exceed C. The window is therefore cost ∈ (C/2, C] — a
+  // RATIO, which no choice of numbers can widen. Robustness has to come from
+  // SCALE instead, and the scale here is chosen from a measured failure.
+  //
+  // An `entry` cap of 0.5 minutes is a 30-second per-invocation guard, a
+  // 1.0-minute (60-second) job total, and a 30-second minimum invocation.
+  // Author and reviewer each sleep 21 seconds:
+  //   before the author   60.0s left ≥ 30s → runs, and is not killed
+  //   before review 1    ~39.0s left ≥ 30s → runs, returns `revise`
+  //   before the revision ~18.0s left < 30s → REFUSED
+  //
+  // WHY THESE NUMBERS AND NOT THE ORIGINAL 9s/18s/6s (addictedtoai-sfny). The
+  // fixture spawns REAL subprocesses, so each invocation costs its sleep plus
+  // process spawn and teardown. The original left only 9 − 6 = 3 SECONDS for
+  // that overhead, and on 2026-08-31 it ran out: Desk job j-20260831-14 was
+  // recorded `failed` with "gates failed" after 9.44 model-minutes of perfectly
+  // good work, on this single assertion, which then passed 14/14 when re-run
+  // alone minutes later. The author had cost more than the 30% of headroom the
+  // fixture assumed, so review 1 fell below the floor too and the phases read
+  // ['author'] instead of ['author', 'review1'].
+  //
+  // 21s against a 30s cap leaves 9 SECONDS of overhead allowance (3x the old
+  // margin) and 6 seconds above the C/2 floor. The cost is a slower test —
+  // roughly 44s rather than 14s — and that trade is deliberate: `npm test` is a
+  // MERGE GATE, so a fixture that fails on scheduling jitter fails whatever job
+  // is running, and three consecutive same-type failures trip a breaker and
+  // write HOLD.md, halting the Desk until a human clears it. Thirty seconds per
+  // gate run is cheaper than one false halt.
+  //
+  // This is the only fixture in the repository that uses real wall-clock sleeps
+  // (grepped for `--sleep-ms`), so the class is contained to this one test.
   const cfg = {
     ...DEFAULT_CONFIG,
-    job_caps_minutes: { ...DEFAULT_CONFIG.job_caps_minutes, entry: 0.15 },
+    job_caps_minutes: { ...DEFAULT_CONFIG.job_caps_minutes, entry: 0.5 },
   };
   const ctx = makeRepo({
     now: () => NOW,
     config: cfg,
     runners: runnersYaml({
-      command: mockCommand('done-content-entry', ' --sleep-ms 6000'),
-      reviewerCommand: mockCommand('review-revise-then-approve', ' --sleep-ms 6000'),
+      command: mockCommand('done-content-entry', ' --sleep-ms 21000'),
+      reviewerCommand: mockCommand('review-revise-then-approve', ' --sleep-ms 21000'),
     }),
   });
   writeQueue(ctx, [{ type: 'entry', title: 'write the entry for the fixture subject' }]);
