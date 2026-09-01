@@ -19,6 +19,10 @@
  *   origins         no exported page references a network origin outside the
  *                   allowlist — the half of task 4.10 that content checking
  *                   cannot see
+ *   crawler stance  robots.txt allows every crawler, carries no Disallow, names
+ *                   the four AI crawlers a position was taken on, and ships its
+ *                   reasoning; llms.txt's links all resolve in this export and
+ *                   its counts match the dataset (beads addictedtoai-k1j)
  *   structured data every indexed page of the five described kinds carries the
  *                   right schema.org type, no `noindex` page carries any, every
  *                   `dateModified` equals that URL's `<lastmod>` in the sitemap,
@@ -37,7 +41,7 @@ import * as cheerio from 'cheerio';
 import Parser from 'rss-parser';
 
 import { scanExportedPages } from '../lib/origins.mjs';
-import { SITE_HOSTS } from '../lib/site-config.mjs';
+import { SITE_HOSTS, SITE_URL } from '../lib/site-config.mjs';
 import {
   FEED_ROUTES,
   DATASET_JSON_ROUTE,
@@ -45,7 +49,10 @@ import {
   DATASET_LICENSE,
   TABLE_JSON_ROUTES,
   SEARCH_INDEX_ROUTE,
+  ROBOTS_ROUTE,
+  LLMS_ROUTE,
 } from '../lib/asset-routes.mjs';
+import { AI_CRAWLERS } from '../lib/crawlers.mjs';
 
 let failures = 0;
 
@@ -254,6 +261,116 @@ async function checkOrigins(out) {
 
 /**
  * ---------------------------------------------------------------------------
+ * THE CRAWLER STANCE AND llms.txt (beads addictedtoai-k1j)
+ *
+ * `lib/crawlers.test.mjs` proves the renderers produce the right text. This
+ * proves the EXPORT carries it, which is a different claim now that
+ * `robots.txt` comes from `public/` rather than from `app/robots.ts`: a
+ * `STATIC_ASSET_ROUTES` entry that stopped being written would leave the site
+ * with no `robots.txt` at all, and the only place that shows is the export.
+ *
+ * The `Disallow` assertion is the one that protects behaviour rather than
+ * documentation. Every `noindex` on this site is a per-page meta tag, and a
+ * crawler that is disallowed never fetches the page and so never reads the
+ * tag — a `Disallow` added here in good faith would silently break the
+ * indexability rules the whole wiki depends on.
+ *
+ * `llms.txt`'s links are resolved against the exported tree, and its counts
+ * against the exported dataset. A pointer file whose pointers 404, or whose
+ * numbers disagree with the payload they claim to describe, is worse than no
+ * pointer file: it is confidently wrong.
+ * ---------------------------------------------------------------------------
+ */
+async function checkCrawlerFiles(out) {
+  process.stdout.write('\ncrawler stance (specs/site — allowed by choice, not by default)\n');
+
+  let robots = '';
+  try {
+    robots = await read(out, ROBOTS_ROUTE);
+  } catch (err) {
+    bad(`${ROBOTS_ROUTE} is served`, err.message);
+    return;
+  }
+  check(/^User-agent: \*$/m.test(robots) && /^Allow: \/$/m.test(robots), `${ROBOTS_ROUTE} allows every crawler`);
+  check(
+    !/^\s*Disallow:/m.test(robots),
+    `${ROBOTS_ROUTE} carries no Disallow`,
+    'a Disallow would stop a crawler reading the per-page noindex this site relies on',
+  );
+  const unnamed = AI_CRAWLERS.filter((b) => !new RegExp(`^User-agent: ${b.agent}$`, 'm').test(robots));
+  check(
+    unnamed.length === 0,
+    `${ROBOTS_ROUTE} names every AI crawler a position was taken on`,
+    unnamed.length === 0 ? AI_CRAWLERS.map((b) => `${b.agent} ${b.rule}`).join(', ') : unnamed.map((b) => b.agent).join(', '),
+  );
+  check(
+    robots.includes(`Sitemap: ${SITE_URL}/sitemap.xml`),
+    `${ROBOTS_ROUTE} points at the sitemap`,
+  );
+  check(
+    robots.split('\n').filter((l) => l.startsWith('#')).length >= 15,
+    `${ROBOTS_ROUTE} carries its reasoning, in the served file`,
+    `${robots.split('\n').filter((l) => l.startsWith('#')).length} comment line(s)`,
+  );
+
+  let llms = '';
+  try {
+    llms = await read(out, LLMS_ROUTE);
+  } catch (err) {
+    bad(`${LLMS_ROUTE} is served`, err.message);
+    return;
+  }
+  // Every link it advertises must exist in this export. `llms.txt` is read by
+  // machines that will not shrug at a 404.
+  const links = [...llms.matchAll(/\]\((https?:\/\/[^)]+)\)/g)].map((m) => m[1]);
+  const broken = [];
+  for (const url of links) {
+    if (!url.startsWith(SITE_URL)) {
+      // An off-site URL here would be a licence link, which is not ours to serve.
+      if (!/creativecommons\.org/.test(url)) broken.push(`${url} (off-site)`);
+      continue;
+    }
+    const route = url.slice(SITE_URL.length) || '/';
+    // Three shapes, because `llms.txt` advertises both static files and pages:
+    // `/catalog.json` is a file, `/wiki` is `out/wiki.html` under this
+    // exporter, and `/` is `out/index.html`.
+    const candidates =
+      route === '/' ? ['index.html'] : [route.slice(1), `${route.slice(1)}.html`, `${route.slice(1)}/index.html`];
+    let found = false;
+    for (const candidate of candidates) {
+      try {
+        await readFile(join(out, candidate), 'utf8');
+        found = true;
+        break;
+      } catch {
+        /* try the next shape */
+      }
+    }
+    if (!found) broken.push(route);
+  }
+  check(
+    broken.length > 0 ? false : links.length > 0,
+    `${LLMS_ROUTE} advertises ${links.length} URL(s), all of which this export serves`,
+    broken.length === 0 ? '' : `missing: ${broken.slice(0, 5).join(', ')}`,
+  );
+
+  try {
+    const counts = JSON.parse(await read(out, DATASET_JSON_ROUTE)).counts ?? {};
+    const wrong = Object.entries(counts).filter(([, v]) => !llms.includes(`**${v} `));
+    check(
+      wrong.length === 0,
+      `${LLMS_ROUTE} states the same counts as ${DATASET_JSON_ROUTE}`,
+      wrong.length === 0
+        ? Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(', ')
+        : `disagrees on: ${wrong.map(([k, v]) => `${k}=${v}`).join(', ')}`,
+    );
+  } catch (err) {
+    bad(`${LLMS_ROUTE} counts check`, err.message);
+  }
+}
+
+/**
+ * ---------------------------------------------------------------------------
  * STRUCTURED DATA (beads addictedtoai-k1j)
  *
  * `lib/jsonld.test.mjs` proves the builders produce the right objects. This
@@ -454,6 +571,7 @@ async function main() {
   await checkColophon(out);
   await checkFeeds(out);
   await checkOrigins(out);
+  await checkCrawlerFiles(out);
   await checkStructuredData(out);
   await checkStamp(out);
 

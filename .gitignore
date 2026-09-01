@@ -22,6 +22,12 @@ node_modules/
 /public/catalog/
 /public/feeds/
 /public/dataset/
+# robots.txt moved out of app/robots.ts so the crawler stance could carry its
+# reasoning as comments in the SERVED file — Next's robots generator cannot
+# emit any (lib/crawlers.mjs, beads addictedtoai-k1j). llms.txt joined it.
+# Generated on every build like everything above, never hand-edited.
+/public/robots.txt
+/public/llms.txt
 
 # The two brakes (beads addictedtoai-ufu). `STOP` is the maintainer's; `HOLD.md`
 # is the loop's self-halt, written when a breaker trips. Both address a person
