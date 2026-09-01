@@ -23,7 +23,46 @@ export const LINK_INTERVAL_DAYS = 30;
 export const LISTING_INTERVAL_DAYS = 45; // specs/directory
 const DEFAULT_MAX_PER_RUN = 25;
 const TIMEOUT_MS = 15000;
-const USER_AGENT = 'AddictedtoAI-Pulse/0.1 (+https://www.addictedtoai.net)';
+
+/**
+ * ---------------------------------------------------------------------------
+ * AN HONEST, SELF-IDENTIFYING USER-AGENT. DO NOT REPLACE IT WITH A BROWSER ONE.
+ *
+ * This is the obvious "fix" for a host that answers a bare Node fetch with a
+ * 403 or a 400, and it was proposed as one (beads addictedtoai-5th, which
+ * reported `ai.meta.com/blog/meta-llama-3-1/` returning HTTP 400 "with a full
+ * browser user-agent, accept and accept-language headers" and asked whether the
+ * checker should send the same).
+ *
+ * MEASURED on 2026-08-31, same machine, same minute, same URL, both methods:
+ *
+ *   this user-agent      HEAD 200 · GET 200, 209,783 bytes,
+ *                        title "Introducing Llama 3.1: Our most capable
+ *                        models to date"
+ *   a desktop-Chrome UA  HEAD 400 · GET 400, 1,542 bytes, title "Error"
+ *
+ * The result is the exact inverse of the assumption, and it repeated on
+ * `www.llama.com` (200 vs 400). `www.bls.gov` — the other host named as needing
+ * a browser UA — answered 200 to both, so it is not a counterexample either.
+ * Meta appears to penalise a desktop-Chrome UA arriving without the rest of a
+ * browser's fingerprint; an honest crawler string sails through.
+ *
+ * So the design tension resolves without needing to be argued. Impersonating a
+ * browser to get past a host's bot policy is a choice about that host's wishes,
+ * AND, measured here, it is worse at the job: adding a browser UA to this
+ * checker would have MANUFACTURED the broken link that addictedtoai-5th was
+ * filed about. The corpus's record agrees — `data/linkcheck.json` has this URL
+ * at `ok: true, status: 200`, checked 2026-08-28, never once a failure.
+ *
+ * The string stays honest for the ordinary reason too: it names the project and
+ * carries a contact URL, so a host that wants to refuse this crawler can, and
+ * DECLINED_STATUSES below makes that refusal a non-verdict rather than a false
+ * alarm. That is the whole policy for "a source a person can read but a checker
+ * cannot", and it needs no per-host allowlist — which would be an assertion
+ * with an expiry date on it.
+ * ---------------------------------------------------------------------------
+ */
+export const USER_AGENT = 'AddictedtoAI-Pulse/0.1 (+https://www.addictedtoai.net)';
 
 /**
  * ---------------------------------------------------------------------------
@@ -75,6 +114,35 @@ export function isConfirmedBroken(consecutiveFailures) {
  * 404, 410, every other 4xx, and all 5xx remain failures. A dead link is still
  * a dead link, and transience is handled by CONFIRM_AFTER_FAILURES above, not
  * by forgiving the status.
+ *
+ * WHY 400 IS DELIBERATELY ABSENT FROM THIS SET (beads addictedtoai-5th). The
+ * question was raised because `ai.meta.com` was reported returning one, and the
+ * argument for adding it is real on its face: a 400 to a well-formed GET of a
+ * URL that parsed is a statement about the request, not about the resource, and
+ * a 400 treated as a 404 files a repair job with nothing to repair.
+ *
+ * It is not added, for two measured reasons and one design one.
+ *
+ *  1. The reported 400 was an artifact of the PROBE, not of this checker. It
+ *     was observed with a spoofed browser user-agent; this checker's honest one
+ *     gets 200 from the same URL in the same minute. See USER_AGENT above for
+ *     the full measurement.
+ *  2. In 427 URLs of recorded state (`data/linkcheck.json`, read 2026-08-31),
+ *     this check has recorded **zero** 400s, ever. The statuses it has actually
+ *     seen are 200 (419), 202 (5), 404 (1) and 429 (2). Adding a branch for a
+ *     condition with no instance is the reads-as-present-and-does-nothing shape
+ *     this repository keeps catching.
+ *  3. It would cost something real. A 400 is the only status that can report a
+ *     cited URL the SERVER rejects as malformed while `new URL()` accepted it —
+ *     a stray control character, an over-long path, a bad percent-escape. Those
+ *     are genuine content defects, and moving 400 into the non-verdict set
+ *     would make that class permanently invisible: `last_ok` unchanged,
+ *     `consecutive_failures` never incremented, no finding, forever.
+ *
+ * If a 400 ever does appear here, the honest repair is to look at THAT URL
+ * before generalising — the two possibilities (a malformed citation and a
+ * hostile bot policy) are distinguishable by reading it, and neither is served
+ * by a blanket rule written in advance of a single example.
  * ---------------------------------------------------------------------------
  */
 const DECLINED_STATUSES = new Set([401, 403, 407, 429]);

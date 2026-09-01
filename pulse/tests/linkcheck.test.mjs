@@ -28,6 +28,7 @@ import {
   metaRefreshTarget,
   referenceDrift,
   rollingLinkCheck,
+  USER_AGENT,
 } from '../lib/linkcheck.mjs';
 import { corpusLinks, extractLinks, readCorpus } from '../lib/corpus.mjs';
 import { cleanup, makeRoot, paths, readJson, runPulse, writeEntry, writeJson } from './helpers.mjs';
@@ -365,6 +366,35 @@ test('a host that declines our user-agent returns no verdict; a dead one still f
   const dead = await checkUrl('https://fixture-vendor.net/x');
   assert.equal(dead.ok, false);
   assert.equal(dead.status, null);
+});
+
+test('the checker identifies itself and does not impersonate a browser', async (t) => {
+  // beads addictedtoai-5th. Swapping in a browser user-agent is the obvious
+  // response to a host that 4xxs a bare Node fetch, and it was proposed as one.
+  // MEASURED on 2026-08-31 against ai.meta.com/blog/meta-llama-3-1/, same
+  // machine, same minute: this user-agent got 200 and 209,783 bytes of the real
+  // article; a desktop-Chrome string got 400 and a 1,542-byte error page. Same
+  // inversion on www.llama.com. So impersonation is not merely a choice about
+  // a host's wishes — here it manufactures the broken link it was meant to fix.
+  //
+  // Asserted on the CONSTANT and on the header actually sent, because the
+  // second is what a host sees and the first is only what we meant.
+  assert.match(USER_AGENT, /AddictedtoAI/, 'the crawler must name the project');
+  assert.match(USER_AGENT, /\+https?:\/\//, 'and carry a contact URL, so a host can choose to refuse it');
+  for (const impersonation of [/Mozilla/i, /AppleWebKit/i, /Chrome\//i, /Safari\//i, /Gecko/i, /Edg\//i]) {
+    assert.doesNotMatch(USER_AGENT, impersonation, 'the checker must not claim to be a browser');
+  }
+
+  const realFetch = globalThis.fetch;
+  t.after(() => (globalThis.fetch = realFetch));
+  const seen = [];
+  globalThis.fetch = async (_url, init) => {
+    seen.push(init?.headers?.['user-agent'] ?? null);
+    return new Response(null, { status: 200 });
+  };
+  await checkUrl('https://fixture-vendor.net/x');
+  assert.ok(seen.length > 0, 'the check must have made a request');
+  for (const ua of seen) assert.equal(ua, USER_AGENT, 'every request sends the declared user-agent');
 });
 
 test('a 403 is retried as GET before it is believed, and each request gets its own timeout', async (t) => {
