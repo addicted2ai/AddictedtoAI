@@ -19,6 +19,10 @@
  *   origins         no exported page references a network origin outside the
  *                   allowlist — the half of task 4.10 that content checking
  *                   cannot see
+ *   contract        every machine-readable payload states its schema version and
+ *                   points at /data#contract, that anchor exists and states both
+ *                   halves of the rule, and vercel.json declares CORS for every
+ *                   asset route (beads addictedtoai-k1j)
  *   crawler stance  robots.txt allows every crawler, carries no Disallow, names
  *                   the four AI crawlers a position was taken on, and ships its
  *                   reasoning; llms.txt's links all resolve in this export and
@@ -51,8 +55,13 @@ import {
   SEARCH_INDEX_ROUTE,
   ROBOTS_ROUTE,
   LLMS_ROUTE,
+  TABLE_SCHEMA_VERSION,
+  DATASET_SCHEMA_VERSION,
+  CONTRACT_ANCHOR,
 } from '../lib/asset-routes.mjs';
 import { AI_CRAWLERS } from '../lib/crawlers.mjs';
+import { CORS_ROUTES, VERCEL_FILE } from '../lib/redirects.mjs';
+import { absoluteUrl } from '../lib/site-config.mjs';
 
 let failures = 0;
 
@@ -257,6 +266,84 @@ async function checkOrigins(out) {
       ? ''
       : violations.slice(0, 5).map((v) => `${v.page} ${v.where} ${v.origin}`).join('; '),
   );
+}
+
+/**
+ * ---------------------------------------------------------------------------
+ * THE PUBLISHED CONTRACT (beads addictedtoai-k1j)
+ *
+ * `/catalog.json` and its siblings are advertised as something other people
+ * can build on. This checks the three things that claim rests on: that every
+ * payload states its version, that every payload points at the page where the
+ * rule is written, and that the page is actually there under the anchor those
+ * payloads name — a `contract:` URL landing on a missing anchor is worse than
+ * no field, because it is a promise with a broken address.
+ *
+ * THE CORS ASSERTION IS DELIBERATELY NARROW, AND SAYS SO IN ITS OWN LABEL.
+ * Under `output: 'export'` there is no server here, and no exported byte
+ * records a response header: the host applies `vercel.json`. So this asserts
+ * the DECLARATION, not the served header. Confirming the header itself needs a
+ * request to the deployed site, which is the deploy poll's job and not this
+ * script's, and pretending otherwise would be exactly the "reason from what a
+ * change was meant to do rather than measure what it does" error.
+ * ---------------------------------------------------------------------------
+ */
+async function checkContract(out) {
+  process.stdout.write('\npublished contract (specs/site — a contract you publish is one you keep)\n');
+
+  const contractUrl = absoluteUrl(CONTRACT_ANCHOR);
+  const payloads = [
+    ...Object.values(TABLE_JSON_ROUTES).map((r) => [r, TABLE_SCHEMA_VERSION]),
+    [DATASET_JSON_ROUTE, DATASET_SCHEMA_VERSION],
+  ];
+  for (const [route, version] of payloads) {
+    try {
+      const payload = JSON.parse(await read(out, route));
+      check(
+        payload.schema_version === version && payload.contract === contractUrl,
+        `${route} states its schema version and points at the contract`,
+        `schema_version ${JSON.stringify(payload.schema_version)}, contract ${JSON.stringify(payload.contract)}`,
+      );
+    } catch (err) {
+      bad(`${route} carries the contract fields`, err.message);
+    }
+  }
+
+  // The anchor those payloads publish must exist, and the page must state both
+  // halves of the rule. "What is stable" alone is the half that makes a
+  // contract unkeepable.
+  const $ = await page(out, '/data');
+  const section = $('#contract');
+  const text = section.closest('section').text();
+  check(section.length === 1, `${CONTRACT_ANCHOR} resolves to exactly one anchor on /data`, String(section.length));
+  check(
+    /What is stable/i.test(text) && /What is not/i.test(text),
+    '/data states what is stable AND what is not',
+  );
+  check(
+    /renamed or removed/i.test(text),
+    '/data says what a version change means',
+  );
+
+  try {
+    const vercel = JSON.parse(await readFile(VERCEL_FILE, 'utf8'));
+    const declared = new Map(
+      (vercel.headers ?? []).map((h) => [
+        h.source,
+        (h.headers ?? []).find((x) => x.key === 'Access-Control-Allow-Origin')?.value,
+      ]),
+    );
+    const uncovered = CORS_ROUTES.filter((r) => declared.get(r) !== '*');
+    check(
+      uncovered.length === 0,
+      `vercel.json declares CORS for all ${CORS_ROUTES.length} machine-readable route(s)`,
+      uncovered.length === 0
+        ? 'the DECLARATION only — the host applies it, and no exported byte records a response header'
+        : `uncovered: ${uncovered.slice(0, 5).join(', ')}`,
+    );
+  } catch (err) {
+    bad('vercel.json declares CORS', err.message);
+  }
 }
 
 /**
@@ -571,6 +658,7 @@ async function main() {
   await checkColophon(out);
   await checkFeeds(out);
   await checkOrigins(out);
+  await checkContract(out);
   await checkCrawlerFiles(out);
   await checkStructuredData(out);
   await checkStamp(out);

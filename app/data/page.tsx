@@ -8,6 +8,8 @@ import {
   STATUS_ROUTE,
   DATASET_LICENSE,
   DATASET_LICENSE_URL,
+  TABLE_SCHEMA_VERSION,
+  DATASET_SCHEMA_VERSION,
 } from '../../lib/asset-routes.mjs';
 import JsonLd from '../_components/JsonLd';
 import { datasetGraph, DATASET_DESCRIPTION } from '../../lib/jsonld.mjs';
@@ -139,6 +141,54 @@ export default function DataPage() {
             <span className="browse-kind">{FEED_ROUTES.tutorials}</span>
           </li>
         </ul>
+      </section>
+
+      {/*
+        THE CONTRACT (beads addictedtoai-k1j). The `id` is load-bearing: every
+        JSON payload the build writes carries `contract:` pointing at
+        `/data#contract`, so this heading is the destination of a URL published
+        inside several thousand rows of other people's downloads. Renaming it
+        breaks those links.
+
+        Written as what is stable and what is NOT, in that order, because the
+        second half is the part that makes the first half believable: a
+        contract that promised the row values would hold would be a contract
+        this site breaks four times a day by design.
+      */}
+      <section className="section" aria-labelledby="contract">
+        <h2 className="section-title" id="contract">
+          The contract
+        </h2>
+        <p>
+          These files are meant to be built on. Every JSON payload carries a{' '}
+          <code>schema_version</code> and a <code>contract</code> field pointing back at this
+          section, and every one of them is served with{' '}
+          <code>Access-Control-Allow-Origin: *</code>, so a page in a browser can fetch them
+          directly. The current versions are{' '}
+          <strong>
+            {TABLE_SCHEMA_VERSION} for the standing tables and {DATASET_SCHEMA_VERSION} for the
+            dataset
+          </strong>
+          .
+        </p>
+        <p>
+          <strong>What is stable.</strong> The URLs. The licence, and its presence inside the
+          payload. The top-level key names. Every existing field name on a row, and what it means.
+          That <code>row_count</code> equals the length of <code>rows</code>. That{' '}
+          <code>rows</code> is in the order <code>sort_criterion</code> names.
+        </p>
+        <p>
+          <strong>What is not, and is never claimed to be.</strong> Which rows are present, what
+          their values are, and how many there are. Those move — that is what the files are for.{' '}
+          <code>generated_on</code> changes whenever the site is rebuilt.
+        </p>
+        <p>
+          <strong>What a version change means.</strong> A <em>new</em> key on a payload or a row
+          can appear without the version moving, so write a reader that ignores keys it does not
+          recognise. The version increases only when an existing key is{' '}
+          <strong>renamed or removed</strong> — that is the only thing it means, and the only thing
+          worth acting on.
+        </p>
       </section>
     </article>
   );
