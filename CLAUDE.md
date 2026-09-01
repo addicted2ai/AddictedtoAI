@@ -29,13 +29,30 @@ different one, and it is not negotiable either:
 > A failing gate is a stop, not a warning. The remote deploys on push, so an
 > unverified push is a public defect.
 
-**CLEARING `HOLD.md` — granted 2026-08-30, SCOPED to the execution of
-`make-the-blog-worth-sending`.** The maintainer's words: *"I would rather grant
-you authority to clear the halt you'd diagnosed, for this change at least. If
-this goes like all the other changes, you will encounter several unforeseen
-issues, I want you to work through them!"* He also accepted scope creep needed
-to resolve them, asking only that actions and decisions be documented — in the
-change artifacts or in beads, whichever fits.
+**CLEARING `HOLD.md` — STANDING AUTHORITY, no longer scoped to any one
+change.** First granted 2026-08-30 for `make-the-blog-worth-sending` in the
+maintainer's words: *"I would rather grant you authority to clear the halt
+you'd diagnosed, for this change at least. If this goes like all the other
+changes, you will encounter several unforeseen issues, I want you to work
+through them!"* He also accepted scope creep needed to resolve them, asking
+only that actions and decisions be documented — in the change artifacts or in
+beads, whichever fits.
+
+**BROADENED, and the broadening is the correction of a real failure.** On
+2026-09-01 the orchestrator diagnosed a deploy halt completely — cause found,
+cause resolved, finding filed as `addictedtoai-k2y0` — and then left the file
+standing anyway, citing the "scoped to this change" sentence that used to sit
+here, and told the maintainer that removal was reserved to him. His answer:
+*"This is NOT true ... I have given you authorization at least 5 times now."*
+He was right. The authority had been given repeatedly in session and this file
+had not kept up, so the stale sentence outranked what he had actually said —
+which cost three hours of Desk idle time on a halt whose cause had already
+cleared.
+
+**The lesson is bigger than this grant and belongs to whoever reads this next:
+a maintainer's live instruction outranks this file, and when the two disagree
+the correct move is to follow him AND fix the file — not to quote the file back
+at him.** This document is a record of his decisions, not a source of them.
 
 **The word `diagnosed` is the whole grant, and it is not a formality.** The
 order is fixed and never varies:
@@ -53,7 +70,11 @@ halt skippable, and a halt you cannot diagnose is a halt you must leave standing
 and report. The grant is also the orchestrator's between runs, never a job's:
 a job that clears its own halt is the conflict of interest the brake exists for.
 
-Outside this change, `HOLD.md` removal remains reserved.
+The two halves that did **not** broaden, and they are the whole substance:
+a halt you cannot diagnose is a halt you leave standing and report, and the
+authority is the **orchestrator's between runs, never a job's** — a job that
+clears its own halt is the exact conflict of interest the brake exists for.
+`STOP` remains the maintainer's alone, created and removed only by him.
 
 Still requiring the maintainer, and still not the agent's to take:
 
