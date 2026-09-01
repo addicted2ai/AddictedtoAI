@@ -36,13 +36,16 @@
  *    other way, and worse — `pulse/` would then depend on the agentic loop.
  *
  * AND THE CONSOLIDATION WOULD NOT HAVE PREVENTED THE RECURRENCE ANYWAY, which
- * is the measurement that actually settles it. Of the seven defect sites this
- * class produced, **two** were helpers written wrongly (`pulse/lib/core.mjs`
- * `today()`, `lib/facts.mjs` `todayIso()`) and **five** were bare
- * `toISOString().slice(0, 10)` written inline by an author who never looked for
- * a helper at all. A shared module fixes an implementation once; it does
- * nothing whatever about not reaching for it, and not reaching for it is five
- * sevenths of the problem. So the deliverable that ends the class is not this
+ * is the measurement that actually settles it. Of the **nine** defect sites
+ * this class produced, **two** were helpers written wrongly
+ * (`pulse/lib/core.mjs` `today()` — addictedtoai-4ih; `lib/facts.mjs`
+ * `todayIso()` — addictedtoai-aw6) and **seven** were bare
+ * `toISOString().slice(0, 10)` or `getUTC*` written inline by an author who
+ * never looked for a helper at all (the seven itemised in addictedtoai-nmr:
+ * `verify-design.mjs` x2, `verify-analytics.mjs`, `proposals.mjs`, `run.mjs`,
+ * `review.mjs`, `ledger.mjs`). A shared module fixes an implementation once; it
+ * does nothing whatever about not reaching for it, and not reaching for it is
+ * seven ninths of the problem. So the deliverable that ends the class is not this
  * file — it is `scripts/local-dates.test.mjs`, the source check that fires the
  * moment the bad form is *typed*, on any machine, in any zone.
  *

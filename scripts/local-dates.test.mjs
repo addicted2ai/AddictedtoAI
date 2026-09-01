@@ -7,12 +7,13 @@
  *
  * `CLAUDE.md` and `AGENTS.md` state one rule for the whole repository: *"Every
  * date in this repository is the LOCAL date of the machine that wrote it."*
- * Between 2026-08-29 and 2026-08-31 that rule was broken in **seven** places
- * across four files, producing four separate P1/P2 bugs. Two of the seven were
- * helpers written wrongly; **five were bare `toISOString().slice(0, 10)` typed
- * inline** by an author who never looked for a helper at all.
+ * Between 2026-08-29 and 2026-08-31 that rule was broken in **nine** places
+ * across seven files, producing four separate P1/P2 bugs. Two of the nine were
+ * helpers written wrongly (addictedtoai-4ih, addictedtoai-aw6); **seven were
+ * bare `toISOString().slice(0, 10)` or `getUTC*` typed inline** by an author
+ * who never looked for a helper at all (itemised in addictedtoai-nmr).
  *
- * That five-of-seven is why this file exists and why consolidating the helpers
+ * That seven-of-nine is why this file exists and why consolidating the helpers
  * was not, on its own, the fix. A shared module corrects an implementation
  * once; it does nothing about not reaching for it. See `loop/lib/dates.mjs`'s
  * header for the full decision, including the measured import-edge counts
