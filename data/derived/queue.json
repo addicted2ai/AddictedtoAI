@@ -1,7 +1,15 @@
 {
   "cap": 50,
-  "count": 5,
+  "count": 6,
   "items": [
+    {
+      "detail": "declared row id absent from the latest snapshot; last seen 2026-08-31 — bound facts render last-known values with an as-of date",
+      "rank": 85,
+      "reason": "vanished-feed-row",
+      "subject": "openrouter-models:mistralai/mistral-large-2512:batch",
+      "target": "content/wiki/model/mistralai-mistral-large-2512-batch.md",
+      "type": "repair"
+    },
     {
       "detail": "declared row id absent from the latest snapshot; last seen 2026-08-31 — bound facts render last-known values with an as-of date",
       "rank": 85,
@@ -44,5 +52,5 @@
       "type": "interpret"
     }
   ],
-  "total_before_cap": 5
+  "total_before_cap": 6
 }

@@ -16711,6 +16711,131 @@
         "max_completion_tokens": 209715
       }
     },
+    "mistralai/mistral-large-2512:batch": {
+      "$as_of": "2026-08-31",
+      "$status": "active",
+      "$vanished": true,
+      "architecture": {
+        "input_modalities": [
+          "text",
+          "image",
+          "file"
+        ],
+        "instruct_type": null,
+        "modality": "text+image+file->text",
+        "output_modalities": [
+          "text"
+        ],
+        "tokenizer": "Mistral"
+      },
+      "benchmarks": {
+        "artificial_analysis": {
+          "agentic_index": 5.5,
+          "coding_index": 20.1,
+          "intelligence_index": 15.9
+        },
+        "design_arena": [
+          {
+            "arena": "models",
+            "category": "3d",
+            "elo": 1142,
+            "rank": 69,
+            "win_rate": 46.9
+          },
+          {
+            "arena": "models",
+            "category": "asciiart",
+            "elo": 1095,
+            "rank": 56,
+            "win_rate": 40.3
+          },
+          {
+            "arena": "models",
+            "category": "codecategories",
+            "elo": 1166,
+            "rank": 70,
+            "win_rate": 47.6
+          },
+          {
+            "arena": "models",
+            "category": "dataviz",
+            "elo": 1158,
+            "rank": 69,
+            "win_rate": 45.7
+          },
+          {
+            "arena": "models",
+            "category": "gamedev",
+            "elo": 1116,
+            "rank": 84,
+            "win_rate": 41.5
+          },
+          {
+            "arena": "models",
+            "category": "svg",
+            "elo": 1032,
+            "rank": 74,
+            "win_rate": 38
+          },
+          {
+            "arena": "models",
+            "category": "uicomponent",
+            "elo": 1128,
+            "rank": 76,
+            "win_rate": 43
+          },
+          {
+            "arena": "models",
+            "category": "website",
+            "elo": 1181,
+            "rank": 69,
+            "win_rate": 49.5
+          }
+        ]
+      },
+      "canonical_slug": "mistralai/mistral-large-2512",
+      "context_length": 262144,
+      "created": 1764624472,
+      "default_parameters": {
+        "frequency_penalty": null,
+        "temperature": 0.0645,
+        "top_p": null
+      },
+      "description": "Mistral Large 3 2512 is Mistral’s most capable model to date, featuring a sparse mixture-of-experts architecture with 41B active parameters (675B total), and released under the Apache 2.0 license.",
+      "expiration_date": null,
+      "hugging_face_id": "",
+      "id": "mistralai/mistral-large-2512:batch",
+      "knowledge_cutoff": null,
+      "links": {
+        "details": "/api/v1/models/mistralai/mistral-large-2512/endpoints"
+      },
+      "name": "Mistral: Mistral Large 3 2512 (batch)",
+      "per_request_limits": null,
+      "pricing": {
+        "completion": "0.0000015",
+        "input_cache_read": "0.00000005",
+        "prompt": "0.0000005"
+      },
+      "supported_parameters": [
+        "frequency_penalty",
+        "max_tokens",
+        "presence_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "tool_choice",
+        "tools",
+        "top_p"
+      ],
+      "supported_voices": null,
+      "top_provider": {
+        "context_length": 262144,
+        "is_moderated": false,
+        "max_completion_tokens": 209715
+      }
+    },
     "mistralai/mistral-medium-3": {
       "$as_of": "2026-09-01",
       "$status": "active",
