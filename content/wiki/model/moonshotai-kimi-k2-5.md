@@ -2,7 +2,7 @@
 id: model/moonshotai-kimi-k2-5
 kind: model
 display_name: "MoonshotAI: Kimi K2.5"
-status: deprecated
+status: active
 maintenance: living
 aliases:
   - name: "MoonshotAI: Kimi K2.5"
@@ -89,15 +89,18 @@ the `moonshot-v1` series were officially retired on August 31, 2026. Calls
 to these models now return a 404 (model not found) error" — pointing
 migrations at `kimi-k3`.
 
-The catalog reads this row `active`; this page reads it `deprecated`, and
-the disagreement is which signal counts. OpenRouter cleared the expiry from
-its own row, {{fact:model/moonshotai-kimi-k2-5#expiration_date}}, and the
-catalog's status is derived from that field — a cleared expiry reads
-`active`. The `deprecated` badge follows Moonshot's own documentation,
-which files `kimi-k2.5` under "Deprecated Models" — "officially
-discontinued on August 31, 2026 and is no longer maintained or supported".
-The router's data stopped carrying a date; the vendor's page says the model
-is discontinued.
+The status follows the router's row, not the vendor's page. OpenRouter
+cleared the expiry from its own record,
+{{fact:model/moonshotai-kimi-k2-5#expiration_date}}, and the catalog's
+status is derived from that field — a cleared expiry reads `active`, so
+this entry reads `active` too. Moonshot's documentation still files
+`kimi-k2.5` under "Deprecated Models" — "officially discontinued on
+August 31, 2026 and is no longer maintained or supported" — but that is a
+statement about the vendor's platform, recorded in the api_sunset fact and
+the timeline; the router keeps the row listed and priced. The two surfaces
+diverged on 31 August, when the router's data dropped the date the vendor's
+page still names, and the catalog — and now the entry — counts the model
+active.
 
 The arithmetic is the story. Released 27 January 2026, off the vendor's
 platform on 31 August: 216 days of service for a model that shipped as a
