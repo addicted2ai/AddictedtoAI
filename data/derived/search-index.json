@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 604,
+  "count": 634,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -2713,6 +2713,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/ibm-granite-granite-4-2-8b",
+      "t": "IBM: Granite 4.2 8B",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/ibm-granite-granite-4-2-8b",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/inception-mercury-2",
       "t": "Inception: Mercury 2",
       "k": "entry",
@@ -3436,7 +3446,7 @@
       "t": "Nex AGI: Nex-N2-Mini",
       "k": "entry",
       "d": "model",
-      "s": "active",
+      "s": "deprecated",
       "i": "model/nex-agi-nex-n2-mini",
       "a": [],
       "b": true
@@ -3446,7 +3456,7 @@
       "t": "Nex AGI: Nex-N2-Pro",
       "k": "entry",
       "d": "model",
-      "s": "active",
+      "s": "deprecated",
       "i": "model/nex-agi-nex-n2-pro",
       "a": [],
       "b": true
@@ -3622,6 +3632,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-3-5-turbo-batch",
+      "t": "OpenAI: GPT-3.5 Turbo (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-3-5-turbo-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-3-5-turbo-instruct",
       "t": "OpenAI: GPT-3.5 Turbo Instruct",
       "k": "entry",
@@ -3652,12 +3672,32 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-4-1-batch",
+      "t": "OpenAI: GPT-4.1 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4-1-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-4-1-mini",
       "t": "OpenAI: GPT-4.1 Mini",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-4-1-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4-1-mini-batch",
+      "t": "OpenAI: GPT-4.1 Mini (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4-1-mini-batch",
       "a": [],
       "b": true
     },
@@ -3672,12 +3712,32 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-4-1-nano-batch",
+      "t": "OpenAI: GPT-4.1 Nano (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4-1-nano-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-4-turbo",
       "t": "OpenAI: GPT-4 Turbo",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-4-turbo",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-4-turbo-batch",
+      "t": "OpenAI: GPT-4 Turbo (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4-turbo-batch",
       "a": [],
       "b": true
     },
@@ -3732,6 +3792,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-4o-batch",
+      "t": "OpenAI: GPT-4o (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4o-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-4o-mini",
       "t": "OpenAI: GPT-4o-mini",
       "k": "entry",
@@ -3752,6 +3822,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-4o-mini-batch",
+      "t": "OpenAI: GPT-4o-mini (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-4o-mini-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5",
       "t": "OpenAI: GPT-5",
       "k": "entry",
@@ -3768,6 +3848,16 @@
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-5-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-1-batch",
+      "t": "OpenAI: GPT-5.1 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-1-batch",
       "a": [],
       "b": true
     },
@@ -3812,6 +3902,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-5-2-batch",
+      "t": "OpenAI: GPT-5.2 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-2-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5-2-chat",
       "t": "OpenAI: GPT-5.2 Chat",
       "k": "entry",
@@ -3842,6 +3942,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-5-2-pro-batch",
+      "t": "OpenAI: GPT-5.2 Pro (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-2-pro-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5-3-codex",
       "t": "OpenAI: GPT-5.3-Codex",
       "k": "entry",
@@ -3860,6 +3970,16 @@
       "i": "model/openai-gpt-5-4",
       "a": [],
       "b": false
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-4-batch",
+      "t": "OpenAI: GPT-5.4 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-4-batch",
+      "a": [],
+      "b": true
     },
     {
       "u": "/wiki/model/openai-gpt-5-4-image-2",
@@ -3882,12 +4002,32 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-5-4-mini-batch",
+      "t": "OpenAI: GPT-5.4 Mini (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-4-mini-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5-4-nano",
       "t": "OpenAI: GPT-5.4 Nano",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-5-4-nano",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-4-nano-batch",
+      "t": "OpenAI: GPT-5.4 Nano (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-4-nano-batch",
       "a": [],
       "b": true
     },
@@ -3902,6 +4042,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-5-4-pro-batch",
+      "t": "OpenAI: GPT-5.4 Pro (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-4-pro-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5-5",
       "t": "OpenAI: GPT-5.5",
       "k": "entry",
@@ -3912,12 +4062,32 @@
       "b": false
     },
     {
+      "u": "/wiki/model/openai-gpt-5-5-batch",
+      "t": "OpenAI: GPT-5.5 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-5-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5-5-pro",
       "t": "OpenAI: GPT-5.5 Pro",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-5-5-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-5-pro-batch",
+      "t": "OpenAI: GPT-5.5 Pro (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-5-pro-batch",
       "a": [],
       "b": true
     },
@@ -3932,12 +4102,32 @@
       "b": false
     },
     {
+      "u": "/wiki/model/openai-gpt-5-6-luna-batch",
+      "t": "OpenAI: GPT-5.6 Luna (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-luna-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5-6-luna-pro",
       "t": "OpenAI: GPT-5.6 Luna Pro",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-5-6-luna-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-6-luna-pro-batch",
+      "t": "OpenAI: GPT-5.6 Luna Pro (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-luna-pro-batch",
       "a": [],
       "b": true
     },
@@ -3956,12 +4146,32 @@
       "b": false
     },
     {
+      "u": "/wiki/model/openai-gpt-5-6-sol-batch",
+      "t": "OpenAI: GPT-5.6 Sol (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-sol-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5-6-sol-pro",
       "t": "OpenAI: GPT-5.6 Sol Pro",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-5-6-sol-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-6-sol-pro-batch",
+      "t": "OpenAI: GPT-5.6 Sol Pro (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-sol-pro-batch",
       "a": [],
       "b": true
     },
@@ -3976,12 +4186,42 @@
       "b": false
     },
     {
+      "u": "/wiki/model/openai-gpt-5-6-terra-batch",
+      "t": "OpenAI: GPT-5.6 Terra (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-terra-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5-6-terra-pro",
       "t": "OpenAI: GPT-5.6 Terra Pro",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-5-6-terra-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-6-terra-pro-batch",
+      "t": "OpenAI: GPT-5.6 Terra Pro (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-6-terra-pro-batch",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-batch",
+      "t": "OpenAI: GPT-5 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-batch",
       "a": [],
       "b": true
     },
@@ -4016,6 +4256,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-5-mini-batch",
+      "t": "OpenAI: GPT-5 Mini (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-mini-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5-nano",
       "t": "OpenAI: GPT-5 Nano",
       "k": "entry",
@@ -4026,12 +4276,32 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-gpt-5-nano-batch",
+      "t": "OpenAI: GPT-5 Nano (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-nano-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-gpt-5-pro",
       "t": "OpenAI: GPT-5 Pro",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/openai-gpt-5-pro",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-gpt-5-pro-batch",
+      "t": "OpenAI: GPT-5 Pro (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-gpt-5-pro-batch",
       "a": [],
       "b": true
     },
@@ -4166,12 +4436,32 @@
       "b": true
     },
     {
+      "u": "/wiki/model/openai-o3-batch",
+      "t": "OpenAI: o3 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o3-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/openai-o3-mini",
       "t": "OpenAI: o3 Mini",
       "k": "entry",
       "d": "model",
       "s": "active",
       "i": "model/openai-o3-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-o3-mini-batch",
+      "t": "OpenAI: o3 Mini (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o3-mini-batch",
       "a": [],
       "b": true
     },
@@ -4202,6 +4492,16 @@
       "d": "model",
       "s": "active",
       "i": "model/openai-o4-mini",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/openai-o4-mini-batch",
+      "t": "OpenAI: o4 Mini (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/openai-o4-mini-batch",
       "a": [],
       "b": true
     },

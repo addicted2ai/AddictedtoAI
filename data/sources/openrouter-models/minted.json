@@ -579,6 +579,11 @@
     "entry_id": "model/ibm-granite-granite-4-1-8b",
     "path": "content/wiki/model/ibm-granite-granite-4-1-8b.md"
   },
+  "ibm-granite/granite-4.2-8b": {
+    "date": "2026-09-01",
+    "entry_id": "model/ibm-granite-granite-4-2-8b",
+    "path": "content/wiki/model/ibm-granite-granite-4-2-8b.md"
+  },
   "inception/mercury-2": {
     "date": "2026-08-28",
     "entry_id": "model/inception-mercury-2",
@@ -1029,6 +1034,11 @@
     "entry_id": "model/openai-gpt-3-5-turbo-instruct",
     "path": "content/wiki/model/openai-gpt-3-5-turbo-instruct.md"
   },
+  "openai/gpt-3.5-turbo:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-3-5-turbo-batch",
+    "path": "content/wiki/model/openai-gpt-3-5-turbo-batch.md"
+  },
   "openai/gpt-4": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-4",
@@ -1044,6 +1054,11 @@
     "entry_id": "model/openai-gpt-4-turbo-preview",
     "path": "content/wiki/model/openai-gpt-4-turbo-preview.md"
   },
+  "openai/gpt-4-turbo:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-4-turbo-batch",
+    "path": "content/wiki/model/openai-gpt-4-turbo-batch.md"
+  },
   "openai/gpt-4.1": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-4-1",
@@ -1054,10 +1069,25 @@
     "entry_id": "model/openai-gpt-4-1-mini",
     "path": "content/wiki/model/openai-gpt-4-1-mini.md"
   },
+  "openai/gpt-4.1-mini:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-4-1-mini-batch",
+    "path": "content/wiki/model/openai-gpt-4-1-mini-batch.md"
+  },
   "openai/gpt-4.1-nano": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-4-1-nano",
     "path": "content/wiki/model/openai-gpt-4-1-nano.md"
+  },
+  "openai/gpt-4.1-nano:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-4-1-nano-batch",
+    "path": "content/wiki/model/openai-gpt-4-1-nano-batch.md"
+  },
+  "openai/gpt-4.1:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-4-1-batch",
+    "path": "content/wiki/model/openai-gpt-4-1-batch.md"
   },
   "openai/gpt-4o": {
     "date": "2026-08-28",
@@ -1089,6 +1119,16 @@
     "entry_id": "model/openai-gpt-4o-mini-2024-07-18",
     "path": "content/wiki/model/openai-gpt-4o-mini-2024-07-18.md"
   },
+  "openai/gpt-4o-mini:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-4o-mini-batch",
+    "path": "content/wiki/model/openai-gpt-4o-mini-batch.md"
+  },
+  "openai/gpt-4o:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-4o-batch",
+    "path": "content/wiki/model/openai-gpt-4o-batch.md"
+  },
   "openai/gpt-5": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5",
@@ -1109,15 +1149,30 @@
     "entry_id": "model/openai-gpt-5-mini",
     "path": "content/wiki/model/openai-gpt-5-mini.md"
   },
+  "openai/gpt-5-mini:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-mini-batch",
+    "path": "content/wiki/model/openai-gpt-5-mini-batch.md"
+  },
   "openai/gpt-5-nano": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5-nano",
     "path": "content/wiki/model/openai-gpt-5-nano.md"
   },
+  "openai/gpt-5-nano:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-nano-batch",
+    "path": "content/wiki/model/openai-gpt-5-nano-batch.md"
+  },
   "openai/gpt-5-pro": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5-pro",
     "path": "content/wiki/model/openai-gpt-5-pro.md"
+  },
+  "openai/gpt-5-pro:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-pro-batch",
+    "path": "content/wiki/model/openai-gpt-5-pro-batch.md"
   },
   "openai/gpt-5.1": {
     "date": "2026-08-28",
@@ -1139,6 +1194,11 @@
     "entry_id": "model/openai-gpt-5-1-codex-mini",
     "path": "content/wiki/model/openai-gpt-5-1-codex-mini.md"
   },
+  "openai/gpt-5.1:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-1-batch",
+    "path": "content/wiki/model/openai-gpt-5-1-batch.md"
+  },
   "openai/gpt-5.2": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5-2",
@@ -1158,6 +1218,16 @@
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5-2-pro",
     "path": "content/wiki/model/openai-gpt-5-2-pro.md"
+  },
+  "openai/gpt-5.2-pro:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-2-pro-batch",
+    "path": "content/wiki/model/openai-gpt-5-2-pro-batch.md"
+  },
+  "openai/gpt-5.2:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-2-batch",
+    "path": "content/wiki/model/openai-gpt-5-2-batch.md"
   },
   "openai/gpt-5.3-codex": {
     "date": "2026-08-28",
@@ -1179,15 +1249,35 @@
     "entry_id": "model/openai-gpt-5-4-mini",
     "path": "content/wiki/model/openai-gpt-5-4-mini.md"
   },
+  "openai/gpt-5.4-mini:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-4-mini-batch",
+    "path": "content/wiki/model/openai-gpt-5-4-mini-batch.md"
+  },
   "openai/gpt-5.4-nano": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5-4-nano",
     "path": "content/wiki/model/openai-gpt-5-4-nano.md"
   },
+  "openai/gpt-5.4-nano:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-4-nano-batch",
+    "path": "content/wiki/model/openai-gpt-5-4-nano-batch.md"
+  },
   "openai/gpt-5.4-pro": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5-4-pro",
     "path": "content/wiki/model/openai-gpt-5-4-pro.md"
+  },
+  "openai/gpt-5.4-pro:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-4-pro-batch",
+    "path": "content/wiki/model/openai-gpt-5-4-pro-batch.md"
+  },
+  "openai/gpt-5.4:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-4-batch",
+    "path": "content/wiki/model/openai-gpt-5-4-batch.md"
   },
   "openai/gpt-5.5": {
     "date": "2026-08-28",
@@ -1199,6 +1289,16 @@
     "entry_id": "model/openai-gpt-5-5-pro",
     "path": "content/wiki/model/openai-gpt-5-5-pro.md"
   },
+  "openai/gpt-5.5-pro:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-5-pro-batch",
+    "path": "content/wiki/model/openai-gpt-5-5-pro-batch.md"
+  },
+  "openai/gpt-5.5:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-5-batch",
+    "path": "content/wiki/model/openai-gpt-5-5-batch.md"
+  },
   "openai/gpt-5.6-luna": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5-6-luna",
@@ -1208,6 +1308,16 @@
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5-6-luna-pro",
     "path": "content/wiki/model/openai-gpt-5-6-luna-pro.md"
+  },
+  "openai/gpt-5.6-luna-pro:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-6-luna-pro-batch",
+    "path": "content/wiki/model/openai-gpt-5-6-luna-pro-batch.md"
+  },
+  "openai/gpt-5.6-luna:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-6-luna-batch",
+    "path": "content/wiki/model/openai-gpt-5-6-luna-batch.md"
   },
   "openai/gpt-5.6-sol": {
     "date": "2026-08-28",
@@ -1219,6 +1329,16 @@
     "entry_id": "model/openai-gpt-5-6-sol-pro",
     "path": "content/wiki/model/openai-gpt-5-6-sol-pro.md"
   },
+  "openai/gpt-5.6-sol-pro:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-6-sol-pro-batch",
+    "path": "content/wiki/model/openai-gpt-5-6-sol-pro-batch.md"
+  },
+  "openai/gpt-5.6-sol:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-6-sol-batch",
+    "path": "content/wiki/model/openai-gpt-5-6-sol-batch.md"
+  },
   "openai/gpt-5.6-terra": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5-6-terra",
@@ -1228,6 +1348,21 @@
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-5-6-terra-pro",
     "path": "content/wiki/model/openai-gpt-5-6-terra-pro.md"
+  },
+  "openai/gpt-5.6-terra-pro:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-6-terra-pro-batch",
+    "path": "content/wiki/model/openai-gpt-5-6-terra-pro-batch.md"
+  },
+  "openai/gpt-5.6-terra:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-6-terra-batch",
+    "path": "content/wiki/model/openai-gpt-5-6-terra-batch.md"
+  },
+  "openai/gpt-5:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-gpt-5-batch",
+    "path": "content/wiki/model/openai-gpt-5-batch.md"
   },
   "openai/gpt-audio": {
     "date": "2026-08-28",
@@ -1294,10 +1429,20 @@
     "entry_id": "model/openai-o3-mini-high",
     "path": "content/wiki/model/openai-o3-mini-high.md"
   },
+  "openai/o3-mini:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-o3-mini-batch",
+    "path": "content/wiki/model/openai-o3-mini-batch.md"
+  },
   "openai/o3-pro": {
     "date": "2026-08-28",
     "entry_id": "model/openai-o3-pro",
     "path": "content/wiki/model/openai-o3-pro.md"
+  },
+  "openai/o3:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-o3-batch",
+    "path": "content/wiki/model/openai-o3-batch.md"
   },
   "openai/o4-mini": {
     "date": "2026-08-28",
@@ -1308,6 +1453,11 @@
     "date": "2026-08-28",
     "entry_id": "model/openai-o4-mini-high",
     "path": "content/wiki/model/openai-o4-mini-high.md"
+  },
+  "openai/o4-mini:batch": {
+    "date": "2026-09-01",
+    "entry_id": "model/openai-o4-mini-batch",
+    "path": "content/wiki/model/openai-o4-mini-batch.md"
   },
   "openrouter/auto": {
     "date": "2026-08-28",

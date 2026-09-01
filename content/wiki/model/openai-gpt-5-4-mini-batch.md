@@ -1,14 +1,14 @@
 ---
-id: model/nex-agi-nex-n2-mini
+id: model/openai-gpt-5-4-mini-batch
 kind: model
-display_name: "Nex AGI: Nex-N2-Mini"
+display_name: "OpenAI: GPT-5.4 Mini (batch)"
 status: active
 maintenance: living
 aliases:
-  - name: "Nex AGI: Nex-N2-Mini"
+  - name: "OpenAI: GPT-5.4 Mini (batch)"
     class: manual
 feeds:
-  openrouter-models: nex-agi/nex-n2-mini
+  openrouter-models: openai/gpt-5.4-mini:batch
 facts:
   - field: price_input
     source: feed
@@ -30,6 +30,6 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline: [ { date: "2026-09-01", event: deprecated, source_url: https://openrouter.ai/api/v1/models } ]
+timeline: []
 mentions: []
 ---

@@ -1062,6 +1062,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2305.11206v1": {
+      "bytes": 43607,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2305.11206v1",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2305.13245": {
       "consecutive_failures": 0,
       "error": null,
@@ -1096,6 +1107,17 @@
       "final_url": "https://arxiv.org/abs/2305.17493",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2305.17493v3": {
+      "bytes": 44040,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2305.17493v3",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1185,6 +1207,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2307.13702v1": {
+      "bytes": 45231,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2307.13702v1",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2309.00071": {
       "bytes": 41170,
       "consecutive_failures": 0,
@@ -1233,6 +1266,17 @@
       "final_url": "https://arxiv.org/abs/2309.12288",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2309.12288v4": {
+      "bytes": 44422,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2309.12288v4",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1308,6 +1352,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2312.05934v3": {
+      "bytes": 41486,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2312.05934v3",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2312.07104": {
       "consecutive_failures": 0,
       "error": null,
@@ -1324,11 +1379,33 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2401.04088v1": {
+      "bytes": 45615,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2401.04088v1",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2401.10774": {
       "consecutive_failures": 0,
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2401.14887v4": {
+      "bytes": 44890,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2401.14887v4",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -1362,6 +1439,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2403.05440v1": {
+      "bytes": 43031,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2403.05440v1",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2403.14123": {
       "bytes": 41253,
       "consecutive_failures": 0,
@@ -1391,6 +1479,17 @@
       "final_url": "https://arxiv.org/abs/2404.01413",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2404.01413v2": {
+      "bytes": 46756,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2404.01413v2",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1430,6 +1529,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2404.13208v1": {
+      "bytes": 41078,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2404.13208v1",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2405.05417": {
       "bytes": 40764,
       "consecutive_failures": 0,
@@ -1452,6 +1562,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2405.21015v2": {
+      "bytes": 41018,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2405.21015v2",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2406.04127": {
       "bytes": 42728,
       "consecutive_failures": 0,
@@ -1470,6 +1591,17 @@
       "final_url": "https://arxiv.org/abs/2406.05946",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2406.10162v3": {
+      "bytes": 44614,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2406.10162v3",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1657,6 +1789,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2503.00061v2": {
+      "bytes": 40904,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2503.00061v2",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2503.01840": {
       "consecutive_failures": 0,
       "error": null,
@@ -1706,6 +1849,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2505.23836v3": {
+      "bytes": 42622,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2505.23836v3",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2506.08837": {
       "bytes": 42797,
       "consecutive_failures": 0,
@@ -1739,6 +1893,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2508.15734v1": {
+      "bytes": 44066,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2508.15734v1",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2509.04664": {
       "bytes": 41152,
       "consecutive_failures": 0,
@@ -1750,6 +1915,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2509.04664v1": {
+      "bytes": 41164,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2509.04664v1",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2510.07192": {
       "bytes": 44129,
       "consecutive_failures": 0,
@@ -1757,6 +1933,17 @@
       "final_url": "https://arxiv.org/abs/2510.07192",
       "last_checked": "2026-08-31",
       "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2510.09023v1": {
+      "bytes": 44294,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2510.09023v1",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -2749,6 +2936,39 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/MiniMaxAI/MiniMax-H3": {
+      "bytes": 270266,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/MiniMaxAI/MiniMax-H3",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/QA-about-License.md": {
+      "bytes": 121500,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/QA-about-License.md",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/MiniMaxAI/MiniMax-H3/raw/main/LICENSE": {
+      "bytes": 17604,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/raw/main/LICENSE",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/MiniMaxAI/MiniMax-M2": {
       "bytes": 362145,
       "consecutive_failures": 0,
@@ -2793,6 +3013,28 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/api/models/MiniMaxAI/MiniMax-H3": {
+      "bytes": 20815,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/MiniMaxAI/MiniMax-H3",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/MiniMaxAI/MiniMax-H3/commits/main": {
+      "bytes": 6914,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/MiniMaxAI/MiniMax-H3/commits/main",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/api/models/Xenova/all-MiniLM-L6-v2": {
       "bytes": 2957,
       "consecutive_failures": 0,
@@ -2800,6 +3042,17 @@
       "final_url": "https://huggingface.co/api/models/Xenova/all-MiniLM-L6-v2",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/tencent/Hy3": {
+      "bytes": 19620,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/tencent/Hy3",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3416,6 +3669,17 @@
       "final_url": "https://platform.kimi.ai/docs/models",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://platform.minimax.io/h3-license": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://platform.minimax.io/h3-license",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4252,6 +4516,17 @@
       "final_url": "https://www.darpa.mil/news/2014/grand-challenge-ten-years-later",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.digitalapplied.com/blog/open-weight-model-licence-audit-2026": {
+      "bytes": 356560,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.digitalapplied.com/blog/open-weight-model-licence-audit-2026",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
       "meta_refresh": null,
       "ok": true,
       "status": 200

@@ -1,14 +1,14 @@
 ---
-id: model/nex-agi-nex-n2-mini
+id: model/ibm-granite-granite-4-2-8b
 kind: model
-display_name: "Nex AGI: Nex-N2-Mini"
+display_name: "IBM: Granite 4.2 8B"
 status: active
 maintenance: living
 aliases:
-  - name: "Nex AGI: Nex-N2-Mini"
+  - name: "IBM: Granite 4.2 8B"
     class: manual
 feeds:
-  openrouter-models: nex-agi/nex-n2-mini
+  openrouter-models: ibm-granite/granite-4.2-8b
 facts:
   - field: price_input
     source: feed
@@ -30,6 +30,6 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline: [ { date: "2026-09-01", event: deprecated, source_url: https://openrouter.ai/api/v1/models } ]
+timeline: []
 mentions: []
 ---
