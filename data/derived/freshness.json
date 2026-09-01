@@ -15,11 +15,11 @@
   ],
   "date": "2026-09-01",
   "link_check": {
-    "checked": 25,
+    "checked": 0,
     "confirm_after_failures": 2,
     "declined": 2,
     "drifted": 0,
-    "due": 40,
+    "due": 15,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 14,
@@ -719,14 +719,6 @@
   ],
   "unreadable_content": [],
   "vanished_feed_rows": [
-    {
-      "entry_id": "model/kwaipilot-kat-coder-air-v2-5",
-      "has_last_known": true,
-      "last_seen_date": "2026-08-31",
-      "path": "content/wiki/model/kwaipilot-kat-coder-air-v2-5.md",
-      "row_id": "kwaipilot/kat-coder-air-v2.5",
-      "source": "openrouter-models"
-    },
     {
       "entry_id": "model/mistralai-codestral-2508-batch",
       "has_last_known": true,
