@@ -3210,7 +3210,7 @@
       "t": "Mistral: Mistral Medium 3.1 (batch)",
       "k": "entry",
       "d": "model",
-      "s": "active",
+      "s": "retired",
       "i": "model/mistralai-mistral-medium-3-1-batch",
       "a": [],
       "b": true
