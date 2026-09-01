@@ -1,7 +1,16 @@
 {
   "cap": 50,
-  "count": 1,
+  "count": 2,
   "items": [
+    {
+      "detail": "\"The route out, in the licence's own words\" opens \"That sentence is also the door.\" Its antecedent is the Section V.4 block quotation, which is now two paragraphs and roughly 200 words upstream — the revision lengthened the paragraph that sits between them. Naming the clause (\"Section V.4 is also the door\") would fix it in four words.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260831-12 (`j-20260831-12.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/minimax-h3-licence-excluded-territories.md",
+      "target": "content/blog/minimax-h3-licence-excluded-territories.md",
+      "title": "Tighten the \"That sentence is also the door\" antecedent",
+      "type": "repair"
+    },
     {
       "detail": "The body says K2.5 \"shipped as a trillion-parameter flagship, trained on 15 trillion tokens of mixed image and text\". The model card (https://huggingface.co/moonshotai/Kimi-K2.5/raw/main/README.md, fetched 2026-08-31) says \"built through continual pretraining on approximately 15 trillion mixed visual and text tokens atop Kimi-K2-Base\" — the 15T is continual pretraining on top of an existing base, not the model's whole training budget, and \"approximately\" is dropped. Not in this diff and not blocking; \"continually pretrained on roughly 15 trillion mixed image and text tokens on top of Kimi-K2-Base\" would fix it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260831-11 (`j-20260831-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -12,5 +21,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 1
+  "total_before_cap": 2
 }
