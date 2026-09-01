@@ -88,7 +88,8 @@ mentions:
 ---
 
 This release moved the scoreboard without moving anything a buyer pays
-for. In the 31 August 2026 snapshot this row and `x-ai/grok-4.5` list the
+for. In the catalog, as observed on 31 August 2026, this row and
+`x-ai/grok-4.5` listed the
 same context window — {{fact:model/x-ai-grok-4-5#context_window}} there
 against {{fact:model/x-ai-grok-4-6#context_window}} here — the same input
 price, {{fact:model/x-ai-grok-4-5#price_input}} against

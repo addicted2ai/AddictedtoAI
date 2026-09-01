@@ -72,8 +72,8 @@ mentions:
   - model/z-ai-glm-4-5v
 ---
 
-Z.ai publishes weights for fourteen of its sixteen rows in the OpenRouter
-catalog, as of the 31 August 2026 snapshot. The two it does not are both
+Z.ai published weights for fourteen of its sixteen rows in the OpenRouter
+catalog, as observed on 31 August 2026. The two it did not are both
 called Turbo, and a checkpoint with no
 published weights has no third party able to host it — so on those two rows
 the listed price is Z.ai's own, and on the open rows it need not be.
@@ -88,9 +88,9 @@ charges to keep a checkpoint to itself: it is a closed price quoted against
 whichever host happens to head an open row.
 
 The other field Z.ai fills in that almost nobody does is the death date. Of
-the 396 rows in that same 31 August 2026 snapshot, six carry a non-null
-expiration date and five of them are Z.ai's; no other vendor carries more
-than one. It uses the
+the 396 rows in the catalog, as observed on 31 August 2026, six carried a
+non-null expiration date and five of them were Z.ai's; no other vendor
+carried more than one. It uses the
 field two ways. `z-ai/glm-4.5`, one half of the July and August 2025 pair
 that carried the company's reputation abroad, reads
 {{fact:model/z-ai-glm-4-5#expiration_date}}, a real retirement seventeen

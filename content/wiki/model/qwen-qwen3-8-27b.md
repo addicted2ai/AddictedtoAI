@@ -78,7 +78,8 @@ the same size, `qwen/qwen3.6-27b` listed
 {{fact:model/qwen-qwen3-8-27b#context_window}}. Every Qwen release with
 published weights before August 2026 stops at the smaller of those two
 figures — the ceiling held from July 2025 to August 2026, across more than
-thirty rows with published weights, and then broke twice, two days apart:
+thirty rows with published weights in the catalog as observed on
+31 August 2026, and then broke twice, two days apart:
 once on `qwen/qwen3.8-2.4t-a95b` at
 {{fact:model/qwen-qwen3-8-2-4t-a95b#context_window}}, and once here, on a
 model of {{fact:model/qwen-qwen3-8-27b#parameters}}.

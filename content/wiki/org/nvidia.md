@@ -85,9 +85,10 @@ usually the secret. The card for `nvidia/nemotron-3-ultra-550b-a55b` —
 as a public dataset collection, that major portions of the fine-tuning corpus
 are released too, and that the end-to-end training recipe is published in
 NVIDIA's developer repository. All ten of NVIDIA's rows in the OpenRouter
-snapshot of 31 August 2026 carry a Hugging Face id, and no vendor with more
-rows than that publishes weights for all of them: the next fully-open
-listings belong to `meta-llama` and MoonshotAI, tied at eight rows each.
+catalog, as observed on 31 August 2026, carried a Hugging Face id, and no
+vendor with more rows than that published weights for all of them: the next
+fully-open listings belonged to `meta-llama` and MoonshotAI, tied at eight
+rows each.
 
 The licence became a standard one as the models stopped being someone else's.
 NVIDIA's April 2025 reasoning release was a Llama derivative under
@@ -102,7 +103,8 @@ competitor's acceptable-use policy, and anyone deploying it to enforce
 policy is bound by Google's.
 
 Then there are the rows that argue with each other. Five of the eighteen free
-listings in the whole snapshot are NVIDIA's — more than any other vendor — and
+listings in the catalog, as observed on 31 August 2026, were NVIDIA's — more
+than any other vendor — and
 two of them advertise a larger window than the paid row of the same model:
 `nvidia/nemotron-3.5-lightning` lists
 {{fact:model/nvidia-nemotron-3-5-lightning#context_window}} while

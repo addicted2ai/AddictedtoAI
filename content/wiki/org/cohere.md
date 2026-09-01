@@ -101,9 +101,9 @@ The gap was not idleness. Cohere's revenue was reported at
 in a deal that one anonymous individual told the New York Times would make
 the combined companies worth twenty billion dollars, with six hundred million
 dollars invested in Cohere by Schwarz Gruppe. One structural
-detail separates Cohere from nearly every vendor in the catalog: as of the
-31 August 2026 snapshot, ninety-three of the 396 rows carry the router's
-`is_moderated` flag, spread across eight provider prefixes, and Cohere is
+detail separates Cohere from nearly every vendor in the catalog, as observed
+on 31 August 2026: ninety-three of the 396 rows carried the router's
+`is_moderated` flag, spread across eight provider prefixes, and Cohere was
 one of only two vendors with
 five or more rows flagged on every single one. The other is Amazon. Selling
 to banks and hospitals shows up in the metadata before it shows up anywhere

@@ -90,22 +90,23 @@ larger model above it in the range. Mistral's ladder runs backwards at the
 top: the flagship is the
 bargain, and the mid-tier is the premium product.
 
-The `:batch` suffix is worth checking before you plan around it. As of the
-31 August 2026 snapshot, every one of Anthropic's eleven batch rows prices
-at exactly half its standard twin, and so do nine of Google's eleven, with
-one at a quarter and one — `google/gemma-4-31b-it:batch` — listing above
-its standard twin instead of below it. Mistral lists six
+The `:batch` suffix is worth checking before you plan around it. Across the
+catalog, as observed on 31 August 2026, every one of Anthropic's eleven batch
+rows priced at exactly half its standard twin, and so did nine of Google's
+eleven, with one at a quarter and one — `google/gemma-4-31b-it:batch` —
+listing above its standard twin instead of below it. Mistral listed six
 batch rows and five of them —
 `mistralai/mistral-large-2512:batch`, `mistralai/codestral-2508:batch`,
 `mistralai/ministral-8b-2512:batch`, `mistralai/mistral-medium-3.1:batch` and
-`mistralai/mistral-small-2603:batch` — carry the same input and output prices
+`mistralai/mistral-small-2603:batch` — carried the same input and output prices
 as the rows they batch, to the last digit. Only
-`mistralai/mistral-medium-3-5:batch` is actually half price. A suffix that
+`mistralai/mistral-medium-3-5:batch` was actually half price. A suffix that
 reliably means a discount at two vendors means nothing at this one, five
 times out of six.
 
 Nothing has been listed since. Of the five vendors with more than twenty rows
-in the catalog, Mistral's newest listing is the oldest by a wide margin:
+in the catalog, as observed on 31 August 2026, Mistral's newest listing is the
+oldest by a wide margin:
 {{fact:org/mistral-ai#newest_listing}}, against 9 July for OpenAI, 24 July for
 Anthropic, 13 August for Google and 26 August for Alibaba Cloud. The company
 itself was not still over those four months —

@@ -61,8 +61,9 @@ mentions:
 ---
 
 Qwen tells you its licence in the model's name, and the tier vocabulary has
-never once broken the rule. Alibaba Cloud has 53 rows in the OpenRouter
-snapshot of 31 August 2026, second only to OpenAI's 60. Seventeen carry no
+never once broken the rule. Alibaba Cloud had 53 rows in the OpenRouter
+catalog, as observed on 31 August 2026, second only to OpenAI's 60.
+Seventeen carried no
 Hugging Face id — and every one of those seventeen is named `max`, `plus` or
 `flash`. The tier-named rows and the closed rows are the same seventeen: not
 a single `max`, `plus` or `flash` row is downloadable, and not a single row

@@ -57,9 +57,10 @@ This row first appeared in OpenRouter's catalog on
 against [the model's own listing](https://openrouter.ai/google/gemini-3.1-pro-preview)
 today, which still shows no non-preview release. That is more than six
 months before the snapshot of 31 August 2026 this page reads, and in all
-that time the tier has never shipped a plain row: the catalog carries three
-Pro rows — this one, a batch billing tier, and a custom-tools variant — and
-every one of them still carries "preview" in its slug.
+that time the tier has never shipped a plain row: the catalog, as observed
+on 31 August 2026, carried three Pro rows — this one, a batch billing tier,
+and a custom-tools variant — and every one of them still carried "preview"
+in its slug.
 
 Its siblings didn't stay there. `google/gemini-3.1-flash-lite-preview` got
 its plain row 65 days after listing, and
