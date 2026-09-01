@@ -29,7 +29,7 @@ It does say what happens next. Section VIII.2: "If you breach any term or condit
 
 ## The route out, in the licence's own words
 
-That sentence is also the door. Section II continues:
+Section V.4 is also the door. Section II continues:
 
 > We will continuously evaluate the applicable laws, regulations and compliance requirements for the Excluded Territories. In the meantime, should any person in such Excluded Territories be interested in deploying our models, you are welcome to contact us about obtaining a license, which will be granted based on robust controls and guardrails for purposes of complying with the laws, regulations and compliance requirements of the Excluded Territories.
 
