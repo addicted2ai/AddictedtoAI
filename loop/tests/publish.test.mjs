@@ -30,9 +30,9 @@
  *
  * The tests below never hand the real repository root to `publishStep`. The
  * handoff is asserted against a **throwaway repository** carrying a byte-for-
- * byte copy of the real `pulse/lib/publish.mjs` (and the `core.mjs` it imports)
- * at the path `findSharedStep` looks in, with its own `data/config.json` and no
- * `origin` remote at all. So:
+ * byte copy of the real `pulse/lib/publish.mjs` — and the closure of the
+ * modules it imports — at the path `findSharedStep` looks in, with its own
+ * `data/config.json` and no `origin` remote at all. So:
  *
  *   - the shared step under test is the shipped one, not a stub — a
  *     reimplementation in `loop/` would print different lines and return a
@@ -62,25 +62,78 @@ import { findSharedStep, publishStep, FALLBACK_SKIP_LINE } from '../lib/publish.
 import { makeRepo, DEFAULT_CONFIG } from './helpers.mjs';
 
 const REAL_STEP = join(DEFAULT_REPO_ROOT, 'pulse', 'lib', 'publish.mjs');
-const REAL_CORE = join(DEFAULT_REPO_ROOT, 'pulse', 'lib', 'core.mjs');
+
+/**
+ * Every file the fixture copies, repo-relative: the shared step and the whole
+ * closure of its RELATIVE imports.
+ *
+ * It used to be two entries, with a comment saying `publish.mjs` imports only
+ * `./core.mjs` and node builtins. That stopped being true when the step gained
+ * its IndexNow phase (beads addictedtoai-k1j), and the way it stopped being
+ * true is the reason this list is now checked rather than described: the
+ * fixture's dynamic import failed with `Cannot find module … indexnow.mjs`,
+ * surfacing as a mismatched assertion four tests away from the actual problem.
+ *
+ * `closedUnderRelativeImports` below asserts the set is complete, so the next
+ * import added anywhere in this graph fails HERE, naming the missing file,
+ * instead of somewhere unrelated.
+ */
+const FIXTURE_FILES = [
+  'pulse/lib/publish.mjs',
+  'pulse/lib/core.mjs',
+  'pulse/lib/indexnow.mjs',
+  'lib/asset-routes.mjs',
+  'lib/site-config.mjs',
+];
 
 const sha = (buf) => createHash('sha256').update(buf).digest('hex');
+
+/** Relative specifiers in a source file, resolved to repo-relative paths. */
+function relativeImportsOf(rel) {
+  const dir = rel.split('/').slice(0, -1);
+  const out = [];
+  const text = readFileSync(join(DEFAULT_REPO_ROOT, rel), 'utf8');
+  for (const m of text.matchAll(/from\s+'(\.[^']+)'/g)) {
+    const parts = [...dir];
+    for (const seg of m[1].split('/')) {
+      if (seg === '.') continue;
+      else if (seg === '..') parts.pop();
+      else parts.push(seg);
+    }
+    out.push(parts.join('/'));
+  }
+  return out;
+}
+
+/**
+ * Is the copied set closed under relative imports? Returns what is missing.
+ *
+ * The mechanism that keeps FIXTURE_FILES honest. A hand-maintained list of
+ * "what this module needs" is a second copy of the import graph, and the
+ * second copy is the one that goes stale.
+ */
+function closedUnderRelativeImports(files = FIXTURE_FILES) {
+  const have = new Set(files);
+  const missing = new Set();
+  for (const rel of files) {
+    for (const target of relativeImportsOf(rel)) {
+      if (!have.has(target)) missing.add(`${rel} -> ${target}`);
+    }
+  }
+  return [...missing].sort();
+}
 
 /**
  * A throwaway repository that really does contain the Pulse's publish step.
  *
- * The two files are copied rather than imported so that `findSharedStep` has
+ * The files are copied rather than imported so that `findSharedStep` has
  * something to find at the canonical relative path and `loop/lib/publish.mjs`
- * performs its real dynamic import. `publish.mjs` imports only `./core.mjs`
- * and node builtins, which is why two files are enough.
+ * performs its real dynamic import.
  */
 function repoWithSharedStep(config) {
-  const step = readFileSync(REAL_STEP, 'utf8');
-  const core = readFileSync(REAL_CORE, 'utf8');
-  const ctx = makeRepo({
-    config: { ...DEFAULT_CONFIG, ...config },
-    files: { 'pulse/lib/publish.mjs': step, 'pulse/lib/core.mjs': core },
-  });
+  const files = {};
+  for (const rel of FIXTURE_FILES) files[rel] = readFileSync(join(DEFAULT_REPO_ROOT, rel), 'utf8');
+  const ctx = makeRepo({ config: { ...DEFAULT_CONFIG, ...config }, files });
   // The copy has to be the shipped step, not a paraphrase of it.
   assert.equal(
     sha(readFileSync(join(ctx.repoRoot, 'pulse', 'lib', 'publish.mjs'))),
@@ -109,6 +162,22 @@ async function loopbackSite(t) {
     await new Promise((r) => server.close(r));
   });
 }
+
+test('the fixture copies the whole import closure of the shared step, not a remembered subset', () => {
+  // beads addictedtoai-k1j. When the shared step gained an import that this
+  // list did not know about, the fixture's dynamic import failed with
+  // `Cannot find module`, and it surfaced as a mismatched assertion four tests
+  // away — a failure that says nothing about its own cause. This test is the
+  // one that should go red instead, and it names the missing file.
+  assert.deepEqual(
+    closedUnderRelativeImports(),
+    [],
+    'add the named file(s) to FIXTURE_FILES — the fixture repo cannot import what it does not carry',
+  );
+  for (const rel of FIXTURE_FILES) {
+    assert.ok(existsSync(join(DEFAULT_REPO_ROOT, rel)), `${rel} must exist to be copied`);
+  }
+});
 
 test('the loop finds the Pulse\'s shared publish step where it actually lives', () => {
   const found = findSharedStep(DEFAULT_REPO_ROOT);
