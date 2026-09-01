@@ -3350,7 +3350,7 @@
       "t": "MoonshotAI: Kimi K2.5",
       "k": "entry",
       "d": "model",
-      "s": "active",
+      "s": "deprecated",
       "i": "model/moonshotai-kimi-k2-5",
       "a": [
         "Kimi K2.5",
