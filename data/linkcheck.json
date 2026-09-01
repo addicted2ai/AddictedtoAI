@@ -4652,6 +4652,72 @@
       "ok": true,
       "status": 200
     },
+    "https://www.law.cornell.edu/supremecourt/text/111/53": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.law.cornell.edu/supremecourt/text/111/53",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.law.cornell.edu/supremecourt/text/510/569": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.law.cornell.edu/supremecourt/text/510/569",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.law.cornell.edu/uscode/text/17/107": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.law.cornell.edu/uscode/text/17/107",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.legislation.gov.uk/ukpga/1988/48/section/9": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.legislation.gov.uk/ukpga/1988/48/section/9",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.linkedin.com/posts/henna-virkkunen_ai-models-are-becoming-increasingly-capable-activity-7499411372032602112-fL5z": {
+      "bytes": 200891,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.linkedin.com/posts/henna-virkkunen_ai-models-are-becoming-increasingly-capable-activity-7499411372032602112-fL5z",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.linkedin.com/posts/thomas-regnier-24a05810b_as-announced-by-evp-henna-virkkunen-the-activity-7500107478773387264-2WAu": {
+      "bytes": 176385,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.linkedin.com/posts/thomas-regnier-24a05810b_as-announced-by-evp-henna-virkkunen-the-activity-7500107478773387264-2WAu",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.llamaindex.ai/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4696,6 +4762,50 @@
       "ok": true,
       "status": 200
     },
+    "https://www.nber.org/papers/w25943": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.nber.org/papers/w25943",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.nist.gov/news-events/news/2019/12/nist-study-evaluates-effects-race-age-sex-face-recognition-software": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.nist.gov/news-events/news/2019/12/nist-study-evaluates-effects-race-age-sex-face-recognition-software",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.notus.org/courts/judge-says-pentagon-illegally-blacklisted-anthropic": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.notus.org/courts/judge-says-pentagon-illegally-blacklisted-anthropic",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.oxfordmartin.ox.ac.uk/downloads/academic/The_Future_of_Employment.pdf": {
+      "bytes": 1139230,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://oms-www.files.svdcdn.com/production/downloads/academic/The_Future_of_Employment.pdf",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.promptfoo.dev/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4714,6 +4824,50 @@
       "final_url": "https://www.promptlayer.com/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.rand.org/pubs/research_reports/RRA2977-2.html": {
+      "bytes": 919,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.rand.org/pubs/research_reports/RRA2977-2.html",
+      "last_checked": "2026-09-01",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": null,
+      "status": 403
+    },
+    "https://www.scientificamerican.com/article/detecting-deepfakes1/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.scientificamerican.com/article/detecting-deepfakes1/",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.searchenginejournal.com/anthropic-warns-hackers-are-stealing-claude-sessions-to-hijack-accounts/587566/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.searchenginejournal.com/anthropic-warns-hackers-are-stealing-claude-sessions-to-hijack-accounts/587566/",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.sequoiacap.com/article/ais-600b-question/": {
+      "bytes": 525586,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://sequoiacap.com/article/ais-600b-question",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4747,6 +4901,17 @@
       "final_url": "https://www.wilmerhale.com/en/insights/client-alerts/20260602-new-executive-order-addressing-early-government-access-to-frontier-ai-models",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www2.census.gov/library/working-papers/2024/adrm/ces/CES-WP-24-16.pdf": {
+      "bytes": 2499351,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www2.census.gov/library/working-papers/2024/adrm/ces/CES-WP-24-16.pdf",
+      "last_checked": "2026-09-01",
+      "last_ok": "2026-09-01",
       "meta_refresh": null,
       "ok": true,
       "status": 200

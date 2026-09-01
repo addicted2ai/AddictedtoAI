@@ -15,14 +15,14 @@
   ],
   "date": "2026-09-01",
   "link_check": {
-    "checked": 0,
+    "checked": 15,
     "confirm_after_failures": 2,
-    "declined": 2,
+    "declined": 3,
     "drifted": 0,
     "due": 15,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 14,
+    "redirected": 15,
     "total": 467
   },
   "listings": [
@@ -650,6 +650,18 @@
       "last_checked": "2026-08-29",
       "meta_refresh": null,
       "url": "https://www.nature.com/articles/nature16961",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": 1139230,
+      "cited_by": [
+        "content/learn/ai-and-work.md"
+      ],
+      "final_url": "https://oms-www.files.svdcdn.com/production/downloads/academic/The_Future_of_Employment.pdf",
+      "kind": "cross-site-related",
+      "last_checked": "2026-09-01",
+      "meta_refresh": null,
+      "url": "https://www.oxfordmartin.ox.ac.uk/downloads/academic/The_Future_of_Employment.pdf",
       "verdict_recorded": true
     }
   ],

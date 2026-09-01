@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 4,
+  "count": 5,
   "items": [
     {
       "detail": "The edited file ends `---` with no final newline (the diff prints \"\\ No newline at end of file\"), unlike the three entries merged in the same repair shape — content/wiki/model/mistralai-codestral-2508-batch.md and mistralai-ministral-8b-2512-batch.md both end with one. Nothing fails on it; it is a one-byte inconsistency that will show up as noise in the next diff that touches this file. Fix: append a newline after the closing `---`.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-04 (`j-20260901-04.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -30,6 +30,15 @@
       "type": "repair"
     },
     {
+      "detail": "The annotation reads \"a real lifecycle event, since OpenRouter serves no status field of its own.\" The subordinate clause does not establish the main one — that OpenRouter ships no status field explains why the status is *derived*, not why this particular flip is *real* rather than a metadata correction. The sibling annotation on the same source (j-20260901-08, the nex-n2-mini row) carries the reason that actually does the work: \"unlike the two earlier status flips on this source, which were metadata corrections of a dropped date.\" I confirmed the substance is sound either way — `data/changes.jsonl` holds exactly two lines mentioning `nex-n2-pro` (the `field_change` at l.114 and this annotation), so no prior status flip on this row could have been a correction — so this is a wording fix, not a claim defect.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-09 (`j-20260901-09.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/changes.jsonl",
+      "target": "data/changes.jsonl",
+      "title": "Tighten the \"since OpenRouter serves no status field\" clause in the annotation",
+      "type": "repair"
+    },
+    {
       "detail": "The proposal's evidence line carries \"CyberGym 84.5 vs GLM-5.2 77.2; ExploitGym 105/130 vs 29/39\". Fetching https://huggingface.co/zai-org/GLM-5.3 on 2026-09-01 confirmed the GLM-5.3 side — license \"glm-5.3\", 753B params, the \"Emergent Cyber Capability\" note, CyberGym 84.5, ExploitGym 105/130 — but the extraction surfaced a second ExploitGym row (130/247 at a 6-hour timeout) and did not surface either comparator (77.2, 29/39). The \"29/39\" denominator matches neither 130 nor 247, so the pair may be reading across two different timeout rows. WebFetch's extractor is not evidence of absence, so this is not a finding that the numbers are wrong — it is that the post job must read the benchmark table itself, state which timeout row each figure comes from, and name the card as the cited document, rather than inheriting the pair from this proposal.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-07 (`j-20260901-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
@@ -39,5 +48,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 4
+  "total_before_cap": 5
 }
