@@ -3,14 +3,6 @@
   "count": 4,
   "items": [
     {
-      "detail": "openrouter-models nex-agi/nex-n2-mini status: active -> deprecated on 2026-09-01",
-      "rank": 50,
-      "reason": "uninterpreted-status-change",
-      "subject": "openrouter-models|13514954c61b0211|a9e815e403b4d7a5|nex-agi/nex-n2-mini|status",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
-    },
-    {
       "detail": "openrouter-models nex-agi/nex-n2-pro status: active -> deprecated on 2026-09-01",
       "rank": 50,
       "reason": "uninterpreted-status-change",
@@ -34,6 +26,15 @@
       "subject": "content/wiki/model/mistralai-mistral-medium-3-1-batch.md",
       "target": "content/wiki/model/mistralai-mistral-medium-3-1-batch.md",
       "title": "Restore the trailing newline on the retired entry file",
+      "type": "repair"
+    },
+    {
+      "detail": "The proposal's evidence line carries \"CyberGym 84.5 vs GLM-5.2 77.2; ExploitGym 105/130 vs 29/39\". Fetching https://huggingface.co/zai-org/GLM-5.3 on 2026-09-01 confirmed the GLM-5.3 side — license \"glm-5.3\", 753B params, the \"Emergent Cyber Capability\" note, CyberGym 84.5, ExploitGym 105/130 — but the extraction surfaced a second ExploitGym row (130/247 at a 6-hour timeout) and did not surface either comparator (77.2, 29/39). The \"29/39\" denominator matches neither 130 nor 247, so the pair may be reading across two different timeout rows. WebFetch's extractor is not evidence of absence, so this is not a finding that the numbers are wrong — it is that the post job must read the benchmark table itself, state which timeout row each figure comes from, and name the card as the cited document, rather than inheriting the pair from this proposal.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-07 (`j-20260901-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/proposals/glm-5-3-license-revenue-gate.md",
+      "target": "data/proposals/glm-5-3-license-revenue-gate.md",
+      "title": "Pin the GLM-5.3 comparator benchmark figures against the card before writing",
       "type": "repair"
     }
   ],
