@@ -1,6 +1,8 @@
 import { getSite } from '../../lib/site.mjs';
 import { renderEntryRow } from '../../lib/render/entry.mjs';
 import { sortNote } from '../../lib/render/common.mjs';
+import JsonLd from '../_components/JsonLd';
+import { definedTermSetGraph, TERM_KINDS } from '../../lib/jsonld.mjs';
 
 /**
  * The wiki browse index (specs/wiki, task 4.1's listing side).
@@ -11,9 +13,11 @@ import { sortNote } from '../../lib/render/common.mjs';
  * reachable through the name search and the open dataset.
  */
 
+const DESCRIPTION = 'One typed, sourced, dated record per thing in AI.';
+
 export const metadata = {
   title: 'Wiki',
-  description: 'One typed, sourced, dated record per thing in AI.',
+  description: DESCRIPTION,
 };
 
 const SORT = 'name, A to Z';
@@ -22,9 +26,16 @@ export default async function WikiIndex() {
   const site = await getSite();
   const rows = site.browsable.map(renderEntryRow).join('');
   const stubs = site.entries.length - site.browsable.length;
+  // The `DefinedTermSet` the entry pages' `DefinedTerm`s declare themselves
+  // members of. Membership is computed from the same two facts the entry
+  // pages use — the kind is a term kind, and the entry is browsable — so the
+  // set cannot list a term whose own page does not claim it, or omit one that
+  // does (lib/jsonld.mjs, beads addictedtoai-k1j).
+  const terms = site.browsable.filter((doc: any) => TERM_KINDS.includes(doc.data.kind));
 
   return (
     <>
+      <JsonLd graph={definedTermSetGraph(terms, { description: DESCRIPTION })} />
       <p className="eyebrow">wiki</p>
       <h1 className="page-title">Every thing, typed and dated</h1>
       <p className="page-lede">

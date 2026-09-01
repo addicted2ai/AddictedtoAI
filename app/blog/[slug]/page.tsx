@@ -3,6 +3,8 @@ import { renderPostPage } from '../../../lib/render/blog.mjs';
 import { renderReferencedHere } from '../../../lib/mentions.mjs';
 import { notFound } from 'next/navigation';
 import { withEmptyGuard } from '../../../lib/static-params.mjs';
+import JsonLd from '../../_components/JsonLd';
+import { postGraph } from '../../../lib/jsonld.mjs';
 
 export const dynamicParams = false;
 
@@ -33,6 +35,14 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   if (!doc) notFound();
   return (
     <article>
+      {/*
+        An `Article`: `datePublished` is the post's own `date:`, `dateModified`
+        is the shared material-change resolution — the later of the review
+        record's date and the newest changed-feed line joining to anything this
+        post transcludes — so it is the same value `app/sitemap.ts` sends as
+        `lastmod` (lib/jsonld.mjs, beads addictedtoai-k1j).
+      */}
+      <JsonLd graph={postGraph(doc, { dateModified: site.contentChangedOn(doc) })} />
       {/*
         `changes` is what turns an anchor from "Recorded in this site's change
         feed" into the event's own name plus the source it was read from

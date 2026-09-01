@@ -2,6 +2,8 @@ import { getSite } from '../../../../lib/site.mjs';
 import { renderEntryPage } from '../../../../lib/render/entry.mjs';
 import { notFound } from 'next/navigation';
 import { withEmptyGuard } from '../../../../lib/static-params.mjs';
+import JsonLd from '../../../_components/JsonLd';
+import { definedTermGraph } from '../../../../lib/jsonld.mjs';
 
 /**
  * A wiki entry page (task 4.1, specs/wiki).
@@ -53,5 +55,18 @@ export default async function EntryPage({ params }: { params: Promise<{ kind: st
   const { kind, slug } = await params;
   const { site, doc } = await find(kind, slug);
   if (!doc) notFound();
-  return <article dangerouslySetInnerHTML={{ __html: renderEntryPage(doc, site) }} />;
+  // A `DefinedTerm`, for the two kinds that ARE defined terms and only when
+  // the page is indexed — `doc.index.indexed` is the same value the robots tag
+  // above reads, so structured data can never contradict it. `definedTermGraph`
+  // returns undefined for every other kind and `<JsonLd>` then renders nothing
+  // (lib/jsonld.mjs, beads addictedtoai-k1j).
+  const graph = doc.index?.indexed
+    ? definedTermGraph(doc, { dateModified: site.contentChangedOn(doc) })
+    : undefined;
+  return (
+    <>
+      <JsonLd graph={graph} />
+      <article dangerouslySetInnerHTML={{ __html: renderEntryPage(doc, site) }} />
+    </>
+  );
 }

@@ -1,7 +1,7 @@
-import { getSite } from '../../lib/site.mjs';
 import {
   DATASET_JSON_ROUTE,
   DATASET_CSV_ROUTES,
+  DATASET_CSV_LABELS,
   TABLE_JSON_ROUTES,
   FEED_ROUTES,
   SEARCH_INDEX_ROUTE,
@@ -9,6 +9,8 @@ import {
   DATASET_LICENSE,
   DATASET_LICENSE_URL,
 } from '../../lib/asset-routes.mjs';
+import JsonLd from '../_components/JsonLd';
+import { datasetGraph, DATASET_DESCRIPTION } from '../../lib/jsonld.mjs';
 
 /**
  * The open dataset (task 4.9, specs/site).
@@ -21,26 +23,25 @@ import {
  * say what you may do with it.
  */
 
+// One string, shared with the `Dataset` graph below so the page and its
+// structured data cannot describe the same download differently
+// (lib/jsonld.mjs, beads addictedtoai-k1j).
 export const metadata = {
   title: 'Open dataset',
-  description:
-    'The whole structured layer — entries, facts, timelines, model catalog, deprecations, dated deltas — as JSON and CSV under CC BY 4.0.',
+  description: DATASET_DESCRIPTION,
 };
 
-export default async function DataPage() {
-  const site = await getSite();
-
-  const csvs: [string, string, number][] = [
-    [DATASET_CSV_ROUTES.entries, 'Entries — identity, lifecycle, indexability', site.entries.length],
-    [DATASET_CSV_ROUTES.facts, 'Facts — resolved values with their state and source', 0],
-    [DATASET_CSV_ROUTES.timelines, 'Timelines — dated, sourced lifecycle events', 0],
-    [DATASET_CSV_ROUTES.catalog, 'Model catalog — raw per-token prices', site.catalog.length],
-    [DATASET_CSV_ROUTES.deprecations, 'Deprecations and retirements', site.deprecations.length],
-    [DATASET_CSV_ROUTES.deltas, 'Impossible → Routine — dated pairs with both sources', site.deltas.length],
-  ];
+export default function DataPage() {
+  // Labels come from `lib/asset-routes.mjs`, beside the routes they name, so
+  // this page and the `DataDownload` entries in the graph below print the same
+  // description of the same file.
+  const csvs = Object.values(DATASET_CSV_ROUTES).map(
+    (route) => [route, DATASET_CSV_LABELS[route]] as [string, string],
+  );
 
   return (
     <article>
+      <JsonLd graph={datasetGraph()} />
       <p className="eyebrow">open data</p>
       <h1 className="page-title">Take the whole thing</h1>
       <p className="page-lede">
