@@ -6,6 +6,14 @@
       "detail": "declared row id absent from the latest snapshot; last seen 2026-08-31 — bound facts render last-known values with an as-of date",
       "rank": 85,
       "reason": "vanished-feed-row",
+      "subject": "openrouter-models:mistralai/mistral-medium-3.1:batch",
+      "target": "content/wiki/model/mistralai-mistral-medium-3-1-batch.md",
+      "type": "repair"
+    },
+    {
+      "detail": "declared row id absent from the latest snapshot; last seen 2026-08-31 — bound facts render last-known values with an as-of date",
+      "rank": 85,
+      "reason": "vanished-feed-row",
       "subject": "openrouter-models:mistralai/mistral-small-2603:batch",
       "target": "content/wiki/model/mistralai-mistral-small-2603-batch.md",
       "type": "repair"
@@ -34,15 +42,6 @@
       "subject": "openrouter-models|13514954c61b0211|a9e815e403b4d7a5|nex-agi/nex-n2-pro|status",
       "target": "data/changes.jsonl",
       "type": "interpret"
-    },
-    {
-      "detail": "The edited file ends `---` with no final newline (the diff prints \"\\ No newline at end of file\"), unlike the three entries merged in the same repair shape — content/wiki/model/mistralai-codestral-2508-batch.md and mistralai-ministral-8b-2512-batch.md both end with one. Nothing fails on it; it is a one-byte inconsistency that will show up as noise in the next diff that touches this file. Fix: append a newline after the closing `---`.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-04 (`j-20260901-04.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/wiki/model/mistralai-mistral-large-2512-batch.md",
-      "target": "content/wiki/model/mistralai-mistral-large-2512-batch.md",
-      "title": "Restore the trailing newline on the retired entry file",
-      "type": "repair"
     }
   ],
   "total_before_cap": 5
