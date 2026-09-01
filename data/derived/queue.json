@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 4,
+  "count": 3,
   "items": [
-    {
-      "detail": "content/wiki/model/mistralai-mistral-medium-3-1-batch.md ends `---` with no final newline — read directly, its last six bytes are `[]\\n---`, and the diff prints \"\\ No newline at end of file\". This is the same one-byte inconsistency already carried against content/wiki/model/mistralai-mistral-large-2512-batch.md (data/carried/j-20260901-04-carry-1.md), and the sibling entries mistralai-codestral-2508-batch.md and mistralai-ministral-8b-2512-batch.md both end with one. Nothing fails on it. Fix: append a newline after the closing `---`. Worth doing in the same diff as the mistral-large-2512 carry rather than as its own job.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-05 (`j-20260901-05.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/wiki/model/mistralai-mistral-medium-3-1-batch.md",
-      "target": "content/wiki/model/mistralai-mistral-medium-3-1-batch.md",
-      "title": "Restore the trailing newline on the retired entry file",
-      "type": "repair"
-    },
     {
       "detail": "The new annotation lumps both earlier flips together as \"metadata corrections of a dropped date\". That fits the GLM 4.5V annotation, which calls itself \"a metadata correction on an otherwise unchanged row\". It does not fit the Kimi K2.5 annotation immediately above it, which says \"It matters more than a badge\" and records that the derived catalog and the joined entry now disagree about the same model — a live inconsistency, not a correction. Both flips were indeed dropped expiration dates, so nothing here is false about the data; the contrast clause just flattens a record this same file already carries. \"both of which were dropped expiration dates, not new deprecations\" would say the true part without re-characterising the Kimi case.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-08 (`j-20260901-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -39,5 +30,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 4
+  "total_before_cap": 3
 }
