@@ -60,6 +60,7 @@ import { join, basename } from 'node:path';
 import matter from 'gray-matter';
 import { JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
 import { declaredIssueIds, ISSUE_PREFIX } from './issues.mjs';
+import { localDate } from './dates.mjs';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -84,17 +85,16 @@ export function droppedDir(ctx) {
 }
 
 /**
- * The LOCAL date of the machine that is writing, as `YYYY-MM-DD`.
+ * Re-exported so this module's long-standing import path keeps working, and so
+ * `localDate` still reads as available here to anyone who learned it here.
  *
- * Not `toISOString().slice(0, 10)`, which is UTC: on 2026-08-28 a session that
- * ran past UTC midnight split one wave of work across two dates because half
- * of it used each convention (CLAUDE.md). Every date this module writes or
- * compares goes through here.
+ * The implementation moved to `./dates.mjs` on 2026-08-31 (beads
+ * addictedtoai-t9h): three more sites in `loop/` needed it, and `ledger.mjs`
+ * reaching it through the proposal engine — gray-matter and all — would have
+ * been a worse edge than the bug it fixes. That file's header carries the
+ * decision about which boundary a date helper may cross. Short version: none.
  */
-export function localDate(d) {
-  const p = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
+export { localDate };
 
 const FM_BLOCK = /^﻿?(---[ \t]*\r?\n)([\s\S]*?)(\r?\n---[ \t]*(?:\r?\n|$))/;
 

@@ -45,7 +45,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseVerdict } from './verdict.mjs';
-import { localDate } from './proposals.mjs';
+import { localDate } from './dates.mjs';
 
 /**
  * Transcribe every carried finding in a verdict record into `data/carried/`.

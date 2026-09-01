@@ -36,6 +36,7 @@ import { runExecutor, jobLogPath } from './exec.mjs';
 import { PROSE_TYPES } from './specs.mjs';
 import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
+import { localDate } from './dates.mjs';
 import { GROUND_RULES, subjectLines } from './brief.mjs';
 import { REASONS, VERDICTS, parseVerdict, normalizeWouldCite, normalizeField } from './verdict.mjs';
 import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
@@ -912,7 +913,12 @@ export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCit
     `would-cite: ${JSON.stringify(wouldCite)}`,
     readsHuman ? `reads-human: ${JSON.stringify(readsHuman)}` : null,
     reviewer ? `reviewer: ${reviewer}` : null,
-    `date: ${ctx.now().toISOString().slice(0, 10)}`,
+    // LOCAL, not UTC. `date:` on a review record is the first category in
+    // CLAUDE.md's convention paragraph by name, and `lib/reviews.mjs` compares
+    // it against the corpus's other local dates (beads addictedtoai-nmr). This
+    // read `toISOString().slice(0, 10)` until 2026-08-31, so an evening review
+    // — the Desk runs unattended — stamped tomorrow onto the record.
+    `date: ${localDate(ctx.now())}`,
     '---',
     '',
     notes,

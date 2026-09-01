@@ -16,6 +16,7 @@
 import { appendFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { OUTCOMES } from './config.mjs';
+import { localDayStamp } from './dates.mjs';
 
 /** The keys every ledger line carries, in order. Printed by --dry-run. */
 export const LEDGER_FIELDS = Object.freeze([
@@ -156,13 +157,21 @@ export function withinWindow(lines, now, ms) {
   });
 }
 
-/** The next `j-<yyyymmdd>-<seq>` for today, from the ledger plus any existing branches. */
+/**
+ * The next `j-<yyyymmdd>-<seq>` for today, from the ledger plus any existing
+ * branches.
+ *
+ * The day is the LOCAL one. This read `getUTCFullYear`/`getUTCMonth`/
+ * `getUTCDate` until 2026-08-31, which is not the wall-clock-instant case that
+ * makes `ts` honestly UTC a few lines above: a job id is a calendar-day LABEL,
+ * read by a human beside the review record and the directive marker that same
+ * job writes, and those are local. MEASURED live on 2026-08-29 (beads
+ * addictedtoai-nmr): a job started at 20:31 local on the 29th was named
+ * `j-20260830-01`, so its id and its own records disagreed by a day. Every job
+ * started after 18:00 local at UTC-6 had that defect.
+ */
 export function nextJobId(ledger, now, existingIds = []) {
-  const y = now.getUTCFullYear();
-  const m = String(now.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(now.getUTCDate()).padStart(2, '0');
-  const day = `${y}${m}${d}`;
-  const prefix = `j-${day}-`;
+  const prefix = `j-${localDayStamp(now)}-`;
   let max = 0;
   for (const id of [...ledger.map((l) => l.id), ...existingIds]) {
     if (typeof id === 'string' && id.startsWith(prefix)) {

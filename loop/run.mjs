@@ -56,6 +56,7 @@ import {
 import { publishStep } from './lib/publish.mjs';
 import { rederiveStep, DERIVED_PATHS, dirtyDerivedInputs } from './lib/rederive.mjs';
 import { markDirectiveDone } from './lib/directives.mjs';
+import { localDate } from './lib/dates.mjs';
 import { isIssueId, mergeIssueIds } from './lib/issues.mjs';
 import {
   applyProposalMergeRules,
@@ -1157,7 +1158,10 @@ export async function runLoop(ctx, opts = {}) {
       if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
       await publishStep(ctx, { cfg });
       if (job.source === 'directive' && job.lineNumber) {
-        const m = markDirectiveDone(ctx, job.lineNumber, jobId, now.toISOString().slice(0, 10));
+        // LOCAL, not UTC (beads addictedtoai-nmr). The completion marker goes
+        // into `DIRECTIVES.md`, a file in the corpus that a human reads, and an
+        // unattended evening run stamped tomorrow onto it until 2026-08-31.
+        const m = markDirectiveDone(ctx, job.lineNumber, jobId, localDate(now));
         if (m.changed) ctx.log(`appended the completion marker to DIRECTIVES.md line ${job.lineNumber}`);
       }
       deleteBranch(ctx.repoRoot, branch);
