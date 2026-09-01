@@ -1,16 +1,6 @@
 {
   "cap": 50,
-  "count": 1,
-  "items": [
-    {
-      "detail": "The body says K2.5 \"shipped as a trillion-parameter flagship, trained on 15 trillion tokens of mixed image and text\". The model card (https://huggingface.co/moonshotai/Kimi-K2.5/raw/main/README.md, fetched 2026-08-31) says \"built through continual pretraining on approximately 15 trillion mixed visual and text tokens atop Kimi-K2-Base\" — the 15T is continual pretraining on top of an existing base, not the model's whole training budget, and \"approximately\" is dropped. Not in this diff and not blocking; \"continually pretrained on roughly 15 trillion mixed image and text tokens on top of Kimi-K2-Base\" would fix it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260831-11 (`j-20260831-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/wiki/model/moonshotai-kimi-k2-5.md",
-      "target": "content/wiki/model/moonshotai-kimi-k2-5.md",
-      "title": "Qualify the \"15 trillion tokens\" line as continual pretraining atop Kimi-K2-Base",
-      "type": "repair"
-    }
-  ],
-  "total_before_cap": 1
+  "count": 0,
+  "items": [],
+  "total_before_cap": 0
 }
