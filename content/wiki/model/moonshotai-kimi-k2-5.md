@@ -101,9 +101,9 @@ is discontinued.
 
 The arithmetic is the story. Released 27 January 2026, off the vendor's
 platform on 31 August: 216 days of service for a model that shipped as a
-trillion-parameter flagship, trained on 15 trillion tokens of mixed image
-and text, and topped the tool-using HLE-Full evaluation — though not the
-plain one — on
+trillion-parameter flagship, continually pretrained on roughly 15 trillion
+mixed image and text tokens on top of Kimi-K2-Base, and topped the
+tool-using HLE-Full evaluation — though not the plain one — on
 [the day it launched](https://siliconangle.com/2026/01/27/moonshot-ai-releases-open-source-kimi-k2-5-model-1t-parameters/).
 The [model card](https://huggingface.co/moonshotai/Kimi-K2.5) lists the
 split: 50.2 on HLE-Full with tools, and 30.1 on the plain variant, where
