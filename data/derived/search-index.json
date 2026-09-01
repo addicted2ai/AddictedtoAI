@@ -3140,7 +3140,7 @@
       "t": "Mistral: Ministral 3 8B 2512 (batch)",
       "k": "entry",
       "d": "model",
-      "s": "active",
+      "s": "retired",
       "i": "model/mistralai-ministral-8b-2512-batch",
       "a": [],
       "b": true
