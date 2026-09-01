@@ -27,6 +27,8 @@ evidence: >
   machinery headers as specification (the comment is the design record for the
   presented-status resolution, addictedtoai-ij4h), so an illustration naming a
   page that no longer exhibits the behavior is a finding, not a nit.
+proposed_by_job: j-20260901-14
+proposed_by_type: repair
 ---
 
 The presented-status resolution in `lib/build-content.mjs` (addictedtoai-ij4h)
