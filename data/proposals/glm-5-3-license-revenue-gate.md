@@ -26,6 +26,8 @@ evidence: >
   went public around 2026-08-28 after a two-week safety review, per the
   llm-releases.com feed item fetched 2026-09-01 — https://llm-releases.com/models/glm-5-3.
 expires: 2026-09-08
+proposed_by_job: j-20260901-07
+proposed_by_type: scout
 ---
 
 # GLM-5.3's revenue-gated licence

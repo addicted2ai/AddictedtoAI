@@ -28,6 +28,8 @@ evidence: >
   https://llm-releases.com/models/hy4-preview (preview stage; vendor figures
   unverified at launch).
 expires: 2026-09-08
+proposed_by_job: j-20260901-07
+proposed_by_type: scout
 ---
 
 # Tencent Hy4 preview — open weights, verified licence

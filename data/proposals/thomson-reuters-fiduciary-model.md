@@ -31,6 +31,8 @@ evidence: >
   feed item fetched 2026-09-01 — https://llm-releases.com/models/thomson
   (undisclosed size/architecture; deployed in Tabular Analysis).
 expires: 2026-09-08
+proposed_by_job: j-20260901-07
+proposed_by_type: scout
 ---
 
 # Thomson Reuters launches its own frontier model
