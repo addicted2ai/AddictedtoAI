@@ -3090,7 +3090,7 @@
       "t": "Mistral: Codestral 2508 (batch)",
       "k": "entry",
       "d": "model",
-      "s": "retired",
+      "s": "active",
       "i": "model/mistralai-codestral-2508-batch",
       "a": [],
       "b": true
