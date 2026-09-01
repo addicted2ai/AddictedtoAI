@@ -720,14 +720,6 @@
   "unreadable_content": [],
   "vanished_feed_rows": [
     {
-      "entry_id": "model/mistralai-mistral-large-2512-batch",
-      "has_last_known": true,
-      "last_seen_date": "2026-08-31",
-      "path": "content/wiki/model/mistralai-mistral-large-2512-batch.md",
-      "row_id": "mistralai/mistral-large-2512:batch",
-      "source": "openrouter-models"
-    },
-    {
       "entry_id": "model/mistralai-mistral-medium-3-1-batch",
       "has_last_known": true,
       "last_seen_date": "2026-08-31",
