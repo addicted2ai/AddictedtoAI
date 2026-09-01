@@ -1,6 +1,15 @@
 {
   "headers": [
     {
+      "source": "/0f53367020cd11b3a49cebd8c5b4d382.txt",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
+    {
       "source": "/catalog.json",
       "headers": [
         {

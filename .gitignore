@@ -28,6 +28,12 @@ node_modules/
 # Generated on every build like everything above, never hand-edited.
 /public/robots.txt
 /public/llms.txt
+# The IndexNow key file (lib/asset-routes.mjs, beads addictedtoai-k1j). Named
+# for the key itself, which is what the protocol requires and which is why this
+# line carries a literal: ROTATING THE KEY MEANS EDITING THIS LINE TOO.
+# `pulse/tests/indexnow.test.mjs` asserts the two agree, so a rotation that
+# forgets fails the tests rather than committing build output.
+/public/0f53367020cd11b3a49cebd8c5b4d382.txt
 
 # The two brakes (beads addictedtoai-ufu). `STOP` is the maintainer's; `HOLD.md`
 # is the loop's self-halt, written when a breaker trips. Both address a person

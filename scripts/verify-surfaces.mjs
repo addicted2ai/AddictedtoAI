@@ -58,6 +58,8 @@ import {
   TABLE_SCHEMA_VERSION,
   DATASET_SCHEMA_VERSION,
   CONTRACT_ANCHOR,
+  INDEXNOW_KEY,
+  INDEXNOW_KEY_ROUTE,
 } from '../lib/asset-routes.mjs';
 import { AI_CRAWLERS } from '../lib/crawlers.mjs';
 import { CORS_ROUTES, VERCEL_FILE } from '../lib/redirects.mjs';
@@ -453,6 +455,21 @@ async function checkCrawlerFiles(out) {
     );
   } catch (err) {
     bad(`${LLMS_ROUTE} counts check`, err.message);
+  }
+
+  // The IndexNow key file. A search engine compares this file's WHOLE BODY to
+  // the key in a submission, so a trailing newline, a BOM or a wrapper is a
+  // rejection — and the rejection is silent from this side, which is why it is
+  // asserted on the exported bytes rather than on the writer's intent.
+  try {
+    const served = await read(out, INDEXNOW_KEY_ROUTE);
+    check(
+      served === INDEXNOW_KEY,
+      `${INDEXNOW_KEY_ROUTE} serves the key and nothing else`,
+      `${served.length} byte(s); the key is ${INDEXNOW_KEY.length}`,
+    );
+  } catch (err) {
+    bad(`${INDEXNOW_KEY_ROUTE} is served`, err.message);
   }
 }
 

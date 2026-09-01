@@ -31,7 +31,8 @@
  * CLAUDE.md's own advice to hold publishing down while a larger change is in
  * flight.
  *
- * So the step is two phases:
+ * So the step is two phases, plus one that only exists once the first two have
+ * both succeeded:
  *
  *   1. **COMMIT** — stage and commit what this run can attribute to itself.
  *      Runs whatever `data/config.json` says, and whatever `HOLD.md` says.
@@ -42,6 +43,12 @@
  *      the old behaviour exactly: they commit only on a real publish.
  *   2. **PUBLISH** — push `main` and poll the live `/status.json` build stamp.
  *      Gated by `publish`, by `HOLD.md`, and by having something to say.
+ *   3. **ANNOUNCE** — an IndexNow submission of the URLs whose `<lastmod>` is
+ *      today (`pulse/lib/indexnow.mjs`, beads addictedtoai-k1j). Reached only
+ *      from inside the success branch of phase 2, so it can only ever name URLs
+ *      the live site is already serving; it re-checks its own five guards
+ *      regardless, it never throws, and it never writes `HOLD.md`. A search
+ *      engine's outage is not a deploy failure.
  *
  * `HOLD.md` still suspends phase 2 completely and nothing here removes it. It
  * does not suspend phase 1, which is what the hold file itself has always said:
@@ -122,6 +129,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
 import { paths, readJson, today } from './core.mjs';
+import { submitIndexNow } from './indexnow.mjs';
 
 const DEFAULT_SITE = 'https://www.addictedtoai.net';
 const POLL_BUDGET_MS = 10 * 60 * 1000;
@@ -663,10 +671,32 @@ export async function publishStep(
       lastSeen = id;
       if (stampMatchesCommit(id, expected)) {
         say('publish', `live build stamp carries ${id} — the commit this run pushed`);
+        // ---- PHASE 3 — tell the search engines (beads addictedtoai-k1j) ----
+        //
+        // HERE, and nowhere earlier, because this is the first moment the new
+        // bytes are known to be served. Pinging a URL before its deploy lands
+        // is worse than not pinging it: the crawler arrives promptly and
+        // re-reads the page that was already there. This line is also why the
+        // Desk gets it for free — `loop/run.mjs` publishes through this same
+        // step after a merge, so reviewed prose is announced the moment it is
+        // live rather than waiting for the next Pulse.
+        //
+        // `submitIndexNow` re-checks every one of its own guards (it is not
+        // trusted to be reachable only from here) and cannot throw: a search
+        // engine's outage is not this deploy's problem, and nothing it does
+        // touches the result below.
+        const indexnow = await submitIndexNow({
+          root,
+          day: today(),
+          siteUrl: siteUrl(),
+          config,
+          dryRun,
+          log,
+        });
         // `commit` here is the SHA the site is serving, which is what every
         // caller of this result has always read. Phase 1's own report rides
         // alongside it under `committed`.
-        return { published: true, stamp: id, commit: expected, committed: commit };
+        return { published: true, stamp: id, commit: expected, committed: commit, indexnow };
       }
     }
     await new Promise((r) => setTimeout(r, pollIntervalMs));
