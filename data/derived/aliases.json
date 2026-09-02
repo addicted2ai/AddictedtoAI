@@ -311,6 +311,26 @@
       ]
     },
     {
+      "name": "Anthropic: Claude Fable 5.1",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-fable-5-1",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Anthropic: Claude Fable 5.1 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/anthropic-claude-fable-5-1-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Anthropic: Claude Fable Latest",
       "linkable": false,
       "claimed_by": [
@@ -2194,6 +2214,16 @@
       "claimed_by": [
         {
           "id": "model/inception-mercury-2",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Inception: Mercury 2.5 Preview",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inception-mercury-2-5-preview",
           "class": "manual"
         }
       ]
@@ -6444,6 +6474,16 @@
       "claimed_by": [
         {
           "id": "model/z-ai-glm-5v-turbo",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Z.ai: GLM Flash Latest",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/z-ai-glm-flash-latest",
           "class": "manual"
         }
       ]

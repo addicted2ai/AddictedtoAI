@@ -1,14 +1,14 @@
 ---
-id: model/z-ai-glm-4-5v
+id: model/inception-mercury-2-5-preview
 kind: model
-display_name: "Z.ai: GLM 4.5V"
+display_name: "Inception: Mercury 2.5 Preview"
 status: active
 maintenance: living
 aliases:
-  - name: "Z.ai: GLM 4.5V"
+  - name: "Inception: Mercury 2.5 Preview"
     class: manual
 feeds:
-  openrouter-models: z-ai/glm-4.5v
+  openrouter-models: inception/mercury-2.5-preview
 facts:
   - field: price_input
     source: feed
@@ -30,12 +30,6 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline:
-  - date: "2026-08-29"
-    event: active
-    source_url: "https://openrouter.ai/api/v1/models"
-  - date: "2026-09-02"
-    event: deprecated
-    source_url: https://openrouter.ai/api/v1/models
+timeline: []
 mentions: []
 ---

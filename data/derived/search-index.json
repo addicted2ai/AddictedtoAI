@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 634,
+  "count": 638,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -1603,6 +1603,26 @@
       "b": true
     },
     {
+      "u": "/wiki/model/anthropic-claude-fable-5-1",
+      "t": "Anthropic: Claude Fable 5.1",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-fable-5-1",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/anthropic-claude-fable-5-1-batch",
+      "t": "Anthropic: Claude Fable 5.1 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/anthropic-claude-fable-5-1-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/anthropic-claude-fable-5-batch",
       "t": "Anthropic: Claude Fable 5 (batch)",
       "k": "entry",
@@ -2729,6 +2749,16 @@
       "d": "model",
       "s": "active",
       "i": "model/inception-mercury-2",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/inception-mercury-2-5-preview",
+      "t": "Inception: Mercury 2.5 Preview",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/inception-mercury-2-5-preview",
       "a": [],
       "b": true
     },
@@ -5633,7 +5663,7 @@
       "t": "Z.ai: GLM 4.5V",
       "k": "entry",
       "d": "model",
-      "s": "active",
+      "s": "deprecated",
       "i": "model/z-ai-glm-4-5v",
       "a": [],
       "b": true
@@ -5765,6 +5795,16 @@
       "d": "model",
       "s": "active",
       "i": "model/z-ai-glm-5v-turbo",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/z-ai-glm-flash-latest",
+      "t": "Z.ai: GLM Flash Latest",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/z-ai-glm-flash-latest",
       "a": [],
       "b": true
     },

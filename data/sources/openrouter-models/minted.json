@@ -64,6 +64,16 @@
     "entry_id": "model/anthropic-claude-fable-5",
     "path": "content/wiki/model/anthropic-claude-fable-5.md"
   },
+  "anthropic/claude-fable-5.1": {
+    "date": "2026-09-02",
+    "entry_id": "model/anthropic-claude-fable-5-1",
+    "path": "content/wiki/model/anthropic-claude-fable-5-1.md"
+  },
+  "anthropic/claude-fable-5.1:batch": {
+    "date": "2026-09-02",
+    "entry_id": "model/anthropic-claude-fable-5-1-batch",
+    "path": "content/wiki/model/anthropic-claude-fable-5-1-batch.md"
+  },
   "anthropic/claude-fable-5:batch": {
     "date": "2026-08-28",
     "entry_id": "model/anthropic-claude-fable-5-batch",
@@ -588,6 +598,11 @@
     "date": "2026-08-28",
     "entry_id": "model/inception-mercury-2",
     "path": "content/wiki/model/inception-mercury-2.md"
+  },
+  "inception/mercury-2.5-preview": {
+    "date": "2026-09-02",
+    "entry_id": "model/inception-mercury-2-5-preview",
+    "path": "content/wiki/model/inception-mercury-2-5-preview.md"
   },
   "inclusionai/ling-3.0-flash": {
     "date": "2026-08-28",
@@ -2133,6 +2148,11 @@
     "date": "2026-08-28",
     "entry_id": "model/x-ai-grok-latest",
     "path": "content/wiki/model/x-ai-grok-latest.md"
+  },
+  "~z-ai/glm-flash-latest": {
+    "date": "2026-09-02",
+    "entry_id": "model/z-ai-glm-flash-latest",
+    "path": "content/wiki/model/z-ai-glm-flash-latest.md"
   },
   "~z-ai/glm-latest": {
     "date": "2026-08-28",
