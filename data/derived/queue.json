@@ -36,12 +36,13 @@
       "type": "scout"
     },
     {
-      "detail": "openrouter-models z-ai/glm-4.5v status: active -> deprecated on 2026-09-02",
-      "rank": 50,
-      "reason": "uninterpreted-status-change",
-      "subject": "openrouter-models|a9e815e403b4d7a5|31886658dc9b9e56|z-ai/glm-4.5v|status",
-      "target": "data/changes.jsonl",
-      "type": "interpret"
+      "detail": "Both pages state in their own voice that the old slug \"still answers and still serves\" (4.8) / \"the slug still answers, and existing requests still serve\" (5). The sourcing is sound — OpenRouter's notice says exactly that, and it is quoted and cited — but the router's own endpoints API disagrees in shape: GET https://openrouter.ai/api/v1/models/anthropic/claude-opus-4.8-fast/endpoints returns HTTP 200 with the model record and an empty \"endpoints\" array (same for claude-opus-5-fast and claude-opus-4.7-fast; the surviving standard rows return 8, 11 and 10 endpoints respectively). Measured 2026-09-02. Nothing published resolves whether an empty endpoints list means the slug is aliased internally or genuinely unroutable, and it cannot be settled without an API key. A clause of the form \"the model record still answers, though the router's endpoints listing for it is now empty; OpenRouter's notice is the authority that requests still route\" would keep the reader's trust if they run the same check.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-01 (`j-20260902-01.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/anthropic-claude-opus-4-8-fast.md",
+      "target": "content/wiki/model/anthropic-claude-opus-4-8-fast.md",
+      "title": "Note that the deprecated fast slugs list zero endpoints, and attribute \"still serves\" to OpenRouter",
+      "type": "repair"
     },
     {
       "detail": "The summary field still reads \"with GLM-5.3 state of the art on CyberGym and ExploitGym\". The card's own table, which this diff just read, puts GLM-5.3 third on the ExploitGym row — 105 / 130, behind Fable 5's 181 / 247 and the bolded GPT-5.6 Sol at 216 / 293. The card's prose does not make that claim either: it says \"GLM-5.3 is state of the art on CyberGym for vulnerability discovery, and its gains are largest further up the exploitation chain, where it more than doubles GLM-5.2 on exploitation benchmarks\" — SOTA is asserted for CyberGym only, and the exploitation sentence is a comparison against GLM-5.2, not a field-wide claim. Fix: narrow the summary to \"state of the art on CyberGym\", and if the ExploitGym gain is worth keeping, state it as the card does (more than triples GLM-5.2 at both budgets) rather than as a superlative. This matters because the post job draws its framing from this summary.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-23 (`j-20260901-23.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
