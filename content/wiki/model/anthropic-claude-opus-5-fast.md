@@ -50,7 +50,17 @@ as an "Anthropic Fast" provider on the standard `anthropic/claude-opus-5`
 row, at $10 / $50 per million tokens — the rates this row's last-known
 facts above record.
 
-The old `anthropic/claude-opus-5-fast` slug no longer resolves. Call
-`anthropic/claude-opus-5` with the "Anthropic Fast" provider pinned, or on
-Anthropic's own API send `speed: "fast"` with the `fast-mode-2026-02-01`
-beta header. The tier was folded into the parent row, not retired.
+The old `anthropic/claude-opus-5-fast` slug is deprecated, not broken.
+OpenRouter's notice on its page dates the change to September 1, 2026: the
+dedicated fast model is deprecated, and fast mode is now served by the fast
+service tier endpoint on Claude Opus 5 — "Requests to this model keep
+working and are served by the same fast tier capacity, so no action is
+required, but new integrations should target the regular model"
+([model page](https://openrouter.ai/anthropic/claude-opus-5-fast);
+[service-tier docs](https://openrouter.ai/docs/guides/features/service-tiers)).
+So the slug still answers, and existing requests still serve; what you call
+for new work is `anthropic/claude-opus-5` with `service_tier: "fast"` or
+`speed: "fast"`, or on Anthropic's own API `speed: "fast"` with the
+`fast-mode-2026-02-01` beta header, per its
+[fast-mode documentation](https://platform.claude.com/docs/en/build-with-claude/fast-mode).
+The tier was folded into the parent row, not retired.
