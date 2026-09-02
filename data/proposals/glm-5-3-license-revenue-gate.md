@@ -17,8 +17,14 @@ summary: >
 evidence: >
   Hugging Face model card for zai-org/GLM-5.3, fetched 2026-09-01 —
   https://huggingface.co/zai-org/GLM-5.3 (License: glm-5.3; 753B params;
-  arxiv 2602.15763; "Emergent Cyber Capability" note; CyberGym 84.5 vs
-  GLM-5.2 77.2; ExploitGym 105/130 vs 29/39). The licence text itself,
+  arxiv 2602.15763; "Emergent Cyber Capability" note). Benchmark figures
+  read from the card's own table, pinned to their rows: CyberGym 84.5
+  (GLM-5.3) vs 77.2 (GLM-5.2), the single CyberGym row (card's footnote:
+  unlimited timeout per task, single-run Pass@1 over 1,507 tasks);
+  ExploitGym 105/130 (GLM-5.3) vs 29/39 (GLM-5.2), both pairs from the one
+  "ExploitGym (2h / 6h)" row — first value the 2-hour timeout budget, second
+  the 6-hour (card's footnote: single-run Pass@1 on 869 tasks). The licence
+  text itself,
   fetched 2026-09-01 — https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE
   (clause 2 verbatim: the $10B/12-month revenue threshold, the security-review
   condition, the MaaS definition excluding embedded features and "mere relaying
@@ -67,4 +73,7 @@ quotable, primary, and four days old.
   post says so rather than speculating.
 - Facts carried with retrieval dates; the model card is the cited document
   for the benchmark figures (CyberGym, ExploitGym), and the licence file is
-  the cited document for clause 2.
+  the cited document for clause 2. The post reads the benchmark table
+  itself and states the timeout row each figure comes from: CyberGym is a
+  single row (unlimited timeout), and each ExploitGym value is the 2h / 6h
+  pair from the one "ExploitGym (2h / 6h)" row.
