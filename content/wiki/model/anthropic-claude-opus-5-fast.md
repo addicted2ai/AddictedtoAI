@@ -58,12 +58,12 @@ working and are served by the same fast tier capacity, so no action is
 required, but new integrations should target the regular model"
 ([model page](https://openrouter.ai/anthropic/claude-opus-5-fast);
 [service-tier docs](https://openrouter.ai/docs/guides/features/service-tiers)).
-One caveat for anyone running the same check: the router's endpoints API
-returns the model record with an empty `endpoints` array for this slug
-(HTTP 200, measured 2026-09-02), while the standard row still lists
-endpoints. Nothing published resolves whether that means the slug is aliased
-internally or genuinely unroutable; OpenRouter's notice, quoted above, is
-the authority that requests still route. So the slug still answers, and
+Anyone re-running this check should note how the record reads: HTTP 200,
+measured 2026-09-02, but the `endpoints` array comes back empty — while the
+standard row still lists endpoints. Nothing published settles whether the
+slug is an internal alias or genuinely unroutable; for whether requests
+still route, the notice quoted above is the authority. So the slug still
+answers, and
 existing requests still serve; what you call for new work is
 `anthropic/claude-opus-5` with `service_tier: "fast"` or
 `speed: "fast"`, or on Anthropic's own API `speed: "fast"` with the
