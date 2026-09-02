@@ -21,6 +21,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { describeFetchError } from '../lib/sources.mjs';
+import { assertIngested, cleanup, jsonSource, makeRoot, paths, readJson, runPulse, serve } from './helpers.mjs';
 
 /** The shape undici actually produces for a failed connect. */
 function fetchFailed(code, message = 'connect EADDRINUSE 127.0.0.1:13513') {
@@ -65,4 +66,59 @@ test('an error with no cause reads exactly as it did before', () => {
     'TimeoutError: The operation was aborted due to timeout',
   );
   assert.doesNotMatch(describeFetchError(err), /\(\)/);
+});
+
+/**
+ * The other half of addictedtoai-ar0, missing until 2026-09-02.
+ *
+ * The errno has been preserved into `state.json` since that day — and no test
+ * ever read it, so the diagnosis was thrown away one layer above the place it
+ * was carefully kept. Three Desk jobs were failed at the merge gate by the
+ * downstream symptoms of a fixture fetch that never landed (a `null` snapshot,
+ * a status flip that never happened), and ~19 model-minutes of sound work was
+ * discarded on two of them (addictedtoai-fpud).
+ *
+ * These two tests pin both halves: that a lost fetch really does leave the
+ * Pulse exiting 0, which is why the symptom surfaces so far from the cause,
+ * and that `assertIngested` fires on it and names the errno.
+ */
+test('a source that cannot be reached does NOT fail the run — it degrades, exit 0', async (t) => {
+  // Port 1 on loopback: nothing listens there, so the connect is refused
+  // immediately. No fixture server, and therefore no port of our own to leak.
+  const root = makeRoot([jsonSource('models', 'http://127.0.0.1:1/models')]);
+  t.after(() => cleanup(root));
+
+  const run = await runPulse(root, ['--no-build']);
+  assert.equal(run.status, 0, 'one unreachable source is degradation, not a crash — this is the whole trap');
+  assert.equal(readJson(paths.latest(root, 'models')), null, 'and it writes no snapshot, so readers see null');
+});
+
+test('assertIngested fires on that run, and names the errno rather than a downstream symptom', async (t) => {
+  const root = makeRoot([jsonSource('models', 'http://127.0.0.1:1/models')]);
+  t.after(() => cleanup(root));
+
+  assert.equal((await runPulse(root, ['--no-build'])).status, 0);
+
+  assert.throws(
+    () => assertIngested(root, 'models', 'unit'),
+    (err) => {
+      assert.match(err.message, /never ingested/, 'it must say the source never ingested');
+      assert.match(err.message, /ECONNREFUSED|EADDRINUSE|fetch failed/, 'and carry the errno undici reported');
+      assert.match(err.message, /CONNECTION failure, not a logic failure/, 'and say which kind of failure this is');
+      return true;
+    },
+  );
+});
+
+test('and it stays quiet when the source really did ingest — the control', async (t) => {
+  const rows = [{ id: 'acme/one', name: 'Acme One', pricing: { prompt: '0.000001' }, context_length: 1000 }];
+  const server = await serve(() => ({ status: 200, body: JSON.stringify({ data: rows }) }));
+  const root = makeRoot([jsonSource('models', `${server.url}/models`)]);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  assert.equal((await runPulse(root, ['--no-build'])).status, 0);
+  assert.doesNotThrow(() => assertIngested(root, 'models', 'control'));
 });

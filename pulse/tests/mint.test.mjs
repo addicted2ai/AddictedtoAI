@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import YAML from 'yaml';
-import { cleanup, jsonSource, makeRoot, readLines, paths, runPulse, serve, writeEntry, writeJson } from './helpers.mjs';
+import { assertIngested, cleanup, jsonSource, makeRoot, readLines, paths, runPulse, serve, writeEntry, writeJson } from './helpers.mjs';
 import { findSlugCollisions, slugFromRowId } from '../lib/mint.mjs';
 
 const NO_BUILD = ['--no-build'];
@@ -322,10 +322,12 @@ test('an appended timeline date survives a round trip as a string, not a Date', 
   });
 
   assert.equal((await runPulse(root, NO_BUILD)).status, 0);
+  assertIngested(root, 'models', 'first run, before the expiry is set');
   // The source now says the row expires soon: derived status active -> deprecated,
   // which is the only kind of change that reaches the timeline.
   rows = [{ ...rows[0], expiration_date: '2026-09-30' }];
   assert.equal((await runPulse(root, [...NO_BUILD, '--force'])).status, 0);
+  assertIngested(root, 'models', 'second run, which must re-read the expiry to flip the status');
 
   const text = readFileSync(file, 'utf8');
   const front = YAML.parse(text.slice(4, text.indexOf('\n---', 3) + 1));

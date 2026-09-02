@@ -176,3 +176,58 @@ export const paths = {
   previous: (root, id) => join(root, 'data', 'sources', id, 'previous.json'),
   linkcheck: (root) => join(root, 'data', 'linkcheck.json'),
 };
+
+/**
+ * Assert the named sources actually ingested on the run that just finished.
+ *
+ * A source whose fetch fails is not a crash: `readSource` records
+ * `outcome: 'error'` and the Pulse exits 0, because one dead source is
+ * degradation and the engine is built to degrade rather than stop. That is
+ * correct in production and ruinous in a test, because every downstream
+ * assertion then fails for a reason it cannot see — a snapshot that was never
+ * written reads as `null.rows`, and a status flip that never happened reads as
+ * "a status change appends a timeline event".
+ *
+ * Measured 2026-09-02 (addictedtoai-fpud): three Desk jobs were failed at the
+ * merge gate by exactly those two messages, across two test files, and ~19
+ * model-minutes of sound work was discarded. Each was a fixture fetch that
+ * never landed. The errno was captured the whole time — `describeFetchError`
+ * writes it to the source's `state.json` — and no test ever read it, so a
+ * connection-level flake presented as a logic failure. This reads it.
+ *
+ * It does NOT tolerate the failure. A gate that passes on a lost fetch would
+ * hide the regressions these tests exist to catch; the point is to name the
+ * cause, not to forgive it. Whether the Desk should distinguish an
+ * environmental gate failure from a real one is a separate question, filed
+ * separately.
+ */
+export function assertIngested(root, ids, context = '') {
+  const where = context ? ` (${context})` : '';
+  for (const id of [ids].flat()) {
+    const file = sourcePaths(root, id).state;
+    if (!existsSync(file)) {
+      throw new Error(`source \`${id}\` wrote no state.json${where} — the Pulse never reached it at all`);
+    }
+    const state = JSON.parse(readFileSync(file, 'utf8'));
+    if (state.last_error) {
+      throw new Error(
+        `source \`${id}\` never ingested${where}: ${state.last_error.detail} (recorded ${state.last_error.date}). ` +
+          'This is a CONNECTION failure, not a logic failure — the assertion below it would have been ' +
+          'measuring a snapshot that was never written. `connect EADDRINUSE` means the machine had no ' +
+          'ephemeral port to spare: something else on it was making connections (see addictedtoai-ar0), ' +
+          'and the test is sound.',
+      );
+    }
+    if (state.refusing) {
+      throw new Error(
+        `source \`${id}\` is being refused${where}: ${state.refusing.reason} since ${state.refusing.since}`,
+      );
+    }
+  }
+}
+
+/** The Pulse's own per-source paths, so a test reads state where the engine wrote it. */
+function sourcePaths(root, id) {
+  const dir = join(root, 'data', 'sources', id);
+  return { dir, latest: join(dir, 'latest.json'), previous: join(dir, 'previous.json'), state: join(dir, 'state.json') };
+}

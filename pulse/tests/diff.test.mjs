@@ -7,7 +7,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanup, jsonSource, makeRoot, paths, readJson, readLines, runPulse, serve, writeJson } from './helpers.mjs';
+import { assertIngested, cleanup, jsonSource, makeRoot, paths, readJson, readLines, runPulse, serve, writeJson } from './helpers.mjs';
 import { deriveStatus, isScheduled } from '../lib/diff.mjs';
 
 const ARGS = ['--no-build', '--no-mint'];
@@ -191,6 +191,7 @@ test('a field marked event:false keeps its catalog column and stops producing fe
 
   for (const root of [controlRoot, fixedRoot]) {
     assert.equal((await runPulse(root, ARGS)).status, 0);
+    assertIngested(root, 'models', 'first run, before the price is moved');
     const previous = readJson(paths.previous(root, 'models'));
     previous.rows['acme/one'].pricing.prompt = '0.000009';
     writeJson(paths.previous(root, 'models'), previous);
@@ -225,6 +226,7 @@ test('a clock-scheduled price produces no change line, while a tiered one still 
   });
 
   assert.equal((await runPulse(root, ARGS)).status, 0);
+  assertIngested(root, 'models', 'first run, before every price is moved');
 
   // Move every row's price, so the only reason a row is missing is suppression.
   const previous = readJson(paths.previous(root, 'models'));
