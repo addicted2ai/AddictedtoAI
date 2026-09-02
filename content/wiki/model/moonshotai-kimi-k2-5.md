@@ -60,7 +60,7 @@ facts:
     source: cited
     value: "2026-08-31 — full platform sunset; closed to newly registered users beforehand"
     source_url: "https://platform.kimi.ai/docs/models"
-    accessed: "2026-08-28"
+    accessed: "2026-09-01"
     volatility: dated
 timeline:
   - date: "2026-01-27"
