@@ -27,4 +27,6 @@ evidence: >
   and lines 123-131 make any other `{{...}}` marker a build error named
   bad-marker, so the second cure is not implementable; this job reworded the
   paragraph instead, which is what the machinery can do today.
+proposed_by_job: j-20260902-08
+proposed_by_type: repair
 ---
