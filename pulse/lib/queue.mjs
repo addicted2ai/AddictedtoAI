@@ -430,6 +430,65 @@ export function carriedFindingItems(root) {
   return out;
 }
 
+/**
+ * A declared feed row that vanished from its source (beads addictedtoai-u0n5),
+ * one queue item per file under `data/vanished/` (`pulse/lib/vanished.mjs`
+ * writes them; nothing else does).
+ *
+ * This deliberately mirrors `carriedFindingItems` rather than computing from
+ * `freshness.vanished_feed_rows`. A withdrawn row is absent from the latest
+ * snapshot forever, so the computed form could never retire: it re-dispatched
+ * work that had already been done and, at rank 85, starved every finding
+ * beneath it. Presence of the file is the state; the fixing job's own diff
+ * deletes it; nothing records "done" separately. That is what `specs/pulse`
+ * requires of a retirable finding, and the reason it gives — "a retirement
+ * that depended on a separate step recording 'this one is done' is how a
+ * high-rank item becomes permanently un-retirable and blocks everything
+ * beneath it forever" — is a description of the defect this replaces.
+ *
+ * A malformed record (no front matter, no `title:`) is skipped rather than
+ * queued under a guessed name, the same rule every other reader here follows.
+ */
+export function vanishedRowItems(root) {
+  const dir = join(paths(root).root, 'data', 'vanished');
+  if (!existsSync(dir)) return [];
+  let names;
+  try {
+    names = readdirSync(dir, { withFileTypes: true })
+      .filter((e) => e.isFile() && e.name.endsWith('.md') && e.name !== 'README.md')
+      .map((e) => e.name)
+      .sort();
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const name of names) {
+    let text;
+    try {
+      text = readFileSync(join(dir, name), 'utf8');
+    } catch {
+      continue;
+    }
+    let data = {};
+    let body = text;
+    try {
+      const p = matter(text);
+      data = p.data ?? {};
+      body = p.content ?? '';
+    } catch {
+      continue;
+    }
+    const title = String(data.title ?? '').trim();
+    if (!title) continue;
+    const source = data.source ? String(data.source).trim() : null;
+    const rowId = data.row_id ? String(data.row_id).trim() : null;
+    const subject = source && rowId ? `${source}:${rowId}` : `data/vanished/${name}`;
+    const target = data.subject ? String(data.subject).trim() : null;
+    out.push(item('repair', 'vanished-feed-row', subject, body.trim(), target, title));
+  }
+  return out;
+}
+
 /* ===========================================================================
  * Declared coverage: the gap between what a surface says it will teach and
  * what it has published (specs/pulse, "A surface's unmet declared coverage is
@@ -633,17 +692,16 @@ export function computeQueue(root, { freshness, changesFile, wants = readWants(r
     );
   }
 
-  for (const v of freshness.vanished_feed_rows ?? []) {
-    items.push(
-      item(
-        'repair',
-        'vanished-feed-row',
-        `${v.source}:${v.row_id}`,
-        `declared row id absent from the latest snapshot; last seen ${v.last_seen_date ?? 'never'} — bound facts render last-known values with an as-of date`,
-        v.path,
-      ),
-    );
-  }
+  // `vanished-feed-row` is NOT produced from `freshness.vanished_feed_rows`.
+  // That field is a level signal — a withdrawn row is absent forever — so
+  // producing from it gave a rank-85 item with no retirement condition, which
+  // re-dispatched already-finished work on every run and blocked everything
+  // beneath it (addictedtoai-u0n5). The finding is now file-presence state
+  // under `data/vanished/`, retired by the fixing job's own diff, exactly as
+  // `specs/pulse` requires of a carried finding and for the reason it gives.
+  // `freshness.vanished_feed_rows` remains as reporting, and is still what the
+  // Pulse uses to decide which records to write.
+  items.push(...vanishedRowItems(root));
 
   for (const c of freshness.slug_collisions ?? []) {
     items.push(

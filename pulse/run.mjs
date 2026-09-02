@@ -33,7 +33,8 @@
 
 import { existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { makeLogger, paths, readJsonl, repoRoot, today } from './lib/core.mjs';
+import { join } from 'node:path';
+import { makeLogger, paths, readJson, readJsonl, repoRoot, today } from './lib/core.mjs';
 import { loadRegistry, sortedSources } from './lib/registry.mjs';
 import { ingestSource, loadSnapshot, loadState, saveState } from './lib/sources.mjs';
 import { appendChanges, diffSnapshots, seedChanges } from './lib/diff.mjs';
@@ -44,6 +45,7 @@ import { rollingLinkCheck } from './lib/linkcheck.mjs';
 import { computeFreshness } from './lib/freshness.mjs';
 import { computeQueue, writeQueue } from './lib/queue.mjs';
 import { corroborationFindings } from './lib/corroboration.mjs';
+import { recordVanishedRows } from './lib/vanished.mjs';
 import { publishStep } from './lib/publish.mjs';
 
 const argv = new Set(process.argv.slice(2));
@@ -193,6 +195,21 @@ log.step(
   'freshness',
   `${freshness.overdue_facts.length} overdue fact(s), ${freshness.tutorials.filter((t) => t.state === 'stale' || t.state === 'demoted').length} stale tutorial(s), ` +
     `${freshness.listings.filter((l) => l.state !== 'ok').length} listing(s) needing attention, ${freshness.sources.filter((s) => s.suspect).length} suspect source(s)`,
+);
+
+// A withdrawn feed row becomes a durable record under `data/vanished/`, once,
+// and leaves only when a fixing job's diff deletes it (addictedtoai-u0n5). It
+// is written HERE, from the derived tree, rather than produced inside the
+// queue: a withdrawn row is absent from the latest snapshot forever, so a
+// computed finding could never retire and re-dispatched finished work on every
+// run at rank 85, starving everything beneath it. The record also pins the
+// row's last-known values, because snapshot rotation eventually removes them
+// from both snapshots and a repair job would otherwise lose the evidence it
+// needs (addictedtoai-64fk).
+const vanishedRecords = recordVanishedRows(root, derived.vanished, readJson(join(paths(root).derived, 'feed-rows.json')) ?? {}, today());
+log.step(
+  'vanished rows',
+  `${vanishedRecords.written.length} newly recorded, ${vanishedRecords.existing.length} already awaiting repair`,
 );
 
 // ---- 7. derived queue ----------------------------------------------------
