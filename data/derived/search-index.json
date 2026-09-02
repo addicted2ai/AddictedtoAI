@@ -1770,7 +1770,7 @@
       "s": "active",
       "i": "model/anthropic-claude-opus-4-7-fast",
       "a": [],
-      "b": false
+      "b": true
     },
     {
       "u": "/wiki/model/anthropic-claude-opus-4-8",
@@ -1800,7 +1800,7 @@
       "s": "active",
       "i": "model/anthropic-claude-opus-4-8-fast",
       "a": [],
-      "b": false
+      "b": true
     },
     {
       "u": "/wiki/model/anthropic-claude-opus-5",
@@ -1834,7 +1834,7 @@
       "s": "active",
       "i": "model/anthropic-claude-opus-5-fast",
       "a": [],
-      "b": false
+      "b": true
     },
     {
       "u": "/wiki/model/anthropic-claude-opus-latest",
