@@ -1,7 +1,16 @@
 {
   "cap": 50,
-  "count": 3,
+  "count": 4,
   "items": [
+    {
+      "detail": "content/wiki/model/moonshotai-kimi-k3.md lines 85-88 read \"K2.5's platform record reads {{fact:model/moonshotai-kimi-k2-5#api_sunset}}. K3's OpenRouter listing date is 46 days ahead of that\". With the transcluded value now the bare date 2026-08-31, the sentence renders as \"reads 2026-08-31. K3's OpenRouter listing date is 46 days ahead of that\" — and K3's listed_date is 2026-07-16, which is 46 days BEFORE 2026-08-31 (15 days left in July + 31 in August). \"Ahead of\" most naturally reads as later, so the sentence now points the interval the wrong way; the interval itself is right. \"46 days before that\" or \"precedes it by 46 days\" fixes it. Not introduced by this diff — the arithmetic anchor is the same date it always was — but the shortened value removed the framing that used to carry the sentence.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-16 (`j-20260901-16.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/moonshotai-kimi-k3.md",
+      "target": "content/wiki/model/moonshotai-kimi-k3.md",
+      "title": "Reword the K3 entry's \"46 days ahead of that\" — the listing is 46 days earlier, not later",
+      "type": "repair"
+    },
     {
       "detail": "The new clause reads \"a real lifecycle event: the row's first status flip, so it cannot be a metadata correction of a dropped date.\" Measured, the openrouter-models change history in data/changes.jsonl spans three days only — 2026-08-29 (29 lines), 2026-08-31 (1), 2026-09-01 (38) — while the row's own `created` timestamp (1780937140, ~June 2026) predates that window by months. So \"the row's first status flip\" is true of the recorded diff history, not of the row's life, and the absolute \"cannot\" is one word stronger than the evidence. Inserting \"recorded\" — \"the row's first recorded status flip\" — fixes it without touching the reasoning.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-13 (`j-20260901-13.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -30,5 +39,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 3
+  "total_before_cap": 4
 }
