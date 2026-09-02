@@ -21,8 +21,8 @@ re-retired in the same week, possibly a pricing or packaging experiment.
 
 **Worth a stranger's attention.** The flip already has a recorded
 interpretation on this exact row: job j-20260902-02 annotated the
-2026-08-29 reactivation, and job j-20260902-04 applied carried findings
-about it. The feed flapping is a gateway-catalog artifact with no vendor
+2026-09-02 flip back to `deprecated`, and job j-20260902-04 applied
+carried findings about it. The feed flapping is a gateway-catalog artifact with no vendor
 statement (no Z.ai announcement was found in the sweep), and the plausible
 reading — an alias or packaging change on the router's side — is not
 checkable from outside. A post built on two status rows would be a claim
