@@ -574,7 +574,14 @@ function checkReviews(corpus, dataDir) {
     }
     const norm = normalizeWouldCite(v.wouldCite);
     const dup = seenCite.get(norm);
-    if (dup) {
+    // A record that covers several pieces is ONE review with ONE `would-cite`,
+    // not several recycled ones. The rule specs/review states is that a
+    // REVIEWER must not reuse a sentence across reviews; comparing a record
+    // against itself is not that. This mattered the moment a job batched a
+    // cohort: j-20260902-05 reviewed two Anthropic "(Fast)" pages in one
+    // record, and the check reported "j-20260902-05.md's `would-cite` is
+    // identical to j-20260902-05.md's" — a sentence being identical to itself.
+    if (dup && dup !== rec.name) {
       problems.push(
         `${doc.file}: ${rec.name}'s \`would-cite\` is identical (after trimming) to ${dup}'s. ` +
           'specs/review refuses a recycled sentence at merge; it does not become valid at launch.',

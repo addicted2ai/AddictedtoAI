@@ -571,12 +571,25 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
+/* An annotation is authored prose about a feed change, and the useful ones
+   cite the exact document they quote — an API path, a schema key, a raw JSON
+   URL. Those arrive as single unbreakable tokens: measured 2026-09-02, one
+   61-character endpoints URL pushed the home page to scrollWidth 380 against a
+   320 viewport and failed the reflow bar, because nothing here wrapped it.
+   Removing the URLs was the wrong repair — a reader who cannot check a quote
+   is the reason the citation was asked for — so the text wraps instead, the
+   same way `.browse-name`, `.listing-facts dd` and `.build-stamp` already do.
+   `min-width: 0` is required for the same reason it is on `.browse-name`: a
+   flex or grid child will not shrink below its longest token without it, so
+   `overflow-wrap` alone would not have been enough. */
 .change-annotation {
   font-size: var(--step--1);
   border-left: 2px solid var(--accent);
   padding-left: 0.6rem;
   margin-top: 0.3rem;
   color: var(--ink);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .change-annotation .label {
