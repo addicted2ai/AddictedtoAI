@@ -54,9 +54,15 @@ required, but new integrations should target the regular model"
 ([model page](https://openrouter.ai/anthropic/claude-opus-4.8-fast);
 [service-tier docs](https://openrouter.ai/docs/guides/features/service-tiers)).
 
-So the old slug still answers and still serves; what changed is the name to
-build against. The row left the router's model list between the 2026-09-01
-and 2026-09-02 snapshots, which is why the facts above freeze at 2026-09-01.
+One caveat for anyone running the same check: the router's endpoints API
+returns the model record with an empty `endpoints` array for this slug
+(HTTP 200, measured 2026-09-02), while the standard row still lists
+endpoints. Nothing published resolves whether that means the slug is aliased
+internally or genuinely unroutable; OpenRouter's notice, quoted above, is
+the authority that requests still route. So the old slug still answers and
+still serves; what changed is the name to build against. The row left the
+router's model list between the 2026-09-01 and 2026-09-02 snapshots, which
+is why the facts above freeze at 2026-09-01.
 For new work, call `anthropic/claude-opus-4.8` with `service_tier: "fast"`
 or `speed: "fast"` — the fast endpoint on that row prices at $10 / $50 per
 million tokens, the same rates this row's last-known facts record, twice the
