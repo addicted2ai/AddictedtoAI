@@ -3,12 +3,12 @@
   "count": 2,
   "items": [
     {
-      "detail": "Commit 212b982 changes nine numbers under js_payload in data/launch.json alongside the one-line front-matter repair. They are internally honest — measured_on is already 2026-09-01 and the method line is unchanged — but the decreases include /wiki/concept/ai-winter (inline 5.7 → 5.5, html 7.8 → 7.6), a page this diff cannot touch, so they are a re-measure of the whole current tree riding inside a content repair rather than a consequence of it. Re-running scripts/measure-payload.mjs on a fresh export and confirming the three rows would settle it; the repo's own habit elsewhere is a separate \"launch: ...\" commit for exactly this.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-16 (`j-20260901-16.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "detail": "The repaired sentence now reads \"for the stretch between them both rows were live in this catalog at once.\" That is true of the stretch, but the past tense reads as if the co-listing were over, and it is not: data/derived/catalog.json still carries row_id \"moonshotai/kimi-k2.5\" with \"expiration_date\": null and \"status\": \"active\" today, and the K2.5 entry says so itself — \"The catalog reads this row `active`; this page reads it `deprecated`, and the disagreement is which signal counts\" (content/wiki/model/moonshotai-kimi-k2-5.md:92-93). What ended on 2026-08-31 was Moonshot's own endpoint, not the pair of catalog rows. A half-clause would settle it — e.g. \"both rows were live in this catalog at once, as they still are, the older one now on OpenRouter's data rather than Moonshot's hosting\" — but it is a nuance on an otherwise accurate sentence, not a defect worth a revision pass.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-21 (`j-20260901-21.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
-      "subject": "data/launch.json",
-      "target": "data/launch.json",
-      "title": "Confirm the js_payload numbers this repair re-recorded, or move them to their own launch commit",
+      "subject": "content/wiki/model/moonshotai-kimi-k3.md",
+      "target": "content/wiki/model/moonshotai-kimi-k3.md",
+      "title": "Note that K2.5's catalog row is still live, so the co-listing has not ended",
       "type": "repair"
     },
     {
