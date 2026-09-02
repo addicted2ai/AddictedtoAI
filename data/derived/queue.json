@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 2,
+  "count": 1,
   "items": [
-    {
-      "detail": "The repaired sentence now reads \"for the stretch between them both rows were live in this catalog at once.\" That is true of the stretch, but the past tense reads as if the co-listing were over, and it is not: data/derived/catalog.json still carries row_id \"moonshotai/kimi-k2.5\" with \"expiration_date\": null and \"status\": \"active\" today, and the K2.5 entry says so itself — \"The catalog reads this row `active`; this page reads it `deprecated`, and the disagreement is which signal counts\" (content/wiki/model/moonshotai-kimi-k2-5.md:92-93). What ended on 2026-08-31 was Moonshot's own endpoint, not the pair of catalog rows. A half-clause would settle it — e.g. \"both rows were live in this catalog at once, as they still are, the older one now on OpenRouter's data rather than Moonshot's hosting\" — but it is a nuance on an otherwise accurate sentence, not a defect worth a revision pass.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-21 (`j-20260901-21.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/wiki/model/moonshotai-kimi-k3.md",
-      "target": "content/wiki/model/moonshotai-kimi-k3.md",
-      "title": "Note that K2.5's catalog row is still live, so the co-listing has not ended",
-      "type": "repair"
-    },
     {
       "detail": "The proposal's evidence line carries \"CyberGym 84.5 vs GLM-5.2 77.2; ExploitGym 105/130 vs 29/39\". Fetching https://huggingface.co/zai-org/GLM-5.3 on 2026-09-01 confirmed the GLM-5.3 side — license \"glm-5.3\", 753B params, the \"Emergent Cyber Capability\" note, CyberGym 84.5, ExploitGym 105/130 — but the extraction surfaced a second ExploitGym row (130/247 at a 6-hour timeout) and did not surface either comparator (77.2, 29/39). The \"29/39\" denominator matches neither 130 nor 247, so the pair may be reading across two different timeout rows. WebFetch's extractor is not evidence of absence, so this is not a finding that the numbers are wrong — it is that the post job must read the benchmark table itself, state which timeout row each figure comes from, and name the card as the cited document, rather than inheriting the pair from this proposal.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-07 (`j-20260901-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -21,5 +12,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 2
+  "total_before_cap": 1
 }
