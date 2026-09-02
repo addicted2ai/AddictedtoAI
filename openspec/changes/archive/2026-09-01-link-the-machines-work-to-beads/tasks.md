@@ -98,13 +98,19 @@ builds it and the integrated check passes without it.
 
 ## 6. Deliberately not done
 
-- [ ] 6.1 **A required id on a dropped proposal — rejected, not deferred.** It
+*Both items below are checked because the work each names is a DECISION, and
+both decisions were made and recorded. The checkbox means "settled", not
+"built" — building either is precisely what was rejected. Marked 2026-09-01 at
+archive time so the change does not sit permanently at 13/15 for two entries
+that were never going to be implemented.*
+
+- [x] 6.1 **A required id on a dropped proposal — rejected, not deferred.** It
       would demand an issue per scout decline (ten in one night), which is the
       manufactured backlog noise `addictedtoai-occ0`'s own first constraint
       forbids, in service of a loss that measurement says is not occurring: all
       ten drop records are spec-compliant, naming their failed test and a refile
       condition. The real gap there is that nothing CHECKS that compliance,
       which is `addictedtoai-fyd3` and is a different requirement.
-- [ ] 6.2 **An `issue:` key on review records — declined on design grounds**
+- [x] 6.2 **An `issue:` key on review records — declined on design grounds**
       (design D3), not on the hazard `addictedtoai-occ0` stated, which was
       traced and does not exist.

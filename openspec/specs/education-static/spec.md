@@ -116,12 +116,36 @@ prerequisites — in the same change that adds the page. Silent drift is the
 named enemy: the map must keep describing the territory, or coverage claims
 become unverifiable.
 
+**That `SHALL NOT` is enforced by the build, not by review alone.** A
+published learn page whose slug appears in no curriculum entry SHALL fail the
+build, naming the page's file, the slug, and the path of the curriculum of
+record, before any page renders. The check SHALL read the curriculum's catalog
+section — the enumeration of planned pages — and no other part of it, so that
+prose elsewhere in the document cannot be mistaken for a declaration. Where the
+curriculum of record cannot be read at all, the build SHALL fail with one error
+naming that file, rather than one error per page: a reader who has lost the map
+needs to be told that once.
+
 #### Scenario: A page outside the map amends the map first
 
 - **WHEN** a job proposes a learn page that appears in no curriculum entry
 - **THEN** review requires the curriculum amended — area, rung,
   prerequisites, outcome, bounds — before the page can merge, and rejects
   the page as `spec-violation` otherwise
+
+#### Scenario: An undeclared page stops the build
+
+- **WHEN** a learn page is published whose slug appears in no entry of the
+  curriculum's catalog
+- **THEN** the build fails naming the page's file, the slug and the
+  curriculum path, and no page renders
+
+#### Scenario: A lost map is one error, not thirty-eight
+
+- **WHEN** the curriculum of record is missing or its catalog section cannot
+  be found
+- **THEN** the build fails with a single error naming the curriculum path,
+  and does not report every published page as undeclared
 
 #### Scenario: Coverage is checkable when the spine completes
 

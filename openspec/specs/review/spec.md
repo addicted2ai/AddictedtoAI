@@ -55,6 +55,12 @@ this closed list:
 - `not-worth-reading` — dull, derivative, padded, or otherwise not worth a
   reader's time (see `editorial`). **This is a complete rejection reason in
   its own right and never needs to be dressed up as a factual defect.**
+- `reads-as-generated` — the prose reads machine-made: uniform rhythm and
+  paragraph shape, structure signposted rather than felt, meta-commentary
+  narrating its own method, no willingness to be blunt (see `blog` and the
+  voice document it names). A complete reason in its own right, and the
+  voice bar's one gate — the voice lint only advises, so this verdict is
+  where machine-made prose actually stops;
 - `overclaiming-summary` — title/excerpt claims more than the body proves;
 - `spec-violation` — violates a named requirement in these specs;
 - `broken-reference` — a transclusion, mention, or link that does not hold;
@@ -77,6 +83,15 @@ old failure; this field makes it asked — a reviewer that approves
 everything without ever confronting the would-cite test produces the same
 unread site as one that could not object at all.
 
+**For a blog post, the voice question is asked the same way.** A verdict
+on a `post` SHALL additionally contain a required, non-empty `reads-human`
+field: the reviewer's own-words answer to "where does this read
+machine-made, or why does it not?" The merge SHALL refuse a post verdict
+whose `reads-human` field is empty or exactly duplicates an existing
+record's, on the same terms and at the same point it refuses a blank
+`would-cite`. Same mechanics, same honesty about their limit: the field
+compels the asking, not the judgment.
+
 #### Scenario: An approve must answer the quality question
 
 - **WHEN** a reviewer returns `approve` on a blog post with the
@@ -89,6 +104,13 @@ unread site as one that could not object at all.
 - **WHEN** a factually clean draft is judged not worth a reader's time
 - **THEN** the reviewer rejects with `not-worth-reading` and the recorded
   reason says so plainly, with no manufactured factual objection
+
+#### Scenario: A post verdict answers the voice question
+
+- **WHEN** a reviewer returns `approve` on a post with the `reads-human`
+  field blank
+- **THEN** the merge refuses the verdict exactly as it would a blank
+  `would-cite`, and the reviewer must re-issue it with the field answered
 
 ### Requirement: What is checked depends on what the work is
 
@@ -105,7 +127,26 @@ wiki entry, a tutorial, and a machinery change are not the same job:
   disclosed; perishables all declared.
 - **Blog post**: every external claim source-checked by fetching; title and
   excerpt read against the body for overclaim; company-conduct claims held
-  to the news-fact-checking standard; dates explicit.
+  to the news-fact-checking standard; dates explicit. Additionally, the
+  reviewer SHALL identify the post's form (news note or synthesis — see
+  `blog`) and apply that form's finish line: for a note, the declared
+  anchor holds (external anchors fetched and confirmed to document the
+  event and its date), the affected party is named where one exists, and
+  brevity alone is never a defect; for a synthesis, the derivation method
+  is stated and the evidence enumerable. The reviewer SHALL judge the
+  prose against the voice document `blog` names, rejecting
+  `reads-as-generated` where it reads machine-made — the advisory voice
+  lint's build warnings MAY be cited as evidence, but the judgment is the
+  reviewer's, not the count's — and SHALL answer the
+  send question in the record's `would-cite` field — who would send this,
+  and to whom — in its own words.
+- **Scout run**: the charge's failure condition applied first — a run
+  whose candidates could all have been written without leaving the
+  repository fails it; evidence URLs spot-checked by fetching; every
+  candidate carries slug, type, `expires:`, why-now, retrieval-dated
+  evidence, and done-when lines; every declined story has a drop record
+  naming the failed test and a refile condition; at most three candidates
+  filed.
 - **Education page**: no perishable literals; prerequisites and the
   "after this you will understand" statement honest; beats the obvious
   alternative.
@@ -133,6 +174,15 @@ automated check.
 - **WHEN** a machinery diff claims "this makes X impossible"
 - **THEN** the reviewer attempts X against the changed code and the verdict
   cites the attempt's observed result, not the diff's description
+
+#### Scenario: A scout run is checked against its charge
+
+- **WHEN** a scout run's diff arrives for review with three candidates and
+  two drop records
+- **THEN** the reviewer verifies the candidates carry externally retrieved,
+  retrieval-dated evidence, spot-fetches it, and rejects the run as
+  `spec-violation` if everything filed could have been written from the
+  repository alone
 
 ### Requirement: Rejection has mechanics and an end
 
@@ -190,13 +240,14 @@ author, or the same model twice:
 
 ### Requirement: A review record names the bytes it reviewed
 
-A verdict record today names a *piece*; it does not name the *text* it judged.
-The join in `lib/reviews.mjs` matches a record to a piece by the canonical
-URL-derived filename, three accepted alternates, or a front-matter subject key,
-and the merge gate then checks that the record carries a verdict from the closed
-list and a non-empty, non-duplicated `would-cite`. Every one of those checks
-passes unchanged after the reviewed text is edited. An approval therefore
-survives the thing it approved.
+A record that named only a *piece*, and never the *text* it judged, would leave
+an approval surviving the thing it approved. The join in `lib/reviews.mjs`
+matches a record to a piece by the canonical URL-derived filename, three
+accepted alternates, or a front-matter subject key, and the merge gate then
+checks that the record carries a verdict from the closed list and a non-empty,
+non-duplicated `would-cite`. Every one of those checks would pass unchanged
+after the reviewed text had been edited. Binding the record to the bytes is
+what closes that gap.
 
 Binding is done by the one step that already knows what landed — the loop's
 merge step, which writes `subject:` for exactly this reason:
@@ -253,8 +304,10 @@ defined in the next requirement.
 `lib/reviews.mjs`'s header already reasons that "unreviewed" and "named
 something the join does not recognise" are the same observation from the join's
 position, and that absence must therefore be reported rather than acted on.
-Reviewed-then-changed is the third member of that family, and today the check
-cannot tell it from the other two.
+Reviewed-then-changed is the third member of that family, and a check unable to
+tell it from the other two would report a page whose approved text had since
+moved as though it had never been reviewed at all — the one reading that loses
+both the record and the change.
 
 - The join SHALL classify every reviewable piece into exactly one of four
   states: **recorded** (a record joins and its recorded hash equals the piece's
@@ -334,3 +387,52 @@ previous requirement a wall rather than a gate.
 - **WHEN** two records name the same piece and neither carries a date or a job
   id
 - **THEN** the join reports the contention and binds neither by guesswork
+
+### Requirement: A reviewer's non-blocking finding reaches work without editing anything
+
+The reviewer has no edit rights, as a mechanism rather than as an instruction:
+its worktree is discarded unconditionally, so it cannot fix what it finds. That
+is the property that makes review trustworthy, and it is also what puts every
+finding the reviewer does not block on at risk of dying in a file nobody reads
+again. Measured before either mechanism below existed: **19.5%** of `approve`
+verdict records carried a finding the reviewer recorded but did not block on,
+and roughly **30%** of those were never rescued by any means at all.
+
+A finding therefore travels as **data written into the verdict record**, which
+is the one artifact the reviewer both produces and is trusted to produce.
+
+- A verdict record MAY carry a `carry:` block of zero or more entries, each with
+  a `title`, a `detail`, and an optional `subject` naming the file the finding
+  is about. Implemented by `parseCarry` in `loop/lib/verdict.mjs`; measured by
+  the verdict parser's tests.
+- A verdict record MAY carry a reviewer-noted **proposal**, on the same terms
+  and for the same reason. This mechanism predates `carry:` and is what `carry:`
+  was modelled on. Implemented by `transcribeNotedProposal` in
+  `loop/lib/proposals.mjs`.
+- Neither `carry:` nor a noted proposal SHALL affect the verdict itself. A
+  reviewer that could turn a finding into a rejection by writing it in a
+  different field would have been given, through the back door, the editorial
+  power the discarded worktree exists to withhold. The verdict remains exactly
+  the value drawn from the closed list, decided on the reasons the review
+  requirement already names. Implemented by `parseVerdict` in
+  `loop/lib/verdict.mjs`, which reads the two independently; measured by the
+  verdict parser's tests.
+- The reviewer's brief SHALL document both fields, because a mechanism a
+  reviewer is not told about is a mechanism that does not run. Implemented in
+  `loop/lib/review.mjs`; measured by the brief-text tests.
+- A carried finding SHALL NOT be a second route to publication. It becomes a
+  queue item and is then subject to every rule an item from any other source
+  is: selection, budget, the review gate on whatever job takes it.
+
+#### Scenario: An approval carries a finding it did not block on
+
+- **WHEN** a reviewer approves a piece and records a finding it judged not worth
+  blocking on
+- **THEN** the verdict is `approve`, unchanged, and the finding is written into
+  the record as a `carry:` entry rather than lost with the discarded worktree
+
+#### Scenario: A finding cannot become a rejection by another name
+
+- **WHEN** a verdict record carries `carry:` entries alongside an `approve`
+- **THEN** the merge treats the verdict as `approve` and the entries change
+  nothing about it

@@ -423,7 +423,11 @@ Every named file, symbol and line was verified to exist at HEAD on
 
 ## 5. The record
 
-- [ ] **5.1 — Update the three issues; file one.** Comment disposition on
+- [x] **5.1 — Update the three issues; file one.** *(Done 2026-09-01.
+  `addictedtoai-6ov` was already closed — §2.4, §2.5 and §3.8 all landed
+  2026-08-30. Dispositions appended to `addictedtoai-18c` and
+  `addictedtoai-3zf`; the new issue is `addictedtoai-ze5b`.)* Comment
+  disposition on
   `addictedtoai-18c` (the send test and the input are both here; the
   scout answers its "bigger finding"), `addictedtoai-6ov` (producing side
   specified here; closes when §2.4/§2.5/§3.8 land), and

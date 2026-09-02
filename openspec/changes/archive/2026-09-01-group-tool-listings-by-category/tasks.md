@@ -77,17 +77,29 @@
 Authored under a no-builds constraint (eight agents share one `.next/`;
 addictedtoai-6s7). These are the orchestrator's, serially:
 
-- [ ] **3.1** `npm test`
-- [ ] **3.2** `npm run build`
-- [ ] **3.3** `node scripts/verify-launch.mjs` — the tool floor and the seed
-  review records
-- [ ] **3.4** `node scripts/verify-surfaces.mjs` — `/tools` states its sort
-  criterion (reads the **first** `[data-sort-note]`)
-- [ ] **3.5** `node scripts/verify-design.mjs` — contrast, keyboard traversal
+*Run serially by the orchestrator on 2026-09-01, all seven green. Log and
+measured values below.*
+
+- [x] **3.1** `npm test` — exit 0.
+- [x] **3.2** `npm run build` — exit 0.
+- [x] **3.3** `node scripts/verify-launch.mjs` — the tool floor and the seed
+  review records. Exit 0; `curated tool listings 35 (floor 20)`; corpus
+  525 entry, 38 learn, 4 tutorial, 5 post, 35 tool, 27 delta = 634 pages.
+- [x] **3.4** `node scripts/verify-surfaces.mjs` — `/tools` states its sort
+  criterion (reads the **first** `[data-sort-note]`). Exit 0; the note reads
+  *category name, A to Z; then listing name, A to Z within each category*,
+  which is the two-level sort this change introduced.
+- [x] **3.5** `node scripts/verify-design.mjs` — contrast, keyboard traversal
   and no horizontal scroll at 320px, now that `/tools` has a `<details>`, a
-  `<nav>` and twelve `<h2>`s it did not have
-- [ ] **3.6** `node scripts/measure-payload.mjs` — unchanged expectation: this
-  change ships **zero** additional JavaScript
+  `<nav>` and twelve `<h2>`s it did not have. Exit 0.
+- [x] **3.6** `node scripts/measure-payload.mjs` — unchanged expectation: this
+  change ships **zero** additional JavaScript. Exit 0, and the claim is
+  measured rather than assumed: `chunks_kb_gzipped` is **byte-identical** on
+  all three recorded pages (104.4 home, 104.4 entry, 104.8 catalog), which is
+  the JavaScript. `inline` and `html` each drifted +0.2–0.3 KB uniformly
+  across every page — the paired, uniform-across-pages signature of a JSON-LD
+  block growing with the corpus, not of shipped script, and the ordinary
+  gate-run churn tracked in `addictedtoai-91s` / `addictedtoai-u07`.
 
 ## 4. Traceability — every normative sentence, its task and its check
 

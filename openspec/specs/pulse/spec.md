@@ -253,16 +253,16 @@ broken fetcher cannot make the site look fresher than it is.
 The Pulse SHALL recompute the loop's work queue from current state on every
 run: overdue facts, overdue tutorials, failed verifications, broken links,
 want-demand eligible mints, suspect sources, refusing sources, vanished
-feed rows, and material changes on price/licence/status fields from the
+feed rows, material changes on price/licence/status fields from the
 trailing 14 days that lack an interpretation annotation (the source
-`interpret` jobs draw from — see `loop`). The queue is a ranked snapshot
-(a generated file), not a ledger: nothing is ever "filed" into it, it has no
-history, and it cannot backlog — an item leaves the queue the moment the
-underlying state is fixed, and the queue's size is bounded by the size of
-the site, not by time passing. Discovered work that needs human judgment or
-does not map to site state (a bug, an idea, a follow-up) goes to beads
-(`bd`) instead, filed by whoever discovers it — the two never mirror each
-other.
+`interpret` jobs draw from — see `loop`), and the daily scout item (see the
+scout requirement). The queue is a ranked snapshot (a generated file), not
+a ledger: nothing is ever "filed" into it, it has no history, and it cannot
+backlog — an item leaves the queue the moment the underlying state is
+fixed, and the queue's size is bounded by the size of the site, not by
+time passing. Discovered work that needs human judgment or does not map to
+site state (a bug, an idea, a follow-up) goes to beads (`bd`) instead,
+filed by whoever discovers it — the two never mirror each other.
 
 #### Scenario: Fixing the state empties the queue
 
@@ -443,3 +443,242 @@ moment it is computed.
 - **WHEN** the site rebuild fails
 - **THEN** the publish step does not run at all: nothing is committed and
   nothing is pushed
+
+### Requirement: Once per day, the Pulse queues the scout
+
+- On each run, the Pulse SHALL derive a **scout item** into the work queue
+  exactly when `data/ledger.jsonl` records no `scout` job started on the
+  current local date — at most one item, computed from the ledger and the
+  clock alone, so the derivation stays a pure function of current state
+  and a re-run on the same day with a scout already recorded derives
+  nothing.
+- The item SHALL carry mechanically assembled context: the change feed's
+  event lines from the trailing 7 days that no published post's `covers:`
+  declarations include — a deterministic join, not a judgment, and an
+  input to the scout rather than a bound on it (the scout's charge is the
+  world beyond this repository; see `loop`).
+- The scout item SHALL rank below confirmed-breakage repairs and
+  corroboration disagreements and above routine timer-driven
+  re-verifications: the site's claim to be true outranks discovery, and
+  discovery outranks re-checking things that were true last week. The
+  upkeep floor in `loop` keeps this ordering from starving upkeep — rank
+  decides within a run; the floor guarantees upkeep's share across runs.
+
+#### Scenario: One scout a day, mechanically
+
+- **WHEN** the Pulse runs twice on one local date and the ledger records a
+  `scout` job started that day before the second run
+- **THEN** the second run derives no scout item, and the next local date's
+  first run derives one
+
+#### Scenario: The context is a join, not a judgment
+
+- **WHEN** the trailing 7 days hold four event lines and a published post's
+  `covers:` names one of them
+- **THEN** the scout item carries the other three, with no score, no
+  ordering beyond the feed's own, and no model invoked
+
+#### Scenario: The Pulse still never judges
+
+- **WHEN** the scout item is derived on any state
+- **THEN** no model runs, and nothing in the item says which events are
+  worth writing about — that question belongs to the scout job it triggers
+
+### Requirement: A surface's unmet declared coverage is queue input
+
+Every other queue reason answers *the world changed* or *a timer elapsed*.
+Neither can express that this site has declared an intention it has not met, so
+nothing in the machinery has ever looked inward at the corpus's own stated
+shape. Where a surface has a **curriculum of record** — a written enumeration of
+the pages it intends to publish — the Pulse SHALL derive one queue item for each
+enumerated page that `content/` does not publish.
+
+- The item SHALL propose an `education` job and SHALL carry the reason
+  `curriculum-gap`, ranked below every reason describing something broken or
+  overdue and below `want-eligible-mint`. Nothing is wrong on any page because a
+  page the site intends to write does not exist yet.
+- The derivation SHALL be a set difference between two committed files and
+  SHALL NOT score, rank, or otherwise judge either side. It is the same
+  arithmetic a reader could do with two directory listings, and its result is
+  falsifiable by doing so.
+- The item SHALL retire by recomputation alone, like every other queue item:
+  publishing the page removes it at the next run, with no close or archive
+  action by anyone.
+- The Pulse SHALL read the curriculum tolerantly. A curriculum that is absent,
+  unreadable, or carries no catalog section SHALL yield no items and SHALL NOT
+  halt the run — the engine must keep the data layer true on a day when the
+  build would fail.
+
+#### Scenario: A declared page nobody has written becomes work
+
+- **WHEN** the curriculum enumerates a page whose slug has no file in
+  `content/learn/`
+- **THEN** the next queue carries one `education` item with reason
+  `curriculum-gap` naming that slug
+
+#### Scenario: Writing the page empties the item
+
+- **WHEN** that page is published
+- **THEN** the next Pulse run's queue no longer contains the item, with no
+  close or archive action by anyone
+
+#### Scenario: A full map produces no work
+
+- **WHEN** every enumerated page is published
+- **THEN** the queue carries no `curriculum-gap` item, and that is a complete
+  and healthy run rather than a failure to find work
+
+#### Scenario: A missing curriculum is not a halt
+
+- **WHEN** the curriculum of record is absent from the tree the Pulse is
+  running against
+- **THEN** the run completes, the queue carries no `curriculum-gap` item, and
+  nothing is reported as broken
+
+### Requirement: Which job types the queue may produce is a stated decision
+
+The loop can run ten job types and the queue produces a strict subset. Which
+types are missing has never been recorded as a decision, so an absent producer
+is indistinguishable from an unbuilt one — capacity with no trigger and no
+record of why.
+
+The Pulse SHALL declare, as a closed list in the queue's own source, every job
+type the derived queue may produce, together with the reason the remaining types
+are not on it. Every item the queue computes SHALL carry a type from that list,
+and a violation SHALL fail the test suite. Adding a producer for a type not on
+the list SHALL require amending the list in the same change.
+
+The decision of record is that `tutorial`, `post`, `prune` and `machinery` are
+**proposal- and maintainer-initiated by design**, not merely unbuilt:
+
+- `prune` and `machinery` SHALL NOT become queue-producible while the only
+  available trigger would be a model scoring the corpus or the codebase against
+  a rubric. Removal is the one irreversible act here — a wrongly-fired `prune`
+  404s a published URL, where every other queue item that fires wrongly merely
+  wastes a job — and "the machinery is deficient" has no committed-state
+  measurement at all. The channel that serves machinery work is evidence-driven
+  and already exists: a reviewer naming a measured defect in its verdict record.
+- `post` is excluded because a derived "a post is due" trigger is a cadence, and
+  a cadence is what fills a blog with pieces nobody asked for.
+- `tutorial` is excluded for a different and weaker reason: the declared-coverage
+  shape above would fit it, but no curriculum of record exists for that surface.
+  Writing one is an editorial decision about what the site should teach by
+  doing, not a machinery decision.
+
+#### Scenario: A queue item of an undeclared type fails the suite
+
+- **WHEN** a queue producer emits an item whose type is not on the declared
+  list
+- **THEN** the test suite fails, naming the type and the item's reason
+
+#### Scenario: The list states its own exclusions
+
+- **WHEN** a reader asks why the queue cannot produce a `prune` job
+- **THEN** the answer is in the declared list beside the decision, not
+  inferred from the absence of a producer
+
+### Requirement: A carried finding is queue state, and its file is the state
+
+A reviewer cannot fix what it finds — its worktree is discarded, as a
+mechanism. `specs/review` therefore has it write non-blocking findings into the
+verdict record. This requirement is the other end of that path: what turns a
+recorded finding into work the Desk can actually select.
+
+The queue is derived and never accumulates, and a carried finding does not
+weaken that. The finding's **file is the state**: `data/carried/` holds one file
+per carried finding, the queue reads that directory every run, and the item
+exists for exactly as long as the file does. Nothing accumulates in the queue
+itself, which is still recomputed from scratch on every run.
+
+- On merging a job whose verdict record carries `carry:` entries, the loop SHALL
+  write one file per entry into `data/carried/`. Implemented by
+  `transcribeCarriedFindings` in `loop/lib/carry.mjs`, called from
+  `loop/run.mjs`.
+- The derived queue SHALL read `data/carried/` on every run and produce one item
+  per file. Implemented by the carried-finding class in `pulse/lib/queue.mjs`.
+- A carried finding SHALL rank **below** every finding derived from the world or
+  from the corpus's own declarations. It is one reviewer's judgment about
+  something it chose not to block on, which is the weakest evidence any queue
+  item rests on, and ranking it with measured staleness or a broken link would
+  let opinion outrank observation. Implemented as rank 25 in
+  `pulse/lib/queue.mjs`.
+- Retirement SHALL be by **deletion of the file**, performed by the fixing job's
+  own diff, and SHALL NOT require any merge-step bookkeeping. A retirement that
+  depended on a separate step recording "this one is done" is how a high-rank
+  item becomes permanently un-retirable and blocks everything beneath it
+  forever; that failure has happened here and is not to be repeated.
+- A carried finding SHALL NOT be a second route to publication. The job that
+  takes it is an ordinary job under every ordinary rule: selection, budget, and
+  the review gate on whatever it produces.
+
+#### Scenario: A carried finding becomes selectable work
+
+- **WHEN** a merged job's verdict record carried a `carry:` entry and the next
+  Pulse run recomputes the queue
+- **THEN** the queue holds one item for that finding, ranked below the
+  world-derived and declaration-derived findings
+
+#### Scenario: The fixing job's own diff retires it
+
+- **WHEN** a job takes a carried finding, fixes it, and its merged diff deletes
+  that finding's file
+- **THEN** the next run's queue simply does not contain the item, with no
+  retirement step having recorded anything
+
+#### Scenario: An unfixed finding is still there tomorrow
+
+- **WHEN** no job has taken a carried finding and its file is still present
+- **THEN** the item is produced again by the next run's recomputation, at the
+  same rank, having accumulated nothing
+
+### Requirement: A row whose slug is already taken is a finding, not a silent refusal
+
+Minting is how a live feed row becomes a stub the corpus can carry. It refuses,
+correctly, when the slug it would mint at is already occupied by an entry that
+does not declare that row — two different things must never collapse into one
+page. But a refusal that only ever declines leaves one case permanently
+invisible: an entry retired when its row vanished has had its `feeds:` binding
+removed, and if that row later re-lists, the mint refuses forever and nothing
+ever says so. The row is live in the world, absent from the site, and silent in
+every report.
+
+- The queue SHALL produce a finding for a row that is **live in a minting
+  source's latest snapshot**, **undeclared** by any entry, and whose **expected
+  mint path is occupied** by an entry that does not declare it. All three
+  conditions SHALL hold; any one of them alone is an ordinary state that must
+  not fire. Implemented by `findSlugCollisions` in `pulse/lib/mint.mjs`,
+  threaded as `slug_collisions` through `pulse/lib/freshness.mjs`, and produced
+  as reason `slug-collision` in `pulse/lib/queue.mjs`; measured by
+  `pulse/tests/mint.test.mjs`, `pulse/tests/freshness.test.mjs` and
+  `pulse/tests/queue.test.mjs`.
+- The Pulse SHALL NOT edit the corpus in response, and SHALL NOT choose between
+  the two readings of the collision — "the binding was removed and should be
+  restored" and "these are genuinely two different things" — which is a
+  judgment about the world that belongs to a repair job with a reviewer, not to
+  a model-free engine. The finding SHALL carry what was observed and stop there.
+- A row that is genuinely still absent SHALL NOT produce this finding. The
+  distinction is the occupied path: a row with nowhere to land is an ordinary
+  unminted row, and reporting it here would bury the real case in the noise of
+  every row the corpus has not yet chosen to carry. Measured as the negative
+  case in `pulse/tests/mint.test.mjs`.
+
+#### Scenario: A re-listed row whose entry was retired becomes work
+
+- **WHEN** a row absent long enough for its entry to be retired — its `feeds:`
+  binding removed — re-appears in the latest snapshot, and the slug it would
+  mint at is that retired entry's
+- **THEN** the queue holds a `slug-collision` item naming the row, the source
+  and the occupying entry, and nothing in the corpus has been edited
+
+#### Scenario: An ordinary unminted row is not a collision
+
+- **WHEN** a live undeclared row's expected mint path is free
+- **THEN** no `slug-collision` finding is produced, and the row is treated as
+  the ordinary unminted row it is
+
+#### Scenario: A declared row is not a collision
+
+- **WHEN** a live row's expected mint path is occupied by an entry that DOES
+  declare that row
+- **THEN** no finding is produced — that is the normal bound state, not a
+  collision

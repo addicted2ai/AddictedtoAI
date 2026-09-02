@@ -44,6 +44,10 @@ Pulse run. Job types form a closed list:
 - `repair` — fix a broken link, failed listing, malformed record.
 - `prune` — nominate and remove the weakest existing content.
 - `machinery` — change the site's own code or the loop's own scripts.
+- `scout` — the daily outward sweep (see "The scout looks outward, takes
+  the best three, and records the rest"): find candidate stories in the
+  world, rank them against the editorial bar, file at most three as
+  expiring proposals, and record what was declined.
 
 Adding a job type requires an OpenSpec change.
 
@@ -101,9 +105,12 @@ Jobs are selected from, in priority order:
    markdown file in `data/proposals/`, with front matter declaring: a date,
    a kebab-case `slug` naming the idea, the job type it proposes (from the
    closed list — a proposal proposes a job of an existing type, never a new
-   kind of work), a one-paragraph summary, and the evidence that prompted
-   it. Proposals come into existence three ways: a Desk run MAY end by
-   writing at most one proposal as a side-output of whatever it noticed; a
+   kind of work), a one-paragraph summary, the evidence that prompted
+   it, and optionally an `expires:` date for evidence that decays.
+   Proposals come into existence three ways: a Desk run MAY end by
+   writing at most one proposal as a side-output of whatever it noticed
+   (the `scout` job is the exception: filing candidates is its outcome,
+   governed by its own requirement and its own mechanical cap); a
    reviewer MAY note one in its verdict record (the loop transcribes it);
    the maintainer MAY drop one in directly. A proposal SHALL cool for at
    least 3 days (file age) before selection. A rejected proposal moves to
@@ -120,6 +127,48 @@ Jobs are selected from, in priority order:
 treated as such: a run that finds nothing worth doing ends without
 manufacturing work.
 
+**The producing side of source 3 is wired, not merely permitted:**
+
+- Every brief the loop assembles SHALL state the proposal rule that binds
+  its job — at most one, or the scout's own — restating the front-matter
+  contract above, because a self-contained brief is the only channel a job
+  has and an untold job cannot know.
+- The review brief SHALL ask the reviewer to note a proposal where its
+  review surfaced one, and the loop SHALL transcribe a noted proposal into
+  `data/proposals/` as a well-formed proposal file naming the reviewing
+  job as its origin.
+- The caps SHALL be mechanisms: where a merged branch adds more proposal
+  files than its job's rule allows, the loop SHALL keep the allowed number
+  — by the job's own stated ranking where one exists, else by filename —
+  and discard the rest with a note naming them. A proposal on a branch
+  that is discarded dies with the branch: ideas do not outlive the
+  rejection of the work that produced them.
+- At merge, the loop SHALL stamp the proposing job's type onto each kept
+  proposal, overwriting any value the executor wrote, and a proposal whose
+  stamped origin type equals the type it proposes SHALL be auto-discarded
+  on the same terms as a rejected-slug duplicate — with a pointer to this
+  rule, spending no inference. The guard closes the tight loop, not every
+  loop: a two-type cycle (`post` → `interpret` → `post`) remains possible,
+  bounded by cooling at each hop and caught, where it is a re-tread, by
+  the reviewer holding the rejection index. Cross-type noticing — an
+  `interpret` job that has read three weeks of licence churn proposing a
+  synthesis `post` — is the designed path. The maintainer's route is
+  untouched: a file he drops in has no proposing job, so the rule cannot
+  apply to it.
+- A proposal declaring `expires:` SHALL be selectable without the 3-day
+  cooling and SHALL NOT be selectable after its expiry; at expiry, an
+  unselected expiring proposal SHALL be swept to `data/proposals/dropped/`
+  mechanically, with a note naming the expiry. Cooling filters ideas by
+  whether they survive three days; an expiry filters evidence by the date
+  it stops being news — both are time-based honesty checks, and a
+  candidate carries whichever one fits its evidence. No backlog carries
+  forward: the sweep is what keeps the candidate directory from becoming
+  the ten-weeks-of-backlog queue the predecessor's author track named as
+  its own bottleneck.
+- `data/proposals/dropped/` is a **record, never a block**: unlike
+  `rejected/`, it SHALL NOT feed automatic slug suppression, so a story
+  declined today may be refiled when its stated refile condition arrives.
+
 #### Scenario: An empty run is not a failure
 
 - **WHEN** the directives file is empty, the derived queue has no item above
@@ -133,6 +182,28 @@ manufacturing work.
   `data/proposals/rejected/`
 - **THEN** it is discarded automatically with a pointer to the recorded
   rejection reason, spending no inference
+
+#### Scenario: A job's noticing becomes ripe work
+
+- **WHEN** an `interpret` job's merged branch includes one proposal for a
+  synthesis `post`, with slug, summary and evidence and no `expires:`
+- **THEN** the proposal is stamped with the interpret job's type, lands in
+  `data/proposals/`, and is selectable once it has cooled 3 days
+
+#### Scenario: A job cannot propose more of itself
+
+- **WHEN** a `post` job's merged branch includes a proposal whose type is
+  `post`
+- **THEN** the proposal is auto-discarded with a pointer to the
+  self-amplification rule, spending no inference, and the job's merge is
+  otherwise unaffected
+
+#### Scenario: Expired news is swept, not queued
+
+- **WHEN** a scout-filed candidate's `expires:` date passes with the
+  candidate unselected
+- **THEN** the next run sweeps it to `data/proposals/dropped/` with a note
+  naming the expiry, and nothing anywhere treats that as a failure
 
 ### Requirement: Spending is budgeted in model-minutes with floors and ceilings
 
@@ -153,10 +224,13 @@ of the frontier total; cheap shares of the cheap total):
 | Category | Bound |
 |---|---|
 | Upkeep (`interpret`, `verify`, `repair`, `prune`) | floor: ≥ 40% |
-| New writing (`entry`, `tutorial`, `post`, `education`) | ceiling: ≤ 45% |
+| New writing (`entry`, `tutorial`, `post`, `education`, `scout`) | ceiling: ≤ 45% |
 | `machinery` | ceiling: ≤ 10% |
 
-Review MM counts toward the job it reviews. Each bound has its own
+`scout` spends from the new-writing share deliberately: discovery is the
+first stage of writing, and when writing is over its ceiling, finding more
+to write is the first thing to stop. Review MM counts toward the job it
+reviews. Each bound has its own
 enforcement point: when a ceiling is reached, jobs of that category are not
 selectable until the window rolls; when the upkeep share in a tier is below
 its floor and any upkeep job is available in that tier, only upkeep jobs
@@ -169,6 +243,37 @@ machinery ceiling exists because the previous site spent roughly seven lines
 of process per line of site — the loop improving its own tooling is capped,
 permanently, and the cap is enforced by the selector, not by good
 intentions.
+
+A percentage of a very small total is not a bound, it is a rounding artifact:
+on the first day of a window, one job of any kind is 100% of everything, and a
+ceiling read against the observed total alone would refuse every category
+before the loop had done enough work for a share to mean anything. The
+denominator therefore has a floor of its own.
+
+- A **ceiling** SHALL be measured against the larger of the tier's observed
+  rolling total and a **warm-up window**, so that a ceiling binds on a
+  meaningful denominator from the first run rather than on whatever happens to
+  have run first. Implemented by `warmUpMm()` in `loop/lib/budget.mjs`;
+  measured by `loop/tests/budget.test.mjs`.
+- The **upkeep floor** SHALL always read the tier's observed rolling total, and
+  SHALL NOT be measured against the warm-up window. The floor and the ceilings
+  fail in opposite directions: a ceiling read against a tiny denominator
+  refuses everything, while a floor read against an inflated one would compel
+  upkeep the loop has no evidence it needs. Implemented in
+  `loop/lib/budget.mjs`'s floor path; measured by `loop/tests/budget.test.mjs`.
+- The warm-up window SHALL be **derived** — (100 ÷ the tightest configured
+  ceiling percentage) × the largest per-type wall-clock cap in
+  `data/config.json` — and SHALL NOT be a configuration key of its own. A key
+  would be a second place to state a bound that is already stated, and the two
+  would drift. Implemented by `warmUpMm()` and `largestCapMinutes()` in
+  `loop/lib/budget.mjs`; measured by `loop/tests/budget.test.mjs`.
+- The unit of "the largest per-type wall-clock cap" in that formula SHALL be
+  one **invocation's** cap, NOT one whole job's bounded total under `A job's
+  total spend is measured, and the cap is named for what it is` — a job's total
+  may reach a multiple of an invocation's cap, so reading the formula the other
+  way would silently widen the window without any number changing. Implemented
+  in `loop/lib/budget.mjs`; measured by the `dyw the warm-up denominator
+  measures one invocation` test in `loop/tests/budget.test.mjs`.
 
 #### Scenario: Writing cannot crowd out upkeep
 
@@ -189,6 +294,21 @@ intentions.
 - **THEN** the selector offers only upkeep jobs in that tier until the
   floor is met
 
+#### Scenario: A ceiling does not bind on a nearly empty window
+
+- **WHEN** a tier's observed rolling total is far below the warm-up window and
+  a single job would exceed a ceiling as a share of that observed total
+- **THEN** the ceiling is measured against the warm-up window instead, the job
+  is not refused on that arithmetic, and the substitution is stated in the
+  refusal record whenever a refusal is printed
+
+#### Scenario: The floor is not warmed up
+
+- **WHEN** a tier's observed rolling total is far below the warm-up window and
+  upkeep's observed share is below its floor
+- **THEN** the floor binds on the observed total, unaffected by the warm-up
+  window that the ceilings use
+
 ### Requirement: Capacity exhaustion is a pause, and degradation is ordered
 
 When a provider's allowance runs out mid-job, the job SHALL be marked
@@ -208,15 +328,15 @@ prediction of the provider's window, which is unknowable for consumer
 subscriptions. Exhaustion is
 never an error, never triggers a retry storm, and never causes a hunt for
 another credential or provider. As capacity tightens, work SHALL be shed in
-this order: new `post`/`education` first, then `entry`/`tutorial` minting,
-then `interpret` on immaterial diffs — keeping `verify` (tutorial and fact
-re-verification) and `repair` last. "Tightening" is deterministic, read
-from the ledger: a tier's shed level equals the count of `capacity`
+this order: new `post`/`education`/`scout` first, then `entry`/`tutorial`
+minting, then `interpret` on immaterial diffs — keeping `verify` (tutorial
+and fact re-verification) and `repair` last. "Tightening" is deterministic,
+read from the ledger: a tier's shed level equals the count of `capacity`
 classifications recorded for that tier in the trailing 48 hours — at 1,
-`post` and `education` are not selectable in that tier; at 2, `entry` and
-`tutorial` are also excluded; at 3 or more, only `verify`, `repair`, and
-material-field `interpret` remain selectable. The Pulse never pauses for
-capacity reasons: the site stays alive on zero inference.
+`post`, `education` and `scout` are not selectable in that tier; at 2,
+`entry` and `tutorial` are also excluded; at 3 or more, only `verify`,
+`repair`, and material-field `interpret` remain selectable. The Pulse never
+pauses for capacity reasons: the site stays alive on zero inference.
 
 #### Scenario: A window closes mid-job
 
@@ -228,7 +348,7 @@ capacity reasons: the site stays alive on zero inference.
 
 - **WHEN** a tier's ledger shows two `capacity` classifications within the
   trailing 48 hours
-- **THEN** the selector refuses `post`, `education`, `entry`, and
+- **THEN** the selector refuses `post`, `education`, `scout`, `entry`, and
   `tutorial` jobs in that tier, while `verify` and `repair` remain
   selectable
 
@@ -420,15 +540,40 @@ An expired credential makes an executor exit in seconds with no `RESULT.md`.
 That classifies `interrupted`, correctly — and `interrupted` is not a failure:
 the branch is kept, it is resumed oldest-first before new work, no retry is
 consumed, and the three-consecutive-failures breaker counts only `failed` and
-`discarded`. With no rule against it the Desk resumes the same branch forever,
-halting nothing and telling nobody. The mechanism that ends that spin lives in
-`loop/lib/health.mjs`, and it is specified here rather than left to the code
-alone: a machine behaviour with no rule behind it drifts without anything
+`discarded`. With no rule against it a Desk would resume the same branch
+forever, halting nothing and telling nobody. The mechanism that ends that spin
+lives in `loop/lib/health.mjs`, and it is specified here rather than left to the
+code alone: a machine behaviour with no rule behind it drifts without anything
 noticing.
+
+Detection has to be stated twice, because the two roles leave different
+evidence. An author writes a `RESULT.md` and a branch diff; a reviewer's
+worktree is discarded unconditionally, as a mechanism, so it has neither. A
+criterion written only in the author's terms cannot be satisfied for the
+reviewer role at all, and a refusal that claims to cover both roles while its
+detection covers one is a rule that reads as present and does nothing.
 
 - The loop SHALL treat a run that produced nothing at all — no `RESULT.md`, no
   executor output, and no diff on the branch — as evidence about the runner
   rather than about the job, recorded as a signal on that run's ledger line.
+  Implemented in `loop/lib/result.mjs` and `loop/run.mjs`; measured by
+  `loop/tests/runner-health.test.mjs`.
+- For the **reviewer** role, where there is no `RESULT.md` and no branch diff to
+  read, the equivalent evidence SHALL be an absent verdict record together with
+  nothing on stdout. A verdict record that exists but is malformed is **output,
+  not silence**, and SHALL be handled instead by the existing malformed-verdict
+  merge-gate refusal — treating it as silence would blame the runner for a
+  fault the reviewer demonstrably ran to produce. Implemented by
+  `reviewProducedNothing()` in `loop/lib/result.mjs`, recorded per invocation by
+  `loop/run.mjs`'s `phase()` call for `review*` roles, and read by
+  `noOutputStreak()` in `loop/lib/health.mjs`; measured by the `G8A` tests in
+  `loop/tests/runner-health.test.mjs`.
+- The streak SHALL be accumulated **per invocation and per role**, not from a
+  ledger line's runner field alone. A line's runner field names the author, so a
+  runner configured only as reviewer could otherwise never accumulate a streak
+  however many times it produced nothing. Implemented by `noOutputStreak()`'s
+  `invocationsFor` helper in `loop/lib/health.mjs`; measured by the `G8A` tests
+  in `loop/tests/runner-health.test.mjs`.
 - After three consecutive such runs on one runner, the loop SHALL refuse that
   runner for the `author` and `reviewer` roles, on the same terms and with the
   same consequence `A swap has a stated procedure and a conformance check` gives
@@ -448,8 +593,9 @@ noticing.
   only ever moved in that direction.
 - Refusing a runner SHALL NOT write `HOLD.md`. The breaker list in `Breakers
   halt the loop, and only the named ones` is closed and is not extended by this
-  requirement; whether a Desk with no usable runner should halt is a separate
-  question, left open here and tracked as `addictedtoai-pfv`.
+  requirement. Whether a Desk with **every** author-cleared runner refused
+  should halt is a separate question: it has been ruled in the affirmative as a
+  target state and is tracked, unimplemented, as `addictedtoai-8wm0`.
 
 #### Scenario: The spin ends at the third empty run
 
@@ -458,6 +604,21 @@ noticing.
 - **THEN** the loop refuses that runner for authoring and review, printing the
   cause and the conformance command that clears it, and does not invoke it or
   resume a branch with it
+
+#### Scenario: A reviewer-only runner accumulates a streak
+
+- **WHEN** a runner configured only for the reviewer role completes three
+  consecutive review invocations that each wrote no verdict record and printed
+  nothing
+- **THEN** the streak reaches three and that runner is refused for review, even
+  though no ledger line names it as an author
+
+#### Scenario: A malformed verdict record is output, not silence
+
+- **WHEN** a reviewer invocation writes a verdict record that the merge gate
+  refuses as malformed
+- **THEN** the no-output streak is cleared rather than advanced, and the
+  malformed record is handled by the merge gate's own refusal
 
 #### Scenario: Refusal is not a halt
 
@@ -472,23 +633,27 @@ noticing.
 
 ### Requirement: A budget refusal states the arithmetic it refused on
 
-A share is a percentage of something, and the something is not always the number
-the reader assumes. `loop/lib/budget.mjs` measures ceilings against
-`max(observed total, warm-up)` while this specification says a category's share
-is its MM over the tier's rolling total; the divergence is defensible and is
-invisible wherever the arithmetic is not printed, because a refusal prints a
-percentage and a percentage hides its own denominator. This requirement does not
-settle which denominator is right — that question is open and tracked as
-`addictedtoai-tr8`. It makes the answer impossible to hide either way.
+A share is a percentage of something, and the something is not always the
+number the reader assumes. A refusal prints a percentage, and a percentage
+hides its own denominator: two refusals reading 46% and 46% can be measured
+against different totals, and nothing in the printed line would say so. The
+denominator question itself is settled in `Spending is budgeted in
+model-minutes with floors and ceilings` — ceilings against the larger of the
+observed rolling total and the warm-up window, the floor always against the
+observed total. This requirement is what keeps that settlement legible at the
+moment it bites, so a reader never has to re-derive which denominator was used.
 
 - When a ceiling or the upkeep floor refuses a job, the loop SHALL record and
   print the category's model-minutes, the denominator the percentage was
-  computed against, and the origin of that denominator.
+  computed against, and the origin of that denominator. Implemented by
+  `refusalArithmetic()` in `loop/lib/budget.mjs`; measured by
+  `loop/tests/budget.test.mjs`.
 - Where the denominator is not the tier's observed rolling total, the refusal
   SHALL say which value was used instead and why it was substituted. A
   substituted denominator that announces itself is a recorded reading; one that
-  does not is a silent divergence from this specification, and the second is how
-  a spec and its code stop describing the same system.
+  does not is a silent divergence between this specification and its code, and
+  that divergence is how the two stop describing the same system. Implemented
+  by `refusalArithmetic()`; measured by `loop/tests/budget.test.mjs`.
 
 #### Scenario: A refusal names its denominator
 
@@ -695,3 +860,204 @@ mechanism.
 
 - **WHEN** a job drawn from the derived queue merges
 - **THEN** no proposal is moved and nothing in `data/proposals/` changes
+
+### Requirement: The scout looks outward, takes the best three, and records the rest
+
+The scout is the Desk job the daily queue item (see `pulse`) triggers. Its
+charge, verbatim from the track that carried it on the predecessor site:
+**bring back work the site could not have thought of by looking at
+itself.**
+
+- The scout SHALL sweep outward — the world beyond this repository and
+  beyond the registered sources: vendor announcements and documentation,
+  papers, incidents, pricing and licence pages, community signal — and MAY
+  use the queue item's assembled feed context as one input among them. A
+  scout run in which every filed candidate could have been written without
+  leaving the repository SHALL be rejected in review as `spec-violation`
+  naming this charge.
+- The scout SHALL judge everything it found against the two-test bar
+  (`editorial`: worth a stranger's attention; true, checkable, current)
+  and SHALL file **at most three candidates per run — the most worthy
+  three**, as expiring proposals. Each candidate SHALL carry the docket
+  discipline: a kebab-case `slug`, a proposed job type from the closed
+  list, an `expires:` date — at most 7 days out for an event-driven
+  candidate, at most 14 for a synthesis — a why-now, externally retrieved
+  evidence with URLs and retrieval dates, and done-when acceptance lines
+  written at filing time.
+- The cap SHALL be mechanical, not behavioral: at the scout's merge, the
+  loop keeps at most three candidate files — by the scout's own stated
+  ranking, else by filename — and every excess candidate is moved to the
+  drop record rather than merged (the caps mechanism in the work-sources
+  requirement).
+- What the scout declines SHALL be recorded, never silently dropped: each
+  considered-and-declined story becomes one record in
+  `data/proposals/dropped/`, naming which test it failed and what would
+  make it worth refiling. Stated honestly, the way this repository states
+  it about `would-cite`: the records prove the **form** of the bar, not
+  its **rate** — nothing measures how many stories the scout considered,
+  so a scout that sweeps forty sources and writes three drop records is
+  mechanically indistinguishable from one that considered six. The bar
+  itself is an instruction to a model, checked by a model-run review from
+  its checklist; the records are what make that check auditable after the
+  fact, and that is all they are claimed to do.
+- A day with no external story that clears the bar SHALL open the
+  **synthesis branch**: the scout considers whether the accumulated
+  recorded evidence — the change feed, the snapshots, the corpus's data
+  layer — supports a synthesis candidate instead. The branch opens an
+  avenue and never lowers the bar: it is an opportunity, not an
+  obligation, and a floor reintroduced through it would be the exact
+  failure the no-cadence rule exists to prevent.
+- When nothing clears the bar on either branch, the scout SHALL end with
+  `RESULT.md` first line `blocked: nothing cleared the bar` — an honest
+  outcome the ledger records as such, and a success. Zero candidates on a
+  quiet day is the bar working; a candidate manufactured to fill a day is
+  the failure.
+- **The blocked streak SHALL have a witness.** A `blocked:` scout outcome
+  is a success everywhere it is counted — breakers exclude it, health
+  streaks end on it — so nothing in the loop can distinguish a year of
+  honest quiet from a bar nothing can clear. The build SHALL therefore
+  derive, from `data/ledger.jsonl`, the count of consecutive scout runs
+  ending `blocked:` (reset by any scout run that files a candidate) and
+  record it in the published `/status.json` alongside the build stamp.
+  Observability without obligation: no threshold, no floor, no breaker
+  reads it — it exists so that a person or a later job can see the streak
+  without excavating the ledger, and it obliges nothing.
+- A scout run's diff — candidates and drop records, all model-written —
+  SHALL pass the ordinary review gate before it merges, like every other
+  Desk job's.
+
+#### Scenario: A burst day is ranked, capped, and recorded
+
+- **WHEN** a scout run finds five stories that each clear the bar
+- **THEN** it files the three most worthy as expiring candidates, writes a
+  drop record for each of the other two naming the judgment, and the merge
+  enforces the cap mechanically if it files more
+
+#### Scenario: An inward-looking scout is rejected
+
+- **WHEN** a scout run's three candidates could all have been written from
+  the repository's own contents, with no externally retrieved evidence
+- **THEN** review rejects the run as `spec-violation` naming the charge —
+  bring back what the site could not have thought of by looking at itself
+
+#### Scenario: A quiet day opens the synthesis branch and still publishes nothing
+
+- **WHEN** no external story clears the bar and the accumulated evidence
+  supports no synthesis worth a stranger's attention either
+- **THEN** the scout ends `blocked: nothing cleared the bar`, the ledger
+  records it, no candidate is filed, and nothing anywhere treats the day
+  as a failure
+
+#### Scenario: A long quiet spell is visible without being punished
+
+- **WHEN** fourteen consecutive scout runs end `blocked: nothing cleared
+  the bar`
+- **THEN** `/status.json` reports the streak of 14, no breaker trips, no
+  floor opens, nothing selects differently — and anyone reading the
+  published status can see the quiet without opening the ledger
+
+#### Scenario: A quiet day yields a synthesis instead
+
+- **WHEN** no single headline clears the bar but three weeks of recorded
+  licence changes show a shape no single event shows
+- **THEN** the scout files one synthesis candidate carrying the evidence
+  set and an `expires:` at most 14 days out, through the same review gate
+
+### Requirement: The machine's work is joinable to the issue tracker
+
+Beads is this project's persistent memory across models, providers and
+harnesses, and the maintainer's standing rule for humans is that a deferral
+lives in *its own issue with its own id*, because a thought that exists only
+inside something finished is already lost. The machine had no equivalent: of 18
+job lines in `data/ledger.jsonl`, **none** carried an issue id and no such field
+existed, so *"what did the machine ever do about `addictedtoai-X`"* could not be
+asked of any artifact.
+
+- The loop SHALL define the beads id format in **exactly one place**, and that
+  definition SHALL be a pure function of a string — no process, no filesystem,
+  no network. Implemented by task 1.1; measured by `issues.test.mjs` cases
+  1a–1b.
+- Validation of an id SHALL split into a **format** check and an **existence**
+  check, and the two SHALL NOT be conflated. The format check SHALL be usable
+  anywhere, including inside `next build`; the existence check SHALL run only
+  where `bd` is present. `next build` runs on Vercel, where the `bd` binary does
+  not exist and the Dolt store is unreachable, so a build that resolved ids
+  against the store would make the site unbuildable. Implemented by tasks 1.1
+  and 4.1; measured by task 4.2's SKIP path.
+- Nothing in the loop SHALL create, close, or synchronise a beads issue as a
+  side effect of a run. `bd dolt push` is the maintainer's decision alone, and a
+  gate that filed an issue to satisfy itself would manufacture the backlog it
+  exists to keep honest. Implemented by task 4.1; measured by task 4.3.
+
+#### Scenario: The join answers a question that was previously unanswerable
+
+- **WHEN** a job that serves `addictedtoai-X` completes and the run appends its
+  ledger line
+- **THEN** that line carries `addictedtoai-X`, and every job the machine ever
+  ran against that issue is one read of one file
+
+### Requirement: An issue id declared in front matter is format-checked; prose is harvested
+
+A **declared field** is a promise about its own shape. A line of **prose** makes
+no such promise. The two SHALL therefore be read differently, and the asymmetry
+is deliberate rather than an inconsistency.
+
+- A proposal MAY declare `issue:` in its front matter, carrying one id or
+  several. The loop SHALL validate its **format** at parse time, beside the
+  existing `slug` and `type` checks. Implemented by task 2.1; measured by
+  `issues.test.mjs` case 3a.
+- A proposal whose declared `issue:` is not a well-formed id SHALL be treated as
+  `malformed` and SHALL NOT be selectable, and the run SHALL report it naming
+  the file and the offending value — on exactly the terms a bad `type:` already
+  gets. An `issue: see the tracker` that parsed as *no issue* would be a link
+  that reads as present and joins to nothing. Implemented by task 2.1; measured
+  by `issues.test.mjs` case 3a and by the mutation test in task 5.2.
+- A `DIRECTIVES.md` line SHALL NOT require a new syntax. The loop SHALL harvest
+  ids from the line's text wherever they appear, so that a line naming an issue
+  in ordinary prose is joined mechanically and every line already in the file
+  stays valid. Implemented by task 3.1; measured by `issues.test.mjs` cases
+  4a–4d.
+- Harvested prose SHALL NOT produce a malformed result. A directive naming no
+  issue is a normal directive, not a defect. Implemented by task 3.1; measured
+  by `issues.test.mjs` cases 2c and 4c.
+- The harvest SHALL survive the `[done <date> <job-id>]` completion marker the
+  loop appends to a directive line. Implemented by task 3.1; measured by
+  `issues.test.mjs` case 4b.
+
+#### Scenario: A malformed declared id stops the proposal rather than being ignored
+
+- **WHEN** a proposal declares `issue: see the tracker`
+- **THEN** it is reported as malformed naming the file and the value, it is not
+  selectable, and a sibling proposal declaring nothing at all is still selectable
+
+### Requirement: The ledger line carries the join, as a list, additively
+
+`data/ledger.jsonl` is append-only and is the durable record of what the machine
+actually did. It is therefore where the join belongs, and the constraints on
+changing it are unusually tight.
+
+- A ledger line SHALL carry the issue ids its job served under an `issues` key
+  whose value is a **list**. A job can serve more than one issue, and a scalar
+  that later had to become a list would be a migration across an append-only
+  file. Implemented by task 3.2; measured by `issues.test.mjs` cases 5a and 5d.
+- The `issues` key SHALL be **omitted entirely** when a job serves no issue, and
+  `LEDGER_FIELDS` SHALL NOT be extended to require it. Requiring an id per job
+  would manufacture backlog noise: a `verify` job triggered by an overdue fact
+  is routine upkeep with nothing behind it, and the requirement belongs where
+  work would otherwise be lost, not everywhere. Every line written before this
+  key existed SHALL remain valid. Implemented by task 3.2; measured by
+  `issues.test.mjs` cases 5b and 5c, and by the mutation test in task 5.2.
+- A job whose work spans more than one run SHALL serve the same issues in each,
+  recovered from the branch rather than re-derived. A resumed run SHALL NOT
+  recompute the join from a source file the maintainer may have edited in
+  between. Implemented by task 3.3; measured by task 5.3.
+- Where a proposal carrying an id is retired — consumed, or swept at its
+  expiry — the retirement record SHALL name that id. This SHALL propagate an id
+  the proposal already declared and SHALL NOT require one that it did not.
+  Implemented by task 3.4; measured by task 5.3.
+
+#### Scenario: Routine upkeep writes no key
+
+- **WHEN** a `verify` job triggered by an overdue fact completes
+- **THEN** its ledger line carries no `issues` key at all, and that absence is
+  the mechanism working rather than a gap in it
