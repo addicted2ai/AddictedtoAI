@@ -86,9 +86,11 @@ The two flagships also overlap on the calendar rather than handing off
 cleanly. K2.5's platform record reads
 {{fact:model/moonshotai-kimi-k2-5#api_sunset}}. K3's OpenRouter listing date
 is 46 days before that, and for the stretch between them both rows were
-live in this catalog at once. What lapsed at the end of it was a
-hosted endpoint rather than the model, since K2.5's weights ship under
-{{fact:model/moonshotai-kimi-k2-5#license}} and stay downloadable.
+live in this catalog at once, as they still are, the older one now on
+OpenRouter's data rather than Moonshot's hosting. What lapsed at the end
+of it was a hosted endpoint rather than the model, since K2.5's weights
+ship under {{fact:model/moonshotai-kimi-k2-5#license}} and stay
+downloadable.
 
 Whether the bigger model is also the better one is a question this
 catalog answers directly rather than by press release. On the Artificial
