@@ -9,8 +9,10 @@ summary: >
   any consecutive 12 months conditional on passing Z.AI's security review, whose
   scope and method Z.AI determines. The model card frames the context: "as we
   scaled post-training, cyber capability developed faster than we expected," with
-  GLM-5.3 state of the art on CyberGym and ExploitGym. The post would quote the
-  licence and the card, contrast the clause with MIT/Apache norms and with
+  GLM-5.3 state of the art on CyberGym for vulnerability discovery, its ExploitGym
+  105/130 more than tripling GLM-5.2's 29/39 while standing third on the card's
+  own row (behind Fable 5 and GPT-5.6 Sol). The post would quote the licence and
+  the card, contrast the clause with MIT/Apache norms and with
   GLM-5.3-Flash's plain MIT, and test what the clause actually binds (who is over
   the revenue line, what "Model as a Service" excludes, whether the review can be
   refused).
@@ -22,9 +24,12 @@ evidence: >
   (GLM-5.3) vs 77.2 (GLM-5.2), the single CyberGym row (card's footnote:
   unlimited timeout per task, single-run Pass@1 over 1,507 tasks);
   ExploitGym 105/130 (GLM-5.3) vs 29/39 (GLM-5.2), both pairs from the one
-  "ExploitGym (2h / 6h)" row — first value the 2-hour timeout budget, second
-  the 6-hour (card's footnote: single-run Pass@1 on 869 tasks). The licence
-  text itself,
+  "ExploitGym (2h / 6h)" row — first value the 2-hour budget, second the
+  6-hour (card's footnote: single-run Pass@1 on 869 tasks; the two budgets are
+  API inference time rescaled by per-model tokens-per-second — GLM-5.3 at 115
+  TPS, Kimi K3 at 40 TPS, Qwen3.8 Max at 47 TPS, TPS sourced from Artificial
+  Analysis — plus non-API overhead, so not wall-clock time). The licence text
+  itself,
   fetched 2026-09-01 — https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE
   (clause 2 verbatim: the $10B/12-month revenue threshold, the security-review
   condition, the MaaS definition excluding embedded features and "mere relaying
