@@ -58,15 +58,14 @@ working and are served by the same fast tier capacity, so no action is
 required, but new integrations should target the regular model"
 ([model page](https://openrouter.ai/anthropic/claude-opus-5-fast);
 [service-tier docs](https://openrouter.ai/docs/guides/features/service-tiers)).
-Anyone re-running this check should note how the record reads: HTTP 200,
-measured 2026-09-02, but the `endpoints` array comes back empty — while the
-standard row still lists endpoints. Nothing published settles whether the
-slug is an internal alias or genuinely unroutable; for whether requests
-still route, the notice quoted above is the authority. So the slug still
-answers, and
-existing requests still serve; what you call for new work is
+An empty `endpoints` list on the old slug proves nothing about routing.
+`GET /api/v1/models/anthropic/claude-opus-5-fast/endpoints` answered HTTP
+200 with `"endpoints":[]` on 2026-09-02, where the same call on the
+standard row returns a populated list. No published source explains the
+difference, and whether requests still route is answered by the deprecation
+notice above, not by the listing. For new work, call
 `anthropic/claude-opus-5` with `service_tier: "fast"` or
-`speed: "fast"`, or on Anthropic's own API `speed: "fast"` with the
-`fast-mode-2026-02-01` beta header, per its
+`speed: "fast"`, or on Anthropic's own API
+`speed: "fast"` with the `fast-mode-2026-02-01` beta header, per its
 [fast-mode documentation](https://platform.claude.com/docs/en/build-with-claude/fast-mode).
 The tier was folded into the parent row, not retired.
