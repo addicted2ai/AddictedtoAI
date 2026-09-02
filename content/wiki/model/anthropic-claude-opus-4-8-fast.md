@@ -33,3 +33,25 @@ facts:
 timeline: []
 mentions: []
 ---
+
+The `anthropic/claude-opus-4.8-fast` row disappeared from the OpenRouter
+catalog in the 2026-09-02 snapshot, a day after it was last listed, active
+and without an expiry date. The bound facts above still render their
+last-known values as of 2026-09-01. The same snapshot also dropped the fast
+rows for Claude Opus 5 and Claude Opus 4.7.
+
+This was a consolidation, not a retirement. Anthropic's
+[fast-mode documentation](https://platform.claude.com/docs/en/build-with-claude/fast-mode)
+still lists Claude Opus 4.8 as a fast-mode model — a research preview, up to
+2.5 times the output tokens per second at twice the base price — and
+OpenRouter now sells the option through the standard row instead of a
+separate slug. The model page for `anthropic/claude-opus-4.8` lists an
+"Anthropic Fast" provider at $10 / $50 per million tokens, the same rates
+this row's last-known facts above record.
+
+What changed is the address, not the capability. The
+`anthropic/claude-opus-4.8-fast` slug no longer resolves; to get fast mode
+on this model you call `anthropic/claude-opus-4.8` and pin the "Anthropic
+Fast" provider, or on Anthropic's own API send `speed: "fast"` with the
+`fast-mode-2026-02-01` beta header. A request pointed at the old slug fails
+now, and that is the moved sign, not the model.

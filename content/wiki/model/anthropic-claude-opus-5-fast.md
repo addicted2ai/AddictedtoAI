@@ -33,3 +33,24 @@ facts:
 timeline: []
 mentions: []
 ---
+
+The `anthropic/claude-opus-5-fast` row was dropped from the OpenRouter
+catalog in the 2026-09-02 snapshot. It was active, without an expiry date,
+in the 2026-09-01 snapshot before it, and the bound facts above still
+render their last-known values as of that day. The router withdrew the fast
+rows for Claude Opus 4.8 and Claude Opus 4.7 in the same snapshot.
+
+Fast mode is still on sale for this model. Anthropic's
+[Opus 5 launch post](https://www.anthropic.com/news/claude-opus-5) describes
+the model as "also offered in Fast mode, where it runs around 2.5 times the
+default speed" at twice the base price, and its
+[fast-mode documentation](https://platform.claude.com/docs/en/build-with-claude/fast-mode)
+still names Opus 5 as a supported model. OpenRouter now serves the option
+as an "Anthropic Fast" provider on the standard `anthropic/claude-opus-5`
+row, at $10 / $50 per million tokens — the rates this row's last-known
+facts above record.
+
+The old `anthropic/claude-opus-5-fast` slug no longer resolves. Call
+`anthropic/claude-opus-5` with the "Anthropic Fast" provider pinned, or on
+Anthropic's own API send `speed: "fast"` with the `fast-mode-2026-02-01`
+beta header. The tier was folded into the parent row, not retired.
