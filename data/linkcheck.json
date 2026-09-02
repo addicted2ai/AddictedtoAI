@@ -3365,6 +3365,28 @@
       "ok": true,
       "status": 200
     },
+    "https://openrouter.ai/anthropic/claude-opus-4.8-fast": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/anthropic/claude-opus-4.8-fast",
+      "last_checked": "2026-09-02",
+      "last_ok": "2026-09-02",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/anthropic/claude-opus-5-fast": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/anthropic/claude-opus-5-fast",
+      "last_checked": "2026-09-02",
+      "last_ok": "2026-09-02",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/api/v1/models": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3394,6 +3416,17 @@
       "final_url": "https://openrouter.ai/cohere/north-mini-code:free",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/docs/guides/features/service-tiers": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/docs/guides/features/service-tiers",
+      "last_checked": "2026-09-02",
+      "last_ok": "2026-09-02",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3647,6 +3680,17 @@
       "final_url": "https://papers.nips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://platform.claude.com/docs/en/build-with-claude/fast-mode": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://platform.claude.com/docs/en/build-with-claude/fast-mode",
+      "last_checked": "2026-09-02",
+      "last_ok": "2026-09-02",
       "meta_refresh": null,
       "ok": true,
       "status": 200
