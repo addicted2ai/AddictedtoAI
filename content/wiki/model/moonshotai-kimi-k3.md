@@ -85,7 +85,7 @@ replaces.
 The two flagships also overlap on the calendar rather than handing off
 cleanly. K2.5's platform record reads
 {{fact:model/moonshotai-kimi-k2-5#api_sunset}}. K3's OpenRouter listing date
-is 46 days ahead of that, and for the stretch between them both rows are
+is 46 days before that, and for the stretch between them both rows are
 live in this catalog at once. What lapses at the end of it is a
 hosted endpoint rather than the model, since K2.5's weights ship under
 {{fact:model/moonshotai-kimi-k2-5#license}} and stay downloadable.
