@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 4,
+  "count": 5,
   "items": [
-    {
-      "detail": "The timeline carries `- date: \"2026-08-31\" / event: active`, sourced to https://openrouter.ai/api/v1/models. Rendered beside its neighbours (\"Moonshot's own API sunsets the model; migration directed to kimi-k3\") a reader meets a dated row whose whole text is the word \"active\", with no subject and no indication that it records the *router's* status flip, not the model's. Something like \"OpenRouter's row drops its expiry; the derived catalog reads the model `active`\" would say what the row means. (Cosmetic aside on the same row: its `source_url` is the only unquoted one in the file.)\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-15 (`j-20260901-15.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/wiki/model/moonshotai-kimi-k2-5.md",
-      "target": "content/wiki/model/moonshotai-kimi-k2-5.md",
-      "title": "The second 2026-08-31 timeline row reads only \"active\"",
-      "type": "repair"
-    },
     {
       "detail": "The body answers \"can I call this model\" for two of three routes — the vendor endpoint (404, quoted) and self-hosting (\"anyone with the hardware can keep serving the same checkpoint\") — but says nothing about the third, even though the facts table renders live OpenRouter prices (`price_input` 0.00000045, `price_output` 0.00000225 in `data/derived/catalog.json`) directly above the prose. A reader is left to infer whether a priced, `active` router row means a call would succeed. The reticence is defensible — confirming it needs a credentialed call nobody here made, and the page correctly never claims the router works — so the fix is one honest clause saying the row is still listed and priced and that the page does not assert the call succeeds, not a claim about availability.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-15 (`j-20260901-15.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -18,6 +9,15 @@
       "subject": "content/wiki/model/moonshotai-kimi-k2-5.md",
       "target": "content/wiki/model/moonshotai-kimi-k2-5.md",
       "title": "The router path is priced on the page but never addressed in the prose",
+      "type": "repair"
+    },
+    {
+      "detail": "content/wiki/model/moonshotai-kimi-k3.md lines 85-88 read \"K2.5's platform record reads {{fact:model/moonshotai-kimi-k2-5#api_sunset}}. K3's OpenRouter listing date is 46 days ahead of that\". With the transcluded value now the bare date 2026-08-31, the sentence renders as \"reads 2026-08-31. K3's OpenRouter listing date is 46 days ahead of that\" — and K3's listed_date is 2026-07-16, which is 46 days BEFORE 2026-08-31 (15 days left in July + 31 in August). \"Ahead of\" most naturally reads as later, so the sentence now points the interval the wrong way; the interval itself is right. \"46 days before that\" or \"precedes it by 46 days\" fixes it. Not introduced by this diff — the arithmetic anchor is the same date it always was — but the shortened value removed the framing that used to carry the sentence.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-16 (`j-20260901-16.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/moonshotai-kimi-k3.md",
+      "target": "content/wiki/model/moonshotai-kimi-k3.md",
+      "title": "Reword the K3 entry's \"46 days ahead of that\" — the listing is 46 days earlier, not later",
       "type": "repair"
     },
     {
@@ -30,6 +30,15 @@
       "type": "repair"
     },
     {
+      "detail": "Commit 212b982 changes nine numbers under js_payload in data/launch.json alongside the one-line front-matter repair. They are internally honest — measured_on is already 2026-09-01 and the method line is unchanged — but the decreases include /wiki/concept/ai-winter (inline 5.7 → 5.5, html 7.8 → 7.6), a page this diff cannot touch, so they are a re-measure of the whole current tree riding inside a content repair rather than a consequence of it. Re-running scripts/measure-payload.mjs on a fresh export and confirming the three rows would settle it; the repo's own habit elsewhere is a separate \"launch: ...\" commit for exactly this.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-16 (`j-20260901-16.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/launch.json",
+      "target": "data/launch.json",
+      "title": "Confirm the js_payload numbers this repair re-recorded, or move them to their own launch commit",
+      "type": "repair"
+    },
+    {
       "detail": "The proposal's evidence line carries \"CyberGym 84.5 vs GLM-5.2 77.2; ExploitGym 105/130 vs 29/39\". Fetching https://huggingface.co/zai-org/GLM-5.3 on 2026-09-01 confirmed the GLM-5.3 side — license \"glm-5.3\", 753B params, the \"Emergent Cyber Capability\" note, CyberGym 84.5, ExploitGym 105/130 — but the extraction surfaced a second ExploitGym row (130/247 at a 6-hour timeout) and did not surface either comparator (77.2, 29/39). The \"29/39\" denominator matches neither 130 nor 247, so the pair may be reading across two different timeout rows. WebFetch's extractor is not evidence of absence, so this is not a finding that the numbers are wrong — it is that the post job must read the benchmark table itself, state which timeout row each figure comes from, and name the card as the cited document, rather than inheriting the pair from this proposal.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-07 (`j-20260901-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
@@ -39,5 +48,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 4
+  "total_before_cap": 5
 }
