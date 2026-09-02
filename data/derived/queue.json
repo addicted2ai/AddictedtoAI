@@ -1,14 +1,23 @@
 {
   "cap": 50,
-  "count": 2,
+  "count": 4,
   "items": [
     {
-      "detail": "The repair inserts the same ~55-word block verbatim into both pages: \"One caveat for anyone running the same check: the router's endpoints API returns the model record with an empty `endpoints` array for this slug (HTTP 200, measured 2026-09-02), while the standard row still lists endpoints. Nothing published resolves whether that means the slug is aliased internally or genuinely unroutable; OpenRouter's notice, quoted above, is the authority that requests still route.\" The caveat itself is correct and I measured it true on both slugs, so this is not a factual objection — but two sibling entries carrying an identical paragraph is the uniform-block shape the voice bar exists to catch, and a reader who opens both in tabs sees copy-paste. Either reword one of the two so the sentence order and framing differ, or bind the shared half as a `{{fact:…}}`-style transclusion so the duplication is structural rather than authored.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-05 (`j-20260902-05.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "detail": "data/proposals/dropped/glm-45v-status-flapping.md says \"job j-20260902-02 annotated the 2026-08-29 reactivation\". The annotation on line 154 of data/changes.jsonl carries \"annotates\":\"openrouter-models|a9e815e403b4d7a5|31886658dc9b9e56|z-ai/glm-4.5v|status\", \"date\":\"2026-09-02\" and opens \"On 2026-09-02 the OpenRouter row for `z-ai/glm-4.5v` again carries `expiration_date: 2026-12-31`\" — it annotates the 2026-09-02 active -> deprecated flip, not the 2026-08-29 reactivation. The decline's substance (the flip already has a recorded interpretation) is unaffected; only the date attributed to the annotation is wrong.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-07 (`j-20260902-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
-      "subject": "content/wiki/model/anthropic-claude-opus-5-fast.md",
-      "target": "content/wiki/model/anthropic-claude-opus-5-fast.md",
-      "title": "Vary the endpoints caveat between the 4.8 and 5 fast pages, or make it a shared transclusion",
+      "subject": "data/proposals/dropped/glm-45v-status-flapping.md",
+      "target": "data/proposals/dropped/glm-45v-status-flapping.md",
+      "title": "Correct which GLM 4.5V flip the existing annotation covers",
+      "type": "repair"
+    },
+    {
+      "detail": "data/proposals/dropped/qwen38-flash-next-recheck.md says \"already covered by `data/proposals/qwen38-max-revenue-share-licence.md`'s record on this site's own side.\" That file is not in data/proposals/ — it is at data/proposals/dropped/qwen38-max-revenue-share-licence.md. Directory listing of data/proposals/ shows no such file; the dropped/ listing does. Fix: correct the path to include the dropped/ segment.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-07 (`j-20260902-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/proposals/dropped/qwen38-flash-next-recheck.md",
+      "target": "data/proposals/dropped/qwen38-flash-next-recheck.md",
+      "title": "Fix the path a drop record gives for the Qwen licence proposal",
       "type": "repair"
     },
     {
@@ -19,7 +28,16 @@
       "target": "data/proposals/glm-5-3-license-revenue-gate.md",
       "title": "Note that the card states ExploitGym provenance for only three of its eight columns",
       "type": "repair"
+    },
+    {
+      "detail": "The openai-astra-critical-cyber-designation docket anchors on https://openai.com/index/path-to-astra/. Fetched twice during this review, that URL returned \"The server returned HTTP 403 Forbidden\" both times. The page exists and the docket's quotes are corroborated by third parties (SecurityWeek gives \"Astra now declines 91.5% of cyber-related jailbreak attempts in its testing, up from 59% for its predecessor, GPT-5.6 Sol\"; TechCrunch, 2026-09-01, gives the perfect ExploitBench score and the two zero-days), but a post job told to re-fetch and quote the announcement page directly will be blocked by the same 403. The docket should name a retrieval route that works, or the job should expect to quote the corroborating coverage and say so.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-07 (`j-20260902-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/proposals/openai-astra-critical-cyber-designation.md",
+      "target": "data/proposals/openai-astra-critical-cyber-designation.md",
+      "title": "Warn the Astra post job that openai.com/index/ is 403 to WebFetch",
+      "type": "repair"
     }
   ],
-  "total_before_cap": 2
+  "total_before_cap": 4
 }
