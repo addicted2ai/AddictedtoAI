@@ -24,7 +24,13 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { join } from 'node:path';
 
 import { computeQueue, RANKS, vanishedRowItems } from '../lib/queue.mjs';
-import { recordVanishedRows, vanishedFileName, listVanishedRecords } from '../lib/vanished.mjs';
+import {
+  answerVanishedRecord,
+  listAnsweredRecords,
+  listVanishedRecords,
+  recordVanishedRows,
+  vanishedFileName,
+} from '../lib/vanished.mjs';
 import { makeRoot, cleanup } from './helpers.mjs';
 
 const AT = new Date('2026-09-02T12:00:00.000Z');
@@ -101,7 +107,10 @@ test('a recorded vanished row produces exactly one item, at its documented rank'
 
 /* ── the property the whole change exists for ──────────────────────────── */
 
-test('THE POINT: deleting the record retires the item, with nothing else recording "done"', () => {
+// NOTE the narrow claim in this test's name. Removing the file removes the
+// item from the READ side, which is all this proves. It is NOT retirement:
+// the recorder writes it straight back, as the two tests below establish.
+test('the queue reads the directory, so a removed record produces no item on that read', () => {
   const root = makeRoot();
   try {
     recordVanishedRows(root, VANISHED, FEED_ROWS, TODAY);
@@ -135,7 +144,7 @@ test('recomputing without fixing anything keeps the item, and does not duplicate
 
 /* ── the writer ────────────────────────────────────────────────────────── */
 
-test('recording is idempotent: a second run writes nothing and cannot revive a deleted record', () => {
+test('recording is idempotent: a second run over an existing record writes nothing', () => {
   const root = makeRoot();
   try {
     const first = recordVanishedRows(root, VANISHED, FEED_ROWS, TODAY);
@@ -147,12 +156,78 @@ test('recording is idempotent: a second run writes nothing and cannot revive a d
     assert.equal(second.existing.length, 1);
     assert.equal(listVanishedRecords(root).length, 1);
 
-    // And after a fixing job deletes it, a later run MUST re-record it only if
-    // the row is still vanished — which it is here. This is the deliberate
-    // trade: the finding comes back if the fix did not actually happen.
+  } finally {
+    cleanup(root);
+  }
+});
+
+/* ── the correction: deletion is NOT retirement ────────────────────────── */
+
+test('DELETING a record does NOT retire it — the next run writes it again', () => {
+  // This is the defect the first version of this module shipped, and it is
+  // pinned here so it cannot come back. A carried finding can be retired by
+  // deletion because its source is a one-time verdict record. A vanished row's
+  // source is the permanent absence of a row, so a deleted record is simply
+  // re-derived: the finding would be immortal and the original bug would be
+  // reimplemented with extra steps. Measured on the real Pulse, which logged
+  // "3 newly recorded" on the run after the records were deleted by hand.
+  const root = makeRoot();
+  try {
+    recordVanishedRows(root, VANISHED, FEED_ROWS, TODAY);
     rmSync(join(root, 'data', 'vanished', listVanishedRecords(root)[0]));
-    const third = recordVanishedRows(root, VANISHED, FEED_ROWS, TODAY);
-    assert.equal(third.written.length, 1);
+
+    const again = recordVanishedRows(root, VANISHED, FEED_ROWS, TODAY);
+    assert.equal(again.written.length, 1, 'deletion alone must not retire the finding');
+    assert.equal(emptyQueue(root).items.filter((i) => i.reason === 'vanished-feed-row').length, 1);
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('THE POINT, corrected: ANSWERING a record retires it, permanently', () => {
+  const root = makeRoot();
+  try {
+    recordVanishedRows(root, VANISHED, FEED_ROWS, TODAY);
+    const name = listVanishedRecords(root)[0];
+
+    assert.equal(answerVanishedRecord(root, name), true);
+    assert.deepEqual(listVanishedRecords(root), []);
+    assert.deepEqual(listAnsweredRecords(root), [name]);
+
+    // Gone from the queue...
+    assert.equal(emptyQueue(root).items.filter((i) => i.reason === 'vanished-feed-row').length, 0);
+
+    // ...and STAYS gone, though the row is still absent from the feed forever.
+    for (let i = 0; i < 3; i++) {
+      const r = recordVanishedRows(root, VANISHED, FEED_ROWS, TODAY);
+      assert.equal(r.written.length, 0, `run ${i + 1} must not re-record an answered row`);
+      assert.equal(r.answered.length, 1);
+      assert.equal(emptyQueue(root).items.filter((x) => x.reason === 'vanished-feed-row').length, 0);
+    }
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('the answered/ subdirectory is not itself read as a finding', () => {
+  const root = makeRoot();
+  try {
+    recordVanishedRows(root, VANISHED, FEED_ROWS, TODAY);
+    answerVanishedRecord(root, listVanishedRecords(root)[0]);
+    assert.equal(vanishedRowItems(root).length, 0);
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('answering twice is harmless, and answering nothing reports false', () => {
+  const root = makeRoot();
+  try {
+    recordVanishedRows(root, VANISHED, FEED_ROWS, TODAY);
+    const name = listVanishedRecords(root)[0];
+    assert.equal(answerVanishedRecord(root, name), true);
+    assert.equal(answerVanishedRecord(root, name), false);
+    assert.equal(answerVanishedRecord(root, 'never-existed.md'), false);
   } finally {
     cleanup(root);
   }

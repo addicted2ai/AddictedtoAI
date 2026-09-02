@@ -9,10 +9,23 @@ during a Pulse run; nothing else does.
 `vanished-feed-row` item per file. There is no "resolved" flag, no merge-step
 bookkeeping, and nothing anywhere else that records a withdrawal as handled.
 
-**Retirement is deletion, performed by the fixing job's own diff.** A job
-dispatched against one of these deletes the file in the same change as its
-prose fix, and the next Pulse run simply stops emitting the item because there
-is nothing left to read.
+**Retirement is MOVING the record into `answered/`, performed by the fixing
+job's own diff. Not deleting it.** A job dispatched against one of these moves
+the file, unchanged, into `data/vanished/answered/` in the same change as its
+prose fix.
+
+Deletion does not work, and the first version of this mechanism shipped that
+mistake. A carried finding can be retired by deleting its file because its
+source is a one-time verdict record — once the file is gone, nothing recreates
+it. A withdrawn row's source is the *continuing absence* of a row from a
+snapshot, which is re-derived on every run, so a deleted record is simply
+written again. Measured: after three records were deleted by hand, the next
+Pulse run logged `3 newly recorded`. The finding was still immortal; it had
+merely acquired a file.
+
+A row named in `answered/` is never recorded again, however long it stays
+absent. That store is the durable evidence that the site has responded, and it
+is the only thing that stops the question being asked forever.
 
 That rule is not a convenience. `specs/pulse` requires it of a retirable
 finding and says why: *"a retirement that depended on a separate step recording

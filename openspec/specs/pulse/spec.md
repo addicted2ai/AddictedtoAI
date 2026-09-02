@@ -699,17 +699,31 @@ What is fixable here is not the world but the site's answer to it: whether the
 corpus tells a reader what happened to the model. That is the state this
 finding tracks.
 
+A permanent condition needs a durable record of the ANSWER, not of the
+question. This is the one place where the carried-finding analogy breaks and
+must not be followed: a carried finding may be retired by deleting its file
+because its source is a one-time verdict record, and once the file is gone
+nothing recreates it. A withdrawn row's source is the continuing absence of a
+row from a snapshot, so a deleted record is simply re-derived on the next run.
+Retiring by deletion would leave the finding immortal — the original defect,
+with extra steps.
+
 - The Pulse SHALL write one durable record per declared row absent from its
   source's latest snapshot, under a directory at the data root, and SHALL write
   it **once**: a record that already exists SHALL NOT be rewritten. Idempotency
-  is by presence, not by comparing dates, so a run cannot revive a finding a job
-  has just retired nor overwrite pinned evidence with a later, emptier reading.
-- The derived queue SHALL produce its `vanished-feed-row` items from those
-  records and SHALL NOT produce them from the computed absence itself. The
-  computed list remains as reporting and as the input that decides which records
-  to write.
-- Retirement SHALL be by deletion of the record, performed by the fixing job's
-  own diff, with no separate step recording that the withdrawal was handled.
+  is by presence, not by comparing dates, so a run cannot overwrite pinned
+  evidence with a later, emptier reading.
+- The derived queue SHALL produce its `vanished-feed-row` items from the
+  **pending** records and SHALL NOT produce them from the computed absence
+  itself. The computed list remains as reporting and as the input that decides
+  which records to write.
+- Retirement SHALL be by **moving the record into an answered store**,
+  performed by the fixing job's own diff, and SHALL NOT be by deletion. A row
+  named in the answered store SHALL NOT be recorded again, however long it
+  stays absent from its source.
+- The Pulse SHALL commit the records it writes. A record that is written and
+  queued from but never committed is durable queue state that exists on one
+  machine, invisible to a fresh clone and to every other actor.
 - Each record SHALL pin the row's **last-known values** as of the moment it was
   written. A source's `previous` snapshot is only rotated when a fetch's rows
   differ from `latest`, so once rotation passes a withdrawal the row is present
@@ -726,21 +740,29 @@ finding tracks.
 #### Scenario: The finding survives recomputation until it is answered
 
 - **WHEN** a declared row is absent from its source's latest snapshot and its
-  record has not been deleted
+  record is still pending
 - **THEN** every recomputation produces exactly one `vanished-feed-row` item for
   it, never more, and the item does not duplicate across runs
 
 #### Scenario: The fixing job's own diff retires it
 
-- **WHEN** a job dispatched against a withdrawn row deletes that row's record in
-  the same change as its fix
-- **THEN** the next recomputation produces no item for that row, even though the
-  row is still absent from the latest snapshot, and nothing else recorded that
-  the work was done
+- **WHEN** a job dispatched against a withdrawn row moves that row's record into
+  the answered store in the same change as its fix
+- **THEN** no later recomputation produces an item for that row, and no later
+  run re-records it, even though the row remains absent from the latest
+  snapshot indefinitely
+
+#### Scenario: Deleting a record does not retire it
+
+- **WHEN** a pending record is deleted without being answered and the row is
+  still absent from the latest snapshot
+- **THEN** the next run records it again, and the item returns — deletion is not
+  a retirement path
 
 #### Scenario: Absence alone is not a finding
 
 - **WHEN** a row is absent from the latest snapshot and no record exists for it
+  in either store
 - **THEN** no `vanished-feed-row` item is produced
 
 #### Scenario: The evidence outlives the snapshots
