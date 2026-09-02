@@ -30,8 +30,8 @@ preview with vendor figures unverified, and the managed API twin
 (Qwen3.8-Flash, $0.15/$0.47) was already part of the same announcement
 wave. An entry would be a recap of a recap — the earlier decline's refile
 conditions have not arrived. The adjacent license-angle question is already
-covered by `data/proposals/qwen38-max-revenue-share-licence.md`'s record on
-this site's own side.
+covered by `data/proposals/dropped/qwen38-max-revenue-share-licence.md`'s
+record on this site's own side.
 
 ## What would make it worth refiling
 
