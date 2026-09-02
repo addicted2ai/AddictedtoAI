@@ -512,9 +512,25 @@ test('a missing openspec/ directory is zero changes, not a crash', async () => {
 
 /* ── the real corpus, lightly ────────────────────────────────────────────── */
 
+// ZERO LIVE CHANGES IS A LEGITIMATE STATE, and this test used to deny it.
+//
+// It asserted `changes.length > 0` — "expected at least one unarchived change"
+// — which is an assertion that the repository always has work in flight. That
+// held for as long as it happened to hold, and on 2026-09-01 a batch archive
+// emptied `openspec/changes/` and turned a green suite red. Nothing was wrong:
+// an empty in-flight set is the DESIRABLE state, the one where the constitution
+// and the code have finished disagreeing.
+//
+// The guard was not pointless — without something, a `readLiveChanges` that
+// silently returned [] would make the loop below vacuous and this test would
+// pass while measuring nothing. But that is a claim about the LOADER, and the
+// loader already has its own positive control: `readLiveChanges skips
+// archive/` builds a fixture tree and asserts the exact change names come back.
+// Proving it twice, once against a corpus whose contents are supposed to change,
+// bought nothing and cost a false failure.
 test("this repository's own live deltas parse, and every one carries an operation", async () => {
   const changes = await readLiveChanges(join(ROOT, 'openspec'));
-  assert.ok(changes.length > 0, 'expected at least one unarchived change');
+  assert.ok(Array.isArray(changes), 'readLiveChanges must resolve to an array');
   for (const c of changes) {
     for (const cap of c.capabilities) {
       const n =
