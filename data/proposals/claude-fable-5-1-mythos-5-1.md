@@ -41,6 +41,8 @@ evidence: >
   feed carries the OpenRouter arrival rows for anthropic/claude-fable-5.1 and
   its :batch twin, dated 2026-09-02.
 expires: 2026-09-09
+proposed_by_job: j-20260902-07
+proposed_by_type: scout
 ---
 
 # Claude Fable 5.1 and Claude Mythos 5.1 — one model, two safeguard regimes, ~25–45% cheaper

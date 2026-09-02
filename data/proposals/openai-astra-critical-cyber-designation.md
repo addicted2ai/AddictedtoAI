@@ -38,6 +38,8 @@ evidence: >
   Sep 1, 2026 — https://openai.com/news/. The change feed does not carry
   Astra; it is not on any API yet.
 expires: 2026-09-09
+proposed_by_job: j-20260902-07
+proposed_by_type: scout
 ---
 
 # OpenAI's Astra is the first model designated Critical — and it is not being given to everyone

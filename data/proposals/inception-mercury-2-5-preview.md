@@ -34,6 +34,8 @@ evidence: >
   unverified at launch"). The change feed carries the OpenRouter arrival line
   for inception/mercury-2.5-preview, dated 2026-09-02.
 expires: 2026-09-08
+proposed_by_job: j-20260902-07
+proposed_by_type: scout
 ---
 
 # Inception Mercury 2.5 Preview — the diffusion-LLM claim, in prose
