@@ -14,7 +14,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, parse, relative, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 import { DEFAULT_REPO_ROOT, makeContext } from '../lib/paths.mjs';
@@ -215,6 +215,40 @@ test('the ledger line schema includes provider', () => {
   );
   assert.deepEqual(Object.keys(line), [...LEDGER_FIELDS]);
   assert.equal(line.provider, 'p');
+});
+
+test('vv3h a job worktree is created on the repository\'s own drive, and outside the repository', () => {
+  // BOTH HALVES ARE LOAD-BEARING AND THEY PULL AGAINST EACH OTHER.
+  //
+  // Outside the repository, because `.gitignore` anchors its build-output
+  // patterns to the root, so a worktree inside the tree is picked up by the
+  // build and by `git status`.
+  //
+  // On the repository's own drive, because `node_modules` reaches a worktree
+  // through a junction to the repository's copy. With the worktree on another
+  // Windows drive, Next builds its client entry from
+  // `path.relative(worktreeDir, require.resolve('next/dist/client/next.js'))`;
+  // node resolves through the junction to the real path, `path.relative`
+  // cannot express a path across drive letters so it returns that absolute
+  // path, and Next prefixes `./`. Every build gate then fails on
+  // `Can't resolve './D:/.../node_modules/next/dist/client/next.js'`.
+  //
+  // Measured on one branch, one machine, minutes apart: a `C:` worktree FAILS
+  // and a `D:` worktree PASSES. The default used to be `tmpdir()`, which is on
+  // `C:` here while the repository is on `D:`, so the Desk's build gate could
+  // not pass for ANY job.
+  const wt = ctx.worktreeRoot;
+  const root = ctx.repoRoot;
+
+  assert.ok(
+    !wt.toLowerCase().startsWith(root.toLowerCase() + sep),
+    `worktrees must not live inside the repository (${wt})`,
+  );
+  assert.equal(
+    parse(wt).root.toLowerCase(),
+    parse(root).root.toLowerCase(),
+    `worktrees must share the repository's filesystem root/drive: ${wt} vs ${root}`,
+  );
 });
 
 test('DIRECTIVES.md exists and explains its role and completion marker', () => {

@@ -9,7 +9,6 @@
 
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
-import { tmpdir } from 'node:os';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // <repo>/loop/lib
 export const DEFAULT_REPO_ROOT = resolve(HERE, '..', '..');
@@ -25,6 +24,24 @@ export const DEFAULT_REPO_ROOT = resolve(HERE, '..', '..');
  *   worktree inside the tree would be picked up by the build and by
  *   `git status`. Worktrees are scratch — the *branch* carries everything
  *   resumption needs (specs/loop).
+ *
+ *   BESIDE THE REPOSITORY, NOT IN `tmpdir()`, and the difference is a build
+ *   gate that works versus one that cannot pass (beads addictedtoai-vv3h).
+ *   `node_modules` is shared into each worktree by a junction pointing at the
+ *   repository's copy. When the worktree is on a DIFFERENT WINDOWS DRIVE from
+ *   that copy — `tmpdir()` is on `C:` here, the repository on `D:` — Next
+ *   builds its client entry by taking `path.relative(worktreeDir,
+ *   require.resolve('next/dist/client/next.js'))`. Node resolves through the
+ *   junction to the real `D:` path, `path.relative` cannot express a path
+ *   across drive letters so it returns that absolute path unchanged, and Next
+ *   prefixes it with `./`. The build then fails on
+ *   `Can't resolve './D:/.../node_modules/next/dist/client/next.js'`.
+ *
+ *   MEASURED, one branch, one machine, one minute apart: the same job branch
+ *   built in a `C:` worktree FAILS and in a `D:` worktree PASSES. Keeping the
+ *   worktree on the repository's own drive removes the whole class, and on
+ *   POSIX it additionally keeps worktrees off a possibly-separate `/tmp`
+ *   filesystem. `LOOP_WORKTREE_ROOT` still overrides.
  * @param {(s: string) => void} [opts.log]
  */
 export function makeContext(opts = {}) {
@@ -40,7 +57,7 @@ export function makeContext(opts = {}) {
     worktreeRoot: resolve(
       opts.worktreeRoot ??
         process.env.LOOP_WORKTREE_ROOT ??
-        join(tmpdir(), 'addictedtoai-worktrees'),
+        join(dirname(repoRoot), 'addictedtoai-worktrees'),
     ),
     runnersPath: opts.runnersPath ?? join(repoRoot, 'runners.yml'),
     configPath: opts.configPath ?? join(repoRoot, 'data', 'config.json'),
