@@ -268,7 +268,19 @@ if (!buildFailed) {
   // this run touches — data/changes.jsonl, data/linkcheck.json,
   // data/derived/**, data/sources/<id>/*, public/** — the step attributes by
   // path on its own (`isEngineWrite`), so it is deliberately not repeated here.
-  const owned = [...mints.minted.map((m) => m.path), ...timeline.appended.map((a) => a.path)];
+  // `written` AND `existing`, deliberately. Declaring only what this run wrote
+  // would mean a record that failed to commit once could never be committed at
+  // all: the next run classifies it as `existing` and would drop it from the
+  // declared set forever, leaving durable queue state that lives on one machine.
+  // Re-declaring an unchanged file costs nothing — git stages no diff for it.
+  const vanishedPaths = [...vanishedRecords.written, ...vanishedRecords.existing].map(
+    (name) => `data/vanished/${name}`,
+  );
+  const owned = [
+    ...mints.minted.map((m) => m.path),
+    ...timeline.appended.map((a) => a.path),
+    ...vanishedPaths,
+  ];
   await publishStep(root, { dryRun: options.dryRun, assumePublish: options.assumePublish, log, owned });
 
   const feedLines = readJsonl(p.changes).length;
