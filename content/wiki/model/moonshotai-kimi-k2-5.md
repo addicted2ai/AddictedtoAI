@@ -58,7 +58,7 @@ facts:
     volatility: static
   - field: api_sunset
     source: cited
-    value: "2026-08-31 — full platform sunset; closed to newly registered users beforehand"
+    value: "2026-08-31"
     source_url: "https://platform.kimi.ai/docs/models"
     accessed: "2026-09-01"
     volatility: dated
