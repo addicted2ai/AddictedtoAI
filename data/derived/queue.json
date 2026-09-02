@@ -3,12 +3,12 @@
   "count": 4,
   "items": [
     {
-      "detail": "data/proposals/dropped/glm-45v-status-flapping.md says \"job j-20260902-02 annotated the 2026-08-29 reactivation\". The annotation on line 154 of data/changes.jsonl carries \"annotates\":\"openrouter-models|a9e815e403b4d7a5|31886658dc9b9e56|z-ai/glm-4.5v|status\", \"date\":\"2026-09-02\" and opens \"On 2026-09-02 the OpenRouter row for `z-ai/glm-4.5v` again carries `expiration_date: 2026-12-31`\" — it annotates the 2026-09-02 active -> deprecated flip, not the 2026-08-29 reactivation. The decline's substance (the flip already has a recorded interpretation) is unaffected; only the date attributed to the annotation is wrong.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-07 (`j-20260902-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "detail": "`data/proposals/delta-review-brief-embeds-pre-revision-diff.md` (2026-09-01) predicts that a delta-review brief embedding the pre-revision diff would make a reviewer \"re-issue the identical revision finding, and discard the job on its last pass.\" That happened again today, on this job's pass 2: the brief stated the diff was computed on commit `d29ae884daf0`, but the embedded diff was `55869ad..9b7b984` — the pass-1 text (\"Anyone re-running this check should note how the record reads\"), which `d29ae88` had already replaced. `git diff 00ecc2e d29ae88` shows the revision the brief omitted. Adding this second dated occurrence to that proposal's Evidence section would show the bug is unfixed and has now nearly cost two jobs, which is the argument for prioritising it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-08 (`j-20260902-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
-      "subject": "data/proposals/dropped/glm-45v-status-flapping.md",
-      "target": "data/proposals/dropped/glm-45v-status-flapping.md",
-      "title": "Correct which GLM 4.5V flip the existing annotation covers",
+      "subject": "data/proposals/delta-review-brief-embeds-pre-revision-diff.md",
+      "target": "data/proposals/delta-review-brief-embeds-pre-revision-diff.md",
+      "title": "Add today's recurrence to the delta-review stale-diff proposal's evidence",
       "type": "repair"
     },
     {
