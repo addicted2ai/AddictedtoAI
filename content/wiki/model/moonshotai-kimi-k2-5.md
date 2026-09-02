@@ -97,7 +97,11 @@ catalog's status is derived from that field — a cleared expiry reads
 which files `kimi-k2.5` under "Deprecated Models" — "officially
 discontinued on August 31, 2026 and is no longer maintained or supported".
 The router's data stopped carrying a date; the vendor's page says the model
-is discontinued.
+is discontinued. The row still lists at
+{{fact:model/moonshotai-kimi-k2-5#price_input}} in and
+{{fact:model/moonshotai-kimi-k2-5#price_output}} out — but this page does
+not assert that a call through it would succeed; confirming that needs a
+credentialed call nobody here made.
 
 The arithmetic is the story. Released 27 January 2026, off the vendor's
 platform on 31 August: 216 days of service for a model that shipped as a
