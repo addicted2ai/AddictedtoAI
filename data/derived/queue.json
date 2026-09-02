@@ -1,7 +1,34 @@
 {
   "cap": 50,
-  "count": 2,
+  "count": 5,
   "items": [
+    {
+      "detail": "The `api_sunset` fact cites https://platform.kimi.ai/docs/models with `accessed: \"2026-08-28\"`, but the body quotes that same page in its post-sunset, past-tense state — \"`kimi-k2.5` and the `moonshot-v1` series were officially retired on August 31, 2026\" — wording the page cannot have carried on 28 August. `git log -S\"officially retired on August 31\"` dates that prose to commit `5d0c463` (2026-08-31). Nothing here is false (I re-fetched the page today and both quoted sentences are present verbatim), but the page's most load-bearing citation now advertises the oldest verification date on the entry, while two less consequential HuggingFace facts were refreshed to 2026-09-01 in this very diff. Re-verifying and bumping that one `accessed:` to the date the vendor page was actually read would fix it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-15 (`j-20260901-15.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/moonshotai-kimi-k2-5.md",
+      "target": "content/wiki/model/moonshotai-kimi-k2-5.md",
+      "title": "Refresh the api_sunset accessed date, which predates the quote read from the same page",
+      "type": "repair"
+    },
+    {
+      "detail": "The timeline carries `- date: \"2026-08-31\" / event: active`, sourced to https://openrouter.ai/api/v1/models. Rendered beside its neighbours (\"Moonshot's own API sunsets the model; migration directed to kimi-k3\") a reader meets a dated row whose whole text is the word \"active\", with no subject and no indication that it records the *router's* status flip, not the model's. Something like \"OpenRouter's row drops its expiry; the derived catalog reads the model `active`\" would say what the row means. (Cosmetic aside on the same row: its `source_url` is the only unquoted one in the file.)\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-15 (`j-20260901-15.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/moonshotai-kimi-k2-5.md",
+      "target": "content/wiki/model/moonshotai-kimi-k2-5.md",
+      "title": "The second 2026-08-31 timeline row reads only \"active\"",
+      "type": "repair"
+    },
+    {
+      "detail": "The body answers \"can I call this model\" for two of three routes — the vendor endpoint (404, quoted) and self-hosting (\"anyone with the hardware can keep serving the same checkpoint\") — but says nothing about the third, even though the facts table renders live OpenRouter prices (`price_input` 0.00000045, `price_output` 0.00000225 in `data/derived/catalog.json`) directly above the prose. A reader is left to infer whether a priced, `active` router row means a call would succeed. The reticence is defensible — confirming it needs a credentialed call nobody here made, and the page correctly never claims the router works — so the fix is one honest clause saying the row is still listed and priced and that the page does not assert the call succeeds, not a claim about availability.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-15 (`j-20260901-15.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/moonshotai-kimi-k2-5.md",
+      "target": "content/wiki/model/moonshotai-kimi-k2-5.md",
+      "title": "The router path is priced on the page but never addressed in the prose",
+      "type": "repair"
+    },
     {
       "detail": "The new clause reads \"a real lifecycle event: the row's first status flip, so it cannot be a metadata correction of a dropped date.\" Measured, the openrouter-models change history in data/changes.jsonl spans three days only — 2026-08-29 (29 lines), 2026-08-31 (1), 2026-09-01 (38) — while the row's own `created` timestamp (1780937140, ~June 2026) predates that window by months. So \"the row's first status flip\" is true of the recorded diff history, not of the row's life, and the absolute \"cannot\" is one word stronger than the evidence. Inserting \"recorded\" — \"the row's first recorded status flip\" — fixes it without touching the reasoning.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260901-13 (`j-20260901-13.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -21,5 +48,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 2
+  "total_before_cap": 5
 }
