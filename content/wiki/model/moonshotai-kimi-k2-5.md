@@ -70,8 +70,8 @@ timeline:
     event: "Moonshot's own API sunsets the model; migration directed to kimi-k3"
     source_url: "https://platform.kimi.ai/docs/models"
   - date: "2026-08-31"
-    event: active
-    source_url: https://openrouter.ai/api/v1/models
+    event: "OpenRouter's row drops its expiry; the derived catalog reads the model active"
+    source_url: "https://openrouter.ai/api/v1/models"
 mentions:
   - org/moonshot-ai
   - model/moonshotai-kimi-k3
