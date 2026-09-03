@@ -26,3 +26,13 @@ evidence: >
   2026-09-03 and five mistralai batch rows on 2026-09-01 — yet nothing in the
   docs says whether the async endpoint still accepts the standard slug for any
   of those models, or how the `:batch` rows relate to the endpoint at all.
+---
+
+The two mechanisms are easy to conflate and impossible to tell apart from
+OpenRouter's own surfaces: the `:batch` variant rows that still litter the
+catalog and the async batch endpoint that takes a standard model slug. A reader
+planning a batch workload cannot tell from any OpenRouter document which models
+the async endpoint accepts, and a vanished `:batch` row does not resolve the
+question either way. The tutorial would pin both mechanisms down, quote the 50%
+billing rule, and record the unpublished per-model support question rather than
+answering it from inference.
