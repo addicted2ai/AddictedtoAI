@@ -107,3 +107,17 @@ designation itself is a named, dated, checkable fact.
   safeguards were strengthened after the Hugging Face incident (Aug 26, 2026)
   and its two-week training pause, with the large frontier RL run restarted
   August 28.
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-03
+- job: j-20260903-05 (post)
+- merged as: `ba0bba0ecb0886cf358291ccccd1a602fe30971b`
+- produced: `content/blog/openai-astra-critical-designation.md`
+- was: `openai-astra-critical-cyber-designation.md` (slug `openai-astra-critical-cyber-designation`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

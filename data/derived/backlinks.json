@@ -1582,6 +1582,12 @@
         "title": "OpenAI",
         "type": "entry",
         "file": "content/wiki/org/openai.md"
+      },
+      {
+        "url": "/blog/openai-astra-critical-designation",
+        "title": "OpenAI's Astra is the first model designated Critical for cybersecurity. Advanced access starts with alpha testers",
+        "type": "post",
+        "file": "content/blog/openai-astra-critical-designation.md"
       }
     ],
     "model/openai-gpt-5-6-sol-pro": [
@@ -2310,6 +2316,12 @@
         "title": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
         "type": "post",
         "file": "content/blog/eu-ai-office-first-enforcement-rfis.md"
+      },
+      {
+        "url": "/blog/openai-astra-critical-designation",
+        "title": "OpenAI's Astra is the first model designated Critical for cybersecurity. Advanced access starts with alpha testers",
+        "type": "post",
+        "file": "content/blog/openai-astra-critical-designation.md"
       },
       {
         "url": "/blog/three-accounts-hugging-face-intrusion",
