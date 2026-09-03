@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 2,
+  "count": 1,
   "items": [
-    {
-      "detail": "The lede reads \"The review's scope and method are reasonably Z.AI's to determine.\" The licence reads \"The scope and method of the security review shall be reasonably determined by Z.AI.\" Moved where it now sits, the adverb can be read as \"it is reasonable that Z.AI decides\" rather than as what it is in the text — the one limit on Z.AI's discretion. Something like \"are Z.AI's to determine, subject only to the licence's word 'reasonably'\" carries the qualifier without the drift. The verbatim quote two paragraphs down keeps this from being a misquotation, which is why it is carried and not blocking.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-20 (`j-20260902-20.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/blog/glm-5-3-license-revenue-gate.md",
-      "target": "content/blog/glm-5-3-license-revenue-gate.md",
-      "title": "Fix the word order on the \"reasonably determined\" paraphrase",
-      "type": "repair"
-    },
     {
       "detail": "\"Who it lands on\" opens \"If you or an affiliate runs hosted inference on GLM-5.3 and your group's revenue ... is $10B or more\". Clause 2's first condition is \"If the Licensee or any of its affiliates operates a Model as a Service business\" — with no tie to the Software anywhere in the sentence. Read literally, a $10B group that operates a MaaS business on some other model, and merely fine-tunes GLM-5.3 internally, is inside the condition. The post's narrower reading is the sensible commercial one, but a piece whose subject is what the clause literally binds should say the text does not say it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-20 (`j-20260902-20.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -21,5 +12,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 2
+  "total_before_cap": 1
 }
