@@ -3419,6 +3419,26 @@
       ]
     },
     {
+      "name": "Muse Spark 1.3",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-spark-1-3",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Muse Spark 1.3 Contributor",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-spark-1-3-contributor",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "MythoMax 13B",
       "linkable": false,
       "claimed_by": [
@@ -6724,6 +6744,26 @@
       "claimed_by": [
         {
           "id": "model/meta-muse-glimmer-30b",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "meta/muse-spark-1.3",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-spark-1-3",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "meta/muse-spark-1.3-contributor",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-spark-1-3-contributor",
           "class": "exclusive"
         }
       ]

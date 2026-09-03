@@ -3039,8 +3039,11 @@
       "d": "model",
       "s": "active",
       "i": "model/meta-muse-spark-1-3",
-      "a": [],
-      "b": true
+      "a": [
+        "Muse Spark 1.3",
+        "meta/muse-spark-1.3"
+      ],
+      "b": false
     },
     {
       "u": "/wiki/model/meta-muse-spark-1-3-contributor",
@@ -3049,8 +3052,11 @@
       "d": "model",
       "s": "active",
       "i": "model/meta-muse-spark-1-3-contributor",
-      "a": [],
-      "b": true
+      "a": [
+        "Muse Spark 1.3 Contributor",
+        "meta/muse-spark-1.3-contributor"
+      ],
+      "b": false
     },
     {
       "u": "/wiki/model/microsoft-phi-4",

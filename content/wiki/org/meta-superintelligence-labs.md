@@ -16,9 +16,9 @@ aliases:
 facts:
   - field: flagship_weights
     source: cited
-    value: "closed; Meta says it hopes to open-source future versions of the model"
-    source_url: "https://about.fb.com/news/2026/04/introducing-muse-spark-meta-superintelligence-labs/"
-    accessed: "2026-08-28"
+    value: "Open weights · Meta license (weights pending); weights not released"
+    source_url: "https://llm-releases.com/models/muse-spark-1-3"
+    accessed: "2026-09-03"
     volatility: slow
   - field: open_weight_release
     source: cited
@@ -54,12 +54,17 @@ timeline:
   - date: "2026-08-10"
     event: "Muse Glimmer 30B released under the Apache License 2.0"
     source_url: "https://huggingface.co/meta-models/Muse-Glimmer-30B"
+  - date: "2026-09-02"
+    event: "Muse Spark 1.3 released — the first Spark flagship listed with an open-weights flag, under a Meta license with weights pending"
+    source_url: "https://llm-releases.com/models/muse-spark-1-3"
 mentions:
   - model/meta-muse-spark-1-2
   - model/meta-muse-spark-1-2-contributor
   - model/meta-muse-glimmer-30b
   - model/meta-llama-llama-4-maverick
   - model/meta-muse-spark-1-1
+  - model/meta-muse-spark-1-3
+  - model/meta-muse-spark-1-3-contributor
 ---
 
 The company that made open weights a mainstream expectation stopped shipping
@@ -70,6 +75,16 @@ by Meta Superintelligence Labs, with the weights kept closed and the
 announcement saying only that Meta "hope[s] to open-source future versions of
 the model." In the OpenRouter catalog the change shows up as a change of
 prefix: `meta-llama/` rows stop in 2025, `meta/` rows begin in July 2026.
+
+The line's listings moved first on 2 September 2026. Muse Spark 1.3's card on
+[llm-releases](https://llm-releases.com/models/muse-spark-1-3) carries the
+first open-weights flag on a Spark flagship: "Open weights · Meta license
+(weights pending)", with the weights themselves "Not released". It is a
+listing, not a release — nothing is downloadable, and the flag is checkable:
+if the weights land, the line ships a flagship openly again; if they do not,
+the pending state is a dated record of the April hope unfulfilled.
+The only Spark-family weights actually shipped remain the distilled Glimmer
+30B under Apache-2.0.
 
 The licence went the other way. Llama shipped under Meta's own
 [Llama 4 Community License Agreement](https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct),
