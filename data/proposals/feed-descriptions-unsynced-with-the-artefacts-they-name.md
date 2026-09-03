@@ -27,6 +27,8 @@ evidence: >
   data/changes.jsonl already carry kind:annotation from interpret jobs
   (j-20260830-02, j-20260831-04, j-20260901-08).
 expires: 2026-09-10
+proposed_by_job: j-20260903-02
+proposed_by_type: post
 ---
 
 The Thomson post job fetched the feed record and the primary artefact in the
