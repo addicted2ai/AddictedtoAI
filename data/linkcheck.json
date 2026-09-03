@@ -1948,6 +1948,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2608.27147v1": {
+      "bytes": 47220,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2608.27147v1",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/html/2009.03300": {
       "bytes": 228495,
       "consecutive_failures": 0,
@@ -3068,6 +3079,17 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/api/models/thomsonreuters/Thomson-1.0-Small": {
+      "bytes": 18985,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/thomsonreuters/Thomson-1.0-Small",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/api/models/zai-org/GLM-5.3": {
       "bytes": 41490,
       "consecutive_failures": 0,
@@ -3222,6 +3244,39 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/spaces/tri-fair-lab/publications/blob/main/Thomson_1_0_Technical_Report.pdf": {
+      "bytes": 85350,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/spaces/tri-fair-lab/publications/blob/main/Thomson_1_0_Technical_Report.pdf",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/tencent/Hy4-preview": {
+      "bytes": 362043,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/tencent/Hy4-preview",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/tencent/Hy4-preview/blob/main/LICENSE": {
+      "bytes": 275298,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/tencent/Hy4-preview/blob/main/LICENSE",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/tencent/hy-mt2-7b": {
       "bytes": 230985,
       "consecutive_failures": 0,
@@ -3240,6 +3295,39 @@
       "final_url": "https://huggingface.co/thinkingmachines/Inkling",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/thomsonreuters/Thomson-1.0-Small": {
+      "bytes": 340388,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/thomsonreuters/Thomson-1.0-Small",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/thomsonreuters/Thomson-1.0-Small/raw/main/LICENSE": {
+      "bytes": 3593,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/thomsonreuters/Thomson-1.0-Small/raw/main/LICENSE",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/thomsonreuters/Thomson-1.0-Small/raw/main/config.json": {
+      "bytes": 4153,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/thomsonreuters/Thomson-1.0-Small/raw/main/config.json",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3310,11 +3398,33 @@
       "ok": true,
       "status": 200
     },
+    "https://llm-releases.com/models/hy4-preview": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llm-releases.com/models/hy4-preview",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://llm-releases.com/models/mercury-2-5-preview": {
       "bytes": null,
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://www.llm-releases.com/models/mercury-2-5-preview",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://llm-releases.com/models/thomson": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llm-releases.com/models/thomson",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
       "meta_refresh": null,
@@ -3834,6 +3944,17 @@
       "final_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8371605/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://polyformproject.org/licenses/strict/1.0.0": {
+      "bytes": 2136,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://polyformproject.org/licenses/strict/1.0.0",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -5044,6 +5165,39 @@
       "final_url": "https://sequoiacap.com/article/ais-600b-question",
       "last_checked": "2026-09-01",
       "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.tencent.com/tencent-releases-and-open-sources-tencent-hy4-preview/": {
+      "bytes": 23415,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.tencent.com/tencent-releases-and-open-sources-tencent-hy4-preview/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.thomsonreuters.com/en-us/posts/innovation/thomson-reuters-standard-for-high-stakes-ai/": {
+      "bytes": 16828,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.thomsonreuters.com/en-us/posts/innovation/thomson-reuters-standard-for-high-stakes-ai/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.thomsonreuters.com/en/press-releases/2026/august/thomson-reuters-leverages-its-world-class-data-assets-to-launch-its-own-frontier-model": {
+      "bytes": 35762,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.thomsonreuters.com/en/press-releases/2026/august/thomson-reuters-leverages-its-world-class-data-assets-to-launch-its-own-frontier-model",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
