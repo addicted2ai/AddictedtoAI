@@ -34,7 +34,9 @@ evidence: >
   method, so the row is not a like-for-like leaderboard. The "(w/ fallback)"
   qualifier on Fable 5 appears only in that header, and the card states no
   meaning for it — no footnote, caption or prose says what fallback was
-  enabled, to what, or for which runs. The licence text
+  enabled, to what, or for which runs — the card's only "fall back" is
+  PostTrainBench's footnote, about GLM-5.3's own scoring, and says nothing
+  about the Fable 5 column label. The licence text
   itself,
   fetched 2026-09-01 — https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE
   (clause 2 verbatim: the $10B/12-month revenue threshold, the security-review
