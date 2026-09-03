@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 639,
+  "count": 638,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -25,16 +25,6 @@
     {
       "u": "/blog/eu-ai-office-first-enforcement-rfis",
       "t": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/blog/glm-5-3-license-revenue-gate",
-      "t": "GLM-5.3's licence: above $10B in revenue, Model-as-a-Service use waits on Z.AI's security review",
       "k": "post",
       "d": null,
       "s": null,

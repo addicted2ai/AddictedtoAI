@@ -1950,12 +1950,6 @@
         "title": "Z.ai",
         "type": "entry",
         "file": "content/wiki/org/z-ai.md"
-      },
-      {
-        "url": "/blog/glm-5-3-license-revenue-gate",
-        "title": "GLM-5.3's licence: above $10B in revenue, Model-as-a-Service use waits on Z.AI's security review",
-        "type": "post",
-        "file": "content/blog/glm-5-3-license-revenue-gate.md"
       }
     ],
     "model/z-ai-glm-5-3-flash": [
@@ -1964,12 +1958,6 @@
         "title": "Z.ai",
         "type": "entry",
         "file": "content/wiki/org/z-ai.md"
-      },
-      {
-        "url": "/blog/glm-5-3-license-revenue-gate",
-        "title": "GLM-5.3's licence: above $10B in revenue, Model-as-a-Service use waits on Z.AI's security review",
-        "type": "post",
-        "file": "content/blog/glm-5-3-license-revenue-gate.md"
       }
     ],
     "model/z-ai-glm-5-turbo": [
@@ -2284,12 +2272,6 @@
         "title": "Z.ai: GLM 5.1",
         "type": "entry",
         "file": "content/wiki/model/z-ai-glm-5-1.md"
-      },
-      {
-        "url": "/blog/glm-5-3-license-revenue-gate",
-        "title": "GLM-5.3's licence: above $10B in revenue, Model-as-a-Service use waits on Z.AI's security review",
-        "type": "post",
-        "file": "content/blog/glm-5-3-license-revenue-gate.md"
       }
     ],
     "technique/chain-of-thought-prompting": [
