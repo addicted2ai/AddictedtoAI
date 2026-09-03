@@ -2569,8 +2569,11 @@
       "d": "model",
       "s": "active",
       "i": "model/google-gemini-3-8-flash",
-      "a": [],
-      "b": true
+      "a": [
+        "Gemini 3.8 Flash",
+        "google/gemini-3.8-flash"
+      ],
+      "b": false
     },
     {
       "u": "/wiki/model/google-gemini-3-8-flash-batch",

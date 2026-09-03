@@ -1094,6 +1094,12 @@
         "file": "content/wiki/model/google-gemini-3-7-flash.md"
       },
       {
+        "url": "/wiki/model/google-gemini-3-8-flash",
+        "title": "Google: Gemini 3.8 Flash",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-8-flash.md"
+      },
+      {
         "url": "/wiki/org/google-deepmind",
         "title": "Google DeepMind",
         "type": "entry",
@@ -1101,6 +1107,20 @@
       }
     ],
     "model/google-gemini-3-7-flash": [
+      {
+        "url": "/wiki/model/google-gemini-3-8-flash",
+        "title": "Google: Gemini 3.8 Flash",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-8-flash.md"
+      },
+      {
+        "url": "/wiki/org/google-deepmind",
+        "title": "Google DeepMind",
+        "type": "entry",
+        "file": "content/wiki/org/google-deepmind.md"
+      }
+    ],
+    "model/google-gemini-3-8-flash": [
       {
         "url": "/wiki/org/google-deepmind",
         "title": "Google DeepMind",
@@ -2182,6 +2202,12 @@
         "title": "Google: Gemini 3.7 Flash",
         "type": "entry",
         "file": "content/wiki/model/google-gemini-3-7-flash.md"
+      },
+      {
+        "url": "/wiki/model/google-gemini-3-8-flash",
+        "title": "Google: Gemini 3.8 Flash",
+        "type": "entry",
+        "file": "content/wiki/model/google-gemini-3-8-flash.md"
       },
       {
         "url": "/learn/who-builds-ai",

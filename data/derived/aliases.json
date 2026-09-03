@@ -1529,6 +1529,16 @@
       ]
     },
     {
+      "name": "Gemini 3.8 Flash",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-8-flash",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Glitch token",
       "linkable": false,
       "claimed_by": [
@@ -6664,6 +6674,16 @@
       "claimed_by": [
         {
           "id": "model/google-gemini-3-7-flash",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "google/gemini-3.8-flash",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-8-flash",
           "class": "exclusive"
         }
       ]

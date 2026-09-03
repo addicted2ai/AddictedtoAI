@@ -49,14 +49,6 @@
       "ok": true,
       "status": 200
     },
-    "https://9to5google.com/2026/08/13/gemini-3-7-flash-launch/": {
-      "consecutive_failures": 0,
-      "error": null,
-      "last_checked": "2026-08-28",
-      "last_ok": "2026-08-28",
-      "ok": true,
-      "status": 200
-    },
     "https://about.fb.com/news/2026/04/introducing-muse-spark-meta-superintelligence-labs/": {
       "consecutive_failures": 0,
       "error": null,

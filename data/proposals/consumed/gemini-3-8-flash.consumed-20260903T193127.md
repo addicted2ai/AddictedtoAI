@@ -121,3 +121,17 @@ with a named access regime.
   benchmark claims are labeled as such.
 
 ---
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-03
+- job: j-20260903-11 (entry)
+- merged as: `e3947f4dc41bfdd68c805867db3a0636f28fe70d`
+- produced: `content/wiki/model/google-gemini-3-8-flash.md`, `content/wiki/org/google-deepmind.md`
+- was: `gemini-3-8-flash.md` (slug `gemini-3-8-flash`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

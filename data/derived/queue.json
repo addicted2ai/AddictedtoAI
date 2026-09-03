@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 19,
+  "count": 22,
   "items": [
     {
       "detail": "The post tells the reader what is in the file: \"The rest of the file is clause 1 (the MIT-style grant, the notice condition, and a requirement that use comply with applicable laws), clause 3 (a standard as-is warranty), and a contact address, glmlicense@z.ai.\" Fetched from https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE on 2026-09-02 (4263 bytes), the file does not end there: after a `-----` separator it carries a complete Chinese version of the same licence, and the review-gate sentence appears there as \"安全审查的范围和方式由Z.AI合理确定\" (合理 = reasonably). The two halves agree on substance, and the file names no governing language, which for a licence is worth a clause of its own. One sentence added to that enumeration — that the English text is followed by a Chinese translation of the whole licence, with no governing-language clause — would close the gap between what the post says the file contains and what a reader who opens the raw URL will find. Two smaller notes in the same sentence: the MIT-style grant is actually the preamble paragraph above clause 1, not part of clause 1, and \"The review itself is two sentences of the file and nothing more\" is true of the English half only.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-22 (`j-20260902-22.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -120,6 +120,15 @@
       "type": "repair"
     },
     {
+      "detail": "The new paragraph quotes Inception as saying its models are \"OpenAI compatible and a drop-in replacement for traditional LLMs\". Both vendor pages I fetched on 2026-09-03 say \"OpenAI API compatible\" — the homepage reads \"Our models are OpenAI API compatible and a drop-in replacement for traditional LLMs\", and the models page reads \"OpenAI API compatible and are supported through libraries including AISuite, LiteLLM, and LangChain\". The meaning is unchanged but the words inside the quotation marks are not the source's. Insert \"API\".\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-10 (`j-20260903-10.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/inception-mercury-2-5-preview.md",
+      "target": "content/wiki/model/inception-mercury-2-5-preview.md",
+      "title": "Restore \"API\" to the OpenAI-compatibility quote",
+      "type": "repair"
+    },
+    {
       "detail": "The revised sentence reads \"But this model's batch page … still knows the batch variant, but lists no providers and no pricing under it and no deprecation notice anywhere on the page\". Two small defects, both introduced by the revision. First, \"but … but\" in one sentence, and \"lists … no deprecation notice anywhere on the page\" — the verb \"lists\" cannot govern that clause, and \"anywhere on the page\" contradicts the \"under it\" scope it is coordinated with. Second, the precision is now available to do better: I parsed the live page's `variantGroups` and it contains exactly two groups, `free` (1 endpoint) and `standard` (4 endpoints) — there is no `batch` group at all, empty or otherwise, so \"lists no providers and no pricing under it\" is true but understates what was measured. Suggested replacement: \"still identifies itself as the batch variant — the slug, the heading and its uptime queries all name it — but its variant list now holds only the free and standard groups, with no batch group and so no providers or pricing at all; nothing anywhere on the page announces a deprecation.\"\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-08 (`j-20260903-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
@@ -135,6 +144,24 @@
       "subject": "content/wiki/model/tencent-hy4-preview.md",
       "target": "content/wiki/model/tencent-hy4-preview.md",
       "title": "Date the two new timeline rows to a document that states the date",
+      "type": "repair"
+    },
+    {
+      "detail": "The org body reads \"The about page calls Mercury {{fact:org/inception-labs#product}}\", and that fact's value is \"diffusion-based large language models (dLLMs); it calls Mercury 'the world's first commercially available family of diffusion large language models'\". renderFact (lib/facts.mjs:217) splices the value inline, so the rendered sentence says \"calls Mercury ... it calls Mercury ...\" twice in one clause. Dropping \"; it calls Mercury\" from the fact value, or rewriting the lead-in to \"The about page describes\", fixes it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-10 (`j-20260903-10.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/org/inception-labs.md",
+      "target": "content/wiki/org/inception-labs.md",
+      "title": "Fix the stutter the product fact creates when transcluded",
+      "type": "repair"
+    },
+    {
+      "detail": "The org body presents the about page's research list as \"the foundation line (Diffusion Models, Flash Attention, Direct Preference Optimization) and the discrete-diffusion line Mercury descends from (Masked Diffusion, Block Diffusion, Remasking Diffusion, and d1 Reasoning)\". The page actually lists nine items; Discrete Diffusion Guidance (arxiv.org/abs/2412.10193) and Decision Transformers (arxiv.org/abs/2106.01345) are dropped without a word saying the enumeration is a selection. \"among them\" or a named omission would fix it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-10 (`j-20260903-10.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/org/inception-labs.md",
+      "target": "content/wiki/org/inception-labs.md",
+      "title": "Signal that the technologies enumeration is partial",
       "type": "repair"
     },
     {
@@ -174,5 +201,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 19
+  "total_before_cap": 22
 }
