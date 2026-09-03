@@ -1182,12 +1182,6 @@
         "file": "content/wiki/model/meta-muse-glimmer-30b.md"
       },
       {
-        "url": "/wiki/model/meta-muse-spark-1-3",
-        "title": "Meta: Muse Spark 1.3",
-        "type": "entry",
-        "file": "content/wiki/model/meta-muse-spark-1-3.md"
-      },
-      {
         "url": "/wiki/org/meta-superintelligence-labs",
         "title": "Meta Superintelligence Labs",
         "type": "entry",
@@ -1195,34 +1189,6 @@
       }
     ],
     "model/meta-muse-spark-1-2-contributor": [
-      {
-        "url": "/wiki/org/meta-superintelligence-labs",
-        "title": "Meta Superintelligence Labs",
-        "type": "entry",
-        "file": "content/wiki/org/meta-superintelligence-labs.md"
-      }
-    ],
-    "model/meta-muse-spark-1-3": [
-      {
-        "url": "/wiki/model/meta-muse-spark-1-3-contributor",
-        "title": "Meta: Muse Spark 1.3 Contributor",
-        "type": "entry",
-        "file": "content/wiki/model/meta-muse-spark-1-3-contributor.md"
-      },
-      {
-        "url": "/wiki/org/meta-superintelligence-labs",
-        "title": "Meta Superintelligence Labs",
-        "type": "entry",
-        "file": "content/wiki/org/meta-superintelligence-labs.md"
-      }
-    ],
-    "model/meta-muse-spark-1-3-contributor": [
-      {
-        "url": "/wiki/model/meta-muse-spark-1-3",
-        "title": "Meta: Muse Spark 1.3",
-        "type": "entry",
-        "file": "content/wiki/model/meta-muse-spark-1-3.md"
-      },
       {
         "url": "/wiki/org/meta-superintelligence-labs",
         "title": "Meta Superintelligence Labs",
@@ -2262,18 +2228,6 @@
         "title": "Meta: Muse Glimmer 30B",
         "type": "entry",
         "file": "content/wiki/model/meta-muse-glimmer-30b.md"
-      },
-      {
-        "url": "/wiki/model/meta-muse-spark-1-3",
-        "title": "Meta: Muse Spark 1.3",
-        "type": "entry",
-        "file": "content/wiki/model/meta-muse-spark-1-3.md"
-      },
-      {
-        "url": "/wiki/model/meta-muse-spark-1-3-contributor",
-        "title": "Meta: Muse Spark 1.3 Contributor",
-        "type": "entry",
-        "file": "content/wiki/model/meta-muse-spark-1-3-contributor.md"
       }
     ],
     "org/mistral-ai": [
