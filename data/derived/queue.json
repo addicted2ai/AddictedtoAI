@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 22,
+  "count": 24,
   "items": [
     {
       "detail": "The post tells the reader what is in the file: \"The rest of the file is clause 1 (the MIT-style grant, the notice condition, and a requirement that use comply with applicable laws), clause 3 (a standard as-is warranty), and a contact address, glmlicense@z.ai.\" Fetched from https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE on 2026-09-02 (4263 bytes), the file does not end there: after a `-----` separator it carries a complete Chinese version of the same licence, and the review-gate sentence appears there as \"安全审查的范围和方式由Z.AI合理确定\" (合理 = reasonably). The two halves agree on substance, and the file names no governing language, which for a licence is worth a clause of its own. One sentence added to that enumeration — that the English text is followed by a Chinese translation of the whole licence, with no governing-language clause — would close the gap between what the post says the file contains and what a reader who opens the raw URL will find. Two smaller notes in the same sentence: the MIT-style grant is actually the preamble paragraph above clause 1, not part of clause 1, and \"The review itself is two sentences of the file and nothing more\" is true of the English half only.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-22 (`j-20260902-22.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -111,6 +111,24 @@
       "type": "repair"
     },
     {
+      "detail": "output_tokens_per_task carries value \"~48k at high reasoning (a ~30% rise in average output tokens per task)\", and both prose sentences that transclude it already supply that framing themselves. The model entry reads \"average output tokens per task rose to {{fact:... #output_tokens_per_task}}, lifting cost per task to {{fact:... #cost_per_task}} at high reasoning\", so it renders as \"average output tokens per task rose to ~48k at high reasoning (a ~30% rise in average output tokens per task), lifting cost per task to ~$0.58 at high reasoning\" — \"average output tokens per task\" twice, \"at high reasoning\" twice. content/wiki/org/google-deepmind.md has the same doubling in its \"llm-releases prices that sentence\" paragraph. Shortening the value to \"~48k\" fixes both surfaces at once and loses nothing, since the ~30% and the effort level are already in the sentences. Separately, the source attaches \"at high reasoning\" to the cost-per-task clause, not to the token count — \"a ~30% rise in average output tokens per task (to ~48k) lifts cost per task to ~$0.58 at high reasoning\" — so dropping it from this value is also the more faithful reading.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-11 (`j-20260903-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/google-gemini-3-8-flash.md",
+      "target": "content/wiki/model/google-gemini-3-8-flash.md",
+      "title": "Trim the duplicated wording out of the output-tokens fact value",
+      "type": "repair"
+    },
+    {
+      "detail": "The model entry's benchmark sentence ends \"...Harvey's Legal Agent Benchmark at {{fact:...#harveys_legal_agent_benchmark}}, and on {{fact:...#deepswe_v1_1}}.\" The deepswe_v1_1 value is a whole clause (\"DeepSWE v1.1 — outperforms most larger frontier models at a fraction of the cost\"), so the rendered text reads \"and on DeepSWE v1.1 — outperforms most larger frontier models at a fraction of the cost\", which does not parse against the \"X at Y\" list it is joined to. Either drop the \"and on\" and start a new sentence, or reduce the fact value to the claim alone the way the neighbouring fact values are written.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-11 (`j-20260903-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/google-gemini-3-8-flash.md",
+      "target": "content/wiki/model/google-gemini-3-8-flash.md",
+      "title": "Fix the sentence that runs into the DeepSWE fact value",
+      "type": "repair"
+    },
+    {
       "detail": "Both files added by this job end without a final newline — `git diff` reports \"\\ No newline at end of file\" for content/wiki/model/inception-mercury-2-5-preview.md (after \"which accepts `tools` and `response_format`.\") and for data/proposals/context-window-transclusion-unit-doubling.md. Nothing breaks and the build passes; it just makes every future diff of these files noisier than it needs to be. One newline each fixes it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-24 (`j-20260902-24.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
@@ -201,5 +219,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 22
+  "total_before_cap": 24
 }

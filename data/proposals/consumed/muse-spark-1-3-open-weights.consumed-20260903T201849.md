@@ -85,3 +85,17 @@ Meta entry predicted ("hopes to open-source future versions of the model").
   state with its date and sources.
 
 ---
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-03
+- job: j-20260903-12 (entry)
+- merged as: `ec04855ab22a733b9c272a4c6016aa7d600eedea`
+- produced: `content/wiki/model/meta-muse-spark-1-3-contributor.md`, `content/wiki/model/meta-muse-spark-1-3.md`, `content/wiki/org/meta-superintelligence-labs.md`
+- was: `muse-spark-1-3-open-weights.md` (slug `muse-spark-1-3-open-weights`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
