@@ -18,7 +18,13 @@ facts:
     source: cited
     value: "closed; Meta says it hopes to open-source future versions of the model"
     source_url: "https://about.fb.com/news/2026/04/introducing-muse-spark-meta-superintelligence-labs/"
-    accessed: "2026-08-28"
+    accessed: "2026-09-03"
+    volatility: slow
+  - field: flagship_weights_listing
+    source: cited
+    value: "listed 'Open weights · Meta license (weights pending)' with weights 'Not released'"
+    source_url: "https://llm-releases.com/models/muse-spark-1-3"
+    accessed: "2026-09-03"
     volatility: slow
   - field: open_weight_release
     source: cited
@@ -54,12 +60,17 @@ timeline:
   - date: "2026-08-10"
     event: "Muse Glimmer 30B released under the Apache License 2.0"
     source_url: "https://huggingface.co/meta-models/Muse-Glimmer-30B"
+  - date: "2026-09-02"
+    event: "Muse Spark 1.3 released; the flagship card's 'Open weights · Meta license (weights pending)' listing, unchanged since the 1.2 release, still shows weights not released"
+    source_url: "https://llm-releases.com/models/muse-spark-1-3"
 mentions:
   - model/meta-muse-spark-1-2
   - model/meta-muse-spark-1-2-contributor
   - model/meta-muse-glimmer-30b
   - model/meta-llama-llama-4-maverick
   - model/meta-muse-spark-1-1
+  - model/meta-muse-spark-1-3
+  - model/meta-muse-spark-1-3-contributor
 ---
 
 The company that made open weights a mainstream expectation stopped shipping
@@ -70,6 +81,21 @@ by Meta Superintelligence Labs, with the weights kept closed and the
 announcement saying only that Meta "hope[s] to open-source future versions of
 the model." In the OpenRouter catalog the change shows up as a change of
 prefix: `meta-llama/` rows stop in 2025, `meta/` rows begin in July 2026.
+
+The catalogue's license line moved ahead of the weights themselves, and then
+stalled. Muse Spark 1.2's card on [llm-releases](https://llm-releases.com/models/muse-spark-1-2),
+released 5 August 2026, was the first Spark flagship
+{{fact:org/meta-superintelligence-labs#flagship_weights_listing}}; the card
+added that "Meta has signaled open weights are coming." One full flagship
+release later, on 2 September 2026, Muse Spark 1.3's
+[card](https://llm-releases.com/models/muse-spark-1-3) carries the same two
+lines, character for character. A month of "pending" spanning two releases,
+with nothing downloadable, is its own fact — and the catalogue contradicts
+itself about what the flag means: its own
+[changelog](https://llm-releases.com/changelog) still describes Glimmer as
+"its first open-weight model after the closed Muse Spark line." The only
+Spark-family weights actually shipped remain the distilled Glimmer 30B under
+Apache-2.0.
 
 The licence went the other way. Llama shipped under Meta's own
 [Llama 4 Community License Agreement](https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct),
