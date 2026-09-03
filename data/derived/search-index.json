@@ -2769,12 +2769,8 @@
       "d": "model",
       "s": "active",
       "i": "model/inception-mercury-2-5-preview",
-      "a": [
-        "Mercury 2.5 Preview",
-        "Mercury 2.5",
-        "inception/mercury-2.5-preview"
-      ],
-      "b": false
+      "a": [],
+      "b": true
     },
     {
       "u": "/wiki/model/inclusionai-ling-3-0-flash",

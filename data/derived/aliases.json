@@ -2559,26 +2559,6 @@
       ]
     },
     {
-      "name": "Mercury 2.5",
-      "linkable": false,
-      "claimed_by": [
-        {
-          "id": "model/inception-mercury-2-5-preview",
-          "class": "shared"
-        }
-      ]
-    },
-    {
-      "name": "Mercury 2.5 Preview",
-      "linkable": true,
-      "claimed_by": [
-        {
-          "id": "model/inception-mercury-2-5-preview",
-          "class": "exclusive"
-        }
-      ]
-    },
-    {
       "name": "Meta",
       "linkable": false,
       "claimed_by": [
@@ -6584,16 +6564,6 @@
       "claimed_by": [
         {
           "id": "model/google-gemini-3-7-flash",
-          "class": "exclusive"
-        }
-      ]
-    },
-    {
-      "name": "inception/mercury-2.5-preview",
-      "linkable": true,
-      "claimed_by": [
-        {
-          "id": "model/inception-mercury-2-5-preview",
           "class": "exclusive"
         }
       ]
