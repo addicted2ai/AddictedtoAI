@@ -26,6 +26,8 @@ evidence: >
   2026-09-03 and five mistralai batch rows on 2026-09-01 — yet nothing in the
   docs says whether the async endpoint still accepts the standard slug for any
   of those models, or how the `:batch` rows relate to the endpoint at all.
+proposed_by_job: j-20260903-08
+proposed_by_type: repair
 ---
 
 The two mechanisms are easy to conflate and impossible to tell apart from
