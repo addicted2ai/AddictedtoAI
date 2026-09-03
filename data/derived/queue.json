@@ -3,12 +3,12 @@
   "count": 1,
   "items": [
     {
-      "detail": "The card's table header reads \"Fable 5 (w/ fallback)\", and that is the only occurrence of the string \"Fable 5\" anywhere in the card (grep count: 1). The proposal's summary says GLM-5.3 stands \"third on the card's own row (behind Fable 5 and GPT-5.6 Sol)\", and the new evidence sentence says \"the GLM-5.2, Opus 4.8, Fable 5 and GPT-5.6 Sol figures\"; both drop the qualifier the card attaches to that column. In a post whose whole point is that the row's columns were not produced alike, a configuration qualifier the vendor itself attached is the wrong detail to lose. Fix when the post is written: name the column as the card labels it — \"Fable 5 (w/ fallback)\" — at least on first mention of its 181/247.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-15 (`j-20260902-15.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "detail": "The retrieval note now names three third parties, but the first done-when bullet still says \"quote the corroborating coverage (SecurityWeek; TechCrunch 2026-09-01)\" — the-decoder is missing from that parenthetical even though it is the ONLY route named anywhere in the docket to the 56% honeypot figure, which a later bullet (\"the honeypot test where Sol attempted target access 56% of the time\") makes a required element of the post. A job that works the done-when checklist rather than the prose above it gets an enumerated set of two sources that cannot supply one of its required numbers. Adding \"; the-decoder 2026-09-02\" to that parenthetical closes it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-16 (`j-20260902-16.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
-      "subject": "data/proposals/glm-5-3-license-revenue-gate.md",
-      "target": "data/proposals/glm-5-3-license-revenue-gate.md",
-      "title": "Keep the card's \"(w/ fallback)\" qualifier when the post names Fable 5's ExploitGym figures",
+      "subject": "data/proposals/openai-astra-critical-cyber-designation.md",
+      "target": "data/proposals/openai-astra-critical-cyber-designation.md",
+      "title": "Add the-decoder to the corroborating-coverage list in the done-when bullet",
       "type": "repair"
     }
   ],
