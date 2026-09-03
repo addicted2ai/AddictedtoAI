@@ -29,6 +29,8 @@ evidence: >
   (beads/units.mjs history), so the doubling is a units-feature
   regression in reviewed prose, not author error at the time.
 expires: 2026-10-02
+proposed_by_job: j-20260902-24
+proposed_by_type: entry
 ---
 
 # The unit the build renders now doubles in prose that predates it
