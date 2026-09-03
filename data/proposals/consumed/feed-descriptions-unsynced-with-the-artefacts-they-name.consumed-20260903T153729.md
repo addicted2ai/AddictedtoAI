@@ -52,3 +52,17 @@ proposal adds — a docket entry, not new machinery.
 Scope note: the job annotates, never rewrites. The feed line stays what the
 Pulse observed; the annotation is the correction beside it, dated and
 attributed to the job that verified it.
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-03
+- job: j-20260903-06 (interpret)
+- merged as: `1ea9c14b53654a6f0db538ed81c9ee650f7b1fac`
+- produced: (the merge produced no joinable artifact)
+- was: `feed-descriptions-unsynced-with-the-artefacts-they-name.md` (slug `feed-descriptions-unsynced-with-the-artefacts-they-name`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
