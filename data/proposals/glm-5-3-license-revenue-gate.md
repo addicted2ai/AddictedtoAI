@@ -31,7 +31,10 @@ evidence: >
   Analysis — plus non-API overhead, so not wall-clock time). The footnote
   states its method for GLM-5.3, Kimi K3 and Qwen3.8 Max only — the GLM-5.2,
   Opus 4.8, Fable 5 (w/ fallback) and GPT-5.6 Sol figures on the same row carry no stated
-  method, so the row is not a like-for-like leaderboard. The licence text
+  method, so the row is not a like-for-like leaderboard. The "(w/ fallback)"
+  qualifier on Fable 5 appears only in that header, and the card states no
+  meaning for it — no footnote, caption or prose says what fallback was
+  enabled, to what, or for which runs. The licence text
   itself,
   fetched 2026-09-01 — https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE
   (clause 2 verbatim: the $10B/12-month revenue threshold, the security-review
