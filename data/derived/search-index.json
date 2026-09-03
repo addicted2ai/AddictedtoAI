@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 645,
+  "count": 644,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -45,16 +45,6 @@
     {
       "u": "/blog/minimax-h3-licence-excluded-territories",
       "t": "MiniMax H3's licence excludes the EU, the UK, South Korea and the US",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/blog/openai-astra-critical-designation",
-      "t": "OpenAI's Astra is the first model designated Critical for cybersecurity. Advanced access starts with alpha testers",
       "k": "post",
       "d": null,
       "s": null,
