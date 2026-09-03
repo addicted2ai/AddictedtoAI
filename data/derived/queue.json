@@ -1,16 +1,25 @@
 {
   "cap": 50,
-  "count": 1,
+  "count": 2,
   "items": [
     {
-      "detail": "The new clause says \"no footnote, caption or prose says what fallback was enabled\". That is true for the one-word string — `grep -n -i \"fallback\"` over the card fetched 2026-09-02 returns exactly line 22, the table header — but the card does contain the TWO-word form: the PostTrainBench footnote reads \"Runs that fail to produce a score fall back to the official zero-shot base-model baseline score\", scoped to Z.ai's own GLM-5.3 evaluation and never mentioning Fable 5. A writer who greps the card for \"fall back\" will hit it, and it is exactly the plausible gloss the clause exists to forbid. Half a clause closes it: the card's only \"fall back\" is PostTrainBench's, about GLM-5.3's own scoring, and says nothing about the Fable 5 column label.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-19 (`j-20260902-19.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "detail": "The lede reads \"The review's scope and method are reasonably Z.AI's to determine.\" The licence reads \"The scope and method of the security review shall be reasonably determined by Z.AI.\" Moved where it now sits, the adverb can be read as \"it is reasonable that Z.AI decides\" rather than as what it is in the text — the one limit on Z.AI's discretion. Something like \"are Z.AI's to determine, subject only to the licence's word 'reasonably'\" carries the qualifier without the drift. The verbatim quote two paragraphs down keeps this from being a misquotation, which is why it is carried and not blocking.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-20 (`j-20260902-20.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
-      "subject": "data/proposals/glm-5-3-license-revenue-gate.md",
-      "target": "data/proposals/glm-5-3-license-revenue-gate.md",
-      "title": "Note that the card's only \"fall back\" is PostTrainBench's, unrelated to the column label",
+      "subject": "content/blog/glm-5-3-license-revenue-gate.md",
+      "target": "content/blog/glm-5-3-license-revenue-gate.md",
+      "title": "Fix the word order on the \"reasonably determined\" paraphrase",
+      "type": "repair"
+    },
+    {
+      "detail": "\"Who it lands on\" opens \"If you or an affiliate runs hosted inference on GLM-5.3 and your group's revenue ... is $10B or more\". Clause 2's first condition is \"If the Licensee or any of its affiliates operates a Model as a Service business\" — with no tie to the Software anywhere in the sentence. Read literally, a $10B group that operates a MaaS business on some other model, and merely fine-tunes GLM-5.3 internally, is inside the condition. The post's narrower reading is the sensible commercial one, but a piece whose subject is what the clause literally binds should say the text does not say it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-20 (`j-20260902-20.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/glm-5-3-license-revenue-gate.md",
+      "target": "content/blog/glm-5-3-license-revenue-gate.md",
+      "title": "Say that the licence's MaaS trigger is not tied to GLM-5.3 itself",
       "type": "repair"
     }
   ],
-  "total_before_cap": 1
+  "total_before_cap": 2
 }
