@@ -38,6 +38,8 @@ evidence: >
   Spark's weights as "closed" and quotes the April 2026 announcement that
   Meta "hope[s] to open-source future versions of the model".
 expires: 2026-09-09
+proposed_by_job: j-20260903-09
+proposed_by_type: scout
 ---
 
 # Muse Spark 1.3 — Meta's flagship listed open-weight for the first time (weights pending)

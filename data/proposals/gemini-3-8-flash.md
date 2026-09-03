@@ -64,6 +64,8 @@ evidence: >
   Wed, 02 Sep 2026. The site's change feed carries the OpenRouter arrival
   rows for google/gemini-3.8-flash and its :batch twin, dated 2026-09-03.
 expires: 2026-09-09
+proposed_by_job: j-20260903-09
+proposed_by_type: scout
 ---
 
 # Gemini 3.8 Flash — the fourth Flash in four months, and a Cyber sibling

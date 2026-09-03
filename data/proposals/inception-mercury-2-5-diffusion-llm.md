@@ -51,6 +51,8 @@ evidence: >
   dated 2026-09-03; the llm-releases feed pubDate for the item is
   Mon, 31 Aug 2026.
 expires: 2026-09-08
+proposed_by_job: j-20260903-09
+proposed_by_type: scout
 ---
 
 # Mercury 2.5 Preview — Inception's diffusion LLM, and the first Inception entry the site would own
