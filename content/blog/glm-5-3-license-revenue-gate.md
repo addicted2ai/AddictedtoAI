@@ -44,7 +44,7 @@ GLM-5.3-Flash, released the same week with a first commit dated 25 August 2026, 
 
 ## Who it lands on
 
-If you or an affiliate runs hosted inference on GLM-5.3 and your group's revenue over any trailing 12 months is $10B or more, clause 2 makes your commercial use conditional on a review whose operation Z.AI has not published. What to do about it: the licence's own answer is its contact address, glmlicense@z.ai. Below the line, nothing changes, and the same is true of embedded-product use and relays, which the definition excludes.
+If you or an affiliate operates a Model-as-a-Service business, and your group's revenue over any trailing 12 months is $10B or more, clause 2 makes your commercial use conditional on a review whose operation Z.AI has not published. Note what the clause does not say: the trigger is not tied to GLM-5.3. The condition opens "operates a Model as a Service business" with no mention of the Software, so read literally a MaaS business on another model puts the group inside it, and a $10B group that merely fine-tunes GLM-5.3 internally while selling inference on something else is caught too. The narrower reading, hosted inference on GLM-5.3, is the sensible commercial one, but the text does not say it. What to do about it: the licence's own answer is its contact address, glmlicense@z.ai. Below the line, nothing changes, and the same is true of embedded-product use and relays, which the definition excludes.
 
 ## Sources
 
