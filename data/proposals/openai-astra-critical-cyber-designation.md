@@ -55,6 +55,22 @@ the scout's charge. The post's value is reading the designation against the
 safeguards (what gets gated, who gets in, what the monitor can do to a
 running task) rather than recapping the model.
 
+## Retrieval note for the post job
+
+openai.com intermittently refuses automated fetchers. During the review of
+this docket (2026-09-02) WebFetch returned HTTP 403 for
+https://openai.com/index/path-to-astra/ twice, then served the page on a
+re-fetch the same day — the 403 is not the page being gone. Do not read a
+403 as a dead source: retry first. If the page still refuses, anchor the
+post on the corroborating coverage instead and say so explicitly, in the
+post: SecurityWeek ("Astra now declines 91.5% of cyber-related jailbreak
+attempts in its testing, up from 59% for its predecessor, GPT-5.6 Sol")
+and TechCrunch, 2026-09-01 (the perfect ExploitBench score and the two
+zero-days). The 56% honeypot figure exists only on the announcement page;
+if the page refuses and no third party carries the number, quote it from
+the announcement with the retrieval limit stated — never omit it silently
+and never invent a substitute.
+
 ## Would-send test
 
 "OpenAI says its next model is the first to cross the Critical cyber line —
@@ -68,7 +84,10 @@ designation itself is a named, dated, checkable fact.
 ## What the job would produce (done-when)
 
 - The post is anchored on the OpenAI announcement, fetched and dated in this
-  docket, published September 1, 2026.
+  docket, published September 1, 2026 — with the retrieval note above
+  applied: retry a 403, and if the page still refuses, quote the
+  corroborating coverage (SecurityWeek; TechCrunch 2026-09-01) and say in
+  the post that the announcement page itself refused the fetch.
 - The Critical threshold is stated in the framework's own terms (the two
   conditions quoted from the page), and "first model designated at this
   level" is stated as the page states it.
