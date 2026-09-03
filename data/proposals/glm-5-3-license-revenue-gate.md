@@ -11,7 +11,7 @@ summary: >
   scaled post-training, cyber capability developed faster than we expected," with
   GLM-5.3 state of the art on CyberGym for vulnerability discovery, its ExploitGym
   105/130 more than tripling GLM-5.2's 29/39 while standing third on the card's
-  own row (behind Fable 5 and GPT-5.6 Sol). The post would quote the licence and
+  own row (behind Fable 5 (w/ fallback) and GPT-5.6 Sol). The post would quote the licence and
   the card, contrast the clause with MIT/Apache norms and with
   GLM-5.3-Flash's plain MIT, and test what the clause actually binds (who is over
   the revenue line, what "Model as a Service" excludes, whether the review can be
@@ -30,7 +30,7 @@ evidence: >
   TPS, Kimi K3 at 40 TPS, Qwen3.8 Max at 47 TPS, TPS sourced from Artificial
   Analysis — plus non-API overhead, so not wall-clock time). The footnote
   states its method for GLM-5.3, Kimi K3 and Qwen3.8 Max only — the GLM-5.2,
-  Opus 4.8, Fable 5 and GPT-5.6 Sol figures on the same row carry no stated
+  Opus 4.8, Fable 5 (w/ fallback) and GPT-5.6 Sol figures on the same row carry no stated
   method, so the row is not a like-for-like leaderboard. The licence text
   itself,
   fetched 2026-09-01 — https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE
