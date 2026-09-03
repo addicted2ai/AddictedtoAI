@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 644,
+  "count": 643,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -45,16 +45,6 @@
     {
       "u": "/blog/minimax-h3-licence-excluded-territories",
       "t": "MiniMax H3's licence excludes the EU, the UK, South Korea and the US",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/blog/thomson-reuters-thomson-model",
-      "t": "Thomson Reuters says its $40M in-house model is 'on par with the latest frontier models'",
       "k": "post",
       "d": null,
       "s": null,
