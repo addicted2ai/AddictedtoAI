@@ -29,9 +29,9 @@ evidence: >
   API inference time rescaled by per-model tokens-per-second — GLM-5.3 at 115
   TPS, Kimi K3 at 40 TPS, Qwen3.8 Max at 47 TPS, TPS sourced from Artificial
   Analysis — plus non-API overhead, so not wall-clock time). The footnote
-  states its method for GLM-5.3, Kimi K3 and Qwen3.8 Max only — the Fable 5,
-  GPT-5.6 Sol and Opus 4.8 figures on the same row carry no stated method, so
-  the row is not a like-for-like leaderboard. The licence text
+  states its method for GLM-5.3, Kimi K3 and Qwen3.8 Max only — the GLM-5.2,
+  Opus 4.8, Fable 5 and GPT-5.6 Sol figures on the same row carry no stated
+  method, so the row is not a like-for-like leaderboard. The licence text
   itself,
   fetched 2026-09-01 — https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE
   (clause 2 verbatim: the $10B/12-month revenue threshold, the security-review
