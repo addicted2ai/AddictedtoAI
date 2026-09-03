@@ -53,7 +53,7 @@ facts:
     volatility: slow
 timeline:
   - date: "2026-09-02"
-    event: "released; the first Spark-class flagship listed with an open-weights flag, under a Meta license with weights pending"
+    event: "released; the flagship card still lists 'Open weights · Meta license (weights pending)' with weights not released — a listing first seen on the Muse Spark 1.2 card"
     source_url: "https://llm-releases.com/models/muse-spark-1-3"
 mentions:
   - org/meta-superintelligence-labs
@@ -62,7 +62,8 @@ mentions:
 ---
 
 Spark 1.3 is a point release whose one notable row in the catalog is the
-license line. Released [2 September 2026](https://openrouter.ai/meta/muse-spark-1.3),
+license line, and that row is notable for having stalled. Released
+[2 September 2026](https://openrouter.ai/meta/muse-spark-1.3),
 it is Meta's reasoning model for long-running agent work: the OpenRouter
 listing positions it for "long-running agentic, multi-agent, and coding
 workflows," built to track information across extended tasks and request
@@ -74,11 +75,13 @@ row lists {{fact:model/meta-muse-spark-1-3#price_input}} input against
 
 The detail worth reading twice is what the [llm-releases card](https://llm-releases.com/models/muse-spark-1-3)
 records under License and Weights: {{fact:model/meta-muse-spark-1-3#license}}.
-That is the first open-weights flag on a Spark flagship, against a line whose
-earlier releases shipped closed. It is a listing, not a release — nothing is
-downloadable, and the pending state is the checkable fact: if the weights
-land, the line's flagship is open again; if they do not, the flag stays a
-dated record of an open-sourcing hope unfulfilled.
+The listing first appeared on a Spark flagship with [Muse Spark 1.2's card](https://llm-releases.com/models/muse-spark-1-2)
+on 5 August 2026 — the [1.1 card](https://llm-releases.com/models/muse-spark-1-1)
+read Proprietary — and one full flagship release later the Weights field still
+has not moved. It is a listing, not a release: nothing is downloadable, and
+the pending state is the checkable fact — if the weights land, the line's
+flagship is open again; if they do not, the flag stays a dated record of an
+open-sourcing hope unfulfilled.
 
 One limitation sits on the card before you pipe audio into it.
 [OpenRouter's notice](https://openrouter.ai/meta/muse-spark-1.3) for this row

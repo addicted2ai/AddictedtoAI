@@ -59,7 +59,8 @@ The contributor row is Spark 1.3 with the training-permission trade applied.
 The [llm-releases card](https://llm-releases.com/models/muse-spark-1-3) for
 the model states the deal in terms: the lower-cost contributor tier is offered
 "in exchange for permission to train future Meta models on prompts and
-completions." The card states the condition itself:
+completions." [OpenRouter's contributor listing](https://openrouter.ai/meta/muse-spark-1.3-contributor)
+states the condition itself:
 {{fact:model/meta-muse-spark-1-3-contributor#contributor_tier_terms}} — the
 same trade the org entry records for the 1.2 contributor row.
 
