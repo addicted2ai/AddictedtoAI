@@ -71,3 +71,18 @@ mistake it for a routine model launch.
   reported as not found rather than assumed.
 - No claim that Thomson "is" frontier — only that TR claims parity, with
   the citation.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-03
+- job: j-20260903-02 (post)
+- merged as: `d9f05f99aa5ce2f0c73cd6a0c9348f519939d6f4`
+- produced: `content/blog/thomson-reuters-thomson-model.md`
+- was: `thomson-reuters-fiduciary-model.md` (slug `thomson-reuters-fiduciary-model`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
