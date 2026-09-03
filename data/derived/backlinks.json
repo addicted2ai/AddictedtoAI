@@ -1274,12 +1274,6 @@
         "file": "content/wiki/model/moonshotai-kimi-k2-5.md"
       },
       {
-        "url": "/wiki/model/tencent-hy4-preview",
-        "title": "Tencent: Hy4 preview",
-        "type": "entry",
-        "file": "content/wiki/model/tencent-hy4-preview.md"
-      },
-      {
         "url": "/wiki/org/moonshot-ai",
         "title": "Moonshot AI",
         "type": "entry",
@@ -1794,12 +1788,6 @@
     ],
     "model/tencent-hy3": [
       {
-        "url": "/wiki/model/tencent-hy4-preview",
-        "title": "Tencent: Hy4 preview",
-        "type": "entry",
-        "file": "content/wiki/model/tencent-hy4-preview.md"
-      },
-      {
         "url": "/wiki/org/tencent",
         "title": "Tencent",
         "type": "entry",
@@ -1987,12 +1975,6 @@
       }
     ],
     "model/z-ai-glm-5-3": [
-      {
-        "url": "/wiki/model/tencent-hy4-preview",
-        "title": "Tencent: Hy4 preview",
-        "type": "entry",
-        "file": "content/wiki/model/tencent-hy4-preview.md"
-      },
       {
         "url": "/wiki/org/z-ai",
         "title": "Z.ai",
@@ -2324,14 +2306,6 @@
         "title": "SpaceXAI: Grok 4.6",
         "type": "entry",
         "file": "content/wiki/model/x-ai-grok-4-6.md"
-      }
-    ],
-    "org/tencent": [
-      {
-        "url": "/wiki/model/tencent-hy4-preview",
-        "title": "Tencent: Hy4 preview",
-        "type": "entry",
-        "file": "content/wiki/model/tencent-hy4-preview.md"
       }
     ],
     "org/z-ai": [
