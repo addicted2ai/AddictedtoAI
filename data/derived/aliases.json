@@ -2249,6 +2249,26 @@
       ]
     },
     {
+      "name": "Inception",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/inception-labs",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Inception Labs",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/inception-labs",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Inception: Mercury 2",
       "linkable": false,
       "claimed_by": [

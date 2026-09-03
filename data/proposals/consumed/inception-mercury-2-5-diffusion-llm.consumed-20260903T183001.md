@@ -99,3 +99,17 @@ site has nothing on the class yet.
   promotional rate is not the list price is carried, not elided.
 
 ---
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-03
+- job: j-20260903-10 (entry)
+- merged as: `ada4cfbc2afed26c38a4e78ae6210a93c306149b`
+- produced: `content/wiki/model/inception-mercury-2-5-preview.md`, `content/wiki/org/inception-labs.md`
+- was: `inception-mercury-2-5-diffusion-llm.md` (slug `inception-mercury-2-5-diffusion-llm`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

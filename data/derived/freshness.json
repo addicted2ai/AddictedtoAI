@@ -15,15 +15,15 @@
   ],
   "date": "2026-09-03",
   "link_check": {
-    "checked": 6,
+    "checked": 0,
     "confirm_after_failures": 2,
     "declined": 3,
     "drifted": 0,
-    "due": 6,
+    "due": 4,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 15,
-    "total": 504
+    "total": 508
   },
   "listings": [
     {

@@ -1114,6 +1114,20 @@
         "title": "Inception: Mercury 2.5 Preview",
         "type": "entry",
         "file": "content/wiki/model/inception-mercury-2-5-preview.md"
+      },
+      {
+        "url": "/wiki/org/inception-labs",
+        "title": "Inception Labs",
+        "type": "entry",
+        "file": "content/wiki/org/inception-labs.md"
+      }
+    ],
+    "model/inception-mercury-2-5-preview": [
+      {
+        "url": "/wiki/org/inception-labs",
+        "title": "Inception Labs",
+        "type": "entry",
+        "file": "content/wiki/org/inception-labs.md"
       }
     ],
     "model/meta-llama-llama-4-maverick": [
