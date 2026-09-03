@@ -87,8 +87,9 @@ designation itself is a named, dated, checkable fact.
 - The post is anchored on the OpenAI announcement, fetched and dated in this
   docket, published September 1, 2026 — with the retrieval note above
   applied: retry a 403, and if the page still refuses, quote the
-  corroborating coverage (SecurityWeek; TechCrunch 2026-09-01) and say in
-  the post that the announcement page itself refused the fetch.
+  corroborating coverage (SecurityWeek; TechCrunch 2026-09-01; the-decoder
+  2026-09-02) and say in the post that the announcement page itself refused
+  the fetch.
 - The Critical threshold is stated in the framework's own terms (the two
   conditions quoted from the page), and "first model designated at this
   level" is stated as the page states it.
