@@ -3693,7 +3693,7 @@
       "s": "active",
       "i": "model/nvidia-nemotron-3-ultra-550b-a55b-batch",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/nvidia-nemotron-3-ultra-550b-a55b-free",
