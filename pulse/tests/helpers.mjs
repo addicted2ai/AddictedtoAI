@@ -12,7 +12,7 @@
  */
 
 import { createServer } from 'node:http';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -108,8 +108,8 @@ function scalar(v) {
  * deadlock is silent — the run just hangs — so the sync variant is not used
  * anywhere here.
  */
-export function runPulse(root, args = [], env = {}) {
-  return new Promise((resolvePromise) => {
+export function runPulse(root, args = [], env = {}, { allowFetchFailure = false } = {}) {
+  return new Promise((resolvePromise, rejectPromise) => {
     const child = spawn(process.execPath, [RUN, ...args], {
       env: { ...process.env, PULSE_ROOT: root, ...env },
     });
@@ -117,8 +117,92 @@ export function runPulse(root, args = [], env = {}) {
     let stderr = '';
     child.stdout.on('data', (d) => (stdout += d));
     child.stderr.on('data', (d) => (stderr += d));
-    child.on('close', (status) => resolvePromise({ status, stdout, stderr, out: stdout + stderr }));
+    child.on('close', (status) => {
+      // REJECT, never throw. `close` fires asynchronously, outside the
+      // executor's synchronous scope, so a bare `throw` here escapes the
+      // promise entirely and lands as an unhandled exception rather than a
+      // rejection the caller can see — measured, because the first draft of
+      // this guard did exactly that and its own test caught it. A guardrail is
+      // what it does when measured, not what it was built to do.
+      if (!allowFetchFailure) {
+        try {
+          assertNoTransportFailure(root, args);
+        } catch (err) {
+          rejectPromise(err);
+          return;
+        }
+      }
+      resolvePromise({ status, stdout, stderr, out: stdout + stderr });
+    });
   });
+}
+
+/**
+ * Refuse to return from a fixture Pulse run that lost a connection.
+ *
+ * WHY THIS IS IN `runPulse` AND NOT AT THE CALL SITES, which is the whole
+ * point of it. `assertIngested` below is the same check, and it was wired into
+ * the three sites that had already failed (addictedtoai-fpud, 2026-09-02).
+ * On 2026-09-03 the identical failure arrived at a FOURTH site —
+ * `mint.test.mjs:254`, "a price change never reaches the timeline", asserting
+ * `priceLines.length === 1` and seeing 0 — and failed a Desk job's merge gate,
+ * discarding 14.21 model-minutes of sound work. There are 107 `runPulse` call
+ * sites and any of them can be next, so a fix that names sites is a fix that
+ * will be incomplete again. This one cannot be forgotten, because it lives in
+ * the function every test already calls.
+ *
+ * IT FIRES ONLY ON TRANSPORT FAILURES, not on HTTP status. `readSource`
+ * records both in `state.last_error`, but with distinguishable details: an
+ * HTTP error reads `HTTP 404 Not Found` and a connection failure reads
+ * `TypeError: fetch failed (ECONNREFUSED)` — `describeFetchError`'s work. A
+ * status is something a test CHOSE to serve and several tests here serve one
+ * deliberately; a transport failure is never intended by any fixture in this
+ * repository, so it is always the environment and never the assertion below
+ * it. That distinction is why this can default to on across all 107 sites
+ * without forgiving anything a test meant to test.
+ *
+ * The opt-out (`allowFetchFailure`) exists for the one test that INDUCES a
+ * lost fetch on purpose, in `sources.test.mjs`, to prove this class is
+ * detectable at all.
+ *
+ * IT DOES NOT TOLERATE THE FAILURE. It converts a false content assertion into
+ * a true environmental one — the misdiagnosis is what cost hours on
+ * addictedtoai-fpud, not the flake. The flake itself is addictedtoai-ar0's
+ * ephemeral-port exhaustion and is not addressed here.
+ */
+export function assertNoTransportFailure(root, args = []) {
+  const dir = join(root, 'data', 'sources');
+  if (!existsSync(dir)) return;
+  let ids;
+  try {
+    ids = readdirSync(dir, { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name);
+  } catch {
+    return;
+  }
+  for (const id of ids) {
+    const file = sourcePaths(root, id).state;
+    if (!existsSync(file)) continue;
+    let state;
+    try {
+      state = JSON.parse(readFileSync(file, 'utf8'));
+    } catch {
+      continue;
+    }
+    const detail = state.last_error?.detail;
+    if (!detail || /^HTTP \d/.test(detail)) continue;
+    throw new Error(
+      `source \`${id}\` lost its connection during \`runPulse ${args.join(' ')}\`: ${detail} ` +
+        `(recorded ${state.last_error.date}). This is a TRANSPORT failure, not a logic failure: no ` +
+        `fixture here intends one, the source wrote no snapshot, and the Pulse still exited 0 because ` +
+        `one dead source is degradation rather than a crash. Every assertion after this point would ` +
+        `have been measuring a snapshot that was never written — which is how this class has ` +
+        `presented four times as a content bug (addictedtoai-fpud). \`connect EADDRINUSE\` means the ` +
+        `machine had no ephemeral port to spare: something else on it was making connections ` +
+        `(addictedtoai-ar0), and the test is sound. Re-run it alone.`,
+    );
+  }
 }
 
 /**

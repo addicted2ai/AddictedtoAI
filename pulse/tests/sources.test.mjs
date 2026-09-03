@@ -20,6 +20,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { describeFetchError } from '../lib/sources.mjs';
 import { assertIngested, cleanup, jsonSource, makeRoot, paths, readJson, runPulse, serve } from './helpers.mjs';
 
@@ -88,7 +89,11 @@ test('a source that cannot be reached does NOT fail the run — it degrades, exi
   const root = makeRoot([jsonSource('models', 'http://127.0.0.1:1/models')]);
   t.after(() => cleanup(root));
 
-  const run = await runPulse(root, ['--no-build']);
+  // `allowFetchFailure` because this test's SUBJECT is a lost fetch.
+  // `runPulse` refuses to return from a transport failure everywhere else
+  // (`assertNoTransportFailure`), which is what stops this class presenting
+  // as a content bug at a fifth call site; here the failure is the point.
+  const run = await runPulse(root, ['--no-build'], {}, { allowFetchFailure: true });
   assert.equal(run.status, 0, 'one unreachable source is degradation, not a crash — this is the whole trap');
   assert.equal(readJson(paths.latest(root, 'models')), null, 'and it writes no snapshot, so readers see null');
 });
@@ -97,7 +102,7 @@ test('assertIngested fires on that run, and names the errno rather than a downst
   const root = makeRoot([jsonSource('models', 'http://127.0.0.1:1/models')]);
   t.after(() => cleanup(root));
 
-  assert.equal((await runPulse(root, ['--no-build'])).status, 0);
+  assert.equal((await runPulse(root, ['--no-build'], {}, { allowFetchFailure: true })).status, 0);
 
   assert.throws(
     () => assertIngested(root, 'models', 'unit'),
@@ -107,6 +112,51 @@ test('assertIngested fires on that run, and names the errno rather than a downst
       assert.match(err.message, /CONNECTION failure, not a logic failure/, 'and say which kind of failure this is');
       return true;
     },
+  );
+});
+
+test('runPulse itself refuses to return from a lost fetch, so no call site can forget the check', async (t) => {
+  // THE CLASS FIX, and the reason it is not another wired call site. The three
+  // sites that had already failed got `assertIngested` on 2026-09-02; on
+  // 2026-09-03 the identical failure arrived at a fourth (`mint.test.mjs:254`,
+  // "a price change never reaches the timeline", 0 !== 1) and failed a Desk
+  // job's merge gate, discarding 14.21 model-minutes. There are 107 `runPulse`
+  // call sites; naming them one incident at a time is a fix that is always
+  // one door behind. The guard now lives in the function all 107 call.
+  const root = makeRoot([jsonSource('models', 'http://127.0.0.1:1/models')]);
+  t.after(() => cleanup(root));
+
+  await assert.rejects(
+    () => runPulse(root, ['--no-build']),
+    (err) => {
+      assert.match(err.message, /lost its connection/, 'it must name the transport as the cause');
+      assert.match(err.message, /ECONNREFUSED|EADDRINUSE|fetch failed/, 'and carry the errno undici reported');
+      assert.match(err.message, /TRANSPORT failure, not a logic failure/);
+      assert.match(err.message, /--no-build/, 'and quote the run it happened on, so the failing site is obvious');
+      return true;
+    },
+  );
+});
+
+test('THE CONTROL: an HTTP status a fixture chose to serve is NOT a transport failure', async (t) => {
+  // The distinction the guard turns on. A 404 is something a test DECIDED to
+  // serve, and several tests here serve one deliberately; a fetch that never
+  // connected is never intended by any fixture. Without this control the guard
+  // would be free to fire on the tests it is supposed to leave alone, and
+  // defaulting it on across 107 sites would be unsafe.
+  const server = await serve(() => ({ status: 404, body: 'nope' }));
+  const root = makeRoot([jsonSource('models', `${server.url}/models`)]);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  const run = await runPulse(root, ['--no-build']);
+  assert.equal(run.status, 0, 'a 404 source degrades exactly as before');
+  assert.match(
+    JSON.parse(readFileSync(paths.state(root, 'models'), 'utf8')).last_error.detail,
+    /^HTTP 404/,
+    'and it really did record an error — the guard is choosing not to fire, not finding nothing',
   );
 });
 
