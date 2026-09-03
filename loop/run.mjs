@@ -1390,14 +1390,19 @@ export async function runLoop(ctx, opts = {}) {
   // proposal is gone by construction, and dropping it here would stage the
   // addition without the deletion.
   const staged = recordPaths.filter((p) => existsSync(join(ctx.repoRoot, p))).concat(sweptPaths, consumedPaths);
-  if (staged.length) {
-    gitTry(ctx.repoRoot, ['add', '--', ...staged]);
-    const has = gitTry(ctx.repoRoot, ['diff', '--cached', '--name-only']).stdout.trim();
-    if (has) {
-      gitTry(ctx.repoRoot, ['commit', '--no-verify', '-m', `job ${jobId}: records (${outcome})`]);
-      ctx.log(`committed the job's records: ${has.split('\n').join(', ')}`);
-    }
-  }
+  commitJobRecords(ctx, { staged, jobId, outcome });
+
+  // The run's last word, unconditionally.
+  //
+  // Diagnostic, and it is here because its absence cost a diagnosis today. On
+  // 2026-09-03 j-20260903-05 merged, published, transcribed its findings — and
+  // its log simply STOPPED there, with the process exiting 0 and no records
+  // commit anywhere. A run that reached the end with nothing to commit and a
+  // run that stopped between the transcription and the commit produced exactly
+  // the same log, because the last thing the run ever printed was conditional.
+  // A terminal line that always prints makes it answerable from the log alone
+  // whether a run finished (addictedtoai-tqpq).
+  ctx.log(`job ${jobId} complete — outcome ${outcome}`);
 
   if (outcome === 'failed' || outcome === 'discarded') {
     const b1 = checkConsecutiveFailures(ctx, readLedger(ctx), job.type);
@@ -1405,6 +1410,95 @@ export async function runLoop(ctx, opts = {}) {
   }
 
   return { started: true, jobId, branch, outcome, mergedSha, ledgerLine: line, result };
+}
+
+/**
+ * Commit the loop's own records — the ledger line, the verdict record(s), the
+ * directive marker, the recomputed derived tree, and anything transcribed from
+ * the verdict — by exact path.
+ *
+ * Exported and separated from `runLoop` so the failure below can be MEASURED,
+ * which is the whole reason this function exists (beads addictedtoai-tqpq).
+ *
+ * THE DEFECT. This was four inlined lines that discarded every git return
+ * value:
+ *
+ *     gitTry(repo, ['add', '--', ...staged]);
+ *     const has = gitTry(repo, ['diff', '--cached', '--name-only']).stdout.trim();
+ *     if (has) { gitTry(repo, ['commit', ...]); log(...) }
+ *
+ * `gitTry` reports `{ok, status, stdout, stderr}` and nothing here read `ok`.
+ * So a failed `add` — most obviously a concurrent Pulse holding
+ * `.git/index.lock`, which happens on this machine because the two engines
+ * share one checkout — left `has` empty, took the `if` false, logged NOTHING,
+ * and the run went on to report `done`. "Staging failed" and "there was
+ * nothing new to commit" were the same silent branch.
+ *
+ * MEASURED 2026-09-03, twice in one day. `j-20260903-02` and `j-20260903-05`
+ * both merged and pushed with no `records` commit anywhere in the history, and
+ * their carried findings sat untracked. In -02's case the Pulse's own commit
+ * `b2aa018` carried the Desk's ledger line, verdict record and consumed
+ * proposal — files the Pulse did not write — which is `addictedtoai-ps3`'s
+ * attribution failure arriving through this door.
+ *
+ * WHAT IS AT STAKE beyond a few files: this same path carries the ledger line
+ * the budget is computed from, the verdict record the review gate is audited
+ * by, and BOTH halves of a proposal move. A failed `add` there leaves the
+ * addition uncommitted while the deletion is not staged either — the exact
+ * split `consumedPaths`' own comment says must never happen.
+ *
+ * THE FIX IS VISIBILITY, NOT A RETRY. Whether the loop should retry, wait for
+ * the lock, or leave the files for the next run is a real design question and
+ * a separate one; a failure that prints nothing cannot be any of them. So this
+ * distinguishes the three outcomes and says which one happened, every time.
+ *
+ * @returns {{committed: boolean, why: string, paths: string[]}}
+ */
+export function commitJobRecords(ctx, { staged, jobId, outcome }) {
+  if (!staged.length) {
+    const why = 'no record path existed to stage';
+    ctx.log(`records: ${why}`);
+    return { committed: false, why, paths: [] };
+  }
+  const add = gitTry(ctx.repoRoot, ['add', '--', ...staged]);
+  if (!add.ok) {
+    // Loud, and naming the paths, because these files are now the only copy of
+    // this run's records and nothing downstream will notice they are missing.
+    ctx.log(
+      `RECORDS NOT COMMITTED — \`git add\` failed (exit ${add.status}): ${
+        add.stderr.trim() || '(no stderr)'
+      }`,
+    );
+    ctx.log(`  could not stage: ${staged.join(', ')}`);
+    ctx.log(
+      '  they are in the working tree, uncommitted. If .git/index.lock is held, a concurrent ' +
+        'Pulse or another agent has the index; the files are intact and need committing by the ' +
+        'next run or by hand (addictedtoai-tqpq).',
+    );
+    return { committed: false, why: `git add failed: ${add.stderr.trim() || `exit ${add.status}`}`, paths: staged };
+  }
+  const has = gitTry(ctx.repoRoot, ['diff', '--cached', '--name-only']).stdout.trim();
+  if (!has) {
+    // A real and ordinary outcome — usually because a concurrent Pulse's
+    // wholesale `data/` staging already committed them. Said out loud so it
+    // can never again be mistaken for the failure above.
+    const why = 'everything was already committed; nothing new to record';
+    ctx.log(`records: ${why}`);
+    return { committed: false, why, paths: [] };
+  }
+  const paths = has.split('\n');
+  const commit = gitTry(ctx.repoRoot, ['commit', '--no-verify', '-m', `job ${jobId}: records (${outcome})`]);
+  if (!commit.ok) {
+    ctx.log(
+      `RECORDS NOT COMMITTED — the paths staged but \`git commit\` failed (exit ${commit.status}): ${
+        commit.stderr.trim() || commit.stdout.trim() || '(no output)'
+      }`,
+    );
+    ctx.log(`  staged and left staged: ${paths.join(', ')}`);
+    return { committed: false, why: `git commit failed: exit ${commit.status}`, paths };
+  }
+  ctx.log(`committed the job's records: ${paths.join(', ')}`);
+  return { committed: true, why: 'committed', paths };
 }
 
 /** Breaker 3, exported so the bypass path is testable by attempting it. */
