@@ -46,7 +46,11 @@ timeline:
   - date: "2026-08-13"
     event: "Gemini 3.7 Flash released; introductory pricing declared to run through 2026-12-31"
     source_url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-3-7-flash/"
+  - date: "2026-09-02"
+    event: "Gemini 3.8 Flash released"
+    source_url: "https://openrouter.ai/google/gemini-3.8-flash"
 mentions:
+  - model/google-gemini-3-8-flash
   - model/google-gemini-3-7-flash
   - model/google-gemini-3-6-flash
   - model/google-gemini-3-5-flash
@@ -54,23 +58,28 @@ mentions:
 ---
 
 Google's cheap tier has overtaken its expensive one. In the OpenRouter
-catalog on 31 August 2026, the newest Gemini row on the Pro line is
+catalog on 3 September 2026, the newest Gemini row on the Pro line is
 `google/gemini-3.1-pro-preview`, listed on 19 February 2026 and still
-carrying `preview` in its name. The Flash line has shipped three times since:
+carrying `preview` in its name. The Flash line has shipped four times since:
 `google/gemini-3.5-flash` in May, `google/gemini-3.6-flash` on 21 July,
-`google/gemini-3.7-flash` on 13 August — the last two
-[three weeks apart](https://9to5google.com/2026/08/13/gemini-3-7-flash-launch/).
+`google/gemini-3.7-flash` on 13 August, `google/gemini-3.8-flash` on
+2 September. [llm-releases](https://llm-releases.com/models/gemini-3-8-flash)
+counts that run as Google's fourth Flash model in under four months;
+[9to5Google](https://9to5google.com/2026/09/02/gemini-3-8-flash-launch/) read
+it as the third Flash update in three months, with 3.8 rolling out three
+weeks after 3.7.
 
 The scoreboard now reads backwards. The Artificial Analysis intelligence
-index the catalog carries puts `google/gemini-3.7-flash` at
-{{fact:model/google-gemini-3-7-flash#intelligence_index}} against
+index the catalog carries puts `google/gemini-3.8-flash` at
+{{fact:model/google-gemini-3-8-flash#intelligence_index}} against
 {{fact:model/google-gemini-3-1-pro-preview#intelligence_index}} for the Pro
-preview, and the Flash row lists at
-{{fact:model/google-gemini-3-7-flash#price_input}} input against the Pro
-row's {{fact:model/google-gemini-3-1-pro-preview#price_input}}. Google's
-own numbers for the release are about coding and agents rather than the
-Pro comparison: DeepSWE at 65.3% against 49.0% for the previous Flash, and
-FrontierCode at 43.6% against 34.4%.
+preview, and
+[llm-releases](https://llm-releases.com/models/gemini-3-8-flash) splits the
+same index by reasoning effort:
+{{fact:model/google-gemini-3-8-flash#intelligence_index_by_effort}}. The
+Flash row also lists at
+{{fact:model/google-gemini-3-8-flash#price_input}} input against the Pro
+row's {{fact:model/google-gemini-3-1-pro-preview#price_input}}.
 
 Rising version numbers did not mean rising scores along the way. The July
 release, `google/gemini-3.6-flash`, sits at
@@ -80,6 +89,16 @@ fractionally below the
 `google/gemini-3.5-flash` from May, and at half its listed input price. That
 release bought its buyers cost, not capability. The jump came twenty-three
 days later.
+
+Google says the latest jump is a design choice: the launch post explains
+that "3.8 Flash works harder", executing extra reasoning steps and calling
+tools iteratively, and that "at times, the model might use more tokens to
+maximize performance, especially at higher effort levels".
+[llm-releases](https://llm-releases.com/models/gemini-3-8-flash) prices that
+sentence: output tokens per task rose to
+{{fact:model/google-gemini-3-8-flash#output_tokens_per_task}}, lifting cost
+per task to {{fact:model/google-gemini-3-8-flash#cost_per_task}} at high
+reasoning even though the per-token price never moved.
 
 The price on the current row is dated in a way vendors rarely publish:
 Google's launch post calls it introductory pricing, names 31 December 2026
