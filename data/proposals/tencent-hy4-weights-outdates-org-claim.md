@@ -25,6 +25,8 @@ evidence: >
     org entry reads, fetched 2026-09-02
   - content/wiki/model/tencent-hy4-preview.md (this job's entry) records the
     open-sourcing as dated facts
+proposed_by_job: j-20260902-25
+proposed_by_type: entry
 ---
 
 The org entry's sentence is two claims joined: "the only one of Tencent's
