@@ -83,3 +83,17 @@ tokens" would send the fix: "they fixed the doubled units, the diff is
 one word per page." The audience is internal but the defect is on the
 public site, and a repair here is cheaper than the next reader
 misreading a window comparison.
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-03
+- job: j-20260903-07 (repair)
+- merged as: `4034b22a47a097e4aabd2a65996cbebd8b61682b`
+- produced: `content/wiki/model/anthropic-claude-haiku-4-5.md`, `content/wiki/model/anthropic-claude-opus-4-8.md`, `content/wiki/model/openai-gpt-5-4.md`, `content/wiki/model/openai-gpt-5-6-luna.md`, `content/wiki/org/anthropic.md`
+- was: `context-window-transclusion-unit-doubling.md` (slug `context-window-transclusion-unit-doubling`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
