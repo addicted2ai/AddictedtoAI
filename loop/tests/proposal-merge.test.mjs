@@ -293,9 +293,18 @@ function sweepRepo(extra = {}) {
       'data/proposals/live-news.md':
         '---\nslug: live-news\ntype: post\ndate: 2026-09-09\nexpires: 2026-09-14\n---\n\nA story that is still current.\n',
     },
+    // The job is sourced from a DIRECTIVE, which outranks every proposal and
+    // the queue alike, so selection cannot touch either candidate above.
+    //
+    // This used to be a queue item. Since `let-dated-news-outrank-the-queue`
+    // an expiring proposal is reached BEFORE the queue, so `live-news` — whose
+    // whole job is to be the control that survives — was being selected and
+    // consumed by the very run this test drives, and `active` came back empty.
+    // A directive removes selection as a confound entirely, which is what a
+    // sweep test wants: what is measured below is the sweep, not the selector.
+    directives: '# DIRECTIVES.md\n\n- repair: an ordinary repair, so the run reaches its record commit\n',
     ...extra,
   });
-  writeQueue(ctx, [{ type: 'repair', title: 'an ordinary repair, so the run reaches its record commit' }]);
   return ctx;
 }
 

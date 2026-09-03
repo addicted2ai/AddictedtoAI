@@ -21,8 +21,28 @@ import { conformanceGate, loadConformance } from './runners.mjs';
 import { runnerHealthGate } from './health.mjs';
 
 /**
- * Gather every candidate, in the spec's priority order: directives, then the
- * derived queue, then ripe proposals.
+ * Gather every candidate, in the spec's priority order: directives, then any
+ * ripe proposal carrying an EXPIRY, then the derived queue, then every other
+ * ripe proposal.
+ *
+ * The expiring band sits above the queue because an expiry is a deadline the
+ * site set itself and the derived queue has none: an item the queue does not
+ * reach today it recomputes tomorrow, while expiring evidence that is not
+ * written before its date is swept to `dropped/` and gone. Measured
+ * 2026-09-02 (addictedtoai-mtnk): the blog published nothing on 2026-09-01
+ * across twenty-three jobs, because reviewers file carried findings into the
+ * queue about as fast as jobs retire them (37 filed, 35 retired in three days,
+ * 76% of them onto a file already carried), so source 2 never empties and news
+ * was only ever reached in the gaps.
+ *
+ * A proposal with NO expiry is deliberately left below the queue: with no
+ * deadline there is nothing to preempt for, and "proposals first" would be a
+ * much larger claim than the evidence supports.
+ *
+ * This reorders which work is reached, never how much of each kind may run.
+ * The upkeep floor and the new-writing ceiling are applied downstream in
+ * `selectJob` and still bind, so an expiring proposal over the ceiling is
+ * still refused.
  */
 export function gatherCandidates(ctx, { dryRun = false } = {}) {
   const warnings = [];
@@ -49,10 +69,18 @@ export function gatherCandidates(ctx, { dryRun = false } = {}) {
   const candidates = [];
   let order = 0;
   for (const d of directives) candidates.push({ ...d, priority: 1, order: order++ });
-  for (const it of q.items) {
-    candidates.push({ ...it, priority: 2, order: order++, tutorialVerify: isTutorialVerify(it) });
+  // `readProposals` already returns ripe proposals expiry-first, soonest
+  // first, so the stable sort below preserves "closest deadline wins" inside
+  // the expiring band.
+  for (const p of props.ripe) {
+    if (p.expires) candidates.push({ ...p, priority: 2, order: order++ });
   }
-  for (const p of props.ripe) candidates.push({ ...p, priority: 3, order: order++ });
+  for (const it of q.items) {
+    candidates.push({ ...it, priority: 3, order: order++, tutorialVerify: isTutorialVerify(it) });
+  }
+  for (const p of props.ripe) {
+    if (!p.expires) candidates.push({ ...p, priority: 4, order: order++ });
+  }
   candidates.sort((a, b) => a.priority - b.priority || a.order - b.order);
   return { candidates, warnings, notes, rejectionIndexUsed: props.rejected };
 }

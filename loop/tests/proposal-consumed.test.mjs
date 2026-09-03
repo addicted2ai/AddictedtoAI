@@ -29,7 +29,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, utimesSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { runLoop } from '../run.mjs';
@@ -198,11 +198,22 @@ test('POSITIVE CONTROL — only the consumed proposal is retired; the others are
 test('POSITIVE CONTROL — a merged job that came from the queue retires nothing', async (t) => {
   // The source of the job is what decides. A queue item that happened to merge
   // while a proposal sat in the directory must not consume it.
+  //
+  // The candidate here is UNDATED and backdated past cooling, which is what
+  // makes it a live candidate that genuinely LOSES to the queue. It used to
+  // carry an expiry, and since `let-dated-news-outrank-the-queue` an expiring
+  // proposal is reached BEFORE the queue — so the old fixture would have been
+  // selected from source 2's new superior, and this test would have been
+  // asserting nothing about queue-sourced jobs at all. Keeping it ripe rather
+  // than cooling is the point: a cooling candidate the selector never
+  // considered would make the assertion vacuous.
   const ctx = repo({
-    files: { 'data/proposals/dated-repair.md': RIPE },
+    files: { 'data/proposals/dated-repair.md': COOLING },
     queue: [{ type: 'repair', title: 'an ordinary queue item, not a proposal' }],
   });
   t.after(() => ctx.cleanup());
+  const ripeAge = new Date(NOW.getTime() - 30 * 86400000);
+  utimesSync(join(ctx.proposalsDir, 'dated-repair.md'), ripeAge, ripeAge);
 
   const res = await go(ctx);
   assert.equal(res.outcome, 'done', ctx.output());
