@@ -76,3 +76,17 @@ extends a known row rather than introducing a new thing.
 - Feed bindings for volatile fields (price, status, context) are kept; the
   entry adds what the feed cannot: what the model is and who made it.
 - Every source fetched during the job carries its retrieval date.
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-02
+- job: j-20260902-24 (entry)
+- merged as: `16e27a05903ffe5097aa019baee2ca068464ddd7`
+- produced: `content/wiki/model/inception-mercury-2-5-preview.md`
+- was: `inception-mercury-2-5-preview.md` (slug `inception-mercury-2-5-preview`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

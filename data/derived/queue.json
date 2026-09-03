@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 1,
+  "count": 4,
   "items": [
     {
       "detail": "The post tells the reader what is in the file: \"The rest of the file is clause 1 (the MIT-style grant, the notice condition, and a requirement that use comply with applicable laws), clause 3 (a standard as-is warranty), and a contact address, glmlicense@z.ai.\" Fetched from https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE on 2026-09-02 (4263 bytes), the file does not end there: after a `-----` separator it carries a complete Chinese version of the same licence, and the review-gate sentence appears there as \"安全审查的范围和方式由Z.AI合理确定\" (合理 = reasonably). The two halves agree on substance, and the file names no governing language, which for a licence is worth a clause of its own. One sentence added to that enumeration — that the English text is followed by a Chinese translation of the whole licence, with no governing-language clause — would close the gap between what the post says the file contains and what a reader who opens the raw URL will find. Two smaller notes in the same sentence: the MIT-style grant is actually the preamble paragraph above clause 1, not part of clause 1, and \"The review itself is two sentences of the file and nothing more\" is true of the English half only.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-22 (`j-20260902-22.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -10,7 +10,34 @@
       "target": "content/blog/glm-5-3-license-revenue-gate.md",
       "title": "Say that the LICENSE file is bilingual, not English-only",
       "type": "repair"
+    },
+    {
+      "detail": "The rewritten sentence keeps \"your group's revenue over any trailing 12 months is $10B or more\". The fetched LICENSE says \"exceeds 10 billion US dollars (or the equivalent in other currencies) in total over any consecutive 12 months\". Two slips in one clause: \"or more\" includes a group at exactly $10.0B, which \"exceeds\" does not, and \"trailing\" narrows the window to one ending now, where \"any consecutive\" reaches any 12-month span. The post's own analysis section gets the window right (\"over any consecutive 12 months, so a fiscal year is the wrong window to check against\"), and the title and lede get the threshold right (\"above $10B\", \"passes $10B\"), so this is the one place the closing summary drifts from the quoted text. \"over any consecutive 12 months is above $10B\" fixes both.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-23 (`j-20260902-23.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/glm-5-3-license-revenue-gate.md",
+      "target": "content/blog/glm-5-3-license-revenue-gate.md",
+      "title": "\"$10B or more\" and \"trailing 12 months\" both loosen the licence's own words",
+      "type": "repair"
+    },
+    {
+      "detail": "The post says \"The rest of the file is clause 1 (the MIT-style grant, the notice condition, and a requirement that use comply with applicable laws)\". In the LICENSE fetched 2026-09-02 the grant is the unnumbered paragraph above the numbered list — it opens \"Permission is hereby granted, free of charge, to any person or entity (the Licensee) obtaining a copy of this software\" and closes \"subject to the following conditions:\" — and clause 1 is exactly two sentences, the notice condition and the applicable-laws sentence, with no grant language in it. The post's argument in \"The condition attaches to all commercial use, not just MaaS\" leans on the grant being made subject to the conditions, which is a preamble fact, so naming it correctly strengthens that section. This was raised in the pass-1 record for j-20260902-20 and was not transcribed into `data/carried/`, so it is currently tracked nowhere; I re-verified it against the file myself rather than taking that record's word for it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-23 (`j-20260902-23.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/glm-5-3-license-revenue-gate.md",
+      "target": "content/blog/glm-5-3-license-revenue-gate.md",
+      "title": "The MIT-style grant is the unnumbered preamble, not part of clause 1",
+      "type": "repair"
+    },
+    {
+      "detail": "\"The rest of the file is clause 1 ..., clause 3 ..., and a contact address\" describes 14 of the file's 29 lines. Below a `-----` rule the same three clauses appear in full Chinese translation (100亿美元 for the ten-billion line, 任意连续12个月 for the window, 由Z.AI合理确定 for \"reasonably determined by Z.AI\"), and nothing in either half says which language governs. For a post whose whole subject is the exact reach of one clause, an unremarked parallel text with no governing-language clause is a real fact about the instrument. One sentence in \"Clause 2, verbatim\" would close it. Also raised in the pass-1 record for j-20260902-20 and likewise not transcribed anywhere.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-23 (`j-20260902-23.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/glm-5-3-license-revenue-gate.md",
+      "target": "content/blog/glm-5-3-license-revenue-gate.md",
+      "title": "The licence file is bilingual and names no governing language",
+      "type": "repair"
     }
   ],
-  "total_before_cap": 1
+  "total_before_cap": 4
 }
