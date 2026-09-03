@@ -88,3 +88,18 @@ quotable, primary, and four days old.
   itself and states the timeout row each figure comes from: CyberGym is a
   single row (unlimited timeout), and each ExploitGym value is the 2h / 6h
   pair from the one "ExploitGym (2h / 6h)" row.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-02
+- job: j-20260902-20 (post)
+- merged as: `b1e33be3b11700a82ff519d517974935454560ca`
+- produced: `content/blog/glm-5-3-license-revenue-gate.md`
+- was: `glm-5-3-license-revenue-gate.md` (slug `glm-5-3-license-revenue-gate`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
