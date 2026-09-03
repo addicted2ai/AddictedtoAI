@@ -1454,28 +1454,108 @@ export async function runLoop(ctx, opts = {}) {
  *
  * @returns {{committed: boolean, why: string, paths: string[]}}
  */
-export function commitJobRecords(ctx, { staged, jobId, outcome }) {
+export function commitJobRecords(ctx, { staged: stagedIn, jobId, outcome }) {
+  let staged = stagedIn;
   if (!staged.length) {
     const why = 'no record path existed to stage';
     ctx.log(`records: ${why}`);
     return { committed: false, why, paths: [] };
   }
+  // Drop the source half of a move that something else has ALREADY committed.
+  //
+  // This is the cause rather than the damage, and dropping it here keeps the
+  // ordinary publishing run on the fast path. When publishing is on, the
+  // publish step runs before this commit and stages `data/` wholesale
+  // (addictedtoai-ps3), so it routinely commits a consumed proposal's move
+  // first. The source path is then in neither the working tree nor the index,
+  // which makes it an unmatched pathspec — and one of those is fatal for the
+  // whole `add` (see the retry below). A path that is absent from disk but
+  // still tracked is exactly what `sweptPaths`/`consumedPaths` exist for and
+  // is kept: `ls-files` returns it, because that is how a deletion gets
+  // staged alongside its addition.
+  const absent = staged.filter((p) => !existsSync(join(ctx.repoRoot, p)));
+  let stageable = staged;
+  if (absent.length) {
+    const ls = gitTry(ctx.repoRoot, ['ls-files', '--', ...absent]);
+    const tracked = new Set(
+      ls.stdout
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    );
+    // Only drop when `ls-files` actually answered. If it failed, keep every
+    // path and let the retry sort it out — a broken query must not silently
+    // discard records.
+    const drop = ls.ok ? absent.filter((p) => !tracked.has(p)) : [];
+    if (drop.length) {
+      stageable = staged.filter((p) => !drop.includes(p));
+      ctx.log(
+        `records: ${drop.length} moved path(s) are already committed elsewhere and are not this ` +
+          `run's to record: ${drop.join(', ')}`,
+      );
+    }
+  }
+  if (!stageable.length) {
+    const why = 'every record path was already committed elsewhere';
+    ctx.log(`records: ${why}`);
+    return { committed: false, why, paths: [] };
+  }
+  staged = stageable;
+
   const add = gitTry(ctx.repoRoot, ['add', '--', ...staged]);
   if (!add.ok) {
-    // Loud, and naming the paths, because these files are now the only copy of
-    // this run's records and nothing downstream will notice they are missing.
-    ctx.log(
-      `RECORDS NOT COMMITTED — \`git add\` failed (exit ${add.status}): ${
-        add.stderr.trim() || '(no stderr)'
-      }`,
-    );
-    ctx.log(`  could not stage: ${staged.join(', ')}`);
-    ctx.log(
-      '  they are in the working tree, uncommitted. If .git/index.lock is held, a concurrent ' +
-        'Pulse or another agent has the index; the files are intact and need committing by the ' +
-        'next run or by hand (addictedtoai-tqpq).',
-    );
-    return { committed: false, why: `git add failed: ${add.stderr.trim() || `exit ${add.status}`}`, paths: staged };
+    // ONE UNMATCHED PATHSPEC IS FATAL FOR THE WHOLE `add`, and that is the
+    // mechanism behind every instance of this defect measured so far.
+    //
+    // `sweptPaths` and `consumedPaths` name the SOURCE of a move, which by
+    // construction no longer exists on disk. Staging it is right and
+    // deliberate — it is how the deletion travels with the addition — but it
+    // only works while git still knows the path. When publishing is on, the
+    // publish step runs BEFORE this commit and stages `data/` wholesale
+    // (addictedtoai-ps3), so it may already have committed the move. The path
+    // is then absent from the working tree AND from the index, `git add` says
+    // "did not match any files", exits 128, and takes every OTHER path in the
+    // same invocation down with it.
+    //
+    // Measured 2026-09-03 on j-20260903-06: one already-committed proposal
+    // move discarded the ledger line, the verdict record, the derived tree, a
+    // noted proposal and both carried findings.
+    //
+    // So retry per path. A record that can be staged is staged; one that
+    // cannot is named. No single odd path may cost the rest.
+    const staged1 = [];
+    const failed = [];
+    for (const p of staged) {
+      const one = gitTry(ctx.repoRoot, ['add', '--', p]);
+      if (one.ok) staged1.push(p);
+      else failed.push({ path: p, why: one.stderr.trim() || `exit ${one.status}` });
+    }
+    for (const f of failed) {
+      const gone = /did not match any file/i.test(f.why);
+      ctx.log(
+        `records: could not stage ${f.path} — ${f.why}${
+          gone
+            ? '. This is the source half of a move that something else has already committed ' +
+              '(most likely the publish step, which stages data/ wholesale and runs first), so ' +
+              'there is nothing left for this run to record about it.'
+            : ''
+        }`,
+      );
+    }
+    if (!staged1.length) {
+      // Loud, and naming the paths, because these files are now the only copy
+      // of this run's records and nothing downstream will notice they are
+      // missing.
+      ctx.log(`RECORDS NOT COMMITTED — not one record path could be staged (exit ${add.status})`);
+      ctx.log(`  could not stage: ${staged.join(', ')}`);
+      ctx.log(
+        '  they are in the working tree, uncommitted. If .git/index.lock is held, a concurrent ' +
+          'Pulse or another agent has the index; the files are intact and need committing by the ' +
+          'next run or by hand (addictedtoai-tqpq).',
+      );
+      return { committed: false, why: `git add failed: ${add.stderr.trim() || `exit ${add.status}`}`, paths: staged };
+    }
+    ctx.log(`records: staged ${staged1.length} of ${staged.length} path(s) individually after the batch add failed`);
   }
   const has = gitTry(ctx.repoRoot, ['diff', '--cached', '--name-only']).stdout.trim();
   if (!has) {

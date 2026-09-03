@@ -106,6 +106,120 @@ test('an empty path list says so rather than passing `git add --` no arguments',
   ctx.cleanup();
 });
 
+// ---------------------------------------------------------------------------
+// The unmatched pathspec, which is what actually caused every instance.
+// ---------------------------------------------------------------------------
+
+test('ONE ALREADY-COMMITTED MOVE DOES NOT DISCARD THE REST OF THE RECORDS', () => {
+  // THE REPRODUCTION, measured on j-20260903-06. `sweptPaths`/`consumedPaths`
+  // name the SOURCE of a move, which no longer exists on disk. That is
+  // deliberate — it is how a deletion travels with its addition — but it only
+  // works while git still knows the path. With publishing on, the publish step
+  // runs first and stages `data/` wholesale, so it routinely commits the move
+  // before this function sees it. `git add` then reports "did not match any
+  // files", exits 128, AND TAKES EVERY OTHER PATH DOWN WITH IT: one odd path
+  // cost the ledger line, the verdict record, the derived tree, a noted
+  // proposal and two carried findings.
+  const ctx = makeRepo({ files: { 'data/proposals/dated.md': '---\nslug: dated\n---\n\nbody\n' } });
+  // Someone else commits the move first, exactly as the publish step does.
+  rmSync(join(ctx.repoRoot, 'data/proposals/dated.md'));
+  record(ctx, 'data/proposals/consumed/dated.consumed-1.md');
+  git(ctx.repoRoot, ['add', '-A']);
+  git(ctx.repoRoot, ['commit', '--no-verify', '-m', 'publish: staged data/ wholesale']);
+
+  // Now the run tries to record its own work, still naming the moved source.
+  const staged = [
+    record(ctx, 'data/ledger.jsonl', '{"id":"j-6"}\n'),
+    record(ctx, 'data/carried/j-6-carry-1.md'),
+    'data/proposals/dated.md',
+  ];
+
+  const r = commitJobRecords(ctx, { staged, jobId: 'j-6', outcome: 'done' });
+
+  // THE OUTCOME ONLY, deliberately. Two independent nets produce it — the
+  // pre-filter that drops the path up front, and the per-path retry that
+  // survives a batch `add` failing — and this asserts the invariant they exist
+  // for rather than which one delivered it. Disabling either alone leaves this
+  // green, which is what having two means; the message each one prints is
+  // pinned by its own test below.
+  assert.equal(r.committed, true, `the survivable paths must still commit:\n${ctx.output()}`);
+  assert.ok(r.paths.includes('data/ledger.jsonl'), 'the ledger line the budget is computed from');
+  assert.ok(r.paths.includes('data/carried/j-6-carry-1.md'), 'and the carried finding');
+  assert.equal(git(ctx.repoRoot, ['status', '--porcelain']).trim(), '', 'nothing is left stranded');
+  ctx.cleanup();
+});
+
+test('the already-committed move is dropped UP FRONT, so an ordinary publishing run stays on the fast path', () => {
+  // The pre-filter's own test. Without it every publishing run would fail its
+  // batch `add`, fall back to staging one path at a time, and log a
+  // could-not-stage line for a completely ordinary condition — and routine
+  // noise is how a real failure goes unread.
+  const ctx = makeRepo({ files: { 'data/proposals/dated.md': '---\nslug: dated\n---\n\nbody\n' } });
+  rmSync(join(ctx.repoRoot, 'data/proposals/dated.md'));
+  record(ctx, 'data/proposals/consumed/dated.consumed-1.md');
+  git(ctx.repoRoot, ['add', '-A']);
+  git(ctx.repoRoot, ['commit', '--no-verify', '-m', 'publish: staged data/ wholesale']);
+
+  const staged = [record(ctx, 'data/ledger.jsonl', '{"id":"j-6b"}\n'), 'data/proposals/dated.md'];
+  const r = commitJobRecords(ctx, { staged, jobId: 'j-6b', outcome: 'done' });
+
+  assert.equal(r.committed, true, ctx.output());
+  assert.match(ctx.output(), /already committed elsewhere/, 'it must say why the path was dropped');
+  assert.match(ctx.output(), /data\/proposals\/dated\.md/, 'and name it');
+  assert.doesNotMatch(
+    ctx.output(),
+    /individually after the batch add failed/,
+    'and it must never have reached the retry — the batch add has to succeed on the fast path',
+  );
+  assert.doesNotMatch(ctx.output(), /could not stage/, 'an ordinary condition must not print a failure line');
+  ctx.cleanup();
+});
+
+test('the PER-PATH RETRY is what saves the rest when one path git refuses is not a moved source', () => {
+  // The retry's own test, and it needed writing: a two-factor mutation showed
+  // that disabling the retry alone failed NOTHING, because every other test
+  // here is satisfied by the pre-filter or by the total-failure branch. A net
+  // no test can distinguish is a net that can be deleted by accident.
+  //
+  // The case is real rather than contrived. `.gitignore` in this repository
+  // carries `/HOLD.md` and `/STOP` (beads addictedtoai-ufu), and the fixture
+  // copies those rules deliberately. A staged path git REFUSES — as opposed to
+  // one it has never heard of — is invisible to the pre-filter, because the
+  // file is right there on disk. It still fails the batch `add` and would
+  // still take every record with it.
+  const ctx = makeRepo();
+  writeFileSync(join(ctx.repoRoot, 'HOLD.md'), 'a halt\n', 'utf8');
+  const staged = [record(ctx, 'data/ledger.jsonl', '{"id":"j-8"}\n'), 'HOLD.md'];
+
+  const r = commitJobRecords(ctx, { staged, jobId: 'j-8', outcome: 'done' });
+
+  assert.equal(r.committed, true, `the ledger line must survive a path git refuses:\n${ctx.output()}`);
+  assert.deepEqual(r.paths, ['data/ledger.jsonl']);
+  assert.match(ctx.output(), /could not stage HOLD\.md/, 'and the refused path is named');
+  assert.match(ctx.output(), /staged 1 of 2 path\(s\) individually/, 'and the retry says it happened');
+  ctx.cleanup();
+});
+
+test('THE CONTROL: a move whose source is still TRACKED is kept, so the deletion travels with the addition', () => {
+  // The pre-filter must not throw away the case the mechanism exists for. A
+  // path absent from disk but present in the index is a staged deletion, and
+  // dropping it would leave the proposal existing in two places in the
+  // history — the split `run.mjs` says must never happen.
+  const ctx = makeRepo({ files: { 'data/proposals/dated.md': '---\nslug: dated\n---\n\nbody\n' } });
+  rmSync(join(ctx.repoRoot, 'data/proposals/dated.md'));
+  const staged = ['data/proposals/dated.md', record(ctx, 'data/proposals/consumed/dated.consumed-1.md')];
+
+  const r = commitJobRecords(ctx, { staged, jobId: 'j-7', outcome: 'done' });
+
+  assert.equal(r.committed, true, ctx.output());
+  assert.ok(r.paths.includes('data/proposals/dated.md'), 'the deletion must be in the commit');
+  assert.ok(r.paths.includes('data/proposals/consumed/dated.consumed-1.md'), 'together with the addition');
+  assert.doesNotMatch(ctx.output(), /already committed elsewhere/, 'and it must NOT be dropped');
+  const show = git(ctx.repoRoot, ['show', '--name-status', '--format=', 'HEAD']);
+  assert.match(show, /^D\s+data\/proposals\/dated\.md$/m, `the commit records the deletion:\n${show}`);
+  ctx.cleanup();
+});
+
 test('both halves of a proposal move are named when the lock blocks them — the split this prevents', () => {
   // `run.mjs` stages the removal AND the addition of a consumed proposal
   // together, because "the history never shows one proposal existing in two
