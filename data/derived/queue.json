@@ -3,12 +3,12 @@
   "count": 1,
   "items": [
     {
-      "detail": "The openai-astra-critical-cyber-designation docket anchors on https://openai.com/index/path-to-astra/. Fetched twice during this review, that URL returned \"The server returned HTTP 403 Forbidden\" both times. The page exists and the docket's quotes are corroborated by third parties (SecurityWeek gives \"Astra now declines 91.5% of cyber-related jailbreak attempts in its testing, up from 59% for its predecessor, GPT-5.6 Sol\"; TechCrunch, 2026-09-01, gives the perfect ExploitBench score and the two zero-days), but a post job told to re-fetch and quote the announcement page directly will be blocked by the same 403. The docket should name a retrieval route that works, or the job should expect to quote the corroborating coverage and say so.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-07 (`j-20260902-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "detail": "The card's table header reads \"Fable 5 (w/ fallback)\", and that is the only occurrence of the string \"Fable 5\" anywhere in the card (grep count: 1). The proposal's summary says GLM-5.3 stands \"third on the card's own row (behind Fable 5 and GPT-5.6 Sol)\", and the new evidence sentence says \"the GLM-5.2, Opus 4.8, Fable 5 and GPT-5.6 Sol figures\"; both drop the qualifier the card attaches to that column. In a post whose whole point is that the row's columns were not produced alike, a configuration qualifier the vendor itself attached is the wrong detail to lose. Fix when the post is written: name the column as the card labels it — \"Fable 5 (w/ fallback)\" — at least on first mention of its 181/247.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-15 (`j-20260902-15.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
-      "subject": "data/proposals/openai-astra-critical-cyber-designation.md",
-      "target": "data/proposals/openai-astra-critical-cyber-designation.md",
-      "title": "Warn the Astra post job that openai.com/index/ is 403 to WebFetch",
+      "subject": "data/proposals/glm-5-3-license-revenue-gate.md",
+      "target": "data/proposals/glm-5-3-license-revenue-gate.md",
+      "title": "Keep the card's \"(w/ fallback)\" qualifier when the post names Fable 5's ExploitGym figures",
       "type": "repair"
     }
   ],
