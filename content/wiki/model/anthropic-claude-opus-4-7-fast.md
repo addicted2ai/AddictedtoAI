@@ -40,8 +40,7 @@ no expiry date. All three Anthropic fast rows left the catalog in that same
 snapshot, as observed on 2 September 2026, and this one had been there
 longest: OpenRouter's records date it
 to 2026-05-12, ahead of `anthropic/claude-opus-4.8-fast` (2026-05-27) and
-`anthropic/claude-opus-5-fast` (2026-07-24). The bound facts above still
-render their last-known values as of 2026-09-01.
+`anthropic/claude-opus-5-fast` (2026-07-24).
 
 The other two fast pages carry a dated notice; this one carries none. As of
 September 1, 2026, OpenRouter deprecated `anthropic/claude-opus-4.8-fast`
@@ -60,10 +59,10 @@ silent fallback, where Opus 4.6 would have run standard. OpenRouter's
 current listing of `anthropic/claude-opus-4.7` agrees: the standard row
 remains, with its usual providers and no fast endpoint among them. The row
 this page describes nonetheless existed, and sold at premium pricing until
-the end: 0.00003 in / 0.00015 out per token against the standard row's
-0.000005 / 0.000025 — six times the base — which OpenRouter's own
-description, still live, calls "identical capabilities with higher output
-speed at premium 6x pricing." Nothing in either source records how those
+the end: its last-known values as of 2026-09-01, 0.00003 in / 0.00015 out
+per token against the standard row's 0.000005 / 0.000025 — six times the
+base — which OpenRouter's own description, still live, calls "identical
+capabilities with higher output speed at premium 6x pricing." Nothing in either source records how those
 two fit together; the row simply stopped listing.
 
 So the honest answer is that fast mode on Opus 4.7 is not available
