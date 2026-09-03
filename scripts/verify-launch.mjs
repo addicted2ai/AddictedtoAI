@@ -607,22 +607,49 @@ function checkReviews(corpus, dataDir) {
     // lint is advisory, so this field is the entire mechanical bar between
     // machine-made prose and the live site.
     if (needsReadsHuman(doc.type)) {
-      if (!v.readsHuman) {
+      // The bar belongs to the PIECE, not to whichever record happens to be
+      // current for it. The merge gate asks the voice question of post JOBS;
+      // this check asks it of post PIECES; the two agree on the predicate and
+      // used to differ on its subject, which is a divergence this file's own
+      // header has twice claimed cannot happen.
+      //
+      // Measured 2026-09-02: `j-20260902-23`, a REPAIR job, corrected three
+      // licence sentences in a published post. Its reviewer saw a diff and
+      // correctly wrote no `reads-human` — it said so in the record — and that
+      // record superseded `j-20260902-20.pass2.md`, which approved the post
+      // with a full voice verdict. The post had been reviewed for voice and
+      // read as though it never had.
+      //
+      // So the question is whether ANY approving reviewer ever answered it for
+      // this piece, not whether the newest one did. Whether a repair that
+      // rewrites a post's prose should re-take the voice verdict is a real and
+      // separate question — the `reviewed:` hash already tracks moved bytes —
+      // and it is carried by its own issue rather than decided here.
+      const voiceRec =
+        normalizeField(v.readsHuman) && v.verdict === 'approve'
+          ? rec
+          : (hit.declaredBy ?? []).find(
+              (r) => r.verdict?.verdict === 'approve' && normalizeField(r.verdict.readsHuman),
+            ) ?? null;
+      if (!voiceRec) {
+        const also = (hit.declaredBy ?? []).map((r) => r.name).filter((n) => n !== rec.name);
         problems.push(
-          `${doc.file}: ${rec.name} approves a ${doc.type} with an EMPTY \`reads-human\`. ` +
-            'specs/review: the voice question is asked, not merely available, and the merge gate ' +
-            'refuses this record (`reads-human-empty`). The prebuild voice lint only warns, so ' +
-            'this field is the bar.',
+          `${doc.file}: no approving record carries a \`reads-human\`. The current record is ` +
+            `${rec.name}` +
+            (also.length ? `, and the others naming this piece are ${also.join(', ')}` : '') +
+            '. specs/review: the voice question is asked, not merely available, and the merge ' +
+            'gate refuses such a record (`reads-human-empty`). The prebuild voice lint only ' +
+            'warns, so this field is the bar.',
         );
         continue;
       }
-      const twins = (voiceByValue.get(normalizeField(v.readsHuman)) ?? []).filter(
-        (n) => n !== rec.name,
+      const twins = (voiceByValue.get(normalizeField(voiceRec.verdict.readsHuman)) ?? []).filter(
+        (n) => n !== voiceRec.name,
       );
       if (twins.length) {
         problems.push(
-          `${doc.file}: ${rec.name}'s \`reads-human\` is identical (after trimming) to the field ` +
-            `in ${twins.join(', ')}. specs/review refuses a recycled sentence at merge ` +
+          `${doc.file}: ${voiceRec.name}'s \`reads-human\` is identical (after trimming) to the ` +
+            `field in ${twins.join(', ')}. specs/review refuses a recycled sentence at merge ` +
             '(`reads-human-duplicate`); it does not become valid at launch.',
         );
         continue;
