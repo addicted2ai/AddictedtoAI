@@ -66,3 +66,18 @@ produce, while the entry's value is durable facts.
 - The entry states the free-two-weeks window and the Hy3 extension to
   September 30 with dates.
 - Every source fetched during the job carries its retrieval date.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-03
+- job: j-20260902-25 (entry)
+- merged as: `c67e202a6e01ba24eaa7aa6563a360278320cd60`
+- produced: `content/wiki/model/tencent-hy4-preview.md`
+- was: `tencent-hy4-preview-open-weights.md` (slug `tencent-hy4-preview-open-weights`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

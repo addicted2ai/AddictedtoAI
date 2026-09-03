@@ -1,7 +1,7 @@
 {
-  "body_hash": "882374e6e46456c23533a2dd26fc74c88df9f00b9f4f58067550e280dec411aa",
-  "date": "2026-08-28",
-  "fetched_at": "2026-08-28T18:19:35.089Z",
+  "body_hash": "c248722ce604c7b1be951c615a0bd0001d2e3a94c21d80622043552f0d8cf7bb",
+  "date": "2026-09-01",
+  "fetched_at": "2026-09-01T06:00:03.562Z",
   "row_count": 60,
   "rows": {
     "00a6e024-dee9-47e9-9cc7-d74d1c52ffa4": {
@@ -21,15 +21,6 @@
       "source_name": "OpenAI",
       "source_url": "https://openai.com/index/gpt-5-6/",
       "title": "OpenAI takes the GPT-5.6 family to GA"
-    },
-    "08613cc5-35b0-4d62-9037-a33da8ebcb82": {
-      "description": "Base44 - Base44 (a Wix company) rolls out Base1, a general-purpose 'vibe coding' agent fine-tuned on an open-source foundation model using data from tens of millions of platform interactions, selectable alongside GPT-5.5 and Claude Opus 4.8 in its model picker.",
-      "guid": "08613cc5-35b0-4d62-9037-a33da8ebcb82",
-      "link": "https://llm-releases.com/models/base1",
-      "pubDate": "Mon, 29 Jun 2026 00:00:00 GMT",
-      "source_name": "Base44",
-      "source_url": "https://base44.com",
-      "title": "Base44 rolls out Base1, its first in-house model"
     },
     "08bd42e4-d622-40b4-9c61-f7c7c8bbd396": {
       "description": "Moonshot AI - Moonshot AI publishes the full Kimi K3 weights to Hugging Face under a Modified MIT license on July 26 — a day ahead of its announced July 27 target — making the 2.8T-parameter MoE freely downloadable, modifiable, and self-hostable, and cementing K3 as the largest open-weight model publicly available.",
@@ -58,6 +49,15 @@
       "source_url": "https://thinkingmachines.ai/news/introducing-inkling/",
       "title": "Thinking Machines releases Inkling"
     },
+    "12f99309-06bd-41e3-a8df-c337553b2bac": {
+      "description": "Ant Group (inclusionAI) - Ant Group inclusionAI launched Ling-3.0-flash-Fin, a finance-domain-tuned variant of Ling-3.0-flash (124B/5.1B MoE) for investment and banking workflows, with a 256K context and tool calling. Hosted API first with a one-month free OpenRouter window; open weights announced for the week of Aug 31 2026 (not yet posted at launch).",
+      "guid": "12f99309-06bd-41e3-a8df-c337553b2bac",
+      "link": "https://llm-releases.com/models/ling-3-0-flash-fin",
+      "pubDate": "Thu, 27 Aug 2026 00:00:00 GMT",
+      "source_name": "Ant Group (inclusionAI)",
+      "source_url": "https://openrouter.ai/inclusionai/ling-3.0-flash-fin",
+      "title": "Ant Group launches Ling-3.0-flash-Fin"
+    },
     "1357d23a-6549-448a-8c55-b834830619c1": {
       "description": "DeepSeek - DeepSeek moves the V4 model family (V4-Pro and V4-Flash) out of preview and into general availability, closing a run of just under three months from the April 24 preview. The legacy deepseek-chat and deepseek-reasoner API aliases are retired on July 24, 2026 with no fallback; production traffic must reference deepseek-v4-pro / deepseek-v4-flash.",
       "guid": "1357d23a-6549-448a-8c55-b834830619c1",
@@ -67,6 +67,15 @@
       "source_url": "https://api-docs.deepseek.com/news",
       "title": "DeepSeek V4 family reaches general availability"
     },
+    "16a51c05-6af5-4307-8fed-98490ebdb73e": {
+      "description": "Cohere - Cohere released Parse 5 (parse-v5.0), a 2.3B document-intelligence vision-language model that converts PDFs, slides, and images into structured Markdown with tables, forms, and bounding boxes, across nine languages. Priced at $1.50 per 1,000 pages via API, with Model Vault, SageMaker, and Azure availability. Positioned on price-to-performance.",
+      "guid": "16a51c05-6af5-4307-8fed-98490ebdb73e",
+      "link": "https://llm-releases.com/models/cohere-parse-5",
+      "pubDate": "Thu, 27 Aug 2026 00:00:00 GMT",
+      "source_name": "Cohere",
+      "source_url": "https://cohere.com/blog/parse",
+      "title": "Cohere releases Parse 5 document-intelligence VLM"
+    },
     "194c85d3-6d4c-4aed-a834-23da2023563c": {
       "description": "Tencent Hunyuan - Tencent Hunyuan open-weighted Hy-MT2-30B-A3B, a fast-thinking multilingual machine-translation MoE (30B total / ~3B active) covering 33 language pairs plus Chinese-dialect and minority-language pairs, with an 8K context small enough to run locally.",
       "guid": "194c85d3-6d4c-4aed-a834-23da2023563c",
@@ -75,15 +84,6 @@
       "source_name": "Tencent Hunyuan",
       "source_url": "https://huggingface.co/tencent/Hy-MT2-30B-A3B",
       "title": "Tencent open-weights Hy-MT2-30B-A3B"
-    },
-    "1bb58cda-68ea-43db-b8e5-b60b851bfb7e": {
-      "description": "Meta AI - Meta Superintelligence Labs releases Muse Spark 1.1 in US public preview on the Meta Model API, the first time Meta charges for one of its models. A natively multimodal reasoning model (text/image/video/PDF/audio in, text out) with a self-compacting 1M-token context, aimed at agentic and coding workflows and priced at $1.25/$4.25 per Mtok — about a quarter of comparable Anthropic/OpenAI models. Closed weights; benchmarks around the Opus 4.8 / GPT-5.5 tier.",
-      "guid": "1bb58cda-68ea-43db-b8e5-b60b851bfb7e",
-      "link": "https://llm-releases.com/models/muse-spark-1-1",
-      "pubDate": "Thu, 09 Jul 2026 00:00:00 GMT",
-      "source_name": "Meta AI",
-      "source_url": "https://www.marktechpost.com/2026/07/09/meta-superintelligence-labs-releases-muse-spark-1-1/",
-      "title": "Meta launches Muse Spark 1.1 — its first paid model"
     },
     "1c89550b-4e66-4de4-9b79-f98066dcb759": {
       "description": "OpenAI - OpenAI launched GPT-5.6-Cyber, a cybersecurity-specialized model built on GPT-5.6-Sol with a lower refusal rate on dual-use security tasks, reporting a 95% completion rate on advanced exploit-chain prompts. Access is gated to vetted defenders through the new Daybreak Red tier; the model is not generally available and weights are not released.",
@@ -139,6 +139,15 @@
       "source_url": "https://www.marktechpost.com/2026/08/03/alibaba-qwen-releases-qwen3-8-max/",
       "title": "Alibaba ships Qwen3.8-Max to general availability"
     },
+    "34ed470c-dbc8-4a25-a0cb-7bca39adcc11": {
+      "description": "Z.ai (Zhipu AI) - Z.ai's GLM-5.2 Turbo (API id glm-5.2-fast) surfaced as a speed-optimized hosted serving tier of GLM-5.2, carrying the 1M-token context and served through Z.ai and SCX.ai at premium fast-tier pricing (~$1.99 in / $6.16 out per Mtok). Parameter count, architecture detail, and any open-weight release for the Turbo tier are undisclosed.",
+      "guid": "34ed470c-dbc8-4a25-a0cb-7bca39adcc11",
+      "link": "https://llm-releases.com/models/glm-5-2-turbo",
+      "pubDate": "Mon, 17 Aug 2026 00:00:00 GMT",
+      "source_name": "Z.ai (Zhipu AI)",
+      "source_url": "https://llmgateway.io/models/glm-5.2-fast",
+      "title": "Z.ai surfaces GLM-5.2 Turbo fast-serving tier"
+    },
     "387e3f1f-a7f2-491b-8a2b-b0377a0a4453": {
       "description": "Google DeepMind - Bloomberg reports Google delayed Gemini 3.5 Pro again after the rebuilt model fell short of internal quality goals on hallucinations and reliability — its third slipped target after June and early July. Google DeepMind's Logan Kilpatrick said on July 21 the company is testing it with partners and hopes to \"land soon\"; there is still no model card or public API entry.",
       "guid": "387e3f1f-a7f2-491b-8a2b-b0377a0a4453",
@@ -193,6 +202,15 @@
       "source_url": "https://huggingface.co/apodex/Apodex-1.1-mini",
       "title": "Apodex 1.1 mini released as an open-weight 35B model"
     },
+    "45b5eeb6-9aa0-489a-adb1-396c436cd22f": {
+      "description": "Alibaba (Qwen) - Alibaba released Qwen3.8-Flash-Next, an open-weight 125B/6B sparse MoE previewing the Qwen4 architecture (Gated-DeltaNet + Qwen Sparse Attention, n-gram embedding, multi-token prediction). Native 262K context extensible to 1M via YaRN; weights under the Qwen Community License 1.0. Status: preview.",
+      "guid": "45b5eeb6-9aa0-489a-adb1-396c436cd22f",
+      "link": "https://llm-releases.com/models/qwen3-8-flash-next",
+      "pubDate": "Wed, 26 Aug 2026 00:00:00 GMT",
+      "source_name": "Alibaba (Qwen)",
+      "source_url": "https://the-decoder.com/alibaba-releases-qwen3-8-flash-next-targeting-ultimate-cost-efficiency/",
+      "title": "Alibaba releases Qwen3.8-Flash-Next (Qwen4 preview)"
+    },
     "47666f8e-8ed0-4ee8-9b7e-a927354eea33": {
       "description": "Microsoft - Microsoft released MAI-Code-1.1-Flash, an efficiency-focused agentic coding model rolling out across GitHub Copilot (CLI and VS Code). Microsoft reports +22% on Terminal-Bench 2.1 and +15% on .NET over MAI-Code-1.0, with 25% greater token efficiency at roughly a quarter of the cost.",
       "guid": "47666f8e-8ed0-4ee8-9b7e-a927354eea33",
@@ -201,6 +219,15 @@
       "source_name": "Microsoft",
       "source_url": "https://microsoft.ai/news/mai-code-1-1-flash-br-better-faster-at-a-quarter-of-the-cost/",
       "title": "Microsoft releases MAI-Code-1.1-Flash in GitHub Copilot"
+    },
+    "4bd27e94-0504-4d3b-adf3-caca87cdd65e": {
+      "description": "IBM - The smallest Granite 4.2 model (~4B on Hugging Face), aimed at local / edge deployment, with the family's thinking / non-thinking switch and native tool calling. Open weights on Hugging Face, Ollama, and GitHub.",
+      "guid": "4bd27e94-0504-4d3b-adf3-caca87cdd65e",
+      "link": "https://llm-releases.com/models/granite-4-2-3b",
+      "pubDate": "Tue, 25 Aug 2026 00:00:00 GMT",
+      "source_name": "IBM",
+      "source_url": "https://huggingface.co/ibm-granite/granite-4.2-3b",
+      "title": "IBM Granite 4.2 3B released (Apache-2.0)"
     },
     "53c7a6e5-c9e3-4077-9700-29ddeb135ec0": {
       "description": "Alibaba (Qwen) - Alibaba published the open weights of its Qwen3.8-Max flagship on Hugging Face and ModelScope as Qwen3.8-2.4T-A95B under Apache 2.0 — the same 2.4T-total / ~95B-active MoE, now downloadable with a 262K context extendable to 1M via YaRN, alongside the smaller Qwen3.8-27B.",
@@ -220,6 +247,24 @@
       "source_url": "https://venturebeat.com/technology/chinas-moonshot-ai-releases-kimi-k3-the-largest-open-source-model-ever-rivaling-top-u-s-systems",
       "title": "Moonshot AI releases Kimi K3"
     },
+    "574c56d8-1a40-41d1-bbe7-0d1a7be5e53f": {
+      "description": "Thomson Reuters - Thomson Reuters announced Thomson, its first in-house proprietary LLM, trained on decades of Westlaw, Practical Law, Checkpoint, and Reuters content to a \"Fiduciary-Grade\" standard (~$40M training investment). First deployed inside Tabular Analysis in CoCounsel Legal; size, architecture, and context are undisclosed, and a smaller open-weight variant is being released for academic use. Status: preview.",
+      "guid": "574c56d8-1a40-41d1-bbe7-0d1a7be5e53f",
+      "link": "https://llm-releases.com/models/thomson",
+      "pubDate": "Mon, 24 Aug 2026 00:00:00 GMT",
+      "source_name": "Thomson Reuters",
+      "source_url": "https://www.thomsonreuters.com/en/press-releases/2026/august/thomson-reuters-leverages-its-world-class-data-assets-to-launch-its-own-frontier-model",
+      "title": "Thomson Reuters launches its in-house frontier model, Thomson"
+    },
+    "5d5598b5-39c4-40c4-9df0-b05fd2248364": {
+      "description": "Alibaba (Qwen) - Alibaba announced Qwen3.8-Flash, the productionized, managed Qwen Cloud API twin of the open-weight Qwen3.8-Flash-Next, running the same Qwen4-preview MoE architecture. Defaults to a 1M-token context with built-in tools; list pricing $0.15 input / $0.47 output per Mtok. Recorded proprietary/API-only.",
+      "guid": "5d5598b5-39c4-40c4-9df0-b05fd2248364",
+      "link": "https://llm-releases.com/models/qwen3-8-flash",
+      "pubDate": "Wed, 26 Aug 2026 00:00:00 GMT",
+      "source_name": "Alibaba (Qwen)",
+      "source_url": "https://openrouter.ai/qwen/qwen3.8-flash",
+      "title": "Alibaba launches the managed Qwen3.8-Flash API"
+    },
     "662adf1b-df69-4b07-94e7-4ed842f1d137": {
       "description": "Z.ai (Zhipu AI) - Z.ai released GLM-5.3, a 743B coding model reusing the GLM-5.2 base with expanded post-training, keeping the 1M-token context and 128K output. Launched via the GLM Coding Plan and ZCode; open weights held back pending a safety review (~2 weeks out).",
       "guid": "662adf1b-df69-4b07-94e7-4ed842f1d137",
@@ -228,6 +273,15 @@
       "source_name": "Z.ai (Zhipu AI)",
       "source_url": "https://decrypt.co/375684/china-z-ai-glm-5-3-top-open-weight-coding-model",
       "title": "Z.ai releases GLM-5.3"
+    },
+    "66e30450-b162-45ba-a9ac-bb7130d489cb": {
+      "description": "Z.ai (Zhipu AI) - Z.ai published GLM-5.3's open weights on Hugging Face (zai-org/GLM-5.3) after a roughly two-week safety review it attributed to unexpectedly strong multi-stage exploit-chaining found during evaluation. The weights ship under a bespoke \"GLM-5.3 License\" — MIT-equivalent for most users, but companies with >$10B revenue over any consecutive 12 months must pass Z.AI's security review before commercial Model-as-a-Service use. GLM-5.3-Flash remains plain MIT.",
+      "guid": "66e30450-b162-45ba-a9ac-bb7130d489cb",
+      "link": "https://llm-releases.com/models/glm-5-3",
+      "pubDate": "Fri, 28 Aug 2026 00:00:00 GMT",
+      "source_name": "Z.ai (Zhipu AI)",
+      "source_url": "https://huggingface.co/zai-org/GLM-5.3",
+      "title": "GLM-5.3 open weights released under a bespoke license"
     },
     "67a43e42-175c-4f32-84ec-78f3570b00ac": {
       "description": "Ant Group (inclusionAI) - Ant Group's inclusionAI lab releases Ling-3.0-flash, a hybrid-reasoning Mixture-of-Experts model with 124B total parameters and ~5.1B active per token (1/64 expert activation), built for production-scale agents. Ant claims it matches or beats its own ~1T-parameter flagship on most benchmarks shown at 1/8 the total and 1/12 the active parameters — a vendor claim with no public benchmark table at launch. Uses a KDA + MLA hybrid-linear attention stack at a reported 5:1 ratio for an economical 256K-token context. Announced as open-weight under Apache 2.0, but weights and a model card were not yet posted to Hugging Face as of July 24; usable only via hosted API, free on OpenRouter and Vercel AI Gateway through August 3 2026.",
@@ -256,6 +310,15 @@
       "source_url": "https://openrouter.ai/kwaipilot/kat-coder-pro-v2.5",
       "title": "Kwaipilot ships KAT-Coder-Pro V2.5"
     },
+    "7053e9d0-fab2-4653-8df2-8b3a1a3da5e8": {
+      "description": "Tencent Hunyuan - Tencent Hunyuan released and open-sourced Hy4 preview under Apache-2.0 — a 770B-total / 49B-active MoE flagship with a 1M-token context, aimed at long-horizon software engineering, office/financial analysis, and scientific work. Weights and an FP8 variant on Hugging Face; also served via Tencent Cloud TokenHub and OpenRouter. Preview stage; vendor figures unverified at launch.",
+      "guid": "7053e9d0-fab2-4653-8df2-8b3a1a3da5e8",
+      "link": "https://llm-releases.com/models/hy4-preview",
+      "pubDate": "Fri, 28 Aug 2026 00:00:00 GMT",
+      "source_name": "Tencent Hunyuan",
+      "source_url": "https://www.tencent.com/tencent-releases-and-open-sources-tencent-hy4-preview/",
+      "title": "Tencent open-sources Hy4 preview (770B MoE)"
+    },
     "72be986e-2a02-4cd1-8a3f-528e0ec888a1": {
       "description": "Cohere - Cohere released North Micro Vision Instruct, a 2.4B Apache-2.0 document-focused vision-language model with a native-resolution vision encoder and a Command A+ language backbone. Strong on document tasks (0.921 DocVQA, 0.808 ChartQA) and grounding (0.732 RefCOCO), with open weights on Hugging Face.",
       "guid": "72be986e-2a02-4cd1-8a3f-528e0ec888a1",
@@ -274,41 +337,23 @@
       "source_url": "https://www.liquid.ai/blog/lfm2-5-2-6b",
       "title": "Liquid AI releases LFM2.5-2.6B"
     },
-    "732d363e-e085-4cc5-a5de-4f10ce6d489a": {
-      "description": "Mistral AI - CEO Arthur Mensch confirms Mistral is preparing a new open-weight Mixture-of-Experts family — \"fat but sparse\" — entering early access in July 2026 and aimed at the frontier open-weight tier. No parameter count, benchmarks, license terms, or release date disclosed; tracked as rumored.",
-      "guid": "732d363e-e085-4cc5-a5de-4f10ce6d489a",
-      "link": "https://llm-releases.com/models/mistral-frontier-open-weight",
-      "pubDate": "Mon, 06 Jul 2026 00:00:00 GMT",
-      "source_name": "Mistral AI",
-      "source_url": "https://www.techtimes.com/articles/319798/20260706/mistral-ai-targets-frontier-gap-open-weight-model-entering-july-early-access.htm",
-      "title": "Mistral confirms a frontier-gap open-weight MoE with July early access"
+    "7d8a0832-076d-4aa2-836c-ba32a6150ecb": {
+      "description": "DeepSeek - DeepSeek pinned the dated GA build behind its deepseek-v4-pro API id (OpenRouter listing dated Aug 12 2026), the Pro-tier counterpart to V4-Flash-0731. Keeps the V4-Pro 1.6T/49B MoE architecture and 1M-token context; cache-heavy list pricing. Recorded proprietary/API-only (no confirmed separate 0813 open-weight repo).",
+      "guid": "7d8a0832-076d-4aa2-836c-ba32a6150ecb",
+      "link": "https://llm-releases.com/models/deepseek-v4-pro-0813",
+      "pubDate": "Thu, 13 Aug 2026 00:00:00 GMT",
+      "source_name": "DeepSeek",
+      "source_url": "https://api-docs.deepseek.com/quick_start/pricing",
+      "title": "DeepSeek pins the V4-Pro GA build as 0813"
     },
-    "77f68068-508e-407a-9774-dcbfa909bf03": {
-      "description": "Meituan (LongCat) - Meituan releases LongCat-2.0, a 1.6T-parameter MoE (~48B active) with a 1M-token context for agentic coding, open-sourced under the MIT license on Hugging Face and GitHub. It was trained and served on a ~50,000-card cluster of domestic Chinese AI chips — the first trillion-parameter model Meituan says completed full-process training and inference on home-grown hardware. Vendor-reported results: 59.5 SWE-bench Pro (vs GPT-5.5's 58.6), 70.8 Terminal-Bench 2.1, and 77.3 SWE-bench Multilingual.",
-      "guid": "77f68068-508e-407a-9774-dcbfa909bf03",
-      "link": "https://llm-releases.com/models/longcat-2-0",
-      "pubDate": "Tue, 30 Jun 2026 00:00:00 GMT",
-      "source_name": "Meituan (LongCat)",
-      "source_url": "https://huggingface.co/meituan-longcat/LongCat-2.0",
-      "title": "Meituan open-sources LongCat-2.0, trained entirely on Chinese chips"
-    },
-    "7e457a2e-9825-4b3d-b739-ab2f5d43cb1f": {
-      "description": "Anthropic - Anthropic restored Mythos 5 access for approved U.S. organizations and continues expanding the Glasswing trusted-access program, while Mythos remains restricted rather than generally available.",
-      "guid": "7e457a2e-9825-4b3d-b739-ab2f5d43cb1f",
-      "link": "https://llm-releases.com/models/claude-mythos",
-      "pubDate": "Wed, 01 Jul 2026 00:00:00 GMT",
-      "source_name": "Anthropic",
-      "source_url": "https://www.anthropic.com/news/redeploying-fable-5",
-      "title": "Claude Mythos 5 access restored for approved partners"
-    },
-    "8023ffaf-f3c2-4176-8ba5-9e35e195885e": {
-      "description": "Anthropic - Reporting says the White House lifted the ban on Anthropic's models after an agreement on additional safeguards, authorizing Anthropic to return Fable 5 to public release channels while Mythos remains limited to pre-vetted partners.",
-      "guid": "8023ffaf-f3c2-4176-8ba5-9e35e195885e",
-      "link": "https://llm-releases.com/models/claude-fable-5",
-      "pubDate": "Tue, 30 Jun 2026 00:00:00 GMT",
-      "source_name": "Anthropic",
-      "source_url": "https://www.ft.com/content/137ddb71-852f-438c-ad76-25e2dc43486b",
-      "title": "White House lifts Anthropic Fable 5 ban"
+    "7d93034b-25ed-414d-8f7e-ffd423890039": {
+      "description": "Z.ai (Zhipu AI) - Z.ai released GLM-5.3-Flash, a 320B-total / 18B-active natively multimodal MoE with a 1M-token context and MIT-licensed open weights (zai-org/GLM-5.3-Flash), priced roughly 10x cheaper on input than the text-only GLM-5.3 flagship. Vision is integrated into the coding/agent loop. Vendor benchmarks unverified at launch.",
+      "guid": "7d93034b-25ed-414d-8f7e-ffd423890039",
+      "link": "https://llm-releases.com/models/glm-5-3-flash",
+      "pubDate": "Wed, 26 Aug 2026 00:00:00 GMT",
+      "source_name": "Z.ai (Zhipu AI)",
+      "source_url": "https://z.ai/blog/glm-5.3-flash",
+      "title": "Z.ai releases GLM-5.3-Flash"
     },
     "844690a4-074c-40aa-92bc-1e072dbef9dd": {
       "description": "Kwaipilot (Kuaishou) - The efficient ~32B-active variant of KAT-Coder V2.5, sharing the 256K context and agentic tool-use focus at roughly a fifth of Pro's price ($0.15/$0.60 per Mtok).",
@@ -382,15 +427,6 @@
       "source_url": "https://api-docs.deepseek.com/news/news260821/",
       "title": "DeepSeek launches the experimental DeepSeek-V4-Flash-Vision-Exp"
     },
-    "b0667906-a7dd-408d-b6bc-525493ce5650": {
-      "description": "NVIDIA - A compressed variant of Nemotron-3-Super produced with \"Iterative Puzzle\", trimming the parent to 75.3B total / 9.3B active while keeping the hybrid Mamba-Transformer LatentMoE design and 1M context. NVIDIA reports ~2x higher server throughput at matched user throughput; released on Hugging Face in BF16/FP8/NVFP4 under OpenMDW-1.1.",
-      "guid": "b0667906-a7dd-408d-b6bc-525493ce5650",
-      "link": "https://llm-releases.com/models/nemotron-labs-3-puzzle-75b-a9b",
-      "pubDate": "Mon, 06 Jul 2026 00:00:00 GMT",
-      "source_name": "NVIDIA",
-      "source_url": "https://huggingface.co/nvidia/NVIDIA-Nemotron-Labs-3-Puzzle-75B-A9B-BF16",
-      "title": "NVIDIA releases Nemotron-Labs-3-Puzzle-75B-A9B"
-    },
     "b3252086-c622-477a-a752-a8c7cb7325d3": {
       "description": "Google DeepMind - Google DeepMind ships Gemini 3.6 Flash, a multimodal 1M-context workhorse for agentic workflows that improves on 3.5 Flash in coding, knowledge work, and computer use while cutting output-token usage ~17% at a lower price ($1.50 / $7.50 per Mtok). Available in the Gemini API, Gemini Enterprise, and the Gemini app.",
       "guid": "b3252086-c622-477a-a752-a8c7cb7325d3",
@@ -399,15 +435,6 @@
       "source_name": "Google DeepMind",
       "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-6-flash-3-5-flash-lite-3-5-flash-cyber/",
       "title": "Google launches Gemini 3.6 Flash"
-    },
-    "bfb9c7c6-ed41-490e-b302-faaa7ed109f7": {
-      "description": "Anthropic - Anthropic releases Claude Sonnet 5, its most agentic Sonnet yet — performance approaching Opus 4.8 at a lower price, made the default model on the Free and Pro plans and available to Max, Team, and Enterprise users. Available in Claude Code and via the Claude API as claude-sonnet-5, with introductory pricing of $2 per Mtok input / $10 per Mtok output through Aug 31, 2026, then standard $3/$15.",
-      "guid": "bfb9c7c6-ed41-490e-b302-faaa7ed109f7",
-      "link": "https://llm-releases.com/models/claude-sonnet-5",
-      "pubDate": "Tue, 30 Jun 2026 00:00:00 GMT",
-      "source_name": "Anthropic",
-      "source_url": "https://www.anthropic.com/news/claude-sonnet-5",
-      "title": "Anthropic releases Claude Sonnet 5"
     },
     "c3165855-1047-4b87-9323-3696b6bc8603": {
       "description": "Anthropic - Anthropic releases Claude Opus 5, its flagship model for demanding reasoning, autonomous coding, and long-horizon agentic work — pitched as the go-to model for most knowledge work, approaching Fable 5 capability in many categories at about half the price. Adds a five-level 'effort' dial on the Claude API/Platform to trade compute for capability, a 1M-token context at standard pricing, and up to 128K output tokens. Standard pricing $5/$25 per Mtok (matching Opus 4.8), plus a $10/$50 Fast mode; becomes the default for Claude Max subscribers. Anthropic calls it its most aligned Opus model.",
@@ -418,24 +445,6 @@
       "source_url": "https://www.anthropic.com/news/claude-opus-5",
       "title": "Anthropic releases Claude Opus 5"
     },
-    "c47c9a34-c527-4530-8470-938ffd9e9687": {
-      "description": "OpenAI - Luna, the fast, most cost-efficient tier of the GPT-5.6 family ($1/$6 per Mtok), moves from restricted preview to general availability alongside Sol and Terra.",
-      "guid": "c47c9a34-c527-4530-8470-938ffd9e9687",
-      "link": "https://llm-releases.com/models/gpt-5-6-luna",
-      "pubDate": "Thu, 09 Jul 2026 00:00:00 GMT",
-      "source_name": "OpenAI",
-      "source_url": "https://openai.com/index/gpt-5-6/",
-      "title": "GPT-5.6 Luna reaches general availability"
-    },
-    "c4b4b2c1-bf07-4885-b7c5-3cf6ecfd6da5": {
-      "description": "Poolside - Poolside releases Laguna XS 2.1, an upgraded 33B-A3B open-weight MoE coding model served at 256K context. It raises SWE-bench Multilingual by 5.4 points to 63.1% over XS.2, adds open-weighted DFlash speculator models that roughly double local tokens/sec, and moves to the fully permissive OpenMDW-1.1 license. Weights are on Hugging Face (BF16/FP8/INT4/NVFP4) and it's available free on OpenRouter, with paid API pricing of $0.10/$0.20/$0.05 per 1M input/output/cache-read tokens.",
-      "guid": "c4b4b2c1-bf07-4885-b7c5-3cf6ecfd6da5",
-      "link": "https://llm-releases.com/models/laguna-xs-2-1",
-      "pubDate": "Thu, 02 Jul 2026 00:00:00 GMT",
-      "source_name": "Poolside",
-      "source_url": "https://poolside.ai/blog/introducing-laguna-xs-2-1",
-      "title": "Poolside releases Laguna XS 2.1"
-    },
     "cb5d8549-7349-4204-a98f-395119662b7e": {
       "description": "Google DeepMind - Fastest, most cost-effective 3.5-class model (~350 output tokens/s) for high-throughput agentic workloads, priced at $0.30 / $2.50 per Mtok with a 1M-token context and built-in computer use. Large step up on 3.1 Flash-Lite and beats 3 Flash on several agentic/coding evals.",
       "guid": "cb5d8549-7349-4204-a98f-395119662b7e",
@@ -444,6 +453,15 @@
       "source_name": "Google DeepMind",
       "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-6-flash-3-5-flash-lite-3-5-flash-cyber/",
       "title": "Google releases Gemini 3.5 Flash-Lite"
+    },
+    "d4475b29-c1be-4d8d-9175-79f00510c2e0": {
+      "description": "IBM - The mid-size member of IBM's Granite 4.2 open reasoning family (~9B on Hugging Face): a dense decoder-only transformer trained to call tools and act inside sandboxed environments for software-engineering, terminal, and search tasks. Open weights on Hugging Face, Ollama, and GitHub.",
+      "guid": "d4475b29-c1be-4d8d-9175-79f00510c2e0",
+      "link": "https://llm-releases.com/models/granite-4-2-8b",
+      "pubDate": "Tue, 25 Aug 2026 00:00:00 GMT",
+      "source_name": "IBM",
+      "source_url": "https://huggingface.co/ibm-granite/granite-4.2-8b",
+      "title": "IBM Granite 4.2 8B released (Apache-2.0)"
     },
     "d69ab2ea-a12f-448a-ac57-38a8b2102173": {
       "description": "xAI - xAI released Grok 4.6, a post-training update on the reported 1.5T-parameter V9 foundation behind Grok 4.5, with a 500K context, configurable reasoning effort, and $2/$6 per Mtok list pricing below 200K tokens.",
@@ -462,15 +480,6 @@
       "source_name": "DeepReinforce (Ornith)",
       "source_url": "https://huggingface.co/collections/ornith-ai/ornith-15",
       "title": "Ornith-1.5-9B released with an on-device Mobile build"
-    },
-    "e675fdb6-20cf-4cae-88d0-24bd8991aca2": {
-      "description": "xAI - SpaceXAI (the rebranded xAI) releases its most capable model to date — the first Grok trained jointly with Cursor (Anysphere), pitched as \"Opus-class\" but faster, cheaper ($2/$6 per Mtok), and ~4x more token-efficient than Opus 4.8 on SWE-bench Pro. Available in Grok Build (default), Cursor (all plans), and the SpaceXAI console; initially unavailable in the EU.",
-      "guid": "e675fdb6-20cf-4cae-88d0-24bd8991aca2",
-      "link": "https://llm-releases.com/models/grok-4-5",
-      "pubDate": "Wed, 08 Jul 2026 00:00:00 GMT",
-      "source_name": "xAI",
-      "source_url": "https://www.trendingtopics.eu/spacexai-and-cursor-launch-grok-4-5-not-yet-in-the-eu/",
-      "title": "SpaceXAI and Cursor launch Grok 4.5"
     },
     "e7986935-32a2-44da-a52a-c37fa23cc920": {
       "description": "NVIDIA - NVIDIA released Nemotron 3.5 Lightning, a hybrid Mamba-2 + MoE + Attention model (~31.6B total / ~3.6B active) with a 1M-token context, under OpenMDW-1.1 with weights, data, and recipes — shipped alongside the NeMo Switchyard router.",
@@ -499,14 +508,14 @@
       "source_url": "https://www.apodex.com/blog/apodex-1.1-scaling-agentic-intelligence-for-complex-work",
       "title": "Apodex launches the Apodex 1.1 agentic model family"
     },
-    "f70ee972-bfff-49b2-a7da-be97444fcad7": {
-      "description": "Anthropic - Anthropic says Claude Fable 5 is available globally again on Claude Platform, Claude.ai, Claude Code, and Claude Cowork after export controls were lifted; cloud partner access is being re-enabled and safeguards now route high-risk requests to Opus 4.8.",
-      "guid": "f70ee972-bfff-49b2-a7da-be97444fcad7",
-      "link": "https://llm-releases.com/models/claude-fable-5",
-      "pubDate": "Wed, 01 Jul 2026 00:00:00 GMT",
-      "source_name": "Anthropic",
-      "source_url": "https://www.anthropic.com/news/redeploying-fable-5",
-      "title": "Claude Fable 5 access restored globally"
+    "f78c9634-9ba8-4b2e-9261-eb54ab34a155": {
+      "description": "IBM - IBM released Granite 4.2 in 3B, 8B, and 30B sizes under Apache-2.0 — dense decoder-only models with a thinking / non-thinking switch and low-effort reasoning mode, pre-trained on ~15T tokens and post-trained with multi-stage RL for agentic tool use. The 30B reports ~57 on SWE-bench Verified. Open weights on Hugging Face, Ollama, and GitHub.",
+      "guid": "f78c9634-9ba8-4b2e-9261-eb54ab34a155",
+      "link": "https://llm-releases.com/models/granite-4-2-30b",
+      "pubDate": "Tue, 25 Aug 2026 00:00:00 GMT",
+      "source_name": "IBM",
+      "source_url": "https://research.ibm.com/blog/introducing-granite-4-2",
+      "title": "IBM releases the Granite 4.2 open reasoning family"
     },
     "f81a7b4e-97e7-4f04-bb4b-c25ba58cc249": {
       "description": "Alibaba (Qwen) - Alongside Qwen3.8-Max GA, Alibaba announced a smaller open-weight Qwen3.8-27B checkpoint with a firm open-weights timeline — its first for the 3.8 generation.",
@@ -516,15 +525,6 @@
       "source_name": "Alibaba (Qwen)",
       "source_url": "https://www.testingcatalog.com/qwen-released-qwen3-8-max-with-open-weights-coming-soon/",
       "title": "Alibaba announces open-weight Qwen3.8-27B"
-    },
-    "f8b8f9cc-cb67-4d9d-a43d-f2cc59755c72": {
-      "description": "Tencent Hunyuan - Tencent officially launches Hunyuan 3.0 (Hy3), the GA of its rebuilt third-generation model, and open-sources it under Apache-2.0. A 295B-total / 21B-active MoE (plus a 3.8B multi-token-prediction layer) with a 256K context and three selectable fast/slow inference modes; Tencent reports it rivals GLM-5.2 and DeepSeek-V4 and matches or surpasses GPT-5.5 on several science benchmarks, with 78.0 on SWE-bench Verified. Weights on Hugging Face (tencent/Hy3) and ModelScope, with a free OpenRouter route (tencent/hy3:free) through July 21, 2026.",
-      "guid": "f8b8f9cc-cb67-4d9d-a43d-f2cc59755c72",
-      "link": "https://llm-releases.com/models/hunyuan-hy3",
-      "pubDate": "Mon, 06 Jul 2026 00:00:00 GMT",
-      "source_name": "Tencent Hunyuan",
-      "source_url": "https://www.tencent.com/en-us/articles/2202386.html",
-      "title": "Tencent officially releases and open-sources Hunyuan Hy3"
     },
     "fe1a87b9-a459-4824-b35b-326c47b01a9f": {
       "description": "DeepSeek - The deepseek-v4-flash API endpoint is silently upgraded to the retrained DeepSeek-V4-Flash-0731 production build. Same endpoint, key, and model name; pricing unchanged at $0.14/$0.28 per Mtok.",

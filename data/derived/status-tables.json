@@ -1,6 +1,205 @@
 {
   "changed_30d": [
     {
+      "date": "2026-09-03",
+      "display_name": "NVIDIA: Nemotron 3 Ultra (batch)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "nvidia/nemotron-3-ultra-550b-a55b-20260604",
+        "context_length": 512288,
+        "created": 1780551208,
+        "expiration_date": null,
+        "id": "nvidia/nemotron-3-ultra-550b-a55b:batch",
+        "name": "NVIDIA: Nemotron 3 Ultra (batch)",
+        "pricing.completion": "0.0000036",
+        "pricing.prompt": "0.0000006"
+      },
+      "field": null,
+      "key": "openrouter-models|31886658dc9b9e56|a6c7f5e5e6f3c575|nvidia/nemotron-3-ultra-550b-a55b:batch|$retirement",
+      "kind": "retirement",
+      "new": null,
+      "old": null,
+      "row_id": "nvidia/nemotron-3-ultra-550b-a55b:batch",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-03",
+      "display_name": "Meta: Muse Spark 1.3",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "meta/muse-spark-1.3-20260902",
+        "context_length": 1048576,
+        "created": 1788378359,
+        "expiration_date": null,
+        "id": "meta/muse-spark-1.3",
+        "name": "Meta: Muse Spark 1.3",
+        "pricing.completion": "0.00000425",
+        "pricing.prompt": "0.00000125"
+      },
+      "field": null,
+      "key": "openrouter-models|31886658dc9b9e56|a6c7f5e5e6f3c575|meta/muse-spark-1.3|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "meta/muse-spark-1.3",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-03",
+      "display_name": "Meta: Muse Spark 1.3 Contributor",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "meta/muse-spark-1.3-contributor-20260902",
+        "context_length": 1048576,
+        "created": 1788381519,
+        "expiration_date": null,
+        "id": "meta/muse-spark-1.3-contributor",
+        "name": "Meta: Muse Spark 1.3 Contributor",
+        "pricing.completion": "0.0000002",
+        "pricing.prompt": "0.0000001"
+      },
+      "field": null,
+      "key": "openrouter-models|31886658dc9b9e56|a6c7f5e5e6f3c575|meta/muse-spark-1.3-contributor|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "meta/muse-spark-1.3-contributor",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-03",
+      "display_name": "Google: Gemini 3.8 Flash",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "google/gemini-3.8-flash-20260902",
+        "context_length": 1048576,
+        "created": 1788362056,
+        "expiration_date": null,
+        "id": "google/gemini-3.8-flash",
+        "name": "Google: Gemini 3.8 Flash",
+        "pricing.completion": "0.00000375",
+        "pricing.prompt": "0.00000075"
+      },
+      "field": null,
+      "key": "openrouter-models|31886658dc9b9e56|a6c7f5e5e6f3c575|google/gemini-3.8-flash|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "google/gemini-3.8-flash",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-03",
+      "display_name": "Google: Gemini 3.8 Flash (batch)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "google/gemini-3.8-flash-20260902",
+        "context_length": 1048576,
+        "created": 1788362056,
+        "expiration_date": null,
+        "id": "google/gemini-3.8-flash:batch",
+        "name": "Google: Gemini 3.8 Flash (batch)",
+        "pricing.completion": "0.000001875",
+        "pricing.prompt": "0.000000375"
+      },
+      "field": null,
+      "key": "openrouter-models|31886658dc9b9e56|a6c7f5e5e6f3c575|google/gemini-3.8-flash:batch|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "google/gemini-3.8-flash:batch",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-03",
+      "display_name": "Google DeepMind releases Gemini 3.8 Flash",
+      "excerpt": {
+        "description": "Google DeepMind - Google DeepMind ships Gemini 3.8 Flash, the successor to Gemini 3.7 Flash and its fourth Flash model in under four months. It scores 59 on the Artificial Analysis Intelligence Index at high reasoning (up 3 points from 3.7 Flash), 57 at medium and 52 at low, with gains led by agentic evaluations (t^3-Banking tool use +12 points to 45%, Terminal-Bench v2.1 coding, GDPval-AA v2). 1M-token context, multimodal input (text, image, video, speech) with text output. Pricing matches 3.7 Flash at $0.75/$3.75 per Mtok in/out through end of 2026 ($1.50/$7.50 standard), with cached input keeping a 90% discount. Available in the Gemini app (AI Pro/Ultra), AI Mode, and Gemini in Google Sheets, and for developers via Google Antigravity, AI Studio and the Gemini API. Vendor/third-party figures unverified by independent replication at launch.",
+        "guid": "bd089f31-3f2e-40d7-9596-71c3d8c81216",
+        "link": "https://llm-releases.com/models/gemini-3-8-flash",
+        "pubDate": "Wed, 02 Sep 2026 00:00:00 GMT",
+        "source_name": "Google DeepMind",
+        "source_url": "https://deepmind.google/models/gemini/flash/",
+        "title": "Google DeepMind releases Gemini 3.8 Flash"
+      },
+      "field": null,
+      "key": "llm-releases|68d9e4fb05fa6b60|23fc1c89ef49a3ee|bd089f31-3f2e-40d7-9596-71c3d8c81216|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "bd089f31-3f2e-40d7-9596-71c3d8c81216",
+      "source": "llm-releases",
+      "source_url": "https://llm-releases.com/feed.xml"
+    },
+    {
+      "date": "2026-09-03",
+      "display_name": "Claude Mythos 5.1 ships to trusted-access programs",
+      "excerpt": {
+        "description": "Anthropic - Anthropic released Claude Mythos 5.1, the same underlying model as Fable 5.1 with more permissive safeguards, available only through the Cyber Verification Program and Life Sciences Verification Program. Anthropic reports its strongest cyber capabilities to date (Terminal-Bench 4.0 60.9% vs 55.8% for safeguarded Fable 5.1) while remaining in the lower risk tier of its Frontier Compliance Framework. Access limited to vetted US organizations; not publicly token-billed.",
+        "guid": "7e20eb4e-4ca3-4f88-a5c2-0bbcafe4152f",
+        "link": "https://llm-releases.com/models/claude-mythos-5-1",
+        "pubDate": "Tue, 01 Sep 2026 00:00:00 GMT",
+        "source_name": "Anthropic",
+        "source_url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
+        "title": "Claude Mythos 5.1 ships to trusted-access programs"
+      },
+      "field": null,
+      "key": "llm-releases|68d9e4fb05fa6b60|23fc1c89ef49a3ee|7e20eb4e-4ca3-4f88-a5c2-0bbcafe4152f|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "7e20eb4e-4ca3-4f88-a5c2-0bbcafe4152f",
+      "source": "llm-releases",
+      "source_url": "https://llm-releases.com/feed.xml"
+    },
+    {
+      "date": "2026-09-03",
+      "display_name": "Anthropic releases Claude Fable 5.1",
+      "excerpt": {
+        "description": "Anthropic - Anthropic released Claude Fable 5.1 (API id claude-fable-5-1), the GA successor to Fable 5 for agentic coding, long-running problem-solving, and knowledge work. Base pricing is unchanged at $10/$50 per Mtok but cache reads were cut 75% to $0.25/Mtok; 1M-token context, 128K output. Reported results include Terminal-Bench 4.0 55.8% and Humanity's Last Exam 65.0% with tools — vendor figures at launch. Available on the Claude API, AWS, Google Cloud, and Microsoft Azure; first Anthropic release with the EU AI Act text watermark.",
+        "guid": "407abb45-beca-4cd6-9cbc-47adfe7a6899",
+        "link": "https://llm-releases.com/models/claude-fable-5-1",
+        "pubDate": "Tue, 01 Sep 2026 00:00:00 GMT",
+        "source_name": "Anthropic",
+        "source_url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
+        "title": "Anthropic releases Claude Fable 5.1"
+      },
+      "field": null,
+      "key": "llm-releases|68d9e4fb05fa6b60|23fc1c89ef49a3ee|407abb45-beca-4cd6-9cbc-47adfe7a6899|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "407abb45-beca-4cd6-9cbc-47adfe7a6899",
+      "source": "llm-releases",
+      "source_url": "https://llm-releases.com/feed.xml"
+    },
+    {
+      "date": "2026-09-03",
+      "display_name": "Inception previews Mercury 2.5 diffusion LLM",
+      "excerpt": {
+        "description": "Inception - Inception released Mercury 2.5 Preview, a diffusion LLM that generates and refines many tokens in parallel (~1,107 tokens/sec on standard GPUs), positioned as the fastest reasoning LLM with quality comparable to cost-optimized frontier models. Tunable reasoning levels, parallel tool calls, schema-aligned JSON; 260K context, 65,536 output tokens. API-only via Inception and OpenRouter; list $0.20/$0.75 per Mtok with a launch promo at $0.04/$0.15.",
+        "guid": "06a0c9a7-7f66-487f-8180-dbaae938de80",
+        "link": "https://llm-releases.com/models/mercury-2-5-preview",
+        "pubDate": "Mon, 31 Aug 2026 00:00:00 GMT",
+        "source_name": "Inception",
+        "source_url": "https://openrouter.ai/inception/mercury-2.5-preview",
+        "title": "Inception previews Mercury 2.5 diffusion LLM"
+      },
+      "field": null,
+      "key": "llm-releases|68d9e4fb05fa6b60|23fc1c89ef49a3ee|06a0c9a7-7f66-487f-8180-dbaae938de80|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "06a0c9a7-7f66-487f-8180-dbaae938de80",
+      "source": "llm-releases",
+      "source_url": "https://llm-releases.com/feed.xml"
+    },
+    {
       "date": "2026-09-02",
       "display_name": "Z.ai: GLM Flash Latest",
       "excerpt": {
@@ -2572,52 +2771,6 @@
       "seeded": true,
       "source": "llm-releases",
       "source_url": "https://research.meta.ai/blog/introducing-muse-code-and-muse-spark-1-2"
-    },
-    {
-      "date": "2026-08-03",
-      "display_name": "Alibaba announces open-weight Qwen3.8-27B",
-      "excerpt": {
-        "description": "Alibaba (Qwen) - Alongside Qwen3.8-Max GA, Alibaba announced a smaller open-weight Qwen3.8-27B checkpoint with a firm open-weights timeline — its first for the 3.8 generation.",
-        "guid": "f81a7b4e-97e7-4f04-bb4b-c25ba58cc249",
-        "link": "https://llm-releases.com/models/qwen3-8-27b",
-        "pubDate": "Mon, 03 Aug 2026 00:00:00 GMT",
-        "source_name": "Alibaba (Qwen)",
-        "source_url": "https://www.testingcatalog.com/qwen-released-qwen3-8-max-with-open-weights-coming-soon/",
-        "title": "Alibaba announces open-weight Qwen3.8-27B"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/qwen3-8-27b",
-      "key": "seed|llm-releases|f81a7b4e-97e7-4f04-bb4b-c25ba58cc249",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "f81a7b4e-97e7-4f04-bb4b-c25ba58cc249",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://www.testingcatalog.com/qwen-released-qwen3-8-max-with-open-weights-coming-soon/"
-    },
-    {
-      "date": "2026-08-03",
-      "display_name": "Alibaba ships Qwen3.8-Max to general availability",
-      "excerpt": {
-        "description": "Alibaba (Qwen) - Qwen3.8-Max went GA on 2026-08-03, two weeks after its WAIC preview: a 2.4T-parameter MoE (~95B active) with 1M-token context, multimodal input, and firm pricing of $2/$6 per Mtok. Alibaba committed to open weights for Qwen3.8-Max and a smaller Qwen3.8-27B checkpoint.",
-        "guid": "30eafd23-c168-426e-b63a-12ca88e89482",
-        "link": "https://llm-releases.com/models/qwen3-8-max",
-        "pubDate": "Mon, 03 Aug 2026 00:00:00 GMT",
-        "source_name": "Alibaba (Qwen)",
-        "source_url": "https://www.marktechpost.com/2026/08/03/alibaba-qwen-releases-qwen3-8-max/",
-        "title": "Alibaba ships Qwen3.8-Max to general availability"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/qwen3-8-max",
-      "key": "seed|llm-releases|30eafd23-c168-426e-b63a-12ca88e89482",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "30eafd23-c168-426e-b63a-12ca88e89482",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://www.marktechpost.com/2026/08/03/alibaba-qwen-releases-qwen3-8-max/"
     }
   ],
   "deprecations": [
@@ -2692,7 +2845,7 @@
       "status": "deprecated"
     }
   ],
-  "generated_on": "2026-09-02",
+  "generated_on": "2026-09-03",
   "sort_criterion": {
     "catalog": "source then row id, ascending",
     "changed_30d": "date, newest first",

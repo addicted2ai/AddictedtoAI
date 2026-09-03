@@ -2881,6 +2881,17 @@
       "ok": true,
       "status": 200
     },
+    "https://github.com/zai-org/GLM-5": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://github.com/zai-org/GLM-5",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://groq.com/": {
       "bytes": 54752,
       "consecutive_failures": 0,
@@ -3057,6 +3068,39 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/api/models/zai-org/GLM-5.3": {
+      "bytes": 41490,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/zai-org/GLM-5.3",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/zai-org/GLM-5.3-Flash/commits/main": {
+      "bytes": 3162,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/zai-org/GLM-5.3-Flash/commits/main",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/zai-org/GLM-5.3/commits/main": {
+      "bytes": 3354,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/zai-org/GLM-5.3/commits/main",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/blog/agent-intrusion-technical-timeline": {
       "bytes": 675220,
       "consecutive_failures": 0,
@@ -3211,6 +3255,39 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/zai-org/GLM-5.3": {
+      "bytes": 437409,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/zai-org/GLM-5.3",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/zai-org/GLM-5.3-Flash/raw/main/LICENSE": {
+      "bytes": 1070,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/zai-org/GLM-5.3-Flash/raw/main/LICENSE",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE": {
+      "bytes": 4263,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://knightcolumbia.org/content/ai-as-normal-technology": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3229,6 +3306,17 @@
       "final_url": "https://langfuse.com/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://llm-releases.com/models/mercury-2-5-preview": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llm-releases.com/models/mercury-2-5-preview",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3449,6 +3537,17 @@
       "final_url": "https://openrouter.ai/google/gemini-3.6-flash",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/inception/mercury-2.5-preview": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/inception/mercury-2.5-preview",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4377,6 +4476,17 @@
       "ok": true,
       "status": 200
     },
+    "https://www.apache.org/licenses/LICENSE-2.0.txt": {
+      "bytes": 3967,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.bleepingcomputer.com/news/artificial-intelligence/anthropic-warns-infostealer-malware-is-hijacking-claude-sessions-to-drain-usage/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4659,6 +4769,28 @@
       "final_url": "https://www.imf.org/external/pubs/ft/fandd/2015/03/bessen.htm",
       "last_checked": "2026-08-31",
       "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.inceptionlabs.ai/": {
+      "bytes": 457931,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.inceptionlabs.ai/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.inceptionlabs.ai/models": {
+      "bytes": 320999,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.inceptionlabs.ai/models",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4967,6 +5099,17 @@
       "final_url": "https://xkcd.com/1425/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://z.ai/blog/glm-5.3": {
+      "bytes": 598,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://z.ai/blog/glm-5.3",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200

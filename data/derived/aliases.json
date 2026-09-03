@@ -1829,6 +1829,26 @@
       ]
     },
     {
+      "name": "Google: Gemini 3.8 Flash",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-8-flash",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Google: Gemini 3.8 Flash (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/google-gemini-3-8-flash-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Google: Gemma 2 27B",
       "linkable": false,
       "claimed_by": [
@@ -2125,6 +2145,26 @@
         {
           "id": "org/tencent",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Hy4",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy4-preview",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Hy4 preview",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy4-preview",
+          "class": "exclusive"
         }
       ]
     },
@@ -2734,6 +2774,26 @@
       "claimed_by": [
         {
           "id": "model/meta-muse-spark-1-2-contributor",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Muse Spark 1.3",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-spark-1-3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Meta: Muse Spark 1.3 Contributor",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/meta-muse-spark-1-3-contributor",
           "class": "manual"
         }
       ]
@@ -6705,6 +6765,16 @@
         {
           "id": "event/gpt-2-staged-release",
           "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "tencent/hy4-preview",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy4-preview",
+          "class": "exclusive"
         }
       ]
     },
