@@ -1,18 +1,21 @@
 # Unit-doubling sweep — drop record (j-20260903-07)
 
 Sweep of every prose line where a unit-rendering `{{fact:…}}` transclusion
-is directly followed by a literal, per the brief's done-when. The four
+is directly followed by a literal, per the brief's done-when. The five
 doublings found and fixed are in the diff itself (one word deleted per
-page). This record names every line the sweep judged **not** a doubling,
-with the reading, so the sweep's coverage is auditable.
+page; the `openai-gpt-5-4` one was line-wrapped — the literal sat at the
+start of the line after the transclusion — so it needed the period moved
+up a line to read once). This record names every line the sweep judged
+**not** a doubling, with the reading, so the sweep's coverage is auditable.
 
-## Fixed (4)
+## Fixed (5)
 
 | File | Line | Rendering before → after |
 |---|---|---|
 | content/wiki/model/anthropic-claude-haiku-4-5.md | 45 | "it lists 200000 tokens **tokens**, the same" → "it lists 200000 tokens, the same" |
 | content/wiki/model/anthropic-claude-opus-4-8.md | 74 | "still capped at 200000 tokens **tokens**, the same" → "still capped at 200000 tokens, the same" |
-| content/wiki/model/openai-gpt-5-6-luna.md | 83 | "runs 200000 tokens **tokens** against Nano's" → "runs 200000 tokens against Nano's" |
+| content/wiki/model/openai-gpt-5-4.md | 55-56 | "all cap at 400000 tokens **tokens**. This row broke the plateau" → "all cap at 400000 tokens. This row broke the plateau" |
+| content/wiki/model/openai-gpt-5-6-luna.md | 83 | "runs 1050000 tokens **tokens** against Nano's" → "runs 1050000 tokens against Nano's" |
 | content/wiki/org/anthropic.md | 96 | "at … USD per token **per token**" → "at … USD per token" |
 
 ## Judged not a doubling (left alone)

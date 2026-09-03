@@ -52,8 +52,8 @@ mentions:
 ---
 
 Four releases in a row shipped with the same context ceiling: GPT-5, 5.1,
-5.2 and 5.3-Codex all cap at {{fact:model/openai-gpt-5#context_window}}
-tokens. This row broke the plateau —
+5.2 and 5.3-Codex all cap at {{fact:model/openai-gpt-5#context_window}}.
+This row broke the plateau —
 {{fact:model/openai-gpt-5-4#context_window}}, more than double — and every
 full-size GPT-5.x release since has kept that exact number:
 {{fact:model/openai-gpt-5-5#context_window}} on 5.5,
