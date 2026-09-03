@@ -71,7 +71,7 @@ times running.
 
 The context window moved on a different schedule than the price.
 `anthropic/claude-opus-4.5` still capped at
-{{fact:model/anthropic-claude-opus-4-5#context_window}} tokens, the same
+{{fact:model/anthropic-claude-opus-4-5#context_window}}, the same
 ceiling the line had shipped with since the first Opus 4. The next
 release, `anthropic/claude-opus-4.6`, raised it to
 {{fact:model/anthropic-claude-opus-4-6#context_window}}, at an

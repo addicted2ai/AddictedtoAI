@@ -93,7 +93,7 @@ Opus release since `anthropic/claude-opus-4.5`, listed 24 November 2025,
 carries the same list price in the OpenRouter catalog — five releases
 (`claude-opus-4.5`, `-4.6`, `-4.7`, `-4.8`, `claude-opus-5`) over nine
 months at {{fact:model/anthropic-claude-opus-5#price_input}} and
-{{fact:model/anthropic-claude-opus-5#price_output}} per token. Anthropic
+{{fact:model/anthropic-claude-opus-5#price_output}}. Anthropic
 said as much when it shipped
 [Opus 5](https://www.anthropic.com/news/claude-opus-5): improved performance
 "for the same cost as its predecessor."

@@ -42,7 +42,7 @@ mentions:
 
 Every other current Anthropic tier runs at a million-token context window.
 This row doesn't: it lists
-{{fact:model/anthropic-claude-haiku-4-5#context_window}} tokens, the same
+{{fact:model/anthropic-claude-haiku-4-5#context_window}}, the same
 ceiling {{fact:model/anthropic-claude-3-haiku#context_window}} carried on
 `anthropic/claude-3-haiku`, a model old enough that its own catalog row
 carries no recorded benchmark index at all. Nothing about the Haiku line's

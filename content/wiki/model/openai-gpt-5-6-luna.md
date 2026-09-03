@@ -80,7 +80,7 @@ minor versions later. The match is recent rather than designed: OpenAI cut
 Luna's price by 80% on 30 July 2026, four weeks before that reading, and
 the two rows have only lined up since. Nothing else matches: Luna's
 context window runs
-{{fact:model/openai-gpt-5-6-luna#context_window}} tokens against Nano's
+{{fact:model/openai-gpt-5-6-luna#context_window}} against Nano's
 {{fact:model/openai-gpt-5-4-nano#context_window}}, and the scoreboard gap
 is wider still — intelligence
 {{fact:model/openai-gpt-5-6-luna#intelligence_index}} against
