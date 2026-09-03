@@ -58,9 +58,21 @@ facts:
     source_url: "https://openrouter.ai/inception/mercury-2.5-preview"
     accessed: "2026-09-02"
     volatility: dated
+  - field: observed_throughput_p50
+    source: cited
+    value: "359 tok/s"
+    source_url: "https://openrouter.ai/inception/mercury-2.5-preview"
+    accessed: "2026-09-02"
+    volatility: dated
+  - field: observed_latency_p50
+    source: cited
+    value: "1.37 s"
+    source_url: "https://openrouter.ai/inception/mercury-2.5-preview"
+    accessed: "2026-09-02"
+    volatility: dated
   - field: introductory_pricing_ends
     source: cited
-    value: "2026-09-08 07:00 UTC; 80% off input and output on the OpenRouter listing"
+    value: "2026-09-08 07:00 UTC"
     source_url: "https://openrouter.ai/inception/mercury-2.5-preview"
     accessed: "2026-09-02"
     volatility: dated
@@ -102,11 +114,14 @@ says Mercury 2.5 "produces and refines multiple tokens in parallel",
 are claims until independently verified". This page records the claim; it
 does not record a measurement of it.
 
-OpenRouter's own page carries a measured number for the same row: P50
-throughput of 325 tok/s across its provider, with a P50 latency of 1.24 s,
-as shown on the page fetched 2 September 2026. The two figures are not the
-same quantity — a vendor capability claim against a traffic-derived median —
-and both are on the same source page.
+OpenRouter's own page carries a different number for the same row: P50
+throughput of {{fact:model/inception-mercury-2-5-preview#observed_throughput_p50}}
+across its provider, with a P50 latency of
+{{fact:model/inception-mercury-2-5-preview#observed_latency_p50}}, read off
+the page fetched 2 September 2026. The two figures are not the same quantity
+— a vendor capability claim against a traffic-derived median — and
+OpenRouter computes them over a rolling 30-minute window of live traffic, so
+the page reads differently from hour to hour.
 
 The durable facts are the row's: released
 {{fact:model/inception-mercury-2-5-preview#release_date}} as a preview, with
@@ -132,7 +147,7 @@ cheapest diffusion tier" is a true reading of the snapshot while the promo
 runs, and stops being one the day the window closes.
 
 The positioning is Inception's, not measured. The listing claims "a 10+
-point jump in intelligence over Mercury 2" and quality "comparable to
+point jump in intelligence over Mercury 2" and "comparable quality to
 cost-optimized frontier models like GPT-5.6 Luna (Low), Gemini 3.5
 Flash-Lite, and Claude Haiku 4.5"; the models page repeats the comparison,
 and the [vendor's homepage](https://www.inceptionlabs.ai/) adds "sub-300ms
