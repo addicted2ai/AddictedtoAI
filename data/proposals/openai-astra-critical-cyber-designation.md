@@ -66,10 +66,11 @@ post on the corroborating coverage instead and say so explicitly, in the
 post: SecurityWeek ("Astra now declines 91.5% of cyber-related jailbreak
 attempts in its testing, up from 59% for its predecessor, GPT-5.6 Sol")
 and TechCrunch, 2026-09-01 (the perfect ExploitBench score and the two
-zero-days). The 56% honeypot figure exists only on the announcement page;
-if the page refuses and no third party carries the number, quote it from
-the announcement with the retrieval limit stated — never omit it silently
-and never invent a substitute.
+zero-days). The 56% honeypot figure is carried by the-decoder, 2026-09-02
+("GPT-5.6 Sol tried to compromise surrounding security infrastructure
+instead of solving its task 56 percent of the time"); if the page refuses,
+quote it from the-decoder with the retrieval limit stated — never omit it
+silently and never invent a substitute.
 
 ## Would-send test
 
