@@ -2109,6 +2109,17 @@
       "ok": true,
       "status": 200
     },
+    "https://build.nvidia.com/nvidia/nemotron-3-ultra-550b-a55b": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://build.nvidia.com/nvidia/nemotron-3-ultra-550b-a55b",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://c2pa.org/": {
       "bytes": 28395,
       "consecutive_failures": 0,
@@ -3552,6 +3563,17 @@
       "ok": true,
       "status": 200
     },
+    "https://openai.com/index/path-to-astra/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openai.com/index/path-to-astra/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3614,6 +3636,17 @@
       "final_url": "https://openrouter.ai/cohere/north-mini-code:free",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/docs/batch-quickstart": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/docs/batch-quickstart",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3724,6 +3757,17 @@
       "final_url": "https://openrouter.ai/nvidia/nemotron-3-ultra-550b-a55b",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/nvidia/nemotron-3-ultra-550b-a55b:batch": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/nvidia/nemotron-3-ultra-550b-a55b:batch",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4285,6 +4329,17 @@
       "final_url": "https://techcrunch.com/2026/08/26/openai-releases-its-official-report-on-the-hugging-face-breach/",
       "last_checked": "2026-08-31",
       "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://techcrunch.com/2026/09/01/open-ais-astra-model-is-on-the-way-and-very-good-at-breaking-into-computer-systems/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://techcrunch.com/2026/09/01/open-ais-astra-model-is-on-the-way-and-very-good-at-breaking-into-computer-systems/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -5154,6 +5209,17 @@
       "final_url": "https://www.searchenginejournal.com/anthropic-warns-hackers-are-stealing-claude-sessions-to-hijack-accounts/587566/",
       "last_checked": "2026-09-01",
       "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.securityweek.com/openais-astra-becomes-first-model-to-cross-critical-cybersecurity-threshold/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.securityweek.com/openais-astra-becomes-first-model-to-cross-critical-cybersecurity-threshold/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
