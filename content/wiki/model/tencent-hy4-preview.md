@@ -48,7 +48,7 @@ facts:
     volatility: fast
   - field: parameters
     source: cited
-    value: "770B total, 49B activated per token — mixture-of-experts"
+    value: "770B total, 49B activated per token"
     source_url: "https://huggingface.co/tencent/Hy4-preview"
     accessed: "2026-09-02"
     volatility: static
@@ -96,8 +96,14 @@ facts:
     volatility: dated
 timeline:
   - date: "2026-08-28"
-    event: "released and open-sourced under the Apache License 2.0, with instruct weights and an FP8 variant published on Hugging Face, ModelScope, GitCode and CNB"
+    event: "released and open-sourced"
     source_url: "https://www.tencent.com/tencent-releases-and-open-sources-tencent-hy4-preview/"
+  - date: "2026-08-28"
+    event: "instruct weights and an FP8 variant published on Hugging Face, ModelScope, GitCode and CNB"
+    source_url: "https://huggingface.co/tencent/Hy4-preview"
+  - date: "2026-08-28"
+    event: "licensed under the Apache License 2.0"
+    source_url: "https://huggingface.co/tencent/Hy4-preview/blob/main/LICENSE"
   - date: "2026-08-28"
     event: "listed on OpenRouter as tencent/hy4-preview, hosted solely by Tencent Cloud"
     source_url: "https://openrouter.ai/tencent/hy4-preview"
@@ -108,7 +114,7 @@ mentions:
   - model/moonshotai-kimi-k3
 ---
 
-Hy4 preview is Tencent's fourth-generation flagship, and it was open the day
+Hy4 preview is Tencent's next-generation flagship, and it was open the day
 it was announced. Tencent released and open-sourced the model on
 {{fact:model/tencent-hy4-preview#release_date}}, listing it on OpenRouter the
 same day. It is a mixture-of-experts model of
@@ -152,8 +158,9 @@ experiments and iterating on the results, which the announcement calls "an
 early-stage recursive self-improvement loop". The second: the model
 autonomously analyzed its own inference system and optimized operator fusion
 and communication, raising end-to-end throughput "by 31.8% compared with the
-baseline". No measurement accompanies either claim on the announcement, so
-both are recorded here as claims with dates, not as facts.
+baseline". What is absent for both is the method, the identity of the
+baseline, and any independent check, so both are recorded here as claims with
+dates, not as facts.
 
 On OpenRouter the row is served by a single provider, Tencent Cloud, so the
 listed price is Tencent's own rate rather than a reseller's: the row lists at

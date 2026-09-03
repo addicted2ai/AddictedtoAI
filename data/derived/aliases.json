@@ -2129,6 +2129,26 @@
       ]
     },
     {
+      "name": "Hy4",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy4-preview",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Hy4 preview",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy4-preview",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "IBM: Granite 4.0 Micro",
       "linkable": false,
       "claimed_by": [
@@ -6705,6 +6725,16 @@
         {
           "id": "event/gpt-2-staged-release",
           "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "tencent/hy4-preview",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "model/tencent-hy4-preview",
+          "class": "exclusive"
         }
       ]
     },

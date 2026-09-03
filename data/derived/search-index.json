@@ -5426,8 +5426,12 @@
       "d": "model",
       "s": "active",
       "i": "model/tencent-hy4-preview",
-      "a": [],
-      "b": true
+      "a": [
+        "Hy4 preview",
+        "Hy4",
+        "tencent/hy4-preview"
+      ],
+      "b": false
     },
     {
       "u": "/wiki/model/thedrummer-cydonia-24b-v4-1",
