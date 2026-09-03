@@ -3,12 +3,12 @@
   "count": 1,
   "items": [
     {
-      "detail": "The retrieval note now names three third parties, but the first done-when bullet still says \"quote the corroborating coverage (SecurityWeek; TechCrunch 2026-09-01)\" — the-decoder is missing from that parenthetical even though it is the ONLY route named anywhere in the docket to the 56% honeypot figure, which a later bullet (\"the honeypot test where Sol attempted target access 56% of the time\") makes a required element of the post. A job that works the done-when checklist rather than the prose above it gets an enumerated set of two sources that cannot supply one of its required numbers. Adding \"; the-decoder 2026-09-02\" to that parenthetical closes it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-16 (`j-20260902-16.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "detail": "The proposal now carries the card's qualifier verbatim, but the card explains it nowhere — `grep -n -i \"fallback\"` over the fetched card returns exactly one line, the table header at line 22, and no footnote, caption or prose says what fallback was enabled, to what, or for which runs. That is a trap for the writer: a qualifier reproduced without a definition invites a plausible gloss (\"with fallback routing\", \"with a fallback model\"), which would be an invention attributed to Z.ai. One clause in the evidence block — that the qualifier appears only in the header and the card states no meaning for it — closes it, and is also the strongest version of the like-for-like point: the one column the card qualifies is the one column it declines to explain.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-17 (`j-20260902-17.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
-      "subject": "data/proposals/openai-astra-critical-cyber-designation.md",
-      "target": "data/proposals/openai-astra-critical-cyber-designation.md",
-      "title": "Add the-decoder to the corroborating-coverage list in the done-when bullet",
+      "subject": "data/proposals/glm-5-3-license-revenue-gate.md",
+      "target": "data/proposals/glm-5-3-license-revenue-gate.md",
+      "title": "Say in the evidence block that the card never defines \"(w/ fallback)\"",
       "type": "repair"
     }
   ],
