@@ -37,7 +37,8 @@ mentions: []
 The `anthropic/claude-opus-4.7-fast` row vanished from the OpenRouter catalog
 in the 2026-09-02 snapshot. A day earlier it was still listed, active, with
 no expiry date. All three Anthropic fast rows left the catalog in that same
-snapshot, and this one had been there longest: OpenRouter's records date it
+snapshot, as observed on 2 September 2026, and this one had been there
+longest: OpenRouter's records date it
 to 2026-05-12, ahead of `anthropic/claude-opus-4.8-fast` (2026-05-27) and
 `anthropic/claude-opus-5-fast` (2026-07-24). The bound facts above still
 render their last-known values as of 2026-09-01.
