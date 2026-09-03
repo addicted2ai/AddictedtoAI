@@ -146,7 +146,8 @@ the promo rate the row undercuts its predecessor's current listing, so "the
 cheapest diffusion tier" is a true reading of the snapshot while the promo
 runs, and stops being one the day the window closes.
 
-The positioning is Inception's, not measured. The listing claims "a 10+
+The positioning is Inception's, not measured. The listing's opening claim is
+that Mercury 2.5 "is the fastest reasoning LLM"; it goes on to claim "a 10+
 point jump in intelligence over Mercury 2" and "comparable quality to
 cost-optimized frontier models like GPT-5.6 Luna (Low), Gemini 3.5
 Flash-Lite, and Claude Haiku 4.5"; the models page repeats the comparison,
@@ -159,3 +160,18 @@ agents, voice pipelines, and coding subagents — and the capabilities it
 claims the architecture enables: tunable reasoning levels, parallel tool
 calls, and schema-aligned JSON output, the last two checkable on the row,
 which accepts `tools` and `response_format`.
+
+Preview is the status, and it carries three caveats. The documented
+developer path is text-only: the row's modalities are text-to-text, and the
+[aimadetools explainer](https://www.aimadetools.com/blog/mercury-2-5-preview-explained/),
+fetched 3 September 2026, is explicit that "the currently documented
+developer path is a text model". The endpoint is OpenAI-compatible — the
+same writeup shows the model called through the OpenAI SDK against
+`https://api.inceptionlabs.ai/v1` — and Inception's pages say its models are
+"OpenAI compatible and a drop-in replacement for traditional LLMs". And the
+identifier is not a contract: the writeup tells developers to confirm the
+direct model identifier in account documentation "before shipping; preview
+aliases can change". It also states the pricing distinction this page's
+arithmetic depends on, in plainer words: "OpenRouter's launch rates are an
+80% promotional discount. They are not Inception's direct list price and may
+change independently."
