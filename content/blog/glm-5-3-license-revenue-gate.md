@@ -10,7 +10,7 @@ mentions:
   - model/z-ai-glm-5-3-flash
 ---
 
-Z.ai published the open weights of GLM-5.3 on Hugging Face on 27 August 2026, and the licence that ships with them is the part of the release worth reading twice. The GLM-5.3 License reads like MIT until clause 2, which makes commercial use by any licensee running Model-as-a-Service conditional on passing Z.AI's security review once the licensee's aggregate revenue with its affiliates passes **$10B** in any consecutive 12 months. The review's scope and method are Z.AI's to set. Everyone below that line gets the permissive grant unchanged.
+Z.ai published the open weights of GLM-5.3 on Hugging Face on 27 August 2026, and the licence that ships with them is the part of the release worth reading twice. The GLM-5.3 License reads like MIT until clause 2, which makes commercial use by any licensee conditional on passing Z.AI's security review once the licensee or any of its affiliates operates a Model-as-a-Service business and the group's aggregate revenue passes **$10B** over any consecutive 12 months. The review's scope and method are reasonably Z.AI's to determine. Licensees the clause does not trigger keep the permissive grant unchanged.
 
 ## Clause 2, verbatim
 
@@ -24,7 +24,7 @@ The rest of the file is clause 1 (the MIT-style grant, the notice condition, and
 
 ## The condition attaches to all commercial use, not just MaaS
 
-Three parts of clause 2 do the work. The revenue line is aggregate, over the licensee and its affiliates together, and over any consecutive 12 months, so a fiscal year is the wrong window to check against. The trigger is operating a MaaS business, and the definition excludes two shapes: end-user products whose model capabilities are embedded in specific features, and plain relays of requests to models hosted by others. A company over the line that never serves inference to third parties is untouched by the clause.
+Three parts of clause 2 do the work. The revenue line is aggregate, over the licensee and its affiliates together, and over any consecutive 12 months, so a fiscal year is the wrong window to check against. The trigger is the licensee or any of its affiliates operating a MaaS business — a subsidiary's MaaS business triggers the parent's condition too. The definition excludes two shapes: end-user products whose model capabilities are embedded in specific features, and plain relays of requests to models hosted by others. A company over the line whose group runs no MaaS business at all is untouched by the clause.
 
 Once the trigger fires, though, the review precondition attaches to any commercial purpose, not only MaaS. The sentence reads "before using the Software or its derivative works for any commercial purpose": fine-tunes, internal deployments, product features are all inside the condition, and the grant is made subject to the conditions. Until the review is passed, commercial use by a triggered licensee is outside the licence as written.
 
@@ -44,7 +44,7 @@ GLM-5.3-Flash, released the same week with a first commit dated 25 August 2026, 
 
 ## Who it lands on
 
-If you run hosted inference on GLM-5.3 and your group's revenue over any trailing 12 months is $10B or more, clause 2 makes your commercial use conditional on a review whose operation Z.AI has not published. What to do about it: the licence's own answer is its contact address, glmlicense@z.ai. Below the line, nothing changes, and the same is true of embedded-product use and relays, which the definition excludes.
+If you or an affiliate runs hosted inference on GLM-5.3 and your group's revenue over any trailing 12 months is $10B or more, clause 2 makes your commercial use conditional on a review whose operation Z.AI has not published. What to do about it: the licence's own answer is its contact address, glmlicense@z.ai. Below the line, nothing changes, and the same is true of embedded-product use and relays, which the definition excludes.
 
 ## Sources
 
