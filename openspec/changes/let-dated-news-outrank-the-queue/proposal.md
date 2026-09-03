@@ -88,3 +88,52 @@ opposite failure — writing endlessly while the corpus rots.
 - **Carried findings are not capped.** The 76% concentration is worth its own
   treatment; capping it here would bundle an unrelated redesign into an
   ordering fix. Carried by `addictedtoai-mtnk`.
+
+## The regression this change caused, and why the fix lives here
+
+The ordering above assumed something it never stated: that a proposal, once
+reached, gets **done**. It does not always. A discarded job deliberately does
+not consume its proposal — only a merged `done` may, because what a reviewer
+refused was the writing rather than the idea — and while proposals sat below
+the derived queue that was self-limiting: a refused candidate waited behind
+however much upkeep existed, which on this repository is effectively always
+some. Ranking an expiring proposal above the queue removed that spacing without
+replacing it.
+
+Observed 2026-09-03, hours after task 1 shipped, and filed as
+`addictedtoai-z5dj`. `j-20260903-03` was refused twice and discarded at 34.61
+model-minutes; the next dry run selected the identical proposal, with the same
+brief and nothing between the attempts changed. Unattended that is ~35 model-
+minutes a run until the candidate expires or three consecutive discards trip
+breaker 1 and halt the Desk.
+
+The second defect was in the same job and is the worse of the two. Both
+findings the reviewer carried named
+`content/blog/claude-fable-5-1-mythos-5-1.md` — a file that never existed,
+because the branch carrying it was discarded. A repair job dispatched at either
+would have found nothing. So the one fact that would have stopped the retry
+repeating itself was written down in a form nothing could act on, while the
+proposal that produced it went back to the front of the queue untouched. That
+is the deferral-that-dies-with-its-container failure in mechanical form.
+
+**Two fixes, addressing different halves, and neither substitutes for the
+other.** The demotion makes the retry slower; the record in the proposal makes
+it smarter. A slower retry that repeats the same mistake is still waste, and an
+informed one that runs every single run still costs a job's spend every run.
+
+This is fixed inside this change rather than in a new one because the
+precedence and its bound are a single rule. Archiving the first without the
+second would put a constitution on record stating that dated news outranks the
+queue and saying nothing about what happens when that news cannot be written —
+which is exactly the untasked-SHALL shape this repository keeps catching.
+
+## What is deliberately still not changed
+
+- **A discarded candidate is not rejected.** It is demoted, and its expiry
+  still sweeps it on time. Nothing about it reaches the rejection index:
+  deleting a candidate on the strength of one bad attempt is not a judgment the
+  loop is entitled to make, and the requirement above says so already.
+- **No retry counter halts anything.** Breaker 1 already halts the Desk on
+  three consecutive discards of a type, and adding a second, narrower halt
+  would be a fifth breaker in a closed list. The demotion is a bound on rate,
+  not a new stop.

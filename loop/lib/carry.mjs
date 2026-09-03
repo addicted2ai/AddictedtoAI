@@ -55,27 +55,50 @@ import { localDate } from './dates.mjs';
  * noticed something worth carrying, and its edits to the reviewed tree are
  * discarded, so this record is its only channel.
  *
+ * ORPHANED FINDINGS (`subjectMustExist`, beads addictedtoai-z5dj). A finding
+ * names a `subject:` and the queue uses that path as the repair job's target.
+ * On a MERGED job the subject is in the tree by construction. On a DISCARDED
+ * one it may not be, and on 2026-09-03 it was not: both of j-20260903-03's
+ * findings named `content/blog/claude-fable-5-1-mythos-5-1.md`, a file that
+ * never existed because the branch carrying it was thrown away. A repair job
+ * dispatched at either would find nothing — the finding was orphaned at birth,
+ * which is the file-the-deferral failure in mechanical form. With this option
+ * set, such an entry is returned in `orphaned` and NOT written: the caller puts
+ * it where the work that would act on it actually lives, which for a job
+ * sourced from a proposal is the proposal (`recordDiscardedAttempt`). A finding
+ * whose subject DOES exist is transcribed normally on either outcome, because
+ * a reviewer noticing something about a published page is unaffected by what
+ * happened to the branch it was reviewing.
+ *
  * @param {object} ctx
- * @param {{jobId: string, verdictPath: string, reviewer?: string, dryRun?: boolean}} args
- * @returns {{transcribed: Array<{dest: string, title: string}>, skipped: Array<{title: string, why: string}>, warnings: string[], why?: string}}
+ * @param {{jobId: string, verdictPath: string, reviewer?: string, dryRun?: boolean, subjectMustExist?: boolean}} args
+ * @returns {{transcribed: Array<{dest: string, title: string}>, skipped: Array<{title: string, why: string}>, orphaned: Array<{title: string, detail: string, subject: string}>, warnings: string[], why?: string}}
  */
-export function transcribeCarriedFindings(ctx, { jobId, verdictPath, reviewer = '', dryRun = false }) {
+export function transcribeCarriedFindings(
+  ctx,
+  { jobId, verdictPath, reviewer = '', dryRun = false, subjectMustExist = false },
+) {
   if (!verdictPath || !existsSync(verdictPath)) {
-    return { transcribed: [], skipped: [], warnings: [], why: 'no verdict record' };
+    return { transcribed: [], skipped: [], orphaned: [], warnings: [], why: 'no verdict record' };
   }
   const v = parseVerdict(readFileSync(verdictPath, 'utf8'));
   const warnings = [...(v.carryWarnings ?? [])];
   const entries = v.carry ?? [];
   if (entries.length === 0) {
-    return { transcribed: [], skipped: [], warnings, why: 'the verdict record carries no findings' };
+    return { transcribed: [], skipped: [], orphaned: [], warnings, why: 'the verdict record carries no findings' };
   }
 
   const dir = ctx.carriedDir ?? join(ctx.repoRoot, 'data', 'carried');
   const today = localDate(ctx.now ? ctx.now() : new Date());
   const transcribed = [];
   const skipped = [];
+  const orphaned = [];
 
   entries.forEach((entry, i) => {
+    if (subjectMustExist && entry.subject && !existsSync(join(ctx.repoRoot, entry.subject))) {
+      orphaned.push({ title: entry.title, detail: entry.detail, subject: entry.subject });
+      return;
+    }
     const dest = join(dir, `${jobId}-carry-${i + 1}.md`);
     if (existsSync(dest)) {
       skipped.push({ title: entry.title, why: `a file already exists at ${dest}; the entry was not transcribed over it` });
@@ -113,5 +136,5 @@ export function transcribeCarriedFindings(ctx, { jobId, verdictPath, reviewer = 
     transcribed.push({ dest, title: entry.title });
   });
 
-  return { transcribed, skipped, warnings };
+  return { transcribed, skipped, orphaned, warnings };
 }

@@ -39,6 +39,17 @@ import { runnerHealthGate } from './health.mjs';
  * deadline there is nothing to preempt for, and "proposals first" would be a
  * much larger claim than the evidence supports.
  *
+ * So is an expiring proposal whose last attempt was DISCARDED — the band is
+ * `preempts`, which `readProposals` clears once `discarded_attempts` is
+ * stamped on the file. The precedence exists because the evidence has a
+ * deadline, not to buy unlimited retries: a discarded job does not consume its
+ * proposal (correctly — the idea was not what was rejected), so without this
+ * the same candidate returns to the front on every run, unchanged, at ~35
+ * model-minutes an attempt until it expires or three consecutive discards trip
+ * breaker 1. Observed 2026-09-03, addictedtoai-z5dj. Demoting it restores
+ * exactly the spacing that made a refused proposal self-limiting before this
+ * band existed.
+ *
  * This reorders which work is reached, never how much of each kind may run.
  * The upkeep floor and the new-writing ceiling are applied downstream in
  * `selectJob` and still bind, so an expiring proposal over the ceiling is
@@ -73,13 +84,13 @@ export function gatherCandidates(ctx, { dryRun = false } = {}) {
   // first, so the stable sort below preserves "closest deadline wins" inside
   // the expiring band.
   for (const p of props.ripe) {
-    if (p.expires) candidates.push({ ...p, priority: 2, order: order++ });
+    if (p.preempts) candidates.push({ ...p, priority: 2, order: order++ });
   }
   for (const it of q.items) {
     candidates.push({ ...it, priority: 3, order: order++, tutorialVerify: isTutorialVerify(it) });
   }
   for (const p of props.ripe) {
-    if (!p.expires) candidates.push({ ...p, priority: 4, order: order++ });
+    if (!p.preempts) candidates.push({ ...p, priority: 4, order: order++ });
   }
   candidates.sort((a, b) => a.priority - b.priority || a.order - b.order);
   return { candidates, warnings, notes, rejectionIndexUsed: props.rejected };

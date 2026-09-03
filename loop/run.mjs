@@ -61,6 +61,7 @@ import { isIssueId, mergeIssueIds } from './lib/issues.mjs';
 import {
   applyProposalMergeRules,
   consumeProposal,
+  recordDiscardedAttempt,
   sweepExpiredProposals,
   transcribeNotedProposal,
 } from './lib/proposals.mjs';
@@ -455,7 +456,14 @@ async function executeJob(ctx, opts) {
     }
     if (pass >= 2) {
       ctx.log('a second non-approval discards the job: branch closed, reasons kept');
-      return finish({ outcome: 'discarded', mm, changed, note: gate.reason, verdict: gate.verdict });
+      // `pass` matters, and its absence here was a real defect: everything
+      // downstream reads `verdictPath(ctx, jobId, result.pass ?? 1)`, so a
+      // discard silently transcribed PASS ONE's carried findings and would
+      // have recorded pass one's reasons on the proposal — not the refusal
+      // that actually discarded the job. Measured on j-20260903-03, whose two
+      // transcribed findings both came from the pass-1 record while the
+      // blocking finding sat in pass 2 (addictedtoai-z5dj).
+      return finish({ outcome: 'discarded', mm, changed, note: gate.reason, verdict: gate.verdict, pass });
     }
     // One revision pass against the named findings, then a delta review.
     findings = `${gate.verdict.reasons.join(', ')}\n\n${gate.verdict.notes}`;
@@ -1121,7 +1129,9 @@ export async function runLoop(ctx, opts = {}) {
       //
       // Only on a merged, DONE outcome, and `outcome` is already `'done'` here.
       // A discarded job's proposal deliberately stays selectable: what was
-      // rejected was the work, not the idea.
+      // rejected was the work, not the idea. It does not stay AHEAD of the
+      // queue, though — `recordDiscardedAttempt` below stamps the attempt onto
+      // it and that clears its `preempts` (addictedtoai-z5dj).
       //
       // Placed before the build gate and the publish so that a publishing run
       // pushes the retirement with the piece it produced; the move is also
@@ -1174,6 +1184,10 @@ export async function runLoop(ctx, opts = {}) {
     // (specs/loop). That is an absence of code, which is why it is written
     // down — and it is measured by a test that plants a proposal on a branch
     // the reviewer rejects and then reads the working tree.
+    //
+    // The proposal this job was SELECTED from is a different file, living in
+    // the main working tree, and it survives: see `recordDiscardedAttempt`
+    // below, which stamps this attempt onto it.
   }
 
   // A proposal the REVIEWER noted, transcribed from the verdict record.
@@ -1210,12 +1224,19 @@ export async function runLoop(ctx, opts = {}) {
   // parsed a verdict for" scope as the noted proposal above, and for the same
   // reason: the reviewer's edits to the reviewed tree are discarded, so
   // `carry:` in its own record is the only way one of these reaches work.
+  const orphanedFindings = [];
   if (result.verdict) {
     const c = transcribeCarriedFindings(ctx, {
       jobId,
       verdictPath: verdictPath(ctx, jobId, result.pass ?? 1),
       reviewer: reviewer.id,
+      // Only on a discard, and only then because only then can the subject be
+      // absent: the branch that would have created it was thrown away
+      // (addictedtoai-z5dj). These entries go to the proposal below instead of
+      // becoming a queue item pointed at a file that never existed.
+      subjectMustExist: outcome === 'discarded',
     });
+    orphanedFindings.push(...c.orphaned);
     for (const t of c.transcribed) {
       transcribedPaths.push(relative(ctx.repoRoot, t.dest));
       ctx.log(`carried finding transcribed to ${t.dest}: ${JSON.stringify(t.title)}`);
@@ -1225,6 +1246,50 @@ export async function runLoop(ctx, opts = {}) {
     }
     for (const w of c.warnings) {
       ctx.log(`the verdict record's carry: block ${w}`);
+    }
+  }
+
+  // The discarded attempt, recorded in the proposal it came from
+  // (addictedtoai-z5dj). Two effects, one append: the candidate stops
+  // outranking the derived queue, and the next attempt's brief carries the
+  // reasons the last one was refused — a proposal's body IS the brief's
+  // `detail`. Both are needed: without the first the same proposal returns to
+  // the front every run at ~35 model-minutes an attempt; without the second the
+  // retry repeats the mistake that got it refused.
+  if (outcome === 'discarded' && proposalOrigin) {
+    const rec = recordDiscardedAttempt(ctx, {
+      path: proposalOrigin.path,
+      slug: proposalOrigin.slug,
+      jobId,
+      jobType: job.type,
+      reasons: result.verdict?.reasons ?? [],
+      notes: result.verdict?.notes ?? '',
+      findings: orphanedFindings,
+    });
+    ctx.log(
+      rec.recorded
+        ? `recorded discarded attempt ${rec.attempts} on the proposal${
+            orphanedFindings.length
+              ? `, carrying ${orphanedFindings.length} finding(s) that named a file the branch never merged`
+              : ''
+          }: ${rec.why}`
+        : `the discarded attempt was not recorded on the proposal: ${rec.why}`,
+    );
+    if (rec.recorded) {
+      transcribedPaths.push(relative(ctx.repoRoot, proposalOrigin.path));
+    }
+  } else if (outcome === 'discarded' && orphanedFindings.length) {
+    // No proposal to hold them, and no file to repair: the job came from a
+    // directive or the queue and the piece its findings name was never merged.
+    // They stay in the committed verdict record, which is where a reader
+    // looking at why this job was discarded will be. Said out loud rather than
+    // dropped silently — a finding that goes nowhere should say so.
+    for (const f of orphanedFindings) {
+      ctx.log(
+        `a carried finding was not transcribed: it names \`${f.subject}\`, which the discarded ` +
+          `branch never merged, and this job came from no proposal that could hold it — ` +
+          `it stays in the verdict record: ${JSON.stringify(f.title)}`,
+      );
     }
   }
 

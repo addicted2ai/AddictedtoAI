@@ -254,6 +254,12 @@ export function readProposals(ctx) {
       continue;
     }
     const ageDays = (now.getTime() - p.mtimeMs) / DAY_MS;
+    // How many attempts at this candidate a reviewer has already refused twice,
+    // stamped onto the file by `recordDiscardedAttempt`. It spends the expiry's
+    // precedence over the derived queue — see `preempts` below.
+    const discardedAttempts = Number.isFinite(Number(p.fm.discarded_attempts))
+      ? Math.max(0, Math.trunc(Number(p.fm.discarded_attempts)))
+      : 0;
     const candidate = {
       source: 'proposal',
       type,
@@ -261,6 +267,13 @@ export function readProposals(ctx) {
       path: p.path,
       ageDays,
       expires: exp.present ? exp.date : null,
+      discardedAttempts,
+      // An expiry buys a place ahead of the derived queue, and the first
+      // discarded attempt spends it. The candidate stays live — the idea was
+      // not what was rejected — but it goes back among the proposals, which is
+      // exactly the spacing that made a refused proposal self-limiting before
+      // the expiring band existed (addictedtoai-z5dj).
+      preempts: exp.present && discardedAttempts === 0,
       title: p.fm.title ?? p.fm.summary ?? slug,
       detail: `${p.fm.summary ?? ''}\n\n${p.body}`.trim(),
       evidence: p.fm.evidence ?? null,
@@ -311,10 +324,15 @@ export function readProposals(ctx) {
   // predecessor's own diagnosis was "ten weeks of backlog for stories with a
   // one-week shelf life", and its fix — "take the freshest viable item, not
   // the oldest" — is this comparator plus the sweep, together.
+  //
+  // The band is `preempts`, not `expires`: a candidate whose last attempt was
+  // discarded has spent its precedence and sorts with the undated ones, so the
+  // selector's expiring band and this comparator agree on one predicate rather
+  // than two that could drift apart.
   ripe.sort((a, b) => {
-    if (a.expires && b.expires) return a.expires < b.expires ? -1 : a.expires > b.expires ? 1 : 0;
-    if (a.expires) return -1;
-    if (b.expires) return 1;
+    if (a.preempts && b.preempts) return a.expires < b.expires ? -1 : a.expires > b.expires ? 1 : 0;
+    if (a.preempts) return -1;
+    if (b.preempts) return 1;
     return b.ageDays - a.ageDays;
   });
   return { ripe, cooling, expired, duplicates, malformed, rejected };
@@ -490,6 +508,95 @@ export function consumeProposal(ctx, { path, slug, jobId, jobType, artifacts = [
   writeFileSync(dest, original + note, 'utf8');
   unlinkSync(path);
   return { moved: true, dest, why };
+}
+
+/**
+ * Record, in the proposal itself, that an attempt at it was discarded.
+ *
+ * THE DEFECT THIS CLOSES (addictedtoai-z5dj). `consumeProposal` above fires
+ * only on a merged `done`, deliberately: "a discarded job's proposal stays
+ * selectable, because the idea was not what was rejected". That was
+ * self-limiting while proposals sat below the derived queue — a refused
+ * candidate waited behind however much upkeep existed, which on this repository
+ * is effectively always some. Once an expiring proposal was ranked ABOVE the
+ * queue (`let-dated-news-outrank-the-queue`), the same candidate came back to
+ * the front on the very next run, with the same brief and nothing between
+ * attempts changed. Observed 2026-09-03: j-20260903-03 was refused twice and
+ * discarded at 34.61 model-minutes, and the next dry run selected the identical
+ * proposal again. Left alone that is ~35 mm per run until the candidate expires
+ * or three consecutive discards trip breaker 1 and halt the Desk.
+ *
+ * TWO THINGS, ONE APPEND, and they fix different halves:
+ *
+ *  1. `discarded_attempts` in the front matter is what `readProposals` reads to
+ *     clear `preempts`. The candidate keeps its place among proposals and its
+ *     expiry still sweeps it; it simply stops preempting the queue. That bounds
+ *     the spend.
+ *  2. The body gains the reviewer's blocking reasons and every carried finding
+ *     that named a file the discarded branch never merged. The proposal's body
+ *     IS the `detail` the next brief carries (`readProposals`), so the retry is
+ *     briefed on why the last attempt failed instead of repeating it. That is
+ *     where those findings belong: transcribing them to `data/carried/` writes
+ *     a queue item against a path that does not exist and never did.
+ *
+ * The write also advances the file's mtime, which re-cools a candidate carrying
+ * no `expires:` for free — cooling is file age. That is a side effect worth
+ * naming, not the mechanism: the bound above is the demotion.
+ *
+ * @param {object} ctx
+ * @param {object} o
+ * @param {string} o.path   absolute path to the proposal file, in the MAIN
+ *                          working tree — the discarded branch is thrown away
+ * @param {string} o.slug
+ * @param {string} o.jobId
+ * @param {string} o.jobType
+ * @param {string[]} [o.reasons]   the reviewer's categorical refusal reasons
+ * @param {string} [o.notes]       the reviewer's prose, verbatim
+ * @param {Array<{title: string, detail: string, subject?: string}>} [o.findings]
+ * @returns {{recorded: boolean, attempts: number, why: string}}
+ */
+export function recordDiscardedAttempt(
+  ctx,
+  { path, slug, jobId, jobType, reasons = [], notes = '', findings = [] },
+  { dryRun = false } = {},
+) {
+  const why =
+    `an attempt at proposal "${slug}" (job ${jobId}, ${jobType}) was discarded; the reasons and the ` +
+    `reviewer's orphaned findings are appended to the proposal, and it no longer outranks the ` +
+    `derived queue`;
+  if (!existsSync(path)) {
+    return { recorded: false, attempts: 0, why: `${why} — except that ${path} no longer exists` };
+  }
+  const original = readFileSync(path, 'utf8');
+  const fm = matter(original).data ?? {};
+  const attempts =
+    (Number.isFinite(Number(fm.discarded_attempts)) ? Math.max(0, Math.trunc(Number(fm.discarded_attempts))) : 0) + 1;
+  if (dryRun) return { recorded: false, attempts, why };
+  const reasonLine = reasons.length ? reasons.map((r) => `\`${r}\``).join(', ') : '(no categorical reason recorded)';
+  const carried = findings.length
+    ? findings
+        .map(
+          (f) =>
+            `#### ${f.title}\n\n${String(f.detail).trim()}\n` +
+            (f.subject ? `\n(The reviewer named \`${f.subject}\`, which the discarded branch never merged.)\n` : ''),
+        )
+        .join('\n')
+    : '';
+  const note =
+    `\n\n---\n\n## Discarded attempt ${attempts}: job ${jobId}\n\n` +
+    // The LOCAL date, like every other date in this repository (CLAUDE.md).
+    `- date: ${localDate(ctx.now())}\n` +
+    `- job: ${jobId} (${jobType})\n` +
+    `- refused for: ${reasonLine}\n\n` +
+    `A reviewer refused this work twice and the branch was discarded. The candidate is ` +
+    `still live — what was rejected was the writing, not the idea — but it no longer ` +
+    `outranks the derived queue, and its \`expires:\` still sweeps it on time.\n\n` +
+    `**Read this before attempting it again.** The section below is why the last attempt ` +
+    `did not merge; an attempt that repeats it will be refused the same way.\n\n` +
+    `### What the reviewer said\n\n${String(notes).trim() || '(the record carried no prose)'}\n` +
+    (carried ? `\n### Findings the reviewer carried\n\n${carried}` : '');
+  writeFileSync(path, setFrontMatterKeys(original, { discarded_attempts: attempts }) + note, 'utf8');
+  return { recorded: true, attempts, why };
 }
 
 // ---------------------------------------------------------------------------

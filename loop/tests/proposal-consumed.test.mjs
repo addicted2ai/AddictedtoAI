@@ -175,6 +175,27 @@ test('POSITIVE CONTROL — a discarded job leaves its proposal selectable', asyn
   assert.deepEqual(active(ctx), ['dated-repair.md']);
   assert.deepEqual(consumed(ctx), []);
   assert.deepEqual(readProposals(ctx).ripe.map((p) => p.slug), ['dated-repair']);
+
+  // But it does NOT come straight back to the front of the queue. The attempt
+  // is stamped on the candidate, which spends the precedence an `expires:`
+  // buys over the derived queue (addictedtoai-z5dj). Asserted end to end here,
+  // through the real `runLoop`, because the unit tests in
+  // `discarded-proposal-retry.test.mjs` call `recordDiscardedAttempt` directly
+  // and so cannot see whether run.mjs ever calls it.
+  const after = readProposals(ctx).ripe.find((p) => p.slug === 'dated-repair');
+  assert.equal(after.discardedAttempts, 1, ctx.output());
+  assert.equal(after.preempts, false, 'a refused candidate stops outranking the queue');
+  const amended = readFileSync(join(ctx.proposalsDir, 'dated-repair.md'), 'utf8');
+  assert.match(amended, new RegExp(`## Discarded attempt 1: job ${res.jobId}`), amended);
+  assert.match(amended, /Read this before attempting it again/);
+
+  // And it is COMMITTED with the job's records, not left dirty in the working
+  // tree for the next run to trip over.
+  assert.equal(
+    git(ctx.repoRoot, ['status', '--porcelain', '--', 'data/proposals/dated-repair.md']).trim(),
+    '',
+    'the amended proposal must land in the job records commit',
+  );
 });
 
 test('POSITIVE CONTROL — only the consumed proposal is retired; the others are left alone', async (t) => {

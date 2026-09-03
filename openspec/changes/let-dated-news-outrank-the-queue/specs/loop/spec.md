@@ -106,6 +106,18 @@ manufacturing work.
   unchanged and still bind, so this reorders **which** work is reached first
   and never how much of each kind may run — an expiring proposal that would
   breach the new-writing ceiling is still refused.
+- **That precedence is spent by a discarded attempt.** An expiring proposal
+  whose last attempt was discarded SHALL rank at source 3 with the undated
+  proposals, behind the derived queue, until it expires. It is a demotion and
+  never a deletion: the candidate stays selectable, its expiry still sweeps it
+  on time, and nothing about it reaches the rejection index — what a reviewer
+  refused was the writing, not the idea. The reason is that a discarded job
+  does **not** consume its proposal (a separate requirement, and correct), so
+  without this the same candidate returns to the front of the queue on every
+  run, unchanged, until it expires or three consecutive discards trip breaker
+  1 and halt the Desk. Ranking proposals below the queue was what made a
+  refused candidate self-limiting before this band existed; this restores
+  exactly that spacing, and only for a candidate that has actually failed.
 
 - `data/proposals/dropped/` is a **record, never a block**: unlike
   `rejected/`, it SHALL NOT feed automatic slug suppression, so a story
@@ -159,3 +171,123 @@ manufacturing work.
 - **WHEN** the derived queue holds a repair item and a ripe proposal carrying
   no `expires:` is also selectable
 - **THEN** the queue item is selected first, exactly as before
+
+#### Scenario: A refused candidate stops preempting the queue
+
+- **WHEN** a job selected from an expiring proposal is discarded, and on the
+  next run the derived queue holds a repair item and that same proposal is
+  still ripe and unexpired
+- **THEN** the queue item is selected first and the proposal is still a
+  candidate, merely a later one — it was demoted, not dropped
+
+#### Scenario: A refused candidate does not block the ones behind it
+
+- **WHEN** two expiring proposals are ripe, the one with the sooner expiry has
+  a discarded attempt recorded on it and the other has none
+- **THEN** the one with no discarded attempt is selected first, even though its
+  deadline is later
+
+### Requirement: A proposal a merged job consumed is retired
+
+A proposal that has been selected, written, reviewed and merged is finished
+work. Left in `data/proposals/` it stays selectable, and the next run is
+dispatched at a piece that already exists — every run, until its `expires:`
+arrives. Observed 2026-08-30, with three retired by hand before there was a
+mechanism.
+
+- A proposal a job was selected from SHALL be retired when that job **merges**,
+  to `data/proposals/consumed/`, with a note naming the job, the merge commit,
+  and the artifacts the merge produced.
+- Only a **merged, `done`** outcome SHALL consume a proposal. The proposal a
+  **discarded** job was *selected from* SHALL remain selectable: what the
+  reviewer rejected was the work, not the idea, and deleting a candidate on the
+  strength of one bad attempt at it is not a judgment the loop is entitled to
+  make. This concerns only the proposal a job was selected from; a proposal a
+  discarded job *produced* dies with its branch, which is a different rule in a
+  different requirement.
+- A **discarded** job SHALL record the attempt on the proposal it was selected
+  from: the job's id, the local date, the reviewer's categorical refusal
+  reasons and its prose, appended to the proposal file, and a count of
+  discarded attempts written into its front matter. The count is what demotes
+  an expiring candidate out of the band that outranks the derived queue (a
+  separate requirement); the appended text is what makes the next attempt
+  informed, because a proposal's body is the `detail` the next brief carries.
+  Both halves are needed and neither substitutes for the other: a slower retry
+  that repeats the same mistake is still waste, and an informed one that runs
+  every single run is still a job's spend every run.
+- A finding the reviewer **carried** on a discarded job, whose `subject:` names
+  a path the discarded branch never merged, SHALL NOT be transcribed to
+  `data/carried/`. It is written into the proposal's record of the attempt
+  instead, where the work that would act on it lives. Transcribing it would
+  queue a repair job against a file that does not exist and never did — a note
+  that reads as recorded and can never be acted on. A carried finding whose
+  subject **does** exist is transcribed exactly as on a merged job, because a
+  reviewer noticing something about a published page is unaffected by what
+  happened to the branch it was reviewing. Where a discarded job came from no
+  proposal, such a finding SHALL be reported as untranscribed, naming the file
+  it points at: it stays in the committed verdict record, and a finding that
+  goes nowhere says so rather than vanishing quietly.
+- A job drawn from the derived queue or from a directive SHALL retire nothing.
+- `data/proposals/consumed/` SHALL be a **record and never a block**, on the same
+  terms as `data/proposals/dropped/` and unlike `data/proposals/rejected/`: a
+  slug appearing there SHALL NOT suppress a later proposal carrying the same
+  slug. Being written about once is not a reason a subject may never be written
+  about again.
+- Retirement SHALL be **mechanical**: it invokes no model and spends no
+  inference.
+- Selection SHALL record on the job's branch what the job was selected from, as
+  data rather than as prose to be parsed, using a repository-relative path so it
+  survives being read from another worktree. Without it a **resumed** run — whose
+  job object is rebuilt from the branch and cannot remember a selection made in
+  an earlier run — would merge and leave its proposal live, which is the same
+  defect through the resumption door. That record SHALL be removed with the rest
+  of the job scaffolding before the merge, so it never reaches `main`.
+- Both halves of the move — the removal and the addition — SHALL be committed
+  together with the job's records, so the history never shows one proposal
+  existing in two places.
+
+#### Scenario: A consumed idea is not offered again
+
+- **WHEN** a job selected from a proposal is approved and merged
+- **THEN** the proposal moves to `data/proposals/consumed/` naming the job, the
+  merge commit and what it produced, and the next run does not select it
+
+#### Scenario: A discarded job does not consume its proposal
+
+- **WHEN** a job selected from a proposal is discarded by the reviewer
+- **THEN** the proposal is still in `data/proposals/` and still selectable — the
+  work was rejected, the idea was not — and it carries a record of the attempt:
+  the job, the date, the reasons it was refused, and the reviewer's prose
+
+#### Scenario: A refused attempt's reasons reach the next attempt
+
+- **WHEN** a proposal carrying a discarded attempt is selected again
+- **THEN** the brief for that job carries the reasons the previous attempt was
+  refused, because they are in the proposal's body and the body is the brief's
+  detail
+
+#### Scenario: A finding about a file that was never merged is not queued
+
+- **WHEN** a discarded job's reviewer carries a finding naming a file that
+  exists only on the discarded branch
+- **THEN** no item is queued against that path, and the finding is written into
+  the proposal's record of the attempt instead
+
+#### Scenario: A retired subject may be proposed again
+
+- **WHEN** a new proposal carries the same `slug` as one in
+  `data/proposals/consumed/`
+- **THEN** it is selectable on its own merits, unlike a slug matching one in
+  `data/proposals/rejected/`, which is still auto-discarded
+
+#### Scenario: An interrupted proposal job still retires its proposal
+
+- **WHEN** a job selected from a proposal is interrupted and a later run resumes
+  its branch, and that resumed run merges
+- **THEN** the proposal is retired, because the branch carries the record of what
+  the job was selected from
+
+#### Scenario: A queue job retires nothing
+
+- **WHEN** a job drawn from the derived queue merges
+- **THEN** no proposal is moved and nothing in `data/proposals/` changes
