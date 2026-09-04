@@ -27,6 +27,8 @@ evidence: >
   (content/blog/openai-astra-critical-designation.md and
   content/blog/openai-daybreak-frontline-defenders.md) and no wiki file.
 expires: 2026-09-11
+proposed_by_job: j-20260904-03
+proposed_by_type: post
 ---
 
 The Daybreak program is where OpenAI deploys its frontier cyber capability, and
