@@ -1343,8 +1343,28 @@ export async function runLoop(ctx, opts = {}) {
     }
   }
 
+  // `removeWorktree` runs `worktree remove --force` and then `worktree prune`;
+  // the `rmSync` is the fallback for when the remove is not believed. On Windows
+  // the remove can fail on a file still held open, and then the ORDER defeats
+  // the prune: the prune runs while the directory is still present, finds
+  // nothing prunable, and the `rmSync` deletes the directory a moment later. The
+  // admin entry under `.git/worktrees/` is now stale and nothing ever prunes it
+  // again — and git reads that entry, not the filesystem, when asked to delete a
+  // branch. Measured in a throwaway repository on git 2.40.0.windows.1: with the
+  // directory gone and the entry unpruned, `git branch -D` answers
+  //     error: Cannot delete branch 'job/probe' checked out at '<gone dir>'
+  // and one `worktree prune` at that point makes the identical call succeed. So
+  // the prune belongs AFTER the `rmSync` as well: it is the only one that can
+  // see what the `rmSync` did. Cheap and idempotent when the remove worked.
+  //
+  // The one case it does not close, said out loud rather than claimed away: a
+  // worktree under `git worktree lock` refuses `remove --force` AND is skipped by
+  // prune, so both prunes leave it. That is not this failure mode — nothing in
+  // the Desk locks a worktree — but a stale entry surviving here means look for a
+  // lock, not for a missing prune.
   removeWorktree(ctx.repoRoot, worktree);
   rmSync(worktree, { recursive: true, force: true });
+  gitTry(ctx.repoRoot, ['worktree', 'prune']);
 
   // -------------------------------------------------------------------------
   // DELETE THE MERGED BRANCH — here, after the worktree, and read the answer.
