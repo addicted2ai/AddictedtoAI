@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 16,
+  "count": 15,
   "items": [
-    {
-      "detail": "Not a doubling, and this sweep was right to leave both alone, but the units feature changed how they read. cohere-command-a.md:72 now renders \"256000 tokens context window\" and meta-muse-glimmer-30b.md:98 \"a 131072 tokens context window\" (both measured through renderFact, not taken from the drop record, which gives different figures for both). The unit appears once, so nothing is factually wrong; the noun phrase is just ungrammatical where it used to read \"a 256000 context window\". Rephrasing to \"a context window of {{fact:...}}\" fixes both without touching a figure. Carried forward from the pass-1 record, which the loop reads only at the final pass.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-07 (`j-20260903-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/wiki/model/cohere-command-a.md",
-      "target": "content/wiki/model/cohere-command-a.md",
-      "title": "Consider rephrasing \"a <N> tokens context window\" now that the unit renders",
-      "type": "repair"
-    },
     {
       "detail": "2 findings carried by reviewers against `content/wiki/model/google-gemini-3-8-flash.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Trim the duplicated wording out of the output-tokens fact value\n\nCarried in `data/carried/j-20260903-11-carry-1.md`.\n\noutput_tokens_per_task carries value \"~48k at high reasoning (a ~30% rise in average output tokens per task)\", and both prose sentences that transclude it already supply that framing themselves. The model entry reads \"average output tokens per task rose to {{fact:... #output_tokens_per_task}}, lifting cost per task to {{fact:... #cost_per_task}} at high reasoning\", so it renders as \"average output tokens per task rose to ~48k at high reasoning (a ~30% rise in average output tokens per task), lifting cost per task to ~$0.58 at high reasoning\" — \"average output tokens per task\" twice, \"at high reasoning\" twice. content/wiki/org/google-deepmind.md has the same doubling in its \"llm-releases prices that sentence\" paragraph. Shortening the value to \"~48k\" fixes both surfaces at once and loses nothing, since the ~30% and the effort level are already in the sentences. Separately, the source attaches \"at high reasoning\" to the cost-per-task clause, not to the token count — \"a ~30% rise in average output tokens per task (to ~48k) lifts cost per task to ~$0.58 at high reasoning\" — so dropping it from this value is also the more faithful reading.\n\n### Fix the sentence that runs into the DeepSWE fact value\n\nCarried in `data/carried/j-20260903-11-carry-2.md`.\n\nThe model entry's benchmark sentence ends \"...Harvey's Legal Agent Benchmark at {{fact:...#harveys_legal_agent_benchmark}}, and on {{fact:...#deepswe_v1_1}}.\" The deepswe_v1_1 value is a whole clause (\"DeepSWE v1.1 — outperforms most larger frontier models at a fraction of the cost\"), so the rendered text reads \"and on DeepSWE v1.1 — outperforms most larger frontier models at a fraction of the cost\", which does not parse against the \"X at Y\" list it is joined to. Either drop the \"and on\" and start a new sentence, or reduce the fact value to the claim alone the way the neighbouring fact values are written.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260903-11-carry-1.md`\n- `data/carried/j-20260903-11-carry-2.md`",
       "rank": 25,
@@ -147,5 +138,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 16
+  "total_before_cap": 15
 }
