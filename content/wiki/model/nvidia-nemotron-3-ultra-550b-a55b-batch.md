@@ -49,8 +49,8 @@ live on 2026-09-03), and OpenRouter still lists the standard and free rows. No
 `nvidia/` row was added and none other was removed in the 2026-09-03 snapshot,
 so no successor slug has appeared — but the snapshot was not otherwise still in
 that namespace: three of the nine `nvidia/` rows changed, including the
-standard row's price, whose prompt rate fell from 0.000000625 to 0.0000006 and
-whose completion rate fell from 0.000003125 to 0.0000024 per token.
+standard row's price, whose prompt rate fell from $0.625 to $0.60 and
+whose completion rate fell from $3.125 to $2.40 per million tokens.
 
 What is not published is why the batch variant specifically was withdrawn.
 OpenRouter's batch offering is alive as a whole: 66 `:batch` rows remain in the
