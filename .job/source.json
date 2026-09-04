@@ -1,0 +1,8 @@
+{
+  "job": "j-20260903-14",
+  "type": "verify",
+  "source": "proposal",
+  "slug": "verify-meta-spark-weights-pending-status",
+  "path": "data/proposals/verify-meta-spark-weights-pending-status.md",
+  "issues": []
+}
