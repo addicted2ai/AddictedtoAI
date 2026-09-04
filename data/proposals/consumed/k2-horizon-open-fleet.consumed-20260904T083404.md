@@ -95,3 +95,17 @@ architecture, and a self-correction on benchmark hygiene.
   vendor-reported, with the evaluation names the page names (AIME 2026,
   SWE-bench, BrowseComp, TerminalBench).
 - Every number is attributed to the page it came from.
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-04
+- job: j-20260904-05 (post)
+- merged as: `3b806d760d232fbb69470693168cf053d10dd073`
+- produced: `content/blog/ifm-k2-horizon-open-fleet.md`
+- was: `k2-horizon-open-fleet.md` (slug `k2-horizon-open-fleet`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

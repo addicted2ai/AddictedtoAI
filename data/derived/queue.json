@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 16,
+  "count": 17,
   "items": [
     {
       "detail": "openrouter-models z-ai/glm-4.7-flash status: active -> deprecated on 2026-09-04",
@@ -17,6 +17,15 @@
       "subject": "content/blog/openai-daybreak-frontline-defenders.md",
       "target": "content/blog/openai-daybreak-frontline-defenders.md",
       "title": "Clear the 3 carried findings on content/blog/openai-daybreak-frontline-defenders.md",
+      "type": "repair"
+    },
+    {
+      "detail": "3 findings carried by reviewers against `content/blog/openai-gpt-6-astra-system-card.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Restore the card's hedge in the steganography quote\n\nCarried in `data/carried/j-20260904-04-carry-1.md`.\n\nThe post writes: OpenAI reads the evasion risk as \"largely bounded to lower reasoning tasks\". That exact string is not in the system card. The card's sentence is \"We have not seen evidence of steganographic CoT reasoning (e.g., concealing hidden reasoning within ordinary and seemingly unrelated text), indicating that the evasion risk MAY LARGELY BE BOUNDED to lower reasoning tasks\" — a hedge the quotation marks currently drop, in the reassuring direction. Quote \"may largely be bounded to lower reasoning tasks\", or drop the quotation marks and paraphrase.\n\n### Name the condition the sub-11% WMDP recall figure belongs to\n\nCarried in `data/carried/j-20260904-04-carry-2.md`.\n\nThe post says \"Told to sandbag, Astra keeps its CoT-only monitor recall below 11% on WMDP, where Sol's was nearly 100%, and at zero on Monorepo-Bench.\" The card's figure is from the \"evasion aware\" condition, not the sandbagging prompt alone: \"when explicitly instructed to evade detection, GPT-6 Astra achieves a CoT-only monitor recall below 11% for WMDP, compared with nearly 100% for GPT-5.6 Sol. For Monorepo-Bench, the recall dropped to zero for GPT-6 Astra.\" The distinction is load-bearing because the card reports the weaker condition going the other way: \"In the 'simple aware' setting, we do not observe covert obfuscation from GPT-6 Astra, and the monitor recall is comparable to the 'unaware' condition.\" The bullet's own opening sentence (\"Evasion works under adversarial conditions\") supplies the frame, so this is precision, not a false claim — \"Told to sandbag and to evade the monitor\" fixes it.\n\n### The SRE-Bench four-attempt pair is release-page prose, not a table row\n\nCarried in `data/carried/j-20260904-04-carry-3.md`.\n\nThe section introduces the block as \"The release page's table, OpenAI's own figures, carries the cyber rows:\" and then lists \"SRE-Bench, four attempts | 99.2% | 68.7%\". The page's benchmark table carries only \"SRE-Bench 88.0% 55.9%\"; the four-attempt pair comes from the body text (\"Astra solved 88.0% of tasks in a single attempt and 99.2% within four attempts, compared with 55.9% and 68.7% for GPT-5.6 Sol, respectively\"). All four numbers are correct and all four are on the release page — only the \"table\" attribution is off. Say \"the release page\" instead of \"the release page's table\", or move the four-attempt figures into prose.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260904-04-carry-1.md`\n- `data/carried/j-20260904-04-carry-2.md`\n- `data/carried/j-20260904-04-carry-3.md`",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/openai-gpt-6-astra-system-card.md",
+      "target": "content/blog/openai-gpt-6-astra-system-card.md",
+      "title": "Clear the 3 carried findings on content/blog/openai-gpt-6-astra-system-card.md",
       "type": "repair"
     },
     {
@@ -146,5 +155,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 16
+  "total_before_cap": 17
 }
