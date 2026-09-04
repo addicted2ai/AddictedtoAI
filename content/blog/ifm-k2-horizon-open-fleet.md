@@ -6,7 +6,7 @@ anchor:
   date: "2026-09-03"
 ---
 
-On 3 September 2026 the Institute of Foundation Models at MBZUAI (Mohamed bin Zayed University of Artificial Intelligence) released K2 Horizon, a connected fleet of six open-weights models running from 0.9B to 375B-A23B, every one under Apache 2.0. The [announcement page](https://ifm.ai/blog/k2/), published the same day, opens the training lifecycle for each model: intermediate checkpoints, training data or detailed construction recipes, training code, configurations, fine-grained logs, evaluation results and final weights. It also audits the fleet's own benchmark scores for reward hacking, and that section is the part worth reading twice.
+On 3 September 2026 the Institute of Foundation Models at MBZUAI (Mohamed bin Zayed University of Artificial Intelligence) released K2 Horizon, a connected fleet of six open-weights models running from 0.9B to 375B-A23B, every one under Apache 2.0. The [announcement page](https://ifm.ai/blog/k2/), published the same day, opens the training lifecycle for each model: intermediate checkpoints, training data or detailed construction recipes, training code, configurations, fine-grained logs, evaluation results and final weights. It also audits its flagship's TerminalBench score for reward hacking, and that section is the part worth reading twice.
 
 If you run or serve open weights, the fleet is live now. Day-zero support in vLLM, SGLang and Ollama. Models are on the [Hugging Face collection](https://huggingface.co/collections/IFM/k2-horizon), code on [GitHub](https://github.com/ifm-ai) (`uno`, `xllm`, `horizon-post-train`), training runs on [Weights & Biases](https://wandb.ai/llm360). If you deploy on-device, the three smallest sizes are pointed at you: the 0.9B is built for watches, glasses and other edge devices under quantization, the 3.7B and 7B for phones. All six sizes ship with quantization support.
 
@@ -18,7 +18,7 @@ If you run or serve open weights, the fleet is live now. Day-zero support in vLL
 | 36B-A4B | MoVA sparse attention plus MoE feed-forward, about 4B active | Nearly the performance of the dense 32B while activating only about 4B parameters per token |
 | 32B | Dense | The fleet's most powerful dense model, among the top dense models below 40B parameters |
 | 7B, 3.7B | Dense | The page describes them together: strong reasoning, mathematics, coding, tool-use and agentic performance, suitable for local and on-device deployment |
-| 0.9B | Dense, smaller vocabulary | "An AIME 2026 score above 48", plus mathematical reasoning, tool use and simple agentic tasks for edge devices |
+| 0.9B | Dense, smaller vocabulary | "an AIME 2026 score above 48", plus mathematical reasoning, tool use and simple agentic tasks for edge devices |
 
 The six share core architecture, vocabulary, training methodology, interfaces, evaluation infrastructure and deployment tooling, with a smaller vocabulary for the 0.9B. IFM's claim for the small end, on its own page: the 0.9B, 3.7B and 7B are "setting new state of the art at their respective scales", with the evaluation names the page names, AIME 2026, SWE-bench, BrowseComp and TerminalBench among them. Those are vendor-reported figures, and the page labels the harness choices under its charts, including strict no-internet settings for the SWE benchmarks and a subset of tasks for WildClawBench and Apex-Agents.
 
