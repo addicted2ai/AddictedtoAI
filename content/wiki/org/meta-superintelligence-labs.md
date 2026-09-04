@@ -88,8 +88,9 @@ released 5 August 2026, was the first Spark flagship
 {{fact:org/meta-superintelligence-labs#flagship_weights_listing}}; the card
 added that "Meta has signaled open weights are coming." One full flagship
 release later, on 2 September 2026, Muse Spark 1.3's
-[card](https://llm-releases.com/models/muse-spark-1-3) carries the same two
-lines, character for character. A month of "pending" spanning two releases,
+[card](https://llm-releases.com/models/muse-spark-1-3) carries the same
+License and Weights lines, character for character. A month of "pending"
+spanning two releases,
 with nothing downloadable, is its own fact — and the catalogue contradicts
 itself about what the flag means: its own
 [changelog](https://llm-releases.com/changelog) still describes Glimmer as
