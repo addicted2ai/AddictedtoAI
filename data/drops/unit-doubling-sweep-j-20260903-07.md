@@ -20,12 +20,13 @@ up a line to read once). This record names every line the sweep judged
 
 ## Judged not a doubling (left alone)
 
-- content/wiki/model/cohere-command-a.md:72 — "with a 256000 tokens
-  context window" — the transclusion fills the adjective slot of the noun
-  phrase "context window"; "window" as a noun is the brief's explicit
-  fine case; the unit renders once.
-- content/wiki/model/meta-muse-glimmer-30b.md:98 — "over a 131072 tokens
-  context window" — same reading as above.
+- content/wiki/model/cohere-command-a.md:71-72 — "with a context window of
+  256000 tokens — a" — the transclusion follows the noun phrase "context
+  window", and what follows the unit is an em dash, not a literal; the unit
+  renders once.
+- content/wiki/model/meta-muse-glimmer-30b.md:97-98 — "over a context window
+  of 131072 tokens. The" — same shape: the transclusion follows the noun
+  phrase and the unit is followed by a full stop, not a literal.
 - content/wiki/model/inception-mercury-2-5-preview.md:128 — "with 260000
   tokens of context" — "of context" is the noun the quantity modifies;
   the unit renders once.
