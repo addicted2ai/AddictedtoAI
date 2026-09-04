@@ -16,13 +16,13 @@ aliases:
 facts:
   - field: flagship_weights
     source: cited
-    value: "closed; Meta says it hopes to open-source future versions of the model"
-    source_url: "https://about.fb.com/news/2026/04/introducing-muse-spark-meta-superintelligence-labs/"
+    value: "not released; Meta's 1.3 announcement (2026-09-02) names 'the Muse Spark open weights release' on its roadmap"
+    source_url: "https://research.meta.ai/blog/introducing-muse-spark-1-3"
     accessed: "2026-09-03"
     volatility: slow
   - field: flagship_weights_listing
     source: cited
-    value: "listed 'Open weights · Meta license (weights pending)' with weights 'Not released'"
+    value: "listed 'Open weights · Meta license (weights pending)' with weights 'Not released' — a badge name that no Meta license text carries"
     source_url: "https://llm-releases.com/models/muse-spark-1-3"
     accessed: "2026-09-03"
     volatility: slow
