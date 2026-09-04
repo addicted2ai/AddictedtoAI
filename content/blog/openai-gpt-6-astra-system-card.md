@@ -41,7 +41,7 @@ The release page, OpenAI's own figures, carries the cyber rows:
 | SRE-Bench, single attempt | 88.0% | 55.9% |
 | SRE-Bench, four attempts | 99.2% | 68.7% |
 
-A footnote puts the ExploitGym pair outside the 6-hour time limit. Three more rows from the same table: ARC-AGI-3 99.9%, run with OpenAI's Responses API harness, which the footnote says changes two settings to match real-world performance. FrontierMath Tier 4 (v2) is 97.6%, while the page's prose says Astra "saturates FrontierMath Tier 4 with a 98% score". HealthBench Professional is 63.4% against 60.5%, length-adjusted.
+A footnote puts the ExploitGym pair outside the 6-hour time limit. Three more rows from the release page's benchmark table: ARC-AGI-3 99.9%, run with OpenAI's Responses API harness, which the footnote says changes two settings to match real-world performance. FrontierMath Tier 4 (v2) is 97.6%, while the page's prose says Astra "saturates FrontierMath Tier 4 with a 98% score". HealthBench Professional is 63.4% against 60.5%, length-adjusted.
 
 ## The alignment numbers go the other way
 
