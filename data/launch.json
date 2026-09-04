@@ -7,23 +7,23 @@
       "/": {
         "label": "home",
         "chunks_kb_gzipped": 104.4,
-        "inline_kb_gzipped": 6.5,
-        "total_kb_gzipped": 110.7,
-        "html_kb_gzipped": 10
+        "inline_kb_gzipped": 6.3,
+        "total_kb_gzipped": 110.6,
+        "html_kb_gzipped": 9.6
       },
       "/wiki/concept/ai-winter": {
         "label": "entry",
         "chunks_kb_gzipped": 104.4,
-        "inline_kb_gzipped": 5.7,
-        "total_kb_gzipped": 109.9,
-        "html_kb_gzipped": 7.8
+        "inline_kb_gzipped": 5.5,
+        "total_kb_gzipped": 109.7,
+        "html_kb_gzipped": 7.6
       },
       "/catalog": {
         "label": "table",
         "chunks_kb_gzipped": 104.8,
-        "inline_kb_gzipped": 18.2,
+        "inline_kb_gzipped": 18,
         "total_kb_gzipped": 123.1,
-        "html_kb_gzipped": 34.7
+        "html_kb_gzipped": 34.5
       }
     }
   },
