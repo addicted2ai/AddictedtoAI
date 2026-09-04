@@ -168,7 +168,7 @@ fetched 3 September 2026, is explicit that "the currently documented
 developer path is a text model". The endpoint is OpenAI-compatible — the
 same writeup shows the model called through the OpenAI SDK against
 `https://api.inceptionlabs.ai/v1` — and Inception's pages say its models are
-"OpenAI compatible and a drop-in replacement for traditional LLMs". And the
+"OpenAI API compatible and a drop-in replacement for traditional LLMs". And the
 identifier is not a contract: the writeup tells developers to confirm the
 direct model identifier in account documentation "before shipping; preview
 aliases can change". It also states the pricing distinction this page's

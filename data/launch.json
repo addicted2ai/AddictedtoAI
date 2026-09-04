@@ -9,7 +9,7 @@
         "chunks_kb_gzipped": 104.4,
         "inline_kb_gzipped": 5.7,
         "total_kb_gzipped": 109.9,
-        "html_kb_gzipped": 8.7
+        "html_kb_gzipped": 8.6
       },
       "/wiki/concept/ai-winter": {
         "label": "entry",
@@ -21,7 +21,7 @@
       "/catalog": {
         "label": "table",
         "chunks_kb_gzipped": 104.8,
-        "inline_kb_gzipped": 18.1,
+        "inline_kb_gzipped": 18,
         "total_kb_gzipped": 123.1,
         "html_kb_gzipped": 34.5
       }
