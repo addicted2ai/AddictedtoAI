@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 17,
+  "count": 16,
   "items": [
-    {
-      "detail": "The revision did not touch this, and pass 1 raised it as a carry rather than a blocker, so it survives into the merged entry. `blue_definition` is OpenAI's verbatim sentence \"Daybreak Blue supports common defensive work with our mainline models\". I read `renderFact` in `lib/facts.mjs` (the `cited` branch, lines 249-257): the value is emitted bare inside `<span class=\"fact-value\">`, escaped, with no quotation marks, followed by \"source, accessed 2026-09-04\". Inlined mid-sentence in the body's second paragraph, the built page therefore says \"with our mainline models\" in this site's voice, about models this site does not own. `red_definition` has no such problem because OpenAI wrote that one in the third person. Changing the value to \"with OpenAI's mainline models\" keeps it faithful and stops the site claiming the models.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-06 (`j-20260904-06.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/wiki/concept/openai-daybreak.md",
-      "target": "content/wiki/concept/openai-daybreak.md",
-      "title": "Drop OpenAI's \"our\" from the blue_definition fact value",
-      "type": "repair"
-    },
     {
       "detail": "Not a doubling, and this sweep was right to leave both alone, but the units feature changed how they read. cohere-command-a.md:72 now renders \"256000 tokens context window\" and meta-muse-glimmer-30b.md:98 \"a 131072 tokens context window\" (both measured through renderFact, not taken from the drop record, which gives different figures for both). The unit appears once, so nothing is factually wrong; the noun phrase is just ungrammatical where it used to read \"a 256000 context window\". Rephrasing to \"a context window of {{fact:...}}\" fixes both without touching a figure. Carried forward from the pass-1 record, which the loop reads only at the final pass.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-07 (`j-20260903-07.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -156,5 +147,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 17
+  "total_before_cap": 16
 }
