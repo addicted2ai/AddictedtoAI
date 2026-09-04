@@ -976,6 +976,11 @@ export async function runLoop(ctx, opts = {}) {
   let mergedSha = null;
   /** Set when the derived tree was recomputed after a merge (addictedtoai-942). */
   let rederived = false;
+  /**
+   * The merged job branch, deleted after the worktree that holds it is gone.
+   * `null` on every other outcome — a branch that did not merge is kept.
+   */
+  let mergedBranch = null;
   /** Both halves of the consumed-proposal move, staged with the job's records. */
   const consumedPaths = [];
 
@@ -1215,7 +1220,11 @@ export async function runLoop(ctx, opts = {}) {
         const m = markDirectiveDone(ctx, job.lineNumber, jobId, localDate(now));
         if (m.changed) ctx.log(`appended the completion marker to DIRECTIVES.md line ${job.lineNumber}`);
       }
-      deleteBranch(ctx.repoRoot, branch);
+      // NOT DELETED HERE. This job's own worktree still has `branch` checked
+      // out until `removeWorktree` below, and git refuses to delete a branch
+      // checked out in a linked worktree. The deletion is deferred to after
+      // that removal; see the call site below for the measurement.
+      mergedBranch = branch;
     }
   } else if (outcome === 'discarded') {
     ctx.log(`discarding ${branch}; the record of the reasons is kept at ${verdictPath(ctx, jobId, result.pass ?? 1)}`);
@@ -1336,6 +1345,35 @@ export async function runLoop(ctx, opts = {}) {
 
   removeWorktree(ctx.repoRoot, worktree);
   rmSync(worktree, { recursive: true, force: true });
+
+  // -------------------------------------------------------------------------
+  // DELETE THE MERGED BRANCH — here, after the worktree, and read the answer.
+  //
+  // This used to run at the merge, while this job's own worktree still had the
+  // branch checked out. Measured in a throwaway repository reproducing exactly
+  // that state: `git branch -D` answers
+  //     error: Cannot delete branch 'job/probe' checked out at '<worktree>'
+  // with the worktree present, and succeeds the moment it is removed. So the
+  // deletion had never once worked: measured on this repository 2026-09-04,
+  // `main` carries 112 `job <id> (<type>):` merge commits and 113 already-merged
+  // `job/*` branches are still present locally. Not one was ever deleted.
+  //
+  // It was invisible because `deleteBranch` returns a boolean out of `gitTry`
+  // and the call site discarded it. `gitTry` exists so a git failure is a value
+  // to inspect rather than an exception; inspecting it is the other half of the
+  // fix. A refusal is reported, not raised: a branch left behind costs nothing
+  // this run needs, and the merge already happened.
+  // -------------------------------------------------------------------------
+  if (mergedBranch) {
+    if (deleteBranch(ctx.repoRoot, mergedBranch)) {
+      ctx.log(`deleted the merged branch ${mergedBranch}`);
+    } else {
+      ctx.log(
+        `could not delete the merged branch ${mergedBranch} — git refused it. The merge stands; ` +
+          `the branch is left behind and can be removed by hand.`,
+      );
+    }
+  }
 
   // -------------------------------------------------------------------------
   // GUARD: do not commit `data/derived/` disconnected from what it was
