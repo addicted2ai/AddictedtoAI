@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 19,
+  "count": 18,
   "items": [
-    {
-      "detail": "The intro to the benchmark block was changed from \"The release page's table, OpenAI's own figures, carries the cyber rows:\" to \"The release page, ...\", which is the fix carry-3 asked for. But the paragraph below the table still reads \"Three more rows from the same table: ARC-AGI-3 99.9% ...\", and \"the same table\" now has no antecedent except the post's own table — the one that includes the \"SRE-Bench, four attempts | 99.2% | 68.7%\" row that carry-3 established is release-page prose, not a table row. The true reading (the release page's benchmark table) is still available, so this is not a false claim, but it half-restores the attribution the repair removed. \"Three more rows from the release page's benchmark table:\" fixes it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-11 (`j-20260904-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/blog/openai-gpt-6-astra-system-card.md",
-      "target": "content/blog/openai-gpt-6-astra-system-card.md",
-      "title": "Fix the now-dangling \"the same table\" after the release-page reattribution",
-      "type": "repair"
-    },
     {
       "detail": "The repaired sentence now states 26 August twice for the same repo under two different labels — \"bartowski's GGUF of Thomson-1.0-Small, latest update 26 August\" and, in the parenthetical, \"the conversion was created 26 August\". Both are true (the API gives createdAt 2026-08-26T04:45:39Z and lastModified 2026-08-26T07:26:55Z, under three hours apart), but a reader meeting the same date twice in one sentence reads it as an editing slip rather than as two distinct facts that happen to coincide. The sentence also now carries an em-dash pair inside a parenthesis inside an em-dash clause. Folding the opening clause to \"bartowski's GGUF of Thomson-1.0-Small, created and last updated 26 August\" states both facts once and lets the parenthetical shrink to the source repo's date.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-23 (`j-20260903-23.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -174,5 +165,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 19
+  "total_before_cap": 18
 }
