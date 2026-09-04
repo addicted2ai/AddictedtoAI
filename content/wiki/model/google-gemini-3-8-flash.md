@@ -82,7 +82,7 @@ facts:
     volatility: dated
   - field: deepswe_v1_1
     source: cited
-    value: "DeepSWE v1.1 — outperforms most larger frontier models at a fraction of the cost"
+    value: "outperforms most larger frontier models at a fraction of the cost"
     source_url: "https://deepmind.google/models/gemini/flash/"
     accessed: "2026-09-03"
     volatility: dated
@@ -94,7 +94,7 @@ facts:
     volatility: dated
   - field: cost_per_task
     source: cited
-    value: "~$0.58 at high reasoning"
+    value: "~$0.58"
     source_url: "https://llm-releases.com/models/gemini-3-8-flash"
     accessed: "2026-09-03"
     volatility: dated
@@ -134,8 +134,8 @@ paying the same rate and a larger bill.
 Google's own launch numbers for the row are vendor-reported and dated to the
 release: HLE-Verified at {{fact:model/google-gemini-3-8-flash#hle_verified}},
 Vals Finance Agent v2 at {{fact:model/google-gemini-3-8-flash#vals_finance_agent_v2}},
-Harvey's Legal Agent Benchmark at {{fact:model/google-gemini-3-8-flash#harveys_legal_agent_benchmark}}.
-{{fact:model/google-gemini-3-8-flash#deepswe_v1_1}}. The row keeps the
+Harvey's Legal Agent Benchmark at {{fact:model/google-gemini-3-8-flash#harveys_legal_agent_benchmark}},
+and on DeepSWE v1.1, 3.8 Flash {{fact:model/google-gemini-3-8-flash#deepswe_v1_1}}. The row keeps the
 family-standard {{fact:model/google-gemini-3-8-flash#context_window}} input
 window with {{fact:model/google-gemini-3-8-flash#max_output_tokens}} output,
 and Google dates its knowledge cutoff to
