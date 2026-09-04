@@ -88,7 +88,7 @@ facts:
     volatility: dated
   - field: output_tokens_per_task
     source: cited
-    value: "~48k at high reasoning (a ~30% rise in average output tokens per task)"
+    value: "~48k"
     source_url: "https://llm-releases.com/models/gemini-3-8-flash"
     accessed: "2026-09-03"
     volatility: dated
@@ -134,8 +134,8 @@ paying the same rate and a larger bill.
 Google's own launch numbers for the row are vendor-reported and dated to the
 release: HLE-Verified at {{fact:model/google-gemini-3-8-flash#hle_verified}},
 Vals Finance Agent v2 at {{fact:model/google-gemini-3-8-flash#vals_finance_agent_v2}},
-Harvey's Legal Agent Benchmark at {{fact:model/google-gemini-3-8-flash#harveys_legal_agent_benchmark}},
-and on {{fact:model/google-gemini-3-8-flash#deepswe_v1_1}}. The row keeps the
+Harvey's Legal Agent Benchmark at {{fact:model/google-gemini-3-8-flash#harveys_legal_agent_benchmark}}.
+{{fact:model/google-gemini-3-8-flash#deepswe_v1_1}}. The row keeps the
 family-standard {{fact:model/google-gemini-3-8-flash#context_window}} input
 window with {{fact:model/google-gemini-3-8-flash#max_output_tokens}} output,
 and Google dates its knowledge cutoff to
