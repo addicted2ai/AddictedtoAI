@@ -49,6 +49,17 @@
       "ok": true,
       "status": 200
     },
+    "https://9to5google.com/2026/09/02/gemini-3-8-flash-launch/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://9to5google.com/2026/09/02/gemini-3-8-flash-launch/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://about.fb.com/news/2026/04/introducing-muse-spark-meta-superintelligence-labs/": {
       "consecutive_failures": 0,
       "error": null,
@@ -1811,6 +1822,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2504.12216v1": {
+      "bytes": 42375,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2504.12216v1",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2504.13837": {
       "consecutive_failures": 0,
       "error": null,
@@ -2032,6 +2054,17 @@
       "final_url": "https://blog.dottxt.ai/say-what-you-mean.html",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://blog.google/innovation-and-ai/models-and-research/gemini-models/3-8-flash-and-3-8-flash-cyber/": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/3-8-flash-and-3-8-flash-cyber/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -2318,6 +2351,17 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://deepmind.google/models/gemini/flash/": {
+      "bytes": 220940,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://deepmind.google/models/gemini/flash/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -3401,6 +3445,39 @@
       "ok": true,
       "status": 200
     },
+    "https://llm-releases.com/changelog": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llm-releases.com/changelog",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://llm-releases.com/models/gemini-3-8-flash": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llm-releases.com/models/gemini-3-8-flash",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://llm-releases.com/models/gemini-3-8-flash-cyber": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llm-releases.com/models/gemini-3-8-flash-cyber",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://llm-releases.com/models/hy4-preview": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3417,6 +3494,39 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://www.llm-releases.com/models/mercury-2-5-preview",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://llm-releases.com/models/muse-spark-1-1": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llm-releases.com/models/muse-spark-1-1",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://llm-releases.com/models/muse-spark-1-2": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llm-releases.com/models/muse-spark-1-2",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://llm-releases.com/models/muse-spark-1-3": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.llm-releases.com/models/muse-spark-1-3",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
       "meta_refresh": null,
@@ -3676,6 +3786,28 @@
       "ok": true,
       "status": 200
     },
+    "https://openrouter.ai/google/gemini-3.8-flash": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/google/gemini-3.8-flash",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/inception/mercury-2": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/inception/mercury-2",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/inception/mercury-2.5-preview": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3694,6 +3826,28 @@
       "final_url": "https://openrouter.ai/meta/muse-spark-1.2-contributor",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/meta/muse-spark-1.3": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/meta/muse-spark-1.3",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/meta/muse-spark-1.3-contributor": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/meta/muse-spark-1.3-contributor",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4545,6 +4699,17 @@
       "ok": true,
       "status": 200
     },
+    "https://www.aimadetools.com/blog/mercury-2-5-preview-explained/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.aimadetools.com/blog/mercury-2-5-preview-explained/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.aisi.gov.uk/work/pre-deployment-evaluation-of-openais-o1-model": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4946,6 +5111,17 @@
       "consecutive_failures": 0,
       "error": null,
       "final_url": "https://www.inceptionlabs.ai/",
+      "last_checked": "2026-09-03",
+      "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.inceptionlabs.ai/about": {
+      "bytes": 287510,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.inceptionlabs.ai/about",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
       "meta_refresh": null,
