@@ -68,8 +68,8 @@ a commercial product on them at all.
 
 The restriction is not attached to a small model, either. Command A
 publishes at {{fact:model/cohere-command-a#parameters}}, listed
-{{fact:model/cohere-command-a#listed_date}} with a
-{{fact:model/cohere-command-a#context_window}} context window — a
+{{fact:model/cohere-command-a#listed_date}} with a context window of
+{{fact:model/cohere-command-a#context_window}} — a
 full-sized release, not a research checkpoint scoped down to make the
 non-commercial terms easier to accept.
 

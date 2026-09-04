@@ -95,7 +95,7 @@ model compressed to leave your account out of the loop entirely.
 That local-hardware claim is not just a spec-sheet line — this same row
 also carries an OpenRouter price, {{fact:model/meta-muse-glimmer-30b#price_input}}
 input against {{fact:model/meta-muse-glimmer-30b#price_output}} output over
-a {{fact:model/meta-muse-glimmer-30b#context_window}} context window. The
+a context window of {{fact:model/meta-muse-glimmer-30b#context_window}}. The
 identical weights are usable two ways: rented by the token through that
 API, or downloaded once and run on a single card for every request after.
 The licence governing the download is
