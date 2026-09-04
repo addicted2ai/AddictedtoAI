@@ -48,13 +48,14 @@ Ultra on its own NIM API
 live on 2026-09-03), and OpenRouter still lists the standard and free rows. No
 `nvidia/` row was added and none other was removed in the 2026-09-03 snapshot,
 so no successor slug has appeared — but the snapshot was not otherwise still in
-that namespace: three of the nine `nvidia/` rows changed, including the
-standard row's price, whose prompt rate fell from $0.625 to $0.60 and
-whose completion rate fell from $3.125 to $2.40 per million tokens.
+that namespace: three of the nine `nvidia/` rows changed, as observed on
+3 September 2026, including the standard row's price, whose prompt rate fell
+from $0.625 to $0.60 and whose completion rate fell from $3.125 to $2.40 per
+million tokens.
 
 What is not published is why the batch variant specifically was withdrawn.
-OpenRouter's batch offering is alive as a whole: 66 `:batch` rows remain in the
-same catalog, and the [Batch API
+OpenRouter's batch offering is alive as a whole: 66 `:batch` rows remained in
+the same catalog, as observed on 3 September 2026, and the [Batch API
 quickstart](https://openrouter.ai/docs/batch-quickstart) documents an async
 batch endpoint that takes a standard model slug. But this model's batch page
 ([`nvidia/nemotron-3-ultra-550b-a55b:batch`](https://openrouter.ai/nvidia/nemotron-3-ultra-550b-a55b:batch))
