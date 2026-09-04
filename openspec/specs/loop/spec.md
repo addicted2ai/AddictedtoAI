@@ -91,7 +91,8 @@ Job identity and resumption are mechanical, not remembered:
 
 ### Requirement: Work comes from three sources and cannot self-amplify
 
-Jobs are selected from, in priority order:
+Jobs are selected from, in priority order — with one stated exception,
+below, for evidence that expires:
 
 1. **The maintainer's directives** — a plain file (`DIRECTIVES.md`) the
    maintainer edits; always selectable first. Completion semantics: on
@@ -165,6 +166,32 @@ manufacturing work.
   forward: the sweep is what keeps the candidate directory from becoming
   the ten-weeks-of-backlog queue the predecessor's author track named as
   its own bottleneck.
+- An expiring proposal SHALL outrank the derived queue: it is selected
+  before source 2 and after the maintainer's directives. The reason is that
+  an expiry is a **deadline the site set itself**, and source 2 has none —
+  the derived queue is recomputed from current state, so an item it drops
+  today it recomputes tomorrow, while expiring evidence that is not written
+  before its date is swept and gone. Ordering the deadline-free source ahead
+  of the deadline-bearing one spends the only thing that cannot be recovered.
+  This SHALL NOT extend to proposals generally: a proposal with no `expires:`
+  stays at source 3, behind the queue, because without a deadline there is
+  nothing to preempt for. The upkeep floor and the new-writing ceiling are
+  unchanged and still bind, so this reorders **which** work is reached first
+  and never how much of each kind may run — an expiring proposal that would
+  breach the new-writing ceiling is still refused.
+- **That precedence is spent by a discarded attempt.** An expiring proposal
+  whose last attempt was discarded SHALL rank at source 3 with the undated
+  proposals, behind the derived queue, until it expires. It is a demotion and
+  never a deletion: the candidate stays selectable, its expiry still sweeps it
+  on time, and nothing about it reaches the rejection index — what a reviewer
+  refused was the writing, not the idea. The reason is that a discarded job
+  does **not** consume its proposal (a separate requirement, and correct), so
+  without this the same candidate returns to the front of the queue on every
+  run, unchanged, until it expires or three consecutive discards trip breaker
+  1 and halt the Desk. Ranking proposals below the queue was what made a
+  refused candidate self-limiting before this band existed; this restores
+  exactly that spacing, and only for a candidate that has actually failed.
+
 - `data/proposals/dropped/` is a **record, never a block**: unlike
   `rejected/`, it SHALL NOT feed automatic slug suppression, so a story
   declined today may be refiled when its stated refile condition arrives.
@@ -204,6 +231,34 @@ manufacturing work.
   candidate unselected
 - **THEN** the next run sweeps it to `data/proposals/dropped/` with a note
   naming the expiry, and nothing anywhere treats that as a failure
+
+#### Scenario: Dated news is written before routine upkeep
+
+- **WHEN** the derived queue holds a repair item and a ripe proposal carrying
+  an `expires:` date is also selectable
+- **THEN** the expiring proposal is selected first, and the queue item is
+  selected on a later run — the queue recomputes it, the expiry does not
+
+#### Scenario: A proposal without an expiry does not jump the queue
+
+- **WHEN** the derived queue holds a repair item and a ripe proposal carrying
+  no `expires:` is also selectable
+- **THEN** the queue item is selected first, exactly as before
+
+#### Scenario: A refused candidate stops preempting the queue
+
+- **WHEN** a job selected from an expiring proposal is discarded, and on the
+  next run the derived queue holds a repair item and that same proposal is
+  still ripe and unexpired
+- **THEN** the queue item is selected first and the proposal is still a
+  candidate, merely a later one — it was demoted, not dropped
+
+#### Scenario: A refused candidate does not block the ones behind it
+
+- **WHEN** two expiring proposals are ripe, the one with the sooner expiry has
+  a discarded attempt recorded on it and the other has none
+- **THEN** the one with no discarded attempt is selected first, even though its
+  deadline is later
 
 ### Requirement: Spending is budgeted in model-minutes with floors and ceilings
 
@@ -811,6 +866,28 @@ mechanism.
   make. This concerns only the proposal a job was selected from; a proposal a
   discarded job *produced* dies with its branch, which is a different rule in a
   different requirement.
+- A **discarded** job SHALL record the attempt on the proposal it was selected
+  from: the job's id, the local date, the reviewer's categorical refusal
+  reasons and its prose, appended to the proposal file, and a count of
+  discarded attempts written into its front matter. The count is what demotes
+  an expiring candidate out of the band that outranks the derived queue (a
+  separate requirement); the appended text is what makes the next attempt
+  informed, because a proposal's body is the `detail` the next brief carries.
+  Both halves are needed and neither substitutes for the other: a slower retry
+  that repeats the same mistake is still waste, and an informed one that runs
+  every single run is still a job's spend every run.
+- A finding the reviewer **carried** on a discarded job, whose `subject:` names
+  a path the discarded branch never merged, SHALL NOT be transcribed to
+  `data/carried/`. It is written into the proposal's record of the attempt
+  instead, where the work that would act on it lives. Transcribing it would
+  queue a repair job against a file that does not exist and never did — a note
+  that reads as recorded and can never be acted on. A carried finding whose
+  subject **does** exist is transcribed exactly as on a merged job, because a
+  reviewer noticing something about a published page is unaffected by what
+  happened to the branch it was reviewing. Where a discarded job came from no
+  proposal, such a finding SHALL be reported as untranscribed, naming the file
+  it points at: it stays in the committed verdict record, and a finding that
+  goes nowhere says so rather than vanishing quietly.
 - A job drawn from the derived queue or from a directive SHALL retire nothing.
 - `data/proposals/consumed/` SHALL be a **record and never a block**, on the same
   terms as `data/proposals/dropped/` and unlike `data/proposals/rejected/`: a
@@ -840,7 +917,22 @@ mechanism.
 
 - **WHEN** a job selected from a proposal is discarded by the reviewer
 - **THEN** the proposal is still in `data/proposals/` and still selectable — the
-  work was rejected, the idea was not
+  work was rejected, the idea was not — and it carries a record of the attempt:
+  the job, the date, the reasons it was refused, and the reviewer's prose
+
+#### Scenario: A refused attempt's reasons reach the next attempt
+
+- **WHEN** a proposal carrying a discarded attempt is selected again
+- **THEN** the brief for that job carries the reasons the previous attempt was
+  refused, because they are in the proposal's body and the body is the brief's
+  detail
+
+#### Scenario: A finding about a file that was never merged is not queued
+
+- **WHEN** a discarded job's reviewer carries a finding naming a file that
+  exists only on the discarded branch
+- **THEN** no item is queued against that path, and the finding is written into
+  the proposal's record of the attempt instead
 
 #### Scenario: A retired subject may be proposed again
 
