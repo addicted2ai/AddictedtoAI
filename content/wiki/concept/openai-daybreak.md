@@ -8,7 +8,7 @@ aliases:
   - name: "OpenAI Daybreak"
     class: exclusive
   - name: "Daybreak"
-    class: exclusive
+    class: manual
   - name: "Daybreak Blue"
     class: manual
   - name: "Daybreak Red"
