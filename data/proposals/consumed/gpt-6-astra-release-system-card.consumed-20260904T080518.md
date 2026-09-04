@@ -132,3 +132,17 @@ story: the announcement was about a *designation*; this is about a
   data point.
 - Every number is attributed to the page it came from; OpenAI-reported
   benchmark claims are labeled as such.
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-04
+- job: j-20260904-04 (post)
+- merged as: `e2ef5abce28d061dbfb6d5f3c5700fdd9adab715`
+- produced: `content/blog/openai-gpt-6-astra-system-card.md`
+- was: `gpt-6-astra-release-system-card.md` (slug `gpt-6-astra-release-system-card`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

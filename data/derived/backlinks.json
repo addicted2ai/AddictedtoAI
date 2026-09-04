@@ -1656,6 +1656,12 @@
         "title": "OpenAI's Astra is the first model designated Critical for cybersecurity. Advanced access starts with alpha testers",
         "type": "post",
         "file": "content/blog/openai-astra-critical-designation.md"
+      },
+      {
+        "url": "/blog/openai-gpt-6-astra-system-card",
+        "title": "GPT-6 Astra shipped, and OpenAI's system card says the model got harder to monitor",
+        "type": "post",
+        "file": "content/blog/openai-gpt-6-astra-system-card.md"
       }
     ],
     "model/openai-gpt-5-6-sol-pro": [
@@ -2414,6 +2420,12 @@
         "title": "OpenAI commits $1B in subsidized Daybreak access for water utilities, grid operators and local governments",
         "type": "post",
         "file": "content/blog/openai-daybreak-frontline-defenders.md"
+      },
+      {
+        "url": "/blog/openai-gpt-6-astra-system-card",
+        "title": "GPT-6 Astra shipped, and OpenAI's system card says the model got harder to monitor",
+        "type": "post",
+        "file": "content/blog/openai-gpt-6-astra-system-card.md"
       },
       {
         "url": "/blog/three-accounts-hugging-face-intrusion",

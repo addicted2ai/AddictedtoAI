@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 15,
+  "count": 16,
   "items": [
     {
       "detail": "openrouter-models z-ai/glm-4.7-flash status: active -> deprecated on 2026-09-04",
@@ -9,6 +9,15 @@
       "subject": "openrouter-models|a6c7f5e5e6f3c575|554be452279cdebe|z-ai/glm-4.7-flash|status",
       "target": "data/changes.jsonl",
       "type": "interpret"
+    },
+    {
+      "detail": "3 findings carried by reviewers against `content/blog/openai-daybreak-frontline-defenders.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Match the announcement's wording for the Defense Network's product count\n\nCarried in `data/carried/j-20260904-03-carry-1.md`.\n\nThe post says \"more than 35 partner products and partner-operated services across the Daybreak Defense Network, per the announcement.\" Every independent retrieval of the announcement renders the phrase as \"more than 35 ENTERPRISE products and partner-operated services\" — the products are enterprise security tools reached through partners, which is not the same claim as 35 products belonging to partners. Since the sentence explicitly attributes to the announcement, change \"partner products\" to \"enterprise products\".\n\n### Add the Path to Astra page to the post's own Sources list\n\nCarried in `data/carried/j-20260904-03-carry-2.md`.\n\nThe fourth section quotes the 1 September announcement directly — \"access through Daybreak Blue expanding afterward to support defensive use\" — but the Sources block lists only the Daybreak page and the GPT-6 Astra page. The quotation's source is reachable only by following the link to this site's earlier post and then its citation. Add \"OpenAI, 'Path to Astra: critical capabilities and frontier safeguards', published 1 September 2026 — openai.com/index/path-to-astra/\" to the Sources list so the quoted page is one click away.\n\n### Resolve \"this week\" to a date\n\nCarried in `data/carried/j-20260904-03-carry-3.md`.\n\n\"The announcement adds that a second gathering of utility companies this week drew participants representing 40 states and the District of Columbia.\" \"This week\" is the announcement's relative framing and does not survive being read later; every other date in the post is explicit. \"the week of 3 September 2026\" fixes it without changing the claim.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260904-03-carry-1.md`\n- `data/carried/j-20260904-03-carry-2.md`\n- `data/carried/j-20260904-03-carry-3.md`",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/openai-daybreak-frontline-defenders.md",
+      "target": "content/blog/openai-daybreak-frontline-defenders.md",
+      "title": "Clear the 3 carried findings on content/blog/openai-daybreak-frontline-defenders.md",
+      "type": "repair"
     },
     {
       "detail": "The repaired sentence now states 26 August twice for the same repo under two different labels — \"bartowski's GGUF of Thomson-1.0-Small, latest update 26 August\" and, in the parenthetical, \"the conversion was created 26 August\". Both are true (the API gives createdAt 2026-08-26T04:45:39Z and lastModified 2026-08-26T07:26:55Z, under three hours apart), but a reader meeting the same date twice in one sentence reads it as an editing slip rather than as two distinct facts that happen to coincide. The sentence also now carries an em-dash pair inside a parenthesis inside an em-dash clause. Folding the opening clause to \"bartowski's GGUF of Thomson-1.0-Small, created and last updated 26 August\" states both facts once and lets the parenthetical shrink to the source repo's date.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-23 (`j-20260903-23.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -137,5 +146,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 15
+  "total_before_cap": 16
 }

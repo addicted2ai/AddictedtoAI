@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 650,
+  "count": 651,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -65,6 +65,16 @@
     {
       "u": "/blog/openai-daybreak-frontline-defenders",
       "t": "OpenAI commits $1B in subsidized Daybreak access for water utilities, grid operators and local governments",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/openai-gpt-6-astra-system-card",
+      "t": "GPT-6 Astra shipped, and OpenAI's system card says the model got harder to monitor",
       "k": "post",
       "d": null,
       "s": null,
