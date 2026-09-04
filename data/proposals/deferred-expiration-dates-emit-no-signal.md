@@ -35,6 +35,8 @@ evidence: >
   annotations written by j-20260901-08 and j-20260901-09 both close "the same
   rule derives `retired` once 2026-09-04 passes", and on 2026-09-04 both rows
   are listed and derive `deprecated`.
+proposed_by_job: j-20260904-33
+proposed_by_type: repair
 ---
 
 The finding this job cleared was a phrasing defect, and the fix was a phrasing
