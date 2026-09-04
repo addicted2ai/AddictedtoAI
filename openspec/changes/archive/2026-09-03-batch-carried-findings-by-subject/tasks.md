@@ -27,9 +27,41 @@
       and `node scripts/check-spec-deltas.mjs --strict`.
 - [x] 9. Gates: `npm test`, `npm run build`, verify-launch, verify-design,
       verify-surfaces, verify-analytics.
-- [ ] 10. Drive it end to end: one Desk run against the four-finding subject,
+- [x] 10. Drive it end to end: one Desk run against the four-finding subject,
       and read what the brief actually contained rather than what it was meant
       to contain.
+
+## What the end-to-end run measured (job `j-20260903-15`)
+
+The Pulse recomputed the queue as **16 items over 27 findings, 7 of them
+batches**, and put the four-finding subject at the head of the carried block.
+`j-20260903-15-brief.md` was read as written, not as intended: all four
+findings under their own headings in the reviewing reviewers' own words, each
+naming the file carrying it, and one closing retirement list of all four paths.
+
+**Approved on the first review pass, 11.11 model-minutes** (author 8.19, review
+5 2.92), diff `acacb893`: four insertions to the post, four carried files
+deleted, nothing else touched. Each deletion was earned — the grant named as
+the unnumbered preamble in both places it is discussed, "$10B or more" →
+"above $10B", "trailing 12 months" → "any consecutive 12 months", and the
+Chinese half of the LICENSE stated along with the absence of a
+governing-language clause.
+
+The measurement worth keeping is the last one. Findings 1 and 4 both asked for
+a sentence about the bilingual LICENSE, and one job wrote **one** sentence
+answering both. Dispatched one per file, that is two jobs each adding their own
+bilingual sentence to the same paragraph — a duplicate that the second
+reviewer would have had to catch and did not have to, because the batch never
+created it. The saving is not only the four contexts that were not rebuilt.
+
+For comparison, the four findings dispatched singly would have been four author
+phases and at least four review passes. Read out of `data/ledger.jsonl`: of the
+15 jobs on 2026-09-03, 13 merged, averaging **29.60 mm**; the four merged
+`repair` jobs averaged **35.37 mm excluding this one**. So one batch clearing
+four findings cost 11.11 mm against roughly 35 mm for a single-finding repair.
+That is one run and not a trend — a batch of four trivially-fixable findings on
+one post is the favourable case, and the honest claim is that this run cost
+about a third of a normal repair while retiring four times the findings.
 
 ## Mutation test (2026-09-03)
 
