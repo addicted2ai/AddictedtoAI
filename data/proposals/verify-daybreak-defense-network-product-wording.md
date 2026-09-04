@@ -26,6 +26,8 @@ evidence: >
   "ENTERPRISE products" and instructs changing the post's "partner products"
   to "enterprise products" on that premise.
 expires: 2026-09-08
+proposed_by_job: j-20260904-06
+proposed_by_type: entry
 ---
 The page that the repair cites disagrees with itself: its summary bullet says
 "enterprise products", its body prose says "partner products". Either wording
