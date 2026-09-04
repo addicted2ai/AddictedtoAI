@@ -60,10 +60,18 @@ current listing of `anthropic/claude-opus-4.7` agrees: the standard row
 remains, with its usual providers and no fast endpoint among them. The row
 this page describes nonetheless existed, and sold at premium pricing until
 the end: its last-known values as of 2026-09-01, $30.00 in / $150.00 out
-per million tokens against the standard row's $5.00 / $25.00 — six times the
+per million tokens against the standard row's
+{{fact:model/anthropic-claude-opus-4-7#price_input}} /
+{{fact:model/anthropic-claude-opus-4-7#price_output}} — six times the
 base — which OpenRouter's own description, still live, calls "identical
-capabilities with higher output speed at premium 6x pricing." Nothing in either source records how those
-two fit together; the row simply stopped listing.
+capabilities with higher output speed at premium 6x pricing." Nothing
+in either source records how those two fit together; the row simply
+stopped listing.
+<!-- The $30.00 in / $150.00 out per-million-token literals in the paragraph
+above are the vanished row's own last-known prices, dated 2026-09-01. The
+row is gone — data/derived/feed-rows.json holds no pricing key for
+anthropic/claude-opus-4.7-fast — so they cannot be transcluded, and the
+currency-literal warnings they produce are deliberate, not rot. -->
 
 So the honest answer is that fast mode on Opus 4.7 is not available
 anywhere today. Anthropic's own API errors on `speed: "fast"` for this
