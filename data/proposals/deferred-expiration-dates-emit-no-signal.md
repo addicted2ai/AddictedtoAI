@@ -64,4 +64,9 @@ assigns to that decision.
 
 Worth pairing with `flag-flapping-feed-fields`, which asks for the neighbouring
 observation on material fields that oscillate; this one is the case where the
-value never reaches a material field at all.
+value never reaches a material field at all. It is the closer pair with
+`expiration-dates-that-never-arrive`, though — that proposal rests on the same
+walk of the same snapshots, including the same 2026-09-02 deferral of the two
+nex-agi rows: it would report, as a post, that OpenRouter death dates keep
+moving, and this job is what would make that movement observable rather than
+something a reader has to go and measure by hand.
