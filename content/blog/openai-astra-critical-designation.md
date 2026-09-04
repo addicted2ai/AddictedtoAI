@@ -11,7 +11,7 @@ mentions:
 
 On 1 September 2026 OpenAI announced that Astra, its next model, meets the Critical cybersecurity capability threshold under its Preparedness Framework, the first model the company has designated at that level. The same announcement gates the release: "We plan to make Astra available soon, but access to its most advanced cybersecurity capabilities will be more limited."
 
-The reader this lands on is a security team. The threshold, in OpenAI's words, means that "with the right tools and access, [Astra] can find previously unknown security flaws and develop ways to exploit them across many well-protected systems without a person guiding each step", and the capabilities are not being given out broadly: advanced cyber work "will initially be available to a small group of alpha testers, with access through Daybreak Blue expanding afterward to support defensive use". Defenders who do get in inherit a monitoring system that can slow, pause, or stop their own legitimate work.
+The reader this lands on is a security team. The threshold, in OpenAI's words, means that "with the right tools and access, [Astra] can find previously unknown security flaws and develop ways to exploit them across many well-protected systems without a person guiding each step", and the capabilities are not being given out broadly: advanced cyber work "will initially be available to a small group of alpha testers, with access through [Daybreak Blue](/wiki/concept/openai-daybreak) expanding afterward to support defensive use". Defenders who do get in inherit a monitoring system that can slow, pause, or stop their own legitimate work.
 
 ## Critical, in the framework's own words
 
