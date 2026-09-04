@@ -6,6 +6,7 @@ anchor:
   date: "2026-09-03"
 mentions:
   - org/openai
+  - concept/openai-daybreak
 ---
 
 On 3 September 2026 OpenAI committed $1 billion in subsidized [Daybreak](/wiki/concept/openai-daybreak) access, training, technical support and partnerships for cyber defenders, and it says the money is targeted for consumption within the next six months, starting in the United States.
