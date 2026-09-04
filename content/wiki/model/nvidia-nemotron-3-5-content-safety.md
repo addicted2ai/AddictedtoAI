@@ -1,14 +1,14 @@
 ---
-id: model/z-ai-glm-4-7-flash
+id: model/nvidia-nemotron-3-5-content-safety
 kind: model
-display_name: "Z.ai: GLM 4.7 Flash"
+display_name: "NVIDIA: Nemotron 3.5 Content Safety"
 status: active
 maintenance: living
 aliases:
-  - name: "Z.ai: GLM 4.7 Flash"
+  - name: "NVIDIA: Nemotron 3.5 Content Safety"
     class: manual
 feeds:
-  openrouter-models: z-ai/glm-4.7-flash
+  openrouter-models: nvidia/nemotron-3.5-content-safety
 facts:
   - field: price_input
     source: feed
@@ -30,6 +30,6 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline: [ { date: "2026-09-04", event: deprecated, source_url: https://openrouter.ai/api/v1/models } ]
+timeline: []
 mentions: []
 ---

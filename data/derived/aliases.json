@@ -2509,6 +2509,16 @@
       ]
     },
     {
+      "name": "Ling 3.0 Flash Fin",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inclusionai-ling-3-0-flash-fin",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Ling 3.0 Flash Fin (free)",
       "linkable": false,
       "claimed_by": [
@@ -3534,6 +3544,16 @@
       "claimed_by": [
         {
           "id": "model/nvidia-nemotron-3-ultra-550b-a55b-free",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NVIDIA: Nemotron 3.5 Content Safety",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/nvidia-nemotron-3-5-content-safety",
           "class": "manual"
         }
       ]
@@ -5784,6 +5804,16 @@
       "claimed_by": [
         {
           "id": "model/x-ai-grok-4-3",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "SpaceXAI: Grok 4.3 (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/x-ai-grok-4-3-batch",
           "class": "manual"
         }
       ]

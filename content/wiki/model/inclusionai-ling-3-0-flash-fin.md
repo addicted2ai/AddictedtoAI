@@ -1,14 +1,14 @@
 ---
-id: model/z-ai-glm-4-7-flash
+id: model/inclusionai-ling-3-0-flash-fin
 kind: model
-display_name: "Z.ai: GLM 4.7 Flash"
+display_name: Ling 3.0 Flash Fin
 status: active
 maintenance: living
 aliases:
-  - name: "Z.ai: GLM 4.7 Flash"
+  - name: Ling 3.0 Flash Fin
     class: manual
 feeds:
-  openrouter-models: z-ai/glm-4.7-flash
+  openrouter-models: inclusionai/ling-3.0-flash-fin
 facts:
   - field: price_input
     source: feed
@@ -30,6 +30,6 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline: [ { date: "2026-09-04", event: deprecated, source_url: https://openrouter.ai/api/v1/models } ]
+timeline: []
 mentions: []
 ---

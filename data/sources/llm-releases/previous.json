@@ -1,26 +1,17 @@
 {
-  "body_hash": "c248722ce604c7b1be951c615a0bd0001d2e3a94c21d80622043552f0d8cf7bb",
-  "date": "2026-09-01",
-  "fetched_at": "2026-09-01T06:00:03.562Z",
+  "body_hash": "7727eeea56f92f3ce1a411e2b6a5d72613ceb2a0db629f0cb87be9c88d8684a8",
+  "date": "2026-09-03",
+  "fetched_at": "2026-09-03T06:00:03.790Z",
   "row_count": 60,
   "rows": {
-    "00a6e024-dee9-47e9-9cc7-d74d1c52ffa4": {
-      "description": "OpenAI - Terra, the balanced everyday-work tier of the GPT-5.6 family ($2.50/$15 per Mtok), moves from restricted preview to general availability alongside Sol and Luna, available to Plus, Pro, Business, and Enterprise users in ChatGPT and via the API.",
-      "guid": "00a6e024-dee9-47e9-9cc7-d74d1c52ffa4",
-      "link": "https://llm-releases.com/models/gpt-5-6-terra",
-      "pubDate": "Thu, 09 Jul 2026 00:00:00 GMT",
-      "source_name": "OpenAI",
-      "source_url": "https://openai.com/index/gpt-5-6/",
-      "title": "GPT-5.6 Terra reaches general availability"
-    },
-    "02571b6b-b8d6-433c-8141-73d5e81c5ccf": {
-      "description": "OpenAI - Following U.S. government review and a two-week restricted preview, OpenAI rolls out the full GPT-5.6 family — Sol, Terra, and Luna — to general availability across ChatGPT (Plus, Pro, Business, Enterprise) and the API.",
-      "guid": "02571b6b-b8d6-433c-8141-73d5e81c5ccf",
-      "link": "https://llm-releases.com/models/gpt-5-6",
-      "pubDate": "Thu, 09 Jul 2026 00:00:00 GMT",
-      "source_name": "OpenAI",
-      "source_url": "https://openai.com/index/gpt-5-6/",
-      "title": "OpenAI takes the GPT-5.6 family to GA"
+    "06a0c9a7-7f66-487f-8180-dbaae938de80": {
+      "description": "Inception - Inception released Mercury 2.5 Preview, a diffusion LLM that generates and refines many tokens in parallel (~1,107 tokens/sec on standard GPUs), positioned as the fastest reasoning LLM with quality comparable to cost-optimized frontier models. Tunable reasoning levels, parallel tool calls, schema-aligned JSON; 260K context, 65,536 output tokens. API-only via Inception and OpenRouter; list $0.20/$0.75 per Mtok with a launch promo at $0.04/$0.15.",
+      "guid": "06a0c9a7-7f66-487f-8180-dbaae938de80",
+      "link": "https://llm-releases.com/models/mercury-2-5-preview",
+      "pubDate": "Mon, 31 Aug 2026 00:00:00 GMT",
+      "source_name": "Inception",
+      "source_url": "https://openrouter.ai/inception/mercury-2.5-preview",
+      "title": "Inception previews Mercury 2.5 diffusion LLM"
     },
     "08bd42e4-d622-40b4-9c61-f7c7c8bbd396": {
       "description": "Moonshot AI - Moonshot AI publishes the full Kimi K3 weights to Hugging Face under a Modified MIT license on July 26 — a day ahead of its announced July 27 target — making the 2.8T-parameter MoE freely downloadable, modifiable, and self-hostable, and cementing K3 as the largest open-weight model publicly available.",
@@ -112,15 +103,6 @@
       "source_url": "https://research.meta.ai/blog/introducing-muse-code-and-muse-spark-1-2",
       "title": "Meta releases Muse Spark 1.2 and Muse Code"
     },
-    "2534a73d-20d7-42cc-9e20-a92c91d6fee5": {
-      "description": "OpenAI - OpenAI moves the GPT-5.6 family to general availability after the June 26 restricted preview. Sol, the flagship for difficult professional, coding, research, computer-use, and tool-heavy work, ships with a 1.05M-token context window, 128K max output, and standard pricing of $5/$30 per Mtok, alongside a new max reasoning effort and ultra subagent mode.",
-      "guid": "2534a73d-20d7-42cc-9e20-a92c91d6fee5",
-      "link": "https://llm-releases.com/models/gpt-5-6-sol",
-      "pubDate": "Thu, 09 Jul 2026 00:00:00 GMT",
-      "source_name": "OpenAI",
-      "source_url": "https://openai.com/index/gpt-5-6/",
-      "title": "GPT-5.6 Sol reaches general availability"
-    },
     "2cd7b56f-8f82-440d-b980-ce2fae92058f": {
       "description": "Alibaba (Qwen) - Alibaba adds Qwen3.7-Flash, a cost-optimized vision-language reasoning model in the Qwen3.7 line, listed on OpenRouter and API endpoints on July 27 without a flagship announcement, technical report, or benchmark suite. It carries a 1M-token context and up to 65,536 output tokens, and at $0.03 / $0.13 per 1M input/output tokens is the cheapest 1M-context multimodal model available at release — aimed at high-volume multimodal agent workloads (visual coding, screen perception, browser/computer use, search) where cost matters more than peak intelligence. Closed-weights and API-only; architecture is undisclosed, with community speculation pointing to a small sparse-MoE design.",
       "guid": "2cd7b56f-8f82-440d-b980-ce2fae92058f",
@@ -183,6 +165,15 @@
       "source_name": "DeepReinforce (Ornith)",
       "source_url": "https://huggingface.co/collections/ornith-ai/ornith-15",
       "title": "Ornith-1.5-35B-A3B released"
+    },
+    "407abb45-beca-4cd6-9cbc-47adfe7a6899": {
+      "description": "Anthropic - Anthropic released Claude Fable 5.1 (API id claude-fable-5-1), the GA successor to Fable 5 for agentic coding, long-running problem-solving, and knowledge work. Base pricing is unchanged at $10/$50 per Mtok but cache reads were cut 75% to $0.25/Mtok; 1M-token context, 128K output. Reported results include Terminal-Bench 4.0 55.8% and Humanity's Last Exam 65.0% with tools — vendor figures at launch. Available on the Claude API, AWS, Google Cloud, and Microsoft Azure; first Anthropic release with the EU AI Act text watermark.",
+      "guid": "407abb45-beca-4cd6-9cbc-47adfe7a6899",
+      "link": "https://llm-releases.com/models/claude-fable-5-1",
+      "pubDate": "Tue, 01 Sep 2026 00:00:00 GMT",
+      "source_name": "Anthropic",
+      "source_url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
+      "title": "Anthropic releases Claude Fable 5.1"
     },
     "416d2dbc-fd1a-4c03-803a-dc9171e07c16": {
       "description": "Poolside - Poolside releases Laguna S 2.1, a 118B-total / 8B-active open-weight MoE coding model with a 1M-token context, pitched as 'the West's most capable open-weight model' for its weight class. It scores 70.2% on Terminal-Bench 2.1 and tops the published open disclosed-size table on SWE-bench Multilingual at 78.5%. Trained in under nine weeks on 4,096 H200 GPUs, it ships weights on Hugging Face under OpenMDW-1.1 (BF16/FP8/INT4/NVFP4 + GGUF/MLX) and runs at 4-bit on a single NVIDIA DGX Spark. Hosted free at 256K context and paid at full 1M context via OpenRouter ($0.10/$0.20/$0.01 per 1M input/output/cache-read tokens).",
@@ -301,15 +292,6 @@
       "source_url": "https://openrouter.ai/sakana/namazu",
       "title": "Sakana AI opens Namazu as an API"
     },
-    "6fabc6b3-358b-4c58-b0a1-c76af8f266e7": {
-      "description": "Kwaipilot (Kuaishou) - Kuaishou's Kwaipilot team releases KAT-Coder-Pro V2.5, an agentic coding MoE (~72B active) trained with large-scale agentic RL in verifiable repository environments, with a 256K context, 80K max output, and API pricing of $0.74/$2.96 per Mtok via StreamLake, Atlas Cloud, and OpenRouter.",
-      "guid": "6fabc6b3-358b-4c58-b0a1-c76af8f266e7",
-      "link": "https://llm-releases.com/models/kat-coder-pro-v2-5",
-      "pubDate": "Tue, 14 Jul 2026 00:00:00 GMT",
-      "source_name": "Kwaipilot (Kuaishou)",
-      "source_url": "https://openrouter.ai/kwaipilot/kat-coder-pro-v2.5",
-      "title": "Kwaipilot ships KAT-Coder-Pro V2.5"
-    },
     "7053e9d0-fab2-4653-8df2-8b3a1a3da5e8": {
       "description": "Tencent Hunyuan - Tencent Hunyuan released and open-sourced Hy4 preview under Apache-2.0 — a 770B-total / 49B-active MoE flagship with a 1M-token context, aimed at long-horizon software engineering, office/financial analysis, and scientific work. Weights and an FP8 variant on Hugging Face; also served via Tencent Cloud TokenHub and OpenRouter. Preview stage; vendor figures unverified at launch.",
       "guid": "7053e9d0-fab2-4653-8df2-8b3a1a3da5e8",
@@ -354,6 +336,15 @@
       "source_name": "Z.ai (Zhipu AI)",
       "source_url": "https://z.ai/blog/glm-5.3-flash",
       "title": "Z.ai releases GLM-5.3-Flash"
+    },
+    "7e20eb4e-4ca3-4f88-a5c2-0bbcafe4152f": {
+      "description": "Anthropic - Anthropic released Claude Mythos 5.1, the same underlying model as Fable 5.1 with more permissive safeguards, available only through the Cyber Verification Program and Life Sciences Verification Program. Anthropic reports its strongest cyber capabilities to date (Terminal-Bench 4.0 60.9% vs 55.8% for safeguarded Fable 5.1) while remaining in the lower risk tier of its Frontier Compliance Framework. Access limited to vetted US organizations; not publicly token-billed.",
+      "guid": "7e20eb4e-4ca3-4f88-a5c2-0bbcafe4152f",
+      "link": "https://llm-releases.com/models/claude-mythos-5-1",
+      "pubDate": "Tue, 01 Sep 2026 00:00:00 GMT",
+      "source_name": "Anthropic",
+      "source_url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
+      "title": "Claude Mythos 5.1 ships to trusted-access programs"
     },
     "844690a4-074c-40aa-92bc-1e072dbef9dd": {
       "description": "Kwaipilot (Kuaishou) - The efficient ~32B-active variant of KAT-Coder V2.5, sharing the 256K context and agentic tool-use focus at roughly a fifth of Pro's price ($0.15/$0.60 per Mtok).",
@@ -435,6 +426,15 @@
       "source_name": "Google DeepMind",
       "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-6-flash-3-5-flash-lite-3-5-flash-cyber/",
       "title": "Google launches Gemini 3.6 Flash"
+    },
+    "bd089f31-3f2e-40d7-9596-71c3d8c81216": {
+      "description": "Google DeepMind - Google DeepMind ships Gemini 3.8 Flash, the successor to Gemini 3.7 Flash and its fourth Flash model in under four months. It scores 59 on the Artificial Analysis Intelligence Index at high reasoning (up 3 points from 3.7 Flash), 57 at medium and 52 at low, with gains led by agentic evaluations (t^3-Banking tool use +12 points to 45%, Terminal-Bench v2.1 coding, GDPval-AA v2). 1M-token context, multimodal input (text, image, video, speech) with text output. Pricing matches 3.7 Flash at $0.75/$3.75 per Mtok in/out through end of 2026 ($1.50/$7.50 standard), with cached input keeping a 90% discount. Available in the Gemini app (AI Pro/Ultra), AI Mode, and Gemini in Google Sheets, and for developers via Google Antigravity, AI Studio and the Gemini API. Vendor/third-party figures unverified by independent replication at launch.",
+      "guid": "bd089f31-3f2e-40d7-9596-71c3d8c81216",
+      "link": "https://llm-releases.com/models/gemini-3-8-flash",
+      "pubDate": "Wed, 02 Sep 2026 00:00:00 GMT",
+      "source_name": "Google DeepMind",
+      "source_url": "https://deepmind.google/models/gemini/flash/",
+      "title": "Google DeepMind releases Gemini 3.8 Flash"
     },
     "c3165855-1047-4b87-9323-3696b6bc8603": {
       "description": "Anthropic - Anthropic releases Claude Opus 5, its flagship model for demanding reasoning, autonomous coding, and long-horizon agentic work — pitched as the go-to model for most knowledge work, approaching Fable 5 capability in many categories at about half the price. Adds a five-level 'effort' dial on the Claude API/Platform to trade compute for capability, a 1M-token context at standard pricing, and up to 128K output tokens. Standard pricing $5/$25 per Mtok (matching Opus 4.8), plus a $10/$50 Fast mode; becomes the default for Claude Max subscribers. Anthropic calls it its most aligned Opus model.",

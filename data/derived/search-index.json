@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 646,
+  "count": 649,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -2830,6 +2830,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/inclusionai-ling-3-0-flash-fin",
+      "t": "Ling 3.0 Flash Fin",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/inclusionai-ling-3-0-flash-fin",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/inclusionai-ling-3-0-flash-fin-free",
       "t": "Ling 3.0 Flash Fin (free)",
       "k": "entry",
@@ -3611,6 +3621,16 @@
       "d": "model",
       "s": "active",
       "i": "model/nousresearch-hermes-4-70b",
+      "a": [],
+      "b": true
+    },
+    {
+      "u": "/wiki/model/nvidia-nemotron-3-5-content-safety",
+      "t": "NVIDIA: Nemotron 3.5 Content Safety",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/nvidia-nemotron-3-5-content-safety",
       "a": [],
       "b": true
     },
@@ -5663,6 +5683,16 @@
       "b": true
     },
     {
+      "u": "/wiki/model/x-ai-grok-4-3-batch",
+      "t": "SpaceXAI: Grok 4.3 (batch)",
+      "k": "entry",
+      "d": "model",
+      "s": "active",
+      "i": "model/x-ai-grok-4-3-batch",
+      "a": [],
+      "b": true
+    },
+    {
       "u": "/wiki/model/x-ai-grok-4-5",
       "t": "SpaceXAI: Grok 4.5",
       "k": "entry",
@@ -5790,7 +5820,7 @@
       "t": "Z.ai: GLM 4.7 Flash",
       "k": "entry",
       "d": "model",
-      "s": "active",
+      "s": "deprecated",
       "i": "model/z-ai-glm-4-7-flash",
       "a": [],
       "b": true

@@ -1,14 +1,14 @@
 ---
-id: model/z-ai-glm-4-7-flash
+id: model/x-ai-grok-4-3-batch
 kind: model
-display_name: "Z.ai: GLM 4.7 Flash"
+display_name: "SpaceXAI: Grok 4.3 (batch)"
 status: active
 maintenance: living
 aliases:
-  - name: "Z.ai: GLM 4.7 Flash"
+  - name: "SpaceXAI: Grok 4.3 (batch)"
     class: manual
 feeds:
-  openrouter-models: z-ai/glm-4.7-flash
+  openrouter-models: x-ai/grok-4.3:batch
 facts:
   - field: price_input
     source: feed
@@ -30,6 +30,6 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline: [ { date: "2026-09-04", event: deprecated, source_url: https://openrouter.ai/api/v1/models } ]
+timeline: []
 mentions: []
 ---

@@ -3104,6 +3104,17 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/api/models/Qwen/Qwen3.6-35B-A3B": {
+      "bytes": 21384,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/Qwen/Qwen3.6-35B-A3B",
+      "last_checked": "2026-09-04",
+      "last_ok": "2026-09-04",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/api/models/Xenova/all-MiniLM-L6-v2": {
       "bytes": 2957,
       "consecutive_failures": 0,
@@ -3111,6 +3122,17 @@
       "final_url": "https://huggingface.co/api/models/Xenova/all-MiniLM-L6-v2",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/bartowski/thomsonreuters_Thomson-1.0-Small-GGUF": {
+      "bytes": 11608,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/bartowski/thomsonreuters_Thomson-1.0-Small-GGUF",
+      "last_checked": "2026-09-04",
+      "last_ok": "2026-09-04",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3133,6 +3155,17 @@
       "final_url": "https://huggingface.co/api/models/thomsonreuters/Thomson-1.0-Small",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/tri-fair-lab/Snowdon1.1-Small": {
+      "bytes": 19581,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/tri-fair-lab/Snowdon1.1-Small",
+      "last_checked": "2026-09-04",
+      "last_ok": "2026-09-04",
       "meta_refresh": null,
       "ok": true,
       "status": 200

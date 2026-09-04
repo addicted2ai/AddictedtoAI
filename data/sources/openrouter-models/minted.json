@@ -619,6 +619,11 @@
     "entry_id": "model/inclusionai-ling-3-0-flash",
     "path": "content/wiki/model/inclusionai-ling-3-0-flash.md"
   },
+  "inclusionai/ling-3.0-flash-fin": {
+    "date": "2026-09-04",
+    "entry_id": "model/inclusionai-ling-3-0-flash-fin",
+    "path": "content/wiki/model/inclusionai-ling-3-0-flash-fin.md"
+  },
   "inclusionai/ling-3.0-flash-fin:free": {
     "date": "2026-08-28",
     "entry_id": "model/inclusionai-ling-3-0-flash-fin-free",
@@ -1033,6 +1038,11 @@
     "date": "2026-08-28",
     "entry_id": "model/nvidia-nemotron-3-ultra-550b-a55b-free",
     "path": "content/wiki/model/nvidia-nemotron-3-ultra-550b-a55b-free.md"
+  },
+  "nvidia/nemotron-3.5-content-safety": {
+    "date": "2026-09-04",
+    "entry_id": "model/nvidia-nemotron-3-5-content-safety",
+    "path": "content/wiki/model/nvidia-nemotron-3-5-content-safety.md"
   },
   "nvidia/nemotron-3.5-content-safety:free": {
     "date": "2026-08-28",
@@ -2008,6 +2018,11 @@
     "date": "2026-08-28",
     "entry_id": "model/x-ai-grok-4-3",
     "path": "content/wiki/model/x-ai-grok-4-3.md"
+  },
+  "x-ai/grok-4.3:batch": {
+    "date": "2026-09-04",
+    "entry_id": "model/x-ai-grok-4-3-batch",
+    "path": "content/wiki/model/x-ai-grok-4-3-batch.md"
   },
   "x-ai/grok-4.5": {
     "date": "2026-08-28",
