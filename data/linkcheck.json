@@ -2373,6 +2373,17 @@
       "ok": true,
       "status": 200
     },
+    "https://deploymentsafety.openai.com/gpt-6-astra": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://deploymentsafety.openai.com/gpt-6-astra",
+      "last_checked": "2026-09-04",
+      "last_ok": "2026-09-04",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://developers.googleblog.com/en/new-features-for-the-gemini-api-and-google-ai-studio/": {
       "consecutive_failures": 0,
       "error": null,
@@ -2884,6 +2895,17 @@
       "ok": true,
       "status": 200
     },
+    "https://github.com/ifm-ai": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://github.com/ifm-ai",
+      "last_checked": "2026-09-04",
+      "last_ok": "2026-09-04",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://github.com/mozilla-ai/llamafile": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -2971,6 +2993,17 @@
       "meta_refresh": null,
       "ok": true,
       "status": 200
+    },
+    "https://help.openai.com/en/articles/20001258-openai-daybreak-trusted-access-for-cyber-overview": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://help.openai.com/en/articles/20001258-openai-daybreak-trusted-access-for-cyber-overview",
+      "last_checked": "2026-09-04",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": null,
+      "status": 403
     },
     "https://huggingface.co/": {
       "bytes": null,
@@ -3225,6 +3258,17 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/collections/IFM/k2-horizon": {
+      "bytes": 207413,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/collections/IFM/k2-horizon",
+      "last_checked": "2026-09-04",
+      "last_ok": "2026-09-04",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731": {
       "bytes": 277744,
       "consecutive_failures": 0,
@@ -3452,6 +3496,17 @@
       "final_url": "https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://ifm.ai/blog/k2/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://ifm.ai/blog/k2/",
+      "last_checked": "2026-09-04",
+      "last_ok": "2026-09-04",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3697,6 +3752,50 @@
       "meta_refresh": null,
       "ok": true,
       "status": 200
+    },
+    "https://openai.com/daybreak/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openai.com/daybreak/",
+      "last_checked": "2026-09-04",
+      "last_ok": "2026-09-04",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openai.com/index/daybreak-for-frontline-defenders/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openai.com/index/daybreak-for-frontline-defenders/",
+      "last_checked": "2026-09-04",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": null,
+      "status": 403
+    },
+    "https://openai.com/index/daybreak-securing-the-world/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openai.com/index/daybreak-securing-the-world/",
+      "last_checked": "2026-09-04",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": null,
+      "status": 403
+    },
+    "https://openai.com/index/gpt-6-astra/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openai.com/index/gpt-6-astra/",
+      "last_checked": "2026-09-04",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": null,
+      "status": 403
     },
     "https://openai.com/index/path-to-astra/": {
       "bytes": null,
@@ -4156,6 +4255,17 @@
       "final_url": "https://platform.minimax.io/h3-license",
       "last_checked": "2026-09-01",
       "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://platform.openai.com/docs/pricing": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://developers.openai.com/api/docs/pricing",
+      "last_checked": "2026-09-04",
+      "last_ok": "2026-09-04",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4673,6 +4783,17 @@
       "final_url": "https://vllm.ai/blog/2023-06-20-vllm",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://wandb.ai/llm360": {
+      "bytes": 70480,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://wandb.ai/llm360",
+      "last_checked": "2026-09-04",
+      "last_ok": "2026-09-04",
       "meta_refresh": null,
       "ok": true,
       "status": 200

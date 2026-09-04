@@ -15,14 +15,14 @@
   ],
   "date": "2026-09-04",
   "link_check": {
-    "checked": 0,
+    "checked": 11,
     "confirm_after_failures": 2,
-    "declined": 3,
+    "declined": 7,
     "drifted": 0,
     "due": 11,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 15,
+    "redirected": 16,
     "total": 534
   },
   "listings": [
@@ -602,6 +602,18 @@
       "last_checked": "2026-08-29",
       "meta_refresh": null,
       "url": "https://ojs.aaai.org/aimagazine/index.php/aimagazine/article/view/1911/1809",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
+        "content/blog/openai-gpt-6-astra-system-card.md"
+      ],
+      "final_url": "https://developers.openai.com/api/docs/pricing",
+      "kind": "same-site-move",
+      "last_checked": "2026-09-04",
+      "meta_refresh": null,
+      "url": "https://platform.openai.com/docs/pricing",
       "verdict_recorded": true
     },
     {
