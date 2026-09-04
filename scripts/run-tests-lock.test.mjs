@@ -36,6 +36,24 @@ function tmp() {
 }
 
 /**
+ * Poll until `ready()` is true, or fail with `why` — never `setTimeout(n)` and
+ * hope.
+ *
+ * A fixed sleep standing in for "the other process has got there by now" is a
+ * race whose failure looks exactly like a real defect: it reports the assertion
+ * the test was written for, not the timing that actually broke. The timeout is
+ * generous because a slow machine must make this test SLOW, never RED.
+ */
+async function waitFor(ready, why, { timeoutMs = 30_000, everyMs = 10 } = {}) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (ready()) return;
+    await new Promise((r) => setTimeout(r, everyMs));
+  }
+  assert.fail(`timed out after ${timeoutMs}ms: ${why}`);
+}
+
+/**
  * A fixture project with one `*.test.mjs` file that logs when it starts and
  * finishes, holding for `holdMs` in between via a synchronous sleep. Placed
  * under `tests/` because that is one of `run-tests.mjs`'s SEARCH directories.
@@ -155,13 +173,27 @@ test('a real npm test run that has to wait for the lock says so on stdout', asyn
   const root = tmp();
   const log = join(root, 'order.log');
   writeFileSync(log, '', 'utf8');
-  writeFixtureProject(root, log, 1500);
+  // Held long enough that the second process has room to start, contend and
+  // print, even on a machine already running the other 1,199 tests.
+  writeFixtureProject(root, log, 5000);
 
   const first = runRealRunTests(root);
-  // Give the first process a moment to actually acquire the lock before the
-  // second tries — otherwise both could race for first place and neither
-  // would be guaranteed to observe a wait.
-  await new Promise((r) => setTimeout(r, 300));
+  // WAIT FOR THE SIGNAL, NEVER FOR A DURATION. This was `setTimeout(300)` —
+  // a guess that the first process had acquired the lock by then — and it
+  // failed inside a full `npm test` run on 2026-09-04: node's startup under
+  // load outran the sleep, so the SECOND process took the lock first, never
+  // waited, and printed no wait line. The suite reported 1199/1200 with a
+  // failure that had nothing to do with the code under test, and a flake in
+  // the merge gate fails jobs that did nothing wrong — three consecutive
+  // failures trip breaker 1 and halt the Desk (addictedtoai-juig).
+  //
+  // The fixture already writes `enter <pid>` at module-load time, which is
+  // inside the window the test lock is held. That is the real signal, so poll
+  // for it rather than sleeping.
+  await waitFor(
+    () => readFileSync(log, 'utf8').includes('enter '),
+    'the first run never entered its held window, so there was no lock to contend for',
+  );
   const second = await runRealRunTests(root);
   const firstResult = await first;
 
