@@ -72,7 +72,7 @@ facts:
     volatility: dated
   - field: open_weights
     source: cited
-    value: "instruct weights and an FP8 variant published on Hugging Face, ModelScope, GitCode and CNB on the release date"
+    value: "instruct weights and an FP8 variant published on Hugging Face, ModelScope, GitCode and CNB"
     source_url: "https://huggingface.co/tencent/Hy4-preview"
     accessed: "2026-09-02"
     volatility: slow
@@ -99,11 +99,11 @@ timeline:
     event: "released and open-sourced"
     source_url: "https://www.tencent.com/tencent-releases-and-open-sources-tencent-hy4-preview/"
   - date: "2026-08-28"
-    event: "instruct weights and an FP8 variant published on Hugging Face, ModelScope, GitCode and CNB"
-    source_url: "https://huggingface.co/tencent/Hy4-preview"
+    event: "weights and an FP8 variant published on Hugging Face as tencent/Hy4-preview"
+    source_url: "https://llm-releases.com/models/hy4-preview"
   - date: "2026-08-28"
     event: "licensed under the Apache License 2.0"
-    source_url: "https://huggingface.co/tencent/Hy4-preview/blob/main/LICENSE"
+    source_url: "https://llm-releases.com/models/hy4-preview"
   - date: "2026-08-28"
     event: "listed on OpenRouter as tencent/hy4-preview, hosted solely by Tencent Cloud"
     source_url: "https://openrouter.ai/tencent/hy4-preview"
