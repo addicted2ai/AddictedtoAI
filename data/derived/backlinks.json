@@ -336,6 +336,20 @@
         "file": "content/learn/what-an-agent-is.md"
       }
     ],
+    "concept/openai-daybreak": [
+      {
+        "url": "/blog/openai-astra-critical-designation",
+        "title": "OpenAI's Astra is the first model designated Critical for cybersecurity. Advanced access starts with alpha testers",
+        "type": "post",
+        "file": "content/blog/openai-astra-critical-designation.md"
+      },
+      {
+        "url": "/blog/openai-daybreak-frontline-defenders",
+        "title": "OpenAI commits $1B in subsidized Daybreak access for water utilities, grid operators and local governments",
+        "type": "post",
+        "file": "content/blog/openai-daybreak-frontline-defenders.md"
+      }
+    ],
     "concept/reversal-curse": [
       {
         "url": "/wiki/concept/hallucination",
