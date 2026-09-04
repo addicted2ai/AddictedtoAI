@@ -8,17 +8,17 @@ mentions:
   - org/openai
 ---
 
-On 3 September 2026 OpenAI committed $1 billion in subsidized Daybreak access, training, technical support and partnerships for cyber defenders, and it says the money is targeted for consumption within the next six months, starting in the United States.
+On 3 September 2026 OpenAI committed $1 billion in subsidized [Daybreak](/wiki/concept/openai-daybreak) access, training, technical support and partnerships for cyber defenders, and it says the money is targeted for consumption within the next six months, starting in the United States.
 
 The offer lands first on defenders without large security budgets. OpenAI names water and wastewater systems, electric grid operators, state and local governments, community and regional banks, nonprofits and open-source maintainers as Daybreak for America's priorities, with partner countries to follow "in the coming weeks." What the money buys, per the announcement, is subsidized access to Daybreak cyber models and products. The stated uses are concrete: reviewing legacy code, analyzing suspicious activity, identifying and validating vulnerabilities, prioritizing the most serious risks, and developing and testing fixes.
 
 ## Daybreak for America starts with an MS-ISAC pilot
 
-The US program includes a new pilot with the Multi-State Information Sharing and Analysis Center (MS-ISAC), the group that provides threat intelligence and incident response to thousands of public-sector organizations. The pilot pairs Daybreak access with guided training for an initial group of public sector and water system defenders, aiming to build a model that can expand to MS-ISAC's wider membership. Distribution also runs through tools defenders already use: more than 35 partner products and partner-operated services across the Daybreak Defense Network, per the announcement.
+The US program includes a new pilot with the Multi-State Information Sharing and Analysis Center (MS-ISAC), the group that provides threat intelligence and incident response to thousands of public-sector organizations. The pilot pairs Daybreak access with guided training for an initial group of public sector and water system defenders, aiming to build a model that can expand to MS-ISAC's wider membership. Distribution also runs through tools defenders already use: more than 35 enterprise products and partner-operated services across the Daybreak Defense Network, per the announcement.
 
 ## Daybreak already serves 2,000 approved organizations
 
-The program extends work that predates it. OpenAI says thousands of defenders across 2,000 approved organizations and workspaces already use Daybreak. The water-sector response is older still: following recent attacks on U.S. water systems, OpenAI offered affected states and utilities up to $1 million in no-cost API credits, Daybreak access and technical assistance. The announcement adds that a second gathering of utility companies this week drew participants representing 40 states and the District of Columbia, collectively serving more than half of the U.S. population.
+The program extends work that predates it. OpenAI says thousands of defenders across 2,000 approved organizations and workspaces already use Daybreak. The water-sector response is older still: following recent attacks on U.S. water systems, OpenAI offered affected states and utilities up to $1 million in no-cost API credits, Daybreak access and technical assistance. The announcement adds that a second gathering of utility companies the week of 3 September 2026 drew participants representing 40 states and the District of Columbia, collectively serving more than half of the U.S. population.
 
 ## This is the expansion Astra's launch promised
 
@@ -30,5 +30,6 @@ The date that matters is the six-month target, not the announcement. OpenAI says
 
 All fetched 4 September 2026.
 
+- OpenAI, "Path to Astra: critical capabilities and frontier safeguards", published 1 September 2026 — [openai.com/index/path-to-astra/](https://openai.com/index/path-to-astra/)
 - OpenAI, "Daybreak for Frontline Defenders: $1B to protect essential services", published 3 September 2026 — [openai.com/index/daybreak-for-frontline-defenders/](https://openai.com/index/daybreak-for-frontline-defenders/)
 - OpenAI, "GPT-6 Astra: A new generation of intelligence", published 3 September 2026 — [openai.com/index/gpt-6-astra/](https://openai.com/index/gpt-6-astra/)
