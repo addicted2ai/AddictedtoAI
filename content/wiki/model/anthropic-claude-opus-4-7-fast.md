@@ -59,8 +59,8 @@ silent fallback, where Opus 4.6 would have run standard. OpenRouter's
 current listing of `anthropic/claude-opus-4.7` agrees: the standard row
 remains, with its usual providers and no fast endpoint among them. The row
 this page describes nonetheless existed, and sold at premium pricing until
-the end: its last-known values as of 2026-09-01, $30.00 in / $150.00 out
-per million tokens against the standard row's
+the end: its last-known values as of 2026-09-01, $30.00 in / $150.00 out,
+against the standard row's
 {{fact:model/anthropic-claude-opus-4-7#price_input}} /
 {{fact:model/anthropic-claude-opus-4-7#price_output}} — six times the
 base — which OpenRouter's own description, still live, calls "identical
