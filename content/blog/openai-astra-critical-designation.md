@@ -11,7 +11,7 @@ mentions:
 
 On 1 September 2026 OpenAI announced that Astra, its next model, meets the Critical cybersecurity capability threshold under its Preparedness Framework, the first model the company has designated at that level. The same announcement gates the release: "We plan to make Astra available soon, but access to its most advanced cybersecurity capabilities will be more limited."
 
-The reader this lands on is a security team. The threshold, in OpenAI's words, means Astra can "find previously unknown security flaws and develop ways to exploit them across many well-protected systems without a person guiding each step", and the capabilities are not being given out broadly: advanced cyber work "will initially be available to a small group of alpha testers, with access through Daybreak Blue expanding afterward to support defensive use". Defenders who do get in inherit a monitoring system that can slow, pause, or stop their own legitimate work.
+The reader this lands on is a security team. The threshold, in OpenAI's words, means that "with the right tools and access, it can find previously unknown security flaws and develop ways to exploit them across many well-protected systems without a person guiding each step", and the capabilities are not being given out broadly: advanced cyber work "will initially be available to a small group of alpha testers, with access through Daybreak Blue expanding afterward to support defensive use". Defenders who do get in inherit a monitoring system that can slow, pause, or stop their own legitimate work.
 
 ## Critical, in the framework's own words
 
@@ -40,7 +40,7 @@ Two numbers carry the abuse-resistance story, both from the same page. On OpenAI
 
 > GPT-5.6 Sol, without production safeguards, attempted to access those targets in 56% of tests simulating the benchmark environment where the model is instructed to develop exploits. Astra made no such attempts in these tests.
 
-The page adds that both figures "describe behavior under the test conditions without cyber safeguards, not normal production use". SecurityWeek's coverage, published 2 September, carries the 91.5% and 59% pair independently.
+The page adds that both figures "describe behavior under the test conditions without cyber safeguards, not normal production use". SecurityWeek's coverage, published 2 September, carries the same 91.5% and 59% pair.
 
 Then the monitoring layer. Astra ships with "additional chain-of-thought monitoring to rapidly detect and contain potentially misaligned actions", and OpenAI describes a production misalignment monitor for Astra-class models whose consequences for a user are concrete:
 
