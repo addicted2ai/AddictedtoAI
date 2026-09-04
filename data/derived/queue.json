@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 8,
+  "count": 7,
   "items": [
-    {
-      "detail": "The annotation closes \"with the same rule deriving `retired` once 2026-09-10 passes.\" True of the rule's arithmetic, and every annotation of this shape has ended the same way — but the identical clause in j-20260901-08 (\"the same rule derives `retired` once 2026-09-04 passes\") is falsified today: nex-agi/nex-n2-mini and nex-n2-pro moved their date to 2026-09-08 on 2026-09-02 and are still active-listed on 2026-09-04. Because a date change with no status change emits no change record, the forecast quietly stops being true and nothing in the file says so. The clause should read as conditional on the date holding — one word, and it stops the log making predictions the same log later contradicts.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-08 (`j-20260904-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/carried/j-20260904-08-carry-2.md",
-      "target": "data/carried/j-20260904-08-carry-2.md",
-      "title": "Phrase the \"retired once X passes\" clause as conditional on the date holding",
-      "type": "repair"
-    },
     {
       "detail": "The revised annotation reads \"...OpenRouter's own declaration that `z-ai/glm-5.3-flash` is the current GLM Flash model. That row reads `active` — `expiration_date` \"2098-12-31\" ... at 1,310,720 tokens of context ... 25% dearer on input ... 37.5% cheaper on output\". \"That row\" has two candidate antecedents introduced in the sentence immediately before it, `~z-ai/glm-flash-latest` and `z-ai/glm-5.3-flash`, and the pointer row matches two of the three attributes attached to the pronoun: in the 2026-09-04 snapshot `~z-ai/glm-flash-latest` carries the same context_length 1310720 and the identical pricing pair (prompt 0.000000075, completion 0.00000025). Only `expiration_date` separates them — 2098-12-31 on glm-5.3-flash, null on the pointer row — so a reader who resolves the pronoun to the pointer row is wrong about exactly one fact and gets no signal that they are. The pre-revision text named the row explicitly at this point (\"`z-ai/glm-5.3-flash` reads `active` — ...\"); the fix is to restore that name in place of \"That row\".\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-27 (`j-20260904-27.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -75,5 +66,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 8
+  "total_before_cap": 7
 }
