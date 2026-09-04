@@ -22,7 +22,7 @@ facts:
     volatility: slow
   - field: flagship_weights_listing
     source: cited
-    value: "listed 'Open weights · Meta license (weights pending)' with weights 'Not released' — a badge name that no Meta license text carries"
+    value: "listed 'Open weights · Meta license (weights pending)' with weights 'Not released'"
     source_url: "https://llm-releases.com/models/muse-spark-1-3"
     accessed: "2026-09-03"
     volatility: slow

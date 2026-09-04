@@ -3,7 +3,9 @@
 Job j-20260903-14 (verify). Re-checked, against Meta's own channels rather
 than the third-party catalogue, whether the Muse Spark flagship weights have
 moved from "pending". Raw transcript: `verify-meta-spark-weights-pending-status.raw.txt`
-in this directory (single run of a node fetch+strip+count script, 2026-09-03).
+in this directory (node fetch+strip+count script, 2026-09-03; the
+huggingface.co/meta-models org page was fetched twice because its activity
+feed renders intermittently).
 
 ## What was fetched (all 2026-09-03, all HTTP 200)
 
@@ -14,6 +16,10 @@ in this directory (single run of a node fetch+strip+count script, 2026-09-03).
 | about.fb.com/news/2026/04/... (April announcement, the corpus's cited source) | `weights`=0, `open-source`=1 — "we hope to open-source future versions of the model" still live |
 | huggingface.co/meta-models (org listing) | `spark`=0 — no Muse Spark repo at all; the org carries only the Muse Glimmer family |
 | huggingface.co/models?search=muse+spark | only `MuseSparkAI/musespark-video` (unrelated third party), no Meta repo |
+| huggingface.co/meta-models/Muse-Glimmer-30B (Meta's only open-weight repo) | `apache-2.0`=13 — the repo's license tag is `license:apache-2.0`; `meta-license`=0 |
+| huggingface.co/models?other=meta-license (HF's license filter) | `meta-license`=2 — the filter chip and "Active filters: meta-license", no model rows; `Muse`=0 |
+| huggingface.co/meta-llama (the legacy org) | `Muse`=0, `Spark`=0 — nothing Spark-family there either |
+| llm-releases.com/methodology | `known family`=1 — licenses resolve "to a known family" |
 | llm-releases.com/models/muse-spark-1-2 and /muse-spark-1-3 (the badge's own source) | both still: "License Open weights · Meta license (weights pending)" and "Weights Not released" |
 
 ## The one new primary-source statement
@@ -36,21 +42,21 @@ spark" returns only the April 8 post — no separate newsroom pages for 1.2 or
 
 ## The "Meta license (weights pending)" license-text check
 
-No Meta license text carries that name. Checked instruments: the HF license
-tag on Meta's only open-weight repo (meta-models/Muse-Glimmer-30B is tagged
-`license:apache-2.0`); the HF models filter `other=meta-license` (empty
-result set); the meta-models and meta-llama org pages (no such license name
-rendered); both Meta announcement pages (no license text); llm-releases'
-own methodology page, which describes licenses resolving "to a known
-family". The name appears only as the badge on llm-releases' own Spark 1.2 /
-1.3 cards, which cite no Meta document for it.
+No license text of that name was found on the checked instruments (all
+fetched 2026-09-03): the HF license tag on Meta's only open-weight repo
+(meta-models/Muse-Glimmer-30B is tagged `license:apache-2.0`); the HF models
+filter `other=meta-license` (empty result set); the meta-models and meta-llama
+org pages (no such license name rendered); both Meta announcement pages (no
+license text); llm-releases' own methodology page, which describes licenses
+resolving "to a known family". The name appears only as the badge on
+llm-releases' own Spark 1.2 / 1.3 cards, which cite no Meta document for it.
 
 ## Fact-by-fact result
 
 | field | prior value | primary sources support | action |
 |---|---|---|---|
 | `flagship_weights` | "closed; Meta says it hopes to open-source future versions of the model" (cited to the April about.fb.com post) | Weights not released; Meta's 1.3 announcement names "the Muse Spark open weights release" on its roadmap | **updated** — value now states the pending state on Meta's own September authority, source_url moved to the 1.3 announcement |
-| `flagship_weights_listing` | "listed 'Open weights · Meta license (weights pending)' with weights 'Not released'" (cited to llm-releases) | Badge unchanged on both cards, fetched today; the license name it quotes exists nowhere on Meta's channels | **updated** — value kept and sharpened with the license-name finding |
+| `flagship_weights_listing` | "listed 'Open weights · Meta license (weights pending)' with weights 'Not released'" (cited to llm-releases) | Badge unchanged on both cards, fetched today; no license text of that name appears on Meta's announcement pages, the meta-models or meta-llama orgs, or HF's `meta-license` tag | **confirmed** — value restored to the badge quotation alone; the clause asserting what Meta license text carries was removed because the cited card does not support it |
 
 Both `accessed:` stamps stay 2026-09-03, the real date this check ran. The
 checks FAILED in the sense the proposal named ("has the state moved?") — it
