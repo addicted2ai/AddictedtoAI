@@ -16,7 +16,7 @@ aliases:
 facts:
   - field: blue_definition
     source: cited
-    value: "Daybreak Blue supports common defensive work with our mainline models"
+    value: "Daybreak Blue supports common defensive work with OpenAI's mainline models"
     source_url: "https://openai.com/index/daybreak-for-frontline-defenders/"
     accessed: "2026-09-04"
     volatility: slow
