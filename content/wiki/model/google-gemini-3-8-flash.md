@@ -125,11 +125,11 @@ What changed is the invoice per task. Google's release note credits the gains
 to "a core design choice: 3.8 Flash works harder" — extra reasoning steps,
 iterative tool calls, and at higher effort levels, more tokens spent. An
 independent reading of the release, [llm-releases](https://llm-releases.com/models/gemini-3-8-flash),
-turns that sentence into arithmetic: average output tokens per task rose to
-{{fact:model/google-gemini-3-8-flash#output_tokens_per_task}}, lifting cost
-per task to {{fact:model/google-gemini-3-8-flash#cost_per_task}} at high
-reasoning despite the unchanged per-token price. Buyers of this row are
-paying the same rate and a larger bill.
+turns that sentence into arithmetic: average output tokens per task rose
+~30%, to {{fact:model/google-gemini-3-8-flash#output_tokens_per_task}},
+lifting cost per task to {{fact:model/google-gemini-3-8-flash#cost_per_task}}
+at high reasoning despite the unchanged per-token price. Buyers of this row
+are paying the same rate and a larger bill.
 
 Google's own launch numbers for the row are vendor-reported and dated to the
 release: HLE-Verified at {{fact:model/google-gemini-3-8-flash#hle_verified}},
