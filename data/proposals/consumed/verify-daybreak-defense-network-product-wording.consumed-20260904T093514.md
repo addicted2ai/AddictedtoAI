@@ -39,3 +39,17 @@ post's wording on a premise its own source contradicts. The wiki entry written
 alongside this proposal (concept/openai-daybreak) sidesteps the split by using
 the intersection ("more than 35 products and partner-operated services"), so
 this proposal only concerns the blog post's repair.
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-04
+- job: j-20260904-07 (verify)
+- merged as: `fc584b83238f6502ef967e30a5daf0c68b9c0fa8`
+- produced: (the merge produced no joinable artifact)
+- was: `verify-daybreak-defense-network-product-wording.md` (slug `verify-daybreak-defense-network-product-wording`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
