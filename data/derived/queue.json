@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 9,
+  "count": 8,
   "items": [
-    {
-      "detail": "The annotation opens \"The llm-releases description on this line — size, architecture and context undisclosed, no benchmark table — was still what the feed's own page said on 2026-09-03\". Two of those three are in the stored description, verbatim: \"size, architecture, and context are undisclosed\". Benchmarks are not mentioned in it at all; the benchmark absence is a property of llm-releases.com/models/thomson, which on 2026-09-03 reads \"No benchmark scores recorded yet. Spotted some? Submit a correction.\" The composite claim is true of the page and two-thirds true of the line it is attributed to. Attributing the benchmark half explicitly to the linked page would make the sentence exact.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-06 (`j-20260903-06.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/carried/j-20260903-06-carry-2.md",
-      "target": "data/carried/j-20260903-06-carry-2.md",
-      "title": "The \"no benchmark table\" half belongs to the feed's page, not to the stored line",
-      "type": "repair"
-    },
     {
       "detail": "The annotation closes \"with the same rule deriving `retired` once 2026-09-10 passes.\" True of the rule's arithmetic, and every annotation of this shape has ended the same way — but the identical clause in j-20260901-08 (\"the same rule derives `retired` once 2026-09-04 passes\") is falsified today: nex-agi/nex-n2-mini and nex-n2-pro moved their date to 2026-09-08 on 2026-09-02 and are still active-listed on 2026-09-04. Because a date change with no status change emits no change record, the forecast quietly stops being true and nothing in the file says so. The clause should read as conditional on the date holding — one word, and it stops the log making predictions the same log later contradicts.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-08 (`j-20260904-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -84,5 +75,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 9
+  "total_before_cap": 8
 }
