@@ -17,3 +17,18 @@ Reviewing this job, the corpus's description of Meta's flagship licensing now re
 ## Origin
 
 Transcribed by the loop from the verdict record for job j-20260903-12 (`j-20260903-12.pass2.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a proposal it noticed reaches the work sources only by being written in its record and copied here. The reviewing job is named above as its origin.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-03
+- job: j-20260903-14 (verify)
+- merged as: `442d9f6eb182aa57fae07d73c1754ab73ef1c189`
+- produced: `content/wiki/org/meta-superintelligence-labs.md`
+- was: `verify-meta-spark-weights-pending-status.md` (slug `verify-meta-spark-weights-pending-status`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
