@@ -1622,12 +1622,6 @@
     ],
     "model/openai-gpt-5-6-sol": [
       {
-        "url": "/wiki/concept/openai-daybreak",
-        "title": "OpenAI Daybreak",
-        "type": "entry",
-        "file": "content/wiki/concept/openai-daybreak.md"
-      },
-      {
         "url": "/wiki/model/openai-gpt-5-4",
         "title": "OpenAI: GPT-5.4",
         "type": "entry",
@@ -2348,12 +2342,6 @@
         "title": "Hallucination",
         "type": "entry",
         "file": "content/wiki/concept/hallucination.md"
-      },
-      {
-        "url": "/wiki/concept/openai-daybreak",
-        "title": "OpenAI Daybreak",
-        "type": "entry",
-        "file": "content/wiki/concept/openai-daybreak.md"
       },
       {
         "url": "/wiki/event/eliza",

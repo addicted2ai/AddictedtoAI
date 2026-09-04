@@ -1069,36 +1069,6 @@
       ]
     },
     {
-      "name": "Daybreak",
-      "linkable": false,
-      "claimed_by": [
-        {
-          "id": "concept/openai-daybreak",
-          "class": "manual"
-        }
-      ]
-    },
-    {
-      "name": "Daybreak Blue",
-      "linkable": false,
-      "claimed_by": [
-        {
-          "id": "concept/openai-daybreak",
-          "class": "manual"
-        }
-      ]
-    },
-    {
-      "name": "Daybreak Red",
-      "linkable": false,
-      "claimed_by": [
-        {
-          "id": "concept/openai-daybreak",
-          "class": "manual"
-        }
-      ]
-    },
-    {
       "name": "Deep Blue",
       "linkable": false,
       "claimed_by": [
@@ -3774,16 +3744,6 @@
       "claimed_by": [
         {
           "id": "org/openai",
-          "class": "exclusive"
-        }
-      ]
-    },
-    {
-      "name": "OpenAI Daybreak",
-      "linkable": true,
-      "claimed_by": [
-        {
-          "id": "concept/openai-daybreak",
           "class": "exclusive"
         }
       ]
