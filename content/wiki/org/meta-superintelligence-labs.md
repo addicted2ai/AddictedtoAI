@@ -23,7 +23,7 @@ facts:
   - field: flagship_weights_listing
     source: cited
     value: "listed 'Open weights · Meta license (weights pending)' with weights 'Not released'"
-    source_url: "https://llm-releases.com/models/muse-spark-1-3"
+    source_url: "https://llm-releases.com/models/muse-spark-1-2"
     accessed: "2026-09-03"
     volatility: slow
   - field: open_weight_release
