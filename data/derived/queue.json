@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 12,
+  "count": 11,
   "items": [
-    {
-      "detail": "The annotation ends on what happens to this row and never says where a reader goes instead, although the same 2026-09-04 snapshot it read carries z-ai/glm-5.3-flash — active (expiration_date \"2098-12-31\", the far-future sentinel the registry note describes), 1,310,720 tokens of context against this row's 202,752, prompt price 0.000000075 against 0.00000006. The precedent annotation on this same source (j-20260902-02, data/changes.jsonl) explicitly went looking for a migration target and reported that none was identifiable from the feed; here one plainly is, and it goes unmentioned. A follow-up annotation, or a body on the stub entry before 2026-09-10, should name it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-08 (`j-20260904-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/wiki/model/z-ai-glm-4-7-flash.md",
-      "target": "content/wiki/model/z-ai-glm-4-7-flash.md",
-      "title": "Name the in-feed successor when a deprecation annotation has one",
-      "type": "repair"
-    },
     {
       "detail": "This job fixed the model entry, which is all its target allowed. The org entry runs the identical argument off the identical source and still has the same gap: content/wiki/org/google-deepmind.md:97-101 reads \"[llm-releases] prices that sentence: output tokens per task rose to {{fact:...#output_tokens_per_task}}, lifting cost per task to {{fact:...#cost_per_task}} at high reasoning even though the per-token price never moved.\" A reader there gets ~48k with nothing to scale it against, and the paragraph before it is entirely about the size of the jump (\"The jump came twenty-three days later\"). Same fix as here — a prose edit to \"output tokens per task rose ~30%, to {{fact:...}}\" — and the same source sentence supports it verbatim.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-19 (`j-20260904-19.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -111,5 +102,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 12
+  "total_before_cap": 11
 }
