@@ -12,7 +12,7 @@ aliases:
 facts:
   - field: product
     source: cited
-    value: "diffusion-based language models (dLLMs); it calls Mercury 'the world's first commercially available family of diffusion large language models'"
+    value: "diffusion-based large language models (dLLMs); it calls Mercury 'the world's first commercially available family of diffusion large language models'"
     source_url: "https://www.inceptionlabs.ai/about"
     accessed: "2026-09-03"
     volatility: slow
