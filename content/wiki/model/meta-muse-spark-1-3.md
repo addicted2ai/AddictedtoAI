@@ -67,8 +67,8 @@ license line, and that row is notable for having stalled. Released
 it is Meta's reasoning model for long-running agent work: the OpenRouter
 listing positions it for "long-running agentic, multi-agent, and coding
 workflows," built to track information across extended tasks and request
-confirmation when needed. It keeps the family's million-token window — a
-{{fact:model/meta-muse-spark-1-3#context_window}} context window — and the
+confirmation when needed. It keeps the family's million-token window — a context window of
+{{fact:model/meta-muse-spark-1-3#context_window}} — and the
 row lists {{fact:model/meta-muse-spark-1-3#price_input}} input against
 {{fact:model/meta-muse-spark-1-3#price_output}} output, with
 {{fact:model/meta-muse-spark-1-3#price_cache_read}} on a cache read.
