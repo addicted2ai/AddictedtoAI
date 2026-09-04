@@ -171,6 +171,134 @@ test('re-running with the carried-finding file unchanged produces byte-identical
   }
 });
 
+// ---------------------------------------------------------------------------
+// One item per SUBJECT, not per file. Measured 2026-09-03: 26 standing
+// findings on 15 subjects, the top seven holding 18 of them.
+// ---------------------------------------------------------------------------
+
+/** The shape `loop/lib/carry.mjs` actually writes: detail, then two sections. */
+function carriedBody(detail) {
+  return (
+    `${detail}\n\n` +
+    `## Origin\n\nTranscribed by the loop from the verdict record for job j-x (\`j-x.md\`).\n\n` +
+    `## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's ` +
+    `derived queue. Once it is fixed, delete this file as part of the same diff.\n`
+  );
+}
+
+test('several findings on ONE subject become ONE job, not one job each', () => {
+  const root = makeRoot([]);
+  try {
+    const subject = 'content/blog/glm-5-3-license-revenue-gate.md';
+    writeCarried(root, 'j-9-carry-1.md', { title: 'the LICENSE file is bilingual', subject }, carriedBody('Say so.'));
+    writeCarried(root, 'j-9-carry-2.md', { title: 'the MIT-style grant is the preamble', subject }, carriedBody('Not clause 1.'));
+    writeCarried(root, 'j-9-carry-3.md', { title: '"trailing 12 months" loosens the wording', subject }, carriedBody('Quote it.'));
+
+    const items = carriedFindingItems(root);
+    assert.equal(items.length, 1, 'three findings on one file are one job');
+    const [it] = items;
+    assert.equal(it.subject, subject);
+    assert.equal(it.target, subject);
+    assert.equal(it.rank, RANKS['carried-finding'], 'batching does not change the rank');
+    assert.equal(it.title, `Clear the 3 carried findings on ${subject}`);
+    assert.notEqual(it.title, it.detail, 'the title is still never the detail');
+
+    // Every finding reaches the job, in the reviewer's own words.
+    for (const t of ['the LICENSE file is bilingual', 'the MIT-style grant is the preamble', '"trailing 12 months" loosens the wording']) {
+      assert.ok(it.detail.includes(t), `the batch states: ${t}`);
+    }
+    for (const d of ['Say so.', 'Not clause 1.', 'Quote it.']) assert.ok(it.detail.includes(d));
+
+    // And every file it must delete is NAMED, which is the whole reason the
+    // per-file boilerplate cannot simply be repeated three times.
+    for (const f of ['data/carried/j-9-carry-1.md', 'data/carried/j-9-carry-2.md', 'data/carried/j-9-carry-3.md']) {
+      assert.ok(it.detail.includes(f), `the batch names ${f} for deletion`);
+    }
+    assert.equal(
+      it.detail.split('### Retiring these findings').length - 1,
+      1,
+      'exactly one retirement instruction, not one per finding',
+    );
+    assert.ok(!it.detail.includes('## Origin'), "carry.mjs's generated Origin section is dropped from a batch");
+    assert.ok(!it.detail.includes('Retiring this item'), 'and so is its per-file, unnamed retirement boilerplate');
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('a lone finding is unchanged by grouping — same title, same detail, boilerplate and all', () => {
+  const root = makeRoot([]);
+  try {
+    const body = carriedBody('The one finding.');
+    writeCarried(root, 'j-10-carry-1.md', { title: 'one finding', subject: 'content/x.md' }, body);
+    const [it] = carriedFindingItems(root);
+    assert.equal(it.title, 'one finding', 'not rewritten into a batch heading');
+    assert.equal(it.detail, body.trim(), 'byte-identical to the pre-grouping detail');
+    assert.ok(it.detail.includes('## Origin'), 'a single body already reads correctly on its own');
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('findings with NO subject never group together — nothing says they concern the same file', () => {
+  const root = makeRoot([]);
+  try {
+    writeCarried(root, 'j-11-carry-1.md', { title: 'first orphan' });
+    writeCarried(root, 'j-11-carry-2.md', { title: 'second orphan' });
+    const items = carriedFindingItems(root);
+    assert.equal(items.length, 2);
+    assert.deepEqual(items.map((i) => i.subject).sort(), [
+      'data/carried/j-11-carry-1.md',
+      'data/carried/j-11-carry-2.md',
+    ]);
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('a batch retires finding by finding: delete one file and the job shrinks; delete all and it goes', () => {
+  const root = makeRoot([]);
+  try {
+    const subject = 'content/wiki/model/a.md';
+    writeCarried(root, 'j-12-carry-1.md', { title: 'first', subject }, carriedBody('One.'));
+    writeCarried(root, 'j-12-carry-2.md', { title: 'second', subject }, carriedBody('Two.'));
+    assert.equal(carriedFindingItems(root)[0].title, `Clear the 2 carried findings on ${subject}`);
+
+    // The fixing job fixed one of the two and deleted only that file.
+    rmSync(join(root, 'data', 'carried', 'j-12-carry-1.md'));
+    const [after] = carriedFindingItems(root);
+    assert.equal(after.title, 'second', 'one finding left is a lone finding again, under its own title');
+    assert.ok(after.detail.includes('Two.'));
+
+    rmSync(join(root, 'data', 'carried', 'j-12-carry-2.md'));
+    assert.deepEqual(carriedFindingItems(root), [], 'presence is still the only state there is');
+  } finally {
+    cleanup(root);
+  }
+});
+
+test('a batched finding whose own prose contains an "## Origin" heading keeps it', () => {
+  const root = makeRoot([]);
+  try {
+    const subject = 'content/x.md';
+    writeCarried(
+      root,
+      'j-13-carry-1.md',
+      { title: 'quotes a heading', subject },
+      carriedBody('The page\'s\n\n## Origin\n\nsection is the one to fix.'),
+    );
+    writeCarried(root, 'j-13-carry-2.md', { title: 'other', subject }, carriedBody('Two.'));
+    const [it] = carriedFindingItems(root);
+    assert.ok(
+      it.detail.includes("section is the one to fix."),
+      'splitting on the LAST generated heading keeps a reviewer\'s own use of it',
+    );
+    assert.ok(!it.detail.includes('Transcribed by the loop'), 'while still dropping the generated section');
+  } finally {
+    cleanup(root);
+  }
+});
+
 test('multiple carried findings sort deterministically by subject within the same rank', () => {
   const root = makeRoot([]);
   try {

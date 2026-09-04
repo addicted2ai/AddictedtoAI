@@ -378,11 +378,40 @@ export function scoutItems(root, { changesFile, at = now() } = {}) {
 
 /**
  * Findings a reviewer carried but did not block on (beads addictedtoai-2bo),
- * one queue item per file under `data/carried/` (`loop/lib/carry.mjs` writes
+ * queued from the files under `data/carried/` (`loop/lib/carry.mjs` writes
  * them; nothing else does). Each file's own `title:` becomes the item's
  * `title` — never the `detail ?? title` fallback the loop's reader otherwise
  * applies, because a carried finding's detail is review prose and can run
  * long enough to make an undispatchable job heading.
+ *
+ * ## ONE ITEM PER SUBJECT, not per file (2026-09-03)
+ *
+ * It was one item per file until the queue was measured: on 2026-09-03 all 26
+ * standing items were carried findings, on **15 distinct subjects**, with the
+ * top seven subjects holding 18 of them. Four separate findings named
+ * `content/blog/glm-5-3-license-revenue-gate.md` and three named one model
+ * entry. Dispatched one per file, that is four jobs that each open the same
+ * post, re-read the same licence, and re-establish the same context, and four
+ * review passes over four one-line diffs to the same paragraph — with three of
+ * them reviewing a file the other three are also editing.
+ *
+ * Grouping by subject is the whole change and it is a change to the QUEUE, not
+ * to the mechanism: a finding is still one file, the file's presence is still
+ * the state, and retirement is still the fixing job's own diff deleting it.
+ * What changes is how many of them one job is handed. The count of jobs needed
+ * to drain the queue drops from the number of findings to the number of
+ * subjects — 26 to 15 as measured — and the saving is larger than that ratio
+ * because the context a repair job must build is per-subject, not per-finding.
+ *
+ * A finding with no `subject:` keys on its own path, so it never groups with
+ * anything: two subject-less findings stay two items, which is correct, since
+ * nothing says they concern the same file.
+ *
+ * The total order in `computeQueue` (rank, then reason, then subject) is
+ * untouched, and deliberately: ordering the groups by SIZE would put the
+ * biggest batch permanently at the head of the carried block, which is the
+ * shape addictedtoai-5hn and -cct both warn about. Alphabetical by subject
+ * drains just as completely and cannot starve.
  *
  * A malformed file (no front matter, no `title:`) is skipped rather than
  * queued with a guessed title — the same "do not manufacture a name" rule
@@ -403,7 +432,7 @@ export function carriedFindingItems(root) {
   } catch {
     return [];
   }
-  const out = [];
+  const groups = new Map();
   for (const name of names) {
     let text;
     try {
@@ -423,11 +452,72 @@ export function carriedFindingItems(root) {
     const title = String(data.title ?? '').trim();
     if (!title) continue;
     const subject = data.subject ? String(data.subject).trim() : null;
+    const key = subject ?? `data/carried/${name}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ file: `data/carried/${name}`, title, body: body.trim() });
+  }
+
+  const out = [];
+  for (const [key, found] of groups) {
+    if (found.length === 1) {
+      // Byte-identical to what a single finding produced before grouping
+      // existed. Its body already reads correctly on its own, including the
+      // retirement instruction `loop/lib/carry.mjs` writes into it.
+      out.push(item('repair', 'carried-finding', key, found[0].body, key, found[0].title));
+      continue;
+    }
     out.push(
-      item('repair', 'carried-finding', subject ?? `data/carried/${name}`, body.trim(), subject ?? `data/carried/${name}`, title),
+      item('repair', 'carried-finding', key, batchedDetail(key, found), key, batchedTitle(key, found)),
     );
   }
   return out;
+}
+
+/** One line naming the whole batch — never a detail, which runs to kilobytes. */
+function batchedTitle(subject, found) {
+  return `Clear the ${found.length} carried findings on ${subject}`;
+}
+
+/**
+ * The reviewer's own words for each finding in a batch, under a heading naming
+ * the file that carries it, followed by ONE retirement instruction.
+ *
+ * The two trailing sections `loop/lib/carry.mjs` generates into every carried
+ * file — `## Origin` and `## Retiring this item` — are dropped here and
+ * replaced by the closing section below. Repeated four times they are noise,
+ * and worse than noise: each says "delete **this** file" without naming it,
+ * which is unambiguous in a one-finding brief and exactly ambiguous in a
+ * four-finding one. The replacement names every path.
+ *
+ * The split is on the generated `## Origin` heading, taking the LAST
+ * occurrence so a reviewer who wrote that heading inside its own prose keeps
+ * it; a file without the heading at all (hand-written, or written by some
+ * future version) contributes its whole body, which is the safe direction.
+ */
+function batchedDetail(subject, found) {
+  const parts = [
+    `${found.length} findings carried by reviewers against \`${subject}\`, batched into one job ` +
+      `because they concern the same file. Each is stated below in the reviewing reviewer's own ` +
+      `words. Fix every one, or say in \`RESULT.md\` which you did not and why — a finding you ` +
+      `leave standing must keep its file.`,
+  ];
+  for (const f of found) {
+    parts.push(`### ${f.title}\n\nCarried in \`${f.file}\`.\n\n${reviewerDetail(f.body)}`);
+  }
+  parts.push(
+    `### Retiring these findings\n\n` +
+      `These files' presence is what puts the findings in the Pulse's derived queue. Delete the ` +
+      `file for each finding you fixed, in the same diff as the fix — that is what removes the ` +
+      `item, and a file left in place puts the same finding back on the next Pulse run:\n\n` +
+      found.map((f) => `- \`${f.file}\``).join('\n'),
+  );
+  return parts.join('\n\n');
+}
+
+/** A carried file's body without the two sections `carry.mjs` appends. */
+function reviewerDetail(body) {
+  const at = body.lastIndexOf('\n## Origin\n');
+  return (at === -1 ? body : body.slice(0, at)).trim();
 }
 
 /**

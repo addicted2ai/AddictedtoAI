@@ -35,6 +35,14 @@ import { runnerHealthGate } from './health.mjs';
  * 76% of them onto a file already carried), so source 2 never empties and news
  * was only ever reached in the gaps.
  *
+ * That last clause — 76% onto a file already carried — is now acted on rather
+ * than only observed. `pulse/lib/queue.mjs`'s `carriedFindingItems` emits one
+ * item per SUBJECT instead of one per file, so a subject holding four findings
+ * is one job and not four. Re-measured 2026-09-03: 26 standing findings on 15
+ * subjects. It does not change how fast findings are FILED, and it does not
+ * touch this ordering; it changes how many jobs the same backlog costs to
+ * drain, which is the half of the arithmetic a selector cannot fix.
+ *
  * A proposal with NO expiry is deliberately left below the queue: with no
  * deadline there is nothing to preempt for, and "proposals first" would be a
  * much larger claim than the evidence supports.
