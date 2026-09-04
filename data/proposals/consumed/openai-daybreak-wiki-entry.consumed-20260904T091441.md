@@ -42,3 +42,17 @@ for the program, with the Blue/Red split, the front-line-defenders commitment
 and the 2,000-organization base as feed-bound or cited facts, is the natural
 home. The sibling proposal `astra-wiki-entry-and-critical-threshold` covers the
 model; this one covers the program that gates it.
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-04
+- job: j-20260904-06 (entry)
+- merged as: `1fd5c7ce6e2b63700f66108a19c9e9fcd18ed7ed`
+- produced: `content/wiki/concept/openai-daybreak.md`
+- was: `openai-daybreak-wiki-entry.md` (slug `openai-daybreak-wiki-entry`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

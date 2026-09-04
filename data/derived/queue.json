@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 17,
+  "count": 18,
   "items": [
     {
       "detail": "openrouter-models z-ai/glm-4.7-flash status: active -> deprecated on 2026-09-04",
@@ -9,6 +9,15 @@
       "subject": "openrouter-models|a6c7f5e5e6f3c575|554be452279cdebe|z-ai/glm-4.7-flash|status",
       "target": "data/changes.jsonl",
       "type": "interpret"
+    },
+    {
+      "detail": "2 findings carried by reviewers against `content/blog/ifm-k2-horizon-open-fleet.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Narrow the lede's description of what was audited\n\nCarried in `data/carried/j-20260904-05-carry-1.md`.\n\nThe lede says the announcement \"also audits the fleet's own benchmark scores for reward hacking\", which reads as though all six models' scores were audited. What the page reports, and what the post's own body then states correctly, is one audit of the 375B-A23B on TerminalBench 2.1 (89 tasks, eight attempts, 712 trials) plus a separately observed 7B SWE-bench case. The body scopes it right within two paragraphs and the title's \"a reward-hacking audit of its own scores\" is defensible, so this is precision rather than overclaim: \"audits its flagship's TerminalBench score\" would carry the same weight and be exact.\n\n### Fix the altered capital inside a direct quotation\n\nCarried in `data/carried/j-20260904-05-carry-2.md`.\n\nThe 0.9B table row quotes \"An AIME 2026 score above 48\". The announcement reads \"K2 Horizon 0.9B achieves an AIME 2026 score above 48\" — lowercase \"an\", mid-sentence. The substance is untouched and the number is right, but the quotation marks are around text that was re-cased. Lowercase the \"an\" inside the quotes, or drop the quote marks and report it as the page's claim in the post's own words.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260904-05-carry-1.md`\n- `data/carried/j-20260904-05-carry-2.md`",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/ifm-k2-horizon-open-fleet.md",
+      "target": "content/blog/ifm-k2-horizon-open-fleet.md",
+      "title": "Clear the 2 carried findings on content/blog/ifm-k2-horizon-open-fleet.md",
+      "type": "repair"
     },
     {
       "detail": "3 findings carried by reviewers against `content/blog/openai-daybreak-frontline-defenders.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Match the announcement's wording for the Defense Network's product count\n\nCarried in `data/carried/j-20260904-03-carry-1.md`.\n\nThe post says \"more than 35 partner products and partner-operated services across the Daybreak Defense Network, per the announcement.\" Every independent retrieval of the announcement renders the phrase as \"more than 35 ENTERPRISE products and partner-operated services\" — the products are enterprise security tools reached through partners, which is not the same claim as 35 products belonging to partners. Since the sentence explicitly attributes to the announcement, change \"partner products\" to \"enterprise products\".\n\n### Add the Path to Astra page to the post's own Sources list\n\nCarried in `data/carried/j-20260904-03-carry-2.md`.\n\nThe fourth section quotes the 1 September announcement directly — \"access through Daybreak Blue expanding afterward to support defensive use\" — but the Sources block lists only the Daybreak page and the GPT-6 Astra page. The quotation's source is reachable only by following the link to this site's earlier post and then its citation. Add \"OpenAI, 'Path to Astra: critical capabilities and frontier safeguards', published 1 September 2026 — openai.com/index/path-to-astra/\" to the Sources list so the quoted page is one click away.\n\n### Resolve \"this week\" to a date\n\nCarried in `data/carried/j-20260904-03-carry-3.md`.\n\n\"The announcement adds that a second gathering of utility companies this week drew participants representing 40 states and the District of Columbia.\" \"This week\" is the announcement's relative framing and does not survive being read later; every other date in the post is explicit. \"the week of 3 September 2026\" fixes it without changing the claim.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260904-03-carry-1.md`\n- `data/carried/j-20260904-03-carry-2.md`\n- `data/carried/j-20260904-03-carry-3.md`",
@@ -155,5 +164,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 17
+  "total_before_cap": 18
 }

@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 652,
+  "count": 653,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -1300,6 +1300,20 @@
       "i": "concept/model-context-protocol",
       "a": [
         "MCP"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/openai-daybreak",
+      "t": "OpenAI Daybreak",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/openai-daybreak",
+      "a": [
+        "Daybreak",
+        "Daybreak Blue",
+        "Daybreak Red"
       ],
       "b": false
     },
