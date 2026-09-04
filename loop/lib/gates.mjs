@@ -14,6 +14,55 @@ import { existsSync, lstatSync, symlinkSync, unlinkSync, readFileSync } from 'no
 import { join } from 'node:path';
 
 /**
+ * THE MARKER A GATE FAILURE CARRIES WHEN THE MACHINE, NOT THE DIFF, FAILED.
+ *
+ * `pulse/tests/helpers.mjs`'s `assertNoTransportFailure` throws an error whose
+ * text contains this sentence when a fixture's loopback fetch never connected —
+ * on this machine, ephemeral-port exhaustion under concurrent load
+ * (`connect EADDRINUSE`, beads addictedtoai-ar0). That helper is the code that
+ * KNOWS what it saw: it reads the errno the Pulse recorded and it skips
+ * anything reading `HTTP <status>`, which is a response a fixture chose to
+ * serve. This constant is matched against captured gate output for exactly that
+ * reason — a downstream match on `EADDRINUSE`, or on any other guessed error
+ * string, would be a second opinion formed with less information than the first.
+ *
+ * `loop/tests/gate-transport-retry.test.mjs` runs the real emitter against a
+ * real fixture and asserts the thrown text contains this string, so the two
+ * cannot drift apart without a red test.
+ */
+export const TRANSPORT_FAILURE_MARKER = 'This is a TRANSPORT failure, not a logic failure';
+
+/** Did this gate output come from the machine rather than from the diff? */
+export function isTransportFailure(output) {
+  return typeof output === 'string' && output.includes(TRANSPORT_FAILURE_MARKER);
+}
+
+/**
+ * What KIND of gate failure this was, in the one line the ledger keeps.
+ *
+ * The flat note `gates failed` was all a failed gate run ever recorded, so the
+ * ledger could not tell a broken diff from a machine that ran out of sockets —
+ * and on 2026-09-04 two runs in one chain were recorded `failed` on the latter
+ * (job j-20260904-38 and the six-gate pass that followed it), each of which
+ * counts toward breaker 1. Naming the failing script and the marker's presence
+ * costs nothing and makes the ledger line answerable on its own.
+ */
+export function gateFailureNote(result = {}, { retried = false } = {}) {
+  const failed = (result.results ?? []).filter((r) => !r.ok);
+  const which = failed.length
+    ? failed
+        .map((r) => `npm run ${r.script} (${r.status === null ? 'could not run' : `exit ${r.status}`})`)
+        .join(', ')
+    : 'no per-gate result was recorded';
+  const kind = isTransportFailure(result.output)
+    ? retried
+      ? 'transport-marked, retried once and failed again'
+      : 'transport-marked'
+    : 'no transport marker in the captured output';
+  return `gates failed: ${which} — ${kind}`;
+}
+
+/**
  * A worktree has no `node_modules` — it is gitignored, so `git worktree add`
  * does not bring it. Link the repository's, rather than installing a second
  * copy per job.

@@ -42,7 +42,13 @@ import {
 } from './lib/git.mjs';
 import { scanJobBranches, readCommittedBrief, readCommittedJobSource } from './lib/resume.mjs';
 import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './lib/health.mjs';
-import { runGates, unlinkNodeModules } from './lib/gates.mjs';
+import {
+  gateFailureNote,
+  isTransportFailure,
+  runGates,
+  unlinkNodeModules,
+  TRANSPORT_FAILURE_MARKER,
+} from './lib/gates.mjs';
 import { isReissueRefusal, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
 import {
   brakeScan,
@@ -339,10 +345,43 @@ async function executeJob(ctx, opts) {
   let gateResult = { ok: true, output: 'gates skipped (--no-gates)' };
   let gateReport = { ran: false, why: 'the loop was run with --no-gates' };
   if (gates !== false) {
+    const runTheGates = () => (typeof gates === 'function' ? gates(ctx, worktree) : runGates(ctx, worktree));
     ctx.log('running the schema/build gates on the branch');
-    gateResult = typeof gates === 'function' ? gates(ctx, worktree) : runGates(ctx, worktree);
+    gateResult = runTheGates();
     gateReport = { ran: true, ok: gateResult.ok, results: gateResult.results ?? [] };
     ctx.log(`gates: ${gateResult.ok ? 'PASS' : 'FAIL'}`);
+
+    // -----------------------------------------------------------------------
+    // A TRANSPORT FAILURE IS NOT A DEFECT, AND IT WAS BEING COUNTED AS ONE.
+    //
+    // Measured 2026-09-04: job j-20260904-38 authored its repair successfully
+    // (7.96 model-minutes, author outcome `done`), its gate run failed, and the
+    // job was recorded `failed` with its branch left unmerged; the closing
+    // six-gate pass failed the same way minutes later. Re-run alone with
+    // nothing else on the machine, the same suite passed 1201/1201. Neither
+    // was a defect — both were `connect EADDRINUSE` from ephemeral-port
+    // exhaustion under concurrent load (beads addictedtoai-ar0). Three such
+    // runs trip breaker 1 and halt the whole Desk on nothing.
+    //
+    // So: when the captured output carries the marker the emitting code writes,
+    // run the gates ONCE more. A pass means the run continues normally and
+    // nothing is recorded as a failure; a second failure is recorded `failed`
+    // exactly as before. ONCE, never in a loop — a real defect still fails
+    // twice, which is the property that makes this safe, and no new outcome and
+    // no change to breaker semantics is needed for it.
+    // -----------------------------------------------------------------------
+    let retried = false;
+    if (!gateResult.ok && isTransportFailure(gateResult.output)) {
+      retried = true;
+      ctx.log(
+        `the gate output carries the marker \`${TRANSPORT_FAILURE_MARKER}\` — this is the machine, ` +
+          `not the diff. Running the gates ONCE more; a second failure is recorded \`failed\` as usual.`,
+      );
+      gateResult = runTheGates();
+      gateReport = { ran: true, ok: gateResult.ok, results: gateResult.results ?? [], retried: true };
+      ctx.log(`gates (retry after a transport failure): ${gateResult.ok ? 'PASS' : 'FAIL'}`);
+    }
+
     if (!gateResult.ok) {
       // Print WHY, not just THAT. The worktree is torn down in the caller's
       // `finally`, so this is the only moment the evidence exists: a gate
@@ -354,7 +393,9 @@ async function executeJob(ctx, opts) {
       ctx.log('--- gate output ---');
       ctx.log(gateResult.output ?? '(no output captured)');
       ctx.log('--- end gate output ---');
-      return finish({ outcome: 'failed', mm, changed, note: 'gates failed', gateOutput: gateResult.output });
+      const note = gateFailureNote(gateResult, { retried });
+      ctx.log(note);
+      return finish({ outcome: 'failed', mm, changed, note, gateOutput: gateResult.output });
     }
   }
 
