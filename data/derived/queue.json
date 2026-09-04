@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 24,
+  "count": 25,
   "items": [
     {
       "detail": "The post tells the reader what is in the file: \"The rest of the file is clause 1 (the MIT-style grant, the notice condition, and a requirement that use comply with applicable laws), clause 3 (a standard as-is warranty), and a contact address, glmlicense@z.ai.\" Fetched from https://huggingface.co/zai-org/GLM-5.3/raw/main/LICENSE on 2026-09-02 (4263 bytes), the file does not end there: after a `-----` separator it carries a complete Chinese version of the same licence, and the review-gate sentence appears there as \"安全审查的范围和方式由Z.AI合理确定\" (合理 = reasonably). The two halves agree on substance, and the file names no governing language, which for a licence is worth a clause of its own. One sentence added to that enumeration — that the English text is followed by a Chinese translation of the whole licence, with no governing-language clause — would close the gap between what the post says the file contains and what a reader who opens the raw URL will find. Two smaller notes in the same sentence: the MIT-style grant is actually the preamble paragraph above clause 1, not part of clause 1, and \"The review itself is two sentences of the file and nothing more\" is true of the English half only.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260902-22 (`j-20260902-22.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -183,6 +183,15 @@
       "type": "repair"
     },
     {
+      "detail": "The org entry reads \"the card added that \\\"Meta has signaled open weights are coming.\\\" One full flagship release later, on 2 September 2026, Muse Spark 1.3's card carries the same two lines, character for character.\" The intended antecedent — the License and Weights lines carried in the flagship_weights_listing transclusion — is correct and I verified both cards carry them identically. But the nearer sentence quotes a third line, and the \"signaled open weights are coming\" sentence is NOT on the 1.3 card (case-insensitive \"signaled\" hits = 0 in the stripped text of llm-releases.com/models/muse-spark-1-3, fetched 2026-09-03; hits = 1 on the 1.2 card). Naming them — \"carries the same License and Weights lines, character for character\" — removes the reading that would be false.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-12 (`j-20260903-12.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/org/meta-superintelligence-labs.md",
+      "target": "content/wiki/org/meta-superintelligence-labs.md",
+      "title": "Name the two lines that 1.3's card repeats, so \"the same two lines\" cannot be misread",
+      "type": "repair"
+    },
+    {
       "detail": "The annotation opens \"The llm-releases description on this line — size, architecture and context undisclosed, no benchmark table — was still what the feed's own page said on 2026-09-03\". Two of those three are in the stored description, verbatim: \"size, architecture, and context are undisclosed\". Benchmarks are not mentioned in it at all; the benchmark absence is a property of llm-releases.com/models/thomson, which on 2026-09-03 reads \"No benchmark scores recorded yet. Spotted some? Submit a correction.\" The composite claim is true of the page and two-thirds true of the line it is attributed to. Attributing the benchmark half explicitly to the linked page would make the sentence exact.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-06 (`j-20260903-06.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
@@ -219,5 +228,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 24
+  "total_before_cap": 25
 }
