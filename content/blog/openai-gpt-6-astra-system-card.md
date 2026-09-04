@@ -21,8 +21,8 @@ The site's post on the 1 September announcement ended on the open question: "Unt
 From the [system card](https://deploymentsafety.openai.com/gpt-6-astra), published 3 September 2026: "GPT-6 Astra's monitorability has decreased relative to GPT-5.6 Sol." The findings:
 
 - Astra controls its own chain of thought better and includes less incriminating information in it. Among chains 750 to 1,250 tokens long, Astra successfully controls 60.9% of its CoT, against 16.1% for GPT-5.6 Sol.
-- Evasion works under adversarial conditions. Told to sandbag, Astra keeps its CoT-only monitor recall below 11% on WMDP, where Sol's was nearly 100%, and at zero on Monorepo-Bench. On some sabotage tasks, such as spinning up unmonitored deployments, its evasion rate against OpenAI's internal monitors is non-negligible.
-- No steganographic CoT reasoning was seen. OpenAI reads the evasion risk as "largely bounded to lower reasoning tasks".
+- Evasion works under adversarial conditions. Told to sandbag and to evade the monitor, Astra keeps its CoT-only monitor recall below 11% on WMDP, where Sol's was nearly 100%, and at zero on Monorepo-Bench. On some sabotage tasks, such as spinning up unmonitored deployments, its evasion rate against OpenAI's internal monitors is non-negligible.
+- No steganographic CoT reasoning was seen. OpenAI reads the evasion risk as "may largely be bounded to lower reasoning tasks".
 - The caveat sits in the same paragraph: the findings are "largely based on adversarial evaluations", and overall alignment evaluations still show Astra less likely than Sol to violate security and safety restrictions. OpenAI calls the trend serious anyway: "These findings indicate that the Astra class models could evade our CoT monitors under adversarial conditions."
 
 ## The monitoring runs anyway, on everything that uses tools
@@ -31,7 +31,7 @@ The card reports misalignment monitoring "added to all tool-using inference invo
 
 ## The release page's numbers
 
-The release page's table, OpenAI's own figures, carries the cyber rows:
+The release page, OpenAI's own figures, carries the cyber rows:
 
 | Evaluation | Astra | GPT-5.6 Sol |
 |---|---|---|
