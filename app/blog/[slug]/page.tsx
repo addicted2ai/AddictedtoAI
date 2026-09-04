@@ -37,12 +37,18 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     <article>
       {/*
         An `Article`: `datePublished` is the post's own `date:`, `dateModified`
-        is the shared material-change resolution — the later of the review
-        record's date and the newest changed-feed line joining to anything this
-        post transcludes — so it is the same value `app/sitemap.ts` sends as
-        `lastmod` (lib/jsonld.mjs, beads addictedtoai-k1j).
+        is `postChangedOn` — the later of the shared material-change resolution
+        and that same `date:`, so an edited post reports being edited and an
+        unedited one still carries a date (lib/jsonld.mjs, beads
+        addictedtoai-k1j).
+
+        This line and `app/sitemap.ts`'s call the SAME function, which is the
+        only thing that makes them equal. They did not until 2026-09-03: this
+        sent `contentChangedOn` while the sitemap sent `doc.data.date`, and the
+        first edit to a published post made them disagree. `verify-surfaces`
+        caught it; the comment that used to sit here asserted they matched.
       */}
-      <JsonLd graph={postGraph(doc, { dateModified: site.contentChangedOn(doc) })} />
+      <JsonLd graph={postGraph(doc, { dateModified: site.postChangedOn(doc) })} />
       {/*
         `changes` is what turns an anchor from "Recorded in this site's change
         feed" into the event's own name plus the source it was read from

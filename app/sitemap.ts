@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getSite } from '../lib/site.mjs';
 import { absoluteUrl } from '../lib/site-config.mjs';
-import { buildChangedOnMap, contentChangedOn as resolveContentChangedOn, newest } from '../lib/sitemap-dates.mjs';
+import { buildChangedOnMap, contentChangedOn as resolveContentChangedOn, postChangedOn as resolvePostChangedOn, newest } from '../lib/sitemap-dates.mjs';
 
 /**
  * The sitemap (task 4.9, specs/site).
@@ -97,7 +97,9 @@ import { buildChangedOnMap, contentChangedOn as resolveContentChangedOn, newest 
  *   `/learn`                 newest `contentChangedOn` among `site.corpus.learn`
  *   `/tools`                 newest `last_verified` among `site.tools`
  *   `/tutorials`             newest `verified_on` among indexed `site.tutorials`
- *   `/blog`                  newest `date` among `site.posts`
+ *   `/blog`                  newest `postChangedOn` among `site.posts` — the same
+ *                            values the post loop below emits, so the index cannot
+ *                            claim to be older than a post it lists
  *   `/impossible-routine`    newest `contentChangedOn` among `site.deltas` —
  *                            literally the same values the delta loop below
  *                            computes, because the page renders exactly that list
@@ -147,6 +149,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const changedOn = buildChangedOnMap(site.changes);
   const contentChangedOn = (doc: any) => resolveContentChangedOn(doc, site.reviews.byFile, changedOn);
+  const postChangedOn = (doc: any) => resolvePostChangedOn(doc, site.reviews.byFile, changedOn);
 
   // Each index route's `lastModified` is the newest date already true of its
   // own members — see the header ("THE TWELVE INDEX ROUTES") for what each
@@ -157,7 +160,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const tutorialsChangedOn = newest(
     site.tutorials.filter(({ state }: any) => state.indexed).map(({ doc }: any) => doc.data.verified_on),
   );
-  const blogChangedOn = newest(site.posts.map((doc: any) => doc.data.date));
+  const blogChangedOn = newest(site.posts.map((doc: any) => postChangedOn(doc)));
   const deltasChangedOn = newest(site.deltas.map((view: any) => contentChangedOn(view.doc)));
   const catalogChangedOn = newest(
     site.catalog.map((row: any) => (row.entry ? changedOn.get(row.entry.id) : undefined)),
@@ -197,7 +200,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // questions answer it: a learn page is prose plus whatever it transcludes.
   for (const doc of site.corpus.learn) add(doc.url, contentChangedOn(doc));
   for (const { doc, state } of site.tutorials) if (state.indexed) add(doc.url, doc.data.verified_on);
-  for (const doc of site.posts) add(doc.url, doc.data.date);
+  // A post's date was `doc.data.date` here and `contentChangedOn` in
+  // `app/blog/[slug]/page.tsx` — two definitions of one date, which disagreed
+  // the first time a published post was edited (2026-09-03). Both now call
+  // `postChangedOn`, the later of the two, so the sitemap and the graph cannot
+  // drift and an edited post still reports being edited.
+  for (const doc of site.posts) add(doc.url, postChangedOn(doc));
   for (const view of site.deltas) add(view.url, contentChangedOn(view.doc));
 
   return urls;
