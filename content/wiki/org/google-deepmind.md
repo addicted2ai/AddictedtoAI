@@ -95,7 +95,7 @@ that "3.8 Flash works harder", executing extra reasoning steps and calling
 tools iteratively, and that "at times, the model might use more tokens to
 maximize performance, especially at higher effort levels".
 [llm-releases](https://llm-releases.com/models/gemini-3-8-flash) prices that
-sentence: output tokens per task rose to
+sentence: output tokens per task rose ~30%, to
 {{fact:model/google-gemini-3-8-flash#output_tokens_per_task}}, lifting cost
 per task to {{fact:model/google-gemini-3-8-flash#cost_per_task}} at high
 reasoning even though the per-token price never moved.
