@@ -61,8 +61,8 @@ no other listing in the snapshot claims one. A reader comparing this lab with
 any other is comparing a different mechanism, not a faster one of the same
 kind.
 
-Inception's own pages make the pitch the router repeats. The about page calls
-Mercury {{fact:org/inception-labs#product}}, and the mechanism is the pitch:
+Inception's own pages make the pitch the router repeats. The about page describes
+{{fact:org/inception-labs#product}}, and the mechanism is the pitch:
 {{fact:org/inception-labs#architecture}}. The team is
 {{fact:org/inception-labs#team_origins}}, and the lab says it is
 {{fact:org/inception-labs#deployment_claim}} — all of it the vendor speaking.
@@ -73,8 +73,9 @@ explicit preview — API-only, no weights released, per
 Six months apart — 4 March to 31 August 2026 — the second was announced as a
 preview positioned above the first. The about page links
 the papers behind the mechanism, under "some of the technologies we've
-developed": the foundation line (Diffusion Models, Flash Attention, Direct
-Preference Optimization) and the discrete-diffusion line Mercury descends from
+developed": among them, the foundation line (Diffusion Models, Flash Attention,
+Direct Preference Optimization) and the discrete-diffusion line Mercury descends
+from
 (Masked Diffusion, Block Diffusion, Remasking Diffusion, and
 [d1 Reasoning](https://arxiv.org/abs/2504.12216v1), the April 2025 framework
 that adapts pre-trained masked dLLMs into reasoning models via SFT and RL).
