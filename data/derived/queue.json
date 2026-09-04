@@ -3,15 +3,6 @@
   "count": 15,
   "items": [
     {
-      "detail": "The corrected sentence reads: Inception's pages say its models are \"OpenAI API compatible and a drop-in replacement for traditional LLMs\". Fetching both pages with curl on 2026-09-04 (HTTP 200, 457,931 and 320,999 bytes), the homepage carries that sentence verbatim — \"Our models are OpenAI API compatible and a drop-in replacement for traditional LLMs.\" — but the models page carries the SAME sentence without \"API\": \"Our models are OpenAI compatible and a drop-in replacement for traditional LLMs.\" (The models page does say \"OpenAI API compatible\" in a different sentence, the one about AISuite/LiteLLM/LangChain.) So the plural attribution is one page too wide for the string inside the quotation marks. Changing \"Inception's pages say\" to \"Inception's homepage says\" — or linking the homepage on that clause the way the earlier paragraph already does — would make the named document the one quoted.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-18 (`j-20260904-18.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/wiki/model/inception-mercury-2-5-preview.md",
-      "target": "content/wiki/model/inception-mercury-2-5-preview.md",
-      "title": "Attribute the drop-in-replacement quote to the homepage, not to \"Inception's pages\"",
-      "type": "repair"
-    },
-    {
       "detail": "The same defect survives on a page the original finding did not name. content/wiki/model/meta-muse-spark-1-3.md:71 still reads \"It keeps the family's million-token window — a {{fact:model/meta-muse-spark-1-3#context_window}} context window\", and the built page at out/wiki/model/meta-muse-spark-1-3.html renders it \"a 1048576 tokens ... context window\". The fact binds openrouter-models|context_length, which lib/units.mjs declares as \"tokens\", so it is the identical cause. The same rewrite this job applied — \"a context window of {{fact:...}}\" — fixes it without touching a figure. Out of scope here: the queue item named only cohere-command-a and meta-muse-glimmer-30b.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-16 (`j-20260904-16.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
@@ -45,6 +36,15 @@
       "subject": "content/wiki/model/z-ai-glm-4-7-flash.md",
       "target": "content/wiki/model/z-ai-glm-4-7-flash.md",
       "title": "Name the in-feed successor when a deprecation annotation has one",
+      "type": "repair"
+    },
+    {
+      "detail": "This job fixed the model entry, which is all its target allowed. The org entry runs the identical argument off the identical source and still has the same gap: content/wiki/org/google-deepmind.md:97-101 reads \"[llm-releases] prices that sentence: output tokens per task rose to {{fact:...#output_tokens_per_task}}, lifting cost per task to {{fact:...#cost_per_task}} at high reasoning even though the per-token price never moved.\" A reader there gets ~48k with nothing to scale it against, and the paragraph before it is entirely about the size of the jump (\"The jump came twenty-three days later\"). Same fix as here — a prose edit to \"output tokens per task rose ~30%, to {{fact:...}}\" — and the same source sentence supports it verbatim.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-19 (`j-20260904-19.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/org/google-deepmind.md",
+      "target": "content/wiki/org/google-deepmind.md",
+      "title": "Carry the ~30% rise into the DeepMind org entry's version of the same sentence",
       "type": "repair"
     },
     {
