@@ -15,11 +15,11 @@
   ],
   "date": "2026-09-04",
   "link_check": {
-    "checked": 11,
+    "checked": 0,
     "confirm_after_failures": 2,
     "declined": 7,
     "drifted": 0,
-    "due": 11,
+    "due": 0,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 16,
