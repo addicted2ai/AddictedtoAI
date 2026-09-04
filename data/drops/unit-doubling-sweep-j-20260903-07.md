@@ -20,29 +20,29 @@ up a line to read once). This record names every line the sweep judged
 
 ## Judged not a doubling (left alone)
 
-- content/wiki/model/cohere-command-a.md:72 — "with a 200000 tokens
+- content/wiki/model/cohere-command-a.md:72 — "with a 256000 tokens
   context window" — the transclusion fills the adjective slot of the noun
   phrase "context window"; "window" as a noun is the brief's explicit
   fine case; the unit renders once.
-- content/wiki/model/meta-muse-glimmer-30b.md:98 — "over a 1000000 tokens
+- content/wiki/model/meta-muse-glimmer-30b.md:98 — "over a 131072 tokens
   context window" — same reading as above.
-- content/wiki/model/inception-mercury-2-5-preview.md:128 — "with 1107
+- content/wiki/model/inception-mercury-2-5-preview.md:128 — "with 260000
   tokens of context" — "of context" is the noun the quantity modifies;
   the unit renders once.
 - content/wiki/model/qwen-qwen3-8-27b.md:77 — "listed 262144 tokens of
-  context; this row lists 262144 tokens." — both positions read clean.
+  context; this row lists 1000000 tokens." — both positions read clean.
 - content/wiki/model/x-ai-grok-4-6.md:110 — "listed 1000000 tokens of
-  context at 0.0000008 USD per token input" — "of context" as above;
+  context at $1.25 per million tokens input" — "of context" as above;
   "input" is the price-side label, not a unit duplicate.
-- content/wiki/model/z-ai-glm-5-1.md:80 — "listing 1000000 tokens of
+- content/wiki/model/z-ai-glm-5-1.md:80 — "listing 1048576 tokens of
   context — the largest single step" — reads clean.
-- content/wiki/org/spacexai.md:71 — "at 200000 tokens of context" — reads
+- content/wiki/org/spacexai.md:71 — "at 2000000 tokens of context" — reads
   clean.
 
 ## Checked and clean (no literal follows the transclusion)
 
 - max_output_tokens transclusions: inception-mercury-2-5-preview.md:129
-  ("a max output of 1107 tokens;") and tencent-hy4-preview.md:123
+  ("a max output of 65536 tokens;") and tencent-hy4-preview.md:123
   ("{{fact:…}}." — nothing after). No doubling anywhere.
 - price facts in the other unit-carrying fields
   (price_cache_read / price_cache_write / price_internal_reasoning):
@@ -50,6 +50,3 @@ up a line to read once). This record names every line the sweep judged
 - learn / tutorial / blog / directory surfaces: only two learn pages
   carry transclusions (open-weights-and-closed-models.md,
   what-a-benchmark-measures.md), and none is followed by a unit literal.
-- inception-mercury-2-5-preview.md:110 hard-codes "1,107 tokens" in
-  prose; that is a currency-literal lint case (build advisory), not a
-  transclusion doubling, and not this job's scope.
