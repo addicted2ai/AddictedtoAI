@@ -21,6 +21,8 @@ evidence: >
   plus Uno and GGUF/FP8 variants and the training datasets). GitHub
   organisation ifm-ai, fetched 2026-09-04 — https://github.com/ifm-ai
   (`uno`, `xllm`, `horizon-post-train`, all Apache-2.0).
+proposed_by_job: j-20260904-05
+proposed_by_type: post
 ---
 
 # IFM and the K2 Horizon fleet have no wiki entries
