@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 649,
+  "count": 650,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -55,6 +55,16 @@
     {
       "u": "/blog/openai-astra-critical-designation",
       "t": "OpenAI's Astra is the first model designated Critical for cybersecurity. Advanced access starts with alpha testers",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/openai-daybreak-frontline-defenders",
+      "t": "OpenAI commits $1B in subsidized Daybreak access for water utilities, grid operators and local governments",
       "k": "post",
       "d": null,
       "s": null,

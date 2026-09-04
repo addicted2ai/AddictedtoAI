@@ -92,3 +92,17 @@ commitment with a budget, a beneficiary list and a pilot partner.
   Daybreak "in the coming weeks."
 - Every claim is attributed to the page it came from; the commitment is a
   stated commitment, not a measured outcome.
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-04
+- job: j-20260904-03 (post)
+- merged as: `18d8ade88cea5f8c2840086204c1c655063faf4c`
+- produced: `content/blog/openai-daybreak-frontline-defenders.md`
+- was: `daybreak-frontline-defenders-billion.md` (slug `daybreak-frontline-defenders-billion`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
