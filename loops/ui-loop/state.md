@@ -34,13 +34,10 @@ process each round knows only what this file says. Every claim cites an artifact
   readability, content above the fold are the FENCE. The old rubric scored "a reader's tool, not a
   showcase": nine rounds optimised an objective the keeper did not hold.
 - **K11** — `/frontier` MAY be prototyped on the branch; merge waits for the Desk's OpenSpec change.
-- **K12 (KP1, 2026-09-05)** — Port CONFIRMED except the ai-winter entry: "FACTS displayed first with
-  no context … feel out of place." F-K12: on prose entries the reader meets the subject (title + one
-  sentence) BEFORE any facts table; the old "answer first" order (S14) is overruled there.
-- **K13** — Models: concept generator + finalist jury FABLE; judges OPUS; implementers + red team
-  SONNET; gates/scoring code. Session effort -> MEDIUM at the first dispatch. **K15** (2026-09-05):
-  analyzer HAIKU -> SONNET from the next run (keeper: capabilities worlds apart; contract edit between rounds).
-  JV budget 9000 was binding for all 8 r1 verdicts: re-baseline once, between rounds.
+- **K12 (KP1)** — Port CONFIRMED except the ai-winter entry ("FACTS displayed first with no context …
+  out of place"). F-K12: on prose entries the reader meets the subject BEFORE any facts table.
+- **K13** — Models: generator + jury FABLE; judges OPUS; implementers + red team SONNET; gates/scoring
+  code; session effort MEDIUM for dispatch. **K15**: analyzer HAIKU -> SONNET (capabilities worlds apart).
 - **K14** (delegated, 2026-09-05) — `RULES` R1–R6 are law; **R7–R16 are the old loop's taste and
   CHALLENGEABLE** by a concept with cause, keeper rules; the port is a start, not a design to keep.
 - **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated: "defer to you").** **K23** carry
@@ -85,7 +82,9 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
 1. MR-UI-001..003 on the revised Players Board preview (MR-UI-001 must include a hatched blank). [r3]
 2. After the K7 stop: merge (K3), push (K4); then **K31** handoff by cross-session message to the
    orchestrator (`addictedtoai-56`): DESK-ORDER-001, DIRECTIVES lines, beads; invite it to ASK about
-   anything it does not fully understand (keeper's wish). Scope stays keeper's. [r3]
+   anything it does not fully understand. **K32**: the two sessions work it out; stop for the keeper
+   only when a BLIND agent (not told the keeper is reachable; given constitution + K3–K31 + HANDOFF)
+   says "keeper required" — `HANDOFF-ORCHESTRATOR.md` §8b; keeper may correct the reading. [r3]
 3. Sign off `knowledge/DESK-ORDER-001.md` (K21/K22/K24/K30 as a spec for the orchestrator); answer
    `EN-domain-facet.md`'s three questions (text vs general; AA rights; domain ordering). [r3]
 
