@@ -186,6 +186,12 @@ judges). Enforced by `tools/ui-invariants.mjs` id `S1`.
 > title column automatically — confirmed live (724.0px, matching `rail-col` + gap +
 > `--measure-title`'s resolved 608px), not re-derived from either token's literal value.
 
+> *round-1 addendum (keeper-delegated, 2026-09-05, K18b).* R7 governs ROW-BASED LIST surfaces
+> (`.browse-row` and kin) by its own text. A ruled table or board (the catalog table, the
+> `/frontier` players board) is not a list surface and is not bound by `--measure-list`; its
+> columns are governed by R8 (rules where values are tracked across) and R13 (one shared track
+> set). No exemption was needed; this line exists so the question is not re-asked.
+
 **R8 — Row rules are surface-conditioned; default-state badges are not.** Whether a list
 surface's sibling rows carry a rule between every pair is decided by what the surface
 demands of its reader, not by one global policy. **The test:** does the reader have to
@@ -736,6 +742,14 @@ Enforced by `tools/ui-invariants.mjs` id `S9`.
 > iter-07 tension relocated to a proportion problem) is unchanged in substance, re-targeted
 > at `.tools-index` rather than the individual `.listings` since that is where the real
 > tracks now live. Enforced by `tools/ui-invariants.mjs` id `S19`.
+
+> *round-1 addendum (keeper, 2026-09-05, K18a).* A template MAY declare ONE additional RAIL
+> track alongside its two content tracks: a non-content track (date spine, provenance gutter,
+> or the board's own fixed column tokens) that carries dates, marks or labels but never the
+> primary content column. The rail shares the page's one left edge, folds inline below the
+> template's narrow breakpoint, and is declared in `app/globals.css` by name. Raised by all four
+> round-1 concepts; the invariant enforcing two tracks is amended to count a declared rail as
+> permitted, falsified both ways in the same change.
 
 **R14 — Persistent chrome budget.** The sticky site header shall occupy no more than 10%
 of the viewport height at 390x844 on every route. A control collapsed to stay under this

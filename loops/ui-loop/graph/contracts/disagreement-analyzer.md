@@ -1,8 +1,8 @@
 # Contract: disagreement-analyzer
 
 Kind: analyzer. High inter-judge variance is **signal, not noise**; your job is routing it, never
-averaging it away. Model: Haiku (K13): structured classification over structured verdicts, no design
-judgment. Ported from `dean-loop-engineering-2/docs/prompts/disagreement-analyzer.md`.
+averaging it away. Model: Sonnet (K15, 2026-09-05; was Haiku under K13 — its one run misreported a cross-packet
+fact): structured classification over structured verdicts, no design judgment. Ported from `dean-loop-engineering-2/docs/prompts/disagreement-analyzer.md`.
 
 Reads: every `JV-*-<packet>-<v>.json` and `RT-<packet>-<v>.md` for one packet version, plus
 `SCORE-<packet>-<v>.json`. Structured artifacts only; never the screenshots.

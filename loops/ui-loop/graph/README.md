@@ -20,7 +20,7 @@ layer. The sandbox loop's own deterministic layer (`scripts/verify-design.mjs`,
 | 05c | judge-system | judge | Opus | contact sheets + `app/globals.css` tokens + packet | `JV-sys-*` |
 | 06 | red-team | adversary | Sonnet | packet/branch, `knowledge/`, prior RT | `RT-*` |
 | 07 | scoring | code | — | `JV-*`, `RT-*`, rubric | `SCORE-*` (`score.mjs`) |
-| 08 | disagreement-analyzer | analyzer | Haiku | `JV-*`, `RT-*` | `DR-*` |
+| 08 | disagreement-analyzer | analyzer | Sonnet (K15) | `JV-*`, `RT-*` | `DR-*` |
 | 10 | arbitrator / jury | jury | **Fable** | `DR-*`, verdicts, constitution; finalists for pairwise | `AR-*`, `RD-*`, pairwise rankings |
 | 12 | reader test | human | keeper | `MR-*` backlog | `CAL-*` (find-task results) |
 
