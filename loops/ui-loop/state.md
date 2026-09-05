@@ -91,11 +91,10 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
 
 ## Next (loop work, in order)
 
-1.–9. Port, rig, anchors, brief, round 1 (concepts), round 2 (both finalists built, panelled, scored,
-   jury with no collapse, `RD-001`/`RD-002`/`AR-001`): done; detail in `state-archive.md` + commit log.
-   Finalists page: https://claude.ai/code/artifact/4c3688bb-c784-4e64-8bcf-e28f5aa29994
-10. **Round 3 (revision), 2026-09-05.** RD-002 on `ui/concept-2` (D:\AddictedtoAI-c2, port 3112),
-   implementer OPUS (K29) → `IR-CP-UI-001-2-2` → re-capture c2 → ONLY RD-002's re_evaluate judges
-   (anchored on the v2 verdicts) + red-team anchored FM1–3 → `score.mjs CP-UI-001-2 3 --round 3 --prev
-   SCORE-CP-UI-001-2-2` → K7 hard stop: present to the keeper → MRs → merge decision → Desk note
-   (K21, K22, K24, Frontier data; `EN-domain-facet.md` questions).
+1.–9. Rounds 0–2 done; detail in `state-archive.md` + commit log. Finalists page:
+   https://claude.ai/code/artifact/4c3688bb-c784-4e64-8bcf-e28f5aa29994
+10. **Round 3 done (2026-09-05).** RD-002 by Opus (`ui/concept-2` @ `1e3ddd7`, 5/5 fixes); re-captured
+   (98ad09f9); affected judges + RT anchored; `SCORE-CP-UI-001-2-3` **88.3** (was 54.8), no critical
+   FAIL; HIER 7.5 / DENS 6.67 / RESP 6.67 under 8; RT critical FM-N1 (claim regex admits marketing
+   fields; "unverified" never prints) + F-hier-11 door hairlines. **K7 cap: HARD STOP.** `BLIND-001`
+   decides what needs the keeper → check-in page → MRs → merge (K3) → push (K4) → handoff (K31, K33).
