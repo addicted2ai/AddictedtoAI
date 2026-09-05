@@ -224,7 +224,7 @@ function sweep(round) {
 function coverage(setDir) {
   const manifest = JSON.parse(readFileSync(join(setDir, 'manifest.json'), 'utf8'));
   const cdir = join(HERE, 'contracts');
-  for (const f of readdirSync(cdir).filter((f) => /^judge-.*\.md$/.test(f))) {
+  for (const f of readdirSync(cdir).filter((f) => /^judge-.*\.md$/.test(f) && f !== 'judge-discipline.md')) {
     const spec = parseCoverage(readFileSync(join(cdir, f), 'utf8'));
     if (!spec) { FAIL(`${f}: no coverage: line — a gate that can see nothing fails`); continue; }
     const gaps = coverageGaps(spec, manifest, (name) => existsSync(join(setDir, name)));

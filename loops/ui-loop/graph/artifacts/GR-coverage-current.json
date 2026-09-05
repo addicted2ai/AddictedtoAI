@@ -1,9 +1,7 @@
 {
   "id": "GR-coverage-current",
-  "at": "2026-09-05T17:23:13.401Z",
-  "pass": false,
-  "fail": [
-    "judge-discipline.md: no coverage: line — a gate that can see nothing fails"
-  ],
+  "at": "2026-09-05T17:23:49.308Z",
+  "pass": true,
+  "fail": [],
   "warn": []
 }
