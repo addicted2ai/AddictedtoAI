@@ -90,10 +90,11 @@ fractionally below the
 release bought its buyers cost, not capability. The jump came twenty-three
 days later.
 
-Google says the latest jump is a design choice: the launch post explains
-that "3.8 Flash works harder", executing extra reasoning steps and calling
-tools iteratively, and that "at times, the model might use more tokens to
-maximize performance, especially at higher effort levels".
+Google says the latest jump is a design choice: the
+[launch post](https://blog.google/innovation-and-ai/models-and-research/gemini-models/3-8-flash-and-3-8-flash-cyber/)
+explains that "3.8 Flash works harder", executing extra reasoning steps and
+calling tools iteratively, and that "at times, the model might use more
+tokens to maximize performance, especially at higher effort levels".
 [llm-releases](https://llm-releases.com/models/gemini-3-8-flash) prices that
 sentence: output tokens per task rose ~30%, to
 {{fact:model/google-gemini-3-8-flash#output_tokens_per_task}}, lifting cost
