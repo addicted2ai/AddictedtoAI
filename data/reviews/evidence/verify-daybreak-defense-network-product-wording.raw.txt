@@ -64,3 +64,21 @@ TERM "into the hands of the enterprise": raw=2 flight-unescaped=2 stripped=1
   [stripped]   ...rtners across the Daybreak Defense Network are announcing more than 35 partner products and partner-operated services that bring OpenAI’s Daybreak cyber models into the hands of the enterprise. Our goal is collective action becoming operational, with products, services, and workflows defenders can use. Ultimately, the goal is not just to find more vulnerabilities, but to fix them faster. This week, we published OpenAI’s approach...
 
 === END ===
+
+=== APPENDED 2026-09-04 by job j-20260904-54 — byte-drift re-measurement ===
+Request: GET https://openai.com/index/daybreak-for-frontline-defenders/
+Headers: user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+         (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36    (no other headers)
+Counts are of the raw served bytes; the two phrase tallies are raw occurrences,
+i.e. the DOM copy plus the flight-payload copy, matching raw=2 above.
+
+2026-09-05T04:52:58.726Z status=200 bytes=376112 enterprise-products=2 partner-products=2
+2026-09-05T04:53:00.569Z status=200 bytes=376108 enterprise-products=2 partner-products=2
+2026-09-05T04:53:02.175Z status=200 bytes=376112 enterprise-products=2 partner-products=2
+2026-09-05T04:53:03.981Z status=200 bytes=376113 enterprise-products=2 partner-products=2
+
+Machine clock at the end of the run: Fri Sep  4 22:53:06 MDT 2026.
+The timestamps above are the fetch's UTC clock; local is 2026-09-04 22:52-22:53,
+which is the date this repository records (see CLAUDE.md on local dates).
+
+=== END APPENDED ===
