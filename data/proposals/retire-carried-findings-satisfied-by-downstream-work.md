@@ -40,6 +40,8 @@ evidence: >
   that moved to `consumed/` — and is not the same remedy: resolving the path
   alone still hands the runner a docket to re-read rather than the produced
   artefact to check.
+proposed_by_job: j-20260904-46
+proposed_by_type: repair
 ---
 
 # A finding can outlive its own fix
