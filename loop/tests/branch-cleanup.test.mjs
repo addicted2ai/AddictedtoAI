@@ -32,10 +32,11 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { runLoop } from '../run.mjs';
-import { deleteBranch, jobBranches, branchExists } from '../lib/git.mjs';
+import { deleteBranch, jobBranches, branchExists, gitTry } from '../lib/git.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml, git } from './helpers.mjs';
 
 function repo(authorMode, reviewerMode, type = 'repair') {
@@ -80,6 +81,46 @@ test('GIT REFUSES to delete a branch a linked worktree still has checked out', (
   assert.equal(branchExists(ctx.repoRoot, 'job/probe'), false);
 });
 
+test('THE DIRECTORY BEING GONE IS NOT ENOUGH — an unpruned admin entry refuses the deletion too', (t) => {
+  // The residual case behind the prune that now follows the `rmSync` fallback in
+  // `run.mjs`. `removeWorktree` prunes BEFORE that `rmSync`, so a
+  // `worktree remove --force` that fails — on Windows, a file still held open —
+  // leaves this exact state: directory deleted by the fallback, admin entry under
+  // `.git/worktrees/` still standing. Constructed here the short way, by deleting
+  // the directory without ever removing the worktree, because the state is what
+  // the deletion reads and git cannot tell which route produced it.
+  //
+  // Git answers from that entry, not from the filesystem, and the error names a
+  // path that no longer exists — which is why this failed silently: the log line
+  // says the branch could not be deleted and the directory it blames is gone.
+  const ctx = makeRepo();
+  t.after(() => ctx.cleanup());
+
+  const dir = join(ctx.testRoot, 'stale-worktree');
+  git(ctx.repoRoot, ['worktree', 'add', '-b', 'job/stale', dir, 'HEAD']);
+  git(dir, ['commit', '--quiet', '--no-verify', '--allow-empty', '-m', 'job stale: work']);
+  git(ctx.repoRoot, ['merge', '--no-ff', '--no-verify', '-m', 'merge job/stale', 'job/stale']);
+
+  rmSync(dir, { recursive: true, force: true });
+
+  assert.equal(
+    deleteBranch(ctx.repoRoot, 'job/stale'),
+    false,
+    'a gone directory with an unpruned entry must still refuse — if it does not, this prune is unnecessary',
+  );
+  assert.equal(branchExists(ctx.repoRoot, 'job/stale'), true);
+  assert.match(
+    gitTry(ctx.repoRoot, ['worktree', 'list', '--porcelain']).stdout,
+    /prunable/,
+    'and git itself calls the entry prunable, which is the whole opportunity',
+  );
+
+  // The fix, and nothing else changed: the same call, after one prune.
+  assert.equal(gitTry(ctx.repoRoot, ['worktree', 'prune']).ok, true);
+  assert.equal(deleteBranch(ctx.repoRoot, 'job/stale'), true, 'and one prune is all it takes');
+  assert.equal(branchExists(ctx.repoRoot, 'job/stale'), false);
+});
+
 test('deleteBranch REPORTS a refusal instead of throwing — `gitTry` semantics are not changed', (t) => {
   // Every other `gitTry` caller depends on a git failure being a value rather
   // than an exception. Asserted by attempting a deletion that cannot succeed:
@@ -106,6 +147,13 @@ test('A MERGED JOB LEAVES NO BRANCH BEHIND', async (t) => {
   // The refusal line must not appear on a healthy run: if it does, the deletion
   // is still being attempted while something holds the branch.
   assert.doesNotMatch(ctx.output(), /could not delete the merged branch/);
+
+  // And the cleanup leaves no worktree metadata behind either — neither a live
+  // entry for the job's own worktree nor a stale one for the reviewer's. A
+  // leftover entry is what the test above shows blocks the next deletion.
+  const worktrees = gitTry(ctx.repoRoot, ['worktree', 'list', '--porcelain']).stdout;
+  assert.doesNotMatch(worktrees, /prunable/, `a stale worktree entry survived the run:\n${worktrees}`);
+  assert.doesNotMatch(worktrees, new RegExp(res.jobId), `a worktree entry for the job survived:\n${worktrees}`);
 });
 
 test('the work survives the deletion — the branch is gone, the merge is not', async (t) => {
