@@ -14,8 +14,7 @@ process each round knows only what this file says. Every claim cites an artifact
   -> 93,963px (branch) = I14 in one number. Sandbox scores VOID for live; R1–R16 + invariants carry.
 - Gates: `npm test` · `npm run build` (read the LOG) · `verify-design` · `verify-surfaces` ·
   `tools/ui-invariants.mjs` · `graph/gates.mjs`. Method: graph engineering (playbook in
-  `D:\shared_workspace\dean-loop-engineering-2\docs\`); **keep the artifact, replace the loop**:
-  one concept round, keeper picks from a frontier. Anchors: `loops/ui-loop/graph/`.
+  `D:\shared_workspace\dean-loop-engineering-2\docs\`). Anchors: `loops/ui-loop/graph/`.
 
 ## Live rulings (keeper, 2026-09-05; K1–K2 in the archive)
 
@@ -23,7 +22,7 @@ process each round knows only what this file says. Every claim cites an artifact
 - **K4** — No push to the remote until done, absent a stated good reason.
 - **K5** — `STOP` and `HOLD.md` are the keeper's alone; the loop never touches either.
 - **K6** — Reserved paths untouched: `openspec/specs/`, `data/config.json`, `runners.yml`,
-  `package.json`. Content read-only (charter slot 1). Unfreeze is the orchestrator's job, not ours.
+  `package.json`. Content read-only (charter slot 1). Unfreeze is the orchestrator's.
 - **K7 (delegated defaults)** — ≤3 revisions then keeper check-in; jury (order-swapped pairwise) once,
   on ≤2 finalists; 8.5 target REPORTED, not a stop. Convergence = empty `ui-fixable` queue AND full
   rig coverage AND empty keeper section.
@@ -85,7 +84,8 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
 ## Next (keeper decisions)
 
 1. MR-UI-001..003 on the revised Players Board preview (MR-UI-001 must include a hatched blank). [r3]
-2. After the K7 hard stop: merge decision (K3), push decision (K4), Desk-order note sign-off. [r3]
+2. After the K7 stop: merge (K3), push (K4); then **K31** handoff by cross-session message to the
+   orchestrator (`addictedtoai-56`): DESK-ORDER-001, DIRECTIVES lines, beads. Scope stays keeper's. [r3]
 3. Sign off `knowledge/DESK-ORDER-001.md` (K21/K22/K24/K30 as a spec for the orchestrator); answer
    `EN-domain-facet.md`'s three questions (text vs general; AA rights; domain ordering). [r3]
 
