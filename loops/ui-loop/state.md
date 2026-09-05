@@ -17,15 +17,13 @@ process each round knows only what this file says. Every claim cites an artifact
 - **Port of the sandbox loop (iterations 0–9, stopped on max_iters at 8.475).** Sandbox = git-less copy of
   live `bfeb382`; merge detail in commit `2d0f3fa`. `app/robots.ts` NOT restored (live deleted it,
   `be34c70`). Screenshots never enter history.
-- **Every sandbox verdict and score is VOID as evidence for live.** `RULES.md` R1–R16 and
-  `tools/ui-invariants.mjs` carry; scores do not. Round 0 is a fresh baseline on the ported build.
-- Gates, in order: `npm test` · `npm run build` (read the LOG, never the exit code) ·
-  `scripts/verify-design.mjs` · `scripts/verify-surfaces.mjs` · `tools/ui-invariants.mjs`.
-  Latest result: `eval-log.md`, last entry.
-- Method: graph engineering per `D:\shared_workspace\dean-loop-engineering-2\docs\graph-engineering-playbook.md`.
-  Plan of record (2026-09-05, keeper: "I trust your judgement"): **keep the artifact, replace the
-  loop** — port, then ONE concept round on the questions an item-fixing loop cannot answer
-  (catalog at 390px; wiki-entry template, 495 pages; visual identity), keeper picks from a frontier.
+- **Every sandbox verdict and score is VOID for live.** `RULES.md` R1–R16 and `tools/ui-invariants.mjs`
+  carry; scores do not.
+- Gates: `npm test` · `npm run build` (read the LOG) · `verify-design` · `verify-surfaces` ·
+  `tools/ui-invariants.mjs` · `loops/ui-loop/graph/gates.mjs`. Method: graph engineering
+  (`D:\shared_workspace\dean-loop-engineering-2\docs\graph-engineering-playbook.md`); plan of record:
+  **keep the artifact, replace the loop** — one concept round (Frontier flagship, wiki-entry
+  template, catalog@390, identity), keeper picks from a frontier. Anchors: `loops/ui-loop/graph/`.
 
 ## Live rulings (keeper, 2026-09-05; K1–K2 in the archive)
 
@@ -38,9 +36,8 @@ process each round knows only what this file says. Every claim cites an artifact
   jury (order-swapped pairwise) once, on ≤2 finalists; the 8.5 pointwise target is REPORTED, not a
   stop condition. Convergence = empty `ui-fixable` queue AND complete rig coverage AND empty
   keeper section. Judge tier Opus, implementers Sonnet (K2 stands).
-- **K8** — STOP file created by the keeper (2026-09-05). Keeper will review screenshot pairs.
-- **K9** — Reader test: the keeper alone. Recorded as weaker evidence than strangers; still the
-  only human measurement the loop has. No usage ceiling "within reason"; keeper flags rate limits.
+- **K8** — `STOP` created by the keeper 2026-09-05. **K9** — Reader test: the keeper alone (weaker
+  than strangers, still the only human measurement). No usage ceiling "within reason".
 - **K10 — THE BRIEF'S CENTRE (keeper, verbatim in substance).** "A shining example of what
   frontier AI can do when handed the reins. I want people to be truly amazed at the quality of the
   site, and even more so once they realize a human didn't write any of it." Content largely liked.
@@ -67,22 +64,21 @@ process each round knows only what this file says. Every claim cites an artifact
 - **L7** — Seven model pages render "not published" mid-sentence (worst: `gemini-3-1-pro-preview`,
   `z-ai-glm-5-1`). Desk backlog in `DIRECTIVES.md`, pre-existing, NOT a presentation defect. A
   judge who files it has filed a content lie.
-- **L8** — Two concurrent `next build`s share `.next/` and die with `ENOENT pages-manifest.json`.
-  Looks like a content defect; is a process one. One build at a time, always.
+- **L8** — Two concurrent `next build`s share `.next/`, die with `ENOENT pages-manifest.json`: process
+  defect, not content. One build at a time.
 
 ## Failure modes to guard
 
-- Concurrent writers (iter-02): confirm quiescence before capturing evidence. During the freeze
-  only this loop writes to the tree.
+- Concurrent writers: confirm quiescence before capturing; only this loop writes during the freeze.
 - Keeper items age. An item open 3 rounds FAILs the sweep (builder F17). Instrument work is never
   the answer to a blocked ruling.
 - A gate that can see nothing fails: rig coverage (routes × viewports × themes named by each judge
   contract) is checked BEFORE any judge spawns.
 - Two writers, one judge, one score: never again. Judges are scoped by oracle; code totals.
-- **Build lock with a reused pid** (2026-09-05): `atai-build-locks/*.lock` named a pid that Windows
-  had reused for OUR shell, so the build waited on itself for 10 min, then would have run the
-  browser gates against a STALE `out/`. Check the lock's `started` against the pid's creation time;
-  remove only when no build process exists. One build at a time; never trust an `out/` you did not build.
+- **Build lock with a reused pid** (2026-09-05): a stale `atai-build-locks/*.lock` named a pid Windows
+  had reused for OUR shell; the build waited on itself, then would have gated a STALE `out/`. Compare
+  the lock's `started` to the pid's creation time; remove only with no build process alive.
+- **This file was committed over budget twice** (8394, 8316 B). `gates.mjs` now FAILs it; run before commit.
 
 ## Next (keeper decisions)
 
