@@ -39,6 +39,8 @@ evidence: >
   (against gpt-5-5), and wiki/model/z-ai-glm-5-1 (against glm-5-2). Each was
   found by reading the built HTML for a feed-sourced index span in state
   `absent`, which is a check nothing in the repository currently runs.
+proposed_by_job: j-20260905-13
+proposed_by_type: repair
 ---
 
 The Pulse's own spec argues this case for rows and stops one level short of
