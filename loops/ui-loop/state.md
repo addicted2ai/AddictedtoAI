@@ -52,6 +52,15 @@ process each round knows only what this file says. Every claim cites an artifact
   rubric told its judge to score "a reader's tool, not a showcase piece" and capped distinctiveness
   at impact 4 — the keeper's actual goal was never in a brief, so nine rounds optimised an
   objective the keeper did not hold. The brief carries intent; a loop cannot infer it.
+- **K11** — `/frontier` MAY be prototyped on the branch; merge waits for the Desk's OpenSpec change.
+- **K12 (KP1, first ever, 2026-09-05)** — Port CONFIRMED: "everything looks better changed, except
+  the ai-winter wiki entry. Having the FACTS displayed first with no context makes them feel out of
+  place." Finding F-K12 against the wiki-entry template (prose entries): the reader must meet the
+  subject (title + one sentence of context) BEFORE any facts table; the old loop's "answer first"
+  order (S14) is overruled for entries with prose bodies. Feeds BRIEF-UI-001, not a hotfix.
+- **K13** — Models confirmed: concept generator + finalist jury FABLE; judges OPUS; implementers +
+  red team SONNET; analyzer HAIKU; gates/scoring code. Session effort -> MEDIUM when the first
+  dispatch is announced (keeper switches on request).
 
 ## Known evidence lies (live-specific; continues JUDGE.md's L-series)
 
@@ -77,18 +86,13 @@ process each round knows only what this file says. Every claim cites an artifact
 
 ## Next (keeper decisions)
 
-1. **KP1: confirm the port** from the review page above (or name any pair where After is worse).
-2. **K11 (proposed): allow the graph to prototype `/frontier` on the branch** — charter slot 1 forbids
-   new routes; merge waits for the Desk's OpenSpec change (bead `addictedtoai-s8gz`; plan + sealed
-   review in the orchestrator scratchpad). Keeper: the plan over-indexed on provable claims (verif- 70,
-   benchmark 60, reader 4, visual 0 in 983 lines; its timeline = index lead changes, not releases).
-   The Frontier is the concept round's FLAGSHIP surface; keeper inputs: players board (lab x frontier
-   model x claims verbatim+labelled x independently verified), release-cadence compression, new
-   abilities, no hype.
-3. **Models + effort** (asked to be discussed before any dispatch): proposal in the 2026-09-05 chat;
-   open question whether the concept generator runs on Fable rather than Opus. Session effort to
-   MEDIUM before the first dispatch (agents inherit it).
-4. Catalog at 390px: choose from the round-1 concept frontier (supersedes the delegated I14 ruling).
+1. ~~KP1~~ K12. 2. ~~K11~~ yes. 3. ~~Models~~ K13. Frontier context for the brief: bead
+   `addictedtoai-s8gz`; plan + sealed review in the orchestrator scratchpad; the plan over-indexed on
+   provable claims (verif- 70, benchmark 60, reader 4, visual 0 in 983 lines; its timeline = index
+   lead changes, not releases). Keeper inputs: players board (lab x frontier model x claims
+   verbatim+labelled x independently verified), release-cadence compression, new abilities, no hype.
+4. Read the anchors (`loops/ui-loop/graph/`) when they land; say GO and switch effort to medium.
+5. Catalog at 390px: choose from the round-1 concept frontier (supersedes the delegated I14 ruling).
 
 ## Next (loop work, in order)
 
@@ -100,4 +104,4 @@ process each round knows only what this file says. Every claim cites an artifact
 5. `BRIEF-UI-001`: K10 centre; Frontier flagship (K11); catalog@390; wiki-entry template; fence =
    site spec design bar + R1–R16; anti-req: no content edits, no rubric edits in-round, no single
    third-party index dependency (AA licence open, `addictedtoai-ego8`), digit-free fixed copy.
-6. Round 1 only after: KP1 confirmed, K11 ruled, models confirmed, session at medium effort.
+6. Round 1 only after the keeper reads the anchors, says GO, and the session is at medium effort.
