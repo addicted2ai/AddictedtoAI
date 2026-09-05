@@ -92,19 +92,18 @@ mentions:
 OpenAI's own positioning for this row, in GitHub's launch note, is
 {{fact:model/openai-gpt-5-6-terra#vendor_role}} — the middle tier, not the
 frontier one. The catalog disagrees about what that middle buys. As
-observed on 28 August 2026, Terra beats the pricier release right before
-it on every axis Artificial Analysis measures: the intelligence index
-reads {{fact:model/openai-gpt-5-6-terra#intelligence_index}} here against
-{{fact:model/openai-gpt-5-5#intelligence_index}} for `openai/gpt-5.5`, the
-coding index {{fact:model/openai-gpt-5-6-terra#coding_index}} against
-{{fact:model/openai-gpt-5-5#coding_index}}, agentic
+observed on 5 September 2026, Terra beats the pricier release right before
+it wherever Artificial Analysis scores them both: the coding index reads
+{{fact:model/openai-gpt-5-6-terra#coding_index}} here against
+{{fact:model/openai-gpt-5-5#coding_index}} for `openai/gpt-5.5`, agentic
 {{fact:model/openai-gpt-5-6-terra#agentic_index}} against
-{{fact:model/openai-gpt-5-5#agentic_index}}. The intelligence margin is
-the thin one, a fraction of a point; the price margin is not, with Terra
-listing {{fact:model/openai-gpt-5-6-terra#price_input}} input against
-GPT-5.5's {{fact:model/openai-gpt-5-5#price_input}}.
+{{fact:model/openai-gpt-5-5#agentic_index}}. The coding margin is the thin
+one, under two points; the agentic margin is several times wider. The
+price margin is not thin either, with Terra listing
+{{fact:model/openai-gpt-5-6-terra#price_input}} input against GPT-5.5's
+{{fact:model/openai-gpt-5-5#price_input}}.
 
-Off the catalog's own scoreboard the gap looks wider than that thin index
+Off the catalog's own scoreboard the gap looks wider than that thin coding
 margin suggests. Reporting from the June preview carries two figures the
 catalog does not. The first: Terra
 {{fact:model/openai-gpt-5-6-terra#terminalbench_comparison}} — beating, on

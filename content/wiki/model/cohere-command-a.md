@@ -73,16 +73,15 @@ publishes at {{fact:model/cohere-command-a#parameters}}, listed
 full-sized release, not a research checkpoint scoped down to make the
 non-commercial terms easier to accept.
 
-Nor is the restriction obviously buying this row competitive standing. On
-the Artificial Analysis intelligence index, Command A scores
-{{fact:model/cohere-command-a#intelligence_index}}, against
-{{fact:model/deepseek-deepseek-v4-flash-0731#intelligence_index}} for
-DeepSeek's `deepseek-ai/DeepSeek-V4-Flash-0731` — a model listed more than
-a year later, whose OpenRouter row heads at
-{{fact:model/deepseek-deepseek-v4-flash-0731#price_input}} input, and which
-is licensed under plain MIT with no commercial restriction whatsoever. That
-figure is the top listed provider's rate for that row rather than
-necessarily DeepSeek's own, because a licence with no commercial
-restriction is exactly what lets anyone else host the weights and quote a
-price for them. A non-commercial licence is a harder sell on a model
-trailing a permissively licensed rival than on one that leads.
+Nor is the restriction obviously buying this row a price advantage. Command
+A heads at {{fact:model/cohere-command-a#price_input}} input, against
+{{fact:model/deepseek-deepseek-v4-flash-0731#price_input}} for DeepSeek's
+`deepseek-ai/DeepSeek-V4-Flash-0731` — a model listed more than a year
+later and licensed under plain MIT with no commercial restriction
+whatsoever. That is more than an order of magnitude apart, in the
+permissively licensed row's favour. Each figure is the top listed
+provider's rate for its row rather than necessarily the vendor's own, and
+the permissive licence is exactly what lets anyone else host those weights
+and quote a price for them at all. A non-commercial licence is a harder
+sell on a model that costs more to call than a permissively licensed rival,
+not less.

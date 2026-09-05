@@ -73,6 +73,4 @@ which in the 31 August 2026 snapshot is twice the room at an unchanged
 input price. The Pro tier, heading at
 {{fact:model/google-gemini-3-1-pro-preview#price_input}} input — the top
 listed provider's rate for that row rather than necessarily Google's own —
-and carrying an Artificial Analysis intelligence index of
-{{fact:model/google-gemini-3-1-pro-preview#intelligence_index}}, has had no
-such row at all.
+has had no such row at all.
