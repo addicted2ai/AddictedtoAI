@@ -68,6 +68,17 @@
       "ok": true,
       "status": 200
     },
+    "https://abovethelaw.com/2026/09/doj-tells-court-ai-training-is-fair-use-forgets-to-mention-its-negotiating-a-stake-in-openai/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://abovethelaw.com/2026/09/doj-tells-court-ai-training-is-fair-use-forgets-to-mention-its-negotiating-a-stake-in-openai/",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://aclanthology.org/2024.emnlp-main.649/": {
       "bytes": 40095,
       "consecutive_failures": 0,
@@ -113,6 +124,17 @@
       "final_url": "https://api.crossref.org/works/10.1038/s41586-024-07566-y",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://api.deepinfra.com/models/list": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://api.deepinfra.com/models/list",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -2036,6 +2058,17 @@
       "ok": true,
       "status": 200
     },
+    "https://authorsguild.org/news/court-grants-final-approval-anthropic-copyright-settlement/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://authorsguild.org/news/court-grants-final-approval-anthropic-copyright-settlement/",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://axolotl.ai/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -2163,6 +2196,17 @@
       "final_url": "https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://clearinghouse.net/case/46635/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://clearinghouse.net/case/46635/",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3280,6 +3324,17 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/ibm-granite/granite-4.1-8b": {
+      "bytes": 295493,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/ibm-granite/granite-4.1-8b",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct": {
       "bytes": 441250,
       "consecutive_failures": 0,
@@ -3507,6 +3562,17 @@
       "final_url": "https://ifm.ai/blog/k2/",
       "last_checked": "2026-09-04",
       "last_ok": "2026-09-04",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://ipwatchdog.com/2026/09/03/doj-sides-with-openai-warns-obstacles-to-ai-development-threaten-national-security/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://ipwatchdog.com/2026/09/03/doj-sides-with-openai-warns-obstacles-to-ai-development-threaten-national-security/",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3852,6 +3918,39 @@
       "ok": true,
       "status": 200
     },
+    "https://openrouter.ai/api/v1/models/ibm-granite/granite-4.1-8b/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/ibm-granite/granite-4.1-8b/endpoints",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/qwen/qwen3.8-max-20260803/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-max-20260803/endpoints",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/api/v1/models/qwen/qwen3.8-max/endpoints": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/api/v1/models/qwen/qwen3.8-max/endpoints",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://openrouter.ai/cohere/command-a": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -3925,6 +4024,17 @@
       "final_url": "https://openrouter.ai/google/gemini-3.8-flash",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/ibm-granite/granite-4.1-8b": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/ibm-granite/granite-4.1-8b",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4101,6 +4211,17 @@
       "final_url": "https://openrouter.ai/qwen/qwen3.8-2.4t-a95b",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://openrouter.ai/qwen/qwen3.8-max": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://openrouter.ai/qwen/qwen3.8-max-0902",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -4578,6 +4699,17 @@
       "ok": true,
       "status": 200
     },
+    "https://storage.courtlistener.com/recap/gov.uscourts.nysd.640396/gov.uscourts.nysd.640396.1682.0.pdf": {
+      "bytes": 269531,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://storage.courtlistener.com/recap/gov.uscourts.nysd.640396/gov.uscourts.nysd.640396.1682.0.pdf",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://suno.com/blog/v3": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -4886,6 +5018,28 @@
       "ok": true,
       "status": 200
     },
+    "https://www.alibabacloud.com/en/notice/model_studio_update_notice_for_qwen38max_models_863": {
+      "bytes": 60640,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.alibabacloud.com/en/notice/model_studio_update_notice_for_qwen38max_models_863?_p_lc=1",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.alibabacloud.com/help/en/model-studio/qwen3-8-max": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.alibabacloud.com/help/en/model-studio/qwen3-8-max",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.aljazeera.com/economy/2026/8/27/openai-says-it-detected-malign-activity-months-before-hugging-face-attack": {
       "bytes": 0,
       "consecutive_failures": 0,
@@ -5018,6 +5172,17 @@
       "ok": true,
       "status": 200
     },
+    "https://www.bostonglobe.com/2026/09/02/business/justice-department-new-york-times-openai/": {
+      "bytes": 228182,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.bostonglobe.com/2026/09/02/business/justice-department-new-york-times-openai/",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://www.britgo.org/deepmind2016/press1": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -5080,6 +5245,17 @@
       "final_url": "https://www.cmu.edu/news/stories/archives/2019/july/cmu-facebook-ai-beats-poker-pros.html",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.cnn.com/2026/07/02/business/openai-trump-stake-intl": {
+      "bytes": 810653,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.cnn.com/2026/07/02/business/openai-trump-stake-intl",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -5212,6 +5388,17 @@
       "final_url": "https://www.fast.ai/posts/2018-08-10-fastai-diu-imagenet.html",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.goodwinlaw.com/en/insights/publications/2025/06/alerts-practices-aiml-northern-district-of-california-judge-rules": {
+      "bytes": 0,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.goodwinlaw.com/en/insights/publications/2025/06/alerts-practices-aiml-northern-district-of-california-judge-rules",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -5410,6 +5597,17 @@
       "final_url": "https://www.llamaindex.ai/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://www.lowenstein.com/news-insights/publications/client-alerts/us-government-backs-fair-use-for-ai-training-in-openai-copyright-litigation-intellectual-property": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://www.lowenstein.com/news-insights/publications/client-alerts/us-government-backs-fair-use-for-ai-training-in-openai-copyright-litigation-intellectual-property",
+      "last_checked": "2026-09-05",
+      "last_ok": "2026-09-05",
       "meta_refresh": null,
       "ok": true,
       "status": 200

@@ -15,14 +15,14 @@
   ],
   "date": "2026-09-05",
   "link_check": {
-    "checked": 0,
+    "checked": 18,
     "confirm_after_failures": 2,
     "declined": 7,
     "drifted": 0,
     "due": 18,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 16,
+    "redirected": 18,
     "total": 552
   },
   "listings": [
@@ -607,6 +607,18 @@
     {
       "bytes": null,
       "cited_by": [
+        "content/wiki/model/qwen-qwen3-8-max.md"
+      ],
+      "final_url": "https://openrouter.ai/qwen/qwen3.8-max-0902",
+      "kind": "same-site-move",
+      "last_checked": "2026-09-05",
+      "meta_refresh": null,
+      "url": "https://openrouter.ai/qwen/qwen3.8-max",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": null,
+      "cited_by": [
         "content/blog/openai-gpt-6-astra-system-card.md"
       ],
       "final_url": "https://developers.openai.com/api/docs/pricing",
@@ -650,6 +662,18 @@
       "last_checked": "2026-08-31",
       "meta_refresh": null,
       "url": "https://www.aisi.gov.uk/work/pre-deployment-evaluation-of-openais-o1-model",
+      "verdict_recorded": true
+    },
+    {
+      "bytes": 60640,
+      "cited_by": [
+        "content/wiki/model/qwen-qwen3-8-max.md"
+      ],
+      "final_url": "https://www.alibabacloud.com/en/notice/model_studio_update_notice_for_qwen38max_models_863?_p_lc=1",
+      "kind": "same-site-move",
+      "last_checked": "2026-09-05",
+      "meta_refresh": null,
+      "url": "https://www.alibabacloud.com/en/notice/model_studio_update_notice_for_qwen38max_models_863",
       "verdict_recorded": true
     },
     {
