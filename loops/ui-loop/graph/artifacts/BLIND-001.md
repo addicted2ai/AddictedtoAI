@@ -68,16 +68,15 @@ one Opus revision (entry 8, clean on five fixes) that still carries a quiet rule
 `openspec/specs/directory/spec.md`, "No placement is ever sold": a category order *"SHALL
 be a pure function of the category names, and SHALL NOT be derived from the order in which
 the categories are declared"*, not adjustable without an OpenSpec change; EN §8 restates it
-for this facet. **Resolution:** /frontier orders domain sections by domain id; declaration
+for this facet. Resolution: /frontier orders domain sections by domain id; declaration
 order and member count are forbidden, the criterion stated on the page. Record it in
 `DESK-ORDER-001` as spec-derived, not a preference still owed an answer.
 
 **5b. Republishing Artificial Analysis values (Q7) — RESOLVABLE, negative, for now.**
 Anchor: K24 (index columns only once a registry index exists), HANDOFF §5 (no index value
 renders until rights are cleared; two rights beads open), and the
-brief's anti-requirement against depending on a single third-party index. **Resolution:**
-no AA value renders on /frontier while the terms are unverified. The affirmative grant is a
-rights determination outside the graph, not cleared here.
+brief's anti-requirement against depending on a single third-party index. Resolution:
+no AA value renders on /frontier while the terms are unverified. The affirmative grant is a rights determination outside the graph.
 
 **5c. Keep `text` or make "general" the unmarked default (Q1) — KEEPER REQUIRED.** No
 clause fixes it: K22 seeds the vocabulary and says *the keeper picks*, and EN §4.1 holds
