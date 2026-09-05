@@ -19,12 +19,14 @@
  * ── Type: serif speaks, mono records ────────────────────────────────────
  * Two families, per the spec's ceiling, with a strict division of labour:
  * a text serif for prose and page titles, a monospace for everything that is
- * a record — dates, ids, prices, table cells, labels, navigation. Both are
- * system stacks, and that is a decision rather than a compromise: the
- * third-party origin allowlist (task 4.10) fails the build on any network
- * origin but our own and Google Analytics, which rules out a web-font CDN,
- * and a self-hosted face would spend the payload budget the same spec caps.
- * The identity comes from the pairing and the scale, not from an exotic file.
+ * a record — dates, ids, prices, table cells, labels, navigation, and (K16,
+ * round-1) this concept's own spine. `--serif` stays a system stack,
+ * metric-matched (see below). `--mono` is now led by a self-hosted face,
+ * JetBrains Mono, subset to <5 KB per weight and served from `public/fonts/`
+ * — same-origin, so the third-party origin allowlist (task 4.10) is
+ * untouched; a real monospace face is what "dates set in mono as the spine
+ * face" (this packet's own design_moves.type) is actually about, not a
+ * system-stack placeholder for it.
  *
  * ── Colour ──────────────────────────────────────────────────────────────
  * Ink-on-cool-paper, with exactly two accents and both of them semantic:
@@ -90,46 +92,71 @@
   size-adjust: 106.5%;
 }
 
-/* K16 (round-1 ruling): "each finalist names a self-hosted face with
- * licence, or argues the stack as a choice." Self-hosting is declined with
- * the SAME cause as --serif's own R16 treatment above (no network fetch or
- * subsetting toolchain in this build environment — a real, stated
- * constraint, not silence). The argued choice for the spine/date face
- * (dates and labels, per K16): keep `--mono`, and extend R16's own
- * metric-matching technique to it, which R16's original pass never covered.
+/* K16 (round-1 ruling, corrected): "each finalist names a self-hosted face
+ * with licence, or argues the stack as a choice." A self-hosted face IS
+ * possible in this environment (this round's own correction — a prior pass
+ * declined it on a toolchain-availability claim that did not hold) and is
+ * used here for `--mono`, the token dates, labels, ids, prices and the
+ * spine already lead with site-wide.
  *
- * MEASURED on this sandbox (`ctx.measureText` at 100px, the identical
- * method R16 used, sample string "The quick brown fox jumps 0123456789
- * ABCDEFGHIJ"): `SF Mono`, `Segoe UI Mono`, `Roboto Mono`, `Menlo` and
- * `Consolas` are all ABSENT here — each measures IDENTICAL to the bare
- * `monospace` generic (2584.08px), which is how their absence was confirmed
- * rather than guessed, exactly as R16 established for Charter/Bitstream
- * Charter. `Cascadia Mono` (2753.91px) and `DejaVu Sans Mono` (2829.64px)
- * ARE installed and both resolve WIDER than the generic default — 6.6% and
- * 9.5% respectively — an --mono cross-platform rhythm risk R16's original
- * pass never measured because it only covered --serif. The generic
- * `monospace` keyword is the anchor here (there is no Georgia-equivalent
- * "already the stack's deliberate choice" entry to anchor against in a
- * monospace stack, and every genuinely-monospace font's PER-CHARACTER
- * advance width is fixed by design, so anchoring to whichever fallback the
- * reader's own platform would otherwise land on — the generic keyword — is
- * the choice that changes the fewest platforms' rendering from their own
- * present default). Each late fallback gets a `local()`-sourced synthetic
- * face with `size-adjust` = (generic monospace width) / (that font's own
- * width) over the same sample, so a platform resolving to either one still
- * renders dates and labels at the SAME rhythm as a platform that does not
- * have it. `local()` fails over silently exactly like the name it replaces,
- * so nothing is lost where neither is installed. */
+ * **JetBrains Mono** (JetBrains, SIL Open Font License 1.1). Chosen over
+ * Space Grotesk (the sibling finalist's choice, per its own report) so the
+ * two concepts read as genuinely different bets: Dated Ledger's whole
+ * identity is "dates set in mono as the spine face" (CP-UI-001-1.md
+ * design_moves.type) — a REAL monospace, not a grotesk sans reused for the
+ * mono role, is the face that argument is actually about. JetBrains Mono
+ * ships with tabular figures by construction (every glyph, digits
+ * included, shares one advance width), matching `font-variant-numeric:
+ * tabular-nums` already declared on every date/value in this build.
+ *
+ * Source: `google/fonts` `ofl/jetbrainsmono/JetBrainsMono[wght].ttf`
+ * (variable font, downloaded at authoring time from the public repo).
+ * Instantiated to two static weights with `fonttools varLib.instancer`
+ * (wght=400, wght=600 — Regular for body mono text, SemiBold for the
+ * handful of places `--mono` carries weight, e.g. `.door-name`,
+ * `.provider-name`), then subset with `fonttools.subset` to the Latin
+ * range this site's dates/labels/prices/ids actually use (`U+0020-007E`
+ * plus a handful of punctuation: nbsp, middot, en/em dash, curly quotes,
+ * bullet, the arrow used in "Impossible → Routine") and to `.woff2`, with
+ * OpenType layout features stripped (`--layout-features=-`): programming
+ * ligatures are exactly what a column of dates and prices must NOT have.
+ * Result: 4,948 B (Regular) and 4,968 B (SemiBold) — both under 5 KB,
+ * comfortably inside the 150 KB first-load JS budget this shares no bytes
+ * with (fonts are not JS) and far under any reasonable per-weight cap.
+ * Licence: `public/fonts/JetBrainsMono-OFL.txt`, unmodified from the repo.
+ *
+ * Metrics read from the instanced font (`fontTools`, unitsPerEm 1000):
+ * sTypoAscender 1020, sTypoDescender -300, sTypoLineGap 0 — so
+ * `ascent-override: 102%`, `descent-override: 30%`, `line-gap-override: 0%`
+ * below, per R16, so the fallback stack's own line box does not shift when
+ * the real face swaps in after load. `font-display: swap`: unlike the
+ * `local()` fallbacks above, this IS a network fetch (same-origin, under
+ * `public/fonts/`), so text is visible in the fallback stack immediately
+ * and swaps once the woff2 arrives — no invisible-text flash. */
 @font-face {
-  font-family: 'Cascadia Mono Metric';
-  src: local('Cascadia Mono');
-  size-adjust: 93.8%;
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Regular-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  ascent-override: 102%;
+  descent-override: 30%;
+  line-gap-override: 0%;
 }
 
 @font-face {
-  font-family: 'DejaVu Sans Mono Metric';
-  src: local('DejaVu Sans Mono');
-  size-adjust: 91.3%;
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-SemiBold-subset.woff2') format('woff2');
+  /* Range, not a single value: this build's only bold mono uses
+     (.door-name, .provider-name) declare font-weight: 700, and mapping that
+     straight to the real SemiBold instance beats letting the browser
+     synthesize a faux-bold on top of Regular. */
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+  ascent-override: 102%;
+  descent-override: 30%;
+  line-gap-override: 0%;
 }
 
 /* ── tokens ─────────────────────────────────────────────────────────── */
@@ -152,8 +179,8 @@
 
   --serif: Charter, "Bitstream Charter", "Sitka Text Metric", "Cambria Metric", Georgia,
     "Times New Roman Metric", serif;
-  --mono: ui-monospace, "SF Mono", "Cascadia Mono Metric", "Segoe UI Mono", "Roboto Mono", Menlo,
-    Consolas, "DejaVu Sans Mono Metric", monospace;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", "Roboto Mono",
+    Menlo, Consolas, "DejaVu Sans Mono", monospace;
 
   --step--1: 0.8125rem;
   --step-0: 1rem;

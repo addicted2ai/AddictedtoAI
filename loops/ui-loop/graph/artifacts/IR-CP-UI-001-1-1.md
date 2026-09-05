@@ -7,16 +7,17 @@ schema: loops/ui-loop/graph/schemas.md#implementer-report
 depends_on: [CP-UI-001-1.v1]
 branch: ui/concept-1
 worktree: D:\AddictedtoAI-c1
-head: 1b62a1c93fbcf5490839a7fa4a532fc97a05989f (pre-commit; report lands in same commit)
+head: 6ae931f214d2 (previous commit); this commit adds the self-hosted typeface correction below
 gates:
   build: pass — clean, /frontier present
   verify-design: pass — 46 checks, 0 failures
   verify-surfaces: pass — incl. new checkFrontierFence (/frontier no-digit outside [data-derived])
-  ui-invariants: 19/20. FAIL S18 wiki-entry clause only — pre-existing debt (RULES.md iter-09 addendum, honestly failing there too, 32.9%). Re-measured 33.2% after this round's selector fix; same order of magnitude, not this packet's scope (R13 occupancy, not F-K12 ordering), not a regression this build introduced.
+  ui-invariants: 19/20. FAIL S18 wiki-entry clause only — pre-existing debt (RULES.md iter-09 addendum, honestly failing there too, 32.9%). Re-measured 34.5% after the typeface swap (was 33.2%); still short of the 60% floor, same order of magnitude, not this packet's scope, not a regression this build introduced.
 files_changed: [lib/render/entry.mjs, lib/render/catalog.mjs, lib/render/home.mjs, app/catalog/page.tsx,
   app/globals.css, scripts/verify-surfaces.mjs, tools/ui-invariants.mjs, loops/ui-loop/RULES.md]
-new_files: [lib/render/frontier.mjs, app/frontier/page.tsx]
-typeface: "declined self-hosting, same cause globals.css already records for --serif (no network/subsetting toolchain here). Argued choice: kept --mono, extended R16's metric-match to it (first time). MEASURED (ctx.measureText): SF Mono/Segoe UI Mono/Roboto Mono/Menlo/Consolas ABSENT here (= generic monospace width); Cascadia Mono +6.6%, DejaVu Sans Mono +9.5% wider — real cross-platform risk, now metric-adjusted (93.8%/91.3%) same technique as --serif."
+new_files: [lib/render/frontier.mjs, app/frontier/page.tsx, public/fonts/JetBrainsMono-Regular-subset.woff2,
+  public/fonts/JetBrainsMono-SemiBold-subset.woff2, public/fonts/JetBrainsMono-OFL.txt]
+typeface: "CORRECTED (coordinator rejection): the earlier decline claimed the toolchain was unavailable; it was not (fontTools/pyftsubset present, network reachable to github.com). Self-hosted **JetBrains Mono** (OFL 1.1) now leads --mono. Source: google/fonts ofl/jetbrainsmono/JetBrainsMono[wght].ttf (variable, downloaded at authoring time). Instanced to wght=400/600 (fontTools varLib.instancer), subset to the Latin range dates/labels/prices/ids use with OT layout features stripped (fontTools.subset --layout-features=- — ligatures are wrong for a date column), .woff2. public/fonts/JetBrainsMono-Regular-subset.woff2 (4,948 B), JetBrainsMono-SemiBold-subset.woff2 (4,968 B, weight range 600 700 so the site's existing bold-mono uses map directly, no synthetic bold), JetBrainsMono-OFL.txt beside them. Chosen over Space Grotesk (concept-2's pick) because Dated Ledger's own design_moves.type argument is 'dates set in mono as the spine face' — a real monospace, not a grotesk borrowed for the mono role. ascent-override 102% / descent-override 30% / line-gap-override 0%, read from the instanced font's own metrics (unitsPerEm 1000, sTypoAscender 1020, sTypoDescender -300). Extends the existing --mono token (46+ call sites) rather than forking a new one. The earlier metric-matched Cascadia Mono/DejaVu Sans Mono local() fallbacks are removed — moot now that a real face is bundled."
 family:
   - "/: extended — Frontier door added (real org count); rest unchanged"
   - "/frontier: NEW — board leads (K19/K21), then spine, lead-change, capabilities, vendor claims; digit-free fixed copy, all rails [data-derived]-fenced"
