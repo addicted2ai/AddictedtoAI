@@ -44,7 +44,7 @@ noise, not progress.
 
 ## Phase 1 — Evidence freshness (cheapest first)
 
-Check whether cached evidence is current: `git status --porcelain app/` is clean AND every PNG under `loops/ui-loop/evidence/` is newer than the newest file under `app/`. Both true means the filed evidence is current and the judge runs with no build at all. All fresh → skip to
+Check whether cached evidence is current: `node tools/ui-evidence.mjs --hash` prints the content hash of the built `out/` (build stamp normalised away), and it must EQUAL `contentHash` in `loops/ui-loop/evidence/current/manifest.json`. Equal means the filed evidence is current and the judge runs with no capture at all. (Revival round 0, 2026-09-05: this replaces the wall-clock rule — file mtimes and `buildStamp` moved on every mandated rebuild even when nothing changed, so the old check manufactured a fatal mismatch, L6/I48.) All fresh → skip to
 Phase 2 at zero evidence cost. Any stale → refresh via `npm run build` (check the LOG, not the exit code), then `node tools/ui-evidence.mjs`, which serves `out/` on its own port and captures every sampled route x theme x viewport into `loops/ui-loop/evidence/`, and apply
 L5 to everything produced. If the artifact changed substantially outside the loop since
 the last verdict, declare a re-baseline in `state.md`: the anchor is void, and the next

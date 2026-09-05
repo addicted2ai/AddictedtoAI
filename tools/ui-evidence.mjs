@@ -31,7 +31,7 @@ import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdir, rm, writeFile, readdir, stat, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
@@ -44,6 +44,7 @@ const MIN_PNG_BYTES = 12_000;
 // The build the capture campaign is supposed to be OF, read from the tree itself rather
 // than from any page under test — otherwise the check is circular.
 let TREE_STAMP = null;
+let TREE_STAMP_FULL = '';
 const NAV_TIMEOUT_MS = 20_000;
 
 /** One representative route per page template. `null` slug entries resolve from `out/`. */
@@ -58,6 +59,15 @@ const ROUTE_PLAN = [
   { route: '/tools', label: 'index-tools' },
   { route: '/colophon', label: 'prose' },
   { route: '/data', label: 'data' },
+  // Added 2026-09-05 (revival round 0, closing evidence-fix I44a): templates the old rig never
+  // captured in nine iterations — 54 of one round's 58 fixes landed on a route no judge had seen
+  // — plus the model record, the wiki's most numerous template and a different surface from the
+  // prose entry that `wiki-entry` resolves to.
+  { route: '/tutorials', label: 'index-tutorials' },
+  { route: null, label: 'tutorial', from: 'tutorials' },
+  { route: '/impossible-routine', label: 'index-routine' },
+  { route: null, label: 'routine', from: 'impossible-routine' },
+  { route: null, label: 'wiki-model', from: 'wiki/model' },
 ];
 
 /**
@@ -73,6 +83,9 @@ const THEMES = [
 const VIEWPORTS = [
   { id: '1440', width: 1440, height: 900 },
   { id: '390', width: 390, height: 844 },
+  // Added 2026-09-05 (revival round 0, I44a): responsive integrity was scored at 768 for nine
+  // iterations from captures that did not contain it.
+  { id: '768', width: 768, height: 1024 },
 ];
 
 function fail(msg) {
@@ -111,6 +124,48 @@ async function firstEntry(dir, maxDepth = 3) {
   return walk(dir, 0);
 }
 
+/**
+ * Content identity of an export that does NOT move when only the build does (L6, I48). The old
+ * freshness rule compared wall-clock build stamps, so the mandated rebuild before every capture
+ * guaranteed a "fatal" mismatch on identical content. This hashes the PRESENTATION of every HTML
+ * and CSS file under the export: two builds of one tree agree, any presentation change disagrees.
+ * Recorded in manifest.json as `contentHash`; `node tools/ui-evidence.mjs --hash [dir]` recomputes
+ * it for the export you are about to judge (default out/). Equal -> the filed evidence is current.
+ *
+ * MEASURED 2026-09-05 (revival round 0), by diffing two consecutive exports of one tree: they
+ * differ in (1) the build stamp (attribute, visible footer text, and each piece repeated as its own
+ * string in the flight payload), (2) Next's per-build id, present as an HTML comment and as "b" in
+ * the flight payload, and (3) the ORDER of the inline self.__next_f.push chunks, which is not
+ * deterministic. None of the three is presentation. So: every <script> and every HTML comment is
+ * dropped, the stamp's pieces are scrubbed, and the visible stamp element is blanked. What remains
+ * is the static HTML (the JSX structure the judges see) and the CSS (content-hashed by the bundler).
+ */
+async function treeContentHash(root = OUT) {
+  const files = [];
+  const walk = async (dir) => {
+    const ents = (await readdir(dir, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name));
+    for (const e of ents) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) await walk(full);
+      else if (/\.(html|css)$/.test(e.name)) files.push(full);
+    }
+  };
+  await walk(root);
+  const index = await readFile(join(root, 'index.html'), 'utf8');
+  const stampFull = (index.match(/data-build-stamp="([^"]*)"/) || [])[1] || '';
+  const pieces = stampFull.split(/[\s+]+/).filter((t) => t.length >= 7);
+  const tokens = [...new Set([stampFull, ...pieces, '+dirty'].filter(Boolean))];
+  const h = createHash('sha256');
+  for (const f of files) {
+    let text = await readFile(f, 'utf8');
+    text = text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '').replace(/<!--[\s\S]*?-->/g, '');
+    for (const t of tokens) text = text.split(t).join('');
+    text = text.replace(/<p class="build-stamp"[^>]*>[\s\S]*?<\/p>/g, '<p class="build-stamp"></p>');
+    h.update(f.slice(root.length).replace(/\\/g, '/')).update('\0').update(text).update('\0');
+  }
+  return { hash: h.digest('hex'), files: files.length };
+}
+
 async function freePort() {
   const net = await import('node:net');
   return new Promise((res, rej) => {
@@ -146,7 +201,8 @@ async function main() {
   // Establish the tree's build identity BEFORE capturing anything.
   {
     const html = await readFile(join(OUT, 'index.html'), 'utf8');
-    TREE_STAMP = (html.match(/data-build-stamp="([^" ]+)/) || [])[1] || null;
+    TREE_STAMP_FULL = (html.match(/data-build-stamp="([^"]*)"/) || [])[1] || '';
+    TREE_STAMP = TREE_STAMP_FULL.split(' ')[0] || null;
     if (!TREE_STAMP) {
       console.error('REFUSED: out/index.html exposes no data-build-stamp — freshness cannot be established, so no capture here could be proved current.');
       process.exit(1);
@@ -154,6 +210,13 @@ async function main() {
     console.log(`ui-evidence — tree build ${TREE_STAMP}`);
   }
   const args = process.argv.slice(2);
+  if (args.includes('--hash')) {
+    const next = args[args.indexOf('--hash') + 1];
+    const root = next && !next.startsWith('--') ? resolve(next) : OUT;
+    const { hash, files } = await treeContentHash(root);
+    console.log(`contentHash ${hash}  (${files} html/css files under ${root.replace(ROOT, '.')}; scripts, comments and build stamp normalised away)`);
+    return;
+  }
   const isBaseline = args.includes('--baseline');
   const routeArg = args.indexOf('--routes');
   const only = routeArg >= 0 ? args[routeArg + 1].split(',') : null;
@@ -330,7 +393,7 @@ async function main() {
 
   await writeFile(
     join(dest, 'manifest.json'),
-    JSON.stringify({ captured: new Date().toISOString(), baseline: isBaseline, routes: plan.length, images: manifest.length, entries: manifest }, null, 2),
+    JSON.stringify({ captured: new Date().toISOString(), baseline: isBaseline, treeStamp: TREE_STAMP, contentHash: (await treeContentHash()).hash, viewports: VIEWPORTS.map((v) => v.id), routes: plan.length, images: manifest.length, entries: manifest }, null, 2),
   );
 
   const expected = plan.length * THEMES.length * VIEWPORTS.length;

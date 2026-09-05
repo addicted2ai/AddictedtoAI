@@ -88,6 +88,8 @@ verify route, title and `<main>` length, none of which changes when the build do
 capture now records a `buildStamp`; compare it against the tree before scoring, and treat
 a mismatch as fatal rather than as a detail.
 
+> **AMENDMENT (revival round 0, 2026-09-05, closes I48).** The `buildStamp` is a wall clock: the mandated rebuild before every capture changed it while the content did not, so L6 as written guaranteed a "fatal" mismatch on identical pages. Freshness is now `contentHash` in `manifest.json` versus `node tools/ui-evidence.mjs --hash` on the tree you are judging: EQUAL means current, anything else means capture again. `buildStamp` still identifies WHICH build a capture shows; it no longer decides whether the capture is stale.
+
 **L5 (iter-02) — `fullPage` screenshots MISRENDER a viewport-coupled layout, and the
 image gives no sign of it.** A sticky scroll container with a `vh`-based `max-height`
 paints at the wrong height when the capture re-composites at document height, while the
