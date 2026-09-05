@@ -4,7 +4,7 @@
 id: BLIND-001
 version: 1
 schema: loops/ui-loop/graph/schemas.md#evidence-note
-depends_on: [CHARTER.md, RULES.md, state.md (K3–K33), HANDOFF-ORCHESTRATOR.v1,
+depends_on: [SCORE-CP-UI-001-2-3, RT-CP-UI-001-2-3, JV-sys-CP-UI-001-2-3, JV-hier-CP-UI-001-2-3, JV-struct-CP-UI-001-2-3, MR-UI-001, MR-UI-002, MR-UI-003, BRIEF-UI-001.v1]
   BRIEF-UI-001.v1, SCORE-CP-UI-001-2-3.v1, RT-CP-UI-001-2-3.v1, JV-sys-CP-UI-001-2-3.v3,
   JV-hier-CP-UI-001-2-3.v1, JV-struct-CP-UI-001-2-3.v1, MR-UI-001..003.v1,
   implementer-ledger.md, EN-domain-facet.md, openspec/specs/directory/spec.md]

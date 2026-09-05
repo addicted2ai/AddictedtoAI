@@ -31,6 +31,7 @@ deltas, never restatements; structured over prose; a `depends_on` that names not
 | `CAL` | calibration (reader test result) | 3000 |
 | `GR` | gate report (machine-written) | 6000 |
 | `IR` | implementer report (finalist build / revision) | 7000 |
+| `BLIND` | blind-arbiter test: what needs the keeper (K32) | 5000 |
 | `JURY` | jury: one-order pairwise half (`JURY-<brief>-AB`/`-BA`) or the merged frontier (`JURY-<brief>`) | 10000 |
 | `state.md` | resume file | 8000 |
 
