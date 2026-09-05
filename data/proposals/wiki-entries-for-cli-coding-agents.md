@@ -38,6 +38,8 @@ evidence: >
   product identity inline because there is nothing to link. Every further
   incident, price change or release in this product category will pay the same
   cost.
+proposed_by_job: j-20260905-07
+proposed_by_type: post
 ---
 
 # Wiki entries for the CLI coding agents
