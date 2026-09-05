@@ -19,16 +19,15 @@ process each round knows only what this file says. Every claim cites an artifact
 
 ## Live rulings (keeper, 2026-09-05; K1–K2 in the archive)
 
-- **K3** — No merge to `main` until the keeper says everything is in order. Branch-only until then.
-- **K4** — No push to the remote until done, absent a stated really good reason.
-- **K5** — `STOP` and `HOLD.md` are the keeper's alone. The loop never creates or removes either.
+- **K3** — No merge to `main` until the keeper says everything is in order.
+- **K4** — No push to the remote until done, absent a stated good reason.
+- **K5** — `STOP` and `HOLD.md` are the keeper's alone; the loop never touches either.
 - **K6** — Reserved paths untouched: `openspec/specs/`, `data/config.json`, `runners.yml`,
   `package.json`. Content read-only (charter slot 1). Unfreeze is the orchestrator's job, not ours.
 - **K7 (delegated defaults)** — ≤3 revisions then keeper check-in; jury (order-swapped pairwise) once,
   on ≤2 finalists; 8.5 target REPORTED, not a stop. Convergence = empty `ui-fixable` queue AND full
   rig coverage AND empty keeper section.
-- **K8** — `STOP` created by the keeper 2026-09-05. **K9** — Reader test: the keeper alone. No usage
-  ceiling "within reason".
+- **K8** — `STOP` is the keeper's. **K9** — Reader test: the keeper alone.
 - **K10 — THE BRIEF'S CENTRE (keeper, verbatim in substance).** "A shining example of what
   frontier AI can do when handed the reins. I want people to be truly amazed at the quality of the
   site, and even more so once they realize a human didn't write any of it." Layout "ok, but a bit
@@ -55,6 +54,10 @@ process each round knows only what this file says. Every claim cites an artifact
   stack, every row in the document (I14 Ctrl-F clause); more density is a later brief. **K29** the
   RD-002 revision runs on OPUS (7 ledger entries, semantic class recurring); ledger continues. K7
   check-in held here; RD-002 is iteration 3 of 3 — hard stop after it regardless of score.
+- **K30 (keeper, 2026-09-05).** Frontier domain section = scout-flagged, domain-tagged EDITORIAL
+  records (`frontier: true`, `frontier_reason: F1–F5`, `domains`), 3 most recent per domain; index
+  leaders secondary where licensed; flagged stories exempt from the 3/day cap, not the budget;
+  feeds are the scout's radar, never display. Spec `knowledge/DESK-ORDER-001.md` §1; UI: next brief.
 - **Round-1 rulings (keeper, 2026-09-05).** **K16** typeface: "open to change" → judge-system's
   reading stands (inheriting the stack is not a decision); each finalist names a self-hosted face
   with licence, or argues the stack as a choice. **K17** finalists: `CP-UI-001-1` Dated Ledger and
@@ -83,7 +86,8 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
 
 1. MR-UI-001..003 on the revised Players Board preview (MR-UI-001 must include a hatched blank). [r3]
 2. After the K7 hard stop: merge decision (K3), push decision (K4), Desk-order note sign-off. [r3]
-3. **K30?** "top 3 models per domain" section on /frontier (keeper, 2026-09-05): ruling pending. [r3]
+3. Sign off `knowledge/DESK-ORDER-001.md` (K21/K22/K24/K30 as a spec for the orchestrator); answer
+   `EN-domain-facet.md`'s three questions (text vs general; AA rights; domain ordering). [r3]
 
 ## Next (loop work, in order)
 
