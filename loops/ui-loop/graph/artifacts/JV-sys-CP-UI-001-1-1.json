@@ -1,0 +1,144 @@
+{
+ "id": "JV-sys-CP-UI-001-1-1",
+ "version": 1,
+ "judge": "judge-system",
+ "packet": "CP-UI-001-1",
+ "packet_version": 1,
+ "anchor": {
+  "previous_verdict": null,
+  "delta_seen": null
+ },
+ "questions": [
+  {
+   "q": 1,
+   "tag": "TYPE",
+   "verdict": "UNCERTAIN",
+   "element": "all templates / type scale, measure, vertical rhythm",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "note": "Scale, measure and rhythm can only be read from rendered pages; discipline rule 10 defers this to the built finalist's contact sheets. The packet does declare one deliberate type decision (tabular lining numerals on every date and value, dates in mono at --step--1 as the spine face) and introduces no new scale, so no declared outlier exists yet."
+  },
+  {
+   "q": 2,
+   "tag": "TYPE",
+   "verdict": "FAIL",
+   "critical": true,
+   "element": "app/globals.css :root --serif / design_moves.type",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "note": "design_moves.type keeps the inherited --serif stack (Charter, Bitstream Charter, Sitka Text Metric, Cambria Metric, Georgia, Times New Roman Metric) and the fence states 'no new typeface; local() stack only'. That is the fallback stack R16 records as self-hosting-declined, not a face chosen for this domain, so the site spec's distinctive typographic identity rests on numerals and a mono spine label alone."
+  },
+  {
+   "q": 3,
+   "tag": "COLR",
+   "verdict": "UNCERTAIN",
+   "element": "all templates / light, dark and un-stamped rendering",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "note": "Whether the three theme states each read as a considered set is a pixel question, deferred to the built finalist. Declared discipline is sound (paper and ink only, --ember reserved for state flips, no fills), but 'accent for links' is stated flatly and R9 permits --accent only on hover and focus, never on a resting record link, border or rule."
+  },
+  {
+   "q": 4,
+   "tag": "FAM",
+   "verdict": "UNCERTAIN",
+   "element": "contact sheet / radii, spacing scale, header and list treatment",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "note": "Family coherence is judged from the sheet and no sheet exists; deferred. The declared family mechanism has the broadest coverage of the four: the spine track is carried onto /, /frontier, /catalog, /wiki entries, /blog, /tutorials and /impossible-routine, and every reuses line extends an existing render module rather than forking one."
+  },
+  {
+   "q": 5,
+   "tag": "ALLR",
+   "verdict": "UNCERTAIN",
+   "critical": true,
+   "element": "/ and /frontier / time-scaled spine",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "note": "A real mechanism is named rather than an adjective - vertical distance proportional to elapsed calendar time, so cadence compression is a shape before it is a label - but the packet's own known_risks say the spine has little visible variation at eight-day snapshot depth and that lead-change knots are empty on day one. The pull therefore depends on history the repo does not yet hold; routed to a reader measure."
+  },
+  {
+   "q": 6,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier / spine spacing and lead-change knots",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "note": "Pace is encoded as geometry driven by dated records (data/changes.jsonl, data/derived/status-tables.json), with no adjectives and no decoration standing in for it; motion is none and fixed copy sits inside [data-derived] with no digits. This is the clearest structure-carries-the-argument answer of the four packets."
+  },
+  {
+   "q": 7,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier / spine as sole signature",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "note": "Boldness is spent once - a time-proportional spine is a layout no template site ships - and everything else is explicitly quiet: paper and ink, no fills, no motion, no new face. Restraint is declared, not merely implied."
+  },
+  {
+   "q": 8,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier / vendor-claim cell and index columns",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "note": "The claim cell carries an ember-outlined 'claimed / unverified' tag with source and accessed date, 'verified' is gated on cited evidence, and vendor figures are never merged with index values. The empty cell is muted text ('no vendor claim on file') with no pattern and no box, so absence reads as absence; the packet does not, however, state that the claim is reproduced verbatim as R-B requires."
+  },
+  {
+   "q": 9,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "meta": true,
+   "element": "n/a / order and verbosity self-check",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "note": "This packet was read first and received the strictest ALLR treatment of the four (the only UNCERTAIN on q5), so first-read benefit of the doubt is not detectable here. The four packets sit within roughly ten percent of one another in length, so verbosity could not have carried 5-7."
+  }
+ ],
+ "findings": [
+  {
+   "id": "F-sys-1-1",
+   "tag": "TYPE",
+   "problem": "The concept's identity is carried entirely by spacing; the typeface is the inherited fallback stack, so a site whose brief centre is a distinctive typographic identity makes no typographic decision.",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "invariant": "At least one declared role (prose or label) resolves to a self-hosted face served from public/ with its licence file beside it, or the keeper rules that the metric-adjusted local() stack satisfies the site spec design bar.",
+   "governing_rule": "openspec/specs/site design bar",
+   "prescription": "Pair the spine with one self-hosted face for dates and labels, or route the design-bar question to the keeper alongside R16's declined-with-cause record.",
+   "confidence": 0.8,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-1-2",
+   "tag": "ALLR",
+   "problem": "The single allure mechanism is a function of history depth the repo does not have; at eight days of snapshots the spine can render as near-uniform spacing, which reads as ragged rather than as cadence.",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "invariant": "On the data present today, the largest inter-row gap on the /frontier spine is at least three times the smallest within the rendered window.",
+   "governing_rule": null,
+   "prescription": "State a clamp tied to the window actually available, or choose a window wide enough that the compression is visible on day one.",
+   "confidence": 0.75,
+   "route": "measure"
+  },
+  {
+   "id": "F-sys-1-3",
+   "tag": "COLR",
+   "problem": "design_moves.colour assigns --accent to links without qualification, which is the resting-state use R9 forbids on record links and, per its iter-08 addendum, on borders and rules.",
+   "evidence": "graph/artifacts/CP-UI-001-1.md",
+   "invariant": "No record-link, border, rule or divider carries --accent at rest on any template; --accent appears only on hover and focus.",
+   "governing_rule": "RULES.md R9",
+   "prescription": "Restate the colour move as ink-plus-underline at rest with --accent on hover and focus; the spine hairline uses --rule.",
+   "confidence": 0.6,
+   "route": "ui-fixable"
+  }
+ ],
+ "carried_forward": [],
+ "diagnosis": {
+  "strongest": "ALLR on pace: spacing proportional to elapsed time is the only concept here where the field's cadence is the geometry rather than a caption, and it needs no adjectives to say so.",
+  "weakest": "TYPE: the inherited --serif fallback stack is kept and no face is chosen, so a brief centred on typographic identity gets numerals and a mono spine label.",
+  "critical_issue": "Both critical questions land badly for the same reason - the concept bets everything on one channel. q2 FAILs outright (no typeface decision) and q5 is UNCERTAIN because the spine's amplitude is a function of history depth the repo will not have for months.",
+  "highest_value_improvement": "Name one self-hosted face for dates and labels. It closes q2, gives the spine a voice at day-one data depth, and costs nothing the fence forbids.",
+  "confidence": 0.72,
+  "evidence_ids": [
+   "graph/artifacts/CP-UI-001-1.md",
+   "app/globals.css :root",
+   "RULES.md R9",
+   "RULES.md R16",
+   "openspec/specs/site design bar"
+  ]
+ },
+ "downstream": {
+  "weakness": "Identity rests on a single channel (spacing) that the current corpus cannot yet drive.",
+  "cause": "Type and colour were both deliberately held at the inherited system, leaving no second carrier if the spine reads flat.",
+  "recommendation": "If this is built, capture /frontier on real data at all three widths first: pixel questions 1, 3 and 4 are deferred to that sheet, and q5 needs MR-UI-001 to ask a reader whether proportional spacing reads as cadence.",
+  "confidence": 0.7
+ }
+}

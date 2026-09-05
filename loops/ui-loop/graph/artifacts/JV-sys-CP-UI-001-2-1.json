@@ -1,0 +1,144 @@
+{
+ "id": "JV-sys-CP-UI-001-2-1",
+ "version": 1,
+ "judge": "judge-system",
+ "packet": "CP-UI-001-2",
+ "packet_version": 1,
+ "anchor": {
+  "previous_verdict": null,
+  "delta_seen": null
+ },
+ "questions": [
+  {
+   "q": 1,
+   "tag": "TYPE",
+   "verdict": "UNCERTAIN",
+   "element": "all templates / two-face system, measure, rhythm",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "note": "One scale and one rhythm can only be verified from rendered pages; deferred to the built finalist's sheets. The declared split is legible on paper - a self-hosted grotesk for labels, headers and cells, the Charter stack for prose, tabular numerals throughout - but a two-face system is where a single controlled measure most often breaks."
+  },
+  {
+   "q": 2,
+   "tag": "TYPE",
+   "verdict": "PASS",
+   "critical": true,
+   "element": "public/fonts / design_moves.type, fence.no_external_origins",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "note": "This is the only packet of the four that makes a typeface decision for this domain rather than inheriting the fallback stack: an OFL grotesk subset self-hosted under public/fonts with a LICENSE file beside it, the verify-design allowlist unchanged, and public/fonts declared in build_estimate.new_files. The face itself and its custom-property token are unnamed - open_questions carries it as research - so the licence and the thirty-kilobyte subset claim are asserted, not yet citable (F-sys-2-1)."
+  },
+  {
+   "q": 3,
+   "tag": "COLR",
+   "verdict": "UNCERTAIN",
+   "element": "/frontier / hatched blank cells in light, dark and un-stamped",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "note": "How a forty-five-degree --rule hatch reads across the three theme states is a pixel question and the exact case discipline rule 9 marks unjudgeable from text; deferred. The declared reservation is clean: ink on paper, no cell fills, --ember confined to state flips, and the hatch built from the neutral rule token rather than an accent."
+  },
+  {
+   "q": 4,
+   "tag": "FAM",
+   "verdict": "UNCERTAIN",
+   "element": "contact sheet / board column tokens across templates",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "note": "Judged from the sheet, so deferred; the declared mechanism is a single board grid with fixed column tokens shared by /frontier, /catalog and the /wiki index, a real family device. Coverage is the gap: surfaces omits /blog, /tutorials, /learn and /impossible-routine, so those templates would be the family's outliers (F-sys-2-2)."
+  },
+  {
+   "q": 5,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "critical": true,
+   "element": "/frontier board and / Frontier door",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "note": "The named mechanism is the hatched blank: the shape of what the site cannot state is drawn as visibly as what it can, so the first impression is a machine being candid rather than a leaderboard being confident - and it works on day-one data, because the blanks exist now. The home door is the board's first three rows, so the pull is the same object on both surfaces rather than a summary of it."
+  },
+  {
+   "q": 6,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier / lead-change strip, capabilities column, read dates",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "note": "Recency and change are carried by data - a read date in every row's last cell, a lead-change strip from data/changes.jsonl, a capabilities column typed by proof kind - with no adjectives and no decoration; fixed copy is fenced digit-free inside [data-derived=frontier-board]. Cadence is weaker than in CP-UI-001-1: the board is a snapshot, so compression of release rate is reported in a strip rather than encoded in the structure."
+  },
+  {
+   "q": 7,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier / hatched cells within the ruled board",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "note": "One memorable move, and it is the honest blank rather than the grid: departures-board tabulation is common, drawing absence as a first-class mark is not. The grotesk and the two-axis rules serve that one move rather than competing with it, and no fills, no colour beyond ember state flips and no motion keep the restraint credible."
+  },
+  {
+   "q": 8,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier / vendor claim cell and index position cells",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "note": "The claim cell is walled off from indices, tagged 'claimed / unverified' with source and accessed date, and a verified state requires cited evidence; an absent index column is omitted whole, and every hatched cell carries visible text, not only a pattern. The residual risk is the packet's own open question - hatch as honesty or as breakage - and 'verbatim' is not stated for the vendor figure as R-B requires."
+  },
+  {
+   "q": 9,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "meta": true,
+   "element": "n/a / order and verbosity self-check",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "note": "This packet scores best of the four on 5-7 and was read second, not first, and it is not the longest, so neither order nor length explains the result; the discriminator is that its mechanism fires on data present today while the first packet's does not. Guard held: the same PASS bar was applied to CP-UI-001-3's proof rail."
+  }
+ ],
+ "findings": [
+  {
+   "id": "F-sys-2-1",
+   "tag": "TYPE",
+   "problem": "The typeface decision is real but unnamed: no face, no custom-property token and no licence file path, so the no-external-origins fence and the thirty-kilobyte subset are claims a gate cannot check.",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "invariant": "The build names one face, its licence file under public/fonts, and one custom property in :root that declares it, and the shipped woff2 subset is at most thirty kilobytes.",
+   "governing_rule": "openspec/specs/site design bar",
+   "prescription": "Name a specific OFL grotesk with a metric-stable subset and record the licence path in the packet before build.",
+   "confidence": 0.8,
+   "route": "research"
+  },
+  {
+   "id": "F-sys-2-2",
+   "tag": "FAM",
+   "problem": "The board tokens reach only the index-shaped templates; /blog, /tutorials, /learn and /impossible-routine are absent from surfaces, so a contact sheet would show two systems.",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "invariant": "Every template on the contact sheet either uses the board's column tokens and header treatment or carries a stated exemption with cause.",
+   "governing_rule": null,
+   "prescription": "State the prose templates' relationship to the board - shared header and rule treatment at minimum - or exempt them explicitly.",
+   "confidence": 0.7,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-2-3",
+   "tag": "ALLR",
+   "problem": "The whole allure bet rests on a first-time reader interpreting a hatched cell as candour rather than as a rendering fault, which no text artifact can settle.",
+   "evidence": "graph/artifacts/CP-UI-001-2.md",
+   "invariant": "In a five-reader test, no reader describes a hatched cell as broken, missing or an error when asked what it means.",
+   "governing_rule": null,
+   "prescription": "Carry the hatch plus its visible text into MR-UI-001 as an explicit why-is-this-cell-striped question.",
+   "confidence": 0.75,
+   "route": "measure"
+  }
+ ],
+ "carried_forward": [],
+ "diagnosis": {
+  "strongest": "ALLR: the honest blank is a mechanism, not a mood, it is drawn from the repo's actual gaps rather than from data the site wishes it had, and it is the same object on the home door and the flagship.",
+  "weakest": "FAM coverage: the board reaches the index templates and stops, leaving the prose templates on the previous system with nothing said about them.",
+  "critical_issue": "The critical TYPE pass is provisional - a self-hosted OFL grotesk is the right decision but no face, token or licence path is named, so the fence that makes it legal is currently a promise.",
+  "highest_value_improvement": "Name the face and its licence file. It converts the strongest differentiator of the four packets from an intention into something the allowlist gate can enforce.",
+  "confidence": 0.78,
+  "evidence_ids": [
+   "graph/artifacts/CP-UI-001-2.md",
+   "app/globals.css :root",
+   "RULES.md R9",
+   "RULES.md R16",
+   "openspec/specs/site design bar"
+  ]
+ },
+ "downstream": {
+  "weakness": "A two-face system plus a hatched empty state is the most theme-sensitive and most font-loading-sensitive concept of the four.",
+  "cause": "Identity is carried on two new channels at once (a new face and a new cell mark) rather than one.",
+  "recommendation": "If built, the sheet must include a dark capture of a hatched board at 1440 and 390 before questions 1, 3 and 4 can be answered; the font's transfer bytes belong in the payload record even though R3 bounds JavaScript only.",
+  "confidence": 0.75
+ }
+}

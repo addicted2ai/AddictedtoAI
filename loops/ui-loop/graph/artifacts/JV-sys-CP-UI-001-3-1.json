@@ -1,0 +1,145 @@
+{
+ "id": "JV-sys-CP-UI-001-3-1",
+ "version": 1,
+ "judge": "judge-system",
+ "packet": "CP-UI-001-3",
+ "packet_version": 1,
+ "anchor": {
+  "previous_verdict": null,
+  "delta_seen": null
+ },
+ "questions": [
+  {
+   "q": 1,
+   "tag": "TYPE",
+   "verdict": "UNCERTAIN",
+   "element": "all templates / scale steps, measure, vertical rhythm",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "note": "Scale, measure and rhythm are pixel properties; deferred to the built finalist's sheets. The packet declares real decisions inside the existing scale - pair dates at --step-3, bracket labels in mono small caps, rail headings in mono tracking - and its own open_questions admits pairs and ledger rows would sit at different measures: that is the outlier to look for."
+  },
+  {
+   "q": 2,
+   "tag": "TYPE",
+   "verdict": "FAIL",
+   "critical": true,
+   "element": "app/globals.css :root --serif / design_moves.type",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "note": "design_moves.type says 'Charter stack kept' and fence.no_external_origins says 'none added', so the face remains the inherited --serif fallback stack (Charter, Bitstream Charter, Sitka Text Metric, Cambria Metric, Georgia, Times New Roman Metric) that R16 records as self-hosting-declined. Enlarging dates to --step-3 is a scale decision, not a typeface decision, so the site spec's distinctive typographic identity is unaddressed."
+  },
+  {
+   "q": 3,
+   "tag": "COLR",
+   "verdict": "UNCERTAIN",
+   "element": "all templates / two-ink pair ends in light, dark and un-stamped",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "note": "Whether two inks read as a considered set across the three theme states is deferred to the sheets. Colour is reserved for meaning rather than decoration, which the contract permits, and the kind word is always present so colour is never the sole carrier - but --accent is given a second, resting job as the routine end while it is also the link colour, which risks the resting-accent shape R9 exists to prevent (F-sys-3-1)."
+  },
+  {
+   "q": 4,
+   "tag": "FAM",
+   "verdict": "UNCERTAIN",
+   "element": "contact sheet / pair motif across templates",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "note": "Family coherence is a sheet judgement; deferred. The declared motif - two inks, two dates, one bracket - is stated as running on every template, but surfaces lists only six and /catalog is the likely family break: it gets a checkbox field chooser and single-line rows, a mechanism the pair motif does not touch."
+  },
+  {
+   "q": 5,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "critical": true,
+   "element": "/frontier proof rail and / Frontier door",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "note": "The mechanism is specific and human: a dated pair - what was impossible, what is now routine - with the elapsed interval bracketed between them at large type and sourced at both ends, turning the field's progress into one object a visitor can feel rather than a rank to interpret. The home door carries the newest three proofs, so the same object produces the pull on both surfaces."
+  },
+  {
+   "q": 6,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier / elapsed bracket and proof kinds",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "note": "The elapsed bracket is derived from two sourced dates in content/deltas, so compression of time is computed from data rather than asserted, and proof kind words (became routine, proven by execution, reported) replace adjectives entirely. Fixed copy including the criterion line is digit-free inside [data-derived]."
+  },
+  {
+   "q": 7,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/impossible-routine and /frontier / the pair block motif",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "note": "One signature, promoted deliberately: the impossible-to-routine pair with its interval bracket is a data-driven graphic no template site has, because no template site has that corpus. Everything else is held back - no motion, no third colour, existing list-row shape reused for the ledger - so boldness is spent once."
+  },
+  {
+   "q": 8,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier / vendor claim aside and leaders ledger",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "note": "The vendor figure sits in its own aside, apart from index and proof, tagged 'claimed / unverified' with source and accessed date; the empty case is a heading plus 'no vendor claim on file', which reads as absent rather than as evidence. Verbatim reproduction is again not stated, and a missing elapsed bracket is honest but silent about why."
+  },
+  {
+   "q": 9,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "meta": true,
+   "element": "n/a / order and verbosity self-check",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "note": "Read third of four and neither the longest nor the shortest, yet it matches the second on 5-7, so neither order nor verbosity accounts for the result; the discriminator is that both mechanisms work on data present today. Its open challenge to R-B's board shape was judged as an argument per discipline rule 11, not as non-compliance."
+  }
+ ],
+ "findings": [
+  {
+   "id": "F-sys-3-1",
+   "tag": "COLR",
+   "problem": "--accent carries two meanings at once: it is the link colour in the existing system and, in this concept, the resting ink of every routine end, so a reader meets the same hue as both a state and a semantic category.",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "invariant": "On any template, --accent resolves to exactly one meaning at rest, or the pair ends use a token distinct from the resting link and hover colour.",
+   "governing_rule": "RULES.md R9",
+   "prescription": "Give the routine end its own token, or keep the pair ends on ink and reserve colour for the impossible end only.",
+   "confidence": 0.7,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-3-2",
+   "tag": "TYPE",
+   "problem": "No typeface decision is made; the concept's whole type argument is a scale jump inside the inherited fallback stack, which leaves the brief's typographic-identity requirement unanswered.",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "invariant": "At least one declared role resolves to a self-hosted face under public/ with its licence beside it, or the keeper rules the metric-adjusted local() stack satisfies the site spec design bar.",
+   "governing_rule": "openspec/specs/site design bar",
+   "prescription": "A display face for the pair dates would serve the signature move and close the question at once.",
+   "confidence": 0.8,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-3-3",
+   "tag": "ALLR",
+   "problem": "The rail's density is set by editorial output, not by feeds, so on day one the flagship shows only the existing corpus of pairs, tutorials and anchored notes - the packet says so itself.",
+   "evidence": "graph/artifacts/CP-UI-001-3.md",
+   "invariant": "The proof rail renders at least eight dated items from content present in the repo today before the surface is judged as a flagship.",
+   "governing_rule": null,
+   "prescription": "Count the eligible items in content/deltas, content/tutorials and content/blog before build and state the number.",
+   "confidence": 0.7,
+   "route": "research"
+  }
+ ],
+ "carried_forward": [],
+ "diagnosis": {
+  "strongest": "ALLR: a dated pair with an elapsed bracket is the most human object any of the four packets proposes, it is computed from sourced dates rather than asserted, and it answers K10's complaint about a mechanical layout directly rather than by adding ornament.",
+  "weakest": "TYPE: the inherited stack is kept and the type argument reduces to one scale step, so the identity requirement is met on layout alone.",
+  "critical_issue": "The critical TYPE question FAILs and the concept openly demotes the players board that R-B names, so its case rests entirely on the keeper accepting proof over ranking as the flagship's organising idea.",
+  "highest_value_improvement": "Name a self-hosted display face for the pair dates: it closes q2 and strengthens the one move this concept is betting on, with no new surface and no new rule challenge.",
+  "confidence": 0.75,
+  "evidence_ids": [
+   "graph/artifacts/CP-UI-001-3.md",
+   "app/globals.css :root",
+   "RULES.md R9",
+   "RULES.md R16",
+   "openspec/specs/site design bar",
+   "BRIEF-UI-001 R-B"
+  ]
+ },
+ "downstream": {
+  "weakness": "The flagship's substance depends on editorial supply rather than on feed volume.",
+  "cause": "Choosing proof over ranking moves the surface off the data that refreshes automatically and onto the data a human writes.",
+  "recommendation": "Route the R-B shape challenge to the keeper before build, per discipline rule 11 it must not be scored as non-compliance; then capture /impossible-routine and /frontier in both themes so questions 1, 3 and 4 can be answered on the two-ink system.",
+  "confidence": 0.72
+ }
+}

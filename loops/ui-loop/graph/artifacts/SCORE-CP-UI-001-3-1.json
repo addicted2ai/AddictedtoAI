@@ -1,0 +1,119 @@
+{
+  "id": "SCORE-CP-UI-001-3-1",
+  "version": 1,
+  "schema": "loops/ui-loop/graph/schemas.md#score",
+  "depends_on": [
+    "JV-hier-CP-UI-001-3-1",
+    "JV-sys-CP-UI-001-3-1",
+    "RT-CP-UI-001-3-1"
+  ],
+  "packet": "CP-UI-001-3",
+  "packet_version": 1,
+  "computed_at": "2026-09-05T17:53:00.060Z",
+  "anchored_verdicts": [],
+  "dimensions": {
+    "HIER": {
+      "score": 7.5,
+      "pass": 3,
+      "total": 4,
+      "uncertain": 1,
+      "critical_fail": false,
+      "blocked_on": []
+    },
+    "DENS": {
+      "score": 0,
+      "pass": 0,
+      "total": 3,
+      "uncertain": 3,
+      "critical_fail": false,
+      "blocked_on": []
+    },
+    "TABL": {
+      "score": null,
+      "pass": 0,
+      "total": 0,
+      "uncertain": 0,
+      "critical_fail": false,
+      "blocked_on": []
+    },
+    "RESP": {
+      "score": null,
+      "pass": 0,
+      "total": 0,
+      "uncertain": 0,
+      "critical_fail": false,
+      "blocked_on": []
+    },
+    "TYPE": {
+      "score": 0,
+      "pass": 0,
+      "total": 2,
+      "uncertain": 1,
+      "critical_fail": true,
+      "blocked_on": []
+    },
+    "COLR": {
+      "score": 0,
+      "pass": 0,
+      "total": 1,
+      "uncertain": 1,
+      "critical_fail": false,
+      "blocked_on": []
+    },
+    "FAM": {
+      "score": 0,
+      "pass": 0,
+      "total": 1,
+      "uncertain": 1,
+      "critical_fail": false,
+      "blocked_on": []
+    },
+    "ALLR": {
+      "score": 10,
+      "pass": 4,
+      "total": 4,
+      "uncertain": 0,
+      "critical_fail": false,
+      "blocked_on": []
+    }
+  },
+  "overall_100": 46.7,
+  "rt_criticals": [],
+  "stop_conditions": {
+    "conditions": {
+      "hard_gates_pass": {
+        "met": false,
+        "why": "no GR for this version"
+      },
+      "all_dimensions_ge_8": {
+        "met": false
+      },
+      "rt_criticals_zero": {
+        "met": true
+      },
+      "keeper_section_empty": {
+        "met": false,
+        "open_items": 2
+      },
+      "revisions_le_cap": {
+        "met": true
+      },
+      "plateau_under_1pct": {
+        "met": false,
+        "why": "needs a prior scored version"
+      },
+      "no_open_measurement_request": {
+        "met": true,
+        "open": []
+      },
+      "rig_coverage_complete": {
+        "met": true
+      },
+      "knowledge_debt_clear": {
+        "met": true
+      }
+    },
+    "all_met": false
+  },
+  "note": "overall is REPORTED, never a target (K7). A carried verdict is a score with no reader."
+}

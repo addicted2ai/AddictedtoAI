@@ -1,0 +1,146 @@
+{
+ "id": "JV-sys-CP-UI-001-4-1",
+ "version": 1,
+ "judge": "judge-system",
+ "packet": "CP-UI-001-4",
+ "packet_version": 1,
+ "anchor": {"previous_verdict": null, "delta_seen": null},
+ "questions": [
+  {
+   "q": 1,
+   "tag": "TYPE",
+   "verdict": "UNCERTAIN",
+   "element": "all templates / scale, measure, rhythm with a gutter",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "note": "Scale, measure and rhythm are pixel properties; deferred to the sheets. The packet is deliberately conservative here (Charter stack kept, no prose size change, glyph alternates in mono at --step--1), so the sheet risk is a stamped gutter competing with prose rhythm on long entries - its own first known risk - not a broken scale."
+  },
+  {
+   "q": 2,
+   "tag": "TYPE",
+   "verdict": "FAIL",
+   "critical": true,
+   "element": "app/globals.css :root --serif / design_moves.type",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "note": "design_moves.type keeps the Charter stack and fence.no_external_origins says 'none added', so the face is the inherited --serif fallback stack R16 records as self-hosting-declined; the only gesture is mono at --step--1 for glyph alternates and band headings. The identity is a provenance system, not a typographic one, and the site spec's typographic bar is unaddressed."
+  },
+  {
+   "q": 3,
+   "tag": "COLR",
+   "verdict": "UNCERTAIN",
+   "element": "all templates / three-glyph colour in light, dark, un-stamped",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "note": "Whether three glyph colours read as a considered set across the theme states is the pixel question rule 10 defers; the packet names the hazard itself, --muted contrast in dark. Declared discipline is the strongest of the four: colour is the meaning system, nothing else is coloured, every glyph is paired with a word, links stay ink-underlined per R9."
+  },
+  {
+   "q": 4,
+   "tag": "FAM",
+   "verdict": "UNCERTAIN",
+   "element": "contact sheet / gutter across templates, /catalog excluded",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "note": "Judged from the sheet; deferred. Declared coverage is the widest of the four - the gutter runs on /, /frontier, wiki entries, /blog, /tutorials and /learn, reusing the home rail's --rail-col track rather than a new one - but /catalog is the named outlier, left untouched, so the densest template carries no part of the family (F-sys-4-3)."
+  },
+  {
+   "q": 5,
+   "tag": "ALLR",
+   "verdict": "UNCERTAIN",
+   "critical": true,
+   "element": "/ gutter and /frontier provenance bands",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "note": "A mechanism is named, not an adjective: every fact stamped with its standing and date, the flagship three honest censuses. But it is a rigour mechanism, and K10's complaint was that the site reads well for machines and not for humans, so stamping every paragraph deepens that trait rather than answering it. The packet itself asks whether readers notice the glyph, so the pull is a reader measure."
+  },
+  {
+   "q": 6,
+   "tag": "ALLR",
+   "verdict": "FAIL",
+   "element": "/frontier / three provenance bands",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "note": "The organising axis is provenance state, not time, so pace and cadence have no structural carrier: recency and change survive only as gutter dates and one lead-change line, and the census counts cells, not releases. Nothing here is hype or decoration - the failure is an absence, not an excess."
+  },
+  {
+   "q": 7,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "all templates / provenance glyph gutter",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "note": "The stamped gutter is one signature move a visitor would remember and no template site ships, and boldness is spent there alone: no motion, no prose size change, glyphs under a kilobyte. The restraint is credible because the reading column is untouched."
+  },
+  {
+   "q": 8,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier / claimed band, glyph alternates, census",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "note": "The packet's centre, answered most completely of the four: three glyphs with text alternates ('derived', 'claimed / unverified', 'verified'), an undated item labelled 'undated' rather than blank, the claimed band walled off and verbatim, and a full-width 'no vendor claim on file for any listed model' line so an empty band reads as absence. Residual risk is its own: a day-one empty band must not read as defect."
+  },
+  {
+   "q": 9,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "meta": true,
+   "element": "n/a / order and verbosity self-check",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "note": "Read last, where fatigue could produce an unearned FAIL, so q6 was re-tested against the packet's own text rather than the memory of packet 1's spine: bands are ordered by provenance and no geometry is a function of elapsed time, so the FAIL stands on the packet. Lengths are within ten percent across the four, so verbosity carried 5-7 nowhere."
+  }
+ ],
+ "findings": [
+  {
+   "id": "F-sys-4-1",
+   "tag": "ALLR",
+   "problem": "The flagship has no structural carrier for pace: bands are ordered by provenance state, and time appears only as printed dates and one lead-change line.",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "invariant": "/frontier renders at least one element whose geometry - order, spacing, length or position - is a function of elapsed time between dated records.",
+   "governing_rule": null,
+   "prescription": "Order the proven band by elapsed interval, or give the indexed band a dated rail, without disturbing the bands.",
+   "confidence": 0.8,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-4-2",
+   "tag": "ALLR",
+   "problem": "The allure bet is that visible rigour produces pull, but rigour is what K10 already credits while calling the site mechanical; a glyph on every paragraph may read as apparatus, not voice.",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "invariant": "In a five-reader test, at least three readers cite the provenance stamp unprompted as a reason they kept reading.",
+   "governing_rule": null,
+   "prescription": "Carry the packet's own glyph question into MR-UI-001 with a why-trust prompt on the find-tasks.",
+   "confidence": 0.75,
+   "route": "measure"
+  },
+  {
+   "id": "F-sys-4-3",
+   "tag": "FAM",
+   "problem": "/catalog is excluded, so the family omits the densest template and the brief's R-D requirement is left to another concept.",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "invariant": "Every template on the contact sheet carries the gutter track or a keeper-accepted exemption naming what replaces it.",
+   "governing_rule": null,
+   "prescription": "State how a stamped row works inside the catalog table, or accept the exemption on record.",
+   "confidence": 0.8,
+   "route": "keeper"
+  },
+  {
+   "id": "F-sys-4-4",
+   "tag": "TYPE",
+   "problem": "No typeface decision; the identity is a glyph and colour system carried on the inherited fallback stack.",
+   "evidence": "graph/artifacts/CP-UI-001-4.md",
+   "invariant": "At least one declared role resolves to a self-hosted face under public/ with its licence beside it, or the keeper rules the local() stack satisfies the design bar.",
+   "governing_rule": "openspec/specs/site design bar",
+   "prescription": "A self-hosted mono for the gutter would give the stamps a voice and close the question where the concept lives.",
+   "confidence": 0.8,
+   "route": "ui-fixable"
+  }
+ ],
+ "carried_forward": [],
+ "diagnosis": {
+  "strongest": "The claimed-versus-verified answer: three stamps with text alternates, an explicit undated state, a walled-off claimed band, an empty band that says in prose that it is empty. No other packet makes honesty checkable per paragraph.",
+  "weakest": "ALLR on pace: provenance replaced time as the organising axis, so cadence has nowhere structural to live.",
+  "critical_issue": "q5 is the exposure: it answers K10 with more rigour, the trait the keeper already granted while calling the result mechanical. Whether a stamp reads as voice or apparatus must go to a reader.",
+  "highest_value_improvement": "Give one band a time-driven geometry: it closes q6 and supplies the human pull the glyph system alone may not.",
+  "confidence": 0.76,
+  "evidence_ids": ["graph/artifacts/CP-UI-001-4.md", "app/globals.css :root", "RULES.md R9", "RULES.md R16", "openspec/specs/site design bar", "state.md K10"]
+ },
+ "downstream": {
+  "weakness": "The most rule-disciplined concept, and the least likely to move a first-time human.",
+  "cause": "Its bet targets trust rather than pull, and trust was not what K10 said was missing.",
+  "recommendation": "If built, the sheet needs a dark capture of a long prose entry with a fully stamped gutter (both the --muted contrast and the noise risk live there), and MR-UI-001 must ask about the glyph directly; questions 1, 3 and 4 defer to that sheet.",
+  "confidence": 0.74
+ }
+}
