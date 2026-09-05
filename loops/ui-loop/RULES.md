@@ -30,6 +30,21 @@ sanity floor and outranks every prescription in a verdict.
 **R2 — Reflow.** No sampled route shall scroll horizontally at 320px. Wide content —
 tables, code, diagrams — shall scroll inside its own container; the page shall not.
 
+> *Round-2 addendum (RD-002 fix 5, F-struct-1; AR-001 D5).* "Sampled" was doing work
+> nobody had decided it should do. R2 speaks of ROUTES; the only executable form of it
+> was the reflow pass in `scripts/verify-design.mjs`, which samples four fixed routes,
+> and `/tutorials/<entry>` is not one of them — so that template rendered its document
+> 465px wide in a 390px viewport, 75px of page-level horizontal scroll from a single
+> unbroken inline code token, with every gate green. AR-001 D5: R2 speaks of routes, not
+> regressions, and "inherited" is no exemption. The sample is therefore widened by
+> TEMPLATE, not patched per route: one live route for EVERY page template the app
+> declares, at 390 and at R2's own 320. That widening lands in `tools/ui-invariants.mjs`
+> id `S23` — not in the rig, which this loop does not edit (IMPLEMENT.md rule 7). A new
+> template added without a line in `S23`'s route list is itself the defect. The widened
+> sample immediately found a second violation the four-route list had never looked at
+> (`/tutorials` at 320px, 330px wide, from an unbroken token in `.listing-line`), which
+> is the whole argument for widening it.
+
 **R3 — Payload.** First-load JavaScript, gzipped, shall stay under the 150 KB bound
 recorded in `data/launch.json` as `js_payload`.
 
@@ -49,6 +64,18 @@ is not the same as being able to use it.
 both 1440x900 and 390x844, with no full-viewport hero. This is an **intent-preservation**
 rule: it exists so a restructure cannot quietly push the site's substance below the fold
 while passing every other check. It is the model every new restructure invariant follows.
+
+> *Round-2 addendum (RD-002 fix 3, F-hier-10; AR-001 D3, K25).* R6 also decides what a NEW
+> flagship route may ask of this page. At 390 the Frontier door is the home rail's first
+> block, but the rail folds after the whole changed feed, so `/frontier` sat ~2,400px into
+> the document. AR-001 D3: F-hier-10's own invariant says the nav counts, and under R6
+> (nothing displaces the feed) the nav item is the anchored minimum; K25 confirms it. So
+> the rule now reads in two directions on this surface, and `tools/ui-invariants.mjs` id
+> `S24` asserts both: a link to a flagship route shall be reachable from the home FIRST
+> VIEWPORT at 390 — the link itself, or the closed nav disclosure that exposes it (R14/S10)
+> — AND the changed feed shall still lead, its first line above that route's own block on
+> the page. A reachability floor stated alone would be satisfied by lifting the flagship
+> over the feed, which is the worse failure this rule exists to forbid.
 
 ---
 
@@ -206,7 +233,20 @@ every row is itself a link, so the link already carries the row's signal — the
 surface does not need and dilutes what a rule elsewhere is doing real work to say. A
 status badge shall render as a bordered chip only when its tone differs from the
 collection's default state — unconditionally; this half of R8 was never in question and
-is unchanged. From iter-01 S2 (`iter-00-a` I3 / `iter-00-b` I2, filed independently by
+is unchanged. *Round-2 addendum (RD-002 fix 2, F-hier-5 + F-struct-4).* The badge clause
+and the 90%-repeated-value clause govern `/frontier`'s players board too, and did so
+before `S17`'s route list knew the route existed: the VENDOR CLAIM column rendered a
+bordered "claimed · unverified" chip on 16 of 16 rows — a state shared by every row IS
+the collection default, so R8 forbids boxing it — and the READ column repeated one
+provenance value on 16 of 16 rows at the full ink weight of the price and context
+columns a reader compares across. Both are answered the way `/catalog` already answers
+the second (`renderFetchLine`, stated once above the table, the row rendered at
+`--muted`): a state shared by more than 90% of rows is stated ONCE above the board as
+unboxed `--muted` text, and the per-row mark is dropped or muted, with full weight kept
+for a row whose value genuinely differs. The board itself, being sixteen rows of seven
+columns, is a rule-REQUIRED surface by R8's own test above, and now carries the row
+rule its test demands. `S17` samples `/frontier` as its fourth surface. From iter-01 S2
+(`iter-00-a` I3 / `iter-00-b` I2, filed independently by
 both judges); the row-rule half amended iter-03. Applied by the test above: `/catalog`'s
 table rows (396 rows x 7 columns) and the home changed-feed entries (ragged heights from
 an optional annotation line and a wrapped `source` line) carry the rule; `.browse-row` on
@@ -359,7 +399,14 @@ on one fix. Enforced by `tools/ui-invariants.mjs` id `S6`.
 
 **R10 — Rule width matches content width.** A horizontal rule dividing a content block
 shall span that block's own rendered width, not an unrelated wider container. From
-iter-01 S5 (`iter-00-a` I2). Enforced by `tools/ui-invariants.mjs` id `S5`. This rule
+iter-01 S5 (`iter-00-a` I2). Enforced by `tools/ui-invariants.mjs` id `S5`.
+*Round-2 addendum (RD-002 fix 4, F-struct-2).* The rule's domain includes each section
+of the wiki entry's `.rails` block (REFERENCED HERE / APPEARS IN — what the round-2
+findings call `.entry-rails`): a section's own `border-top` is the rule introducing that
+section's list and shall span that list, within 1px, not a grid track it happened to
+share with a shorter neighbour. Measured at 292.0px of rule over 130.0px and 216.0px of
+content — 162.0px and 76.0px of overhang, green for the length of this block's life
+because `S5` had never sampled it. `S5`'s wiki-entry clause now does. This rule
 covers block-width matching only; column-start alignment between a label/value grid (the
 facts block, the date rail) and unlabelled prose is not required by it — see the iter-01
 implementer report for why that half of S5's invariant was not attempted.
@@ -493,6 +540,21 @@ layout for a stacked record-per-row form shall not reintroduce a displaced or oc
 header (R11); if it removes the header outright, that removal shall be asserted as
 deliberate rather than left to pass by the header's mere absence. From iter-02 I1
 (unresolved since iteration 0). Enforced by `tools/ui-invariants.mjs` id `S8`.
+
+*Round-2 addendum (RD-002 fix 4, F-struct-3; AR-001 D4).* R13's 60% dead-track floor
+binds every declared two-column grid on a template, not the one pair an assertion
+happened to name. Retiring `S18`'s wiki-entry clause last round retired the ASSERTION,
+not the RULE (AR-001 D4; the preamble's own "a rule with no executable form is
+keeper-verified, not void"), and the shape it governed survived: `.rails` on the same
+template was still a two-track grid whose shorter column reached 44.9% of the taller
+(61.0px against 136.0px). Answered the way R13's own text allows — the grid is retired
+for ONE `fit-content` flow, so there is no second track for a floor to be asked of.
+`S18`'s second clause now asks R13's question generically on that template: EITHER one
+flow, OR a shorter column at 60% of the taller, reading columns off the children's
+rendered left edges rather than any grid declaration, and reading each column's
+OCCUPIED height rather than its item box — a grid row stretches every item in it to the
+same height, so a box-height ratio there is 100% by construction and would report a
+dead track as full.
 
 **R13 — Track discipline.** A page template shall place its primary content column
 against one of at most two declared grid tracks (a text/list measure, or the wide shell

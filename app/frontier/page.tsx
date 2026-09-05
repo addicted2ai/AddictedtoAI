@@ -1,5 +1,10 @@
 import { getSite } from '../../lib/site.mjs';
 import { renderPlayersBoard, renderLeadChangeStrip, renderCapabilities } from '../../lib/render/frontier.mjs';
+// RD-002 fix 2 (F-struct-4, RULES R8 / S17): the provenance value every board
+// row repeats is stated ONCE above the board. /catalog already has the
+// element that does exactly this for exactly these rows — reused, not
+// reimplemented (IMPLEMENT.md family rules; "reuse before you draw").
+import { renderFetchLine } from '../../lib/render/catalog.mjs';
 
 /**
  * The Frontier (CP-UI-001-2, K11/K19) — new route.
@@ -36,6 +41,7 @@ export default async function FrontierPage() {
         labelled blank, not a guess — the shape of what the feeds have not yet stated is drawn as
         plainly as what they have.
       </p>
+      <div dangerouslySetInnerHTML={{ __html: renderFetchLine(site) }} />
       <div dangerouslySetInnerHTML={{ __html: renderPlayersBoard(orgs, site, site.catalogFile.rows) }} />
       <p className="sort-note">
         Sorted by organisation name, A to Z. Nothing on this site is ordered by payment. Machine-

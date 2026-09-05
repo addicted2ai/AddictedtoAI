@@ -185,6 +185,13 @@
      reopen there. Starts equal to --measure so headlines and the lede above
      them share one right edge and the page reads as one column. */
   --measure-title: 38rem;
+  /* RD-002 fix 2 (F-hier-6 / F-struct-5 / F-sys-2-1b, R13): the widest the
+     players board's VENDOR CLAIM cell may render. A vendor claim is prose in
+     a cell of a seven-column table; left uncapped it pushed the READ
+     provenance column off-screen at 1440 and clipped itself mid-word on all
+     sixteen rows. Sized so the whole board fits the 1152px shell at 1440
+     with READ inside it — S22 MEASURES that rather than trusting this value. */
+  --board-claim-max: 11rem;
   /* Fallback header height for the /catalog sticky table head (S7). Overwritten
      precisely at runtime by the measurement script in layout.tsx; this value
      only covers the no-JS case, sized for the header's one-line layout. */
@@ -1948,14 +1955,28 @@ body:has(#catalog-table-wrap) .site-footer {
   padding: 0.02rem 0.3rem;
 }
 
+/* RD-002 fix 4 (F-struct-2 + F-struct-3 + F-hier-7; AR-001 D4, RULES R13/R10).
+   `.rails` is the block the round-2 findings call `.entry-rails` — REFERENCED
+   HERE and APPEARS IN on a wiki entry. It was `repeat(auto-fit, minmax(15rem,
+   1fr))` inside --measure, i.e. two 292px tracks; measured live, its shorter
+   column reached 44.9% of the taller (61.0px against 136.0px), under R13's
+   60% dead-track floor — and AR-001 D4 is explicit that retiring S18's
+   wiki-entry ASSERTION last round did not retire R13 itself, which still
+   binds this grid. The second lever R13 offers (let the shorter rail's own
+   content set the row) is not available: the two lists' lengths are data,
+   different on every entry. So the grid is retired the way R13's own text
+   allows — ONE fit-content flow, no second track for a floor to be asked of.
+   `width: fit-content` on the flow AND on each section is also R10: each
+   section's `border-top` is the rule introducing that section's own list, and
+   it now spans that list rather than a 292px track it shared with a shorter
+   neighbour (162.0px and 76.0px of overhang, F-struct-2). Still bounded by
+   --measure so the block keeps prose's right edge (S5's iter-01 clause). */
 .rails {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
   margin-top: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  /* S5 (iter-01): match .prose's width — see the note on .entry-head. Two
-     15rem+ tracks still fit comfortably inside --measure (38rem), so the
-     referenced/appears-in columns keep sitting side by side. */
+  width: fit-content;
   max-width: var(--measure);
 }
 
@@ -1963,6 +1984,8 @@ body:has(#catalog-table-wrap) .site-footer {
 .rail-appears-in {
   border-top: 1px solid var(--rule-strong);
   padding-top: 0.6rem;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .rails h2 {
@@ -2172,6 +2195,17 @@ body:has(#catalog-table-wrap) .site-footer {
   grid-column: 1 / -1;
   border-top: 1px solid var(--rule);
   padding: 0.75rem 0;
+  /* RD-002 fix 5, SECOND finding (RULES R2, law). Widening the reflow sample
+     (S23) — the point of fix 5 — immediately found a page-level overflow the
+     four-route sample had never looked at: /tutorials renders its document
+     330px wide in a 320px viewport, from an unbroken verification-stamp token
+     inside `.listing-line`, which is `display: contents` and so has no box of
+     its own to carry the break opportunity. `break-word`, not `anywhere`:
+     `anywhere` would also shrink this element's min-content contribution, and
+     these rows sit in a shared subgrid track set whose pricing column S19
+     holds to a 200px floor. A break opportunity is wanted here; a narrower
+     intrinsic size is not. */
+  overflow-wrap: break-word;
 }
 
 .listing[data-alive="no"] {
@@ -2456,6 +2490,19 @@ body:has(#catalog-table-wrap) .site-footer {
   background: var(--accent-soft);
   padding: 0.05em 0.28em;
   border-radius: 2px;
+  /* RD-002 fix 5 (F-struct-1; RULES R2, law under K14, AR-001 D5). An
+     unbroken inline code token — a bare URL inside `<code>` in a tutorial
+     body — rendered the /tutorials/<entry> DOCUMENT 465px wide in a 390px
+     viewport: 75px of PAGE-level horizontal scroll, which R2 forbids
+     outright. `.prose pre` already scrolls inside its own container, which
+     is what R2 asks of wide content; INLINE code had no such container and
+     no break opportunity at all. `anywhere` rather than `break-word` because
+     `break-word` does not create a soft-wrap opportunity for min-content
+     sizing, which is exactly the measurement that set the document's width
+     here (the same distinction the note at `.change-detail` records). This
+     is a property of INLINE code only — `.prose pre code` below is inside a
+     scrollport and is left to scroll. */
+  overflow-wrap: anywhere;
 }
 
 .prose pre {
@@ -2590,6 +2637,64 @@ body:has(#catalog-table-wrap) .site-footer {
   font-weight: 700;
 }
 
+/* RD-002 fix 3 (F-sys-2-4, R8's surface test). The board is sixteen rows of
+   seven columns — genuine cross-row tracking by R8's own test, the same test
+   that made `#catalog-table`'s rule required — so it carries a rule between
+   every pair of rows. Scoped by id, matching `#catalog-table`'s precedent
+   above rather than widening `.data-table`, and it is the property the home
+   Frontier door borrows to read as this board's door and not as the CATALOG
+   and DEPRECATED blocks beside it. */
+#frontier-board tbody tr {
+  border-bottom: 1px solid var(--rule);
+}
+
+/* RD-002 fix 2 (F-hier-6 + F-struct-5 + F-sys-2-1b, R13). `.data-table th/td`
+   already sets `white-space: nowrap`, so an uncapped prose cell in the last
+   value track simply ran past the container edge — sixteen rows clipped
+   mid-word at 1440 with the READ column pushed out of the shell entirely,
+   and no affordance in frame saying either had happened. The cell is capped
+   at one line and ellipsised at `--board-claim-max`: the board keeps the
+   claim's shape and its provenance, the model record keeps the sentence.
+   `.board-read` is only a handle for S22 to measure — it declares no width
+   of its own, so the READ column is on-screen because the claim column is
+   bounded, not because READ was itself squeezed. */
+/* RD-002 fix 2 / RULES R8 (S17's 90% clause), the /catalog precedent applied:
+   every board row is read from the same feed on the same day, so READ was one
+   value repeated on 16 of 16 rows at the price columns' own ink weight. The
+   constant is stated once above the board (`renderFetchLine`, reused from
+   /catalog) and the unexceptional row drops to --muted here; a row whose
+   provenance genuinely differs carries no `data-default` and keeps full
+   weight, exactly as `#catalog-table`'s Read column already does. */
+#frontier-board .board-read[data-default] {
+  color: var(--muted);
+}
+
+.board-claim {
+  max-width: var(--board-claim-max);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.board-claim .claim-line {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* RD-002 fix 2 (F-hier-5 + F-struct-4, R8's badge clause). The state more
+   than 90% of the board's rows share is stated ONCE, here, above the board —
+   unboxed, at --muted, below the weight of the columns a reader compares
+   across. The bordered per-row chip it replaces was the flagship's loudest
+   repeated mark on 16 of 16 rows: R8 boxes a badge only where its tone
+   differs from the collection's default state. */
+.board-note {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  margin: 0 0 0.4rem;
+}
+
 /* F-hier-1/F-hier-4 (JV-hier): an empty cell must never outweigh a filled
    one, and the board needs ONE column set heavier than the rest as a
    first-read entry point. `.board-lead` (organisation, current model) is
@@ -2630,13 +2735,18 @@ body:has(#catalog-table-wrap) .site-footer {
   font-size: var(--step--1);
 }
 
-.frontier-door-org {
-  font-weight: 700;
-}
-
+/* RD-002 fix 3 (F-sys-2-4). The door's weight is no longer its own: both
+   cells carry `.board-lead`, the board's OWN lead-pair treatment (mono at
+   700 — organisation and current model, the board's first-read entry point),
+   and the row rule above matches `#frontier-board tbody tr`. Those two
+   properties together are on no other block in this rail: CATALOG and
+   DEPRECATED beside it are ruleless lists at ordinary weight. `.absent`
+   drops back to the ordinary weight because an absence must never outweigh
+   a value (F-hier-1, the board's own rule for its hatch). */
 .frontier-door-model.absent {
   color: var(--muted);
   font-style: italic;
+  font-weight: 400;
 }
 
 .frontier-capabilities .badge {

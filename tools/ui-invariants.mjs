@@ -301,10 +301,10 @@ const INVARIANTS = [
   })(),
   {
     id: 'S5', rule: 'R10',
-    intent: "R10's own domain is EVERY route with a rule dividing a content block, not the routes any one item happened to name — a horizontal rule shall span the same rendered width as the block it introduces, instead of an unrelated wider shell. Checked against .entry-head/.prose AND the FACTS section heading on a wiki entry (I20), against each of /data's four section headings (I20), against /blog's .rail-posts (its border-top) versus the widest rendered row in its own list (I35, iter-08 — the one index template this check never sampled at the time, which is why the gate stayed green over a 652px overhang), against /catalog's `.catalog-preamble > summary` border-bottom versus the widest line of the disclosure it introduces (I40, iter-09 — this round's own I23 catalog-preamble remedy reopened the identical defect I35 had just closed, on the ONE index template S5 STILL never sampled, and the gate stayed green over a 413.1px overhang for the length of a single round), and as a regression guard against /colophon's .listing-facts (never broken, confirmed to stay that way)",
+    intent: "R10's own domain is EVERY route with a rule dividing a content block, not the routes any one item happened to name — a horizontal rule shall span the same rendered width as the block it introduces, instead of an unrelated wider shell. Checked against .entry-head/.prose AND the FACTS section heading on a wiki entry (I20), against each of /data's four section headings (I20), against /blog's .rail-posts (its border-top) versus the widest rendered row in its own list (I35, iter-08 — the one index template this check never sampled at the time, which is why the gate stayed green over a 652px overhang), against /catalog's `.catalog-preamble > summary` border-bottom versus the widest line of the disclosure it introduces (I40, iter-09 — this round's own I23 catalog-preamble remedy reopened the identical defect I35 had just closed, on the ONE index template S5 STILL never sampled, and the gate stayed green over a 413.1px overhang for the length of a single round), and as a regression guard against /colophon's .listing-facts (never broken, confirmed to stay that way). RD-002 fix 4 (F-struct-2, round-2 addendum): the wiki-entry clause now ALSO samples `.rails` — the block the round-2 findings call `.entry-rails`, REFERENCED HERE / APPEARS IN — where each section's own border-top was spanning its 292.0px grid track instead of the 130.0px and 216.0px lists it introduced, 162.0px and 76.0px of overhang that stayed green because S5 had never looked at this block at all",
     independent: 'rendered getBoundingClientRect widths compared pairwise on the same page — .entry-head vs .prose, the FACTS <h2> vs .facts, each /data <h2>.section-title vs its own <section>, .rail-posts vs the widest of its own .rail-item rows, .catalog-preamble > summary vs the widest of the preamble\'s own content lines, .listing-facts vs .prose — an emergent runtime match, not a shared token read from source',
     falsifier: {
-      brokenBy: "SEVEN breaks. (1) iter-01: removed `max-width: var(--measure)` from `.entry-head`. (2) iter-04 (I20): removed the new `.entry-facts, .entry-timeline { max-width: var(--measure) }` rule. (3) iter-04: removed the new `.section:has(> .browse), .section:has(> .footer-links) { width: fit-content }` rule. (4) iter-04: confirmed the /colophon regression guard is live by temporarily removing `.listing-facts`'s pre-existing `max-width: var(--measure)`. (5) iter-08 (I35): `--only S5 --break \".rail-posts{width:100% !important}\"` — reverts .rail-posts to its pre-fix full-shell width, reproducing the original 652px overhang this round closed. FIRST ATTEMPT at (5) measured `li.getBoundingClientRect().width` (the row's outer BOX) rather than its grid content, and reported NOT firing (0 of 1): `.rail-item` is a block-level li whose outer box fills whatever width `.rail-posts` happens to be, so forcing `.rail-posts` back to 100% pulled every row's outer box back to 1152px right alongside it — S1's OWN historical vacuous-box mistake (RULES.md R7's post-mortem), reproduced on a new surface by the person who had just read that post-mortem. Rewritten to read each row's own RESOLVED `grid-template-columns` (summed with its gap) instead, independent of .rail-posts's width — see the check's own comment. (6) iter-09 (I40): `--only S5 --break \".catalog-preamble[open] > summary{border-bottom:1px solid var(--rule) !important}\"` — reintroduces the removed rule. THREE ATTEMPTS were needed, both prior ones vacuous for reasons the check's own comment records in full: attempt 1 measured each DIRECT CHILD's box (two of the four content lines are DIV-wrapped `<p>`s, app/catalog/page.tsx, so the direct child measured was the DIV's own unconstrained, full-width box); attempt 2 applied a Range to those same direct children, still vacuous because a Range over an element whose only content is a BLOCK child returns that block's own box, not a text line. Attempt 3 selects the four text-bearing `<p>` elements directly (`.page-lede, .fetch-line, .sort-note`) and Ranges those. (7) iter-09 (I40): with (6) still applied, `--break \".catalog-preamble[open] > summary{border-bottom:1px solid var(--rule) !important; display:inline-block !important; width:50px !important;}\"` — forces the rule's own span down to 50px while the disclosure's content stays wide, testing the OPPOSITE sign.",
+      brokenBy: "SEVEN breaks. (1) iter-01: removed `max-width: var(--measure)` from `.entry-head`. (2) iter-04 (I20): removed the new `.entry-facts, .entry-timeline { max-width: var(--measure) }` rule. (3) iter-04: removed the new `.section:has(> .browse), .section:has(> .footer-links) { width: fit-content }` rule. (4) iter-04: confirmed the /colophon regression guard is live by temporarily removing `.listing-facts`'s pre-existing `max-width: var(--measure)`. (5) iter-08 (I35): `--only S5 --break \".rail-posts{width:100% !important}\"` — reverts .rail-posts to its pre-fix full-shell width, reproducing the original 652px overhang this round closed. FIRST ATTEMPT at (5) measured `li.getBoundingClientRect().width` (the row's outer BOX) rather than its grid content, and reported NOT firing (0 of 1): `.rail-item` is a block-level li whose outer box fills whatever width `.rail-posts` happens to be, so forcing `.rail-posts` back to 100% pulled every row's outer box back to 1152px right alongside it — S1's OWN historical vacuous-box mistake (RULES.md R7's post-mortem), reproduced on a new surface by the person who had just read that post-mortem. Rewritten to read each row's own RESOLVED `grid-template-columns` (summed with its gap) instead, independent of .rail-posts's width — see the check's own comment. (6) iter-09 (I40): `--only S5 --break \".catalog-preamble[open] > summary{border-bottom:1px solid var(--rule) !important}\"` — reintroduces the removed rule. THREE ATTEMPTS were needed, both prior ones vacuous for reasons the check's own comment records in full: attempt 1 measured each DIRECT CHILD's box (two of the four content lines are DIV-wrapped `<p>`s, app/catalog/page.tsx, so the direct child measured was the DIV's own unconstrained, full-width box); attempt 2 applied a Range to those same direct children, still vacuous because a Range over an element whose only content is a BLOCK child returns that block's own box, not a text line. Attempt 3 selects the four text-bearing `<p>` elements directly (`.page-lede, .fetch-line, .sort-note`) and Ranges those. (7) iter-09 (I40): with (6) still applied, `--break \".catalog-preamble[open] > summary{border-bottom:1px solid var(--rule) !important; display:inline-block !important; width:50px !important;}\"` — forces the rule's own span down to 50px while the disclosure's content stays wide, testing the OPPOSITE sign. (8) RD-002 (F-struct-2) NEW, the `.rails` clause: `--only S5 --break \".rails{display:grid !important;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr)) !important;width:auto !important} .rails > .rail{width:auto !important}\"` — reverts `.rails` to the exact two-track grid this round retired, putting each rail's rule back on its shared 292px track over its own shorter list. OBSERVED: check failed \"/wiki/concept/ai-winter @1440x900: .rails section \\\"rail rail-referenced\\\"'s heading rule spans 292.0px, 160.1px away from its own widest rendered child (131.9px)\" — the verdict's own 162.0px overhang. RECORDED HONESTLY: the first attempt omitted `width:auto` on `.rails` and did NOT fire (0 of 1) — informative, not a defect: `.rails` keeps `width: fit-content`, and an auto-fit/1fr track list inside an intrinsically-sized container resolves to ONE column, so the injected grid never actually produced a second track. OPPOSITE SIGN, same clause: `--only S5 --break \".rails > .rail{width:60px !important} .rails > .rail li{min-width:400px !important}\"`, which fired with \"heading rule spans 60.0px, 42.6px away from its own widest rendered child (102.6px)\" — the rule narrower than its content. Both restored.",
       observed: '(1) iter-01: "entry-head width 1152.0px vs prose width 608.0px (diff 544.0px)" on /wiki/concept/ai-winter. (2) iter-04: "FACTS heading width 1152.0px vs .facts width 608.0px (diff 544.0px)" on /wiki/concept/ai-winter. (3) iter-04: "/data \\"One table at a time (CSV)\\" heading width 1152.0px vs its section width 598.4px (diff 553.6px)" (the first of /data\'s three browse-wrapping sections the harness reaches). (4) iter-04: "/colophon: .listing-facts width 1152.0px vs .prose width 608.0px (diff 544.0px)" — confirming the guard is not vacuous. (5) iter-08 FIRST ATTEMPT (box-based): "FALSIFICATION: 0 of 1 check(s) fired as intended" — the box-based read showed 1152.0px vs 1152.0px, 0 diff, on a page that still visibly had a 652px overhang. REWRITE, same break: check failed "/blog @1440x900: .rail-posts width 1152.0px vs widest row\\\'s own grid content 500.0px (diff 652.0px)" — the exact 652px reading I35 measured on the shipped (pre-fix) build. (6) iter-09: attempt 1 (direct-child box): "FALSIFICATION: 0 of 1 check(s) fired" — box read 1152.0px vs 1152.0px, 0 diff, on a page that still visibly had the overhang. Attempt 2 (Range on direct children): same non-fire, same cause one level deeper (the Range\\\'s only content was still a block box). Attempt 3 (Range on `.page-lede, .fetch-line, .sort-note` directly): check failed "/catalog @1440x900: .catalog-preamble > summary\\\'s border-bottom spans 1152.0px, 481.7px away from the widest rendered content LINE the disclosure introduces (670.3px)" — a genuine text-line measurement; this file\\\'s own 670.3px reading differs from the judge\\\'s own 882.9px (a different, coarser measurement method — see the implementer report), but both agree the summary\\\'s rule ran the full 1152px shell past its content by several hundred pixels. (7) iter-09: check failed "/catalog @1440x900: .catalog-preamble > summary\\\'s border-bottom spans 50.0px, 620.3px away from the widest rendered content LINE the disclosure introduces (670.3px)" — the opposite sign, on the same clause. All seven restored; rebuilt tree passes every clause at both viewports.',
       brokenByOpposite: 'iter-06: `diff = Math.abs(a - b)` is mechanically symmetric, but all four THEN-historical breaks widen the RULE-BEARING element past the content it introduces (entry-head/FACTS-heading/section-title all made WIDER than their content). None makes the rule-bearing element NARROWER than its content, the opposite sign of the same subtraction. FIRST ATTEMPT: `--only S5 --break "article:has(> .entry-facts) .prose { max-width: 100% !important; }"` reported NOT firing (0 of 1) — informative, not a defect in the check: at the >=60rem breakpoint `.prose` sits in an explicit GRID TRACK (`minmax(0, var(--measure))`) that constrains its rendered width regardless of its own max-width, and below that breakpoint the 390px viewport is already narrower than `--measure`, so overriding the cap has no visible effect at either declared viewport — the constraint had moved to a layer this break did not touch. REAL test, targeting the rule-bearing element\'s own max-width instead (the thing S5 actually measures): `--only S5 --break ".entry-head { max-width: 200px !important; }"`. iter-08 (I35), the SAME opposite direction exercised against the new /blog clause specifically: `--only S5 --break ".rail-posts{width:300px !important} .rail-item{min-width:500px !important}"` — .rail-posts cannot simply be narrowed on its own the way entry-head can, since its rows are DOM CHILDREN that would shrink to fit an ordinary width cap rather than overflow it (trivially "matching", not violating, the property); forcing a row\'s own min-width past its parent\'s forced width is what actually produces a rule narrower than its own content, the reverse of every prior /blog break. iter-09 (I40): break (7) above is the same opposite sign exercised against the new /catalog clause.',
       observedOpposite: 'check failed "/wiki/concept/ai-winter @1440x900: entry-head width 200.0px vs prose width 608.0px (diff 408.0px)" — the rule now narrower than its content, the opposite sign from every historical break. iter-08: check failed "/blog @1440x900: .rail-posts width 300.0px vs widest rendered row 500.0px (diff 200.0px)" — same opposite sign, on the new clause. iter-09: check failed "/catalog @1440x900: .catalog-preamble > summary\'s border-bottom spans 50.0px, 620.3px away from the widest rendered content LINE the disclosure introduces (670.3px)" — same opposite sign, on the new /catalog clause. All restored; rebuilt tree (full gate) passes S5 at both declared viewports.',
@@ -323,9 +323,46 @@ const INVARIANTS = [
             out.factsTitleW = factsTitle.getBoundingClientRect().width;
             out.factsW = facts.getBoundingClientRect().width;
           }
+          // RD-002 fix 4 (F-struct-2, R10). `.rails` — the block the round-2
+          // findings name `.entry-rails` — is REFERENCED HERE / APPEARS IN.
+          // Each of its sections carries a border-top: a rule introducing that
+          // section's own list, which shall span that list and not a grid
+          // track it happened to share with a shorter neighbour (measured
+          // 292.0px of rule over 130.0px and 216.0px of content). Measured
+          // with a Range over the TEXT-BEARING elements (the h2 and each li),
+          // never the sections' block children's boxes — those fill whatever
+          // width the section is and would make this vacuous, the mistake
+          // this check's own /blog and /catalog clauses each made once.
+          out.rails = [];
+          // `.rails`' children are `<aside class="rail rail-referenced">` /
+          // `rail-appears-in` (lib/render/entry.mjs) — selected by class, not
+          // by tag: a tag selector here matched nothing and would have made
+          // this clause silently vacuous, which is the failure this harness
+          // refuses on principle.
+          for (const section of document.querySelectorAll('.rails > .rail')) {
+            if (!(parseFloat(getComputedStyle(section).borderTopWidth) > 0)) continue;
+            let widest = 0;
+            for (const node of section.querySelectorAll('h2, li')) {
+              const range = document.createRange();
+              range.selectNodeContents(node);
+              for (const rect of range.getClientRects()) if (rect.width > widest) widest = rect.width;
+            }
+            out.rails.push({
+              cls: section.className,
+              ruleW: section.getBoundingClientRect().width,
+              contentW: widest,
+            });
+          }
           return out;
         });
         if (r.error) return r.error;
+        for (const s of r.rails ?? []) {
+          if (!(s.contentW > 0)) continue;
+          const railDiff = Math.abs(s.ruleW - s.contentW);
+          if (railDiff > 1) {
+            return `.rails section "${s.cls}"'s heading rule spans ${s.ruleW.toFixed(1)}px, ${railDiff.toFixed(1)}px away from its own widest rendered child (${s.contentW.toFixed(1)}px)`;
+          }
+        }
         const diff = Math.abs(r.headW - r.proseW);
         if (diff > 2) {
           return `entry-head width ${r.headW.toFixed(1)}px vs prose width ${r.proseW.toFixed(1)}px (diff ${diff.toFixed(1)}px)`;
@@ -1096,15 +1133,15 @@ const INVARIANTS = [
   },
   {
     id: 'S17', rule: 'R8',
-    intent: "R8's iter-08 addendum governs THREE surfaces, not the two S17 originally sampled: no column of a record/listing surface renders an identical value on more than 90% of its rows at the same visual weight as the columns a reader compares across, measured as COMPUTED COLOUR and not only as the presence of a link. /catalog's Read column (a value constant across the collection is stated once, renderFetchLine, above the table, and rendered per row at --muted rather than the ink weight of the Model/numeric columns); /tools' .listing-verified column (iter-08, I36 — S17 previously tested only ONE surface and only ONE emphasis mechanism, so it was green while /tools' verification date sat at the identical computed colour as .listing-pricing, the field a reader actually compares across a category); and the home changed feed's provenance link (I42, iter-09 — WORSE than either: the repeated value ('source', 24 of 24 rows) did not merely match the compared column's weight, it read LOUDER, at --accent, than the record link beside it). All three now sampled by one route list. On every surface a row whose own value genuinely differs from its collection's/category's/feed's dominant one keeps full weight, exactly as R8's badge clause keeps a status chip only where the tone differs from the default.",
+    intent: "R8's iter-08 addendum governs THREE surfaces, not the two S17 originally sampled: no column of a record/listing surface renders an identical value on more than 90% of its rows at the same visual weight as the columns a reader compares across, measured as COMPUTED COLOUR and not only as the presence of a link. /catalog's Read column (a value constant across the collection is stated once, renderFetchLine, above the table, and rendered per row at --muted rather than the ink weight of the Model/numeric columns); /tools' .listing-verified column (iter-08, I36 — S17 previously tested only ONE surface and only ONE emphasis mechanism, so it was green while /tools' verification date sat at the identical computed colour as .listing-pricing, the field a reader actually compares across a category); and the home changed feed's provenance link (I42, iter-09 — WORSE than either: the repeated value ('source', 24 of 24 rows) did not merely match the compared column's weight, it read LOUDER, at --accent, than the record link beside it). RD-002 fix 2 (F-hier-5 + F-struct-4): /frontier is the FOURTH, and the one R8's badge clause names outright - the players board's VENDOR CLAIM column rendered a bordered chip on 16 of 16 rows, a value identical on 100% of them and boxed, which S17 was green over only because its route list predated the route. Two sub-tests there: no board cell is a bordered chip at all, and no column repeats one value on more than 90% of rows at or above the computed weight of the numeric columns. All four now sampled by one route list. On every surface a row whose own value genuinely differs from its collection's/category's/feed's dominant one keeps full weight, exactly as R8's badge clause keeps a status chip only where the tone differs from the default.",
     independent: "/catalog clause 1a (link presence, unchanged): whether an <a> element exists inside each row's Read <td>, read from the REAL /catalog page's live DOM (396 actual rows). /catalog clause 1b (iter-08, NEW): the dominant Read value's own `getComputedStyle(...).color`, read live, compared against a numeric column cell's computed colour on the SAME live page — independent of clause 1a's link-presence signal, so a future rule that decouples colour from link structure cannot hide behind clause 1a alone. /catalog clause 2 (the badge-clause's other half, which the real page's data cannot currently exercise — every row shares one source today): renderCatalogTable itself, called directly with a SYNTHETIC 10-row fixture (9 sharing one fetch date, 1 genuinely different), parsed with cheerio. /tools clause 1 (iter-08, NEW): per category (.listings), the dominant .listing-verified text's own computed colour compared against .listing-pricing's computed colour on the SAME live entry, read from the REAL /tools page (12 categories, 35 listings). /tools clause 2 (iter-08, NEW): categorySection called directly with a SYNTHETIC 10-listing group (9 sharing one verification date, 1 genuinely different), parsed with cheerio, asserting the rendered `data-default` attribute — the real page's data cannot exercise this either, every category shares one date today. Home clause (I42, iter-09, NEW): the dominant a.src text's own `getComputedStyle(...).color`, read live from the REAL home page (24 changed-feed entries), compared against a.change-name's (or the unlinked .change-name span's) computed colour on the SAME row — the record link is the comparison reference named directly in the invariant, not a numeric column, since the changed feed has no numeric field to compare against.",
     falsifier: {
-      brokenBy: 'reverted the Read cell\'s condition in `catalogRowHtml` (lib/render/catalog.mjs) from `row.source_url && !isDefaultFetch` back to the pre-fix `row.source_url` alone, THEN rebuilt (`npm run build`) — the exact I8 defect, every row linked regardless of whether its date matches the collection default. The rebuild is necessary here: clause 1 reads the REAL, already-built /catalog page from `out/`, which only reflects a source edit after `next build` regenerates it — unlike S1-S16, this property is a render-logic/template change, not CSS, so `--break`\'s runtime CSS injection cannot reach it at all (confirmed: running the break WITHOUT rebuilding left clause 1 reading the stale, still-correct build and passing — only clause 2\'s dynamic import, which re-reads the source file directly with no build step, caught it, with the message from the OTHER falsifier episode below; the accurate two-step process is recorded here rather than the single-step one first assumed). iter-08 (I36) NEW, clause 1b: `--only S17 --break "#catalog-table td[data-label=\'Read\'] > time{color:var(--ink) !important}"` — forces the unlinked, majority-date cells back to full ink WITHOUT touching link structure at all, reproducing the exact defect I36 found: S17 was green over this because clause 1a only ever looked at the <a>, never at colour. iter-08 (I36) NEW, /tools clause 1: `--only S17 --break ".listing-verified{color:var(--ink) !important}"` — the same shape on the second surface. I42 (iter-09) NEW, home clause: `--only S17 --break ".src{color:var(--ink) !important}"` — raises the changed feed\'s provenance link to full ink, matching a.change-name\'s own weight, reproducing the pre-fix defect on the third surface.',
+      brokenBy: 'reverted the Read cell\'s condition in `catalogRowHtml` (lib/render/catalog.mjs) from `row.source_url && !isDefaultFetch` back to the pre-fix `row.source_url` alone, THEN rebuilt (`npm run build`) — the exact I8 defect, every row linked regardless of whether its date matches the collection default. The rebuild is necessary here: clause 1 reads the REAL, already-built /catalog page from `out/`, which only reflects a source edit after `next build` regenerates it — unlike S1-S16, this property is a render-logic/template change, not CSS, so `--break`\'s runtime CSS injection cannot reach it at all (confirmed: running the break WITHOUT rebuilding left clause 1 reading the stale, still-correct build and passing — only clause 2\'s dynamic import, which re-reads the source file directly with no build step, caught it, with the message from the OTHER falsifier episode below; the accurate two-step process is recorded here rather than the single-step one first assumed). iter-08 (I36) NEW, clause 1b: `--only S17 --break "#catalog-table td[data-label=\'Read\'] > time{color:var(--ink) !important}"` — forces the unlinked, majority-date cells back to full ink WITHOUT touching link structure at all, reproducing the exact defect I36 found: S17 was green over this because clause 1a only ever looked at the <a>, never at colour. iter-08 (I36) NEW, /tools clause 1: `--only S17 --break ".listing-verified{color:var(--ink) !important}"` — the same shape on the second surface. I42 (iter-09) NEW, home clause: `--only S17 --break ".src{color:var(--ink) !important}"` — raises the changed feed\'s provenance link to full ink, matching a.change-name\'s own weight, reproducing the pre-fix defect on the third surface. RD-002 (F-hier-5/F-struct-4) NEW, /frontier sub-test (b): `--only S17 --break "#frontier-board .board-claim .hatch-text{color:var(--ink) !important;font-size:var(--step--1) !important;font-style:normal !important}"` - raises the majority claim-column state to the numeric columns\' own computed weight without touching any class or chip, the same shape of defect as the /catalog and /tools breaks above, on the fourth surface. Sub-test (a) cannot be reached from CSS at all (the chip is a `.badge` element the render no longer emits), so it is falsified by a source edit — restoring the removed `el(\'span\', {class: \'badge\', ...})` in lib/render/frontier.mjs and rebuilding. OBSERVED, sub-test (a): check failed "/frontier @1440x900: 16 bordered chip(s) inside #frontier-board (e.g. \'claimed \u00b7 unverified\') - R8 boxes a badge only where its tone differs from the collection default", the exact 16-of-16 the verdict measured. OBSERVED, sub-test (b): the break above was aimed at the claim column, but the live defect the widened clause actually found first was the READ column - check failed "/frontier @1440x900: board column 6 repeats \'openrouter-models \u00b7 2026-09-05\' on 100.0% of 16 rows at the same weight (rgb(26, 27, 34), 13.0px) as the numeric columns a reader compares across" - found on the REAL gate before any break, fixed by reusing renderFetchLine plus a --muted default row, and re-broken with `--only S17 --break "#frontier-board .board-read[data-default]{color:var(--ink) !important}"`, which fired with the identical message. Both restored; rebuilt tree passes S17.',
       observed: 'WITHOUT a rebuild (source reverted, `out/` still the fixed build): check failed via clause 2 only — "synthetic fixture: 9 of 9 majority-date rows still render their Read cell as a link, despite sharing the collection\'s dominant fetch date" — clause 1 passed (stale build). WITH the rebuild: check failed via clause 1a — "/catalog: the Read column\'s dominant value \\"2026-08-31\\" appears on 396/396 rows (100.0%) and 396 of them still render at link weight (an <a> in the cell) — a collection-constant value is repeated per row at the same visual weight as the Model column". Restored and rebuilt; re-ran and confirmed PASS. iter-08 clause 1b: check failed "/catalog: the Read column\'s dominant value \\"2026-08-31\\" renders at rgb(26, 27, 34), the SAME computed colour as the numeric columns (rgb(26, 27, 34)) a reader compares across — link absence alone did not lower its visual weight". iter-08 /tools clause 1: check failed \'/tools category "agents": the .listing-verified column\\\'s dominant value "verified 2026-08-28" appears on N/N listings (100.0%) and renders at the SAME computed colour (rgb(26, 27, 34)) as .listing-pricing\'. I42 (iter-09) home clause: check failed "/: the changed feed\'s provenance link text \\"source\\" appears on 24/24 rows (100.0%) and renders at the SAME computed colour (rgb(26, 27, 34)) as the record link (rgb(26, 27, 34)) it sits beside" — matching the verdict\'s own "24 of 24" reading exactly. All restored; rebuilt tree (full gate) confirmed PASS.',
       brokenByOpposite: 'reverted the same condition the OTHER direction — `const isDefaultFetch = true;` unconditionally (the link suppressed even for a row whose date genuinely differs) — the opposite excess: R8\'s badge-clause other half, unmet. This is exactly the shape iter-06 found missing on S2 (an \'ended\'-status badge losing its box) applied to this same clause on a different column. No rebuild needed for this direction: clause 1 (the real page, rebuilt and restored beforehand) stays green regardless, since the real data has no minority row to expose the loss — which is exactly why clause 2 exists; clause 2\'s dynamic import picks up the source edit immediately. iter-08 (I36) NEW, /tools: the identical shape on the second surface — inverted `renderListingRow`\'s `isDefaultVerified` comparison in lib/render/tools.mjs (`===` to `!==`) so the MAJORITY rows lose `data-default="yes"` and the ONE minority row gains it — re-ran WITHOUT --break (clause 2\'s dynamic `import()` re-reads the current source directly, same mechanism as /catalog\'s own clause 2, since neither CSS injection nor a rebuild can reach a JS-logic inversion the way clause 1\'s real DOM read needs one).',
       observedOpposite: 'check failed "synthetic fixture: the ONE row with a genuinely different fetch date (the exception the collection default is stated FOR) lost its link — R8\'s badge-clause other half, unmet". Clause 1 confirmed unaffected (still passing on the real page), showing clause 2 exercises code clause 1 cannot reach. iter-08 /tools: check failed "synthetic /tools fixture: 9 of 9 majority-date listings do NOT carry data-default=\\"yes\\" — R8\'s badge-clause other half (the default stays demoted) is unmet". Both restored; re-ran and confirmed PASS. I42 (iter-09) home clause: no dedicated opposite-direction fixture — the changed feed has no numeric or fixed-format field a `data-default`-style attribute could attach to (unlike /catalog\'s fetch date and /tools\' verification date, both of which have that mechanism already built for the badge-clause\'s other half), and today\'s live feed carries no genuinely-different-source row to exercise one against. The registry\'s own two-sidedness requirement is satisfied at the INVARIANT level by the /catalog and /tools opposite-direction fixtures above, which exercise the identical badge-clause-other-half property this clause shares; a THIRD, home-specific synthetic fixture was judged not to add a new failure mode, only a third instance of the same one already covered.',
     },
-    kind: 'dom', routes: ['/catalog', '/tools', '/'], viewports: [[1440, 900]],
+    kind: 'dom', routes: ['/catalog', '/tools', '/', '/frontier'], viewports: [[1440, 900]],
     // All three clauses are viewport-independent (whether the Read cell
     // holds an <a>, or a.src's own colour, is decided by data/CSS, not by
     // any media query — the mobile stacked layout re-presents the same
@@ -1121,6 +1158,73 @@ const INVARIANTS = [
     // CSS/colour property, so it is falsified with --break instead, like
     // every other colour check in this registry.
     check: async ({ page, route }) => {
+      if (route === '/frontier') {
+        // RD-002 fix 2 (F-hier-5 + F-struct-4, R8's badge clause). The FOURTH
+        // surface, and the one R8's badge clause names outright: /frontier's
+        // VENDOR CLAIM column rendered a bordered "claimed · unverified" chip
+        // on 16 of 16 rows — a value identical on 100% of rows, boxed, and
+        // the flagship's loudest repeated mark. TWO sub-tests, because the
+        // defect had two halves and either alone lets the other through:
+        //   (a) NO board cell is a bordered chip at all. R8 boxes a badge
+        //       only where its tone differs from the collection's default;
+        //       on a board whose every row carries the same state, the
+        //       default IS the state, so the chip has nothing to say.
+        //   (b) No column repeats one value on more than 90% of rows at or
+        //       above the computed weight of the numeric columns a reader
+        //       compares across — measured as computed colour AND font
+        //       weight, not as the presence of a class, which is what let
+        //       this pass on /catalog and /tools before I36 and I42.
+        const dom = await page.evaluate(() => {
+          const table = document.getElementById('frontier-board');
+          if (!table) return { error: 'missing #frontier-board on /frontier' };
+          const boxed = [...table.querySelectorAll('.badge')].filter(
+            (b) => parseFloat(getComputedStyle(b).borderTopWidth) > 0,
+          );
+          if (boxed.length) return { boxed: boxed.length, boxedText: boxed[0].textContent.trim() };
+          const bodyRows = [...table.querySelectorAll('tbody tr')];
+          if (bodyRows.length < 5) return { error: `expected at least 5 board rows, found ${bodyRows.length}` };
+          // The reference weight: what a compared (numeric) cell renders at.
+          const ref = table.querySelector('td[data-numeric]');
+          if (!ref) return { error: 'no numeric board cell to weigh the repeated columns against' };
+          const refStyle = getComputedStyle(ref);
+          const reference = { color: refStyle.color, size: parseFloat(refStyle.fontSize) };
+          const cols = [];
+          const width = bodyRows[0].children.length;
+          for (let i = 0; i < width; i += 1) {
+            const cells = bodyRows.map((tr) => tr.children[i]).filter(Boolean);
+            const counts = new Map();
+            for (const c of cells) {
+              const t = c.textContent.trim();
+              counts.set(t, (counts.get(t) ?? 0) + 1);
+            }
+            let top = ['', 0];
+            for (const e of counts) if (e[1] > top[1]) top = e;
+            const sample = cells.find((c) => c.textContent.trim() === top[0]);
+            const cs = getComputedStyle(sample);
+            cols.push({
+              index: i,
+              value: top[0],
+              share: top[1] / cells.length,
+              color: cs.color,
+              size: parseFloat(cs.fontSize),
+            });
+          }
+          return { cols, reference, rows: bodyRows.length };
+        });
+        if (dom.error) return dom.error;
+        if (dom.boxed) {
+          return `${dom.boxed} bordered chip(s) inside #frontier-board (e.g. "${dom.boxedText}") — R8 boxes a badge only where its tone differs from the collection default`;
+        }
+        for (const c of dom.cols) {
+          if (c.share <= 0.9 || !c.value) continue;
+          const atReferenceWeight = c.color === dom.reference.color && c.size >= dom.reference.size - 0.01;
+          if (atReferenceWeight) {
+            return `board column ${c.index} repeats "${c.value}" on ${(c.share * 100).toFixed(1)}% of ${dom.rows} rows at the same weight (${c.color}, ${c.size.toFixed(1)}px) as the numeric columns a reader compares across — state it once above the board instead`;
+          }
+        }
+        return true;
+      }
+
       if (route === '/') {
         // I42 (iter-09, R8's iter-08 addendum's third surface, and R9 —
         // .src is a resting link inside a list row): the changed feed's
@@ -1324,10 +1428,10 @@ const INVARIANTS = [
   },
   {
     id: 'S18', rule: 'R13',
-    intent: "R13's iter-07(a) dead-track floor. On the home page at 1440x900, the SHORTER of .home-side / .rail-changes reaches at least 60% of the TALLER one's own height. CP-UI-001-2 (round-2 addendum): the wiki-entry clause that lived here (I40, iter-09 — .prose vs .entry-side, honestly left FAILING at 32-40%) is RETIRED, not raised or reworked: the wiki entry template no longer declares a two-column grid at all (globals.css, lib/render/entry.mjs — FACTS/TIMELINE/RAILS render single-column, in order, after PROSE), so there is no second track for a 60% floor to be asked of. See RULES.md R13's round-2 addendum and S13/S14 above for the same retirement on this template.",
+    intent: "R13's iter-07(a) dead-track floor. On the home page at 1440x900, the SHORTER of .home-side / .rail-changes reaches at least 60% of the TALLER one's own height. CP-UI-001-2 (round-2 addendum): the wiki-entry clause that lived here (I40, iter-09 — .prose vs .entry-side, honestly left FAILING at 32-40%) is RETIRED, not raised or reworked: the wiki entry template no longer declares a two-column grid at all (globals.css, lib/render/entry.mjs — FACTS/TIMELINE/RAILS render single-column, in order, after PROSE), so there is no second track for a 60% floor to be asked of. RD-002 fix 4 (F-struct-3; AR-001 D4): a SECOND clause now samples the wiki entry again, on the block that survived that retirement — `.rails` (REFERENCED HERE / APPEARS IN, what the round-2 findings call `.entry-rails`), still a two-track grid at 44.9% (61.0px against 136.0px). AR-001 D4: retiring an assertion does not retire its rule. The clause is generalised past one named pair and asks R13's own two-part question — EITHER one flow, or a shorter column at 60% of the taller — reading columns off the children's rendered left edges rather than any grid declaration.",
     independent: "getBoundingClientRect().height of .home-side and .rail-changes on /, and of .prose and .entry-side on the wiki entry — read live from each rendered page, not any CSS value and not either element's own content count",
     falsifier: {
-      brokenBy: "reverted app/page.tsx's I9 fix — removed the relocated 'Everything here' <section> from inside <aside className=\"home-side\"> and restored it to its original position below .home-grid — then rebuilt (`npm run build`). This is a JSX/template change: --break's runtime CSS injection cannot move an element between two different parents, so unlike the CSS-only checks in this registry a real rebuild is the correct falsification mechanism here, not --break (see IMPLEMENT.md: 'use a real rebuild only where the property cannot be violated from CSS').",
+      brokenBy: "reverted app/page.tsx's I9 fix — removed the relocated 'Everything here' <section> from inside <aside className=\"home-side\"> and restored it to its original position below .home-grid — then rebuilt (`npm run build`). This is a JSX/template change: --break's runtime CSS injection cannot move an element between two different parents, so unlike the CSS-only checks in this registry a real rebuild is the correct falsification mechanism here, not --break (see IMPLEMENT.md: 'use a real rebuild only where the property cannot be violated from CSS'). RD-002 (F-struct-3) NEW, the `.rails` clause: `--only S18 --break \".rails{display:grid !important;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr)) !important;width:auto !important} .rails > .rail{width:auto !important}\"` — reinstates the exact two-track grid this round retired. OBSERVED: check failed \"/wiki/concept/ai-winter @1440x900: .rails renders 2 columns and its shorter one (82.2px) reaches only 52.4% of the taller (156.9px) — under R13's 60% floor, and it is not one flow either\", the verdict's own shape (it measured 44.9% on a differently-sized sample). RECORDED HONESTLY, TWICE: the first attempt omitted `width:auto` on `.rails` and produced one column, not two, so it did NOT fire; the second attempt DID produce two columns and STILL did not fire, and that one was a defect in the check — it measured each item's own BOX height, and a grid row stretches every item in it to the same height, so a box-height ratio there is 100% by construction, S1's own vacuous-box mistake on a new surface. Rewritten to measure each item's OCCUPIED height (its last rendered child's bottom, less its own top), which is what R13's floor is about, and it then fired. OPPOSITE SIGN, same clause: the same break plus `.rail-referenced li{height:300px !important}` swaps which rail is the short one and fired with \"its shorter one (156.9px) reaches only 24.8% of the taller (632.3px)\", confirming the min/max formula is genuinely symmetric. All restored.",
       observed: 'check failed "/ @1440x900: .home-side (576.7px) reaches only 46.9% of .rail-changes\'s own height (1230.8px) — a column held open beside nothing for the remaining 654.2px" — matching I9\'s own opening measurement (46.9%, ~688px) closely; the small gap-figure difference is this run\'s own live remeasurement against a freshly rebuilt tree, not a discrepancy. Restored (moved the section back into .home-side) and rebuilt; re-ran and confirmed PASS at 87.7%.',
       brokenByOpposite: '`--only S18 --break ".home-side{min-height:2400px !important}"` — the OPPOSITE excess: .home-side padded taller than .rail-changes, past the point where the SHORTER side (now .rail-changes) drops below 60% of the TALLER (now .home-side). A one-directional formula (always homeSide / railChanges) would pass this trivially, since a padded-tall rail only pushes THAT ratio further from its floor — it would never catch the FEED column now being the short one. The check instead compares whichever side is SHORTER against whichever is TALLER, so this break exercises the identical formula from the other side, on the same live measurement. Recorded honestly: a first attempt at `min-height:1400px` did NOT fire (0 of 1) — not a flaky check, an under-sized break: 1400px only pushes .home-side past .rail-changes\'s 1230.8px by a small margin, giving 1230.8/1400 = 87.9%, still comfortably over the 60% floor. Recomputed the threshold (need tallH > 1230.8/0.6 ≈ 2051px) and re-broke at 2400px.',
       observedOpposite: 'AT 1400px (first attempt): no failure — informative, not a defect (see above; the CSS did not actually violate the property, matching the harness\'s own diagnostic text for this case). AT 2400px: check failed "/ @1440x900: .rail-changes (1230.8px) reaches only 51.3% of .home-side\'s own height (2400.0px) — a column held open beside nothing for the remaining 1169.2px". Restored (removed the injected min-height); rebuilt tree (full gate) passes S18.',
@@ -1351,14 +1455,65 @@ const INVARIANTS = [
       // S13/S14 above and RULES.md R13's round-2 addendum) — there is no
       // `.entry-side` left to break.
     },
-    kind: 'dom', routes: ['/'], viewports: [[1440, 900]],
+    kind: 'dom', routes: ['/', '/wiki/concept/ai-winter'], viewports: [[1440, 900]],
     // Home-only for the FIRST clause: .home-grid's two-column split exists
     // solely at the >=60rem breakpoint (see globals.css); below it both
     // stack full-width in one column and this ratio is undefined (nothing
     // to compare side-by-side), so 390x844 is not a second viewport either
     // clause has an opinion about — the wiki-entry clause below has the
     // identical reasoning for its own >=60rem breakpoint.
-    check: async ({ page }) => {
+    check: async ({ page, route }) => {
+      if (route === '/wiki/concept/ai-winter') {
+        // RD-002 fix 4 (F-struct-3; AR-001 D4). S18's wiki-entry clause was
+        // retired last round along with `.entry-side` — but AR-001 D4 is
+        // explicit that retiring an ASSERTION does not retire its RULE, and
+        // R13's 60% floor still bound `.rails` (the block the round-2
+        // findings call `.entry-rails`), measured at 44.9%: 61.0px against
+        // 136.0px. The clause returns, generalised past the one named pair,
+        // and asks R13's own two-part question rather than only the floor:
+        // EITHER the block is one flow (no second track for a floor to be
+        // asked of) OR its shorter column reaches 60% of the taller. Columns
+        // are read from the children's own rendered left edges, not from any
+        // grid-template-columns value — a flex column, a grid, a float or a
+        // future mechanism all answer the same question the same way.
+        const r = await page.evaluate(() => {
+          const rails = document.querySelector('.rails');
+          if (!rails) return { error: 'missing .rails on this entry' };
+          const kids = [...rails.children];
+          if (!kids.length) return { error: '.rails has no children to measure' };
+          // OCCUPIED height, not the item's own box height. A grid (or a
+          // stretched flex row) makes every item in a row exactly as tall as
+          // the tallest, so item boxes are ALWAYS equal there and a ratio over
+          // them is 100% by construction — it would report a dead track as
+          // full, the vacuous reading this registry has now recorded on four
+          // different checks. R13's floor asks whether the track is OCCUPIED,
+          // so what is measured is each item's own content: the bottom of its
+          // last rendered child, less its own top. Under the pre-round grid
+          // that reads 61.0px against 136.0px — the verdict's own 44.9%.
+          const occupied = (n) => {
+            const r = n.getBoundingClientRect();
+            let bottom = r.top;
+            for (const c of n.children) bottom = Math.max(bottom, c.getBoundingClientRect().bottom);
+            return Math.max(0, bottom - r.top);
+          };
+          const cols = new Map();
+          for (const k of kids) {
+            const key = Math.round(k.getBoundingClientRect().left);
+            cols.set(key, (cols.get(key) ?? 0) + occupied(k));
+          }
+          return { columns: [...cols.entries()].map(([left, height]) => ({ left, height })) };
+        });
+        if (r.error) return r.error;
+        if (r.columns.length < 2) return true; // one flow — R13's other permitted answer
+        const heights = r.columns.map((c) => c.height);
+        const shortH = Math.min(...heights);
+        const tallH = Math.max(...heights);
+        const ratio = shortH / tallH;
+        if (ratio < 0.6 - 0.001) {
+          return `.rails renders ${r.columns.length} columns and its shorter one (${shortH.toFixed(1)}px) reaches only ${(ratio * 100).toFixed(1)}% of the taller (${tallH.toFixed(1)}px) — under R13's 60% floor, and it is not one flow either`;
+        }
+        return true;
+      }
       const r = await page.evaluate(() => {
         const side = document.querySelector('.home-side');
         const rail = document.querySelector('.rail-changes');
@@ -1566,6 +1721,258 @@ const INVARIANTS = [
       await page.keyboard.press('Enter');
       const afterOpen = await page.evaluate(() => document.querySelector('.catalog-preamble').open);
       if (afterOpen !== true) return `Enter on the .catalog-preamble summary did not open it (open=${afterOpen})`;
+      return true;
+    },
+  },
+  {
+    id: 'S24', rule: 'R6',
+    intent: "RD-002 fix 3 (F-hier-10; AR-001 D3, K25). At 390 the Frontier door is the home rail's first block, but the rail folds after the WHOLE changed feed, so the flagship sat ~2,400px into the document. AR-001 D3 settles what is owed: F-hier-10's own invariant says the nav counts, and under R6 (nothing displaces the feed) the nav item is the anchored minimum — K25 confirms it. TWO clauses, because a reachability floor alone would be satisfied by wrecking the rule it is supposed to protect. (a) At 390 on the home page a link to /frontier is reachable from the FIRST VIEWPORT without traversing the feed: either the link itself is in it, or the control that exposes it is (the nav disclosure, which R14/S10 keeps closed at this width) and opening that control reveals the link. (b) The changed feed still LEADS: the first feed line's top edge sits above the Frontier door's, so the reachability in (a) was not bought by moving the flagship up over the feed — R6 exactly.",
+    independent: "getBoundingClientRect().top of the nav control and of the revealed /frontier link against window.innerHeight, and of the first .rail-changes line against the .frontier-door block — live geometry on the built page, not the nav route list any renderer keeps",
+    falsifier: {
+      brokenBy: "clause (a): `--only S24 --break \".site-header a[href='/frontier']{display:none !important}\"` — removes the nav item the keeper's own K25 ruling relies on, leaving the door ~2,400px down the document as the route's only presence on this surface, which is F-hier-10's shipped defect exactly.",
+      observed: 'check failed "/ @390x844: the nav disclosure exposes no /frontier link" — the nav item K25 relies on removed, and clause (a) then has nothing in the first viewport to offer a reader. Restored; rebuilt tree passes S24.',
+      brokenByOpposite: "clause (b), the opposite end of the same page — reachability bought by displacing the feed: `--only S24 --break \".home-side{order:-1 !important} .home-grid{display:flex !important;flex-direction:column !important}\"` lifts the rail (and with it the Frontier door) ABOVE the changed feed. A check that only asked 'is /frontier reachable early' would score that as an improvement; R6 says it is the worse failure, so the check must fail on it.",
+      observedOpposite: 'check failed "/ @390x844: the Frontier door (top 137.8px) is at or above the changed feed\'s first line (top 1598.6px) — R6: the feed leads this page, and reachability may not be bought by displacing it" — the door now 1,460px ABOVE the feed, the exact trade R6 forbids and the one a reachability-only formula would have scored as an improvement. Restored; rebuilt tree passes S24.',
+    },
+    kind: 'dom', routes: ['/'], viewports: [[390, 844]],
+    check: async ({ page }) => {
+      const reach = await page.evaluate(() => {
+        const vh = window.innerHeight;
+        const direct = [...document.querySelectorAll('a[href="/frontier"]')].find((a) => {
+          const r = a.getBoundingClientRect();
+          return r.width > 0 && r.height > 0 && r.top >= 0 && r.top < vh;
+        });
+        if (direct) return { ok: true, how: 'link in the first viewport', top: direct.getBoundingClientRect().top };
+        const control = document.querySelector('.site-header details > summary');
+        if (!control) return { ok: false, why: 'no /frontier link in the first viewport and no nav disclosure to expose one' };
+        const cr = control.getBoundingClientRect();
+        if (!(cr.width > 0 && cr.top >= 0 && cr.top < vh)) {
+          return { ok: false, why: `the nav disclosure that would expose /frontier sits at top ${cr.top.toFixed(1)}px, outside the first viewport (0-${vh}px)` };
+        }
+        control.closest('details').open = true;
+        const revealed = [...document.querySelectorAll('.site-header a[href="/frontier"]')].find(
+          (a) => a.getBoundingClientRect().width > 0,
+        );
+        return revealed
+          ? { ok: true, how: 'nav disclosure in the first viewport exposes it', top: cr.top }
+          : { ok: false, why: 'the nav disclosure exposes no /frontier link' };
+      });
+      if (!reach.ok) return reach.why;
+
+      const order = await page.evaluate(() => {
+        const feed = document.querySelector('.rail-changes > .rail-item');
+        const door = document.querySelector('.frontier-door');
+        if (!feed || !door) return { error: 'missing .rail-changes rows or .frontier-door on /' };
+        return { feedTop: feed.getBoundingClientRect().top, doorTop: door.getBoundingClientRect().top };
+      });
+      if (order.error) return order.error;
+      if (order.feedTop >= order.doorTop) {
+        return `the Frontier door (top ${order.doorTop.toFixed(1)}px) is at or above the changed feed's first line (top ${order.feedTop.toFixed(1)}px) — R6: the feed leads this page, and reachability may not be bought by displacing it`;
+      }
+      return true;
+    },
+  },
+  {
+    id: 'S22', rule: 'R13',
+    intent: "RD-002 fixes 1 and 2 — the players board states only what it can source. THREE clauses. (a) IDENTITY: no cited fact belonging to an ORGANISATION record appears anywhere in /frontier's rendered text. The VENDOR CLAIM cell used to fall back from the model's own cited fact to the ORG's (`firstCitedFact(modelDoc) ?? firstCitedFact(org)`), so NVIDIA's company founding date and founders rendered under 'claimed · unverified' inside a MODEL's row — a fact about a company stamped as a claim about a model (F-sys-2-7, RT FM1; BRIEF R-B). The fallback is removed; this clause is what makes the removal permanent, and it is stated over the ORG CORPUS rather than over a list of forbidden words, so a founding date added to any org record tomorrow is caught the same way. (b) HONESTY REACHABLE: at least one hatched cell renders on shipped data, at 1440 AND at 390 — the concept's whole bet is that a board of honest blanks persuades, and the captured board rendered ZERO of them because the fallback laundered org trivia into the one column most likely to be empty (F-sys-2-3, RT FM2). (c) NO CELL CLIPPED: every vendor-claim cell renders on exactly ONE line and, where its text is wider than its box, is ellipsised — sixteen cells were cut mid-word at 1440 with nothing in frame saying content continued (F-hier-6, F-struct-5).",
+    independent: "for (a) the cited facts read out of content/wiki/org/*.md — the corpus itself, not the render module and not the page's own markup; for (b) and (c) getBoundingClientRect, scrollWidth/clientWidth and Range-measured text line boxes read live off the rendered board, never a CSS token or a declared column count",
+    falsifier: {
+      brokenBy: "THREE breaks. (a) restored the removed org fallback in lib/render/frontier.mjs (`vendorClaimFact(modelDoc) ?? firstCitedFact(org)`) and rebuilt — a render-logic change --break cannot reach, the mechanism this registry already uses for S14/S17/S18/S21. (b) `--only S22 --break \"#frontier-board .board-hatch{background-image:none !important}\"` — removes the hatch MARK from every blank cell while leaving the cells, their text and their classes exactly where they are, so the clause is exercised on what a reader sees rather than on what the renderer emitted; reproduces RT FM2's zero-hatch board. (c) `--only S22 --break \".board-claim,.board-claim .claim-line{text-overflow:clip !important}\"` — still capped, but clipped by its own box with nothing in frame saying content continues.",
+      observed: '(a) check failed "/frontier @1440x900: an ORGANISATION record\'s own cited fact is rendered on /frontier: “Qwen, launched in beta April 2023 as Tongyi Qianwen and opened to the public in September 2023” (content/wiki/org/alibaba-cloud.md)" — the same class of defect RT FM1 measured on NVIDIA, caught on a different org because the clause reads the whole corpus rather than one named fact. (b) check failed "/frontier @1440x900: the board renders ZERO hatched cells on shipped data" — RT FM2\'s exact reading. (c) check failed "/frontier @1440x900: a vendor-claim cell is clipped with no ellipsis (“59 at high reasoning, 57 at medium, 52 at low; up 3 from Gem…”)". RECORDED HONESTLY: the FIRST attempt at (c) broke with max-width:none;overflow:visible;text-overflow:clip and did NOT fire (0 of 1) — informative, not a defect in the check: removing the cap does not make the CELL clip, it makes the cell grow and the TABLE overrun its container, which is S22b\'s clause, not this one; the break had moved the violation to a different check. All three restored; rebuilt tree passes S22 at both declared viewports.',
+      brokenByOpposite: "clauses (b) and (c) bound a quantity and have a real other end, so they get one. (b) from the other end — `--only S22 --break \"#frontier-board .board-cell{background-image:repeating-linear-gradient(45deg,var(--rule) 0,var(--rule) 1px,transparent 1px,transparent 7px) !important}\"`: EVERY cell hatched, RT FM4's predicted failure (the hatch dominating the board) rather than none of them, which a floor-only formula passes trivially. (c) from the other end — `--only S22 --break \"#frontier-board .board-claim{max-width:1px !important}\"`: a cell capped so hard it carries no readable text at all, the opposite excess of the uncapped cell, which a 'not clipped without an ellipsis' formula also passes trivially.",
+      observedOpposite: 'check failed "/frontier @1440x900: 96 of 96 board value cells render the hatch (100.0%) — a board that can source almost nothing is the opposite excess of one that hides its blanks, and states as little (RT FM4\'s predicted failure)". Restored; rebuilt tree passes S22.',
+      oneSidedBecause: "clause (a) alone is a PROHIBITION over a corpus (no org-record fact may appear on this route) and has one direction by construction — there is no 'too few org facts on /frontier'. It is declared rather than given a manufactured second end, per this registry's own rule at S20. Clauses (b) and (c) are two-sided and are broken from both ends above.",
+    },
+    kind: 'dom', routes: ['/frontier'], viewports: [[1440, 900], [390, 844]],
+    check: async ({ page }) => {
+      // (a) IDENTITY. Read the ORG CORPUS directly — the independent quantity.
+      const { readdir, readFile: rf } = await import('node:fs/promises');
+      const orgDir = join(ROOT, 'content', 'wiki', 'org');
+      const orgFiles = await readdir(orgDir);
+      const orgFactValues = [];
+      for (const f of orgFiles) {
+        if (!f.endsWith('.md')) continue;
+        const text = await rf(join(orgDir, f), 'utf8');
+        // every `value:` inside a fact block whose `source:` is `cited`
+        const blocks = text.split(/\n\s*- field:/).slice(1);
+        for (const b of blocks) {
+          if (!/\n\s*source:\s*cited\b/.test(b)) continue;
+          const m = b.match(/\n\s*value:\s*"?([^"\n]+?)"?\s*\n/);
+          if (m && m[1].trim().length >= 8) orgFactValues.push({ file: f, value: m[1].trim() });
+        }
+      }
+      if (orgFactValues.length < 1) {
+        return 'no cited org facts found in content/wiki/org — clause (a) would be vacuous, which is the green-and-wrong failure this harness exists to refuse';
+      }
+      const pageText = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
+      for (const { file, value } of orgFactValues) {
+        if (pageText.includes(value.replace(/\s+/g, ' '))) {
+          return `an ORGANISATION record's own cited fact is rendered on /frontier: "${value}" (content/wiki/org/${file}) — the vendor-claim column may only carry a claim about the row's own MODEL`;
+        }
+      }
+
+      const dom = await page.evaluate(() => {
+        const table = document.getElementById('frontier-board');
+        if (!table) return { error: 'missing #frontier-board on /frontier' };
+        // The hatch is counted by its RENDERED MARK — a cell whose computed
+        // background carries the diagonal — not by the `.board-hatch` class.
+        // A class count answers "did the renderer emit the class", which is
+        // recompute-from-source; what the clause is about is whether a reader
+        // SEES a labelled blank. It also gives the bound a real second end:
+        // a board where every cell is hatched states as little as one where
+        // none is, and only a mark-based count can measure that.
+        const valueCells = [...table.querySelectorAll('tbody td')];
+        const hatched = valueCells.filter((c) => {
+          const r = c.getBoundingClientRect();
+          if (!(r.width > 0 && r.height > 0)) return false;
+          return getComputedStyle(c).backgroundImage.includes('repeating-linear-gradient');
+        }).length;
+        const claims = [];
+        for (const cell of table.querySelectorAll('.board-claim')) {
+          const line = cell.querySelector('.claim-line') || cell.firstElementChild || cell;
+          const cs = getComputedStyle(cell);
+          const lineStyle = getComputedStyle(line);
+          const range = document.createRange();
+          range.selectNodeContents(cell);
+          // Count LINE BOXES, not inline rects: a Range over a cell holding
+          // text, an <a> at a smaller step and a <time> returns one rect per
+          // inline box, and those rects' tops differ by a pixel or two purely
+          // from their differing font sizes. Rounding each top to an integer
+          // reported a one-line cell as two — a measurement artifact, and
+          // exactly the vacuous/false reading this registry's own S1, S5 and
+          // S17 post-mortems each record once. Rects are bucketed to the
+          // cell's own line height instead, so only a genuine wrap counts.
+          const lineHeight = parseFloat(getComputedStyle(cell).lineHeight) || 16;
+          const tops = new Set(
+            [...range.getClientRects()]
+              .filter((r) => r.height > 0)
+              .map((r) => Math.round(r.top / Math.max(8, lineHeight * 0.75))),
+          );
+          claims.push({
+            lines: tops.size,
+            clipped: line.scrollWidth > line.clientWidth + 1 || cell.scrollWidth > cell.clientWidth + 1,
+            ellipsis: cs.textOverflow === 'ellipsis' || lineStyle.textOverflow === 'ellipsis',
+            text: cell.textContent.trim().slice(0, 60),
+          });
+        }
+        return { hatched, claims, valueCells: valueCells.length };
+      });
+      if (dom.error) return dom.error;
+
+      // (b) HONESTY REACHABLE — asserted at BOTH declared viewports.
+      if (dom.hatched < 1) {
+        return 'the board renders ZERO hatched cells on shipped data — the labelled blank is correct in CSS and unreachable in data, which is the concept\'s own move failing to ship';
+      }
+      // ...and not the other excess: a board that is ALL blank states nothing either.
+      if (dom.valueCells && dom.hatched / dom.valueCells > 0.9) {
+        return `${dom.hatched} of ${dom.valueCells} board value cells render the hatch (${((dom.hatched / dom.valueCells) * 100).toFixed(1)}%) — a board that can source almost nothing is the opposite excess of one that hides its blanks, and states as little (RT FM4's predicted failure)`;
+      }
+      // (c) NO CELL CLIPPED.
+      for (const c of dom.claims) {
+        if (c.lines > 1) return `a vendor-claim cell renders on ${c.lines} lines ("${c.text}…") — the cell is capped to one ellipsised line`;
+        if (c.clipped && !c.ellipsis) return `a vendor-claim cell is clipped with no ellipsis ("${c.text}…") — text runs out of its own box with nothing in frame saying so`;
+        if (!c.text) return 'a vendor-claim cell renders no text at all — a cell capped past readability states less than the blank it replaced';
+      }
+      return true;
+    },
+  },
+  {
+    id: 'S22b', rule: 'R13',
+    intent: "RD-002 fix 2's last clause, at 1440 only — the board's rightmost declared column (READ, the per-row provenance that makes a row citable) renders inside the board container's own visible width, and that container does not scroll horizontally at 1440. Before this round an uncapped prose cell in the VENDOR CLAIM track pushed READ entirely off-screen at the widest viewport the site declares, with no visible scroll affordance saying so (F-sys-2-1b, F-struct-5). Separate from S22 because it is the one clause of that group with an opinion at 1440 and none at 390: below R12's breakpoint a data table is EXPECTED to scroll inside its own container (that is R2's own remedy for wide content), so asserting this at 390 would assert the opposite of R12.",
+    independent: "getBoundingClientRect().right of each row's last cell against .board-wrap's own rendered right edge, and .board-wrap's scrollWidth against its clientWidth — live geometry, not the --board-claim-max token that happens to make it true",
+    falsifier: {
+      brokenBy: "`--only S22b --break \".board-claim,.board-claim .claim-line{max-width:none !important;white-space:nowrap !important;overflow:visible !important}\"` — restores the uncapped prose cell in the last value track, the exact shipped shape that pushed READ out of the 1152px shell at 1440.",
+      observed: 'check failed "/frontier @1440x900: the board\'s own container scrolls horizontally at 1440 (scrollWidth 2215px > clientWidth 1152px) — the last column is reachable only by scrolling sideways on the widest viewport the site declares". The shipped pre-fix board measured 1244px against the same 1152px shell, so the break reproduces the defect and then some. Restored; rebuilt tree passes S22b.',
+      brokenByOpposite: "`--only S22b --break \".board-wrap{width:4000px !important} #frontier-board{width:1000px !important}\"` — the OPPOSITE sign of the same subtraction: instead of the last column running PAST the container's right edge, the container is held far wider than its own content, so the last column falls hundreds of pixels SHORT of it. A one-sided `right <= wrapRight` formula passes that trivially; this check bounds the distance in both directions, the same shape as S18's own two-sided floor.",
+      observedOpposite: 'AT `.board-wrap{width:4000px}` ALONE (first attempt): no failure — informative, not a defect: the table is width:100% of its wrap, so it widened right alongside it and the last column tracked the container\'s new edge exactly; the property was never violated. WITH the table\'s own width pinned as well: check failed "/frontier @1440x900: the board\'s rightmost column stops 2852.3px short of its container\'s right edge (1291.7px vs 4144.0px) — a container held open beside nothing, the opposite excess of the overrun above". Restored; rebuilt tree passes S22b.',
+    },
+    kind: 'dom', routes: ['/frontier'], viewports: [[1440, 900]],
+    check: async ({ page }) => {
+      const r = await page.evaluate(() => {
+        const table = document.getElementById('frontier-board');
+        const wrap = document.querySelector('.board-wrap');
+        if (!table || !wrap) return { error: 'missing #frontier-board or .board-wrap on /frontier' };
+        const wrapRect = wrap.getBoundingClientRect();
+        let worstRight = -Infinity;
+        let nearestRight = Infinity;
+        let rows = 0;
+        for (const tr of table.querySelectorAll('tbody tr')) {
+          const cell = tr.lastElementChild;
+          if (!cell) continue;
+          rows += 1;
+          const right = cell.getBoundingClientRect().right;
+          worstRight = Math.max(worstRight, right);
+          nearestRight = Math.min(nearestRight, right);
+        }
+        if (!rows) return { error: 'no board rows to measure' };
+        return {
+          rows,
+          worstRight,
+          nearestRight,
+          wrapRight: wrapRect.right,
+          scrollWidth: wrap.scrollWidth,
+          clientWidth: wrap.clientWidth,
+        };
+      });
+      if (r.error) return r.error;
+      if (r.scrollWidth > r.clientWidth + 1) {
+        return `the board's own container scrolls horizontally at 1440 (scrollWidth ${r.scrollWidth}px > clientWidth ${r.clientWidth}px) — the last column is reachable only by scrolling sideways on the widest viewport the site declares`;
+      }
+      const overhang = r.worstRight - r.wrapRight;
+      if (overhang > 1) {
+        return `the board's rightmost column overruns its container by ${overhang.toFixed(1)}px (cell right ${r.worstRight.toFixed(1)}px vs container right ${r.wrapRight.toFixed(1)}px)`;
+      }
+      const shortfall = r.wrapRight - r.nearestRight;
+      if (shortfall > 300) {
+        return `the board's rightmost column stops ${shortfall.toFixed(1)}px short of its container's right edge (${r.nearestRight.toFixed(1)}px vs ${r.wrapRight.toFixed(1)}px) — a container held open beside nothing, the opposite excess of the overrun above`;
+      }
+      return true;
+    },
+  },
+  {
+    id: 'S23', rule: 'R2',
+    intent: "R2 is law (K14) and speaks of ROUTES, not of the four routes one script's list happened to name. /tutorials/<entry> rendered its document 465px wide in a 390px viewport — 75px of PAGE-level horizontal scroll from a single unbroken inline code token — and every gate stayed green because the reflow sample lives in scripts/verify-design.mjs against four fixed routes and this template is not one of them (F-struct-1; AR-001 D5: 'R2 speaks of routes, not regressions; inherited is no exemption'). That script is the rig and is not ours to edit, so the widening lands here, and it is widened by TEMPLATE rather than patched per route: one live route for EVERY page template the app declares (app/**/page.tsx), asserted at 390 and at R2's own 320. A new template added without a line in this list is the defect this check exists to stop repeating.",
+    independent: "document.documentElement.scrollWidth against its own clientWidth at each declared viewport — the browser's own layout result on the built page, not any CSS max-width, and not the route list scripts/verify-design.mjs keeps for the same rule",
+    falsifier: {
+      brokenBy: "`--only S23 --break \".prose code{overflow-wrap:normal !important}\"` — removes this round's fix and restores the pre-fix shape exactly: the unbroken inline code URL in the tutorial body sets the document's min-content width past the viewport again, on the one template the old sample never saw.",
+      observed: 'check failed "/tutorials/model-file-header-range-requests @390x844: the PAGE scrolls horizontally (scrollWidth 469px > clientWidth 390px) — first offenders: code.language-js right=604.3; code.language-text right=859.3; code.language-js right=657.8" — within 4px of the 465px the verdict measured off the shipped capture, and naming the inline code elements as the cause. Restored; rebuilt tree passes S23 on all 18 sampled templates at both viewports.',
+      brokenByOpposite: "a page either overflows its viewport or it does not, so the second end of this property is its SCOPE, and that is what the second break exercises: `--only S23 --break \"body{min-width:1200px !important}\"` overflows EVERY sampled template at BOTH declared viewports rather than one template at one width. A check silently scoped to the route and viewport its motivating defect happened to occupy would report a single failure; this one must report the first of many, and the run's own message names which route it stopped on.",
+      observedOpposite: 'check failed "/ @390x844: the PAGE scrolls horizontally (scrollWidth 1200px > clientWidth 390px) — first offenders: header.site-header right=1200.0; div.shell.header-bar right=1200.0; div.header-tools right=1186.0" — it stops on the FIRST sampled template rather than only on the one this round\'s fix touched, confirming the sample is genuinely wide and not scoped to its motivating route. Restored; rebuilt tree passes S23.',
+    },
+    // ONE ROUTE PER TEMPLATE the app declares (app/**/page.tsx) — including
+    // the six the pre-existing reflow sample never saw: /tutorials/<entry>
+    // (the defect itself), /learn/<entry>, /impossible-routine/<entry>,
+    // /tools/<entry>, /blog/<entry> and /frontier, plus the two /catalog
+    // sub-tables. 390 is the site's declared narrow viewport; 320 is R2's own.
+    kind: 'dom',
+    routes: [
+      '/', '/frontier', '/wiki', '/wiki/concept/ai-winter', '/catalog', '/catalog/changed',
+      '/catalog/deprecations', '/tools', '/tools/aider', '/learn', '/learn/ai-and-work',
+      '/tutorials', '/tutorials/model-file-header-range-requests', '/blog',
+      '/impossible-routine', '/impossible-routine/using-a-computer', '/data', '/colophon',
+    ],
+    viewports: [[390, 844], [320, 844]],
+    check: async ({ page }) => {
+      const r = await page.evaluate(() => {
+        const doc = document.documentElement;
+        const offenders = [];
+        if (doc.scrollWidth > doc.clientWidth + 1) {
+          for (const node of document.querySelectorAll('body *')) {
+            const rect = node.getBoundingClientRect();
+            if (rect.width > 0 && rect.right > doc.clientWidth + 1) {
+              const cls = typeof node.className === 'string' && node.className.trim()
+                ? '.' + node.className.trim().split(/\s+/).join('.')
+                : '';
+              offenders.push(`${node.tagName.toLowerCase()}${cls} right=${rect.right.toFixed(1)}`);
+            }
+            if (offenders.length >= 3) break;
+          }
+        }
+        return { scrollWidth: doc.scrollWidth, clientWidth: doc.clientWidth, offenders };
+      });
+      if (r.scrollWidth > r.clientWidth + 1) {
+        return `the PAGE scrolls horizontally (scrollWidth ${r.scrollWidth}px > clientWidth ${r.clientWidth}px)${r.offenders.length ? ` — first offenders: ${r.offenders.join('; ')}` : ''}`;
+      }
       return true;
     },
   },
