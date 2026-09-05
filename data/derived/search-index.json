@@ -2827,7 +2827,7 @@
       "s": "active",
       "i": "model/ibm-granite-granite-4-1-8b",
       "a": [],
-      "b": false
+      "b": true
     },
     {
       "u": "/wiki/model/ibm-granite-granite-4-2-8b",
