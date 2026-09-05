@@ -81,5 +81,5 @@ rights determination outside the graph, not cleared here.
 
 **5c. Keep `text` or make "general" the unmarked default (Q1) — KEEPER REQUIRED.** No
 clause fixes it: K22 seeds the vocabulary and says *the keeper picks*, and EN §4.1 holds
-both readings defensible (`text` is 431/431, near-useless; absence-as-general
-loses the editorial "published as general-purpose" signal).
+both readings defensible (`text` on 431/431 rows discriminates nothing; an unmarked
+"general" loses the editorial signal).

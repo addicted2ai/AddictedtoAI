@@ -53,19 +53,13 @@ process each round knows only what this file says. Every claim cites an artifact
   records (`frontier: true`, `frontier_reason: F1–F5`, `domains`), 3 most recent per domain; index
   leaders secondary where licensed; flagged stories exempt from the 3/day cap, not the budget;
   feeds are the scout's radar, never display. Spec `knowledge/DESK-ORDER-001.md` §1; UI: next brief.
-- **Round-1 rulings (keeper, 2026-09-05).** **K16** typeface: "open to change" → judge-system's
-  reading stands (inheriting the stack is not a decision); each finalist names a self-hosted face
-  with licence, or argues the stack as a choice. **K17** finalists: `CP-UI-001-1` Dated Ledger and
-  `CP-UI-001-2` Players Board (CP-3, CP-4 not built; their rule items moot).
-  **K18** R13 rail-track addendum (a); R7 board clarification (b, delegated). **K19** "No": the
-  Frontier LEADS with a players board (K11 stands); Dated Ledger's per-index spine must read as one.
-  **K20** (delegated) family: a finalist names a treatment for EVERY template; "unchanged, because"
-  is allowed. Worktrees `D:\AddictedtoAI-c1` (`ui/concept-1`), `-c2` (`ui/concept-2`). **K21** board
-  membership is EDITORIAL, never feed-gated: a player is on the board because the site covers it;
-  feeds fill cells; no label assumes one source. **K22** a closed, small cross-cutting `domain` facet
-  (models/orgs/tools/indices) joins the **Desk order** (post-pick note: Frontier data, K21 coverage,
-  K22); Opus research → `graph/knowledge/EN-domain-facet.md`; keeper picks. The graph ASSUMES the
-  facet: finalists absorb a domain as data (column/filter/row), no template edit — jury question.
+- **Round-1 rulings (keeper, 2026-09-05).** **K16** a typeface decision is required (inheriting the
+  stack is not one). **K17** finalists CP-UI-001-1 Dated Ledger + CP-UI-001-2 Players Board. **K18**
+  R13 rail-track addendum; R7 board clarification. **K19** the Frontier LEADS with a players board.
+  **K20** a finalist names a treatment for EVERY template. Worktrees `D:\AddictedtoAI-c1`
+  (`ui/concept-1`), `-c2` (`ui/concept-2`). **K21** board membership is EDITORIAL, never feed-gated;
+  feeds fill cells; no label assumes one source. **K22** a closed, small `domain` facet joins the Desk
+  order (`EN-domain-facet.md`); the graph ASSUMES it: finalists absorb a domain as data, no template edit.
 
 ## Known evidence lies
 
@@ -86,8 +80,11 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
    only when a BLIND agent (not told the keeper is reachable; given constitution + K3–K31 + HANDOFF)
    says "keeper required" (`HANDOFF-ORCHESTRATOR.md` §8b). **K33** STOP removal pre-authorised for
    the orchestrator after the handoff (transcript line 2883; HANDOFF §8c); K5 holds for us. [r3]
-3. Sign off `knowledge/DESK-ORDER-001.md` (K21/K22/K24/K30 as a spec for the orchestrator); answer
-   `EN-domain-facet.md`'s three questions (text vs general; AA rights; domain ordering). [r3]
+3. Sign off `knowledge/DESK-ORDER-001.md`; answer the one domain question left (`text` vs unmarked
+   "general"). **K34** (BLIND-001, delegated): domain sections order by domain id; AA values render
+   nothing until rights clear (K24). [r3]
+4. Check-in (K7 cap): authorise a narrow 4th iteration (FM-N1 claim filter + visible "unverified";
+   F-hier-11 door hairlines) or not; run MR-UI-001..003; implementer tier; then merge/push. [r3]
 
 ## Next (loop work, in order)
 
