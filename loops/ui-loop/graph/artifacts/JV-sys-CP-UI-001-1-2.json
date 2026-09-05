@@ -1,0 +1,122 @@
+{
+ "id": "JV-sys-CP-UI-001-1-2",
+ "version": 1,
+ "judge": "judge-system",
+ "packet": "CP-UI-001-1",
+ "packet_version": 2,
+ "anchor": { "previous_verdict": "JV-sys-CP-UI-001-1-1", "delta_seen": "IR-CP-UI-001-1-1" },
+ "questions": [
+  {
+   "q": 1, "tag": "TYPE", "verdict": "PASS",
+   "element": "16 templates / type scale, weights, measure, rhythm",
+   "evidence": "evidence/current/contact-sheet--light--1440.png",
+   "note": "One scale holds across all sixteen tiles - serif prose at --step-0 on a ~65-character measure, mono for every date, id, price and label, section headings as small mono caps over a rule - and the smallest type on the sheet (the /frontier board, /catalog, /data tables) is the site's existing table size rather than a new step, so no template introduces a scale of its own."
+  },
+  {
+   "q": 2, "tag": "TYPE", "verdict": "PASS", "critical": true,
+   "element": "app/globals.css :root --mono + public/fonts/",
+   "evidence": "app/globals.css :root",
+   "note": "The anchor's FAIL is answered by an observable change: --mono now leads with self-hosted JetBrains Mono (OFL 1.1, licence beside the files), two subset woff2 faces of ~4.9 KB served same-origin from /fonts/ with ascent and descent overrides, argued from this packet's own thesis that dates as the spine face need a real monospace with tabular figures by construction, while --serif stays the metric-matched Charter stack as the argued-choice half of K16."
+  },
+  {
+   "q": 3, "tag": "COLR", "verdict": "PASS",
+   "element": "home rail badges, /frontier claim tags, both themes",
+   "evidence": "evidence/current/home--dark--1440.png",
+   "note": "Colour carries state and nothing else - ember on DEPRECATED, RETIRED and DEAD badges and on the 'claimed | unverified' outline, accent on links and interaction - and no border, rule or divider is drawn in accent in either theme; the single item at rest in accent on a divider is the '2 YEARS, 3 MONTHS' elapsed label, which is data rather than decoration but sits in R9's reserved channel (F-sys-2-3)."
+  },
+  {
+   "q": 4, "tag": "FAM", "verdict": "FAIL",
+   "element": "/frontier board table at 390 vs /catalog provider groups at 390",
+   "evidence": "evidence/current/contact-sheet--light--390.png",
+   "note": "At 1440 the sixteen templates read as one system - one radii vocabulary, one spacing scale, one mono-caps-over-rule header, one dated-row list - but the family breaks at 390, where this same build collapses /catalog's wide table into provider details groups for R-D while the new /frontier board holds three columns at that width, so two data tables in one build take opposite narrow treatments."
+  },
+  {
+   "q": 5, "tag": "ALLR", "verdict": "FAIL", "critical": true,
+   "element": "/frontier THE BOARD (16 rows x 2 index columns)",
+   "evidence": "evidence/current/frontier--light--1440.png",
+   "note": "The pull mechanism is real where it renders - the spine's five dated clusters sit at visibly unequal distances and the capabilities rail is dense and sourced - but the flagship's entire first screen is a 32-cell grid printing the identical sentence 'no index published for this window' in every cell, which is not the column-level collapse the packet's own empty_state declared and reads to a first-time visitor as a broken table rather than an honest gap."
+  },
+  {
+   "q": 6, "tag": "ALLR", "verdict": "PASS",
+   "element": "/frontier THE PACE spine + home impossible-to-routine pairs",
+   "evidence": "evidence/current/frontier--light--1440.png",
+   "note": "Cadence is carried by dated structure and measured intervals - unequal vertical gaps between dated clusters, elapsed spans printed as '2 YEARS, 3 MONTHS' between an impossible and a routine date, a proof-kind word and date on every capability line - with no adjective, no motion and no decorative graphic standing in for the argument."
+  },
+  {
+   "q": 7, "tag": "ALLR", "verdict": "PASS",
+   "element": "/frontier THE PACE spine as sole signature",
+   "evidence": "evidence/current/frontier--light--1440.png",
+   "note": "Boldness is still spent once - time-proportional spacing is the only gesture no template site ships, and everything around it stays deliberately quiet (paper and ink, no fills, no motion, one face pair) - though the signature is now the third block down the flagship rather than its opening, so the visitor meets the restraint before the move."
+  },
+  {
+   "q": 8, "tag": "ALLR", "verdict": "PASS",
+   "element": "/frontier claim cells and board cells",
+   "evidence": "evidence/current/frontier--light--1440.png",
+   "note": "Every vendor statement carries an ember-outlined 'claimed | unverified' tag with source link and accessed date and is never placed in an index column, and empty states are plain muted sentences with no box, pattern or dash so absence reads as absence; the standfirst states the rule in words before the reader meets a blank cell."
+  },
+  {
+   "q": 9, "tag": "ALLR", "verdict": "PASS", "meta": true,
+   "element": "n/a / order and verbosity self-check",
+   "evidence": "evidence/current/contact-sheet--light--1440.png",
+   "note": "This build moved in both directions against its own anchor - q2 from FAIL to PASS on a named observable change, q5 from UNCERTAIN to FAIL on a captured surface - which is the shape of an anchored re-score rather than a re-roll, and length played no part because questions 5 to 8 were answered from pixels rather than from the report."
+  }
+ ],
+ "findings": [
+  {
+   "id": "F-sys-2-1", "tag": "ALLR",
+   "problem": "The flagship's leading element prints the same empty-state sentence 32 times, so the first screen of /frontier is a wall of repeated absence and the surface's one real move sits below it.",
+   "evidence": "evidence/current/frontier--light--1440.png",
+   "invariant": "On /frontier, an index column with no published value for any row states its absence once at column level, and repeated empty-state text occupies no more than a quarter of the board's height at 1440 and 390.",
+   "governing_rule": "CP-UI-001-1 elements.index-columns.empty_state",
+   "prescription": "Collapse a wholly-unpublished column to its header plus one line, as the packet declared, and let the rows stand on the organisation names and claims that do carry data.",
+   "confidence": 0.85, "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-2-2", "tag": "FAM",
+   "problem": "Two data tables in one build take opposite narrow treatments: /catalog collapses to provider groups at 390 while the new /frontier board keeps three columns at that width, at a type size well below the surrounding prose.",
+   "evidence": "evidence/current/contact-sheet--light--390.png",
+   "invariant": "At 390 no template renders a multi-column data table at a smaller type size than /catalog's narrow treatment uses; the board reflows to one block per organisation.",
+   "governing_rule": "BRIEF-UI-001 R-D",
+   "prescription": "Reuse the renderCatalogGroups pattern this same build already ships for the board's narrow state.",
+   "confidence": 0.7, "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-2-3", "tag": "COLR",
+   "problem": "Accent appears at rest on the divider label between paired dates and on the deprecated-rail record links, which is R9's reserved hover and focus channel; pre-existing, not introduced by this build.",
+   "evidence": "evidence/current/home--dark--1440.png",
+   "invariant": "No divider label and no resting record link carries --accent on any template; accent appears only on hover and focus.",
+   "governing_rule": "RULES.md R9",
+   "prescription": "Set the elapsed-span label and the deprecated-rail links in muted or ink with an underline, keeping accent for hover and focus.",
+   "confidence": 0.5, "route": "ui-fixable"
+  }
+ ],
+ "carried_forward": [
+  "F-sys-1-1 (typeface) is closed by the build: self-hosted JetBrains Mono with its OFL licence now leads --mono, satisfying the invariant as written.",
+  "F-sys-1-2 (spine amplitude at eight-day depth) is declined with cause in IR-CP-UI-001-1-1 - the clamp is driven by real day-gaps and re-tuning is routed to a reader test - so it is acknowledged, not re-filed; the captured spine does show unequal gaps.",
+  "F-sys-1-3 (accent at rest) was neither built nor declined, and is restated narrowly as F-sys-2-3 with pixel evidence."
+ ],
+ "diagnosis": {
+  "strongest": "TYPE: a self-hosted monospace chosen from the packet's own argument, under 5 KB per weight with metric overrides and its licence beside it, turns the round's worst dimension into the one now carrying the identity.",
+  "weakest": "ALLR on the flagship's first screen: the board K19 requires to lead /frontier leads it with 32 identical empty cells.",
+  "critical_issue": "q5 fails on a build detail rather than on the concept - the packet declared column-level collapse and the build renders cell-level repetition - so the surface's honesty is intact while its first impression is not.",
+  "highest_value_improvement": "Collapse a wholly-unpublished index column to one line at column level; it turns the flagship's opening screen from a broken-looking grid into a short honest note and lifts the spine into first view.",
+  "confidence": 0.8,
+  "evidence_ids": [
+   "evidence/current/contact-sheet--light--1440.png",
+   "evidence/current/contact-sheet--dark--1440.png",
+   "evidence/current/contact-sheet--light--390.png",
+   "evidence/current/frontier--light--1440.png",
+   "evidence/current/frontier--light--390.png",
+   "evidence/current/home--light--1440.png",
+   "evidence/current/home--dark--1440.png",
+   "app/globals.css :root",
+   "public/fonts/JetBrainsMono-OFL.txt"
+  ]
+ },
+ "downstream": {
+  "weakness": "The identity now has two carriers, a real mono face and time-proportional spacing, but both are met second: the reader sees the empty board before either.",
+  "cause": "The board was wired for K19's ordering before any index feed publishes a value, and its empty state was implemented per cell rather than per column.",
+  "recommendation": "Fix the column-level collapse and the board's 390 reflow, then re-capture /frontier at all four combinations; q5 still needs MR-UI-001 to ask a real reader whether proportional spacing reads as cadence.",
+  "confidence": 0.75
+ }
+}
