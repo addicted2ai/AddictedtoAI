@@ -44,7 +44,7 @@ import { scanJobBranches, readCommittedBrief, readCommittedJobSource } from './l
 import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './lib/health.mjs';
 import {
   gateFailureNote,
-  isTransportFailure,
+  gatesHitTransportFailure,
   runGates,
   unlinkNodeModules,
   TRANSPORT_FAILURE_MARKER,
@@ -369,13 +369,22 @@ async function executeJob(ctx, opts) {
     // exactly as before. ONCE, never in a loop — a real defect still fails
     // twice, which is the property that makes this safe, and no new outcome and
     // no change to breaker semantics is needed for it.
+    //
+    // THE DECISION IS READ, NOT RE-DERIVED. `gateResult.output` is a truncated
+    // human-readable log — each script's last 6000 characters — so a marker
+    // raised early in a 1201-test run is not in it (beads addictedtoai-kisa).
+    // `runGates` computes `transport` over the FULL output at the point of
+    // capture; `gatesHitTransportFailure` reads that flag, and falls back to
+    // scanning only for a result that never came from `runGates`.
     // -----------------------------------------------------------------------
     let retried = false;
-    if (!gateResult.ok && isTransportFailure(gateResult.output)) {
+    if (!gateResult.ok && gatesHitTransportFailure(gateResult)) {
       retried = true;
       ctx.log(
-        `the gate output carries the marker \`${TRANSPORT_FAILURE_MARKER}\` — this is the machine, ` +
-          `not the diff. Running the gates ONCE more; a second failure is recorded \`failed\` as usual.`,
+        `a gate's full output carried the marker \`${TRANSPORT_FAILURE_MARKER}\` — this is the ` +
+          `machine, not the diff. It may not appear in the truncated log printed below, which is why ` +
+          `the decision is made at capture. Running the gates ONCE more; a second failure is recorded ` +
+          `\`failed\` as usual.`,
       );
       gateResult = runTheGates();
       gateReport = { ran: true, ok: gateResult.ok, results: gateResult.results ?? [], retried: true };

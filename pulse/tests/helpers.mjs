@@ -18,6 +18,20 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// THE ONE DEFINITION OF THE SENTENCE BOTH EMITTERS BELOW ANNOUNCE A MACHINE
+// FAILURE WITH, imported rather than restated (beads addictedtoai-brsp). Until
+// 2026-09-04 the two emitters worded it differently — TRANSPORT here, CONNECTION
+// in `assertIngested` — and the Desk's gate retry matched only the first, so a
+// machine failure caught by the other was recorded as a defect. The matcher owns
+// the word because the matcher is production Desk code and cannot import a test
+// helper; the reverse edge, `pulse/tests/ -> loop/lib/`, already exists at
+// `pulse/tests/curriculum-queue.test.mjs:31`. Nothing in the Pulse ENGINE
+// imports this. Re-exported because `sources.test.mjs` asserts against it too,
+// and one definition means one definition.
+import { TRANSPORT_FAILURE_MARKER } from '../../loop/lib/gates.mjs';
+
+export { TRANSPORT_FAILURE_MARKER };
+
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const RUN = join(REPO, 'pulse', 'run.mjs');
 
@@ -194,7 +208,7 @@ export function assertNoTransportFailure(root, args = []) {
     if (!detail || /^HTTP \d/.test(detail)) continue;
     throw new Error(
       `source \`${id}\` lost its connection during \`runPulse ${args.join(' ')}\`: ${detail} ` +
-        `(recorded ${state.last_error.date}). This is a TRANSPORT failure, not a logic failure: no ` +
+        `(recorded ${state.last_error.date}). ${TRANSPORT_FAILURE_MARKER}: no ` +
         `fixture here intends one, the source wrote no snapshot, and the Pulse still exited 0 because ` +
         `one dead source is degradation rather than a crash. Every assertion after this point would ` +
         `have been measuring a snapshot that was never written — which is how this class has ` +
@@ -294,12 +308,29 @@ export function assertIngested(root, ids, context = '') {
     }
     const state = JSON.parse(readFileSync(file, 'utf8'));
     if (state.last_error) {
+      // THE SPLIT IS WHAT LETS THIS CARRY THE MARKER AT ALL, and it is the
+      // reason `addictedtoai-brsp` was filed rather than fixed by widening the
+      // match. Unlike `assertNoTransportFailure`, this fires on ANY
+      // `last_error`, and several fixtures here serve a 403 or a 404 on
+      // purpose — an HTTP status is a response a fixture CHOSE, never evidence
+      // the machine failed. Announcing every `last_error` as a machine failure
+      // would make the Desk retry a real, reproducible defect, and the retry is
+      // safe only because a real defect still fails twice. So the words are
+      // spent on the branch that has earned them, and the HTTP branch says
+      // plainly that it has not.
+      const detail = state.last_error.detail ?? '';
+      const machine = !/^HTTP \d/.test(detail);
       throw new Error(
-        `source \`${id}\` never ingested${where}: ${state.last_error.detail} (recorded ${state.last_error.date}). ` +
-          'This is a CONNECTION failure, not a logic failure — the assertion below it would have been ' +
-          'measuring a snapshot that was never written. `connect EADDRINUSE` means the machine had no ' +
-          'ephemeral port to spare: something else on it was making connections (see addictedtoai-ar0), ' +
-          'and the test is sound.',
+        `source \`${id}\` never ingested${where}: ${detail} (recorded ${state.last_error.date}). ` +
+          (machine
+            ? `${TRANSPORT_FAILURE_MARKER} — the assertion below it would have been ` +
+              'measuring a snapshot that was never written. `connect EADDRINUSE` means the machine had no ' +
+              'ephemeral port to spare: something else on it was making connections (see addictedtoai-ar0), ' +
+              'and the test is sound.'
+            : 'The source answered with an HTTP status, which is a response a fixture in this repository ' +
+              'may well have served on purpose — so this is NOT, on its own, evidence that the machine ' +
+              'failed, and it carries no machine-failure marker. Check what this fixture meant to serve ' +
+              'before blaming the environment.'),
       );
     }
     if (state.refusing) {

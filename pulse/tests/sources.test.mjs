@@ -22,7 +22,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describeFetchError } from '../lib/sources.mjs';
-import { assertIngested, cleanup, jsonSource, makeRoot, paths, readJson, runPulse, serve } from './helpers.mjs';
+import {
+  assertIngested,
+  cleanup,
+  jsonSource,
+  makeRoot,
+  paths,
+  readJson,
+  runPulse,
+  serve,
+  TRANSPORT_FAILURE_MARKER,
+} from './helpers.mjs';
 
 /** The shape undici actually produces for a failed connect. */
 function fetchFailed(code, message = 'connect EADDRINUSE 127.0.0.1:13513') {
@@ -109,7 +119,14 @@ test('assertIngested fires on that run, and names the errno rather than a downst
     (err) => {
       assert.match(err.message, /never ingested/, 'it must say the source never ingested');
       assert.match(err.message, /ECONNREFUSED|EADDRINUSE|fetch failed/, 'and carry the errno undici reported');
-      assert.match(err.message, /CONNECTION failure, not a logic failure/, 'and say which kind of failure this is');
+      // Asserted against the CONSTANT, not against a copy of its words: a
+      // literal here would be a fourth place the sentence lives, and re-inventing
+      // the wording is the defect this keying has already had once
+      // (addictedtoai-brsp).
+      assert.ok(
+        err.message.includes(TRANSPORT_FAILURE_MARKER),
+        `it must announce the machine failure in the one shared wording; it said: ${err.message}`,
+      );
       return true;
     },
   );
@@ -131,7 +148,7 @@ test('runPulse itself refuses to return from a lost fetch, so no call site can f
     (err) => {
       assert.match(err.message, /lost its connection/, 'it must name the transport as the cause');
       assert.match(err.message, /ECONNREFUSED|EADDRINUSE|fetch failed/, 'and carry the errno undici reported');
-      assert.match(err.message, /TRANSPORT failure, not a logic failure/);
+      assert.ok(err.message.includes(TRANSPORT_FAILURE_MARKER), err.message);
       assert.match(err.message, /--no-build/, 'and quote the run it happened on, so the failing site is obvious');
       return true;
     },
