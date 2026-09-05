@@ -10,6 +10,7 @@ file is the evidence. Sonnet is the implementer tier under K13.
 |---|---|---|---|---|---|---|---|
 | 1 | 2026-09-05 | CP-UI-001-1 Dated Ledger | Sonnet | Declined the K16 typeface requirement citing "no network/subsetting toolchain"; the sibling build used the same machine's fonttools to download, instance and subset a face. False cause for a decline. | wrong-decline | orchestrator (reading both IRs) | one message; rebuild of one item before the panel |
 | 2 | 2026-09-05 | CP-UI-001-2 Players Board | Sonnet | Vendor-claim column wired to each org's FIRST cited fact (founding dates, founders), so "claimed · unverified" sits on "5 April 1993, by Jensen Huang". Mislabelled claim; honest render was the empty state. | semantic-mislabel | orchestrator (first look at frontier--light--1440.png); panel pending | revision directive expected |
+| 3 | 2026-09-05 | CP-UI-001-1 Dated Ledger | Sonnet | Left S18 (wiki-entry second-column occupancy, 34.5% vs 60% floor) failing as "pre-existing debt, out of packet scope" — but the packet's own reuses line promised "facts and timeline share the spine track, filling S18's dead column", and BRIEF R-C requires S18 green or keeper-retired. Scope narrowed against its own packet. | wrong-decline | orchestrator (IR + gate result) | panel will see it; RD expected |
 
 Classes: wrong-decline · semantic-mislabel · rule-violation-quiet · scope-creep · gate-skipped ·
 data-invented · content-edit-in-disguise. Reads: `IR-*` reports, `JV-*` findings routed
