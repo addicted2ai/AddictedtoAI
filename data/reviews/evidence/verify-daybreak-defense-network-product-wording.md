@@ -47,18 +47,26 @@ larger gap is ordinary too:
 | When (local, 2026-09-04) | Served bytes | Recorded by |
 |---|---|---|
 | 03:27 | 375,916 | j-20260904-07 — the table row above |
-| 20:32 | 376,021 / 376,069 | j-20260904-49 — the corrected note above |
+| 20:32 | 376,021 / 376,069 — two different header sets, see the blockquote (UA only, then UA + `accept-language` + `cache-control`) | j-20260904-49 — the corrected note above |
 | 21:36 | 376,057 / 376,064 / 376,065 / 376,059 | j-20260904-51 |
 | 22:53 | 376,112 / 376,108 / 376,112 / 376,113 | j-20260904-54 |
 
 The first three rows are timed by the commit that carries each count, and each
 fetch preceded its own commit; the last row is its fetch's own clock. In each
-of the two runs made inside a single second the spread is under ten bytes;
-across the 19h26m from the first row to the last, the counts rose about 200.
-Not monotonically — 20:32's 376,069 sits above the whole 21:36 run — but each
-run's floor is higher than the last: 375,916, 376,021, 376,057, 376,108. The
-table row is the day's earliest fetch and sits below the rest for that reason,
-not because it is a different document:
+of the two closely spaced runs the spread is under ten bytes — 21:36's four
+fetches inside one second, and 22:53's four across 5.3 seconds
+(04:52:58.726Z → 04:53:03.981Z in the transcript); across the 19h26m from the
+first row to the last, the counts rose about 200. Not monotonically —
+20:32's 376,069 sits above the whole 21:36 run — but each run's floor is
+higher than the last: 375,916, 376,021, 376,057, 376,108. That ordering is a
+description of these four rows at their hours-apart spacing, not a trend: at
+closer spacing it stops holding. Three fetches at 23:10, seventeen minutes
+after the last row, floored at 376,100 — below that row's 376,108 (recorded in
+`data/reviews/j-20260904-54.md`); three more at 23:33, forty minutes after it,
+returned 376,108 / 376,116 / 376,108 — level with that floor, not above it
+(this job's block in the transcript).
+The table row is the day's earliest fetch and sits below the rest for that
+reason, not because it is a different document:
 all four 22:53 fetches carried "enterprise products" and "partner products"
 twice each in the raw bytes — the DOM copy and the flight-payload copy — which
 is exactly what the transcript records for the 03:27 fetch. So a byte count
