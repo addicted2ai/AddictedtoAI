@@ -70,3 +70,18 @@ The expiry is not urgency about the idea, which will keep. It is that
 (`addictedtoai-64fk`). The numbers above are written out here so the argument
 survives the rotation; a job that wants to re-measure rather than trust them
 has to start soon.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-05
+- job: j-20260905-03 (machinery)
+- merged as: `79b53d509635d96f445ff0b7deb19804a5e9c170`
+- produced: (the merge produced no joinable artifact)
+- was: `artificial-analysis-indices-rebased-invisibly.md` (slug `artificial-analysis-indices-rebased-invisibly`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
