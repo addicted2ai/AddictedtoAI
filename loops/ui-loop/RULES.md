@@ -611,6 +611,40 @@ fed values came from) is otherwise read as the claim's own. Enforced by `tools/u
 id `S22` clause (e), which re-derives vendor-ness from the org and model corpora with its own
 org→model mapping rather than from the render module it polices.
 
+*Round-5 addendum (RD-005; JV-sys F-sys-5-1, RT FM-N5 — the ATTRIBUTION MUST BE VISIBLE, and WHO OWNS
+A HOST).* Two things the round-4 clause stated correctly and could not deliver.
+
+(iv) **An attribution inside a clamp is placed where the clamp cannot eat it.** Naming the party is
+not showing it: RD-004 appended the vendor's name after the claim fragment inside a one-line
+ellipsised cell, and `text-overflow: ellipsis` elides at the END of the line box, so the ellipsis
+reached the attribution before it reached the quoted words. Both shipped claims lost it — one broke
+mid-name and dropped its accessed date, the other was cut before the em dash and named no source at
+all, beside a READ cell that does name a feed. So the attributing party renders FIRST in the cell,
+ahead of the fragment it attributes, and the fragment takes the truncation (the unelided value stays
+in the cell's `title` and in the model record). The clamp itself is unchanged: this is an ordering
+rule, not a width rule.
+
+(v) **Whose host is it?** — ownership is read off the REGISTRABLE DOMAIN (eTLD+1), never off a
+host's labels. The round-4 test asked whether any dot-separated label of a cited host was one of the
+org's own name tokens, which is label identity with no notion of position: `google.<anyone-else>`
+cleared it for Google DeepMind exactly as `deepmind.google` did, and an `endsWith('.'+recorded)`
+test has the same hole from the other side. THE RULE, stated once and duplicated nowhere: the public
+suffix is a host's last label, except for an explicit table of two-label suffixes (`co.uk`,
+`com.cn`, `github.io`, …) where it is the last two; the registrable domain is that suffix plus the
+one label to its left, and THAT label — the string the registrant actually bought — is the only one
+ownership can be read from. `www.tencent.com` is `tencent.com`/`tencent`; `deepmind.google` is
+`deepmind.google`/`deepmind`, and because `.google` is a single-label brand TLD, `blog.google` is a
+DIFFERENT registrable domain from it and neither is `google.com`; `google.attacker.example` is
+`attacker.example`/`attacker`. A cited source is the row vendor's when its registrable domain is one
+the org entry records citing itself from, or when its registrable label is one of the org's own name
+tokens (display name and explicit `aliases`) — nothing else. Enforced by `tools/ui-invariants.mjs`
+id `S22` clause (e), which re-derives both halves with its own suffix table and measures the
+attribution's own rect against the clamp's visible edge, two-sided at each: a name that overruns the
+clamp fails, and so does a name taking more than 85% of it, since a cell showing its vendor and none
+of its claim satisfies "the name is visible" perfectly. KNOWN AND NOT FIXED HERE (RT FM-N6, a DATA
+item, not a rule one): this rule can only recognise a product-brand domain — Moonshot's own
+`platform.kimi.ai` — where the org record's `aliases` carry that brand.
+
 
 > *iter-05 addendum — the "occupy most of it" half was only ever HALF-satisfied, and this
 > closes it.* iter-04 landed I17's subgrid half (the trailing-columns clause above) but
