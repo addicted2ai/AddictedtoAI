@@ -38,6 +38,8 @@ evidence: >
   competitive-programming milestone today, and `content/blog/` now carries a
   dated note on the 2026 result that has nowhere to link for identity and
   background.
+proposed_by_job: j-20260905-08
+proposed_by_type: post
 ---
 
 The corpus has a shape for this and an obvious hole in it. `event/` holds
