@@ -82,15 +82,16 @@ government ahead of launch and that, at the government's request, it was
 "starting with a limited preview" — roughly 20 organisations, before the
 public release two weeks later.
 
-What the tiers cost is where the release gets interesting. Luna lists at
-{{fact:model/openai-gpt-5-6-luna#price_input}} input in the OpenRouter
-catalog with an Artificial Analysis intelligence index of
-{{fact:model/openai-gpt-5-6-luna#intelligence_index}}. The `openai/gpt-5.4`
-row, OpenAI's own flagship four months earlier, sits at
-{{fact:model/openai-gpt-5-4#intelligence_index}} on the same index and
-{{fact:model/openai-gpt-5-4#price_input}} input. The cheapest member of the
-new family lands within a point of the previous flagship's score at roughly
-a twelfth of its listed input price, 126 days later.
+What the tiers cost is where the naming meets the catalog. The rows do fall
+in the promised order on the Artificial Analysis intelligence index — Sol at
+{{fact:model/openai-gpt-5-6-sol#intelligence_index}}, Terra at
+{{fact:model/openai-gpt-5-6-terra#intelligence_index}}, Luna at
+{{fact:model/openai-gpt-5-6-luna#intelligence_index}}. Listed input price
+sorts them into two groups rather than three: the Sol and Terra rows list at
+{{fact:model/openai-gpt-5-6-sol#price_input}} and
+{{fact:model/openai-gpt-5-6-terra#price_input}}, the same number, while the
+Luna row lists at {{fact:model/openai-gpt-5-6-luna#price_input}}. The names
+describe three rungs; the input column has two.
 
 One oddity in the catalog, as observed on 28 August 2026: each tier's `-pro`
 row lists at the same price as its base row — `openai/gpt-5.6-sol-pro`

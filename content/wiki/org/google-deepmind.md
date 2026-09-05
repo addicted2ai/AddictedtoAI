@@ -57,9 +57,9 @@ mentions:
   - model/google-gemini-3-1-pro-preview
 ---
 
-Google's cheap tier has overtaken its expensive one. In the OpenRouter
-catalog on 3 September 2026, the newest Gemini row on the Pro line is
-`google/gemini-3.1-pro-preview`, listed on 19 February 2026 and still
+Google's Pro line has stopped shipping and its cheap line has not. In the
+OpenRouter catalog on 3 September 2026, the newest Gemini row on the Pro
+line is `google/gemini-3.1-pro-preview`, listed on 19 February 2026 and still
 carrying `preview` in its name. The Flash line has shipped four times since:
 `google/gemini-3.5-flash` in May, `google/gemini-3.6-flash` on 21 July,
 `google/gemini-3.7-flash` on 13 August, `google/gemini-3.8-flash` on
@@ -69,26 +69,22 @@ counts that run as Google's fourth Flash model in under four months;
 it as the third Flash update in three months, with 3.8 rolling out three
 weeks after 3.7.
 
-The scoreboard now reads backwards. The Artificial Analysis intelligence
+The scoreboard moved with the shipping. The Artificial Analysis intelligence
 index the catalog carries puts `google/gemini-3.8-flash` at
-{{fact:model/google-gemini-3-8-flash#intelligence_index}} against
-{{fact:model/google-gemini-3-1-pro-preview#intelligence_index}} for the Pro
-preview, and
-[llm-releases](https://llm-releases.com/models/gemini-3-8-flash) splits the
-same index by reasoning effort:
-{{fact:model/google-gemini-3-8-flash#intelligence_index_by_effort}}. The
-Flash row also lists at
-{{fact:model/google-gemini-3-8-flash#price_input}} input against the Pro
-row's {{fact:model/google-gemini-3-1-pro-preview#price_input}}.
+{{fact:model/google-gemini-3-8-flash#intelligence_index}}, against
+{{fact:model/google-gemini-3-7-flash#intelligence_index}} for the August
+release and {{fact:model/google-gemini-3-6-flash#intelligence_index}} for
+July's — two climbs in the six weeks between them. The Flash row lists at
+{{fact:model/google-gemini-3-8-flash#price_input}} input; the Pro preview,
+six months older, lists at
+{{fact:model/google-gemini-3-1-pro-preview#price_input}}.
 
-Rising version numbers did not mean rising scores along the way. The July
-release, `google/gemini-3.6-flash`, sits at
-{{fact:model/google-gemini-3-6-flash#intelligence_index}} on that index —
-fractionally below the
-{{fact:model/google-gemini-3-5-flash#intelligence_index}} of
-`google/gemini-3.5-flash` from May, and at half its listed input price. That
-release bought its buyers cost, not capability. The jump came twenty-three
-days later.
+The discount arrived before the capability did. `google/gemini-3.5-flash`
+from May listed at {{fact:model/google-gemini-3-5-flash#price_input}};
+`google/gemini-3.6-flash` in July halved that to
+{{fact:model/google-gemini-3-6-flash#price_input}}, and the two releases
+since have held it there. The jump on the index came twenty-three days after
+the price cut, on a row that costs the same.
 
 Google says the latest jump is a design choice: the
 [launch post](https://blog.google/innovation-and-ai/models-and-research/gemini-models/3-8-flash-and-3-8-flash-cyber/)

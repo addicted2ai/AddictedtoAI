@@ -98,11 +98,9 @@ said as much when it shipped
 [Opus 5](https://www.anthropic.com/news/claude-opus-5): improved performance
 "for the same cost as its predecessor."
 
-What moved instead was everything else on the row. The listed context window
-quintupled at `anthropic/claude-opus-4.6` on 4 February 2026 and now stands
-at {{fact:model/anthropic-claude-opus-5#context_window}}. The Artificial
-Analysis intelligence index the catalog carries went from
-{{fact:model/anthropic-claude-opus-4-7#intelligence_index}} on the April
-release to {{fact:model/anthropic-claude-opus-4-8#intelligence_index}} in May
-to {{fact:model/anthropic-claude-opus-5#intelligence_index}} in July. Two
-step-ups in ninety-nine days, neither of them charged for.
+What moved instead was the window. The listed context window quintupled at
+`anthropic/claude-opus-4.6` on 4 February 2026 — up from the
+{{fact:model/anthropic-claude-opus-4-5#context_window}} of the November row —
+and every release since carries the
+{{fact:model/anthropic-claude-opus-5#context_window}} this one does. Five
+times the context, at a list price that never moved.
