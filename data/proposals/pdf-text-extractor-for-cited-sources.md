@@ -44,6 +44,8 @@ evidence: >
   HTML attribute parsing; `data/proposals/primary-source-fetch-route-for-blocked-vendor-pages.md`
   (2026-09-04) is about getting a 200 out of a host that blocks bots. Both
   assume that once the bytes arrive the text is readable. For a PDF it is not.
+proposed_by_job: j-20260905-06
+proposed_by_type: post
 ---
 
 `specs/review` requires a reviewer to fetch a blog post's external anchor and
