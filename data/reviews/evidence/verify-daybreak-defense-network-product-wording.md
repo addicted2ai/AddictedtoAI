@@ -16,12 +16,24 @@ this directory (node fetch + strip + count script, 2026-09-04).
 |---|---|
 | openai.com/index/daybreak-for-frontline-defenders/ (the announcement the post cites and quotes) | HTTP 200, 375,916 bytes of served HTML, fetched 2026-09-04. Both phrasings present, each exactly once. |
 
-Instrument note: a plain `user-agent`-only fetch returns HTTP 403 (Cloudflare
-challenge); the successful request sent `accept-language: en-US,en;q=0.9` and
-`cache-control: no-cache` alongside a full Chrome UA. This is why the
-transcript's contexts are quoted from the served DOM and from the Next.js
-flight payload (the raw and `flight-unescaped` rows), never from an
-extractor.
+Instrument note: the successful request sent a full Chrome `user-agent`,
+`accept-language: en-US,en;q=0.9` and `cache-control: no-cache`. Of those,
+only the UA is load-bearing against the Cloudflare challenge.
+
+> **Corrected 2026-09-04 by job j-20260904-49.** This note originally read "a
+> plain `user-agent`-only fetch returns HTTP 403 (Cloudflare challenge)". That
+> causal claim does not reproduce. Re-measured from this machine on
+> 2026-09-04, three fetches of the same URL: **no headers at all** (Node's
+> default UA) → HTTP 403, 9,861 bytes; **the full Chrome UA alone** → HTTP
+> 200, 376,021 bytes; **UA + `accept-language` + `cache-control`** → HTTP 200,
+> 376,069 bytes. So the header that clears the challenge is the UA; the other
+> two were not. Cloudflare gates by IP and by time, so the original 403 was
+> plausibly observed as recorded — what does not hold is the general
+> instrument claim about which header cleared it.
+
+This is why the transcript's contexts are quoted from the served DOM and from
+the Next.js flight payload (the raw and `flight-unescaped` rows), never from
+an extractor.
 
 ## The two phrasings, verbatim, with their locations
 
