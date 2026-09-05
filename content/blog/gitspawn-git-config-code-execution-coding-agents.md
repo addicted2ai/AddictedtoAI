@@ -36,11 +36,18 @@ Manifold write-up: "This is the agent's own code spawning a subprocess to use
 git, so the command runs outside the sandbox, without an approval prompt. The
 permission model never sees it."
 
-The moment it fires varies by product. On Claude Code and Hermes Agent the
-payload runs before the workspace-trust prompt is accepted. On Qwen Code, before
-the user has authenticated at all. On Grok Build, on the first keystroke. In
-goose it runs while `goose review` collects the diff, which the GitHub advisory
-places "before goose contacts a model."
+The moment it fires varies by product. On Claude Code the payload runs before the
+workspace-trust prompt is accepted. On Qwen Code, before the user has
+authenticated at all. On Grok Build, on the first keystroke. In goose it runs
+while `goose review` collects the diff, which the GitHub advisory places "before
+goose contacts a model."
+
+Hermes Agent is the one the two accounts disagree about. The Hacker News groups
+it with Claude Code at the trust prompt. Manifold's own Hermes case study never
+mentions a trust prompt and puts the moment at "a user opens a repository with
+Hermes and sends their first message", and CVE-2026-71963 says the same: "When a
+user opens the malicious repository and sends any message." The primary sources
+win here.
 
 ## Cloning is safe. A zip is not.
 
