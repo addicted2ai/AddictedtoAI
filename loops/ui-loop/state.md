@@ -80,14 +80,12 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
 
 ## Next (keeper decisions)
 
-1. MR-UI-001..003 on the revised Players Board preview (MR-UI-001 must include a hatched blank). [r3]
-2. After the K7 stop: merge (K3), push (K4); then **K31** handoff by cross-session message to the
-   orchestrator (`addictedtoai-56`): DESK-ORDER-001, DIRECTIVES lines, beads; invite it to ASK about
-   anything it does not fully understand. **K32**: the two sessions work it out; stop for the keeper
-   only when a BLIND agent (not told the keeper is reachable; given constitution + K3–K31 + HANDOFF)
-   says "keeper required" (`HANDOFF-ORCHESTRATOR.md` §8b). **K33** STOP removal pre-authorised for
-   the orchestrator after the handoff (transcript line 2883; HANDOFF §8c); K5 holds for us. [r3]
-3. ~~Check-in decisions 1–5~~ → K35–K40. Keeper away; K40 blanket delegation. Nothing open. [r3]
+1. ~~MR-UI-001..003~~ retired by the keeper (K36). [r3]
+2. ~~Merge (K3), push (K4), handoff (K31)~~ authorised K39; executing now under K40/K43. [r6]
+3. ~~Check-in decisions 1–5~~ → K35–K40. [r3]
+4. Nothing open for the keeper. Next brief (BRIEF-UI-002, keeper-drafted when back): wiki entry's empty
+   right half at 1440 (F-hier-7), catalog at 768 (JV-struct q5), claim clamp eats the value (JV-sys
+   v6 downstream), Frontier domain section once DESK-ORDER-001 §1 data exists. [r6]
 
 ## Next (loop work, in order)
 
