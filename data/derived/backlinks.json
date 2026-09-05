@@ -1142,6 +1142,14 @@
         "file": "content/wiki/org/google-deepmind.md"
       }
     ],
+    "model/ibm-granite-granite-4-2-8b": [
+      {
+        "url": "/wiki/model/ibm-granite-granite-4-1-8b",
+        "title": "IBM: Granite 4.1 8B",
+        "type": "entry",
+        "file": "content/wiki/model/ibm-granite-granite-4-1-8b.md"
+      }
+    ],
     "model/inception-mercury-2": [
       {
         "url": "/wiki/model/inception-mercury-2-5-preview",
