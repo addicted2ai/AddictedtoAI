@@ -118,3 +118,18 @@ themselves rather than from a critic. Three days old.
   Nemotron 3 Ultra** — this site's own change feed records the retirement of
   `nvidia/nemotron-3-ultra-550b-a55b:batch` on 2026-09-03, and a reader must not
   conclude the IOI system is a model they can call.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-05
+- job: j-20260905-08 (post)
+- merged as: `3de894a3066934b5b9e740596f29dcfbd936aeec`
+- produced: `content/blog/nemotron-ultra-cc-ioi-2026.md`
+- was: `nemotron-ultra-cc-outscores-top-human-ioi-2026.md` (slug `nemotron-ultra-cc-outscores-top-human-ioi-2026`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

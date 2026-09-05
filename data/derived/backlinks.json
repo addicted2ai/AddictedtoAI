@@ -1430,6 +1430,12 @@
         "title": "NVIDIA",
         "type": "entry",
         "file": "content/wiki/org/nvidia.md"
+      },
+      {
+        "url": "/blog/nemotron-ultra-cc-ioi-2026",
+        "title": "NVIDIA's IOI 2026 run scored 535.4 to the top human's 498.27, and the paper lists its own limits",
+        "type": "post",
+        "file": "content/blog/nemotron-ultra-cc-ioi-2026.md"
       }
     ],
     "model/nvidia-nemotron-3-ultra-550b-a55b-batch": [
@@ -1438,6 +1444,12 @@
         "title": "NVIDIA",
         "type": "entry",
         "file": "content/wiki/org/nvidia.md"
+      },
+      {
+        "url": "/blog/nemotron-ultra-cc-ioi-2026",
+        "title": "NVIDIA's IOI 2026 run scored 535.4 to the top human's 498.27, and the paper lists its own limits",
+        "type": "post",
+        "file": "content/blog/nemotron-ultra-cc-ioi-2026.md"
       }
     ],
     "model/nvidia-nemotron-3-ultra-550b-a55b-free": [
@@ -2100,6 +2112,12 @@
         "title": "Z.ai",
         "type": "entry",
         "file": "content/wiki/org/z-ai.md"
+      },
+      {
+        "url": "/blog/nemotron-ultra-cc-ioi-2026",
+        "title": "NVIDIA's IOI 2026 run scored 535.4 to the top human's 498.27, and the paper lists its own limits",
+        "type": "post",
+        "file": "content/blog/nemotron-ultra-cc-ioi-2026.md"
       }
     ],
     "model/z-ai-glm-5-3": [
@@ -2276,6 +2294,12 @@
         "title": "Who builds AI",
         "type": "learn",
         "file": "content/learn/who-builds-ai.md"
+      },
+      {
+        "url": "/blog/nemotron-ultra-cc-ioi-2026",
+        "title": "NVIDIA's IOI 2026 run scored 535.4 to the top human's 498.27, and the paper lists its own limits",
+        "type": "post",
+        "file": "content/blog/nemotron-ultra-cc-ioi-2026.md"
       }
     ],
     "org/google-deepmind": [
@@ -2388,6 +2412,12 @@
         "title": "Who builds AI",
         "type": "learn",
         "file": "content/learn/who-builds-ai.md"
+      },
+      {
+        "url": "/blog/nemotron-ultra-cc-ioi-2026",
+        "title": "NVIDIA's IOI 2026 run scored 535.4 to the top human's 498.27, and the paper lists its own limits",
+        "type": "post",
+        "file": "content/blog/nemotron-ultra-cc-ioi-2026.md"
       }
     ],
     "org/openai": [
@@ -2540,6 +2570,12 @@
         "title": "GLM-5.3's licence: above $10B in revenue, Model-as-a-Service use waits on Z.AI's security review",
         "type": "post",
         "file": "content/blog/glm-5-3-license-revenue-gate.md"
+      },
+      {
+        "url": "/blog/nemotron-ultra-cc-ioi-2026",
+        "title": "NVIDIA's IOI 2026 run scored 535.4 to the top human's 498.27, and the paper lists its own limits",
+        "type": "post",
+        "file": "content/blog/nemotron-ultra-cc-ioi-2026.md"
       }
     ],
     "technique/chain-of-thought-prompting": [

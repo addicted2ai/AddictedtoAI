@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 661,
+  "count": 662,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -75,6 +75,16 @@
     {
       "u": "/blog/minimax-h3-licence-excluded-territories",
       "t": "MiniMax H3's licence excludes the EU, the UK, South Korea and the US",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/nemotron-ultra-cc-ioi-2026",
+      "t": "NVIDIA's IOI 2026 run scored 535.4 to the top human's 498.27, and the paper lists its own limits",
       "k": "post",
       "d": null,
       "s": null,
