@@ -126,3 +126,18 @@ not.
   approval 2026-07-20, $1.5B, 482,460 works) is described as resolving
   acquisition/piracy claims, not as a ruling on training-as-fair-use, since
   conflating the two is the specific error this post exists to prevent.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-05
+- job: j-20260905-06 (post)
+- merged as: `8fe0ca7c3bcd3ba3a8bb8beab0c6e909b6a059e5`
+- produced: `content/blog/doj-statement-of-interest-llm-training-fair-use.md`
+- was: `doj-statement-of-interest-ai-training-fair-use.md` (slug `doj-statement-of-interest-ai-training-fair-use`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

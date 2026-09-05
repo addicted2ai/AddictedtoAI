@@ -2210,6 +2210,12 @@
         "file": "content/blog/claude-session-theft-infostealers.md"
       },
       {
+        "url": "/blog/doj-statement-of-interest-llm-training-fair-use",
+        "title": "The United States told a federal judge that LLM training is fair use. Three of its nineteen pages go after a ruling Meta won",
+        "type": "post",
+        "file": "content/blog/doj-statement-of-interest-llm-training-fair-use.md"
+      },
+      {
         "url": "/blog/eu-ai-office-first-enforcement-rfis",
         "title": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
         "type": "post",
@@ -2444,6 +2450,12 @@
         "title": "Who builds AI",
         "type": "learn",
         "file": "content/learn/who-builds-ai.md"
+      },
+      {
+        "url": "/blog/doj-statement-of-interest-llm-training-fair-use",
+        "title": "The United States told a federal judge that LLM training is fair use. Three of its nineteen pages go after a ruling Meta won",
+        "type": "post",
+        "file": "content/blog/doj-statement-of-interest-llm-training-fair-use.md"
       },
       {
         "url": "/blog/eu-ai-office-first-enforcement-rfis",

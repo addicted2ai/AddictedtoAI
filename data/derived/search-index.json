@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 659,
+  "count": 660,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -15,6 +15,16 @@
     {
       "u": "/blog/claude-session-theft-infostealers",
       "t": "Anthropic emailed Claude users about stolen sessions. What was taken was not a password.",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/doj-statement-of-interest-llm-training-fair-use",
+      "t": "The United States told a federal judge that LLM training is fair use. Three of its nineteen pages go after a ruling Meta won",
       "k": "post",
       "d": null,
       "s": null,

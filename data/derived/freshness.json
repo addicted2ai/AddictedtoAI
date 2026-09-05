@@ -19,11 +19,11 @@
     "confirm_after_failures": 2,
     "declined": 7,
     "drifted": 0,
-    "due": 9,
+    "due": 18,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 16,
-    "total": 543
+    "total": 552
   },
   "listings": [
     {
