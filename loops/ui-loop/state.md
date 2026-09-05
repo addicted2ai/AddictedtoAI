@@ -14,11 +14,9 @@ process each round knows only what this file says. Every claim cites an artifact
   https://claude.ai/code/artifact/550cc939-50e4-4ac5-9bb8-f49071f4cbce (light, 1440+390; dark and
   768 captured, not shown). Measured there: catalog @390 went 14,974px (main, scrolling table) ->
   93,963px (branch, stacked records) — I14 in one number.
-- **Port of the sandbox loop (iterations 0–9, stopped on max_iters at 8.475).** Sandbox was a git-less
-  copy of live `bfeb382`. 7 loop-only files copied; 4 three-way merged; 2 conflicts resolved
-  (`app/globals.css`: both comment blocks kept; `scripts/verify-design.mjs`: LIVE's derived
-  focus-sweep bound kept, the loop's fixed 2000 cap dropped as superseded). `app/robots.ts` NOT
-  restored — live deleted it deliberately (`be34c70`). Screenshots never enter history (`.gitignore`).
+- **Port of the sandbox loop (iterations 0–9, stopped on max_iters at 8.475).** Sandbox = git-less copy of
+  live `bfeb382`; merge detail in commit `2d0f3fa`. `app/robots.ts` NOT restored (live deleted it,
+  `be34c70`). Screenshots never enter history.
 - **Every sandbox verdict and score is VOID as evidence for live.** `RULES.md` R1–R16 and
   `tools/ui-invariants.mjs` carry; scores do not. Round 0 is a fresh baseline on the ported build.
 - Gates, in order: `npm test` · `npm run build` (read the LOG, never the exit code) ·
@@ -75,21 +73,18 @@ process each round knows only what this file says. Every claim cites an artifact
 - **Build lock with a reused pid** (2026-09-05): `atai-build-locks/*.lock` named a pid that Windows
   had reused for OUR shell, so the build waited on itself for 10 min, then would have run the
   browser gates against a STALE `out/`. Check the lock's `started` against the pid's creation time;
-  remove only when no `prebuild`/`next build` process exists. Never run two builds; never trust
-  `out/` you did not just build.
-- Orphan `serve-static out 3000` (pid 6416, since 2026-08-29) is not ours; harmless (rig uses free
-  ports, verify-design uses 3111). Orchestrator's to clean on unfreeze.
+  remove only when no build process exists. One build at a time; never trust an `out/` you did not build.
 
 ## Next (keeper decisions)
 
 1. **KP1: confirm the port** from the review page above (or name any pair where After is worse).
 2. **K11 (proposed): allow the graph to prototype `/frontier` on the branch** — charter slot 1 forbids
-   new routes; merge waits for the Desk's OpenSpec change (`addictedtoai-s8gz`, plan + sealed review in
-   the orchestrator scratchpad; review verdict "build with changes", blocker = hash-chain immutability).
-   Keeper 2026-09-05: the plan over-indexed on provable claims (verif- 70, benchmark 60, reader 4,
-   visual/visitor/excite 0 in 983 lines; timeline = AA-index lead changes, not releases). The Frontier
-   is the concept round's FLAGSHIP surface; keeper inputs: players board (lab x frontier model x claimed
-   verbatim/labelled x independently verified), release-cadence compression, new abilities, no hype.
+   new routes; merge waits for the Desk's OpenSpec change (bead `addictedtoai-s8gz`; plan + sealed
+   review in the orchestrator scratchpad). Keeper: the plan over-indexed on provable claims (verif- 70,
+   benchmark 60, reader 4, visual 0 in 983 lines; its timeline = index lead changes, not releases).
+   The Frontier is the concept round's FLAGSHIP surface; keeper inputs: players board (lab x frontier
+   model x claims verbatim+labelled x independently verified), release-cadence compression, new
+   abilities, no hype.
 3. **Models + effort** (asked to be discussed before any dispatch): proposal in the 2026-09-05 chat;
    open question whether the concept generator runs on Fable rather than Opus. Session effort to
    MEDIUM before the first dispatch (agents inherit it).
