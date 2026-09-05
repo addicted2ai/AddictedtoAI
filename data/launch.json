@@ -21,9 +21,9 @@
       "/catalog": {
         "label": "table",
         "chunks_kb_gzipped": 104.8,
-        "inline_kb_gzipped": 18.5,
-        "total_kb_gzipped": 123.5,
-        "html_kb_gzipped": 35.2
+        "inline_kb_gzipped": 18.4,
+        "total_kb_gzipped": 123.3,
+        "html_kb_gzipped": 35
       }
     }
   },
