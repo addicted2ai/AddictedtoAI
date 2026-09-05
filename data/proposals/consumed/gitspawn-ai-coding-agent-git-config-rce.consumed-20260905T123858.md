@@ -127,3 +127,18 @@ the release notes for the version numbers involved.
 - The reader-actionable line is explicit and early: the fixed version numbers,
   and that `git config --get core.fsmonitor` in an untrusted clone is the
   one-command check.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-05
+- job: j-20260905-07 (post)
+- merged as: `b043081d862dbe221fd89be3f28e6a803cce336e`
+- produced: `content/blog/gitspawn-git-config-code-execution-coding-agents.md`
+- was: `gitspawn-ai-coding-agent-git-config-rce.md` (slug `gitspawn-ai-coding-agent-git-config-rce`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
