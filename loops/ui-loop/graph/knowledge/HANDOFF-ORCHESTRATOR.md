@@ -161,6 +161,16 @@ if it answers "keeper required" (a value call no clause or ruling anchors, a new
 push, or something irreversible) does either of us stop and ask. The keeper is the final judge, not
 the default worker.
 
+## 8c. STOP removal is pre-authorised (K33)
+
+The keeper, 2026-09-05 20:43 UTC: *"I pre-emptively give my authorization to remove the STOP file
+after the handoff is completed and the project needs to resume operation."* The keeper said they
+would also tell you directly. To verify without reading the whole transcript: the ui-loop session's
+log is `C:\Users\BadBitch\.claude\projects\D--shared-workspace-dean-loop-engineering-2\ce83345f-bdb2-4f8e-a1dc-e7e725a95f66.jsonl`;
+the authorisation is the `user` record at **line 2883**, uuid `feb3bfa5-84de-49b2-8a7c-de0e8094a614`,
+timestamp `2026-09-05T20:43:39.927Z`. K5 still holds for this session: the ui-loop never touches
+`STOP`; the removal is yours, after the handoff, when you are ready to resume.
+
 ## 9. Questions we expect you to have (ask them)
 
 Why editorial records rather than the feeds you already ingest. Whether the F1–F5 criteria are
