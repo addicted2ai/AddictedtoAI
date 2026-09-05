@@ -7,7 +7,13 @@ process each round knows only what this file says. Every claim cites an artifact
 ## Where things are (2026-09-05)
 
 - **Revival, round 0.** Branch `ui/graph-round-0` off live `main` `4f2314e`, frozen 2026-09-05 by the
-  AddictedtoAI orchestrator (Pulse task disabled, `publish: false`, tree clean, no worktrees).
+  AddictedtoAI orchestrator (Pulse task disabled, `publish: false`, tree clean, no worktrees; keeper
+  created `STOP`). Commits: `2d0f3fa` port (78 files), `f08a3c6` rig (+/tutorials, /impossible-routine,
+  wiki model record, 768px; freshness = presentation hash, verified 3 ways). Evidence: `baseline/`
+  = main `4f2314e`, `current/` = `f08a3c6`, 90/90 each. **Keeper review page (KP1):**
+  https://claude.ai/code/artifact/550cc939-50e4-4ac5-9bb8-f49071f4cbce (light, 1440+390; dark and
+  768 captured, not shown). Measured there: catalog @390 went 14,974px (main, scrolling table) ->
+  93,963px (branch, stacked records) — I14 in one number.
 - **Port of the sandbox loop (iterations 0–9, stopped on max_iters at 8.475).** Sandbox was a git-less
   copy of live `bfeb382`. 7 loop-only files copied; 4 three-way merged; 2 conflicts resolved
   (`app/globals.css`: both comment blocks kept; `scripts/verify-design.mjs`: LIVE's derived
@@ -66,18 +72,37 @@ process each round knows only what this file says. Every claim cites an artifact
 - A gate that can see nothing fails: rig coverage (routes × viewports × themes named by each judge
   contract) is checked BEFORE any judge spawns.
 - Two writers, one judge, one score: never again. Judges are scoped by oracle; code totals.
+- **Build lock with a reused pid** (2026-09-05): `atai-build-locks/*.lock` named a pid that Windows
+  had reused for OUR shell, so the build waited on itself for 10 min, then would have run the
+  browser gates against a STALE `out/`. Check the lock's `started` against the pid's creation time;
+  remove only when no `prebuild`/`next build` process exists. Never run two builds; never trust
+  `out/` you did not just build.
+- Orphan `serve-static out 3000` (pid 6416, since 2026-08-29) is not ours; harmless (rig uses free
+  ports, verify-design uses 3111). Orchestrator's to clean on unfreeze.
 
 ## Next (keeper decisions)
 
-1. Confirm the port from before/after screenshot pairs (KP1, firing for the first time). Link follows.
-2. Catalog at 390px: choose from the round-1 concept frontier (supersedes the delegated I14 ruling).
-3. Readers for the find-task test: who and when.
+1. **KP1: confirm the port** from the review page above (or name any pair where After is worse).
+2. **K11 (proposed): allow the graph to prototype `/frontier` on the branch** — charter slot 1 forbids
+   new routes; merge waits for the Desk's OpenSpec change (`addictedtoai-s8gz`, plan + sealed review in
+   the orchestrator scratchpad; review verdict "build with changes", blocker = hash-chain immutability).
+   Keeper 2026-09-05: the plan over-indexed on provable claims (verif- 70, benchmark 60, reader 4,
+   visual/visitor/excite 0 in 983 lines; timeline = AA-index lead changes, not releases). The Frontier
+   is the concept round's FLAGSHIP surface; keeper inputs: players board (lab x frontier model x claimed
+   verbatim/labelled x independently verified), release-cadence compression, new abilities, no hype.
+3. **Models + effort** (asked to be discussed before any dispatch): proposal in the 2026-09-05 chat;
+   open question whether the concept generator runs on Fable rather than Opus. Session effort to
+   MEDIUM before the first dispatch (agents inherit it).
+4. Catalog at 390px: choose from the round-1 concept frontier (supersedes the delegated I14 ruling).
 
 ## Next (loop work, in order)
 
-1. Gates green on the port → commit on the branch (no push, K4).
-2. Rig: add `/tutorials`, `/impossible-routine`, the 768px band; content-hash freshness stamp
-   (replaces the wall clock, L6).
-3. Round-0 baseline capture on the ported build; keeper pair-review page.
-4. Anchors: 3 judge contracts scoped by oracle + red team + code scoring + rig-coverage gate +
-   size gate; `BRIEF-UI-001` (requirements, anti-requirements, mandatory first steps).
+1. ~~Gates green → port commit~~ `2d0f3fa`. 2. ~~Rig~~ `f08a3c6`. 3. ~~Baseline + review page~~ done.
+4. Anchors, as FILES for the keeper to read before anything runs: 3 judge contracts scoped by oracle
+   (screens: hierarchy/density/chrome test; DOM+screens: tables/responsive; contact sheet+tokens:
+   type/colour/family/identity) + red team + code scoring (PASS/total, critical caps, anchored
+   fallback, ANDed stop) + rig-coverage gate + size gate + keeper-item ageing gate.
+5. `BRIEF-UI-001`: K10 centre; Frontier flagship (K11); catalog@390; wiki-entry template; fence =
+   site spec design bar + R1–R16; anti-req: no content edits, no rubric edits in-round, no single
+   third-party index dependency (AA licence open, `addictedtoai-ego8`), digit-free fixed copy.
+6. Round 1 only after: KP1 confirmed, K11 ruled, models confirmed, session at medium effort.
