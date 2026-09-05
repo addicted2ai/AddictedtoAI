@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 5,
+  "count": 6,
   "items": [
     {
       "detail": "The body no longer implies Reuters is the only outlet naming the two secretaries, but the Sources list still does. Line 80 describes the Globe and Mail item as \"the account that names Lutnick and Bessent\" — the definite article makes the same uniqueness claim this job removed two screens above. Time's 3 July 2026 write-up of the same FT reporting names all three (\"The FT said among those Altman was in active talks with about public ownership were Trump himself, Treasury Secretary Scott Bessent, and Commerce Secretary Howard Lutnick\", https://time.com/article/2026/07/03/openai-invest-ai-trump-administration-sam-altman/, retrieved 5 September 2026). \"an account that names Lutnick and Bessent\" fixes it. The adjacent CNN annotation, \"it names neither secretary\", is a claim about CNN specifically and needs no change.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-11 (`j-20260905-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -9,6 +9,15 @@
       "subject": "content/blog/doj-statement-of-interest-llm-training-fair-use.md",
       "target": "content/blog/doj-statement-of-interest-llm-training-fair-use.md",
       "title": "Soften the same exclusivity in the Sources entry for the Reuters wire",
+      "type": "repair"
+    },
+    {
+      "detail": "The post now writes \"The first round scored 343.9\" and (pre-existing) \"scored 502.0 on IOI 2025\". Both numbers are means. The paper reads \"As shown in Figure 8(a), Nano-CC's mean IOI 2025 score increases from 360.6 after the first round to 468.2 after five rounds ... Ultra-CC improves from 343.9 to 502.0\", and Figure 8(a)'s caption is \"Mean IOI 2025 score across successive GenCorrect rounds for Nano-CC and Ultra-CC ... shaded regions show the min-max range from 5 runs per round\" (arXiv:2609.02849v1, HTML and PDF, retrieved 5 September 2026). The post is scrupulous about this two screens earlier — \"That mean is 521.72, with an observed range of 495.0 to 545.8\" — so the inconsistency is local. \"averaged 343.9\", or \"the mean first round scored 343.9\", fixes it. Not blocking: the paragraph argues against the model, and a mean is the fairer of the two readings anyway.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-12 (`j-20260905-12.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/nemotron-ultra-cc-ioi-2026.md",
+      "target": "content/blog/nemotron-ultra-cc-ioi-2026.md",
+      "title": "Say that 343.9 and 502.0 are means of five runs, not single scores",
       "type": "repair"
     },
     {
@@ -48,5 +57,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 5
+  "total_before_cap": 6
 }
