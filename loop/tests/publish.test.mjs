@@ -54,7 +54,8 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 
 import { DEFAULT_REPO_ROOT } from '../lib/paths.mjs';
@@ -246,6 +247,165 @@ test('armed and not dry — the push it attempts is the fixture\'s, and there is
     },
   );
   assert.equal(git(ctx.repoRoot, ['rev-parse', 'HEAD']), head, 'nothing was committed either');
+});
+
+/**
+ * The same fixture, plus a BARE `origin` in the OS temp directory and a
+ * loopback `/status.json` that serves whatever commit that bare repository's
+ * `main` points at.
+ *
+ * Every other test in this file proves the loop cannot leave the fixture by
+ * giving it no remote at all. The staging test below has to prove something
+ * the absence of a remote hides — WHICH FILES the push carried — so it needs a
+ * remote it can read the commit back off, which is the pattern
+ * `pulse/tests/publish-verify.test.mjs` established. Both directories come from
+ * `mkdtempSync`, so the only reachable remote is still one this machine created
+ * a moment ago, and the only reachable site is still loopback.
+ *
+ * The status server reads the bare repository at request time rather than
+ * serving a fixed body: the commit the step waits for does not exist until the
+ * step makes it, and a deploy that lands the instant the step reaches the
+ * remote is what keeps this test to milliseconds instead of the shared step's
+ * ten-minute poll window (which the loop's adapter deliberately does not let a
+ * caller shorten). Before the step runs, the bare repository has no `main` at
+ * all and the server says so with a 404 — which is also the honest answer, and
+ * is what `fetchLiveStamp` reads as its baseline.
+ *
+ * Nothing here seeds the remote, deliberately: `loop/tests/portability.test.mjs`
+ * forbids a quoted `push` argument anywhere under `loop/`, tests included, and
+ * that guard is right. The only thing that ever reaches this remote is the
+ * shared step, which is the thing under test.
+ */
+async function repoWithBareOrigin(t, config) {
+  const ctx = repoWithSharedStep(config);
+  const remote = mkdtempSync(join(tmpdir(), 'atai-loop-remote-'));
+  execFileSync('git', ['init', '--bare', remote], { stdio: 'ignore' });
+  git(ctx.repoRoot, ['remote', 'add', 'origin', remote.replace(/\\/g, '/')]);
+
+  const server = createServer((_req, res) => {
+    let head = null;
+    try {
+      head = git(remote, ['rev-parse', '--short=12', 'main']);
+    } catch {
+      /* nothing has reached the remote yet — there is no live build to report */
+    }
+    if (!head) {
+      res.writeHead(404);
+      res.end('');
+      return;
+    }
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ built_at: '2026-09-04T00:00:00Z', commit: head, dirty: true }));
+  });
+  await new Promise((r) => server.listen(0, '127.0.0.1', r));
+  const prior = process.env.SITE_URL;
+  process.env.SITE_URL = `http://127.0.0.1:${server.address().port}`;
+
+  t.after(async () => {
+    if (prior === undefined) delete process.env.SITE_URL;
+    else process.env.SITE_URL = prior;
+    await new Promise((r) => server.close(r));
+    ctx.cleanup();
+    try {
+      rmSync(remote, { recursive: true, force: true });
+    } catch {
+      /* a locked temp dir on Windows is not a test failure */
+    }
+  });
+  return { ctx, remote };
+}
+
+/**
+ * Give the bare remote the fixture's base commit, WITHOUT a push.
+ *
+ * `git fetch` run inside the bare repository moves the same bytes the same way
+ * and does not spell the word the portability guard forbids under `loop/`. The
+ * second fetch is what gives the fixture an `origin/main` to be ahead of, which
+ * is the state `aheadOfOrigin` reads.
+ */
+function seedRemote(ctx, remote) {
+  git(remote, ['fetch', ctx.repoRoot.replace(/\\/g, '/'), 'refs/heads/main:refs/heads/main']);
+  git(ctx.repoRoot, ['fetch', '--quiet', 'origin']);
+  return git(remote, ['rev-parse', 'main']);
+}
+
+/** The file names in the commit at the REMOTE's tip — not the local tree's. */
+function remoteCommitFiles(remote) {
+  return git(remote, ['show', '--name-only', '--pretty=format:', 'main'])
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .sort();
+}
+
+test('the loop declares what it wrote, so the push carries its records and NOT a file it did not produce', async (t) => {
+  // THE DEFECT, measured before this test existed: `loop/lib/publish.mjs` called
+  // the shared step with no `owned` key, so `pulse/lib/publish.mjs` took its
+  // `declared === null` branch — "the undeclared caller" in its own words — and
+  // staged `data/`, `content/` and `public/` WHOLESALE. `data/launch.json` is
+  // not a hypothetical choice of victim: it is the exact file the scheduled
+  // Pulse swept into commit `998ee0a` and pushed live in `addictedtoai-ps3`.
+  //
+  // Asserted against the commit read back off the REMOTE. The local tree and
+  // the step's return value both miss what actually got published.
+  const { ctx, remote } = await repoWithBareOrigin(t, { publish: true });
+
+  writeFileSync(join(ctx.repoRoot, 'data', 'ledger.jsonl'), '{"id":"j-test"}\n', 'utf8');
+  writeFileSync(join(ctx.repoRoot, 'data', 'launch.json'), '{"someone-else-was":"mid-edit"}\n', 'utf8');
+
+  const res = await publishStep(ctx, { owned: ['data/ledger.jsonl'] });
+  assert.equal(res.published, true, `the fixture deploy should land; got ${JSON.stringify(res)}`);
+
+  const files = remoteCommitFiles(remote);
+  assert.deepEqual(
+    files,
+    ['data/ledger.jsonl'],
+    'the published commit must carry exactly what this run declared it wrote',
+  );
+  assert.ok(
+    !files.includes('data/launch.json'),
+    'a file this run did not produce reached the live remote — that is addictedtoai-ps3 arriving through the Desk\'s door',
+  );
+  // And it is left alone rather than reverted: not staging it is the fix, not
+  // deciding for its author.
+  assert.match(git(ctx.repoRoot, ['status', '--porcelain', '--', 'data/launch.json']), /launch\.json/);
+});
+
+test("a job's content and that job's own records reach the remote in ONE push", async (t) => {
+  // The invariant itself, measured rather than reasoned about. The shape is the
+  // one `loop/run.mjs` now produces: the merge commit carries the content, the
+  // records commit carries the ledger line and the verdict record, BOTH are
+  // committed before the publish, and the declared paths are therefore already
+  // clean by the time the step sees them.
+  //
+  // That last detail is the part worth measuring: a declaring caller with
+  // nothing dirty left takes `pulse/lib/publish.mjs`'s "nothing of this run's
+  // own to publish" branch UNLESS it is ahead of `origin/main`. It is, and this
+  // is the check that says so.
+  const { ctx, remote } = await repoWithBareOrigin(t, { publish: true });
+  const base = seedRemote(ctx, remote);
+
+  writeFileSync(join(ctx.repoRoot, 'content-piece.md'), '# a merged piece\n', 'utf8');
+  git(ctx.repoRoot, ['add', '--', 'content-piece.md']);
+  git(ctx.repoRoot, ['commit', '--quiet', '--no-verify', '-m', 'job j-test (entry): a piece']);
+
+  writeFileSync(join(ctx.repoRoot, 'data', 'ledger.jsonl'), '{"id":"j-test","outcome":"done"}\n', 'utf8');
+  git(ctx.repoRoot, ['add', '--', 'data/ledger.jsonl']);
+  git(ctx.repoRoot, ['commit', '--quiet', '--no-verify', '-m', 'job j-test: records (done)']);
+
+  const res = await publishStep(ctx, { owned: ['data/ledger.jsonl'] });
+  assert.equal(res.published, true, `a clean tree ahead of origin still publishes; got ${JSON.stringify(res)}`);
+
+  const arrived = git(remote, ['log', '--format=%s', `${base}..main`])
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  assert.deepEqual(
+    arrived,
+    ['job j-test: records (done)', 'job j-test (entry): a piece'],
+    'both the content and the records describing it must arrive at the remote together — a run that ' +
+      'pushes content before its records exist strands them for some later run to carry (addictedtoai-tqpq)',
+  );
 });
 
 test('nothing under loop/ runs a push, so the handoff cannot be quietly reimplemented', () => {
