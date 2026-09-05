@@ -23,8 +23,8 @@ evidence: >
   2026-09-01 ("size, architecture, and context are undisclosed"); versus
   https://huggingface.co/thomsonreuters/Thomson-1.0-Small model card and
   config.json (fetched 2026-09-03 by job j-20260903-02, which publishes the
-  correction in prose). The annotation shape exists: as of this proposal's
-  date, five lines in data/changes.jsonl already carry kind:annotation from
+  correction in prose). The annotation shape exists: at the time this proposal was
+  written, five lines in data/changes.jsonl already carry kind:annotation from
   interpret jobs (j-20260830-02, j-20260831-04, j-20260901-08,
   j-20260901-09, j-20260902-02).
 expires: 2026-09-10
