@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 4,
+  "count": 3,
   "items": [
-    {
-      "detail": "The gemini-3-8-flash docket attributes two things to https://9to5google.com/2026/09/02/gemini-3-8-flash-launch/ that I could not reproduce from that page with my own extractor: Wiz's \"+7.5-9.7% recall\" (the page as I retrieved it says only \"higher recall on their internal penetration testing benchmark for a 2.3-5.2x lower cost\", with no percentage range), and the sentence \"At times, the model might use more tokens to maximize performance, especially at higher effort levels\" (I retrieved the adjacent \"works harder\" framing as \"exhibit[s] greater diligence — executing extra reasoning steps, and calling tools iteratively\"). This is NOT a finding that either is wrong — WebFetch's extractor denies text that is present as readily as it invents text, so absence through it proves nothing, and every other figure in this docket reproduced exactly. It is a flag that these two are the only unconfirmed items in the set: the entry job that picks this candidate up should quote whichever sentence the page actually carries, and drop the percentage range if it is not there rather than carry it forward on the docket's authority.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-09 (`j-20260903-09.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/proposals/gemini-3-8-flash.md",
-      "target": "data/proposals/gemini-3-8-flash.md",
-      "title": "Re-confirm the two 9to5Google figures against the page before publishing them",
-      "type": "repair"
-    },
     {
       "detail": "2 findings carried by reviewers against `data/proposals/gpt-6-astra-release-system-card.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Quote the Astra post's closing sentence in full, or mark the truncation\n\nCarried in `data/carried/j-20260904-02-carry-1.md`.\n\nThe candidate's summary and why-now both say the site's own post \"ends with the sentence 'Until the system card lands, the capability numbers are OpenAI's word.'\" The sentence in content/blog/openai-astra-critical-designation.md:57 is longer — \"Until the system card lands, the capability numbers are OpenAI's word, and the designation itself is the dated, checkable fact.\" The truncation drops the half that says the designation *was* checkable, which is the original post's actual position. Any post written from this docket should quote the whole sentence or ellipse the cut.\n\n### Disambiguate FrontierMath Tier 4 97.6 vs 98 before the post prints either\n\nCarried in `data/carried/j-20260904-02-carry-2.md`.\n\nThe candidate's evidence block quotes the release page's prose (\"saturates FrontierMath Tier 4 with a 98% score\") and its done-when line then lists \"FrontierMath Tier 4 97.6/98\" as if both were table rows. Vellum's benchmark write-up of the same release (fetched 2026-09-04, https://www.vellum.ai/blog/gpt-6-astra-benchmarks-explained) reports the table value as \"FrontierMath Tier 4 (v2): Astra 97.6\". The post should print 97.6 as the measured row and treat \"98%\" as the announcement's rounded prose, naming which is which — not print both as scores.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260904-02-carry-1.md`\n- `data/carried/j-20260904-02-carry-2.md`",
       "rank": 25,
@@ -39,5 +30,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 4
+  "total_before_cap": 3
 }
