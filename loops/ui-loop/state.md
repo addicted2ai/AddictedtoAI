@@ -14,12 +14,12 @@ process each round knows only what this file says. Every claim cites an artifact
   -> 93,963px (branch) = I14 in one number. Sandbox scores VOID for live; R1–R16 + invariants carry.
 - Gates: `npm test` · `npm run build` (read the LOG) · `verify-design` · `verify-surfaces` ·
   `tools/ui-invariants.mjs` · `graph/gates.mjs`. Method: graph engineering (playbook in
-  `D:\shared_workspace\dean-loop-engineering-2\docs\`). Anchors: `loops/ui-loop/graph/`.
+  `D:\shared_workspace\dean-loop-engineering-2\docs\`). Anchors `loops/ui-loop/graph/`.
 
 ## Live rulings (keeper, 2026-09-05; K1–K2 in the archive)
 
 - **K3** — No merge to `main` until the keeper says everything is in order.
-- **K4** — No push to the remote until done, absent a stated good reason.
+- **K4** — No push to the remote until done, absent a good reason.
 - **K5** — `STOP` and `HOLD.md` are the keeper's alone; the loop never touches either.
 - **K6** — Reserved paths untouched: `openspec/specs/`, `data/config.json`, `runners.yml`,
   `package.json`. Content read-only (charter slot 1). Unfreeze is the orchestrator's.
@@ -84,7 +84,8 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
    orchestrator (`addictedtoai-56`): DESK-ORDER-001, DIRECTIVES lines, beads; invite it to ASK about
    anything it does not fully understand. **K32**: the two sessions work it out; stop for the keeper
    only when a BLIND agent (not told the keeper is reachable; given constitution + K3–K31 + HANDOFF)
-   says "keeper required" — `HANDOFF-ORCHESTRATOR.md` §8b; keeper may correct the reading. [r3]
+   says "keeper required" (`HANDOFF-ORCHESTRATOR.md` §8b). **K33** STOP removal pre-authorised for
+   the orchestrator after the handoff (transcript line 2883; HANDOFF §8c); K5 holds for us. [r3]
 3. Sign off `knowledge/DESK-ORDER-001.md` (K21/K22/K24/K30 as a spec for the orchestrator); answer
    `EN-domain-facet.md`'s three questions (text vs general; AA rights; domain ordering). [r3]
 
