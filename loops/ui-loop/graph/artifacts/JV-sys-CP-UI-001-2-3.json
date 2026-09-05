@@ -1,0 +1,187 @@
+{
+ "id": "JV-sys-CP-UI-001-2-3",
+ "version": 3,
+ "judge": "judge-system",
+ "packet": "CP-UI-001-2",
+ "packet_version": 3,
+ "anchor": {
+  "previous_verdict": "JV-sys-CP-UI-001-2-2",
+  "delta_seen": "IR-CP-UI-001-2-2"
+ },
+ "questions": [
+  {
+   "q": 1,
+   "tag": "TYPE",
+   "verdict": "PASS",
+   "element": "all 16 templates / eyebrow + serif h1 + grotesk record type",
+   "evidence": "contact-sheet--light--1440.png",
+   "note": "carried from JV-sys-CP-UI-001-2-2 (RD-002 stand)"
+  },
+  {
+   "q": 2,
+   "tag": "TYPE",
+   "verdict": "PASS",
+   "critical": true,
+   "element": ":root --mono / @font-face 'Space Grotesk' (app/globals.css L89-109)",
+   "evidence": "public/fonts/",
+   "note": "carried from JV-sys-CP-UI-001-2-2 (RD-002 stand)"
+  },
+  {
+   "q": 3,
+   "tag": "COLR",
+   "verdict": "PASS",
+   "element": "/frontier board rules and badges; /wiki index status badges; / DEPRECATED chips",
+   "evidence": "contact-sheet--dark--1440.png",
+   "note": "carried from JV-sys-CP-UI-001-2-2 (RD-002 stand)"
+  },
+  {
+   "q": 4,
+   "tag": "FAM",
+   "verdict": "PASS",
+   "element": "contact sheet, 16 templates / one head pattern, one rule vocabulary, one record face",
+   "evidence": "contact-sheet--light--1440.png",
+   "note": "carried from JV-sys-CP-UI-001-2-2 (RD-002 stand)"
+  },
+  {
+   "q": 5,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "critical": true,
+   "element": "/frontier #frontier-board VENDOR CLAIM column; / right rail THE FRONTIER door rows",
+   "evidence": "frontier--light--1440.png",
+   "note": "Anchored upgrade on the observable count the v2 FAIL turned on: the hatched blank reading 'no vendor claim on file' renders 12 times in 96 value cells, in the first viewport, identically in dark, so the lede's promise ('the shape of what the feeds have not yet stated is drawn as plainly as what they have') is now a visible 12-of-16 fact rather than dead CSS; home's door is no longer a link pair list but the board's own two-weight lead pair over its row rule, ordered by newest change (K26), though it still previews only filled rows."
+  },
+  {
+   "q": 6,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier NEWEST PROOFS and LEAD CHANGE strip; / impossible-routine gap rules",
+   "evidence": "frontier--light--1440.png",
+   "note": "carried from JV-sys-CP-UI-001-2-2 (RD-002 stand)"
+  },
+  {
+   "q": 7,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier .board-hatch / 12 hatched cells; contact sheet for restraint elsewhere",
+   "evidence": "frontier--dark--1440.png",
+   "note": "The signature fires for the first time: removing firstCitedFact left 12 hatched cells against 4 claims, a texture that appears on exactly one column of one template and nowhere else on the 16-template sheet, and no second bold move was added -- /catalog next to it is still the plain seven-column table, which is what makes the hatch legible as a statement rather than a style."
+  },
+  {
+   "q": 8,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier th VENDOR CLAIM + .board-claim / .board-hatch cells",
+   "evidence": "frontier--light--1440.png",
+   "note": "Both v2 defects are observably gone: no founding date or company fact appears under VENDOR CLAIM (the 4 remaining cells are model claims -- '59 at high reasoning', '359 tok/s', 'SpaceXAI's smartest', '2.99/4.00 average'), the cell is clamped to one ellipsised line so nothing cuts mid-word, READ is on screen at 1440, and the empty cell now reads as absent in words ('no vendor claim on file', italic, over neutral hatch) rather than as a substituted fact; the residual is that the word 'unverified' now survives only in the column header (F-sys-3-1)."
+  },
+  {
+   "q": 9,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "meta": true,
+   "element": "n/a / order and verbosity self-check against JV-sys-CP-UI-001-2-1",
+   "evidence": "IR-CP-UI-001-2-1.md",
+   "note": "carried from JV-sys-CP-UI-001-2-2 (RD-002 stand)"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F-sys-3-1",
+   "tag": "ALLR",
+   "problem": "With the per-row chip removed under RD-002 fix 2, the word 'unverified' appears nowhere on /frontier: the claim's status is carried only by the column header VENDOR CLAIM, while the claim text sits at the same ink weight as the fed price and context columns beside it.",
+   "evidence": "frontier--light--1440.png",
+   "invariant": "The /frontier surface states once, in words within the first viewport, that VENDOR CLAIM cells are statements the vendor made and this site has not verified.",
+   "governing_rule": "RULES.md R8 (badge clause; the chip is correctly gone)",
+   "prescription": "One --muted line in the existing fetch line above the board, not a returned chip; the lede already carries the blank's half of the sentence.",
+   "confidence": 0.6,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-3-2",
+   "tag": "ALLR",
+   "problem": "At 390 the capture shows only ORGANISATION and CURRENT MODEL; VENDOR CLAIM is outside the captured frame, so the identity move a phone visitor is meant to meet is not on the first screen even though the report counts 12 hatched cells in the DOM.",
+   "evidence": "frontier--light--390.png",
+   "invariant": "At 390 the count of blanks is legible without horizontal scrolling: either a hatched cell is within the unscrolled first screen, or the lede states the current number of models with no vendor claim on file.",
+   "governing_rule": null,
+   "prescription": "State the count in the lede rather than re-cutting the board (R2 remedy and R12 expectation stand; scroll state is not judgeable from a still, discipline rule 9).",
+   "confidence": 0.65,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-3-3",
+   "tag": "ALLR",
+   "problem": "The home door now carries the board's row form but all three recency-picked rows are filled, so the landing surface still previews the board's competence and never its one memorable property.",
+   "evidence": "home--light--1440.png",
+   "invariant": "The home Frontier door shows the board's blank at least once, or names its count, without changing the two-column door form (F-hier-2 declined, accepted).",
+   "governing_rule": null,
+   "prescription": "Let the door's existing 'The whole board' line carry the number; no new block, no per-row rules.",
+   "confidence": 0.55,
+   "route": "ui-fixable"
+  }
+ ],
+ "carried_forward": [
+  {
+   "id": "F-sys-2-3",
+   "status": "resolved",
+   "note": "Resolved: 12 hatched cells of 96 render at 1440 in both themes, in the first viewport; the fallback is gone and vendorClaimFact reads only the row's own model."
+  },
+  {
+   "id": "F-sys-2-7",
+   "status": "resolved",
+   "note": "Resolved: no org founding fact appears under VENDOR CLAIM in either theme; the 4 surviving cells are claims about the row's model, and absence falls through to the labelled blank."
+  },
+  {
+   "id": "F-sys-2-1b",
+   "status": "resolved differently",
+   "note": "Resolved per discipline rule 4: the column reorder was declined with cause (board grid, do_not_touch); the one-line clamp with ellipsis plus a 1152px board in a 1152px shell puts READ on screen and ends mid-word cutting."
+  },
+  {
+   "id": "F-sys-2-4",
+   "status": "resolved",
+   "note": "Resolved: the door carries .board-lead's two-weight pair over the board's own row rule and no other rail block does, and rows are picked by newest change (K26); F-sys-3-3 asks only that the blank reach it."
+  },
+  {
+   "id": "F-sys-2-8",
+   "status": "not resolved, still routed",
+   "note": "Still open and now answerable for the first time: MR-UI-001 must ask why a cell is striped on this build, which renders 12 (keeper Next item 1)."
+  },
+  {
+   "id": "F-sys-2-6",
+   "status": "not resolved",
+   "note": "The evidence-fix did not land: every file in evidence/current is theme-stamped light or dark, so the un-stamped auto state still has no image. COLR q3 stands on the token."
+  },
+  {
+   "id": "F-sys-2-5",
+   "status": "deferred by RD-002",
+   "note": "Deferred by directive; home's WHAT IT MEANS measure is unchanged and TYPE q1 stands."
+  },
+  {
+   "id": "F-hier-2",
+   "status": "declined with cause, acknowledged",
+   "note": "Not re-filed: the two-column door form is untouched and F-sys-3-3 works inside it."
+  }
+ ],
+ "diagnosis": {
+  "strongest": "ALLR: one removed fallback did what two rounds of styling could not -- the board now says something no template site says, that 12 of its 16 organisations have made no claim about their own newest model, and it says it by drawing the hole.",
+  "weakest": "The claim half of the same column: with the chip correctly gone, nothing on the page says in words that the four surviving cells are unverified vendor speech, and at 390 the whole column is off-frame.",
+  "critical_issue": "None. Question 5 moves FAIL to PASS against the anchor on the same observable it failed on -- zero hatched cells became 12 of 96, in both themes, in the first viewport at 1440.",
+  "highest_value_improvement": "Put the blank's count in words in the lede: it labels the claim column's status, reaches 390 where the column does not, and gives the home door a number to carry -- one sentence closing all three new findings.",
+  "confidence": 0.85,
+  "evidence_ids": [
+   "frontier--light--1440.png",
+   "frontier--dark--1440.png",
+   "frontier--light--390.png",
+   "home--light--1440.png",
+   "home--light--390.png",
+   "contact-sheet--light--1440.png",
+   "IR-CP-UI-001-2-2.md"
+  ]
+ },
+ "downstream": {
+  "weakness": "The identity now depends on a data condition holding: if the feeds fill those 12 cells, the signature disappears with no code change and no gate failure.",
+  "cause": "The move is defined as the absence of data rather than as a stated property of the board, so its visibility is a function of the day's feed rather than of the design.",
+  "recommendation": "Have the board state its own blank count as text next to the hatch, so the statement survives the day the data fills in; keep the S22 hatch floor as the alarm if it does.",
+  "confidence": 0.8
+ }
+}

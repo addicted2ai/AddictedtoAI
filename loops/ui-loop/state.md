@@ -14,89 +14,88 @@ process each round knows only what this file says. Every claim cites an artifact
   -> 93,963px (branch) = I14 in one number. Sandbox scores VOID for live; R1–R16 + invariants carry.
 - Gates: `npm test` · `npm run build` (read the LOG) · `verify-design` · `verify-surfaces` ·
   `tools/ui-invariants.mjs` · `graph/gates.mjs`. Method: graph engineering (playbook in
-  `D:\shared_workspace\dean-loop-engineering-2\docs\`); **keep the artifact, replace the loop**:
-  one concept round, keeper picks from a frontier. Anchors: `loops/ui-loop/graph/`.
+  `D:\shared_workspace\dean-loop-engineering-2\docs\`). Anchors `loops/ui-loop/graph/`.
 
 ## Live rulings (keeper, 2026-09-05; K1–K2 in the archive)
 
-- **K3** — No merge to `main` until the keeper says everything is in order. Branch-only until then.
-- **K4** — No push to the remote until done, absent a stated really good reason.
-- **K5** — `STOP` and `HOLD.md` are the keeper's alone. The loop never creates or removes either.
+- **K3** — No merge to `main` until the keeper says everything is in order.
+- **K4** — No push to the remote until done, absent a good reason.
+- **K5** — `STOP` and `HOLD.md` are the keeper's alone; the loop never touches either.
 - **K6** — Reserved paths untouched: `openspec/specs/`, `data/config.json`, `runners.yml`,
-  `package.json`. Content read-only (charter slot 1). Unfreeze is the orchestrator's job, not ours.
+  `package.json`. Content read-only (charter slot 1). Unfreeze is the orchestrator's.
 - **K7 (delegated defaults)** — ≤3 revisions then keeper check-in; jury (order-swapped pairwise) once,
-  on ≤2 finalists; 8.5 target REPORTED, not a stop. Convergence = empty `ui-fixable` queue AND full
-  rig coverage AND empty keeper section.
-- **K8** — `STOP` created by the keeper 2026-09-05. **K9** — Reader test: the keeper alone. No usage
-  ceiling "within reason".
+  on ≤2 finalists; 8.5 target REPORTED, not a stop.
+- **K8** — `STOP` is the keeper's. **K9** — Reader test: the keeper alone.
 - **K10 — THE BRIEF'S CENTRE (keeper, verbatim in substance).** "A shining example of what
   frontier AI can do when handed the reins. I want people to be truly amazed at the quality of the
-  site, and even more so once they realize a human didn't write any of it." Content largely liked.
-  Layout "ok, but a bit mechanical"; "great for machine reading (also important!) but not very
-  alluring or exciting for a human." → Visual identity and human allure are PRIMARY requirements
-  of `BRIEF-UI-001`, not a capped afterthought. Findability, WCAG AA, 320px reflow, 150 KB payload,
-  machine-readability and "content above the fold, decoration never displaces information"
-  (`openspec/specs/site` design bar) are the FENCE: never worse. **Lesson recorded:** the old
-  rubric scored "a reader's tool, not a showcase piece" and capped distinctiveness at impact 4;
-  the keeper's goal was never in a brief, so nine rounds optimised the wrong objective.
+  site, and even more so once they realize a human didn't write any of it." Layout "ok, but a bit
+  mechanical … great for machine reading (also important!) but not very alluring or exciting for a
+  human." → identity and allure are PRIMARY; findability, WCAG AA, 320px reflow, 150 KB, machine-
+  readability, content above the fold are the FENCE. The old rubric scored "a reader's tool, not a
+  showcase": nine rounds optimised an objective the keeper did not hold.
 - **K11** — `/frontier` MAY be prototyped on the branch; merge waits for the Desk's OpenSpec change.
-- **K12 (KP1, 2026-09-05)** — Port CONFIRMED except the ai-winter entry: "FACTS displayed first with
-  no context … feel out of place." F-K12: on prose entries the reader meets the subject (title + one
-  sentence) BEFORE any facts table; the old "answer first" order (S14) is overruled there.
-- **K13** — Models: concept generator + finalist jury FABLE; judges OPUS; implementers + red team
-  SONNET; gates/scoring code. Session effort -> MEDIUM at the first dispatch. **K15** (2026-09-05):
-  analyzer HAIKU -> SONNET from the next run (keeper: capabilities worlds apart; contract edit between rounds).
-  JV budget 9000 was binding for all 8 r1 verdicts: re-baseline once, between rounds.
+- **K12 (KP1)** — Port CONFIRMED except the ai-winter entry ("FACTS displayed first with no context …
+  out of place"). F-K12: on prose entries the reader meets the subject BEFORE any facts table.
+- **K13** — Models: generator + jury FABLE; judges OPUS; implementers + red team SONNET; gates/scoring
+  code; session effort MEDIUM for dispatch. **K15**: analyzer HAIKU -> SONNET (capabilities worlds apart).
 - **K14** (delegated, 2026-09-05) — `RULES` R1–R6 are law; **R7–R16 are the old loop's taste and
   CHALLENGEABLE** by a concept with cause, keeper rules; the port is a start, not a design to keep.
-- **Round-1 rulings (keeper, 2026-09-05).** **K16** typeface: "open to change" → judge-system's
-  reading stands (inheriting the stack is not a decision); each finalist names a self-hosted face
-  with licence, or argues the stack as a choice. **K17** finalists: `CP-UI-001-1` Dated Ledger and
-  `CP-UI-001-2` Players Board (Proof Rail, Provenance Gutter not built; their rule items moot).
-  **K18** R13 rail-track addendum (a); R7 board clarification (b, delegated). **K19** "No": the
-  Frontier LEADS with a players board (K11 stands); Dated Ledger's per-index spine must read as one.
-  **K20** (delegated) family: a finalist names a treatment for EVERY template; "unchanged, because"
-  is allowed. Worktrees `D:\AddictedtoAI-c1` (`ui/concept-1`), `-c2` (`ui/concept-2`). **K21** board
-  membership is EDITORIAL, never feed-gated: a player is on the board because the site covers it;
-  feeds fill cells; no label assumes one source. **K22** a closed, small cross-cutting `domain` facet
-  (models/orgs/tools/indices) joins the **Desk order** (post-pick note: Frontier data, K21 coverage,
-  K22); Opus research → `graph/knowledge/EN-domain-facet.md`; keeper picks. The graph ASSUMES the
-  facet: finalists absorb a domain as data (column/filter/row), no template edit — jury question.
+- **Check-in rulings (keeper, 2026-09-05).** **K35** one narrow 4th iteration authorised (`RD-003`:
+  claim allow-list; visible "not verified" lede; door hairlines). **K36** reader tests SKIPPED: MR-UI-
+  001..003 retired by the keeper; CAL-UI-001 not required before merge. **K37** implementer tier OPUS
+  for all (K13 amended). **K38** domain vocabulary: "general" is the unmarked default, `text` is not a
+  tag. **K39** DESK-ORDER-001 and the DIRECTIVES lines signed off; merge (K3), push (K4) and handoff
+  (K31) authorised after RD-003 passes. **K40** blanket delegation while the keeper is away.
+- **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated: "defer to you").** **K23** carry
+  PLAYERS BOARD forward; Dated Ledger's branch stays as a frontier record, RD-001 not run. **K24**
+  index columns appear only when a registry index exists (Desk order); until then the board carries
+  catalog-derived columns. **K25** the nav item discharges K19 at 390 (AR-001 D3). **K26** door rows
+  by most-recent change: a data ordering, not a content edit. **K27** PB's S13/S14/S18 rewrite
+  ratified; R13's 60% floor holds (AR-001 D4; RD-002 fix 4). **K28** catalog@390 = flat two-line
+  stack, every row in the document (I14 Ctrl-F clause); more density is a later brief. **K29** the
+  RD-002 revision runs on OPUS (7 ledger entries, semantic class recurring); ledger continues. K7
+  check-in held here; RD-002 is iteration 3 of 3 — hard stop after it regardless of score.
+- **K30 (keeper, 2026-09-05).** Frontier domain section = scout-flagged, domain-tagged EDITORIAL
+  records (`frontier: true`, `frontier_reason: F1–F5`, `domains`), 3 most recent per domain; index
+  leaders secondary where licensed; flagged stories exempt from the 3/day cap, not the budget;
+  feeds are the scout's radar, never display. Spec `knowledge/DESK-ORDER-001.md` §1; UI: next brief.
+- **Round-1 rulings (keeper, 2026-09-05).** **K16** a typeface decision is required (inheriting the
+  stack is not one). **K17** finalists CP-UI-001-1 Dated Ledger + CP-UI-001-2 Players Board. **K18**
+  R13 rail-track addendum; R7 board clarification. **K19** the Frontier LEADS with a players board.
+  **K20** a finalist names a treatment for EVERY template. Worktrees `D:\AddictedtoAI-c1`
+  (`ui/concept-1`), `-c2` (`ui/concept-2`). **K21** board membership is EDITORIAL, never feed-gated;
+  feeds fill cells; no label assumes one source. **K22** a closed, small `domain` facet joins the Desk
+  order (`EN-domain-facet.md`); the graph ASSUMES it: finalists absorb a domain as data, no template edit.
 
-## Known evidence lies (live-specific; continues JUDGE.md's L-series)
+## Known evidence lies
 
-- **L7** — Seven model pages render "not published" mid-sentence (worst: `gemini-3-1-pro-preview`,
-  `z-ai-glm-5-1`). Desk backlog in `DIRECTIVES.md`, pre-existing, NOT a presentation defect. A
-  judge who files it has filed a content lie.
-- **L8** — Two concurrent `next build`s share `.next/`, die with `ENOENT pages-manifest.json`: process
-  defect, not content. One build at a time.
+L7 (model pages render "not published": Desk backlog, never a UI finding), L8 (concurrent builds
+ENOENT): text in `state-archive.md`; also `JUDGE.md` L1–L8. Binding.
 
 ## Failure modes to guard
 
-- Keeper items age: open 3 rounds FAILs the sweep (F17). Instrument work never answers a blocked ruling.
-- A gate that can see nothing fails: rig coverage (routes × viewports × themes named by each judge
-  contract) is checked BEFORE any judge spawns.
-- Two writers, one judge, one score: never again. Judges are scoped by oracle; code totals.
-- **Build lock with a reused pid** (2026-09-05): compare the lock's `started` to the pid's creation
-  time; remove only with no build process alive (else it gates a STALE `out/`).
-- **This file was committed over budget twice** (8394, 8316 B). `gates.mjs` now FAILs it; run before commit.
+Binding; text in `state-archive.md`: build-lock pid reuse; keeper items age (F17); a gate that sees
+nothing fails; judges scoped by oracle, code totals; this file over budget (now 4×) — check first.
 
 ## Next (keeper decisions)
 
-1. ~~Anchors read, GO given (2026-09-05).~~ Round 1 running. [r0]
-2. ~~Round-1 rulings 1–8~~ → K16–K20 (concept page
-   https://claude.ai/code/artifact/0242a21f-b528-4116-9ee4-ed9ae7c11551). [r1]
-3. Schedule MR-UI-001..003 (find-tasks; hatched blank; spine cadence) once finalist captures exist. [r1]
+1. MR-UI-001..003 on the revised Players Board preview (MR-UI-001 must include a hatched blank). [r3]
+2. After the K7 stop: merge (K3), push (K4); then **K31** handoff by cross-session message to the
+   orchestrator (`addictedtoai-56`): DESK-ORDER-001, DIRECTIVES lines, beads; invite it to ASK about
+   anything it does not fully understand. **K32**: the two sessions work it out; stop for the keeper
+   only when a BLIND agent (not told the keeper is reachable; given constitution + K3–K31 + HANDOFF)
+   says "keeper required" (`HANDOFF-ORCHESTRATOR.md` §8b). **K33** STOP removal pre-authorised for
+   the orchestrator after the handoff (transcript line 2883; HANDOFF §8c); K5 holds for us. [r3]
+3. ~~Check-in decisions 1–5~~ → K35–K40 (2026-09-05). Keeper stepped away; **K40** blanket delegation:
+   the orchestrator-of-this-loop answers everything "short of insane catastrophic project-threatening
+   madness". Nothing open for the keeper. [r3]
 
 ## Next (loop work, in order)
 
-1.–6. Port `2d0f3fa`, rig `f08a3c6`, baseline, anchors, brief, GO: all done (archive has detail).
-7. **Round 1 (concept).** Packets `CP-UI-001-1..4` committed `efa1b35` (Dated Ledger, Players Board,
-   Proof Rail, Provenance Gutter; all pass `gates.mjs --packet`). Panel dispatched 2026-09-05:
-   judge-hierarchy + judge-system (Opus) → `JV-hier|sys-CP-UI-001-n-1.json`; red-team (Sonnet) →
-   `RT-CP-UI-001-n-1.md`. If resuming: check which of those 12 files exist; re-dispatch only the
-   missing ones (independence: never show a judge a sibling's verdict).
-8. ~~Verdicts, scores, DRs, concept page, rulings~~ done. 9. **Finalist builds running** (Sonnet,
-   `contracts/implementer.md`): c1 port 3111, c2 port 3112; one `next build` at a time via the lock.
-   Then: rig captures per worktree incl. /frontier → `--coverage` → full panel (3 judges + red team)
-   → score → DR → jury (Fable, order-swapped) → keeper pick → ≤3 revisions → MRs → merge decision (K3).
+1.–9. Rounds 0–2 done; detail in `state-archive.md` + commit log. Finalists page:
+   https://claude.ai/code/artifact/4c3688bb-c784-4e64-8bcf-e28f5aa29994
+10. **Round 3 done (2026-09-05).** RD-002 by Opus (`ui/concept-2` @ `1e3ddd7`, 5/5 fixes); re-captured
+   (98ad09f9); affected judges + RT anchored; `SCORE-CP-UI-001-2-3` **88.3** (was 54.8), no critical
+   FAIL; HIER 7.5 / DENS 6.67 / RESP 6.67 under 8; RT critical FM-N1 (claim regex admits marketing
+   fields; "unverified" never prints) + F-hier-11 door hairlines. **K7 cap: HARD STOP.** `BLIND-001`
+   decides what needs the keeper → check-in page → MRs → merge (K3) → push (K4) → handoff (K31, K33).

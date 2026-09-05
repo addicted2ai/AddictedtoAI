@@ -1,0 +1,213 @@
+{
+ "id": "JV-sys-CP-UI-001-2-2",
+ "version": 2,
+ "judge": "judge-system",
+ "packet": "CP-UI-001-2",
+ "packet_version": 2,
+ "anchor": {
+  "previous_verdict": "JV-sys-CP-UI-001-2-1",
+  "delta_seen": "IR-CP-UI-001-2-1"
+ },
+ "questions": [
+  {
+   "q": 1,
+   "tag": "TYPE",
+   "verdict": "PASS",
+   "element": "all 16 templates / eyebrow + serif h1 + grotesk record type",
+   "evidence": "contact-sheet--light--1440.png",
+   "note": "Deferred in v1, now answerable: one head pattern (grotesk caps eyebrow, Charter h1, ~62-66 character lede) and one record face with tabular figures hold across all sixteen templates; the sole outlier is home's WHAT IT MEANS blocks at ~90 characters on --step--1 (F-sys-2-5)."
+  },
+  {
+   "q": 2,
+   "tag": "TYPE",
+   "verdict": "PASS",
+   "critical": true,
+   "element": ":root --mono / @font-face 'Space Grotesk' (app/globals.css L89-109)",
+   "evidence": "public/fonts/",
+   "note": "Space Grotesk (OFL 1.1) subset to two self-hosted woff2 of 10,860 B and 10,300 B beside SpaceGrotesk-OFL.txt, no external origin, metrics from the face's own numbers, heading the existing --mono token so one edit reaches 46 record call sites; F-sys-2-1 closes."
+  },
+  {
+   "q": 3,
+   "tag": "COLR",
+   "verdict": "PASS",
+   "element": "/frontier board rules and badges; /wiki index status badges; / DEPRECATED chips",
+   "evidence": "contact-sheet--dark--1440.png",
+   "note": "Deferred in v1, now answerable for both stamped themes: rules and gridlines are --rule/--rule-strong, the board has no cell fills, accent sits only on links and the wordmark, and the only saturated marks at rest are state stamps -- but the hatch's neutrality is read from the token, not a pixel."
+  },
+  {
+   "q": 4,
+   "tag": "FAM",
+   "verdict": "PASS",
+   "element": "contact sheet, 16 templates / one head pattern, one rule vocabulary, one record face",
+   "evidence": "contact-sheet--light--1440.png",
+   "note": "Deferred in v1, and the family device beats the packet's: the --mono edit reaches the six templates F-sys-2-2 named as coming outliers without touching them, and radii, rule weights and the head pattern are one vocabulary across all sixteen."
+  },
+  {
+   "q": 5,
+   "tag": "ALLR",
+   "verdict": "FAIL",
+   "critical": true,
+   "element": "/ right rail THE FRONTIER block (.frontier-door) vs /frontier .board",
+   "evidence": "home--light--1440.png",
+   "note": "Anchored downgrade on a rendered count, not taste: the mechanism the v1 PASS named -- the hatched blank, and the home door being the board's own rows -- renders zero times across 112 cells, and the only change on the landing surface is the label face (F-sys-2-4)."
+  },
+  {
+   "q": 6,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "element": "/frontier NEWEST PROOFS and LEAD CHANGE strip; / impossible-routine gap rules",
+   "evidence": "frontier--light--1440.png",
+   "note": "Pace is structural and adjective-free -- eight proofs stamped 2026-09-03 to 09-05 read as a rate, home puts the elapsed span on the rule between two dates -- but the flagship's own cadence devices are an empty lead-change strip and a clipped Read date."
+  },
+  {
+   "q": 7,
+   "tag": "ALLR",
+   "verdict": "FAIL",
+   "element": "/frontier .board / hatched cell, the intended signature",
+   "evidence": "frontier--light--1440.png",
+   "note": "The one move a visitor was meant to remember is implemented and fires on nothing, because the claim cell falls back to any cited fact and the index column is omitted whole, leaving the seven-column table /catalog already was."
+  },
+  {
+   "q": 8,
+   "tag": "ALLR",
+   "verdict": "FAIL",
+   "element": "/frontier VENDOR CLAIM column / .badge[data-tone=early] 'claimed · unverified'",
+   "evidence": "frontier--light--1440.png",
+   "note": "The stamp sits on the wrong material -- NVIDIA reads 'claimed - unverified 5 April 1993, by Jensen Huang...', a sourced founding fact labelled an unverified vendor claim about a current model -- and all 16 claims truncate mid-word at 1440 (F-sys-2-1b)."
+  },
+  {
+   "q": 9,
+   "tag": "ALLR",
+   "verdict": "PASS",
+   "meta": true,
+   "element": "n/a / order and verbosity self-check against JV-sys-CP-UI-001-2-1",
+   "evidence": "IR-CP-UI-001-2-1.md",
+   "note": "The risk was the opposite of order bias -- this was my v1 favourite and the pull was to protect its PASS -- so 5-7 were checked against pixels only, and TYPE and FAM rest on the licence file and the sheet."
+  }
+ ],
+ "findings": [
+  {
+   "id": "F-sys-2-4",
+   "tag": "ALLR",
+   "problem": "/'s THE FRONTIER block is a two-column link pair list styled like the CATALOG and DEPRECATED blocks beside it, so the board's character never reaches the surface a first-time visitor lands on.",
+   "evidence": "home--light--1440.png",
+   "invariant": "The home Frontier block carries at least one board-specific property present on no other rail block: the two-weight lead pair plus the board's horizontal row rules.",
+   "governing_rule": null,
+   "prescription": "Not a re-file of the declined F-hier-2: keep the fixed two-column excerpt and no overflow container, and carry the row rules and .board-lead weight onto it.",
+   "confidence": 0.8,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-2-3",
+   "tag": "ALLR",
+   "problem": ".board-hatch is correct in CSS and unreachable in data: the claim cell falls back to any cited org fact, price/context/model are filled for all 16 matched orgs, and the index column is omitted whole.",
+   "evidence": "frontier--light--1440.png",
+   "invariant": "At least one hatched cell renders on /frontier on shipped data, at 1440 and 390, within the first viewport; or fixed copy states nothing is currently unstated.",
+   "governing_rule": null,
+   "prescription": "Drop the firstCitedFact(org) fallback; the blanks that appear are the move, and their count is the page's most interesting number.",
+   "confidence": 0.85,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-2-1b",
+   "tag": "ALLR",
+   "problem": "Two of seven columns are unreadable at 1440: VENDOR CLAIM is cut mid-word for all 16 rows and the READ provenance cell that makes a row citable is entirely off-screen, with no visible scroll affordance.",
+   "evidence": "frontier--light--1440.png",
+   "invariant": "At 1440 no board cell's text is visually truncated and the per-row provenance cell is within the first viewport; scrolled columns carry a persistent visible edge affordance.",
+   "governing_rule": null,
+   "prescription": "Clamp the claim cell to an excerpt with its own ellipsis, and place the read date ahead of the claim.",
+   "confidence": 0.85,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-2-7",
+   "tag": "ALLR",
+   "problem": "VENDOR CLAIM labels sourced organisation founding facts as unverified vendor claims because the cell takes the first cited fact of any kind, which trains a reader to ignore the stamp.",
+   "evidence": "frontier--light--1440.png",
+   "invariant": "Every cell under VENDOR CLAIM is a claim the vendor made about that row's model, verbatim with source and accessed date; a record without one renders the labelled blank, never a substituted fact.",
+   "governing_rule": "BRIEF-UI-001 R-B",
+   "prescription": "Type the fact at the source instead of taking the first cited one, letting absence fall through to the labelled blank -- which also repairs F-sys-2-3.",
+   "confidence": 0.85,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-2-5",
+   "tag": "TYPE",
+   "problem": "Home's WHAT IT MEANS blocks set --step--1 prose across the ~90-character feed column, the widest measure at the smallest size on the sheet and the only visible break in the one-measure rule.",
+   "evidence": "home--light--1440.png",
+   "invariant": "No prose block on any template exceeds ~75 characters per line at --step--1 or smaller.",
+   "governing_rule": null,
+   "prescription": "Cap the annotation block at --measure inside the feed row rather than letting it inherit the column.",
+   "confidence": 0.7,
+   "route": "ui-fixable"
+  },
+  {
+   "id": "F-sys-2-6",
+   "tag": "COLR",
+   "problem": "Every capture is theme-stamped (manifest theme: light|dark), so the un-stamped 'auto' state the contract asks about has no image in the evidence set.",
+   "evidence": "contact-sheet--light--1440.png",
+   "invariant": "The evidence set contains a capture of /frontier and / with no data-theme attribute set, under each of prefers-color-scheme light and dark.",
+   "governing_rule": null,
+   "prescription": "Add an un-stamped pair to the rig's route matrix.",
+   "confidence": 0.75,
+   "route": "evidence-fix"
+  },
+  {
+   "id": "F-sys-2-8",
+   "tag": "ALLR",
+   "problem": "Whether a hatched cell reads as candour or as breakage is unanswered, and now carries F-sys-2-3's remedy, which deliberately introduces blanks onto the flagship.",
+   "evidence": "frontier--light--1440.png",
+   "invariant": "In the keeper reader test, no reader describes a hatched cell as broken, missing or an error when asked what it means.",
+   "governing_rule": null,
+   "prescription": "Carry the hatch into MR-UI-001 as a why-is-this-cell-striped question, on a build that renders one.",
+   "confidence": 0.75,
+   "route": "measure"
+  }
+ ],
+ "carried_forward": [
+  {
+   "id": "F-sys-2-1",
+   "status": "resolved",
+   "note": "Resolved: Space Grotesk OFL 1.1, SpaceGrotesk-OFL.txt, 10,860 B and 10,300 B against the ~30 KB cap, declared on --mono."
+  },
+  {
+   "id": "F-sys-2-2",
+   "status": "resolved differently",
+   "note": "Satisfied differently per discipline rule 4: the prose templates inherited the face through --mono, not board column tokens, and IR-CP-UI-001-2-1 states an 'unchanged, because' for each of the six."
+  },
+  {
+   "id": "F-hier-2",
+   "status": "declined with cause, acknowledged",
+   "note": "Declined with cause (R6, R2) and accepted; F-sys-2-4 asks only for row rules and lead-pair weight on the existing fixed excerpt."
+  },
+  {
+   "id": "F-sys-2-3(v1)",
+   "status": "superseded",
+   "note": "Superseded by F-sys-2-8: it now gates a remedy rather than a shipped state."
+  }
+ ],
+ "diagnosis": {
+  "strongest": "TYPE and FAM: heading the existing --mono token instead of forking one made a single edit carry Space Grotesk to all sixteen templates, with metric overrides so the swap costs no reflow.",
+  "weakest": "ALLR on the shipped pixels: the bet -- absence drawn as plainly as presence -- sits in the CSS and reaches no cell, leaving a competent table on the flagship and the round-0 home in a new label face.",
+  "critical_issue": "Question 5 moves PASS to FAIL against the anchor on an observable count: zero hatched cells across 112 in both themes and widths, and a home Frontier block that is a link list, not the board's rows.",
+  "highest_value_improvement": "Restrict the vendor-claim cell to actual vendor claims and drop the first-cited-fact fallback: one change repairs the mislabel, renders the hatched blank for the first time, and makes the blank count the flagship data statement.",
+  "confidence": 0.82,
+  "evidence_ids": [
+   "frontier--light--1440.png",
+   "frontier--dark--1440.png",
+   "frontier--light--390.png",
+   "home--light--1440.png",
+   "contact-sheet--light--1440.png",
+   "contact-sheet--dark--1440.png",
+   "app/globals.css :root",
+   "public/fonts/",
+   "IR-CP-UI-001-2-1.md"
+  ]
+ },
+ "downstream": {
+  "weakness": "The build shipped an identity (a face) without the gesture (the blank), and only the gesture answers K10's 'mechanical'.",
+  "cause": "The empty state was written as a fallback for missing data rather than a typed condition, so a permissive fallback in the same cell consumed every case that would have triggered it.",
+  "recommendation": "Add a rig assertion counting rendered .board-hatch cells on /frontier, and judge the next round's question 5 from home first.",
+  "confidence": 0.8
+ }
+}

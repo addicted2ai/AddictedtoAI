@@ -3,7 +3,7 @@ id: MR-UI-002
 version: 1
 schema: loops/ui-loop/graph/schemas.md#measurement-request
 depends_on: [BRIEF-UI-001.v1, DR-CP-UI-001-2-1.v1]
-status: open
+status: retired  # keeper 2026-09-05, check-in decision 2: "Skip this step" (K36)
 closed_by: null
 ```
 

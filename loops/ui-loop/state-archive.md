@@ -680,3 +680,45 @@ their work is bounded, scoped to one surface, and verified by the iteration gate
 immediately - the profile a cheaper model suits. Judging is the measurement every
 downstream routing decision inherits, and it is now the one row of the model policy backed
 by a measurement rather than by a preference.
+
+
+## Archived from state.md 2026-09-05 (round-1 loop-work list, superseded by round 2)
+
+## Next (loop work, in order)
+
+1.–6. Port `2d0f3fa`, rig `f08a3c6`, baseline, anchors, brief, GO: all done (archive has detail).
+7. **Round 1 (concept).** Packets `CP-UI-001-1..4` committed `efa1b35` (Dated Ledger, Players Board,
+   Proof Rail, Provenance Gutter; all pass `gates.mjs --packet`). Panel dispatched 2026-09-05:
+   judge-hierarchy + judge-system (Opus) → `JV-hier|sys-CP-UI-001-n-1.json`; red-team (Sonnet) →
+   `RT-CP-UI-001-n-1.md`. If resuming: check which of those 12 files exist; re-dispatch only the
+   missing ones (independence: never show a judge a sibling's verdict).
+8. ~~Verdicts, scores, DRs, concept page, rulings~~ done. 9. **Finalist builds running** (Sonnet,
+   `contracts/implementer.md`): c1 port 3111, c2 port 3112; one `next build` at a time via the lock.
+   Then: rig captures per worktree incl. /frontier → `--coverage` → full panel (3 judges + red team)
+   → score → DR → jury (Fable, order-swapped) → keeper pick → ≤3 revisions → MRs → merge decision (K3).
+
+
+## Archived from state.md 2026-09-05 (Failure modes to guard — still binding, moved for budget)
+
+## Failure modes to guard
+
+- Keeper items age: open 3 rounds FAILs the sweep (F17). Instrument work never answers a blocked ruling.
+- A gate that can see nothing fails: rig coverage (routes × viewports × themes named by each judge
+  contract) is checked BEFORE any judge spawns.
+- Two writers, one judge, one score: never again. Judges are scoped by oracle; code totals.
+- **Build lock with a reused pid** (2026-09-05): compare the lock's `started` to the pid's creation
+  time; remove only with no build process alive (else it gates a STALE `out/`).
+- **This file was committed over budget twice** (8394, 8316 B). `gates.mjs` now FAILs it; run before commit.
+
+
+
+## Archived from state.md 2026-09-05 (Known evidence lies L7–L8 — still binding, moved for budget)
+
+## Known evidence lies (live-specific; continues JUDGE.md's L-series)
+
+- **L7** — Seven model pages render "not published" mid-sentence (worst: `gemini-3-1-pro-preview`,
+  `z-ai-glm-5-1`). Desk backlog in `DIRECTIVES.md`, pre-existing, NOT a presentation defect. A
+  judge who files it has filed a content lie.
+- **L8** — Two concurrent `next build`s share `.next/`, die with `ENOENT pages-manifest.json`: process
+  defect, not content. One build at a time.
+
