@@ -64,7 +64,10 @@ A player is on the board because the site covers it; feeds fill cells. The board
 organisation entries; 34 catalog providers have no entry and never surface. Order: widen
 `content/wiki/org/` coverage far beyond API-model vendors — labs without an API product,
 open-weights groups, image/video/audio, robotics, research groups. Each new org entry needs its
-`feeds` map (the join the board relies on) or it renders an all-blank row (allowed, honest).
+`feeds` map (the join the board relies on) or it renders an all-blank row (allowed, honest). Each org
+entry should also list its PRODUCT-BRAND domains as aliases (e.g. Moonshot's `kimi.ai`): the board
+attributes a vendor claim only when the cited source's registrable domain is the vendor's own, so a
+brand domain missing from the aliases makes a real vendor claim render as a blank (RT FM-N6).
 
 ## 3. The `domain` facet (K22) — OpenSpec: wiki schema, directory
 

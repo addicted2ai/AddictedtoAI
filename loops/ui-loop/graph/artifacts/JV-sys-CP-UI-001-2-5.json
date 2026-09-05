@@ -1,0 +1,93 @@
+{
+ "id": "JV-sys-CP-UI-001-2-5",
+ "version": 1,
+ "judge": "judge-system",
+ "packet": "CP-UI-001-2",
+ "packet_version": 5,
+ "anchor": {
+  "previous_verdict": "JV-sys-CP-UI-001-2-4",
+  "delta_seen": "IR-CP-UI-001-2-4"
+ },
+ "questions": [
+  {"q": 1, "tag": "TYPE", "verdict": "PASS",
+   "element": "all 16 templates / eyebrow + serif h1 + grotesk record type",
+   "evidence": "contact-sheet--light--1440.png",
+   "note": "carried from JV-sys-CP-UI-001-2-4 (RD-004 stand)"},
+  {"q": 2, "tag": "TYPE", "verdict": "PASS", "critical": true,
+   "element": ":root --mono / @font-face 'Space Grotesk' (app/globals.css L89-109)",
+   "evidence": "public/fonts/",
+   "note": "carried from JV-sys-CP-UI-001-2-4 (RD-004 stand)"},
+  {"q": 3, "tag": "COLR", "verdict": "PASS",
+   "element": "/frontier board rules and badges; /wiki index status badges; / DEPRECATED chips",
+   "evidence": "contact-sheet--dark--1440.png",
+   "note": "carried from JV-sys-CP-UI-001-2-4 (RD-004 stand)"},
+  {"q": 4, "tag": "FAM", "verdict": "PASS",
+   "element": "contact sheet, 16 templates / one head pattern, one rule vocabulary, one record face",
+   "evidence": "contact-sheet--light--1440.png",
+   "note": "carried from JV-sys-CP-UI-001-2-4 (RD-004 stand)"},
+  {"q": 5, "tag": "ALLR", "verdict": "PASS", "critical": true,
+   "element": "/frontier #frontier-board VENDOR CLAIM column; / right rail THE FRONTIER door rows",
+   "evidence": "frontier--light--1440.png",
+   "note": "carried from JV-sys-CP-UI-001-2-4 (RD-004 stand)"},
+  {"q": 6, "tag": "ALLR", "verdict": "PASS",
+   "element": "/frontier NEWEST PROOFS and LEAD CHANGE strip; / impossible-routine gap rules",
+   "evidence": "frontier--light--1440.png",
+   "note": "carried from JV-sys-CP-UI-001-2-4 (RD-004 stand)"},
+  {"q": 7, "tag": "ALLR", "verdict": "PASS",
+   "element": "/frontier .board-hatch / hatched cells; contact sheet for restraint elsewhere",
+   "evidence": "frontier--dark--1440.png",
+   "note": "carried from JV-sys-CP-UI-001-2-4 (RD-004 stand)"},
+  {"q": 8, "tag": "ALLR", "verdict": "PASS",
+   "element": "/frontier p.board-lede + .board-claim (with .src) / .board-hatch / th VENDOR CLAIM + td READ",
+   "evidence": "frontier--light--1440.png",
+   "note": "Judged fresh on the round-5 captures. LABELLED: the lede states in words, in the first viewport of all four captures, that vendor claims are quoted verbatim from the vendor, are not verified by this site, and that a blank means no claim on file; at 390 that sentence is the whole of a reader's contact with the column, which is off-frame. THIRD-PARTY MEASURED: nothing measured now renders as a claim -- the traffic-derived throughput figure that carried the round-4 risk is gone from Inception's row, which reads as a labelled blank, and no analyst-arithmetic value appears in either theme. BLANKS: the absent state reads in words, italic and muted over hatch, on every row without a claim, and the lede's stated count agrees with the board in both themes. ATTRIBUTED: only partly, and this is where the question is now thinnest -- see F-sys-5-1. The one-line clamp truncates the attribution the round added: one claim cell ends in a cut organisation name with its date lost, the other is clipped before the em dash so no source name appears in that row at all. The presentation still reads honestly at a glance -- unverified is stated, absent is stated, no measurement is dressed as vendor speech -- so the verdict holds against the anchor."},
+  {"q": 9, "tag": "ALLR", "verdict": "PASS", "meta": true,
+   "element": "n/a / order and verbosity self-check against JV-sys-CP-UI-001-2-1",
+   "evidence": "IR-CP-UI-001-2-1.md",
+   "note": "carried from JV-sys-CP-UI-001-2-4 (RD-004 stand)"}
+ ],
+ "findings": [
+  {"id": "F-sys-5-1", "tag": "ALLR",
+   "problem": "The attribution this round added is defeated at render by the clamp it was placed inside. The claim cell is one clamped line and the vendor name plus accessed date were appended after the fragment, so the ellipsis eats the attribution before it eats the claim: Google DeepMind's cell breaks mid-name and drops its date, and Tencent's cell is cut before the em dash, leaving a bare quantified fragment with no source of any kind beside a READ cell that names the feed. That is the glance F-sys-4-1 was written about, now reproduced for one of the two claims instead of for both. Identical in light and dark at 1440; the column is off-frame at 390.",
+   "evidence": "frontier--light--1440.png",
+   "invariant": "For every row rendering a vendor claim, the attributing party's name is legible in the cell untruncated, in both themes, at the widest captured viewport.",
+   "governing_rule": null,
+   "prescription": "The clamp is do_not_touch as a form, not as an ordering: put the source ahead of or beneath the fragment so the ellipsis falls on the quoted words, or fix the name as a short trailing chip the fragment clamps against. The implementer may satisfy the invariant otherwise.",
+   "confidence": 0.6,
+   "route": "ui-fixable"}
+ ],
+ "carried_forward": [
+  {"id": "F-sys-4-1", "status": "partially resolved",
+   "note": "The mechanism is right and data-derived: the vendor's own display name, linked to the cited source, follows the fragment, and the admission rule was narrowed so only a value the vendor itself is cited for reaches the column. But the finding's own invariant -- source and date identifiable from the row -- is met for neither claim as rendered: one name is cut and dateless, the other is not on screen at all. Re-filed as F-sys-5-1 because the residual is a different defect (clamp order) from the one v4 measured (no attribution at all)."},
+  {"id": "F-sys-3-3", "status": "not resolved",
+   "note": "Untouched by directive this round; home's THE FRONTIER door still shows filled rows with no blank and no count. Not re-filed -- the count remains one click away and the door form is correct."},
+  {"id": "F-sys-2-8", "status": "not resolved, still routed",
+   "note": "Still open; MR-UI-001 must ask why a cell is striped, now on a build whose hatch covers all but two rows."},
+  {"id": "F-sys-2-6", "status": "not resolved",
+   "note": "Every file in evidence/current is theme-stamped light or dark; the un-stamped auto state still has no image. COLR q3 stands on the token."},
+  {"id": "F-sys-2-5", "status": "deferred by RD-002",
+   "note": "Still deferred; home's WHAT IT MEANS measure is unchanged and TYPE q1 stands."},
+  {"id": "F-hier-2", "status": "declined with cause, acknowledged",
+   "note": "Not re-filed: the two-column door form is untouched."}
+ ],
+ "diagnosis": {
+  "strongest": "ALLR: the column's admission rule now matches its own label. A measurement can no longer pass as a vendor claim and only a value the vendor itself is the cited source of reaches the cell, so the sentence above the board is true of every value beneath it -- which it was not last round.",
+  "weakest": "The attribution that rule earned is truncated away by the single-line clamp: one claim shows a cut name with no date, the other shows no source at all.",
+  "critical_issue": "None. q8 holds PASS against the anchor -- unverified is stated in words in the first viewport of every capture, the absent state reads as absent, and no third-party measurement renders as vendor speech.",
+  "highest_value_improvement": "Reorder the claim cell so the ellipsis falls on the quoted fragment rather than on the source, because the honesty of the column is now carried by a name the layout is deleting.",
+  "confidence": 0.85,
+  "evidence_ids": [
+   "frontier--light--1440.png",
+   "frontier--dark--1440.png",
+   "frontier--light--390.png",
+   "frontier--dark--390.png",
+   "IR-CP-UI-001-2-4.md"
+  ]
+ },
+ "downstream": {
+  "weakness": "The stricter rule made the column emptier and the hatch is now nearly the whole of it. The board's identity move still rides on how little the vendors say rather than on a stated property of the board, so the day the column fills, the sentence above it is the only thing that was ever load-bearing.",
+  "cause": "Vendor-domain admission is the right fence, but it selects on where a fact was published rather than on what the board measures, so coverage tracks vendor publishing habits and will move with no design decision behind it.",
+  "recommendation": "Keep the lede as the permanent statement and let the hatch illustrate it; make the clamp-order fix in a form that still reads when the column is full, since that is the state the fence makes unpredictable.",
+  "confidence": 0.8
+ }
+}

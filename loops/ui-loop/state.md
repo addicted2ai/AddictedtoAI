@@ -45,16 +45,17 @@ process each round knows only what this file says. Every claim cites an artifact
   001..003 retired by the keeper; CAL-UI-001 not required before merge. **K37** implementer tier OPUS
   for all (K13 amended). **K38** domain vocabulary: "general" is the unmarked default, `text` is not a
   tag. **K39** DESK-ORDER-001 and the DIRECTIVES lines signed off; merge (K3), push (K4) and handoff
-  (K31) authorised after RD-003 passes. **K40** blanket delegation while the keeper is away.
-- **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated: "defer to you").** **K23** carry
-  PLAYERS BOARD forward; Dated Ledger's branch stays as a frontier record, RD-001 not run. **K24**
-  index columns appear only when a registry index exists (Desk order); until then the board carries
-  catalog-derived columns. **K25** the nav item discharges K19 at 390 (AR-001 D3). **K26** door rows
-  by most-recent change: a data ordering, not a content edit. **K27** PB's S13/S14/S18 rewrite
-  ratified; R13's 60% floor holds (AR-001 D4; RD-002 fix 4). **K28** catalog@390 = flat two-line
-  stack, every row in the document (I14 Ctrl-F clause); more density is a later brief. **K29** the
-  RD-002 revision runs on OPUS (7 ledger entries, semantic class recurring); ledger continues. K7
-  check-in held here; RD-002 is iteration 3 of 3 — hard stop after it regardless of score.
+  (K31) authorised after RD-003 passes. **K40** blanket delegation while the keeper is away. **K41**
+  (under K40): RT FM-N3 (a measured throughput rendered as a VENDOR CLAIM) → `RD-004` before merge.
+  **K42** (under K40): `RD-005` micro-fix (vendor name first in the claim cell; eTLD+1 host match), then
+  merge. v5: 88.3, zero RT criticals, hard gates pass; HIER/DENS/RESP under 8 are next-brief items.
+  **K43** (keeper, 2026-09-05): "Make this the last iteration! Address any findings directly and begin
+  the handoff process after." Iteration 6 is final; findings are fixed directly, no further RD.
+- **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated).** **K23** PLAYERS BOARD carried
+  forward; Dated Ledger's branch kept as a record. **K24** index columns only when a registry index
+  exists. **K25** the nav discharges K19 at 390. **K26** door rows by most-recent change. **K27** PB's
+  S13/S14/S18 rewrite ratified; R13's 60% floor holds. **K28** catalog@390 flat two-line stack (I14).
+  **K29** RD-002 on OPUS. K7 check-in held; RD-002 = iteration 3.
 - **K30 (keeper, 2026-09-05).** Frontier domain section = scout-flagged, domain-tagged EDITORIAL
   records (`frontier: true`, `frontier_reason: F1–F5`, `domains`), 3 most recent per domain; index
   leaders secondary where licensed; flagged stories exempt from the 3/day cap, not the budget;
@@ -79,16 +80,10 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
 
 ## Next (keeper decisions)
 
-1. MR-UI-001..003 on the revised Players Board preview (MR-UI-001 must include a hatched blank). [r3]
-2. After the K7 stop: merge (K3), push (K4); then **K31** handoff by cross-session message to the
-   orchestrator (`addictedtoai-56`): DESK-ORDER-001, DIRECTIVES lines, beads; invite it to ASK about
-   anything it does not fully understand. **K32**: the two sessions work it out; stop for the keeper
-   only when a BLIND agent (not told the keeper is reachable; given constitution + K3–K31 + HANDOFF)
-   says "keeper required" (`HANDOFF-ORCHESTRATOR.md` §8b). **K33** STOP removal pre-authorised for
-   the orchestrator after the handoff (transcript line 2883; HANDOFF §8c); K5 holds for us. [r3]
-3. ~~Check-in decisions 1–5~~ → K35–K40 (2026-09-05). Keeper stepped away; **K40** blanket delegation:
-   the orchestrator-of-this-loop answers everything "short of insane catastrophic project-threatening
-   madness". Nothing open for the keeper. [r3]
+1. Nothing open for the keeper (K35–K43 closed rounds 3–6; struck items in `state-archive.md`). Next
+   brief (BRIEF-UI-002, keeper-drafted when back): wiki entry's empty right half at 1440 (F-hier-7),
+   catalog at 768 (JV-struct q5), claim clamp eats the value (JV-sys v6 downstream), Frontier domain
+   section once DESK-ORDER-001 §1 data exists. [r6]
 
 ## Next (loop work, in order)
 
