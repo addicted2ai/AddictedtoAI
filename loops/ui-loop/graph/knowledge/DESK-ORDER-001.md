@@ -4,7 +4,7 @@
 id: DESK-ORDER-001
 version: 1
 schema: loops/ui-loop/graph/schemas.md#evidence-note
-status: draft — keeper sign-off pending (state.md keeper item 2)
+status: SIGNED OFF by the keeper 2026-09-05 (check-in decision 5, K39)
 date: 2026-09-05
 depends_on: [BRIEF-UI-001.v1, EN-domain-facet.v1, frontier-plan.md, JURY-BRIEF-UI-001, state.md K11 K19 K21 K22 K24 K30]
 addressed_to: the AddictedtoAI orchestrator (Desk), on unfreeze
@@ -72,10 +72,12 @@ Closed, small, set-valued, optional on models, orgs, tools, techniques and front
 Research and recommendation in `EN-domain-facet.md` (Opus, 2026-09-05): nine values —
 `text, coding, agents, image, video, audio, research, science-math, robotics` — chosen over
 modality-only and capability-only alternatives because it is the only vocabulary the data on disk
-seeds (431/446 models partially via feed modalities; 181 fully via the AA indices). **Three
-questions are the keeper's before this lands** (state.md keeper item 2): keep `text` or make
-"general" the unmarked default; may the site republish Artificial Analysis values; alphabetical vs
-declared ordering of domain sections (directory spec's pure-function rule). `domain` and tool
+seeds (431/446 models partially via feed modalities; 181 fully via the AA indices). **The three
+open questions are answered:** "general" is the UNMARKED default and `text` is not a tag (keeper,
+K38); no Artificial Analysis value renders until republication rights are cleared (K24/K34, beads
+addictedtoai-ego8 and -c563); domain sections order by domain id, a pure function of names per the
+directory spec (K34). The facet vocabulary is therefore eight tagged values: `coding, agents,
+image, video, audio, research, science-math, robotics`, with untagged = general. `domain` and tool
 `category` are different axes: 28 of 35 tool listings map to no domain, so it is optional on tools.
 Build gate: any `domains` value outside the vocabulary fails.
 
