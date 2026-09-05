@@ -27,6 +27,8 @@ evidence: >
   Related but not the same case: `data/proposals/review-worktrees-carry-no-node-modules.md`
   (2026-09-01) covers the REVIEW worktree, whose remedy would not reach the
   authoring one.
+proposed_by_job: j-20260904-56
+proposed_by_type: repair
 ---
 
 A job whose acceptance checks say "the repository still builds (`npm run
