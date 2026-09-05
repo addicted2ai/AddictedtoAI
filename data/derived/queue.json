@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 2,
+  "count": 1,
   "items": [
-    {
-      "detail": "3 findings carried by reviewers against `data/reviews/evidence/verify-daybreak-defense-network-product-wording.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### \"inside a single second\" is wrong for the 22:53 run — say \"within seconds\"\n\nCarried in `data/carried/j-20260904-54-carry-1.md`.\n\nThe narrative says \"In each of the two runs made inside a single second the spread is under ten bytes\", but the transcript appended in the same diff timestamps the 22:53 run 04:52:58.726Z → 04:53:03.981Z — 5.3 seconds, not one. The substance holds (spread 5 bytes), only the descriptor is wrong; \"within seconds\" or \"inside six seconds\" fixes it. Worth correcting because this job exists to stop a measurement being described at the wrong timescale.\n\n### The 20:32 row's two counts came from two different header sets, and the table does not say so\n\nCarried in `data/carried/j-20260904-54-carry-2.md`.\n\nThe new table lists \"20:32 | 376,021 / 376,069\" as one run, but the blockquote immediately above it records that 376,021 was the UA-only fetch and 376,069 the UA + accept-language + cache-control fetch. The sentence \"Not monotonically — 20:32's 376,069 sits above the whole 21:36 run\" therefore rests on the one measurement in the whole table taken with `cache-control: no-cache`. Adding \"(different header sets — see the blockquote)\" to that row would keep the confound visible; nothing in the conclusion changes, since the sentence it supports is a hedge.\n\n### A fifth run 17 minutes later breaks the rising-floor pattern\n\nCarried in `data/carried/j-20260904-54-carry-3.md`.\n\nThis review re-fetched the URL at 23:10 local (UA only) and got 376,100 / 376,116 / 376,108 — a floor of 376,100, below the 22:53 run's 376,108. \"each run's floor is higher than the last\" is exactly true of the four rows tabulated and is not overstated as a law, but a reader may take it as a trend; a half-clause noting the floors are only monotonic at hours-apart spacing would close that reading. Nothing in the argument depends on it — the 105-byte gap the record set out to explain is still far outside the seconds-scale band.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260904-54-carry-1.md`\n- `data/carried/j-20260904-54-carry-2.md`\n- `data/carried/j-20260904-54-carry-3.md`",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/reviews/evidence/verify-daybreak-defense-network-product-wording.md",
-      "target": "data/reviews/evidence/verify-daybreak-defense-network-product-wording.md",
-      "title": "Clear the 3 carried findings on data/reviews/evidence/verify-daybreak-defense-network-product-wording.md",
-      "type": "repair"
-    },
     {
       "detail": "The evidence file's header says the raw transcript is a \"node fetch+strip+count script, 2026-09-03; the huggingface.co/meta-models org page was fetched twice because its activity feed renders intermittently\". Grepping \"^=== https\" over data/reviews/evidence/verify-meta-spark-weights-pending-status.raw.txt returns 11 fetch blocks and huggingface.co/meta-models appears exactly once (line 22). The underlying observation is real — that page's stripped length was 2556 in the transcript and 2548 when I fetched it myself minutes later — but as written the sentence describes a second fetch the transcript does not contain. Either capture both fetches, or say it plainly (\"the page was fetched in both this run and the earlier one and rendered differently; only this run's is captured\"). This is the same narrative-outruns-transcript shape the previous pass flagged, at much smaller scale, which is why it is carried rather than blocked on.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-14 (`j-20260903-14.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -21,5 +12,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 2
+  "total_before_cap": 1
 }
