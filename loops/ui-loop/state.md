@@ -27,8 +27,8 @@ process each round knows only what this file says. Every claim cites an artifact
 - **K7 (delegated defaults)** — ≤3 revisions then keeper check-in; jury (order-swapped pairwise) once,
   on ≤2 finalists; 8.5 target REPORTED, not a stop. Convergence = empty `ui-fixable` queue AND full
   rig coverage AND empty keeper section.
-- **K8** — `STOP` created by the keeper 2026-09-05. **K9** — Reader test: the keeper alone (weaker
-  than strangers, still the only human measurement). No usage ceiling "within reason".
+- **K8** — `STOP` created by the keeper 2026-09-05. **K9** — Reader test: the keeper alone. No usage
+  ceiling "within reason".
 - **K10 — THE BRIEF'S CENTRE (keeper, verbatim in substance).** "A shining example of what
   frontier AI can do when handed the reins. I want people to be truly amazed at the quality of the
   site, and even more so once they realize a human didn't write any of it." Content largely liked.
@@ -40,11 +40,9 @@ process each round knows only what this file says. Every claim cites an artifact
   rubric scored "a reader's tool, not a showcase piece" and capped distinctiveness at impact 4;
   the keeper's goal was never in a brief, so nine rounds optimised the wrong objective.
 - **K11** — `/frontier` MAY be prototyped on the branch; merge waits for the Desk's OpenSpec change.
-- **K12 (KP1, first ever, 2026-09-05)** — Port CONFIRMED: "everything looks better changed, except
-  the ai-winter wiki entry. Having the FACTS displayed first with no context makes them feel out of
-  place." Finding F-K12 against the wiki-entry template (prose entries): the reader must meet the
-  subject (title + one sentence of context) BEFORE any facts table; the old loop's "answer first"
-  order (S14) is overruled for entries with prose bodies. Feeds BRIEF-UI-001, not a hotfix.
+- **K12 (KP1, 2026-09-05)** — Port CONFIRMED except the ai-winter entry: "FACTS displayed first with
+  no context … feel out of place." F-K12: on prose entries the reader meets the subject (title + one
+  sentence) BEFORE any facts table; the old "answer first" order (S14) is overruled there.
 - **K13** — Models: concept generator + finalist jury FABLE; judges OPUS; implementers + red team
   SONNET; gates/scoring code. Session effort -> MEDIUM at the first dispatch. **K15** (2026-09-05):
   analyzer HAIKU -> SONNET from the next run (keeper: capabilities worlds apart; contract edit between rounds).
@@ -58,7 +56,12 @@ process each round knows only what this file says. Every claim cites an artifact
   **K18** R13 rail-track addendum (a); R7 board clarification (b, delegated). **K19** "No": the
   Frontier LEADS with a players board (K11 stands); Dated Ledger's per-index spine must read as one.
   **K20** (delegated) family: a finalist names a treatment for EVERY template; "unchanged, because"
-  is allowed. Both worktrees: `D:\AddictedtoAI-c1` (`ui/concept-1`), `-c2` (`ui/concept-2`).
+  is allowed. Worktrees `D:\AddictedtoAI-c1` (`ui/concept-1`), `-c2` (`ui/concept-2`). **K21** board
+  membership is EDITORIAL, never feed-gated: a player is on the board because the site covers it;
+  feeds fill cells; no label assumes one source. **K22** a closed, small cross-cutting `domain` facet
+  (models/orgs/tools/indices) joins the **Desk order** (post-pick note: Frontier data, K21 coverage,
+  K22); Opus research → `graph/knowledge/EN-domain-facet.md`; keeper picks. The graph ASSUMES the
+  facet: finalists absorb a domain as data (column/filter/row), no template edit — jury question.
 
 ## Known evidence lies (live-specific; continues JUDGE.md's L-series)
 
@@ -70,8 +73,7 @@ process each round knows only what this file says. Every claim cites an artifact
 
 ## Failure modes to guard
 
-- Keeper items age. An item open 3 rounds FAILs the sweep (builder F17). Instrument work is never
-  the answer to a blocked ruling.
+- Keeper items age: open 3 rounds FAILs the sweep (F17). Instrument work never answers a blocked ruling.
 - A gate that can see nothing fails: rig coverage (routes × viewports × themes named by each judge
   contract) is checked BEFORE any judge spawns.
 - Two writers, one judge, one score: never again. Judges are scoped by oracle; code totals.
