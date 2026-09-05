@@ -47,6 +47,8 @@ process each round knows only what this file says. Every claim cites an artifact
   tag. **K39** DESK-ORDER-001 and the DIRECTIVES lines signed off; merge (K3), push (K4) and handoff
   (K31) authorised after RD-003 passes. **K40** blanket delegation while the keeper is away. **K41**
   (under K40): RT FM-N3 (a measured throughput rendered as a VENDOR CLAIM) → `RD-004` before merge.
+  **K42** (under K40): `RD-005` micro-fix (vendor name first in the claim cell; eTLD+1 host match), then
+  merge. v5: 88.3, zero RT criticals, hard gates pass; HIER/DENS/RESP under 8 are next-brief items.
 - **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated).** **K23** PLAYERS BOARD carried
   forward; Dated Ledger's branch kept as a record. **K24** index columns only when a registry index
   exists. **K25** the nav discharges K19 at 390. **K26** door rows by most-recent change. **K27** PB's
