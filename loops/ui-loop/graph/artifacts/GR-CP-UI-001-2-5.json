@@ -1,0 +1,42 @@
+{
+ "id": "GR-CP-UI-001-2-5",
+ "version": 1,
+ "schema": "loops/ui-loop/graph/schemas.md#score",
+ "packet": "CP-UI-001-2",
+ "packet_version": 5,
+ "derived_from": [
+  "c2 evidence/current/invariants.txt",
+  "verify-design.txt",
+  "manifest.json",
+  "GR-coverage-current.json (c2)",
+  "IR-CP-UI-001-2-4 (build + verify-surfaces)"
+ ],
+ "head": "f7bff8d",
+ "contentHash": "5016b30595a1277a271730369e49221cb52bc8e7ccd7cc1ff6a58d6ed7f14330",
+ "captured": "2026-09-05T22:20:17.959Z",
+ "images": 96,
+ "gates": {
+  "build": {
+   "pass": true,
+   "source": "IR-CP-UI-001-2-4: npm run build PASS, log read"
+  },
+  "verify-design": {
+   "pass": true,
+   "checks": 46,
+   "failures": 0
+  },
+  "verify-surfaces": {
+   "pass": true,
+   "source": "IR-CP-UI-001-2-4: PASS"
+  },
+  "ui-invariants": {
+   "pass": true,
+   "holding": 24
+  },
+  "rig-coverage": {
+   "pass": true
+  }
+ },
+ "computed_at": "2026-09-05T22:23:10.108682Z",
+ "pass": true
+}
