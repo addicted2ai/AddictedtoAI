@@ -30,6 +30,7 @@ deltas, never restatements; structured over prose; a `depends_on` that names not
 | `MR` | measurement request | 2000 |
 | `CAL` | calibration (reader test result) | 3000 |
 | `GR` | gate report (machine-written) | 6000 |
+| `IR` | implementer report (finalist build / revision) | 7000 |
 | `state.md` | resume file | 8000 |
 
 `JV` was 9000; round 1 observed 8391–8999 B for 8/8 verdicts (binding for every writer). Re-baselined
@@ -124,3 +125,13 @@ condition. `CAL` records the raw observations (task, success, seconds, notes), n
 
 Written only by `score.mjs` and `gates.mjs`. Running either to "check" writes an artifact nobody
 commissioned: use `--dry-run`.
+
+## implementer-report (`IR-<packet>-<v>`)
+
+Written by the implementer after a finalist build or a revision. YAML header (universal) plus
+`branch`, `worktree`, `head` (commit), `gates` (build | verify-design | verify-surfaces |
+ui-invariants: pass | fail + one line), `files_changed`, `new_files`, `typeface` (face, licence
+path, or "stack argued as choice: <why>"), `family` (every template: treatment or "unchanged,
+because"), `expected_delta[]` ({element, evidence_file, region, before, after}), `empty_states[]`
+({element, source_path, what_rendered}), `declined[]` ({item, cause}), `rule_changes[]` (invariant
+ids amended, falsified both ways). No screenshots, no adjectives.
