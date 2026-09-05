@@ -84,18 +84,19 @@ process each round knows only what this file says. Every claim cites an artifact
 
 ## Next (keeper decisions)
 
-1. ~~Anchors read, GO given, session at medium effort (2026-09-05).~~ Round 1 running.
+1. ~~Anchors read, GO given (2026-09-05).~~ Round 1 running. [r0]
 2. Catalog at 390px: choose from the round-1 concept frontier (supersedes the delegated I14). [r0]
 3. Rule challenges under K14, as concepts raise them: retire, amend, or keep each. [r0]
 
 ## Next (loop work, in order)
 
-1. ~~Gates green → port commit~~ `2d0f3fa`. 2. ~~Rig~~ `f08a3c6`. 3. ~~Baseline + review page~~ done.
-4. Anchors, as FILES for the keeper to read before anything runs: 3 judge contracts scoped by oracle
-   (screens: hierarchy/density/chrome test; DOM+screens: tables/responsive; contact sheet+tokens:
-   type/colour/family/identity) + red team + code scoring (PASS/total, critical caps, anchored
-   fallback, ANDed stop) + rig-coverage gate + size gate + keeper-item ageing gate.
-5. `BRIEF-UI-001`: K10 centre; Frontier flagship (K11); catalog@390; wiki-entry template; fence =
-   site spec design bar + R1–R16; anti-req: no content edits, no rubric edits in-round, no single
-   third-party index dependency (AA licence open, `addictedtoai-ego8`), digit-free fixed copy.
-6. Round 1 only after the keeper reads the anchors, says GO, and the session is at medium effort.
+1.–6. Port `2d0f3fa`, rig `f08a3c6`, baseline, anchors, brief, GO: all done (archive has detail).
+7. **Round 1 (concept).** Packets `CP-UI-001-1..4` committed `efa1b35` (Dated Ledger, Players Board,
+   Proof Rail, Provenance Gutter; all pass `gates.mjs --packet`). Panel dispatched 2026-09-05:
+   judge-hierarchy + judge-system (Opus) → `JV-hier|sys-CP-UI-001-n-1.json`; red-team (Sonnet) →
+   `RT-CP-UI-001-n-1.md`. If resuming: check which of those 12 files exist; re-dispatch only the
+   missing ones (independence: never show a judge a sibling's verdict).
+8. Validate verdicts (`gates.mjs --jv … --contract …`), `score.mjs <packet> 1 --round 1` dry then
+   `--write`, disagreement-analyzer (Haiku) → `DR-*`; keeper-tagged items to the section above.
+9. Concept page for the keeper: four bets flat, scores reported never collapsed, rule challenges
+   listed. Keeper picks ≤2 finalists (K7) → implementers (Sonnet) on `ui/concept-<n>`.
