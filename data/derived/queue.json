@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 5,
+  "count": 4,
   "items": [
-    {
-      "detail": "The prune this job added (`loop/run.mjs:1367`) closes the branch-deletion case for any run that reaches cleanup, but the same stale entry has a second effect the diff does not touch. `loop/lib/review.mjs:712` does `rmSync(reviewDir)` then `addWorktree(...)` at that exact path, and `loop/run.mjs:912` does the same for the job worktree — neither prunes first. Measured on a throwaway repo, git 2.40.0.windows.1: with a stale entry for a path whose directory was deleted, `git worktree add --detach <same path>` exits 128 with `fatal: '<path>' is a missing but already registered worktree; use 'add -f' to override, or 'prune' or 'remove' to clear`. `addWorktree` throws on a non-ok result (`loop/lib/git.mjs:91`), so that aborts the run. It cannot arise from a run that completes — the new prune clears it — only from one killed at the wall-clock cap after a failed `worktree remove`. One `gitTry(repo, ['worktree','prune'])` before each `addWorktree`, or the same trailing prune added to `review.mjs:752`, would close it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-42 (`j-20260904-42.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/carried/j-20260904-42-carry-1.md",
-      "target": "data/carried/j-20260904-42-carry-1.md",
-      "title": "Prune before `worktree add`, or a run killed mid-flight blocks the next one at the same path",
-      "type": "repair"
-    },
     {
       "detail": "The gemini-3-8-flash docket attributes two things to https://9to5google.com/2026/09/02/gemini-3-8-flash-launch/ that I could not reproduce from that page with my own extractor: Wiz's \"+7.5-9.7% recall\" (the page as I retrieved it says only \"higher recall on their internal penetration testing benchmark for a 2.3-5.2x lower cost\", with no percentage range), and the sentence \"At times, the model might use more tokens to maximize performance, especially at higher effort levels\" (I retrieved the adjacent \"works harder\" framing as \"exhibit[s] greater diligence — executing extra reasoning steps, and calling tools iteratively\"). This is NOT a finding that either is wrong — WebFetch's extractor denies text that is present as readily as it invents text, so absence through it proves nothing, and every other figure in this docket reproduced exactly. It is a flag that these two are the only unconfirmed items in the set: the entry job that picks this candidate up should quote whichever sentence the page actually carries, and drop the percentage range if it is not there rather than carry it forward on the docket's authority.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260903-09 (`j-20260903-09.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -48,5 +39,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 5
+  "total_before_cap": 4
 }
