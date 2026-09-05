@@ -4559,6 +4559,46 @@
       ]
     },
     {
+      "name": "OpenAI: GPT-6 Astra",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-6-astra",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-6 Astra (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-6-astra-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-6 Astra Pro",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-6-astra-pro",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI: GPT-6 Astra Pro (batch)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/openai-gpt-6-astra-pro-batch",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "OpenAI: gpt-oss-120b",
       "linkable": false,
       "claimed_by": [
@@ -5534,6 +5574,16 @@
       "claimed_by": [
         {
           "id": "model/qwen-qwen3-8-max",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Qwen: Qwen3.8 Max (0902)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/qwen-qwen3-8-max-0902",
           "class": "manual"
         }
       ]
@@ -6785,6 +6835,16 @@
         {
           "id": "model/inception-mercury-2-5-preview",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "inclusionAI: Ling 3.0 Flash Sante (free)",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "model/inclusionai-ling-3-0-flash-sante-free",
+          "class": "manual"
         }
       ]
     },

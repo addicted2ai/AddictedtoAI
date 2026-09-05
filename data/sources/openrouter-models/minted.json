@@ -629,6 +629,11 @@
     "entry_id": "model/inclusionai-ling-3-0-flash-fin-free",
     "path": "content/wiki/model/inclusionai-ling-3-0-flash-fin-free.md"
   },
+  "inclusionai/ling-3.0-flash-sante:free": {
+    "date": "2026-09-05",
+    "entry_id": "model/inclusionai-ling-3-0-flash-sante-free",
+    "path": "content/wiki/model/inclusionai-ling-3-0-flash-sante-free.md"
+  },
   "kwaipilot/kat-coder-air-v2.5": {
     "date": "2026-08-28",
     "entry_id": "model/kwaipilot-kat-coder-air-v2-5",
@@ -1409,6 +1414,26 @@
     "entry_id": "model/openai-gpt-5-batch",
     "path": "content/wiki/model/openai-gpt-5-batch.md"
   },
+  "openai/gpt-6-astra": {
+    "date": "2026-09-05",
+    "entry_id": "model/openai-gpt-6-astra",
+    "path": "content/wiki/model/openai-gpt-6-astra.md"
+  },
+  "openai/gpt-6-astra-pro": {
+    "date": "2026-09-05",
+    "entry_id": "model/openai-gpt-6-astra-pro",
+    "path": "content/wiki/model/openai-gpt-6-astra-pro.md"
+  },
+  "openai/gpt-6-astra-pro:batch": {
+    "date": "2026-09-05",
+    "entry_id": "model/openai-gpt-6-astra-pro-batch",
+    "path": "content/wiki/model/openai-gpt-6-astra-pro-batch.md"
+  },
+  "openai/gpt-6-astra:batch": {
+    "date": "2026-09-05",
+    "entry_id": "model/openai-gpt-6-astra-batch",
+    "path": "content/wiki/model/openai-gpt-6-astra-batch.md"
+  },
   "openai/gpt-audio": {
     "date": "2026-08-28",
     "entry_id": "model/openai-gpt-audio",
@@ -1848,6 +1873,11 @@
     "date": "2026-08-28",
     "entry_id": "model/qwen-qwen3-8-max",
     "path": "content/wiki/model/qwen-qwen3-8-max.md"
+  },
+  "qwen/qwen3.8-max-0902": {
+    "date": "2026-09-05",
+    "entry_id": "model/qwen-qwen3-8-max-0902",
+    "path": "content/wiki/model/qwen-qwen3-8-max-0902.md"
   },
   "rekaai/reka-edge": {
     "date": "2026-08-28",

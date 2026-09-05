@@ -1,6 +1,190 @@
 {
   "changed_30d": [
     {
+      "date": "2026-09-05",
+      "display_name": "Qwen: Qwen3.8 Max",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "qwen/qwen3.8-max-20260803",
+        "context_length": 1000000,
+        "created": 1785731612,
+        "expiration_date": null,
+        "id": "qwen/qwen3.8-max",
+        "name": "Qwen: Qwen3.8 Max",
+        "pricing.completion": "0.000006",
+        "pricing.prompt": "0.000002"
+      },
+      "field": null,
+      "key": "openrouter-models|554be452279cdebe|380c23a4c00dcada|qwen/qwen3.8-max|$retirement",
+      "kind": "retirement",
+      "new": null,
+      "old": null,
+      "row_id": "qwen/qwen3.8-max",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-05",
+      "display_name": "Qwen: Qwen3.8 Max (0902)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "qwen/qwen3.8-max-20260902",
+        "context_length": 1000000,
+        "created": 1788469704,
+        "expiration_date": null,
+        "id": "qwen/qwen3.8-max-0902",
+        "name": "Qwen: Qwen3.8 Max (0902)",
+        "pricing.completion": "0.000006",
+        "pricing.prompt": "0.000002"
+      },
+      "field": null,
+      "key": "openrouter-models|554be452279cdebe|380c23a4c00dcada|qwen/qwen3.8-max-0902|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "qwen/qwen3.8-max-0902",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-05",
+      "display_name": "OpenAI: GPT-6 Astra",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "openai/gpt-6-astra-20260903",
+        "context_length": 1050000,
+        "created": 1788552838,
+        "expiration_date": null,
+        "id": "openai/gpt-6-astra",
+        "name": "OpenAI: GPT-6 Astra",
+        "pricing.completion": "0.00005",
+        "pricing.prompt": "0.00001"
+      },
+      "field": null,
+      "key": "openrouter-models|554be452279cdebe|380c23a4c00dcada|openai/gpt-6-astra|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "openai/gpt-6-astra",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-05",
+      "display_name": "OpenAI: GPT-6 Astra (batch)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "openai/gpt-6-astra-20260903",
+        "context_length": 1050000,
+        "created": 1788552838,
+        "expiration_date": null,
+        "id": "openai/gpt-6-astra:batch",
+        "name": "OpenAI: GPT-6 Astra (batch)",
+        "pricing.completion": "0.000025",
+        "pricing.prompt": "0.000005"
+      },
+      "field": null,
+      "key": "openrouter-models|554be452279cdebe|380c23a4c00dcada|openai/gpt-6-astra:batch|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "openai/gpt-6-astra:batch",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-05",
+      "display_name": "OpenAI: GPT-6 Astra Pro",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "openai/gpt-6-astra-pro-20260903",
+        "context_length": 1050000,
+        "created": 1788552835,
+        "expiration_date": null,
+        "id": "openai/gpt-6-astra-pro",
+        "name": "OpenAI: GPT-6 Astra Pro",
+        "pricing.completion": "0.00005",
+        "pricing.prompt": "0.00001"
+      },
+      "field": null,
+      "key": "openrouter-models|554be452279cdebe|380c23a4c00dcada|openai/gpt-6-astra-pro|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "openai/gpt-6-astra-pro",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-05",
+      "display_name": "OpenAI: GPT-6 Astra Pro (batch)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "openai/gpt-6-astra-pro-20260903",
+        "context_length": 1050000,
+        "created": 1788552835,
+        "expiration_date": null,
+        "id": "openai/gpt-6-astra-pro:batch",
+        "name": "OpenAI: GPT-6 Astra Pro (batch)",
+        "pricing.completion": "0.000025",
+        "pricing.prompt": "0.000005"
+      },
+      "field": null,
+      "key": "openrouter-models|554be452279cdebe|380c23a4c00dcada|openai/gpt-6-astra-pro:batch|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "openai/gpt-6-astra-pro:batch",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-05",
+      "display_name": "inclusionAI: Ling 3.0 Flash Sante (free)",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "inclusionai/ling-3.0-flash-sante-20260904",
+        "context_length": 262144,
+        "created": 1788545946,
+        "expiration_date": null,
+        "id": "inclusionai/ling-3.0-flash-sante:free",
+        "name": "inclusionAI: Ling 3.0 Flash Sante (free)",
+        "pricing.completion": "0",
+        "pricing.prompt": "0"
+      },
+      "field": null,
+      "key": "openrouter-models|554be452279cdebe|380c23a4c00dcada|inclusionai/ling-3.0-flash-sante:free|$arrival",
+      "kind": "arrival",
+      "new": null,
+      "old": null,
+      "row_id": "inclusionai/ling-3.0-flash-sante:free",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
+      "date": "2026-09-05",
+      "display_name": "IBM: Granite 4.1 8B",
+      "excerpt": {
+        "$status": "active",
+        "canonical_slug": "ibm-granite/granite-4.1-8b-20260429",
+        "context_length": 131072,
+        "created": 1777577071,
+        "expiration_date": null,
+        "id": "ibm-granite/granite-4.1-8b",
+        "name": "IBM: Granite 4.1 8B",
+        "pricing.completion": "0.0000001",
+        "pricing.prompt": "0.00000005"
+      },
+      "field": null,
+      "key": "openrouter-models|554be452279cdebe|380c23a4c00dcada|ibm-granite/granite-4.1-8b|$retirement",
+      "kind": "retirement",
+      "new": null,
+      "old": null,
+      "row_id": "ibm-granite/granite-4.1-8b",
+      "source": "openrouter-models",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    {
       "date": "2026-09-04",
       "display_name": "Z.ai: GLM 4.7 Flash",
       "excerpt": {
@@ -2926,29 +3110,6 @@
       "seeded": true,
       "source": "llm-releases",
       "source_url": "https://www.liquid.ai/blog/lfm2-5-2-6b"
-    },
-    {
-      "date": "2026-08-05",
-      "display_name": "Meta releases Muse Spark 1.2 and Muse Code",
-      "excerpt": {
-        "description": "Meta AI - Meta shipped Muse Spark 1.2, a flagship coding model with 1M-token context and multimodal input, priced at $1.25/$4.25 per Mtok (plus a 12x-cheaper contributor tier), alongside Muse Code, a terminal-based coding agent powered by the model.",
-        "guid": "245e3f14-4bb6-4fee-9dee-4c75e8697b98",
-        "link": "https://llm-releases.com/models/muse-spark-1-2",
-        "pubDate": "Wed, 05 Aug 2026 00:00:00 GMT",
-        "source_name": "Meta AI",
-        "source_url": "https://research.meta.ai/blog/introducing-muse-code-and-muse-spark-1-2",
-        "title": "Meta releases Muse Spark 1.2 and Muse Code"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/muse-spark-1-2",
-      "key": "seed|llm-releases|245e3f14-4bb6-4fee-9dee-4c75e8697b98",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "245e3f14-4bb6-4fee-9dee-4c75e8697b98",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://research.meta.ai/blog/introducing-muse-code-and-muse-spark-1-2"
     }
   ],
   "deprecations": [
@@ -3037,7 +3198,7 @@
       "status": "deprecated"
     }
   ],
-  "generated_on": "2026-09-04",
+  "generated_on": "2026-09-05",
   "sort_criterion": {
     "catalog": "source then row id, ascending",
     "changed_30d": "date, newest first",
