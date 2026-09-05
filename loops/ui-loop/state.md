@@ -31,14 +31,11 @@ process each round knows only what this file says. Every claim cites an artifact
   ceiling "within reason".
 - **K10 — THE BRIEF'S CENTRE (keeper, verbatim in substance).** "A shining example of what
   frontier AI can do when handed the reins. I want people to be truly amazed at the quality of the
-  site, and even more so once they realize a human didn't write any of it." Content largely liked.
-  Layout "ok, but a bit mechanical"; "great for machine reading (also important!) but not very
-  alluring or exciting for a human." → Visual identity and human allure are PRIMARY requirements
-  of `BRIEF-UI-001`, not a capped afterthought. Findability, WCAG AA, 320px reflow, 150 KB payload,
-  machine-readability and "content above the fold, decoration never displaces information"
-  (`openspec/specs/site` design bar) are the FENCE: never worse. **Lesson recorded:** the old
-  rubric scored "a reader's tool, not a showcase piece" and capped distinctiveness at impact 4;
-  the keeper's goal was never in a brief, so nine rounds optimised the wrong objective.
+  site, and even more so once they realize a human didn't write any of it." Layout "ok, but a bit
+  mechanical … great for machine reading (also important!) but not very alluring or exciting for a
+  human." → identity and allure are PRIMARY; findability, WCAG AA, 320px reflow, 150 KB, machine-
+  readability, content above the fold are the FENCE. The old rubric scored "a reader's tool, not a
+  showcase": nine rounds optimised an objective the keeper did not hold.
 - **K11** — `/frontier` MAY be prototyped on the branch; merge waits for the Desk's OpenSpec change.
 - **K12 (KP1, 2026-09-05)** — Port CONFIRMED except the ai-winter entry: "FACTS displayed first with
   no context … feel out of place." F-K12: on prose entries the reader meets the subject (title + one
@@ -72,31 +69,21 @@ process each round knows only what this file says. Every claim cites an artifact
   K22); Opus research → `graph/knowledge/EN-domain-facet.md`; keeper picks. The graph ASSUMES the
   facet: finalists absorb a domain as data (column/filter/row), no template edit — jury question.
 
-## Known evidence lies (live-specific; continues JUDGE.md's L-series)
+## Known evidence lies
 
-- **L7** — Seven model pages render "not published" mid-sentence (worst: `gemini-3-1-pro-preview`,
-  `z-ai-glm-5-1`). Desk backlog in `DIRECTIVES.md`, pre-existing, NOT a presentation defect. A
-  judge who files it has filed a content lie.
-- **L8** — Two concurrent `next build`s share `.next/`, die with `ENOENT pages-manifest.json`: process
-  defect, not content. One build at a time.
+L7 (model pages render "not published": Desk backlog, never a UI finding), L8 (concurrent builds
+ENOENT): text in `state-archive.md`; also `JUDGE.md` L1–L8. Binding.
 
 ## Failure modes to guard
 
-- Keeper items age: open 3 rounds FAILs the sweep (F17). Instrument work never answers a blocked ruling.
-- A gate that can see nothing fails: rig coverage (routes × viewports × themes named by each judge
-  contract) is checked BEFORE any judge spawns.
-- Two writers, one judge, one score: never again. Judges are scoped by oracle; code totals.
-- **Build lock with a reused pid** (2026-09-05): compare the lock's `started` to the pid's creation
-  time; remove only with no build process alive (else it gates a STALE `out/`).
-- **This file was committed over budget twice** (8394, 8316 B). `gates.mjs` now FAILs it; run before commit.
+Binding; text in `state-archive.md`: build-lock pid reuse; keeper items age (F17); a gate that sees
+nothing fails; judges scoped by oracle, code totals; this file over budget (now 4×) — check first.
 
 ## Next (keeper decisions)
 
-1. ~~Anchors read, GO given.~~ [r0]
-2. ~~Round-1 rulings 1–8 → K16–K20.~~ [r1]
-3. ~~Round-2 decisions 1–8 → K23–K29.~~ [r2]
-4. MR-UI-001..003 on the revised Players Board preview (MR-UI-001 must include a hatched blank). [r3]
-5. After the K7 hard stop: merge decision (K3) and push decision (K4); Desk-order note sign-off. [r3]
+1. MR-UI-001..003 on the revised Players Board preview (MR-UI-001 must include a hatched blank). [r3]
+2. After the K7 hard stop: merge decision (K3), push decision (K4), Desk-order note sign-off. [r3]
+3. **K30?** "top 3 models per domain" section on /frontier (keeper, 2026-09-05): ruling pending. [r3]
 
 ## Next (loop work, in order)
 
