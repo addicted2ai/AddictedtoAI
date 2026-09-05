@@ -40,11 +40,9 @@ process each round knows only what this file says. Every claim cites an artifact
   rubric scored "a reader's tool, not a showcase piece" and capped distinctiveness at impact 4;
   the keeper's goal was never in a brief, so nine rounds optimised the wrong objective.
 - **K11** — `/frontier` MAY be prototyped on the branch; merge waits for the Desk's OpenSpec change.
-- **K12 (KP1, first ever, 2026-09-05)** — Port CONFIRMED: "everything looks better changed, except
-  the ai-winter wiki entry. Having the FACTS displayed first with no context makes them feel out of
-  place." Finding F-K12 against the wiki-entry template (prose entries): the reader must meet the
-  subject (title + one sentence of context) BEFORE any facts table; the old loop's "answer first"
-  order (S14) is overruled for entries with prose bodies. Feeds BRIEF-UI-001, not a hotfix.
+- **K12 (KP1, 2026-09-05)** — Port CONFIRMED except the ai-winter entry: "FACTS displayed first with
+  no context … feel out of place." F-K12: on prose entries the reader meets the subject (title + one
+  sentence) BEFORE any facts table; the old "answer first" order (S14) is overruled there.
 - **K13** — Models: concept generator + finalist jury FABLE; judges OPUS; implementers + red team
   SONNET; gates/scoring code. Session effort -> MEDIUM at the first dispatch. **K15** (2026-09-05):
   analyzer HAIKU -> SONNET from the next run (keeper: capabilities worlds apart; contract edit between rounds).
@@ -60,8 +58,9 @@ process each round knows only what this file says. Every claim cites an artifact
   **K20** (delegated) family: a finalist names a treatment for EVERY template; "unchanged, because"
   is allowed. Worktrees `D:\AddictedtoAI-c1` (`ui/concept-1`), `-c2` (`ui/concept-2`). **K21** board
   membership is EDITORIAL, never feed-gated: a player is on the board because the site covers it;
-  feeds fill cells; no label assumes one source. Desk order (post-pick): widen coverage far beyond
-  the OpenRouter feed (labs, open-weights, image/video/audio, robotics, research groups).
+  feeds fill cells; no label assumes one source. **K22** a closed, small cross-cutting `domain` facet
+  (models/orgs/tools/indices) joins the **Desk order** (post-pick note: Frontier data, K21 coverage,
+  K22); vocabulary researched by Opus → `graph/knowledge/EN-domain-facet.md`; keeper picks it.
 
 ## Known evidence lies (live-specific; continues JUDGE.md's L-series)
 
