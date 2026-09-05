@@ -14,7 +14,7 @@
  * Only --report writes anything (a GR-*.json); everything else prints. A run that writes an artifact
  * nobody commissioned is the failure the source graph recorded on 2026-08-28.
  */
-import { readFileSync, existsSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname, basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -153,7 +153,8 @@ export function keeperItems(stateText) {
   if (sec === undefined) return null;
   const body = sec.split(/^## /m)[0];
   const items = [];
-  for (const m of body.matchAll(/^\s*(\d+)\.\s+([\s\S]*?)(?=^\s*\d+\.\s|\s*$)/gm)) {
+  // an item runs to the next numbered line or the end of the section (continuation lines belong to it)
+  for (const m of body.matchAll(/^\s*(\d+)\.\s+([\s\S]*?)(?=^\s*\d+\.\s|(?![\s\S]))/gm)) {
     const text = m[2].trim();
     const struck = /^~~/.test(text) && !/[^~\s.]/.test(text.replace(/~~[^~]*~~/g, '').replace(/\b(K\d+|yes|done)\b/g, ''));
     const r = text.match(/\[r(\d+)\]/);
@@ -273,7 +274,7 @@ const opt = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : nu
 if (args.includes('--selftest')) selftest();
 else if (args.includes('--sweep')) { sweep(opt('--round') ? Number(opt('--round')) : null); report(); }
 else if (opt('--packet')) { const f = opt('--packet'); const { problems, hype } = packetChecks(readFileSync(f, 'utf8'), existsSync); problems.forEach((p) => FAIL(`${basename(f)}: ${p}`)); if (hype.length) WARN(`${basename(f)}: hype lexicon (${hype.join(', ')})`); if (!problems.length) PASS(`${basename(f)}: packet fields and data sources check`); report(); }
-else if (opt('--coverage')) { coverage(resolve(opt('--coverage'))); if (args.includes('--report')) { const gr = { id: `GR-coverage-${basename(opt('--coverage'))}`, at: new Date().toISOString(), pass: !out.fail.length, fail: out.fail, warn: out.warn }; writeFileSync(join(ARTIFACTS, gr.id + '.json'), JSON.stringify(gr, null, 2)); } report(); }
+else if (opt('--coverage')) { coverage(resolve(opt('--coverage'))); if (args.includes('--report')) { mkdirSync(ARTIFACTS, { recursive: true }); const gr = { id: `GR-coverage-${basename(opt('--coverage'))}`, at: new Date().toISOString(), pass: !out.fail.length, fail: out.fail, warn: out.warn }; writeFileSync(join(ARTIFACTS, gr.id + '.json'), JSON.stringify(gr, null, 2)); } report(); }
 else if (opt('--jv')) { const p = jvChecks(readFileSync(opt('--jv'), 'utf8'), readFileSync(opt('--contract'), 'utf8')); p.forEach((m) => FAIL(`${basename(opt('--jv'))}: ${m}`)); if (!p.length) PASS(`${basename(opt('--jv'))}: verdict well-formed`); report(); }
 else if (args.includes('--keeper')) { const items = keeperItems(readFileSync(join(LOOP, 'state.md'), 'utf8')); ageingGate(items || [], Number(opt('--round') || 0)).forEach((r) => out[r.status.toLowerCase()].push(r.msg)); report(); }
 else { console.log('usage: see header comment'); }
