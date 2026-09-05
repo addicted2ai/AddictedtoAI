@@ -16,18 +16,39 @@ import { join } from 'node:path';
 /**
  * THE MARKER A GATE FAILURE CARRIES WHEN THE MACHINE, NOT THE DIFF, FAILED.
  *
- * `pulse/tests/helpers.mjs`'s `assertNoTransportFailure` throws an error whose
- * text contains this sentence when a fixture's loopback fetch never connected —
- * on this machine, ephemeral-port exhaustion under concurrent load
- * (`connect EADDRINUSE`, beads addictedtoai-ar0). That helper is the code that
- * KNOWS what it saw: it reads the errno the Pulse recorded and it skips
- * anything reading `HTTP <status>`, which is a response a fixture chose to
- * serve. This constant is matched against captured gate output for exactly that
- * reason — a downstream match on `EADDRINUSE`, or on any other guessed error
- * string, would be a second opinion formed with less information than the first.
+ * `pulse/tests/helpers.mjs` throws an error whose text contains this sentence
+ * when a fixture's loopback fetch never connected — on this machine,
+ * ephemeral-port exhaustion under concurrent load (`connect EADDRINUSE`, beads
+ * addictedtoai-ar0). Those helpers are the code that KNOWS what it saw: they
+ * read the errno the Pulse recorded and they say this only for a detail that is
+ * NOT `HTTP <status>`, which is a response a fixture chose to serve. This
+ * constant is matched against captured gate output for exactly that reason — a
+ * downstream match on `EADDRINUSE`, or on any other guessed error string, would
+ * be a second opinion formed with less information than the first.
  *
- * `loop/tests/gate-transport-retry.test.mjs` runs the real emitter against a
- * real fixture and asserts the thrown text contains this string, so the two
+ * THIS DECLARATION IS THE ONLY PLACE THE WORDS EXIST, and that is the fix for
+ * beads addictedtoai-brsp rather than a tidy-up. Until 2026-09-04 the same class
+ * of machine failure was announced in two wordings — `assertNoTransportFailure`
+ * said TRANSPORT and `assertIngested` said CONNECTION — and this constant
+ * matched only the first, so half the emitting surface was invisible to the
+ * retry. A wider regex covering both would have left the next fixture free to
+ * invent a third wording, which is how the defect was born; so both emitters now
+ * interpolate this constant, and `pulse/ carries no hard-coded wording of this
+ * sentence` scans `pulse/` for a re-invention and fails on one.
+ *
+ * WHY IT LIVES HERE rather than in `pulse/`, in `lib/`, or in a new module: the
+ * matcher below is production Desk code and must not import a test helper, so a
+ * definition owned by the emitting side would have to be re-exported from
+ * `pulse/tests/` into `loop/run.mjs`'s runtime path. The remaining candidates
+ * were a sixth top-level directory — an architectural element added to hold one
+ * sentence, which `loop/lib/dates.mjs` already rejected on the same grounds —
+ * and `lib/`, the site build core, which has nothing to do with either side.
+ * `pulse/tests/ -> loop/lib/` is not a new edge: `pulse/tests/curriculum-queue
+ * .test.mjs:31` already imports `JOB_TYPES` from `loop/lib/config.mjs`. The
+ * Pulse ENGINE (`pulse/lib/`, `pulse/run.mjs`) gains no dependency at all.
+ *
+ * `loop/tests/gate-transport-retry.test.mjs` runs both real emitters against
+ * real fixtures and asserts the thrown text contains this string, so the two
  * cannot drift apart without a red test.
  */
 export const TRANSPORT_FAILURE_MARKER = 'This is a TRANSPORT failure, not a logic failure';
@@ -35,6 +56,26 @@ export const TRANSPORT_FAILURE_MARKER = 'This is a TRANSPORT failure, not a logi
 /** Did this gate output come from the machine rather than from the diff? */
 export function isTransportFailure(output) {
   return typeof output === 'string' && output.includes(TRANSPORT_FAILURE_MARKER);
+}
+
+/**
+ * THE SAME QUESTION, ASKED OF A GATE RESULT RATHER THAN OF THE SUMMARY STRING.
+ *
+ * `runGates`' `output` is a HUMAN-READABLE LOG: each script's tail, truncated,
+ * so a failure report stays readable. `npm test` runs 1201 tests and prints a
+ * line per test, so a transport failure raised early is pushed out of that
+ * window long before anything reads it — the retry then never fired, on an
+ * output that had carried the marker all along (beads addictedtoai-kisa).
+ *
+ * The decision is therefore made at the point of CAPTURE, over each script's
+ * full output, and carried as `transport` on the result. This reads that flag.
+ * The fallback to scanning `output` is for a result that never went through
+ * `runGates` — the `gates` hook the tests and `--no-gates` use — where the
+ * summary IS the whole output and scanning it is exact.
+ */
+export function gatesHitTransportFailure(result = {}) {
+  if (typeof result.transport === 'boolean') return result.transport;
+  return isTransportFailure(result.output);
 }
 
 /**
@@ -54,7 +95,7 @@ export function gateFailureNote(result = {}, { retried = false } = {}) {
         .map((r) => `npm run ${r.script} (${r.status === null ? 'could not run' : `exit ${r.status}`})`)
         .join(', ')
     : 'no per-gate result was recorded';
-  const kind = isTransportFailure(result.output)
+  const kind = gatesHitTransportFailure(result)
     ? retried
       ? 'transport-marked, retried once and failed again'
       : 'transport-marked'
@@ -126,7 +167,11 @@ function npmRun(worktree, script, timeoutMs) {
 /**
  * Run the schema/build checks in a job worktree.
  *
- * @returns {{ok: boolean, results: Array, output: string}}
+ * `transport` is computed HERE, over each script's FULL output, before anything
+ * is sliced — see `gatesHitTransportFailure`. `output` is the truncated
+ * human-readable log and nothing decides anything from it.
+ *
+ * @returns {{ok: boolean, results: Array, transport: boolean, output: string}}
  */
 export function runGates(ctx, worktree, { scripts = ['test', 'build'], timeoutMs = 20 * 60 * 1000 } = {}) {
   linkNodeModules(worktree, ctx.repoRoot);
@@ -147,9 +192,12 @@ export function runGates(ctx, worktree, { scripts = ['test', 'build'], timeoutMs
     if (!r.ok) break;
   }
   const ok = results.length > 0 && results.every((r) => r.ok);
+  // BEFORE THE SLICE, and that ordering is the whole point of the flag.
+  const transport = results.some((r) => isTransportFailure(r.output));
   return {
     ok,
     results,
+    transport,
     output: results
       .map((r) => `--- npm run ${r.script} (${r.ok ? 'PASS' : `FAIL, exit ${r.status}`})\n${r.output.slice(-6000)}`)
       .join('\n'),
