@@ -40,6 +40,12 @@ process each round knows only what this file says. Every claim cites an artifact
   code; session effort MEDIUM for dispatch. **K15**: analyzer HAIKU -> SONNET (capabilities worlds apart).
 - **K14** (delegated, 2026-09-05) — `RULES` R1–R6 are law; **R7–R16 are the old loop's taste and
   CHALLENGEABLE** by a concept with cause, keeper rules; the port is a start, not a design to keep.
+- **Check-in rulings (keeper, 2026-09-05).** **K35** one narrow 4th iteration authorised (`RD-003`:
+  claim allow-list; visible "not verified" lede; door hairlines). **K36** reader tests SKIPPED: MR-UI-
+  001..003 retired by the keeper; CAL-UI-001 not required before merge. **K37** implementer tier OPUS
+  for all (K13 amended). **K38** domain vocabulary: "general" is the unmarked default, `text` is not a
+  tag. **K39** DESK-ORDER-001 and the DIRECTIVES lines signed off; merge (K3), push (K4) and handoff
+  (K31) authorised after RD-003 passes. **K40** blanket delegation while the keeper is away.
 - **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated: "defer to you").** **K23** carry
   PLAYERS BOARD forward; Dated Ledger's branch stays as a frontier record, RD-001 not run. **K24**
   index columns appear only when a registry index exists (Desk order); until then the board carries
@@ -80,12 +86,9 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
    only when a BLIND agent (not told the keeper is reachable; given constitution + K3–K31 + HANDOFF)
    says "keeper required" (`HANDOFF-ORCHESTRATOR.md` §8b). **K33** STOP removal pre-authorised for
    the orchestrator after the handoff (transcript line 2883; HANDOFF §8c); K5 holds for us. [r3]
-3. Sign off `knowledge/DESK-ORDER-001.md`; answer the one domain question left (`text` vs unmarked
-   "general"). **K34** (BLIND-001, delegated): domain sections order by domain id; AA values render
-   nothing until rights clear (K24). [r3]
-4. Check-in (K7 cap): authorise a narrow 4th iteration (FM-N1 claim filter + visible "unverified";
-   F-hier-11 door hairlines) or not; run MR-UI-001..003; implementer tier; then merge/push. Page:
-   https://claude.ai/code/artifact/ec87ffd5-e243-474c-aaf0-ee688cc7ccbf [r3]
+3. ~~Check-in decisions 1–5~~ → K35–K40 (2026-09-05). Keeper stepped away; **K40** blanket delegation:
+   the orchestrator-of-this-loop answers everything "short of insane catastrophic project-threatening
+   madness". Nothing open for the keeper. [r3]
 
 ## Next (loop work, in order)
 
