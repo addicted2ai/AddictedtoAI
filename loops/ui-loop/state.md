@@ -80,12 +80,10 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
 
 ## Next (keeper decisions)
 
-1. ~~MR-UI-001..003~~ retired by the keeper (K36). [r3]
-2. ~~Merge (K3), push (K4), handoff (K31)~~ authorised K39; executing now under K40/K43. [r6]
-3. ~~Check-in decisions 1–5~~ → K35–K40. [r3]
-4. Nothing open for the keeper. Next brief (BRIEF-UI-002, keeper-drafted when back): wiki entry's empty
-   right half at 1440 (F-hier-7), catalog at 768 (JV-struct q5), claim clamp eats the value (JV-sys
-   v6 downstream), Frontier domain section once DESK-ORDER-001 §1 data exists. [r6]
+1. Nothing open for the keeper (K35–K43 closed rounds 3–6; struck items in `state-archive.md`). Next
+   brief (BRIEF-UI-002, keeper-drafted when back): wiki entry's empty right half at 1440 (F-hier-7),
+   catalog at 768 (JV-struct q5), claim clamp eats the value (JV-sys v6 downstream), Frontier domain
+   section once DESK-ORDER-001 §1 data exists. [r6]
 
 ## Next (loop work, in order)
 

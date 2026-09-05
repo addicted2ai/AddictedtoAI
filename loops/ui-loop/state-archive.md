@@ -722,3 +722,16 @@ by a measurement rather than by a preference.
 - **L8** — Two concurrent `next build`s share `.next/`, die with `ENOENT pages-manifest.json`: process
   defect, not content. One build at a time.
 
+
+
+## Archived from state.md 2026-09-05 (keeper items closed at rounds 3–6)
+
+## Next (keeper decisions)
+
+1. ~~MR-UI-001..003~~ retired by the keeper (K36). [r3]
+2. ~~Merge (K3), push (K4), handoff (K31)~~ authorised K39; executing now under K40/K43. [r6]
+3. ~~Check-in decisions 1–5~~ → K35–K40. [r3]
+4. Nothing open for the keeper. Next brief (BRIEF-UI-002, keeper-drafted when back): wiki entry's empty
+   right half at 1440 (F-hier-7), catalog at 768 (JV-struct q5), claim clamp eats the value (JV-sys
+   v6 downstream), Frontier domain section once DESK-ORDER-001 §1 data exists. [r6]
+
