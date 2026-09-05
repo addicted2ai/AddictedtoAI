@@ -82,3 +82,17 @@ The timestamps above are the fetch's UTC clock; local is 2026-09-04 22:52-22:53,
 which is the date this repository records (see CLAUDE.md on local dates).
 
 === END APPENDED ===
+
+=== APPENDED 2026-09-04 by job j-20260904-56 — does the rising floor hold at
+    sub-hour spacing? ===
+Request and headers identical to the j-20260904-54 block above (Chrome UA only).
+
+2026-09-05T05:33:42.185Z status=200 bytes=376108 enterprise-products=2 partner-products=2
+2026-09-05T05:33:43.534Z status=200 bytes=376116 enterprise-products=2 partner-products=2
+2026-09-05T05:33:44.822Z status=200 bytes=376108 enterprise-products=2 partner-products=2
+
+Machine clock at the end of the run: Fri Sep  4 23:33:46 MDT 2026 — local
+2026-09-04 23:33, forty minutes after the 22:53 run. The floor is 376,108,
+equal to the 22:53 floor and not above it; the phrase tallies are unchanged.
+
+=== END APPENDED ===
