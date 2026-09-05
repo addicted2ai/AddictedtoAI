@@ -30,7 +30,7 @@ evidence: >
   in full, and `:44` prints "FrontierMath Tier 4 (v2) is 97.6%, while the
   page's prose says Astra 'saturates FrontierMath Tier 4 with a 98% score'".
   That job's own reviewer recorded both as handled
-  (`data/reviews/j-20260904-04.md:31-33` and `:186-188`), and a later job's
+  (`data/reviews/j-20260904-04.md:263-266` and `:186-188`), and a later job's
   reviewer confirmed 97.6% is a genuine `<table>` row by parsing the release
   page's table elements (`data/reviews/j-20260904-13.md:67`). Neither carry
   file was deleted by that diff, so both items stayed in
