@@ -74,12 +74,9 @@ index the catalog carries puts `google/gemini-3.8-flash` at
 {{fact:model/google-gemini-3-8-flash#intelligence_index}}, against
 {{fact:model/google-gemini-3-7-flash#intelligence_index}} for the August
 release and {{fact:model/google-gemini-3-6-flash#intelligence_index}} for
-July's — two climbs in six weeks.
-[llm-releases](https://llm-releases.com/models/gemini-3-8-flash) published
-its own split of the 3.8 Flash score by reasoning effort on 3 September:
-{{fact:model/google-gemini-3-8-flash#intelligence_index_by_effort}}. The
-Flash row lists at {{fact:model/google-gemini-3-8-flash#price_input}} input;
-the Pro preview, six months older, lists at
+July's — two climbs in the six weeks between them. The Flash row lists at
+{{fact:model/google-gemini-3-8-flash#price_input}} input; the Pro preview,
+six months older, lists at
 {{fact:model/google-gemini-3-1-pro-preview#price_input}}.
 
 The discount arrived before the capability did. `google/gemini-3.5-flash`

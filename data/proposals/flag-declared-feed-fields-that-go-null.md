@@ -21,9 +21,12 @@ evidence: >
   (fetched 2026-09-04T06:00:03Z, 427 rows) and latest.json
   (2026-09-05T06:00:04Z, 431 rows), rows carrying a number for
   benchmarks.artificial_analysis.intelligence_index fell from 164 to 52;
-  114 rows lost the number while the row itself stayed live. No row
-  vanished, so `vanished_feed_rows` produced nothing and no queue item
-  existed. The defect reached the live site instead: five org pages
+  113 rows lost the number while the row itself stayed live, which is the
+  case no detector covers: `vanished_feed_rows` sees whole rows leaving, and
+  these rows did not leave. (Two rows did vanish outright in the same fetch,
+  `qwen/qwen3.8-max` and `ibm-granite/granite-4.1-8b`, both declared by an
+  entry's `feeds:` map — that detector fired on those two and on nothing
+  else.) The defect reached the live site instead: five org pages
   published sentences narrating index trajectories over values that were
   gone, quoted in the directive that produced job j-20260905-13 and repaired
   by it. Sweeping the rebuilt out/ after that repair, 16 further pages still
@@ -45,7 +48,8 @@ declares that is absent from the latest snapshot)". That rule exists because
 a page bound to a row that disappeared would otherwise render a number the
 world no longer publishes. A field that disappears from a surviving row is
 the identical hazard with a smaller blast radius per row and, as measured
-above, a far larger one in aggregate — 114 rows in one overnight fetch.
+above, a far larger one in aggregate — 113 rows in one overnight fetch,
+against the two whole rows the existing rule caught in the same fetch.
 
 The asymmetry is worth stating plainly, because it is why nobody caught this:
 the rendering layer already handles the field correctly. `lib/facts.mjs`
@@ -73,7 +77,7 @@ written down here:
   lives nowhere in any snapshot.
 - A field that has been null since the entry was minted SHALL NOT fire. The
   distinction is the transition, not the absence — most rows in this catalog
-  have never carried an index, and reporting them would bury the 114 real
+  have never carried an index, and reporting them would bury the 113 real
   cases in several hundred ordinary ones. This is the same shape as the
   slug-collision rule's insistence that "a row with nowhere to land is an
   ordinary unminted row".
