@@ -79,6 +79,26 @@ export function branchExists(repo, branch) {
  * to the branch.
  */
 export function addWorktree(repo, dir, branch, { create = false, base = 'HEAD', detach = false } = {}) {
+  // Prune first, because the caller's `rmSync` is not enough on its own. Every
+  // call site deletes `dir` before calling this, but deleting the DIRECTORY does
+  // not remove the admin entry under `.git/worktrees/` — and git answers from
+  // that entry, not from the filesystem. Measured in a throwaway repository on
+  // git 2.40.0.windows.1: with the directory gone and the entry unpruned,
+  //     git worktree add --detach <same path> <branch>
+  // exits 128 with
+  //     fatal: '<path>' is a missing but already registered worktree;
+  //     use 'add -f' to override, or 'prune' or 'remove' to clear
+  // and one `worktree prune` at that point makes the identical call succeed.
+  // Since this function throws on a non-ok result, that aborts the whole run.
+  //
+  // The state only arises from a run KILLED at the wall-clock cap after a failed
+  // `worktree remove` — a run that reaches cleanup prunes on its way out
+  // (`run.mjs`) — which is exactly why it belongs here: the next run is the one
+  // that pays, and it is a different process from the one that left the mess.
+  // Prune is the narrow tool for it rather than `add -f`: it removes only
+  // registrations whose directory is already gone and cannot disturb a live
+  // worktree, where `-f` would override a genuine collision with one.
+  gitTry(repo, ['worktree', 'prune']);
   // `detach` matters for the reviewer: git refuses two worktrees on one branch,
   // and a detached checkout is the stronger arrangement anyway — the reviewer
   // physically cannot move the branch it is reviewing.
