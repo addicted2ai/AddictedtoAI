@@ -102,9 +102,11 @@ The top score fell 92.96 points between the two years and the gold threshold fel
 final score distribution", so a threshold that low describes a problem set that
 the field as a whole scored badly on.
 
-Against that, the paper's own general pipeline scored 502.0 on IOI 2025. Hengxi
-Liu scored 591.23 on the same problems. Nothing in this paper has reached that
-number on any problem set.
+Against that, the paper's own general pipeline scored 502.0 on IOI 2025, and that
+number is where five rounds of GenCorrect ended up: 200 generations a round,
+narrowed to 10 submissions, graded, fed back in. The first round scored 343.9.
+Hengxi Liu scored 591.23 on the same problems. Nothing in this paper has reached
+that number on any problem set.
 
 Which is why the authors' claim is worded the way it is: first to outscore the
 highest-scoring human "on an IOI problem set". That is true, it is narrower than
