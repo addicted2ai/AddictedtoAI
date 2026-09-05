@@ -34,7 +34,10 @@
         "hugging_face_id",
         "knowledge_cutoff",
         "expiration_date",
-        "per_request_limits"
+        "per_request_limits",
+        "benchmarks.artificial_analysis.agentic_index",
+        "benchmarks.artificial_analysis.coding_index",
+        "benchmarks.artificial_analysis.intelligence_index"
       ],
       "fetch_every_days": 1,
       "expected_change_days": 3,
@@ -55,6 +58,15 @@
         },
         { "field": "context_window", "path": "context_length" },
         { "field": "status", "path": "$status" }
+      ],
+      "declined_fields_note": "The third state `material_fields_note` does not cover. A path in `material_fields` is CARRIED (column + fact, and an event unless `event: false`). A path in neither list is UNDECIDED — nobody has looked, which is what a field looks like when the vendor added it after this entry was written, and it is indistinguishable from a refusal from the outside. This list is the fourth answer to that note's question — column, fact, event, or NONE OF THOSE — recorded rather than left to default. `decision` may only be \"not carried\": carrying is expressed by `material_fields`, so a `declined_fields` entry claiming otherwise would be a decision written where nothing can enact it. pulse/lib/registry.mjs refuses a path that is both declined and material, and refuses a refusal with no dated measurement behind it. This list ends the undecided state for the paths it names and for no others: 23 further paths this source serves are still in it, and the check that would make the state unreachable is addictedtoai-eexr.",
+      "declined_fields": [
+        {
+          "path": "benchmarks.artificial_analysis",
+          "decision": "not carried",
+          "decided_on": "2026-09-05",
+          "note": "Not a column, not a fact, not an event — the same shape of finding as price_input above, and for the same underlying reason: the value is verbatim but the referent moved. Measured 2026-09-05 over all nine committed snapshots in git (data/sources/openrouter-models/latest.json, 2026-08-28 through 2026-09-05). NOT AN EVENT: across the first seven day-boundaries the three indices moved on at most ONE row on any one day; then between the 2026-09-04T06:00:03Z and 2026-09-05T06:00:04Z fetches, 165 of the 179 rows carrying the block changed at once, 147 directional moves went DOWN and 0 went up (agentic_index 97 down / 0 up, intelligence_index 50 down / 0 up), 181 values went number->null with 0 going null->number, and coding_index sat still on 176 of 179. intelligence_index fell by a near-uniform fifth (ratio p25 0.781, median 0.803, p75 0.827). One publisher act, not 165 model facts — and 56 of the carrying row ids are `:batch`/`:free` twins of a canonical_slug already counted, so a per-row line would emit that one act more than once per model. Corroborating but not load-bearing: Artificial Analysis published \"Announcing Artificial Analysis Intelligence Index v4.2\" (https://artificialanalysis.ai/articles/artificial-analysis-intelligence-index-v4-2) dated September 4, 2026, saying \"Index v4.2 has more complex and realistic tasks, and more private test sets to prevent gaming\"; that article states neither the direction of the shift nor which models were re-run, so the decision rests on the measurement, not on it. NOT A COLUMN: the block is present on 181 of 431 rows (42%), and after the rebase intelligence_index is a number on 52 rows (12%) and agentic_index on 99 (23%). NOT A FACT: the row carries a bare number with no scale, no index version and no measurement date, so the site could not say which index a value belongs to — the 2026-09-04 and 2026-09-05 readings of one key are 20% apart and both would have rendered as \"intelligence_index\". Binding it would import exactly the rot that \"volatile values are bound, never typed\" exists to prevent. Revisit if OpenRouter starts serving the index version and evaluation date alongside the number, or if coverage stops collapsing on a rebase."
+        }
       ],
       "schedule_rule": {
         "kind": "utc_windows",

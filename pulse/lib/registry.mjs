@@ -4,8 +4,9 @@
  * The registry is the only place a source may be declared. It records, per
  * source: URL, the fields it yields, which field is the row id (the join key
  * entries declare in their `feeds` map — see specs/wiki), `fetch_every_days`,
- * `expected_change_days`, the optional `mints` mapping, and the robots/terms
- * check with its date.
+ * `expected_change_days`, the optional `mints` mapping, the optional
+ * `declined_fields` refusals (see `validateDeclinedFields`), and the
+ * robots/terms check with its date.
  *
  * Validation is strict and fails loudly: a malformed registry is a broken
  * engine, not something to work around. Adding or removing a source is an
@@ -15,6 +16,99 @@
 import { paths, readJson } from './core.mjs';
 
 const FORMATS = new Set(['json', 'rss']);
+
+/**
+ * The only verdict a `declined_fields` entry may record.
+ *
+ * Carrying a field is expressed by `material_fields` — which is what builds the
+ * catalog column, the entry-page fact and (unless `event: false`) the changed-feed
+ * line. So a `declined_fields` entry saying "column" or "fact" would be a decision
+ * written in the one place that cannot enact it: it would read as settled and do
+ * nothing, which is the exact failure `declined_fields` exists to end.
+ */
+const DECLINED_DECISION = 'not carried';
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Do two dotted paths name the same field, or one an ancestor of the other? */
+function pathsOverlap(a, b) {
+  return a === b || a.startsWith(`${b}.`) || b.startsWith(`${a}.`);
+}
+
+/**
+ * Validate a source's `declined_fields` — the fields it serves that this repo
+ * has looked at and deliberately does not carry.
+ *
+ * ## Why this list exists at all (2026-09-05)
+ *
+ * `material_fields_note` distinguishes a field that is a column and a fact from
+ * one that is also an event (`event: false`), because deleting a field and
+ * marking it non-event look identical from the outside and are not the same
+ * thing. There is a third state it does not cover, and it is the one a growing
+ * upstream API produces by default: a field in NEITHER list. Nobody looked. From
+ * the outside that is indistinguishable from a considered refusal, so the next
+ * reader cannot tell an answered question from an unasked one — and re-answering
+ * it costs a measurement every time.
+ *
+ * `openrouter-models` had one. OpenRouter added a `benchmarks.artificial_analysis`
+ * block after the registry entry was written; between the 2026-09-04 and
+ * 2026-09-05 snapshots 165 of the 179 rows carrying it moved, every directional
+ * move downward, and the site recorded nothing anywhere. The decision — not a
+ * column, not a fact, not an event — and the measurement behind it are in the
+ * registry entry. This function is what makes that decision hold:
+ *
+ *   - a path is CARRIED or REFUSED, never both, in either direction of prefix
+ *     overlap. Adding the declined path back to `material_fields` without
+ *     removing the refusal fails the registry loudly instead of quietly shipping
+ *     a column that is blank on seven-eighths of rows;
+ *   - a refusal carries a `decided_on` date and a `note`, because a refusal with
+ *     no measurement behind it is the undecided state wearing a label.
+ *
+ * What this deliberately does NOT do: require that every path a snapshot serves
+ * be accounted for by one of the three lists. That check is what would make the
+ * undecided state unreachable rather than merely nameable, and it cannot pass
+ * until the 23 other unaccounted `openrouter-models` paths are each decided —
+ * which is a different job's outcome, not this one's. Filed as addictedtoai-eexr
+ * so it does not die with the job that found it.
+ */
+function validateDeclinedFields(source, where) {
+  const declined = source.declined_fields;
+  if (declined === undefined || declined === null) return;
+  if (!Array.isArray(declined)) throw new Error(`${where}: "declined_fields" must be an array`);
+
+  const carried = (source.material_fields ?? []).map((spec) => spec?.path).filter((p) => typeof p === 'string');
+  const seen = new Set();
+  for (const entry of declined) {
+    const path = entry?.path;
+    if (typeof path !== 'string' || path === '') {
+      throw new Error(`${where}: a "declined_fields" entry is missing a string "path"`);
+    }
+    if (seen.has(path)) throw new Error(`${where}: "declined_fields" declares "${path}" twice`);
+    seen.add(path);
+    if (entry.decision !== DECLINED_DECISION) {
+      throw new Error(
+        `${where}: "declined_fields" entry "${path}" records decision ${JSON.stringify(entry.decision)} — ` +
+          `the only legal value is "${DECLINED_DECISION}", because carrying a field is expressed by "material_fields"`,
+      );
+    }
+    if (!DATE.test(entry.decided_on ?? '')) {
+      throw new Error(`${where}: "declined_fields" entry "${path}" needs a "decided_on" date (yyyy-mm-dd)`);
+    }
+    if (typeof entry.note !== 'string' || entry.note.trim() === '') {
+      throw new Error(
+        `${where}: "declined_fields" entry "${path}" needs a "note" — ` +
+          `a refusal with no measurement behind it is the undecided state wearing a label`,
+      );
+    }
+    for (const carriedPath of carried) {
+      if (pathsOverlap(carriedPath, path)) {
+        throw new Error(
+          `${where}: "${path}" is declined and also carried as material field path "${carriedPath}" — ` +
+            `a field is carried or refused, never both`,
+        );
+      }
+    }
+  }
+}
 
 export function loadRegistry(root) {
   const p = paths(root);
@@ -48,6 +142,7 @@ export function loadRegistry(root) {
       }
     }
     if (s.format === 'json' && !s.rows_path) throw new Error(`${where}: json format needs "rows_path"`);
+    validateDeclinedFields(s, where);
   }
   return raw;
 }
