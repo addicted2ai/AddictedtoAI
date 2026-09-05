@@ -680,3 +680,19 @@ their work is bounded, scoped to one surface, and verified by the iteration gate
 immediately - the profile a cheaper model suits. Judging is the measurement every
 downstream routing decision inherits, and it is now the one row of the model policy backed
 by a measurement rather than by a preference.
+
+
+## Archived from state.md 2026-09-05 (round-1 loop-work list, superseded by round 2)
+
+## Next (loop work, in order)
+
+1.–6. Port `2d0f3fa`, rig `f08a3c6`, baseline, anchors, brief, GO: all done (archive has detail).
+7. **Round 1 (concept).** Packets `CP-UI-001-1..4` committed `efa1b35` (Dated Ledger, Players Board,
+   Proof Rail, Provenance Gutter; all pass `gates.mjs --packet`). Panel dispatched 2026-09-05:
+   judge-hierarchy + judge-system (Opus) → `JV-hier|sys-CP-UI-001-n-1.json`; red-team (Sonnet) →
+   `RT-CP-UI-001-n-1.md`. If resuming: check which of those 12 files exist; re-dispatch only the
+   missing ones (independence: never show a judge a sibling's verdict).
+8. ~~Verdicts, scores, DRs, concept page, rulings~~ done. 9. **Finalist builds running** (Sonnet,
+   `contracts/implementer.md`): c1 port 3111, c2 port 3112; one `next build` at a time via the lock.
+   Then: rig captures per worktree incl. /frontier → `--coverage` → full panel (3 judges + red team)
+   → score → DR → jury (Fable, order-swapped) → keeper pick → ≤3 revisions → MRs → merge decision (K3).
