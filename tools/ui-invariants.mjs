@@ -2020,9 +2020,12 @@ const INVARIANTS = [
       const GENERIC = new Set(['ai', 'labs', 'lab', 'cloud', 'inc', 'corp', 'corporation',
         'company', 'group', 'foundation', 'pbc', 'ltd', 'llc', 'technologies', 'technology',
         'research', 'the', 'and', 'for', 'com', 'net', 'org', 'www']);
+      // RT-CP-UI-001-2-6 FM-N7 (applied directly under K43): parse with the
+      // platform URL parser so userinfo and ports never reach the suffix rule,
+      // matching lib/render/frontier.mjs's urlHost byte for byte.
       const hostOf = (u) => {
-        const m = String(u).match(/^https?:\/\/([^/?#]+)/i);
-        return m ? m[1].toLowerCase().replace(/^www\./, '') : null;
+        try { return new URL(String(u)).hostname.toLowerCase().replace(/^www\./, ''); }
+        catch { return null; }
       };
       // RD-005 fix 2 (RT FM-N5). REGISTRABLE DOMAIN (eTLD+1), re-derived here
       // with this clause's OWN suffix table and never imported from
