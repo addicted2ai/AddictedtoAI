@@ -2164,12 +2164,6 @@
         "title": "Moonshot AI",
         "type": "entry",
         "file": "content/wiki/org/moonshot-ai.md"
-      },
-      {
-        "url": "/blog/gitspawn-git-config-code-execution-coding-agents",
-        "title": "GitSpawn: a repository can name the program your coding agent runs before you type anything",
-        "type": "post",
-        "file": "content/blog/gitspawn-git-config-code-execution-coding-agents.md"
       }
     ],
     "org/anthropic": [
@@ -2226,12 +2220,6 @@
         "title": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
         "type": "post",
         "file": "content/blog/eu-ai-office-first-enforcement-rfis.md"
-      },
-      {
-        "url": "/blog/gitspawn-git-config-code-execution-coding-agents",
-        "title": "GitSpawn: a repository can name the program your coding agent runs before you type anything",
-        "type": "post",
-        "file": "content/blog/gitspawn-git-config-code-execution-coding-agents.md"
       }
     ],
     "org/deepseek": [
@@ -2476,12 +2464,6 @@
         "file": "content/blog/eu-ai-office-first-enforcement-rfis.md"
       },
       {
-        "url": "/blog/gitspawn-git-config-code-execution-coding-agents",
-        "title": "GitSpawn: a repository can name the program your coding agent runs before you type anything",
-        "type": "post",
-        "file": "content/blog/gitspawn-git-config-code-execution-coding-agents.md"
-      },
-      {
         "url": "/blog/openai-astra-critical-designation",
         "title": "OpenAI's Astra is the first model designated Critical for cybersecurity. Advanced access starts with alpha testers",
         "type": "post",
@@ -2512,12 +2494,6 @@
         "title": "SpaceXAI: Grok 4.6",
         "type": "entry",
         "file": "content/wiki/model/x-ai-grok-4-6.md"
-      },
-      {
-        "url": "/blog/gitspawn-git-config-code-execution-coding-agents",
-        "title": "GitSpawn: a repository can name the program your coding agent runs before you type anything",
-        "type": "post",
-        "file": "content/blog/gitspawn-git-config-code-execution-coding-agents.md"
       }
     ],
     "org/tencent": [

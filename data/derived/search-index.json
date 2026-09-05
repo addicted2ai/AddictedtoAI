@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 661,
+  "count": 660,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -35,16 +35,6 @@
     {
       "u": "/blog/eu-ai-office-first-enforcement-rfis",
       "t": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/blog/gitspawn-git-config-code-execution-coding-agents",
-      "t": "GitSpawn: a repository can name the program your coding agent runs before you type anything",
       "k": "post",
       "d": null,
       "s": null,
