@@ -68,6 +68,10 @@ const ROUTE_PLAN = [
   { route: '/impossible-routine', label: 'index-routine' },
   { route: null, label: 'routine', from: 'impossible-routine' },
   { route: null, label: 'wiki-model', from: 'wiki/model' },
+  // Added 2026-09-05 (round 1, K11/K19): the flagship route exists only on finalist branches, so it
+  // is `optional` — skipped, with a line in the manifest, when out/frontier.html is absent. A
+  // route that IS exported and fails to capture is still fatal like every other.
+  { route: '/frontier', label: 'frontier', optional: true },
 ];
 
 /**
@@ -228,8 +232,13 @@ async function main() {
 
   // Resolve the plan into concrete routes.
   const plan = [];
+  const skipped = [];
   for (const p of ROUTE_PLAN) {
     let route = p.route;
+    if (p.optional && route && !existsSync(join(OUT, `${route.slice(1)}.html`))) {
+      skipped.push(p.label);
+      continue;
+    }
     if (route === null) route = await firstEntry(p.from);
     if (!route) {
       fail(`could not resolve a real entry under out/${p.from}/ for label "${p.label}"`);
@@ -393,7 +402,7 @@ async function main() {
 
   await writeFile(
     join(dest, 'manifest.json'),
-    JSON.stringify({ captured: new Date().toISOString(), baseline: isBaseline, treeStamp: TREE_STAMP, contentHash: (await treeContentHash()).hash, viewports: VIEWPORTS.map((v) => v.id), routes: plan.length, images: manifest.length, entries: manifest }, null, 2),
+    JSON.stringify({ captured: new Date().toISOString(), baseline: isBaseline, treeStamp: TREE_STAMP, contentHash: (await treeContentHash()).hash, viewports: VIEWPORTS.map((v) => v.id), routes: plan.length, skippedOptional: skipped, images: manifest.length, entries: manifest }, null, 2),
   );
 
   const expected = plan.length * THEMES.length * VIEWPORTS.length;
