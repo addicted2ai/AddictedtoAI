@@ -54,6 +54,8 @@ evidence: >
   403 to this run's fetch on 2026-09-05. Every characterisation above is
   secondary reporting. The authoring job must obtain and quote the PDF.
 expires: 2026-09-12
+proposed_by_job: j-20260905-05
+proposed_by_type: scout
 ---
 
 # The United States tells a court that training on copyrighted text is fair use

@@ -54,6 +54,8 @@ evidence: >
   directions. The authoring job must read the raw HTML of the Manifold post and
   check each CVE against MITRE/NVD directly.
 expires: 2026-09-12
+proposed_by_job: j-20260905-05
+proposed_by_type: scout
 ---
 
 # GitSpawn: an untrusted repo can run code in your coding agent before you type anything

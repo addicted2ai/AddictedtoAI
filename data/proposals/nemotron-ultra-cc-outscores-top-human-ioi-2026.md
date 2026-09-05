@@ -51,6 +51,8 @@ evidence: >
   every quote the post uses must be re-confirmed against the arXiv HTML or the
   PDF before publication.
 expires: 2026-09-12
+proposed_by_job: j-20260905-05
+proposed_by_type: scout
 ---
 
 # An AI outscored the best human at IOI 2026, and its own authors say what that does not mean
