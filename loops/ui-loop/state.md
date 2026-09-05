@@ -52,7 +52,7 @@ process each round knows only what this file says. Every claim cites an artifact
 - **Round-1 rulings (keeper, 2026-09-05).** **K16** typeface: "open to change" → judge-system's
   reading stands (inheriting the stack is not a decision); each finalist names a self-hosted face
   with licence, or argues the stack as a choice. **K17** finalists: `CP-UI-001-1` Dated Ledger and
-  `CP-UI-001-2` Players Board (Proof Rail, Provenance Gutter not built; their rule items moot).
+  `CP-UI-001-2` Players Board (CP-3, CP-4 not built; their rule items moot).
   **K18** R13 rail-track addendum (a); R7 board clarification (b, delegated). **K19** "No": the
   Frontier LEADS with a players board (K11 stands); Dated Ledger's per-index spine must read as one.
   **K20** (delegated) family: a finalist names a treatment for EVERY template; "unchanged, because"
@@ -83,21 +83,9 @@ process each round knows only what this file says. Every claim cites an artifact
 
 ## Next (keeper decisions)
 
-1. ~~Anchors read, GO given (2026-09-05).~~ Round 1 running. [r0]
-2. ~~Round-1 rulings 1–8~~ → K16–K20 (concept page
-   https://claude.ai/code/artifact/0242a21f-b528-4116-9ee4-ed9ae7c11551). [r1]
-3. Schedule MR-UI-001..003 (find-tasks; hatched blank; spine cadence) once finalist captures exist. [r1]
-
-## Next (loop work, in order)
-
-1.–8. Port, rig, anchors, brief, round 1 (concept packets, panel, scores, DRs, rulings): done;
-   detail in `state-archive.md` (appended 2026-09-05) and the commit log.
-9. **Round 2 (built finalists), 2026-09-05.** c1 Dated Ledger `ui/concept-1` (JetBrains Mono), c2
-   Players Board `ui/concept-2` (Space Grotesk); 96 captures each (`/frontier` in the rig, optional),
-   coverage complete, full panel + red team, `SCORE-*-2.json` (reported: c2 54.8, c1 30.5; both have
-   critical FAILs — c2: blank never renders, tutorial overflow; c1: board 928px wide at 390, 32
-   identical cells, hard-wired empty renderer RT FM11). Both mislabel founding facts as vendor
-   claims. `knowledge/implementer-ledger.md` #1–#7, all Sonnet.
-10. Now: `DR-*-2` → jury (Fable, order-swapped, `JURY-BRIEF-UI-001.md` + `RD-*`) → comparison page →
-   keeper picks ONE → ≤3 revisions (K7) → MR-UI-001..003 → merge decision (K3). Then the Desk-order
-   note (K21, K22, Frontier data; `EN-domain-facet.md` questions to the keeper).
+1. ~~Anchors, GO~~ [r0]. 2. ~~Round-1 rulings~~ → K16–K20 [r1].
+3. **Round-2 decisions 1–8** (identity pick; Frontier with no index data; door at 390; door by
+   recency; ratify PB's S13/S14/S18 rewrite; catalog@390 vs I14; implementer tier; K7 check-in):
+   `JURY-BRIEF-UI-001` for_keeper + `AR-001`; page in loop-work 10. Jury done (no collapse; ALLR order-flipped → none), `RD-001` (DL), `RD-002` (PB), `AR-001`.
+   Finalists page: https://claude.ai/code/artifact/4c3688bb-c784-4e64-8bcf-e28f5aa29994. Next: keeper picks ONE → its RD →
+   re-capture → affected judges only → score v3 → K7 check-in → MRs → merge decision (K3) → Desk note.
