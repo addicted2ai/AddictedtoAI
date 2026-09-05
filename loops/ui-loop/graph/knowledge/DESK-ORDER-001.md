@@ -114,3 +114,20 @@ robots/terms and a last-verified date as the registry requires.
 
 The UI loop consumes these as data; the templates already iterate columns and rows from arrays
 (IR-CP-UI-001-2-1 § K22), so none of this requires a template change to render.
+
+## Appendix — proposed `DIRECTIVES.md` lines (keeper pastes or approves; K6: this loop does not write that file)
+
+`DIRECTIVES.md` is the Desk's highest-priority work source, one typed line per job (`specs/loop`);
+`machinery` is the type for the site's own code and the loop's scripts and is capped at 10% of the
+budget. The spec changes (§1 fields/criteria/cap clause, §3 wiki schema) are OpenSpec changes and go
+through the Desk's change process first; the lines below are the jobs that follow.
+
+```
+- machinery: implement DESK-ORDER-001 §1 — post front matter `frontier`/`frontier_reason` (F1–F5)/`domains`, the build gate (flag without reason or valid domain fails), and the scout's F1–F5 sweep + cap exemption once the blog/loop OpenSpec change lands; spec: loops/ui-loop/graph/knowledge/DESK-ORDER-001.md §1
+- verify: backfill `frontier`/`frontier_reason`/`domains` on the existing blog posts against DESK-ORDER-001 §1 criteria; record declines in the review
+- machinery: register the scout's radar feeds (Hugging Face Hub, covered orgs' release RSS, arXiv, GitHub releases) as registry rows with robots/terms and last-verified dates; DESK-ORDER-001 §5
+- machinery: add `lead-change` (arrival vs rescoring) to changes.jsonl and derive data/derived/frontier.json per frontier-plan §2.3; DESK-ORDER-001 §4
+- machinery: define the vendor-claim record (verbatim, source, accessed, ability named, verified{by,url,date}) and migrate the 21 cited facts that are claims; DESK-ORDER-001 §4
+- verify: check Artificial Analysis and Design Arena republication terms; record the outcome in the registry; no index value renders until cleared; DESK-ORDER-001 §4
+- entry: org entries for the 34 catalog providers with no wiki entry (one line per org when filed), each with its `feeds` map; DESK-ORDER-001 §2
+```
