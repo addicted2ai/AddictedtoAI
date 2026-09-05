@@ -981,6 +981,12 @@ export async function runLoop(ctx, opts = {}) {
    * `null` on every other outcome — a branch that did not merge is kept.
    */
   let mergedBranch = null;
+  /**
+   * Set on a merge, and read at the FOOT of this function — after the job's own
+   * records are written and committed — because that is where the publish now
+   * happens. See the call site for the measurement (addictedtoai-tqpq).
+   */
+  let publishAfterRecords = false;
   /** Both halves of the consumed-proposal move, staged with the job's records. */
   const consumedPaths = [];
 
@@ -1212,7 +1218,12 @@ export async function runLoop(ctx, opts = {}) {
       const built = opts.noGates ? { ok: true } : (typeof opts.gates === 'function' ? opts.gates(ctx, ctx.repoRoot) : runGates(ctx, ctx.repoRoot, { scripts: ['build'] }));
       const red = checkBuildRed(ctx, { ok: built.ok, output: built.output ?? '' });
       if (red.tripped) ctx.log(`BREAKER: the post-merge build is red; HOLD.md written`);
-      await publishStep(ctx, { cfg });
+      // THE PUBLISH IS NOT HERE ANY MORE. It is at the foot of this function,
+      // after `commitJobRecords`, and the flag is what carries the decision
+      // there. What survives unchanged is the ordering that is load-bearing:
+      // the build gate above still runs BEFORE the publish, so a run that
+      // produced content the build rejects still publishes nothing.
+      publishAfterRecords = true;
       if (job.source === 'directive' && job.lineNumber) {
         // LOCAL, not UTC (beads addictedtoai-nmr). The completion marker goes
         // into `DIRECTIVES.md`, a file in the corpus that a human reads, and an
@@ -1490,6 +1501,46 @@ export async function runLoop(ctx, opts = {}) {
   // addition without the deletion.
   const staged = recordPaths.filter((p) => existsSync(join(ctx.repoRoot, p))).concat(sweptPaths, consumedPaths);
   commitJobRecords(ctx, { staged, jobId, outcome });
+
+  // -------------------------------------------------------------------------
+  // PUBLISH — HERE, after the records above are committed, and declaring them.
+  //
+  // It used to run at the merge, ~280 lines above: before the directive
+  // completion marker, before the reviewer's noted proposal, before the carried
+  // findings, and before `commitJobRecords`. Two defects came out of that one
+  // position, and each one alone left the other intact:
+  //
+  //   1. A run PUSHED CONTENT TO THE LIVE SITE BEFORE THE RECORDS DESCRIBING
+  //      THAT WORK EXISTED. The verdict record the review gate is audited by,
+  //      the ledger line the budget is computed from, the completion marker a
+  //      human reads in DIRECTIVES.md — all of it rode out on some LATER run's
+  //      push, or on none.
+  //   2. The step was the UNDECLARED CALLER (`loop/lib/publish.mjs` passed no
+  //      `owned`), so it staged `data/`, `content/` and `public/` wholesale.
+  //      Running first, it routinely committed a consumed proposal's move
+  //      before the lines above staged that same source path deliberately;
+  //      `git add` then answered "did not match any files", exited 128, and ONE
+  //      unmatched pathspec is fatal for the WHOLE invocation. Measured
+  //      2026-09-03: three jobs' records discarded in one afternoon, each of
+  //      which still reported `done` (addictedtoai-tqpq, j-20260903-02, -05,
+  //      -06).
+  //
+  // Moving the call fixes (1); declaring `owned` fixes (2). The invariant needs
+  // BOTH, and it is one sentence: a job's content and that job's own records
+  // reach the remote in ONE push, and the publish step never stages a file the
+  // job did not produce.
+  //
+  // `owned` is `staged` — the exact paths this run wrote or moved. Everything
+  // the job authored is already IN the merge commit, not in the working tree,
+  // so the declaration covers what is left: the records. When the commit above
+  // succeeded they are clean and the shared step's phase 1 finds nothing to do;
+  // when it could not (a concurrent Pulse holding `.git/index.lock`) phase 1
+  // commits them by exact path, and they still leave in this run's push.
+  //
+  // Not conditional on the outcome by itself: `publishAfterRecords` is set only
+  // on a merge, which is the same condition the old call site was nested under.
+  // -------------------------------------------------------------------------
+  if (publishAfterRecords) await publishStep(ctx, { cfg, owned: staged });
 
   // The run's last word, unconditionally.
   //
