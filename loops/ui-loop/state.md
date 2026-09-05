@@ -84,8 +84,7 @@ process each round knows only what this file says. Every claim cites an artifact
 
 ## Next (keeper decisions)
 
-1. Read the anchors in `loops/ui-loop/graph/` (README, BRIEF-UI-001, contracts/); say GO and switch
-   the session to medium effort. [r0]
+1. ~~Anchors read, GO given, session at medium effort (2026-09-05).~~ Round 1 running.
 2. Catalog at 390px: choose from the round-1 concept frontier (supersedes the delegated I14). [r0]
 3. Rule challenges under K14, as concepts raise them: retire, amend, or keep each. [r0]
 

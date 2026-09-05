@@ -6,7 +6,8 @@ version: 1
 schema: loops/ui-loop/graph/schemas.md#concept-brief
 status: active — keeper GO pending (K13 confirmed models 2026-09-05; GO after reading the anchors)
 depends_on: [CHARTER.md, RULES.md (R1–R16 + tombstones), openspec/specs/site (design bar), state.md (K10–K13),
-  JUDGE.md (Known evidence lies L1–L8), frontier-plan (bead addictedtoai-s8gz, §1 §2.3 §11.3 §11.4; review §7),
+  JUDGE.md (Known evidence lies L1–L8), graph/knowledge/frontier-plan.md, graph/knowledge/frontier-addendum.md,
+  graph/knowledge/review-frontier.md,
   evidence/baseline (main 4f2314e), evidence/current (f08a3c6)]
 concept_count: 4
 concept_round_panel: [judge-hierarchy, judge-system]     # red team + gates always run
