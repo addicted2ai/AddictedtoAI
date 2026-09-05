@@ -1793,11 +1793,11 @@ const INVARIANTS = [
   },
   {
     id: 'S22', rule: 'R13',
-    intent: "RD-002 fixes 1 and 2 — the players board states only what it can source. THREE clauses. (a) IDENTITY: no cited fact belonging to an ORGANISATION record appears anywhere in /frontier's rendered text. The VENDOR CLAIM cell used to fall back from the model's own cited fact to the ORG's (`firstCitedFact(modelDoc) ?? firstCitedFact(org)`), so NVIDIA's company founding date and founders rendered under 'claimed · unverified' inside a MODEL's row — a fact about a company stamped as a claim about a model (F-sys-2-7, RT FM1; BRIEF R-B). The fallback is removed; this clause is what makes the removal permanent, and it is stated over the ORG CORPUS rather than over a list of forbidden words, so a founding date added to any org record tomorrow is caught the same way. (b) HONESTY REACHABLE: at least one hatched cell renders on shipped data, at 1440 AND at 390 — the concept's whole bet is that a board of honest blanks persuades, and the captured board rendered ZERO of them because the fallback laundered org trivia into the one column most likely to be empty (F-sys-2-3, RT FM2). (c) NO CELL CLIPPED: every vendor-claim cell renders on exactly ONE line and, where its text is wider than its box, is ellipsised — sixteen cells were cut mid-word at 1440 with nothing in frame saying content continued (F-hier-6, F-struct-5). (d) ALLOW-LIST, added RD-003 fix 1 (RT FM-N1 + FM-N2): the column admits only a QUANTIFIED cited claim about the row's own model, so no cited fact on an EXCLUDED field — every positioning/description field (`vendor_description`, `vendor_role`, `tier_role`, `generation_claim`, `architecture`, `structure`, `quantization`, `distilled_from`, `open_weights`, `local_hardware`, `contributor_tier_terms`, the free-access windows) and every record-metadata field (`release_date`, `license`, `parameters`, `listed_date`, `version`, `api_sunset`, `knowledge_cutoff`, `expiration_date`, prices, sizes) — may render inside a `.board-claim` cell, and every claim that DOES render carries a digit. Stated over the MODEL CORPUS with the clause's OWN denied-field list, exactly as (a) is stated over the org corpus: widening the render module's allow-list does not widen this gate, which is the whole reason FM-N1 shipped (a regex over field NAMES admitted `vendor_description` on the same terms as a benchmark score). Two-sided: an allow-list narrowed until the column carries NO claim at all is the opposite excess — a claim column that never states a claim — and fails too.",
+    intent: "RD-002 fixes 1 and 2 — the players board states only what it can source. THREE clauses. (a) IDENTITY: no cited fact belonging to an ORGANISATION record appears anywhere in /frontier's rendered text. The VENDOR CLAIM cell used to fall back from the model's own cited fact to the ORG's (`firstCitedFact(modelDoc) ?? firstCitedFact(org)`), so NVIDIA's company founding date and founders rendered under 'claimed · unverified' inside a MODEL's row — a fact about a company stamped as a claim about a model (F-sys-2-7, RT FM1; BRIEF R-B). The fallback is removed; this clause is what makes the removal permanent, and it is stated over the ORG CORPUS rather than over a list of forbidden words, so a founding date added to any org record tomorrow is caught the same way. (b) HONESTY REACHABLE: at least one hatched cell renders on shipped data, at 1440 AND at 390 — the concept's whole bet is that a board of honest blanks persuades, and the captured board rendered ZERO of them because the fallback laundered org trivia into the one column most likely to be empty (F-sys-2-3, RT FM2). (c) NO CELL CLIPPED: every vendor-claim cell renders on exactly ONE line and, where its text is wider than its box, is ellipsised — sixteen cells were cut mid-word at 1440 with nothing in frame saying content continued (F-hier-6, F-struct-5). (d) ALLOW-LIST, added RD-003 fix 1 (RT FM-N1 + FM-N2): the column admits only a QUANTIFIED cited claim about the row's own model, so no cited fact on an EXCLUDED field — every positioning/description field (`vendor_description`, `vendor_role`, `tier_role`, `generation_claim`, `architecture`, `structure`, `quantization`, `distilled_from`, `open_weights`, `local_hardware`, `contributor_tier_terms`, the free-access windows) and every record-metadata field (`release_date`, `license`, `parameters`, `listed_date`, `version`, `api_sunset`, `knowledge_cutoff`, `expiration_date`, prices, sizes) — may render inside a `.board-claim` cell, and every claim that DOES render carries a digit. Stated over the MODEL CORPUS with the clause's OWN denied-field list, exactly as (a) is stated over the org corpus: widening the render module's allow-list does not widen this gate, which is the whole reason FM-N1 shipped (a regex over field NAMES admitted `vendor_description` on the same terms as a benchmark score). Two-sided: an allow-list narrowed until the column carries NO claim at all is the opposite excess — a claim column that never states a claim — and fails too. (e) ATTRIBUTION, added RD-004 (RT FM-N3 + JV-sys F-sys-4-1): `source: cited` records that a value carries a citation, never that the citation is the VENDOR'S OWN — so an allow-listed field sourced to a third party (OpenRouter's traffic-derived medians, an llm-releases.com analyst's arithmetic, a VentureBeat write-up, a Hugging Face model card) may not render in a column labelled as the vendor's own words under a lede reading 'quoted verbatim from the vendor'; and every claim that DOES render names the ROW'S OWN ORGANISATION in the cell, because the only other provenance on the row is READ, which states the feed the PRICE and CONTEXT values came from. Vendor-ness is re-derived here from the ORG and MODEL corpora — display names and aliases, the hosts an org entry cites ITSELF from, and the org's own `mentions:` list as the model->org mapping — never imported from lib/render/frontier.mjs, exactly as (a) and (d) are.",
     independent: "for (a) the cited facts read out of content/wiki/org/*.md — the corpus itself, not the render module and not the page's own markup; for (b) and (c) getBoundingClientRect, scrollWidth/clientWidth and Range-measured text line boxes read live off the rendered board, never a CSS token or a declared column count",
     falsifier: {
       brokenBy: "THREE breaks. (a) restored the removed org fallback in lib/render/frontier.mjs (`vendorClaimFact(modelDoc) ?? firstCitedFact(org)`) and rebuilt — a render-logic change --break cannot reach, the mechanism this registry already uses for S14/S17/S18/S21. (b) `--only S22 --break \"#frontier-board .board-hatch{background-image:none !important}\"` — removes the hatch MARK from every blank cell while leaving the cells, their text and their classes exactly where they are, so the clause is exercised on what a reader sees rather than on what the renderer emitted; reproduces RT FM2's zero-hatch board. (c) `--only S22 --break \".board-claim,.board-claim .claim-line{text-overflow:clip !important}\"` — still capped, but clipped by its own box with nothing in frame saying content continues. (d) added `'vendor_description'` to `CLAIM_FIELDS_BENCHMARK` in lib/render/frontier.mjs and rebuilt — a render-logic change --break cannot reach, the same mechanism (a) uses, and the exact shipped shape RT FM-N1 measured (x-ai's newest row carrying SpaceXAI's marketing sentence in the claim cell).",
-      observed: '(a) check failed "/frontier @1440x900: an ORGANISATION record\'s own cited fact is rendered on /frontier: “Qwen, launched in beta April 2023 as Tongyi Qianwen and opened to the public in September 2023” (content/wiki/org/alibaba-cloud.md)" — the same class of defect RT FM1 measured on NVIDIA, caught on a different org because the clause reads the whole corpus rather than one named fact. (b) check failed "/frontier @1440x900: the board renders ZERO hatched cells on shipped data" — RT FM2\'s exact reading. (c) check failed "/frontier @1440x900: a vendor-claim cell is clipped with no ellipsis (“59 at high reasoning, 57 at medium, 52 at low; up 3 from Gem…”)". RECORDED HONESTLY: the FIRST attempt at (c) broke with max-width:none;overflow:visible;text-overflow:clip and did NOT fire (0 of 1) — informative, not a defect in the check: removing the cap does not make the CELL clip, it makes the cell grow and the TABLE overrun its container, which is S22b\'s clause, not this one; the break had moved the violation to a different check. (d) FIRST attempt reported 0 of 1 fired and is recorded, not hidden: adding `vendor_description` to the allow-list ALONE does not restore the defect, because `claimRank` also refuses a value with no digit in it and SpaceXAI\'s sentence has none — two independent guards, and the break had only removed one. Re-broken with both removed (the field allow-listed AND the digit test commented out): check failed "/frontier @1440x900: a vendor-claim cell renders a cited fact on the EXCLUDED field “vendor_description” (content/wiki/model/x-ai-grok-4-6.md): “SpaceXAI\'s smartest model with frontier performance on codin”" — RT FM-N1\'s shipped row, reproduced exactly. All four restored; rebuilt tree passes S22 at both declared viewports.',
+      observed: '(e) RD-004, three breaks, all render-logic + rebuild (the mechanism (a) and (d) use). (e-i) the vendor test in claimRank disabled: check failed "a vendor-claim cell renders a fact cited to a THIRD PARTY, not to the row\'s vendor: “59 at high reasoning, 57 at medium, 52 at low; up 3 from Gem” (content/wiki/model/google-gemini-3-8-flash.md#intelligence_index_by_effort, source llm-releases.com)" — FM-N3 DORMANT twin, made live by the break and caught. (e-ii) the other end, the vendor test forced to reject everything: check failed "the VENDOR CLAIM column renders ZERO claims across 16 rows", clause (d) own second end. (e-iii) the attribution half, the cell .src label reverted to the pre-fix "model record": check failed "a vendor-claim cell renders a claim that does not name the row\'s own organisation as its source (“54.9% — model record, accessed 2026-09-03…”)". RECORDED, NOT HIDDEN: (e-iii) did NOT fire on the first attempt (0 of 1). As first written the clause asked only that SOME non-empty name follow the dash, and "model record" satisfied it — a real defect in the check, not a flake: the property is that the cell names the ROW VENDOR, so the clause now compares the .src label against the row own lead cell, and the break fires. All three restored; rebuilt tree passes S22. (a) check failed "/frontier @1440x900: an ORGANISATION record\'s own cited fact is rendered on /frontier: “Qwen, launched in beta April 2023 as Tongyi Qianwen and opened to the public in September 2023” (content/wiki/org/alibaba-cloud.md)" — the same class of defect RT FM1 measured on NVIDIA, caught on a different org because the clause reads the whole corpus rather than one named fact. (b) check failed "/frontier @1440x900: the board renders ZERO hatched cells on shipped data" — RT FM2\'s exact reading. (c) check failed "/frontier @1440x900: a vendor-claim cell is clipped with no ellipsis (“59 at high reasoning, 57 at medium, 52 at low; up 3 from Gem…”)". RECORDED HONESTLY: the FIRST attempt at (c) broke with max-width:none;overflow:visible;text-overflow:clip and did NOT fire (0 of 1) — informative, not a defect in the check: removing the cap does not make the CELL clip, it makes the cell grow and the TABLE overrun its container, which is S22b\'s clause, not this one; the break had moved the violation to a different check. (d) FIRST attempt reported 0 of 1 fired and is recorded, not hidden: adding `vendor_description` to the allow-list ALONE does not restore the defect, because `claimRank` also refuses a value with no digit in it and SpaceXAI\'s sentence has none — two independent guards, and the break had only removed one. Re-broken with both removed (the field allow-listed AND the digit test commented out): check failed "/frontier @1440x900: a vendor-claim cell renders a cited fact on the EXCLUDED field “vendor_description” (content/wiki/model/x-ai-grok-4-6.md): “SpaceXAI\'s smartest model with frontier performance on codin”" — RT FM-N1\'s shipped row, reproduced exactly. All four restored; rebuilt tree passes S22 at both declared viewports.',
       brokenByOpposite: "clauses (b) and (c) bound a quantity and have a real other end, so they get one. (b) from the other end — `--only S22 --break \"#frontier-board .board-cell{background-image:repeating-linear-gradient(45deg,var(--rule) 0,var(--rule) 1px,transparent 1px,transparent 7px) !important}\"`: EVERY cell hatched, RT FM4's predicted failure (the hatch dominating the board) rather than none of them, which a floor-only formula passes trivially. (c) from the other end — `--only S22 --break \"#frontier-board .board-claim{max-width:1px !important}\"`: a cell capped so hard it carries no readable text at all, the opposite excess of the uncapped cell, which a 'not clipped without an ellipsis' formula also passes trivially. (d) from the other end — both allow-list sets emptied in lib/render/frontier.mjs and rebuilt: nothing at all clears the bar, every one of the sixteen claim cells is the hatched blank, and a prohibition-only formula ('no excluded field renders') passes that perfectly while the column states nothing. The clause requires at least one real claim as well.",
       observedOpposite: 'check failed "/frontier @1440x900: 96 of 96 board value cells render the hatch (100.0%) — a board that can source almost nothing is the opposite excess of one that hides its blanks, and states as little (RT FM4\'s predicted failure)". (d) from the other end: both allow-list Sets emptied and rebuilt — check failed "/frontier @1440x900: the VENDOR CLAIM column renders ZERO claims across 16 rows — an allow-list narrowed until nothing qualifies states as little as one that admits marketing copy, and a prohibition-only clause passes it trivially". RECORDED, RD-003: clause (c)\'s OWN narrow-cap opposite (`#frontier-board .board-claim{max-width:1px}`) does NOT reproduce under the corrected line-box measurement below, and re-measurement shows it never violated the property: a table cell floors at its content\'s own minimum, so the claim cell still rendered 116.5px wide against the board\'s narrowest other value column at 85.5px, and `table-layout:fixed` with `width:1px` widened every column to 164.6px instead of narrowing this one. The break moves the layout, not the property. A width clause added for it was written, found unfalsifiable for that reason, and REMOVED rather than kept green — (c)\'s real second end is the wrap break recorded above. Restored; rebuilt tree passes S22.',
       oneSidedBecause: "clause (a) alone is a PROHIBITION over a corpus (no org-record fact may appear on this route) and has one direction by construction — there is no 'too few org facts on /frontier'. It is declared rather than given a manufactured second end, per this registry's own rule at S20. Clauses (b), (c) and (d) are two-sided and are broken from both ends above — (d)'s prohibition half shares (a)'s shape, but its 'at least one claim renders' half gives the pair a real other end that a corpus prohibition alone does not have.",
@@ -1892,6 +1892,26 @@ const INVARIANTS = [
             // reader can actually recover, so both are compared.
             full: `${cell.textContent.trim()} ${(line.getAttribute && line.getAttribute('title')) || ''}`.replace(/\s+/g, ' '),
             hatched: cell.classList.contains('board-hatch'),
+            // RD-004 / JV-sys F-sys-4-1: is the claim ATTRIBUTED inside its own
+            // cell — a named source after the claim fragment, read off the
+            // rendered cell rather than off the renderer's intent.
+            attributed: (() => {
+              const src = cell.querySelector('.src');
+              const name = src ? src.textContent.trim() : '';
+              // The source named must be the ROW'S OWN ORGANISATION, read off
+              // the row's own lead cell — not merely SOME name after the dash.
+              // Recorded, RD-004: the first version of this clause asked only
+              // for a non-empty name and PASSED the pre-fix cell, which named
+              // "model record". A generic label is exactly the unattributed
+              // state F-sys-4-1 measured.
+              const row = cell.closest('tr');
+              const org = row ? (row.querySelector('th') || {}).textContent || '' : '';
+              const k = (x) => x.toLowerCase().replace(/[^a-z0-9]/g, '');
+              return name.length > 0
+                && k(name).length > 0
+                && k(name) === k(org)
+                && cell.textContent.replace(/\s+/g, ' ').includes(`— ${name}`);
+            })(),
           });
         }
         return { hatched, claims, valueCells: valueCells.length };
@@ -1959,6 +1979,84 @@ const INVARIANTS = [
       }
       if (rendered.length < 1) {
         return `the VENDOR CLAIM column renders ZERO claims across ${dom.claims.length} rows — an allow-list narrowed until nothing qualifies states as little as one that admits marketing copy, and a prohibition-only clause passes it trivially`;
+      }
+
+      // (e) ATTRIBUTION (RD-004, RT FM-N3 + JV-sys F-sys-4-1). A claim cell may
+      // carry only a value whose OWN cited source is the row organisation. The
+      // vendor test is re-derived here from the ORG and MODEL corpora — org
+      // display names and aliases, the hosts an org entry cites ITSELF from,
+      // and the org's own `mentions:` list as the model→org mapping — and
+      // never imported from lib/render/frontier.mjs, because the defect this
+      // catches IS that module deciding "cited" means "the vendor said it".
+      const GENERIC = new Set(['ai', 'labs', 'lab', 'cloud', 'inc', 'corp', 'corporation',
+        'company', 'group', 'foundation', 'pbc', 'ltd', 'llc', 'technologies', 'technology',
+        'research', 'the', 'and', 'for', 'com', 'net', 'org', 'www']);
+      const hostOf = (u) => {
+        const m = String(u).match(/^https?:\/\/([^/?#]+)/i);
+        return m ? m[1].toLowerCase().replace(/^www\./, '') : null;
+      };
+      const orgsMeta = [];
+      for (const f of orgFiles) {
+        if (!f.endsWith('.md')) continue;
+        const text = await rf(join(orgDir, f), 'utf8');
+        const fm = text.split(/\n---\n/)[0];
+        const tokens = new Set();
+        const names = [...fm.matchAll(/\n\s*(?:display_name|- name):\s*"?([^"\n]+?)"?\s*\n/g)].map((m) => m[1]);
+        for (const n of names) {
+          const whole = n.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (whole.length >= 3) tokens.add(whole);
+          for (const w of n.toLowerCase().split(/[^a-z0-9]+/)) if (w.length >= 3 && !GENERIC.has(w)) tokens.add(w);
+        }
+        const named = (host) => host.split('.').some((l) => l.length >= 3 && tokens.has(l));
+        const ownHosts = new Set();
+        for (const m of fm.matchAll(/\n\s*source_url:\s*"?([^"\n]+?)"?\s*\n/g)) {
+          const h = hostOf(m[1]);
+          if (h && named(h)) ownHosts.add(h);
+        }
+        const mentions = new Set([...fm.matchAll(/\n\s+- (model\/[a-z0-9-]+)/g)].map((m) => m[1]));
+        orgsMeta.push({
+          file: f,
+          mentions,
+          isVendorHost: (host) => named(host) || [...ownHosts].some((d) => host === d || host.endsWith(`.${d}`)),
+        });
+      }
+      if (orgsMeta.length < 1) return 'no org records parsed — clause (e) would be vacuous';
+      const thirdPartyValues = [];
+      for (const f of modelFiles) {
+        if (!f.endsWith('.md')) continue;
+        const text = await rf(join(modelDir, f), 'utf8');
+        const idm = text.match(/\nid:\s*"?(model\/[a-z0-9-]+)"?/);
+        if (!idm) continue;
+        const owners = orgsMeta.filter((o) => o.mentions.has(idm[1]));
+        if (owners.length < 1) continue; // no org claims this model: not judgeable here
+        const blocks = text.split(/\n\s*- field:/).slice(1);
+        for (const b of blocks) {
+          if (!/\n\s*source:\s*cited\b/.test(b)) continue;
+          const fm2 = b.match(/^\s*([A-Za-z0-9_]+)/);
+          const su = b.match(/\n\s*source_url:\s*"?([^"\n]+?)"?\s*\n/);
+          const v = b.match(/\n\s*value:\s*"?([^"\n]+?)"?\s*\n/);
+          if (!fm2 || !su || !v) continue;
+          const host = hostOf(su[1]);
+          if (!host) continue;
+          if (owners.some((o) => o.isVendorHost(host))) continue;
+          if (v[1].trim().length >= 12) thirdPartyValues.push({ file: f, field: fm2[1], host, value: v[1].trim() });
+        }
+      }
+      if (thirdPartyValues.length < 1) {
+        return 'no third-party-sourced cited facts found in content/wiki/model — clause (e) would be vacuous, which is the green-and-wrong failure this harness exists to refuse';
+      }
+      for (const c of rendered) {
+        for (const t of thirdPartyValues) {
+          const needle = t.value.replace(/\s+/g, ' ').slice(0, 60);
+          if (needle.length >= 12 && c.full.includes(needle)) {
+            return `a vendor-claim cell renders a fact cited to a THIRD PARTY, not to the row's vendor: "${needle}" (content/wiki/model/${t.file}#${t.field}, source ${t.host}) — the column is labelled as the vendor's own words and may carry only a fact whose cited source is the row organisation's own domain (RT FM-N3)`;
+          }
+        }
+        // ...and every cell that DOES render names its source in words, so the
+        // READ column beside it cannot be read as the claim's provenance.
+        if (!c.attributed) {
+          return `a vendor-claim cell renders a claim that does not name the row's own organisation as its source ("${c.text}…") — the only other provenance on the row is the READ column, which states the feed the PRICE and CONTEXT values were read from and is otherwise read as the claim's source (JV-sys F-sys-4-1)`;
+        }
       }
 
       // (c) NO CELL CLIPPED.

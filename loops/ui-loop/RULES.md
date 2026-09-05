@@ -593,6 +593,25 @@ ACROSS different templates remains out of scope per DC1 — this rule governs on
 own trailing columns and one surface's own dead space, not cross-template alignment.
 Enforced by `tools/ui-invariants.mjs` id `S9`.
 
+*Round-4 addendum (RD-004; RT FM-N3, JV-sys F-sys-4-1 — the ATTRIBUTION clause).* A column
+labelled as carrying what a party SAID shall admit a value only where that party is the value's
+own cited source, and shall name that party in the cell. `source: cited` records that a value
+carries a citation, never that the citation is the vendor's own assertion: `/frontier`'s VENDOR
+CLAIM column, under a lede reading "quoted verbatim from the vendor", rendered Inception's row
+from `observed_throughput_p50` — OpenRouter's rolling median over live traffic, which the source
+document's own prose separates from Inception's own (different) number — with a dormant twin in
+Google's `output_tokens_per_task`/`cost_per_task` from an llm-releases.com analysis. So, for this
+column: (i) a MEASUREMENT is not a claim, whatever field name carries it, and the measurement tier
+is dropped whole rather than filtered; (ii) an allow-listed field renders only where its
+`source_url` host is the row organisation's OWN domain — one the org entry itself cites the org
+from, or one whose host carries the org's own name — so any third party's republication of a
+vendor number is that third party's, and renders as the labelled blank; (iii) the cell states the
+vendor's name as the claim's source, because a neighbouring provenance column (READ, the feed the
+fed values came from) is otherwise read as the claim's own. Enforced by `tools/ui-invariants.mjs`
+id `S22` clause (e), which re-derives vendor-ness from the org and model corpora with its own
+org→model mapping rather than from the render module it polices.
+
+
 > *iter-05 addendum — the "occupy most of it" half was only ever HALF-satisfied, and this
 > closes it.* iter-04 landed I17's subgrid half (the trailing-columns clause above) but
 > not I16's own width half: `width: fit-content` on `.browse` stopped the list from
