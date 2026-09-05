@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 5,
+  "count": 6,
   "items": [
     {
       "detail": "`removeWorktree` (loop/lib/git.mjs:95) runs `worktree remove --force` and then `worktree prune`, and run.mjs:1347 does an `rmSync` of the directory afterwards — that fallback exists because the remove is not always believed. On Windows a `worktree remove --force` can fail on a locked file; the prune then finds the directory still present and prunes nothing, the `rmSync` deletes the directory, and no prune ever runs again. Measured in a throwaway repo: with the directory gone but the admin entry unpruned, `deleteBranch` returns `false`; a `git worktree prune` at that point and the identical call returns `true` and the branch is gone. Nothing breaks today — the new code logs \"could not delete the merged branch …\" and moves on — but one `gitTry(repo, ['worktree','prune'])` after the `rmSync` in run.mjs would close the residual case.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-40 (`j-20260904-40.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -9,6 +9,15 @@
       "subject": "data/carried/j-20260904-40-carry-1.md",
       "target": "data/carried/j-20260904-40-carry-1.md",
       "title": "Prune worktree metadata after the rmSync fallback, or a failed `worktree remove` still blocks the deletion",
+      "type": "repair"
+    },
+    {
+      "detail": "The repaired sentence reads \"as of this proposal's date, five lines in data/changes.jsonl already carry kind:annotation from interpret jobs (j-20260830-02, j-20260831-04, j-20260901-08, j-20260901-09, j-20260902-02)\". Counted by date in this worktree's data/changes.jsonl, six annotation lines carry a date of 2026-09-03 or earlier — the five named plus line 164, {\"kind\":\"annotation\", ..., \"date\":\"2026-09-03\", \"job\":\"j-20260903-06\"}. The proposal's date is 2026-09-03, so at day granularity the enumerated set is one short. The five named are right for the moment of writing: the ledger records j-20260903-06 starting at 2026-09-03T15:37:23Z and the consumed stamp on this very file is 20260903T153729 — the sixth annotation is the work this proposal caused, seconds later, so listing it as prior evidence would be circular. The fix is the qualifier, not the number: \"at the time this proposal was written\" instead of \"as of this proposal's date\".\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-41 (`j-20260904-41.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/proposals/consumed/feed-descriptions-unsynced-with-the-artefacts-they-name.consumed-20260903T153729.md",
+      "target": "data/proposals/consumed/feed-descriptions-unsynced-with-the-artefacts-they-name.consumed-20260903T153729.md",
+      "title": "Tighten the \"as of this proposal's date\" qualifier to the moment of writing",
       "type": "repair"
     },
     {
@@ -48,5 +57,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 5
+  "total_before_cap": 6
 }
