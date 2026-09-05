@@ -14,7 +14,7 @@ this directory (node fetch + strip + count script, 2026-09-04).
 
 | Source | Result |
 |---|---|
-| openai.com/index/daybreak-for-frontline-defenders/ (the announcement the post cites and quotes) | HTTP 200, 375,916 bytes of served HTML, fetched 2026-09-04. Both phrasings present, each exactly once. |
+| openai.com/index/daybreak-for-frontline-defenders/ (the announcement the post cites and quotes) | HTTP 200, 375,916 bytes of served HTML, fetched 2026-09-04. Served bytes vary between fetches, so this count and every other in this file is per-run and not a fingerprint of the document. Both phrasings present, each exactly once. |
 
 Instrument note: the successful request sent a full Chrome `user-agent`,
 `accept-language: en-US,en;q=0.9` and `cache-control: no-cache`. Of those,
@@ -34,6 +34,14 @@ only the UA is load-bearing against the Cloudflare challenge.
 This is why the transcript's contexts are quoted from the served DOM and from
 the Next.js flight payload (the raw and `flight-unescaped` rows), never from
 an extractor.
+
+The two 200s in that blockquote differ from each other and from the table
+row's 375,916 for the ordinary reason: the response is not byte-stable.
+Measured again on 2026-09-04 from this machine, four fetches of the same URL
+with the same Chrome UA inside one second returned **376,057 / 376,064 /
+376,065 / 376,059 bytes**. So a byte count here dates a fetch; it never
+identifies a document, and a difference between two of these counts is not
+evidence that the page changed.
 
 ## The two phrasings, verbatim, with their locations
 
