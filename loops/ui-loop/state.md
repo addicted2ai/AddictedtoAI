@@ -90,13 +90,14 @@ process each round knows only what this file says. Every claim cites an artifact
 
 ## Next (loop work, in order)
 
-1.–6. Port `2d0f3fa`, rig `f08a3c6`, baseline, anchors, brief, GO: all done (archive has detail).
-7. **Round 1 (concept).** Packets `CP-UI-001-1..4` committed `efa1b35` (Dated Ledger, Players Board,
-   Proof Rail, Provenance Gutter; all pass `gates.mjs --packet`). Panel dispatched 2026-09-05:
-   judge-hierarchy + judge-system (Opus) → `JV-hier|sys-CP-UI-001-n-1.json`; red-team (Sonnet) →
-   `RT-CP-UI-001-n-1.md`. If resuming: check which of those 12 files exist; re-dispatch only the
-   missing ones (independence: never show a judge a sibling's verdict).
-8. ~~Verdicts, scores, DRs, concept page, rulings~~ done. 9. **Finalist builds running** (Sonnet,
-   `contracts/implementer.md`): c1 port 3111, c2 port 3112; one `next build` at a time via the lock.
-   Then: rig captures per worktree incl. /frontier → `--coverage` → full panel (3 judges + red team)
-   → score → DR → jury (Fable, order-swapped) → keeper pick → ≤3 revisions → MRs → merge decision (K3).
+1.–8. Port, rig, anchors, brief, round 1 (concept packets, panel, scores, DRs, rulings): done;
+   detail in `state-archive.md` (appended 2026-09-05) and the commit log.
+9. **Round 2 (built finalists), 2026-09-05.** c1 Dated Ledger `ui/concept-1` (JetBrains Mono), c2
+   Players Board `ui/concept-2` (Space Grotesk); 96 captures each (`/frontier` in the rig, optional),
+   coverage complete, full panel + red team, `SCORE-*-2.json` (reported: c2 54.8, c1 30.5; both have
+   critical FAILs — c2: blank never renders, tutorial overflow; c1: board 928px wide at 390, 32
+   identical cells, hard-wired empty renderer RT FM11). Both mislabel founding facts as vendor
+   claims. `knowledge/implementer-ledger.md` #1–#7, all Sonnet.
+10. Now: `DR-*-2` → jury (Fable, order-swapped, `JURY-BRIEF-UI-001.md` + `RD-*`) → comparison page →
+   keeper picks ONE → ≤3 revisions (K7) → MR-UI-001..003 → merge decision (K3). Then the Desk-order
+   note (K21, K22, Frontier data; `EN-domain-facet.md` questions to the keeper).
