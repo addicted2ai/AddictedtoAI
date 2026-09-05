@@ -1,6 +1,6 @@
 {
   "js_payload": {
-    "measured_on": "2026-09-04",
+    "measured_on": "2026-09-05",
     "budget_kb_gzipped": 150,
     "method": "gzip -9 over every <script src> a modern browser fetches (nomodule excluded) plus every inline <script> body, measured on the exported build in out/",
     "pages": {
@@ -21,20 +21,20 @@
       "/catalog": {
         "label": "table",
         "chunks_kb_gzipped": 104.8,
-        "inline_kb_gzipped": 18.4,
-        "total_kb_gzipped": 123.4,
-        "html_kb_gzipped": 35
+        "inline_kb_gzipped": 18.5,
+        "total_kb_gzipped": 123.5,
+        "html_kb_gzipped": 35.2
       }
     }
   },
   "design_verification": {
-    "date": "2026-09-04",
+    "date": "2026-09-05",
     "pass": true,
     "failures": 0,
     "checks": 46
   },
   "analytics_local": {
-    "date": "2026-09-04",
+    "date": "2026-09-05",
     "base": "http://localhost:3212",
     "measurement_id": "G-KJPHKYL3XL",
     "pages_tested": [
