@@ -245,7 +245,22 @@ the second (`renderFetchLine`, stated once above the table, the row rendered at
 unboxed `--muted` text, and the per-row mark is dropped or muted, with full weight kept
 for a row whose value genuinely differs. The board itself, being sixteen rows of seven
 columns, is a rule-REQUIRED surface by R8's own test above, and now carries the row
-rule its test demands. `S17` samples `/frontier` as its fourth surface. From iter-01 S2
+rule its test demands. `S17` samples `/frontier` as its fourth surface.
+*Round-3 addendum (RD-003 fixes 2 and 3; F-hier-11, F-sys-3-1).* Two clauses of this rule,
+read together, decided the same round twice. (i) The home Frontier door inherited the board's
+row rule along with its lead-pair weight; three near-uniform rows of nothing but links are the
+FORBIDDEN side of R8's own test, so the rule between them is gone and only the door block's
+single boundary `border-top` — which this rule's text permits, drawn once — remains. `S2` now
+asserts BOTH directions on route `/`: the ragged changed feed must carry the rule, the door
+must not. (ii) Dropping a default-state mark is not the same as dropping what it SAID. The
+de-chipped "claimed · unverified" state left the word 'unverified' nowhere on `/frontier` but
+its column header, and the 90%-repeated-value branch that was to state it once never fires at
+the shipped 3-of-16 split. So: where this rule removes or mutes a per-row mark that carried a
+DISCLOSURE (who said it, whether anyone checked it), the disclosure is restated ONCE above the
+surface in words, in the first viewport, at every declared viewport and in both themes — the
+same 'state the collection constant once above the table' mechanism, in prose rather than as a
+chip. Enforced by `tools/ui-invariants.mjs` id `S25`.
+From iter-01 S2
 (`iter-00-a` I3 / `iter-00-b` I2, filed independently by
 both judges); the row-rule half amended iter-03. Applied by the test above: `/catalog`'s
 table rows (396 rows x 7 columns) and the home changed-feed entries (ragged heights from

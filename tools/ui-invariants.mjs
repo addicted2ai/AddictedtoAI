@@ -179,7 +179,7 @@ const INVARIANTS = [
     intent: "a list row carries a rule between siblings where the surface demands cross-row tracking (a wide multi-column table, or ragged entry heights) and none where it does not (a link index of near-uniform single-line rows); a status badge is boxed only when its tone differs from the default — RULES.md R8's surface test, amended iter-03 from the earlier blanket ban",
     independent: "getComputedStyle border widths read from actually-rendered rows on each of the five surfaces the diagnostic split covers (a mid-table /catalog row and its header, a mid-feed home changed-feed entry, and a mid-list .browse-row on each of /wiki, /data, /tools) plus a toneless and an 'ended' badge on /catalog — not the CSS source that declares any of it",
     falsifier: {
-      brokenBy: "FOUR episodes, the last with three sub-breaks. (1) iter-01: the first cut of `.badge:not([data-tone])` set only `border-color: transparent`, which keeps a 1px border BOX (just invisible) — this shipped briefly and the check caught it for real, unprompted, before any deliberate break; fixed by using `border: none` instead. (2) iter-01: deliberately re-added `border-bottom: 1px solid var(--rule)` to `.data-table th, .data-table td` (at a time when R8 still forbade it everywhere). (3) iter-02 round 3: once the harness gained a declared `viewports` array and started actually running S2 at 390x844, it caught a rule between every pair of stacked mobile catalog records — the same then-forbidden shape relocated into the new mobile layout. (4) iter-03, run live, BOTH directions required by IMPLEMENT.md now that R8 is surface-conditioned rather than a blanket ban, plus one extra sub-case: (4a) removed `border-bottom` from both `#catalog-table tbody tr` AND `.rail-changes > .rail-item` at once (the iter-03 restoration undone) to confirm the check catches a rule MISSING where the test now requires it — then, with only `#catalog-table tbody tr` restored, re-ran to isolate the home-feed failure independently of the catalog one. (4b) with both restorations back, added `border-bottom: 1px solid var(--rule)` to `.browse-row` to confirm the check catches a rule PRESENT where the test forbids it. (4c) restored `.browse-row`, then removed the explicit `border-bottom: none` override on `#catalog-table tbody tr` inside the `max-width: 33.999rem` block, to confirm the check also catches the desktop rule leaking into the 390px stacked-record layout — the exact shape iter-02 round 3 (episode 3 above) already found wrong once.",
+      brokenBy: "FOUR episodes, the last with three sub-breaks. (1) iter-01: the first cut of `.badge:not([data-tone])` set only `border-color: transparent`, which keeps a 1px border BOX (just invisible) — this shipped briefly and the check caught it for real, unprompted, before any deliberate break; fixed by using `border: none` instead. (2) iter-01: deliberately re-added `border-bottom: 1px solid var(--rule)` to `.data-table th, .data-table td` (at a time when R8 still forbade it everywhere). (3) iter-02 round 3: once the harness gained a declared `viewports` array and started actually running S2 at 390x844, it caught a rule between every pair of stacked mobile catalog records — the same then-forbidden shape relocated into the new mobile layout. (4) iter-03, run live, BOTH directions required by IMPLEMENT.md now that R8 is surface-conditioned rather than a blanket ban, plus one extra sub-case: (4a) removed `border-bottom` from both `#catalog-table tbody tr` AND `.rail-changes > .rail-item` at once (the iter-03 restoration undone) to confirm the check catches a rule MISSING where the test now requires it — then, with only `#catalog-table tbody tr` restored, re-ran to isolate the home-feed failure independently of the catalog one. (4b) with both restorations back, added `border-bottom: 1px solid var(--rule)` to `.browse-row` to confirm the check catches a rule PRESENT where the test forbids it. (4c) restored `.browse-row`, then removed the explicit `border-bottom: none` override on `#catalog-table tbody tr` inside the `max-width: 33.999rem` block, to confirm the check also catches the desktop rule leaking into the 390px stacked-record layout — the exact shape iter-02 round 3 (episode 3 above) already found wrong once. (5) RD-003 fix 3, the home Frontier door added to the forbidden side [OBSERVED: check failed \"/ @1440x900: the home Frontier door must not carry a rule between its rows (RULES.md R8 — three near-uniform rows of nothing but links; the links already carry the row's signal) but has 1px\"; restored, rebuilt tree passes S2]: `--only S2 --break \".frontier-door-row{border-bottom:1px solid var(--rule) !important}\"` restores exactly the rule RD-002 fix 3 gave the door and F-hier-11 filed against — the OPPOSITE half is already live on the same route and the same run, the changed feed's required rule, so R8's two directions are exercised on one surface.",
       observed: '(4a) first run (both surfaces broken at once): check failed "/catalog @1440x900: mid-table row requires a border-bottom rule (RULES.md R8 — 396 rows x 7 columns needs cross-row tracking) but has none (0px)" — the harness stops at the first failing route, so a second run with only `#catalog-table tbody tr` restored was needed to see the home-feed failure on its own: check failed "/ @1440x900: mid-feed changed entry requires a border-bottom rule (RULES.md R8 — ragged entry heights need it) but has none (0px)". (4b) check failed "/wiki @1440x900: .browse-row must not carry a border-bottom rule (RULES.md R8 — a link index\'s rows are near-uniform, the rule would degrade the exception signal) but has 1px". (4c) check failed "/catalog @390x844: at 390px: the stacked-record layout must not carry a per-row rule (RULES.md R8 / R12 — padding and the record\'s own name heading are the anchor there) but has one (1px)" (the doubled "@390x844 ... at 390px:" is the harness\'s route/viewport prefix plus the check\'s own — same cosmetic doubling already noted on S6, harmless). All breaks restored in sequence and confirmed byte-identical to the pre-break file; rebuilt tree passes all five routes at both declared viewports (see episode-1/2/3 observations above for those, preserved unchanged).',
       brokenByOpposite: 'iter-06: every episode above tests the ROW-RULE clause (required present / forbidden present, both directions, across five routes). The badge clause has its own two ends and only ONE was ever exercised (episode 1: a default/toneless badge that stayed visibly boxed despite `border-color:transparent`). The OTHER end — an exceptional-tone badge (`data-tone="ended"`) losing its box, which the collection\'s de-chipping logic exists specifically NOT to do — had never been deliberately broken. `--only S2 --break ".badge[data-tone=\\"ended\\"] { border: none !important; }"`.',
       observedOpposite: 'check failed "/catalog @1440x900: an \'ended\'-status badge lost its box (0px border)". Restored; rebuilt tree (full gate) passes S2 at both declared viewports.',
@@ -227,11 +227,30 @@ const INVARIANTS = [
           if (items.length < 3) return { error: 'fewer than 3 changed-feed entries rendered' };
           const mid = items[Math.floor(items.length / 2)];
           const border = parseFloat(getComputedStyle(mid).borderBottomWidth);
-          return { border };
+          // RD-003 fix 3 (F-hier-11). The SAME surface, the other side of R8's
+          // test: the Frontier door is three near-uniform rows of nothing but
+          // links, so the rule is FORBIDDEN there exactly as it is on
+          // `.browse-row` below — while the ragged changed feed above needs
+          // it. Both directions of R8 are therefore asserted on one route, on
+          // two blocks sitting in the same rail, which is what makes this a
+          // test of the RULE rather than of a selector list. The door's own
+          // `border-top` (the group container's boundary mark, drawn once) is
+          // permitted by R8's text and is not what is measured.
+          const doorRows = document.querySelectorAll('.frontier-door-row');
+          const doorBorder = doorRows.length
+            ? Math.max(...[...doorRows].map((d) => parseFloat(getComputedStyle(d).borderBottomWidth) || 0))
+            : null;
+          return { border, doorRows: doorRows.length, doorBorder };
         });
         if (r.error) return r.error;
         if (!(r.border > 0)) {
           return `mid-feed changed entry requires a border-bottom rule (RULES.md R8 — ragged entry heights need it) but has none (${r.border}px)`;
+        }
+        if (r.doorRows < 2) {
+          return `fewer than 2 .frontier-door-row rows rendered on / — R8's forbidden-side clause would be vacuous`;
+        }
+        if (r.doorBorder > 0) {
+          return `the home Frontier door must not carry a rule between its rows (RULES.md R8 — three near-uniform rows of nothing but links; the links already carry the row's signal) but has ${r.doorBorder}px`;
         }
         return true;
       }
@@ -1774,14 +1793,14 @@ const INVARIANTS = [
   },
   {
     id: 'S22', rule: 'R13',
-    intent: "RD-002 fixes 1 and 2 — the players board states only what it can source. THREE clauses. (a) IDENTITY: no cited fact belonging to an ORGANISATION record appears anywhere in /frontier's rendered text. The VENDOR CLAIM cell used to fall back from the model's own cited fact to the ORG's (`firstCitedFact(modelDoc) ?? firstCitedFact(org)`), so NVIDIA's company founding date and founders rendered under 'claimed · unverified' inside a MODEL's row — a fact about a company stamped as a claim about a model (F-sys-2-7, RT FM1; BRIEF R-B). The fallback is removed; this clause is what makes the removal permanent, and it is stated over the ORG CORPUS rather than over a list of forbidden words, so a founding date added to any org record tomorrow is caught the same way. (b) HONESTY REACHABLE: at least one hatched cell renders on shipped data, at 1440 AND at 390 — the concept's whole bet is that a board of honest blanks persuades, and the captured board rendered ZERO of them because the fallback laundered org trivia into the one column most likely to be empty (F-sys-2-3, RT FM2). (c) NO CELL CLIPPED: every vendor-claim cell renders on exactly ONE line and, where its text is wider than its box, is ellipsised — sixteen cells were cut mid-word at 1440 with nothing in frame saying content continued (F-hier-6, F-struct-5).",
+    intent: "RD-002 fixes 1 and 2 — the players board states only what it can source. THREE clauses. (a) IDENTITY: no cited fact belonging to an ORGANISATION record appears anywhere in /frontier's rendered text. The VENDOR CLAIM cell used to fall back from the model's own cited fact to the ORG's (`firstCitedFact(modelDoc) ?? firstCitedFact(org)`), so NVIDIA's company founding date and founders rendered under 'claimed · unverified' inside a MODEL's row — a fact about a company stamped as a claim about a model (F-sys-2-7, RT FM1; BRIEF R-B). The fallback is removed; this clause is what makes the removal permanent, and it is stated over the ORG CORPUS rather than over a list of forbidden words, so a founding date added to any org record tomorrow is caught the same way. (b) HONESTY REACHABLE: at least one hatched cell renders on shipped data, at 1440 AND at 390 — the concept's whole bet is that a board of honest blanks persuades, and the captured board rendered ZERO of them because the fallback laundered org trivia into the one column most likely to be empty (F-sys-2-3, RT FM2). (c) NO CELL CLIPPED: every vendor-claim cell renders on exactly ONE line and, where its text is wider than its box, is ellipsised — sixteen cells were cut mid-word at 1440 with nothing in frame saying content continued (F-hier-6, F-struct-5). (d) ALLOW-LIST, added RD-003 fix 1 (RT FM-N1 + FM-N2): the column admits only a QUANTIFIED cited claim about the row's own model, so no cited fact on an EXCLUDED field — every positioning/description field (`vendor_description`, `vendor_role`, `tier_role`, `generation_claim`, `architecture`, `structure`, `quantization`, `distilled_from`, `open_weights`, `local_hardware`, `contributor_tier_terms`, the free-access windows) and every record-metadata field (`release_date`, `license`, `parameters`, `listed_date`, `version`, `api_sunset`, `knowledge_cutoff`, `expiration_date`, prices, sizes) — may render inside a `.board-claim` cell, and every claim that DOES render carries a digit. Stated over the MODEL CORPUS with the clause's OWN denied-field list, exactly as (a) is stated over the org corpus: widening the render module's allow-list does not widen this gate, which is the whole reason FM-N1 shipped (a regex over field NAMES admitted `vendor_description` on the same terms as a benchmark score). Two-sided: an allow-list narrowed until the column carries NO claim at all is the opposite excess — a claim column that never states a claim — and fails too.",
     independent: "for (a) the cited facts read out of content/wiki/org/*.md — the corpus itself, not the render module and not the page's own markup; for (b) and (c) getBoundingClientRect, scrollWidth/clientWidth and Range-measured text line boxes read live off the rendered board, never a CSS token or a declared column count",
     falsifier: {
-      brokenBy: "THREE breaks. (a) restored the removed org fallback in lib/render/frontier.mjs (`vendorClaimFact(modelDoc) ?? firstCitedFact(org)`) and rebuilt — a render-logic change --break cannot reach, the mechanism this registry already uses for S14/S17/S18/S21. (b) `--only S22 --break \"#frontier-board .board-hatch{background-image:none !important}\"` — removes the hatch MARK from every blank cell while leaving the cells, their text and their classes exactly where they are, so the clause is exercised on what a reader sees rather than on what the renderer emitted; reproduces RT FM2's zero-hatch board. (c) `--only S22 --break \".board-claim,.board-claim .claim-line{text-overflow:clip !important}\"` — still capped, but clipped by its own box with nothing in frame saying content continues.",
-      observed: '(a) check failed "/frontier @1440x900: an ORGANISATION record\'s own cited fact is rendered on /frontier: “Qwen, launched in beta April 2023 as Tongyi Qianwen and opened to the public in September 2023” (content/wiki/org/alibaba-cloud.md)" — the same class of defect RT FM1 measured on NVIDIA, caught on a different org because the clause reads the whole corpus rather than one named fact. (b) check failed "/frontier @1440x900: the board renders ZERO hatched cells on shipped data" — RT FM2\'s exact reading. (c) check failed "/frontier @1440x900: a vendor-claim cell is clipped with no ellipsis (“59 at high reasoning, 57 at medium, 52 at low; up 3 from Gem…”)". RECORDED HONESTLY: the FIRST attempt at (c) broke with max-width:none;overflow:visible;text-overflow:clip and did NOT fire (0 of 1) — informative, not a defect in the check: removing the cap does not make the CELL clip, it makes the cell grow and the TABLE overrun its container, which is S22b\'s clause, not this one; the break had moved the violation to a different check. All three restored; rebuilt tree passes S22 at both declared viewports.',
-      brokenByOpposite: "clauses (b) and (c) bound a quantity and have a real other end, so they get one. (b) from the other end — `--only S22 --break \"#frontier-board .board-cell{background-image:repeating-linear-gradient(45deg,var(--rule) 0,var(--rule) 1px,transparent 1px,transparent 7px) !important}\"`: EVERY cell hatched, RT FM4's predicted failure (the hatch dominating the board) rather than none of them, which a floor-only formula passes trivially. (c) from the other end — `--only S22 --break \"#frontier-board .board-claim{max-width:1px !important}\"`: a cell capped so hard it carries no readable text at all, the opposite excess of the uncapped cell, which a 'not clipped without an ellipsis' formula also passes trivially.",
-      observedOpposite: 'check failed "/frontier @1440x900: 96 of 96 board value cells render the hatch (100.0%) — a board that can source almost nothing is the opposite excess of one that hides its blanks, and states as little (RT FM4\'s predicted failure)". Restored; rebuilt tree passes S22.',
-      oneSidedBecause: "clause (a) alone is a PROHIBITION over a corpus (no org-record fact may appear on this route) and has one direction by construction — there is no 'too few org facts on /frontier'. It is declared rather than given a manufactured second end, per this registry's own rule at S20. Clauses (b) and (c) are two-sided and are broken from both ends above.",
+      brokenBy: "THREE breaks. (a) restored the removed org fallback in lib/render/frontier.mjs (`vendorClaimFact(modelDoc) ?? firstCitedFact(org)`) and rebuilt — a render-logic change --break cannot reach, the mechanism this registry already uses for S14/S17/S18/S21. (b) `--only S22 --break \"#frontier-board .board-hatch{background-image:none !important}\"` — removes the hatch MARK from every blank cell while leaving the cells, their text and their classes exactly where they are, so the clause is exercised on what a reader sees rather than on what the renderer emitted; reproduces RT FM2's zero-hatch board. (c) `--only S22 --break \".board-claim,.board-claim .claim-line{text-overflow:clip !important}\"` — still capped, but clipped by its own box with nothing in frame saying content continues. (d) added `'vendor_description'` to `CLAIM_FIELDS_BENCHMARK` in lib/render/frontier.mjs and rebuilt — a render-logic change --break cannot reach, the same mechanism (a) uses, and the exact shipped shape RT FM-N1 measured (x-ai's newest row carrying SpaceXAI's marketing sentence in the claim cell).",
+      observed: '(a) check failed "/frontier @1440x900: an ORGANISATION record\'s own cited fact is rendered on /frontier: “Qwen, launched in beta April 2023 as Tongyi Qianwen and opened to the public in September 2023” (content/wiki/org/alibaba-cloud.md)" — the same class of defect RT FM1 measured on NVIDIA, caught on a different org because the clause reads the whole corpus rather than one named fact. (b) check failed "/frontier @1440x900: the board renders ZERO hatched cells on shipped data" — RT FM2\'s exact reading. (c) check failed "/frontier @1440x900: a vendor-claim cell is clipped with no ellipsis (“59 at high reasoning, 57 at medium, 52 at low; up 3 from Gem…”)". RECORDED HONESTLY: the FIRST attempt at (c) broke with max-width:none;overflow:visible;text-overflow:clip and did NOT fire (0 of 1) — informative, not a defect in the check: removing the cap does not make the CELL clip, it makes the cell grow and the TABLE overrun its container, which is S22b\'s clause, not this one; the break had moved the violation to a different check. (d) FIRST attempt reported 0 of 1 fired and is recorded, not hidden: adding `vendor_description` to the allow-list ALONE does not restore the defect, because `claimRank` also refuses a value with no digit in it and SpaceXAI\'s sentence has none — two independent guards, and the break had only removed one. Re-broken with both removed (the field allow-listed AND the digit test commented out): check failed "/frontier @1440x900: a vendor-claim cell renders a cited fact on the EXCLUDED field “vendor_description” (content/wiki/model/x-ai-grok-4-6.md): “SpaceXAI\'s smartest model with frontier performance on codin”" — RT FM-N1\'s shipped row, reproduced exactly. All four restored; rebuilt tree passes S22 at both declared viewports.',
+      brokenByOpposite: "clauses (b) and (c) bound a quantity and have a real other end, so they get one. (b) from the other end — `--only S22 --break \"#frontier-board .board-cell{background-image:repeating-linear-gradient(45deg,var(--rule) 0,var(--rule) 1px,transparent 1px,transparent 7px) !important}\"`: EVERY cell hatched, RT FM4's predicted failure (the hatch dominating the board) rather than none of them, which a floor-only formula passes trivially. (c) from the other end — `--only S22 --break \"#frontier-board .board-claim{max-width:1px !important}\"`: a cell capped so hard it carries no readable text at all, the opposite excess of the uncapped cell, which a 'not clipped without an ellipsis' formula also passes trivially. (d) from the other end — both allow-list sets emptied in lib/render/frontier.mjs and rebuilt: nothing at all clears the bar, every one of the sixteen claim cells is the hatched blank, and a prohibition-only formula ('no excluded field renders') passes that perfectly while the column states nothing. The clause requires at least one real claim as well.",
+      observedOpposite: 'check failed "/frontier @1440x900: 96 of 96 board value cells render the hatch (100.0%) — a board that can source almost nothing is the opposite excess of one that hides its blanks, and states as little (RT FM4\'s predicted failure)". (d) from the other end: both allow-list Sets emptied and rebuilt — check failed "/frontier @1440x900: the VENDOR CLAIM column renders ZERO claims across 16 rows — an allow-list narrowed until nothing qualifies states as little as one that admits marketing copy, and a prohibition-only clause passes it trivially". RECORDED, RD-003: clause (c)\'s OWN narrow-cap opposite (`#frontier-board .board-claim{max-width:1px}`) does NOT reproduce under the corrected line-box measurement below, and re-measurement shows it never violated the property: a table cell floors at its content\'s own minimum, so the claim cell still rendered 116.5px wide against the board\'s narrowest other value column at 85.5px, and `table-layout:fixed` with `width:1px` widened every column to 164.6px instead of narrowing this one. The break moves the layout, not the property. A width clause added for it was written, found unfalsifiable for that reason, and REMOVED rather than kept green — (c)\'s real second end is the wrap break recorded above. Restored; rebuilt tree passes S22.',
+      oneSidedBecause: "clause (a) alone is a PROHIBITION over a corpus (no org-record fact may appear on this route) and has one direction by construction — there is no 'too few org facts on /frontier'. It is declared rather than given a manufactured second end, per this registry's own rule at S20. Clauses (b), (c) and (d) are two-sided and are broken from both ends above — (d)'s prohibition half shares (a)'s shape, but its 'at least one claim renders' half gives the pair a real other end that a corpus prohibition alone does not have.",
     },
     kind: 'dom', routes: ['/frontier'], viewports: [[1440, 900], [390, 844]],
     check: async ({ page }) => {
@@ -1843,16 +1862,36 @@ const INVARIANTS = [
           // S17 post-mortems each record once. Rects are bucketed to the
           // cell's own line height instead, so only a genuine wrap counts.
           const lineHeight = parseFloat(getComputedStyle(cell).lineHeight) || 16;
-          const tops = new Set(
-            [...range.getClientRects()]
-              .filter((r) => r.height > 0)
-              .map((r) => Math.round(r.top / Math.max(8, lineHeight * 0.75))),
-          );
+          // MEASUREMENT DEFECT FOUND AND FIXED, RD-003 (recorded, not quietly
+          // patched — the registry's own S1/S18 precedent). Bucketing by
+          // `Math.round(top / bucket)` divides ABSOLUTE PAGE coordinates into
+          // fixed bins, so whether two rects 1.0px apart (the same line box,
+          // read at two font sizes — the claim text at --step-0 and its `.src`
+          // link and <time> at --step--1) land in one bin depends on where the
+          // ROW happens to sit down the document. Shipped live this round: the
+          // identical cell measured ONE line at 1440 (tops 519.36/520.36, bin
+          // 34 both) and TWO at 390 (tops 701.97/702.97, bins 46 and 47) with
+          // a 32.3px cell and a 20.15px line height at both — the page was
+          // never wrong, the bin edge moved under it. Clustered by DISTANCE
+          // instead: a rect joins an existing line box if its top is within
+          // 60% of the line height of it. A genuine wrap is a full line height
+          // away and still counts.
+          const rectTops = [...range.getClientRects()].filter((r) => r.height > 0).map((r) => r.top).sort((a, b) => a - b);
+          const tolerance = Math.max(6, lineHeight * 0.6);
+          const lineBoxes = [];
+          for (const t of rectTops) if (!lineBoxes.length || t - lineBoxes[lineBoxes.length - 1] > tolerance) lineBoxes.push(t);
+          const tops = { size: lineBoxes.length };
           claims.push({
             lines: tops.size,
             clipped: line.scrollWidth > line.clientWidth + 1 || cell.scrollWidth > cell.clientWidth + 1,
             ellipsis: cs.textOverflow === 'ellipsis' || lineStyle.textOverflow === 'ellipsis',
             text: cell.textContent.trim().slice(0, 60),
+            // RD-003 clause (d) reads the WHOLE cell, and the `title` the
+            // claim line carries the unelided value in — an ellipsised cell's
+            // textContent is still the full string, but the title is what a
+            // reader can actually recover, so both are compared.
+            full: `${cell.textContent.trim()} ${(line.getAttribute && line.getAttribute('title')) || ''}`.replace(/\s+/g, ' '),
+            hatched: cell.classList.contains('board-hatch'),
           });
         }
         return { hatched, claims, valueCells: valueCells.length };
@@ -1867,6 +1906,61 @@ const INVARIANTS = [
       if (dom.valueCells && dom.hatched / dom.valueCells > 0.9) {
         return `${dom.hatched} of ${dom.valueCells} board value cells render the hatch (${((dom.hatched / dom.valueCells) * 100).toFixed(1)}%) — a board that can source almost nothing is the opposite excess of one that hides its blanks, and states as little (RT FM4's predicted failure)`;
       }
+      // (d) ALLOW-LIST (RD-003 fix 1, RT FM-N1 + FM-N2). The excluded values
+      // are re-derived from the MODEL CORPUS against this clause's OWN denied
+      // list — never imported from lib/render/frontier.mjs, because the defect
+      // this catches IS someone widening that module's allow-list. A denied
+      // field's value reaching a claim cell fails; so does an allow-list
+      // narrowed until no claim renders at all.
+      const DENIED_CLAIM_FIELDS = new Set([
+        // positioning / description — vendor adjectives, not measurements
+        'vendor_description', 'vendor_role', 'tier_role', 'generation_claim',
+        'architecture', 'structure', 'quantization', 'distilled_from',
+        'open_weights', 'local_hardware', 'contributor_tier_terms',
+        'free_access_window', 'hy3_free_extension', 'base_model',
+        // record metadata — true of the record, not claimed of the model
+        'release_date', 'listed_date', 'version', 'license', 'parameters',
+        'preview_parameters', 'api_sunset', 'knowledge_cutoff', 'status',
+        'expiration_date', 'introductory_pricing_ends', 'default_reasoning_effort',
+        'reasoning_on_by_default', 'reasoning_mandatory', 'repository_tensor_total',
+        'hidden_size', 'layers', 'max_position_embeddings', 'max_output_tokens',
+        'context_window', 'price_input', 'price_output', 'price_cache_read',
+        'price_internal_reasoning', 'list_price_input', 'list_price_output',
+      ]);
+      const modelDir = join(ROOT, 'content', 'wiki', 'model');
+      const modelFiles = await readdir(modelDir);
+      const deniedValues = [];
+      for (const f of modelFiles) {
+        if (!f.endsWith('.md')) continue;
+        const text = await rf(join(modelDir, f), 'utf8');
+        const blocks = text.split(/\n\s*- field:/).slice(1);
+        for (const b of blocks) {
+          const fm = b.match(/^\s*([A-Za-z0-9_]+)/);
+          if (!fm || !DENIED_CLAIM_FIELDS.has(fm[1])) continue;
+          if (!/\n\s*source:\s*cited\b/.test(b)) continue;
+          const m = b.match(/\n\s*value:\s*"?([^"\n]+?)"?\s*\n/);
+          if (m && m[1].trim().length >= 12) deniedValues.push({ file: f, field: fm[1], value: m[1].trim() });
+        }
+      }
+      if (deniedValues.length < 1) {
+        return 'no cited facts on any denied field found in content/wiki/model — clause (d) would be vacuous, which is the green-and-wrong failure this harness exists to refuse';
+      }
+      const rendered = dom.claims.filter((c) => !c.hatched);
+      for (const c of rendered) {
+        for (const d of deniedValues) {
+          const needle = d.value.replace(/\s+/g, ' ').slice(0, 60);
+          if (needle.length >= 12 && c.full.includes(needle)) {
+            return `a vendor-claim cell renders a cited fact on the EXCLUDED field "${d.field}" (content/wiki/model/${d.file}): "${needle}" — the column admits only a quantified capability or benchmark claim, by allow-list, never a positioning line or record metadata (RT FM-N1)`;
+          }
+        }
+        if (!/\d/.test(c.full)) {
+          return `a vendor-claim cell renders text with no quantity in it ("${c.text}…") — an unquantified sentence at the ink weight of the fed price columns is the vendor's positioning, not a claim this board can compare (RT FM-N1)`;
+        }
+      }
+      if (rendered.length < 1) {
+        return `the VENDOR CLAIM column renders ZERO claims across ${dom.claims.length} rows — an allow-list narrowed until nothing qualifies states as little as one that admits marketing copy, and a prohibition-only clause passes it trivially`;
+      }
+
       // (c) NO CELL CLIPPED.
       for (const c of dom.claims) {
         if (c.lines > 1) return `a vendor-claim cell renders on ${c.lines} lines ("${c.text}…") — the cell is capped to one ellipsised line`;
@@ -1927,6 +2021,93 @@ const INVARIANTS = [
         return `the board's rightmost column stops ${shortfall.toFixed(1)}px short of its container's right edge (${r.nearestRight.toFixed(1)}px vs ${r.wrapRight.toFixed(1)}px) — a container held open beside nothing, the opposite excess of the overrun above`;
       }
       return true;
+    },
+  },
+  {
+    id: 'S25', rule: 'R8',
+    intent: "RD-003 fix 2 (JV-sys F-sys-3-1, with F-sys-3-3; BRIEF R-B — vendor language only verbatim, ATTRIBUTED and LABELLED). RD-002 removed the per-row \"claimed · unverified\" chip, correctly: a mark on 16 of 16 rows is the collection default and R8 forbids boxing it. But nothing took over its WORDS, and the >90% branch that was meant to state them once never fires at the shipped 3/16 split, so the word 'unverified' survived only inside the column header while three vendor sentences sat at the ink weight of the fed price columns beside them. R8's own answer to a state every row shares is to state it ONCE above the surface; this check asserts the words are there, in the first viewport, at BOTH declared viewports and in BOTH themes: an /frontier lede element states, in words a reader meets before the board, that the claims are the vendor's own and NOT VERIFIED by this site, and that a blank means no claim on file. Checked as rendered geometry and rendered text, not as a string in a template: a sentence pushed below the fold at 390, or reduced to the same colour as its background in one theme, is not a label.",
+    independent: "document.body.innerText and getBoundingClientRect on the built page at each declared viewport, with data-theme stamped to each of light and dark in turn and the resolved colours read back from getComputedStyle — never the JSX source, the renderer's own string constants or a CSS token name",
+    falsifier: {
+      brokenBy: "TWO breaks. (i) `--only S25 --break \".board-lede{display:none !important}\"` — the sentence removed entirely, which is the shipped pre-RD-003 state: 'unverified' nowhere on the route but the column header. (ii) `--only S25 --break \".board-lede{position:absolute !important;top:4000px !important}\"` — the sentence present in the DOM and in innerText, but 4,000px down the document, so a reader meets the three vendor sentences first and the label never. A check that only asked 'does the page contain the words' passes (ii) perfectly.",
+      observed: '(i) check failed "/frontier @1440x900: [light] the /frontier lede is present in the DOM but not rendered (display none, visibility visible, opacity 1, height 0)". (ii) check failed "/frontier @1440x900: [light] the /frontier lede is outside the first viewport (top 4000.0px, bottom 4040.3px, viewport 900px) — a reader meets the vendor\'s sentences before the label saying nobody checked them". Restored; the real gate passes S25 at 1440 (lede top 268.2px, bottom 308.5px of 900) and at 390 (top 398.4px, bottom 458.8px of 844).',
+      brokenByOpposite: "The clause bounds a POSITION and a legibility, and both have a real other end: present, in frame, and unreadable is the opposite excess of absent, and a 'the words are on screen' formula passes it perfectly. Broken ONCE PER THEME, with the ground each theme actually paints, so the theme half of this check is exercised rather than declared: `--break \".board-lede{color:rgb(246,246,248) !important}\"` (the LIGHT ground) and `--break \".board-lede{color:rgb(20,22,28) !important}\"` (the DARK ground). A `color:var(--bg)` break was tried first and reported 0 of 1 fired — informative, not a defect: `--bg` is not the token the page's ground resolves from, so the break never made the text match its background.",
+      observedOpposite: 'Light: check failed "/frontier @1440x900: [light] the /frontier lede renders at rgb(246, 246, 248) on rgb(246, 246, 248) — no channel differs by more than 0 — present, in frame, and unreadable". Dark: check failed "/frontier @1440x900: [dark] the /frontier lede renders at rgb(20, 22, 28) on rgb(20, 22, 28)" — each fires ONLY in its own theme, which is the evidence that both passes run. THE DARK BREAK EXPOSED A REAL DEFECT IN THIS CHECK, found by falsification and recorded rather than quietly patched: with the stamp and the measurement in one `page.evaluate` — even with a forced `offsetHeight` reflow, and then with two `requestAnimationFrame`s — the dark pass read the LIGHT ground (`data-theme="dark"` stamped, `--paper` already resolving to #14161c on :root, `background-color` still rgb(246, 246, 248)), so the dark break reported 0 of 1 fired and the check was theme-aware in prose only. Fixed by stamping and measuring in two round trips with an explicit settle between them. Restored; the real gate passes S25 in both themes at both viewports.',
+    },
+    kind: 'dom', routes: ['/frontier'], viewports: [[1440, 900], [390, 844]],
+    check: async ({ page }) => {
+      // the page's own stamp, restored before returning so this check leaves
+      // the document exactly as it found it for whatever runs next
+      const stamped = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+      let verdict = true;
+      for (const theme of ['light', 'dark']) {
+        // The stamp and the MEASUREMENT are two separate round trips with two
+        // animation frames between them. Doing both in one `evaluate` — even
+        // with a forced `offsetHeight` reflow — measured the PRE-RECALC frame
+        // on the theme swap and is exactly the intermittent-falsifier defect
+        // IMPLEMENT.md records: with `data-theme="dark"` stamped and
+        // `--paper` already resolving to #14161c on :root, `background-color`
+        // still read rgb(246, 246, 248), so an injected dark-ground break
+        // reported 0 of 1 fired — a check that looked theme-aware and was not.
+        // Found by falsification, not by review.
+        await page.evaluate(async (t) => {
+          document.documentElement.setAttribute('data-theme', t);
+          await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        }, theme);
+        // ...and two rAFs were NOT enough on their own in headless Chromium:
+        // with them alone the dark pass still read the light ground. The
+        // explicit settle is what makes the theme half of this check real.
+        await page.waitForTimeout(120);
+        const r = await page.evaluate(() => {
+          const lede = document.querySelector('.board-lede');
+          if (!lede) return { error: 'no .board-lede element on /frontier' };
+          const cs = getComputedStyle(lede);
+          const rect = lede.getBoundingClientRect();
+          // the nearest ancestor that actually paints a background
+          let bg = 'rgba(0, 0, 0, 0)';
+          for (let n = lede; n; n = n.parentElement) {
+            const c = getComputedStyle(n).backgroundColor;
+            if (c && !/rgba\(0, 0, 0, 0\)|transparent/.test(c)) { bg = c; break; }
+          }
+          const px = (c) => (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+          return {
+            text: lede.innerText.replace(/\s+/g, ' ').trim(),
+            top: rect.top, bottom: rect.bottom, height: rect.height,
+            visibility: cs.visibility, display: cs.display, opacity: parseFloat(cs.opacity),
+            fg: px(cs.color), bg: px(bg),
+            vh: window.innerHeight,
+            fence: lede.closest('[data-derived]')?.getAttribute('data-derived') ?? lede.getAttribute('data-derived') ?? null,
+          };
+        });
+        if (r.error) { verdict = r.error; break; }
+        const lower = r.text.toLowerCase();
+        if (!lower.includes('not verified')) {
+          { verdict = `[${theme}] the /frontier lede does not say "not verified" ("${r.text.slice(0, 70)}…") — the words the removed chip carried have to land somewhere a reader reads`; break; }
+        }
+        if (!lower.includes('verbatim')) {
+          { verdict = `[${theme}] the /frontier lede does not say the claims are quoted verbatim from the vendor — attribution is half of BRIEF R-B, the label is the other half`; break; }
+        }
+        if (!lower.includes('no claim on file')) {
+          { verdict = `[${theme}] the /frontier lede does not say what a blank means — most of the board's rows ARE the blank, and an unexplained blank reads as an omission rather than as the board's own statement`; break; }
+        }
+        if (r.fence !== 'frontier-board') {
+          { verdict = `[${theme}] the /frontier lede's counts sit outside the data-derived fence (data-derived=${r.fence}) — every digit on this route lives inside a frontier-<rail> element`; break; }
+        }
+        if (r.display === 'none' || r.visibility === 'hidden' || !(r.opacity > 0) || !(r.height > 0)) {
+          { verdict = `[${theme}] the /frontier lede is present in the DOM but not rendered (display ${r.display}, visibility ${r.visibility}, opacity ${r.opacity}, height ${r.height})`; break; }
+        }
+        if (!(r.bottom > 0 && r.top < r.vh)) {
+          { verdict = `[${theme}] the /frontier lede is outside the first viewport (top ${r.top.toFixed(1)}px, bottom ${r.bottom.toFixed(1)}px, viewport ${r.vh}px) — a reader meets the vendor's sentences before the label saying nobody checked them`; break; }
+        }
+        const dist = Math.max(...r.fg.map((v, i) => Math.abs(v - r.bg[i])));
+        if (!(dist > 24)) {
+          { verdict = `[${theme}] the /frontier lede renders at rgb(${r.fg.join(', ')}) on rgb(${r.bg.join(', ')}) — no channel differs by more than ${dist} — present, in frame, and unreadable, which is the opposite excess of absent`; break; }
+        }
+      }
+      await page.evaluate((t) => {
+        if (t === null) document.documentElement.removeAttribute('data-theme');
+        else document.documentElement.setAttribute('data-theme', t);
+      }, stamped);
+      return verdict;
     },
   },
   {

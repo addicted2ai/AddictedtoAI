@@ -2695,6 +2695,21 @@ body:has(#catalog-table-wrap) .site-footer {
   margin: 0 0 0.4rem;
 }
 
+/* RD-003 fix 2 (F-sys-3-1). The one sentence that says the VENDOR CLAIM
+   column carries the vendor's own words, unverified, and what a blank means.
+   It takes `.board-note`'s treatment exactly — the family's existing
+   above-the-table note, mono at --step--1 in --muted — rather than a second
+   vocabulary for the same job; it is a statement ABOUT the board, so it must
+   not read at the weight of the board's own values (F-hier-1). No colour,
+   size or spacing literal: every value is the note's. */
+.board-lede {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  margin: 0 0 0.4rem;
+  max-width: var(--measure);
+}
+
 /* F-hier-1/F-hier-4 (JV-hier): an empty cell must never outweigh a filled
    one, and the board needs ONE column set heavier than the rest as a
    first-read entry point. `.board-lead` (organisation, current model) is
@@ -2725,22 +2740,32 @@ body:has(#catalog-table-wrap) .site-footer {
   border-top: 1px solid var(--rule);
 }
 
+/* RD-003 fix 3 (JV-hier F-hier-11; RULES R8's own surface test). RD-002 fix
+   3 gave the door the board's row rule along with the board's lead-pair
+   weight. R8 puts a three-row, two-column block of nothing but links on the
+   FORBIDDEN side — the links already carry each row's signal, and a rule
+   drawn on every one of three uniform rows is chrome that dilutes what the
+   rule on /frontier's sixteen-row, seven-column board is doing real work to
+   say. The rule between the rows is gone; `.frontier-door`'s single
+   `border-top` stays — that is the group container's own boundary mark,
+   which R8's text permits drawn once. The lead-pair weight (`.board-lead`,
+   below) is what the door was asked to inherit and is unchanged. */
 .frontier-door-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0 0.75rem;
   padding: 0.45rem 0;
-  border-bottom: 1px solid var(--rule);
   font-family: var(--mono);
   font-size: var(--step--1);
 }
 
 /* RD-002 fix 3 (F-sys-2-4). The door's weight is no longer its own: both
    cells carry `.board-lead`, the board's OWN lead-pair treatment (mono at
-   700 — organisation and current model, the board's first-read entry point),
-   and the row rule above matches `#frontier-board tbody tr`. Those two
-   properties together are on no other block in this rail: CATALOG and
-   DEPRECATED beside it are ruleless lists at ordinary weight. `.absent`
+   700 — organisation and current model, the board's first-read entry point).
+   That treatment is on no other block in this rail: CATALOG and DEPRECATED
+   beside it are ordinary-weight lists. (RD-003 fix 3: the row rule that used
+   to accompany it here is gone — R8 forbids it on three uniform link rows;
+   it stays on the board, where R8's test requires it.) `.absent`
    drops back to the ordinary weight because an absence must never outweigh
    a value (F-hier-1, the board's own rule for its hatch). */
 .frontier-door-model.absent {
