@@ -35,6 +35,8 @@ evidence: >
   over the whole change log, and `benchmarks` appears nowhere in the
   `openrouter-models` entry of `data/sources/registry.json`.
 expires: 2026-09-12
+proposed_by_job: j-20260905-01
+proposed_by_type: repair
 ---
 
 Noticed while repairing the vanished `ibm-granite/granite-4.1-8b` row: the
