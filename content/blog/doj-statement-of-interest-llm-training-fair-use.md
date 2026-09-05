@@ -1,5 +1,5 @@
 ---
-title: "The United States told a federal judge that LLM training is fair use. Three of its nineteen pages go after a ruling Meta won"
+title: "The United States told a federal judge that LLM training is fair use. Three of its nineteen numbered pages go after a ruling Meta won"
 date: "2026-09-05"
 anchor:
   url: "https://storage.courtlistener.com/recap/gov.uscourts.nysd.640396/gov.uscourts.nysd.640396.1682.0.pdf"
@@ -9,7 +9,7 @@ mentions:
   - org/anthropic
 ---
 
-On 1 September the United States filed twenty pages in the consolidated OpenAI copyright cases arguing that copying a book or a news article in order to train a large language model is fair use. It states the position without hedging, twice. The heading over its central section reads "Training Of LLMs On Written Works Is Exceedingly Transformative," and the section says it again in plainer words: "In sum, the use of copies to train LLMs is extraordinarily transformative."
+On 1 September the United States filed twenty pages, nineteen of them numbered, in the consolidated OpenAI copyright cases arguing that copying a book or a news article in order to train a large language model is fair use. It states the position without hedging, twice. The heading over its central section reads "Training Of LLMs On Written Works Is Exceedingly Transformative," and the section says it again in plainer words: "In sum, the use of copies to train LLMs is extraordinarily transformative."
 
 The docket is *In re OpenAI, Inc. Copyright Infringement Litigation*, 25-md-3143 (SHS) (OTW), in the Southern District of New York before Judge Sidney Stein. Associate Attorney General Stanley E. Woodward Jr. and Assistant Attorney General Brett Shumate head the signature block, and Senior Counsel Michael Weisbuch signed it. The caption page carries the MDL number. The ECF stamp on every page carries a member-case one, Case 1:25-cv-03483-SHS-OTW, Document 316, Filed 09/01/26.
 
@@ -55,7 +55,7 @@ The second is competition, and it is pointed at the plaintiffs. If training requ
 
 ## The disclosure the filing does not make
 
-On 2 July 2026 the *Financial Times* reported, and CNN, CNBC and Forbes carried the same day, that OpenAI had discussed handing the federal government a roughly 5% equity stake, worth about $42.6 billion against the $852 billion valuation set in a March funding round. Those reports put Commerce Secretary Howard Lutnick and Treasury Secretary Scott Bessent in the discussions, described them as early-stage, and said any such arrangement would probably need Congress. Nothing has been concluded. Above the Law raised it on 3 September as a conflict the filing does not acknowledge, and that framing is Above the Law's rather than a finding anyone has made on the record.
+On 2 July 2026 the *Financial Times* reported, and CNN, CNBC, Forbes and Reuters carried the same day, that OpenAI had discussed handing the federal government a roughly 5% equity stake, worth about $42.6 billion against the $852 billion valuation set in a March funding round. CNN calls the talks "early conversations" and says any deal "might require an act of Congress to implement." For the names you have to go to the Reuters wire: "Altman has discussed the stake sale with Trump, Commerce Secretary Howard Lutnick and Treasury Secretary Scott Bessent, the FT said." Nothing has been concluded. Above the Law raised it on 3 September as a conflict the filing does not acknowledge, and that framing is Above the Law's rather than a finding anyone has made on the record.
 
 What is checkable is the document. It carries one disclaimer, footnote 2, and it is about something else entirely: that the government does not contend the conduct at issue was authorised by it or undertaken for its benefit under 28 U.S.C. § 1498. The words "equity" and "stake" do not appear in the twenty pages. Whether an unconsummated discussion of an ownership interest is the kind of thing a § 517 filing has to disclose is a question nobody has answered. It is not answered here.
 
@@ -76,7 +76,8 @@ All retrieved on 5 September 2026. Quotations of the brief come from the PDF lin
 - Associated Press via the *Boston Globe*, "Trump administration backs OpenAI in New York Times' copyright case over training of chatbots", 2 September 2026, carrying the Times statement — [bostonglobe.com](https://www.bostonglobe.com/2026/09/02/business/justice-department-new-york-times-openai/)
 - Lowenstein Sandler, "U.S. Government Backs Fair Use for AI Training in OpenAI Copyright Litigation", 3 September 2026, describing the filing as "the federal government's first direct intervention" in the AI training cases and as "not binding on the court" — [lowenstein.com](https://www.lowenstein.com/news-insights/publications/client-alerts/us-government-backs-fair-use-for-ai-training-in-openai-copyright-litigation-intellectual-property)
 - Above the Law, "DOJ Tells Court AI Training Is Fair Use, Forgets To Mention It's Negotiating A Stake In OpenAI", 3 September 2026 — [abovethelaw.com](https://abovethelaw.com/2026/09/doj-tells-court-ai-training-is-fair-use-forgets-to-mention-its-negotiating-a-stake-in-openai/)
-- CNN Business, "OpenAI in talks to give Trump administration a 5% stake in the company, FT reports", 2 July 2026 — [cnn.com](https://www.cnn.com/2026/07/02/business/openai-trump-stake-intl)
+- CNN Business, "OpenAI in talks to give Trump administration a 5% stake in the company, FT reports", 2 July 2026, source of the $42.6bn and $852bn figures, "early conversations" and the act-of-Congress line; it names neither secretary — [cnn.com](https://www.cnn.com/2026/07/02/business/openai-trump-stake-intl)
+- Reuters wire, "OpenAI discussed giving 5% stake to Trump administration, media report says", 2 July 2026, read via *The Globe and Mail*, the account that names Lutnick and Bessent — [theglobeandmail.com](https://www.theglobeandmail.com/business/international-business/us-business/article-openai-5-stake-trump-administration-us-government/)
 - Civil Rights Litigation Clearinghouse, *Perlmutter v. Blanche*, No. 1:25-cv-01659 (D.D.C.), on the 10 May 2025 removal and the 30 June 2026 Supreme Court denial — [clearinghouse.net](https://clearinghouse.net/case/46635/)
 - IPWatchdog, Eileen McDermott, "DOJ Sides with OpenAI, Warns Obstacles to AI Development Threaten National Security", 3 September 2026 — [ipwatchdog.com](https://ipwatchdog.com/2026/09/03/doj-sides-with-openai-warns-obstacles-to-ai-development-threaten-national-security/)
 - Goodwin, "Northern District of California Judge Rules That Meta's Training of AI Models Is Fair Use", on the June 2025 *Kadrey* summary-judgment ruling and its market-dilution dicta — [goodwinlaw.com](https://www.goodwinlaw.com/en/insights/publications/2025/06/alerts-practices-aiml-northern-district-of-california-judge-rules)
