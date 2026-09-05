@@ -68,17 +68,14 @@ at {{fact:model/deepseek-deepseek-v4-flash-0731#price_input}} input with an
 Artificial Analysis intelligence index of
 {{fact:model/deepseek-deepseek-v4-flash-0731#intelligence_index}}.
 
-Put that next to what the same index says about models on the other side of
-the price sheet. OpenAI's `openai/gpt-5.4`, its flagship in March 2026,
-scores {{fact:model/openai-gpt-5-4#intelligence_index}} and lists at
-{{fact:model/openai-gpt-5-4#price_input}}. Google's
-`google/gemini-3.5-flash`, from May, scores
-{{fact:model/google-gemini-3-5-flash#intelligence_index}} at
-{{fact:model/google-gemini-3-5-flash#price_input}}. Same measure, same
-snapshot, scores within about a point and a half of each other, and input
-prices that differ by more than an order of magnitude. Simon Willison, who
-runs models against his own tasks rather than against leaderboards, wrote that
-the release's pricing means this
+Put that next to what the same catalog charges on the other side of the
+price sheet. OpenAI's `openai/gpt-5.4`, its flagship in March 2026, lists at
+{{fact:model/openai-gpt-5-4#price_input}}; Google's
+`google/gemini-3.5-flash`, from May, at
+{{fact:model/google-gemini-3-5-flash#price_input}}. Same snapshot, and both
+are more than an order of magnitude above the DeepSeek row. Simon Willison,
+who runs models against his own tasks rather than against leaderboards, wrote
+that the release's pricing means this
 ["may currently be the best value-per-intelligence model out there"](https://simonwillison.net/2026/Jul/31/deepseek-v4-flash-0731/).
 
 There is a stated mechanism behind the number, not just a price decision.

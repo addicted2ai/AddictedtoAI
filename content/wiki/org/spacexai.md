@@ -79,15 +79,14 @@ million-token window or more on their current rows in the same snapshot.
 Nobody markets a context reduction; you find it by reading the rows in date
 order.
 
-What rose over those same four releases was capability and price. The
-Artificial Analysis intelligence index went from
-{{fact:model/x-ai-grok-4-3#intelligence_index}} on the April row to
-{{fact:model/x-ai-grok-4-5#intelligence_index}} in July to
-{{fact:model/x-ai-grok-4-6#intelligence_index}} in August, while the listed
-input price moved from {{fact:model/x-ai-grok-4-3#price_input}} to
-{{fact:model/x-ai-grok-4-6#price_input}}. Whatever the July architecture
-change was, it was not sold as a trade — the shorter window was never a
-headline.
+What rose while the window fell was capability and price. The listed input
+price moved from {{fact:model/x-ai-grok-4-3#price_input}} on the April row to
+{{fact:model/x-ai-grok-4-6#price_input}} in August, and the Artificial
+Analysis intelligence index the catalog carries went from
+{{fact:model/x-ai-grok-4-5#intelligence_index}} on the July row to
+{{fact:model/x-ai-grok-4-6#intelligence_index}} on the August one. Whatever
+the July architecture change was, it was not sold as a trade — the shorter
+window was never a headline.
 
 One more thing the rows record: version numbers here are not decimals.
 `x-ai/grok-4.20` was listed on 31 March and `x-ai/grok-4.3` a month later, so
