@@ -696,3 +696,17 @@ by a measurement rather than by a preference.
    `contracts/implementer.md`): c1 port 3111, c2 port 3112; one `next build` at a time via the lock.
    Then: rig captures per worktree incl. /frontier → `--coverage` → full panel (3 judges + red team)
    → score → DR → jury (Fable, order-swapped) → keeper pick → ≤3 revisions → MRs → merge decision (K3).
+
+
+## Archived from state.md 2026-09-05 (Failure modes to guard — still binding, moved for budget)
+
+## Failure modes to guard
+
+- Keeper items age: open 3 rounds FAILs the sweep (F17). Instrument work never answers a blocked ruling.
+- A gate that can see nothing fails: rig coverage (routes × viewports × themes named by each judge
+  contract) is checked BEFORE any judge spawns.
+- Two writers, one judge, one score: never again. Judges are scoped by oracle; code totals.
+- **Build lock with a reused pid** (2026-09-05): compare the lock's `started` to the pid's creation
+  time; remove only with no build process alive (else it gates a STALE `out/`).
+- **This file was committed over budget twice** (8394, 8316 B). `gates.mjs` now FAILs it; run before commit.
+

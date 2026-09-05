@@ -49,6 +49,15 @@ process each round knows only what this file says. Every claim cites an artifact
   JV budget 9000 was binding for all 8 r1 verdicts: re-baseline once, between rounds.
 - **K14** (delegated, 2026-09-05) — `RULES` R1–R6 are law; **R7–R16 are the old loop's taste and
   CHALLENGEABLE** by a concept with cause, keeper rules; the port is a start, not a design to keep.
+- **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated: "defer to you").** **K23** carry
+  PLAYERS BOARD forward; Dated Ledger's branch stays as a frontier record, RD-001 not run. **K24**
+  index columns appear only when a registry index exists (Desk order); until then the board carries
+  catalog-derived columns. **K25** the nav item discharges K19 at 390 (AR-001 D3). **K26** door rows
+  by most-recent change: a data ordering, not a content edit. **K27** PB's S13/S14/S18 rewrite
+  ratified; R13's 60% floor holds (AR-001 D4; RD-002 fix 4). **K28** catalog@390 = flat two-line
+  stack, every row in the document (I14 Ctrl-F clause); more density is a later brief. **K29** the
+  RD-002 revision runs on OPUS (7 ledger entries, semantic class recurring); ledger continues. K7
+  check-in held here; RD-002 is iteration 3 of 3 — hard stop after it regardless of score.
 - **Round-1 rulings (keeper, 2026-09-05).** **K16** typeface: "open to change" → judge-system's
   reading stands (inheriting the stack is not a decision); each finalist names a self-hosted face
   with licence, or argues the stack as a choice. **K17** finalists: `CP-UI-001-1` Dated Ledger and
@@ -83,9 +92,19 @@ process each round knows only what this file says. Every claim cites an artifact
 
 ## Next (keeper decisions)
 
-1. ~~Anchors, GO~~ [r0]. 2. ~~Round-1 rulings~~ → K16–K20 [r1].
-3. **Round-2 decisions 1–8** (identity pick; Frontier with no index data; door at 390; door by
-   recency; ratify PB's S13/S14/S18 rewrite; catalog@390 vs I14; implementer tier; K7 check-in):
-   `JURY-BRIEF-UI-001` for_keeper + `AR-001`; page in loop-work 10. Jury done (no collapse; ALLR order-flipped → none), `RD-001` (DL), `RD-002` (PB), `AR-001`.
-   Finalists page: https://claude.ai/code/artifact/4c3688bb-c784-4e64-8bcf-e28f5aa29994. Next: keeper picks ONE → its RD →
-   re-capture → affected judges only → score v3 → K7 check-in → MRs → merge decision (K3) → Desk note.
+1. ~~Anchors read, GO given.~~ [r0]
+2. ~~Round-1 rulings 1–8 → K16–K20.~~ [r1]
+3. ~~Round-2 decisions 1–8 → K23–K29.~~ [r2]
+4. MR-UI-001..003 on the revised Players Board preview (MR-UI-001 must include a hatched blank). [r3]
+5. After the K7 hard stop: merge decision (K3) and push decision (K4); Desk-order note sign-off. [r3]
+
+## Next (loop work, in order)
+
+1.–9. Port, rig, anchors, brief, round 1 (concepts), round 2 (both finalists built, panelled, scored,
+   jury with no collapse, `RD-001`/`RD-002`/`AR-001`): done; detail in `state-archive.md` + commit log.
+   Finalists page: https://claude.ai/code/artifact/4c3688bb-c784-4e64-8bcf-e28f5aa29994
+10. **Round 3 (revision), 2026-09-05.** RD-002 on `ui/concept-2` (D:\AddictedtoAI-c2, port 3112),
+   implementer OPUS (K29) → `IR-CP-UI-001-2-2` → re-capture c2 → ONLY RD-002's re_evaluate judges
+   (anchored on the v2 verdicts) + red-team anchored FM1–3 → `score.mjs CP-UI-001-2 3 --round 3 --prev
+   SCORE-CP-UI-001-2-2` → K7 hard stop: present to the keeper → MRs → merge decision → Desk note
+   (K21, K22, K24, Frontier data; `EN-domain-facet.md` questions).
