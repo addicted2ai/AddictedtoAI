@@ -24,8 +24,7 @@ process each round knows only what this file says. Every claim cites an artifact
 - **K6** — Reserved paths untouched: `openspec/specs/`, `data/config.json`, `runners.yml`,
   `package.json`. Content read-only (charter slot 1). Unfreeze is the orchestrator's.
 - **K7 (delegated defaults)** — ≤3 revisions then keeper check-in; jury (order-swapped pairwise) once,
-  on ≤2 finalists; 8.5 target REPORTED, not a stop. Convergence = empty `ui-fixable` queue AND full
-  rig coverage AND empty keeper section.
+  on ≤2 finalists; 8.5 target REPORTED, not a stop.
 - **K8** — `STOP` is the keeper's. **K9** — Reader test: the keeper alone.
 - **K10 — THE BRIEF'S CENTRE (keeper, verbatim in substance).** "A shining example of what
   frontier AI can do when handed the reins. I want people to be truly amazed at the quality of the
@@ -85,7 +84,8 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
 
 1. MR-UI-001..003 on the revised Players Board preview (MR-UI-001 must include a hatched blank). [r3]
 2. After the K7 stop: merge (K3), push (K4); then **K31** handoff by cross-session message to the
-   orchestrator (`addictedtoai-56`): DESK-ORDER-001, DIRECTIVES lines, beads. Scope stays keeper's. [r3]
+   orchestrator (`addictedtoai-56`): DESK-ORDER-001, DIRECTIVES lines, beads; invite it to ASK about
+   anything it does not fully understand (keeper's wish). Scope stays keeper's. [r3]
 3. Sign off `knowledge/DESK-ORDER-001.md` (K21/K22/K24/K30 as a spec for the orchestrator); answer
    `EN-domain-facet.md`'s three questions (text vs general; AA rights; domain ordering). [r3]
 
