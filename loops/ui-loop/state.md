@@ -55,9 +55,11 @@ process each round knows only what this file says. Every claim cites an artifact
   place." Finding F-K12 against the wiki-entry template (prose entries): the reader must meet the
   subject (title + one sentence of context) BEFORE any facts table; the old loop's "answer first"
   order (S14) is overruled for entries with prose bodies. Feeds BRIEF-UI-001, not a hotfix.
-- **K13** — Models confirmed: concept generator + finalist jury FABLE; judges OPUS; implementers +
-  red team SONNET; analyzer HAIKU; gates/scoring code. Session effort -> MEDIUM when the first
-  dispatch is announced (keeper switches on request).
+- **K13** — Models: concept generator + finalist jury FABLE; judges OPUS; implementers + red team
+  SONNET; analyzer HAIKU; gates/scoring code. Session effort -> MEDIUM at the first dispatch.
+- **K14** (delegated, 2026-09-05, after the keeper asked whether resuming locks in a narrow optimum)
+  — `RULES` R1–R6 are law (site spec); **R7–R16 are the old loop's taste and CHALLENGEABLE** by a
+  concept with cause, keeper rules; the port is a starting point, not a design to preserve.
 
 ## Known evidence lies (live-specific; continues JUDGE.md's L-series)
 
@@ -82,13 +84,10 @@ process each round knows only what this file says. Every claim cites an artifact
 
 ## Next (keeper decisions)
 
-1. ~~KP1~~ K12. 2. ~~K11~~ yes. 3. ~~Models~~ K13. Frontier context for the brief: bead
-   `addictedtoai-s8gz`; plan + sealed review in the orchestrator scratchpad; the plan over-indexed on
-   provable claims (verif- 70, benchmark 60, reader 4, visual 0 in 983 lines; its timeline = index
-   lead changes, not releases). Keeper inputs: players board (lab x frontier model x claims
-   verbatim+labelled x independently verified), release-cadence compression, new abilities, no hype.
-4. Read the anchors (`loops/ui-loop/graph/`) when they land; say GO and switch effort to medium.
-5. Catalog at 390px: choose from the round-1 concept frontier (supersedes the delegated I14 ruling).
+1. Read the anchors in `loops/ui-loop/graph/` (README, BRIEF-UI-001, contracts/); say GO and switch
+   the session to medium effort. [r0]
+2. Catalog at 390px: choose from the round-1 concept frontier (supersedes the delegated I14). [r0]
+3. Rule challenges under K14, as concepts raise them: retire, amend, or keep each. [r0]
 
 ## Next (loop work, in order)
 
