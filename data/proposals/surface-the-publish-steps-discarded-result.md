@@ -9,12 +9,14 @@ summary: >
   false}` and `{published: true}` are the same event to everything downstream.
   A run that could not publish changes no exit code, writes no HOLD.md, sets no
   ledger field, and reports its job `done`. The proposed job reads the result at
-  both call sites and makes a non-publish a named run outcome: the reason
-  (`foreign-content`, `commit-failed`, `tree-unreadable`, `hold`, `disabled`)
-  and the blocking paths in the run's LAST word, not only mid-log, and on the
-  ledger line where a later reader can count how often it happens. It should
-  not change the refusal itself — the refusal is correct — only whether anything
-  can see it.
+  both call sites and makes a non-publish a named run outcome: whatever
+  `reason` the step returns — nine values across its seven `published: false`
+  returns, which are `no-config`, `disabled`, `hold`, `tree-unreadable`,
+  `foreign-content`, `commit-failed`, `dry-run`, `nothing-owned` and
+  `stamp-did-not-advance` — and the blocking paths in the run's LAST word, not
+  only mid-log, and on the ledger line where a later reader can count how often
+  it happens. It should not change the refusal itself — the refusal is correct
+  — only whether anything can see it.
 evidence: >
   Measured 2026-09-04 in a scratch repository under the OS temp dir, seeded with
   one stray `content/wiki/model/someone-elses-draft.md` and run with
@@ -29,9 +31,14 @@ evidence: >
   the declared branch since 4f8d9a3 (the Desk) and since the Pulse's own
   `owned` list at pulse/run.mjs:279-284, and `data/config.json` has
   `publish: true`, so a single stray dirty file under `content/` silently stops
-  every publisher on the machine. Filed as addictedtoai-vqp7.1; this proposal is
-  the route by which the fix can reach the Desk, since beads issues do not feed
-  the derived queue.
+  every publisher on the machine. The reason list above is counted, not
+  recalled: read in pulse/lib/publish.mjs on 2026-09-04, `publishStep` (from
+  :464) has eight `return { published: …` sites — one `true` at :699 and seven
+  `false` at :493, :565, :570, :575, :623, :634 and :714 — and :575 returns
+  whichever of `tree-unreadable`, `foreign-content` and `commit-failed` phase 1
+  set, which is what makes nine values out of seven returns. Filed as
+  addictedtoai-vqp7.1; this proposal is the route by which the fix can reach the
+  Desk, since beads issues do not feed the derived queue.
 proposed_by_job: j-20260904-53
 proposed_by_type: repair
 ---
@@ -61,6 +68,13 @@ The narrow shape, in the order it earns its place:
 2. Put a non-publish in the run's last word. `loop/run.mjs` already prints a
    final diagnostic line for exactly this class of silent ending; a publish that
    did not happen belongs in it, with the reason and the blocking paths named.
+   Carry whatever `reason` came back rather than a hand-copied subset — the nine
+   values are listed above, and two of them already have somewhere to be seen:
+   `dry-run` is not a failure at all, and `stamp-did-not-advance` writes
+   `HOLD.md` itself at `pulse/lib/publish.mjs:705`. The one to be sure of is
+   `nothing-owned` (:634): like `foreign-content` it sits on the real path,
+   reached only after the `publish: true` gate at :561, and it is exactly as
+   silent.
 3. Put it on the ledger line. Whether this fires once a month or three times a
    day is unknown today and unknowable without a record, and that number is what
    decides whether step 4 is worth anything.
