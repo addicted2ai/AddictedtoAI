@@ -585,62 +585,56 @@ const INVARIANTS = [
   },
   {
     id: 'S8', rule: 'R12',
-    intent: 'at 390px the /catalog listing presents the model name, input price, output price and lifecycle status per row, with no page-level horizontal scroll',
-    independent: 'rendered text content and getBoundingClientRect of a mid-table row read at a 390px viewport, plus document.documentElement.scrollWidth vs clientWidth — not the presence of the .data-table class, any CSS token, or the desktop thead labels',
+    intent: 'at 390px the /catalog listing presents the model name, input price, output price and lifecycle status per row, with no page-level horizontal scroll. R-D (round-1): the presentation this asserts against CHANGED — the flat stacked-record table (#catalog-table, still in the DOM but CSS-hidden at this width, per S22) is REPLACED by the provider-grouped `.catalog-groups` `<details>` form, so this check now opens the first provider group and reads a `.provider-row` there rather than a `#catalog-table` row. The property (identity + top fields, reachable, no sideways scroll) is unchanged; the markup it reads is not.',
+    independent: 'rendered text content and getBoundingClientRect of a row inside the first opened `.provider-group`, read at a 390px viewport, plus document.documentElement.scrollWidth vs clientWidth — not the presence of any CSS token, and not `#catalog-table`, which this width no longer renders (S22)',
     falsifier: {
-      brokenBy: "TWO breaks. (1) disabled the whole #catalog-table 390px media-query block (changed its `@media (max-width: 33.999rem)` to an unmatchable `@media (max-width: -1px)`, i.e. desktop table layout kept at 390px — the pre-iter-02 state, with .table-wrap's own I15 scrollport still active so it absorbs the horizontal overflow rather than the page). (2) the FIRST cut of this check only asserted `width > 0` on each cell, which PASSED even in break (1): a table cell keeps a non-zero box at its natural width whether or not that box sits inside the visible viewport, so a zero-width check is vacuous against exactly D1's shape ('R2 passes and useless') — caught unprompted while falsifying, before any deliberate correctness pass.",
-      observed: '(1) with the stronger left/right-vs-viewport check: check failed "at 390px: row 5 priceIn cell (left 550.0px, right 680.6px) sits outside the 390px viewport — it is rendered but not reachable without scrolling its container sideways (this is exactly D1\'s shape: a non-zero box the reader still cannot reach)". (2) confirmed by re-running the ORIGINAL width-only check against the same broken tree: it reported PASS — false negative, the exact green-and-wrong class D4/IMPLEMENT.md rule 3 warns about. Rewritten to bound each cell to window.innerWidth and to check .table-wrap\'s own scrollWidth vs clientWidth. Restored; rebuilt tree passes both S7 and S8.',
-      brokenByOpposite: 'iter-06: the historical break pushes a cell off the RIGHT edge (`v.right > innerWidth`); the check\'s own `if` is already a single OR of both edges (`v.left < -0.5 || v.right > innerWidth + 0.5`), but the left-edge branch had never been independently fired. `--only S8 --break "#catalog-table tbody th { margin-left: -100px !important; }"` — pushes the row-identity cell off the LEFT edge instead, the opposite direction of unreachability.',
-      observedOpposite: 'check failed "/catalog: at 390px: row 5 name cell (left -86.0px, right 376.0px) sits outside the 390px viewport — it is rendered but not reachable without scrolling its container sideways (this is exactly D1\'s shape: a non-zero box the reader still cannot reach)". Restored; rebuilt tree (full gate) passes S8.',
+      brokenBy: "TWO breaks, re-run against the new (R-D) markup. (1) `--only S8 --break \".provider-row-meta{position:relative !important;left:9999px !important}\"` — pushes the price/status metadata span off the right edge, reproducing D1's shape (a non-zero box the reader still cannot reach) on the new structure. (2) confirming the check does NOT vacuously pass a CLOSED group: without opening `.provider-group` first, every `.provider-row` inside it has zero rendered size (closed `<details>` content is not rendered) — the check opens the first group's `.open` property before measuring, exactly as a reader's own click would.",
+      observed: 'check failed "/catalog: at 390px: the first provider row\'s meta (left 10013.0px, right 10198.7px) sits outside the 390px viewport — it is rendered but not reachable without scrolling sideways (D1\'s shape: a non-zero box the reader still cannot reach)". Restored; re-ran clean, passes.',
+      brokenByOpposite: '`--only S8 --break ".provider-row-name{margin-left:-9999px !important}"` — pushes the row-identity link off the LEFT edge instead, the opposite direction of unreachability.',
+      observedOpposite: 'check failed "/catalog: at 390px: the first provider row\'s name (left -9985.0px, right -9764.8px) sits outside the 390px viewport — it is rendered but not reachable without scrolling sideways (D1\'s shape: a non-zero box the reader still cannot reach)". Restored; rebuilt tree (full gate) passes S8.',
     },
     kind: 'dom', routes: ['/catalog'], viewports: 'self',
     check: async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.waitForTimeout(80);
       const r = await page.evaluate(() => {
-        const rows = document.querySelectorAll('#catalog-table tbody tr');
-        if (rows.length < 6) return { error: 'fewer than 6 catalog rows rendered' };
-        const row = rows[5];
-        const name = row.querySelector('th');
-        const priceIn = row.querySelector('td[data-label="In / Mtok"]');
-        const priceOut = row.querySelector('td[data-label="Out / Mtok"]');
-        const status = row.querySelector('td[data-label="Status"]');
-        if (!name || !priceIn || !priceOut || !status) {
-          return { error: 'row 5 is missing the model-name th or one of the In / Mtok, Out / Mtok, Status cells' };
+        const group = document.querySelector('.catalog-groups .provider-group');
+        if (!group) return { error: 'no .provider-group rendered in .catalog-groups' };
+        group.open = true;
+        const row = group.querySelector('.provider-row');
+        if (!row) return { error: 'the first provider group has no .provider-row' };
+        const name = row.querySelector('.provider-row-name');
+        const meta = row.querySelector('.provider-row-meta');
+        if (!name || !meta) {
+          return { error: 'the row is missing .provider-row-name or .provider-row-meta' };
         }
-        const wrap = document.querySelector('#catalog-table-wrap') || document.querySelector('.table-wrap');
-        const rects = { name: name.getBoundingClientRect(), priceIn: priceIn.getBoundingClientRect(), priceOut: priceOut.getBoundingClientRect(), status: status.getBoundingClientRect() };
+        const rects = { name: name.getBoundingClientRect(), meta: meta.getBoundingClientRect() };
         return {
           rects: Object.fromEntries(Object.entries(rects).map(([k, v]) => [k, { width: v.width, height: v.height, left: v.left, right: v.right }])),
           nameText: name.textContent.trim(),
+          metaText: meta.textContent.trim(),
           scrollWidth: document.documentElement.scrollWidth,
           clientWidth: document.documentElement.clientWidth,
           innerWidth: window.innerWidth,
-          wrapScrollWidth: wrap ? wrap.scrollWidth : null,
-          wrapClientWidth: wrap ? wrap.clientWidth : null,
         };
       });
       if (r.error) return r.error;
-      if (!r.nameText) return 'at 390px: row 5 model name is empty';
-      // D1's shape, re-checked here rather than assumed away: a cell can have
-      // non-zero WIDTH while still being unreachable without horizontal
-      // scrolling — a table that keeps full desktop column widths inside a
-      // scrolling .table-wrap "presents" every value by this measure alone
-      // while delivering none of them without a sideways gesture. Bound each
-      // cell to the actual viewport, not just to a non-zero box.
+      if (!r.nameText) return 'at 390px: the first provider row has no model name';
+      if (!/in|out/.test(r.metaText)) return `at 390px: the first provider row's meta carries neither price ("${r.metaText}")`;
+      // D1's shape, re-checked here rather than assumed away: a box can have
+      // non-zero size while still being unreachable without horizontal
+      // scrolling. Bound each element to the actual viewport, not just to a
+      // non-zero box.
       for (const [k, v] of Object.entries(r.rects)) {
         if (v.width <= 0 || v.height <= 0) {
-          return `at 390px: row 5 ${k} cell has zero width (${v.width.toFixed(1)}px) — the value is not rendered`;
+          return `at 390px: the first provider row's ${k} has zero width (${v.width.toFixed(1)}px) — the value is not rendered`;
         }
         if (v.left < -0.5 || v.right > r.innerWidth + 0.5) {
-          return `at 390px: row 5 ${k} cell (left ${v.left.toFixed(1)}px, right ${v.right.toFixed(1)}px) sits outside the ${r.innerWidth}px viewport — it is rendered but not reachable without scrolling its container sideways (this is exactly D1's shape: a non-zero box the reader still cannot reach)`;
+          return `at 390px: the first provider row's ${k} (left ${v.left.toFixed(1)}px, right ${v.right.toFixed(1)}px) sits outside the ${r.innerWidth}px viewport — it is rendered but not reachable without scrolling sideways (D1's shape: a non-zero box the reader still cannot reach)`;
         }
       }
       if (r.scrollWidth > r.clientWidth + 1) {
         return `at 390px: page scrolls horizontally (scrollWidth ${r.scrollWidth}px > clientWidth ${r.clientWidth}px)`;
-      }
-      if (r.wrapScrollWidth !== null && r.wrapScrollWidth > r.wrapClientWidth + 1) {
-        return `at 390px: the table's own wrap still scrolls horizontally (scrollWidth ${r.wrapScrollWidth}px > clientWidth ${r.wrapClientWidth}px) — the catalog kept desktop column layout instead of reflowing`;
       }
       return true;
     },
@@ -938,37 +932,65 @@ const INVARIANTS = [
   },
   {
     id: 'S14', rule: 'R13',
-    intent: "the wiki entry restructure (I5) preserves the reader's ability to reach the FACTS block without scrolling: .entry-facts's top edge falls within the first viewport at BOTH 1440x900 and 390x844 on a wiki entry with a long prose body — the intent-preservation assertion IMPLEMENT.md requires for any restructure that changes grid topology or paint order",
-    independent: "getBoundingClientRect().top of .entry-facts read live at each declared viewport — not a CSS value, not the DOM order (which is unchanged; only paint order/grid placement move) — compared against window.innerHeight",
+    intent: "F-K12 (K12, round-1 keeper ruling) amends this check's ORIGINAL intent (below), it does not retire it. Original: the wiki entry restructure (I5) preserves the reader's ability to reach the FACTS block without scrolling. Amended: on an entry WITH a prose body, WHERE .entry-lede and .entry-facts are STACKED in the same column (narrow viewports, <60rem — the shape F-K12 actually objects to), (a) .entry-lede's bottom edge sits at or above .entry-facts's top edge — title+context strictly precedes facts. At >=60rem, .entry-lede and .entry-side render as two SEPARATE COLUMNS, not stacked — the reader meets the title and the lede at the top of column 1 at the same time facts appears at the top of column 2, which is the pre-F-K12 desktop shape the keeper never objected to, so clause (a) does not apply there (checked live via a horizontal-overlap test, not assumed from the breakpoint). (b), unconditional at every viewport: .entry-facts's top edge stays within 1.5x the viewport height where a lede exists (loosened from 1.0x: a single paragraph, unlike the whole essay S14 was originally written against, can legitimately run past one full viewport on a narrow screen without burying FACTS in any ordinary sense), or the ORIGINAL 1.0x bound on a proseless stub (nothing precedes facts there by design, R-C).",
+    independent: "getBoundingClientRect() of .entry-facts, .entry-lede (when present) and .prose (the unsplit fallback case), read live at each declared viewport — not a CSS value, not the DOM order (unchanged in every case; only paint order/grid placement move) — compared against window.innerHeight; whether lede and facts are STACKED is read from their own live horizontal overlap, not from the viewport width",
     falsifier: {
-      brokenBy: '`--only S14 --break "article:has(> .prose):has(> .entry-facts) { display: block !important; }"` — disables the whole restructure (grid, order, column placement all fall away), reverting to plain block flow in the original DOM order: identity, prose, FACTS, timeline, rails — the exact pre-fix shape this item described.',
-      observed: 'check failed "/wiki/concept/ai-winter @1440x900: FACTS top edge (2173.9px) falls below the first viewport (900px) even though the entry\'s own prose (1945px) is long enough that stacking alone would have buried it" — matches the item\'s own opening measurement ("begins past y=2100 of a 2974px page") almost exactly. The harness stops at the first failing viewport, so 390x844 was not separately exercised by this break; it is exercised by every non-broken run, including the one recorded in this iteration\'s gate log, where both declared viewports pass. Restored; rebuilt tree passes S14 at both.',
-      brokenByOpposite: 'iter-06: the bound was ONE-SIDED — only "too far down" (buried below the fold) failed, with no floor against "too far up" (pushed above y=0, equally unreachable at rest). `--only S14 --break ".entry-facts { position: relative !important; top: -9999px !important; }"` reported ok. Fixed by adding a symmetric floor: `factsTop < -0.5` now fails too.',
-      observedOpposite: 'check failed "/wiki/concept/ai-winter @1440x900: FACTS top edge (-9770.1px) is ABOVE the viewport (negative) — not reachable at rest either, the opposite excess of being buried below the fold". Re-verified the original below-the-fold direction still fires unchanged ("FACTS top edge (2173.9px) falls below the first viewport (900px)..."). Restored; rebuilt tree (full gate) passes S14 at both declared viewports.',
+      brokenBy: 'FIRST attempt: `--only S14 --break ".entry-lede{order:5 !important}"` did NOT fire (0 of 1) — recorded honestly rather than discarded: below 60rem the container is plain block flow (this round\'s own fix removed the old `order`-based reflow, see the F-K12 addendum above), and `order` has no effect outside a flex/grid formatting context, so the break did not actually violate anything. SECOND, corrected: `--only S14 --break "article:has(> .prose):has(.entry-facts){display:flex !important;flex-direction:column !important} .entry-lede{order:5 !important}"` — puts the container into a flex context (at BOTH declared viewports, since the harness checks 1440x900 first) so `order` is live, then pushes LEDE after FACTS.',
+      observed: 'check failed "/wiki/concept/ai-winter @1440x900: .entry-lede and .entry-facts are stacked (same column) and .entry-lede\'s bottom edge (2761.0px) falls BELOW .entry-facts\'s own top edge (246.5px) — facts precedes its own lede, the F-K12 property this clause forbids". Restored; re-ran clean, clause (a) passes at both declared viewports (at 1440x900 the real, unbroken grid renders lede/facts as genuine side-by-side columns, confirmed by the live overlap read finding no horizontal overlap).',
+      brokenByOpposite: 'iter-06 (pre-existing, re-verified): `--only S14 --break ".entry-facts { position: relative !important; top: -9999px !important; }"`.',
+      observedOpposite: 'check failed "/wiki/concept/ai-winter @1440x900: FACTS top edge (-9752.5px) is ABOVE the viewport (negative) — not reachable at rest either, the opposite excess of being buried below the fold". Restored; rebuilt tree (full gate) passes S14 on both routes/viewports.',
     },
     kind: 'dom', routes: ['/wiki/concept/ai-winter'], viewports: [[1440, 900], [390, 844]],
     check: async ({ page }) => {
       const r = await page.evaluate(() => {
         const facts = document.querySelector('.entry-facts');
+        const lede = document.querySelector('.entry-lede');
+        const rest = document.querySelector('.entry-rest');
         const prose = document.querySelector('.prose');
-        if (!facts || !prose) return { error: 'missing .entry-facts or .prose on this entry' };
-        return { factsTop: facts.getBoundingClientRect().top, proseHeight: prose.getBoundingClientRect().height, innerHeight: window.innerHeight };
+        if (!facts) return { error: 'missing .entry-facts on this entry' };
+        const proseHeight = lede
+          ? lede.getBoundingClientRect().height + (rest ? rest.getBoundingClientRect().height : 0)
+          : prose
+            ? prose.getBoundingClientRect().height
+            : 0;
+        const factsRect = facts.getBoundingClientRect();
+        const ledeRect = lede ? lede.getBoundingClientRect() : null;
+        // Stacked (same column) iff their horizontal extents actually
+        // overlap — read live, not inferred from the viewport width, so
+        // this stays correct if the grid's own breakpoint ever moves.
+        const stacked = ledeRect
+          ? ledeRect.left < factsRect.right - 0.5 && factsRect.left < ledeRect.right - 0.5
+          : false;
+        return {
+          factsTop: factsRect.top,
+          ledeBottom: ledeRect ? ledeRect.bottom : null,
+          hasLede: Boolean(ledeRect),
+          stacked,
+          proseHeight,
+          innerHeight: window.innerHeight,
+        };
       });
       if (r.error) return r.error;
       if (r.proseHeight < r.innerHeight) {
         return `this entry's prose (${r.proseHeight.toFixed(0)}px) is shorter than the viewport (${r.innerHeight}px) — not a fixture that tests burying FACTS below the fold; pick a longer entry`;
       }
-      // iter-06: this was ONE-SIDED — only "too far down" failed. FACTS pushed
-      // ABOVE the viewport (negative top, scrolled/positioned past y=0) is not
-      // "reachable without scrolling" either — it is exactly as unreachable at
-      // rest as being buried below the fold — but the check had no floor;
-      // proven missing with `--only S14 --break ".entry-facts { position: relative
-      // !important; top: -9999px !important; }"`, which reported ok.
+      // iter-06: symmetric floor against FACTS pushed ABOVE the viewport.
       if (r.factsTop < -0.5) {
         return `FACTS top edge (${r.factsTop.toFixed(1)}px) is ABOVE the viewport (negative) — not reachable at rest either, the opposite excess of being buried below the fold`;
       }
-      if (r.factsTop > r.innerHeight) {
-        return `FACTS top edge (${r.factsTop.toFixed(1)}px) falls below the first viewport (${r.innerHeight}px) even though the entry's own prose (${r.proseHeight.toFixed(0)}px) is long enough that stacking alone would have buried it`;
+      // F-K12 clause (a): title+context strictly precedes facts — but only
+      // where they are actually STACKED (same column); at a width where
+      // .entry-lede and .entry-side render as separate columns, ordering
+      // between them is not a meaningful reading-order question.
+      if (r.stacked && r.factsTop < r.ledeBottom - 0.5) {
+        return `.entry-lede and .entry-facts are stacked (same column) and .entry-lede's bottom edge (${r.ledeBottom.toFixed(1)}px) falls BELOW .entry-facts's own top edge (${r.factsTop.toFixed(1)}px) — facts precedes its own lede, the F-K12 property this clause forbids`;
+      }
+      // F-K12 clause (b): the loosened 1.5x bound applies only where a lede
+      // exists (a real paragraph, not a whole essay, sits ahead of FACTS);
+      // a proseless stub keeps the ORIGINAL 1.0x bound.
+      const bound = r.hasLede ? r.innerHeight * 1.5 : r.innerHeight;
+      if (r.factsTop > bound) {
+        return `FACTS top edge (${r.factsTop.toFixed(1)}px) falls below ${r.hasLede ? '1.5x' : ''} the first viewport (${bound.toFixed(1)}px) even though the entry's own prose (${r.proseHeight.toFixed(0)}px) is long enough that stacking alone would have buried it`;
       }
       return true;
     },
@@ -1420,17 +1442,29 @@ const INVARIANTS = [
       }
 
       // I40 (iter-09): the wiki entry template's own two-column split —
-      // .prose vs .entry-side, the FACTS+TIMELINE+RAILS stack I40's own fix
+      // PROSE vs .entry-side, the FACTS+TIMELINE+RAILS stack I40's own fix
       // relocated into one wrapper (see globals.css/lib/render/entry.mjs).
       // .entry-side is a real block box at this breakpoint (not `display:
       // contents`, which only applies below 60rem), so its own rendered
       // height already IS the combined stack's height — no need to sum its
       // children separately.
+      //   F-K12 (round-1): PROSE is now split into `.entry-lede` and
+      // `.entry-rest`, two SEPARATE elements — `document.querySelector
+      // ('.prose')` alone now returns only the lede (the FIRST match),
+      // understating the true prose height. Summed here so this clause
+      // keeps measuring the property its own text names (the wiki entry's
+      // real prose column against .entry-side) rather than silently
+      // degrading into a different, smaller comparison.
       const r = await page.evaluate(() => {
+        const lede = document.querySelector('.entry-lede');
+        const rest = document.querySelector('.entry-rest');
         const prose = document.querySelector('.prose');
         const side = document.querySelector('.entry-side');
-        if (!prose || !side) return { error: 'missing .prose or .entry-side on this entry' };
-        return { proseH: prose.getBoundingClientRect().height, sideH: side.getBoundingClientRect().height };
+        if (!side || (!prose && !lede)) return { error: 'missing .prose/.entry-lede or .entry-side on this entry' };
+        const proseH = lede
+          ? lede.getBoundingClientRect().height + (rest ? rest.getBoundingClientRect().height : 0)
+          : prose.getBoundingClientRect().height;
+        return { proseH, sideH: side.getBoundingClientRect().height };
       });
       if (r.error) return r.error;
       const [shortLabel, shortH, tallLabel, tallH] = r.sideH <= r.proseH
@@ -1626,6 +1660,45 @@ const INVARIANTS = [
       await page.keyboard.press('Enter');
       const afterOpen = await page.evaluate(() => document.querySelector('.catalog-preamble').open);
       if (afterOpen !== true) return `Enter on the .catalog-preamble summary did not open it (open=${afterOpen})`;
+      return true;
+    },
+  },
+  {
+    id: 'S22', rule: 'R12',
+    intent: "R-D / I14: at <=390px the catalog's ~400 rows are grouped into native <details> per provider, closed by default, replacing the flat stacked-record form the same width used to render (measured baseline, I14: 93,963px total document height). The intent-preservation assertion: the exported page's total document height at 390x844 stays under a bound far below that baseline (20,000px — generous headroom over ~30-40 closed provider groups, nowhere near the old per-row stack), AND #catalog-table-wrap (the desktop table) is not visible at this width, AND .catalog-groups IS visible and carries at least one <details>.",
+    independent: "document.documentElement.scrollHeight at 390x844 (not any CSS value); getComputedStyle(...).display of #catalog-table-wrap and .catalog-groups, read live; document.querySelectorAll('.catalog-groups details').length",
+    falsifier: {
+      brokenBy: '`--only S22 --break ".catalog-groups{display:none !important}"` — hides the grouped view while leaving the (also-hidden-by-default-CSS) desktop table alone, reproducing a state with neither view rendered.',
+      observed: 'check failed "/catalog @390x844: .catalog-groups is not visible (display: none) — the provider-grouped view is not rendered at this width". Restored; re-ran, passes.',
+      brokenByOpposite: '`--only S22 --break "#catalog-table-wrap{display:block !important}"` — the opposite excess: forces the flat 396-row desktop table back to visible alongside the grouped view, reproducing the pre-R-D shape this check exists to keep retired at this width.',
+      observedOpposite: 'check failed "/catalog @390x844: #catalog-table-wrap is visible (display: block) at <=390px — the flat per-row stack this width used to render (I14: 93,963px) is back". Restored; rebuilt tree (full gate) confirms S22 passes with #catalog-table-wrap hidden, .catalog-groups visible, and total document height far under the 20,000px bound.',
+    },
+    kind: 'dom', routes: ['/catalog'], viewports: [[390, 844]],
+    check: async ({ page }) => {
+      const r = await page.evaluate(() => {
+        const wrap = document.getElementById('catalog-table-wrap');
+        const groups = document.querySelector('.catalog-groups');
+        if (!wrap || !groups) return { error: 'missing #catalog-table-wrap or .catalog-groups on /catalog' };
+        return {
+          wrapDisplay: getComputedStyle(wrap).display,
+          groupsDisplay: getComputedStyle(groups).display,
+          detailsCount: document.querySelectorAll('.catalog-groups details').length,
+          scrollHeight: document.documentElement.scrollHeight,
+        };
+      });
+      if (r.error) return r.error;
+      if (r.wrapDisplay !== 'none') {
+        return `#catalog-table-wrap is visible (display: ${r.wrapDisplay}) at <=390px — the flat per-row stack this width used to render (I14: 93,963px) is back`;
+      }
+      if (r.groupsDisplay === 'none') {
+        return `.catalog-groups is not visible (display: none) — the provider-grouped view is not rendered at this width`;
+      }
+      if (r.detailsCount === 0) {
+        return `.catalog-groups carries zero <details> elements — no provider groups rendered`;
+      }
+      if (r.scrollHeight > 20000) {
+        return `document height at 390x844 (${r.scrollHeight}px) exceeds the 20,000px bound — I14's own baseline was 93,963px; this is meant to be materially fewer screens, not merely fewer`;
+      }
       return true;
     },
   },

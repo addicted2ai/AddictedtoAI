@@ -90,6 +90,48 @@
   size-adjust: 106.5%;
 }
 
+/* K16 (round-1 ruling): "each finalist names a self-hosted face with
+ * licence, or argues the stack as a choice." Self-hosting is declined with
+ * the SAME cause as --serif's own R16 treatment above (no network fetch or
+ * subsetting toolchain in this build environment — a real, stated
+ * constraint, not silence). The argued choice for the spine/date face
+ * (dates and labels, per K16): keep `--mono`, and extend R16's own
+ * metric-matching technique to it, which R16's original pass never covered.
+ *
+ * MEASURED on this sandbox (`ctx.measureText` at 100px, the identical
+ * method R16 used, sample string "The quick brown fox jumps 0123456789
+ * ABCDEFGHIJ"): `SF Mono`, `Segoe UI Mono`, `Roboto Mono`, `Menlo` and
+ * `Consolas` are all ABSENT here — each measures IDENTICAL to the bare
+ * `monospace` generic (2584.08px), which is how their absence was confirmed
+ * rather than guessed, exactly as R16 established for Charter/Bitstream
+ * Charter. `Cascadia Mono` (2753.91px) and `DejaVu Sans Mono` (2829.64px)
+ * ARE installed and both resolve WIDER than the generic default — 6.6% and
+ * 9.5% respectively — an --mono cross-platform rhythm risk R16's original
+ * pass never measured because it only covered --serif. The generic
+ * `monospace` keyword is the anchor here (there is no Georgia-equivalent
+ * "already the stack's deliberate choice" entry to anchor against in a
+ * monospace stack, and every genuinely-monospace font's PER-CHARACTER
+ * advance width is fixed by design, so anchoring to whichever fallback the
+ * reader's own platform would otherwise land on — the generic keyword — is
+ * the choice that changes the fewest platforms' rendering from their own
+ * present default). Each late fallback gets a `local()`-sourced synthetic
+ * face with `size-adjust` = (generic monospace width) / (that font's own
+ * width) over the same sample, so a platform resolving to either one still
+ * renders dates and labels at the SAME rhythm as a platform that does not
+ * have it. `local()` fails over silently exactly like the name it replaces,
+ * so nothing is lost where neither is installed. */
+@font-face {
+  font-family: 'Cascadia Mono Metric';
+  src: local('Cascadia Mono');
+  size-adjust: 93.8%;
+}
+
+@font-face {
+  font-family: 'DejaVu Sans Mono Metric';
+  src: local('DejaVu Sans Mono');
+  size-adjust: 91.3%;
+}
+
 /* ── tokens ─────────────────────────────────────────────────────────── */
 
 :root {
@@ -110,8 +152,8 @@
 
   --serif: Charter, "Bitstream Charter", "Sitka Text Metric", "Cambria Metric", Georgia,
     "Times New Roman Metric", serif;
-  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", Menlo,
-    Consolas, "DejaVu Sans Mono", monospace;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono Metric", "Segoe UI Mono", "Roboto Mono", Menlo,
+    Consolas, "DejaVu Sans Mono Metric", monospace;
 
   --step--1: 0.8125rem;
   --step-0: 1rem;
@@ -862,6 +904,114 @@ main {
   max-width: 100%;
 }
 
+/* ── /frontier ──────────────────────────────────────────────────────────
+ * R8 class: REQUIRED on `.frontier-board` (a reader compares an index value
+ * across many organisation rows — R8's own test) and on `.frontier-spine`
+ * (the whole point is comparing gaps ACROSS knots). Both get a drawn
+ * boundary: the board is `.data-table`, already ruled every row; the spine
+ * gets its own hairline below. */
+
+/* CP-UI-001-1 design_moves.layout: "proportional spacing clamped between
+   one and eight row heights." `--gap-days` is set inline per knot
+   (lib/render/frontier.mjs) from the REAL day count between two dated
+   groups in data/changes.jsonl; this is the only place that number is used.
+   One row height is the generic `.rail-item`'s own vertical rhythm
+   (0.55rem padding * 2 + content ~= 1.6rem); the clamp keeps a same-day
+   cluster tight and a long real gap visible without ever pushing a knot
+   off past a reasonable scroll distance. */
+.frontier-spine > .frontier-knot {
+  margin-top: clamp(1.6rem, calc(var(--gap-days, 1) * 1.6rem), 12.8rem);
+  border-top: 1px solid var(--rule);
+  padding-top: 0.7rem;
+}
+.frontier-spine > .frontier-knot:first-child {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
+}
+
+.frontier-board {
+  width: 100%;
+}
+.board-col-meta {
+  display: block;
+  font-weight: 400;
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.absent-cell {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: var(--step--1);
+}
+
+.frontier-leadchange-empty {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: var(--step--1);
+}
+.dotted-continuation {
+  display: block;
+  height: 1px;
+  width: 3rem;
+  border-top: 2px dotted var(--rule-strong);
+  margin-bottom: 0.5rem;
+}
+
+.proof-kind {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.vendor-claims {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+.vendor-claim {
+  border-top: 1px solid var(--rule);
+  padding-top: 0.6rem;
+}
+/* R9 / K19: --ember is reserved for state flips (deprecated, retired,
+   lead change) — "claimed · unverified" is not one of those, so this tag
+   deliberately does NOT reuse --ember. It is outlined text, --muted, never
+   filled, so it cannot be mistaken for the lifecycle badge's tone. */
+.vendor-claim-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+  margin-bottom: 0.4rem;
+}
+.vendor-claim-org {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.15em;
+}
+.vendor-claim-org:hover,
+.vendor-claim-org:focus-visible {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+.vendor-claim-source {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
 .change-line {
   display: flex;
   flex-wrap: wrap;
@@ -1264,6 +1414,83 @@ body:has(#catalog-table-wrap) .site-footer {
   background: var(--paper);
 }
 
+/* ── R-D / I14: catalog@390 as native <details> per provider ──────────────
+ * R8 class: REQUIRED. The catalog is the one surface on this site where a
+ * reader compares a value (price, context, status) ACROSS many rows sharing
+ * one column set — R8's own test for when a group boundary has to be drawn,
+ * not left to rhythm alone. `.catalog-groups` is the narrow-width answer to
+ * that test: the boundary is drawn once per PROVIDER (the `<details>`'s own
+ * border) rather than once per row, so the reader's place is held by 30-40
+ * disclosure boundaries instead of ~400 stacked-record ones. Hidden by
+ * default; swapped in for `.table-wrap` only below the site's existing
+ * 33.999rem stacked-record threshold (see the `@media` block below). */
+.catalog-groups {
+  display: none;
+}
+
+.provider-group {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.75rem 0;
+}
+.provider-group:first-child {
+  padding-top: 0;
+}
+.provider-group > summary {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  cursor: pointer;
+  list-style: revert;
+}
+.provider-group > summary::-webkit-details-marker {
+  color: var(--muted);
+}
+.provider-name {
+  color: var(--ink);
+  font-weight: 600;
+}
+.provider-count {
+  color: var(--muted);
+}
+.provider-rows {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+}
+.provider-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 0.9rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--rule);
+}
+.provider-row:first-child {
+  border-top: none;
+}
+.provider-row-name {
+  /* R9: ink + underline at rest, --accent only on hover/focus — no
+     resting-state colour on a record link, matching `.data-table a`. */
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.15em;
+}
+.provider-row-name:hover,
+.provider-row-name:focus-visible {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+.provider-row-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* S7 (iter-02, round 2): capping .table-wrap gave the thead a scrollport to
    stick WITHIN, but that scrollport is itself an ordinary block in page
    flow — as the PAGE scrolls (this route's own content is taller than the
@@ -1526,6 +1753,20 @@ body:has(#catalog-table-wrap) .site-footer {
     text-align: left;
     padding-right: 0.5rem;
   }
+
+  /* R-D (I14): below the site's own stacked-record threshold, the flat
+     396-row stack (measured 93,963px, I14's own number) is REPLACED by the
+     provider-grouped `<details>` form — not shown alongside it. The
+     desktop table stays in the DOM (CatalogFilter still targets it
+     unchanged) but is not the page's rendered narrow view. */
+  #catalog-table-wrap,
+  #catalog-filters {
+    display: none;
+  }
+
+  .catalog-groups {
+    display: block;
+  }
 }
 
 /* I23 (iter-08, R6 + R14): the same disclosure primitive as `.nav-disclosure`
@@ -1672,91 +1913,52 @@ body:has(#catalog-table-wrap) .site-footer {
      reads fine at well under 55% occupancy (R13's iter-06 addendum). */
 }
 
-/* I5 / I16 (R13): the wiki entry's FACTS block — the dated, sourced values
-   that are the reason the record exists — used to render after the ENTIRE
-   prose body, so a reader arriving from search wanting one dated value had
-   to scroll past a whole essay to reach it (I5); and for the whole time
-   prose was on screen, the shell's right ~half sat empty beside it, the
-   worst case I16 measured (0.8% of scanlines on /wiki/concept/ai-winter
-   carried ink past 55% of the viewport). One change serves both: FACTS
-   moves into the track prose is not using.
-     At the >=60rem breakpoint (the site's own existing wide-layout
-   threshold — see .home-grid) there is room for two real columns, so FACTS
-   sits beside prose via explicit grid placement. Below it there is not, so
-   FACTS is instead moved ahead of prose in PAINT order only via `order` —
-   the underlying markup order (identity, prose, facts, timeline, rails) is
-   untouched in both cases, exactly as the item's own framing describes ("the
-   <dl> markup does not need to change, only where the block is placed"). A
-   screen-reader user reads the same document either way; a sighted reader —
-   at any width — now sees the dated values before they would have had to
-   start scrolling past the prose.
-     Scoped to `article:has(> .prose):has(.entry-facts)`, which only a wiki
-   entry with BOTH a prose body and a facts block matches — a stub with facts
-   and no prose (nothing to place beside) is untouched, staying in its
-   existing single-column shape, so no dead second track is introduced where
-   there is nothing to fill it.
-     I40 (iter-09): `.entry-facts` is checked as a DESCENDANT (`:has(...)`
-   with no `>`) rather than a direct child, because I40's own fix (below)
-   nests it one level deeper, inside `.entry-side`. */
+/* F-K12 (K12, 2026-09-05): the wiki entry's FACTS block moved ahead of the
+   ENTIRE prose body (I5/I40, `order`-based reflow below 60rem) so a reader
+   could reach a dated value without scrolling past an essay. The keeper's
+   own reading of the shipped page reversed that for entries WITH prose:
+   "having the FACTS displayed first with no context makes them feel out of
+   place" — R-C requires title + one paragraph of context before facts. The
+   two findings do not actually conflict: what needed to precede facts was
+   never "nothing", it was "the whole essay" — one paragraph is enough
+   context and stays short enough that facts still lands near the top.
+     `lib/render/entry.mjs`'s `renderEntryPage` now splits the prose body at
+   its first block (`.entry-lede`) from the remainder (`.entry-rest`), so DOM
+   order becomes: identity, dormant notice, LEDE, `.entry-side` (FACTS +
+   TIMELINE + RAILS, I40's wrapper, unchanged internally), REST of prose.
+   That order is *already correct at every width* — no `order` property is
+   needed below 60rem any more; paint order is DOM order, and this is
+   `S14`'s replacement (see tools/ui-invariants.mjs and RULES.md's F-K12
+   addendum for what the amended check asserts instead).
+     At >=60rem there is room for two real columns; LEDE and REST are placed
+   into column 1 as two grid rows, `.entry-side` spans both rows in column 2
+   via `order` + `grid-row: span 2` (not literal row numbers — the ordering
+   technique below is the same one I40 already proved works: an item with an
+   explicit column and no explicit row lands in the first row where its
+   column is free, so LEDE (order 2) claims row A col 1 first, `.entry-side`
+   (order 3, span 2) then claims col 2 across rows A and a newly opened row
+   B, and REST (order 4) lastly claims row B's now-open col 1).
+     A body whose opening markup the splitter does not recognise falls back
+   to the pre-F-K12 unsplit shape (a single `.prose`, entry-side after it at
+   >=60rem, entry-side before it below — see the `:not(.entry-lede)` rules)
+   — not a regression, the same shape this template already shipped.
+     Scoped to `article:has(> .prose):has(.entry-facts)`: a stub with facts
+   and no prose (nothing to place a lede from) is untouched, staying
+   facts-first, in its existing single-column shape (R-C: "model records
+   without prose may stay facts-first"). `.entry-facts` is checked as a
+   DESCENDANT (`:has(...)` with no `>`) because it nests inside
+   `.entry-side`. */
 article:has(> .prose):has(.entry-facts) {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  display: block;
 }
 
-article:has(> .prose):has(.entry-facts) > .entry-head {
-  order: 0;
-}
-article:has(> .prose):has(.entry-facts) > .notice {
-  order: 1;
-}
-article:has(> .prose):has(.entry-facts) > .prose {
-  order: 3;
-}
-/* I40 (iter-09, R13's iter-07(a) addendum — the dead-track floor, widened
-   past .home-grid to this template, the site's most numerous surface at 495
-   pages). FACTS used to be the freed track's ONLY occupant, filling as
-   little as 17-23% of prose's height on long entries (measured live on
-   /wiki/concept/ai-winter and /wiki/event/attention-is-all-you-need) and
-   then stopping — 1493px of empty column beside a page of running prose,
-   with .rails (REFERENCED HERE / APPEARS IN) stacked full-width BELOW the
-   whole two-column block instead, in the narrow track it happened to
-   inherit from before this grid existed.
-     TIMELINE and RAILS now share column 2 with FACTS — the identical move
-   I9 already made once on the home page: relocate content that already
-   exists into the track a shorter sibling leaves open, no new copy, a
-   position change only. Doing that with CSS placement alone (each of the
-   three still a separate `<article>` child, each given `grid-column: 2`)
-   was tried FIRST and measured WRONG: CSS Grid auto-placement puts FACTS
-   into the same implicit ROW as PROSE (both unspecified-row, order 2/3), and
-   that row's height is set by its TALLEST occupant — PROSE, at ~1945px on
-   ai-winter — so RAILS, needing its own row because FACTS already holds
-   row 2's column-2 cell, lands in row 3, which cannot begin until row 2's
-   FULL 1945px is spent. Measured on the shipped attempt: FACTS 226.9-678.8,
-   RAILS 2203.9-2360.9 — an UNCHANGED 1493px gap, just narrowed from
-   1152px wide to 524px wide rather than closed. A grid row's height is
-   driven by whichever single item is CONFINED to it; the fix has to put
-   FACTS+TIMELINE+RAILS in as ONE item, not three, so their combined height
-   — not PROSE's — sets column 2's own extent. `.entry-side` (below) is that
-   one item: a wrapper `renderEntryPage` now renders around all three
-   (lib/render/entry.mjs), matching `.home-side`'s own role on the home
-   page — one aside box holding several relocated blocks, not several boxes
-   independently placed. DOM order inside it is unchanged (facts, timeline,
-   rails); a screen reader encounters the identical document either way. */
 .entry-side {
-  display: contents;
-}
-.entry-side > .entry-facts {
-  order: 2;
-}
-.entry-side > .entry-timeline {
-  order: 4;
-}
-.entry-side > .rails {
-  order: 5;
+  display: block;
 }
 
 @media (min-width: 60rem) {
   article:has(> .prose):has(.entry-facts) {
+    display: grid;
     grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
     column-gap: var(--gap);
     align-items: start;
@@ -1769,26 +1971,37 @@ article:has(> .prose):has(.entry-facts) > .prose {
     grid-column: 1 / -1;
     margin-inline: 0;
   }
-  /* `order` is swapped back to DOM order for auto-placement's purposes only
-     (it still controls layout, not just paint, in a grid): prose has to be
-     PLACED before .entry-side so .entry-side's explicit column-2 lands in
-     the same row prose just claimed in column 1, rather than a row of its
-     own. */
-  article:has(> .prose):has(.entry-facts) > .prose {
+
+  /* Split case: LEDE + REST as two rows in column 1, .entry-side spanning
+     both in column 2 (see the long comment above for the ordering
+     mechanics). */
+  article:has(> .prose):has(.entry-facts) > .entry-lede {
     grid-column: 1;
     order: 2;
   }
-  /* I40 (iter-09): `.entry-side` becomes a real box here — no longer
-     `display: contents` — so it is ONE grid item, sized to its own combined
-     content (FACTS + TIMELINE + RAILS, stacked in ordinary block flow,
-     their individual `order` values above having no effect outside a
-     flex/grid formatting context) rather than three items independently
-     auto-placed into separate implicit rows. */
-  article:has(> .prose):has(.entry-facts) > .entry-side {
+  article:has(> .prose):has(.entry-facts):has(> .entry-lede) > .entry-side {
+    display: block;
+    grid-column: 2;
+    grid-row: span 2;
+    order: 3;
+  }
+  article:has(> .prose):has(.entry-facts) > .entry-rest {
+    grid-column: 1;
+    order: 4;
+  }
+
+  /* Fallback case (no lede split): the pre-F-K12 shape — one `.prose`
+     column beside `.entry-side`, single row. */
+  article:has(> .prose):has(.entry-facts) > .prose:not(.entry-lede):not(.entry-rest) {
+    grid-column: 1;
+    order: 2;
+  }
+  article:has(> .prose):has(.entry-facts):not(:has(> .entry-lede)) > .entry-side {
     display: block;
     grid-column: 2;
     order: 3;
   }
+
   /* .section's ambient margin-top (2rem) is for stacked flow; here FACTS is
      .entry-side's first child, sitting beside prose rather than below it,
      so it must align to prose's own top edge instead. */
@@ -2447,6 +2660,19 @@ article:has(> .prose):has(.entry-facts) > .prose {
 
 .prose > * + * {
   margin-top: 0.9em;
+}
+
+/* F-K12: .entry-lede, .entry-side and .entry-rest are three separate block
+   siblings now (see the note above .entry-facts) rather than one .prose
+   flowing straight into .entry-side; each needs the ordinary inter-block
+   rhythm .section already uses elsewhere on this template. */
+.entry-lede,
+.entry-side,
+.entry-rest {
+  margin-top: 1.25rem;
+}
+.entry-head + .entry-lede {
+  margin-top: 0;
 }
 
 .prose h2 {

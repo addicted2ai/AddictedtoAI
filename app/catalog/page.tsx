@@ -1,6 +1,7 @@
 import { getSite } from '../../lib/site.mjs';
 import {
   renderCatalogTable,
+  renderCatalogGroups,
   renderCatalogFilters,
   renderFetchLine,
 } from '../../lib/render/catalog.mjs';
@@ -80,6 +81,7 @@ export default async function CatalogPage() {
       <script dangerouslySetInnerHTML={{ __html: PREAMBLE_DISCLOSURE_SCRIPT }} />
       <div dangerouslySetInnerHTML={{ __html: renderCatalogFilters(providersOf(rows), statusesOf(rows)) }} />
       <div dangerouslySetInnerHTML={{ __html: renderCatalogTable(rows, { id: 'catalog-table' }) }} />
+      <div dangerouslySetInnerHTML={{ __html: renderCatalogGroups(rows) }} />
       <CatalogFilter />
     </>
   );

@@ -651,6 +651,30 @@ Enforced by `tools/ui-invariants.mjs` id `S9`.
 > regression — the fix is a different mechanism for `.home-grid`'s split, not more rail
 > content and not a lowered floor.
 
+> *round-1 addendum (K12/F-K12, keeper, 2026-09-05) — `S14`'s "answer-first" ordering is
+> OVERRULED for entries with a prose body.* The keeper's own read of the shipped page:
+> "having the FACTS displayed first with no context makes them feel out of place." R-C
+> (`BRIEF-UI-001`): a wiki entry with a prose body shall present the subject — title plus
+> one paragraph of context — BEFORE any facts table; a stub with no prose stays
+> facts-first (R-C's own exception: nothing to place ahead of it there). This does not
+> reopen the iter-05 finding `S14` was written against (an entire essay ahead of the one
+> value a reader came for) — it corrects what "context" turned out to mean: not zero, and
+> not a whole essay, one paragraph. `lib/render/entry.mjs`'s `renderEntryPage` now splits
+> the prose body at its first rendered block (`.entry-lede`) from the remainder
+> (`.entry-rest`), so DOM/paint order becomes identity, dormant notice, LEDE, `.entry-side`
+> (FACTS+TIMELINE+RAILS, I40's wrapper, unchanged internally), REST — correct at every
+> width with no `order` property needed below 60rem, replacing the mobile-only `order`
+> reflow this addendum's own iter-05 text describes. `S14` is amended (not retired — the
+> symmetric floor against FACTS being pushed ABOVE the viewport, iter-06's own fix, still
+> applies) to require: (a) `.entry-lede`'s bottom edge sits at or above `.entry-facts`'s top
+> edge at every declared viewport (title+context strictly precedes facts, the property this
+> whole addendum is actually about); (b) `.entry-facts`'s top edge stays within 1.5x the
+> viewport height, loosened from 1.0x because a single paragraph, unlike a whole essay, can
+> legitimately run long enough to cross a strict one-viewport line on a narrow screen
+> without burying FACTS in any reader's ordinary sense of "past the fold". A stub (no
+> `.entry-lede`) is exempt from clause (a) and keeps `S14`'s original clause (b) bound at
+> 1.0x, unchanged — see `tools/ui-invariants.mjs` `S14` for the falsified check.
+
 > *iter-09 addendum (I40) — the 60% dead-track floor's own text ("A page template shall...")
 > was enforced on ONE template. It is widened here to the site's most numerous surface, and
 > the result is left HONESTLY FAILING — recorded as the deliverable, not a defect to paper

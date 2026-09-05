@@ -668,6 +668,41 @@ async function checkStamp(out) {
   }
 }
 
+/**
+ * The no-digit fence (plan §11.4, K19). `/frontier`'s fixed copy carries no
+ * digit — every DERIVED value lives inside an element carrying
+ * `[data-derived]`. After removing every `[data-derived]` subtree, the site
+ * header and the footer (whose build stamp is digits by design, S-checked
+ * separately by `checkStamp`), the remaining text of `main` must contain no
+ * digit: a census, a count or a date typed straight into the template copy
+ * is the only way this page could state a number it did not derive, and a
+ * page whose fixed copy has no digit cannot state one.
+ *
+ * DECLINED for `/impossible-routine` (the plan's own suggestion, marked
+ * GUESS there): checked, not guessed, and the answer is no — its rendered
+ * deltas (dates, "N years, N months" spans) are not wrapped in
+ * `[data-derived]`, so applying this fence there today would fail on the
+ * page's own derived content, not on typed-in copy. Fencing that page is a
+ * template change to `lib/render/delta.mjs` this packet does not own; left
+ * to whichever build next touches that surface.
+ */
+async function checkFrontierFence(out) {
+  process.stdout.write('\nno-digit fence (frontier-plan.md §11.4)\n');
+  for (const route of ['/frontier']) {
+    const $ = await page(out, route);
+    const main = $('main').first().clone();
+    main.find('[data-derived]').remove();
+    main.find('header, footer, script, style').remove();
+    const text = main.text();
+    const digitMatch = text.match(/\d/);
+    check(
+      !digitMatch,
+      `${route}'s fixed copy (outside [data-derived]) carries no digit`,
+      digitMatch ? text.slice(Math.max(0, text.indexOf(digitMatch[0]) - 40), text.indexOf(digitMatch[0]) + 10) : 'clean',
+    );
+  }
+}
+
 async function main() {
   const out = resolve(process.argv[2] ?? 'out');
   process.stdout.write(`verify-surfaces: ${out}\n`);
@@ -679,6 +714,7 @@ async function main() {
   await checkCrawlerFiles(out);
   await checkStructuredData(out);
   await checkStamp(out);
+  await checkFrontierFence(out);
 
   process.stdout.write(
     failures === 0 ? '\nverify-surfaces: all checks passed\n' : `\nverify-surfaces: ${failures} FAILED\n`,
