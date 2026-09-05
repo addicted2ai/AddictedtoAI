@@ -31,12 +31,13 @@ deltas, never restatements; structured over prose; a `depends_on` that names not
 | `CAL` | calibration (reader test result) | 3000 |
 | `GR` | gate report (machine-written) | 6000 |
 | `IR` | implementer report (finalist build / revision) | 7000 |
-| `BLIND` | blind-arbiter test: what needs the keeper (K32) | 5000 |
+| `BLIND` | blind-arbiter test: what needs the keeper (K32) | 6000 |
 | `JURY` | jury: one-order pairwise half (`JURY-<brief>-AB`/`-BA`) or the merged frontier (`JURY-<brief>`) | 10000 |
 | `state.md` | resume file | 8000 |
 
 `JV` was 9000; round 1 observed 8391–8999 B for 8/8 verdicts (binding for every writer). Re-baselined
-ONCE to 12000 on 2026-09-05 per the source graph's rule; it is hard again from here.
+ONCE to 12000 on 2026-09-05 per the source graph's rule; it is hard again from here. `BLIND` was
+set at 5000 with no observation; the first instance measured 5081 → 6000 once, now hard.
 
 ## concept-brief
 

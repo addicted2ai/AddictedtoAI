@@ -84,7 +84,8 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
    "general"). **K34** (BLIND-001, delegated): domain sections order by domain id; AA values render
    nothing until rights clear (K24). [r3]
 4. Check-in (K7 cap): authorise a narrow 4th iteration (FM-N1 claim filter + visible "unverified";
-   F-hier-11 door hairlines) or not; run MR-UI-001..003; implementer tier; then merge/push. [r3]
+   F-hier-11 door hairlines) or not; run MR-UI-001..003; implementer tier; then merge/push. Page:
+   https://claude.ai/code/artifact/ec87ffd5-e243-474c-aaf0-ee688cc7ccbf [r3]
 
 ## Next (loop work, in order)
 
