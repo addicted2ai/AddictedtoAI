@@ -27,8 +27,8 @@ process each round knows only what this file says. Every claim cites an artifact
 - **K7 (delegated defaults)** — ≤3 revisions then keeper check-in; jury (order-swapped pairwise) once,
   on ≤2 finalists; 8.5 target REPORTED, not a stop. Convergence = empty `ui-fixable` queue AND full
   rig coverage AND empty keeper section.
-- **K8** — `STOP` created by the keeper 2026-09-05. **K9** — Reader test: the keeper alone (weaker
-  than strangers, still the only human measurement). No usage ceiling "within reason".
+- **K8** — `STOP` created by the keeper 2026-09-05. **K9** — Reader test: the keeper alone. No usage
+  ceiling "within reason".
 - **K10 — THE BRIEF'S CENTRE (keeper, verbatim in substance).** "A shining example of what
   frontier AI can do when handed the reins. I want people to be truly amazed at the quality of the
   site, and even more so once they realize a human didn't write any of it." Content largely liked.
@@ -60,7 +60,8 @@ process each round knows only what this file says. Every claim cites an artifact
   membership is EDITORIAL, never feed-gated: a player is on the board because the site covers it;
   feeds fill cells; no label assumes one source. **K22** a closed, small cross-cutting `domain` facet
   (models/orgs/tools/indices) joins the **Desk order** (post-pick note: Frontier data, K21 coverage,
-  K22); vocabulary researched by Opus → `graph/knowledge/EN-domain-facet.md`; keeper picks it.
+  K22); Opus research → `graph/knowledge/EN-domain-facet.md`; keeper picks. The graph ASSUMES the
+  facet: finalists absorb a domain as data (column/filter/row), no template edit — jury question.
 
 ## Known evidence lies (live-specific; continues JUDGE.md's L-series)
 
