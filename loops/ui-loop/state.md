@@ -86,8 +86,9 @@ process each round knows only what this file says. Every claim cites an artifact
 ## Next (keeper decisions)
 
 1. ~~Anchors read, GO given (2026-09-05).~~ Round 1 running. [r0]
-2. Catalog at 390px: choose from the round-1 concept frontier (supersedes the delegated I14). [r0]
-3. Rule challenges under K14, as concepts raise them: retire, amend, or keep each. [r0]
+2. **Round-1 rulings 1–8** (finalists; TYPE inherited-stack; R13; R7; R-B; R9; R-D; prose family):
+   https://claude.ai/code/artifact/0242a21f-b528-4116-9ee4-ed9ae7c11551 + `DR-CP-UI-001-*`.
+   Catalog@390 is chosen with the finalists (supersedes I14). [r1]
 
 ## Next (loop work, in order)
 
@@ -97,7 +98,6 @@ process each round knows only what this file says. Every claim cites an artifact
    judge-hierarchy + judge-system (Opus) → `JV-hier|sys-CP-UI-001-n-1.json`; red-team (Sonnet) →
    `RT-CP-UI-001-n-1.md`. If resuming: check which of those 12 files exist; re-dispatch only the
    missing ones (independence: never show a judge a sibling's verdict).
-8. Validate verdicts (`gates.mjs --jv … --contract …`), `score.mjs <packet> 1 --round 1` dry then
-   `--write`, disagreement-analyzer (Haiku) → `DR-*`; keeper-tagged items to the section above.
-9. Concept page for the keeper: four bets flat, scores reported never collapsed, rule challenges
-   listed. Keeper picks ≤2 finalists (K7) → implementers (Sonnet) on `ui/concept-<n>`.
+8. ~~Verdicts, scores, DRs, concept page~~ `52834c7`+. Waiting on keeper item 2.
+9. On the pick: implementers (Sonnet) build finalists on `ui/concept-<n>` from `ui/graph-round-0` per
+   `contracts/implementer.md`; rig captures incl. /frontier; full panel; open the DRs' MRs.
