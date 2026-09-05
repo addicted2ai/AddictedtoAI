@@ -135,3 +135,42 @@ with a named access regime.
 A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
 
 `data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
+
+---
+
+## Re-confirmed 2026-09-04: both flagged 9to5Google items are on the page
+
+The reviewer of job j-20260903-09 carried a finding
+(`data/carried/j-20260903-09-carry-1.md`) that two items this docket attributes
+to https://9to5google.com/2026/09/02/gemini-3-8-flash-launch/ would not
+reproduce through its extractor: Wiz's "+7.5-9.7% recall", and the sentence
+"At times, the model might use more tokens to maximize performance, especially
+at higher effort levels". It flagged them for re-confirmation rather than
+asserting they were wrong, on the stated ground that an extractor's silence is
+not evidence.
+
+Both are present, verbatim, in the raw HTML of that page, fetched 2026-09-04
+(HTTP 200, 201,798 bytes, no redirect). Read from the response bytes, not
+through an extractor:
+
+- "Wiz found that Gemini 3.8 Flash Cyber achieves +7.5-9.7% higher recall on
+  their internal penetration testing benchmark for a 2.3-5.2x lower cost
+  compared to other leading frontier models." The percentage range is on the
+  page; the reviewer's extractor dropped it.
+- "On complex tasks, it exhibits greater diligence — executing extra reasoning
+  steps, and calling tools iteratively. At times, the model might use more
+  tokens to maximize performance, especially at higher effort levels." The two
+  readings are not rivals: they are consecutive sentences of one blockquote,
+  and the reviewer's extractor returned only the first.
+
+Both also appear verbatim in Google's own launch post,
+https://blog.google/innovation-and-ai/models-and-research/gemini-models/3-8-flash-and-3-8-flash-cyber/,
+fetched the same day (HTTP 200, 406,118 bytes) — the Wiz line under "Real-world
+impact: securing Google's code", the "works harder" passage in the performance
+section. 9to5Google is quoting Google, so the primary document carries them
+too, which is what the merged pages cite: `content/wiki/model/google-gemini-3-8-flash.md`
+attributes the Wiz figure to that launch post and
+`content/wiki/org/google-deepmind.md` attributes the "works harder" and "more
+tokens" quotes to it. Both attributions hold as written, so no prose changed.
+
+The docket's figures stand. The carried finding is retired in the same diff.
