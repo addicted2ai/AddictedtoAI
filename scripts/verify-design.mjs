@@ -139,9 +139,18 @@ function record(pass, label, detail) {
 }
 
 function startServer(out, port) {
+  // stderr was 'ignore' here, so EVERY failure of this child — a port collision, a crash,
+  // a missing file, a syntax error — surfaced as the single string `serve-static exited
+  // with N`. JUDGE.md L1 tells judges that exact string means EACCES and must not be
+  // debugged. **A documented known-lie had therefore become a blanket excuse capable of
+  // hiding any real failure**, and a judge hit it twice with the sandbox off and could not
+  // tell that the gate had not run at all. Capture stderr and put the real cause in the
+  // error, so L1 can identify EACCES specifically instead of standing in for everything.
   const child = spawn(process.execPath, [join(ROOT, 'scripts', 'serve-static.mjs'), out, String(port)], {
-    stdio: ['ignore', 'pipe', 'ignore'],
+    stdio: ['ignore', 'pipe', 'pipe'],
   });
+  let stderr = '';
+  child.stderr.on('data', (buf) => { stderr += String(buf); });
   return new Promise((res, rej) => {
     const timer = setTimeout(() => rej(new Error('serve-static did not start in 15s')), 15000);
     child.stdout.on('data', (buf) => {
@@ -152,7 +161,16 @@ function startServer(out, port) {
     });
     child.on('exit', (code) => {
       clearTimeout(timer);
-      rej(new Error(`serve-static exited with ${code}`));
+      const tail = stderr.trim().split(/\r?\n/).slice(-6).join(' | ');
+      const eacces = /EACCES|EPERM/.test(stderr);
+      rej(new Error(
+        `serve-static exited with ${code}` +
+        (eacces
+          ? ` — EACCES/EPERM binding the socket: this IS the sandbox case JUDGE.md L1 describes; re-run outside the sandbox. stderr: ${tail}`
+          : tail
+            ? ` — NOT the L1 sandbox case. Real cause follows, debug it: ${tail}`
+            : ' — no stderr captured; do not assume L1, investigate'),
+      ));
     });
   });
 }

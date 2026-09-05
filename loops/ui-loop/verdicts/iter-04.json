@@ -1,0 +1,330 @@
+{
+  "iteration": 4,
+  "date": "2026-08-31",
+  "anchor": {
+    "iteration": 2,
+    "overall": 7.25,
+    "implemented_since": ["I16", "I17", "I18", "I20", "I24", "I25", "I10 (declined with cause)", "R8 rewritten surface-conditioned (iteration 3, no verdict)"]
+  },
+  "scores": {
+    "first_read_hierarchy": 8.0,
+    "chrome_restraint": 8.5,
+    "information_density": 6.5,
+    "list_and_table_craft": 8.0,
+    "typographic_system": 7.5,
+    "colour_discipline": 8.0,
+    "family_coherence": 6.5,
+    "responsive_integrity": 8.0,
+    "accessibility": 7.0,
+    "payload_discipline": 9.0,
+    "visual_distinctiveness": 6.0,
+    "overall": 7.7
+  },
+  "instrument_disclosure": {
+    "overall_basis": "unweighted mean of the TEN UNCAPPED categories (visual_distinctiveness scored, reported, excluded)",
+    "this_verdict_ten_category_mean": 7.7,
+    "this_verdict_old_eleven_category_mean": 7.545,
+    "anchor_ten_category_mean": 7.25,
+    "anchor_old_eleven_category_mean": 7.136,
+    "delta_against_anchor": 0.45,
+    "noise_floor": 0.2,
+    "note": "chrome_restraint carries a SECOND instrument change the overall figure cannot express: the category text was rewritten from a global 'is there less chrome' to a surface-conditioned test, and the anchor's 7.5 was produced under the reading that has since been declared a defect. The 7.5 -> 8.5 delta is therefore an absolute reading on a new scale, not a measured movement of the artifact by 1.0. Iteration 3 did the row-rule restoration that the new scale rewards; iteration 4 did none of it."
+  },
+  "verdict": "Competent",
+  "score_deltas": [
+    {
+      "category": "chrome_restraint",
+      "from": 7.5,
+      "to": 8.5,
+      "moved_by": "R8 rewritten surface-conditioned and the row rules restored on the two surfaces the mirror-validated forced choice found them missing from. Verified by me on this evidence, per surface, with the class named: /catalog (396 rows x 7 columns, cross-row tracking YES) carries a rule per row in current/table-catalog--light--1440.png and --dark--1440.png; the home changed feed (ragged entry heights, the WHAT IT MEANS block and wrapped source lines, YES) carries one per entry in current/home--light--1440.png and current/home--light--390.png; /tools' .listing entries (ragged, Deepgram wraps to two lines, YES) carry one in current/index-tools--light--1440.png; the wiki entry's FACTS block (label-to-value gap, multi-line values, YES) carries one in current/wiki-entry--light--1440.png; .browse on /wiki, /data and /tools' category index (near-uniform single-line link rows, NO) carries none in current/index-wiki--light--1440.png, current/data--light--1440.png. Every surface I can classify now matches its class. Held below 9 by the 396 identical underlined READ dates (I8) and the decorative accent rule on the home page (I31). ALSO AN INSTRUMENT CHANGE - see instrument_disclosure."
+    },
+    {
+      "category": "list_and_table_craft",
+      "from": 7.0,
+      "to": 8.0,
+      "moved_by": "I17. .browse-row is now grid-template-columns: subgrid, measured by me at 1440x900: .browse-kind starts at x=540.0 and .badge at x=620.6 on every sampled row of /wiki's 495, against the six ragged positions state.md records for the anchor tree. Falsified rather than taken on report: `node tools/ui-invariants.mjs --only S9 --break \".browse-row{display:block !important}\"` fires with '.browse-kind's left edge varies by 146.0px across sampled rows'. This is the site's second-largest surface and the exact defect the blind forced-choice comparison identified. /catalog reads cleanly at 1440 with the corridor holding (S7) and I25's panel reading removed. Held below 8.5 by I8 (396 identical READ dates), I23 (215.9px per record over an 86,653px page at 390), I11 (/tools' run-on middot line) and I30 (/blog setting record links at a 1019px measure)."
+    },
+    {
+      "category": "first_read_hierarchy",
+      "from": 7.5,
+      "to": 8.0,
+      "moved_by": "I24. The sticky header measured by me at 390x844 on /, /wiki, /catalog, /tools and /learn: 77.9px, 9.2% of the viewport, disclosure defaulting to open=false on all five - against the anchor's 129.3px / 15.3% held permanently on every route. 51.4px of the first screen returned to the page's own H1 and first content line on every route at the mobile viewport; verify-design reports the first changed-feed line starting 137px down at 390x844. Visible in current/home--light--390.png and current/table-catalog--light--390.png. Held below 8.5 by /blog, whose four record titles run to a 1019px measure on a page whose own intro paragraph is bounded at ~605px (I30)."
+    },
+    {
+      "category": "responsive_integrity",
+      "from": 7.5,
+      "to": 8.0,
+      "moved_by": "I24 again, in the category it belongs to most: a persistent chrome budget now exists (R14) and is met with margin on every route I measured, and the control that achieves it stays a genuine tab stop - verify-design's own focus sweep now names the closed <details> as 'not currently tabbable' rather than losing it, and S10 asserts Enter exposes all seven nav links. Zero horizontal scroll at 320px on all four sampled routes. Held below 8.5 by I23: at 390 /catalog is 86,653px tall for 396 records at 215.9px each (measured), so R12 is satisfied and the surface is still not scannable."
+    },
+    {
+      "category": "information_density",
+      "from": 6.0,
+      "to": 6.5,
+      "moved_by": "Three measured recoveries against one measured hold. Recovered: I25 returns 72px per catalog screen (gap at maximum scroll now 24.0px against a 32.3px row height, measured by me at 1440x900); I24 returns 51.4px per mobile screen on every route; I17 makes /wiki's 495 rows scannable down two fixed columns rather than six ragged positions, which is density of usable information rather than of pixels. Held: I16 did not move at all. Scanning current/index-wiki--light--1440.png for the rightmost non-background pixel per scanline, /wiki carries ink past 55% of the 1440 viewport on 26 of 3383 scanlines; the same measurement over evidence/iter-01/index-wiki--light--1440.png reads 27 of 3383 and over evidence/baseline/ reads 1874 of 3444. /data reads 0 of 1031, /colophon 0 of 1043, /wiki/concept/ai-winter 0 of 2794. Four of ten templates leave roughly half the viewport empty down their full height, unchanged."
+    },
+    {
+      "category": "family_coherence",
+      "from": 6.0,
+      "to": 6.5,
+      "moved_by": "One row vocabulary where there were three: .browse now drives /wiki, /data and the /tools category index off one shared subgrid track set, and /learn's rung ladder uses the same mechanism at its own breakpoint (S9, both clauses observed firing under --break). R9's ink+underline resting treatment reaches five index surfaces instead of three (S6 widened; verified in current/home--light--1440.png, current/index-learn--light--1440.png). Section rules bind to their own block on /data (349px, 741px and 750px rules each matching the block beneath), the wiki entry (REFERENCED HERE 145-435, APPEARS IN 460-751) and home (WHAT CHANGED to x=850, rail headings to x=1297) - I20. Held below 7 by three surviving dialects: /blog sets a record link at 1019px while /wiki sets the same object at a 384px track (I30); the home Impossible->Routine block carries an accent-coloured rule vocabulary used nowhere else on the property and inconsistently within itself (I31); and four templates occupy half the shell while three fill it (I16)."
+    },
+    {
+      "category": "typographic_system",
+      "from": 7.0,
+      "to": 7.5,
+      "moved_by": "R16/S12, and only this far. The stack now resolves to Charter, 'Bitstream Charter', 'Sitka Text Metric', 'Cambria Metric', Georgia, 'Times New Roman Metric', serif, with the synthetic faces size-adjusted to Georgia; measured by me in the browser, document.fonts reports 'Sitka Text Metric' loaded, and S12 confirms the adjusted faces render a ~3730px sample within 3px of Georgia's own width. That is a real gain in the category's 'controlled measure and consistent vertical rhythm' clause, on the platforms most readers are actually on. It is NOT a gain in the category's other clause - 'a face chosen for this domain rather than inherited' - and cannot be: there is still no @font-face with a payload anywhere in app/. Vercel's mechanism is a chosen face; this artifact metric-matches whatever face the reader's OS happens to hold. I10's decline is accepted with cause and is not re-filed. 7.5 is this category's honest ceiling while it stands."
+    },
+    {
+      "category": "colour_discipline",
+      "from": 8.0,
+      "to": 8.0,
+      "moved_by": "HELD. I filed a real colour defect this round (I31: a full-strength accent rule, rgb(74,59,212) light and rgb(156,147,255) dark, spanning 1153px above the FIRST Impossible->Routine pair's heading only, while the structurally identical rule above the second pair is neutral rgb(185,187,199) / rgb(65,71,87)) - but I then measured the same pixel in evidence/iter-01/home--light--1440.png (y=1642) and evidence/baseline/home--light--1440.png (y=1666) and found it present in both. It predates the anchor and no change since the anchor made it worse, so under the anchored re-scoring contract it may not move the category down. It moves the item list instead."
+    },
+    {
+      "category": "accessibility",
+      "from": 7.0,
+      "to": 7.0,
+      "moved_by": "HELD by mapping lookup, not judgement. Read from scripts/verify-design.mjs, re-run by me: zero axe violations in both themes on all four sampled routes (45, 47, 51 and 46 rules passed). Lowest printed sweep ratio: /catalog '150 of 818 focusable element(s) - STOPPED AT THE 150-STOP CAP' = 0.183 < 0.5. Row 7. I12 remains the sole reason, is an open evidence-fix against the harness, and is not the artifact's fault."
+    },
+    {
+      "category": "payload_discipline",
+      "from": 9.0,
+      "to": 9.0,
+      "moved_by": "HELD by mapping lookup. Re-run: /catalog 123.1 KB gzipped first-load against the 150 KB bound in data/launch.json = 82.1%, at or under 85%. Row 9. Worth recording that I10's decline is what preserved this: a self-hosted subset face would have spent into the remaining 26.9 KB."
+    },
+    {
+      "category": "visual_distinctiveness",
+      "from": 6.0,
+      "to": 6.0,
+      "moved_by": "HELD, and excluded from the overall under the corrected aggregation. Nothing named moved it: the serif-plus-mono pairing, the violet accent and the flat neutral ground are unchanged in kind. The metric-matched fallbacks make the type more consistent, not more distinctive - they normalise toward Georgia, which is the definition of inherited."
+    }
+  ],
+  "score_hold_justification": "Two categories where resolved items and unresolved ones pull against each other, stated because the arithmetic is not obvious. (1) information_density rose only 0.5 despite three measured recoveries, because the largest single density defect on the property did not move: I16 was scoped and worked this iteration and the measurement is one scanline from its iteration-1 value (26 of 3383 versus 27 of 3383 scanlines carrying ink past 55% of the viewport on /wiki, against 1874 of 3444 at baseline). The subgrid half of that item landed and the width half did not, and the invariant registered for it cannot tell the difference - see I28. (2) typographic_system rose only 0.5 despite R16 landing cleanly, because half the category's own definition is untouched by metric-matching and I10's decline stands. Neither hold is a taste judgement; both are measurements I took myself.",
+  "acknowledged": [
+    {"baseline_item": "I17", "status": "resolved", "note": ".browse-row is subgrid; .browse-kind at x=540.0 and .badge at x=620.6 fixed across sampled rows of /wiki at 1440x900, measured by me. S9's subgrid clause observed firing under --break \".browse-row{display:block !important}\" at 146.0px variance. current/index-wiki--light--1440.png and --dark--1440.png."},
+    {"baseline_item": "I24", "status": "resolved", "note": "Header 77.9px / 9.2% of 390x844 on /, /wiki, /catalog, /tools and /learn, measured by me on all five; details.open === false on all five. Anchor was 129.3px / 15.3%. current/home--light--390.png. R14/S10."},
+    {"baseline_item": "I25", "status": "resolved", "note": "Measured by me at 1440x900 with /catalog at maximum scroll: wrap bottom 794.7px, footer top 818.7px, gap 24.0px against a 32.3px row height (anchor: 96px, three rows). #catalog-table-wrap background rgb(246,246,248) === body background rgb(246,246,248), so the card reading is gone. R15/S11."},
+    {"baseline_item": "I20", "status": "resolved", "note": "Section rules bind to their content block, confirmed on three templates I could see it on: /data's three section rules end at 349, 741 and 750px each matching the block beneath (current/data--light--1440.png); the wiki entry's REFERENCED HERE rule spans 145-435 and APPEARS IN 460-751 (current/wiki-entry--light--1440.png); home's WHAT CHANGED rule ends at x=850 against the feed and the rail headings at x=1297. The manifest's disclosure that /colophon was never broken is correct - I checked prose--light--1440.png and it is a regression guard, not a fix."},
+    {"baseline_item": "I18", "status": "resolved", "note": "R9's ink+underline resting treatment now on the home changed feed, Latest post, Latest tutorial, /learn rung titles and the Impossible->Routine headlines. current/home--light--1440.png and current/index-learn--light--1440.png. Worth recording as a side effect the manifest did not claim: on the home feed the underline is now the only signal separating a record name that has a wiki entry from one that does not, and it does that job legibly."},
+    {"baseline_item": "I16", "status": "unchanged", "note": "NOT RESOLVED, and the manifest's framing of I16 and I17 as one job is where it went wrong. The subgrid half landed; the width half made the measurement worse in the direction R13's own text forbids. Scanning current/index-wiki--light--1440.png for the rightmost non-background pixel per scanline: 26 of 3383 scanlines carry ink past 55% of the 1440 viewport, against 27 of 3383 in evidence/iter-01 and 1874 of 3444 in evidence/baseline. /data 0 of 1031, /colophon 0 of 1043, /wiki/concept/ai-winter 0 of 2794. Re-filed at raised impact."},
+    {"baseline_item": "I10", "status": "resolved", "note": "DECLINED WITH CAUSE AND THE DECLINE IS ACCEPTED - not re-filed. The substitute landed and is real: document.fonts reports 'Sitka Text Metric' loaded, and S12 confirms the size-adjust arithmetic lands within 3px over a ~3730px sample against Georgia. It narrows the defect rather than closing it, exactly as R16 says. The consequence is stated rather than absorbed: typographic_system cannot honestly pass ~7.5 while the category's 'face chosen for this domain' clause stands and no face is shipped. Raising it further is a keeper decision about R3 payload and offline-honesty, not implementer work."},
+    {"baseline_item": "I19", "status": "resolved", "note": "WITHDRAWN BY THE RUBRIC CHANGE, not implemented, and it must not be re-filed. I19 asked for /tools' per-entry rules to be removed. Under revised R8's test, /tools' .listing entries have ragged rendered heights - current/index-tools--light--1440.png shows the Deepgram entry's fact line wrapping to two lines where its neighbours are one - so the rule is REQUIRED there and its removal would be the defect. The artifact is already correct. I am recording this as closed so it stops resurfacing."},
+    {"baseline_item": "I5", "status": "unchanged", "note": "Not worked, deferred by scope. current/wiki-entry--light--1440.png: on /wiki/concept/ai-winter the FACTS block still begins past y=2100 of a 2974px page, after every word of prose. Re-filed."},
+    {"baseline_item": "I8", "status": "unchanged", "note": "Not worked. Every visible READ cell in current/table-catalog--light--1440.png reads the identical string 2026-08-31, and every one of them is underlined. Re-filed."},
+    {"baseline_item": "I9", "status": "unchanged", "note": "Not worked, but re-measured smaller than the anchor stated. .home-side ends at y=646.5 while .rail-changes runs to y=1334.6 on a 2559px page, so the empty right column is ~690px, not the ~2000px the anchor recorded. Re-filed at reduced impact."},
+    {"baseline_item": "I11", "status": "unchanged", "note": "Not worked. current/index-tools--light--1440.png: all 35 listings still set licence, pricing, verified date and link as one run-on mono line separated by middots, spanning the full 1150px shell, so no field starts at the same x on any two entries. Re-filed."},
+    {"baseline_item": "I23", "status": "unchanged", "note": "Not worked. Measured by me at 390x844: the first five stacked records are 209.5, 215.9, 215.9, 215.9 and 215.9px; 396 records over an 86,653px document. Matches current/table-catalog--light--390.png. Re-filed."},
+    {"baseline_item": "I12", "status": "unchanged", "note": "Open evidence-fix, the sole reason accessibility reads 7. This run: 'PASS every tab stop shows a focus indicator /catalog - 150 of 818 focusable element(s) - STOPPED AT THE 150-STOP CAP, the rest unswept'. Orchestrator's to close. Re-filed, and see I29 for an interaction that now caps it at 8 even after closure."},
+    {"baseline_item": "I13", "status": "unchanged", "note": "Open evidence-fix. 38 of 40 captures remain scroll-0 fullPage images, so nothing scroll-linked below the first viewport is observable from the set. Re-filed."},
+    {"baseline_item": "I26", "status": "unchanged", "note": "Open evidence-fix. The fullPage fidelity detector is still keyed to one CSS signature; only /catalog at 1440 trips it, which is exactly the one route already known. Re-filed."},
+    {"baseline_item": "I14", "status": "unchanged", "note": "keeper-gate, reader class. 396 rows as one continuous surface with four filters and no pagination. Unresolvable by presentation. Re-filed so it stops resurfacing."},
+    {"baseline_item": "I27", "status": "unchanged", "note": "keeper-gate. The attr(data-label) assistive-technology question at 390px still needs a measurement this loop's evidence classes cannot supply. Re-filed."},
+    {"baseline_item": "I21", "status": "resolved", "note": "Closed before this iteration. Verified independently: all 40 manifest entries carry buildStamp 2026-09-01T01:43:26Z and out/index.html carried data-build-stamp=\"2026-09-01T01:43:26Z\" when I checked it BEFORE running any build of my own."},
+    {"baseline_item": "I22", "status": "resolved", "note": "Closed before this iteration. The two /catalog 1440 entries are labelled capture: \"viewport\" with a reason; I judged only what is in frame on those two and routed nothing below it."}
+  ],
+  "items": [
+    {
+      "id": "I16",
+      "target": "shared design system (app/globals.css - .shell, .browse, and the measure-track prose templates)",
+      "problem": "Four of the ten sampled templates leave roughly half the viewport unoccupied down their entire height, and this iteration changed the number by one scanline. Measured by scanning each capture for the rightmost non-background pixel on every scanline, excluding the header band and the footer: /wiki carries ink past 55% of the 1440 viewport on 26 of 3383 scanlines (0.8%); /data 0 of 1031; /colophon 0 of 1043; /wiki/concept/ai-winter 0 of 2794. For contrast, on the same measurement / reads 555 of 2379, /tools 399 of 4403 and /learn 777 of 3672. The same scan over evidence/iter-01/index-wiki--light--1440.png reads 27 of 3383 and over evidence/baseline/index-wiki--light--1440.png reads 1874 of 3444. I17's subgrid half landed and is resolved; the width: fit-content half of the same item did not recover any of the width iteration 1 gave up - it made the list narrower, which moves AWAY from R13's second clause. The item was scoped as one job with I17 and only half of it was done, and the check registered for it cannot distinguish the two halves (see I28).",
+      "evidence": "loops/ui-loop/evidence/current/index-wiki--light--1440.png, data--light--1440.png, prose--light--1440.png, wiki-entry--light--1440.png; compared against loops/ui-loop/evidence/iter-01/index-wiki--light--1440.png and loops/ui-loop/evidence/baseline/index-wiki--light--1440.png",
+      "invariant": "On every sampled route at 1440x900, either the rendered content inside <main> carries ink on at least 25% of the scanlines falling in the right half of the shell, or the occupied track is centred within the shell so that the unoccupied width is split rather than pooled entirely on one side.",
+      "governing_rule": "RULES.md R13",
+      "prescription": "Two different remedies, because there are two different causes. For /wiki and /data, restore a genuine second column - kind and status right-aligned toward the shell's inner edge as at baseline. The reason iteration 1 removed it was that values drifted from their labels across ~1140px; subgrid now holds them in one track set, so the alignment objection no longer applies and the width can come back without the defect that motivated capping it. For the measure-track prose templates (/wiki/[kind]/[slug], /colophon, /blog/[slug]), centre the measure track in the shell, or move the FACTS block into the freed track - which would also address I5. Do not satisfy this by widening the prose measure itself; the measure is correct.",
+      "tag": "ui-fixable",
+      "impact": 7,
+      "new": false,
+      "baseline_item": "I16"
+    },
+    {
+      "id": "I28",
+      "target": "tools/ui-invariants.mjs, check S9",
+      "problem": "S9 bounds R13 on one side only, and that is why I16 could be worked and reported while its own measurement stood still. Run by me: `node tools/ui-invariants.mjs --only S9 --break \".browse{width:100% !important}\"` fires correctly with \".browse's own right edge (1296.0px) reaches the shell's inner edge (1296.0px) - it did not shrink to its content\". But `node tools/ui-invariants.mjs --only S9 --break \".browse{width:240px !important}\"` returns ok, and the tool's own banner prints \"0 of 1 check(s) fired as intended; 1 did NOT\". A .browse shrunk to 240px inside a 1216px shell - leaving 1056px, nearly a whole shell, unoccupied for 3563px - satisfies S9 completely. R13's own text names both edges: at most two declared tracks AND no track's worth of the shell left permanently unoccupied along its full height. S9 enforces only the upper one. This is JUDGE.md L4 recurring in a new dimension: a one-sided geometric invariant passing under opposite-direction displacement. L4 was written about collision corridors; the same failure shape applies to occupancy, and the rule the loop drew from L4 - bound the corridor, not the single edge - was not applied to the invariant written three iterations later.",
+      "evidence": "tools/ui-invariants.mjs --only S9 --break output, both directions, run by me at the current tree; loops/ui-loop/evidence/current/index-wiki--light--1440.png",
+      "invariant": "S9 fails both when .browse's right edge reaches the shell's inner edge AND when it falls below a floor stated as a fraction of the shell's inner width; a --break that shrinks .browse to a fraction of the shell makes S9 fire.",
+      "governing_rule": "RULES.md R13; JUDGE.md L4",
+      "prescription": "Add the lower bound to S9 and register the falsifier for it in both directions, not only the one the shipped fix happens to move. More generally: JUDGE.md L4's rule should be promoted from a note about sticky collisions to a standing requirement on every geometric invariant this loop registers - if a property is expressed as a comparison between two edges, both directions of displacement must be observed failing before the check is trusted.",
+      "tag": "evidence-fix",
+      "impact": 7,
+      "new": true
+    },
+    {
+      "id": "I29",
+      "target": "scripts/verify-design.mjs focus sweep, and JUDGE.md rubric section 9's row-10 condition",
+      "problem": "I24 and the accessibility mapping interact, and neither item's invariant can see it. The nav disclosure R14 required is correct, is a genuine tab stop, and the sweep reports it honestly - but the report now reads, on /: 'the complete tab order, 83 stop(s); 84 focusable element(s) in the DOM, 1 of them not currently tabbable (a closed <details> hides its links)', and on /tools: '98 stop(s); 134 focusable element(s) in the DOM, 36 of them not currently tabbable'. The rubric's row 10 requires 'every focus sweep reports swept == total'. With a closed <details> on every route there is now a permanent, correct, by-design gap between swept and total, so swept == total is unreachable and the accessibility ceiling is 8 even after I12 closes. JUDGE.md's own target arithmetic - 8.5 'only if accessibility reaches 10' - is therefore no longer satisfiable by any amount of implementer work. Second, smaller half: three of the four sweeps no longer print the bare '<swept> of <total>' ratio the mapping instructs the judge to read; only /catalog does. The rubric's own escape clause covers this ('If the output does not print a ratio the mapping needs, that is an evidence-fix'). It does not change this verdict's score - /catalog's 0.183 governs either way, and the derivable ratios 83/84, 27/28 and 98/134 are all above 0.5 - but it will govern the next one.",
+      "evidence": "scripts/verify-design.mjs output section 'focus indicators, past the header (addictedtoai-9jj)', re-run by me at the current tree; RULES.md R14; JUDGE.md rubric section 9",
+      "invariant": "For every sampled route the focus sweep prints a '<swept> of <tabbable>' ratio whose denominator counts only elements tabbable in the state under test, and the rubric's row-10 condition is stated against that denominator rather than against DOM focusable count.",
+      "governing_rule": "RULES.md R5; RULES.md R14; JUDGE.md rubric section 9",
+      "prescription": "Change the denominator, not the artifact - the disclosure is correct and R14 requires it. Have the sweep print both figures explicitly (swept, tabbable-in-state, focusable-in-DOM) and restate row 10 against tabbable-in-state, with a separate assertion that every element hidden behind a disclosure becomes tabbable once the disclosure is activated - which S10 already proves for the nav and could be generalised. Rubric edits are keeper-territory; route this as a rubric question rather than implementing it silently.",
+      "tag": "evidence-fix",
+      "impact": 7,
+      "new": true
+    },
+    {
+      "id": "I12",
+      "target": "evidence rig (scripts/verify-design.mjs, focus-indicator sweep)",
+      "problem": "Unchanged and still the sole reason accessibility reads 7 rather than 8. This run's output: 'PASS every tab stop shows a focus indicator /catalog - 150 of 818 focusable element(s) - STOPPED AT THE 150-STOP CAP, the rest unswept'. 668 elements are never examined and the check says so in its own text while reporting PASS. This is JUDGE.md L2 and state.md D2 still live. It is an open evidence-fix against the harness, not an artifact defect, and the artifact is not scored down for it beyond the mapping row it lands in.",
+      "evidence": "scripts/verify-design.mjs output, re-run by me at the current tree",
+      "invariant": "Every focus sweep examines every element tabbable in the state under test on the route it samples, and the printed swept count equals that denominator.",
+      "governing_rule": "RULES.md R5",
+      "prescription": "Raise or remove the 150-stop cap for /catalog specifically, or sample deterministically across the whole tab order rather than truncating at the head of it. If the cap exists for runtime, sample every Nth stop and print the sampling rate, so the ratio the mapping reads is honest about what it means. Coordinate with I29: closing this alone still leaves the ceiling at 8.",
+      "tag": "evidence-fix",
+      "impact": 5,
+      "new": false,
+      "baseline_item": "I12"
+    },
+    {
+      "id": "I8",
+      "target": "app/catalog page template",
+      "problem": "The READ column renders the identical string 2026-08-31 on all 396 rows, underlined on every one of them. In current/table-catalog--light--1440.png every visible row's READ cell is the same date carrying the same link treatment as the discriminating MODEL column. A full column of 396 identical underlined strings is chrome by another route: it consumes a seventh of the table's width and a seventh of its rule-crossings while carrying zero discriminating information, and it competes for attention with IN, OUT, CONTEXT and STATUS, which are what a reader crosses the row to compare. Under the revised chrome_restraint test this is the same failure R8's badge clause already forbids for status chips - drawn on every row including the unexceptional ones, so the exceptional case has nothing left to say - applied to a link treatment rather than a border.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--1440.png and table-catalog--dark--1440.png",
+      "invariant": "No column of a record table renders an identical value on more than 90% of its rows at the same visual weight as the columns a reader compares across; a value constant across the collection is stated once for the collection, not once per row.",
+      "governing_rule": "RULES.md R8 (badge clause, by analogy stated explicitly), RULES.md R9",
+      "prescription": "State the read date once in the table's own preamble - the page already says 'last checked 2026-08-31' twice above the filters - and render the READ cell per row only where it differs from that collection default, exactly as the badge clause treats status. If the per-row link target genuinely differs even when the date does not, move the link onto the model name's row-level affordance rather than onto a repeated date string.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false,
+      "baseline_item": "I8"
+    },
+    {
+      "id": "I11",
+      "target": "app/tools page template (.listing in app/globals.css)",
+      "problem": "All 35 listings render the same four fields - licence, pricing model, verified date and link - as one run-on mono line separated by middots, spanning the full 1150px shell. Because the fields are set inline, no field begins at the same x on any two entries: in current/index-tools--light--1440.png 'verified 2026-08-28' starts at roughly x=884 on browser-use, x=790 on CrewAI, x=1132 on Deepgram (where the line wraps) and x=555 on ElevenLabs. The reader arrives at /tools to compare licence and pricing across tools and the page makes that a reading task rather than a scanning one. This is the same defect I17 just fixed on .browse - values that cannot be tracked down a column - surviving on the surface .browse does not cover. Note the interaction with the revised R8: because the fields are ragged, the per-entry rule is required there and is correctly present; the rule is doing all the binding work that a column structure should be sharing.",
+      "evidence": "loops/ui-loop/evidence/current/index-tools--light--1440.png",
+      "invariant": "On /tools, the licence, pricing, verification-date and link fields of every listing start at the same x within a category, sharing one set of grid tracks across all entries of that surface.",
+      "governing_rule": "RULES.md R13",
+      "prescription": "Give .listing the same treatment .browse just received: one shared grid track set across the entries of a category, with the four facts as columns rather than an inline middot run. R13 already covers this - it is written about 'a row-based list surface' generally and was applied at iteration 4 only to .browse and .rung. This is the third surface it names by its own terms.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false,
+      "baseline_item": "I11"
+    },
+    {
+      "id": "I23",
+      "target": "app/catalog page template (the 33.999rem stacked-record block in app/globals.css)",
+      "problem": "R12 is satisfied - every field reaches the reader at 390 - and the form it arrives in still cannot be scanned. Measured by me at 390x844: the first five stacked records are 209.5, 215.9, 215.9, 215.9 and 215.9px tall; 396 records produce an 86,653px document, which is 102 screens. A reader comparing two models at 390 must hold six label/value lines in memory across roughly one screen of scrolling per record. current/table-catalog--light--390.png also shows ~700px of preamble - four intro paragraphs and four filter controls - before the first record, so the first comparison a reader can make begins on screen two.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--390.png (86,653px); measurement by judge-run Playwright at 390x844",
+      "invariant": "At 390x844 a /catalog record occupies no more than half the viewport height, and at least two complete records are visible in one screen below the filter controls.",
+      "governing_rule": "RULES.md R12",
+      "prescription": "Set the four fields R12 names - name, input price, output price, status - as a two-line record: the name on line one and the three values as a single aligned row on line two, sharing one track set across all records so the prices form a column. Move context, provider and read behind a per-record disclosure or drop them from the 390 form entirely; R12 requires identity plus highest-priority fields, not every field. Do not solve this by shrinking type: the record height is line count, not leading.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false,
+      "baseline_item": "I23"
+    },
+    {
+      "id": "I5",
+      "target": "app/wiki entry page template",
+      "problem": "Unchanged and not worked. The wiki entry is the site's answer surface and still puts its answer last: on /wiki/concept/ai-winter the FACTS block - the dated, sourced, machine-checked values that are the reason this record exists - begins past y=2100 of a 2974px page, after every word of prose. current/wiki-entry--light--1440.png shows prose from y=240 to roughly y=2100 in a 605px measure with the shell's right 576px empty throughout, then FACTS, then REFERENCED HERE and APPEARS IN. A reader who arrives from search wanting the Lighthill report's date reads an essay to find it.",
+      "evidence": "loops/ui-loop/evidence/current/wiki-entry--light--1440.png and wiki-entry--dark--1440.png",
+      "invariant": "On a wiki entry at 1440x900, the FACTS block's top edge falls within the first viewport, or the block is placed in a track beside the prose rather than after it.",
+      "governing_rule": "RULES.md R13",
+      "prescription": "Put FACTS in the shell track the prose is not using - the same 576px that I16 reports empty on this exact template. That places the answer in the first viewport, uses the dead track, and satisfies R13 and this item with one change. This is presentation only: the <dl> markup in app/wiki/[kind]/[slug]/page.tsx does not need to change, only where the block is placed. Note that DC1 retired column-start alignment between the facts grid and the prose - this prescription does not reopen it, because a facts block in its own track need not align to anything.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false,
+      "baseline_item": "I5"
+    },
+    {
+      "id": "I32",
+      "target": "shared design system (app/globals.css, .browse-name's track), as it renders on the /tools category index",
+      "problem": "R7's --measure-list is a cap, not a fit, and on a surface whose labels are far shorter than the cap it manufactures the drift R8 exists to prevent. Measured at 1440x900: on /tools' category index .browse-name occupies x=144 to x=528 - the full 384px track - on every row, while the longest label rendered is 'observability' ending near x=239. .browse-kind, which holds a single digit, starts at x=540. So roughly 289px of the list's 415.6px total width is permanently empty, the count sits ~300px from the label it belongs to, and this is a surface classed NO for cross-row tracking, so it correctly has no rule to bind the two. current/index-tools--light--1440.png shows the result: thirteen one-word categories on the left, thirteen single digits floating three hundred pixels away. On /wiki and /data the cap binds against real content and the same track is correct; the defect is that the track does not respond to the surface it is on.",
+      "evidence": "loops/ui-loop/evidence/current/index-tools--light--1440.png; measurement by judge-run Playwright at 1440x900",
+      "invariant": "A .browse surface's label track sizes to that surface's own max-content bounded above by --measure-list, so the gap between the widest rendered label on the surface and the start of the trailing track does not exceed the row gap.",
+      "governing_rule": "RULES.md R7, RULES.md R13",
+      "prescription": "Size the first track as minmax(0, min(max-content, var(--measure-list))) rather than minmax(0, var(--measure-list)). This does not conflict with R13: the track set is still shared across every row of the surface, which is what R13 requires - it is the surface's own content that sets it rather than a global token. Check /data at the same time: its longest label ends at x=436 inside the same 384px-capped track, so /data is the case where the cap correctly binds and must not be loosened.",
+      "tag": "ui-fixable",
+      "impact": 4,
+      "new": true
+    },
+    {
+      "id": "I30",
+      "target": "app/blog index template, against app/wiki and app/learn",
+      "problem": "The same object - a record-title link on an index - is set at two incompatible measures on the same property. In current/index-blog--light--1440.png the four post titles run from x=259 to x=1278, a 1019px measure, and the third wraps at 1130px; the intro paragraph on that same page is bounded at roughly 605px, so the page contradicts itself. In current/index-wiki--light--1440.png the same object is bounded to a 384px track, and in current/index-learn--light--1440.png to roughly 608px. Three index templates, three measures, one object. A 1019px line of 20px serif is past any reading measure, and it is the widest line of running type anywhere on the property. This is a family-coherence defect, not a taste preference: R7 exists precisely to bound a list's primary label column, and /blog is a list surface that R7's executable form (S1) does not reach because it is not built from .browse-row.",
+      "evidence": "loops/ui-loop/evidence/current/index-blog--light--1440.png, index-wiki--light--1440.png, index-learn--light--1440.png",
+      "invariant": "A record-title link on an index template is bounded to the same measure token on every index template of the property; no index sets one past --measure.",
+      "governing_rule": "RULES.md R7, RULES.md R9",
+      "prescription": "Bound the /blog index's title column to --measure-list, the token R7 names, and extend S1's route list to cover /blog so the bound is asserted rather than assumed. If /blog's titles are genuinely too long for --measure-list - three of the four run past 900px - that is an argument for a wider shared token applied to all three indexes, not for one template setting its own; changing the token is in scope for globals.css and changing one template's measure alone is what produced this.",
+      "tag": "ui-fixable",
+      "impact": 4,
+      "new": true
+    },
+    {
+      "id": "I31",
+      "target": "app/page.tsx home template, the Impossible-to-Routine block (app/globals.css)",
+      "problem": "One decorative accent rule, applied to one of two structurally identical elements. Sampled at x=1250 in current/home--light--1440.png: the 1153px rule above the FIRST pair's heading, at y=1530, is rgb(74,59,212) - full-strength accent - while the same rule above the second pair, at y=1887, is rgb(185,187,199), the property's ordinary neutral. Confirmed in current/home--dark--1440.png at the same coordinates: rgb(156,147,255) against rgb(65,71,87). The coloured rule marks no state and carries no meaning: it separates two sections that are identical in kind, and its sibling separating the identical thing is neutral. The rubric reserves colour for state and meaning, and all three benchmarks agree on that; this is colour as decoration, applied inconsistently, on the site's front door. It is also the only place on the property where a full-strength accent is used as a large area of ink rather than as a link or a chip. NOT SCORED AGAINST colour_discipline: I measured the same pixel in evidence/iter-01/home--light--1440.png (y=1642) and evidence/baseline/home--light--1440.png (y=1666) and it is present in both, so it predates the anchor and no change since made it worse. It is a finding the anchor missed, not a regression.",
+      "evidence": "loops/ui-loop/evidence/current/home--light--1440.png and home--dark--1440.png, pixel sample at x=1250, y=1530 and y=1887, both themes; compared against evidence/iter-01/ and evidence/baseline/",
+      "invariant": "Two instances of the same structural element within one section render the same rule colour, and a section-separating rule uses the neutral rule token rather than --accent.",
+      "governing_rule": null,
+      "prescription": "Make the first pair's rule neutral like its sibling. If the colour was marking something real - the most recent pair, say - it needs to be marking it on whichever pair is actually most recent and needs a second signal that says what it means; as it stands nothing in the page explains it and no other pair can ever receive it. I checked RULES.md before filing and found no rule governing decorative rule colour, which is why governing_rule is null: R9 governs the resting colour of record LINKS and says --accent marks hover and focus, not resting state, but it does not reach a rule element. If this is fixed, the R9 principle is the natural place to widen.",
+      "tag": "ui-fixable",
+      "impact": 4,
+      "new": true
+    },
+    {
+      "id": "I9",
+      "target": "app/page.tsx (home template)",
+      "problem": "Unchanged and not worked, but the anchor overstated it and I am correcting the measurement rather than carrying the number. Measured at 1440x900: .home-side's bottom edge is at y=646.5 while .rail-changes runs to y=1334.6 on a 2559px page, so the empty right column is about 690px, not the ~2000px the anchor recorded. It is still 690px of empty column beside the site's front-door content, and it is the same defect as I16 on a template that HAS a second track and stops filling it a quarter of the way down.",
+      "evidence": "loops/ui-loop/evidence/current/home--light--1440.png and home--dark--1440.png; measurement by judge-run Playwright at 1440x900",
+      "invariant": "On the home page at 1440x900, the right rail's content extends to at least 60% of the changed feed's own height, or the feed reflows to use the full shell below the rail's end.",
+      "governing_rule": "RULES.md R13",
+      "prescription": "Let the changed feed reflow into the full shell width once the rail ends, rather than holding a 366px column open beside nothing. Adding more rail content is a content change and slot 1 forbids it, so the presentation-only remedy is the reflow. R6 constrains this: whatever is done, changed-feed lines must still be visible above the fold at both 1440x900 and 390x844.",
+      "tag": "ui-fixable",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I9"
+    },
+    {
+      "id": "I13",
+      "target": "evidence rig (tools/ui-evidence.mjs capture procedure)",
+      "problem": "Unchanged. 38 of the 40 captures are fullPage images taken at scroll position 0, so nothing scroll-linked is observable from the set - JUDGE.md L3. This iteration it cost something specific: I25's remedy is a scroll-dependent property (the gap between the wrap and the footer at maximum scroll) and no capture in the set can show it. I verified it with my own Playwright measurement instead, which is the right escalation but means the screenshot oracle contributed nothing to judging the item.",
+      "evidence": "loops/ui-loop/evidence/current/manifest.json - 38 entries labelled capture: \"fullPage\", 2 labelled \"viewport\"",
+      "invariant": "For every route whose layout is scroll-coupled, the evidence set contains at least one capture at a non-zero scroll position, labelled with the scroll offset in the manifest.",
+      "governing_rule": "RULES.md R11",
+      "prescription": "Add a scrolled capture for /catalog at 1440 and for / at 390 - the two routes with known scroll-coupled properties - and record the scroll offset in the manifest entry beside capture and buildStamp.",
+      "tag": "evidence-fix",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I13"
+    },
+    {
+      "id": "I26",
+      "target": "evidence rig (tools/ui-evidence.mjs, fullPage fidelity check)",
+      "problem": "Unchanged. The viewport-coupled detector is keyed to one CSS signature - an element whose computed position is sticky and whose max-height is vh-based - so it catches the one case already known and would not catch a second instance built differently. The general assertion filed alongside I22 (that a fullPage capture be verified to render the page faithfully, not merely to capture the right page) was not implemented. state.md D9's own statement of the lesson - identity is not fidelity - is broader than the check that was built from it.",
+      "evidence": "loops/ui-loop/evidence/current/manifest.json - only the two /catalog 1440 entries carry capture: \"viewport\"; tools/ui-evidence.mjs detector",
+      "invariant": "For every capture, the manifest records a comparison between a geometry measured live in the page and the same geometry measured in the rendered image, and refuses the capture when they disagree beyond a stated tolerance.",
+      "governing_rule": null,
+      "prescription": "Compare one measured height taken from the live DOM against the same element's height located in the produced PNG, per capture, rather than pattern-matching the CSS that happens to have caused the one known instance. I checked RULES.md and found no rule governing evidence fidelity - the lesson lives in JUDGE.md L5 and state.md D9 as narrative only, which is why governing_rule is null and why the check drifted narrower than the lesson.",
+      "tag": "evidence-fix",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I26"
+    },
+    {
+      "id": "I14",
+      "target": "keeper - reader gate",
+      "problem": "Unchanged and still unresolvable by this loop. /catalog presents 396 rows as one continuous surface with four filter controls and no pagination or grouping. Whether a reader can find one model among 396 by filtering rather than by paging is a question about a real person's behaviour, which no screenshot and no DOM invariant answers. Listed so it stops resurfacing as actionable.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--1440.png",
+      "invariant": null,
+      "governing_rule": null,
+      "prescription": "Keeper measurement, reader class. Not implementer work.",
+      "tag": "keeper-gate",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I14"
+    },
+    {
+      "id": "I27",
+      "target": "app/catalog page template (the ::before content: attr(data-label) labels at 390px) - keeper measurement",
+      "problem": "Unchanged. Whether the generated-content field labels in the 390px stacked record form are announced by assistive technology is not answerable from axe output, from a screenshot, or from a focus traversal - the three evidence classes this loop has. It is not a taste question and must not be scored into the hard-measured accessibility category; that was T1's defect. Carried so the loop keeps the finding rather than the silence.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--390.png; scripts/verify-design.mjs axe output, which reports zero violations and cannot see this",
+      "invariant": null,
+      "governing_rule": null,
+      "prescription": "Keeper measurement with a real screen reader, or a new oracle class. Not implementer work and not a rubric input until measured.",
+      "tag": "keeper-gate",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I27"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "iteration": 0,
+  "date": "2026-08-31",
+  "anchor": { "iteration": null, "overall": null, "implemented_since": null },
+  "scores": {
+    "first_read_hierarchy": 7.5,
+    "chrome_restraint": 7.5,
+    "information_density": 7,
+    "list_and_table_craft": 5.5,
+    "typographic_system": 8.5,
+    "colour_discipline": 8.5,
+    "family_coherence": 7,
+    "responsive_integrity": 6,
+    "accessibility": 10,
+    "payload_discipline": 9,
+    "visual_distinctiveness": 8,
+    "overall": 7.7
+  },
+  "verdict": "Competent",
+  "score_deltas": [],
+  "score_hold_justification": null,
+  "acknowledged": [],
+  "items": [
+    {
+      "id": "I1",
+      "target": "table-catalog page template (app/catalog/page.tsx, .table-wrap / .data-table in app/globals.css)",
+      "problem": "At 390px, the catalog's data table — the site's single largest and most-visited surface ('Every model you can call today', 396 rows) — renders with only the MODEL column inside the viewport. Provider, IN/MTOK, OUT/MTOK, CONTEXT, STATUS and READ are all past the right edge of .table-wrap, and nothing in the visible frame signals that more columns exist: no fade, no shadow, no partial sliver of the next column, no 'scroll for prices' affordance. A reader who came to check a price sees a plain list of names and, on the evidence alone, has no reason to suspect the number they want is one swipe away. verify-design.mjs's own reflow check confirms the columns extend far past the frame (thead/tr measured at 1112px, th cells at 367px and 551px, against a 320px viewport) — the check is only asserting the PAGE doesn't scroll, which is a different property from the table being usable.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--390.png, loops/ui-loop/evidence/current/table-catalog--dark--390.png (crop confirms the entirety of the visible row band is model names, no other column or scroll cue)",
+      "invariant": "At the 390px viewport, before any horizontal scroll gesture, the catalog table shows a visible affordance (a partial next column, an edge shadow/gradient, or a sticky price cell) that content continues beyond the first column.",
+      "governing_rule": "RULES.md R2",
+      "prescription": "R2 is satisfied — the PAGE does not scroll, only .table-wrap does — so this is not a rule violation, it is a gap R2 doesn't reach. Hypothesis: give .table-wrap a scroll-shadow (a masked linear-gradient or inset box-shadow on the trailing edge that appears only while scrollLeft < scrollWidth-clientWidth), and/or make the MODEL th/td sticky (position: sticky; left: 0) with a solid background so the reader's reference point stays visible while the price columns scroll into view, and/or narrow the visible column set at ≤480px (drop CONTEXT and READ, keep MODEL/PROVIDER/IN/OUT/STATUS) via a container query or max-width media rule on .data-table.",
+      "tag": "ui-fixable",
+      "impact": 9,
+      "new": true
+    },
+    {
+      "id": "I2",
+      "target": "shared design system (app/globals.css .prose / .entry-head / .facts) as expressed in the wiki-entry, article and prose page templates",
+      "problem": "On every template whose content is capped at --measure (38rem ≈ 608px) — wiki-entry, article, prose/colophon — the page's content column sits inside a 76rem (--shell) frame with nothing placed in the remaining ~600px to its right, for the page's full scroll length. On wiki-entry (2937px tall) and article (5774px tall) at 1440, the right half of the viewport is empty ground from the header to the footer; wiki-entry's own 'REFERENCED HERE' / 'APPEARS IN' rails exist but are placed below the prose rather than beside it, so they never fill that space either. This directly contradicts the home and table-catalog templates, which both use the shell's full width (a two-column grid on home, the table's natural width on catalog), so the site's density and the shell's meaning both drift between templates: on some pages 76rem means 'the working width', on others it means '38rem of content plus a permanent blank margin'.",
+      "evidence": "loops/ui-loop/evidence/current/wiki-entry--light--1440.png, loops/ui-loop/evidence/current/article--light--1440.png, loops/ui-loop/evidence/current/prose--light--1440.png (dark variants confirm the same gap is theme-independent), contrasted with loops/ui-loop/evidence/current/home--light--1440.png and loops/ui-loop/evidence/current/table-catalog--light--1440.png",
+      "invariant": "Every page template uses a consistent proportion of the shell's width at >=60rem; no template leaves more than roughly a third of the shell empty for its full scroll length while another template on the same site fills it.",
+      "governing_rule": null,
+      "prescription": "Checked R1-R6: none govern content-column proportion against the shell, so this is a gap rather than a violation. Hypothesis: on wiki-entry, move '.rails' (REFERENCED HERE / APPEARS IN) or the '.facts' block into a second column beside the prose at >=60rem, the same breakpoint home already uses for '.home-grid', so the shell's spare width carries the entry's own apparatus instead of sitting blank; on article/prose, either adopt the same pattern (a related-reading or metadata rail) or reduce the template's own max-width claim on the shell so the empty margin reads as a deliberate measure rather than unused layout.",
+      "tag": "ui-fixable",
+      "impact": 7,
+      "new": true
+    },
+    {
+      "id": "I3",
+      "target": "shared design system (app/globals.css .badge) as expressed on index-wiki, wiki-entry and table-catalog",
+      "problem": "The bordered, uppercase .badge treatment is applied to every lifecycle state, including the default 'ACTIVE' state that covers the overwhelming majority of rows (visible on nearly every one of the ~80 on-screen rows in index-wiki, and on the STATUS column of every row in table-catalog). Because the badge box is identical chrome regardless of whether the state is routine or exceptional, the one piece of information genuinely worth a reader's attention — RETIRED / DEAD / DEPRECATED, which already get the ember treatment — has to compete visually with hundreds of structurally identical grey boxes saying the expected thing. This works against the system's own design note ('a third accent would make both meaningless') and against the Linear benchmark cited in the rubric (structure from type and space, chrome only where it earns its place).",
+      "evidence": "loops/ui-loop/evidence/current/index-wiki--light--1440.png, loops/ui-loop/evidence/current/table-catalog--light--1440.png",
+      "invariant": "The bordered .badge treatment is reserved for a lifecycle state the reader must notice (retired, dead, deprecated, or another ember-toned exception); the default/expected state renders as plain muted text or is omitted, never as a bordered box.",
+      "governing_rule": null,
+      "prescription": "Hypothesis: for rows where data-tone is unset (the active/default case), render the status as plain text in --muted colour with no border/background, keeping the bordered box exclusively for the ember-toned exception states. This is a single CSS rule change (.badge:not([data-tone]) { border: none; background: none; padding: 0; }) with no markup change.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": true
+    }
+  ]
+}

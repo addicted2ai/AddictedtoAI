@@ -73,6 +73,30 @@ export default async function HomePage() {
             </h2>
             <div dangerouslySetInnerHTML={{ __html: renderLatest(site) }} />
           </section>
+
+          {/* I9 (iter-07, R13): relocated here from a full-width section below
+              the grid. .home-side's own content (576.7px) reached only 46.9%
+              of the changed feed's height (1230.9px on a 2559px page),
+              leaving a 404px column open beside nothing for ~688px — R13's
+              I33 defect, applied vertically instead of horizontally. The feed
+              cannot reflow to fill that space with CSS alone without
+              reordering .home-side before it in the DOM (the float mechanism
+              is the only CSS primitive that lets later content wrap around a
+              shorter box, and floats only wrap content that comes AFTER them
+              in source order) — which would place a secondary nav widget
+              ahead of the page's own H1 and its primary content for anyone
+              not relying on CSS layout, contradicting this page's own stated
+              design ("No hero. The first thing under the header is the first
+              dated line of the changed feed"). Growing the rail's own content
+              is the invariant's other satisfying clause, and moving this
+              section — unchanged, not duplicated, not new copy — is a JSX
+              relocation within this template, not a content edit. See S18. */}
+          <section className="section" aria-labelledby="doors">
+            <h2 className="section-title" id="doors">
+              Everything here
+            </h2>
+            <div dangerouslySetInnerHTML={{ __html: renderDoors(site) }} />
+          </section>
         </aside>
       </div>
 
@@ -90,13 +114,6 @@ export default async function HomePage() {
             {site.deltas.length > 0 ? `All ${site.deltas.length} dated pairs` : 'The surface, and how a pair is built'}
           </a>
         </p>
-      </section>
-
-      <section className="section" aria-labelledby="doors">
-        <h2 className="section-title" id="doors">
-          Everything here
-        </h2>
-        <div dangerouslySetInnerHTML={{ __html: renderDoors(site) }} />
       </section>
     </>
   );

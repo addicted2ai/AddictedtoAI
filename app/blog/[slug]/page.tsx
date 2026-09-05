@@ -57,6 +57,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         `site.changes`, which is the rendered feed view.
       */}
       <div
+        className="post-body"
         dangerouslySetInnerHTML={{ __html: renderPostPage(doc, { changes: site.changeLines }) }}
       />
       <div

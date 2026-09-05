@@ -1,0 +1,263 @@
+{
+  "iteration": 1,
+  "date": "2026-08-31",
+  "anchor": {"iteration": 0, "overall": 6.8, "implemented_since": ["S1", "S2", "S4", "S5", "S6", "S7"]},
+  "scores": {
+    "first_read_hierarchy": 7.5,
+    "chrome_restraint": 7.5,
+    "information_density": 6.5,
+    "list_and_table_craft": 5.5,
+    "typographic_system": 7.0,
+    "colour_discipline": 8.0,
+    "family_coherence": 6.0,
+    "responsive_integrity": 6.5,
+    "accessibility": 7.0,
+    "payload_discipline": 9.0,
+    "visual_distinctiveness": 6.0,
+    "overall": 7.0
+  },
+  "verdict": "Competent",
+  "score_deltas": [
+    {
+      "category": "chrome_restraint",
+      "from": 5.0,
+      "to": 7.5,
+      "moved_by": "S2/R8 landed: per-row border-bottom removed from .browse-row, .rail-item, .strip-item and .data-table th/td, the .table-wrap outer box removed, and default-state badges rendered borderless. Roughly 396 rules on /catalog, 85 on /wiki, 24 on the home feed and 11 on /data are gone, along with ~480 grey ACTIVE chips. Evidence: current/index-wiki--light--1440.png and current/table-catalog--light--1440.png against their baseline counterparts. Held below 8 because /tools still draws a rule under all 35 entries (current/index-tools--light--1440.png)."
+    },
+    {
+      "category": "colour_discipline",
+      "from": 7.0,
+      "to": 8.0,
+      "moved_by": "S4/S6/R9 landed: --accent was the resting colour of 396 model names plus 396 READ dates on /catalog and every /blog post title; it is now reserved for hover and focus, so the only colour left on an index is the ember DEAD/RETIRED/DEPRECATED chip. This is the benchmarks' shared principle, colour for state and meaning, actually applied. Evidence: current vs baseline table-catalog--light--1440.png and index-blog--light--1440.png. Held at 8 because the home changed-feed and rail still set record links in --accent (current/home--light--1440.png)."
+    },
+    {
+      "category": "first_read_hierarchy",
+      "from": 7.0,
+      "to": 7.5,
+      "moved_by": "Default-state badges de-chipped, so a page's genuinely dead rows are the only marked ones (current/index-wiki--light--1440.png: RETIRED/DEAD/DEPRECATED now read as the exceptions they are), and S5/R10 stopped the prose header rules at the content edge instead of running 545px past it (current/wiki-entry--light--1440.png, current/article--light--1440.png). Net of the /catalog header collision in I15, which damages the first read of the flagship surface."
+    },
+    {
+      "category": "family_coherence",
+      "from": 5.5,
+      "to": 6.0,
+      "moved_by": "One record-link treatment now shared by /wiki, /catalog and /blog, one divider policy across /wiki, /catalog, /data and home, and block-width matching on the prose templates. Only +0.5 because the same iteration split the family in three new ways: /tools still rules every row while four templates no longer do; /learn and the home feed keep their own link treatments so R9 covers 3 of 5 index surfaces; and --measure-list added a FOURTH content right edge (~660 wiki rows, 751 prose, 1005 learn, 1295 catalog/blog) where the anchor counted three. Evidence: current/index-tools--light--1440.png, current/index-learn--light--1440.png, current/home--light--1440.png."
+    },
+    {
+      "category": "responsive_integrity",
+      "from": 7.0,
+      "to": 6.5,
+      "moved_by": "REGRESSION. At 390 the /catalog column-header row is displaced 129px below its natural position and now renders as a stray MODEL label sitting between body rows 3 and 4, where the baseline showed a coherent header row above the data. Cause is S7. Evidence: current/table-catalog--light--390.png against baseline/table-catalog--light--390.png; measured rects at 390x844 give thead 905-934 against body rows 868-899 and 899-930. R2's reflow oracle stays green throughout, so no measured check catches it."
+    },
+    {
+      "category": "accessibility",
+      "from": 8.5,
+      "to": 7.0,
+      "moved_by": "INSTRUMENT CORRECTION, NOT AN ARTIFACT REGRESSION. The rubric's new mapping is a lookup of exactly two values. Zero axe violations in both themes across all four sampled routes, and the lowest printed focus-sweep ratio is /catalog at 150 of 817 = 0.18, which is < 0.5. The mapping's third row returns 7. The anchor's 8.5 is not a value the table can produce; the rubric says so itself. The artifact's measured accessibility is unchanged from the baseline."
+    },
+    {
+      "category": "payload_discipline",
+      "from": 9.5,
+      "to": 9.0,
+      "moved_by": "INSTRUMENT CORRECTION, NOT AN ARTIFACT REGRESSION. Worst route /catalog is 122.2 KB gzipped against the 150 KB bound in data/launch.json = 81.5%, which is over 60% and at or under 85%, so the mapping returns 9. The anchor's 9.5 is not a value the table can produce. The artifact in fact improved fractionally, from 122.3 KB to 122.2 KB."
+    }
+  ],
+  "score_hold_justification": "The overall rises 6.8 to 7.0, exactly the measured noise floor, and that understates the round. Two of the eleven categories moved on instrument correction rather than on anything the implementer did: applying the rubric's new hard mappings costs accessibility 1.5 and payload 0.5, or 0.18 off the eleven-category mean, for an artifact whose measured accessibility and payload are unchanged. Scored on the anchor's own unmapped numbers for those two rows the overall would be 7.1. Against that, the genuine artifact deltas are strongly positive and broad: chrome restraint +2.5 and colour discipline +1.0 are the two largest single-category moves this loop has recorded, and they discharge the anchor's I2 (impact 8) and most of I3 and I6. They are held from compounding by one severe regression and by the untouched per-template backlog. Information density and list-and-table craft are held rather than raised for a reason that matters more than the arithmetic: S1 and S2 improved how a row READS without changing how much a screen DELIVERS. /wiki lost 61px of 3624 and /catalog 398px of 13427, under 3% each, while /wiki now leaves 55% of the shell empty across all 85 rows and /data about 44%. The anchor's complaint was 950px of dead space INSIDE the row; the fix moved that dead space OUTSIDE the row. The invariant R7 states is satisfied and the reading experience is genuinely better, but the residue is unspent, which is the contract's relocated-defect case and is filed as I16. List craft holds at 5.5 because its large gain (I4 resolved: name-to-attribute distance cut from ~950px to ~40px on two templates) is offset by a new alignment defect on /wiki (I17), by I1 and I11 being untouched, and above all by I15, which leaves the site's primary table with column labels lying on top of its first two data rows in both themes at both viewports.",
+  "acknowledged": [
+    {"baseline_item": "I2", "status": "resolved", "note": "S2/R8. Per-row rules and the outer table box are gone from /catalog, /wiki, /data and the home feed, and default-state badges render borderless. Confirmed against baseline in current/index-wiki--light--1440.png and current/table-catalog--light--1440.png. One exception remains and is re-filed as I19: /tools still rules all 35 entries."},
+    {"baseline_item": "I4", "status": "resolved", "note": "S1/R7. .browse-row is bounded to --measure-list with justify-content: start; on /wiki the kind and status now begin at x~538 immediately after the 24rem name column instead of at x~1170, and /data shows the same shape. Confirmed in current/index-wiki--light--1440.png and current/data--light--1440.png. The vacated width is now unspent margin, filed as I16, and the third track is ragged, filed as I17."},
+    {"baseline_item": "I6", "status": "resolved", "note": "S6/R9. .browse-name is ink with an always-on muted underline, so a /wiki row reads as a link at rest with no hover. Confirmed in current/index-wiki--light--1440.png and current/index-wiki--dark--1440.png."},
+    {"baseline_item": "I3", "status": "partially-resolved", "note": "The link half is largely done: /wiki, /catalog and /blog now share one resting treatment. Two index surfaces were missed, the home changed-feed and rail still using --accent and /learn still using plain ink with no underline, so the site now carries three record-link treatments rather than one; re-filed as I18. The grid half was declined as DC2 for scope, correctly; per DC2's explicit invitation it is re-filed as I16, and it is now worse than the anchor described, because --measure-list added a fourth content right edge."},
+    {"baseline_item": "I7", "status": "resolved", "note": "S7 shipped and the collision the anchor predicted no longer exists, but the premise was wrong and the remedy created a worse defect. .table-wrap computes overflow-y: auto, so it, not the viewport, is the thead's sticky scroll container; the site header could never have occluded it. The offset now pushes the thead 46px DOWN onto its own first rows at all scroll positions. Filed as I15. This is the loop working as designed: the iteration-0 prescription was a hypothesis, it was implemented literally, and the evidence falsified it."},
+    {"baseline_item": "I1", "status": "not-visible-in-evidence", "note": "Not worked; per-template item deliberately out of this iteration's shared-system scope. Still visible as unresolved in current/table-catalog--light--390.png, which shows model names and no numbers. Re-filed unchanged as I1."},
+    {"baseline_item": "I5", "status": "not-visible-in-evidence", "note": "Not worked. The FACTS block still sits below the full prose body at roughly y=2340 of a 3097px page, and the page grew 160px. S5 narrowed the rules around it but did not move it. Re-filed as I5."},
+    {"baseline_item": "I8", "status": "partially-resolved", "note": "Not directly worked, but S4 removed half the harm: the READ column is no longer accent, so it no longer competes with the ember status chips. The 396 identical date strings and the 396 redundant tab stops remain, and /catalog still reports 817 focusable elements. Re-filed at reduced impact as I8."},
+    {"baseline_item": "I9", "status": "not-visible-in-evidence", "note": "Not worked; per-template. The home rail still stops around y=630 while the feed runs to 2691, and the trailing source link still wraps on roughly half the rows. Re-filed as I9."},
+    {"baseline_item": "I10", "status": "not-visible-in-evidence", "note": "Not worked. Still no @font-face or next/font anywhere in app/. Re-filed as I10."},
+    {"baseline_item": "I11", "status": "not-visible-in-evidence", "note": "Not worked; per-template. /tools still sets four identical fields per entry as 35 run-on middot-delimited mono lines. Re-filed as I11."},
+    {"baseline_item": "I12", "status": "not-visible-in-evidence", "note": "Not worked. The sweep still prints PASS on /catalog having examined 150 of 817 stops. It now also costs the artifact 1.5 scored points, because the rubric's mapping reads that ratio directly. Re-filed at raised impact as I12."},
+    {"baseline_item": "I13", "status": "not-visible-in-evidence", "note": "Not worked, and this round proves it necessary in a way the anchor only predicted. Re-filed as I13, widened: the gap is not only the missing scrolled capture but a registered DOM invariant that passed while the geometry it exists to protect broke."},
+    {"baseline_item": "I14", "status": "not-visible-in-evidence", "note": "Keeper gate, unchanged and unresolvable by this loop. Carried as I14."}
+  ],
+  "items": [
+    {
+      "id": "I15",
+      "target": "shared design system (app/globals.css, .data-table thead th + .table-wrap)",
+      "problem": "The /catalog column-header row is displaced downward and lies on top of its own first data rows, at scroll position zero, in both themes and at both viewports. Measured rects at 1440x900: thead occupies y 462-491 while tbody row 1 occupies 445-477 and row 2 occupies 477-508, so the header intersects two body rows. At 390x844: thead 905-934 against rows 868-899 and 899-930. The displacement equals --header-h exactly (46px at 1440, 129px at 390, matching .site-header's measured offsetHeight). The captures show the consequence plainly: MODEL / PROVIDER / IN / OUT / CONTEXT / STATUS / READ are printed over 'Anthropic Claude Haiku Latest' and 'Anthropic Claude Sonnet Latest', and at 390 the word MODEL appears stranded between the third and fourth rows of the list. This is a regression introduced by S7 against a baseline that rendered the header correctly. It is not a capture artifact: it reproduces in a live browser via getBoundingClientRect at both viewports, and the baseline captures at the same settings show no displacement. The site's primary surface, a 396-row price table, currently has no legible column labels. Note also that S7's premise was false: .table-wrap declares overflow-x: auto, and per CSS overflow the visible cross-axis coerces to auto, so .table-wrap computes overflow-y: auto and IS the thead's nearest scrolling ancestor. The thead therefore never stuck to the viewport and .site-header could never have occluded it. The iteration-0 item I7 asserted that collision from CSS alone and was wrong.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--1440.png, table-catalog--dark--1440.png, table-catalog--light--390.png (all three against their baseline/ counterparts, which show the header correctly placed); live getBoundingClientRect over out/catalog.html at 1440x900 and 390x844",
+      "invariant": "At scroll position 0 on /catalog, at 1440 and at 390, the table's column-header row shall not intersect the bounding box of any tbody row; and once /catalog is scrolled, the column headers shall remain visible and unoccluded.",
+      "governing_rule": "RULES.md R11 — checked, and R11 itself is implicated. R11 was written from iteration-0 I7 and assumes .site-header and the thead share one scroll context. They do not, while .table-wrap is a scroll container. R11 should be amended to a two-sided condition: the column headers shall be neither occluded by the site header NOR displaced onto the rows they label. R2 must stay satisfied, so .table-wrap keeping overflow-x: auto is not negotiable; any remedy that removes the horizontal container scroll to fix this trades an R11 defect for an R2 defect.",
+      "prescription": "Hypothesis, not a specification — the last one here was wrong, so re-derive from the rendered geometry before editing. The cheapest correct move is probably to revert .data-table thead th to top: 0, since inside the .table-wrap scroll container that yields zero displacement and the site-header collision the offset was defending against cannot occur there. If genuine viewport-sticky column headers are wanted on a 13,000px table, the container itself has to stop being the scroll context for the thead, which is a larger change than this defect warrants. Whatever is chosen, verify by reading both rects at scroll 0 AND after a scroll, not by reading the --header-h token.",
+      "tag": "ui-fixable",
+      "impact": 9,
+      "new": true
+    },
+    {
+      "id": "I1",
+      "target": "app/catalog page template",
+      "problem": "Unchanged from the anchor and re-filed verbatim in substance. At 390px the model catalog shows the MODEL column and nothing else; in/mtok, out/mtok, context and status are all off-screen inside a horizontally scrolling container. The 320px reflow oracle still measures the table at its full desktop width (thead 1111px, tr 1111px) inside a 320px page that itself does not scroll, so R2 passes while the surface delivers 396 names and no numbers. A mobile reader cannot compare two models' prices without scrolling each row independently, which destroys the alignment that made comparison possible.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--390.png; scripts/verify-design.mjs reflow line for /catalog — 'thead.(no class) → 1111px; tr.(no class) → 1111px'",
+      "invariant": "At 390px the /catalog listing shall present, without horizontal scrolling, the model name AND at least the input price, output price and lifecycle status for each row.",
+      "governing_rule": "RULES.md R2 — the remedy stays inside it: stop the table being wide at 390px rather than letting the page scroll. R2 is satisfied today and must remain satisfied. Note the interaction with I15: any stacked mobile form must also not reintroduce a displaced sticky header.",
+      "prescription": "Below the 33.999rem breakpoint, drop .data-table out of table layout into a stacked record-per-row presentation — model name as row heading, then a compact label/value grid for in/out/context/status. Alternatively keep a table but render a prioritised three-column subset with the remainder in a per-row disclosure. The stacked form is likelier to hold at 320px too.",
+      "tag": "ui-fixable",
+      "impact": 9,
+      "new": false
+    },
+    {
+      "id": "I5",
+      "target": "app/wiki entry page template",
+      "problem": "Unchanged from the anchor. The wiki entry is the site's answer surface and still buries its answer. On /wiki/concept/ai-winter the FACTS block — term origin, lighthill report, alpac report, symbolics revenue trend, each with source and accessed date — is the structured payload a reference reader came for, and it begins at roughly y=2340 of a 3097px page, after every word of prose. The body column is capped at --measure (605px) inside a 1216px shell, so 545px of column runs empty down the entire length of that prose. The page simultaneously has nowhere to put the facts and 545px of unused width beside them. S5 narrowed the rules around the block but did not move it, and the page grew 160px taller this round.",
+      "evidence": "loops/ui-loop/evidence/current/wiki-entry--light--1440.png (3097px; FACTS heading visible at y~2336 in the low crop), current/article--light--1440.png",
+      "invariant": "On a wiki entry at 1440px, the FACTS block shall be reachable without scrolling past the full prose body — either rendered in the residual column beside the prose or placed above it.",
+      "governing_rule": "null — checked R1 through R11. R10 now governs the width of the rules around the block but says nothing about its position. R6 governs the home page only; this is the analogous intent-preservation concern for entry pages and should become a numbered rule if the item is accepted. Moving the FACTS block is a RESTRUCTURE and subject to keeper point KP1.",
+      "prescription": "At 64rem and above, lay the entry as grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr) and move the FACTS definition list into the second track, sticky to the top of the prose. This spends the dead 545px on the page's highest-value content without changing a word. Do not change which facts appear or how they are worded.",
+      "tag": "ui-fixable",
+      "impact": 7,
+      "new": false
+    },
+    {
+      "id": "I16",
+      "target": "shared design system (app/globals.css + app/layout.tsx) and the index page templates",
+      "problem": "Re-filed under DC2's explicit invitation, and the defect is now measurably larger than the anchor described. The anchor counted three content right-edges across the property; there are now four, because --measure-list added one. Against a --shell of 1216px with a constant 145px left margin, primary content now ends at roughly x=660 on /wiki and /data rows, x=751 on prose templates, x=1005 on /learn, and x=1295 on /catalog and /blog. Nothing occupies any of the residue — no sidenotes, no table of contents, no secondary rail. On /wiki this means 55% of the shell is empty beside all 85 rows, and on /data about 44%. S1 was right to bound the row and the row reads far better for it, but the width it freed was not reassigned to anything, so the defect moved channel rather than closing: the anchor's complaint was 950px of dead space inside the row, and the current state is 635px of dead space outside it. A reader moving between two pages of one property still sees the content block change width by up to 635px with no signal that anything changed.",
+      "evidence": "loops/ui-loop/evidence/current/index-wiki--light--1440.png, data--light--1440.png, index-learn--light--1440.png, wiki-entry--light--1440.png, index-blog--light--1440.png (compare the right edge of content in each)",
+      "invariant": "Every page template shall place its primary content column against one of at most two declared grid tracks, and no template shall leave more than one track's worth of the shell permanently unoccupied at 1440px.",
+      "governing_rule": "null — checked R1 through R11. R7 pins the list-row label measure and any remedy must keep it; R10 pins rule width to content width and a narrower shell would satisfy it more easily, not less. DC2 accepted the decline for a shared-system-only iteration and stated the work is achievable but was out of scope; this re-file is what DC2 asked for.",
+      "prescription": "Declare two tracks and use only those: a reading track at --measure and a full track at --shell. Then either narrow --shell on the row-index templates so the rows are not stranded in a container twice their width, or fill the residue with content the page already owns. Do not widen --measure-list back out; the row itself is now correct.",
+      "tag": "ui-fixable",
+      "impact": 6,
+      "new": false
+    },
+    {
+      "id": "I17",
+      "target": "shared design system (app/globals.css, .browse-row)",
+      "problem": "New defect introduced by S1. .browse-row is grid-template-columns: minmax(0, var(--measure-list)) auto auto, and each row is its own independent grid, so the two auto tracks size to that row's own content and nothing aligns across rows. The kind column starts at a constant x~538 because the first track is fixed, but the status column starts wherever that row's kind word happens to end: ACTIVE begins at roughly x=578 after 'org', 584 after 'tool', 585 after 'event', 592 after 'model', 603 after 'concept' and 620 after 'technique'. Down 85 rows the status column is a ragged left edge with six distinct positions, so the one thing a reader scans this index for vertically — which records are dead — cannot be scanned vertically. The anchor had no alignment defect here; the columns were merely too far apart. Stripe's mechanism is the direct contrast: it treats a listing as one table so every column shares one track across all rows, which is what makes a status column scannable at a glance.",
+      "evidence": "loops/ui-loop/evidence/current/index-wiki--light--1440.png and its mid-list region (rows DeepSeek through Moonshot AI), current/index-wiki--dark--1440.png",
+      "invariant": "In a row-based list surface, every column shall begin at the same x position on every row of that surface.",
+      "governing_rule": "RULES.md R7 — checked and binding. R7 requires the label column bounded to --measure-list and the remedy keeps it; the change is only to the two trailing tracks. R8 is unaffected, since no rule is added.",
+      "prescription": "Give the list a shared track set rather than per-row auto tracks — either promote the container to a grid with grid-template-columns: var(--measure-list) 8rem auto and let rows be display: contents, or fix the kind track to a width that fits the longest kind word ('technique'). Either makes the status column a single vertical edge.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": true
+    },
+    {
+      "id": "I18",
+      "target": "shared design system (app/globals.css) — consumed by app/page.tsx (home) and app/learn",
+      "problem": "R9 claims one record-link treatment across every index template and it is applied to three of five. /wiki, /catalog and /blog are ink with a muted underline. The home changed-feed record links and the home rail links are still --accent with an underline. /learn's tutorial titles are plain ink with no underline at all, which is the exact resting-affordance defect the anchor filed as I6 against /wiki, still present on another index. The site therefore carries three resting treatments for the same act of clicking a record, and the two exceptions are the front door and the learning path. This is a smaller inconsistency than the anchor's three-way split and it is on the right trajectory, but R9 as written is not satisfied and the enforcing invariant did not catch it.",
+      "evidence": "loops/ui-loop/evidence/current/home--light--1440.png (feed titles and rail links in accent), current/index-learn--light--1440.png (tutorial titles plain ink, no underline), against current/index-wiki--light--1440.png and current/index-blog--light--1440.png",
+      "invariant": "Every link to a record, on every index template including the home changed-feed and /learn, shall use one identical resting treatment in colour and underline.",
+      "governing_rule": "RULES.md R9 — checked and directly binding; this item is R9 not yet being true. RULES.md R1 also checked: --ink on --paper already clears the contrast threshold in both themes, so extending the existing treatment cannot regress R1. R6 is checked and unaffected — recolouring feed links does not change how many feed lines are visible above the fold.",
+      "prescription": "Extend the .browse-name / .rail-title a / .data-table a rule to the home changed-feed record link and the /learn tutorial title, most cleanly by giving the treatment its own class or a shared selector list rather than enumerating templates. Verify that the enforcing invariant for R9 asserts the treatment on all five index surfaces, not on three.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": true
+    },
+    {
+      "id": "I19",
+      "target": "app/tools page template (.listing in app/globals.css)",
+      "problem": "S2 removed per-row rules from .browse-row, .rail-item, .strip-item and .data-table but not from the /tools listing, which still draws a 1px rule under every one of its 35 entries. R8 says a list surface's sibling rows shall not carry a rule between every pair, and /tools is the one list surface still doing it. Before this iteration every list on the site ruled every row, which was over-chromed but at least uniform; now four templates do not and one does, so the divider policy reads as an inconsistency rather than a decision. This is the chrome fix relocating rather than completing.",
+      "evidence": "loops/ui-loop/evidence/current/index-tools--light--1440.png (rules under Deepgram, ElevenLabs, Aider, Continue, Cursor, Argilla, Hugging Face Hub, Unstructured), against current/index-wiki--light--1440.png and current/data--light--1440.png which carry none",
+      "invariant": "No list surface on the property shall draw a rule between every pair of sibling rows; group boundaries are drawn once.",
+      "governing_rule": "RULES.md R8 — checked and directly binding; this item is R8 not yet being true on /tools. The remedy removes marks and so cannot regress R1.",
+      "prescription": "Remove border-bottom from the /tools listing row and let the existing entry rhythm plus the once-drawn category boundary carry the group, exactly as .browse-row now does. Widen the R8 invariant to assert across every list surface rather than the four it currently names.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": true
+    },
+    {
+      "id": "I13",
+      "target": "evidence rig (tools/ui-evidence.mjs capture procedure and tools/ui-invariants.mjs id S7)",
+      "problem": "Re-filed and widened, because this round demonstrated the gap rather than predicting it. Two parts. First, all 40 captures remain full-page renders at scroll position zero, so no state that exists only after scrolling is judgeable, on a site with a 13,029px table and two sticky elements. Second and more serious: the registered DOM invariant S7 asserts only that the table head's top is not above the site header's bottom after a 400px scroll. That is a ONE-SIDED condition. Pushing the thead arbitrarily far DOWN — including onto the rows it labels, which is what shipped — satisfies it trivially. The manifest reports 5 registered, 5 pass, and the gate was read as evidence the change was safe, while the artifact was in fact broken at every scroll position including zero. An invariant that can be satisfied by making the artifact worse in the opposite direction is the same failure class as R5's preserved post-mortem: a check that passes for the wrong reason.",
+      "evidence": "loops/ui-loop/evidence/current/manifest.json (40 entries, every one a full-page top-of-document capture); tools/ui-invariants.mjs lines 200-224, whose check returns true whenever thTop >= headerBottom - 0.5 and tests nothing else; contrast with the measured overlap in I15",
+      "invariant": null,
+      "governing_rule": "RULES.md R11 — the rule this invariant claims to enforce, and which it under-enforces.",
+      "prescription": "Do not change the artifact for this item. Make the S7 check two-sided: assert both that the thead is not occluded by the site header AND that its rect does not intersect any tbody row rect, at scroll 0 and after a scroll. Separately, add one viewport-sized capture per long route taken after scrolling about 1200px, labelled distinctly (table-catalog--light--1440--scrolled.png), so sticky behaviour becomes a judgeable evidence class. Add to JUDGE.md's Known evidence lies: 'L3 — a full-page capture does not show the scrolled configuration of sticky elements' and 'L4 — a one-sided geometric invariant can be satisfied by displacing the element in the opposite direction; assert both bounds.'",
+      "tag": "evidence-fix",
+      "impact": 5,
+      "new": false
+    },
+    {
+      "id": "I8",
+      "target": "app/catalog page template",
+      "problem": "Re-filed at reduced impact. S4 removed half the harm: the READ column is no longer accent, so it no longer adds a second full column of colour competing with the ember status chips. What remains is that the column renders the identical string '2026-08-31' on all 396 rows and so discriminates nothing while consuming a seventh of the table's width, and that it is the direct cause of the route's tab burden: /catalog still reports 817 focusable elements, which is 396 model links plus 396 date links plus controls. A keyboard reader passes two stops per row where one would do, and that duplication is what exhausts the focus sweep in I12 — which now costs the artifact 1.5 scored points via the accessibility mapping.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--1440.png, table-catalog--dark--1440.png; scripts/verify-design.mjs focus section: '/catalog — 150 of 817 focusable element(s)'",
+      "invariant": "A /catalog column in which every row holds an identical value shall not be rendered as a per-row column, and /catalog shall expose at most one focusable element per data row.",
+      "governing_rule": "RULES.md R4 and R5 — checked: removing 396 redundant links keeps both satisfied and brings a full sweep within the rig's cap. Removing the column removes no information from the page — the same date is already stated once in the header line 'last checked 2026-08-31' — so slot 1's content prohibition is not engaged. If the implementer judges otherwise, decline and route to the keeper.",
+      "prescription": "Drop the per-row READ column and state the read date once, in the table caption or the existing header line. Where a row's read date genuinely differs, show it on that row only — the same exception-only principle R8 now applies to badges. Reclaim the freed width for the price columns, which also helps I1.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false
+    },
+    {
+      "id": "I9",
+      "target": "app/page.tsx (home template)",
+      "problem": "Unchanged from the anchor and slightly more exposed now that the feed's row rules are gone. The home page's right rail stops at roughly y=630 while the changed-feed beside it continues to y=2691, leaving about 2000px of empty column down the middle of the site's front door in both themes. The rail carries the property's highest-value orientation content — the 396-model count, the deprecated-and-retired list, the latest post and latest tutorial — and occupies well under half the height available to it. The feed's own rows still have ragged heights because the trailing 'source' link wraps to a second line on roughly half of them, so the two-column band reads as neither a settled grid nor a continuous list.",
+      "evidence": "loops/ui-loop/evidence/current/home--light--1440.png, home--dark--1440.png",
+      "invariant": "The home page's secondary rail shall not terminate more than one feed-row height above the end of the primary feed column beside it, and a feed row's trailing source link shall occupy its own track rather than wrapping.",
+      "governing_rule": "RULES.md R6 — checked and binding: R6 requires changed-feed lines visible above the fold at 1440x900 and 390x844, currently passing at 12 and 4. Any rebalancing must keep both counts non-zero. This is a RESTRUCTURE and subject to KP1.",
+      "prescription": "Either extend the rail with content already on the page — the 'EVERYTHING HERE' section below the feed is the obvious candidate, and moving it into the rail fills the void and shortens the page without adding or changing copy — or end the two-column band where the rail ends and let the feed run full width below it. Separately, give the feed row a fixed grid so 'source' occupies a right-aligned track instead of wrapping.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false
+    },
+    {
+      "id": "I11",
+      "target": "app/tools page template",
+      "problem": "Unchanged from the anchor. Every /tools listing renders the same four fields for all 35 entries — licence, pricing model, verification date and link — as a single run-on mono line separated by middots, wrapping to two lines at the full width. The fields are identical in kind across every entry, which is the definition of tabular data, but they are set as 35 sentences of differing length. A reader comparing what each tool costs must read 35 prose runs instead of scanning one column. The site already demonstrates it can do this correctly: /catalog aligns the same class of data into columns, and /wiki and /data now do the same for two fields.",
+      "evidence": "loops/ui-loop/evidence/current/index-tools--light--1440.png, table-catalog--light--1440.png, data--light--1440.png",
+      "invariant": "Where every entry in a listing carries the same set of fields, those fields shall be presented in aligned columns rather than as a delimited run of inline text.",
+      "governing_rule": "RULES.md R2 and R7 — checked: any columnar treatment must not introduce page-level horizontal scroll at 320px, and the mobile form must collapse to stacked label/value rather than repeating I1's failure of hiding columns behind a container scroll. R7's --measure-list is the natural bound for the name track. Whatever ships must also satisfy I17's cross-row alignment condition.",
+      "prescription": "Give .listing a shared grid of name / licence / pricing / verified tracks bounded well inside the shell, aligning the four fields down the page within each category section. Below 33.999rem, stack them as label/value pairs. This is a presentation change only: the same strings appear, in the same order, under the same headings.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false
+    },
+    {
+      "id": "I10",
+      "target": "shared design system (app/globals.css)",
+      "problem": "Unchanged from the anchor. There is no @font-face, no next/font and no bundled face anywhere in app/. Type is a fallback chain — Charter, Bitstream Charter, Sitka Text, Cambria, Georgia, Times New Roman — plus a system mono stack. The serif/mono split is a genuinely good domain choice, serif for argument and mono for every dated machine-read fact, and it is applied with discipline. The defect is the chain: Charter, Sitka Text, Cambria, Georgia and Times New Roman differ materially in x-height and set width, so the same page resolves to a different face on macOS, Windows and Linux. The controlled 38rem measure therefore yields a different character count per platform and the rhythm built on --step--1 through --step-4 lands on different baselines, which means the typographic system this verdict credits is only actually true on machines that happen to have Charter installed. Vercel's mechanism is the direct contrast: one face chosen for the property and served with it, so the grid's rhythm is identical for every reader.",
+      "evidence": "app/globals.css lines 55-57 and the absence of any @font-face across app/; rendering visible in loops/ui-loop/evidence/current/article--light--1440.png and prose--light--1440.png",
+      "invariant": "The resolved body face shall be identical across platforms — either self-hosted, or a stack whose fallbacks are metric-compatible with the primary via size-adjust.",
+      "governing_rule": "RULES.md R3 — checked and binding: first-load payload must stay under 150 KB gzipped, worst route currently 122.2 KB, leaving about 28 KB of headroom. R3 as written measures JavaScript, so a woff2 face would not count against it as specified; say so explicitly rather than assuming, and prefer a subset under 30 KB either way.",
+      "prescription": "Self-host one subset woff2 for the serif (Charter is openly licensed) with font-display: swap and a size-adjust-tuned local fallback, so the measure and rhythm resolve identically everywhere. If R3 is read to cover total payload rather than JS alone, subset to Latin plus the figures actually used.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false
+    },
+    {
+      "id": "I12",
+      "target": "evidence rig (scripts/verify-design.mjs, focus-indicator sweep)",
+      "problem": "Re-filed at raised impact, because the rubric's new accessibility mapping now reads this ratio directly and it costs the artifact 1.5 scored points. The sweep on /catalog reports 'PASS — 150 of 817 focusable element(s) — STOPPED AT THE 150-STOP CAP, the rest unswept'. It records a PASS having examined 18% of the route, and the 667 unexamined stops are precisely the deep-table region most likely to differ from the swept header region. This is the failure mode R5's own preserved post-mortem exists to prevent, reappearing as a cap instead of an early return. R5 requires a traversal to assert its stop count against the page's actual focusable count; the check does compute and print both, they disagree by 667, and it still records PASS. The artifact may well be fine; the oracle cannot say so, and it is claiming that it can. The other three routes sweep their complete tab order and would map to 10.",
+      "evidence": "scripts/verify-design.mjs output, focus indicators section: '/catalog — 150 of 817 focusable element(s) — STOPPED AT THE 150-STOP CAP, the rest unswept'; contrast '/tools — the complete tab order, 98 stop(s)'",
+      "invariant": null,
+      "governing_rule": "RULES.md R5",
+      "prescription": "Do not change the artifact for this item. Make the sweep record FAIL, or a distinct INCOMPLETE outcome that does not count as a pass, whenever swept is less than focusable. If the 150-stop cap exists for runtime reasons, replace exhaustive sweeping with a sample that always includes the last stop and a random interior stop, and report the sampling explicitly. Note that I8, if accepted, cuts /catalog from 817 stops to roughly 421 and makes a full sweep cheap enough to simply do.",
+      "tag": "evidence-fix",
+      "impact": 5,
+      "new": false
+    },
+    {
+      "id": "I20",
+      "target": "app/wiki entry page template and app/colophon (section headings inside a measure-bounded block)",
+      "problem": "S5 bounded .facts to --measure but the FACTS section heading's own rule still spans the full shell. On /wiki/concept/ai-winter the FACTS label sits at x=145 with a rule running to x=1295 while the definition list beneath it stops at x=751 — the rule is 2.1 times the width of the block it introduces. The same page gets it right twice immediately below, where the REFERENCED HERE and APPEARS IN rules stop at their own columns' edges, so the correct idiom is present on the same screen as the incorrect one. This is exactly the condition R10 was written for, on the page R10 came from.",
+      "evidence": "loops/ui-loop/evidence/current/wiki-entry--light--1440.png (FACTS rule to x=1295, facts block to x=751, REFERENCED HERE rule correctly to x=435)",
+      "invariant": "A horizontal rule introducing a content block shall not exceed that block's own rendered width.",
+      "governing_rule": "RULES.md R10 — checked and directly binding; this item is R10 not yet being true for section headings inside the entry template. The enforcing invariant for R10 evidently checks the blocks S5 named and not their headings.",
+      "prescription": "Apply the same max-width: var(--measure) bound to the section heading element that introduces .facts, or move the rule onto the .facts block itself. Widen the R10 invariant to assert heading rules as well as block rules.",
+      "tag": "ui-fixable",
+      "impact": 4,
+      "new": true
+    },
+    {
+      "id": "I14",
+      "target": "keeper — reader gate",
+      "problem": "Unchanged from the anchor and still unresolvable by this loop. /catalog presents 396 rows as one continuous table with four filter controls and no pagination or grouping beyond an A-to-Z sort within provider. Whether a reader who arrives knowing only 'I want a cheap long-context model' can converge on one is a question about that reader's behaviour, not about the pixels: the filters may be entirely sufficient, or the row count may defeat them. No screenshot answers it, and the axe, reflow, payload and traversal oracles are all silent on it. Listed so it stops resurfacing as an actionable layout finding — the density and column work in I1 and I8 should not be justified by findability claims this loop cannot test.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--1440.png (13,029px, 396 rows)",
+      "invariant": null,
+      "governing_rule": null,
+      "prescription": "Keeper decision. Resolving it needs a real reader attempting a real lookup, which is outside this loop's oracle stack. If the keeper wants it closed, the cheapest instrument is a timed task with three people, not another screenshot.",
+      "tag": "keeper-gate",
+      "impact": 4,
+      "new": false
+    }
+  ]
+}

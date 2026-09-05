@@ -32,7 +32,7 @@ export default async function ToolsPage() {
         site stops answering keeps its place with a visible marker — a dead tool is a record, not
         an embarrassment.
       </p>
-      <div dangerouslySetInnerHTML={{ __html: renderToolsIndex(site.tools, site.corpus.byId) }} />
+      <div className="tools-index" dangerouslySetInnerHTML={{ __html: renderToolsIndex(site.tools, site.corpus.byId) }} />
     </>
   );
 }

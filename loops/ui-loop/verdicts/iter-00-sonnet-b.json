@@ -1,0 +1,61 @@
+{
+  "iteration": 0,
+  "date": "2026-08-31",
+  "anchor": {"iteration": null, "overall": null, "implemented_since": null},
+  "scores": {
+    "first_read_hierarchy": 7.5,
+    "chrome_restraint": 8,
+    "information_density": 5.5,
+    "list_and_table_craft": 8,
+    "typographic_system": 8.5,
+    "colour_discipline": 8.5,
+    "family_coherence": 5.5,
+    "responsive_integrity": 8,
+    "accessibility": 7,
+    "payload_discipline": 9,
+    "visual_distinctiveness": 7,
+    "overall": 7.2
+  },
+  "verdict": "Competent",
+  "score_deltas": [],
+  "score_hold_justification": null,
+  "acknowledged": [],
+  "items": [
+    {
+      "id": "I1",
+      "target": "app/globals.css + wiki-entry/article/prose/tools/learn page templates",
+      "problem": "At 1440px, every single-column template (wiki-entry, blog article, colophon/prose, tools, learn) caps its content to roughly 600-1000px inside a 1216px shell and puts nothing in the freed width, so 35-55% of the viewport is inert background. home--light--1440.png and table-catalog--light--1440.png use the full 1216px shell (home via .home-grid's two-column split, catalog via the full-width table), so the same viewport reads as dense on two templates and half-empty on five others. This is exactly the family_coherence failure mode named in the rubric ('a template that looks good alone but breaks the family') and it directly depresses information_density, since useful content per screen collapses on the majority of templates that are not the home page.",
+      "evidence": "wiki-entry--light--1440.png (prose paragraphs and the .facts dt/dl block end near x=750 of 1440, REFERENCED HERE / APPEARS IN rails end well short of the shell's right edge); article--light--1440.png (identical pattern, body text width stops far short of the 1216px shell visible via table-catalog--light--1440.png); prose--light--1440.png (colophon: content ends at x≈760, the remaining ≈680px of the 1440 canvas is bare .paper background for the full page height); index-tools--light--1440.png (the category jump-list and every listing block occupy only the left ≈40% of the viewport; the right ≈60% is empty for the whole page); index-learn--light--1440.png (milder version of the same pattern - content reaches roughly 70% width, orientation blurb column at left is fixed-width and doesn't grow).",
+      "invariant": "For any template, either the primary content region's rendered width is within a small, consistent ratio of the shell's available width (matching home/catalog), or the width not used by primary content is occupied by secondary presentation content (a rail, a table of contents, related-entry list, or similar) rather than left as bare background, at >=60rem viewports.",
+      "governing_rule": null,
+      "prescription": "Give the single-column templates a second column at >=60rem, mirroring the .home-grid pattern already defined in globals.css (grid-template-columns: minmax(0,1.75fr) minmax(15rem,1fr) at min-width 60rem): promote the existing .rails block (renderEntryPage's REFERENCED HERE / APPEARS IN) to a persistent right-hand sidebar on wiki-entry and article templates instead of a bottom two-column strip, and add an equivalent in-page anchor list ('on this page') built from existing headings for prose/colophon and the tools/learn indexes. This reuses data the templates already have (backlinks, section headings, category counts) - no content or copy changes are required, only where it is placed.",
+      "tag": "ui-fixable",
+      "impact": 8,
+      "new": true
+    },
+    {
+      "id": "I2",
+      "target": "scripts/verify-design.mjs (checkFocusIndicators, FOCUS_SWEEP_CAP)",
+      "problem": "The keyboard-focus traversal that Rule R5 requires is capped at 150 stops (FOCUS_SWEEP_CAP). /catalog has 817 focusable elements per the check's own reporting, so the sweep quits after 150 and reports 'STOPPED AT THE 150-STOP CAP, the rest unswept' - a true, honestly-labelled PASS that verified only 18% of the route's tab order. This is the exact shape flagged in Known evidence lie L2 (150 of 817 examined, 667 unswept). Per the accessibility scoring mapping this means R5 is unverified on a sampled route, which caps the category at 7 regardless of the 45/0 pass line in data/launch.json.",
+      "evidence": "scripts/verify-design.mjs lines 260-334 (FOCUS_SWEEP_CAP = 150; the capped-vs-complete branching and its own comment: '/catalog has more focusable elements than the cap, and a truncated sweep printed as a clean one is indistinguishable from a complete one'); data/launch.json design_verification (2026-08-31, pass true, 45 checks, 0 failures) - a green summary line that cannot by itself certify R5 on /catalog because of the cap noted above.",
+      "invariant": null,
+      "governing_rule": null,
+      "prescription": "Raise FOCUS_SWEEP_CAP past /catalog's actual focusable count (currently 817; set generously, e.g. 1000, or make the cap route-aware) so the traversal can reach the wrap-around-to-skip-link terminator and report a genuinely complete sweep on every sampled route, not just the ones under 150 stops.",
+      "tag": "evidence-fix",
+      "impact": 5,
+      "new": true
+    },
+    {
+      "id": "I3",
+      "target": "app/globals.css .data-table",
+      "problem": "The 396-row model catalog table (table-catalog--light--1440.png, table-catalog--dark--1440.png) has no visual rest point across its full length: every row carries the same hairline border-bottom and there is no periodic stronger rule or grouping cue, so a reader scanning for one vendor among 396 rows has no anchor beyond hover state and browser find. This is a real but modest list-and-table-craft gap relative to the Stripe benchmark, which pairs hairline row dividers with structural grouping (section headers, alternating weight) at this row count, not hairline dividers alone.",
+      "evidence": "table-catalog--light--1440.png and table-catalog--dark--1440.png (continuous unbroken row list, ~396 rows, uniform border-bottom weight throughout, no grouping marker visible at any point in the capture)",
+      "invariant": "In the model catalog table, a reader can locate their approximate scroll position relative to vendor/provider grouping without relying on hover or in-browser search - e.g. a visually distinct rule or sticky sub-header at each vendor boundary.",
+      "governing_rule": null,
+      "prescription": "Add a stronger top border (border-top: 1px solid var(--rule-strong), or a small sticky vendor label) on the first row of each new provider group in the catalog table, reusing the existing --rule-strong token so no new colour is introduced.",
+      "tag": "ui-fixable",
+      "impact": 3,
+      "new": true
+    }
+  ]
+}

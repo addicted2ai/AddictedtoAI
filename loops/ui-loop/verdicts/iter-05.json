@@ -1,0 +1,305 @@
+{
+  "iteration": 5,
+  "date": "2026-08-31",
+  "anchor": {
+    "iteration": 4,
+    "overall": 7.7,
+    "implemented_since": ["I5", "I16 (widening half declined with cause, centring alternative applied)", "I30", "I32", "I28 (S9 widened two-sided)", "I29 + I12 (accessibility mapping corrected, focus-sweep cap raised)"]
+  },
+  "scores": {
+    "first_read_hierarchy": 8.0,
+    "chrome_restraint": 8.5,
+    "information_density": 7.0,
+    "list_and_table_craft": 8.0,
+    "typographic_system": 7.5,
+    "colour_discipline": 8.0,
+    "family_coherence": 6.0,
+    "responsive_integrity": 8.0,
+    "accessibility": 10.0,
+    "payload_discipline": 9.0,
+    "visual_distinctiveness": 6.0,
+    "overall": 8.0
+  },
+  "instrument_disclosure": {
+    "overall_basis": "unweighted mean of the TEN UNCAPPED categories (visual_distinctiveness scored, reported, excluded)",
+    "this_verdict_ten_category_mean": 8.0,
+    "this_verdict_old_eleven_category_mean": 7.818,
+    "anchor_ten_category_mean": 7.7,
+    "delta_against_anchor": 0.3,
+    "noise_floor": 0.2,
+    "accessibility_instrument_split": {
+      "reads_now_under_corrected_mapping": 10,
+      "would_read_under_anchor_mapping_and_anchor_150_stop_cap": 7,
+      "intermediate_cap_raised_denominator_still_DOM": 8,
+      "artifact_contribution": 0.0,
+      "note": "Zero axe violations in both themes on all four sampled routes (45/47/51/46 rules passed) and every focus sweep prints 'the complete tab order' — 83, 27, 817 and 98 stops. Under the anchor's mapping with the anchor's 150-stop cap the SAME tree reads 7, because /catalog reported 150 of 817 (ratio 0.18 < 0.5). Raising the cap alone moves it to 8 (all sweeps complete, but swept == total stays unreachable: / swept 83 of 84 DOM-focusable, /tools 98 of 134). Correcting the denominator to the tab order moves it to 10. Nothing in this iteration touched a focus indicator, a label, a role or a contrast pair. The artifact's accessibility did not change; all 3.0 points are instrument."
+    },
+    "overall_on_the_anchors_own_instrument": 7.7,
+    "taste_category_arithmetic": {
+      "eight_taste_categories_anchor_mean": 7.625,
+      "eight_taste_categories_now_mean": 7.625,
+      "movement": 0.0,
+      "note": "information_density +0.5 (I5 fills the wiki entry's dead right track on the property's largest template) and family_coherence -0.5 (I16's centring remedy abandoned the property's shared x=144 left rail on /wiki, /data and /colophon) cancel exactly. The whole of the +0.30 on the overall is the accessibility instrument correction. On the anchor's own instrument this iteration reads 7.70 — unchanged."
+    }
+  },
+  "verdict": "Competent",
+  "score_deltas": [
+    {
+      "category": "accessibility",
+      "from": 7,
+      "to": 10,
+      "moved_by": "INSTRUMENT ONLY, not the artifact. scripts/verify-design.mjs, run by me: zero axe violations in light and dark on /, /wiki/concept/ai-winter, /catalog and /tools; every focus sweep prints 'the complete tab order' at 83, 27, 817 and 98 stops. Rubric section 9 row 10 is satisfied. The same tree reads 7 under the anchor's mapping and cap (/catalog 150 of 817). See instrument_disclosure.accessibility_instrument_split for the full 7 -> 8 -> 10 decomposition."
+    },
+    {
+      "category": "family_coherence",
+      "from": 6.5,
+      "to": 6.0,
+      "moved_by": "I16's centring remedy, and this is a change since the baseline that made the category worse. Measured by me at 1440x900 against a shell whose content box is 144-1296 on every route: before this iteration every template started its primary content on one rail at x=144, the same rail the header wordmark uses. Now the property has five: 144 (/, /tools, /learn, /tutorials, /blog, the wiki entry), 416 (/colophon's .prose and .listing-facts, /blog/[slug]'s .entry-head and .prose), 440.1 (/wiki's 85-row .browse index), and on /data alone four more — its four .section blocks centre independently at 617.4, 420.8, 471.2 and 580.5, so four sibling section headings on one screen have four different left edges spanning 196.6px while the H1 sits at 144. Visible in current/index-wiki--light--1440.png (the list is the only block on the page off the rail; the note beneath it snaps back to 144), current/data--light--1440.png (a four-step staircase) and current/prose--light--1440.png (title at 144, body at 416, an empty 272px block directly beneath the title). This category asks whether all templates read as one system; a shared left rail was the one thing that unambiguously held across all of them, and it no longer does."
+    },
+    {
+      "category": "information_density",
+      "from": 6.5,
+      "to": 7.0,
+      "moved_by": "I5, measured by me at 1440x900 on /wiki/concept/ai-winter: the shell's right track (772-1296, 524px) was empty down the full height of all 495 wiki entries and now carries the FACTS block, top edge 228.9px, bottom 680.8px, all 8 dt/dd pairs inside the 900px first viewport, beside a 608px prose column running 144-752. The anchor measured FACTS beginning at 2173.9px after 1945.1px of prose. A reader now gets eight dated, sourced label/value pairs in the first screen where they previously got none. That is a density gain on the property's largest template. Partly offset: /blog's four post titles now wrap to 3 lines each in a 384px track (measured, all four), and /data's centring recovered no width at all — its sections remain 205.1, 598.4, 497.7 and 278.9px inside a 1152px shell. Held well below 8 by I23 (396 records at 215.9px = an 86,653px page at 390x844, first record at y=724.5) and I9 (.home-side ends at y=646.5 while .rail-changes runs to y=1334.6)."
+    }
+  ],
+  "score_hold_justification": "Five acknowledged items resolved this iteration and the overall rises by only 0.30, all of which is an instrument correction. The arithmetic, stated because resolutions and a regression pull against each other: I5 is the largest single reader-facing gain the loop has produced (the answer surface for 495 records now answers in the first viewport at both 1440x900 and 390x844) and it earns +0.5 on information density. I30 and I32 are real but narrow — one measure token enforced on /blog, one label track fitted on /tools — and each created a smaller defect in the same move (/blog's section rule now spans 1152px over a list whose content ends at 639.9px, R10's own defect; /tools' two .browse surfaces are 126px and 254.3px inside a 1152px shell, R13's occupancy clause violated on a surface no check samples), so neither moves list_and_table_craft. Against I5's +0.5 stands a -0.5 on family coherence caused by this iteration's own centring remedy, which converted pooled dead space into left-rail drift on three templates. The eight taste categories therefore move by exactly 0.000, from 7.625 to 7.625. On the anchor's own accessibility mapping the overall reads 7.70 — identical to the anchor. The artifact did real work and also did real damage, in almost exactly equal measure, and the number that rose did so for a reason unrelated to either.",
+  "acknowledged": [
+    {
+      "baseline_item": "I5",
+      "status": "resolved",
+      "note": "RESOLVED, verified by me at BOTH viewports as instructed, not taken on report. 1440x900 on /wiki/concept/ai-winter: .entry-facts top 228.9px, bottom 680.8px, box 772-1296 (524px) in a real two-column grid '608px 524px'; all 8 dt/dd inside the 900px first viewport; prose 144-752 running 228.9-2173.9 (1945.1px), long enough that stacking alone would have buried it. 390x844: .entry-facts top 288.2px, bottom 827.1px, 8/8 dt/dd inside 844px, prose beginning at 827.1px — the answer-first order preserved by paint order (order: 2 on .entry-facts against 3 on .prose) with no markup change. S14 falsified by me independently at each viewport: --break '.entry-facts{order:9}' fires at 1440 ('FACTS top edge (2362.9px) falls below the first viewport'), and the same break scoped to '@media (max-width: 59.99rem)' fires at 390 ('3820.5px ... below 844px'), so both halves of the claim are checked, not one. Visible in current/wiki-entry--light--1440.png: term origin, Lighthill, ALPAC and the Symbolics trend all readable beside the opening paragraph. This is the oldest item in the loop, open since iteration 0, and it is closed properly — and it is the only route where I16's freed track was FILLED rather than merely balanced."
+    },
+    {
+      "baseline_item": "I16",
+      "status": "partially-resolved",
+      "note": "THE DECLINE IS SOUND AND I ACCEPT IT; THE REMEDY RELOCATES THE DEFECT. Decline, adjudicated by measurement rather than by the argument: on /wiki the .browse-name track runs 440.1-824.1, the widest label glyph ends at 799.1, .browse-kind starts at 836.1 and the badge at 916.6 — a 37px gap from label to metadata. Widening .browse toward the shell's inner edge at 1296 would open roughly 480px between a label and its own kind and status, which is verbatim what R7 forbids and exactly the defect iteration 1 removed. The implementer is right and the prescription's widening half was wrong. Remedy, measured: /wiki's .browse is now 440.1-999.9, left gap 296.1 == right gap 296.1, occupancy unchanged at 48.6%. R13's centring clause and my own iter-04 invariant (which offered centring as an alternative) are both literally satisfied, and S9 and S13 both fire under injected violations, so the checks work. But the dead space was not reduced, only split — and splitting it cost the property its shared left rail. On /wiki the eyebrow (144), page title (144), lede (144), sort-note (144) and the closing delisted-note (144) all sit on the rail and the 85-row index that is the page's entire purpose is the one block that does not. On /data four .section blocks centre independently at 617.4, 420.8, 471.2 and 580.5 — a four-step staircase on one screen, the H1 at 144. On /colophon the title sits at 144 over a body at 416. Two routes took a genuinely good remedy and prove the alternative existed: /blog/[slug] centres its H1 and .entry-head WITH the body (all three at 416-1024), which reads as a conventional centred article and is fine; and the wiki entry filled the track instead of balancing it. /learn's .rung, untouched, sits left-aligned at 144-1008 at 75% occupancy and satisfies R13's own occupancy clause without moving off the rail. Re-filed as I33 under JUDGE.md's 'Relocation is not resolution', with the correction that my own iter-04 invariant is partly to blame for permitting centring without requiring the block to keep the page's rail."
+    },
+    {
+      "baseline_item": "I30",
+      "status": "resolved",
+      "note": "Resolved, and it created a smaller defect in the same move. Measured at 1440x900: all four .rail-title boxes are 260-644, exactly 384px = --measure-list, against the anchor's 1019px; .rail-posts .rail-item tracks are '100px 384px'. S15 falsified by me: --break '.rail-posts .rail-item{grid-template-columns:100px 1036px}' fires with '.rail-posts .rail-item's title track is 1036.0px, exceeding --measure-list (384.0px)' — the check works under the fixed harness, and the flaky-run concern in the manifest does not apply to it. The 1019px line of 20px serif, the widest running type on the property, is gone. New defect: the section rule above the list still spans 144-1296 (1152px) at y=315.8 while the list's own content ends at x=639.9 — a 512px overhang, which is R10's exact defect on a route S5 does not sample. Filed as I35. Also note all four titles now wrap to 3 lines each, which is a density cost I have counted."
+    },
+    {
+      "baseline_item": "I32",
+      "status": "resolved",
+      "note": "Resolved. /tools category index at 1440x900: the .browse-name track is 94.3px against a widest label 'observability' of 94.3px, and .browse-kind starts 12px past the widest glyph, against the anchor's ~289px of dead air inside a 384px reserved track. The /tools A-Z .browse behaves the same way — track 131.3px, widest label 'Hugging Face Hub' 131.3px, gap 12px — and /data's cap still binds unloosened (S1 unchanged and green). S16 falsified by me: --break '.browse{grid-template-columns:minmax(0,var(--measure-list)) auto auto}' fires with 'gap ... is 301.7px'. Two caveats recorded rather than scored as unresolved: the two /tools .browse surfaces are now 126px and 254.3px wide inside a 1152px shell (10.9% and 22.1% occupancy, uncentred, right gaps 1026 and 897.7), which violates R13's occupancy clause on a surface neither S9 nor S13 samples — folded into I33's prescription because I believe the occupancy clause itself is the wrong test; and S16 is one-sided, filed as I34."
+    },
+    {
+      "baseline_item": "I28",
+      "status": "resolved",
+      "note": "S9 is two-sided. Falsified by me: --break 'main.shell > .browse{margin-left:0; margin-right:auto}' fires with '/wiki @1440x900: .browse is neither >=55% of the shell's content width NOR centred (left gap 0.0px, right gap 592.2px, occupancy 48.6%)' — the exact reading the anchor's I16 opened with, now caught. The predecessor's finding is closed."
+    },
+    {
+      "baseline_item": "I29",
+      "status": "resolved",
+      "note": "The mapping's denominator is the tab order. The harness prints 'the complete tab order, N stop(s)' and separately reports the DOM count and what is not currently tabbable ('/ — the complete tab order, 83 stop(s); 84 focusable element(s) in the DOM, 1 of them not currently tabbable (a closed <details> hides its links)'). Row 10 is now a lookup, not a determination, and the I24 mobile-nav fix no longer caps the scale that measures it. Correct, and the correction is the reason the category can reach 10 — see instrument_disclosure."
+    },
+    {
+      "baseline_item": "I12",
+      "status": "resolved",
+      "note": "The 150-stop cap is gone. /catalog now reports 'the complete tab order, 817 stop(s)' where the anchor read '150 of 818 — STOPPED AT THE 150-STOP CAP'. D2's recurring 'a check that reports how much it skipped still reports PASS' is closed on this check. Cost: none measurable in the gate's runtime."
+    },
+    {
+      "baseline_item": "I8",
+      "status": "unchanged",
+      "note": "Not worked, deferred by scope per the manifest, and re-verified present by me at 1440x900: the READ column renders '2026-08-31' on 396 of 396 rows — 1 unique value, 100% share — as an underlined link, occupying 105.2px of the table's 1152px. Unchanged from the anchor. Re-filed."
+    },
+    {
+      "baseline_item": "I11",
+      "status": "unchanged",
+      "note": "Not worked, deferred by scope. Re-verified: every .listing child (.listing-name, .listing-line) is display:block at x=144 with no grid; six sampled .listing-line glyph right edges are 1134.3, 1004.8, 1294.2 (2 lines), 799.1, 867.7 and 623.9 — the four fields a reader came to compare still start nowhere in common. Re-filed."
+    },
+    {
+      "baseline_item": "I23",
+      "status": "unchanged",
+      "note": "Not worked, deferred by scope. Re-verified at 390x844 to the pixel: 396 records at 209.5, 215.9, 215.9, 215.9, 215.9, 215.9px, document height 86,653px, first record top y=724.5. Identical to the anchor. Re-filed."
+    },
+    {
+      "baseline_item": "I9",
+      "status": "unchanged",
+      "note": "Not worked, deferred by scope. Re-verified at 1440x900: .home-side runs 69.8-646.5 (576.7px) while .rail-changes runs 103.7-1334.6 (1230.9px), so the rail reaches 46.9% of the feed's height against the 60% the invariant asks — roughly 688px of empty right column beside the site's front-door content. Grid still '707.625px 404.375px'. Re-filed."
+    },
+    {
+      "baseline_item": "I31",
+      "status": "unchanged",
+      "note": "Not worked, held per the manifest as predating the anchor — correctly, and NOT scored against colour_discipline. Re-verified and slightly extended: the first .delta ARTICLE carries border-top rgb(74,59,212) at y=1530.4 while its structurally identical sibling at y=1886.5 carries rgb(185,187,199); and separately one of eight .door list items (x 732-1002, y 2326.7) carries border-top rgb(74,59,212) while the other seven carry rgb(215,216,224). The pattern occurs TWICE on the home page, not once, which is new information the anchor did not have. Re-filed at the same impact."
+    },
+    {
+      "baseline_item": "I13",
+      "status": "unchanged",
+      "note": "Not worked, deferred by scope. 38 of 40 captures are still fullPage at scroll 0; the two exceptions are the /catalog 1440 pair, correctly labelled capture:'viewport' with a stated reason (L5). Every scroll-coupled property in this verdict — the /catalog corridor, the wrap-to-footer gap — was measured by me in the DOM because no capture can contain it. Re-filed."
+    },
+    {
+      "baseline_item": "I26",
+      "status": "unchanged",
+      "note": "Not worked, deferred by scope. The fullPage fidelity detector is still keyed to one CSS signature. Build stamps this iteration are clean: all 40 captures carry 2026-09-01T02:45:26Z, and I confirmed no presentation source (app/globals.css at 02:33:29Z, app/layout.tsx at 01:24:19Z, app/blog/[slug]/page.tsx at 02:33:07Z) was touched after it — my own `npm run build` re-stamped out/ to 02:58:16Z but changed nothing in the tree, so L6 is satisfied. Re-filed."
+    },
+    {
+      "baseline_item": "I14",
+      "status": "unchanged",
+      "note": "Keeper-gate, reader class. Unresolvable by this loop. Re-filed unchanged."
+    },
+    {
+      "baseline_item": "I27",
+      "status": "unchanged",
+      "note": "Keeper-gate, reader class. Unresolvable by this loop's three evidence classes. Re-filed unchanged."
+    }
+  ],
+  "items": [
+    {
+      "id": "I33",
+      "target": "shared design system (app/globals.css: main.shell > .browse; .section:has(> .browse), .section:has(> .footer-links); /colophon's .prose and .listing-facts)",
+      "problem": "The centring remedy that closed I16's letter converted pooled dead space into left-rail drift, and on /data into a ragged left edge across four siblings on one screen. Measured by me at 1440x900 against a shell content box of 144-1296 on every route. /wiki: eyebrow, page title, lede, sort-note and the closing delisted-note all sit at x=144, and the 85-row .browse index — the page's entire purpose — is the ONLY block off the rail, at 440.1-999.9. The reader's eye jumps right for the list and back left for the note beneath it. /data: the H1 is at 144 and its four .section blocks centre independently at 617.4, 420.8, 471.2 and 580.5, each carrying its own R10-bound heading and rule with it, so four sibling section headings on one screen have four different left edges spanning 196.6px. It reads as a staircase, not as a page. /colophon: title at 144 over a body at 416, leaving a conspicuous empty 272px block directly beneath the title, which reads as a mis-indent rather than as a margin. The unoccupied width is unchanged in every case — /wiki's .browse is still 48.6% of the shell, exactly the anchor's number. Two routes prove a better remedy was available: /blog/[slug] centres its H1 and .entry-head WITH its body (all three at 416-1024), which is a conventional centred article and is not a defect; and /wiki/concept/ai-winter FILLED the freed track with FACTS (I5) rather than balancing it. /learn's untouched .rung sits left-aligned at 144-1008 at 75% occupancy and satisfies R13's occupancy clause without leaving the rail at all. Separately, /tools' two .browse surfaces are 126px and 254.3px wide inside the 1152px shell (10.9% and 22.1% occupancy, uncentred, right gaps 1026 and 897.7) — R13's occupancy clause violated on a surface neither S9 nor S13 samples, and yet those surfaces read FINE, because they keep the rail. That is the evidence that the rule is measuring the wrong property. My own iter-04 invariant is partly at fault: it offered centring as an alternative without requiring the centred block to keep the page's own rail, and the implementer satisfied it as written.",
+      "evidence": "loops/ui-loop/evidence/current/index-wiki--light--1440.png, data--light--1440.png, prose--light--1440.png, index-blog--light--1440.png, wiki-entry--light--1440.png; measurements by judge-run Playwright at 1440x900 on /wiki, /data, /colophon, /blog, /blog/[slug], /learn, /tools and /wiki/concept/ai-winter",
+      "invariant": "On every sampled route at 1440x900, the primary content block inside <main> starts within 2px of that route's own H1 and eyebrow, OR that route's H1 and eyebrow share the block's own left edge (a consistently centred article); and no two sibling section blocks within one route have left edges differing by more than 2px.",
+      "governing_rule": "RULES.md R13 (and R13's own occupancy/centring disjunction should be amended — see prescription)",
+      "prescription": "Return main.shell > .browse (/wiki), /data's four .section blocks and /colophon's .prose and .listing-facts to margin-inline-start: 0 so every block resumes the property's x=144 rail, and satisfy R13 the way /learn and the wiki entry already do instead: fill the freed track (S13's own 'filled' clause, which the wiki entry now passes) or accept a left-aligned narrow block as /learn's .rung does at 75% occupancy. Leave /blog/[slug] centred — its own head centres with it and that is correct. Then amend R13: replace 'occupancy >= 55% OR centred' with the property that actually matters, which is that a template's primary content block starts on the same rail as that template's own H1 and eyebrow, and that sibling blocks on one route share one left edge. Centring should be permitted only when the route's own heading matter centres with the block. Under the current disjunction /tools passes nothing and reads well while /data passes and reads badly, which is the clearest possible sign the clause is measuring the wrong thing. Extend S9/S13's route coverage to /tools, /learn, /blog and /tutorials in the same change so no template's rail is unasserted.",
+      "tag": "ui-fixable",
+      "impact": 7,
+      "new": true,
+      "baseline_item": "I16"
+    },
+    {
+      "id": "I34",
+      "target": "tools/ui-invariants.mjs, checks S1 and S16",
+      "problem": "S1 and S16 are ONE-SIDED in exactly JUDGE.md L4's shape, and this is the second consecutive iteration in which a check registered for R7/R13 turns out to bound only the direction the last fix moved in. Both claim to govern .browse-name's track: S1 that it 'stops before --measure-list', S16 that it 'sizes to that surface's OWN widest label, capped at --measure-list'. Run by me: `node tools/ui-invariants.mjs --only S16 --break \".browse{grid-template-columns:40px auto auto !important}\"` reports ok, and the identical break against S1 reports ok. That break is not benign — I measured it live on /tools with the same injection: 42 of 47 labels wrap, the worst to 4 lines, and .browse collapses from 254.3px to 71.6px wide. A track of 40px does not size to a surface whose widest label is 131.3px, so S16's own stated property is false under a break S16 calls ok. Both checks measure only the gap between the label and the trailing track, which shrinks monotonically as the track narrows, so no track can ever be too narrow for either of them. This is L4's rule applied to a size bound rather than a collision: an invariant of the form 'this track must not be too wide' shall name the corridor the track must stay inside, not the single edge it must clear.",
+      "evidence": "judge-run `node tools/ui-invariants.mjs --only S16 --break \".browse{grid-template-columns:40px auto auto !important}\"` (ok, 0 of 1 fired) and the same against S1 (ok, 0 of 1 fired); judge-run Playwright injecting the identical CSS on /tools at 1440x900: 42 of 47 labels wrapped, maxLines 4, .browse width 71.6px",
+      "invariant": "S1 and S16 each fail under an injected violation in EITHER direction: a label track wider than --measure-list, and a label track narrower than the surface's own widest single-line label. Specifically, `.browse{grid-template-columns:40px auto auto}` makes both fail.",
+      "governing_rule": "RULES.md R7; JUDGE.md L4",
+      "prescription": "Add a lower bound to both checks: assert that no .browse-name on the surface wraps (each label's Range height equals one line-height), or equivalently that the resolved first track is at least the surface's own max-content width, and record a falsifier for the narrow direction alongside the existing wide one. Re-run every S1/S16 falsifier against the post-change structure rather than transferring the old records (D8). While in there, audit S13 and S15 for the same asymmetry — S15 bounds .rail-title's track above at --measure-list and nothing bounds it below, so a 40px blog title column would also pass.",
+      "tag": "evidence-fix",
+      "impact": 6,
+      "new": true
+    },
+    {
+      "id": "I8",
+      "target": "app/catalog page template",
+      "problem": "Unchanged and re-verified by me at 1440x900: the READ column renders the identical string '2026-08-31' on 396 of 396 rows — 1 unique value, 100% share — each one an underlined link carrying the same treatment as the discriminating MODEL column, occupying 105.2px of the table's 1152px. A full column of 396 identical underlined strings is chrome by another route: it consumes a ninth of the table's width and a full column of the reader's scan while carrying zero discriminating information, and it competes for attention with IN, OUT, CONTEXT and STATUS, which are what a reader crosses the row to compare. This is the same failure R8's badge clause already forbids for status chips — drawn on every row including the unexceptional ones, so the exceptional case has nothing left to say — applied to a link treatment rather than a border. Stripe's tables state a collection-level constant once above the table and reserve per-row cells for values that discriminate; the property of Stripe's content that makes that transfer is exactly this one's, a long list of records crossed to compare a few fields.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--1440.png and table-catalog--dark--1440.png (both capture:'viewport', L5 — judged in frame only); measurement by judge-run Playwright at 1440x900 over all 396 rows",
+      "invariant": "No column of a record table renders an identical value on more than 90% of its rows at the same visual weight as the columns a reader compares across; a value constant across the collection is stated once for the collection, not once per row.",
+      "governing_rule": "RULES.md R8 (badge clause, by analogy), RULES.md R9",
+      "prescription": "State the read date once in the table's own preamble — the page already says 'last checked 2026-08-31' above the filters — and render the READ cell per row only where it differs from that collection default, exactly as the badge clause treats status. If the per-row link target genuinely differs even when the date does not, move the link onto the model name's row-level affordance rather than onto a repeated date string. Assert it: no column may render one value on more than 90% of rows at link weight.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false,
+      "baseline_item": "I8"
+    },
+    {
+      "id": "I23",
+      "target": "app/catalog page template (the 33.999rem stacked-record block in app/globals.css)",
+      "problem": "Unchanged, re-measured by me at 390x844 and identical to the anchor to the pixel: the first six stacked records are 209.5, 215.9, 215.9, 215.9, 215.9 and 215.9px tall; 396 records produce an 86,653px document, which is 102 screens; and the first record does not begin until y=724.5, so the first comparison a reader can make starts on screen two. R12 is satisfied — every field reaches the reader — and the form it arrives in still cannot be scanned. A reader comparing two models at 390 must hold six label/value lines in memory across roughly one screen of scrolling per record. This is the artifact's largest remaining reader-facing defect and it has survived five iterations.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--390.png; measurement by judge-run Playwright at 390x844",
+      "invariant": "At 390x844 a /catalog record occupies no more than half the viewport height, and at least two complete records are visible in one screen below the filter controls.",
+      "governing_rule": "RULES.md R12",
+      "prescription": "Set the four fields R12 names — name, input price, output price, status — as a two-line record: the name on line one and the three values as a single aligned row on line two, sharing one track set across all records so the prices form a column a reader can run down. Move context, provider and read behind a per-record disclosure or drop them from the 390 form entirely; R12 requires identity plus highest-priority fields, not every field. Separately, collapse the ~700px preamble at 390 so the first record starts within the first viewport. Do not solve this by shrinking type: the record height is line count, not leading.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false,
+      "baseline_item": "I23"
+    },
+    {
+      "id": "I11",
+      "target": "app/tools page template (.listing in app/globals.css)",
+      "problem": "Unchanged and re-verified by me at 1440x900: every .listing child is display:block at x=144 with no grid on the listing or its container, and the four fields a reader arrives to compare — licence, pricing model, verified date and link — are still one run-on mono line separated by middots spanning the full 1152px shell. Six sampled .listing-line glyph right edges: 1134.3, 1004.8, 1294.2 (wrapping to 2 lines), 799.1, 867.7, 623.9. No field begins or ends at the same x on any two entries. This is the defect I17 fixed on .browse and I32 refined this iteration, surviving on the one /tools surface .browse does not cover — and it is the surface the page exists for. Stripe treats a comparison across records as a column problem and gives every field its own track shared down the list; the property of its content that makes that transfer is that a reader is crossing records to compare a small fixed field set, which is precisely what /tools is. Note the interaction with R8: because the fields are ragged the per-entry rule is required and is correctly present, but the rule is doing all the binding work a column structure should be sharing.",
+      "evidence": "loops/ui-loop/evidence/current/index-tools--light--1440.png; measurement by judge-run Playwright at 1440x900 over 35 listings",
+      "invariant": "On /tools, the licence, pricing, verification-date and link fields of every listing start at the same x within a category, sharing one set of grid tracks across all entries of that surface.",
+      "governing_rule": "RULES.md R13",
+      "prescription": "Give .listing the same treatment .browse received at iteration 4: one shared grid track set across the entries of a category (subgrid on the entry, the track set declared on the category container), with the four facts as columns rather than an inline middot run. R13 is written about 'a row-based list surface' generally and has been applied to .browse and .rung; this is the third surface it names by its own terms. Keep the per-entry rule — R8's test still returns YES here once the entries are columnar, because the fields span a wide gap from their record name.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": false,
+      "baseline_item": "I11"
+    },
+    {
+      "id": "I35",
+      "target": "app/blog index template (the section rule above .rail-posts, app/globals.css)",
+      "problem": "I30's fix bound /blog's post-title column to --measure-list and did not narrow the rule above it, so R10's own defect — the one I20 fixed on /data and the wiki entry at iteration 4 — is newly present on /blog. Measured at 1440x900: the rule at y=315.8 spans 144-1296 (1152px) while the list beneath it occupies 144 to a content right edge of 639.9px. A 512px overhang, visible in current/index-blog--light--1440.png as a full-width line above a half-width list. S5 enforces R10 on the wiki entry, /data's four section headings and /colophon as a regression guard, and does not sample /blog, which is why the gate is green over it. This is a small defect and it is filed because it is a regression this iteration created, not a latent one.",
+      "evidence": "loops/ui-loop/evidence/current/index-blog--light--1440.png; measurement by judge-run Playwright at 1440x900",
+      "invariant": "On /blog, the rule introducing the post list spans the same rendered width as the widest rendered row of that list, within 2px; and S5's route list includes /blog.",
+      "governing_rule": "RULES.md R10",
+      "prescription": "Bind the rule to the list's own rendered width — the simplest form is to move it onto .rail-posts itself (border-top) now that .rail-posts' effective content width is the 100px date track plus the 384px title track plus the gap, rather than leaving it on a full-shell container. Extend S5's route list to /blog in the same change so this cannot silently recur; while there, check /tutorials and /learn for the same shape, since both have full-shell section containers over measure-bounded content.",
+      "tag": "ui-fixable",
+      "impact": 5,
+      "new": true
+    },
+    {
+      "id": "I9",
+      "target": "app/page.tsx (home template)",
+      "problem": "Unchanged and not worked. Re-measured by me at 1440x900: .home-side runs y=69.8 to 646.5 (576.7px) while .rail-changes runs y=103.7 to 1334.6 (1230.9px) on a 2559px page, so the rail reaches 46.9% of the feed's own height against the 60% the invariant asks — roughly 688px of empty right column beside the site's front-door content, with the grid still holding a 404.375px track open the whole way down. It is the same defect I33 describes on a template that HAS a second track and stops filling it halfway. Vercel's mechanism is a grid whose rhythm stays visible across every page; a column held open beside nothing for 688px is the rhythm visibly failing on the first page a reader sees.",
+      "evidence": "loops/ui-loop/evidence/current/home--light--1440.png and home--dark--1440.png; measurement by judge-run Playwright at 1440x900",
+      "invariant": "On the home page at 1440x900, the right rail's content extends to at least 60% of the changed feed's own height, or the feed reflows to use the full shell below the rail's end.",
+      "governing_rule": "RULES.md R13",
+      "prescription": "Let the changed feed reflow into the full shell width once the rail ends, rather than holding a 404px column open beside nothing for 688px. Adding rail content is a content change and slot 1 forbids it, so the presentation-only remedy is the reflow. R6 constrains it: changed-feed lines must still be visible above the fold at both 1440x900 and 390x844 — verify-design currently reports 13 of 24 lines visible at 1440 with the first at 105px, and 5 of 24 at 390 with the first at 137px, so those are the numbers to hold.",
+      "tag": "ui-fixable",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I9"
+    },
+    {
+      "id": "I31",
+      "target": "app/page.tsx home template (the Impossible-to-Routine block and the .door grid, app/globals.css)",
+      "problem": "Unchanged, held correctly by the loop as predating the anchor, and re-verified by me with one extension the anchor did not have: the pattern occurs TWICE on the home page, not once. Measured at 1440x900: the first .delta ARTICLE at y=1530.4 carries border-top rgb(74,59,212) — full-strength accent — while its structurally identical sibling at y=1886.5 carries rgb(185,187,199), the ordinary neutral; and separately, one of eight .door list items (x 732-1002, y=2326.7) carries border-top rgb(74,59,212) while the other seven carry rgb(215,216,224). Neither coloured rule marks a state or carries a meaning the page explains, and in both cases the sibling doing the identical structural job is neutral. All three benchmarks reserve colour for state and meaning; this is colour as decoration applied inconsistently, on the site's front door, and it is the only place on the property where full-strength accent appears as an area of ink rather than as a link or a chip. NOT SCORED against colour_discipline: the anchor confirmed both instances predate it in evidence/iter-01 and evidence/baseline, so nothing since made it worse.",
+      "evidence": "loops/ui-loop/evidence/current/home--light--1440.png and home--dark--1440.png; measurement by judge-run Playwright at 1440x900 enumerating every accent-coloured border in <main>",
+      "invariant": "Two instances of the same structural element within one section render the same rule colour, and a section-separating or card-separating rule uses the neutral rule token rather than --accent.",
+      "governing_rule": null,
+      "prescription": "Make the first .delta's rule and the one accented .door's rule neutral like their siblings. If either colour was marking something real — the most recent pair, the featured door — it must mark it on whichever element is actually most recent and needs a second signal saying what it means; as it stands nothing in the page explains it and no other instance can ever receive it. I checked RULES.md before filing and found no rule governing decorative rule colour, which is why governing_rule is null: R9 governs the resting colour of record LINKS and says --accent marks hover and focus, not resting state, but it does not reach a rule or a border. If this is fixed, widening R9 to cover any large area of accent ink is the natural home for it.",
+      "tag": "ui-fixable",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I31"
+    },
+    {
+      "id": "I13",
+      "target": "evidence rig (tools/ui-evidence.mjs capture procedure)",
+      "problem": "Unchanged. 38 of the 40 captures are fullPage images taken at scroll position 0, so nothing scroll-linked is observable from the set (JUDGE.md L3); the two exceptions are the /catalog 1440 pair, correctly labelled capture:'viewport' with a stated reason (L5). This iteration it cost the same thing it cost last time: every scroll-coupled property I needed to verify — the /catalog thead corridor, the wrap-to-footer gap, whether the wiki entry's right track stays useful once the reader scrolls past FACTS — had to be measured by judge-run Playwright, because no image in the set can contain the answer. The screenshot oracle is a scroll-0 oracle and the loop keeps paying for it.",
+      "evidence": "loops/ui-loop/evidence/current/manifest.json — 38 entries capture:'fullPage', 2 capture:'viewport', none with a non-zero scroll offset",
+      "invariant": "For every route whose layout is scroll-coupled, the evidence set contains at least one capture at a non-zero scroll position, labelled with the scroll offset in the manifest.",
+      "governing_rule": "RULES.md R11; JUDGE.md L3",
+      "prescription": "Add a second capture for /catalog at 1440 and 390 taken at the document's maximum scroll, labelled with the offset in the manifest, and for the wiki entry at 1440 taken at 900px so the right track past FACTS is observable. Two extra captures per scroll-coupled route, not a general doubling of the set.",
+      "tag": "evidence-fix",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I13"
+    },
+    {
+      "id": "I26",
+      "target": "evidence rig (tools/ui-evidence.mjs, fullPage fidelity check)",
+      "problem": "Unchanged. The viewport-coupled detector is keyed to one CSS signature — an element whose computed position is sticky and whose max-height is vh-based — so it catches the one case already known (#catalog-table-wrap, correctly labelled this run) and would not catch a second instance built differently. D9's generalisation was 'identity is not fidelity'; the fix instrumented one instance of the failure rather than the property. Build-stamp identity is clean this iteration and I verified it independently: all 40 captures carry 2026-09-01T02:45:26Z, and no presentation source in app/ was modified after that timestamp, so L6 is satisfied even though my own `npm run build` re-stamped out/ to 02:58:16Z.",
+      "evidence": "loops/ui-loop/evidence/current/manifest.json; judge verification of app/ modification times against the recorded buildStamp",
+      "invariant": "For every capture, the manifest records a comparison between a geometry measured live in the page and the same geometry measured in the rendered image, and refuses the capture when they disagree beyond a stated tolerance.",
+      "governing_rule": "JUDGE.md L5; JUDGE.md L6",
+      "prescription": "Replace the CSS-signature heuristic with a general post-capture assertion: after writing a fullPage image, re-measure two or three named elements' rendered heights from the image (or from a second live measurement at document height) and refuse the capture when they disagree with the live geometry beyond a stated tolerance. Falsify it by injecting a deliberately misrendering construct that does NOT match the current sticky/vh signature, per D10 — an orchestrator's evidence-fix owes a falsifier like any other check.",
+      "tag": "evidence-fix",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I26"
+    },
+    {
+      "id": "I14",
+      "target": "keeper — reader gate",
+      "problem": "Unchanged and still unresolvable by this loop. /catalog presents 396 rows as one continuous surface with four filter controls and no pagination or grouping. Whether a reader can find one model among 396 by filtering rather than by paging is a question about a real person's behaviour, which no screenshot, no axe run and no DOM traversal answers. Listed so it stops resurfacing as actionable.",
+      "evidence": "loops/ui-loop/evidence/current/table-catalog--light--1440.png; judge measurement of 396 rows and four filter controls",
+      "invariant": "A reader looking for one named model among 396 reaches it without paging — unfalsifiable by this loop's three evidence classes.",
+      "governing_rule": null,
+      "prescription": "Queue for a reader study or a keeper ruling. Do not re-file as actionable.",
+      "tag": "keeper-gate",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I14"
+    },
+    {
+      "id": "I27",
+      "target": "app/catalog page template (the ::before content: attr(data-label) field labels at 390px) — keeper measurement",
+      "problem": "Unchanged. Whether the generated-content field labels in the 390px stacked record form are announced by assistive technology is not answerable from axe output, from a screenshot, or from a focus traversal — the three evidence classes this loop has. It is not a taste question and must not be scored in one. axe is green on /catalog in both themes at 51 rules, which is exactly the kind of green that says nothing about this property.",
+      "evidence": "scripts/verify-design.mjs axe output for /catalog, both themes (51 rules passed, zero violations); loops/ui-loop/evidence/current/table-catalog--light--390.png",
+      "invariant": "Every field value in the 390px stacked record form is announced with its label by a screen reader — unfalsifiable by this loop's three evidence classes.",
+      "governing_rule": "RULES.md R1; RULES.md R12",
+      "prescription": "Queue for a keeper-run assistive-technology check. Do not re-file as actionable.",
+      "tag": "keeper-gate",
+      "impact": 4,
+      "new": false,
+      "baseline_item": "I27"
+    }
+  ]
+}

@@ -34,6 +34,62 @@
  * Nothing else is coloured; a third accent would make both meaningless.
  */
 
+/* ── font fallback metric matching (I10, R16) ──────────────────────────
+ * There is no bundled face and none is added here: the third-party origin
+ * allowlist fails the build on any non-self, non-GA network origin, which
+ * rules out a CDN face, and a self-hosted woff2 could not be produced or
+ * verified in this environment (no network fetch for a real font binary,
+ * no subsetting toolchain) — see the implementer report for the arithmetic
+ * this declines with cause. This is the OTHER half of R16: keep the stack,
+ * and metric-match the fallbacks so the reader gets the same *rhythm*
+ * (average character width, hence line length and vertical rhythm)
+ * whichever fallback their platform actually resolves, rather than one
+ * width on a Mac (Charter/Bitstream Charter) and a measurably different one
+ * everywhere else.
+ *
+ * MEASURED, not assumed (D6): on this Windows sandbox, "Charter" and
+ * "Bitstream Charter" are both absent — `ctx.measureText` at 100px returns
+ * an IDENTICAL width to the browser's own generic-serif default, which is
+ * how their absence was confirmed rather than guessed — so the stack
+ * resolves to its third entry, "Sitka Text" (a real, installed Windows
+ * font), at a rendered width ~10% WIDER than Georgia's. That is the defect
+ * this item names, reproduced and measured rather than inferred.
+ *
+ * Georgia is the anchor: it is already the stack's own deliberate 5th
+ * choice, its metrics are published (unitsPerEm 2048, ascent 1878, descent
+ * -449), and — not incidentally — Charter and Georgia are both Matthew
+ * Carter designs. Each OTHER late-stack fallback gets a `local()`-sourced
+ * synthetic face carrying a `size-adjust` computed as
+ * (Georgia's measured width) / (that font's own measured width) over the
+ * same 100px sample string, so whichever of Sitka Text, Cambria or Times
+ * New Roman actually resolves, it renders at Georgia's width. `local()`
+ * fails over silently when the named font is not installed, exactly like
+ * the plain name it replaces, so a platform lacking one of these loses
+ * nothing it would have had anyway. Charter and Bitstream Charter — the
+ * primary, intended faces — are left untouched: no metrics were available
+ * to adjust them against, and they are what the stack is FOR when present.
+ * The bare `serif` keyword stays as the unadjustable last resort; `local()`
+ * cannot target a generic CSS family. `font-display` does not apply to a
+ * `local()` source — there is no network fetch to swap in after — so none
+ * is set here; it is the self-hosted path's concern, not this one's. */
+@font-face {
+  font-family: 'Sitka Text Metric';
+  src: local('Sitka Text');
+  size-adjust: 96.2%;
+}
+
+@font-face {
+  font-family: 'Cambria Metric';
+  src: local('Cambria');
+  size-adjust: 105.7%;
+}
+
+@font-face {
+  font-family: 'Times New Roman Metric';
+  src: local('Times New Roman');
+  size-adjust: 106.5%;
+}
+
 /* ── tokens ─────────────────────────────────────────────────────────── */
 
 :root {
@@ -52,7 +108,8 @@
   --ember-soft: #fbeae8;
   --shadow: 0 1px 0 rgba(26, 27, 34, 0.04);
 
-  --serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, "Times New Roman", serif;
+  --serif: Charter, "Bitstream Charter", "Sitka Text Metric", "Cambria Metric", Georgia,
+    "Times New Roman Metric", serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", Menlo,
     Consolas, "DejaVu Sans Mono", monospace;
 
@@ -67,6 +124,38 @@
   --measure: 38rem;
   --shell: 76rem;
   --rail-col: 6.25rem;
+  /* Row-based list surfaces (S1, iter-01): a track between --measure and
+     --shell so a row's primary label stops before it drags metadata to the
+     far edge of a 76rem shell. Matches RULES.md's list-row invariant of a
+     <=24rem gap between a label and its metadata cell. */
+  --measure-list: 24rem;
+  /* I43 (iter-09, R7's iter-08 addendum): a HEADLINE and a row LABEL are
+     different objects and need different tokens even where they currently
+     share a template's own row shape — /blog's post titles are sentences,
+     not names, and every one of the four live titles sat AT --measure-list's
+     384px cap, wrapping to exactly 3 of 3 allowed lines with zero headroom
+     (S15's own printed margin), while the descriptive paragraph directly
+     above the list rendered 224px WIDER at --measure. Template-specific per
+     R7's own remedy for exactly this shape ("give that template its own
+     token, do not widen the shared one") — --measure-list stays untouched
+     at 24rem for /wiki, /data and /tools, so I32's dead-air drift cannot
+     reopen there. Starts equal to --measure so headlines and the lede above
+     them share one right edge and the page reads as one column. */
+  --measure-title: 38rem;
+  /* Fallback header height for the /catalog sticky table head (S7). Overwritten
+     precisely at runtime by the measurement script in layout.tsx; this value
+     only covers the no-JS case, sized for the header's one-line layout. */
+  --header-h: 3.25rem;
+  /* Fallback trailing-chrome height (S7, iter-02 round 2) — NOT just
+     `.site-footer`'s own height; it is the whole measured distance from
+     `#catalog-table-wrap`'s rendered bottom to the document's actual
+     bottom (footer height + <main>'s trailing padding + the footer's own
+     margin-top; measured ~193px at 1440x900, see FOOTER_HEIGHT_SCRIPT's
+     note in layout.tsx for why all three count). Overwritten precisely at
+     runtime by that script, same pattern as --header-h; sized generously
+     here since the footer's link row can wrap to more lines at narrow
+     widths, and this fallback only covers the no-JS case. */
+  --footer-h: 13rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -256,6 +345,104 @@ a:hover {
   align-items: center;
   gap: 0.5rem;
   margin-left: auto;
+}
+
+/* ── nav disclosure (I24, R14) ───────────────────────────────────────────
+ * MEASURED: the sticky header held 129.3px — 15.3% of the viewport — at
+ * 390x844 on every route, permanently, because the seven-item nav wraps to
+ * its own line there. R6 above the fold and R4 keyboard reachability both
+ * name the floor this has to clear without shrinking type (R1) or removing
+ * anything from the tab order.
+ *
+ * `<details>`/`<summary>` — the same disclosure primitive /tools already
+ * uses for its A-to-Z listing — carries the open/expanded state natively,
+ * so a screen reader is told the truth about what is and is not exposed
+ * without any manual `aria-expanded` bookkeeping. The markup ships with
+ * `open` present unconditionally: with no script (or at desktop widths,
+ * where `.nav-disclosure` below is unwrapped to `display: contents` and the
+ * toggle stays hidden) every nav link is exposed and in the tab order
+ * exactly as before this change — nothing is removed, only collapsed
+ * behind a control below the breakpoint, and the control is a genuine tab
+ * stop that opens on Enter or Space (R4's own "activation, not presence").
+ * `NAV_DISCLOSURE_SCRIPT` in layout.tsx sets the default OPEN/CLOSED state
+ * to match the viewport at load, and again on the one event that should
+ * ever flip it — the media query's truth value crossing the breakpoint —
+ * rather than on every `resize`, which fires during ordinary mobile
+ * scrolling (address-bar show/hide) and would otherwise slam a reader's
+ * own open menu shut mid-interaction. */
+.nav-toggle {
+  display: none;
+}
+
+@media (min-width: 34rem) {
+  .nav-disclosure {
+    /* Removes the details element's own box so `.nav-toggle` (hidden) and
+       `<nav>` become direct flex children of `.header-bar`, in the same
+       position `<nav>` occupied before this change — the desktop layout is
+       unaffected pixel-for-pixel. */
+    display: contents;
+  }
+}
+
+@media (max-width: 33.999rem) {
+  /* Two compact rows (wordmark+toggle, then search+theme — the latter
+     already its own full-width row below 26rem) comfortably clear the 10%
+     budget on their own; this trims the header-bar's own padding a little
+     further so the margin under that budget is not razor-thin. */
+  .header-bar {
+    padding-block: 0.4rem;
+  }
+
+  .nav-disclosure {
+    position: relative;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    list-style: none;
+  }
+
+  /* The browser's own disclosure triangle marker; the icon+label pair
+     inside .nav-toggle already says what this control does. */
+  .nav-toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-toggle::marker {
+    display: none;
+  }
+
+  .nav-disclosure[open] .nav-toggle {
+    color: var(--ink);
+    border-color: var(--accent);
+  }
+
+  /* Same floating-panel shape as .search-results below — a dropdown, not a
+     pushed-down row — so the header's own rendered height stays at the
+     compact row's regardless of open/closed state. */
+  .nav-disclosure nav {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 0.4rem);
+    z-index: 30;
+    min-width: 11rem;
+    background: var(--panel);
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+    padding: 0.5rem;
+  }
+
+  .nav-disclosure .nav {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .nav-disclosure .nav a {
+    padding: 0.3rem 0.2rem;
+  }
 }
 
 /* ── header controls: search + theme ────────────────────────────────── */
@@ -449,9 +636,32 @@ main {
   color: var(--muted);
 }
 
+/* I42 (iter-09, R8's iter-08 addendum widened to a third surface, and R9's
+   plain text — "--accent marks hover and focus, not the resting state of a
+   list or table row"): `.src` had no colour rule of its own, so it inherited
+   the bare `a { color: var(--accent) }` default — a provenance link whose
+   text is the identical word "source" on every row it appears (24 of 24 on
+   the home changed feed) rendering LOUDER than the record link on the same
+   row (a.change-name, ink). Demoted to --muted, the lowest weight this list
+   uses, matching R8's own default/exception split (a repeated, non-
+   discriminating value never outweighs the column a reader actually
+   compares) and leaving --accent free for hover/focus, where R9 reserves
+   it. `.data-table a` (a HIGHER-specificity selector, catalog's own
+   exceptional Read-column link) still wins where a row's date genuinely
+   differs from the collection default — this rule does not touch that. */
 .src {
   font-family: var(--mono);
   font-size: var(--step--1);
+  color: var(--muted);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.16em;
+}
+
+.src:hover,
+.src:focus-visible {
+  color: var(--accent);
+  text-decoration-color: currentColor;
 }
 
 .badge {
@@ -466,18 +676,56 @@ main {
   white-space: nowrap;
 }
 
+/* S2 (iter-01): a bordered chip on every row — including the default,
+   unexceptional status — spends the same mark on the norm as on the
+   exception, so DEPRECATED/RETIRED/DEAD no longer stand out. render/common.mjs
+   already omits `data-tone` for the default case (badge(status, null) drops
+   the attribute in attrs()); this is the other half, purely presentational:
+   a tone-less badge renders as plain muted small-caps text with no box.
+   I41 (iter-09, R9's iter-08 addendum, widened past its own two named
+   selectors to a document sweep — see S20): `[data-tone="theme"]` joins this
+   group rather than keeping its old accent box below. A theme tag is a
+   TOPIC, not an exceptional STATE the way `ended`/`early` are — every entry
+   with themes carries one or more, so boxing it at the page's one reserved
+   colour was marking the norm as if it were the exception, on the same line
+   as the genuinely toneless status/maintenance badges it sits beside (the
+   verdict's own finding: "two treatments for one object class, on one
+   line"). The corrected field: the source badge() helper (lib/render/
+   common.mjs) writes `data-tone`, never `data-kind` — the item that named
+   this defect cited `data-kind`, which does not exist anywhere in this
+   codebase; verified against source before this fix, not copied forward. */
+.badge:not([data-tone]),
+.badge[data-tone="theme"] {
+  border: none;
+  background: transparent;
+  padding-inline: 0;
+}
+
 .badge[data-tone="ended"] {
   color: var(--ember);
   border-color: var(--ember);
   background: var(--ember-soft);
 }
 
-.badge[data-tone="early"],
-.badge[data-tone="theme"] {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
+/* I41 (iter-09, R9): `early` (preview/announced statuses) IS a genuine
+   exceptional lifecycle state distinct from the collection's default — its
+   own badge TEXT already says so ("preview"/"announced") — so R8's badge
+   clause still wants it boxed. What it must not do is spend --accent to say
+   so: R9's own absolute clause ("a resting border, rule or divider shall
+   never carry [accent]") has no carve-out for a legitimately-named
+   exception, only the SEPARATE clause about using a DIFFERENT colour to
+   mark one is conditional. No override needed here at all — removing the
+   accent-specific rule leaves `early` on the base `.badge` styling above
+   (border: rule-strong, colour: muted), which is already "boxed, unlike the
+   toneless default" and needs no hue this palette does not have. Currently
+   dormant (no live route renders an `early`-tone badge today — verified via
+   `grep -c 'data-tone="early"' out/**`, zero hits — so this was found by
+   sweeping the source, not by a route failing; left fixed anyway rather
+   than left as a live landmine for the day a preview-status model ships.
+   Same reasoning for `.notice[data-tone="warn"]` below: `notice()`'s own
+   default tone IS 'warn' (lib/render/common.mjs), so that override was
+   colouring the DEFAULT case, the exact shape R8's badge clause forbids on
+   a different element. */
 
 .notice {
   border: 1px solid var(--rule-strong);
@@ -486,11 +734,6 @@ main {
   padding: 0.7rem 0.9rem;
   margin-block: 1rem;
   font-size: var(--step--1);
-}
-
-.notice[data-tone="warn"] {
-  border-left-color: var(--accent);
-  background: var(--accent-soft);
 }
 
 .notice[data-tone="ended"] {
@@ -519,6 +762,23 @@ main {
   grid-template-columns: var(--rail-col) minmax(0, 1fr);
   gap: 0 1rem;
   padding: 0.55rem 0;
+  /* S2 (iter-01): separation between sibling rows is carried by uniform row
+     height and the left-aligned date column, not by a rule under every row —
+     .rail's own border-top is the group's one boundary mark. This still
+     holds for the generic .rail (blog's post index, corrections, entry
+     timelines): those rows are uniform height. See .rail-changes below for
+     the one .rail that is not. */
+}
+
+/* S2 (iter-03, R8 amended): restored for the changed feed specifically. Its
+   entries are ragged-height — an optional annotation paragraph, or a
+   wrapped `source` line at the end of `.change-line`, can extend one entry
+   well past its neighbours — so without a rule a reader cannot tell where
+   one entry's wrapped tail ends and the next begins (RULES.md R8's second
+   surface test). Scoped to `.rail-changes` so the generic `.rail-item`
+   above (uniform-height rows on other surfaces, never tested by the
+   comparison that motivated this) is not affected. */
+.rail-changes > .rail-item {
   border-bottom: 1px solid var(--rule);
 }
 
@@ -541,16 +801,65 @@ main {
 }
 
 .rail-title a {
-  text-decoration: none;
+  /* S3/S4/S6 (iter-01): same resting treatment as .browse-name and
+     .data-table a — see the note there. */
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.16em;
 }
 
-.rail-title a:hover {
-  text-decoration: underline;
+.rail-title a:hover,
+.rail-title a:focus-visible {
+  color: var(--accent);
+  text-decoration-color: currentColor;
 }
 
 .rail-note,
 .rail-text {
   font-size: var(--step--1);
+}
+
+/* I30 (R7, R9): .rail-title is the record-title link column on /blog's index
+   — the same KIND of object R7 already bounds on /wiki, /data and /tools via
+   .browse-name. Unbounded, it ran the full width of .rail-item's
+   `minmax(0, 1fr)` second column — 1019px on /blog, past any reading measure
+   and past the intro paragraph's own --measure on the same page. .rail-item
+   is generic (corrections, timelines, anchors all use it too), so this binds
+   the track only where .rail-title is the second column's actual content:
+   the post index.
+     I43 (iter-09, R7's iter-08 addendum): bound to --measure-title, not
+   --measure-list — a post title is a headline (a sentence), not a row label
+   (a name/term/category), and every one of /blog's four live titles sat
+   pinned AT the shared list cap with zero wrap headroom. See --measure-title's
+   own definition above for why this is a template-specific token rather than
+   a widened shared one. */
+.rail-posts .rail-item {
+  grid-template-columns: var(--rail-col) minmax(0, var(--measure-title));
+}
+
+/* I35 (iter-08, R10): .rail-posts (the <ol>, via the generic .rail's
+   border-top) used to span the full shell — 1152px at 1440x900 — while the
+   row grid above it caps every .rail-item at rail-col + gap + measure-list
+   (500px): the rule introducing the post list ran 652px past the widest
+   rendered row it introduces, R10's exact defect (I20 already closed this on
+   /data and a wiki entry; /blog was the one index template S5 never sampled,
+   which is why the gate stayed green over it). Every .rail-item resolves to
+   the SAME 500px regardless of its own title's length, because the second
+   track's max (--measure-list) is a fixed length that the grid maximises to
+   whenever free space allows — so width: fit-content on the list resolves to
+   that same 500px and the border-top now stops exactly where every row does.
+   Already flush at x=144 (no margin-inline on .rail, matching R13's
+   shared-rail requirement), so this disturbs no other alignment. Checked
+   live for the same shape on /tutorials and /learn (R7's iter-07(b)/S9's own
+   surfaces): neither has it — /tutorials' .listings uses a genuinely
+   flexible minmax(0, 1fr) first track sized to the pricing PROSE, so its
+   per-row .listing border-top is SUPPOSED to span the full row width, and
+   /learn's .rung already carries width: fit-content of its own (S9, iter-04).
+   See tools/ui-invariants.mjs S5. */
+.rail-posts {
+  width: fit-content;
+  max-width: 100%;
 }
 
 .change-line {
@@ -562,6 +871,25 @@ main {
 
 .change-name {
   font-weight: 600;
+}
+
+/* I18 (R9, existing rule not yet true here): same resting treatment as
+   .browse-name/.rail-title a/.data-table a — ink with a muted underline at
+   rest, --accent only on hover/focus. `.change-name` renders as a `<span>`
+   when a changed-feed line has no linkable entry (lib/render/home.mjs), so
+   this is scoped to the anchor specifically: an underline on the span would
+   claim it is clickable when it is not. */
+a.change-name {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.16em;
+}
+
+a.change-name:hover,
+a.change-name:focus-visible {
+  color: var(--accent);
+  text-decoration-color: currentColor;
 }
 
 .change-detail {
@@ -582,9 +910,17 @@ main {
    `min-width: 0` is required for the same reason it is on `.browse-name`: a
    flex or grid child will not shrink below its longest token without it, so
    `overflow-wrap` alone would not have been enough. */
+
+/* I41 (iter-09, R9's iter-08 addendum): the annotation's own bar used
+   --accent at rest — the single loudest colour mark in the home page's main
+   column, on its most prominent entry, marking a state ("this is an
+   editorial annotation") the surrounding prose already makes unmissable on
+   its own. R9's absolute clause reserves --accent for hover/focus; the bar
+   still separates the annotation from the mechanical line above it, just
+   without spending the page's one reserved colour to do it. */
 .change-annotation {
   font-size: var(--step--1);
-  border-left: 2px solid var(--accent);
+  border-left: 2px solid var(--rule-strong);
   padding-left: 0.6rem;
   margin-top: 0.3rem;
   color: var(--ink);
@@ -636,6 +972,7 @@ main {
   list-style: none;
   margin: 0;
   padding: 0;
+  border-top: 1px solid var(--rule);
 }
 
 .strip-item {
@@ -644,8 +981,8 @@ main {
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.35rem 0;
-  border-bottom: 1px solid var(--rule);
   font-size: var(--step--1);
+  /* S2 (iter-01): no per-row rule; .strip carries the group's one boundary. */
 }
 
 .latest {
@@ -662,12 +999,21 @@ main {
   font-size: var(--step-1);
 }
 
+/* I18 (R9): "Latest post"/"Latest tutorial" are record links too — each
+   points at one dated, sourced item — and had no colour rule of their own,
+   so they inherited the bare `a { color: var(--accent) }` default with no
+   underline at rest: --accent as ambient colour, exactly what R9 forbids. */
 .latest-card h3 a {
-  text-decoration: none;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.16em;
 }
 
-.latest-card h3 a:hover {
-  text-decoration: underline;
+.latest-card h3 a:hover,
+.latest-card h3 a:focus-visible {
+  color: var(--accent);
+  text-decoration-color: currentColor;
 }
 
 .latest-date {
@@ -692,9 +1038,14 @@ main {
   gap: 0.1rem;
 }
 
-.door[data-feature="yes"] {
-  border-top-color: var(--accent);
-}
+/* I31 (iter-08, R9): `.door[data-feature="yes"]` gave one door (Impossible ->
+   Routine) a full-strength --accent hairline while its seven siblings kept
+   var(--rule) — a resting-state accent border with no state it names
+   anywhere else on the page (R9 reserves --accent for hover/focus, not rest).
+   The `data-feature` flag and its markup stay (lib/render/home.mjs) in case a
+   genuine editorial "featured" state is worth marking later, in words rather
+   than colour, but nothing currently reads it — every door is one visual
+   family again. See the identical fix on .deltas-strip .delta below. */
 
 .door-name {
   font-family: var(--mono);
@@ -730,14 +1081,20 @@ main {
   letter-spacing: -0.02em;
 }
 
+/* I18 (R9): a delta is a dated, sourced record like any other; ink-no-
+   underline was the same defect /learn's .rung-title had — present on the
+   home page's own showpiece strip, the exact surface I18 is fixing. */
 .delta-title a {
-  text-decoration: none;
   color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.16em;
 }
 
-.delta-title a:hover {
+.delta-title a:hover,
+.delta-title a:focus-visible {
   color: var(--accent);
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .delta-capability {
@@ -785,11 +1142,17 @@ main {
   color: var(--accent);
 }
 
+/* I41 (iter-09, R9's iter-08 addendum): a resting accent hairline, 4
+   instances on home and 54 on /impossible-routine (every span carries one,
+   flanking its own duration label) — 58 resting accent marks across two
+   templates, in both themes, none of them a state the page names elsewhere.
+   --rule at full opacity carries the identical divider function without
+   spending the reserved colour on decoration. */
 .span-rule {
   flex: 1;
   height: 1px;
-  background: var(--accent);
-  opacity: 0.45;
+  background: var(--rule);
+  opacity: 1;
 }
 
 .span-date {
@@ -833,16 +1196,115 @@ main {
   font-size: var(--step--1);
 }
 
-.deltas-strip .delta:first-child {
-  border-top-color: var(--accent);
-}
+/* I31 (iter-08, R9): the home page's Impossible -> Routine strip showed only
+   its first two deltas (renderDeltaStrip(site.deltas, 2)), and the first one
+   carried a full-strength accent border-top while the second, structurally
+   identical, carried the neutral var(--rule-strong) from .delta's own base
+   rule — the same decoration-as-state defect as .door above, on a second
+   surface on the same page. Removed; both deltas now read as one family at
+   rest, matching every other .delta on /impossible-routine and a delta's own
+   page, none of which ever had this override. */
 
 /* ── data tables ────────────────────────────────────────────────────── */
 
+/* I25 (R11 + R8, iter-04): #catalog-table-wrap's height budget subtracts
+   --footer-h, measured (layout.tsx's FOOTER_HEIGHT_SCRIPT) as the whole
+   distance from the wrap's own rendered bottom edge to the document's end —
+   correctly, per iter-02's own finding. But that distance INCLUDES <main>'s
+   trailing padding-block-end (3rem) and .site-footer's margin-top (3rem),
+   both genuine page whitespace that has nothing to do with the corridor.
+   The route was paying for that whitespace twice: once as space below the
+   table, again as headroom subtracted from the table's own scrollport.
+   MEASURED before this change: gap 96.0px (exactly 48px + 48px) between
+   #catalog-table-wrap's bottom and .site-footer's top at max scroll,
+   1440x900 — against a measured row height of 32.3px. Scoped to the
+   catalog route via :has() rather than changed globally: this whitespace is
+   a genuine editorial choice on every other template, and none of them pay
+   this corridor tax, so shrinking it there would be an unevidenced,
+   unrelated visual change. --footer-h is not hand-tuned (S7's own
+   falsifier record already found that fails) — it re-measures itself
+   automatically once the two source values below shrink. */
+main:has(#catalog-table-wrap) {
+  padding-block-end: 0.5rem;
+}
+
+body:has(#catalog-table-wrap) .site-footer {
+  margin-top: 1rem;
+}
+
 .table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--rule);
+  /* S7 (iter-02): `.table-wrap` used to declare only `overflow-x: auto`,
+     which per CSS coerces the visible cross-axis (overflow-y) to `auto` too
+     — confirmed live, `getComputedStyle(.table-wrap).overflowY === "auto"`
+     — but with unconstrained height `clientHeight === scrollHeight` always,
+     so it never actually scrolled vertically. `position: sticky` on the
+     thead therefore had a scrolling ancestor that never scrolled: the
+     stickiness was inert in every variant tested, including the pre-S7
+     `top: 0`. Capping the box makes it a genuine scrollport, so the thead's
+     sticky positioning has something to stick within. See the note on
+     `.data-table thead th` below and layout.tsx's HEADER_HEIGHT_SCRIPT. */
+  overflow-y: auto;
+  max-height: calc(100vh - var(--header-h));
+  /* S2 (iter-01): no outer border — an outer box read as a card around a
+     396-row reference table; the panel background is enough separation. */
   background: var(--panel);
+}
+
+/* I25 (R8, iter-04): the panel background above WAS the group's one
+   boundary mark for /catalog/deprecations and /catalog/changed, where
+   there is no per-row rule. #catalog-table itself now carries a
+   border-bottom on every row (R8's surface test, iter-03) plus the thead's
+   own border-bottom — tested and found sufficient on their own, so the
+   panel here reads as an added card around the page's own primary content
+   rather than as needed separation. Scoped to the id: the two smaller
+   tables above keep the panel, since their surface (no per-row rule) is
+   still exactly what S2's original reasoning describes. */
+#catalog-table-wrap {
+  background: var(--paper);
+}
+
+/* S7 (iter-02, round 2): capping .table-wrap gave the thead a scrollport to
+   stick WITHIN, but that scrollport is itself an ordinary block in page
+   flow — as the PAGE scrolls (this route's own content is taller than the
+   viewport: at 1440x900 max page scroll measured 547px, driven by the
+   81px .site-footer sitting OUTSIDE <main>), .table-wrap scrolls up and out
+   with everything else, carrying its internally-pinned thead with it. thead
+   top ends up UNDER the site header (occluded) and then off-screen entirely
+   — the original I7 defect, now genuinely reachable where the pre-iter-02
+   tree made it structurally impossible.
+
+   FIRST ATTEMPT: `.table-wrap { position: sticky; top: var(--header-h) }`
+   with NO height change, on the theory that parking the box below the
+   header would hold it there as the page scrolls. Measured, not assumed —
+   and it failed. `position: sticky`'s travel range is bounded by its own
+   CONTAINING BLOCK (<main>, which has no overflow set), and that range
+   works out to `mainHeight - wrapHeight - headerOffset`, which reduces to
+   `contentBeforeWrap - headerOffset` — a constant that does NOT depend on
+   wrap's own height, because <main> ends where .table-wrap ends (nothing
+   else follows it in <main>). Measured at 1440x900: contentBeforeWrap
+   370.5px, headerOffset 45.8px, giving ~372px of sticky travel — against a
+   547px page. The element detached at 372px and continued scrolling,
+   landing at thead top -130.7px at max scroll: unchanged from the
+   unfixed tree. A taller <main> (e.g. trailing padding after .table-wrap)
+   does not help either — it was checked algebraically and the padding term
+   cancels out of the inequality that actually governs whether the sticky
+   pin survives to the end of the page: `viewport >= headerOffset +
+   wrapHeight + footerHeight`. At 900/46/854/81 that reads 900 >= 981 —
+   false regardless of any padding added inside <main>.
+
+   REAL FIX: shrink .table-wrap's own height so the inequality holds —
+   leave room for BOTH the header above and the footer below within the
+   viewport, using a measured `--footer-h` the same way `--header-h` is
+   already measured (see FOOTER_HEIGHT_SCRIPT in layout.tsx). This is the
+   quantity that was structurally missing before: nothing in the box's own
+   sizing accounted for what has to fit below it. */
+@media (min-width: 34rem) {
+  #catalog-table-wrap {
+    position: sticky;
+    top: var(--header-h);
+    max-height: calc(100vh - var(--header-h) - var(--footer-h));
+  }
 }
 
 .data-table {
@@ -864,20 +1326,43 @@ main {
 .data-table td {
   text-align: left;
   padding: 0.35rem 0.75rem;
-  border-bottom: 1px solid var(--rule);
   white-space: nowrap;
+}
+
+/* S2 (iter-03, R8 amended): restored on #catalog-table specifically — 396
+   rows x 7 columns is genuine cross-row tracking (RULES.md R8's surface
+   test), and a mirror-validated blind comparison found the iter-01 ruleless
+   treatment lost readers partway across the row. Scoped by id rather than
+   `.data-table` so /catalog/deprecations and /catalog/changed — smaller
+   tables the comparison never tested — keep the iter-01 ruleless treatment,
+   matching I1/iter-02's own precedent for scoping a catalog-only change by
+   id (see `#catalog-table-wrap` below). Undone at the 390px stacked-record
+   layout further down: that surface is no longer a wide row at all, and
+   R8's iter-02 round-3 finding already established a rule is wrong there
+   (padding rhythm and the record's own name heading are the anchor
+   instead) — this stays that way, deliberately, not by oversight. */
+#catalog-table tbody tr {
+  border-bottom: 1px solid var(--rule);
 }
 
 .data-table thead th {
   position: sticky;
+  /* S7 (iter-02): pinned to the top of `.table-wrap`'s own scrollport, not
+     the page. The iter-01 offset (`top: var(--header-h)`) was defending
+     against a collision with `.site-header` that could never happen — see
+     the note on `.table-wrap` above — and instead displaced the thead down
+     onto its own first data rows at rest, on every route, both themes, both
+     viewports. `top: 0` is correct once `.table-wrap` is a real scrollport:
+     the thead sticks to the TOP OF THAT BOX, which already starts below the
+     page header. */
   top: 0;
+  z-index: 5;
   background: var(--panel);
   border-bottom: 1px solid var(--rule-strong);
   color: var(--muted);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-size: 0.6875rem;
-  z-index: 1;
 }
 
 .data-table [data-numeric] {
@@ -888,15 +1373,43 @@ main {
   background: var(--accent-soft);
 }
 
-/* 400 underlined links in one column is a texture, not a signal. The colour
-   already says "link"; the underline arrives on hover and on focus. */
+/* S4/S6 (iter-01): this used to read "the colour already says link; the
+   underline arrives on hover" — but on a reference table nearly every noun
+   is a link, so 396 rows of accent-coloured model names (plus a second
+   accent-coloured date/source column) had already turned the accent into
+   ambient colour rather than a signal, and the resting state (the one every
+   screenshot captures) carried no non-colour affordance at all. Same
+   resting treatment as .browse-name and .rail-title a: ink, with a muted
+   underline that is always there; --accent is reserved for hover/focus. */
 .data-table a {
-  text-decoration: none;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.16em;
 }
 
 .data-table a:hover,
 .data-table a:focus-visible {
-  text-decoration: underline;
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+
+/* I36 (iter-08, R8's iter-07 addendum, generalised past S17's own /catalog
+   clause): I8 already made the Read column's LINK conditional on a row's
+   fetch date differing from the table's own dominant one (catalogRowHtml's
+   `isDefaultFetch`) — but the unlinked, unexceptional case still rendered at
+   full ink, byte-identical to the IN / OUT / CONTEXT numerals a reader
+   actually crosses the row to compare. A constant on 396 of 396 rows was
+   still competing at a discriminating column's own weight; only the
+   underline had been removed. Demoted to --muted — the same treatment the
+   STATUS column's own default-tone badge already uses
+   (.badge:not([data-tone]), above) for the identical shape: muted at rest,
+   full weight only where a row's own value earns it. The `> ` combinator
+   matches only a bare <time> (the default case); an exceptional row's date
+   stays wrapped in <a class="src"> and keeps .data-table a's ink+underline
+   treatment above, unaffected. */
+.data-table td[data-label="Read"] > time {
+  color: var(--muted);
 }
 
 .data-table tbody th {
@@ -908,6 +1421,142 @@ main {
 
 .data-table tr[hidden] {
   display: none;
+}
+
+/* I1 (iter-02): at 390px the catalog table used to keep full desktop table
+   layout and hide in/out price, context and status ~760px into a
+   horizontally scrolling container — R2 (no PAGE horizontal scroll) was
+   satisfied because .table-wrap did the scrolling, and the surface still
+   delivered 396 model names and no numbers. Below the tablet breakpoint the
+   table drops out of table layout into one record per row: the model name
+   (still a <th scope="row">) as the row heading, then a label/value line
+   per remaining column. `content: attr(data-label)` reads the same label
+   text the desktop thead shows (see the data-label note in
+   lib/render/catalog.mjs) — no new copy, no markup depends on this beyond
+   the attribute already being there. Scoped to #catalog-table, the
+   flagship 396-row table this item names; /catalog/deprecations reuses the
+   same renderer and would take the same rule cheaply, but is out of this
+   iteration's scope. */
+@media (max-width: 33.999rem) {
+  #catalog-table-wrap {
+    /* Undo the I15 vertical scrollport at this width: a nested scrolling
+       box around a record list reads worse than letting the page itself
+       scroll, and there is no sticky header left inside it to protect
+       (thead is removed below). */
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  #catalog-table {
+    display: block;
+    width: 100%;
+  }
+
+  #catalog-table thead {
+    /* No column grid survives this layout, so there is nothing left for a
+       persistent header to label — removed rather than kept as a sticky
+       element pointing at nothing. tools/ui-invariants.mjs S7 asserts this
+       is intentional at this width, not an accident: it checks
+       `display: none` explicitly rather than passing because the element
+       is merely absent. */
+    display: none;
+  }
+
+  #catalog-table tbody {
+    display: block;
+  }
+
+  /* S2 (iter-02 round 3, R8): a rule between every pair of stacked records
+     was caught by the harness the moment it could see 390px at all (it had
+     never run there before) — the same shape as R8's original desktop
+     finding, relocated into this new mobile layout rather than fixed by
+     landing it. R8's remedy for a single-line list row was "rhythm and the
+     group's own boundary, drawn once"; a stacked record here is a six-line
+     block, not a single line, so rhythm alone has to do more work than it
+     did for .browse-row. Two levers, neither of them a rule: (1) generous
+     padding between records — deliberately larger than the desktop row's
+     own vertical rhythm, since there is more to separate; (2) the record's
+     own bold name heading (tbody th, already font-weight: 600) is the
+     entry point every record repeats, so a reader's eye has a fixed anchor
+     to jump between without needing a drawn line. The group's own boundary
+     mark is #catalog-table-wrap's existing panel background (S2, iter-01)
+     — unchanged, still drawn once, still the container's mark rather than
+     a per-row one. */
+  #catalog-table tbody tr {
+    display: block;
+    padding: 1.1rem 0;
+    /* S2 (iter-03, R8 amended): the desktop per-row rule restored above is
+       explicitly turned off here rather than left to the cascade — this
+       layout is a stack of record cards, not a wide row, and R8's iter-02
+       round-3 finding already established a rule between them is wrong. */
+    border-bottom: none;
+  }
+
+  #catalog-table tbody tr:first-child {
+    padding-top: 0.7rem;
+  }
+
+  #catalog-table tbody th {
+    display: block;
+    max-width: none;
+    white-space: normal;
+    padding: 0 0 0.4rem;
+    font-size: var(--step-0);
+  }
+
+  #catalog-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.15rem 0;
+    white-space: normal;
+    text-align: right;
+  }
+
+  #catalog-table tbody td[data-numeric] {
+    text-align: right;
+  }
+
+  #catalog-table tbody td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+    text-align: left;
+    padding-right: 0.5rem;
+  }
+}
+
+/* I23 (iter-08, R6 + R14): the same disclosure primitive as `.nav-disclosure`
+   (R14, above) and /tools' `.listings-az`, so it earns the same minimal,
+   functional treatment — mono, muted, matching `.sort-note`'s own register —
+   rather than the browser's default serif marker line, which would be the
+   one disclosure control on the site not to match the other two. */
+.catalog-preamble {
+  margin-bottom: 1.25rem;
+}
+
+.catalog-preamble > summary {
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  color: var(--muted);
+  padding-block: 0.35rem;
+}
+
+/* I40 (iter-09, R10's iter-08 addendum — "the one index template S5 never
+   sampled" — a second instance in the SAME round that fixed the first): this
+   rule spanned the full 1152px shell while the widest line inside the
+   disclosure it introduces reached 882.9px — a 413.1px overhang, immediately
+   under the H1, this round's own I23 remedy. Dropped rather than sized to
+   fit-content: this control was added to solve a 390px problem (R6/R14) and
+   the rule was only ever painted at 1440, where there was none. `.nav-
+   disclosure` and /tools' `.listings-az` — the site's other two disclosures
+   — already carry no rule; the mono/muted register and the margin below
+   already carry the separation, matching both of them. */
+.catalog-preamble[open] > summary {
+  margin-bottom: 0.5rem;
 }
 
 /* ── filters ────────────────────────────────────────────────────────── */
@@ -977,7 +1626,185 @@ main {
 
 /* ── entries ────────────────────────────────────────────────────────── */
 
+/* I20 (R10, existing rule not yet true for section headings): .section-title
+   has no width of its own — as a block child it fills whatever contains it
+   — so binding the block-introducing SECTION (rather than the heading) is
+   what makes the heading's own rule match. Two precise, evidenced targets:
+   .entry-facts/.entry-timeline wrap the Facts/Timeline blocks on a wiki
+   entry, both already effectively --measure width (.facts is bound
+   directly; .rail's date+body content never approaches it); MEASURED before
+   this change, the FACTS rule ran 144-1296px (1152px, the bare shell) over
+   a .facts block ending at 752px — see the implementer report for the
+   number. .section:has(> .browse) and .section:has(> .footer-links) catch
+   /data's four sections, each of which wraps only a short link list, the
+   same shape. Not touched: .section on its own (home, blog's Primary
+   evidence/Corrections, /tools' category groups) — those sections were not
+   evidenced for this defect and several legitimately use more of the
+   shell; widening there is a template-scoped question for a future
+   iteration, not this shared-system one. /colophon was checked and is
+   NOT broken — its only rule-bearing element, .listing-facts, was already
+   bound to --measure by S5/R10 in iter-01 — so it is left alone here and
+   added to S5 only as a regression guard, not a fix. */
+.entry-facts,
+.entry-timeline {
+  max-width: var(--measure);
+}
+
+.section:has(> .browse),
+.section:has(> .footer-links) {
+  width: fit-content;
+  max-width: 100%;
+  /* I16 (R13, second clause), CENTRING RETIRED iter-06 (I33) — see RULES.md
+     R13's iter-06 addendum. These sections used to sit flush against the
+     article's left edge, so the shell's whole right column stayed empty for
+     the section's full height (0 of 1031 scanlines on /data carried ink past
+     55% of the viewport); widening is what R7 forbids here (it would drag
+     .browse-kind away from .browse-name), so iter-05 centred the section
+     instead. That RELOCATED the defect rather than closing it: four sibling
+     section headings on /data ended up at four different left edges (each
+     section's own fit-content width differs, so each one's centred position
+     differs) instead of sharing the page's one left rail with the H1 above
+     them. `width: fit-content` is kept — it is what stops the section's own
+     border/rule from running past its content — but the section is no
+     longer recentred: it stays flush left, at the SAME edge as every other
+     block on this template, and the freed width pools on the trailing side
+     rather than being split. /learn and /tools already prove that shape
+     reads fine at well under 55% occupancy (R13's iter-06 addendum). */
+}
+
+/* I5 / I16 (R13): the wiki entry's FACTS block — the dated, sourced values
+   that are the reason the record exists — used to render after the ENTIRE
+   prose body, so a reader arriving from search wanting one dated value had
+   to scroll past a whole essay to reach it (I5); and for the whole time
+   prose was on screen, the shell's right ~half sat empty beside it, the
+   worst case I16 measured (0.8% of scanlines on /wiki/concept/ai-winter
+   carried ink past 55% of the viewport). One change serves both: FACTS
+   moves into the track prose is not using.
+     At the >=60rem breakpoint (the site's own existing wide-layout
+   threshold — see .home-grid) there is room for two real columns, so FACTS
+   sits beside prose via explicit grid placement. Below it there is not, so
+   FACTS is instead moved ahead of prose in PAINT order only via `order` —
+   the underlying markup order (identity, prose, facts, timeline, rails) is
+   untouched in both cases, exactly as the item's own framing describes ("the
+   <dl> markup does not need to change, only where the block is placed"). A
+   screen-reader user reads the same document either way; a sighted reader —
+   at any width — now sees the dated values before they would have had to
+   start scrolling past the prose.
+     Scoped to `article:has(> .prose):has(.entry-facts)`, which only a wiki
+   entry with BOTH a prose body and a facts block matches — a stub with facts
+   and no prose (nothing to place beside) is untouched, staying in its
+   existing single-column shape, so no dead second track is introduced where
+   there is nothing to fill it.
+     I40 (iter-09): `.entry-facts` is checked as a DESCENDANT (`:has(...)`
+   with no `>`) rather than a direct child, because I40's own fix (below)
+   nests it one level deeper, inside `.entry-side`. */
+article:has(> .prose):has(.entry-facts) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+article:has(> .prose):has(.entry-facts) > .entry-head {
+  order: 0;
+}
+article:has(> .prose):has(.entry-facts) > .notice {
+  order: 1;
+}
+article:has(> .prose):has(.entry-facts) > .prose {
+  order: 3;
+}
+/* I40 (iter-09, R13's iter-07(a) addendum — the dead-track floor, widened
+   past .home-grid to this template, the site's most numerous surface at 495
+   pages). FACTS used to be the freed track's ONLY occupant, filling as
+   little as 17-23% of prose's height on long entries (measured live on
+   /wiki/concept/ai-winter and /wiki/event/attention-is-all-you-need) and
+   then stopping — 1493px of empty column beside a page of running prose,
+   with .rails (REFERENCED HERE / APPEARS IN) stacked full-width BELOW the
+   whole two-column block instead, in the narrow track it happened to
+   inherit from before this grid existed.
+     TIMELINE and RAILS now share column 2 with FACTS — the identical move
+   I9 already made once on the home page: relocate content that already
+   exists into the track a shorter sibling leaves open, no new copy, a
+   position change only. Doing that with CSS placement alone (each of the
+   three still a separate `<article>` child, each given `grid-column: 2`)
+   was tried FIRST and measured WRONG: CSS Grid auto-placement puts FACTS
+   into the same implicit ROW as PROSE (both unspecified-row, order 2/3), and
+   that row's height is set by its TALLEST occupant — PROSE, at ~1945px on
+   ai-winter — so RAILS, needing its own row because FACTS already holds
+   row 2's column-2 cell, lands in row 3, which cannot begin until row 2's
+   FULL 1945px is spent. Measured on the shipped attempt: FACTS 226.9-678.8,
+   RAILS 2203.9-2360.9 — an UNCHANGED 1493px gap, just narrowed from
+   1152px wide to 524px wide rather than closed. A grid row's height is
+   driven by whichever single item is CONFINED to it; the fix has to put
+   FACTS+TIMELINE+RAILS in as ONE item, not three, so their combined height
+   — not PROSE's — sets column 2's own extent. `.entry-side` (below) is that
+   one item: a wrapper `renderEntryPage` now renders around all three
+   (lib/render/entry.mjs), matching `.home-side`'s own role on the home
+   page — one aside box holding several relocated blocks, not several boxes
+   independently placed. DOM order inside it is unchanged (facts, timeline,
+   rails); a screen reader encounters the identical document either way. */
+.entry-side {
+  display: contents;
+}
+.entry-side > .entry-facts {
+  order: 2;
+}
+.entry-side > .entry-timeline {
+  order: 4;
+}
+.entry-side > .rails {
+  order: 5;
+}
+
+@media (min-width: 60rem) {
+  article:has(> .prose):has(.entry-facts) {
+    grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
+    column-gap: var(--gap);
+    align-items: start;
+  }
+  /* .entry-head spans both columns, so it must fall back to flush-left —
+     without this it would independently centre (see the general
+     measure-track centring rule below) within the FULL grid span, which is
+     wider than prose's own column, and drift out of alignment with it. */
+  article:has(> .prose):has(.entry-facts) > .entry-head {
+    grid-column: 1 / -1;
+    margin-inline: 0;
+  }
+  /* `order` is swapped back to DOM order for auto-placement's purposes only
+     (it still controls layout, not just paint, in a grid): prose has to be
+     PLACED before .entry-side so .entry-side's explicit column-2 lands in
+     the same row prose just claimed in column 1, rather than a row of its
+     own. */
+  article:has(> .prose):has(.entry-facts) > .prose {
+    grid-column: 1;
+    order: 2;
+  }
+  /* I40 (iter-09): `.entry-side` becomes a real box here — no longer
+     `display: contents` — so it is ONE grid item, sized to its own combined
+     content (FACTS + TIMELINE + RAILS, stacked in ordinary block flow,
+     their individual `order` values above having no effect outside a
+     flex/grid formatting context) rather than three items independently
+     auto-placed into separate implicit rows. */
+  article:has(> .prose):has(.entry-facts) > .entry-side {
+    display: block;
+    grid-column: 2;
+    order: 3;
+  }
+  /* .section's ambient margin-top (2rem) is for stacked flow; here FACTS is
+     .entry-side's first child, sitting beside prose rather than below it,
+     so it must align to prose's own top edge instead. */
+  article:has(> .prose):has(.entry-facts) > .entry-side > .entry-facts {
+    margin-top: 0;
+  }
+}
+
 .entry-head {
+  /* S5 (iter-01): this rule used to span the full shell while the prose
+     column beneath it (.prose, max-width: var(--measure)) ran at little more
+     than half that width, so the divider pointed at empty space on every
+     entry, article and blog post. Bounding entry-head — and the facts/rails
+     blocks below, which had the same mismatch — to the same measure token
+     resolves the page to one width instead of two. */
+  max-width: var(--measure);
   border-bottom: 1px solid var(--rule-strong);
   padding-bottom: 0.9rem;
   margin-bottom: 1.25rem;
@@ -1017,6 +1844,8 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
+  /* S5 (iter-01): match .prose's width — see the note on .entry-head. */
+  max-width: var(--measure);
 }
 
 @media (min-width: 34rem) {
@@ -1133,6 +1962,10 @@ main {
   gap: 1.5rem;
   margin-top: 2rem;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  /* S5 (iter-01): match .prose's width — see the note on .entry-head. Two
+     15rem+ tracks still fit comfortably inside --measure (38rem), so the
+     referenced/appears-in columns keep sitting side by side. */
+  max-width: var(--measure);
 }
 
 .rail-referenced,
@@ -1168,27 +2001,84 @@ main {
   margin: 0;
   padding: 0;
   border-top: 1px solid var(--rule);
+  /* S9 (iter-04, I16+I17, R13): the list used to be a plain block, 100% of
+     whatever shell it sat in, with each .browse-row a SEPARATE grid — so
+     the kind/status columns sized to that row's own content and drifted
+     across rows (I17), and the list's own width (and its border-top) ran to
+     the container's far edge no matter how little of it the rows actually
+     used (I16). Two changes, and they are one fix: the grid moves UP to the
+     list container, so every row's cells share ONE set of column tracks
+     (kind/status align down the page); and the container shrinks to that
+     grid's own natural width instead of stretching to fill the shell, so
+     the list's rule and its dead space both stop at the same place its
+     content does. See .browse-row below for the row half.
+
+     I32 (R7): --measure-list is a CAP, not a fit. On /tools' category index
+     the widest label ("observability") rendered under half the cap, leaving
+     ~289px of permanent dead air between the label and its count on every
+     row — the drift R8 exists to prevent, reintroduced by a fixed track that
+     doesn't respond to the surface it's on. `fit-content()` sizes the track
+     to the WIDEST label actually on this list (shared across every row via
+     .browse-row's subgrid below, so it is still one track set per R13, just
+     a content-driven one), never exceeding the cap. /data's longest label
+     already sits close to the cap, so that surface is unaffected — the cap
+     still binds there, unloosened; only the token's VALUE would have risked
+     that, and this does not touch the token. */
+  display: grid;
+  grid-template-columns: fit-content(var(--measure-list)) max-content max-content;
+  column-gap: 0.75rem;
+  justify-content: start;
+  width: fit-content;
+  max-width: 100%;
 }
 
+/* I16 (R13, second clause), CENTRING RETIRED iter-06 (I33) — see RULES.md
+   R13's iter-06 addendum. On /wiki, .browse is a direct child of the shell
+   and sat flush against its left edge — 26 of 3383 scanlines (0.8%) carried
+   ink past 55% of the viewport, the worst case I16 measured. iter-05 centred
+   it here; that put /wiki's list at a different left edge (440.1px) than its
+   own H1, lede and closing note (all 144px) — the defect relocated, not
+   closed. No rule now targets `main.shell > .browse` for horizontal
+   position: it inherits plain flush-left block flow, matching every sibling
+   on the page, and the width freed by NOT widening the list (still forbidden
+   by R7) pools on the trailing side instead of being split. See /tools and
+   /learn, both already flush-left at well under 55% occupancy and both read
+   fine — the controlled comparison that grounds the amendment. */
+
 .browse-row {
+  /* S1 (iter-01, kept): the name column stops at --measure-list rather than
+     absorbing the row, so metadata sits immediately after the label. Now
+     inherited from .browse's own shared template via `subgrid` (S9) rather
+     than re-declared per row, which is what makes the kind/status columns
+     line up: subgrid's tracks size to the WIDEST cell in that column across
+     every row of the list, not to one row's own content. */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 0.5rem 0.75rem;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   align-items: baseline;
   padding: 0.35rem 0;
-  border-bottom: 1px solid var(--rule);
+  /* S2 (iter-01): no per-row rule; .browse's own border-top is the group's
+     one boundary mark. */
 }
 
 .browse-name {
-  text-decoration: none;
+  /* S3/S4/S6 (iter-01): one resting treatment for "link to a record" shared
+     with .rail-title a (blog) and .data-table a (catalog) — ink, with a
+     muted underline so the row reads as a link before any hover or focus
+     (S6), and only hover/focus pick up --accent, so the accent stays a
+     signal instead of the ambient colour of every row (S4). */
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.16em;
   color: var(--ink);
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.browse-name:hover {
+.browse-name:hover,
+.browse-name:focus-visible {
   color: var(--accent);
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .browse-kind {
@@ -1197,13 +2087,98 @@ main {
   color: var(--muted);
 }
 
+/* I11 (iter-07, R13): the three facts a reader arrives to compare on /tools
+   (a listing's pricing prose, its verification date and its wiki entry link
+   — corrected iter-08: this comment previously said "pricing/licence prose",
+   naming a fourth field, "licence", that does not exist anywhere on this
+   surface — not in lib/render/tools.mjs's `.listing-line` markup, not in
+   lib/listings.mjs; the surface has always had exactly these three fields)
+   rendered as one run-on mono line joined by middots, ragged at a different
+   x on every entry — six sampled .listing-line right edges
+   (1134.3 / 1004.8 / 1294.2, wrapping / 799.1 / 867.7 / 623.9px) with no
+   field beginning or ending at the same x on any two entries. The same
+   defect R13 already names and the same remedy R13 already prescribes for
+   `.browse-row`: one shared grid track set across the entries of a
+   category — subgrid on the entry (`.listing`), the tracks declared on the
+   category container (`.listings`).
+     UNLIKE `.browse-kind`/`.browse`'s status column, the pricing field here
+   is genuine PROSE, not a short token — measured up to 148 characters across
+   the 35 live listings, several exceeding the shell's own width unwrapped.
+   Capping it to `.browse-name`'s own 24rem list measure (built for a
+   record's NAME, not a paragraph) would force it to wrap far more severely
+   than ITEM 0's tension ever did, on every long listing, for content this
+   surface's own reader needs to actually read rather than merely scan. So
+   only pricing keeps a flexible, wrapping column (`minmax(0, 1fr)` — it
+   still STARTS at a shared x, satisfying the invariant's own text, without
+   forcing its LENGTH into the same cap a short label uses); the verified
+   date and the wiki-entry link — both genuinely short, fixed-format tokens,
+   the actual case R13's `max-content` trailing-column treatment fits — share
+   real columns the way `.browse-row`'s kind/status already do. */
+/* I41 (iter-09, R13, widened past this surface's own twelve independent
+   categories to the whole page): each category's `.listings` declared this
+   track set independently, so its OWN `max-content` columns sized against
+   only that category's own longest wiki-entry label — a shared column
+   WITHIN a category, but seven distinct x positions ACROSS the twelve,
+   because the flexible pricing column absorbed whatever the category's own
+   entry-link width left over, shifting the verified/entry columns' shared
+   boundary left or right of where the next category's rows resolved it.
+   `grid-template-columns` below is now `subgrid`: the real tracks are
+   declared once, on `.tools-index` (app/tools/page.tsx), and every
+   category's `.section` and `.listings` pass them through unchanged (see
+   `.tools-index` below) — the same subgrid mechanism this rule already uses
+   one level down (`.listing` onto `.listings`), just extended one level up
+   so `max-content` is computed from every listing on the PAGE rather than
+   one category's own. */
 .listings {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: grid;
+  grid-template-columns: subgrid;
+  column-gap: 1.25rem;
+}
+
+/* I41 (iter-09, R13): the page-level grid `.listings` now subgrids onto.
+   `max-content` on the trailing two tracks is computed from EVERY
+   `.listing-verified`/`.listing-entry` reachable through the subgrid chain
+   below — every listing in every category — rather than one category's own,
+   which is what makes `.listing-verified` and `.listing-entry` start at the
+   same x for all 35 listings across all twelve categories instead of just
+   within each one. Every direct child spans the full three tracks by
+   default (a category-index nav, the A-to-Z disclosure, a plain sort-note
+   paragraph are none of them part of the subgrid, they just need the full
+   width they always had); only `.section:has(> .listings)` — a category —
+   additionally subgrids so its own `.listings` can reach these tracks. */
+.tools-index {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content max-content;
+  column-gap: 1.25rem;
+}
+
+.tools-index > * {
+  grid-column: 1 / -1;
+}
+
+.tools-index > .section:has(> .listings) {
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+.tools-index > .section:has(> .listings) > * {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 26rem) {
+  .tools-index,
+  .tools-index > .section:has(> .listings) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .listing {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   border-top: 1px solid var(--rule);
   padding: 0.75rem 0;
 }
@@ -1214,6 +2189,7 @@ main {
 }
 
 .listing-name {
+  grid-column: 1 / -1;
   font-size: var(--step-1);
 }
 
@@ -1228,13 +2204,96 @@ main {
 }
 
 .listing-line {
+  /* Three explicit grid items (pricing, verified-date, entry-link), not one
+     inline run: `display: contents` drops THIS element's own box so its
+     children sit directly in `.listing`'s subgrid instead of behind an
+     extra, column-oblivious wrapper — the paragraph stays in the DOM for its
+     semantic grouping, it just is not itself a box the grid has to place. */
+  display: contents;
   font-family: var(--mono);
   font-size: var(--step--1);
   color: var(--muted);
+}
+
+/* I36 (iter-08, R8's iter-07 addendum): .listing-pricing is the field a
+   reader actually arrives to compare across a category's entries — it needs
+   the same full weight the catalog's numeric columns keep (see the Read-cell
+   note below). Explicit rather than left inherited from .listing-line's own
+   muted default, so it reads at ink even where .listing-verified's own
+   demotion (below) would otherwise leave every field in a listing at the
+   same weight. */
+.listing-pricing {
+  grid-row: 2;
+  grid-column: 1;
+  margin-top: 0.15rem;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+}
+
+/* I36 (iter-08, R8's iter-07 addendum, the same clause applied to a second
+   surface): all 35 live listings share one verification date today — a
+   collection-constant rendered at .listing-line's own muted weight, same as
+   .listing-pricing was until the rule above. That alone was invisible before
+   I11 gave the date its own aligned column (a page-long band of one repeated
+   string); .listing-pricing now sits at ink, so leaving .listing-verified at
+   its inherited --muted keeps the constant BELOW the field a reader actually
+   compares, matching the STATUS column's own default-badge treatment on
+   /catalog. `data-default` is computed per category in
+   lib/render/tools.mjs (categorySection/renderListingRow), mirroring
+   catalogRowHtml's `isDefaultFetch`: the day a category's entries stop
+   sharing one verification date, the row that differs earns full weight back
+   automatically, because it will carry `data-default="no"`. */
+.listing-verified {
+  grid-row: 2;
+  grid-column: 2;
+  margin-top: 0.15rem;
+  white-space: nowrap;
+}
+
+.listing-verified[data-default="no"] {
+  color: var(--ink);
+}
+
+.listing-entry {
+  grid-row: 2;
+  grid-column: 3;
   margin-top: 0.15rem;
 }
 
+/* I11 (iter-07): found live while reviewing the rendered page at 390x844 —
+   below .browse's/.rail-item's own shared narrow breakpoint (26rem/416px)
+   the wide layout's fixed max-content columns (verified date, entry link)
+   leave pricing only a sliver of the ~326px available width, forcing its
+   prose into many single-word lines — worse than the pre-fix run-on line it
+   replaced, not better. Below that breakpoint the three fields stack full
+   width instead, one per row, the same shape every other list surface on
+   this site reverts to at this width. */
+@media (max-width: 26rem) {
+  .listings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .listing-pricing {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .listing-verified {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .listing-entry {
+    grid-column: 1;
+    grid-row: 4;
+  }
+}
+
 .listing-marker {
+  /* I11 (iter-07): .listing is now a grid; without an explicit span this
+     would auto-place into column 1 alone (pricing's own track) rather than
+     running the full row's width as it did before .listing became a grid. */
+  grid-column: 1 / -1;
   font-family: var(--mono);
   font-size: var(--step--1);
   margin-top: 0.35rem;
@@ -1253,6 +2312,11 @@ main {
   margin-top: 1.25rem;
   border-top: 1px solid var(--rule);
   padding-top: 0.75rem;
+  /* S5 (iter-01): the value column is minmax(0, 1fr), so without a cap the
+     border-top above it stretches to the shell while colophon's Records /
+     Catalog / Change-history values are a fraction of that width — the same
+     rule-wider-than-content mismatch as .entry-head, bounded the same way. */
+  max-width: var(--measure);
 }
 
 .listing-facts dt {
@@ -1264,6 +2328,32 @@ main {
   margin: 0;
   overflow-wrap: anywhere;
 }
+
+/* I16 (R13, second clause), CENTRING RETIRED iter-06 (I33) — see RULES.md
+   R13's iter-06 addendum. /colophon's .prose and .listing-facts sat flush
+   against the article's left edge, both already bounded to --measure, so the
+   shell's whole right column was empty for the page's full height (0 of 1043
+   scanlines carried ink past 55% of the viewport). iter-05 centred them;
+   that put the page's own title (144px, unmoved — .page-title carries no
+   centring rule) over a body sitting at 416px — the defect relocated, not
+   closed. No centring rule now targets this article's .prose/.listing-facts:
+   they stay flush left at the SAME edge as the H1 above them, and the freed
+   width pools on the trailing side (see /tools and /learn, the controlled
+   comparison — both already flush-left at well under 55% occupancy and both
+   read fine). No rule is declared here any more — the selector that used to
+   carry `margin-inline: auto` (scoped to an article with .listing-facts but
+   NOT .entry-head, i.e. /colophon specifically, leaving /tools/[slug]'s
+   .entry-head + .prose + .listing-facts shape unaffected either way) is
+   removed rather than kept inert, so nothing in this file implies a rule
+   still applies here. */
+
+/* I16 (R13, second clause), CENTRING RETIRED iter-06 (I33), same reasoning
+   as /colophon above: .post-body is a plain wrapper div
+   (app/blog/[slug]/page.tsx) around .entry-head and .prose; .rails is
+   .post-body's own sibling. All three now stay flush left, matching the
+   rest of the template, instead of each centring independently to its own
+   fit-content width (which is what produced ragged left edges between
+   siblings whose natural widths differ). */
 
 /* ── learn ladder ───────────────────────────────────────────────────── */
 
@@ -1284,7 +2374,15 @@ main {
 
 @media (min-width: 48rem) {
   .rung {
-    grid-template-columns: 14rem minmax(0, 1fr);
+    /* S9 (iter-04, I16, R13): the value column was minmax(0, 1fr) — a
+       flexible track that filled the rest of the 1152px shell even though
+       .rung-outcome/.rung-title (below) were already capped to --measure.
+       Fixing the track itself to --measure and shrinking the row to
+       fit-content removes the dead space AND bounds .rung's own border-top
+       rule to the same width as the text it introduces. */
+    grid-template-columns: 14rem minmax(0, var(--measure));
+    width: fit-content;
+    max-width: 100%;
   }
 }
 
@@ -1315,16 +2413,22 @@ main {
   gap: 0.75rem;
 }
 
+/* I18 (R9): plain ink with no underline at all — the third pattern the item
+   named directly ("/learn's tutorial titles are plain ink with no underline
+   at all"). Same rest/hover pair as every other record link. */
 .rung-title {
   font-size: var(--step-1);
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.16em;
   color: var(--ink);
   font-weight: 600;
 }
 
-.rung-title:hover {
+.rung-title:hover,
+.rung-title:focus-visible {
   color: var(--accent);
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .rung-outcome {
@@ -1446,8 +2550,21 @@ main {
     gap: 0.1rem;
   }
 
-  .browse-row {
+  /* S9 (iter-04): the shared 3-track template (measure-list + two
+     max-content columns) is a desktop shape — a fixed 24rem label column
+     plus a shrink-wrapped list would either overflow this viewport or leave
+     the label column far wider than anything needs at 390px. Below this
+     breakpoint the list reverts to a flexible 2-column template sized to
+     the viewport, and rows stay `subgrid` against THAT template rather than
+     re-declaring their own (S1's pre-S9 shape, restored here unchanged). */
+  .browse {
     grid-template-columns: minmax(0, 1fr) auto;
+    width: 100%;
+  }
+
+  .browse-row {
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
   }
 
   .browse-kind {
