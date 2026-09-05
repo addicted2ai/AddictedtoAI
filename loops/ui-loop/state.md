@@ -91,10 +91,9 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
 
 ## Next (loop work, in order)
 
-1.–9. Rounds 0–2 done; detail in `state-archive.md` + commit log. Finalists page:
-   https://claude.ai/code/artifact/4c3688bb-c784-4e64-8bcf-e28f5aa29994
-10. **Round 3 done (2026-09-05).** RD-002 by Opus (`ui/concept-2` @ `1e3ddd7`, 5/5 fixes); re-captured
-   (98ad09f9); affected judges + RT anchored; `SCORE-CP-UI-001-2-3` **88.3** (was 54.8), no critical
-   FAIL; HIER 7.5 / DENS 6.67 / RESP 6.67 under 8; RT critical FM-N1 (claim regex admits marketing
-   fields; "unverified" never prints) + F-hier-11 door hairlines. **K7 cap: HARD STOP.** `BLIND-001`
-   decides what needs the keeper → check-in page → MRs → merge (K3) → push (K4) → handoff (K31, K33).
+1.–10. Rounds 0–6 done 2026-09-05 (six iterations). **MERGED to `main` @ `b6ac95d`, pushed** with the
+   three record branches; gates on main green (build, verify-design 46/46, surfaces, invariants 24/24,
+   tests 1229). Final `SCORE-CP-UI-001-2-6` 88.3, zero RT criticals. Handoff ACCEPTED (K31); STOP
+   removed (K33); Desk running, publish still false; K44 in DIRECTIVES (4578d8a). Machinery at its 10%
+   ceiling → specs, backfill, rights, org entries first; implementations when the window rolls.
+11. Next: BRIEF-UI-002 when the keeper drafts it. This session answers the orchestrator; K32 applies.
