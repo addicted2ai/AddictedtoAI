@@ -46,9 +46,8 @@ process each round knows only what this file says. Every claim cites an artifact
   of `BRIEF-UI-001`, not a capped afterthought. Findability, WCAG AA, 320px reflow, 150 KB payload,
   machine-readability and "content above the fold, decoration never displaces information"
   (`openspec/specs/site` design bar) are the FENCE: never worse. **Lesson recorded:** the old
-  rubric told its judge to score "a reader's tool, not a showcase piece" and capped distinctiveness
-  at impact 4 — the keeper's actual goal was never in a brief, so nine rounds optimised an
-  objective the keeper did not hold. The brief carries intent; a loop cannot infer it.
+  rubric scored "a reader's tool, not a showcase piece" and capped distinctiveness at impact 4;
+  the keeper's goal was never in a brief, so nine rounds optimised the wrong objective.
 - **K11** — `/frontier` MAY be prototyped on the branch; merge waits for the Desk's OpenSpec change.
 - **K12 (KP1, first ever, 2026-09-05)** — Port CONFIRMED: "everything looks better changed, except
   the ai-winter wiki entry. Having the FACTS displayed first with no context makes them feel out of
@@ -56,7 +55,9 @@ process each round knows only what this file says. Every claim cites an artifact
   subject (title + one sentence of context) BEFORE any facts table; the old loop's "answer first"
   order (S14) is overruled for entries with prose bodies. Feeds BRIEF-UI-001, not a hotfix.
 - **K13** — Models: concept generator + finalist jury FABLE; judges OPUS; implementers + red team
-  SONNET; analyzer HAIKU; gates/scoring code. Session effort -> MEDIUM at the first dispatch.
+  SONNET; gates/scoring code. Session effort -> MEDIUM at the first dispatch. **K15** (2026-09-05):
+  analyzer HAIKU -> SONNET from the next run (keeper: capabilities worlds apart; contract edit between rounds).
+  JV budget 9000 was binding for all 8 r1 verdicts: re-baseline once, between rounds.
 - **K14** (delegated, 2026-09-05, after the keeper asked whether resuming locks in a narrow optimum)
   — `RULES` R1–R6 are law (site spec); **R7–R16 are the old loop's taste and CHALLENGEABLE** by a
   concept with cause, keeper rules; the port is a starting point, not a design to preserve.
