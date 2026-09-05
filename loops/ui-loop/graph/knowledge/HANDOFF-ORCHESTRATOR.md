@@ -148,6 +148,19 @@ go through your change process first; the directives follow them. Note the machi
 order's §6 sequence puts the fields, criteria, gate and backfill first because they unblock the next
 UI brief on their own.
 
+## 8b. Work it out between us; stop for the keeper only when a blind agent says you must (K32)
+
+The keeper's instruction, verbatim: *"I want you two to work it all out and to not stop for my input
+unless it really needs to, and the blind agent test confirms that I am needed."* Operationalised
+(the keeper may correct this reading): before either session interrupts the keeper, hand the
+decision to a fresh agent that is NOT told the keeper is reachable, together with the constitution
+(`CHARTER.md`, `RULES.md` R1–R6, the site spec's design bar), rulings K3–K31 in `state.md`, and this
+file. Ask it: can this be resolved from what is written, and if so how? If it resolves it, act on
+that and record the resolution and the agent's reasoning where the keeper can review it later. Only
+if it answers "keeper required" (a value call no clause or ruling anchors, a new scope, a merge or
+push, or something irreversible) does either of us stop and ask. The keeper is the final judge, not
+the default worker.
+
 ## 9. Questions we expect you to have (ask them)
 
 Why editorial records rather than the feeds you already ingest. Whether the F1–F5 criteria are
