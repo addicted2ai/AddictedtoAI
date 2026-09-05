@@ -77,7 +77,18 @@ for a ruling he had already delegated.
 - **`gh pr create` / `gh pr merge`.** Nothing writes to GitHub's API on an
   agent's judgment.
 - **`STOP`.** He creates it and he removes it. Unlike `HOLD.md`, this never
-  transferred.
+  transferred as a standing grant, and the general rule is unchanged.
+  ONE SCOPED EXCEPTION HAS BEEN GIVEN AND HAS BEEN USED UP. On 2026-09-05, at
+  20:43 UTC, he pre-authorised removal of the `STOP` he had placed for the UI
+  freeze — *"I pre-emptively give my authorization to remove the STOP file
+  after the handoff is completed and the project needs to resume operation"* —
+  granted to both this session and the ui-loop orchestrator, and repeated to
+  this session directly. Two conditions, both required, and the wording is the
+  grant: the handoff **completed**, and the project **needing to resume**. It
+  was exercised on 2026-09-05 after the ui-loop handoff (K33), and it does not
+  generalise: the next `STOP` is his again, and asking is the default. Recorded
+  here rather than left in a transcript because a grant given in conversation
+  is as real as one written down, and this file is where that is checked.
 - **`openspec/specs/` and `runners.yml`.** Reserved paths. Author changes under
   `openspec/changes/` instead; the archive step is what writes to `specs/`.
 - **`package.json`.** Never edited. If something looks missing, stop and report.
