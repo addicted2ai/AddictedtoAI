@@ -54,7 +54,9 @@ process each round knows only what this file says. Every claim cites an artifact
   **K44** (under K40, answers to the orchestrator 2026-09-05): F2 records may describe a publisher's
   rescoring qualitatively (no values) under K24; §3 gets an implementation line, seeded `domains` are
   machine-maintained (beside `timeline`), editorial ones go through review; the vendor-claim record
-  lives BESIDE the entry as its own OpenSpec change, source host + tri-state `verified`.
+  lives BESIDE the entry as its own OpenSpec change, source host + tri-state `verified`. **K45**
+  (keeper via orchestrator): this session REVIEWS the three OpenSpec drafts before implementation;
+  origin map `knowledge/SPEC-REVIEW-GUIDE.md`.
 - **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated).** **K23** PLAYERS BOARD carried
   forward; Dated Ledger's branch kept as a record. **K24** index columns only when a registry index
   exists. **K25** the nav discharges K19 at 390. **K26** door rows by most-recent change. **K27** PB's
@@ -96,4 +98,4 @@ nothing fails; judges scoped by oracle, code totals; this file over budget (now 
    tests 1229). Final `SCORE-CP-UI-001-2-6` 88.3, zero RT criticals. Handoff ACCEPTED (K31); STOP
    removed (K33); Desk running, publish still false; K44 in DIRECTIVES (4578d8a). Machinery at its 10%
    ceiling → specs, backfill, rights, org entries first; implementations when the window rolls.
-11. Next: BRIEF-UI-002 when the keeper drafts it. This session answers the orchestrator; K32 applies.
+11. Next: BRIEF-UI-002 when the keeper drafts it; spec reviews (K45) as drafts land.
