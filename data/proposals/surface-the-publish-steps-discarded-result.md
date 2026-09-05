@@ -32,6 +32,8 @@ evidence: >
   every publisher on the machine. Filed as addictedtoai-vqp7.1; this proposal is
   the route by which the fix can reach the Desk, since beads issues do not feed
   the derived queue.
+proposed_by_job: j-20260904-53
+proposed_by_type: repair
 ---
 
 The issue records the condition. This proposes the work, and the distinction
