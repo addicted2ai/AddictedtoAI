@@ -136,3 +136,19 @@ through the Desk's change process first; the lines below are the jobs that follo
 - verify: check Artificial Analysis and Design Arena republication terms; record the outcome in the registry; no index value renders until cleared; DESK-ORDER-001 §4
 - entry: org entries for the 34 catalog providers with no wiki entry (one line per org when filed), each with its `feeds` map; DESK-ORDER-001 §2
 ```
+
+## Amendments from the handoff (2026-09-05, K44; orchestrator's questions, ui-loop's answers)
+
+- **F2 and K24.** An F2 record may describe a publisher's rescoring qualitatively — publisher, index
+  and version, date, direction, coverage change — with no index value, ratio, rank or per-model score
+  in its copy; the publisher's own changelog is the anchor. Artificial Analysis's 2026-09-04 v4.2
+  rebase qualifies.
+- **§3 implementation line** (was missing). Seeded `domains` values are machine-maintained and sit
+  beside `timeline` in `MECHANICAL_FRONT_MATTER_KEYS`; editorial assignments and overrides are a
+  separate field and go through review. One field must not carry two freshness regimes.
+- **§4 is its own OpenSpec change**, drafted by an interpret line before its machinery lines. The
+  vendor-claim record lives BESIDE the entry (its own clock; a later verification must not dirty
+  prose), carries the source URL host (for the board's registrable-domain vendor test, S22(e)), and
+  `verified` is tri-state: absent / false / {by, url, date}.
+- **DIRECTIVES repairs** by the orchestrator (67cd566) accepted: drafting line for 9c9t (livelock
+  otherwise), domain line carries its answers inline, one org entry per line with the backlog on 2ok0.

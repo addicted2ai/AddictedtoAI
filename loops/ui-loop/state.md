@@ -51,6 +51,10 @@ process each round knows only what this file says. Every claim cites an artifact
   merge. v5: 88.3, zero RT criticals, hard gates pass; HIER/DENS/RESP under 8 are next-brief items.
   **K43** (keeper, 2026-09-05): "Make this the last iteration! Address any findings directly and begin
   the handoff process after." Iteration 6 is final; findings are fixed directly, no further RD.
+  **K44** (under K40, answers to the orchestrator 2026-09-05): F2 records may describe a publisher's
+  rescoring qualitatively (no values) under K24; §3 gets an implementation line, seeded `domains` are
+  machine-maintained (beside `timeline`), editorial ones go through review; the vendor-claim record
+  lives BESIDE the entry as its own OpenSpec change, source host + tri-state `verified`.
 - **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated).** **K23** PLAYERS BOARD carried
   forward; Dated Ledger's branch kept as a record. **K24** index columns only when a registry index
   exists. **K25** the nav discharges K19 at 390. **K26** door rows by most-recent change. **K27** PB's
