@@ -1868,14 +1868,6 @@
         "file": "content/wiki/org/alibaba-cloud.md"
       }
     ],
-    "model/qwen-qwen3-8-max-0902": [
-      {
-        "url": "/wiki/model/qwen-qwen3-8-max",
-        "title": "Qwen: Qwen3.8 Max",
-        "type": "entry",
-        "file": "content/wiki/model/qwen-qwen3-8-max.md"
-      }
-    ],
     "model/tencent-hunyuan-a13b-instruct": [
       {
         "url": "/wiki/org/tencent",
