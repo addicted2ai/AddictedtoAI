@@ -710,3 +710,15 @@ by a measurement rather than by a preference.
   time; remove only with no build process alive (else it gates a STALE `out/`).
 - **This file was committed over budget twice** (8394, 8316 B). `gates.mjs` now FAILs it; run before commit.
 
+
+
+## Archived from state.md 2026-09-05 (Known evidence lies L7–L8 — still binding, moved for budget)
+
+## Known evidence lies (live-specific; continues JUDGE.md's L-series)
+
+- **L7** — Seven model pages render "not published" mid-sentence (worst: `gemini-3-1-pro-preview`,
+  `z-ai-glm-5-1`). Desk backlog in `DIRECTIVES.md`, pre-existing, NOT a presentation defect. A
+  judge who files it has filed a content lie.
+- **L8** — Two concurrent `next build`s share `.next/`, die with `ENOENT pages-manifest.json`: process
+  defect, not content. One build at a time.
+
