@@ -58,7 +58,10 @@ process each round knows only what this file says. Every claim cites an artifact
   **K18** R13 rail-track addendum (a); R7 board clarification (b, delegated). **K19** "No": the
   Frontier LEADS with a players board (K11 stands); Dated Ledger's per-index spine must read as one.
   **K20** (delegated) family: a finalist names a treatment for EVERY template; "unchanged, because"
-  is allowed. Both worktrees: `D:\AddictedtoAI-c1` (`ui/concept-1`), `-c2` (`ui/concept-2`).
+  is allowed. Worktrees `D:\AddictedtoAI-c1` (`ui/concept-1`), `-c2` (`ui/concept-2`). **K21** board
+  membership is EDITORIAL, never feed-gated: a player is on the board because the site covers it;
+  feeds fill cells; no label assumes one source. Desk order (post-pick): widen coverage far beyond
+  the OpenRouter feed (labs, open-weights, image/video/audio, robotics, research groups).
 
 ## Known evidence lies (live-specific; continues JUDGE.md's L-series)
 
@@ -70,8 +73,7 @@ process each round knows only what this file says. Every claim cites an artifact
 
 ## Failure modes to guard
 
-- Keeper items age. An item open 3 rounds FAILs the sweep (builder F17). Instrument work is never
-  the answer to a blocked ruling.
+- Keeper items age: open 3 rounds FAILs the sweep (F17). Instrument work never answers a blocked ruling.
 - A gate that can see nothing fails: rig coverage (routes × viewports × themes named by each judge
   contract) is checked BEFORE any judge spawns.
 - Two writers, one judge, one score: never again. Judges are scoped by oracle; code totals.
