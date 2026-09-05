@@ -171,6 +171,21 @@ the authorisation is the `user` record at **line 2883**, uuid `feb3bfa5-84de-49b
 timestamp `2026-09-05T20:43:39.927Z`. K5 still holds for this session: the ui-loop never touches
 `STOP`; the removal is yours, after the handoff, when you are ready to resume.
 
+## 8d. The check-in, and what the keeper decided before stepping away (K35–K40)
+
+After the third iteration the graph stopped at the keeper's cap with the revised Players Board at
+88.3 (from 54.8), no critical failure, one red-team critical left (the claim filter could admit a
+marketing tagline; the word "unverified" no longer printed). A blind arbiter confirmed which
+decisions needed the keeper. The keeper ruled: one narrow fourth iteration for the three remaining
+fixes (K35); the reader tests SKIPPED, so `MR-UI-001..003` are retired and no calibration precedes
+the merge (K36); implementer tier OPUS for all future builds (K37, from the ledger's seven Sonnet
+entries against one small Opus one); the domain vocabulary has "general" as its unmarked default,
+so eight tagged values remain (K38); the Desk order and the directive lines are signed off, and the
+merge, push and this handoff are authorised once the fourth iteration passes (K39). Then, verbatim:
+*"I am stepping away now. I authorize you to answer on behalf for any issues that come up, short of
+insane catastrophic project threatening madness."* (K40). That delegation covers this handoff: work
+it out with this session; escalate to the keeper only for the catastrophic class.
+
 ## 9. Questions we expect you to have (ask them)
 
 Why editorial records rather than the feeds you already ingest. Whether the F1–F5 criteria are
