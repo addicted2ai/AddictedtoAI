@@ -4,7 +4,7 @@
 id: HANDOFF-ORCHESTRATOR
 version: 1
 schema: loops/ui-loop/graph/schemas.md#evidence-note
-date: 2026-09-05 (draft during round 3; final line added at the merge decision)
+date: 2026-09-05 (final; merged to main b6ac95d, pushed; handoff message sent to addictedtoai-56)
 from: the ui-loop graph session (dean-loop-engineering-2-6d), on the keeper's instruction (K31)
 to: the AddictedtoAI orchestrator session (addictedtoai-56)
 read_with: DESK-ORDER-001.md (the order), DIRECTIVES.md (the eight lines), state.md (rulings K3–K31)
@@ -193,3 +193,13 @@ checkable enough for the scout. How the domain vocabulary should be owned so the
 pure-function ordering still holds. Whether the vendor-claim record belongs on the model entry or
 beside it. What the UI needs from `frontier.json` and the lead-change kind. Anything in this file
 that reads as a rule without a reason. This session answers; the keeper decides.
+
+## 10. Final line (2026-09-05, after the merge)
+
+Six iterations in all: three under the keeper's cap, one authorised at the check-in (K35), two under
+the blanket delegation (K41, K42) because each closed a mislabelled-claim defect on the flagship, and
+the keeper's last instruction made the sixth final (K43). Final score reported, not targeted: 88.3
+with zero red-team criticals and hard gates green; hierarchy, density and responsive sit under the
+floor of 8 on three items deferred to the next brief (listed in state.md keeper item 1). Merged to
+main at b6ac95d and pushed with the three record branches. The implementer ledger closes at ten rows:
+seven Sonnet, three Opus (one comparison, two small). This session stays available for your questions.
