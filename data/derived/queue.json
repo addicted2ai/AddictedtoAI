@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 2,
+  "count": 3,
   "items": [
     {
       "detail": "Declaring `owned` moves the Desk onto pulse/lib/publish.mjs's declared branch, which at :527 refuses on ANY uncommitted file under `content/` that the run did not declare — `commitBlocked = 'foreign-content'`, and :573 then returns `{published:false}` without pushing. This is correct and is exactly what the brief asked for, but it is a NEW outcome for the Desk: before this change a Desk publish with a stray dirty `content/` file swept it into the commit and pushed anyway. From now on a fully gated, merged, approved job can end with nothing reaching the live site because an unrelated agent left one entry dirty, and the only trace is one `commit` step line in the run log. MEASURED, not inferred: the same tree returns `{\"published\":false,\"reason\":\"foreign-content\"}` when `owned` is declared and `would run: git add data content` (i.e. would have published the stranger's draft) when it is not. Nothing in this diff is wrong — it fails in the safe direction, which is the direction the brief asked for. What is missing is an issue recording that the Desk's publish can now be blocked by a file no job in the run touched, so the first time it happens it is a known condition and not a fresh diagnosis.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-50 (`j-20260904-50.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -9,6 +9,15 @@
       "subject": "data/carried/j-20260904-50-carry-1.md",
       "target": "data/carried/j-20260904-50-carry-1.md",
       "title": "File the Desk's new foreign-content refusal as its own issue before it surprises someone",
+      "type": "repair"
+    },
+    {
+      "detail": "The added paragraph says \"The two 200s in that blockquote differ from each other and from the table row's 375,916 for the ordinary reason: the response is not byte-stable\", but the measurement offered in support is four fetches inside one second spanning 376,057-376,065 — a ~50-byte band. Every 200 measured for this URL on 2026-09-04, across this job, the j-20260904-49 record and my own re-fetch, falls in 376,020-376,069; the table row's 375,916 sits ~104 bytes below that entire band and is the one count the cited measurement does not cover. The paragraph's conclusion (\"a byte count here dates a fetch; it never identifies a document\") is unaffected and correct, but the causal attribution of the 375,916 gap is an inference presented as a measured result. Either scope the sentence to the two blockquote counts and say the table row's larger gap is unexplained but equally not evidence of a change, or measure the drift across hours rather than seconds.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260904-51 (`j-20260904-51.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/reviews/evidence/verify-daybreak-defense-network-product-wording.md",
+      "target": "data/reviews/evidence/verify-daybreak-defense-network-product-wording.md",
+      "title": "Narrow the drift explanation to the counts it actually measures, or measure the wider gap",
       "type": "repair"
     },
     {
@@ -21,5 +30,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 2
+  "total_before_cap": 3
 }
