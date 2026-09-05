@@ -5,6 +5,7 @@ import {
   renderLatest,
   renderCatalogGlance,
   renderDoors,
+  renderFrontierDoor,
 } from '../lib/render/home.mjs';
 import { renderDeltaStrip } from '../lib/render/delta.mjs';
 
@@ -30,6 +31,7 @@ export const metadata = {
 
 export default async function HomePage() {
   const site = await getSite();
+  const orgs = site.entries.filter((e: any) => e.data.kind === 'org');
 
   return (
     <>
@@ -49,6 +51,21 @@ export default async function HomePage() {
         </div>
 
         <aside className="home-side" aria-label="Today's shape">
+          <section className="section" aria-labelledby="frontier">
+            <h2 className="section-title" id="frontier">
+              The Frontier
+            </h2>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: renderFrontierDoor(orgs, site.catalogFile.rows, site, { limit: 3 }),
+              }}
+            />
+            <p className="sort-note">
+              <a href="/frontier">The whole board</a> — every organisation this site tracks, one row
+              each.
+            </p>
+          </section>
+
           <section className="section" aria-labelledby="glance">
             <h2 className="section-title" id="glance">
               Catalog

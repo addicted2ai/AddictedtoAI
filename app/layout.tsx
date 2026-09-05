@@ -125,6 +125,7 @@ const NAV_DISCLOSURE_SCRIPT = `try{var d=document.querySelector('.nav-disclosure
 const FOOTER_HEIGHT_SCRIPT = `try{function s(){var w=document.querySelector('#catalog-table-wrap');if(!w)return;var r=w.getBoundingClientRect();var wrapBottom=r.bottom+window.scrollY;var trailing=document.documentElement.scrollHeight-wrapBottom+16;if(trailing>0)document.documentElement.style.setProperty('--footer-h',trailing+'px')}s();window.addEventListener('resize',s)}catch(e){}`;
 
 const NAV = [
+  { href: '/frontier', label: 'frontier' },
   { href: '/wiki', label: 'wiki' },
   { href: '/catalog', label: 'catalog' },
   { href: '/tools', label: 'tools' },

@@ -72,6 +72,42 @@
  * cannot target a generic CSS family. `font-display` does not apply to a
  * `local()` source — there is no network fetch to swap in after — so none
  * is set here; it is the self-hosted path's concern, not this one's. */
+/* ── self-hosted identity face (K16, CP-UI-001-2) ───────────────────────
+ * Space Grotesk (Florian Karsten, OFL 1.1) — the OFL grotesk the packet
+ * names for "labels, headers, cells" while --serif (below) keeps Charter for
+ * prose. Downloaded at build-authoring time from google/fonts
+ * (ofl/spacegrotesk/SpaceGrotesk[wght].ttf, a variable font), instantiated to
+ * static 500/700 with `fonttools varLib.instancer`, then subset to the Latin
+ * range this site's labels/dates/prices/nav actually use
+ * (U+0020-007E,00B7,2013,2014,2018-2019,201C-201D,2026,2192,2212) with
+ * `pyftsubset --flavor=woff2`. Two files, public/fonts/, 10,860 B and
+ * 10,300 B — both under the packet's ~30 KB/weight cap. Licence beside them:
+ * public/fonts/SpaceGrotesk-OFL.txt. No external origin: verify-design's
+ * allowlist gate is unchanged. ascent/descent/line-gap overrides are the
+ * font's own measured metrics (unitsPerEm 1000, ascent 984, descent -292),
+ * so a fallback-rendered label does not jump size when the face swaps in. */
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/fonts/SpaceGrotesk-Medium-subset.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  ascent-override: 98.4%;
+  descent-override: 29.2%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/fonts/SpaceGrotesk-Bold-subset.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  ascent-override: 98.4%;
+  descent-override: 29.2%;
+  line-gap-override: 0%;
+}
+
 @font-face {
   font-family: 'Sitka Text Metric';
   src: local('Sitka Text');
@@ -110,8 +146,15 @@
 
   --serif: Charter, "Bitstream Charter", "Sitka Text Metric", "Cambria Metric", Georgia,
     "Times New Roman Metric", serif;
-  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", Menlo,
-    Consolas, "DejaVu Sans Mono", monospace;
+  /* CP-UI-001-2 (K16): --mono was already, by this file's own header
+     comment, "a monospace for everything that is a record — dates, ids,
+     prices, table cells, labels, navigation." That is exactly the packet's
+     "self-hosted OFL grotesk ... for labels, headers, cells" role, so the
+     identity face is added to the FRONT of the existing token rather than a
+     new one forked beside it — one edit reaches every template that already
+     reads --mono (46 call sites). --serif is untouched: prose keeps Charter. */
+  --mono: 'Space Grotesk', ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono",
+    "Roboto Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
 
   --step--1: 0.8125rem;
   --step-0: 1rem;
@@ -215,6 +258,11 @@ body {
   font-size: var(--step-0);
   line-height: 1.55;
   text-rendering: optimizeLegibility;
+  /* CP-UI-001-2 design_moves.type: "tabular numerals everywhere" — one
+     property at the root so every price, date, count and board cell aligns
+     on its digits, in both faces (Space Grotesk and Charter both support
+     tnum). */
+  font-variant-numeric: tabular-nums;
 }
 
 h1, h2, h3, h4 {
@@ -1500,31 +1548,53 @@ body:has(#catalog-table-wrap) .site-footer {
     display: block;
     max-width: none;
     white-space: normal;
-    padding: 0 0 0.4rem;
+    padding: 0 0 0.25rem;
     font-size: var(--step-0);
   }
 
-  #catalog-table tbody td {
+  /* CP-UI-001-2 (R-D): the six-value stacked record (one line per field) is
+     replaced with a SECOND, single flowing line — "each row two dense lines:
+     name / in·out·context·status, read date on line two" (packet). Provider
+     is dropped at this width (it is the sort's own primary key, already
+     grouping the rows it belongs to, and the packet names only in/out/
+     context/status/read for line two); the remaining five cells become
+     inline-flex items on one `tr`, wrapping only if a row's own values are
+     unusually long — matching R7's iter-07(b) precedent for /tools'
+     `.listing-line` run-on row, the nearest existing shape this reuses. */
+  #catalog-table tbody tr {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: 0.75rem;
-    padding: 0.15rem 0;
-    white-space: normal;
-    text-align: right;
+    column-gap: 0.6rem;
+    row-gap: 0.2rem;
   }
 
-  #catalog-table tbody td[data-numeric] {
-    text-align: right;
+  #catalog-table tbody th {
+    flex: 1 0 100%;
+  }
+
+  #catalog-table tbody td[data-label="Provider"] {
+    display: none;
+  }
+
+  #catalog-table tbody td {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3ch;
+    padding: 0;
+    white-space: normal;
+    font-size: var(--step--1);
+  }
+
+  #catalog-table tbody td:not(:last-of-type)::after {
+    content: "·";
+    color: var(--rule-strong);
+    margin-left: 0.6ch;
   }
 
   #catalog-table tbody td::before {
     content: attr(data-label);
     color: var(--muted);
-    font-size: var(--step--1);
-    letter-spacing: 0.04em;
-    text-align: left;
-    padding-right: 0.5rem;
   }
 }
 
@@ -1698,104 +1768,25 @@ body:has(#catalog-table-wrap) .site-footer {
      I40 (iter-09): `.entry-facts` is checked as a DESCENDANT (`:has(...)`
    with no `>`) rather than a direct child, because I40's own fix (below)
    nests it one level deeper, inside `.entry-side`. */
-article:has(> .prose):has(.entry-facts) {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-article:has(> .prose):has(.entry-facts) > .entry-head {
-  order: 0;
-}
-article:has(> .prose):has(.entry-facts) > .notice {
-  order: 1;
-}
-article:has(> .prose):has(.entry-facts) > .prose {
-  order: 3;
-}
-/* I40 (iter-09, R13's iter-07(a) addendum — the dead-track floor, widened
-   past .home-grid to this template, the site's most numerous surface at 495
-   pages). FACTS used to be the freed track's ONLY occupant, filling as
-   little as 17-23% of prose's height on long entries (measured live on
-   /wiki/concept/ai-winter and /wiki/event/attention-is-all-you-need) and
-   then stopping — 1493px of empty column beside a page of running prose,
-   with .rails (REFERENCED HERE / APPEARS IN) stacked full-width BELOW the
-   whole two-column block instead, in the narrow track it happened to
-   inherit from before this grid existed.
-     TIMELINE and RAILS now share column 2 with FACTS — the identical move
-   I9 already made once on the home page: relocate content that already
-   exists into the track a shorter sibling leaves open, no new copy, a
-   position change only. Doing that with CSS placement alone (each of the
-   three still a separate `<article>` child, each given `grid-column: 2`)
-   was tried FIRST and measured WRONG: CSS Grid auto-placement puts FACTS
-   into the same implicit ROW as PROSE (both unspecified-row, order 2/3), and
-   that row's height is set by its TALLEST occupant — PROSE, at ~1945px on
-   ai-winter — so RAILS, needing its own row because FACTS already holds
-   row 2's column-2 cell, lands in row 3, which cannot begin until row 2's
-   FULL 1945px is spent. Measured on the shipped attempt: FACTS 226.9-678.8,
-   RAILS 2203.9-2360.9 — an UNCHANGED 1493px gap, just narrowed from
-   1152px wide to 524px wide rather than closed. A grid row's height is
-   driven by whichever single item is CONFINED to it; the fix has to put
-   FACTS+TIMELINE+RAILS in as ONE item, not three, so their combined height
-   — not PROSE's — sets column 2's own extent. `.entry-side` (below) is that
-   one item: a wrapper `renderEntryPage` now renders around all three
-   (lib/render/entry.mjs), matching `.home-side`'s own role on the home
-   page — one aside box holding several relocated blocks, not several boxes
-   independently placed. DOM order inside it is unchanged (facts, timeline,
-   rails); a screen reader encounters the identical document either way. */
-.entry-side {
-  display: contents;
-}
-.entry-side > .entry-facts {
-  order: 2;
-}
-.entry-side > .entry-timeline {
-  order: 4;
-}
-.entry-side > .rails {
-  order: 5;
-}
-
-@media (min-width: 60rem) {
-  article:has(> .prose):has(.entry-facts) {
-    grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
-    column-gap: var(--gap);
-    align-items: start;
-  }
-  /* .entry-head spans both columns, so it must fall back to flush-left —
-     without this it would independently centre (see the general
-     measure-track centring rule below) within the FULL grid span, which is
-     wider than prose's own column, and drift out of alignment with it. */
-  article:has(> .prose):has(.entry-facts) > .entry-head {
-    grid-column: 1 / -1;
-    margin-inline: 0;
-  }
-  /* `order` is swapped back to DOM order for auto-placement's purposes only
-     (it still controls layout, not just paint, in a grid): prose has to be
-     PLACED before .entry-side so .entry-side's explicit column-2 lands in
-     the same row prose just claimed in column 1, rather than a row of its
-     own. */
-  article:has(> .prose):has(.entry-facts) > .prose {
-    grid-column: 1;
-    order: 2;
-  }
-  /* I40 (iter-09): `.entry-side` becomes a real box here — no longer
-     `display: contents` — so it is ONE grid item, sized to its own combined
-     content (FACTS + TIMELINE + RAILS, stacked in ordinary block flow,
-     their individual `order` values above having no effect outside a
-     flex/grid formatting context) rather than three items independently
-     auto-placed into separate implicit rows. */
-  article:has(> .prose):has(.entry-facts) > .entry-side {
-    display: block;
-    grid-column: 2;
-    order: 3;
-  }
-  /* .section's ambient margin-top (2rem) is for stacked flow; here FACTS is
-     .entry-side's first child, sitting beside prose rather than below it,
-     so it must align to prose's own top edge instead. */
-  article:has(> .prose):has(.entry-facts) > .entry-side > .entry-facts {
-    margin-top: 0;
-  }
-}
+/* CP-UI-001-2 (F-K12, RULES.md R13 round-2 addendum) — RETIRED, iter beyond
+   iter-09. The two-column grid that used to place FACTS (then FACTS+TIMELINE
+   +RAILS via `.entry-side`) beside PROSE at >=60rem is removed outright: it
+   never reached R13's iter-07(a) 60% dead-track floor on either sampled
+   entry (23-40%, S18's own iter-09 record) and the one remaining lever
+   (relocating TIMELINE and RAILS into the same column) was already spent
+   landing that number. A template that cannot fill its own second column
+   does not need a smaller second column, it needs no second column: FACTS,
+   TIMELINE and RAILS now render as ordinary single-column blocks in DOM
+   order, immediately after PROSE — the same order they were always in
+   (lib/render/entry.mjs). The old `order: 2` on FACTS below the 60rem
+   breakpoint (moving it ahead of PROSE for the "answer first" reading, S14)
+   is also removed: F-K12 (2026-09-05, KP1) overrules that ordering for any
+   entry with a prose body — "the reader must meet the subject ... BEFORE any
+   facts table" — so paint order now matches DOM order at every width, not
+   only above 60rem. `.entry-facts` keeps `max-width: var(--measure)` (below)
+   so it shares prose's own right edge rather than spanning the bare shell —
+   the packet's "board fragment spanning the full measure". S18's wiki-entry
+   clause is retired in tools/ui-invariants.mjs and RULES.md accordingly. */
 
 .entry-head {
   /* S5 (iter-01): this rule used to span the full shell while the prose
@@ -2583,4 +2574,71 @@ article:has(> .prose):has(.entry-facts) > .prose {
   .searchbox {
     flex: 1;
   }
+}
+
+/* ── the players board (CP-UI-001-2, /frontier) ─────────────────────────
+ * `.board-table` carries `.data-table` too (frontier.mjs), so the sticky
+ * head, row hover and link treatment it already has are inherited rather
+ * than redeclared — R13's round-1 addendum (K18a): the board is a declared
+ * RAIL track (R8/R13), a real <table>, not `.browse-row`, so R7's list-row
+ * cap does not apply to it (RULES.md R7's own round-1 addendum). R2 is
+ * satisfied by the existing `.table-wrap{overflow-x:auto}` the board reuses:
+ * the board scrolls inside its own container below 60rem, the page does
+ * not. */
+.board-lead {
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+/* F-hier-1/F-hier-4 (JV-hier): an empty cell must never outweigh a filled
+   one, and the board needs ONE column set heavier than the rest as a
+   first-read entry point. `.board-lead` (organisation, current model) is
+   the only board content at 700 weight; every hatched cell below is muted
+   TEXT with a light diagonal behind it, never a filled pattern and never
+   heavier than a value cell. */
+.board-hatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--rule) 0,
+    var(--rule) 1px,
+    transparent 1px,
+    transparent 7px
+  );
+  background-color: var(--panel);
+}
+
+.hatch-text {
+  color: var(--muted);
+  font-size: var(--step--1);
+  font-style: italic;
+}
+
+.frontier-door {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.frontier-door-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: var(--step--1);
+}
+
+.frontier-door-org {
+  font-weight: 700;
+}
+
+.frontier-door-model.absent {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.frontier-capabilities .badge {
+  margin-right: 0.4ch;
 }

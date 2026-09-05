@@ -743,6 +743,30 @@ Enforced by `tools/ui-invariants.mjs` id `S9`.
 > at `.tools-index` rather than the individual `.listings` since that is where the real
 > tracks now live. Enforced by `tools/ui-invariants.mjs` id `S19`.
 
+> *round-2 addendum (CP-UI-001-2 implementer, F-K12, 2026-09-05) — the wiki
+> entry template's two-column grid is RETIRED, not amended.* iter-09's own
+> two-column split (`.prose` / `.entry-side`, holding FACTS+TIMELINE+RAILS)
+> never reached the 60% dead-track floor on either sampled entry (32-40%,
+> S18's own honest record) after its one remaining lever — relocating
+> TIMELINE and RAILS beside FACTS — was already spent. Rather than continue
+> to under-answer a floor with no further lever, the second column is
+> removed: FACTS, TIMELINE and RAILS render single-column, in ordinary block
+> flow, immediately after PROSE (`lib/render/entry.mjs`, `app/globals.css`).
+> This also closes a standing conflict with F-K12 (KP1, 2026-09-05: "the
+> reader must meet the subject ... BEFORE any facts table") that the
+> two-column grid's own mobile `order` rule had never actually honoured — it
+> moved FACTS ahead of PROSE in paint order below the 60rem breakpoint, the
+> old loop's "answer first" ordering F-K12 explicitly overrules. `S13`'s
+> wiki-entry clause (was the freed track filled?) and `S18`'s wiki-entry
+> clause (did it reach 60%?) are both retired outright — there is no track
+> left to ask either question of. `S14` is repurposed rather than retired: it
+> now asserts the property F-K12 actually names — PROSE's own rendered
+> bottom edge sits above FACTS's own top edge, at every viewport — falsified
+> both ways (`--break` forcing FACTS back ahead of PROSE in paint order, and
+> `--break ".entry-facts{margin-top:-4000px}"` pulling FACTS above PROSE by a
+> different mechanism; both fire). Enforced by `tools/ui-invariants.mjs` ids
+> `S13`, `S14`, `S18`.
+>
 > *round-1 addendum (keeper, 2026-09-05, K18a).* A template MAY declare ONE additional RAIL
 > track alongside its two content tracks: a non-content track (date spine, provenance gutter,
 > or the board's own fixed column tokens) that carries dates, marks or labels but never the

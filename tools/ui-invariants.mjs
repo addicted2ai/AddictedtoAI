@@ -858,15 +858,20 @@ const INVARIANTS = [
   },
   {
     id: 'S13', rule: 'R13',
-    intent: "on the measure-track prose templates I16 evidenced beyond /wiki — /data's four sections and /colophon's .prose/.listing-facts — the block stays flush against the page's ONE shared left rail (.page-title's own left edge) rather than being centred (RETIRED iter-06, I33 — see RULES.md R13's iter-06 addendum: centring split the width but broke the rail every sibling block on the template shares); on the wiki entry template, the freed track is not merely balanced but actually FILLED — .entry-facts reaches close to the shell's own inner edge, confirming FACTS moved into the track prose was not using rather than the track being left empty either way",
+    intent: "on the measure-track prose templates I16 evidenced beyond /wiki — /data's four sections and /colophon's .prose/.listing-facts — the block stays flush against the page's ONE shared left rail (.page-title's own left edge) rather than being centred (RETIRED iter-06, I33 — see RULES.md R13's iter-06 addendum: centring split the width but broke the rail every sibling block on the template shares). CP-UI-001-2 (F-K12, round-2 addendum): the wiki-entry-template clause that used to sit here (was FACTS's freed second-column track actually FILLED?) is RETIRED, not merely amended — the wiki entry template no longer declares a two-column grid at all (see RULES.md R13's round-2 addendum and S18 below for the same retirement, and S14 below for its replacement), so the question this clause asked no longer has a track to be asked about.",
     independent: "getBoundingClientRect().left of each measured block compared against .page-title's (the H1's) own getBoundingClientRect().left, both read live — not a CSS margin value, and not the block's own containing <article> (which is what the retired centred check compared against, and which cannot tell two siblings with different fit-content widths apart) — plus .entry-facts's own right edge against the shell's inner right edge for the unrelated filled-track clause",
     falsifier: {
       brokenBy: 'THREE breaks, one per clause, via `--only S13 --break "<css>"`, iter-06 (the /data and /colophon clauses below were rewritten this round from centred-in-container to shared-rail; re-verified against the new logic). (1) `.section:has(> .browse), .section:has(> .footer-links) { margin-inline: auto !important; }` — reintroduces /data\'s retired centring, which now pulls each section off the shared rail by a different amount (each section\'s own fit-content width differs). (2) `article:has(> .listing-facts):not(:has(> .entry-head)) > .prose, article:has(> .listing-facts):not(:has(> .entry-head)) > .listing-facts { margin-inline: auto !important; }` — same, on /colophon. (3) `@media (min-width: 60rem) { article:has(> .prose):has(> .entry-facts) > .entry-facts { grid-column: 1 !important; } }` — forces FACTS back into column 1 (stacked below prose, as before the restructure) instead of the freed column 2; unaffected by this round\'s change, re-run to confirm it still fires.',
       observed: '(1) check failed "/data @1440x900: /data \\"Everything, as one file\\" block\'s left edge (617.4px) does not match the page\'s shared rail at .page-title\'s left edge (144.0px) — diff 473.4px" — the exact 617.4px I33 measured as the first of /data\'s four ragged left edges. (2) check failed "/colophon @1440x900: /colophon .prose\'s left edge (416.0px) does not match the page\'s shared rail at .page-title\'s left edge (144.0px) — diff 272.0px" — the exact 144/416 figures I33 opened with. (3) check failed "/wiki/concept/ai-winter @1440x900: .entry-facts\'s right edge (752.0px) falls well short of the shell\'s inner edge (1296.0px) — the freed track beside prose is not actually occupied". All three restored; rebuilt tree (full gate) passes S13 at both declared viewports.',
       brokenByOpposite: '`--only S13 --break ".section:has(> .browse), .section:has(> .footer-links) { margin-left: -120px !important; }"` — the OPPOSITE direction of misalignment: instead of drifting right of the rail (centring, or any positive offset), the section is pushed LEFT of it. Confirms the check bounds drift in EITHER direction from the rail, not merely "at least as far right as the rail" (which a one-sided `left >= h1Left` formula would have let through).',
       observedOpposite: 'check failed "/data @1440x900: /data \\"Everything, as one file\\" block\'s left edge (24.0px) does not match the page\'s shared rail at .page-title\'s left edge (144.0px) — diff 120.0px". Restored; rebuilt tree (full gate) passes S13 at both declared viewports.',
+      // CP-UI-001-2: the third clause this falsifier used to cover (break 3,
+      // `.entry-facts{grid-column:1}`) is gone along with the clause itself —
+      // there is no more `grid-column` on a retired grid to force. The /data
+      // and /colophon clauses above are unaffected by this round's change and
+      // were re-run to confirm they still fire (both do).
     },
-    kind: 'dom', routes: ['/data', '/colophon', '/wiki/concept/ai-winter'], viewports: [[1440, 900], [390, 844]],
+    kind: 'dom', routes: ['/data', '/colophon'], viewports: [[1440, 900], [390, 844]],
     check: async ({ page, route }) => {
       if (route === '/data') {
         const r = await page.evaluate(() => {
@@ -918,33 +923,18 @@ const INVARIANTS = [
         return true;
       }
 
-      // /wiki/concept/ai-winter: the freed track must actually be FILLED by
-      // FACTS at the two-column breakpoint, not merely present-but-empty.
-      const r = await page.evaluate(() => {
-        const facts = document.querySelector('.entry-facts');
-        const shell = document.querySelector('main.shell');
-        if (!facts || !shell) return { error: 'missing .entry-facts or main.shell' };
-        const fr = facts.getBoundingClientRect();
-        const sr = shell.getBoundingClientRect();
-        return { factsRight: fr.right, shellInnerRight: sr.right - 32, innerWidth: window.innerWidth };
-      });
-      if (r.error) return r.error;
-      if (r.innerWidth < 960) return true; // below the two-column breakpoint; nothing to fill yet
-      if (r.factsRight < r.shellInnerRight - 40) {
-        return `/wiki/concept/ai-winter: .entry-facts's right edge (${r.factsRight.toFixed(1)}px) falls well short of the shell's inner edge (${r.shellInnerRight.toFixed(1)}px) — the freed track beside prose is not actually occupied`;
-      }
       return true;
     },
   },
   {
     id: 'S14', rule: 'R13',
-    intent: "the wiki entry restructure (I5) preserves the reader's ability to reach the FACTS block without scrolling: .entry-facts's top edge falls within the first viewport at BOTH 1440x900 and 390x844 on a wiki entry with a long prose body — the intent-preservation assertion IMPLEMENT.md requires for any restructure that changes grid topology or paint order",
-    independent: "getBoundingClientRect().top of .entry-facts read live at each declared viewport — not a CSS value, not the DOM order (which is unchanged; only paint order/grid placement move) — compared against window.innerHeight",
+    intent: "RETIRED AND REPLACED (CP-UI-001-2, F-K12, round-2 addendum). The old S14 asserted the OPPOSITE of what F-K12 now requires: it wanted FACTS reachable inside the first viewport, which the pre-round shipped tree achieved by placing FACTS ahead of PROSE in PAINT order below the 60rem breakpoint (an 'answer first' reflow — RULES.md's own S14 history, tracing to the old loop's S14 rule that F-K12 explicitly overrules: 'the reader must meet the subject ... BEFORE any facts table'). That paint-order flip is removed (globals.css, lib/render/entry.mjs); this id now asserts the property F-K12 actually names: PROSE's own bottom edge sits above FACTS's own top edge — prose is read, in full, before a reader reaches the facts table — at every declared viewport, on a wiki entry with a prose body. Being below the first viewport is no longer a defect this rule cares about; being ABOVE prose is.",
+    independent: "getBoundingClientRect().top of .entry-facts and .getBoundingClientRect().bottom of .prose, read live at each declared viewport, on an entry that has both",
     falsifier: {
-      brokenBy: '`--only S14 --break "article:has(> .prose):has(> .entry-facts) { display: block !important; }"` — disables the whole restructure (grid, order, column placement all fall away), reverting to plain block flow in the original DOM order: identity, prose, FACTS, timeline, rails — the exact pre-fix shape this item described.',
-      observed: 'check failed "/wiki/concept/ai-winter @1440x900: FACTS top edge (2173.9px) falls below the first viewport (900px) even though the entry\'s own prose (1945px) is long enough that stacking alone would have buried it" — matches the item\'s own opening measurement ("begins past y=2100 of a 2974px page") almost exactly. The harness stops at the first failing viewport, so 390x844 was not separately exercised by this break; it is exercised by every non-broken run, including the one recorded in this iteration\'s gate log, where both declared viewports pass. Restored; rebuilt tree passes S14 at both.',
-      brokenByOpposite: 'iter-06: the bound was ONE-SIDED — only "too far down" (buried below the fold) failed, with no floor against "too far up" (pushed above y=0, equally unreachable at rest). `--only S14 --break ".entry-facts { position: relative !important; top: -9999px !important; }"` reported ok. Fixed by adding a symmetric floor: `factsTop < -0.5` now fails too.',
-      observedOpposite: 'check failed "/wiki/concept/ai-winter @1440x900: FACTS top edge (-9770.1px) is ABOVE the viewport (negative) — not reachable at rest either, the opposite excess of being buried below the fold". Re-verified the original below-the-fold direction still fires unchanged ("FACTS top edge (2173.9px) falls below the first viewport (900px)..."). Restored; rebuilt tree (full gate) passes S14 at both declared viewports.',
+      brokenBy: '`--only S14 --break ".entry-facts{order:-1}"` on `article:has(> .prose):has(.entry-facts)` — the article is no longer `display:grid` so a bare `order` on a block child has no effect by itself; the real reintroduction of the retired flip is `--break "article:has(> .prose):has(.entry-facts){display:grid} article:has(> .prose):has(.entry-facts) > .entry-facts{order:-1}"`, which puts FACTS ahead of PROSE in paint order exactly as the pre-round CSS did below 60rem.',
+      observed: "check failed \"/wiki/concept/ai-winter @1440x900: .entry-facts's top edge (103.8px) sits ABOVE .prose's own bottom edge (2583.5px) — a reader reaches the facts table before finishing the subject's own lede/body\" — the exact F-K12 violation this id now exists to catch.",
+      brokenByOpposite: "the unbroken, shipped tree IS the opposite state (facts after prose) and is what PASSES; a bound with only one state to violate would be vacuous, so the opposite direction was exercised by pushing FACTS further still: `--break \".entry-facts{margin-top:-4000px !important}\"`, pulling FACTS up so its top edge again precedes .prose's bottom edge without touching DOM/paint order at all.",
+      observedOpposite: "check failed \"/wiki/concept/ai-winter @1440x900: .entry-facts's top edge (-1826.1px) sits ABOVE .prose's own bottom edge (2173.9px)\" — same message, reached by a different mechanism, confirming the check reads live geometry rather than paint order alone. Restored; rebuilt tree passes S14 at both declared viewports.",
     },
     kind: 'dom', routes: ['/wiki/concept/ai-winter'], viewports: [[1440, 900], [390, 844]],
     check: async ({ page }) => {
@@ -952,20 +942,11 @@ const INVARIANTS = [
         const facts = document.querySelector('.entry-facts');
         const prose = document.querySelector('.prose');
         if (!facts || !prose) return { error: 'missing .entry-facts or .prose on this entry' };
-        return { factsTop: facts.getBoundingClientRect().top, proseHeight: prose.getBoundingClientRect().height, innerHeight: window.innerHeight };
+        return { factsTop: facts.getBoundingClientRect().top, proseBottom: prose.getBoundingClientRect().bottom };
       });
       if (r.error) return r.error;
-      if (r.proseHeight < r.innerHeight) {
-        return `this entry's prose (${r.proseHeight.toFixed(0)}px) is shorter than the viewport (${r.innerHeight}px) — not a fixture that tests burying FACTS below the fold; pick a longer entry`;
-      }
-      // iter-06: this was ONE-SIDED — only "too far down" failed. FACTS pushed
-      // ABOVE the viewport (negative top, scrolled/positioned past y=0) is not
-      // "reachable without scrolling" either — it is exactly as unreachable at
-      // rest as being buried below the fold — but the check had no floor;
-      // proven missing with `--only S14 --break ".entry-facts { position: relative
-      // !important; top: -9999px !important; }"`, which reported ok.
-      if (r.factsTop < -0.5) {
-        return `FACTS top edge (${r.factsTop.toFixed(1)}px) is ABOVE the viewport (negative) — not reachable at rest either, the opposite excess of being buried below the fold`;
+      if (r.factsTop < r.proseBottom - 0.5) {
+        return `.entry-facts's top edge (${r.factsTop.toFixed(1)}px) sits ABOVE .prose's own bottom edge (${r.proseBottom.toFixed(1)}px) — a reader reaches the facts table before finishing the subject's own lede/body`;
       }
       if (r.factsTop > r.innerHeight) {
         return `FACTS top edge (${r.factsTop.toFixed(1)}px) falls below the first viewport (${r.innerHeight}px) even though the entry's own prose (${r.proseHeight.toFixed(0)}px) is long enough that stacking alone would have buried it`;
@@ -1343,7 +1324,7 @@ const INVARIANTS = [
   },
   {
     id: 'S18', rule: 'R13',
-    intent: "R13's iter-07(a) dead-track floor's FULL domain is every template that declares a two-column content grid, not only the home page it was first written against. On the home page at 1440x900, the SHORTER of .home-side / .rail-changes reaches at least 60% of the TALLER one's own height. On the wiki entry template (I40, iter-09 — the same floor extended to the site's most numerous surface, 495 pages, evidenced by /wiki/concept/ai-winter and /wiki/event/attention-is-all-you-need), the SHORTER of .prose / .entry-side (the FACTS+TIMELINE+RAILS stack — I40's own relocation, see globals.css and lib/render/entry.mjs) reaches the same 60% floor. Both stated symmetrically so neither is vacuous against the mirror excess (a rail or side-stack padded artificially tall would trivially satisfy a one-directional formula regardless of how short the OTHER column then reads by comparison). HONEST STATUS: home passes (87.7%); the wiki entry clause is left FAILING as of this round — the relocation raises ai-winter's ratio from ~23% (FACTS alone) to ~33%, real progress, short of the floor — see RULES.md R13's iter-09 addendum for why the remaining lever (a content-ratio single-column fallback) was not attempted, and the implementer report for the measured numbers on both sampled entries.",
+    intent: "R13's iter-07(a) dead-track floor. On the home page at 1440x900, the SHORTER of .home-side / .rail-changes reaches at least 60% of the TALLER one's own height. CP-UI-001-2 (round-2 addendum): the wiki-entry clause that lived here (I40, iter-09 — .prose vs .entry-side, honestly left FAILING at 32-40%) is RETIRED, not raised or reworked: the wiki entry template no longer declares a two-column grid at all (globals.css, lib/render/entry.mjs — FACTS/TIMELINE/RAILS render single-column, in order, after PROSE), so there is no second track for a 60% floor to be asked of. See RULES.md R13's round-2 addendum and S13/S14 above for the same retirement on this template.",
     independent: "getBoundingClientRect().height of .home-side and .rail-changes on /, and of .prose and .entry-side on the wiki entry — read live from each rendered page, not any CSS value and not either element's own content count",
     falsifier: {
       brokenBy: "reverted app/page.tsx's I9 fix — removed the relocated 'Everything here' <section> from inside <aside className=\"home-side\"> and restored it to its original position below .home-grid — then rebuilt (`npm run build`). This is a JSX/template change: --break's runtime CSS injection cannot move an element between two different parents, so unlike the CSS-only checks in this registry a real rebuild is the correct falsification mechanism here, not --break (see IMPLEMENT.md: 'use a real rebuild only where the property cannot be violated from CSS').",
@@ -1365,84 +1346,43 @@ const INVARIANTS = [
       // since that lever is now fully spent: .home-side already holds every
       // section this template has to offer it.
       //
-      // I40 (iter-09): the wiki-entry clause below is CURRENTLY FAILING on
-      // the real, unbroken build — no injection needed to observe it fire;
-      // the shipped tree itself violates the floor (see the implementer
-      // report for the measured ratios on both sampled entries). Two
-      // DELIBERATE breaks still exercise the clause's own two directions on
-      // top of that: `--only S18 --break ".entry-side{min-height:6000px
-      // !important}"` (PROSE becomes the short side — the mirror excess)
-      // and `--break ".entry-side{min-height:1200px !important}"` (clears
-      // the floor, confirming the clause is not vacuously always-red).
-      // Observed: min-height:6000px — check failed "/wiki/concept/ai-winter
-      // .prose (1945.1px) reaches only 32.4% of .entry-side's own height
-      // (6000.0px)" — the opposite-side excess, confirmed live.
-      // min-height:1200px — check PASSED ("S18 headroom (wiki entry):
-      // .entry-side at 61.7% of .prose (floor 60%) — .prose could grow
-      // 54.9px more before the floor is crossed"), confirming the clause is
-      // satisfiable and not always-red by construction. Both restored.
+      // CP-UI-001-2 (round-2 addendum): the wiki-entry clause that used to be
+      // exercised here is RETIRED along with the two-column grid itself (see
+      // S13/S14 above and RULES.md R13's round-2 addendum) — there is no
+      // `.entry-side` left to break.
     },
-    kind: 'dom', routes: ['/', '/wiki/concept/ai-winter'], viewports: [[1440, 900]],
+    kind: 'dom', routes: ['/'], viewports: [[1440, 900]],
     // Home-only for the FIRST clause: .home-grid's two-column split exists
     // solely at the >=60rem breakpoint (see globals.css); below it both
     // stack full-width in one column and this ratio is undefined (nothing
     // to compare side-by-side), so 390x844 is not a second viewport either
     // clause has an opinion about — the wiki-entry clause below has the
     // identical reasoning for its own >=60rem breakpoint.
-    check: async ({ page, route }) => {
-      if (route === '/') {
-        const r = await page.evaluate(() => {
-          const side = document.querySelector('.home-side');
-          const rail = document.querySelector('.rail-changes');
-          if (!side || !rail) return { error: 'missing .home-side or .rail-changes on /' };
-          return { sideH: side.getBoundingClientRect().height, railH: rail.getBoundingClientRect().height };
-        });
-        if (r.error) return r.error;
-        const [shortLabel, shortH, tallLabel, tallH] = r.sideH <= r.railH
-          ? ['.home-side', r.sideH, '.rail-changes', r.railH]
-          : ['.rail-changes', r.railH, '.home-side', r.sideH];
-        const ratio = shortH / tallH;
-        if (ratio < 0.6 - 0.001) {
-          const gap = tallH - shortH;
-          return `${shortLabel} (${shortH.toFixed(1)}px) reaches only ${(ratio * 100).toFixed(1)}% of ${tallLabel}'s own height (${tallH.toFixed(1)}px) — a column held open beside nothing for the remaining ${gap.toFixed(1)}px`;
-        }
-        // I38 (iter-08, R13's iter-07(a)): the 60% floor is checked against
-        // TODAY's feed (data/changes.jsonl, which the build regenerates daily —
-        // not held to any content bound of its own). Print how much the taller
-        // side could still grow before the ratio crosses the floor, on every
-        // PASS, rather than leave a silent margin only visible by hand-deriving
-        // it from the two heights in a failure message nobody sees while it
-        // passes.
-        const growthHeadroomPx = shortH / 0.6 - tallH;
-        console.log(`          S18 headroom (/): ${shortLabel} at ${(ratio * 100).toFixed(1)}% of ${tallLabel} ` +
-          `(floor 60%) — ${tallLabel} could grow ${growthHeadroomPx.toFixed(1)}px more before the floor is crossed`);
-        return true;
-      }
-
-      // I40 (iter-09): the wiki entry template's own two-column split —
-      // .prose vs .entry-side, the FACTS+TIMELINE+RAILS stack I40's own fix
-      // relocated into one wrapper (see globals.css/lib/render/entry.mjs).
-      // .entry-side is a real block box at this breakpoint (not `display:
-      // contents`, which only applies below 60rem), so its own rendered
-      // height already IS the combined stack's height — no need to sum its
-      // children separately.
+    check: async ({ page }) => {
       const r = await page.evaluate(() => {
-        const prose = document.querySelector('.prose');
-        const side = document.querySelector('.entry-side');
-        if (!prose || !side) return { error: 'missing .prose or .entry-side on this entry' };
-        return { proseH: prose.getBoundingClientRect().height, sideH: side.getBoundingClientRect().height };
+        const side = document.querySelector('.home-side');
+        const rail = document.querySelector('.rail-changes');
+        if (!side || !rail) return { error: 'missing .home-side or .rail-changes on /' };
+        return { sideH: side.getBoundingClientRect().height, railH: rail.getBoundingClientRect().height };
       });
       if (r.error) return r.error;
-      const [shortLabel, shortH, tallLabel, tallH] = r.sideH <= r.proseH
-        ? ['.entry-side', r.sideH, '.prose', r.proseH]
-        : ['.prose', r.proseH, '.entry-side', r.sideH];
+      const [shortLabel, shortH, tallLabel, tallH] = r.sideH <= r.railH
+        ? ['.home-side', r.sideH, '.rail-changes', r.railH]
+        : ['.rail-changes', r.railH, '.home-side', r.sideH];
       const ratio = shortH / tallH;
       if (ratio < 0.6 - 0.001) {
         const gap = tallH - shortH;
         return `${shortLabel} (${shortH.toFixed(1)}px) reaches only ${(ratio * 100).toFixed(1)}% of ${tallLabel}'s own height (${tallH.toFixed(1)}px) — a column held open beside nothing for the remaining ${gap.toFixed(1)}px`;
       }
+      // I38 (iter-08, R13's iter-07(a)): the 60% floor is checked against
+      // TODAY's feed (data/changes.jsonl, which the build regenerates daily —
+      // not held to any content bound of its own). Print how much the taller
+      // side could still grow before the ratio crosses the floor, on every
+      // PASS, rather than leave a silent margin only visible by hand-deriving
+      // it from the two heights in a failure message nobody sees while it
+      // passes.
       const growthHeadroomPx = shortH / 0.6 - tallH;
-      console.log(`          S18 headroom (wiki entry): ${shortLabel} at ${(ratio * 100).toFixed(1)}% of ${tallLabel} ` +
+      console.log(`          S18 headroom (/): ${shortLabel} at ${(ratio * 100).toFixed(1)}% of ${tallLabel} ` +
         `(floor 60%) — ${tallLabel} could grow ${growthHeadroomPx.toFixed(1)}px more before the floor is crossed`);
       return true;
     },
