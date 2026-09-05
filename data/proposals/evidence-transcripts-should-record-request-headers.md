@@ -32,6 +32,8 @@ evidence: >
   returned HTTP 200 and 376,069 bytes. The four bytes of provenance that would
   have made the original note checkable cost one line to emit and, absent, cost
   a review finding, a queue item and a whole repair job.
+proposed_by_job: j-20260904-49
+proposed_by_type: repair
 ---
 
 The corpus already holds the rule this proposal mechanises: *measure, don't
