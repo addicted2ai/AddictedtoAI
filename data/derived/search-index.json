@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 663,
+  "count": 662,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -6159,19 +6159,6 @@
         "MSL",
         "Meta AI",
         "Meta"
-      ],
-      "b": false
-    },
-    {
-      "u": "/wiki/org/minimax",
-      "t": "MiniMax",
-      "k": "entry",
-      "d": "org",
-      "s": "active",
-      "i": "org/minimax",
-      "a": [
-        "MiniMax Group Inc.",
-        "稀宇科技"
       ],
       "b": false
     },
