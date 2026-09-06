@@ -11,11 +11,54 @@
  * Validation is strict and fails loudly: a malformed registry is a broken
  * engine, not something to work around. Adding or removing a source is an
  * ordinary data change, not an OpenSpec change.
+ *
+ * THE FILE HOLDS TWO ARRAYS AND THEY ARE NOT THE SAME KIND OF THING.
+ * `sources` is what the Pulse fetches, snapshots, diffs and derives from —
+ * every row of it can reach a rendered page. `radar` is the scout's inputs
+ * (DESK-ORDER-001 §5, keeper ruling K30): feeds a model job reads to decide
+ * where to look, which this engine never fetches and which never render. The
+ * separation is structural rather than a flag, for the reasons set out on
+ * `validateRadar` below — the short version is that `sortedSources` and
+ * `findSource` cannot see a radar row at all, so no ingest or derive path can
+ * arrive at one by iterating what it already iterates.
  */
 
 import { paths, readJson } from './core.mjs';
 
 const FORMATS = new Set(['json', 'rss']);
+
+/**
+ * A radar feed may also be an Atom document; a Pulse source may not, because
+ * nothing in `sources.mjs` parses one. The wider set is safe here precisely
+ * because nothing in this engine ever fetches a radar row.
+ */
+const RADAR_FORMATS = new Set(['json', 'rss', 'atom']);
+
+/**
+ * The fields that mean "the data layer carries this", refused on a radar row.
+ *
+ * Each one is a live switch somewhere: `material_fields` builds the catalog
+ * column, the entry-page fact and the changed-feed line (`derive.mjs`,
+ * `mint.mjs`, `diff.mjs`); `mints` writes `content/wiki/**`; `seeds` writes
+ * `data/changes.jsonl`; `rows_path`/`row_id_field`/`status_rule`/
+ * `schedule_rule` only mean anything to a snapshot this engine fetched. A
+ * radar row carrying one is not a radar row — it is a source pasted into the
+ * wrong array, and the paste is exactly how this separation would be lost.
+ */
+const INGEST_ONLY_FIELDS = [
+  'material_fields',
+  'declined_fields',
+  'mints',
+  'seeds',
+  'rows_path',
+  'row_id_field',
+  'status_rule',
+  'schedule_rule',
+  'fetch_every_days',
+  'expected_change_days',
+  'emit_on_remove',
+  'rolling_window',
+];
 
 /**
  * The only verdict a `declined_fields` entry may record.
@@ -324,6 +367,154 @@ function validateFrontier(raw) {
   }
 }
 
+/**
+ * Validate the `radar` array — the scout's inputs, which this engine never
+ * fetches (DESK-ORDER-001 §5, keeper ruling K30).
+ *
+ * ## Why radar rows are a SEPARATE ARRAY and not a flag on a source
+ *
+ * The question this answers is not "how do we mark a row as scout-only" but
+ * "what stops a scout-only row from reaching the data layer". Those have
+ * different answers, and only one of them survives the next person who edits
+ * `derive.mjs`.
+ *
+ * A flag on a `sources[]` row would have to be honoured, separately and
+ * correctly, by every consumer that iterates the array: `run.mjs`'s ingest
+ * loop, `derive.mjs`, `mint.mjs`, `diff.mjs` and `freshness.mjs` today, plus
+ * whatever is written next year. A consumer that forgets the flag does not
+ * fail — it quietly fetches, snapshots and publishes a radar feed, which is
+ * precisely the failure the pending `loop` delta names: *"Rendered directly
+ * they would saturate the surface immediately, which is the failure that made
+ * this a curated surface rather than a feed."*
+ *
+ * MEASURED, because "it would render" is a claim and not an inference:
+ * `derive.mjs` writes every `sources[]` row's `id`, `title`, `url`, `format`
+ * and snapshot dates into `data/derived/sources.json` **before** the
+ * `material_fields` check that skips catalog rows (`derive.mjs` line 90 — the
+ * `continue` is after the `sourceStates.push`). `lib/data-layer.mjs` loads
+ * that file and `lib/site.mjs` exposes it to every page as `sourceUrl(id)`.
+ * So `material_fields: []` — the nearest existing field, and what the
+ * non-catalog `llm-releases` row already uses — does NOT keep a row out of the
+ * rendered site. It only keeps it out of the catalog table. There is no
+ * existing field that means "do not ingest this".
+ *
+ * A separate array needs nobody to remember anything. `registry.sources` is
+ * the same array it was; every consumer of it gets exactly what it got before;
+ * and a radar row is unreachable from the ingest path because it is not in the
+ * path's input. Exclusion by construction, not exclusion by filter.
+ *
+ * The guards below close the one door that construction leaves open — a source
+ * pasted into `radar` (or the reverse) by someone copying the shape:
+ *
+ *   - a radar id may not collide with a source id, in either direction, so
+ *     `findSource` and a scout's lookup can never disagree about what a name
+ *     means;
+ *   - a radar row may not carry any `INGEST_ONLY_FIELDS` key, so a row that
+ *     wants a catalog column fails the registry loudly instead of sitting in
+ *     `radar` looking settled and doing nothing;
+ *   - every row and every feed under it carries a dated robots finding, a
+ *     dated terms finding and a `verified_on` — §5's "Each row records
+ *     robots/terms and a last-verified date as the registry requires";
+ *   - a feed marked `registered: false` must say why in
+ *     `not_registered_because`. A refusal is the deliverable when a site
+ *     forbids the read, and a refusal with no reason is an omission wearing a
+ *     label — the same rule `declined_fields` above enforces for a field.
+ *   - a row may not declare its own `url` as a `registered: false` feed. Three
+ *     of the four launch rows repeat their row url as a `feeds` entry, so that
+ *     shape is the one a future refusal will actually be written in: someone
+ *     flips the feed to `registered: false` when a publisher's terms turn.
+ *     Refusing the contradiction here is what keeps that edit from reading as
+ *     settled while the row url still offers the same URL.
+ */
+function validateRadar(raw, where) {
+  const radar = raw.radar;
+  if (radar === undefined || radar === null) return;
+  if (!Array.isArray(radar)) throw new Error(`${where}: "radar" must be an array`);
+
+  const sourceIds = new Set((raw.sources ?? []).map((s) => s?.id));
+  const seen = new Set();
+  for (const row of radar) {
+    const id = row?.id;
+    if (!id || typeof id !== 'string') throw new Error(`${where}: a "radar" row is missing a string "id"`);
+    const at = `${where}: radar feed "${id}"`;
+    if (seen.has(id)) throw new Error(`${at}: duplicate radar id`);
+    seen.add(id);
+    if (sourceIds.has(id)) {
+      throw new Error(
+        `${at}: also declared in "sources" — a feed is the Pulse's to ingest or the scout's to read, never both`,
+      );
+    }
+    if (!row.url || typeof row.url !== 'string') throw new Error(`${at}: missing "url"`);
+    if (!RADAR_FORMATS.has(row.format)) {
+      throw new Error(`${at}: "format" must be one of ${[...RADAR_FORMATS].join(', ')}`);
+    }
+    for (const field of INGEST_ONLY_FIELDS) {
+      if (row[field] !== undefined) {
+        throw new Error(
+          `${at}: carries "${field}", which only means something for a source the Pulse ingests — ` +
+            `a radar feed is an input to the scout and is never fetched, snapshotted, diffed or rendered`,
+        );
+      }
+    }
+    if (row.registered !== undefined && typeof row.registered !== 'boolean') {
+      throw new Error(`${at}: "registered" must be a boolean when present (absent means the row's own url is readable)`);
+    }
+    if (row.registered === false && (typeof row.not_registered_because !== 'string' || row.not_registered_because.trim() === '')) {
+      throw new Error(
+        `${at}: is not registered and says nothing in "not_registered_because" — an honest refusal names what forbade the read`,
+      );
+    }
+    validateRadarChecks(row, at);
+    if (row.feeds !== undefined) {
+      if (!Array.isArray(row.feeds)) throw new Error(`${at}: "feeds" must be an array`);
+      const feedUrls = new Set();
+      for (const feed of row.feeds) {
+        const url = feed?.url;
+        if (!url || typeof url !== 'string') throw new Error(`${at}: a "feeds" entry is missing a string "url"`);
+        if (feedUrls.has(url)) throw new Error(`${at}: "feeds" declares ${url} twice`);
+        feedUrls.add(url);
+        const fat = `${at}, feed ${url}`;
+        if (!RADAR_FORMATS.has(feed.format)) {
+          throw new Error(`${fat}: "format" must be one of ${[...RADAR_FORMATS].join(', ')}`);
+        }
+        if (typeof feed.registered !== 'boolean') {
+          throw new Error(`${fat}: needs a boolean "registered" — whether the scout may read this URL`);
+        }
+        if (feed.registered === false && (typeof feed.not_registered_because !== 'string' || feed.not_registered_because.trim() === '')) {
+          throw new Error(
+            `${fat}: is not registered and says nothing in "not_registered_because" — ` +
+              `an honest refusal names what forbade the read`,
+          );
+        }
+        validateRadarChecks(feed, fat);
+      }
+      // A row whose OWN url is one of its refused feeds is a contradiction, and
+      // the registry names it rather than resolving it in favour of reading.
+      // `radarReadableUrls` also filters this case, but a filter alone would
+      // leave the row saying two things and silently honouring one of them.
+      if (refusedFeedUrls(row).has(row.url)) {
+        throw new Error(
+          `${at}: its own url ${row.url} is declared as a "registered": false feed — ` +
+            `a row cannot both refuse a URL and offer it; refuse the row itself, or register the feed`,
+        );
+      }
+    }
+  }
+}
+
+/** The dated robots finding, the dated terms finding and the verified date. */
+function validateRadarChecks(row, at) {
+  if (!row.robots || !DATE.test(row.robots.checked_on ?? '') || !row.robots.result) {
+    throw new Error(`${at}: missing "robots" with a "checked_on" date (yyyy-mm-dd) and a "result"`);
+  }
+  if (!row.terms || !DATE.test(row.terms.read_on ?? '') || !row.terms.result) {
+    throw new Error(`${at}: missing "terms" with a "read_on" date (yyyy-mm-dd) and a "result"`);
+  }
+  if (!DATE.test(row.verified_on ?? '')) {
+    throw new Error(`${at}: needs a "verified_on" date (yyyy-mm-dd) — the last-verified date §5 requires`);
+  }
+}
+
 export function loadRegistry(root) {
   const p = paths(root);
   const raw = readJson(p.registry);
@@ -359,7 +550,52 @@ export function loadRegistry(root) {
     validateDeclinedFields(s, where);
   }
   validateFrontier(raw);
+  validateRadar(raw, `source registry ${p.registry}`);
   return raw;
+}
+
+/**
+ * The scout's radar feeds, in a stable order (DESK-ORDER-001 §5).
+ *
+ * This is the helper the scout calls. It is deliberately the ONLY way to reach
+ * these rows from code: they are absent from `sortedSources` and from
+ * `findSource`, so no ingest, derive, mint, diff or freshness path can arrive
+ * at one by iterating what it already iterates.
+ */
+export function radarFeeds(registry) {
+  return [...(registry?.radar ?? [])].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+}
+
+/**
+ * Every URL the scout is actually cleared to read, row order then feed order.
+ *
+ * A row's own `url` counts only when the row is not itself refused, and a
+ * `feeds` entry counts only when `registered` is true. A URL a site forbids is
+ * recorded in the registry as a dated refusal and never handed to a caller —
+ * which is the difference between recording a refusal and routing around it.
+ */
+export function radarReadableUrls(registry) {
+  const urls = [];
+  for (const row of radarFeeds(registry)) {
+    // A row's own url is very often ALSO declared as one of its own `feeds`
+    // entries — three of the four launch rows do exactly that. So the refusal
+    // has to be read off the feeds before the row url is emitted, or marking
+    // that feed `registered: false` would be silently ineffective and the
+    // refused URL would still reach the scout through the row.
+    const refused = refusedFeedUrls(row);
+    if (row.registered !== false && !refused.has(row.url)) urls.push(row.url);
+    for (const feed of row.feeds ?? []) {
+      if (feed.registered === true) urls.push(feed.url);
+    }
+  }
+  return [...new Set(urls)];
+}
+
+/** The urls this row's own `feeds` entries record as refused. */
+function refusedFeedUrls(row) {
+  return new Set(
+    (row?.feeds ?? []).filter((f) => f?.registered === false).map((f) => f?.url).filter((u) => typeof u === 'string'),
+  );
 }
 
 /** Sources in a stable order, so every derived file is order-independent. */
