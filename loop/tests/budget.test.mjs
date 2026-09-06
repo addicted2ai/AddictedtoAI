@@ -9,6 +9,8 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import { loadConfig, JOB_TOTAL_CAP_MULTIPLIER } from '../lib/config.mjs';
 import {
@@ -27,7 +29,7 @@ import {
 } from '../lib/budget.mjs';
 import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { readLedger } from '../lib/ledger.mjs';
-import { formatRefusals, selectJob } from '../lib/select.mjs';
+import { formatRefusals, gatherCandidates, selectJob } from '../lib/select.mjs';
 import { makeRepo, writeLedger, ledgerLine, hoursAgo, daysAgo, writeQueue } from './helpers.mjs';
 
 const NOW = new Date('2026-09-10T12:00:00.000Z');
@@ -493,6 +495,106 @@ test('C42 the arithmetic survives the selector, which is where a refusal is actu
   assert.match(refusal.denominator_origin, /observed rolling 30-day total/);
   assert.match(formatRefusals([refusal]).join('\n'), /500 model-minutes of new_writing/);
   ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// THE FRONTIER FLAG BUYS NO BUDGET (flag-what-moved-the-frontier, specs/blog:
+// "**The frontier exemption lifts a count, never a budget.** `post` and `scout`
+// work over the new-writing ceiling is refused whether or not a candidate
+// carries the flag", and its scenario "A frontier flag buys no budget").
+//
+// The clause holds today by construction — nothing in `select.mjs` or
+// `budget.mjs` reads `frontier` — and that is precisely why it needed
+// measuring: it holds because nobody wrote the coupling, not because anything
+// refuses it. A guardrail is what it does when measured, and the paired risk
+// the delta names in the same paragraph is real in the other direction: a bar
+// with no budget behind it makes flagging everything the rational move.
+// ---------------------------------------------------------------------------
+
+test('a candidate reaching the selector carries NO flag: the queue reader builds from a closed field list', () => {
+  // The mechanism, stated as what it is rather than as a coincidence. My first
+  // draft of this test put `frontier: true` on a queue item and asserted the
+  // refusal — and it passed with the seam deliberately opened (`(c) =>
+  // c.frontier === true ? {ok: true} : budgetGate(...)` in select.mjs), because
+  // `readQueue` never copied the key onto the candidate in the first place. A
+  // test that cannot fail is worse than none: it reads as a measurement of the
+  // ceiling and measures nothing.
+  //
+  // What is actually true, and worth pinning, is stronger than the delta's
+  // clause: the flag cannot REACH the selector. `readQueue` and `readProposals`
+  // each build their candidate object from an explicit field list, so a
+  // declared flag is dropped at the boundary. That is the right place for it to
+  // stop — the flag's whole effect is the candidate cap at proposal merge,
+  // where `applyProposalMergeRules` reads the FILE's own front matter.
+  const ctx = fixture(
+    [
+      ledgerLine({ id: 'a', type: 'entry', mm: 500, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+      ledgerLine({ id: 'b', type: 'verify', mm: 500, tier: 'frontier', ts: daysAgo(NOW, 1) }),
+    ],
+    [
+      // A flag that HOLDS — a criterion from F1-F5 and a domain from the closed
+      // vocabulary. Nothing weaker would prove the point: a broken flag is
+      // refused for being broken.
+      { type: 'post', title: 'a frontier post', frontier: true, frontier_reason: 'F2', domains: ['coding'] },
+      { type: 'post', title: 'an ordinary post' },
+      { type: 'scout', title: 'a frontier sweep', frontier: true, frontier_reason: 'F1' },
+    ],
+  );
+  const { candidates } = gatherCandidates(ctx, { dryRun: true });
+  assert.equal(candidates.length, 3);
+  for (const c of candidates) {
+    assert.equal(c.frontier, undefined, `${c.title}: the flag must not be copied onto a selector candidate`);
+    assert.equal(c.frontier_reason, undefined, `${c.title}: nor the criterion`);
+    assert.equal(c.domains, undefined, `${c.title}: nor the domains`);
+  }
+
+  // And the outcome the delta's scenario states, at the ceiling. This half is
+  // weak on its own — it is the assertion that passed under the mutation — and
+  // it is kept only as the end-to-end companion to the two above it.
+  const cfg = loadConfig(ctx);
+  const runner = pickRunner(loadRunners(ctx), { id: 'mock-frontier', role: 'author' });
+  const sel = selectJob(ctx, { cfg, ledger: readLedger(ctx), runner, dryRun: true });
+  assert.equal(sel.selected, null, 'the ceiling refuses all three — the flag is not a key to the budget');
+  assert.deepEqual(
+    sel.refusals.map((r) => r.rule),
+    ['budget:new_writing-ceiling', 'budget:new_writing-ceiling', 'budget:new_writing-ceiling'],
+    'both post candidates and the scout are refused, by the same rule',
+  );
+  const flagged = sel.refusals.find((r) => r.candidate.title === 'a frontier post');
+  const plain = sel.refusals.find((r) => r.candidate.title === 'an ordinary post');
+  assert.equal(flagged.reason, plain.reason, 'the refusal reads the TYPE and the tier; the flag is not in it');
+  ctx.cleanup();
+});
+
+test('the selector and the budget do not read `frontier` at all — the exemption has no seam here', () => {
+  // The structural half of the clause above, and the one that survives a
+  // rewrite of the fixtures. `budgetGate(cfg, shares, c.type)` is handed a TYPE
+  // and not a candidate, so there is nowhere for a flag to enter; this asserts
+  // that no later edit gives it one. It is a source assertion on purpose — the
+  // thing being measured is the ABSENCE of a coupling, which no fixture can
+  // exhibit.
+  const here = new URL('.', import.meta.url);
+  for (const rel of ['../lib/select.mjs', '../lib/budget.mjs']) {
+    const src = readFileSync(fileURLToPath(new URL(rel, here)), 'utf8');
+    // Comments are prose about the module and may say the word; code may not.
+    const code = src
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/(^|[^:])\/\/.*$/gm, '$1');
+    // Targeted at how the flag is READ — `c.frontier`, a destructured
+    // `{ frontier }`, `fm['frontier']`, `frontier_reason` — and deliberately
+    // not at the bare word, because `frontier` is also the name of a TIER in
+    // this file's own vocabulary and a quoted tier literal is not a flag.
+    assert.ok(
+      !/frontier_reason|\.frontier\b|\bfrontier\s*[,}]|\[\s*['"]frontier['"]\s*\]/.test(code),
+      `${rel} reads \`frontier\`: specs/blog says the exemption "lifts a count, never a budget" — `
+        + 'a `post` or `scout` candidate over the new-writing ceiling is refused whether or not it '
+        + 'carries the flag, so the selector and the budget must not be able to see it',
+    );
+  }
+  // The control: the word IS reachable in this repository, so the regexes above
+  // are not vacuously true of every file.
+  const proposals = readFileSync(fileURLToPath(new URL('../lib/proposals.mjs', here)), 'utf8');
+  assert.match(proposals, /\.frontier\b/, 'the merge DOES read the flag — that is where the count is lifted');
 });
 
 test('the selector refuses at the ceiling and names the rule in its output', () => {
