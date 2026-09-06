@@ -30,6 +30,8 @@ evidence: >
   records nothing it over-catches, so this class is undocumented as well as
   unfixed; the corpus is green today only because no shipped page happens to
   use the shape.
+proposed_by_job: j-20260906-03
+proposed_by_type: entry
 ---
 
 The cost is not the corpus, which is green. It is per-author and it is paid in
