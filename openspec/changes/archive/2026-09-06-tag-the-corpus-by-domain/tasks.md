@@ -135,7 +135,7 @@ an ordering accident.
 - [x] 14. `openspec validate tag-the-corpus-by-domain --type change --strict
       --no-interactive`, and `node scripts/check-spec-deltas.mjs --strict`.
       Run at drafting time.
-- [ ] 15. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
+- [x] 15. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
       `verify-surfaces`, `verify-analytics`.
 
 ## Not tasks of this change, recorded so they are not read as omissions

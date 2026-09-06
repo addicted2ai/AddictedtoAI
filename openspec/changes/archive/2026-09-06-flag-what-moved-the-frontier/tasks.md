@@ -126,7 +126,7 @@ visible one rather than a fact recoverable only from commit messages
 - [x] 12. `openspec validate flag-what-moved-the-frontier --type change
       --strict --no-interactive`, and
       `node scripts/check-spec-deltas.mjs --strict`. Run at drafting time.
-- [ ] 13. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
+- [x] 13. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
       `verify-surfaces`, `verify-analytics`.
 
 ## Not tasks of this change, recorded so they are not read as omissions
