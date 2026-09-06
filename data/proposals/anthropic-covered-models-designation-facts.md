@@ -37,6 +37,8 @@ evidence: >
   "zero data retention", "ZDR", "30-day" or "data retention" across content/
   on 2026-09-06 returned one incidental hit in an unrelated post.
 expires: 2026-09-20
+proposed_by_job: j-20260906-14
+proposed_by_type: post
 ---
 
 The blog note this came out of deliberately did not create these facts, because
