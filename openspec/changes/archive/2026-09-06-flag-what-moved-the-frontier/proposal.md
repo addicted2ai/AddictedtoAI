@@ -203,8 +203,8 @@ lost gets re-tightened later by someone who never saw it.
 **Settled: a frontier story with no domain.** The draft transcribed §1's
 "at least one `domains` value" bar as written and named the cost it could not
 resolve: §3 makes `text` not a value and "general" the unmarked default, so a
-genuinely general story could not be flagged at all. Resolved as keeper ruling
-K46 on the blind arbiter record
+genuinely general story could not be flagged at all. Resolved as ruling K46,
+taken under the K40 delegation, on the blind arbiter record
 `loops/ui-loop/graph/artifacts/BLIND-002.md` — *"RESOLVABLE from the record:
 option A. `domains` is optional on a flagged record; absent means general by
 K38's own rule"* — and carried into DESK-ORDER-001 §1 the same day, whose

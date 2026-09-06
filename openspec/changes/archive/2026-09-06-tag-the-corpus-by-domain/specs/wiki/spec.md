@@ -236,7 +236,8 @@ decision, and `pulse/lib/diff.mjs:377-378` states the principle it would break:
 a field *"is an event in one place or in neither"*. The volume is that one
 publisher act counted directly: across those two snapshots there were 71
 number→absent transitions on the two index fields whose presence is the proposed
-seeding signal for `coding` and `agents` — one line each — against the 182 lines
+seeding signal for `coding` and `agents`, 3 of them rows that left the snapshot
+altogether — one line each — against the 182 lines
 `data/changes.jsonl` held on 2026-09-05. Nothing is lost by the silence,
 because seeding is append-only and the value stays on the entry.
 
