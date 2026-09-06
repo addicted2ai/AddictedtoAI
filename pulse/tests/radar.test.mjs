@@ -388,3 +388,45 @@ test('radarFeeds is stably ordered and radarReadableUrls is deduplicated', () =>
   };
   assert.deepEqual(radarReadableUrls(dup), ['https://r.invalid']);
 });
+
+test('a refused feed that repeats its row url is refused, not handed out through the row', () => {
+  // THE SHAPE A REAL REFUSAL WILL BE WRITTEN IN. Three of the four launch rows
+  // declare their row `url` a second time as a `feeds` entry, so the edit this
+  // repository's rights discipline prescribes when a publisher's terms turn —
+  // flip that feed to `registered: false` with a reason — must actually stop
+  // the read. Before this test, it did not: the row url was pushed whenever the
+  // ROW was not itself refused, so the refused URL still reached the caller.
+  const feed = (url, registered, extra = {}) => ({
+    url,
+    format: 'rss',
+    registered,
+    robots: { url: 'https://r.invalid/robots.txt', checked_on: '2026-09-06', result: 'allowed' },
+    terms: { url: 'https://r.invalid/terms', read_on: '2026-09-06', result: 'permitted' },
+    verified_on: '2026-09-06',
+    ...extra,
+  });
+  const refusal = { not_registered_because: "the publisher's terms turned on 2026-09-06 and forbid automated reads" };
+
+  const registry = {
+    radar: [
+      radarRow('r', 'https://r.invalid/feed.xml', {
+        feeds: [feed('https://r.invalid/feed.xml', false, refusal), feed('https://r.invalid/other.xml', true)],
+      }),
+    ],
+  };
+  assert.deepEqual(
+    radarReadableUrls(registry),
+    ['https://r.invalid/other.xml'],
+    'a URL refused as a feed must not be handed back through the row that repeats it',
+  );
+
+  // And the registry refuses to load the contradiction at all, so it cannot sit
+  // in the file looking settled while one half of it is honoured.
+  const root = makeRoot([]);
+  withRadar(root, registry.radar);
+  try {
+    assert.throws(() => loadRegistry(root), /is declared as a "registered": false feed/);
+  } finally {
+    cleanup(root);
+  }
+});

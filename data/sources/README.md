@@ -62,6 +62,16 @@ user-agent, and `github.com/robots.txt` disallows `/*.atom$` — so each row
 registers the permitted alternative (arXiv's `rss.arxiv.org` feeds, GitHub's
 `api.github.com` releases endpoint) and records the refusal beside it.
 
+**A row's own `url` is usually repeated as one of its `feeds` entries** — three
+of the four launch rows do exactly that — so refusing that feed is the shape a
+real refusal will be written in when a publisher's terms turn. Both halves
+honour it: `radarReadableUrls()` filters the row url through its own row's
+refused feed urls, and `loadRegistry` refuses a row whose `url` is declared as
+a `registered: false` feed outright, because a row that both refuses a URL and
+offers it is a contradiction the file should name rather than resolve in
+favour of reading. Refuse the row itself (`registered: false` on the row) or
+register the feed; the registry will not accept both at once.
+
 `loadRegistry` refuses a radar row that carries any field meaning "the data
 layer carries this" (`material_fields`, `mints`, `seeds`, `rows_path`,
 `row_id_field`, `status_rule`, `schedule_rule`, `fetch_every_days`, …), and
