@@ -95,9 +95,26 @@ whether they got one.
 ## The decision
 
 **For the voice verdict: option (b) from the bead, and the bead's own reasoning
-for it stands up under re-measurement.** An approving verdict on a `post` must
-either answer the voice question afresh or carry a named prior answer forward,
-saying in its own words why the diff did not move the post's voice. Option (a) —
+for it stands up under re-measurement.** An approving verdict on a job that
+merges a change to a blog post must either answer the voice question afresh or
+carry a named prior answer forward, saying in its own words why the diff did not
+move the post's voice.
+
+**The obligation follows the merged subjects, not the job type, and that is the
+one place the first draft of this design was wrong.** `needsReadsHuman`
+(`review.mjs:682`) keys the voice question on the **job type**, and
+`READS_HUMAN_TYPES` is `['post']`. The bead's own instance is not a `post` job:
+`j-20260902-23` is type `repair` (`data/ledger.jsonl:68`), and its record
+approves `content/blog/glm-5-3-license-revenue-gate.md` carrying no
+`reads-human` — saying so in its own prose. A type-keyed gate would ask that
+reviewer for neither field, so the refusal would never fire on the exact case
+the bead was filed about and the shape would recur unchanged. `mergeGate`
+already receives the merged `subjects` (`review.mjs:611`, used at `:709`), so
+the predicate is available where the gate stands: an approving verdict whose
+subjects contain a `content/blog/*.md` path owes one of the two answers. The
+fresh-answer demand on `post` **jobs** is untouched.
+
+Option (a) —
 re-ask above a measured prose-diff threshold — was refused because the threshold
 is invented at the point of use and a reviewer on either side of it is asked a
 different question for no reason a later reader can reconstruct. Option (c) —
@@ -105,6 +122,20 @@ accept and document — was refused because `declaredBy` already reaches back
 across superseding records, so accepting means accepting a mechanism that
 actively returns an answer for bytes nobody checked, which is worse than the
 gap the bead described.
+
+**That refusal is about the mechanism's future, not about the 358 records
+already on disk, and the delta now says so.** A record written before this
+requirement could not have carried a carry-forward; `j-20260902-23` is one and
+it is the **current** approving record for the glm post today. A requirement
+read literally against it would turn `verify-launch` red on a corpus nobody may
+now reproduce. So the reach-back is sanctioned in the delta — in the same words
+the live requirement already uses for records that predate `reviewed:` — and
+scoped to exactly those records: a record written after this requirement is
+refused at merge rather than joining that state. Without that sentence the
+implementer's only way to keep the check green is the unstated `declaredBy`
+fallback at `verify-launch.mjs:632-637`, which the spec would nowhere sanction —
+a mechanism outliving the reasoning for it, which is the defect this whole
+change is about.
 
 The refusals are mechanical and the pattern is the existing one: the anchor must
 name a record that approves this piece and carries a non-empty `reads-human`,
@@ -137,9 +168,15 @@ written.
   either bead asks for it. The delta states the boundary explicitly so an
   implementer does not read the extended binding as an extended obligation and
   turn the launch check red.
-- **Asking the voice question of non-`post` types.** `READS_HUMAN_TYPES` stays
-  `['post']`. The requirement scopes the voice bar to the blog's bar in those
-  words and this change does not widen it.
+- **Demanding a *fresh* voice verdict of non-`post` types.** `READS_HUMAN_TYPES`
+  stays `['post']` and no reviewer of a `repair`, a `revision` or any other type
+  is ever asked to write a `reads-human` of its own — that is the demand the
+  requirement scopes to the blog's bar, and it is not widened here. What such a
+  reviewer **is** asked, and only when its diff lands on a post, is the other
+  branch: name the record the post's voice verdict already lives in and say why
+  this diff did not move it. That is not the voice question; it is answerable
+  from the diff the repair reviewer is already reading, and it is the whole
+  point of the carry-forward, since the bead's own instance is a `repair`.
 - **The `reads-human` duplicate sweep's own scope.** It already reads every
   distinct value across every record, not just the post ones, because the merge
   gate does. Unchanged.

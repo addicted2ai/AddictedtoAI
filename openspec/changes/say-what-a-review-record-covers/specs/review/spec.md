@@ -82,12 +82,15 @@ record's, on the same terms and at the same point it refuses a blank
 `would-cite`. Same mechanics, same honesty about their limit: the field
 compels the asking, not the judgment.
 
-**A later verdict on a post SHALL settle the voice question rather than inherit
-it.** A `reads-human` answers for the bytes its writer read. A repair, a
-revision or any later job may rewrite those bytes and be approved by a reviewer
-of its own, and the piece is then bound and clean while the only reviewer that
-ever answered the voice question read an older version. So every **approving**
-verdict on a `post` SHALL do exactly one of two things, and a verdict doing
+**A later verdict that lands on a post SHALL settle the voice question rather
+than inherit it.** A `reads-human` answers for the bytes its writer read. A
+repair, a revision or any later job may rewrite those bytes and be approved by a
+reviewer of its own, and the piece is then bound and clean while the only
+reviewer that ever answered the voice question read an older version. **The job
+type does not say whether that happened.** The type says what the job was for;
+the merged subjects say what it touched, and a job of any type may touch a post.
+So every **approving** verdict on a job whose merged subjects include a blog
+post SHALL do exactly one of two things, for each such post, and a verdict doing
 neither is refused exactly as a blank `reads-human` is refused:
 
 - **answer the question afresh**, in a non-empty, non-duplicated
@@ -95,6 +98,12 @@ neither is refused exactly as a blank `reads-human` is refused:
 - **carry the prior answer forward**, in a `reads-human-from` field naming the
   earlier approving record it stands on together with the reviewer's own-words
   statement of why this diff did not move the post's voice.
+
+The two branches are not equally available to every job, and that is the point.
+A `post` job is already held to the **fresh** answer by the paragraph above; the
+choice is what this requirement adds for every **other** job whose diff reaches
+a post, which is where the gap is — a repair reviewer is asked no voice question
+today and has no field to decline one in.
 
 The merge SHALL refuse a `reads-human-from` whose named record does not exist,
 does not approve this same piece, or carries no non-empty `reads-human` of its
@@ -104,6 +113,17 @@ refuses a blank `would-cite`. Any path that reports on a post's voice SHALL
 follow the carry-forward to the record that answered, and SHALL report a post
 whose carry-forward reaches no such record exactly as it reports one whose own
 record has none.
+
+A post whose current approving record carries neither field is not invalid where
+that record predates this requirement — every record written before the merge
+began asking the question is one, exactly as every record written before the
+merge began writing `reviewed:` carries no `reviewed:` key. It is a distinct,
+named state, and it is satisfied by any earlier approving record naming that
+piece which carries a non-empty `reads-human`. A record written **after** this
+requirement SHALL NOT enter that state: the merge refuses it at the point above,
+so the reach-back reaches only records that could not have carried a
+carry-forward. Reporting such a post as unanswered would redden a check over
+records nobody may now write, which is a guardrail firing on its own history.
 
 The two branches are not interchangeable, and neither collapses into the other.
 Asking a repair reviewer to produce a voice verdict on a three-sentence licence
@@ -157,6 +177,24 @@ reviewer of that piece and by nothing mechanical.
 - **THEN** the merge refuses the verdict, naming the record it could not stand
   on, exactly as it refuses a blank `would-cite`
 
+#### Scenario: A repair that lands on a post and answers neither way is refused
+
+- **WHEN** a job whose type is not `post` merges an edit to a `content/blog/`
+  post and its reviewer approves with neither a `reads-human` nor a
+  `reads-human-from`
+- **THEN** the merge refuses the verdict, because the obligation follows the
+  merged subjects and not the job type, and the reviewer re-issues it naming the
+  record it stands on
+
+#### Scenario: A post approved before the carry-forward existed is a named state
+
+- **WHEN** a post's current approving record was written before this requirement
+  and carries neither field, and an earlier approving record naming that post
+  carries a non-empty `reads-human`
+- **THEN** the voice question counts as answered by that earlier record, no
+  check fails on the post, and a record written after this requirement in the
+  same shape is refused at merge instead of joining that state
+
 ### Requirement: A review record names the bytes it reviewed
 
 A record that named only a *piece*, and never the *text* it judged, would leave
@@ -193,13 +231,17 @@ merge step, which writes `subject:` for exactly this reason:
   inside it would break the join for every record that already exists, which is
   the opposite of the outcome this requirement is for.
 
-- The set of pieces this binding covers SHALL be every content file a record can
-  be joined to, **whether or not it has a prose body**. A body-less entry's
-  reviewed surface is its front matter, which is where its sourced facts live,
-  so a fact-only edit to one moves that surface exactly as a prose edit moves a
-  page's. Excluding it leaves that class of edit with no review-completeness
-  signal at any layer: not missing, not unbound, not mismatched, absent from the
-  count entirely.
+- The set of pieces this binding covers SHALL be every wiki entry, **whether or
+  not it has a prose body**, alongside the pieces the set already carries. A
+  body-less entry's reviewed surface is its front matter, which is where its
+  sourced facts live, so a fact-only edit to one moves that surface exactly as a
+  prose edit moves a page's. Excluding it leaves that class of edit with no
+  review-completeness signal at any layer: not missing, not unbound, not
+  mismatched, absent from the count entirely. **Tool listings stay outside the
+  set**, unchanged and deliberately: they are data rows rather than entry facts,
+  the set has excluded them since it was written, and admitting every file the
+  merge can hash — which is every `content/**.md` — would extend the binding
+  past the class this requirement is about.
 - Extending the binding SHALL NOT extend the requirement to **have** a record.
   Which pieces the launch check refuses to launch without a record is unchanged
   and is decided by its own prose bar; a body-less piece reporting **missing**
