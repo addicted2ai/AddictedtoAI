@@ -1412,6 +1412,22 @@
         "file": "content/wiki/org/meta-superintelligence-labs.md"
       }
     ],
+    "model/microsoft-phi-4": [
+      {
+        "url": "/wiki/org/microsoft",
+        "title": "Microsoft",
+        "type": "entry",
+        "file": "content/wiki/org/microsoft.md"
+      }
+    ],
+    "model/microsoft-wizardlm-2-8x22b": [
+      {
+        "url": "/wiki/org/microsoft",
+        "title": "Microsoft",
+        "type": "entry",
+        "file": "content/wiki/org/microsoft.md"
+      }
+    ],
     "model/minimax-minimax-01": [
       {
         "url": "/wiki/org/minimax",
@@ -2832,6 +2848,12 @@
         "title": "Amazon",
         "type": "entry",
         "file": "content/wiki/org/amazon.md"
+      },
+      {
+        "url": "/wiki/org/microsoft",
+        "title": "Microsoft",
+        "type": "entry",
+        "file": "content/wiki/org/microsoft.md"
       },
       {
         "url": "/wiki/technique/proximal-policy-optimization",

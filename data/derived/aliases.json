@@ -2969,6 +2969,36 @@
       ]
     },
     {
+      "name": "Microsoft",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/microsoft",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Microsoft AI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/microsoft",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Microsoft Research",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/microsoft",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "Microsoft: Phi 4",
       "linkable": false,
       "claimed_by": [

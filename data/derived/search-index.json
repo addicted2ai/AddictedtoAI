@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 669,
+  "count": 670,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -6211,6 +6211,19 @@
         "MSL",
         "Meta AI",
         "Meta"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/org/microsoft",
+      "t": "Microsoft",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/microsoft",
+      "a": [
+        "Microsoft AI",
+        "Microsoft Research"
       ],
       "b": false
     },
