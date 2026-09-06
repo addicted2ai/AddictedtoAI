@@ -29,8 +29,16 @@ const FORMATS = new Set(['json', 'rss']);
 const DECLINED_DECISION = 'not carried';
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Do two dotted paths name the same field, or one an ancestor of the other? */
-function pathsOverlap(a, b) {
+/**
+ * Do two dotted paths name the same field, or one an ancestor of the other?
+ *
+ * Exported because the refusal has a second enforcement point that this module
+ * cannot host: `lib/declined-fields.mjs` runs the same test against every
+ * `facts[].path` in `content/wiki/**`, which the Pulse's engine must not load.
+ * The two halves share this predicate rather than each carrying a copy, so they
+ * cannot drift into disagreeing about what "the same field" means.
+ */
+export function pathsOverlap(a, b) {
   return a === b || a.startsWith(`${b}.`) || b.startsWith(`${a}.`);
 }
 
@@ -62,6 +70,16 @@ function pathsOverlap(a, b) {
  *     a column that is blank on seven-eighths of rows;
  *   - a refusal carries a `decided_on` date and a `note`, because a refusal with
  *     no measurement behind it is the undecided state wearing a label.
+ *
+ * WHAT THIS FUNCTION CANNOT SEE, and where the other half lives. "Carried" has
+ * a second spelling: an entry may bind a feed path as a `source: feed` fact, and
+ * that value renders on a published page exactly as a material field does. This
+ * module never opens `content/wiki/**` — the Pulse's engine must stay able to
+ * fetch, diff and derive without the corpus loaded — so for the first day of the
+ * refusal's life, 48 fact bindings across 29 model entries pointed at
+ * `benchmarks.artificial_analysis` while this function passed. The corpus half
+ * is `lib/declined-fields.mjs`, a prebuild step, sharing `pathsOverlap` with
+ * this one so the two cannot disagree about what "the same field" means.
  *
  * What this deliberately does NOT do: require that every path a snapshot serves
  * be accounted for by one of the three lists. That check is what would make the
