@@ -1059,6 +1059,26 @@
       ]
     },
     {
+      "name": "Covered Model",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "concept/covered-models",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Covered Models",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "concept/covered-models",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "CrewAI",
       "linkable": false,
       "claimed_by": [

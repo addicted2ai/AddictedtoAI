@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 672,
+  "count": 673,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -1224,6 +1224,18 @@
       "a": [
         "Chain of thought",
         "CoT"
+      ],
+      "b": false
+    },
+    {
+      "u": "/wiki/concept/covered-models",
+      "t": "Covered Models",
+      "k": "entry",
+      "d": "concept",
+      "s": "active",
+      "i": "concept/covered-models",
+      "a": [
+        "Covered Model"
       ],
       "b": false
     },

@@ -73,3 +73,18 @@ option to use ZDR with Fable 5 and Fable 5.1 for their own internal business
 applications", "available for a limited time". An entry written from the
 announcement alone would state a commitment broader than the terms page
 supports.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-06
+- job: j-20260906-16 (entry)
+- merged as: `488663ae0a86b82c89cd81f8c8e4d7c2fa8492aa`
+- produced: `content/wiki/concept/covered-models.md`, `content/wiki/model/anthropic-claude-fable-5-1.md`, `content/wiki/model/anthropic-claude-fable-5.md`
+- was: `anthropic-covered-models-designation-facts.md` (slug `anthropic-covered-models-designation-facts`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

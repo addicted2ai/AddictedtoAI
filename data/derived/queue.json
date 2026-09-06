@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 33,
+  "count": 34,
   "items": [
     {
       "detail": "2 findings carried by reviewers against `content/blog/anthropic-enterprise-frontier-safeguards.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Fix \"whenever\" to \"whatever\" in the closing sentence of the lockout section\n\nCarried in `data/carried/j-20260906-14-carry-1.md`.\n\nThe post's lockout section closes: It ends it whenever \"later this fall\" turns out to mean. That is ungrammatical — \"whenever\" takes a time, \"mean\" takes a thing. The fix is one word: It ends it whatever \"later this fall\" turns out to mean.\n\n### Header rounds the lockout up to three months where the body says \"coming up on three\"\n\nCarried in `data/carried/j-20260906-14-carry-2.md`.\n\nThe header reads \"you have already been locked out for three months\"; the body two paragraphs later reads \"for coming up on three months\". The body is right — Covered Models designation for Fable 5 and Mythos 5 is 9 June 2026 and the post is dated 6 September 2026, which is two months and twenty-eight days. The header is the summary line and should not be the looser of the two. \"for nearly three months\" fixes it and costs nothing.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260906-14-carry-1.md`\n- `data/carried/j-20260906-14-carry-2.md`",
@@ -27,6 +27,15 @@
       "subject": "content/blog/nemotron-ultra-cc-ioi-2026.md",
       "target": "content/blog/nemotron-ultra-cc-ioi-2026.md",
       "title": "Say that 343.9 and 502.0 are means of five runs, not single scores",
+      "type": "repair"
+    },
+    {
+      "detail": "2 findings carried by reviewers against `content/blog/nobody-had-to-report-the-wiki-incident.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Start the OpenAI blockquote where TechCrunch starts it\n\nCarried in `data/carried/j-20260906-15-carry-1.md`.\n\nThe blockquote rendered as OpenAI's words opens \"We and the larger AI community do not yet have a clear standard...\". I fetched the declared anchor and searched its bytes: \"We and the larger AI community do not yet have a clear standard\" is MISSING; what the page carries is TechCrunch's own bridge — OpenAI's statement \"stating that both OpenAI and 'the larger AI community do not yet have a clear standard for how to report misalignment that shows up during training, evaluation, and deployment, including examples that don't look like traditional security incidents but could provide insight into AI behavior and future risks.'\" Everything from \"the larger\" onward is verbatim; the two words \"We and\" are the post's own reconstruction of a pronoun TechCrunch elided. The meaning is identical and the primary (the X post) is unreachable, so this is not a wrong claim — but the post's own sourcing block says \"Every OpenAI quotation above is TechCrunch's rendering of that post\", and for two words it is not. Fix: open the blockquote at \"the larger AI community\" and lead in with TechCrunch's own framing (\"OpenAI's statement said that both it and...\").\n\n### Anchor the five weeks of cleanup to the main burst, not to the July bursts\n\nCarried in `data/carried/j-20260906-15-carry-2.md`.\n\nThe post reads \"...smaller bursts on 1 and 2 July. Leitner went on deleting agent pages for five weeks after that.\" WinBuzzer, the cited source, says he \"continued removing agent-created pages for five weeks after the main burst ended\" — and the main burst ended after 22 June, not after 2 July. As written, \"after that\" attaches the five weeks to the July bursts and moves the end of the cleanup about ten days later than the source puts it. Fix: \"for five weeks after the main burst ended.\"\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260906-15-carry-1.md`\n- `data/carried/j-20260906-15-carry-2.md`",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/nobody-had-to-report-the-wiki-incident.md",
+      "target": "content/blog/nobody-had-to-report-the-wiki-incident.md",
+      "title": "Clear the 2 carried findings on content/blog/nobody-had-to-report-the-wiki-incident.md",
       "type": "repair"
     },
     {
@@ -300,5 +309,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 33
+  "total_before_cap": 34
 }

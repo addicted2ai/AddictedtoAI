@@ -814,6 +814,12 @@
     ],
     "model/anthropic-claude-fable-5": [
       {
+        "url": "/wiki/concept/covered-models",
+        "title": "Covered Models",
+        "type": "entry",
+        "file": "content/wiki/concept/covered-models.md"
+      },
+      {
         "url": "/wiki/model/anthropic-claude-opus-5",
         "title": "Claude Opus 5",
         "type": "entry",
@@ -833,6 +839,12 @@
       }
     ],
     "model/anthropic-claude-fable-5-1": [
+      {
+        "url": "/wiki/concept/covered-models",
+        "title": "Covered Models",
+        "type": "entry",
+        "file": "content/wiki/concept/covered-models.md"
+      },
       {
         "url": "/blog/anthropic-enterprise-frontier-safeguards",
         "title": "Anthropic will put Claude misuse logs in your own bucket. Its support pages say what it keeps.",
@@ -2553,6 +2565,12 @@
       }
     ],
     "org/anthropic": [
+      {
+        "url": "/wiki/concept/covered-models",
+        "title": "Covered Models",
+        "type": "entry",
+        "file": "content/wiki/concept/covered-models.md"
+      },
       {
         "url": "/wiki/model/anthropic-claude-haiku-4-5",
         "title": "Anthropic: Claude Haiku 4.5",
