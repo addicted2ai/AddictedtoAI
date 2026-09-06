@@ -26,6 +26,7 @@ import { checkSpecDeltasStep } from './check-spec-deltas.mjs';
 import { arxivPinStep } from '../lib/arxiv-pin.mjs';
 import { declinedFieldsStep } from '../lib/declined-fields.mjs';
 import { changeKindsReportStep } from '../lib/changes.mjs';
+import { frontierMetricsReportStep } from '../lib/frontier-metrics.mjs';
 import { acquireBuildLock, DEFAULT_WAIT_MS } from './build-lock.mjs';
 import { isDirty, dirtyPaths } from '../lib/stamp.mjs';
 
@@ -144,6 +145,16 @@ const STEPS = [
   // voice lint as a report-not-fail check; a build failing on this step is a
   // defect in it.
   { name: 'change-kinds', run: changeKindsReportStep },
+
+  // `separate-a-claim-from-a-fact` task 22 — the index-metric report. A metric
+  // declared in the registry's `frontier` block with NO republication decision
+  // at all is unregistered for rendering, and this says so out loud rather than
+  // letting an unanswered question read as a cleared one (specs/pulse: "a
+  // missing field and a cleared right SHALL NOT look the same"). Also
+  // report-not-fail: the registry load already refuses a MALFORMED decision, and
+  // declaring a metric before answering its rights question is a legal, honest
+  // intermediate state.
+  { name: 'frontier-metrics', run: frontierMetricsReportStep },
 
   // make-the-blog-worth-sending task 3.7 — the voice lint. **ADVISORY: it
   // warns and never fails the build**, by the spec's own emphasis and for a

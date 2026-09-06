@@ -128,6 +128,146 @@ function validateDeclinedFields(source, where) {
   }
 }
 
+/** The three states a republication decision may record. Closed on purpose. */
+export const RIGHTS_OUTCOMES = Object.freeze(['cleared', 'refused', 'unresolved']);
+
+/** Which end of a metric's values counts as leading. */
+const DIRECTIONS = new Set(['higher', 'lower']);
+
+/**
+ * Validate the registry's `frontier` block — the declared index metrics and the
+ * declared row-eligibility exclusions (specs/pulse, "An index is registered with
+ * its publisher and its rights"; `separate-a-claim-from-a-fact` task 22).
+ *
+ * ## What a declared metric must carry, and why each field is here
+ *
+ * The site runs no benchmarks. Every index it could show is somebody else's
+ * aggregate, reaching this repository through a republisher, read on one day —
+ * so a metric declares the field name the corpus uses, the path into the source
+ * row, the source it is read from, the **publisher**, the publisher's URL, the
+ * **republisher** where the site does not read the publisher directly, the
+ * direction that counts as leading, and a display label. Without the publisher
+ * and the republisher a surface cannot make the only claim the data supports:
+ * *the publisher's page says this, as republished by that party, in the snapshot
+ * of that date*.
+ *
+ * ## Rights: absent is a state, and it is not "permitted"
+ *
+ * `rights` is OPTIONAL and its absence is meaningful. A metric with no
+ * republication decision at all is treated as **unregistered for rendering** and
+ * is REPORTED by the build (`lib/frontier-metrics.mjs`), never defaulted to
+ * permitted — specs/pulse's own scenario, "An unanswered question does not read
+ * as a cleared one". It is not fatal here because the registry is data a person
+ * edits in steps: declaring the metric first and answering the rights question
+ * second is a real sequence, and failing the load would make the honest
+ * intermediate state unrepresentable. What IS fatal is a decision that is
+ * malformed — an outcome outside the closed set, a `cleared` outcome resting on
+ * no verbatim excerpt — because that is a claim about permission with nothing
+ * behind it.
+ *
+ * ## The declined-fields cross-check
+ *
+ * `declined_fields` records that a path is **not carried** — not a column, not a
+ * fact, not an event, after a measurement. Declaring that same path as a
+ * frontier metric is carrying it in a fourth sense, so the two lists would be
+ * two decisions silently disagreeing. This is the same shape as
+ * `validateDeclinedFields`' own carried/refused check, applied to the third
+ * list, and it fails loudly naming both ends and the remedy.
+ */
+function validateFrontier(raw) {
+  const frontier = raw.frontier;
+  if (frontier === undefined || frontier === null) return;
+  const where = 'registry "frontier"';
+  if (typeof frontier !== 'object' || Array.isArray(frontier)) throw new Error(`${where}: must be an object`);
+
+  const exclusions = frontier.row_exclusions ?? [];
+  if (!Array.isArray(exclusions)) throw new Error(`${where}: "row_exclusions" must be an array`);
+  for (const ex of exclusions) {
+    const matchers = ['id_prefix', 'id_contains'].filter((k) => ex?.[k] !== undefined);
+    if (matchers.length !== 1) {
+      throw new Error(
+        `${where}: a "row_exclusions" entry must carry exactly one of "id_prefix" or "id_contains" — ` +
+          `these are PATTERNS OVER ROW IDS, not facts about the models, and the two forms are all there are ` +
+          `so the list cannot grow into an unreviewable expression language`,
+      );
+    }
+    if (typeof ex[matchers[0]] !== 'string' || ex[matchers[0]] === '') {
+      throw new Error(`${where}: "row_exclusions" entry has an empty "${matchers[0]}"`);
+    }
+    if (!DATE.test(ex.decided_on ?? '')) {
+      throw new Error(`${where}: "row_exclusions" entry "${ex[matchers[0]]}" needs a "decided_on" date (yyyy-mm-dd)`);
+    }
+    if (typeof ex.note !== 'string' || ex.note.trim() === '') {
+      throw new Error(
+        `${where}: "row_exclusions" entry "${ex[matchers[0]]}" needs a "note" carrying the measurement behind it — ` +
+          `an exclusion with no measurement is a rule compiled into the data instead of into the code, which is ` +
+          `no more reviewable`,
+      );
+    }
+  }
+
+  const metrics = frontier.metrics;
+  if (!Array.isArray(metrics)) {
+    throw new Error(
+      `${where}: "metrics" must be an array — an EMPTY one when no index is registered, never absent. ` +
+        `Zero declared metrics is the day-one state and must be stated, not implied`,
+    );
+  }
+  const seenIds = new Set();
+  for (const m of metrics) {
+    const id = m?.id;
+    if (typeof id !== 'string' || id === '') throw new Error(`${where}: a metric is missing a string "id"`);
+    const at = `${where} metric "${id}"`;
+    if (seenIds.has(id)) throw new Error(`${at}: duplicate metric id`);
+    seenIds.add(id);
+    for (const key of ['field', 'path', 'source', 'publisher', 'publisher_url', 'label']) {
+      if (typeof m[key] !== 'string' || m[key] === '') throw new Error(`${at}: missing string "${key}"`);
+    }
+    if (!DIRECTIONS.has(m.direction)) {
+      throw new Error(`${at}: "direction" must be one of ${[...DIRECTIONS].join(', ')} — which end of the values leads`);
+    }
+    if (m.republisher !== null && m.republisher !== undefined && typeof m.republisher !== 'string') {
+      throw new Error(
+        `${at}: "republisher" must be a string or null — null says the site reads the publisher directly, and ` +
+          `absent would leave a surface unable to tell the two apart`,
+      );
+    }
+    const source = raw.sources.find((s) => s?.id === m.source);
+    if (!source) throw new Error(`${at}: "source" ${JSON.stringify(m.source)} is not a declared source id`);
+    for (const declined of source.declined_fields ?? []) {
+      if (typeof declined?.path === 'string' && pathsOverlap(declined.path, m.path)) {
+        throw new Error(
+          `${at}: path "${m.path}" is declared a frontier metric and also declined on source "${source.id}" as ` +
+            `"${declined.path}" (${declined.decided_on}) — a field is carried or refused, never both. Withdraw the ` +
+            `refusal if the metric is the newer decision, or remove the metric if the refusal still stands`,
+        );
+      }
+    }
+    const rights = m.rights;
+    if (rights === undefined || rights === null) continue; // unanswered; reported by the build, never permitted
+    if (typeof rights !== 'object' || Array.isArray(rights)) throw new Error(`${at}: "rights" must be an object`);
+    if (!RIGHTS_OUTCOMES.includes(rights.outcome)) {
+      throw new Error(
+        `${at}: "rights.outcome" is ${JSON.stringify(rights.outcome)} — the only legal values are ` +
+          `${RIGHTS_OUTCOMES.join(', ')}. An unanswered question is recorded as "unresolved"; a missing field and a ` +
+          `cleared right must never look the same`,
+      );
+    }
+    if (typeof rights.terms_url !== 'string' || rights.terms_url === '') {
+      throw new Error(`${at}: "rights.terms_url" must name the terms that were read`);
+    }
+    if (!DATE.test(rights.checked_on ?? '')) {
+      throw new Error(`${at}: "rights.checked_on" must be the LOCAL date the terms were read (yyyy-mm-dd)`);
+    }
+    if (rights.outcome === 'cleared' && (typeof rights.excerpt !== 'string' || rights.excerpt.trim() === '')) {
+      throw new Error(
+        `${at}: "rights.outcome" is "cleared" with no verbatim "excerpt" — a cleared right must rest on the words ` +
+          `that grant it, or it is an opinion about a document nobody can re-read`,
+      );
+    }
+  }
+}
+
 export function loadRegistry(root) {
   const p = paths(root);
   const raw = readJson(p.registry);
@@ -162,6 +302,7 @@ export function loadRegistry(root) {
     if (s.format === 'json' && !s.rows_path) throw new Error(`${where}: json format needs "rows_path"`);
     validateDeclinedFields(s, where);
   }
+  validateFrontier(raw);
   return raw;
 }
 
