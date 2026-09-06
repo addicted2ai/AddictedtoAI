@@ -27,6 +27,15 @@ on one, under a lede promising the vendor's own words. The defect was not a
 coin-flip that came up badly; it was the near-certain output of the only
 structure available.
 
+**And the sharpest form of it:** every one of those thirteen `founded` facts is
+cited from `en.wikipedia.org`. Not one is the vendor's own page. So what shipped,
+twice, was an encyclopaedia's account of when a company was incorporated,
+presented as that company's verbatim claim about itself. Two requirements below
+catch that independently, and the division of labour is worth stating: the vendor
+test blanks all thirteen on the source alone, because `wikipedia.org` is nobody's
+vendor domain — and the claim record is what gives the column something true to
+put there instead of a blank.
+
 The one-sentence statement of what went wrong is RD-004's, and it is worth
 keeping verbatim because the change exists to make it mechanically true:
 

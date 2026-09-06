@@ -24,7 +24,10 @@ second shape, and the cost of that was paid twice: both finalist builds of
 "claimed · unverified", independently, because the only structure available for
 "what this vendor says" was "any cited fact"
 (`loops/ui-loop/graph/knowledge/implementer-ledger.md` rows 2 and 4). A founding
-date is not a vendor claim and SHALL never render as one.
+date is not a vendor claim and SHALL never render as one — and measured on
+2026-09-05, all thirteen of the `founded` facts that a first-cited-fact rule
+selects are cited from `en.wikipedia.org`, so what shipped was an
+encyclopaedia's account of an incorporation presented as a company's own words.
 
 RD-004 states the confusion exactly, and the requirement exists to make the
 sentence mechanically true: *`source: cited` records that a value carries a
@@ -130,7 +133,8 @@ verified: false
 #### Scenario: A founding date cannot render as a vendor claim
 
 - **WHEN** a surface renders what an organisation says about itself, and the
-  organisation's entry carries a cited `founded` fact and no claim record
+  organisation's entry carries a cited `founded` fact — sourced, as all thirteen
+  in this corpus are, from an encyclopaedia — and no claim record
 - **THEN** the surface renders its empty state, because a claim is read from a
   claim record and from nowhere else — and the founding date renders where it
   always did, as a sourced fact on the entry
