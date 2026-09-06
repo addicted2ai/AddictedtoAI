@@ -241,6 +241,23 @@ what may not render until it does.
   stated decision") and neither is needed to file a claim record.
 - **It does not touch `data/config.json`, `package.json` or
   `openspec/specs/`.**
+- **It does not touch `tools/ui-invariants.mjs` or `loops/ui-loop/RULES.md`**,
+  and one consequence has to be handed over rather than fixed here. Invariant
+  `S22` clause (e) deliberately RE-DERIVES the vendor test — its own suffix
+  table, importing nothing, which is what keeps it a check rather than a
+  restatement of the code it checks. But the rule underneath it widened: the
+  shared module now has **three** admission paths and `S22` (e) has two.
+  `publishes_from` appears in neither `tools/ui-invariants.mjs` nor
+  `loops/ui-loop/RULES.md` (grepped 2026-09-06). So the first org entry that
+  declares a brand domain and carries a fact cited from it will render
+  **correctly** on the board and `S22` (e) will report *"a vendor-claim cell
+  renders a fact cited to a third party"* — verify-design red on a right page,
+  which is the failure that teaches people to switch a gate off. It cannot fire
+  today: zero of 553 entries declare the field (measured 2026-09-06). **`S22`
+  (e) needs a third branch, derived from the org corpus's own `publishes_from`
+  and still importing nothing, before the first declaration lands** — with its
+  paired `RULES.md` line and falsified both ways with `--break`, which is the
+  ui-loop's procedure and the reason this is not an edit to make from here.
 
 ## What I was least sure about
 
