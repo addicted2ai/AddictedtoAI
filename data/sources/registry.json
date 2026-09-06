@@ -76,14 +76,8 @@
           "event": false,
           "note": "Same field, same mechanism, same measurement as price_input above. addictedtoai-8ho."
         },
-        {
-          "field": "context_window",
-          "path": "context_length"
-        },
-        {
-          "field": "status",
-          "path": "$status"
-        }
+        { "field": "context_window", "path": "context_length" },
+        { "field": "status", "path": "$status" }
       ],
       "declined_fields_note": "The third state `material_fields_note` does not cover. A path in `material_fields` is CARRIED (column + fact, and an event unless `event: false`). A path in neither list is UNDECIDED — nobody has looked, which is what a field looks like when the vendor added it after this entry was written, and it is indistinguishable from a refusal from the outside. This list is the fourth answer to that note's question — column, fact, event, or NONE OF THOSE — recorded rather than left to default. `decision` may only be \"not carried\": carrying is expressed by `material_fields`, so a `declined_fields` entry claiming otherwise would be a decision written where nothing can enact it. pulse/lib/registry.mjs refuses a path that is both declined and material, and refuses a refusal with no dated measurement behind it. This list ends the undecided state for the paths it names and for no others: 23 further paths this source serves are still in it, and the check that would make the state unreachable is addictedtoai-eexr.",
       "declined_fields": [
@@ -142,15 +136,8 @@
       "schedule_rule": {
         "kind": "utc_windows",
         "path": "pricing.overrides",
-        "window_keys": [
-          "utc_start",
-          "utc_end",
-          "utc_days"
-        ],
-        "governs": [
-          "price_input",
-          "price_output"
-        ],
+        "window_keys": ["utc_start", "utc_end", "utc_days"],
+        "governs": ["price_input", "price_output"],
         "note": "Some rows republish their price on a timetable, so two fetches at different times of day read two different numbers off one unchanged price sheet. tencent/hy3 posts 0.000000132 for utc_start 0 / utc_end 1600 and 0.0000000825 for 1600-0; this repo recorded a \"+60%\" change on that row whose previous fetch was 18:19 UTC and whose latest was 07:27 UTC. pulse/lib/diff.mjs suppresses a governed field's diff on a row carrying such a window, on either side of the comparison. Measured on the 2026-08-29 snapshot (396 rows): 3 rows carry UTC windows (deepseek/deepseek-v4-flash-vision-exp, deepseek/deepseek-v4-pro-0813, tencent/hy3). A further 48 rows carry a pricing.overrides array of min_prompt_tokens long-context tiers, which do not move with the clock and are deliberately NOT suppressed — window_keys, not the presence of the array, is the test."
       },
       "status_rule": {
@@ -190,15 +177,7 @@
       "format": "rss",
       "row_id_field": "guid",
       "display_name_field": "title",
-      "yields": [
-        "title",
-        "link",
-        "guid",
-        "pubDate",
-        "description",
-        "source_url",
-        "source_name"
-      ],
+      "yields": ["title", "link", "guid", "pubDate", "description", "source_url", "source_name"],
       "fetch_every_days": 1,
       "expected_change_days": 3,
       "emit_on_remove": false,
@@ -288,7 +267,8 @@
       "id": "covered-org-releases",
       "title": "Covered organisations' blogs and release notes (RSS)",
       "reads_for": "scout",
-      "purpose": "DESK-ORDER-001 §5: \"covered organisations' blogs and release notes (RSS; the source of verbatim claims)\". The scope is deliberately narrow — an organisation with a wiki entry under content/wiki/org/ whose site publishes a machine-readable feed, verified live on the date below. A vendor headline is carried verbatim and attributed if it is ever carried at all; nothing from these feeds renders as a feed.",
+      "purpose": "DESK-ORDER-001 §5: \"covered organisations' blogs and release notes (RSS; the source of verbatim claims)\". The membership rule is an organisation with a wiki entry under content/wiki/org/ whose site publishes a machine-readable feed, verified live on the date below. A vendor headline is carried verbatim and attributed if it is ever carried at all; nothing from these feeds renders as a feed.",
+      "coverage": "THE RULE WAS RUN OVER PART OF THE CANDIDATE SET, AND THIS SAYS WHICH PART, so the gap is a stated decision and not a silent stopping point. content/wiki/org/ held 24 entries on 2026-09-06: aion-labs, alibaba-cloud, amazon, anthropic, bytedance-seed, cohere, deepseek, google-deepmind, inception-labs, inclusionai, meta-superintelligence-labs, microsoft, minimax, mistral-ai, moonshot-ai, nous-research, nvidia, openai, perplexity, poolside, spacexai, tencent, thinking-machines-lab, z-ai. SEVEN were examined and each is recorded in `feeds` below as registered, refused or absent: openai, google-deepmind, mistral-ai, nvidia, anthropic, meta-superintelligence-labs, alibaba-cloud. The other SEVENTEEN were NOT examined — aion-labs, amazon, bytedance-seed, cohere, deepseek, inception-labs, inclusionai, microsoft, minimax, moonshot-ai, nous-research, perplexity, poolside, spacexai, tencent, thinking-machines-lab, z-ai. Nothing is claimed about them in either direction: no feed of theirs was fetched, no robots file read and no terms page opened. The seven are the organisations this site writes about most, which is why they were done first; extending the sweep to the remaining seventeen is an ordinary registry data change and needs no code.",
       "url": "https://openai.com/news/rss.xml",
       "format": "rss",
       "yields": [
@@ -340,7 +320,8 @@
             "url": "https://openai.com/policies/terms-of-use/",
             "read_on": "2026-09-06",
             "result": "unread — HTTP 403 JavaScript challenge; robots.txt allows the path",
-            "quote": "Enable JavaScript and cookies to continue"
+            "quote": "Enable JavaScript and cookies to continue",
+            "detail": "WHY THIS IS REGISTERED AND NVIDIA'S FEED IN THE SAME ROW IS NOT, stated here rather than left for the next reader to notice as an inconsistency. The two cases are not the same shape. NVIDIA's terms WERE read and they contain a clause prohibiting crawlers in terms (clause (f)); what is unresolved there is only whether that clause's scope reaches blogs.nvidia.com — a known prohibition of uncertain reach, which is an unmet condition and therefore not a permission. OpenAI's terms could not be read at all: the document answered a JavaScript challenge, so there is no clause, ambiguous or otherwise, on either side. What IS readable on this host is the machine-readable instruction, and it allows this path — the same kind of instruction the Google terms in this row make explicitly operative for automated access. So the row rests on robots.txt plus the publisher serving the feed to this user-agent. HOW A FUTURE READER SHOULD RESOLVE IT: if openai.com/policies/terms-of-use/ becomes readable and contains a crawler clause of the NVIDIA shape, this feed goes to `registered: false` on the same reasoning NVIDIA's did. Until then the question is open, dated and visible rather than assumed either way."
           },
           "verified_on": "2026-09-06",
           "detail": "HTTP 200, 710,995 bytes, 1,172 items, newest Sun, 06 Sep 2026 09:00:00 GMT."
@@ -386,7 +367,7 @@
             "result": "no clause governs reading the public blog; robots.txt is the only instruction that speaks to it",
             "http_status": 200,
             "quote": "At Mistral AI, transparency, trust, and clarity are at the core of our relationship with you, whether you're a customer, an end-user, a business partner, a researcher, or simply exploring our products. … If you're a consumer: Terms of Service for consumers in the European Union / Terms of Service for consumers outside the European Union … For everyone using our products: Privacy Policy / Cookie Policy / Usage Policy / License Notice",
-            "detail": "https://mistral.ai/terms redirects to the Legal Center at legal.mistral.ai/terms/get-started/ (HTTP 200, 59,436 bytes, fetched 2026-09-06). Every document it indexes governs use of Mistral products — consumer and commercial Terms of Service, the Usage Policy, the DPA — and none of them addresses reading the public news feed. Recorded as an absence found by reading, not as an absence assumed."
+            "detail": "https://mistral.ai/terms redirects to the Legal Center at legal.mistral.ai/terms/get-started/ (HTTP 200, 59,436 bytes, fetched 2026-09-06), which is an index — a 1,924-character table of contents, not a policy. THE INDEXED DOCUMENTS WERE THEN OPENED, because a conclusion drawn from their titles would be inference wearing a measurement's clothes. Four on-point documents fetched 2026-09-06 with the Pulse user-agent, each HTTP 200: /terms/usage-policy (385,447 bytes), /terms/eu-consumers-terms-of-service (1,482,427), /terms/row-consumer-terms (241,307), /terms/commercial-terms-of-service (242,924). Across all four rendered texts the substrings \"crawl\", \"scrap\", \"robot\" and \"spider\" occur ZERO times. \"automated\" occurs 4 times in the EU consumer terms and 3 in the rest-of-world consumer terms, and every occurrence is Mistral reserving the right to monitor USERS by automated means — none governs reading the public news feed. So the absence is one found by reading the documents themselves, and robots.txt is the only instruction that speaks to this read."
           },
           "verified_on": "2026-09-06",
           "detail": "https://mistral.ai/rss.xml redirects to https://mistral.ai/news/rss, which is the URL registered here. HTTP 200, 22,983 bytes. Served as text/plain but the body is well-formed RSS 2.0 (\"<rss version=\\\"2.0\\\"><channel><title>Mistral AI Blog</title>\"), 82 items, guid isPermaLink=true, newest Mon, 24 Aug 2026 16:02:41 GMT, oldest Wed, 27 Sep 2023 08:00:00 GMT. The content-type is recorded because a parser that switches on it will mis-handle this feed."
@@ -402,7 +383,7 @@
             "checked_on": "2026-09-06",
             "result": "allowed — and the file advertises this very feed",
             "http_status": 200,
-            "detail": "HTTP 200, 5,906 bytes. The `User-agent: *` group begins \"User-agent: *\\nDisallow: /email-verify/*\\nDisallow: /forms/*\\nDisallow: /*.swf$\" followed by query-parameter patterns; /feed/ is under none of them. The file also contains a block headed \"# Global RSS Feeds\" listing \"Sitemap: https://blogs.nvidia.com/feed/\" and \"Sitemap: https://developer.nvidia.com/blog/feed/\". So robots.txt does not merely permit the read, it points at it — which is why this refusal is a rights finding and not a robots finding."
+            "detail": "HTTP 200, 5,906 bytes. THE FILE CARRIES THREE `User-agent: *` GROUPS, NOT ONE, and all three are transcribed here because the first of them bears directly on this decision and an earlier draft of this record omitted it. Lines 33-35, verbatim: \"User-Agent: *\\nContent-Signal: ai-train=yes, search=yes, ai-input=yes\\nAllow: /\" — an explicit machine-readable signal permitting AI input, which is the directive most nearly on point for this exact read. Lines 73-76: \"User-agent: *\\nDisallow: /email-verify/*\\nDisallow: /forms/*\\nDisallow: /*.swf$\" followed by query-parameter patterns; /feed/ is under none of them. Lines 120-122 repeat the first group verbatim, ahead of the named-bot groups. The file also contains a block headed \"# Global RSS Feeds\" listing \"Sitemap: https://blogs.nvidia.com/feed/\" and \"Sitemap: https://developer.nvidia.com/blog/feed/\". So robots.txt does not merely permit the read, it signals for it and points at it — which is why this refusal is a rights finding and not a robots finding. AND IT DOES NOT RESOLVE THE REFUSAL: `Content-Signal: ai-input=yes` is a statement about this host's machine-readable instructions, and the open question is the SCOPE of a terms clause on a different host, which no robots file can answer. It is recorded in full because it is the evidence a future reader needs to revisit the refusal, and a record that omits the strongest fact on the other side is not a record."
           },
           "terms": {
             "url": "https://www.nvidia.com/en-us/about-nvidia/terms-of-service/",
@@ -421,7 +402,7 @@
           "org_entry": "org/anthropic",
           "format": "rss",
           "registered": false,
-          "not_registered_because": "No feed exists to register. Three candidate URLs were fetched on 2026-09-06 and all three returned HTTP 404 with an HTML body: /rss.xml (60,179 bytes), /news/rss.xml (60,179 bytes) and /news/feed.xml (60,181 bytes). This is an absence at the publisher, not a refusal — anthropic.com/robots.txt is \"User-Agent: *\\nAllow: /\\n\\nSitemap: https://www.anthropic.com/sitemap.xml\" and forbids nothing.",
+          "not_registered_because": "No feed exists to register. Three candidate URLs were fetched on 2026-09-06 and all three returned HTTP 404 with an HTML body titled \"Not Found \\\\ Anthropic\": /rss.xml (59,694 bytes), /news/rss.xml (60,179 bytes) and /news/feed.xml (60,181 bytes). The /rss.xml figure is a correction: it was first recorded as 60,179, the same number as /news/rss.xml, which was one URL's measurement written against two paths. All three were re-fetched three times in succession on 2026-09-06 and each path returned the same byte count every time, so these pages are deterministic and the three figures are three measurements. The load-bearing part of the finding is the status code, which was never in doubt. This is an absence at the publisher, not a refusal — anthropic.com/robots.txt is \"User-Agent: *\\nAllow: /\\n\\nSitemap: https://www.anthropic.com/sitemap.xml\" and forbids nothing.",
           "robots": {
             "url": "https://www.anthropic.com/robots.txt",
             "checked_on": "2026-09-06",
@@ -515,7 +496,7 @@
         "read_on": "2026-09-06",
         "result": "permitted, with a rate limit stated in the document",
         "http_status": 200,
-        "quote": "Our APIs include our OAI-PMH interface , RSS feeds , the legacy arXiv API , bulk data downloads , and SWORD bulk deposit API . … Things that you can (and should!) do: Retrieve, store, transform, and share descriptive metadata about arXiv e-prints. … Provide tools and services to users that helps them to discover or be notified about arXiv e-prints. … When using the legacy APIs (including OAI-PMH, RSS, and the arXiv API), make no more than one request every three seconds, and limit requests to a single connection at a time.",
+        "quote": "Our APIs include our OAI-PMH interface , RSS feeds , the legacy arXiv API , bulk data downloads , and SWORD bulk deposit API . … Things that you can (and should!) do … Retrieve, store, transform, and share descriptive metadata about arXiv e-prints. … Provide tools and services to users that helps them to discover or be notified about arXiv e-prints. … When using the legacy APIs (including OAI-PMH, RSS, and the arXiv API), make no more than one request every three seconds, and limit requests to a single connection at a time.",
         "detail": "\"Terms of Use for arXiv APIs\", fetched 2026-09-06, HTTP 200, 85,842 bytes. The document names RSS feeds as one of the APIs it governs, so the registered URLs are squarely inside it, and it grants exactly what a radar sweep does: retrieve and transform descriptive metadata, and help users discover e-prints. The rate limit is a term and not a courtesy — one request every three seconds, one connection at a time — and reading three feeds is three requests, so the scout must space them. The document also states that arXiv may \"further limit or block your access\" if it judges that limits are being circumvented, which is the refusal path this repository records rather than routes around."
       },
       "verified_on": "2026-09-06",
