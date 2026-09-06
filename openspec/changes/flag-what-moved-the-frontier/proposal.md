@@ -8,7 +8,8 @@ order to the Desk — `loops/ui-loop/graph/knowledge/DESK-ORDER-001.md`, signed
 off by the keeper on 2026-09-05 — opens with §1, and §1 is a data and spec
 change, not a template change: *"The Frontier's domain section is driven by
 scout-flagged, domain-tagged editorial records: the three most recent per
-domain… Not a feed, not a ranking."*
+domain, with leaders-by-index secondary where a licensed index exists. Not a
+feed, not a ranking."*
 
 The first thing that order rules out is the obvious thing. The keeper first
 asked for "top 3 models per domain" (`SPEC-REVIEW-GUIDE.md`, the 9c9t table's
@@ -96,9 +97,12 @@ collapse into.
 ## What changes
 
 **`specs/blog`, added.** A post may declare `frontier: true`. When it does it
-SHALL declare `frontier_reason` — exactly one of F1–F5 — and at least one
-`domains` value from the closed vocabulary. The build fails a flag missing
-either. F1–F5, the not-qualifying list and its test are transcribed verbatim.
+SHALL declare `frontier_reason` — exactly one of F1–F5. `domains` is optional,
+flagged or not; every value it carries must come from the closed vocabulary,
+and carrying none means "general" (K46, below). The build fails a flag with no
+criterion, a criterion outside F1–F5, or a domain outside the vocabulary — and
+does not fail an absent one. F1–F5, the not-qualifying list and its test are
+transcribed verbatim.
 
 **`specs/blog`, added.** The F2 rule: what an F2 record's copy may say and what
 it may not, both listed, with the publisher's own changelog as the anchor.
@@ -111,7 +115,8 @@ lifts a count, never a budget.
 records the rest" gains the standing F1–F5 sweep, the candidate-level flag with
 the same bar as the post-level one, and the mechanical exemption at merge — a
 flagged candidate is not counted against the three, and a candidate whose flag
-cites no valid criterion or no valid domain is not filed at all.
+cites no valid criterion, or a domain outside the vocabulary, is not filed at
+all.
 
 ## The mechanism the order does not mention, and this change must not walk into
 
@@ -187,29 +192,60 @@ implements §3 to discover, and named as a task below.
   is a directive line the keeper already has; this change supplies the rule the
   backfill is judged against.
 
-## What is not settled, and is for the reviewing session
+## What the reviewing session settled, and what it left open
 
-Three things this draft transcribes faithfully and cannot resolve from the
-artifacts in this repository. They are listed here because a requirement whose
-reason is lost gets re-litigated later, and a question asked in the draft is
-cheaper than one discovered in the implementation.
+The draft this revises asked three questions it could not resolve from the
+artifacts in this repository. The reviewing session answered the first, and the
+answer changed the requirement rather than its wording — so the reason is
+recorded here as well as in the delta, because a requirement whose reason is
+lost gets re-tightened later by someone who never saw it.
 
-1. **A frontier story with no domain.** §1 requires ≥1 `domains` value on a
-   flagged post, and §3 makes `text` not a value and "general" the unmarked
-   default. Together they mean a genuinely general story cannot be flagged at
-   all — and much of the corpus is that shape. Named rather than counted, so
-   the judgment is checkable rather than asserted:
-   `content/blog/doj-statement-of-interest-llm-training-fair-use.md` (a court
-   filing), `content/blog/eu-ai-office-first-enforcement-rfis.md` (a
-   regulator), `content/blog/glm-5-3-license-revenue-gate.md` (a licence term)
-   and `content/blog/openai-gpt-6-astra-system-card.md` (a system card) map to
-   no value in the vocabulary. Either the vocabulary needs a value the general
-   case can carry, or the "≥1 domain" bar is intentionally the filter that
-   keeps those stories off this surface. The draft transcribes the bar as
-   written.
-2. **Where the domain vocabulary is defined.** §6 sequences §1 before §3, so
-   the post gate needs the closed list before the wiki facet exists. This draft
-   has the list defined once, in `lib/`, by this change, and read by §3 when it
-   lands — one definition rather than two that drift.
-3. **Whether the exemption needs a numeric bound of its own.** §1 gives it
-   none, and the budget ceiling is the stated brake. The draft adds none.
+**Settled: a frontier story with no domain.** The draft transcribed §1's
+"at least one `domains` value" bar as written and named the cost it could not
+resolve: §3 makes `text` not a value and "general" the unmarked default, so a
+genuinely general story could not be flagged at all. Resolved as keeper ruling
+K46 on the blind arbiter record
+`loops/ui-loop/graph/artifacts/BLIND-002.md` — *"RESOLVABLE from the record:
+option A. `domains` is optional on a flagged record; absent means general by
+K38's own rule"* — and carried into DESK-ORDER-001 §1 the same day, whose
+front-matter line now reads
+`domains: [coding, agents]      # OPTIONAL (K46, BLIND-002): values from the closed vocabulary (§3); absent = general`
+and whose gate line now reads *"`domains` may be absent: by K38 absence IS the
+value 'general'"*. The gate that remains is `frontier_reason` ∈ F1–F5 required,
+and any `domains` value outside the vocabulary fails; absence is not a failure.
+
+BLIND-002 also records why this overturns no keeper decision, which is the part
+worth keeping: K30's bar was spoken while the recommended vocabulary still held
+`text`, so at that moment every general story had a value to carry and the bar
+excluded nothing. K38 removed the value and nobody restated the bar, which left
+it with an editorial effect no ruling states. The four posts this draft named —
+`content/blog/doj-statement-of-interest-llm-training-fair-use.md` (a court
+filing), `content/blog/eu-ai-office-first-enforcement-rfis.md` (a regulator's
+enforcement action), `content/blog/glm-5-3-license-revenue-gate.md` (a licence
+revenue gate) and `content/blog/openai-gpt-6-astra-system-card.md` (a system
+card) — are F4- and F5-shaped events that map to no value in the vocabulary,
+and under the amended gate every one of them is flaggable, undomained.
+
+**One reading this revision had to make, and it is not the order's words.**
+The amended gate names absence and says nothing about an empty list. The blog
+delta states that `domains: []` means what an absent key means, on the ground
+that K38 makes "general" a value rather than an omission — so the two spellings
+cannot be made to differ without inventing a distinction no ruling draws. It is
+a reading, not a transcription, and an implementer who disagrees should say so
+before task 3 is written rather than after.
+
+**Not this change's, and named so the absence is not read as an oversight.**
+DESK-ORDER-001 §1 says the section renders a "general" lane under the same
+three-most-recent rule. Where that lane sits relative to the domain-id ordering
+is a presentation question — BLIND-002's "Scope of the ruling" assigns it to
+BRIEF-UI-002, because §4.8 of `EN-domain-facet` orders sections by domain id
+and "general" has no id — and this change writes no display rule at all.
+
+Two questions the reviewing session left where the draft put them:
+
+- **Where the domain vocabulary is defined.** §6 sequences §1 before §3, so
+  the post gate needs the closed list before the wiki facet exists. This draft
+  has the list defined once, in `lib/`, by this change, and read by §3 when it
+  lands — one definition rather than two that drift.
+- **Whether the exemption needs a numeric bound of its own.** §1 gives it
+  none, and the budget ceiling is the stated brake. The draft adds none.

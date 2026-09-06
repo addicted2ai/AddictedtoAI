@@ -19,9 +19,11 @@ lines after this delta lands and after the reviewing session has read it.
       false; the other two are optional at the field level and made conditional
       by task 3, because a required field would reject every unflagged post.
 - [ ] 3. `lib/schema.mjs`: a `superRefine` on `postSchema` — `frontier: true`
-      with no `frontier_reason`, a `frontier_reason` outside F1–F5, no
-      `domains`, an empty `domains`, or any `domains` value outside the
-      vocabulary is an issue whose `path` names the offending field. This is
+      with no `frontier_reason`, a `frontier_reason` outside F1–F5, or any
+      `domains` value outside the vocabulary is an issue whose `path` names the
+      offending field. **An absent or empty `domains` is not an issue**,
+      flagged or not: absence is the vocabulary's "general" (K46), and a gate
+      that fails it contradicts the vocabulary. This is
       the build gate: schema validation runs in the `content` prebuild step
       (`scripts/prebuild.mjs` STEPS), which already reports the file and the
       field, so the gate needs no new step and no new entry point.
@@ -30,13 +32,14 @@ lines after this delta lands and after the reviewing session has read it.
 
 - [ ] 4. Tests beside `lib/schema.mjs`, one per refusal, each naming the field
       it expects in the error: flag with no reason; flag with `frontier_reason:
-      F6`; flag with no `domains`; flag with `domains: []`; flag with
-      `domains: [legal]`; flag with `domains: [text]` (the vocabulary
-      deliberately excludes it — general is unmarked).
+      F6`; flag with `domains: [legal]`; flag with `domains: [text]` (the
+      vocabulary deliberately excludes it — general is unmarked).
 - [ ] 5. The controls, without which task 4 proves nothing: a post with no
       `frontier` key validates exactly as before; a post with
       `frontier: false` and no other new key validates; a fully valid flagged
-      post validates and round-trips all three values.
+      post validates and round-trips all three values; and — the control that
+      pins K46 — a flagged post with a valid `frontier_reason` and **no**
+      `domains` key validates, as does one with `domains: []`.
 - [ ] 6. `lib/review-hash.test.mjs`: assert that `frontier`, `frontier_reason`
       and `domains` are **absent** from `MECHANICAL_FRONT_MATTER_KEYS`, and
       that a post gaining any of them changes its `reviewedHash`. This is a
@@ -59,8 +62,8 @@ lines after this delta lands and after the reviewing session has read it.
       be lifted by flagging. A non-scout job's flagged proposal is capped
       exactly as before.
       Valid-flagged files are all kept. Invalid-flagged files — `frontier:
-      true` with no `frontier_reason`, a reason outside F1–F5, no `domains`, or
-      a `domains` value outside the vocabulary — go to
+      true` with no `frontier_reason`, a reason outside F1–F5, or a `domains`
+      value outside the vocabulary — go to
       `data/proposals/dropped/` with a note naming the missing or invalid
       field, and do **not** rejoin the unflagged group. A flag that does not
       hold must not be able to buy a place among the three by failing.

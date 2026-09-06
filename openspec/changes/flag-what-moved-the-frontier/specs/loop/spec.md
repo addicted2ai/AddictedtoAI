@@ -1,8 +1,8 @@
 # loop — delta for flag-what-moved-the-frontier
 
-One requirement modified. The scout's charge, its two-test bar, its cap of
-three, its docket discipline, its drop records, its synthesis branch, its
-blocked-streak witness and its review gate are all unchanged. What is added is
+One requirement modified. The scout's charge, its two-test bar, its docket
+discipline, its drop records, its synthesis branch, its blocked-streak witness
+and its review gate are all unchanged. What is added is
 the standing frontier sweep, the candidate-level flag with the same bar the
 post-level flag carries, and the exemption that makes the flag worth carrying —
 mechanical at merge, like the cap it lifts.
@@ -59,11 +59,14 @@ itself.**
   written at filing time.
 - A candidate MAY additionally declare `frontier: true`, and when it does it
   SHALL carry the same bar a post carries: `frontier_reason`, exactly one of
-  F1–F5, and at least one `domains` value from the closed domain vocabulary.
-  **A candidate declaring the flag without a valid criterion or without a
-  valid domain SHALL NOT be filed** — the flag is refused at filing, not
-  discovered at build, because the flag's whole effect happens before any post
-  exists.
+  F1–F5, and every `domains` value it declares from the closed domain
+  vocabulary. `domains` is optional here for the reason it is optional on a
+  post — absence is the vocabulary's unmarked "general", not an unfilled field
+  — so a frontier event with no modality is a candidate like any other.
+  **A candidate declaring the flag with no valid criterion, or with a `domains`
+  value outside the vocabulary, SHALL NOT be filed** — the flag is refused at
+  filing, not discovered at build, because the flag's whole effect happens
+  before any post exists.
 - **A candidate carrying a valid `frontier: true` SHALL NOT count against the
   cap of three.** The exemption is from the count and from nothing else: an
   expiring flagged candidate cools, expires, is swept and is judged exactly as
