@@ -42,6 +42,8 @@ evidence: >
   `data/proposals/same-weights-two-access-envelopes.md` (2026-09-06, type
   `post`), which argues the Fable/Mythos gating as a story; this one is about
   the corpus rendering a policy on two of five pages that describe one model.
+proposed_by_job: j-20260906-16
+proposed_by_type: entry
 ---
 
 The designation is the first fact this corpus has carried that is a property of
