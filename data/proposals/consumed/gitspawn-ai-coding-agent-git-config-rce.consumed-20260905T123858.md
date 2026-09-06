@@ -171,7 +171,7 @@ a source of those three claims.
    publication." Its summary table lists Claude Code twice — the
    `core.fsmonitor` path (patched 2.1.196) and the ultrareview path
    (unpatched, confirmed 2.1.252). Eight findings, seven agents. The post
-   says "eight findings across seven agents".
+   says "eight findings across seven command-line AI coding agents".
 
 3. **The CVE-2026-71963 attribution.** The KNOWN DISCREPANCY block above says
    The Hacker News attributes the identifier to Grok Build. It does not: in
