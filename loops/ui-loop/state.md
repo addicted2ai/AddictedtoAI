@@ -77,9 +77,11 @@ Desk backlog, never a UI finding. Check this file's size before every commit (ov
 
 ## Next (keeper decisions)
 
-1. **Design Arena API key** (bead c563): the grant covers API data with credit + link, but access
-   needs a keeper-signed application. Apply, or leave both index publishers dark by rule (K24). [r6]
-2. Otherwise nothing open (K35–K48 closed; struck items in `state-archive.md`). Next
+1. **Design Arena API key** (bead c563): grant covers API data with credit + link but needs a
+   keeper-signed application. Apply, or leave both index publishers dark by rule (K24). [r6]
+2. **Approve `graph/BRIEF-UI-002.md`** (queued 2026-09-06): Frontier domain section + general lane,
+   `frontier.json` honest render, facet display, claim records, three deferred layout items. [r6]
+3. Otherwise nothing open (K35–K49 closed). Next
    brief (BRIEF-UI-002, keeper-drafted when back): wiki entry's empty right half at 1440 (F-hier-7),
    catalog at 768 (JV-struct q5), claim clamp eats the value (JV-sys v6 downstream), Frontier domain
    section once DESK-ORDER-001 §1 data exists. [r6]
