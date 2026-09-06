@@ -2022,6 +2022,38 @@
         "file": "content/wiki/org/perplexity.md"
       }
     ],
+    "model/poolside-laguna-s-2-1": [
+      {
+        "url": "/wiki/org/poolside",
+        "title": "Poolside",
+        "type": "entry",
+        "file": "content/wiki/org/poolside.md"
+      }
+    ],
+    "model/poolside-laguna-s-2-1-free": [
+      {
+        "url": "/wiki/org/poolside",
+        "title": "Poolside",
+        "type": "entry",
+        "file": "content/wiki/org/poolside.md"
+      }
+    ],
+    "model/poolside-laguna-xs-2-1": [
+      {
+        "url": "/wiki/org/poolside",
+        "title": "Poolside",
+        "type": "entry",
+        "file": "content/wiki/org/poolside.md"
+      }
+    ],
+    "model/poolside-laguna-xs-2-1-free": [
+      {
+        "url": "/wiki/org/poolside",
+        "title": "Poolside",
+        "type": "entry",
+        "file": "content/wiki/org/poolside.md"
+      }
+    ],
     "model/qwen-qwen3-6-27b": [
       {
         "url": "/wiki/model/qwen-qwen3-8-27b",
@@ -2412,6 +2444,14 @@
         "file": "content/blog/gitspawn-git-config-code-execution-coding-agents.md"
       }
     ],
+    "org/amazon": [
+      {
+        "url": "/wiki/org/poolside",
+        "title": "Poolside",
+        "type": "entry",
+        "file": "content/wiki/org/poolside.md"
+      }
+    ],
     "org/anthropic": [
       {
         "url": "/wiki/model/anthropic-claude-haiku-4-5",
@@ -2643,6 +2683,12 @@
       }
     ],
     "org/nvidia": [
+      {
+        "url": "/wiki/org/poolside",
+        "title": "Poolside",
+        "type": "entry",
+        "file": "content/wiki/org/poolside.md"
+      },
       {
         "url": "/learn/the-hardware-that-runs-ai",
         "title": "The hardware AI runs on",
