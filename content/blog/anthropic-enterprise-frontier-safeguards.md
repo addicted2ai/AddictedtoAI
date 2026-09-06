@@ -8,6 +8,8 @@ mentions:
   - org/anthropic
   - model/anthropic-claude-fable-5
   - model/anthropic-claude-fable-5-1
+frontier: true
+frontier_reason: "F5"
 ---
 
 On 1 September 2026 Anthropic announced Enterprise Frontier Safeguards, which it

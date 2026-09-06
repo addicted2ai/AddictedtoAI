@@ -8,6 +8,8 @@ mentions:
   - org/z-ai
   - model/z-ai-glm-5-3
   - model/z-ai-glm-5-3-flash
+frontier: true
+frontier_reason: "F5"
 ---
 
 Z.ai published the open weights of GLM-5.3 on Hugging Face on 27 August 2026, and the licence that ships with them is the part of the release worth reading twice. The GLM-5.3 License reads like MIT until clause 2, which makes commercial use by any licensee conditional on passing Z.AI's security review once the licensee or any of its affiliates operates a Model-as-a-Service business and the group's aggregate revenue passes **$10B** over any consecutive 12 months. The review's scope and method are Z.AI's to determine, subject only to the licence's word "reasonably". Licensees the clause does not trigger keep the permissive grant unchanged.

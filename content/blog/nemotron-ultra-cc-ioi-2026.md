@@ -14,6 +14,10 @@ mentions:
   - model/nvidia-nemotron-3-ultra-550b-a55b
   - model/nvidia-nemotron-3-ultra-550b-a55b-batch
   - model/z-ai-glm-5-2
+frontier: true
+frontier_reason: "F1"
+domains:
+  - "coding"
 ---
 
 NVIDIA posted a paper to arXiv on 2 September 2026 reporting that a
