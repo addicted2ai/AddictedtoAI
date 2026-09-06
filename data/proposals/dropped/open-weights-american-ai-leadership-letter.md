@@ -34,12 +34,16 @@ letter is not an event.
 *Checkability, and this is the sharper reason.* The reporting retrieved on
 2026-09-06 flatly contradicts itself on the fact the story turns on.
 Tom's Hardware and TheNextWeb both frame the story as OpenAI, Anthropic and
-Google being **absent** from 25 signatories. The RedMonk piece, read through
-WebFetch on the same day, states that those three "were initially absent but
-joined by the following day" and that 235 companies had signed by week's
-end. Those cannot both be true, and the entire editorial value of the story
-is which one is. No copy of the letter itself, with its signature list, was
-located during this sweep — every source is a description of it.
+Google being **absent** from 25 signatories. The RedMonk piece, whose raw
+bytes were fetched on 2026-09-06, says it differently: "Notably absent were
+Anthropic, Google and OpenAI, but the latter two joined a day later and by
+the end of the week 235 companies were signatories." Anthropic, on RedMonk's
+telling, did not join. The conflict is therefore in the signatory count and
+its date — a letter with 25 signatories and three named absentees, versus one
+with 235 by the end of the same week — and the entire editorial value of the
+story is which of those describes the document. No copy of the letter itself,
+with its signature list, was located during this sweep — every source is a
+description of it.
 
 ## What would make it worth refiling
 
