@@ -175,7 +175,7 @@ promises.
 - [x] 27. `openspec validate separate-a-claim-from-a-fact --type change --strict
       --no-interactive`, and `node scripts/check-spec-deltas.mjs --strict`. Run
       at drafting time.
-- [ ] 28. `npm test`, `npm run build`, `node scripts/verify-launch.mjs`,
+- [x] 28. `npm test`, `npm run build`, `node scripts/verify-launch.mjs`,
       `verify-design`, `verify-surfaces`, `verify-analytics`.
 
 ## Not tasks of this change, recorded so they are not read as omissions

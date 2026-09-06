@@ -87,7 +87,7 @@ is never silently re-run. Removing finished lines is yours, at leisure.
 
 - machinery: register the scout's radar feeds — Hugging Face Hub, covered orgs' release RSS, arXiv, GitHub releases — as data/sources/registry.json rows with robots/terms and last-verified dates; inputs to the scout only, never displayed; DESK-ORDER-001 §5; addictedtoai-wg78
 
-- machinery: add kind `lead-change` (arrival vs rescoring) to changes.jsonl and derive data/derived/frontier.json per frontier-plan §2.3; DESK-ORDER-001 §4; addictedtoai-eb4l
+- machinery: add kind `lead-change` (arrival vs rescoring) to changes.jsonl and derive data/derived/frontier.json per frontier-plan §2.3; DESK-ORDER-001 §4; addictedtoai-eb4l [done 2026-09-06 addictedtoai-h0z0 — implemented directly by orchestrator subagents in parallel worktrees under the keeper's 2026-09-06 authorisation, not by a Desk job; sealed-reviewed and merged; see the bead]
 
 - machinery: define the vendor-claim record (verbatim quote, source URL, accessed date, ability named, verified: false | {by,url,date}) and migrate the cited facts that are claims; no founding or company fact may render as a claim; DESK-ORDER-001 §4; addictedtoai-eb4l [done 2026-09-06 addictedtoai-h0z0 — implemented directly by orchestrator subagents in parallel worktrees under the keeper's 2026-09-06 authorisation, not by a Desk job; sealed-reviewed and merged; see the bead]
 
