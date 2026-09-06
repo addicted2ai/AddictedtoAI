@@ -76,8 +76,14 @@
           "event": false,
           "note": "Same field, same mechanism, same measurement as price_input above. addictedtoai-8ho."
         },
-        { "field": "context_window", "path": "context_length" },
-        { "field": "status", "path": "$status" }
+        {
+          "field": "context_window",
+          "path": "context_length"
+        },
+        {
+          "field": "status",
+          "path": "$status"
+        }
       ],
       "declined_fields_note": "The third state `material_fields_note` does not cover. A path in `material_fields` is CARRIED (column + fact, and an event unless `event: false`). A path in neither list is UNDECIDED — nobody has looked, which is what a field looks like when the vendor added it after this entry was written, and it is indistinguishable from a refusal from the outside. This list is the fourth answer to that note's question — column, fact, event, or NONE OF THOSE — recorded rather than left to default. `decision` may only be \"not carried\": carrying is expressed by `material_fields`, so a `declined_fields` entry claiming otherwise would be a decision written where nothing can enact it. pulse/lib/registry.mjs refuses a path that is both declined and material, and refuses a refusal with no dated measurement behind it. This list ends the undecided state for the paths it names and for no others: 23 further paths this source serves are still in it, and the check that would make the state unreachable is addictedtoai-eexr.",
       "declined_fields": [
@@ -136,8 +142,15 @@
       "schedule_rule": {
         "kind": "utc_windows",
         "path": "pricing.overrides",
-        "window_keys": ["utc_start", "utc_end", "utc_days"],
-        "governs": ["price_input", "price_output"],
+        "window_keys": [
+          "utc_start",
+          "utc_end",
+          "utc_days"
+        ],
+        "governs": [
+          "price_input",
+          "price_output"
+        ],
         "note": "Some rows republish their price on a timetable, so two fetches at different times of day read two different numbers off one unchanged price sheet. tencent/hy3 posts 0.000000132 for utc_start 0 / utc_end 1600 and 0.0000000825 for 1600-0; this repo recorded a \"+60%\" change on that row whose previous fetch was 18:19 UTC and whose latest was 07:27 UTC. pulse/lib/diff.mjs suppresses a governed field's diff on a row carrying such a window, on either side of the comparison. Measured on the 2026-08-29 snapshot (396 rows): 3 rows carry UTC windows (deepseek/deepseek-v4-flash-vision-exp, deepseek/deepseek-v4-pro-0813, tencent/hy3). A further 48 rows carry a pricing.overrides array of min_prompt_tokens long-context tiers, which do not move with the clock and are deliberately NOT suppressed — window_keys, not the presence of the array, is the test."
       },
       "status_rule": {
@@ -177,7 +190,15 @@
       "format": "rss",
       "row_id_field": "guid",
       "display_name_field": "title",
-      "yields": ["title", "link", "guid", "pubDate", "description", "source_url", "source_name"],
+      "yields": [
+        "title",
+        "link",
+        "guid",
+        "pubDate",
+        "description",
+        "source_url",
+        "source_name"
+      ],
       "fetch_every_days": 1,
       "expected_change_days": 3,
       "emit_on_remove": false,
@@ -211,5 +232,525 @@
     }
   ],
   "verified_on": "2026-08-28",
-  "version": 1
+  "version": 1,
+  "radar_note": "THE SCOUT'S RADAR FEEDS, AND THEY ARE NOT SOURCES. `sources` above is what the Pulse fetches, snapshots, diffs and derives from; every row of it can reach a rendered page. `radar` is DESK-ORDER-001 §5 / keeper ruling K30: feeds the scout reads to decide where to look, which this engine never fetches and which never render. They are a separate array rather than a flagged source because a flag would have to be honoured by every consumer that iterates `sources` — run.mjs, derive.mjs, mint.mjs, diff.mjs, freshness.mjs and whatever is written next — and one that forgets it would silently ingest and publish a radar feed. Measured: derive.mjs writes every `sources[]` row's id, title and url into data/derived/sources.json BEFORE the material_fields check that skips catalog rows, and lib/data-layer.mjs feeds that file to lib/site.mjs, so `material_fields: []` does not keep a row off the site. Nothing iterating `registry.sources` can reach these rows at all; pulse/lib/registry.mjs `radarFeeds()` and `radarReadableUrls()` are the only way in. Each row records robots, terms and a last-verified date, as §5 requires, and a URL a site forbids is recorded as refused and never handed to a caller.",
+  "radar": [
+    {
+      "id": "hf-hub-models",
+      "title": "Hugging Face Hub — public model listing (open weights, licence and modality)",
+      "reads_for": "scout",
+      "purpose": "DESK-ORDER-001 §5: open weights, with licence and modality metadata per model. It tells the scout which open-weight releases moved, so an F1/F3/F5 event on a model nobody here covers is still visible. Nothing from it renders: the Hub is not a catalog source and this repo's model catalog stays OpenRouter's.",
+      "url": "https://huggingface.co/api/models?sort=trendingScore&direction=-1&limit=50&expand%5B%5D=author&expand%5B%5D=createdAt&expand%5B%5D=lastModified&expand%5B%5D=downloads&expand%5B%5D=likes&expand%5B%5D=pipeline_tag&expand%5B%5D=library_name&expand%5B%5D=tags&expand%5B%5D=gated&expand%5B%5D=trendingScore&expand%5B%5D=cardData",
+      "site_url": "https://huggingface.co/models",
+      "format": "json",
+      "yields": [
+        "id",
+        "author",
+        "createdAt",
+        "lastModified",
+        "downloads",
+        "likes",
+        "trendingScore",
+        "pipeline_tag",
+        "library_name",
+        "gated",
+        "tags",
+        "cardData.license"
+      ],
+      "robots": {
+        "url": "https://huggingface.co/robots.txt",
+        "checked_on": "2026-09-06",
+        "result": "allowed",
+        "http_status": 200,
+        "detail": "HTTP 200, 68 bytes, text/plain. The whole file, verbatim: \"User-agent: *\\nAllow: /\\n\\nSitemap: https://huggingface.co/sitemap.xml\\n\". One group, no crawl-delay, no disallowed prefix at all, so /api/models is allowed like everything else."
+      },
+      "terms": {
+        "url": "https://huggingface.co/terms-of-service",
+        "read_on": "2026-09-06",
+        "result": "permitted",
+        "http_status": 200,
+        "document": "Hugging Face Terms of Service, \"Effective Date: September 15, 2022\"",
+        "quote": "If you decide to set your Repository public , you grant each User a perpetual, irrevocable, worldwide, royalty-free, non-exclusive license to use, display, publish, reproduce, distribute, and make derivative works of your Content through our Services and functionalities",
+        "detail": "Fetched 2026-09-06, HTTP 200, 114,631 bytes. The document contains no clause about automated access, crawling or scraping: the literal substrings \"scrap\", \"automated\", \"crawl\" and \"robot\" occur zero times in the rendered text. The clause above is the one that governs reading public model metadata, and it is a grant, not a restriction. Recorded as read rather than as silence, because an absent prohibition and an unread document are not the same finding."
+      },
+      "verified_on": "2026-09-06",
+      "verification": {
+        "date": "2026-09-06",
+        "result": "live",
+        "http_status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "bytes": 44844,
+        "rows": 50,
+        "detail": "Fetched unauthenticated with the Pulse user-agent. 50 rows, 50 distinct ids. Licence arrives two ways and both were counted: 48 of 50 rows carry a `license:*` entry in `tags`, and `cardData.license` carries the same value (row 1: deepseek-ai/DeepSeek-V4-Flash-Vision-Exp, pipeline_tag image-text-to-text, license:mit). Modality arrives as `pipeline_tag`, present on 46 of 50. `license` is NOT an expandable field — asking for it returns HTTP 400 naming the 29 legal values — which is why this URL asks for `tags` and `cardData` instead. That 400 is recorded because the obvious next edit is to add `expand[]=license`, and it fails."
+      }
+    },
+    {
+      "id": "covered-org-releases",
+      "title": "Covered organisations' blogs and release notes (RSS)",
+      "reads_for": "scout",
+      "purpose": "DESK-ORDER-001 §5: \"covered organisations' blogs and release notes (RSS; the source of verbatim claims)\". The scope is deliberately narrow — an organisation with a wiki entry under content/wiki/org/ whose site publishes a machine-readable feed, verified live on the date below. A vendor headline is carried verbatim and attributed if it is ever carried at all; nothing from these feeds renders as a feed.",
+      "url": "https://openai.com/news/rss.xml",
+      "format": "rss",
+      "yields": [
+        "title",
+        "link",
+        "guid",
+        "pubDate",
+        "description"
+      ],
+      "robots": {
+        "url": "https://openai.com/robots.txt",
+        "checked_on": "2026-09-06",
+        "result": "allowed",
+        "http_status": 200,
+        "detail": "Row-level robots is the row url's host. HTTP 200, 98 bytes, verbatim: \"User-agent: *\\nAllow: /\\nDisallow: /microsoft-for-startups/\\n\\nSitemap: https://openai.com/sitemap.xml\". /news/rss.xml is under no disallowed prefix. Per-feed findings are in `feeds` below."
+      },
+      "terms": {
+        "url": "https://openai.com/policies/terms-of-use/",
+        "read_on": "2026-09-06",
+        "result": "unread — the document declined this requester (HTTP 403)",
+        "http_status": 403,
+        "quote": "Enable JavaScript and cookies to continue",
+        "detail": "THE TERMS PAGE COULD NOT BE READ AND THAT IS RECORDED RATHER THAN WORKED AROUND. Fetched 2026-09-06 with the Pulse's honest user-agent: HTTP 403, 9,917 bytes, and the entire rendered text of the body is the sentence quoted above — a JavaScript challenge, not a stated policy. No browser user-agent was substituted and no second route was tried: this repository's rule is that a refusal is a finding, not an obstacle. What IS readable is the machine-readable instruction on the same host, and it allows this path (see `robots` above); the feed itself answers 200 to the same user-agent in the same minute. So the row rests on robots.txt and on the publisher serving the feed, and the terms question is open, dated and visible rather than silently assumed."
+      },
+      "verified_on": "2026-09-06",
+      "verification": {
+        "date": "2026-09-06",
+        "result": "live",
+        "http_status": 200,
+        "content_type": "text/xml; charset=utf-8",
+        "bytes": 710995,
+        "rows": 1172,
+        "detail": "openai.com/news/rss.xml: 1,172 <item> elements, pubDate spanning Fri, 11 Dec 2015 08:00:00 GMT to Sun, 06 Sep 2026 09:00:00 GMT — same-day, so the feed is current. Channel title \"OpenAI News\". The other feeds and the four organisations whose feeds are NOT registered are each recorded in `feeds`."
+      },
+      "feeds": [
+        {
+          "url": "https://openai.com/news/rss.xml",
+          "org_entry": "org/openai",
+          "format": "rss",
+          "registered": true,
+          "robots": {
+            "url": "https://openai.com/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "allowed",
+            "http_status": 200,
+            "detail": "HTTP 200, 98 bytes, verbatim: \"User-agent: *\\nAllow: /\\nDisallow: /microsoft-for-startups/\\n\\nSitemap: https://openai.com/sitemap.xml\". /news/rss.xml is under no disallowed prefix and there is no crawl-delay."
+          },
+          "terms": {
+            "url": "https://openai.com/policies/terms-of-use/",
+            "read_on": "2026-09-06",
+            "result": "unread — HTTP 403 JavaScript challenge; robots.txt allows the path",
+            "quote": "Enable JavaScript and cookies to continue"
+          },
+          "verified_on": "2026-09-06",
+          "detail": "HTTP 200, 710,995 bytes, 1,172 items, newest Sun, 06 Sep 2026 09:00:00 GMT."
+        },
+        {
+          "url": "https://deepmind.google/blog/rss.xml",
+          "org_entry": "org/google-deepmind",
+          "format": "rss",
+          "registered": true,
+          "robots": {
+            "url": "https://deepmind.google/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "allowed",
+            "http_status": 200,
+            "detail": "HTTP 200, 69 bytes, verbatim: \"User-agent: *\\nAllow: /\\n\\nSitemap: https://deepmind.google/sitemap.xml\\n\". No crawl-delay, no disallowed prefix."
+          },
+          "terms": {
+            "url": "https://policies.google.com/terms",
+            "read_on": "2026-09-06",
+            "result": "permitted — the prohibition is conditioned on robots.txt, and robots.txt allows",
+            "http_status": 200,
+            "quote": "using automated means to access content from any of our services in violation of the machine-readable instructions on our web pages (for example, robots.txt files that disallow crawling, training, or other activities)",
+            "detail": "Google Terms of Service, fetched 2026-09-06, HTTP 200, 618,628 bytes. The quoted line is one item in the list of things you may not do. It is the rare terms clause that answers this question exactly rather than by inference: automated access is forbidden only where it violates the site's machine-readable instructions, and deepmind.google/robots.txt is `Allow: /` with nothing disallowed."
+          },
+          "verified_on": "2026-09-06",
+          "detail": "HTTP 200, 71,969 bytes, text/xml. 100 items, channel title \"Google DeepMind News\", newest Thu, 03 Sep 2026 15:02:08 +0000 (\"Introducing WeatherNext 3, our most advanced and accurate global weather AI model\"), oldest Fri, 24 Oct 2025 19:06:32 +0000."
+        },
+        {
+          "url": "https://mistral.ai/news/rss",
+          "org_entry": "org/mistral-ai",
+          "format": "rss",
+          "registered": true,
+          "robots": {
+            "url": "https://mistral.ai/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "allowed",
+            "http_status": 200,
+            "detail": "HTTP 200, 70 bytes, verbatim: \"User-agent: *\\nAllow: /\\n\\nSitemap: https://mistral.ai/sitemap-index.xml\". No crawl-delay, nothing disallowed."
+          },
+          "terms": {
+            "url": "https://legal.mistral.ai/terms/get-started/",
+            "read_on": "2026-09-06",
+            "result": "no clause governs reading the public blog; robots.txt is the only instruction that speaks to it",
+            "http_status": 200,
+            "quote": "At Mistral AI, transparency, trust, and clarity are at the core of our relationship with you, whether you're a customer, an end-user, a business partner, a researcher, or simply exploring our products. … If you're a consumer: Terms of Service for consumers in the European Union / Terms of Service for consumers outside the European Union … For everyone using our products: Privacy Policy / Cookie Policy / Usage Policy / License Notice",
+            "detail": "https://mistral.ai/terms redirects to the Legal Center at legal.mistral.ai/terms/get-started/ (HTTP 200, 59,436 bytes, fetched 2026-09-06). Every document it indexes governs use of Mistral products — consumer and commercial Terms of Service, the Usage Policy, the DPA — and none of them addresses reading the public news feed. Recorded as an absence found by reading, not as an absence assumed."
+          },
+          "verified_on": "2026-09-06",
+          "detail": "https://mistral.ai/rss.xml redirects to https://mistral.ai/news/rss, which is the URL registered here. HTTP 200, 22,983 bytes. Served as text/plain but the body is well-formed RSS 2.0 (\"<rss version=\\\"2.0\\\"><channel><title>Mistral AI Blog</title>\"), 82 items, guid isPermaLink=true, newest Mon, 24 Aug 2026 16:02:41 GMT, oldest Wed, 27 Sep 2023 08:00:00 GMT. The content-type is recorded because a parser that switches on it will mis-handle this feed."
+        },
+        {
+          "url": "https://blogs.nvidia.com/feed/",
+          "org_entry": "org/nvidia",
+          "format": "rss",
+          "registered": false,
+          "not_registered_because": "NVIDIA's Terms of Service prohibit automated access to the Site in terms, and this job could not establish that the blog host is outside their scope. The feed is live and robots.txt advertises it, and neither of those outranks the clause.",
+          "robots": {
+            "url": "https://blogs.nvidia.com/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "allowed — and the file advertises this very feed",
+            "http_status": 200,
+            "detail": "HTTP 200, 5,906 bytes. The `User-agent: *` group begins \"User-agent: *\\nDisallow: /email-verify/*\\nDisallow: /forms/*\\nDisallow: /*.swf$\" followed by query-parameter patterns; /feed/ is under none of them. The file also contains a block headed \"# Global RSS Feeds\" listing \"Sitemap: https://blogs.nvidia.com/feed/\" and \"Sitemap: https://developer.nvidia.com/blog/feed/\". So robots.txt does not merely permit the read, it points at it — which is why this refusal is a rights finding and not a robots finding."
+          },
+          "terms": {
+            "url": "https://www.nvidia.com/en-us/about-nvidia/terms-of-service/",
+            "read_on": "2026-09-06",
+            "result": "forbidden in terms; scope over this host unresolved",
+            "http_status": 200,
+            "quote": "(f) use any robot, spider, scraper, crawler, data mining tool, data gathering or extraction tool, or any other automatic device, program, algorithm or methodology, or any similar or equivalent manual process, to access, acquire, copy or monitor any portion of the Site, or in any way reproduce or circumvent the navigational structure or presentation of the Site, to obtain or attempt to obtain any materials, documents or information through any means not purposely made available through the Site",
+            "scope_quote": "These Terms of Service (these \" Terms \") govern your access to and use of www.nvidia.com, rapids.ai, nventures.ai, jetson-ai-lab.com, and other NVIDIA operated websites where these Terms are linked, including any content, functionality, and services offered on or through such websites and their copies (collectively, the \" Site \").",
+            "detail": "BOTH SIDES ARE RECORDED BECAUSE BOTH ARE TRUE AND THEY DISAGREE. Fetched 2026-09-06, HTTP 200, 360,024 bytes. Clause (f) names robots and crawlers explicitly. Its own trailing qualifier — \"through any means not purposely made available through the Site\" — is a plausible carve-out for a feed the publisher advertises in robots.txt, but it attaches to obtaining materials and not to the flat prohibition on using a crawler to \"access, acquire, copy or monitor any portion of the Site\", so the sentence does not settle itself. The scope clause reaches \"other NVIDIA operated websites where these Terms are linked\", and blogs.nvidia.com is not one of the four hosts named. MEASURED, rather than assumed either way: a fetch of https://blogs.nvidia.com/ on 2026-09-06 returned HTTP 200 and 147,018 bytes in which the case-insensitive substring \"terms\" occurs ZERO times, so this job could establish neither that the Terms are linked there nor that they are not. An unresolved rights question is not a permission. Same shape as the `benchmarks.design_arena` finding on openrouter-models above: the answer is not a refusal, it is an unmet condition, and until it is met nothing reads. WHAT WOULD CLEAR IT: a statement from NVIDIA that feed readers are within the \"purposely made available\" carve-out, or a determination that blogs.nvidia.com does not link these Terms. developer.nvidia.com/blog/feed/ (HTTP 200, 735,042 bytes, Atom) is held back for exactly the same reason and is not listed separately."
+          },
+          "verified_on": "2026-09-06",
+          "detail": "Verified live and deliberately not registered: HTTP 200, 267,696 bytes, application/rss+xml. The URL is recorded so the next reader can see which URL the refusal is about; `registered: false` means the scout is never handed it — see `radarReadableUrls` in pulse/lib/registry.mjs."
+        },
+        {
+          "url": "https://www.anthropic.com/news/rss.xml",
+          "org_entry": "org/anthropic",
+          "format": "rss",
+          "registered": false,
+          "not_registered_because": "No feed exists to register. Three candidate URLs were fetched on 2026-09-06 and all three returned HTTP 404 with an HTML body: /rss.xml (60,179 bytes), /news/rss.xml (60,179 bytes) and /news/feed.xml (60,181 bytes). This is an absence at the publisher, not a refusal — anthropic.com/robots.txt is \"User-Agent: *\\nAllow: /\\n\\nSitemap: https://www.anthropic.com/sitemap.xml\" and forbids nothing.",
+          "robots": {
+            "url": "https://www.anthropic.com/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "allowed",
+            "http_status": 200,
+            "detail": "HTTP 200, 71 bytes, verbatim: \"User-Agent: *\\nAllow: /\\n\\nSitemap: https://www.anthropic.com/sitemap.xml\\n\"."
+          },
+          "terms": {
+            "url": "https://www.anthropic.com/legal/consumer-terms",
+            "read_on": "2026-09-06",
+            "result": "not read — moot while no feed exists",
+            "detail": "Deliberately not fetched. The row is a recorded absence of a feed, and reading a terms page to decide whether to read a document that does not exist would be theatre. If Anthropic publishes a feed, the terms check is the first thing this row needs."
+          },
+          "verified_on": "2026-09-06",
+          "detail": "Recorded rather than omitted because a covered organisation with no feed is a fact the next reader needs: without this line the obvious conclusion from an absent row is that nobody looked. Re-check when Anthropic ships a feed."
+        },
+        {
+          "url": "https://ai.meta.com/blog/rss/",
+          "org_entry": "org/meta-superintelligence-labs",
+          "format": "rss",
+          "registered": false,
+          "not_registered_because": "No feed exists to register. https://ai.meta.com/blog/rss/ and https://ai.meta.com/blog/rss.xml both returned HTTP 404 with a ~148 KB HTML body on 2026-09-06.",
+          "robots": {
+            "url": "https://ai.meta.com/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "not checked — moot while no feed exists",
+            "detail": "Not fetched. Both candidate feed URLs 404, so there is no path whose permission is in question. Recorded as unchecked rather than left blank, so nobody reads this row as a cleared one."
+          },
+          "terms": {
+            "url": "https://www.facebook.com/legal/terms",
+            "read_on": "2026-09-06",
+            "result": "not read — moot while no feed exists",
+            "detail": "Same reason as the robots entry above."
+          },
+          "verified_on": "2026-09-06",
+          "detail": "Recorded so the absence is visible. Re-check when Meta ships a feed for its AI blog."
+        },
+        {
+          "url": "https://qwenlm.github.io/blog/index.xml",
+          "org_entry": "org/alibaba-cloud",
+          "format": "rss",
+          "registered": false,
+          "not_registered_because": "Live and permitted, but dormant: the newest item is dated Tue, 23 Sep 2025 04:00:00 +0800, roughly a year before this check. A radar feed exists to tell the scout where to look, and a feed that has not moved in a year points nowhere. Qwen now publishes at qwen.ai, which serves no feed (see detail).",
+          "robots": {
+            "url": "https://qwenlm.github.io/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "allowed",
+            "http_status": 200,
+            "detail": "HTTP 200, 70 bytes, verbatim: \"User-agent: *\\nDisallow:\\nSitemap: https://qwenlm.github.io/sitemap.xml\". An empty Disallow permits everything."
+          },
+          "terms": {
+            "url": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+            "read_on": "2026-09-06",
+            "result": "permitted — GitHub Pages content under the public-repository licence grant",
+            "http_status": 200,
+            "quote": "By making a repository public, you grant other Users a nonexclusive, worldwide license to use, display, perform and reproduce (by forking) Your Content through the Service as permitted by GitHub's functionality.",
+            "detail": "qwenlm.github.io is GitHub Pages, so GitHub's Terms of Service section D.5 \"License Grant to Other Users\" is what governs. Fetched 2026-09-06, HTTP 200, 372,044 bytes."
+          },
+          "verified_on": "2026-09-06",
+          "detail": "HTTP 200, 39,167 bytes, application/xml, 44 items, channel title \"Blog on Qwen\", newest Tue, 23 Sep 2025 04:00:00 +0800, oldest Sat, 24 Dec 2022 14:54:19 +0800. The successor site was checked and has no feed: https://qwen.ai/rss.xml and https://qwen.ai/blog/rss.xml each return HTTP 200 with the same 94,358-byte client-rendered HTML shell that https://qwen.ai/ returns, which is a single-page app answering every path, not a feed. So Alibaba Cloud is a covered organisation with no usable release feed today. Re-check when qwen.ai publishes one."
+        }
+      ]
+    },
+    {
+      "id": "arxiv-listings",
+      "title": "arXiv listings for the research domain (cs.AI, cs.CL, cs.LG)",
+      "reads_for": "scout",
+      "purpose": "DESK-ORDER-001 §5: \"arXiv listings for the research domain\". Preprint titles and abstracts tell the scout what the research domain is doing; a paper is a lead to judge against the two-test bar, never a row to render. The Frontier's research domain goes quiet if nobody sweeps it, which is why this is a standing input rather than an occasional search.",
+      "url": "https://rss.arxiv.org/rss/cs.AI",
+      "site_url": "https://arxiv.org/list/cs.AI/recent",
+      "format": "rss",
+      "yields": [
+        "title",
+        "link",
+        "guid",
+        "description",
+        "dc:creator",
+        "category",
+        "arxiv:announce_type",
+        "pubDate"
+      ],
+      "robots": {
+        "url": "https://rss.arxiv.org/robots.txt",
+        "checked_on": "2026-09-06",
+        "result": "allowed — the feed host publishes no robots.txt, and the two hosts that do are recorded below",
+        "http_status": 404,
+        "detail": "THREE HOSTS, THREE DIFFERENT ANSWERS, AND THE ONE REGISTERED IS THE ONLY ONE THAT PERMITS THIS READ. (1) rss.arxiv.org/robots.txt returns HTTP 404 with an 11,459-byte HTML body: no robots file, so nothing is disallowed, and this is the host the registered URLs are on. (2) arxiv.org/robots.txt returns HTTP 200, 5,854 bytes, opening \"# robots.txt for http://arxiv.org/ and mirror sites http://*.arxiv.org/ / # Indiscriminate automated downloads from this site are not permitted\"; its `User-agent: *` group is \"User-agent: *\\nCrawl-delay: 15\\nAllow: /archive\\nAllow: /year\\nAllow: /list\\nAllow: /abs\\nAllow: /pdf\\nAllow: /html\\nAllow: /catchup\" followed by 28 Disallow lines that include \"Disallow: /api\", \"Disallow: /oai2\" and \"Disallow: /search\". So the human listing pages are allowed at one request per 15 seconds, and the API path on that host is not. (3) export.arxiv.org/robots.txt returns HTTP 200 and is, in its entirety, \"User-agent: * \\nDisallow: /\". THE LEGACY API HOST DISALLOWS EVERYTHING, FOR EVERY USER-AGENT. That is why no export.arxiv.org query URL appears in this row — the obvious URL for \"arXiv's listing API\" is the one arXiv forbids, and the deliverable there is the refusal, not a way around it. CRAWL-DELAY: 15 on arxiv.org, none on rss.arxiv.org; the API terms below impose one request per three seconds regardless, which is the stricter of the two for a caller reading several feeds and is the rate the scout must hold to."
+      },
+      "terms": {
+        "url": "https://info.arxiv.org/help/api/tou.html",
+        "read_on": "2026-09-06",
+        "result": "permitted, with a rate limit stated in the document",
+        "http_status": 200,
+        "quote": "Our APIs include our OAI-PMH interface , RSS feeds , the legacy arXiv API , bulk data downloads , and SWORD bulk deposit API . … Things that you can (and should!) do: Retrieve, store, transform, and share descriptive metadata about arXiv e-prints. … Provide tools and services to users that helps them to discover or be notified about arXiv e-prints. … When using the legacy APIs (including OAI-PMH, RSS, and the arXiv API), make no more than one request every three seconds, and limit requests to a single connection at a time.",
+        "detail": "\"Terms of Use for arXiv APIs\", fetched 2026-09-06, HTTP 200, 85,842 bytes. The document names RSS feeds as one of the APIs it governs, so the registered URLs are squarely inside it, and it grants exactly what a radar sweep does: retrieve and transform descriptive metadata, and help users discover e-prints. The rate limit is a term and not a courtesy — one request every three seconds, one connection at a time — and reading three feeds is three requests, so the scout must space them. The document also states that arXiv may \"further limit or block your access\" if it judges that limits are being circumvented, which is the refusal path this repository records rather than routes around."
+      },
+      "verified_on": "2026-09-06",
+      "verification": {
+        "date": "2026-09-06",
+        "result": "live",
+        "http_status": 200,
+        "content_type": "application/rss+xml",
+        "bytes": 892,
+        "detail": "All three registered feeds fetched 2026-09-06: HTTP 200, application/rss+xml, 892 bytes each, well-formed RSS 2.0 carrying channel title \"cs.AI updates on arXiv.org\" (and cs.CL, cs.LG), lastBuildDate \"Sun, 06 Sep 2026 04:00:00 +0000\" — same day, so the feeds are current. ZERO <item> ELEMENTS TODAY, AND THAT IS CORRECT RATHER THAN BROKEN: each channel declares \"<skipDays><day>Saturday</day><day>Sunday</day></skipDays>\" and 2026-09-06 is a Saturday, so arXiv announces nothing. Recorded because an empty feed is exactly what a broken feed looks like, and the next reader should not have to re-derive why this one is empty."
+      },
+      "feeds": [
+        {
+          "url": "https://rss.arxiv.org/rss/cs.AI",
+          "format": "rss",
+          "registered": true,
+          "domain": "research — artificial intelligence",
+          "robots": {
+            "url": "https://rss.arxiv.org/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "no robots.txt (HTTP 404); nothing disallowed",
+            "http_status": 404
+          },
+          "terms": {
+            "url": "https://info.arxiv.org/help/api/tou.html",
+            "read_on": "2026-09-06",
+            "result": "permitted; one request per three seconds, single connection"
+          },
+          "verified_on": "2026-09-06",
+          "detail": "HTTP 200, 892 bytes, channel \"cs.AI updates on arXiv.org\", lastBuildDate Sun, 06 Sep 2026 04:00:00 +0000, 0 items (Saturday, see skipDays)."
+        },
+        {
+          "url": "https://rss.arxiv.org/rss/cs.CL",
+          "format": "rss",
+          "registered": true,
+          "domain": "research — computation and language",
+          "robots": {
+            "url": "https://rss.arxiv.org/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "no robots.txt (HTTP 404); nothing disallowed",
+            "http_status": 404
+          },
+          "terms": {
+            "url": "https://info.arxiv.org/help/api/tou.html",
+            "read_on": "2026-09-06",
+            "result": "permitted; one request per three seconds, single connection"
+          },
+          "verified_on": "2026-09-06",
+          "detail": "HTTP 200, 892 bytes, channel \"cs.CL updates on arXiv.org\", same lastBuildDate and same skipDays."
+        },
+        {
+          "url": "https://rss.arxiv.org/rss/cs.LG",
+          "format": "rss",
+          "registered": true,
+          "domain": "research — machine learning",
+          "robots": {
+            "url": "https://rss.arxiv.org/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "no robots.txt (HTTP 404); nothing disallowed",
+            "http_status": 404
+          },
+          "terms": {
+            "url": "https://info.arxiv.org/help/api/tou.html",
+            "read_on": "2026-09-06",
+            "result": "permitted; one request per three seconds, single connection"
+          },
+          "verified_on": "2026-09-06",
+          "detail": "HTTP 200, 892 bytes, channel \"cs.LG updates on arXiv.org\", same lastBuildDate and same skipDays."
+        },
+        {
+          "url": "http://export.arxiv.org/api/query?search_query=cat:cs.AI&sortBy=submittedDate&sortOrder=descending&max_results=50",
+          "format": "atom",
+          "registered": false,
+          "not_registered_because": "export.arxiv.org/robots.txt is \"User-agent: * \\nDisallow: /\" — the legacy API host disallows every path for every user-agent. This is the URL a reader would reach for first when told \"arXiv's listing API\", so it is recorded as refused rather than left absent, and the RSS feeds above are what the row registers instead.",
+          "robots": {
+            "url": "http://export.arxiv.org/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "disallowed",
+            "http_status": 200,
+            "detail": "HTTP 200, 26 bytes, the complete file: \"User-agent: * \\nDisallow: /\". Fetched over https after the redirect from http."
+          },
+          "terms": {
+            "url": "https://info.arxiv.org/help/api/tou.html",
+            "read_on": "2026-09-06",
+            "result": "the terms permit; the robots file on this host does not, and the stricter of the two governs",
+            "detail": "The API Terms of Use grant metadata retrieval and name the legacy arXiv API among the APIs they cover, so terms and robots disagree about this host. The repository rule decides it without judgment: a machine-readable instruction that disallows is a refusal, and a refusal is recorded, not argued with. Nothing here needs the legacy API that the RSS feeds do not already give."
+          },
+          "verified_on": "2026-09-06",
+          "detail": "Not fetched. The robots file was read first and disallows the path, so no request was made to it."
+        }
+      ]
+    },
+    {
+      "id": "github-tool-releases",
+      "title": "GitHub releases for covered tools",
+      "reads_for": "scout",
+      "purpose": "DESK-ORDER-001 §5: \"GitHub releases for covered tools\". A release on a tool this site lists is an F5-shaped signal — a material change in access — and the release notes are where a verbatim claim comes from. The set is the tools under content/directory/tools/ whose own `url:` front-matter field is a GitHub repository, so membership is checkable against the corpus rather than chosen by taste.",
+      "url": "https://api.github.com/repos/vllm-project/vllm/releases?per_page=10",
+      "site_url": "https://github.com/vllm-project/vllm/releases",
+      "format": "json",
+      "yields": [
+        "tag_name",
+        "name",
+        "body",
+        "published_at",
+        "created_at",
+        "draft",
+        "prerelease",
+        "html_url",
+        "author.login"
+      ],
+      "robots": {
+        "url": "https://api.github.com/robots.txt",
+        "checked_on": "2026-09-06",
+        "result": "allowed on api.github.com — and github.com forbids the .atom URL, which is why this row uses the API",
+        "http_status": 404,
+        "detail": "THE OBVIOUS URL IS THE FORBIDDEN ONE. github.com/robots.txt (HTTP 200, 2,274 bytes, fetched 2026-09-06) contains, inside its `User-agent: *` group, the line \"Disallow: /*.atom$\". That pattern matches https://github.com/<owner>/<repo>/releases.atom exactly, so the releases Atom feed — the URL DESK-ORDER-001 §5's phrasing points at — is disallowed for every crawler. It answers anyway: one probe of https://github.com/vllm-project/vllm/releases.atom on 2026-09-06 returned HTTP 200 and 512,052 bytes of application/atom+xml. That probe was made once, before the robots file had been read, and is recorded rather than hidden; it will not be repeated and no .atom URL is registered. HTTP 200 is not permission. The same group also disallows /*/*/tags, /*/*/commits/ and /*/tree/. WHAT THE FILE POINTS AT INSTEAD, in its own second line: \"# We also provide an extensive API: https://docs.github.com\". api.github.com/robots.txt returns HTTP 404 with the body {\"message\": \"Not Found\", \"documentation_url\": \"https://docs.github.com/rest\", \"status\": \"404\"} — no robots file on that host, so nothing there is disallowed. The registered URLs are all on api.github.com."
+      },
+      "terms": {
+        "url": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+        "read_on": "2026-09-06",
+        "result": "permitted, subject to rate limits and a no-token-sharing rule",
+        "http_status": 200,
+        "quote": "H. API Terms Short version: You agree to these Terms of Service, plus this Section H, when using any of GitHub's APIs (Application Programming Interface), including use of the API through a third party product that accesses GitHub. Abuse or excessively frequent requests to GitHub via the API may result in the temporary or permanent suspension of your Account's access to the API. GitHub, in our sole discretion, will determine abuse or excessive usage of the API. We will make a reasonable attempt to warn you via email prior to suspension. You may not share API tokens to exceed GitHub's rate limitations. You may not use the API to download data or Content from GitHub for spamming purposes … All use of the GitHub API is subject to these Terms of Service and the GitHub Privacy Statement .",
+        "detail": "GitHub Terms of Service, section H, fetched 2026-09-06, HTTP 200, 372,044 bytes. Section D.5 of the same document supplies the content licence for the release notes themselves: \"By making a repository public, you grant other Users a nonexclusive, worldwide license to use, display, perform and reproduce (by forking) Your Content through the Service as permitted by GitHub's functionality.\" The rate ceiling that matters in practice is not in the Terms: unauthenticated api.github.com requests are limited to 60 per hour per IP, so four repositories once a day is far inside it and no token is needed. \"You may not share API tokens to exceed GitHub's rate limitations\" is quoted because the tempting fix for a rate limit is a token, and this repository handles no credential on an agent's judgment."
+      },
+      "verified_on": "2026-09-06",
+      "verification": {
+        "date": "2026-09-06",
+        "result": "live",
+        "http_status": 200,
+        "content_type": "application/json; charset=utf-8",
+        "bytes": 93070,
+        "rows": 4,
+        "detail": "Four repositories, each fetched unauthenticated on 2026-09-06 and each returning HTTP 200 with a JSON array whose objects carry tag_name, name, body, published_at, draft and prerelease. Latest release per repo at the time of the check: vllm-project/vllm v0.28.0 (2026-08-26T09:46:30Z), ggml-org/llama.cpp b10826 (2026-09-06T16:40:14Z, prerelease true), unslothai/unsloth v0.1.806-beta (2026-09-02T12:49:18Z), mozilla-ai/llamafile 0.10.5 (2026-08-03T06:27:13Z). llama.cpp tags every build a prerelease, so a sweep that filters on `prerelease: false` sees nothing from it — recorded because that filter is the obvious first thing to write."
+      },
+      "feeds": [
+        {
+          "url": "https://api.github.com/repos/vllm-project/vllm/releases?per_page=10",
+          "tool_entry": "tool/vllm",
+          "format": "json",
+          "registered": true,
+          "robots": {
+            "url": "https://api.github.com/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "no robots.txt (HTTP 404); nothing disallowed",
+            "http_status": 404
+          },
+          "terms": {
+            "url": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+            "read_on": "2026-09-06",
+            "result": "permitted under section H"
+          },
+          "verified_on": "2026-09-06",
+          "detail": "HTTP 200, 93,070 bytes for per_page=3. Latest v0.28.0, published_at 2026-08-26T09:46:30Z, draft false, prerelease false. content/directory/tools/vllm.md carries url: \"https://github.com/vllm-project/vllm\"."
+        },
+        {
+          "url": "https://api.github.com/repos/ggml-org/llama.cpp/releases?per_page=10",
+          "tool_entry": "tool/llama-cpp",
+          "format": "json",
+          "registered": true,
+          "robots": {
+            "url": "https://api.github.com/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "no robots.txt (HTTP 404); nothing disallowed",
+            "http_status": 404
+          },
+          "terms": {
+            "url": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+            "read_on": "2026-09-06",
+            "result": "permitted under section H"
+          },
+          "verified_on": "2026-09-06",
+          "detail": "HTTP 200, 51,626 bytes for per_page=1. Latest b10826, published_at 2026-09-06T16:40:14Z, draft false, prerelease TRUE — every llama.cpp build is tagged a prerelease. content/directory/tools/llama-cpp.md carries url: \"https://github.com/ggml-org/llama.cpp\"."
+        },
+        {
+          "url": "https://api.github.com/repos/unslothai/unsloth/releases?per_page=10",
+          "tool_entry": "tool/unsloth",
+          "format": "json",
+          "registered": true,
+          "robots": {
+            "url": "https://api.github.com/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "no robots.txt (HTTP 404); nothing disallowed",
+            "http_status": 404
+          },
+          "terms": {
+            "url": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+            "read_on": "2026-09-06",
+            "result": "permitted under section H"
+          },
+          "verified_on": "2026-09-06",
+          "detail": "HTTP 200, 41,476 bytes for per_page=1. Latest v0.1.806-beta, name \"2x Faster Qwen3.8-Flash + GLM-5.3-Flash MTP\", published_at 2026-09-02T12:49:18Z. content/directory/tools/unsloth.md carries url: \"https://github.com/unslothai/unsloth\"."
+        },
+        {
+          "url": "https://api.github.com/repos/mozilla-ai/llamafile/releases?per_page=10",
+          "tool_entry": "tool/llamafile",
+          "format": "json",
+          "registered": true,
+          "robots": {
+            "url": "https://api.github.com/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "no robots.txt (HTTP 404); nothing disallowed",
+            "http_status": 404
+          },
+          "terms": {
+            "url": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+            "read_on": "2026-09-06",
+            "result": "permitted under section H"
+          },
+          "verified_on": "2026-09-06",
+          "detail": "HTTP 200, 14,618 bytes for per_page=1. Latest 0.10.5, name \"llamafile v0.10.5\", published_at 2026-08-03T06:27:13Z. content/directory/tools/llamafile.md carries url: \"https://github.com/mozilla-ai/llamafile\"."
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/releases.atom",
+          "tool_entry": "tool/vllm",
+          "format": "atom",
+          "registered": false,
+          "not_registered_because": "github.com/robots.txt disallows it: the `User-agent: *` group contains \"Disallow: /*.atom$\", which matches every <owner>/<repo>/releases.atom path. The row reads the same releases through api.github.com instead, which robots.txt itself points at (\"# We also provide an extensive API: https://docs.github.com\").",
+          "robots": {
+            "url": "https://github.com/robots.txt",
+            "checked_on": "2026-09-06",
+            "result": "disallowed",
+            "http_status": 200,
+            "detail": "HTTP 200, 2,274 bytes. The matching line, verbatim: \"Disallow: /*.atom$\", inside the `User-agent: *` group."
+          },
+          "terms": {
+            "url": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+            "read_on": "2026-09-06",
+            "result": "the Terms do not forbid it; robots.txt does, and the stricter of the two governs"
+          },
+          "verified_on": "2026-09-06",
+          "detail": "One probe on 2026-09-06 returned HTTP 200 and 512,052 bytes of application/atom+xml, made before the robots file was read. Recorded, not repeated. This entry stands for all four repositories: no .atom URL is registered for any of them."
+        }
+      ]
+    }
+  ]
 }
