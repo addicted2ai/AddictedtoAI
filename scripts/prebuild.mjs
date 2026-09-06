@@ -24,6 +24,7 @@ import { anchorCheckStep } from '../lib/anchors.mjs';
 import { checkPostVoiceStep } from './check-post-voice.mjs';
 import { checkSpecDeltasStep } from './check-spec-deltas.mjs';
 import { arxivPinStep } from '../lib/arxiv-pin.mjs';
+import { declinedFieldsStep } from '../lib/declined-fields.mjs';
 import { acquireBuildLock, DEFAULT_WAIT_MS } from './build-lock.mjs';
 import { isDirty, dirtyPaths } from '../lib/stamp.mjs';
 
@@ -116,6 +117,20 @@ const STEPS = [
   // reads the corpus and nothing else, and because this file's own header names
   // STEPS as the registration point for a new build step.
   { name: 'arxiv-pins', run: arxivPinStep },
+
+  // The declined-field cross-check. `data/sources/registry.json` may record
+  // that a field a source serves is deliberately NOT carried;
+  // `pulse/lib/registry.mjs` enforces that against `material_fields` — the
+  // catalog column and the changed-feed line — and cannot see the corpus, so a
+  // path the registry declines could still be bound as an entry fact with
+  // nothing anywhere noticing. It was: 48 bindings across 29 model entries
+  // pointed at `benchmarks.artificial_analysis` while the registry declined it,
+  // and the build was green. FAILS on a binding of a declined path, naming the
+  // registry entry and every binding file; WARNS on the recorded debt in
+  // `data/declined-binding-debt.json`, which may only shrink. It needs the
+  // registry and the corpus at once and the prebuild is the only place that
+  // holds both — see the header of lib/declined-fields.mjs.
+  { name: 'declined-fields', run: declinedFieldsStep },
 
   // make-the-blog-worth-sending task 3.7 — the voice lint. **ADVISORY: it
   // warns and never fails the build**, by the spec's own emphasis and for a

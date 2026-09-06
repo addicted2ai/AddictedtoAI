@@ -1,0 +1,344 @@
+{
+  "note": "Fact bindings that pointed at a path data/sources/registry.json formally DECLINES on the day the cross-check in lib/declined-fields.mjs was written. Each is a DEBT, not an exemption: it warns on every build and FAILS the moment a NEW binding of a declined path appears. This list has one legal direction, down. The refusal it contradicts is openrouter-models' \"benchmarks.artificial_analysis\" — \"not carried: not a column, not a fact, not an event\" — recorded 2026-09-05 with the measurement behind it in the registry entry itself. Repair is one of exactly two decisions, and this file is neither of them: either unbind these facts (a content decision across 29 published model entries, which changes what those pages render), or withdraw the refusal from the registry with a dated note saying why the 2026-09-05 measurement no longer holds. Recording the contradiction here is the third option and the only one that decides nothing.",
+  "recorded": "2026-09-06",
+  "issue": "addictedtoai-226f",
+  "known": [
+    {
+      "file": "content/wiki/model/anthropic-claude-fable-5.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/anthropic-claude-opus-4-7.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/anthropic-claude-opus-4-8.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/anthropic-claude-opus-5.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "agentic_index",
+      "bound_path": "benchmarks.artificial_analysis.agentic_index"
+    },
+    {
+      "file": "content/wiki/model/anthropic-claude-opus-5.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/anthropic-claude-opus-5.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/cohere-command-a.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/deepseek-deepseek-v4-flash-0731.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/deepseek-deepseek-v4-flash-0731.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/deepseek-deepseek-v4-pro-0813.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/google-gemini-3-1-pro-preview.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/google-gemini-3-5-flash.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/google-gemini-3-6-flash.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/google-gemini-3-7-flash.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/google-gemini-3-7-flash.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/google-gemini-3-8-flash.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/meta-muse-spark-1-1.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/meta-muse-spark-1-2.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/moonshotai-kimi-k2-5.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/moonshotai-kimi-k3.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/moonshotai-kimi-k3.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-4-nano.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "agentic_index",
+      "bound_path": "benchmarks.artificial_analysis.agentic_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-4-nano.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-4-nano.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-4.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-5.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "agentic_index",
+      "bound_path": "benchmarks.artificial_analysis.agentic_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-5.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-5.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-6-luna.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "agentic_index",
+      "bound_path": "benchmarks.artificial_analysis.agentic_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-6-luna.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-6-luna.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-6-sol.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "agentic_index",
+      "bound_path": "benchmarks.artificial_analysis.agentic_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-6-sol.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-6-sol.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-6-terra.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "agentic_index",
+      "bound_path": "benchmarks.artificial_analysis.agentic_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-6-terra.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/openai-gpt-5-6-terra.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/qwen-qwen3-8-27b.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/qwen-qwen3-8-max.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/x-ai-grok-4-3.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "agentic_index",
+      "bound_path": "benchmarks.artificial_analysis.agentic_index"
+    },
+    {
+      "file": "content/wiki/model/x-ai-grok-4-3.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/x-ai-grok-4-3.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/x-ai-grok-4-5.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/x-ai-grok-4-6.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "agentic_index",
+      "bound_path": "benchmarks.artificial_analysis.agentic_index"
+    },
+    {
+      "file": "content/wiki/model/x-ai-grok-4-6.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "coding_index",
+      "bound_path": "benchmarks.artificial_analysis.coding_index"
+    },
+    {
+      "file": "content/wiki/model/x-ai-grok-4-6.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/z-ai-glm-5-1.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    },
+    {
+      "file": "content/wiki/model/z-ai-glm-5-2.md",
+      "source": "openrouter-models",
+      "declined_path": "benchmarks.artificial_analysis",
+      "field": "intelligence_index",
+      "bound_path": "benchmarks.artificial_analysis.intelligence_index"
+    }
+  ],
+  "repaid": []
+}
