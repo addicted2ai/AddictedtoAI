@@ -40,6 +40,7 @@ import { ingestSource, loadSnapshot, loadState, saveState } from './lib/sources.
 import { appendChanges, diffSnapshots, seedChanges } from './lib/diff.mjs';
 import { readCorpus, corpusLinks } from './lib/corpus.mjs';
 import { deriveDataLayer } from './lib/derive.mjs';
+import { computeFrontier } from './lib/frontier.mjs';
 import { mintStubs, appendTimelineEvents } from './lib/mint.mjs';
 import { rollingLinkCheck } from './lib/linkcheck.mjs';
 import { computeFreshness } from './lib/freshness.mjs';
@@ -152,6 +153,27 @@ if (options.noMint) {
 const timeline = appendTimelineEvents(root, corpus, freshChanges);
 log.step('timeline', `${timeline.appended.length} lifecycle event(s) appended to joined entries`);
 if (timeline.appended.length) corpus = readCorpus(root);
+
+// The frontier: leaders, ranked rows and counts for every DECLARED index metric
+// into `data/derived/frontier.json`, plus a `lead-change` line where a metric's
+// leader changed between the two committed snapshots. Before the data layer so
+// a line written now reaches this run's own 30-day changed table rather than
+// waiting a day for the next one.
+//
+// It reads no clock: every date it writes is a snapshot's own, and every key is
+// a function of the two snapshot row hashes — so a run with no world change
+// appends nothing and rewrites the file byte-identically. With zero metrics
+// registered the file is still written, carrying an empty `metrics` array and
+// the newest snapshot date, because a surface must be able to look it up and
+// then collapse (implementer-ledger row 6: an empty state that no data could
+// ever fill is a picture of an empty state).
+const frontier = computeFrontier(root, registry, corpus);
+const frontierWritten = appendChanges(p.changes, frontier.candidates);
+log.step(
+  'frontier',
+  `${frontier.data.metrics.length} declared metric(s), ${frontierWritten.length} lead change(s) appended` +
+    (frontierWritten.length ? `: ${frontierWritten.map((l) => `${l.metric} ${l.cause}`).join(', ')}` : ''),
+);
 
 const derived = deriveDataLayer(root, registry, corpus);
 log.step(

@@ -1,5 +1,10 @@
 import { getSite } from '../../lib/site.mjs';
-import { renderPlayersBoard, renderLeadChangeStrip, renderCapabilities } from '../../lib/render/frontier.mjs';
+import {
+  renderPlayersBoard,
+  renderLeadChangeStrip,
+  renderIndexLeaders,
+  renderCapabilities,
+} from '../../lib/render/frontier.mjs';
 // RD-002 fix 2 (F-struct-4, RULES R8 / S17): the provenance value every board
 // row repeats is stated ONCE above the board. /catalog already has the
 // element that does exactly this for exactly these rows — reused, not
@@ -13,9 +18,15 @@ import { renderFetchLine } from '../../lib/render/catalog.mjs';
  * feeds and the wiki's own cited facts can state about them TODAY. Every
  * cell with no source renders as a labelled absence — never a guess, never
  * an average. The one index-position column the packet named is omitted in
- * full: no registry `frontier` block and no independent index exists in this
- * repo yet (red-team ground truth, RT-CP-UI-001-2-1), so the board carries no
- * column it cannot source.
+ * full: the board carries no column it cannot source.
+ *
+ * The registry now HAS a `frontier` block (`separate-a-claim-from-a-fact`),
+ * and it registers no metric and clears no rights — so `renderIndexLeaders`
+ * below looks the metrics up, finds none cleared, and renders nothing at all.
+ * That absence is a computed result: registering one cleared metric populates
+ * the element with no edit to this file or to the renderer. A hard-wired empty
+ * state shipped twice before and no data could ever have filled either
+ * (implementer-ledger row 6).
  *
  * Fixed copy on this page carries no digit (loops/ui-loop/graph/knowledge/
  * frontier-plan.md §11.4): every number and date is inside an element
@@ -47,6 +58,7 @@ export default async function FrontierPage() {
         Sorted by organisation name, A to Z. Nothing on this site is ordered by payment. Machine-
         readable: <a href="/catalog.json">/catalog.json</a>
       </p>
+      <div dangerouslySetInnerHTML={{ __html: renderIndexLeaders(site.frontier, site.clearedMetrics) }} />
       <div dangerouslySetInnerHTML={{ __html: renderLeadChangeStrip(site.changeLines) }} />
       <div dangerouslySetInnerHTML={{ __html: renderCapabilities(site, { limit: 8 }) }} />
     </>
