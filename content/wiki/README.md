@@ -135,6 +135,83 @@ category error in a second place.
 
 ---
 
+## What an `org` entry declares
+
+### The board joins orgs by alias, so an org entry carries no `feeds` map
+
+**Ruled 2026-09-06 (job `j-20260906-11`, from the proposal
+`org-directives-demand-a-feeds-map-that-cannot-exist`).** Eight `entry`
+directives for uncovered catalog providers each carried the sentence *"WHAT THE
+ENTRY MUST CARRY OR THE ROW IS BLANK: its `feeds` map, which is the join the
+board relies on, and its product-brand registrable domains in
+`publishes_from`"*. Both halves are false against the code, and the section
+above repeats the first of them in passing — its *"an org entry with a feeds
+map"* is `addictedtoai-2ok0`'s wording, quoted, and it is not the answer.
+
+**The join is the alias join.** `matchProviders`
+(`lib/render/frontier.mjs:50-61`) builds its provider set from
+`org.data.display_name` and `org.data.aliases[].name`, normalises them, and
+takes a catalog row whose `provider` value contains one of those names or is
+contained by it. `feeds` is not read on that path — the word occurs in that
+file only in the board's table caption and in comments. Board membership is
+editorial and never feed-gated: every org entry is a row whether or not any
+catalog row matches it (K21, `lib/render/frontier.mjs:535-549`).
+
+**A `feeds` map on an org entry would be a wrong join, not a missing one.**
+`feeds` binds an entry to a **source row id** — `specs/wiki`: *"using that
+source's own id field"* — and neither registered source is keyed on an
+organisation. `data/sources/registry.json` gives `openrouter-models` the
+`row_id_field` `id`, a model slug, and `llm-releases` the `row_id_field`
+`guid`, one release. The only value an org could write is therefore a model's
+row id, and the three readers of `feeds` ask no kind question before acting on
+it:
+
+| what would read it | what it would do |
+|---|---|
+| `pulse/lib/corpus.mjs:219-235` — `feedBindings` / `declaredRowIds` scan `corpus.entries` whole | the row reads as already declared, so `pulse/lib/mint.mjs:139-142` mints no `model/` stub for it |
+| `pulse/lib/mint.mjs:258-263` builds its status index the same way | the model's mechanical `deprecated` / `retired` timeline events land on the organisation |
+| `lib/changes.mjs:60-67` — `feedRowIndex` keys one Map on `${source}\|${rowId}` | of the two entries claiming one row, whichever the loader reaches last silently wins the changed feed's entry link |
+
+Measured 2026-09-06: none of the 24 files in `content/wiki/org/` contains the
+string `feeds`, which is the corpus already agreeing with this ruling.
+
+### The brand-domain half is real, and is not an entry's to close today
+
+The same directives are right that a missing brand domain costs something. The
+board attributes a vendor claim through `isVendorSourced`
+(`lib/render/frontier.mjs:329-341`), and a cited fact whose source is not the
+vendor's own is dropped from the column (`claimRank`, `:344-352`) — so a real
+vendor claim renders as an honest-looking blank and nothing fails, which is the
+gap the directives call FM-N6.
+
+What they get wrong is where the fix lives. Both halves of that test are gated
+on the org's own name tokens: the recorded half reads only domains the entry
+already cites itself from **and** whose registrable label is one of those
+tokens (`orgOwnDomains`, `:317-326`, the test at `:323`), and the named half is
+that label test directly (`:340`). So a host whose registrable label is not one
+of the org's name tokens cannot pass, whatever the entry records. The file's own
+example: `blog.google` reduces to the label `blog`, which names nobody, and
+drops out; `deepmind.google` reduces to `deepmind`, which is a token, and
+passes (`:309-315`). The proposal names the same shape on `org/minimax`, whose
+tokens derive from `MiniMax` and `MiniMax Group Inc.`: `minimax.io` passes,
+while the product domains `hailuoai.video` and `talkie-ai.com` do not.
+
+`publishes_from` is the key that would close it, and **it does not exist**:
+`entrySchema` is `.strict()` (`lib/schema.mjs:208-223`) and defines no such
+key, so an entry that declares one fails the build on an unknown key. Landing
+it is tasks 12–16 of
+`openspec/changes/separate-a-claim-from-a-fact/tasks.md` — all five unchecked
+on 2026-09-06 — of which task 12 adds the key and task 15 the gate that a value
+must equal its own registrable-domain reduction.
+
+**Do not reach for an alias instead.** Adding `hailuoai` to an org's `aliases`
+would make the vendor test pass, and would also change the board join above,
+the alias registry and every wrap-only link in the corpus — one name declared
+for its side effect on a fourth mechanism. Until task 12 lands, the honest
+treatment is the blank cell, and the entry says nothing about domains at all.
+
+---
+
 ## Editorial standards for entry prose
 
 Three rulings that bind every entry, written here because this is the file an
