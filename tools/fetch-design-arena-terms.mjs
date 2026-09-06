@@ -9,8 +9,14 @@
  */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 
-const OUT = 'D:/addictedtoai-worktrees/j-20260905-24/data/reviews/evidence/verify-design-arena-republication-terms.raw.txt';
+// Root derived from this file's own location (tools/ sits directly under it),
+// so the script outlives the worktree it was written in. There is no argv
+// override here: argv is the URL list.
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+const OUT = `${ROOT}/data/reviews/evidence/verify-design-arena-republication-terms.raw.txt`;
 // Fetched bodies are a working cache, not repository content: they are third
 // party HTML and they belong outside the tree, like every other test fixture
 // this repo builds under the OS temp directory.

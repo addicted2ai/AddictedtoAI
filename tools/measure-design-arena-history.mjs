@@ -4,8 +4,12 @@
  * Read-only. Git plumbing runs through execFileSync (Windows note in CLAUDE.md).
  */
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 
-const root = 'D:/addictedtoai-worktrees/j-20260905-24';
+// Root derived from this file's own location (tools/ sits directly under it),
+// so the script outlives the worktree it was written in; argv[2] overrides.
+const root = process.argv[2] ?? dirname(dirname(fileURLToPath(import.meta.url)));
 const file = 'data/sources/openrouter-models/latest.json';
 
 const log = execFileSync('git', ['-C', root, 'log', '--format=%H %ad', '--date=short', '--', file], {

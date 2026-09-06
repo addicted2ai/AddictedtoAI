@@ -4,8 +4,13 @@
  * sampling, so a zero here is exhaustive rather than truncated.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 
-const OUT = process.argv[2] ?? 'D:/addictedtoai-worktrees/j-20260905-24/out';
+// Root derived from this file's own location (tools/ sits directly under it),
+// so the default outlives the worktree it was written in; argv[2] overrides.
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+const OUT = process.argv[2] ?? `${ROOT}/out`;
 const TOKENS = ['design_arena', 'designarena', 'Design Arena', 'DesignArena', 'win_rate', 'winRate'];
 
 const counts = Object.fromEntries(TOKENS.map((t) => [t, 0]));

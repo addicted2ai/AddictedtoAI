@@ -3,8 +3,14 @@
  * snapshots. Read-only: prints counts, never writes.
  */
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 
-const root = 'D:/addictedtoai-worktrees/j-20260905-24';
+// The repository root is derived from this file's own location (tools/ sits
+// directly under it), so the script survives the deletion of the worktree it
+// was written in and runs from any working directory. `process.argv[2]`
+// overrides it for a checkout elsewhere.
+const root = process.argv[2] ?? dirname(dirname(fileURLToPath(import.meta.url)));
 
 for (const which of ['latest', 'previous']) {
   const snap = JSON.parse(readFileSync(`${root}/data/sources/openrouter-models/${which}.json`, 'utf8'));
