@@ -52,7 +52,7 @@ lines after this delta lands and after the reviewing session has read it.
 
 ## The scout's cap, and the exemption that lifts it
 
-- [ ] 7. `loop/lib/proposals.mjs`, `applyProposalMergeRules` (line 674): before
+- [x] 7. `loop/lib/proposals.mjs`, `applyProposalMergeRules` (line 674): before
       the `entries.slice(cap)` split, partition the added candidate files into
       three groups — valid-flagged, unflagged, and invalid-flagged. Only
       unflagged files are counted against `proposalCapFor(type)`. **The
@@ -67,13 +67,13 @@ lines after this delta lands and after the reviewing session has read it.
       `data/proposals/dropped/` with a note naming the missing or invalid
       field, and do **not** rejoin the unflagged group. A flag that does not
       hold must not be able to buy a place among the three by failing.
-- [ ] 8. Tests in `loop/tests/`: four candidates, one validly flagged, all four
+- [x] 8. Tests in `loop/tests/`: four candidates, one validly flagged, all four
       merge. Four candidates, none flagged, one is dropped — the control that
       proves the cap still binds. A flagged candidate with no criterion is
       dropped with the reason named and does not displace an unflagged one.
       Stamping and self-amplification discard still run on the kept set in the
       documented order (cap, stamp, discard), unchanged.
-- [ ] 9. Mutation test, both halves separately: revert the partition and
+- [x] 9. Mutation test, both halves separately: revert the partition and
       confirm the exemption test fails while the control passes; revert the
       invalid-flag drop and confirm that test fails while the others pass. Two
       mutations failing disjoint sets is the evidence the halves are
@@ -82,14 +82,14 @@ lines after this delta lands and after the reviewing session has read it.
 
 ## The briefs, because a job is told or it cannot know
 
-- [ ] 10. `loop/lib/brief.mjs`, `ACCEPTANCE_BY_TYPE.scout` (line 128): add the
+- [x] 10. `loop/lib/brief.mjs`, `ACCEPTANCE_BY_TYPE.scout` (line 128): add the
       standing frontier sweep — F1–F5 asked on every run across every domain,
       the not-qualifying list and its test, radar feeds as inputs that are
       never displayed raw, the flag's own bar, that a valid flag does not spend
       one of the three, and that a flag applied to fill a quiet domain is the
       failure the criteria exist to prevent. A Desk job is one written prompt
       in and files out; an untold job cannot know.
-- [ ] 11. `loop/lib/brief.mjs`, `ACCEPTANCE_BY_TYPE.post`: add the three keys,
+- [x] 11. `loop/lib/brief.mjs`, `ACCEPTANCE_BY_TYPE.post`: add the three keys,
       the F2 permitted and forbidden lists in full, and that adding any of the
       three to an already-reviewed post is a review event rather than a
       correction. Both lists go in the brief verbatim — a brief that carries

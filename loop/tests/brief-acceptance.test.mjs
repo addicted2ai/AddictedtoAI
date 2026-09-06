@@ -32,6 +32,7 @@ import assert from 'node:assert/strict';
 
 import { assembleBrief, ACCEPTANCE_BY_TYPE, acceptanceChecksFor, proposalRule } from '../lib/brief.mjs';
 import { JOB_TYPES } from '../lib/config.mjs';
+import { DOMAINS, FRONTIER_CRITERIA } from '../../lib/domains.mjs';
 import { makeRepo } from './helpers.mjs';
 
 /** Assemble one brief of `type` against a spec-less fixture repository. */
@@ -313,6 +314,114 @@ test('3.8 the proposal rule is plain markdown, like the rest of a brief', (t) =>
       assert.ok(!bad.test(text), `${type}: the proposal rule must carry no harness-specific syntax (${bad})`);
     }
   }
+});
+
+// ---------------------------------------------------------------------------
+// The frontier flag (flag-what-moved-the-frontier, tasks 10-11)
+//
+// A Desk job is one written prompt in and files out: no session, no memory
+// across invocations, no way to ask. An untold job cannot know, so everything
+// the flag requires has to reach the assembled markdown — and these fixtures
+// have no `openspec/` tree at all, so nothing below can be carried by a spec
+// excerpt that happens to quote the delta today.
+// ---------------------------------------------------------------------------
+
+test('10 the scout brief carries the standing sweep, the five criteria and the not-qualifying test', (t) => {
+  const text = brief(t, 'scout');
+  carries(
+    text,
+    [
+      'asked on EVERY run across EVERY domain',
+      'NOT QUALIFYING',
+      'a new checkpoint, a price change, a benchmark post with no new artifact, a tool release',
+      'what every other AI news site already shows does not qualify on its own',
+    ],
+    '10 sweep',
+  );
+  // Every criterion, by id AND by its text — an id list would tell a job which
+  // labels exist and nothing about what they mean.
+  for (const c of FRONTIER_CRITERIA) {
+    assert.ok(text.includes(`**${c.id}**`), `the scout brief omits ${c.id}`);
+    assert.ok(text.includes(c.text), `the scout brief omits what ${c.id} means`);
+  }
+});
+
+test('10 the scout brief carries the flag’s own bar, the vocabulary, and the exemption', (t) => {
+  const text = brief(t, 'scout');
+  carries(
+    text,
+    [
+      '`frontier_reason`, exactly one of F1-F5',
+      'IS NOT FILED',
+      'A VALID FLAG DOES NOT SPEND ONE OF THE THREE',
+      'The exemption is from the COUNT and from nothing else',
+      'refuses a flagged candidate over the ceiling exactly as it refuses an unflagged one',
+      'A flag applied to fill a quiet domain is the failure the criteria exist to prevent',
+      'RADAR FEEDS ARE INPUTS TO THE SWEEP AND ARE NEVER DISPLAYED RAW',
+    ],
+    '10 bar and exemption',
+  );
+  for (const d of DOMAINS) assert.ok(text.includes(d), `the scout brief omits the domain ${d}`);
+  // K46, in the brief rather than only in the schema: a job told "at least one
+  // domain" would decline to flag a court filing at all, and nothing would
+  // report that it had.
+  assert.match(text, /`domains` is OPTIONAL/);
+  assert.match(text, /"general" is the UNMARKED default/);
+});
+
+test('11 the post brief carries the three keys and their gate', (t) => {
+  const text = brief(t, 'post');
+  carries(
+    text,
+    [
+      '`frontier: true` (optional; absent means false)',
+      'REQUIRED when `frontier: true`',
+      '`domains` (OPTIONAL, flagged or not',
+      '`text` is not a value',
+      'it does not fail an absent `domains`',
+    ],
+    '11 keys',
+  );
+  for (const c of FRONTIER_CRITERIA) assert.ok(text.includes(c.text), `post brief omits ${c.id}`);
+  for (const d of DOMAINS) assert.ok(text.includes(d), `the post brief omits the domain ${d}`);
+});
+
+test('11 the post brief carries BOTH F2 lists, in full, and why both are there', (t) => {
+  // The load-bearing one. A brief carrying only the permitted list re-teaches
+  // the field-name-is-not-a-source-test lesson at full price: it reads as
+  // complete, and the author fills the gap with the numbers that describe the
+  // rescoring, which republishes an index value with nobody having decided to.
+  const text = brief(t, 'post');
+  carries(
+    text,
+    [
+      // permitted, all six, verbatim from the blog delta
+      'the publisher; the index name and its version; the date; the direction of the rescoring; '
+        + 'the coverage change, as a count of rows scored before and after; the fact that a '
+        + 'non-uniform rescoring can invert orderings',
+      // forbidden, all four
+      'any index value, any ratio, any rank, any per-model score',
+      'A median is a value however it is aggregated; a leaderboard position is a rank',
+      'they belong in the review record, where a reviewer can check your work',
+      'BY ACCIDENT',
+      "anchors on the PUBLISHER'S OWN changelog",
+    ],
+    '11 F2 lists',
+  );
+  assert.match(text, /both lists below are normative — neither may be dropped as redundant/);
+});
+
+test('11 the post brief says tagging a reviewed post is a review event, not a correction', (t) => {
+  carries(
+    brief(t, 'post'),
+    [
+      'THE THREE FRONTIER KEYS ARE EDITORIAL, NOT MECHANICAL',
+      'report `mismatched`',
+      'REVIEW EVENT, not a correction to route around',
+      'Do not exempt the keys',
+    ],
+    '11 review event',
+  );
 });
 
 // ---------------------------------------------------------------------------

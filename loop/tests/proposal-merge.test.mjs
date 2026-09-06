@@ -138,12 +138,33 @@ test('an ordinary job’s cap is one: a second proposal is dropped with the same
 // The frontier exemption, and the flag that does not hold
 // (flag-what-moved-the-frontier, tasks 7-9)
 //
-// Two halves that must be independent, and the mutation test in this change
-// proves they are: the EXEMPTION (a valid flag does not count against the
-// scout's three) and the DROP (a flag that does not hold is not filed at all).
-// Each is measured through a real loop run against a real executor, and each
-// carries the control that stops it from being satisfied by a mechanism that
-// simply kept or dropped everything.
+// Two halves that must be independent: the EXEMPTION (a valid flag does not
+// count against the scout's three) and the DROP (a flag that does not hold is
+// not filed at all). Each is measured through a real loop run against a real
+// executor, and each carries the control that stops it from being satisfied by
+// a mechanism that simply kept or dropped everything.
+//
+// MEASURED, 2026-09-06 (task 9). Each half was reverted in
+// `loop/lib/proposals.mjs` on its own and this file re-run, and the two
+// mutations failed DISJOINT sets — which is the evidence that they are two
+// mechanisms and not one described twice:
+//
+//   mutation A, `exempt` forced to `[]` (the partition reverted, so a valid
+//     flag counts against the cap again) — 27 pass, 1 fail:
+//       ✖ a validly flagged fourth candidate does not count against the
+//         scout's three
+//
+//   mutation B, `invalidFlagged` forced to `[]` (the drop reverted, so a
+//     broken flag rejoins the counted group) — 25 pass, 3 fail:
+//       ✖ a flag with no criterion is dropped naming the field, and displaces
+//         nobody
+//       ✖ every shape of a flag that does not hold is dropped, and the note
+//         names the field
+//       ✖ a non-boolean `frontier` is refused rather than read as an absent flag
+//
+// Neither set contains a member of the other, both controls stayed green under
+// both mutations, and the file was restored to the committed blob (verified by
+// `git hash-object` against `git rev-parse HEAD:loop/lib/proposals.mjs`).
 // ---------------------------------------------------------------------------
 
 test('a validly flagged fourth candidate does not count against the scout’s three', async () => {
