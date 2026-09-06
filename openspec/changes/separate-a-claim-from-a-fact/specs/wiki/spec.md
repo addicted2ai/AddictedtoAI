@@ -225,8 +225,9 @@ standing in for a source test.
 
   The recorded half is half the live rule and is written here because dropping it
   is invisible: R13 (v) carries both halves, `lib/vendor-domain.mjs`'s
-  `recordedDomains` implements it (extracted from `lib/render/frontier.mjs`'s
-  `orgOwnDomains`, which the board now reads rather than copies), and invariant
+  `recordedDomains` implements it — extracted from the board's own former helper
+  in `lib/render/frontier.mjs`, which the board now reads rather than copies, so
+  that name no longer exists in the tree — and invariant
   `S22` clause (e) re-derives both —
   so a spec carrying one half reads as a correction of the other two rather than
   as an omission, and the next implementer "fixes" the gate back to match it. Its
