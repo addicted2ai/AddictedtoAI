@@ -51,6 +51,16 @@
       ]
     },
     {
+      "name": "AWS",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/amazon",
+          "class": "shared"
+        }
+      ]
+    },
+    {
       "name": "Aider",
       "linkable": false,
       "claimed_by": [
@@ -186,6 +196,16 @@
       "claimed_by": [
         {
           "id": "event/alphago-lee-sedol",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Amazon",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/amazon",
           "class": "exclusive"
         }
       ]

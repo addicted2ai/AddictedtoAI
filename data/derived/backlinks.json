@@ -726,6 +726,46 @@
         "file": "content/tutorials/browser-embeddings-no-server.md"
       }
     ],
+    "model/amazon-nova-2-lite-v1": [
+      {
+        "url": "/wiki/org/amazon",
+        "title": "Amazon",
+        "type": "entry",
+        "file": "content/wiki/org/amazon.md"
+      }
+    ],
+    "model/amazon-nova-lite-v1": [
+      {
+        "url": "/wiki/org/amazon",
+        "title": "Amazon",
+        "type": "entry",
+        "file": "content/wiki/org/amazon.md"
+      }
+    ],
+    "model/amazon-nova-micro-v1": [
+      {
+        "url": "/wiki/org/amazon",
+        "title": "Amazon",
+        "type": "entry",
+        "file": "content/wiki/org/amazon.md"
+      }
+    ],
+    "model/amazon-nova-premier-v1": [
+      {
+        "url": "/wiki/org/amazon",
+        "title": "Amazon",
+        "type": "entry",
+        "file": "content/wiki/org/amazon.md"
+      }
+    ],
+    "model/amazon-nova-pro-v1": [
+      {
+        "url": "/wiki/org/amazon",
+        "title": "Amazon",
+        "type": "entry",
+        "file": "content/wiki/org/amazon.md"
+      }
+    ],
     "model/anthropic-claude-3-haiku": [
       {
         "url": "/wiki/model/anthropic-claude-haiku-4-5",
@@ -2360,6 +2400,12 @@
         "file": "content/wiki/model/anthropic-claude-opus-5.md"
       },
       {
+        "url": "/wiki/org/amazon",
+        "title": "Amazon",
+        "type": "entry",
+        "file": "content/wiki/org/amazon.md"
+      },
+      {
         "url": "/learn/who-builds-ai",
         "title": "Who builds AI",
         "type": "learn",
@@ -2618,6 +2664,12 @@
         "title": "OpenAI: GPT-5.6 Terra",
         "type": "entry",
         "file": "content/wiki/model/openai-gpt-5-6-terra.md"
+      },
+      {
+        "url": "/wiki/org/amazon",
+        "title": "Amazon",
+        "type": "entry",
+        "file": "content/wiki/org/amazon.md"
       },
       {
         "url": "/wiki/technique/proximal-policy-optimization",
