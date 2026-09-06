@@ -30,6 +30,33 @@ facts:
     feed: openrouter-models
     path: $status
     volatility: fast
-timeline: []
+  - field: covered_model_designated
+    source: cited
+    value: "2026-08-31"
+    source_url: "https://support.claude.com/en/articles/15425695-covered-models"
+    accessed: "2026-09-06"
+    volatility: dated
+  - field: covered_model_status
+    source: cited
+    value: "Generally available"
+    source_url: "https://support.claude.com/en/articles/15425695-covered-models"
+    accessed: "2026-09-06"
+    volatility: slow
+  - field: covered_model_availability
+    source: cited
+    value: "Claude applications, Claude Platform, Amazon Bedrock, Google Cloud Agent Platform, Microsoft Foundry"
+    source_url: "https://support.claude.com/en/articles/15425695-covered-models"
+    accessed: "2026-09-06"
+    volatility: slow
+  - field: zero_data_retention
+    source: cited
+    value: "not available in workspaces, Claude Enterprise organizations, or third-party platforms (e.g., Azure Subscriptions) where Covered Models can be accessed"
+    source_url: "https://support.claude.com/en/articles/15425695-covered-models"
+    accessed: "2026-09-06"
+    volatility: slow
+timeline:
+  - date: "2026-08-31"
+    event: "designated a Covered Model by Anthropic"
+    source_url: "https://support.claude.com/en/articles/15425695-covered-models"
 mentions: []
 ---
