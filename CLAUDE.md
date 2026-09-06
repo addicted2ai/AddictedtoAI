@@ -402,6 +402,18 @@ disagree, the spec wins.**
 - **Tests are `*.test.mjs` beside the code they test.** They build throwaway
   repositories under the OS temp directory and never touch this one; the
   fixture corpora pin the clock so a passing test stays passing tomorrow.
+- **Archiving a change moves its paths, predictably, so code never points at
+  a change directory.** `openspec archive <name>` moves
+  `openspec/changes/<name>/**` to `openspec/changes/archive/<YYYY-MM-DD>-<name>/**`
+  and merges every requirement block of its deltas into
+  `openspec/specs/<capability>/spec.md`, which is the durable home. Nothing
+  under `lib/`, `loop/`, `pulse/`, `scripts/`, `app/` or `tools/` — code,
+  tests or fixtures — may reference `openspec/changes/<name>/`; read the live
+  spec instead. A document that must name the change writes the archive form.
+  Written down on 2026-09-06 after the third instance: a test that verified a
+  transcription against a delta at its change path failed the final gates run
+  minutes after that change was archived and minutes before the push (bead
+  `addictedtoai-2hsy` carries the source test that will refuse the next one).
 - **Measure, don't infer.** Every claim recorded in `data/launch.json` is a
   measurement with a date and a stated method. Run the cheap direct check
   before concluding, and never treat truncated output as complete.

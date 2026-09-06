@@ -99,6 +99,14 @@ carries a *delta* — `## ADDED` / `## MODIFIED` / `## REMOVED` / `## RENAMED`
 sections — which archiving merges in. Validate a change with
 `openspec validate --change <name> --strict`.
 
+Archiving also **moves the change's paths, predictably**: the directory goes
+to `openspec/changes/archive/<YYYY-MM-DD>-<name>/` and the requirement text
+lands in the live spec. So code, tests and fixtures never reference
+`openspec/changes/<name>/` — they read `openspec/specs/<capability>/spec.md`,
+the durable home — and a document that must name the change writes the
+archive form. Three instances have broken this (bd memory
+`archived-change-paths-move`); a source test is filed as `addictedtoai-2hsy`.
+
 Two things about a delta that the reader has to know before writing one:
 
 - **A `MODIFIED` block replaces the WHOLE requirement body**, and the delta
