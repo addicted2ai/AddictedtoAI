@@ -26,7 +26,14 @@ import { checkSpecDeltasStep } from './check-spec-deltas.mjs';
 import { arxivPinStep } from '../lib/arxiv-pin.mjs';
 import { declinedFieldsStep } from '../lib/declined-fields.mjs';
 import { changeKindsReportStep } from '../lib/changes.mjs';
-import { frontierMetricsReportStep } from '../lib/frontier-metrics.mjs';
+import { frontierMetricsReport } from '../lib/frontier-metrics.mjs';
+// The registry is loaded HERE rather than inside `frontier-metrics.mjs`, which
+// must stay import-free: `pulse/lib/frontier.mjs` reads that module, and
+// `pulse/tests/indexnow.test.mjs` pins every module the Pulse reaches outside
+// `pulse/` as dependency-free so a cross-boundary read cannot pull anything
+// into the Pulse's graph.
+import { loadRegistry } from '../pulse/lib/registry.mjs';
+import { ROOT } from '../lib/paths.mjs';
 import { acquireBuildLock, DEFAULT_WAIT_MS } from './build-lock.mjs';
 import { isDirty, dirtyPaths } from '../lib/stamp.mjs';
 
@@ -154,7 +161,7 @@ const STEPS = [
   // report-not-fail: the registry load already refuses a MALFORMED decision, and
   // declaring a metric before answering its rights question is a legal, honest
   // intermediate state.
-  { name: 'frontier-metrics', run: frontierMetricsReportStep },
+  { name: 'frontier-metrics', run: () => frontierMetricsReport(loadRegistry(ROOT)) },
 
   // make-the-blog-worth-sending task 3.7 — the voice lint. **ADVISORY: it
   // warns and never fails the build**, by the spec's own emphasis and for a

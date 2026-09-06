@@ -281,11 +281,30 @@ test('nothing in indexnow.mjs writes HOLD.md or exits — a failed ping is not a
   assert.ok(!/writeFileSync|appendFileSync/.test(code), 'and writes no state at all');
 });
 
-test('the Pulse reaches outside pulse/ for exactly two modules, and both are import-free', () => {
-  // The precedent this change sets, pinned so it cannot widen quietly. Both
-  // targets are plain constant files with no dependency of their own, which is
-  // what keeps `pulse/tests/zero-model.test.mjs`'s property true: neither can
-  // pull anything into the Pulse's dependency graph.
+test('the Pulse reaches outside pulse/ for exactly four modules, and all are import-free', () => {
+  // The precedent this change sets, pinned so it cannot widen quietly. Every
+  // target is a plain declaration file with no dependency of its own, which is
+  // what keeps `pulse/tests/zero-model.test.mjs`'s property true: none can
+  // pull anything into the Pulse's dependency graph. The import-free assertion
+  // below is the load-bearing half — the list is only the audit trail.
+  //
+  // WIDENED from two to four by `separate-a-claim-from-a-fact`, and here is the
+  // argument for each, which is what this assertion asks for:
+  //
+  //   `lib/change-kinds.mjs` — the closed list of kinds a `data/changes.jsonl`
+  //   line may carry. The Pulse WRITES that file and the site READS it, so the
+  //   declaration has to be reachable from both or there are two lists; two
+  //   lists is exactly the defect this change removed (`MATERIAL_KINDS`, which
+  //   read as authoritative, was imported nowhere, and disagreed with the data).
+  //   Task 17 names `pulse/lib/indexnow.mjs`'s own cross-boundary import as the
+  //   precedent for putting it in `lib/`.
+  //
+  //   `lib/frontier-metrics.mjs` — what the registry's `frontier` block
+  //   declares. `pulse/lib/frontier.mjs` computes leaders from it and the site
+  //   build asks it which metrics may be PRINTED; a second copy of "registered"
+  //   and "cleared" is a rights answer that can drift, which is the one kind of
+  //   drift K24 cannot tolerate. Its header records that it must stay
+  //   import-free for this test's sake.
   const files = fg.sync('**/*.mjs', { cwd: PULSE, absolute: true, ignore: ['tests/**'] });
   const outside = new Set();
   for (const file of files) {
@@ -293,7 +312,12 @@ test('the Pulse reaches outside pulse/ for exactly two modules, and both are imp
   }
   assert.deepEqual(
     [...outside].sort(),
-    ['../../lib/asset-routes.mjs', '../../lib/site-config.mjs'],
+    [
+      '../../lib/asset-routes.mjs',
+      '../../lib/change-kinds.mjs',
+      '../../lib/frontier-metrics.mjs',
+      '../../lib/site-config.mjs',
+    ],
     'a new cross-boundary import into pulse/ needs its own argument, in its own review',
   );
   for (const rel of outside) {
