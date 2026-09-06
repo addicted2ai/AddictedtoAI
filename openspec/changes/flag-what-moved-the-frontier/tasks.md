@@ -8,6 +8,28 @@ ticked, and task 12 (the drafting gates) was run at drafting time. **Task 13 is
 the only open box**: the six gates on merged `main`, which are the
 orchestrator's to run and not a job's.
 
+**Tasks 10–11 landed on BOTH sides of the review gate, and the second side is
+recorded here because it is the one the tasks do not name.** The tasks say
+"the brief", and the brief is the AUTHORING half: `ACCEPTANCE_BY_TYPE.scout`
+and `ACCEPTANCE_BY_TYPE.post` in `loop/lib/brief.mjs`, plus the front-matter
+contract block in `proposalRule('scout')` — the block that says "front matter
+exactly", which now carries `frontier`, `frontier_reason` and `domains`
+alongside the six original keys, because a key absent from it is a key the job
+is told not to write.
+
+The JUDGING half is `loop/lib/review.mjs`, `CHECKLISTS.post` (the frontier
+entry and the F2 permitted/forbidden lists) and `CHECKLISTS.scout` (the
+unflagged-cap entry and the frontier-decline entry), measured in
+`loop/tests/review-blog-bar.test.mjs`. It is not scope creep and it is not
+optional: `excerptsFor` assembles spec text for the AUTHOR's brief alone, so a
+reviewer receives no spec text at all, and the delta's scenarios "review
+rejects the flag as `spec-violation` naming the not-qualifying list" and
+"naming the forbidden list" are impossible unless the checklist carries both
+lists itself. Task 11's "both lists go in the brief verbatim" was read as "and
+in the checklist", which is the correct reading; this paragraph makes it a
+visible one rather than a fact recoverable only from commit messages
+`35c1760` / `131dac6`.
+
 ## The vocabulary and the schema
 
 - [x] 1. `lib/domains.mjs` (new): the closed domain vocabulary — `coding`,
