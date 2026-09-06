@@ -1,0 +1,11 @@
+{
+  "job": "j-20260905-24",
+  "type": "verify",
+  "source": "directive",
+  "slug": null,
+  "path": null,
+  "issues": [
+    "addictedtoai-c563",
+    "addictedtoai-ego8"
+  ]
+}
