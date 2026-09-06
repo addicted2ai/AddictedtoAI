@@ -223,3 +223,10 @@ stated reason, not a wrong claim.
 8. Is `computer use` a technique tagged `agents`, or its own domain?
 9. Do the 15 feed-less/stale entries get editorial domains, or stay untagged?
 10. Is alphabetical domain ordering on /frontier acceptable?
+
+---
+**Correction (2026-09-05, from the 1hjf draft review):** §0's "`design_arena` on 243" is the count of
+rows carrying any `benchmarks` object; `design_arena` itself is on **165** rows of `latest.json`
+(DESK-ORDER-001 §4 has the right figure). §5's "seeds 431/446 partially" counted `text`, which K38
+removed from the vocabulary; excluding it, 265 of 431 rows take ≥1 modality domain and 166 are
+general/untagged. Neither correction changes the recommendation (option B) or any decision.

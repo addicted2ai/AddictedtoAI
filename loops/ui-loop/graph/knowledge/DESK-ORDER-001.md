@@ -75,7 +75,7 @@ Closed, small, set-valued, optional on models, orgs, tools, techniques and front
 Research and recommendation in `EN-domain-facet.md` (Opus, 2026-09-05): nine values —
 `text, coding, agents, image, video, audio, research, science-math, robotics` — chosen over
 modality-only and capability-only alternatives because it is the only vocabulary the data on disk
-seeds (431/446 models partially via feed modalities; 181 fully via the AA indices). **The three
+seeds (measured 2026-09-05 excluding `text`, which K38 removed: 265 of 431 feed rows take ≥1 modality domain and 166 take none and are correctly general/untagged; 181 carry an AA index for coding/agents). **The three
 open questions are answered:** "general" is the UNMARKED default and `text` is not a tag (keeper,
 K38); no Artificial Analysis value renders until republication rights are cleared (K24/K34, beads
 addictedtoai-ego8 and -c563); domain sections order by domain id, a pure function of names per the
@@ -158,3 +158,21 @@ through the Desk's change process first; the lines below are the jobs that follo
   `verified` is tri-state: absent / false / {by, url, date}.
 - **DIRECTIVES repairs** by the orchestrator (67cd566) accepted: drafting line for 9c9t (livelock
   otherwise), domain line carries its answers inline, one org entry per line with the backlog on 2ok0.
+
+## Amendments from the 1hjf draft review (2026-09-05)
+
+- **Seeding is APPEND-ONLY** (ratified under K40 as K47; the 1hjf author's finding): a seeded domain
+  value is never removed by a later run whose signal is absent — the AA v4.2 rebase dropped
+  `agentic_index` presence 166→99 and `intelligence_index` 164→52 overnight while `coding_index` held
+  181→181, so a recomputing rule would have silently un-tagged 67 entries with no editorial decision.
+  Removal is editorial (`domains_excluded`). Recommended, author's call: when a seeding signal
+  disappears for an entry, the Pulse writes a `field_change` record so the disappearance is visible.
+- **Fields**: `domains_seeded` (machine, append-only, in `MECHANICAL_FRONT_MATTER_KEYS`), `domains`
+  (editorial additions), `domains_excluded` (editorial removals); rendered set = (seeded ∪ domains) −
+  excluded; a gate fails an excluded value that is in neither seeded nor domains.
+- **Kinds**: the facet is optional on EVERY wiki kind (widened from §3's list; a `benchmark` entry
+  for FrontierMath is `science-math` by any reading; one `entrySchema` for all kinds means restricting
+  is more machinery, not less). Both tool sets carry it: directory listings and wiki tool entries.
+- **Ordering**: MODIFYING `directory`'s "No placement is ever sold" to add `domain` to the pure-function
+  ordering list is accepted (superset, 8 of 9 units byte-identical).
+- Counts: 544 wiki entries (545 files incl. the README); 14 blog posts (15 files incl. the README).
