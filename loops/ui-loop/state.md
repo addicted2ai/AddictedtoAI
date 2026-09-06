@@ -65,13 +65,10 @@ process each round knows only what this file says. Every claim cites an artifact
   records (`frontier: true`, `frontier_reason: F1–F5`, `domains`), 3 most recent per domain; index
   leaders secondary where licensed; flagged stories exempt from the 3/day cap, not the budget;
   feeds are the scout's radar, never display. Spec `knowledge/DESK-ORDER-001.md` §1; UI: next brief.
-- **Round-1 rulings (keeper, 2026-09-05).** **K16** a typeface decision is required (inheriting the
-  stack is not one). **K17** finalists CP-UI-001-1 Dated Ledger + CP-UI-001-2 Players Board. **K18**
-  R13 rail-track addendum; R7 board clarification. **K19** the Frontier LEADS with a players board.
-  **K20** a finalist names a treatment for EVERY template. Worktrees `D:\AddictedtoAI-c1`
-  (`ui/concept-1`), `-c2` (`ui/concept-2`). **K21** board membership is EDITORIAL, never feed-gated;
-  feeds fill cells; no label assumes one source. **K22** a closed, small `domain` facet joins the Desk
-  order (`EN-domain-facet.md`); the graph ASSUMES it: finalists absorb a domain as data, no template edit.
+- **Round-1 rulings (keeper).** **K16** a typeface decision is required. **K17** finalists Dated
+  Ledger + Players Board. **K18** R13 rail-track addendum; R7 board clarification. **K19** the Frontier
+  LEADS with a players board. **K20** a finalist names a treatment for EVERY template. **K21** board
+  membership is EDITORIAL, never feed-gated. **K22** a closed `domain` facet; the graph ASSUMES it.
 
 ## Known evidence lies · Failure modes to guard
 
@@ -93,5 +90,7 @@ Desk backlog, never a UI finding. Check this file's size before every commit (ov
    criticals; handoff accepted (K31), STOP removed (K33), Desk resumed. Detail: `state-archive.md`.
 11. Specs reviewed (K45) and IMPLEMENTED in parallel (K49, 2026-09-06): domain facet `fa555a4`, claim
    record + vendor test `ca44bac`, frontier flag `b423696`, sealed-reviewed with mutation proofs;
-   lead-change/frontier.json and radar rows pending; 1401 tests green. Next: BRIEF-UI-002 (Frontier
-   domain section + general lane; deferred layout items) once the data is live.
+   lead-change/frontier.json `f0fb938`: all four merged, changes ARCHIVED, gates green, PUSHED,
+   **publishing ON, Pulse re-enabled**. Next: **BRIEF-UI-002** (keeper drafts/approves): Frontier
+   domain section + general lane; domains facet display; claim records in three states; deferred:
+   wiki-entry right half @1440, catalog @768, claim clamp.
