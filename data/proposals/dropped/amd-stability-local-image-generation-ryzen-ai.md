@@ -51,9 +51,7 @@ to fill a domain is precisely the failure the criteria exist to prevent.
 
 - A published index result where it takes or moves a lead — F2 on its own
   footing.
-- A measured throughput or memory figure for the local path from a third
-  party, so a reader can compare it against the hosted alternative rather
-  than against a vendor claim.
+- An open-weights release of it with terms that can be read.
 
 `data/proposals/dropped/` is a record, never a block. This slug suppresses
 nothing.
