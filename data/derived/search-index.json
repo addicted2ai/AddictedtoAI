@@ -1,17 +1,7 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 671,
+  "count": 670,
   "docs": [
-    {
-      "u": "/blog/anthropic-enterprise-frontier-safeguards",
-      "t": "Anthropic will put Claude misuse logs in your own bucket. Its support pages say what it keeps.",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
       "t": "Anthropic publishes one government exception to its usage policy. Weapons and domestic surveillance are not in it.",
