@@ -369,6 +369,41 @@ test('10 the scout brief carries the flag’s own bar, the vocabulary, and the e
   assert.match(text, /"general" is the UNMARKED default/);
 });
 
+test('10 a frontier decline names its criterion, and the rule is UNCONDITIONAL', (t) => {
+  // The loop delta adds a SHALL to the drop-record bullet: "A story considered
+  // as a frontier candidate and declined SHALL name which criterion it was
+  // weighed against and why it failed — the surface's own claim is that it shows
+  // what other AI news sites do not, and the declines are the only record of
+  // where that line was drawn."
+  //
+  // The defect this pins is a conditional standing in for an unconditional rule.
+  // The quiet-domain check already says "record the declines against the
+  // criteria they failed", which satisfies the sentence in the one case a domain
+  // has gone quiet and defeats it everywhere else — so a scout that weighs eight
+  // stories against F1-F5 and declines all eight writes eight records naming
+  // only the two-test bar, and where the frontier line was drawn that day is
+  // unrecoverable.
+  const text = brief(t, 'scout');
+  carries(
+    text,
+    [
+      'ALSO NAMES WHICH CRITERION (F1-F5) IT WAS WEIGHED AGAINST AND WHY IT FAILED',
+      'That is unconditional — every run, every domain',
+      'whether or not the domain is quiet',
+      'these declines are the ONLY record of where that line was drawn',
+    ],
+    '10 frontier declines',
+  );
+  // Measured, not assumed: the sentence must be in the DROP-RECORD check, not
+  // only inside the quiet-domain one it is too easily read as a restatement of.
+  const dropCheck = ACCEPTANCE_BY_TYPE.scout.find((c) => c.startsWith('EVERY STORY CONSIDERED AND DECLINED'));
+  assert.ok(dropCheck, 'the scout brief has no drop-record acceptance check');
+  assert.ok(
+    /WHICH CRITERION \(F1-F5\)/.test(dropCheck),
+    'the frontier half of the drop-record rule lives outside the drop-record check, where it reads as conditional',
+  );
+});
+
 test('11 the post brief carries the three keys and their gate', (t) => {
   const text = brief(t, 'post');
   carries(

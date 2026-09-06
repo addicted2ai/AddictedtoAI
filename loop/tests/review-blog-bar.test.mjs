@@ -43,6 +43,7 @@ import {
   REISSUE_CODES,
 } from '../lib/review.mjs';
 import { subjectsOf } from '../../lib/reviews.mjs';
+import { DOMAINS, FRONTIER_CRITERIA } from '../../lib/domains.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml, HERE } from './helpers.mjs';
 
 const NOW = new Date('2026-09-10T12:00:00.000Z');
@@ -375,8 +376,11 @@ test('2.6 the assembled scout review brief carries the charge, the evidence, the
   assert.match(brief, /what would make it worth refiling/);
   assert.match(brief, /prove the \*form\* of the bar, never its \*rate\*/);
 
-  // The cap, and that zero is not a failure.
-  assert.match(brief, /At most three candidates are filed/);
+  // The cap, and that zero is not a failure. The cap sentence counts UNFLAGGED
+  // candidates since `flag-what-moved-the-frontier` modified it: a reviewer told
+  // "at most three" and instructed to count files reads the four-file run that
+  // change exists to enable as over-filing.
+  assert.match(brief, /At most three UNFLAGGED candidates are filed/);
   assert.match(brief, /Zero candidates is not a defect/);
   ctx.cleanup();
 });
@@ -420,6 +424,108 @@ test('2.6 every closed-list job type has a checklist, and no mapping dangles', (
   assert.deepEqual(cov.unmapped, [], `job types with no checklist: ${cov.unmapped.join(', ')}`);
   assert.deepEqual(cov.danglingMappings, [], cov.danglingMappings.join(', '));
   assert.deepEqual(checklistCoverage(['scout', 'no-such-type']).unmapped, ['no-such-type'], 'and it can find one');
+});
+
+/* ===========================================================================
+ * flag-what-moved-the-frontier — the side that JUDGES
+ *
+ * WHY THESE ARE HERE AND NOT ONLY IN `brief-acceptance.test.mjs`. A reviewer
+ * receives the diff and the checklist and nothing else: `excerptsFor` is called
+ * from exactly one place (`brief.mjs`, the AUTHOR brief), so no spec text and no
+ * delta text reaches a review. A rule written into the brief and not into the
+ * checklist is a rule the writer is held to and the checker has never seen —
+ * which is the ledger-#10 shape one layer up, and it is the shape that makes a
+ * scenario's THEN impossible: a model reviewer cannot reject a draft "naming the
+ * forbidden list" it was never given.
+ * ======================================================================== */
+
+test('the post checklist carries the not-qualifying list and its test, with the verdict named', () => {
+  const ctx = ctxAt();
+  const brief = briefFor(ctx, 'post');
+
+  // The blog delta's "A price change is not a frontier story": THEN review
+  // rejects it as `spec-violation` naming the not-qualifying list.
+  assert.match(brief, /a new checkpoint, a price change, a benchmark post with no new artifact, a tool release/);
+  assert.match(brief, /what every other AI news site already shows does not qualify on its own/);
+  assert.match(brief, /`spec-violation` \*\*naming the not-qualifying list\*\*/);
+  assert.match(brief, /a price change is not F5, which is a change in ACCESS and not in price/);
+
+  // Every criterion by id AND by its meaning — an id list tells a reviewer which
+  // labels exist and nothing about whether the story earned one.
+  for (const c of FRONTIER_CRITERIA) {
+    assert.ok(brief.includes(`**${c.id}**`), `the post checklist omits ${c.id}`);
+    assert.ok(brief.includes(c.text), `the post checklist omits what ${c.id} means`);
+  }
+
+  // K46 on the judging side: a reviewer told "at least one domain" asks for a
+  // repair the vocabulary forbids, and the flag quietly stops reaching general
+  // records (a court filing, a regulator's action, a licence term, a system card).
+  for (const d of DOMAINS) assert.ok(brief.includes(d), `the post checklist omits the domain ${d}`);
+  assert.match(brief, /`domains` is OPTIONAL flagged or not/);
+  assert.match(brief, /"general" is the UNMARKED default and `text` is not a value/);
+  assert.match(brief, /NOT a defect to ask repaired/);
+  ctx.cleanup();
+});
+
+test('the post checklist carries BOTH F2 lists, in full, and the verdict for the forbidden half', () => {
+  // The load-bearing one. The delta: "Both lists are normative and neither may
+  // be dropped as redundant. A list that says only what is permitted is not a
+  // source test." Writing both halves into the author brief and neither into the
+  // checklist reproduces exactly the asymmetry the requirement was written
+  // against — the guard on the side that writes and none on the side that judges.
+  const ctx = ctxAt();
+  const brief = briefFor(ctx, 'post');
+
+  // Permitted, all six, verbatim from the blog delta.
+  assert.ok(brief.includes(
+    'the publisher; the index name and its version; the date; the direction of the rescoring; '
+    + 'the coverage change, as a count of rows scored before and after; the fact that a '
+    + 'non-uniform rescoring can invert orderings',
+  ), 'the permitted half is not carried verbatim');
+
+  // Forbidden, all four, plus the two rulings that decide the hard cases.
+  assert.ok(brief.includes('any index value, any ratio, any rank, any per-model score'),
+    'the forbidden half is not carried verbatim');
+  assert.match(brief, /A median is a value however it is aggregated; a leaderboard position is a rank/);
+  assert.match(brief, /`spec-violation` \*\*naming the forbidden list\*\*/);
+  assert.match(brief, /BOTH lists below are normative — neither may be dropped as redundant/);
+
+  // The anchor rule, which is where an F2 record is most easily laundered.
+  assert.match(brief, /publisher's own changelog or announcement/);
+  assert.match(brief, /a third-party write-up is not that anchor/);
+
+  // And the reason both halves are here, so a later editor trimming for length
+  // knows which sentence is load-bearing.
+  assert.match(brief, /not a source test but a field-name test/);
+  assert.match(brief, /BY ACCIDENT/);
+  ctx.cleanup();
+});
+
+test('the scout checklist asks for the criterion behind a frontier decline, unconditionally', () => {
+  // The loop delta's new SHALL: "A story considered as a frontier candidate and
+  // declined SHALL name which criterion it was weighed against and why it
+  // failed." Satisfied for quiet domains and defeated everywhere else is the
+  // shape of a conditional standing in for an unconditional rule, so the word
+  // that matters most in this assertion is "unconditionally".
+  const ctx = ctxAt();
+  const brief = briefFor(ctx, 'scout');
+  assert.match(brief, /ALSO names which criterion \(F1-F5\) it was weighed against and why it failed/);
+  assert.match(brief, /unconditionally, not only in a domain that has gone quiet/);
+  assert.match(brief, /only record of where the frontier line was drawn/);
+  ctx.cleanup();
+});
+
+test('the scout checklist counts UNFLAGGED candidates against the cap of three', () => {
+  // "A frontier story is filed beside a full docket" expects four candidates to
+  // merge and be judged normally. A reviewer handed the pre-change sentence and
+  // told to count files reads that run as over-filing.
+  const ctx = ctxAt();
+  const brief = briefFor(ctx, 'scout');
+  assert.match(brief, /At most three UNFLAGGED candidates are filed/);
+  assert.match(brief, /exempt from the COUNT and from nothing else/);
+  assert.match(brief, /a fourth file is expected rather than over-filing/);
+  assert.match(brief, /dropped at merge with the offending field named and does not rejoin the three/);
+  ctx.cleanup();
 });
 
 /* ===========================================================================
