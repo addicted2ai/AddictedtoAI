@@ -42,7 +42,8 @@ export function readCommittedBrief(repo, branch) {
 }
 
 /**
- * The job's committed source record — `{source, type, slug, path}` — or null.
+ * The job's committed source record — `{job, type, source, slug, path, issues}`
+ * — or null.
  *
  * "The branch carries everything resumption needs" is this module's whole
  * premise, and until now the brief was the only thing it carried. That was
@@ -52,8 +53,20 @@ export function readCommittedBrief(repo, branch) {
  * (`source: 'resumed'`) has no proposal in it. Rather than parse the prose of
  * the committed brief, the selection writes the fact down beside it.
  *
- * Absent on every branch created before this existed, and on every job that did
- * not come from a proposal — so `null` is an ordinary answer, not an error.
+ * WRITTEN FOR EVERY JOB, NOT ONLY FOR A PROPOSAL, and the difference is now
+ * load-bearing. Selection writes this file unconditionally at branch creation
+ * (`run.mjs`, beside the brief): a non-proposal job carries `job`, `type`,
+ * `source` and `issues` with `slug` and `path` null. That is what lets the
+ * resume path read the job's TYPE from here rather than from its last ledger
+ * line (beads addictedtoai-bze3) — a branch interrupted before it wrote any
+ * ledger line has no last line, and that is precisely the case the type fix is
+ * for. A reader who took this record to be a proposal-only thing would leave
+ * the ledger fallback in place as the real path, which is the opposite of what
+ * the code does.
+ *
+ * So `null` means one of two things, both ordinary and neither an error: a
+ * branch created before this record existed, or a file that could not be read
+ * or did not parse as a JSON object. It does NOT mean "not a proposal job".
  */
 export function readCommittedJobSource(repo, branch) {
   const r = gitTry(repo, ['show', `${branch}:.job/source.json`]);

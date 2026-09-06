@@ -425,6 +425,74 @@ test('an UNMARKED gate failure that then PASSES costs nothing at all — the job
   ctx.cleanup();
 });
 
+test('a gate failure that PASSES on the retry still leaves the evidence of what failed', async () => {
+  // THE RETRY MOVED WHERE THE EVIDENCE IS LOST. Before addictedtoai-xzdd a gate
+  // failure only ever ended `failed`, so printing the failing script and its
+  // output at the end of the block printed everything there was. A failure that
+  // passes on the second run overwrites `gateResult`, and the worktree is torn
+  // down straight after — so unless the first run's evidence is emitted where it
+  // still exists, all that survives is `gates: FAIL` and three booleans. That is
+  // the exact defect run.mjs already records having cost job j-20260828-01, and
+  // it would also make xzdd's own question — whether these failures can be made
+  // deterministic — unanswerable from the runs it is gathering.
+  const ctx = repo();
+  const firstOutput = gateOutput(
+    'not ok 288 - declared: the live build being dirty does not defeat the match\n' +
+      '  at pulse/tests/publish-verify.test.mjs:310:5',
+  );
+  const flaky = {
+    ok: false,
+    // Two gates, one of each, so "which gate failed" is a question the log has
+    // to answer rather than one there is only one possible answer to.
+    results: [
+      { script: 'build', ok: true, status: 0, output: 'ok' },
+      { script: 'test', ok: false, status: 1, output: firstOutput },
+    ],
+    transport: false,
+    output: firstOutput,
+  };
+  const gates = stub(flaky, PASSING);
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+
+  assert.equal(res.outcome, 'done', ctx.output());
+  const log = ctx.output();
+  assert.match(log, /the FIRST gate run, which FAILED/, 'the log says a first run happened and failed');
+  assert.match(log, /gate test: FAIL \(exit 1\)/, 'the failing script is named, with its exit status');
+  assert.match(log, /gate build: PASS/, 'and so is the one that passed');
+  assert.match(
+    log,
+    /pulse\/tests\/publish-verify\.test\.mjs:310/,
+    "the first run's own captured output survives the retry that replaced it",
+  );
+  assert.match(log, /not ok 288 - declared: the live build being dirty/, log);
+  // And on the permanent record, where a log that is never kept is not.
+  const author = readLedger(ctx).at(-1).phases.find((p) => p.role === 'author');
+  assert.deepEqual(author.gates, { retried: true, passed: true, transport: false, first_failed: ['test'] });
+  // AND THE REVIEWER IS TOLD. It is the only judgment in the loop that could
+  // notice a real intermittent defect the second run happened to miss, and the
+  // brief it reads showed it a clean PASS with no hint there had been a first
+  // run. Read off the brief the run actually wrote, not off `gatesSection` —
+  // the wiring from the retry to the report is what this measures.
+  const brief = readFileSync(join(ctx.worktreeRoot, `${res.jobId}-review-1-brief.md`), 'utf8');
+  assert.match(brief, /\*\*These gates were run twice\.\*\*/, brief);
+  assert.match(brief, /What failed the first time: `npm run test`/, brief);
+  assert.match(brief, /carried NO machine-failure marker/, brief);
+  ctx.cleanup();
+});
+
+test('a job whose gates passed first time prints no gate evidence at all', async () => {
+  // The control for the test above: the common path stays quiet, so the
+  // evidence block means what it says when it appears.
+  const ctx = repo();
+  const gates = stub(PASSING);
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.doesNotMatch(ctx.output(), /which FAILED/);
+  assert.doesNotMatch(ctx.output(), /--- gate output ---/);
+  ctx.cleanup();
+});
+
 test('the retry runs the SAME gates in the SAME worktree, not the repository', async () => {
   const ctx = repo();
   const gates = stub(FAILING(gateOutput('not ok 1 - something intermittent')), PASSING);
@@ -452,7 +520,14 @@ test('the ledger records that a retry happened and how it ended, without a new l
     JSON.stringify(line),
   );
   const author = line.phases.find((p) => p.role === 'author');
-  assert.deepEqual(author.gates, { retried: true, passed: true, transport: false }, JSON.stringify(line.phases));
+  // `first_failed` names the scripts, not their output. Three booleans could not
+  // tell a later reader whether the flaky gate was `test` or `build`, and that
+  // distinction is the one addictedtoai-xzdd is trying to characterise.
+  assert.deepEqual(
+    author.gates,
+    { retried: true, passed: true, transport: false, first_failed: ['test'] },
+    JSON.stringify(line.phases),
+  );
   // And the count of model invocations is unchanged by it: a gate run is not one.
   assert.deepEqual(line.phases.map((p) => p.role), ['author', 'review1']);
   ctx.cleanup();

@@ -382,6 +382,45 @@ test('a failed gate is reported to the reviewer as failed, with its exit status'
   assert.match(failing, /on commit `abcdef012345`/);
 });
 
+test('a reviewer told the gates passed is told when they passed on a SECOND run', () => {
+  // The reviewer is the only judgment in the loop that could notice a real
+  // intermittent defect the second gate run happened to miss, and since beads
+  // addictedtoai-xzdd a retry fires on ANY failure — so a clean PASS in this
+  // section can be a second attempt. `retried` was being set on the report and
+  // rendered nowhere: a field that says nothing to anyone.
+  const retried = gatesSection(
+    {
+      ran: true,
+      ok: true,
+      results: [{ script: 'test', ok: true, status: 0 }],
+      retried: true,
+      transport: false,
+      firstFailed: ['test'],
+    },
+    'abcdef0123456789',
+  );
+  assert.match(retried, /\*\*These gates were run twice\.\*\*/);
+  assert.match(retried, /The first run FAILED and the second PASSED/);
+  assert.match(retried, /What failed the first time: `npm run test`/);
+  assert.match(retried, /carried NO machine-failure marker/, 'stated as a measurement, not a reassurance');
+  // And it must not turn into the one instruction this section exists to refuse.
+  assert.match(retried, /\*\*Do not re-run them\.\*\*/);
+});
+
+test('a MARKED first failure says so, and a first-time pass says nothing at all', () => {
+  const marked = gatesSection(
+    { ran: true, ok: true, results: [{ script: 'test', ok: true, status: 0 }], retried: true, transport: true, firstFailed: ['test'] },
+  );
+  assert.match(marked, /carried the machine-failure marker/);
+  assert.doesNotMatch(marked, /carried NO machine-failure marker/);
+
+  // The control: the common path is unchanged, so the paragraph means something
+  // when it appears.
+  const clean = gatesSection({ ran: true, ok: true, results: [{ script: 'test', ok: true, status: 0 }] });
+  assert.doesNotMatch(clean, /run twice/);
+  assert.doesNotMatch(clean, /first run/i);
+});
+
 test('the loop says WHY a verdict is missing, and still refuses the merge', async () => {
   const ctx = repo('done-edit', 'review-nothing');
   const res = await go(ctx);

@@ -145,6 +145,69 @@ test('with NEITHER, the fallback is still `machinery` — and the log says it is
   assert.match(ctx.output(), /this is the fallback, not a measurement/);
 });
 
+/* ---------------------------------------------------------------------------
+ * THE BUDGET-EXHAUSTION SWEEP READS THE SAME RECORD, and the two consumers must
+ * not be able to disagree.
+ *
+ * specs/loop: "Where a resumable branch's job has no budget left, the loop SHALL
+ * abandon it in the same sweep that abandons branches past the resumable age
+ * limit — BEFORE SELECTION — rather than resuming it." The sweep runs 137 lines
+ * above the resume path. While it read only the ledger, a branch mistyped by the
+ * very defect bze3 fixes — a `verify` job whose ledger line says `machinery` —
+ * was measured against machinery's larger total, passed a check it should have
+ * failed, and was then abandoned one step late by `executeJob`'s own guard,
+ * after a worktree had been created. And if the sweep DID abandon it, it wrote
+ * the wrong type onto the permanent `abandoned` line: a false record minted
+ * while fixing false records.
+ * ------------------------------------------------------------------------- */
+
+test('the budget sweep abandons a branch on ITS OWN type, before selection', async (t) => {
+  // 50 model-minutes spent. `verify`'s cap is 30 in the fixture config, so its
+  // total is 60 and 10 minutes remain — below the 15-minute floor, so the job is
+  // out of budget. `machinery`'s cap is 60, total 120, 70 left: comfortably in
+  // budget. The two answers differ, which is what makes this measurable.
+  const ctx = repo();
+  t.after(() => ctx.cleanup());
+  plantJobBranch(ctx, 'j-20260910-01', {
+    files: { '.job/source.json': sourceJson('j-20260910-01', 'verify') },
+  });
+  writeQueue(ctx, []); // nothing else to select, so the sweep is all this run does
+  writeLedger(ctx, [
+    // Exactly j-20260906-10's shape: a `verify` job whose ledger lines say
+    // `machinery`, because the old bug wrote them.
+    ledgerLine({ id: 'j-20260910-01', type: 'machinery', mm: 25, outcome: 'interrupted', ts: daysAgo(NOW, 2) }),
+    ledgerLine({ id: 'j-20260910-01', type: 'machinery', mm: 25, outcome: 'interrupted', ts: daysAgo(NOW, 1) }),
+  ]);
+
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+
+  assert.equal(res.selected, null, `nothing should have been selected\n${ctx.output()}`);
+  assert.match(ctx.output(), /abandoning job\/j-20260910-01/, ctx.output());
+  assert.match(ctx.output(), /this verify job has spent 50\.00 of its 60-minute total budget/, ctx.output());
+  const line = readLedger(ctx).at(-1);
+  assert.equal(line.outcome, 'abandoned', JSON.stringify(line));
+  // The permanent record says what the job WAS, not what the defect recorded.
+  assert.equal(line.type, 'verify', `the abandoned line recorded \`${line.type}\`\n${ctx.output()}`);
+});
+
+test('the sweep still uses the ledger when the branch carries no committed record', async (t) => {
+  // The control: nothing about the old path changed for a branch that predates
+  // `.job/source.json`, and a `machinery` job with 50 minutes spent has 70 left,
+  // so it is resumed rather than swept.
+  const ctx = repo();
+  t.after(() => ctx.cleanup());
+  plantJobBranch(ctx, 'j-20260910-01');
+  writeLedger(ctx, [
+    ledgerLine({ id: 'j-20260910-01', type: 'machinery', mm: 50, outcome: 'interrupted', ts: daysAgo(NOW, 1) }),
+  ]);
+
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', dryRun: true, noGates: true });
+
+  assert.doesNotMatch(ctx.output(), /abandoning job\/j-20260910-01/, ctx.output());
+  assert.equal(res.resumed, true, ctx.output());
+  assert.equal(res.job.type, 'machinery', ctx.output());
+});
+
 test('a source record naming something that is not a job type is not believed', async (t) => {
   // It comes off a branch, so it is input. An unrecognised type would index
   // `job_caps_minutes` at `undefined` rather than fail, which is the silent
