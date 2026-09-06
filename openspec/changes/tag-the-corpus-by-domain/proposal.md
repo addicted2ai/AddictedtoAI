@@ -101,9 +101,83 @@ saying so. So seeding is append-only in this change, exactly as `timeline`
 already is, and removal is an editorial act that goes through review.
 
 The first row matters as much as the second: `coding_index` presence held at
-181 across the same rebase. "Index presence" is not uniformly stable or
-uniformly unstable, which is why the rule is stated as a property of seeding
-rather than left to whichever field someone tests first.
+181 across the same rebase. *(Re-measured over the same two snapshots for this
+revision: all three presence counts reproduce exactly. The flat 181 is itself a
+net — 2 rows lost `coding_index` and 2 gained it — so even the stable row is not
+stationary, which sharpens the point rather than softening it.)* "Index
+presence" is not uniformly stable or uniformly unstable, which is why the rule
+is stated as a property of seeding rather than left to whichever field someone
+tests first.
+
+### The recommendation that came back with the ratification, and the decision on it
+
+The review that ratified append-only seeding as **K47**
+(`loops/ui-loop/graph/knowledge/DESK-ORDER-001.md`, "Amendments from the 1hjf
+draft review", 2026-09-05) left one thing to the author: when a seeding signal
+disappears for an entry, the Pulse *could* write a `field_change` line to
+`data/changes.jsonl` so the disappearance is visible rather than silent.
+**This change decides against it**, and the `wiki` delta says so in a sentence
+rather than leaving it implied.
+
+The offer is a real one and it is cheap — the kind already exists, so it needs
+no new machinery — and append-only seeding does hide something: an entry keeps
+a tag whose evidence has left the feed, and no page says so. But what the
+record buys is visibility, not safety; nothing is lost either way. Three
+findings, each checkable in this tree, decide it against.
+
+1. **The registry has already ruled on this exact block, and this would be a
+   fourth door into it.** `data/sources/registry.json` carries
+   `benchmarks.artificial_analysis` under `declined_fields` with
+   `decided_on: "2026-09-05"` and the decision *"not carried"* — *"Not a
+   column, not a fact, not an event"* — on a measurement stated in the same
+   note: across the 2026-09-04 and 2026-09-05 fetches *"181 values went
+   number->null with 0 going null->number"*, and *"56 of the carrying row ids
+   are `:batch`/`:free` twins of a canonical_slug already counted, so a per-row
+   line would emit that one act more than once per model."* A disappearance
+   line writes precisely the lines that decision refuses, from a code path that
+   never consults `declined_fields`. `pulse/lib/diff.mjs` states the principle
+   it would break, in its own words and from the last time this split bit: a
+   field *"is an event in one place or in neither"* (`diff.mjs:377-378`).
+
+2. **The volume is not 67 lines; it is 71, against a history of 182.** The
+   166→99 figure in the table above is the *net* change in how many rows carry
+   `agentic_index`, and an emitter fires on transitions rather than on a net.
+   Counted directly over the same two snapshots, for the two fields task 11
+   proposes as seeding signals: `agentic_index` went number→absent on **69**
+   rows (and absent→number on 2, which is why the net is 67), and
+   `coding_index` — whose presence "held" at 181→181 — went number→absent on
+   **2** and absent→number on **2** underneath that flat total. So one night's
+   rebase writes **71 lines**. `data/changes.jsonl` holds **182 lines**,
+   counted in this tree on 2026-09-05 and the same total the
+   `separate-a-claim-from-a-fact` delta measures independently: one publisher
+   act would enlarge the site's entire recorded history by two fifths
+   overnight, in the feed that renders on the home page. Some fraction of those
+   lines restates a sibling: the registry's own note on the same event counts
+   *"56 of the carrying row ids"* as `:batch`/`:free` twins of a canonical slug
+   already counted. (The registry note's aggregate — *"181 values went
+   number->null"* — is over all three indices under its own method; counting
+   number→absent over every row in the earlier snapshot gives 185 for the same
+   three. The instruments differ slightly and the conclusion does not; the 71
+   above is this change's own count, over only the fields it proposes to seed
+   from.)
+
+3. **The argument that would have outweighed volume does not apply, and it cuts
+   the other way.** These lines would not turn into model spend:
+   `uninterpretedChanges` selects `field_change` lines whose `field` is in
+   `INTERPRET_FIELDS` — `price_input`, `price_output`, `price`, `license`,
+   `licence`, `status` (`pulse/lib/diff.mjs:110`, applied at `:399`) — and no
+   domain-seeding field is among them, so no `interpret` job would be queued
+   and no budget consumed. The record would be cheap. Cheap is not a reason to
+   put 71 lines in front of a reader scrolling for the ones that are events; a
+   feed nobody trusts is the more expensive failure, and it is the one
+   `declined_fields` was written to avoid.
+
+What is genuinely lost is worth naming rather than waving away: an entry can
+carry a seeded `agents` whose only evidence has since vanished from the
+snapshot, and nothing renders that. The place for that is not the append-only
+history — it is `data/derived/`, which is recomputed from current state on
+every run and is already where "what the snapshot says right now" lives. This
+change does not build it and does not add a requirement for it here.
 
 ## What changes
 
@@ -119,8 +193,13 @@ Domains are declared, never inferred from prose.
 `domains` (editorial, reviewed) and `domains_excluded` (editorial, reviewed,
 suppresses a seeded value). The effective set is
 `(domains_seeded ∪ domains) − domains_excluded`. Asserting and excluding the
-same value fails the build; excluding a value nothing has seeded is legal and
-inert.
+same value fails the build, and so does excluding a value that appears in
+neither `domains_seeded` nor `domains`: an exclusion that removes nothing is a
+stale edit, and the gate is what stops one sitting on an entry reading as a
+decision while enacting nothing. The gate is safe precisely because seeding is
+append-only — it reads two fields of the file it is validating, never the
+feed's current contents, so a publisher dropping a signal cannot turn a green
+build red on an entry nobody touched.
 
 **`specs/directory`, added.** A tool listing MAY declare `domains`, optional,
 from the same vocabulary, editorial and declared — never derived from
@@ -131,6 +210,19 @@ exactly one, still the default grouping.
 its list of objective criteria and extends its ordering guarantee to domain
 groupings: pure function of the domain ids, never declaration order, never
 member count, never an index score or a measure of a domain's importance.
+
+*The check that the MODIFIED block clobbers nothing.* A `MODIFIED` block
+replaces the live requirement wholesale, so the question is not what it adds
+but what it silently drops. Measured against
+`openspec/specs/directory/spec.md` on 2026-09-05, splitting the live
+requirement into units — its two paragraphs, the four bullets of its category
+list, and its three scenarios, nine in all — **8 of the 9 are byte-identical**
+in the MODIFIED block, and the ninth is the opening paragraph. Normalising
+whitespace, that paragraph differs from the live one by exactly one inserted
+word: `(name, date, price, status, category)` becomes
+`(name, date, price, status, category, domain)`. Everything the modification
+adds — the domain-grouping bullets, the paragraph naming the temptation, and
+three new scenarios — is new units beside the nine, not edits to them.
 
 ## The mechanism this change must not walk into, named by the change that found it
 
@@ -161,11 +253,13 @@ editorial domain assignment on an already-reviewed entry rebinds that entry's
 review record. Splitting the fields is what keeps that cost attached to the
 judgments and off the machine's re-seeds.
 
-*(DESK-ORDER-001 §3's implementation note and the drafting directive both say
+*(DESK-ORDER-001 §3's implementation note and the drafting directive both said
 545 wiki files. The measured count of files under `content/wiki/` is 545 and
 the measured count of **entries** is 544; the difference is the root README.
 Same shape as the 15-versus-14 post discrepancy `flag-what-moved-the-frontier`
-recorded, and a file count rather than a missing entry.)*
+recorded, and a file count rather than a missing entry. The order now carries
+both, from the same 2026-09-05 amendment: "Counts: 544 wiki entries (545 files
+incl. the README); 14 blog posts (15 files incl. the README)".)*
 
 ## What this change deliberately does not do
 
@@ -175,6 +269,10 @@ recorded, and a file count rather than a missing entry.)*
   from named feed fields, presence or contents never a republished value — and
   leaves the field list to the change that writes it, because adding a source
   is not an OpenSpec change (`specs/pulse`).
+- **It does not put a seeding signal's disappearance in the changed feed.** The
+  decision and the three measurements behind it are above; the `wiki` delta
+  states the prohibition so that it is a rule rather than an omission somebody
+  later reads as an oversight.
 - **It does not tag a single entry or listing.** The backfill is editorial work
   through the review gate, and it is a directive line, not a task here.
 - **It does not create the index registry or give an index a domain.**
@@ -200,11 +298,16 @@ recorded, and a file count rather than a missing entry.)*
   faceting mechanisms on one record type is a thing worth someone's judgment
   later.
 
-## What is not settled, and is for the reviewing session
+## What the reviewing session settled
 
-Four things this draft resolved from the artifacts available and cannot confirm
-against the rounds that produced them. A requirement whose reason is lost gets
-re-litigated or quietly dropped by whoever implements it, so each is named.
+Four things this draft resolved from the artifacts available and could not
+confirm against the rounds that produced them. The ui-loop session read them on
+2026-09-05 and **ratified all four rather than overturning any**; the outcome is
+recorded in `loops/ui-loop/graph/knowledge/DESK-ORDER-001.md` §3 under
+"Amendments from the 1hjf draft review". They are settled. Each is kept below
+with its outcome attached, because a requirement whose reason is lost gets
+re-litigated or quietly dropped by whoever implements it — and a decision
+recorded without the doubt it resolved is the same defect from the other side.
 
 1. **Which kinds may bear the facet.** DESK-ORDER-001 §3 names "models, orgs,
    tools, techniques and frontier indices". This draft makes it optional on
@@ -214,13 +317,18 @@ re-litigated or quietly dropped by whoever implements it, so each is named.
    a `benchmark` entry for FrontierMath is `science-math` by any reading of the
    vocabulary, and `benchmark` is not on §3's list. Because the facet is
    optional and empty is legal, a kind that should not bear it simply never
-   declares one. This is a **widening of §3 as written** and is the single
-   thing in this draft most likely to be wrong.
+   declares one. This was a **widening of §3 as written** and was flagged as
+   the single thing in this draft most likely to be wrong. **Ratified**, with
+   the draft's own reasoning adopted as the order's: *"the facet is optional on
+   EVERY wiki kind (widened from §3's list; a `benchmark` entry for
+   FrontierMath is `science-math` by any reading; one `entrySchema` for all
+   kinds means restricting is more machinery, not less)."*
 2. **Which "tools" §3 meant.** `EN-domain-facet.md` §0 is explicit that the 35
    curated listings under `content/directory/tools/` and the 38 entries under
    `content/wiki/tool/` are different sets. §3 says "tools" without
    distinguishing. This draft gives the facet to both, on the same reasoning as
-   (1).
+   (1). **Ratified**: *"Both tool sets carry it: directory listings and wiki
+   tool entries."*
 3. **Whether `domains_excluded` should exist at all.** The drafting directive
    names "any override of a seeded value" as an editorial judgment, and the
    guide's K44 row says "editorial assignments **and overrides** are a separate
@@ -232,7 +340,17 @@ re-litigated or quietly dropped by whoever implements it, so each is named.
    include/exclude state was meant, in the shape `aliases: [{name, class}]`
    already uses. Three plain string lists were chosen over one list of objects
    so that `domains` means the same thing and has the same shape on an entry
-   and on a post; the round may have decided otherwise.
+   and on a post; the round may have decided otherwise. **Ratified**, in the
+   order's own listing of the three field names and their shape:
+   *"`domains_seeded` (machine, append-only, in `MECHANICAL_FRONT_MATTER_KEYS`),
+   `domains` (editorial additions), `domains_excluded` (editorial removals);
+   rendered set = (seeded ∪ domains) − excluded"*. The same bullet adds the one
+   requirement this draft did not have — *"a gate fails an excluded value that
+   is in neither seeded nor domains"* — which is the stale-edit gate above. It
+   is what makes the third key defensible rather than merely permitted: an
+   `override` that overrides nothing was the exact failure the third key was
+   introduced to avoid, and until the gate existed the draft's own rules
+   allowed one to sit on an entry indefinitely.
 4. **Whether the seeding coverage §3 cites still holds after K38.**
    DESK-ORDER-001 §3 justifies choosing this vocabulary over the alternatives
    partly on coverage: "431/446 models partially via feed modalities".
@@ -240,7 +358,13 @@ re-litigated or quietly dropped by whoever implements it, so each is named.
    then removed from the vocabulary. Excluding it, **265 of 431 rows take at
    least one modality domain and 166 take none** — those 166 are text-or-file
    only, and under K38 they are correctly general and correctly untagged. The
-   design is working as decided; the number quoted for it is stale. Flagged
+   design is working as decided; the number quoted for it was stale. Flagged
    because it is the stated justification for option B over the alternatives in
    `EN-domain-facet.md` §5, and a justification nobody re-checks is how a
-   settled decision gets reopened later. This draft does not reopen it.
+   settled decision gets reopened later. This draft did not reopen it and does
+   not now. **Corrected upstream** rather than ratified: §3 was amended the same
+   day to carry the recount instead of the stale figure — *"(measured 2026-09-05
+   excluding `text`, which K38 removed: 265 of 431 feed rows take ≥1 modality
+   domain and 166 take none and are correctly general/untagged; 181 carry an AA
+   index for coding/agents)"* — so the order and this draft now state the same
+   numbers.

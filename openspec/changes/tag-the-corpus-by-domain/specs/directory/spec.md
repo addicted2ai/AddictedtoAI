@@ -6,6 +6,10 @@ closed list, and still the thing the default grouping is built from. `domain`
 is a second, optional axis beside it — not a replacement, not a rename, and not
 a reason to touch a single existing listing.
 
+The MODIFIED block below is a superset of the live requirement — 8 of its 9
+units byte-identical and the ninth differing by the single inserted criterion
+`domain`. The check and its method are in this change's `proposal.md`.
+
 The listing count used below was measured on 2026-09-05: `content/directory/`
 `tools/` holds 36 `.md` files, one of which is the directory's own README and
 is not a listing, giving 35 curated listings.
