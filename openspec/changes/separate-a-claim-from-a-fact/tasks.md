@@ -100,62 +100,62 @@ promises.
 
 ## The change-line kinds, which are not closed today
 
-- [ ] 17. A new `lib/change-kinds.mjs` exporting the closed list —
+- [x] 17. A new `lib/change-kinds.mjs` exporting the closed list —
       `arrival`, `release`, `field_change`, `retirement`, `annotation`,
       `lead-change` — with the reason in its header. `pulse/lib/` already imports
       from `../../lib/` (`pulse/lib/indexnow.mjs:101-102`), so one home is
       reachable from both sides.
-- [ ] 18. **Delete `MATERIAL_KINDS` (`lib/changes.mjs:35`).** It is imported
+- [x] 18. **Delete `MATERIAL_KINDS` (`lib/changes.mjs:35`).** It is imported
       nowhere — confirmed by grep, by
       `loops/ui-loop/graph/knowledge/review-frontier.md:137`, and by the live
       carried finding `data/carried/j-20260905-04-carry-1.md` — and three of its
       five values (`price`, `context`, `status`) are material field names, not
       kinds, appearing as a `kind` on zero of the 182 lines. Updating it instead
       of deleting it leaves two lists, one of which is wrong and unread.
-- [ ] 19. `pulse/lib/diff.mjs`, `appendChanges` (line 334): refuse a candidate
+- [x] 19. `pulse/lib/diff.mjs`, `appendChanges` (line 334): refuse a candidate
       whose kind is not a member, naming the kind. Replace the literals at the
       emission sites (lines 209, 232, 250, 301) with reads of the constant, and
       the equality tests in `lib/changes.mjs` (172-173, 196, 202) and
       `pulse/lib/queue.mjs:323` likewise.
-- [ ] 20. The build's summary reports the count of committed lines carrying an
+- [x] 20. The build's summary reports the count of committed lines carrying an
       unrecognised kind, and does **not** fail. `readChanges`
       (`lib/changes.mjs:45-57`) already tolerates a malformed line on the stated
       grounds that it is the Pulse's problem to report; this keeps that stance and
       makes the report exist.
-- [ ] 21. A test that a `lead-change` line inside the trailing window produces no
+- [x] 21. A test that a `lead-change` line inside the trailing window produces no
       `interpret` queue item. `uninterpretedChanges` filters `kind !==
       'field_change'` (`pulse/lib/diff.mjs:397`), so this is true today by
       accident of that filter's shape; the test is what makes it a decision.
 
 ## The lead-change lines and the derived file
 
-- [ ] 22. The `frontier` block on the source registry: declared metrics with
+- [x] 22. The `frontier` block on the source registry: declared metrics with
       publisher, path, direction, label, republisher; the eligibility exclusions
       as declared patterns with the measurement behind each recorded in the row;
       and the republication decision per metric (terms URL, date read, outcome,
       verbatim excerpt). Adding to the registry is an ordinary data change
       (`specs/pulse`); the shape it must carry is the requirement.
-- [ ] 23. `pulse/lib/frontier.mjs`: leaders, ranked rows and counts into
+- [x] 23. `pulse/lib/frontier.mjs`: leaders, ranked rows and counts into
       `data/derived/frontier.json`; `lead-change` candidates from the standing
       diff with a computed `cause`; keys a pure function of the two row hashes,
       the metric and the kind. One write call, `appendChanges`. No clock read:
       the snapshot's own date only. `describeChange` (`lib/changes.mjs:171-182`)
       gains one branch, with no adjective in the sentence it produces.
-- [ ] 24. `pulse/tests/frontier.test.mjs`, fixtures under the OS temp dir per the
+- [x] 24. `pulse/tests/frontier.test.mjs`, fixtures under the OS temp dir per the
       test convention: (a) unchanged snapshots → zero lines and a byte-identical
       derived file; (b) a new row taking the lead → exactly one line,
       `cause: arrival`; (c) the old leader marked down → `cause: rescored`;
       (d) the same leader marked down with no identity change → the other event,
       not a lead change; (e) re-running (b) appends nothing; (f) deleting the
       appended line and re-running restores it.
-- [ ] 25. A one-time seeding script run by the orchestrator, not by a job and not
+- [x] 25. A one-time seeding script run by the orchestrator, not by a job and not
       by the Pulse: replay the committed snapshot blobs via Node plumbing
       (`execFileSync('git', ['show', '<sha>:<path>'])`, never `git show` through
       Git Bash — the CLAUDE.md Windows note about MSYS mangling `rev:path`),
       append `seeded: true` lines with keys derived from the snapshot date, and
       one baseline line per metric stating that observation began there.
       Idempotent; never overwrites an observed entry.
-- [ ] 26. The renderer test that distinguishes an empty state from a picture of
+- [x] 26. The renderer test that distinguishes an empty state from a picture of
       one: a fixture with a cleared metric makes the same renderer produce a
       value. Asserting that the renderer is empty when nothing is registered
       proves only what a hard-wired string would also prove — which is exactly
