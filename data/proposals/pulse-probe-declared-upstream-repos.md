@@ -38,6 +38,8 @@ evidence: >
   (3) The one hit in 179 is the argument for the check rather than against it:
   the sweep is cheap, it is almost always silent, and the single case it found
   had gone unnoticed for twenty-eight months and was found by hand.
+proposed_by_job: j-20260906-09
+proposed_by_type: entry
 ---
 
 The Pulse's existing guarantee stops one hop short of where the reader is.
