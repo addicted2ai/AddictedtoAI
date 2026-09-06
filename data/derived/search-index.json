@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 668,
+  "count": 669,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -6068,6 +6068,20 @@
       "i": "model/z-ai-glm-latest",
       "a": [],
       "b": true
+    },
+    {
+      "u": "/wiki/org/aion-labs",
+      "t": "AionLabs",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/aion-labs",
+      "a": [
+        "Aion Labs",
+        "Aion",
+        "Deep Forge"
+      ],
+      "b": false
     },
     {
       "u": "/wiki/org/alibaba-cloud",
