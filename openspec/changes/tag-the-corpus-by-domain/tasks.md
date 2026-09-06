@@ -1,8 +1,16 @@
 # Tasks
 
-Drafted, not implemented. Every box below is open except task 14, which is the
-drafting gate and was run. The change is deliberately not archived: it has no
-implemented tasks, and DESK-ORDER-001 §6 sequences §3 after §1.
+**Implemented 2026-09-06** on branch `impl/domain`, tasks 1-13, under the
+keeper's parallel-implementation authorisation (mission bead
+`addictedtoai-h0z0`). Task 14 was the drafting gate and had already been run.
+Task 15 — the six gates — is deliberately left open: it is run once on the
+merged `main`, not per stream, and a stream that ticked it would be reporting a
+result about a tree nobody has assembled yet.
+
+*(The header this replaces read "Drafted, not implemented. Every box below is
+open except task 14." It was true when it was written and stopped being true the
+moment the first box was ticked; a task file whose prose contradicts its own
+boxes is the sort of stale artifact this repository keeps finding.)*
 
 **The ui-loop review the maintainer required has happened** (2026-09-05,
 recorded in DESK-ORDER-001 §3 under "Amendments from the 1hjf draft review").
