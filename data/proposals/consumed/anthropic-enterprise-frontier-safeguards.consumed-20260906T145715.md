@@ -108,3 +108,18 @@ Two specific things are checkable and neither is rhetoric:
 - If the corpus gains a bindable fact from this, it is a fact on the
   Anthropic org or a programme record, not a literal in prose — the rollout
   status is exactly the kind of value that rots.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-06
+- job: j-20260906-14 (post)
+- merged as: `af1c8183cf9f0cb35e5832759aacd72884824ec0`
+- produced: `content/blog/anthropic-enterprise-frontier-safeguards.md`
+- was: `anthropic-enterprise-frontier-safeguards.md` (slug `anthropic-enterprise-frontier-safeguards`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

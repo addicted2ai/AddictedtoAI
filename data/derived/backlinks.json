@@ -818,6 +818,20 @@
         "title": "Anthropic",
         "type": "entry",
         "file": "content/wiki/org/anthropic.md"
+      },
+      {
+        "url": "/blog/anthropic-enterprise-frontier-safeguards",
+        "title": "Anthropic will put Claude misuse logs in your own bucket. Its support pages say what it keeps.",
+        "type": "post",
+        "file": "content/blog/anthropic-enterprise-frontier-safeguards.md"
+      }
+    ],
+    "model/anthropic-claude-fable-5-1": [
+      {
+        "url": "/blog/anthropic-enterprise-frontier-safeguards",
+        "title": "Anthropic will put Claude misuse logs in your own bucket. Its support pages say what it keeps.",
+        "type": "post",
+        "file": "content/blog/anthropic-enterprise-frontier-safeguards.md"
       }
     ],
     "model/anthropic-claude-haiku-4-5": [
@@ -2568,6 +2582,12 @@
         "title": "Who builds AI",
         "type": "learn",
         "file": "content/learn/who-builds-ai.md"
+      },
+      {
+        "url": "/blog/anthropic-enterprise-frontier-safeguards",
+        "title": "Anthropic will put Claude misuse logs in your own bucket. Its support pages say what it keeps.",
+        "type": "post",
+        "file": "content/blog/anthropic-enterprise-frontier-safeguards.md"
       },
       {
         "url": "/blog/anthropic-usage-policy-government-exceptions",
