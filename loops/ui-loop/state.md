@@ -23,8 +23,7 @@ process each round knows only what this file says. Every claim cites an artifact
 - **K5** — `STOP` and `HOLD.md` are the keeper's alone; the loop never touches either.
 - **K6** — Reserved paths untouched: `openspec/specs/`, `data/config.json`, `runners.yml`,
   `package.json`. Content read-only (charter slot 1). Unfreeze is the orchestrator's.
-- **K7 (delegated defaults)** — ≤3 revisions then keeper check-in; jury (order-swapped pairwise) once,
-  on ≤2 finalists; 8.5 target REPORTED, not a stop.
+- **K7** — ≤3 revisions then keeper check-in; jury once on ≤2 finalists; 8.5 REPORTED, not a stop.
 - **K8** — `STOP` is the keeper's. **K9** — Reader test: the keeper alone.
 - **K10 — THE BRIEF'S CENTRE (keeper, verbatim in substance).** "A shining example of what
   frontier AI can do when handed the reins. I want people to be truly amazed at the quality of the
@@ -57,7 +56,8 @@ process each round knows only what this file says. Every claim cites an artifact
   lives BESIDE the entry as its own OpenSpec change, source host + tri-state `verified`. **K45**
   (keeper via orchestrator): this session REVIEWS the three OpenSpec drafts before implementation;
   origin map `knowledge/SPEC-REVIEW-GUIDE.md`. **K46** (BLIND-002): `domains` optional on a flagged
-  record, absent = general (a general lane). **K47**: seeding append-only; removal editorial.
+  record, absent = general (a general lane). **K47**: seeding append-only; removal editorial. **K48**
+  org hosts in `publishes_from`, not `aliases`. §4 draft: approve with corrections (`SPECREV-001`).
 - **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated).** **K23** PLAYERS BOARD carried
   forward; Dated Ledger's branch kept as a record. **K24** index columns only when a registry index
   exists. **K25** the nav discharges K19 at 390. **K26** door rows by most-recent change. **K27** PB's
