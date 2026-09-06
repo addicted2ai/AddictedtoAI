@@ -104,8 +104,8 @@ facts:
     volatility: dated
   - field: sante_weights_absent
     source: cited
-    value: "no repository whose name contains \"Sante\" appears among the 100 most recently created inclusionAI repositories, which reach back to 2026-08-26 and whose newest is dated 2026-09-05T05:16:19Z"
-    source_url: "https://huggingface.co/api/models?author=inclusionAI&limit=100&sort=createdAt&direction=-1"
+    value: "no repository whose name contains \"Sante\" exists under the inclusionAI account — a Hugging Face model search for that string, scoped to the account, returns an empty list"
+    source_url: "https://huggingface.co/api/models?search=Sante&author=inclusionAI"
     accessed: "2026-09-06"
     volatility: dated
   - field: router_rows
@@ -195,7 +195,7 @@ Every Ling 3.0 model inclusionAI has shipped in 2026 reached a commercial API
 before it reached Hugging Face, and the newest one has not reached Hugging Face
 at all. The lab is Ant Group's open-source arm —
 {{fact:org/inclusionai#founding_and_backing}} — and it states the commitment
-plainly on its own site, as one of four mission cards:
+plainly on its own site, as one of three mission cards:
 {{fact:org/inclusionai#open_source_commitment}}. It keeps that commitment. What
 the record shows is that it keeps it second.
 
