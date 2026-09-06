@@ -50,6 +50,17 @@ export const GROUND_RULES = `## Ground rules (non-negotiable)
   \`git -C <repo>\`.
 - **Keep shell command strings short.** Write a script file and run it rather
   than composing a long one-liner.
+- **This invocation ends the moment you end your turn.** There is no next turn
+  here and nothing waits for you: the process exits when you stop speaking, and
+  any command still running is orphaned, not awaited. So **never start a
+  process in the background and then stop to wait for it.** Run \`npm test\` and
+  \`npm run build\` in the FOREGROUND, read their output, then write
+  \`RESULT.md\`, then stop. Measured on 2026-09-06 (job \`j-20260906-17\`): an
+  author committed its work, said it was waiting on the suite and ended its
+  turn; the process exited immediately, \`RESULT.md\` was never written so the
+  run was recorded \`interrupted\`, and the orphaned suite kept running inside
+  the deleted worktree and held the machine-wide test lock against every other
+  suite on the machine.
 - **Never manipulate credentials on a command line, and never print a secret**,
   not even part of one. An auth failure is a finding to report — write it in
   \`RESULT.md\` and stop. Do not go looking for a broader-scoped credential.

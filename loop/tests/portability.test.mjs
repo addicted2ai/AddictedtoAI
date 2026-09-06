@@ -201,6 +201,19 @@ test('a brief is self-contained plain markdown carrying the RESULT.md instructio
   assert.match(brief, /Never push/);
   assert.match(brief, /Reserved paths/);
   assert.match(brief, /Report blocked rather than guessing/);
+  // The print-mode ground rule (beads addictedtoai-qpqb, measured on job
+  // j-20260906-17): a Desk job is one prompt in, files out, exit or be killed,
+  // so an author that backgrounds the suite and ends its turn to wait for it
+  // ends the whole invocation instead — no RESULT.md, an orphaned process in a
+  // worktree the loop is about to delete, and the machine-wide test lock held
+  // against every other suite. The rule is only in the brief if it is IN the
+  // assembled brief, which is what this asserts.
+  // Matched against the brief with its line wrapping flattened, because the
+  // rule is prose in a markdown bullet and where it wraps is not the contract.
+  const unwrapped = brief.replace(/\s+/g, ' ');
+  assert.match(unwrapped, /This invocation ends the moment you end your turn/);
+  assert.match(unwrapped, /never start a process in the background and then stop to wait for it/i);
+  assert.match(unwrapped, /Run `npm test` and `npm run build` in the FOREGROUND/);
   assert.match(brief, /There is no prior conversation to recall and no session to resume/);
   // no harness-specific syntax anywhere in a brief
   for (const bad of [/<function_calls>/, /\bslash command\b/, /\/[a-z-]+\s+skill/i]) {
