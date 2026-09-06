@@ -641,6 +641,121 @@ test('a non-boolean `frontier` is refused rather than read as an absent flag', (
   ctx.cleanup();
 });
 
+test('the BAR on the flag binds every job type, and not only the one with the exemption', () => {
+  // The second of task 7's TWO BOUNDARIES, and until now the undefended one.
+  // The first — "the exemption is the SCOUT'S cap and no other job's" — is
+  // pinned by the test below it. This is its pair: the exemption is a privilege
+  // the scout has, but the BAR is what the flag MEANS, and a flag that does not
+  // hold is not filed by anybody.
+  //
+  // It was measurable and unmeasured. Every invalid-flag case above passes
+  // `jobType: 'scout'`, and the only non-scout case uses a VALID flag — so
+  // narrowing the drop to `jobType === 'scout' && e.flagged && …` kept all 28
+  // tests in this file green. The doc comment on that filter says a later
+  // reader will try to simplify exactly this away, which is precisely the state
+  // that lets the simplification land in silence.
+  //
+  // What the narrowed version would do, stated as the cost rather than the
+  // rule: an `entry` job's broken declaration would be KEPT — counted against
+  // its cap of one, stamped, and merged into `data/proposals/` — for the reason
+  // that its job type had no exemption to lose. It would then fail the build
+  // the day it became a post. Dropping it here is the same refusal one step
+  // earlier.
+  const ctx = makeRepo({
+    files: {
+      'data/proposals/entry-bad-flag.md': cand('entry-bad-flag', ['frontier: true']),
+    },
+  });
+  const r = applyProposalMergeRules(ctx, {
+    worktree: ctx.repoRoot,
+    jobId: 'j-test-05',
+    jobType: 'entry',
+    changed: addedAll(['entry-bad-flag.md']),
+  });
+
+  assert.equal(r.cap, 1, 'precondition: an ordinary job\'s cap is one, so the cap alone would have kept this');
+  assert.deepEqual(r.kept, [], 'a flag that does not hold is not filed by anybody');
+  assert.deepEqual(r.dropped.map((d) => d.name), ['entry-bad-flag.md']);
+  assert.deepEqual(r.dropped[0].flag, ['frontier_reason'], 'the drop names the field, as it does for a scout');
+
+  // It is dropped for the FLAG, not swept up by the cap — the two notes are
+  // different records and a reader of `dropped/` must be able to tell which
+  // rule fired. Under the cap of one this file is the only candidate, so the
+  // cap could not have dropped it; asserting the note makes that explicit
+  // rather than incidental.
+  const note = readFileSync(join(ctx.proposalsDir, 'dropped', 'entry-bad-flag.md'), 'utf8');
+  assert.match(note, /## Dropped: the frontier flag it declared does not hold/);
+  assert.ok(!note.includes("## Dropped: over this job's candidate cap"), 'the flag note, not the cap note');
+  assert.match(note, /job: j-test-05 \(entry\)/, 'and it names the job type it actually fired for');
+  ctx.cleanup();
+});
+
+test('the exemption lifts a COUNT: four unflagged plus one flagged keeps three plus the flag', () => {
+  // The arithmetic the exemption exists FOR, at the scale where the cap still
+  // bites: the cap is applied to `counted`, never to `entries`. Every other
+  // case measured it in the degenerate direction — `over` was empty in all of
+  // them, so the `exempt.length ? … : ''` branches in the cap drop-note and in
+  // the run log were never once rendered.
+  //
+  // That note is the only place a reader of `data/proposals/dropped/` learns
+  // WHY a fourth file survived while a fifth did not — the only durable record
+  // that "the flag lifts a count, never a budget" actually operated on the run.
+  const ctx = makeRepo({
+    files: {
+      'data/proposals/u1.md': cand('u1', ['rank: 1']),
+      'data/proposals/u2.md': cand('u2', ['rank: 2']),
+      'data/proposals/u3.md': cand('u3', ['rank: 3']),
+      'data/proposals/u4.md': cand('u4', ['rank: 4']),
+      // Ranked LAST on the job's own stated ranking, so nothing here can pass
+      // by being ordered first: it survives on the flag alone.
+      'data/proposals/f5.md': cand('f5', [
+        'rank: 5',
+        'frontier: true',
+        'frontier_reason: F3',
+        'domains: [robotics]',
+      ]),
+    },
+  });
+  const r = applyProposalMergeRules(ctx, {
+    worktree: ctx.repoRoot,
+    jobId: 'j-test-06',
+    jobType: 'scout',
+    changed: addedAll(['u1.md', 'u2.md', 'u3.md', 'u4.md', 'f5.md']),
+  });
+
+  assert.equal(r.cap, 3);
+  assert.deepEqual(
+    r.kept.sort(),
+    ['f5.md', 'u1.md', 'u2.md', 'u3.md'],
+    'the three top-ranked UNFLAGGED candidates, plus the flagged one that did not count',
+  );
+  assert.deepEqual(
+    r.dropped.map((d) => d.name),
+    ['u4.md'],
+    'the fourth UNFLAGGED candidate is the one over the cap — the flag lifted the count by one, not the cap',
+  );
+  assert.equal(r.dropped[0].flag, undefined, 'it went for the cap, not for a flag that did not hold');
+
+  // The exempt lines, in both places they are written. These are the branches
+  // no other case reaches.
+  const note = readFileSync(join(ctx.proposalsDir, 'dropped', 'u4.md'), 'utf8');
+  assert.match(note, /## Dropped: over this job's candidate cap/);
+  assert.match(note, /- exempt: 1 valid frontier-flagged candidate \(`f5\.md`\)/);
+  assert.match(note, /did not count against it — the flag lifts a count, never a budget/);
+  assert.match(note, /it added 4/, 'the count reported is `counted`, not the five files added');
+  assert.match(note, /- kept instead: /);
+  assert.ok(
+    !note.includes('the frontier exemption is the scout\'s cap and no other'),
+    'that line is for a NON-scout job; this is the scout, which has the exemption',
+  );
+
+  const capNote = r.notes.find((n) => n.startsWith('proposal cap:'));
+  assert.ok(capNote, 'the run log records the cap firing');
+  assert.match(capNote, /added 4 proposal files and may add 3/);
+  assert.match(capNote, /1 valid frontier-flagged candidate \(f5\.md\) did not count/);
+  ctx.cleanup();
+});
+
 test('the documented order still holds for a flagged candidate: cap, stamp, discard', () => {
   // A scout filing a validly flagged `scout` proposal. The exemption keeps it
   // past the cap; the stamp is written; the self-amplification rule then reads
