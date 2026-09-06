@@ -141,6 +141,15 @@ window with {{fact:model/google-gemini-3-8-flash#max_output_tokens}} output,
 and Google dates its knowledge cutoff to
 {{fact:model/google-gemini-3-8-flash#knowledge_cutoff}}.
 
+The by-effort split recorded below is a pre-rebase reading. It was read from
+llm-releases on 3 September 2026, on the Artificial Analysis intelligence index
+as it then stood; the index has since been rebased to
+[v4.2](https://artificialanalysis.ai/methodology/intelligence-benchmarking),
+which moved this row's score down along with every other row that kept a score
+through it. Those effort numbers and the
+{{fact:model/google-gemini-3-8-flash#intelligence_index}} the catalog carries
+today are not on the same scale.
+
 The same launch carried a second model. 3.8 Flash Cyber is the
 cybersecurity-tuned sibling, available only to trusted defenders — [named by
 llm-releases as government authorities, critical-infrastructure operators and

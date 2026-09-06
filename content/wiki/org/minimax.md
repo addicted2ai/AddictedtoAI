@@ -106,7 +106,7 @@ Ten of the eleven MiniMax rows OpenRouter lists are the coding-and-agents
 line, from MiniMax-01 in January 2025 through M3. The eleventh is
 `minimax/minimax-m2-her`, and it is the odd one twice over. It carries
 a window of {{fact:model/minimax-minimax-m2-her#context_window}} where every
-other M2-series row carries {{fact:model/minimax-minimax-m2#context_window}},
+other main-line M2 row carries {{fact:model/minimax-minimax-m2#context_window}},
 and
 the router's own copy calls it
 ["a dialogue-first large language model built for immersive roleplay"](https://openrouter.ai/minimax/minimax-m2-her)

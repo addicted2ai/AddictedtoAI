@@ -61,8 +61,8 @@ row rather than necessarily Anthropic's own, and the 4.1 row is headed by
 resellers, so the step down sits between listings rather than being a price
 Anthropic announced.
 
-Nothing about the row stayed flat over that stretch, but what moved was the
-context window rather than the price.
+Not everything about the row stayed flat over that stretch: what moved was the
+context window, not the price.
 `anthropic/claude-opus-4.5` still capped at
 {{fact:model/anthropic-claude-opus-4-5#context_window}}, the same
 ceiling the line had shipped with since the first Opus 4. The next
