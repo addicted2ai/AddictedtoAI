@@ -33,6 +33,8 @@ evidence: >
   choice between the two repairs turns partly on whether the publisher has since
   started serving the index version and evaluation date alongside the number —
   which is the exact condition the refusal names as its own revisit trigger.
+proposed_by_job: j-20260906-07
+proposed_by_type: machinery
 ---
 
 ## Why this is a separate job and not the one that found it
