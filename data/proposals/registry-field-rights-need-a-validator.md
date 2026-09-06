@@ -29,6 +29,8 @@ evidence: >
   like when the vendor added it after this entry was written". An unvalidated
   rights record is the same defect one level up — a decision in a shape nothing
   checks, which will read as settled and enforce nothing.
+proposed_by_job: j-20260905-24
+proposed_by_type: verify
 ---
 
 `validateDeclinedFields` exists because a refusal with no dated measurement
