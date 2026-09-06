@@ -20,8 +20,8 @@ process each round knows only what this file says. Every claim cites an artifact
 - **K3** — No merge to `main` until the keeper says everything is in order.
 - **K4** — No push to the remote until done, absent a good reason.
 - **K5** — `STOP` and `HOLD.md` are the keeper's alone; the loop never touches either.
-- **K6** — Reserved paths untouched: `openspec/specs/`, `data/config.json`, `runners.yml`,
-  `package.json`. Content read-only (charter slot 1). Unfreeze is the orchestrator's.
+- **K6** — Reserved paths untouched (`openspec/specs/`, `data/config.json`, `runners.yml`,
+  `package.json`); content read-only (charter slot 1).
 - **K7** — ≤3 revisions then keeper check-in; jury once on ≤2 finalists; 8.5 REPORTED, not a stop.
 - **K8** — `STOP` is the keeper's. **K9** — Reader test: the keeper alone.
 - **K10 — THE BRIEF'S CENTRE (keeper, verbatim in substance).** "A shining example of what
@@ -30,7 +30,7 @@ process each round knows only what this file says. Every claim cites an artifact
   mechanical … great for machine reading (also important!) but not very alluring or exciting for a
   human." → identity and allure PRIMARY; a11y, reflow, payload, machine-readability, content above
   the fold are the FENCE. The old rubric scored "a reader's tool, not a showcase": wrong objective.
-- **K11** — `/frontier` MAY be prototyped on the branch; merge waits for the Desk's OpenSpec change.
+- **K11** — `/frontier` prototyped on the branch; merge waited for the Desk's OpenSpec change.
 - **K12 (KP1)** — Port CONFIRMED except the ai-winter entry ("FACTS displayed first with no context …
   out of place"). F-K12: on prose entries the reader meets the subject BEFORE any facts table.
 - **K13** — Models: generator + jury FABLE; judges OPUS; implementers + red team SONNET; gates/scoring
@@ -54,7 +54,8 @@ process each round knows only what this file says. Every claim cites an artifact
   (keeper via orchestrator): this session REVIEWS the three OpenSpec drafts before implementation;
   origin map `knowledge/SPEC-REVIEW-GUIDE.md`. **K46** (BLIND-002): `domains` optional on a flagged
   record, absent = general (a general lane). **K47**: seeding append-only; removal editorial. **K48**
-  org hosts in `publishes_from`, not `aliases`. §4 draft: approve with corrections (`SPECREV-001`).
+  org hosts in `publishes_from`. **K49** (2026-09-06, keeper via session `addictedtoai-a4`): parallel
+  implementation of all three changes outside the Desk, sealed reviewers; pitfall list sent (21 items).
 - **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated).** **K23** PLAYERS BOARD carried
   forward; Dated Ledger's branch kept as a record. **K24** index columns only when a registry index
   exists. **K25** the nav discharges K19 at 390. **K26** door rows by most-recent change. **K27** PB's
