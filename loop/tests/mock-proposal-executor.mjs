@@ -141,6 +141,21 @@ switch (mode) {
     result('done\n\nFiled three candidates.\n');
     break;
 
+  // A scout that files a candidate and a SILENT drop record: a story recorded
+  // as declined without naming which test it failed or what would make it worth
+  // refiling. The requirement it breaks had no mechanism at all until beads
+  // addictedtoai-fyd3; ten real records complied voluntarily, which is exactly
+  // why an empty one has to be attempted here rather than assumed impossible.
+  case 'scout-silent-drop':
+    candidate('d-best.md', { slug: 'best-story', rank: 1 });
+    write(
+      'data/proposals/dropped/silently-declined.md',
+      '---\nslug: silently-declined\ndate: 2026-09-10\n---\n\n' +
+        '# Declined: a story I considered\n\nI looked at it and decided against it.\n',
+    );
+    result('done\n\nFiled one candidate and a drop record.\n');
+    break;
+
   // Four with no stated ranking at all — the filename fallback.
   case 'scout-4-unranked':
     candidate('a-one.md', { slug: 'story-one' });

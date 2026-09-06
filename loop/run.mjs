@@ -1308,7 +1308,23 @@ export async function runLoop(ctx, opts = {}) {
       if (c.ok) ctx.log('dropped the branch\'s data/derived/ before merging — it is an output, not content (addictedtoai-dgj)');
     }
 
-    const merged = mergeLocal(ctx.repoRoot, branch, `job ${jobId} (${job.type}): ${String(job.title).slice(0, 60)}`);
+    // A drop record the branch adds must say what specs/loop requires of it
+    // (beads addictedtoai-fyd3): which test the story failed, and what would
+    // make it worth refiling. `applyProposalMergeRules` measures that BEFORE it
+    // writes anything, so a refusal here leaves the branch exactly as the job
+    // left it — nothing capped, nothing stamped, nothing moved. Reported
+    // through the merge's own failure path, which already logs the reason and
+    // records the outcome; a separate refusal path would be a second way to say
+    // "this did not merge".
+    const merged = proposals.refused.length
+      ? {
+          ok: false,
+          reason:
+            `${proposals.refused.length} drop record${proposals.refused.length === 1 ? '' : 's'} ` +
+            `the branch adds ${proposals.refused.length === 1 ? 'does' : 'do'} not carry what a ` +
+            `declined story must record (specs/loop): ${proposals.refused.join(' | ')}`,
+        }
+      : mergeLocal(ctx.repoRoot, branch, `job ${jobId} (${job.type}): ${String(job.title).slice(0, 60)}`);
     if (!merged.ok) {
       ctx.log(`merge failed: ${merged.reason}`);
       outcome = 'failed';
