@@ -45,7 +45,10 @@ material fields. A separate array needs nobody to remember anything:
 **Reading them.** `pulse/lib/registry.mjs` exports `radarFeeds(registry)` —
 the rows in a stable order — and `radarReadableUrls(registry)`, the flat list
 of URLs the scout is cleared to read. Those two are the only way into the
-array.
+array. The one caller is `loop/lib/brief.mjs`'s `radarInputs()`, which renders
+the rows and their cleared URLs into a **scout** brief as inputs — through
+`radarReadableUrls()`, so a refused URL is never printed into a brief at all
+(`loop/tests/brief-radar.test.mjs` asserts that against this file).
 
 **What a row records.** The bar the registry sets everywhere, plus the one §5
 names explicitly: `robots` with a `checked_on` date and a result, `terms` with
