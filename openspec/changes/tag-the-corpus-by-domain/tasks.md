@@ -19,14 +19,14 @@ an ordering accident.
 
 ## The schema, on both record types
 
-- [ ] 1. `lib/schema.mjs`, `entrySchema` (line 209): add `domains`,
+- [x] 1. `lib/schema.mjs`, `entrySchema` (line 209): add `domains`,
       `domains_excluded` and `domains_seeded`, each an optional array of values
       from `DOMAINS` imported from `lib/domains.mjs`. The schema is `.strict()`,
       so without this the three keys are rejected outright and no entry can
       carry them. Use the existing `closedList` helper so the error names the
       file, the field, the offending value and the allowed values — the message
       shape an unknown `kind` already produces.
-- [ ] 2. `lib/schema.mjs`, `entrySchema.superRefine`, two checks, each an issue
+- [x] 2. `lib/schema.mjs`, `entrySchema.superRefine`, two checks, each an issue
       whose `path` names the field and the value: a value present in both
       `domains` and `domains_excluded`; and a value in `domains_excluded` that
       is in neither `domains_seeded` nor `domains` — an exclusion that removes
@@ -35,18 +35,18 @@ an ordering accident.
       that is what keeps an editorial key uncoupled from the feed, and it holds
       only because seeding is append-only, so a publisher dropping a signal
       never removes the value the exclusion is answering.
-- [ ] 3. `lib/schema.mjs`, `toolSchema` (line 359): add `domains` only —
+- [x] 3. `lib/schema.mjs`, `toolSchema` (line 359): add `domains` only —
       optional, same closed list. Not `domains_seeded` and not
       `domains_excluded`: no feed seeds a tool listing, so there is nothing to
       exclude, and a key that can never do anything is a key that will be
       misread. `category` is untouched.
-- [ ] 4. Confirm `postSchema` (line 341) still does **not** accept
+- [x] 4. Confirm `postSchema` (line 341) still does **not** accept
       `domains_seeded`. It is `.strict()` and does not declare the key, so this
       holds today; task 10 makes it hold tomorrow.
 
 ## The reviewed surface, which is where this change can do silent damage
 
-- [ ] 5. `lib/review-hash.mjs`: add `'domains_seeded'` to
+- [x] 5. `lib/review-hash.mjs`: add `'domains_seeded'` to
       `MECHANICAL_FRONT_MATTER_KEYS` (line 71) beside `'timeline'`, and extend
       the header comment — the file's own docblock says the list is the one
       declared place and that an unlisted mechanical key produces mismatches on
@@ -55,11 +55,11 @@ an ordering accident.
       `domains` would exempt a *post's* editorial `domains` from review, because
       the filter matches by name across every content kind with no per-kind
       scoping (`lib/review-hash.mjs:99-102`).
-- [ ] 6. `lib/review-hash.test.mjs`: update the exact-contents assertion at
+- [x] 6. `lib/review-hash.test.mjs`: update the exact-contents assertion at
       line 57, which currently asserts `['timeline']` and will fail on task 5 —
       it is meant to. Assert the new list exactly, and assert it is still
       frozen.
-- [ ] 7. `lib/review-hash.test.mjs`: assert that `domains` and
+- [x] 7. `lib/review-hash.test.mjs`: assert that `domains` and
       `domains_excluded` are **absent** from the list, and that an entry
       gaining either changes its `reviewedHash` while an entry gaining
       `domains_seeded` does not. Three assertions, because the pair is the
@@ -68,7 +68,7 @@ an ordering accident.
 
 ## The tests that make the gate a mechanism
 
-- [ ] 8. Tests beside `lib/schema.mjs`, one per refusal, each naming the field
+- [x] 8. Tests beside `lib/schema.mjs`, one per refusal, each naming the field
       it expects in the error: an entry with `domains: [legal]`; an entry with
       `domains: [text]` (the vocabulary deliberately excludes it — general is
       unmarked); an entry with `domains: [general]` (there is no such value);
@@ -78,7 +78,7 @@ an ordering accident.
       in neither `domains_seeded` nor `domains`; a tool listing with
       `domains: [legal]`; a tool listing with `domains_seeded: []`, which the
       tool schema must reject as an unknown key.
-- [ ] 9. The controls, without which task 8 proves nothing: an entry with none
+- [x] 9. The controls, without which task 8 proves nothing: an entry with none
       of the three keys validates exactly as before; an entry with
       `domains: []` validates; an entry excluding a value its own
       `domains_seeded` carries validates (the legal exclusion, which is what
@@ -87,7 +87,7 @@ an ordering accident.
       one of the eight vocabulary values validates in each of the three fields
       — in `domains_excluded` alongside the same value in `domains_seeded`,
       since a bare exclusion is now an error.
-- [ ] 10. A test asserting `postSchema` **rejects** `domains_seeded`. This is
+- [x] 10. A test asserting `postSchema` **rejects** `domains_seeded`. This is
       not a tautology about `.strict()`: it is the guard on the one crossing
       that would silently undo `flag-what-moved-the-frontier`'s review
       requirement, and it must fail loudly if someone later relaxes the post
