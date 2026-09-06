@@ -13,8 +13,7 @@ process each round knows only what this file says. Every claim cites an artifact
   https://claude.ai/code/artifact/550cc939-50e4-4ac5-9bb8-f49071f4cbce. Catalog @390: 14,974px (main)
   -> 93,963px (branch) = I14 in one number. Sandbox scores VOID for live; R1–R16 + invariants carry.
 - Gates: `npm test` · `npm run build` (read the LOG) · `verify-design` · `verify-surfaces` ·
-  `tools/ui-invariants.mjs` · `graph/gates.mjs`. Method: graph engineering (playbook in
-  `D:\shared_workspace\dean-loop-engineering-2\docs\`). Anchors `loops/ui-loop/graph/`.
+  `tools/ui-invariants.mjs` · `graph/gates.mjs`. Anchors `loops/ui-loop/graph/`.
 
 ## Live rulings (keeper, 2026-09-05; K1–K2 in the archive)
 
@@ -29,16 +28,14 @@ process each round knows only what this file says. Every claim cites an artifact
   frontier AI can do when handed the reins. I want people to be truly amazed at the quality of the
   site, and even more so once they realize a human didn't write any of it." Layout "ok, but a bit
   mechanical … great for machine reading (also important!) but not very alluring or exciting for a
-  human." → identity and allure are PRIMARY; findability, WCAG AA, 320px reflow, 150 KB, machine-
-  readability, content above the fold are the FENCE. The old rubric scored "a reader's tool, not a
-  showcase": nine rounds optimised an objective the keeper did not hold.
+  human." → identity and allure PRIMARY; a11y, reflow, payload, machine-readability, content above
+  the fold are the FENCE. The old rubric scored "a reader's tool, not a showcase": wrong objective.
 - **K11** — `/frontier` MAY be prototyped on the branch; merge waits for the Desk's OpenSpec change.
 - **K12 (KP1)** — Port CONFIRMED except the ai-winter entry ("FACTS displayed first with no context …
   out of place"). F-K12: on prose entries the reader meets the subject BEFORE any facts table.
 - **K13** — Models: generator + jury FABLE; judges OPUS; implementers + red team SONNET; gates/scoring
   code; session effort MEDIUM for dispatch. **K15**: analyzer HAIKU -> SONNET (capabilities worlds apart).
-- **K14** (delegated, 2026-09-05) — `RULES` R1–R6 are law; **R7–R16 are the old loop's taste and
-  CHALLENGEABLE** by a concept with cause, keeper rules; the port is a start, not a design to keep.
+- **K14** — `RULES` R1–R6 are law; R7–R16 are the old loop's taste, CHALLENGEABLE with cause.
 - **Check-in rulings (keeper, 2026-09-05).** **K35** one narrow 4th iteration authorised (`RD-003`:
   claim allow-list; visible "not verified" lede; door hairlines). **K36** reader tests SKIPPED: MR-UI-
   001..003 retired by the keeper; CAL-UI-001 not required before merge. **K37** implementer tier OPUS
@@ -82,7 +79,9 @@ Desk backlog, never a UI finding. Check this file's size before every commit (ov
 
 ## Next (keeper decisions)
 
-1. Nothing open for the keeper (K35–K43 closed rounds 3–6; struck items in `state-archive.md`). Next
+1. **Design Arena API key** (bead c563): the grant covers API data with credit + link, but access
+   needs a keeper-signed application. Apply, or leave both index publishers dark by rule (K24). [r6]
+2. Otherwise nothing open (K35–K48 closed; struck items in `state-archive.md`). Next
    brief (BRIEF-UI-002, keeper-drafted when back): wiki entry's empty right half at 1440 (F-hier-7),
    catalog at 768 (JV-struct q5), claim clamp eats the value (JV-sys v6 downstream), Frontier domain
    section once DESK-ORDER-001 §1 data exists. [r6]
