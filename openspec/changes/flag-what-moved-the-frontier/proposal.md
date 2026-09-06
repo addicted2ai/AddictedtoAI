@@ -11,7 +11,9 @@ scout-flagged, domain-tagged editorial records: the three most recent per
 domain… Not a feed, not a ranking."*
 
 The first thing that order rules out is the obvious thing. The keeper first
-asked for "top 3 models per domain"; a ranking was refused because `directory`
+asked for "top 3 models per domain" (`SPEC-REVIEW-GUIDE.md`, the 9c9t table's
+first row, which records the round each clause came from); a ranking was
+refused because `directory`
 forbids stating a rank as its own claim, because the only ranking data on disk
 has unverified republication rights, and because — the reason that actually
 decided it — a ranking table has no motion in it. What replaced it is a
@@ -52,8 +54,10 @@ record, where a reviewer can check the work, and never on the page.
 reason is a defect this repository has already paid for.** The board's claim
 cell was built with an allow-list keyed on field names, and it admitted a
 router's measured throughput and a third-party analysis site as "vendor
-claims" (implementer ledger #10, red-team FM-N3) — because a field-name test is
-not a source test. F2 has that shape exactly: a rescoring described by its
+claims" — recorded as row 10 of
+`loops/ui-loop/graph/knowledge/implementer-ledger.md`, dated 2026-09-05,
+against red-team finding FM-N3, and summarised there in one line:
+*"Field-name test without a source test."* F2 has that shape exactly: a rescoring described by its
 numbers becomes a republished value **by accident**, with nobody having
 decided to republish anything. A list that says only what is permitted is the
 same defect one layer up.

@@ -41,7 +41,7 @@ itself.**
   covered organisation's frontier release, a labelled-unverified vendor claim
   of a new ability, and a material change in access. It is a standing
   question asked on every run, not a mode entered on a good day: the surface
-  the flag feeds shows the most recent flagged record per domain, so a domain
+  the flag feeds shows the most recent flagged records per domain, so a domain
   nobody swept goes quiet without anybody deciding it should.
 - Radar feeds — open-weights hubs, covered organisations' release feeds,
   preprint listings, source-release feeds — are **inputs to the sweep and are
