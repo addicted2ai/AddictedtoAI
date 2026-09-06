@@ -908,6 +908,62 @@
         "file": "content/wiki/model/anthropic-claude-haiku-4-5.md"
       }
     ],
+    "model/bytedance-seed-seed-1-6": [
+      {
+        "url": "/wiki/org/bytedance-seed",
+        "title": "ByteDance Seed",
+        "type": "entry",
+        "file": "content/wiki/org/bytedance-seed.md"
+      }
+    ],
+    "model/bytedance-seed-seed-1-6-flash": [
+      {
+        "url": "/wiki/org/bytedance-seed",
+        "title": "ByteDance Seed",
+        "type": "entry",
+        "file": "content/wiki/org/bytedance-seed.md"
+      }
+    ],
+    "model/bytedance-seed-seed-2-0-code": [
+      {
+        "url": "/wiki/org/bytedance-seed",
+        "title": "ByteDance Seed",
+        "type": "entry",
+        "file": "content/wiki/org/bytedance-seed.md"
+      }
+    ],
+    "model/bytedance-seed-seed-2-0-lite": [
+      {
+        "url": "/wiki/org/bytedance-seed",
+        "title": "ByteDance Seed",
+        "type": "entry",
+        "file": "content/wiki/org/bytedance-seed.md"
+      }
+    ],
+    "model/bytedance-seed-seed-2-0-mini": [
+      {
+        "url": "/wiki/org/bytedance-seed",
+        "title": "ByteDance Seed",
+        "type": "entry",
+        "file": "content/wiki/org/bytedance-seed.md"
+      }
+    ],
+    "model/bytedance-seed-seed-2-1-turbo": [
+      {
+        "url": "/wiki/org/bytedance-seed",
+        "title": "ByteDance Seed",
+        "type": "entry",
+        "file": "content/wiki/org/bytedance-seed.md"
+      }
+    ],
+    "model/bytedance-ui-tars-1-5-7b": [
+      {
+        "url": "/wiki/org/bytedance-seed",
+        "title": "ByteDance Seed",
+        "type": "entry",
+        "file": "content/wiki/org/bytedance-seed.md"
+      }
+    ],
     "model/cohere-command-a": [
       {
         "url": "/wiki/org/cohere",

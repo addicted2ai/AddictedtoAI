@@ -691,6 +691,26 @@
       ]
     },
     {
+      "name": "ByteDance Seed",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/bytedance-seed",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "ByteDance Seed Team",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/bytedance-seed",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "ByteDance Seed: Seed 1.6",
       "linkable": false,
       "claimed_by": [
@@ -5844,6 +5864,16 @@
       "claimed_by": [
         {
           "id": "model/sao10k-l3-3-euryale-70b",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Seed",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/bytedance-seed",
           "class": "manual"
         }
       ]
