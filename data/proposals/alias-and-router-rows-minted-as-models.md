@@ -31,6 +31,8 @@ evidence: >
   alias row is a router convenience: it names a pointer that already resolves to
   a live model." That declination was about a blog note; nothing has ever
   measured the population inside the wiki.
+proposed_by_job: j-20260905-25
+proposed_by_type: interpret
 ---
 
 # What this is, and what it is not
