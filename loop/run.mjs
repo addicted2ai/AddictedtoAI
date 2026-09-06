@@ -221,9 +221,20 @@ async function executeJob(ctx, opts) {
   // could never move however dead it was). health.mjs's `noOutputStreak` now
   // reads a `review*`-role phase's own `signal` field the same way it reads
   // the line's, per runner id.
+  // -------------------------------------------------------------------------
+  // `phase()` RETURNS the entry it pushed, so a later measurement about the SAME
+  // invocation can be attached to it. `gates` is the one that does (beads
+  // addictedtoai-xzdd): a gate retry belongs to the author run whose work the
+  // gates were judging. It is attached rather than pushed as a phase of its own
+  // because a gate run is not a model invocation — `phases.length` is what the
+  // reviewer brief counts invocations with, and an entry carrying no runner and
+  // no minutes would make that count wrong in order to say this. Additive in
+  // exactly the way `signal` is: absent unless there is something to say, and a
+  // reader that does not know the key is unaffected.
+  // -------------------------------------------------------------------------
   const phases = [];
-  const phase = (role, who, r, outcome, signal) =>
-    phases.push({
+  const phase = (role, who, r, outcome, signal) => {
+    const entry = {
       role,
       runner: who.id,
       mm: Math.round(r.mm * 100) / 100,
@@ -231,7 +242,10 @@ async function executeJob(ctx, opts) {
       code: r.code ?? null,
       outcome,
       ...(signal ? { signal } : {}),
-    });
+    };
+    phases.push(entry);
+    return entry;
+  };
   /** Every exit from this function carries the phases recorded up to it. */
   const finish = (o) => ({ ...o, phases });
 
@@ -268,7 +282,7 @@ async function executeJob(ctx, opts) {
   const fileResult = readResult(worktree);
   const classified = classifyRun(run, fileResult, runner);
   ctx.log(`result protocol: ${classified.status} — ${classified.evidence}`);
-  phase('author', runner, run, classified.status);
+  const authorPhase = phase('author', runner, run, classified.status);
 
   // Commit whatever the executor left, INCLUDING on a kill: the branch, not
   // the scratch worktree, is what resumption reads.
@@ -352,43 +366,76 @@ async function executeJob(ctx, opts) {
     ctx.log(`gates: ${gateResult.ok ? 'PASS' : 'FAIL'}`);
 
     // -----------------------------------------------------------------------
-    // A TRANSPORT FAILURE IS NOT A DEFECT, AND IT WAS BEING COUNTED AS ONE.
+    // A GATE FAILURE IS RETRIED ONCE, WHATEVER IT SAID. The marker explains WHY
+    // a retry happened; it is not what makes retrying safe.
     //
-    // Measured 2026-09-04: job j-20260904-38 authored its repair successfully
-    // (7.96 model-minutes, author outcome `done`), its gate run failed, and the
-    // job was recorded `failed` with its branch left unmerged; the closing
-    // six-gate pass failed the same way minutes later. Re-run alone with
-    // nothing else on the machine, the same suite passed 1201/1201. Neither
-    // was a defect — both were `connect EADDRINUSE` from ephemeral-port
-    // exhaustion under concurrent load (beads addictedtoai-ar0). Three such
-    // runs trip breaker 1 and halt the whole Desk on nothing.
+    // The original measurement (beads addictedtoai-ar0), 2026-09-04: job
+    // j-20260904-38 authored its repair successfully (7.96 model-minutes,
+    // author outcome `done`), its gate run failed, and the job was recorded
+    // `failed` with its branch left unmerged; the closing six-gate pass failed
+    // the same way minutes later. Re-run alone on an idle machine, the same
+    // suite passed 1201/1201. Neither was a defect — both were `connect
+    // EADDRINUSE` from ephemeral-port exhaustion under concurrent load. Three
+    // such runs trip breaker 1 and halt the whole Desk on nothing.
     //
-    // So: when the captured output carries the marker the emitting code writes,
-    // run the gates ONCE more. A pass means the run continues normally and
-    // nothing is recorded as a failure; a second failure is recorded `failed`
-    // exactly as before. ONCE, never in a loop — a real defect still fails
-    // twice, which is the property that makes this safe, and no new outcome and
-    // no change to breaker semantics is needed for it.
+    // WHY THE MARKER STOPPED BEING ENOUGH (beads addictedtoai-xzdd), measured
+    // 2026-09-06: four gate failures in ~20 jobs. One was real. The other three
+    // were intermittent failures in tests that emit NO marker — a publish-verify
+    // assertion, an exit-code test — in files with nothing to do with the job's
+    // own work, and none of them reproduced afterwards: 6 standalone runs, 5
+    // more, 6-way concurrency and 4 full-suite runs, all clean. Roughly one job
+    // in seven lost its entire authored work to a failure nobody could
+    // reproduce, and each one counts toward breaker 1.
     //
-    // THE DECISION IS READ, NOT RE-DERIVED. `gateResult.output` is a truncated
-    // human-readable log — each script's last 6000 characters — so a marker
-    // raised early in a 1201-test run is not in it (beads addictedtoai-kisa).
-    // `runGates` computes `transport` over the FULL output at the point of
-    // capture; `gatesHitTransportFailure` reads that flag, and falls back to
-    // scanning only for a result that never came from `runGates`.
+    // THE INSTINCT IS TO WIDEN THE MARKER; THAT IS THE WRONG FIX. A marker that
+    // matches more is a marker the next fixture can evade, which is how the
+    // original defect was born. Look instead at where the safety comes from: the
+    // property that makes a retry safe is A REAL DEFECT STILL FAILS TWICE, and
+    // that property holds for ANY retry-once policy. It never came from the
+    // marker. The marker is a COST optimisation — it avoids spending a second
+    // full gate run on a failure already known to be a machine failure — so
+    // dropping it as a PRECONDITION costs one extra gate run (~4 minutes) on
+    // genuinely failing jobs, against a ~1-in-7 loss of complete jobs.
+    //
+    // So: ONCE on any failure, never in a loop. A pass means the run continues
+    // normally and nothing is recorded as a failure; a second failure is
+    // recorded `failed` exactly as before, and no outcome and no breaker
+    // semantics change. The marker is still read, still logged, and still says
+    // in the ledger note which kind of failure this was.
+    //
+    // THE MARKER DECISION IS READ, NOT RE-DERIVED. `gateResult.output` is a
+    // truncated human-readable log — each script's last 6000 characters — so a
+    // marker raised early in a 1201-test run is not in it (beads
+    // addictedtoai-kisa). `runGates` computes `transport` over the FULL output
+    // at the point of capture; `gatesHitTransportFailure` reads that flag, and
+    // falls back to scanning only for a result that never came from `runGates`.
     // -----------------------------------------------------------------------
     let retried = false;
-    if (!gateResult.ok && gatesHitTransportFailure(gateResult)) {
+    if (!gateResult.ok) {
       retried = true;
+      const marked = gatesHitTransportFailure(gateResult);
       ctx.log(
-        `a gate's full output carried the marker \`${TRANSPORT_FAILURE_MARKER}\` — this is the ` +
-          `machine, not the diff. It may not appear in the truncated log printed below, which is why ` +
-          `the decision is made at capture. Running the gates ONCE more; a second failure is recorded ` +
-          `\`failed\` as usual.`,
+        marked
+          ? `a gate's full output carried the marker \`${TRANSPORT_FAILURE_MARKER}\` — this is the ` +
+              `machine, not the diff. It may not appear in the truncated log printed below, which is ` +
+              `why the decision is made at capture. transport marker: running the gates ONCE more.`
+          : `no transport marker in the captured output — this may be a real defect, and it may be ` +
+              `the intermittency that has cost whole jobs (beads addictedtoai-xzdd). The gates are ` +
+              `run ONCE more either way: a real defect still fails twice, which is the only property ` +
+              `that ever made this safe. unmarked failure, retrying once.`,
       );
       gateResult = runTheGates();
       gateReport = { ran: true, ok: gateResult.ok, results: gateResult.results ?? [], retried: true };
-      ctx.log(`gates (retry after a transport failure): ${gateResult.ok ? 'PASS' : 'FAIL'}`);
+      ctx.log(
+        `gates (retry after a ${marked ? 'transport failure' : 'gate failure with no transport marker'}): ` +
+          `${gateResult.ok ? 'PASS' : 'FAIL'}`,
+      );
+      // On the job's permanent record, not only in a log that is not kept: the
+      // author invocation's phase entry says a retry happened and how it ended.
+      // Without it the ledger cannot tell a job that passed first time from one
+      // that needed a second run — which is the number that says whether this
+      // policy is paying for itself.
+      if (authorPhase) authorPhase.gates = { retried: true, passed: gateResult.ok, transport: marked };
     }
 
     if (!gateResult.ok) {
@@ -938,7 +985,8 @@ export async function runLoop(ctx, opts = {}) {
     ctx.log(
       'plus, when they apply: "note", "signal" (no-output), "phases" — one ' +
         '{role, runner, mm, killed, code, outcome} per invocation (author / review1 / ' +
-        'revision / review2) — and "issues", the beads ids this job serves. "mm" above ' +
+        'revision / review2), the author\'s carrying "gates" {retried, passed, transport} ' +
+        'when a gate failure was retried — and "issues", the beads ids this job serves. "mm" above ' +
         'stays the JOB TOTAL; "phases" is what says where a per-invocation cap belongs. ' +
         '"issues" is omitted when the job serves none, which is the common case: routine ' +
         'upkeep has nothing behind it and an id per job would manufacture backlog noise.',

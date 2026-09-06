@@ -19,13 +19,14 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { runLoop } from '../run.mjs';
-import { readLedger } from '../lib/ledger.mjs';
+import { readLedger, LEDGER_FIELDS } from '../lib/ledger.mjs';
+import { consecutiveFailures } from '../lib/budget.mjs';
 import {
   gateFailureNote,
   gatesHitTransportFailure,
@@ -183,19 +184,27 @@ test('a marked gate failure is retried once, and a passing retry is not a failur
   ctx.cleanup();
 });
 
-test('an UNMARKED gate failure is not retried, and the note says which gate failed', async () => {
+test('an UNMARKED gate failure that fails TWICE ends `failed`, and the note says both things', async () => {
+  // This assertion changed with beads addictedtoai-xzdd. It used to read "an
+  // UNMARKED gate failure is not retried": the marker was the precondition, so a
+  // flaky test outside the Pulse's HTTP fixtures cost the whole job. It is the
+  // CONTROL now — a defect that really is a defect fails the retry too and is
+  // still recorded `failed`, which is the property the whole policy rests on.
   const ctx = repo();
-  // A real defect: the suite failed and said nothing about transport. If this
-  // were retried, a broken diff would cost two full gate runs every time.
-  const gates = stub(FAILING(gateOutput('not ok 1 - lib/schema.test.mjs\n  expected 3, got 4')), PASSING);
+  const failing = FAILING(gateOutput('not ok 1 - lib/schema.test.mjs\n  expected 3, got 4'));
+  const gates = stub(failing, failing);
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
 
-  assert.equal(gates.branchCalls(ctx).length, 1, 'the gates ran exactly once — no retry without the marker');
+  assert.equal(gates.branchCalls(ctx).length, 2, 'retried once, never in a loop');
   assert.equal(res.outcome, 'failed', ctx.output());
-  assert.doesNotMatch(ctx.output(), /retry after a transport failure/);
+  assert.match(ctx.output(), /unmarked failure, retrying once/);
+  assert.doesNotMatch(ctx.output(), /retry after a transport failure/, 'and it does not claim the marker was there');
   const line = readLedger(ctx).at(-1);
   assert.equal(line.outcome, 'failed');
-  assert.equal(line.note, 'gates failed: npm run test (exit 1) — no transport marker in the captured output');
+  assert.equal(
+    line.note,
+    'gates failed: npm run test (exit 1) — no transport marker in the captured output, retried once and failed again',
+  );
   ctx.cleanup();
 });
 
@@ -361,7 +370,10 @@ test('a marked failure whose marker was truncated out of the log is STILL retrie
   ctx.cleanup();
 });
 
-test('an unflagged, unmarked failure is still not retried — the flag is not a blanket', async () => {
+test('an explicitly unflagged failure is retried too, and a flag of `false` is not a veto', async () => {
+  // The mirror of the test above, on a result that says `transport: false`
+  // rather than merely not saying so. Since addictedtoai-xzdd the flag decides
+  // what the log and the note SAY, not whether a second run happens.
   const ctx = repo();
   const plain = {
     ok: false,
@@ -369,10 +381,118 @@ test('an unflagged, unmarked failure is still not retried — the flag is not a 
     transport: false,
     output: gateOutput('not ok 1 - lib/schema.test.mjs\n  expected 3, got 4'),
   };
-  const gates = stub(plain, PASSING);
+  const gates = stub(plain, plain);
   const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
 
-  assert.equal(gates.branchCalls(ctx).length, 1, 'a real defect still fails once and is not retried');
+  assert.equal(gates.branchCalls(ctx).length, 2, 'a real defect fails twice — and that is what records it');
   assert.equal(res.outcome, 'failed', ctx.output());
   ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
+// CASE 3 (beads addictedtoai-xzdd) — the failures that carry no marker at all.
+//
+// Measured 2026-09-06: four gate failures in ~20 jobs; one real, three
+// unreproduced after 6 standalone runs, 5 more, 6-way concurrency and 4
+// full-suite runs. The failing tests were a publish-verify assertion and an
+// exit-code test — neither emits a marker, both belonged to jobs with nothing to
+// do with them, and each cost the whole job's authored work. Roughly one job in
+// seven.
+//
+// Widening the marker would be the wrong repair: a marker that matches more is a
+// marker the next fixture can evade. The safety property is "a real defect still
+// fails twice", it holds for ANY retry-once policy, and it never came from the
+// marker — so the retry is unconditional and the marker stays exactly as narrow
+// as it was, explaining WHY rather than deciding WHETHER.
+// ---------------------------------------------------------------------------
+
+test('an UNMARKED gate failure that then PASSES costs nothing at all — the job merges', async () => {
+  const ctx = repo();
+  // Exactly the shape of the three that were lost: an ordinary-looking test
+  // failure with no marker anywhere in it, which does not happen again.
+  const flaky = FAILING(gateOutput('not ok 288 - declared: the live build being dirty does not defeat the match'));
+  assert.equal(isTransportFailure(flaky.output), false, 'the fixture must carry no marker, or it measures nothing');
+  const gates = stub(flaky, PASSING);
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+
+  assert.equal(gates.branchCalls(ctx).length, 2, 'the branch gates ran exactly twice');
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.match(ctx.output(), /unmarked failure, retrying once/);
+  assert.match(ctx.output(), /gates \(retry after a gate failure with no transport marker\): PASS/);
+  const line = readLedger(ctx).at(-1);
+  assert.equal(line.outcome, 'done');
+  assert.ok(!/gates failed/.test(line.note ?? ''), 'nothing is recorded as a gate failure');
+  ctx.cleanup();
+});
+
+test('the retry runs the SAME gates in the SAME worktree, not the repository', async () => {
+  const ctx = repo();
+  const gates = stub(FAILING(gateOutput('not ok 1 - something intermittent')), PASSING);
+  await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+
+  const branchCalls = gates.branchCalls(ctx);
+  assert.equal(branchCalls.length, 2);
+  assert.equal(branchCalls[0], branchCalls[1], 'both runs happened in the one job worktree');
+  assert.ok(branchCalls[0].endsWith('j-20260910-01') || /j-\d{8}-\d{2}$/.test(branchCalls[0]), branchCalls[0]);
+  ctx.cleanup();
+});
+
+test('the ledger records that a retry happened and how it ended, without a new ledger field', async () => {
+  const ctx = repo();
+  const gates = stub(FAILING(gateOutput('not ok 1 - something intermittent')), PASSING);
+  await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+
+  const line = readLedger(ctx).at(-1);
+  assert.equal(line.outcome, 'done', ctx.output());
+  // LEDGER_FIELDS is untouched: the record rides on `phases`, which is already
+  // optional and additive, attached to the invocation the gates were judging.
+  assert.deepEqual(
+    Object.keys(line).filter((k) => !LEDGER_FIELDS.includes(k)).sort(),
+    ['phases'],
+    JSON.stringify(line),
+  );
+  const author = line.phases.find((p) => p.role === 'author');
+  assert.deepEqual(author.gates, { retried: true, passed: true, transport: false }, JSON.stringify(line.phases));
+  // And the count of model invocations is unchanged by it: a gate run is not one.
+  assert.deepEqual(line.phases.map((p) => p.role), ['author', 'review1']);
+  ctx.cleanup();
+});
+
+test('a job whose gates passed first time records no `gates` key at all', async () => {
+  // The control for the line above: nothing grows on the common path.
+  const ctx = repo();
+  const gates = stub(PASSING);
+  await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+
+  const line = readLedger(ctx).at(-1);
+  assert.equal(line.outcome, 'done', ctx.output());
+  assert.equal(gates.branchCalls(ctx).length, 1, 'a passing gate run is not retried');
+  for (const p of line.phases) assert.equal('gates' in p, false, JSON.stringify(p));
+  ctx.cleanup();
+});
+
+test('a retried-then-passed gate is not a failure toward breaker 1', async () => {
+  // Breaker 1 counts `failed` and `discarded` LEDGER OUTCOMES, and this is the
+  // reason the retry needs no change to breaker semantics: a job whose retry
+  // passed is `done`, so `consecutiveFailures` cannot see it. Measured over
+  // three consecutive such jobs, which is the count that would halt the Desk.
+  //
+  // Three repositories rather than three runs in one, because the mock author
+  // writes the same file with the same contents every time and a second run in
+  // one repository would end `done with an empty diff` — a failure of the
+  // fixture, not of the policy. The LINES are real: each was written by a real
+  // run whose gates really failed and really passed on the retry, and they are
+  // handed to the real `consecutiveFailures`, which is what breaker 1 asks.
+  const lines = [];
+  for (let i = 0; i < 3; i += 1) {
+    const ctx = repo();
+    const gates = stub(FAILING(gateOutput('not ok 1 - something intermittent')), PASSING);
+    const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', gates });
+    assert.equal(res.outcome, 'done', `job ${i + 1}\n${ctx.output()}`);
+    assert.equal(existsSync(ctx.holdPath), false, 'no breaker wrote a HOLD.md');
+    lines.push(readLedger(ctx).at(-1));
+    ctx.cleanup();
+  }
+  for (const l of lines) assert.equal(l.outcome, 'done', JSON.stringify(l));
+  assert.equal(consecutiveFailures(lines, 'repair'), 0, 'three retried-then-passed gate runs are zero failures');
 });
