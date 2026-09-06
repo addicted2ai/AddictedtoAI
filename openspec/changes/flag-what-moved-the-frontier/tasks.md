@@ -1,9 +1,12 @@
 # Tasks
 
-Drafted, not implemented. Every box below is open except task 12, which is the
-drafting step and was run. The change is deliberately not archived: it has no
-implemented tasks, and DESK-ORDER-001's own sequence puts the implementation
-lines after this delta lands and after the reviewing session has read it.
+Implemented 2026-09-06 (local), on branch `impl/flag` under mission
+`addictedtoai-h0z0`: tasks 1–11 — the vocabulary and the criteria in
+`lib/domains.mjs`, the build gate on `postSchema`, the review-hash guard, the
+scout's cap exemption at merge, and the scout and post briefs — are done and
+ticked, and task 12 (the drafting gates) was run at drafting time. **Task 13 is
+the only open box**: the six gates on merged `main`, which are the
+orchestrator's to run and not a job's.
 
 ## The vocabulary and the schema
 
