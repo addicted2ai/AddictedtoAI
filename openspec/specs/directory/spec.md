@@ -337,7 +337,7 @@ Therefore:
 
 - `domains` on a tool listing SHALL be **optional**, and the empty set SHALL be
   the common case rather than an omission to be chased. A required field here
-  would force a wrong answer onto at least two listings in three.
+  would force a wrong answer onto 23 of the 35.
 - It SHALL be **set-valued**, drawing on the same closed vocabulary, with the
   same single definition in the source tree and the same build-time gate, as
   the domain facet in `wiki`. There is not a second vocabulary for tools.
