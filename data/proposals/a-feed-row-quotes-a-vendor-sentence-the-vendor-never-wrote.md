@@ -23,7 +23,7 @@ evidence: >
   the single-quoted phrase "the West's most capable open-weight model". That
   post was fetched raw on 2026-09-06 (HTTP 200, 465,592 bytes) and searched
   case-insensitively for "West", "most capable open" and "open-weight model":
-  zero matches for each, against six matches for the phrase Poolside did
+  zero matches for each, against two matches for the phrase Poolside did
   write, "the most capable agentic coding model in its weight class by a wide
   margin". The nearest real sentence in the post's Sanity payload is "The
   open-weight ecosystem in the West is still early in its development", which
