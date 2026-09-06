@@ -142,3 +142,43 @@ the release notes for the version numbers involved.
 A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
 
 `data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
+
+---
+
+## Correction: three carried findings, verified and answered (2026-09-06)
+
+Three findings were carried against this candidate by the reviewer of
+`j-20260905-05` (`data/carried/j-20260905-05-carry-1.md`, `-2`, `-3`). All
+three were re-verified on 2026-09-06 against the primary documents, fetched
+as raw bytes with `node fetch` and searched for literal substrings — not
+through an extractor. All three are correct, and the post that was written
+from this candidate,
+`content/blog/gitspawn-git-config-code-execution-coding-agents.md`, already
+states each of them correctly. The candidate's own text above is left as it
+was filed; this section records what it got wrong so the file is not read as
+a source of those three claims.
+
+1. **Disclosure date.** The summary above says "disclosed on 2026-09-02" and
+   the why-now says "at disclosure three days ago". Manifold's post
+   (https://www.manifold.security/blog/ai-coding-agents-git-hijack, HTTP 200,
+   487,923 bytes on 2026-09-06) carries a byline "Sep 1, 2026" and a JSON-LD
+   `"datePublished": "2026-09-01T00:00:00.000Z"`. 2026-09-02 is The Hacker
+   News's publication date ("Sep 02, 2026" on its own page), not the
+   disclosure date. The post says "published GitSpawn on 1 September 2026".
+
+2. **"Eight agents were reported affected."** Manifold's own TLDR reads
+   "Eight findings across seven agents. Four remain unpatched at
+   publication." Its summary table lists Claude Code twice — the
+   `core.fsmonitor` path (patched 2.1.196) and the ultrareview path
+   (unpatched, confirmed 2.1.252). Eight findings, seven agents. The post
+   says "eight findings across seven agents".
+
+3. **The CVE-2026-71963 attribution.** The KNOWN DISCREPANCY block above says
+   The Hacker News attributes the identifier to Grok Build. It does not: in
+   the raw HTML the identifier occurs once, inside the Hermes Agent passage —
+   "VulnCheck assigned CVE-2026-71963, according to Manifold" — which is the
+   same attribution Manifold's own text and table make ("CVE-2026-71963,
+   assigned by VulnCheck ... Still unpatched", Hermes row). The two accounts
+   agree; the disagreement was an artifact of the extractor, exactly as the
+   block itself warned might be the case. The post resolves the identifier
+   against MITRE rather than asserting a conflict between outlets.
