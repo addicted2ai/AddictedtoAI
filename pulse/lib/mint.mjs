@@ -30,6 +30,7 @@ import { paths, readJson, relPosix, sourcePaths, today, writeJson } from './core
 import { deriveStatus, displayName } from './diff.mjs';
 import { declaredRowIds } from './corpus.mjs';
 import { loadSnapshot } from './sources.mjs';
+import { KIND } from '../../lib/change-kinds.mjs';
 
 /** Deterministic slug from a row id: lowercase kebab-case, nothing else. */
 export function slugFromRowId(rowId) {
@@ -264,7 +265,7 @@ export function appendTimelineEvents(root, corpus, changes) {
   }
 
   for (const change of changes) {
-    if (change.kind !== 'field_change' || change.field !== 'status') continue;
+    if (change.kind !== KIND.FIELD_CHANGE || change.field !== 'status') continue;
     const entry = byRow.get(`${change.source} ${change.row_id}`);
     if (!entry) {
       // An undeclared row never touches an entry (specs/wiki).

@@ -281,21 +281,40 @@ test('nothing in indexnow.mjs writes HOLD.md or exits — a failed ping is not a
   assert.ok(!/writeFileSync|appendFileSync/.test(code), 'and writes no state at all');
 });
 
-test('the Pulse reaches outside pulse/ for exactly three modules, and all are import-free', () => {
+test('the Pulse reaches outside pulse/ for exactly five modules, and all are import-free', () => {
   // The precedent this change sets, pinned so it cannot widen quietly. Every
-  // target is a plain constant file with no dependency of its own, which is
-  // what keeps `pulse/tests/zero-model.test.mjs`'s property true: none of them
-  // can pull anything into the Pulse's dependency graph.
+  // target is a plain declaration file with no dependency of its own, which is
+  // what keeps `pulse/tests/zero-model.test.mjs`'s property true: none can
+  // pull anything into the Pulse's dependency graph. The import-free assertion
+  // below is the load-bearing half — the list is only the audit trail.
   //
-  // WIDENED ONCE, to three, by the change `tag-the-corpus-by-domain`, and the
-  // argument belongs here rather than in a commit message. `lib/domains.mjs` is
-  // the ONE declared home of the closed domain vocabulary. The Pulse's seeding
-  // step writes domain ids into content front matter (`domains_seeded`), and
-  // the build gates those ids against that same list — so the engine either
-  // reads the list or keeps a second copy of it, and a second copy is the drift
-  // the single home exists to prevent: the moment the two disagreed, the Pulse
-  // would write files its own rebuild rejects. The file is frozen constants
-  // with no imports, so the boundary this test defends is unmoved.
+  // WIDENED from two to four by `separate-a-claim-from-a-fact`, and here is the
+  // argument for each, which is what this assertion asks for:
+  //
+  //   `lib/change-kinds.mjs` — the closed list of kinds a `data/changes.jsonl`
+  //   line may carry. The Pulse WRITES that file and the site READS it, so the
+  //   declaration has to be reachable from both or there are two lists; two
+  //   lists is exactly the defect this change removed (`MATERIAL_KINDS`, which
+  //   read as authoritative, was imported nowhere, and disagreed with the data).
+  //   Task 17 names `pulse/lib/indexnow.mjs`'s own cross-boundary import as the
+  //   precedent for putting it in `lib/`.
+  //
+  //   `lib/frontier-metrics.mjs` — what the registry's `frontier` block
+  //   declares. `pulse/lib/frontier.mjs` computes leaders from it and the site
+  //   build asks it which metrics may be PRINTED; a second copy of "registered"
+  //   and "cleared" is a rights answer that can drift, which is the one kind of
+  //   drift K24 cannot tolerate. Its header records that it must stay
+  //   import-free for this test's sake.
+  //
+  //   `lib/domains.mjs` — widened by the change `tag-the-corpus-by-domain`, and
+  //   the argument belongs here rather than in a commit message. It is the ONE
+  //   declared home of the closed domain vocabulary. The Pulse's seeding step
+  //   writes domain ids into content front matter (`domains_seeded`), and the
+  //   build gates those ids against that same list — so the engine either reads
+  //   the list or keeps a second copy of it, and a second copy is the drift the
+  //   single home exists to prevent: the moment the two disagreed, the Pulse
+  //   would write files its own rebuild rejects. The file is frozen constants
+  //   with no imports, so the boundary this test defends is unmoved.
   const files = fg.sync('**/*.mjs', { cwd: PULSE, absolute: true, ignore: ['tests/**'] });
   const outside = new Set();
   for (const file of files) {
@@ -303,7 +322,13 @@ test('the Pulse reaches outside pulse/ for exactly three modules, and all are im
   }
   assert.deepEqual(
     [...outside].sort(),
-    ['../../lib/asset-routes.mjs', '../../lib/domains.mjs', '../../lib/site-config.mjs'],
+    [
+      '../../lib/asset-routes.mjs',
+      '../../lib/change-kinds.mjs',
+      '../../lib/domains.mjs',
+      '../../lib/frontier-metrics.mjs',
+      '../../lib/site-config.mjs',
+    ],
     'a new cross-boundary import into pulse/ needs its own argument, in its own review',
   );
   for (const rel of outside) {
