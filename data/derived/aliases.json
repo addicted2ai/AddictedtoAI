@@ -71,6 +71,36 @@
       ]
     },
     {
+      "name": "Aion",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/aion-labs",
+          "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "Aion Labs",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/aion-labs",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "AionLabs",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/aion-labs",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "AionLabs: Aion-2.0",
       "linkable": false,
       "claimed_by": [
@@ -1155,6 +1185,16 @@
         {
           "id": "event/deep-blue-kasparov",
           "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "Deep Forge",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/aion-labs",
+          "class": "manual"
         }
       ]
     },

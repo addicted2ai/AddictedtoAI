@@ -718,6 +718,38 @@
         "file": "content/learn/when-you-cannot-trust-your-eyes.md"
       }
     ],
+    "model/aion-labs-aion-2-0": [
+      {
+        "url": "/wiki/org/aion-labs",
+        "title": "AionLabs",
+        "type": "entry",
+        "file": "content/wiki/org/aion-labs.md"
+      }
+    ],
+    "model/aion-labs-aion-3-0": [
+      {
+        "url": "/wiki/org/aion-labs",
+        "title": "AionLabs",
+        "type": "entry",
+        "file": "content/wiki/org/aion-labs.md"
+      }
+    ],
+    "model/aion-labs-aion-3-0-mini": [
+      {
+        "url": "/wiki/org/aion-labs",
+        "title": "AionLabs",
+        "type": "entry",
+        "file": "content/wiki/org/aion-labs.md"
+      }
+    ],
+    "model/aion-labs-aion-rp-llama-3-1-8b": [
+      {
+        "url": "/wiki/org/aion-labs",
+        "title": "AionLabs",
+        "type": "entry",
+        "file": "content/wiki/org/aion-labs.md"
+      }
+    ],
     "model/all-minilm-l6-v2": [
       {
         "url": "/tutorials/browser-embeddings-no-server",
