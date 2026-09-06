@@ -41,6 +41,8 @@ evidence: >
   15 of `openspec/changes/separate-a-claim-from-a-fact/tasks.md` and is not
   what this proposal asks for.
 expires: 2026-09-20
+proposed_by_job: j-20260905-26
+proposed_by_type: entry
 ---
 
 The cost is per-job and it accrues on a schedule, which is why this carries an
