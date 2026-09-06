@@ -122,6 +122,15 @@ day one, because no such line has ever been written.
   produces a byte-identical file — the property every file under `data/derived/`
   already holds. Ties SHALL all be leaders and the surface SHALL say so; no
   tie-break invents an order.
+- **With zero declared metrics the file SHALL still be written**, carrying an
+  empty `metrics` collection — no leaders, no ranked rows — and the snapshot's
+  own date. It SHALL NOT be absent and SHALL NOT be stood in for by a placeholder
+  anywhere downstream. This is the day-one state, and it is the state both
+  finalist builds were in when each hard-wired an empty element instead
+  (`implementer-ledger.md` row 6: a cell renderer that ignored both its arguments
+  and returned the same string). A surface SHALL therefore be able to **look the
+  metric up and then collapse**, so that declaring one cleared metric populates it
+  with no edit to any renderer.
 - Rows that are not distinct listed models — service variants of a base row,
   router pseudo-rows, alias rows redirecting elsewhere — SHALL be excluded by
   **declared** criteria in the registry rather than by a rule compiled into the
@@ -133,7 +142,10 @@ day one, because no such line has ever been written.
   idempotent and SHALL never overwrite an observed entry. Its limits SHALL be
   stated on the surface rather than implied: the record begins when observation
   began, and a baseline line says *observation began here*, not *this model
-  became the leader here*.
+  became the leader here*. **Recording a value in a history line is not rendering
+  it**: the rights gate in the next requirement binds the surface, not the
+  record, and `specs/pulse` already requires every material change entry to embed
+  its archived source excerpt.
 
 #### Scenario: A rescoring is not an overtaking
 
@@ -210,7 +222,12 @@ facts, which is the exposure `addictedtoai-ego8` was filed for;
   says, and this requirement SHALL NOT be read to restrict the former. A
   description of a publisher's own act — that it rebased an index, on a date, in
   a direction — is likewise not a value, and is permitted with no value, ratio,
-  rank or per-model score in its copy.
+  rank or per-model score in its copy. **This is the same rule as
+  `flag-what-moved-the-frontier`'s `blog` requirement "An F2 record carries the
+  publisher's act, never the publisher's numbers", stated here for a history line
+  as it is stated there for a post's copy** — both are the K44 amendment
+  resolving F2 against K24, and the cross-reference is written down so an edit to
+  either is visibly an edit to both rather than the start of two copies drifting.
 - A surface displaying a registered value SHALL name the publisher, name the
   republisher where there is one, and carry the snapshot date the value was read
   in. The strongest claim available is *the publisher's page says this, as

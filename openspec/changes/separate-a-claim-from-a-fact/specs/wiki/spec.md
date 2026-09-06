@@ -214,11 +214,39 @@ standing in for a source test.
   (red-team finding FM-N5). Both are what a second copy of this logic drifts
   back into.
 - A claim SHALL be attributed to its subject when `source_host`'s registrable
-  domain is either **one the subject declares publishing from**, or one whose
-  registrable label is one of the subject's own name tokens — its `display_name`
-  and its declared `aliases` — **and nothing else**. A claim failing the test
-  still validates and is still a claim; it renders attributed to whoever does own
-  the domain, never to the subject.
+  domain is one of three things and **nothing else**: **one the subject declares
+  publishing from**; **one the subject's own entry records citing itself from**
+  (the registrable domain of a `facts[].source_url` or a `timeline[].source_url`
+  on that entry, kept only where that domain's own registrable label is one of
+  the subject's name tokens); or one whose registrable label is one of the
+  subject's name tokens. A claim failing the test still validates and is still a
+  claim; it renders attributed to whoever does own the domain, never to the
+  subject.
+
+  The recorded half is half the live rule and is written here because dropping it
+  is invisible: R13 (v) carries both halves, `lib/render/frontier.mjs`'s
+  `orgOwnDomains` implements it, and invariant `S22` clause (e) re-derives both —
+  so a spec carrying one half reads as a correction of the other two rather than
+  as an omission, and the next implementer "fixes" the gate back to match it. Its
+  own name-token filter is not decoration: **all thirteen** `founded` facts in
+  this corpus cite `en.wikipedia.org`, so an unfiltered "records citing itself
+  from" admits an encyclopaedia as a vendor-owned domain — the exact defect the
+  first requirement exists to end, re-entering through the test meant to catch it.
+
+- **Name tokens are identifying words, and a generic corporate word is not one.**
+  The tokens of a subject are the normalised whole names — its `display_name` and
+  its declared `aliases` — **and** their individual words, **excluding** the
+  generic corporate family: `ai`, `labs`, `lab`, `cloud`, `inc`, `corp`,
+  `corporation`, `company`, `group`, `foundation`, `pbc`, `ltd`, `llc`,
+  `technologies`, `technology`, `research`, and the rest of that family. Without
+  the exclusion "Inception Labs" tokenises to `labs` and the test admits
+  `labs.com`; "Ai2" and every `… Research` name admit `research.example`. That is
+  not a corner case — it is a large fraction of this corpus admitting a stranger's
+  domain, and it is red-team finding FM-N5's lookalike hole re-opened one label
+  over. A token SHALL be matched against the **one** ownership label of the
+  registrable domain — the label the registrant bought — and never against any
+  other label of the host, which is the same rule the bullet above states and the
+  reason it is stated once.
 
 **An entry MAY declare `publishes_from`.** A vendor's product-brand domain is
 not one of its name tokens and need not appear in any source it is cited from:
@@ -226,7 +254,19 @@ Moonshot AI publishes from `kimi.ai`, and the round-5 addendum records that the
 test cannot recognise that domain unless the record carries it. Left undeclared,
 a real vendor claim renders as an honest-looking blank (red-team finding
 FM-N6) — which is the failure mode hardest to notice, because a blank looks like
-the correct handling of an absent claim.
+the correct handling of an absent claim. **And no build check can detect an
+absent declaration**: nothing compares a `publishes_from` set against the entry's
+own cited domains for completeness, and nothing could — the entry validates, the
+claim validates, the render is well-formed, and the only signal that a real claim
+was dropped is a blank that is byte-identical to the blank a subject with no
+claims correctly produces. That undetectability is why the burden sits on the org
+entry's editorial completeness rather than on a gate: a gate can catch a wrong
+declaration and can never catch a missing one.
+
+**This diverges from DESK-ORDER-001 §2 and `SPEC-REVIEW-GUIDE.md` row 51, which
+record product-brand domains as `aliases`, and the divergence is deliberate**: a
+host is not a name, §2 said "as aliases" when no host field existed to say
+otherwise, and the mechanical reasons are the last bullet of this requirement.
 
 - `publishes_from` SHALL be optional, set-valued, and the empty set SHALL be the
   common case. Nothing is required to declare one.
@@ -315,7 +355,11 @@ are requirements rather than guidance.
   beside a neighbouring cell that *did* name a feed (judge finding F-sys-5-1).
   So: the party first, the fragment second, and **the fragment takes the
   truncation**. The unelided quote SHALL remain reachable — from the record, and
-  on any clamped surface from the rendered element itself.
+  on any clamped surface from the rendered element itself. The rule is two-sided
+  and both sides are normative: an attribution that **overruns** the clamp fails,
+  and so does one that **consumes** it — R13 (v) sets that second bound at 85% of
+  the clamp's visible width — since a cell showing its party and none of its
+  claim satisfies "the name is visible" perfectly and fails the reader entirely.
 - **The three verification states render as three different things**, and absent
   renders nothing, per the first requirement. A surface SHALL NOT collapse
   absent and `false` into one rendering, in either direction: collapsing toward

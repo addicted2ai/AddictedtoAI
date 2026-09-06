@@ -325,3 +325,37 @@ siblings recorded: a count of files read as a count of fields. Nothing §4
 concludes depends on which of the two numbers is meant — either way the claim
 surface is empty until records are filed — but the figure is quoted downstream
 and a justification nobody re-checks is how a settled decision gets reopened.
+
+## What the review answered, and the two calls it left to me
+
+`loops/ui-loop/graph/artifacts/SPECREV-001.md` (2026-09-05) returned **approve
+with corrections** and answered all seven items above in its "AUTHOR'S
+QUESTIONS" section: item 1 stands as drafted and the divergence is now named in
+the requirement rather than left implicit; items 2, 3, 4 and 6 stand as drafted;
+item 5 keeps its narrow form; item 7 is recorded for §4 v2 and is not a defect
+here. The seven corrections are applied. Two of them required a judgment the
+review's own edit text did not spell out, and both are here rather than in the
+spec because they are about how far a correction reaches, not about what the
+requirement says.
+
+1. **The restored "records citing itself from" half carries a name-token
+   filter, which D2's edit text does not mention.** D2 asks for the half back and
+   cites `frontier.mjs`'s `orgOwnDomains` as the live rule; that function keeps a
+   cited domain only where its registrable label is one of the org's own name
+   tokens (`lib/render/frontier.mjs:317-326`), and R13 (v)'s prose states the
+   half without that filter. I wrote the filter in, because the unfiltered
+   reading is not merely looser — it admits `en.wikipedia.org` as a subject-owned
+   domain for any org entry citing Wikipedia about itself, and measured
+   2026-09-05 all thirteen `founded` facts in this corpus do exactly that. The
+   unfiltered half would rebuild the founding-date defect inside the test written
+   to end it. If the round meant the half without the filter, this is the one
+   sentence to cut, and cutting it re-opens that path.
+2. **L1 calls the empty derivation an empty `metrics` collection.** The review's
+   edit text says "an empty leaders map", the directive says "an empty `metrics`
+   array"; the requirement above already describes the file as leaders per
+   declared metric plus ranked rows and counts. I wrote it as the metrics
+   collection being empty — no leaders and no ranked rows — since with zero
+   declared metrics both are empty and naming the outer container is the form
+   that survives the file gaining a key. The property that matters, and the one
+   ledger row 6 was filed for, is unaffected by which name is chosen: the file
+   exists, carries the snapshot date, and is looked up rather than stood in for.
