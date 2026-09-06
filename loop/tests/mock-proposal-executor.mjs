@@ -150,6 +150,52 @@ switch (mode) {
     result('done\n\nFiled four candidates without ranking them.\n');
     break;
 
+  // ---- the frontier exemption (flag-what-moved-the-frontier) --------------
+
+  // Four candidates where the flagged one is ranked LAST — the one the cap
+  // would have dropped. A run that kept it by accident (because it ranked well)
+  // would prove nothing about the exemption.
+  case 'scout-4-one-flagged':
+    candidate('a-one.md', { slug: 'story-one', rank: 1 });
+    candidate('b-two.md', { slug: 'story-two', rank: 2 });
+    candidate('c-three.md', { slug: 'story-three', rank: 3 });
+    candidate('d-flagged.md', {
+      slug: 'frontier-story',
+      rank: 4,
+      extra: { frontier: 'true', frontier_reason: 'F3', domains: '[agents]' },
+    });
+    result('done\n\nFiled three ordinary candidates and one frontier-flagged fourth.\n');
+    break;
+
+  // The flag that does not hold, ranked FIRST — so that a merge which let it
+  // rejoin the counted group would displace a real candidate, which is the
+  // exact move the drop exists to prevent.
+  case 'scout-4-flag-no-criterion':
+    candidate('a-flagged-no-criterion.md', {
+      slug: 'unearned-flag',
+      rank: 1,
+      extra: { frontier: 'true' },
+    });
+    candidate('b-two.md', { slug: 'story-two', rank: 2 });
+    candidate('c-three.md', { slug: 'story-three', rank: 3 });
+    candidate('d-four.md', { slug: 'story-four', rank: 4 });
+    result('done\n\nFiled four candidates, one of them flagged without a criterion.\n');
+    break;
+
+  // A NON-SCOUT job filing two, the flagged one ranked second. The exemption is
+  // the scout's cap and no other, so the flag must buy this candidate nothing.
+  case 'entry-two-one-flagged':
+    candidate('a-first.md', { slug: 'first-idea', type: 'interpret', rank: 1 });
+    candidate('b-flagged.md', {
+      slug: 'flagged-idea',
+      type: 'interpret',
+      rank: 2,
+      extra: { frontier: 'true', frontier_reason: 'F1', domains: '[coding]' },
+    });
+    write('site-note.md', '# the job’s actual work\n');
+    result('done\n\nDid the work and filed two proposals, one flagged.\n');
+    break;
+
   // A job proposing more of its own type, with a FORGED origin stamp: the
   // executor claims the proposal came from a scout. The loop must overwrite it.
   case 'proposes-post':

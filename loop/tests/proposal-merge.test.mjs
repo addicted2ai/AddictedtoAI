@@ -135,6 +135,98 @@ test('an ordinary job’s cap is one: a second proposal is dropped with the same
 });
 
 // ---------------------------------------------------------------------------
+// The frontier exemption, and the flag that does not hold
+// (flag-what-moved-the-frontier, tasks 7-9)
+//
+// Two halves that must be independent, and the mutation test in this change
+// proves they are: the EXEMPTION (a valid flag does not count against the
+// scout's three) and the DROP (a flag that does not hold is not filed at all).
+// Each is measured through a real loop run against a real executor, and each
+// carries the control that stops it from being satisfied by a mechanism that
+// simply kept or dropped everything.
+// ---------------------------------------------------------------------------
+
+test('a validly flagged fourth candidate does not count against the scout’s three', async () => {
+  // The flagged candidate is ranked LAST — it is exactly the file the cap would
+  // have dropped, so nothing here is passed by a run that kept it on merit.
+  const ctx = repo('scout-4-one-flagged');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  assert.deepEqual(active(ctx), ['a-one.md', 'b-two.md', 'c-three.md', 'd-flagged.md']);
+  assert.deepEqual(inDir(ctx, 'dropped'), [], 'nothing was over the cap: the flagged one is exempt');
+
+  // The exemption is from the COUNT and from nothing else: the flagged
+  // candidate is stamped, cooled, expiring and judged like any other.
+  const fm = fmOf(ctx, 'd-flagged.md');
+  assert.equal(fm.frontier, true);
+  assert.equal(fm.frontier_reason, 'F3');
+  assert.deepEqual(fm.domains, ['agents']);
+  assert.equal(fm.proposed_by_type, 'scout', 'stamping still runs on the kept set');
+  assert.equal(fm.proposed_by_job, res.jobId);
+  ctx.cleanup();
+});
+
+test('POSITIVE CONTROL — with nothing flagged the same four candidates lose one to the cap', async () => {
+  // The pair is the whole evidence: four unflagged candidates drop one, four
+  // candidates with one valid flag drop none. Without this the exemption test
+  // is also passed by a cap that stopped binding.
+  const ctx = repo('scout-4-unranked');
+  await go(ctx);
+  assert.equal(active(ctx).length, 3, active(ctx).join(', '));
+  assert.deepEqual(inDir(ctx, 'dropped'), ['d-four.md']);
+  ctx.cleanup();
+});
+
+test('a flag with no criterion is dropped naming the field, and displaces nobody', async () => {
+  // Ranked FIRST, so a merge that let it rejoin the counted group would push a
+  // real candidate out — which is the move the drop exists to prevent: a flag
+  // that does not hold must not be able to buy a place among the three by
+  // failing.
+  const ctx = repo('scout-4-flag-no-criterion');
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  assert.deepEqual(
+    active(ctx),
+    ['b-two.md', 'c-three.md', 'd-four.md'],
+    'the three unflagged candidates are all kept — the broken flag displaced none of them',
+  );
+  assert.deepEqual(inDir(ctx, 'dropped'), ['a-flagged-no-criterion.md']);
+
+  const note = readFileSync(join(ctx.proposalsDir, 'dropped', 'a-flagged-no-criterion.md'), 'utf8');
+  assert.match(note, /## Dropped: the frontier flag it declared does not hold/);
+  assert.match(note, /`frontier_reason`/, 'the note names the offending field');
+  assert.match(note, /F1, F2, F3, F4, F5/, 'and what would have satisfied it');
+  assert.ok(
+    !/## Dropped: over this job's candidate cap/.test(note),
+    'it was refused for its flag, not for being fourth — the two notes say different things',
+  );
+  assert.match(note, /`domains` may be ABSENT/, 'and the note does not teach the wrong lesson');
+  assert.match(note, /record, never a block/);
+  assert.match(ctx.output(), /frontier flag: the scout job declared `frontier: true` on 1 candidate/);
+  ctx.cleanup();
+});
+
+test('the frontier exemption is the SCOUT’S cap and no other job’s', async () => {
+  // An `entry` job filing two `interpret` proposals, the second one validly
+  // flagged. DESK-ORDER-001 exempts a flagged story from the three-candidates-
+  // per-day cap — the scout's cap. Nothing decided that an ordinary job's
+  // one-proposal side-output rule may be lifted by flagging.
+  const ctx = repo('entry-two-one-flagged', { type: 'entry' });
+  const res = await go(ctx);
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  assert.deepEqual(active(ctx), ['a-first.md'], 'the flag bought this candidate nothing');
+  assert.deepEqual(inDir(ctx, 'dropped'), ['b-flagged.md']);
+  const note = readFileSync(join(ctx.proposalsDir, 'dropped', 'b-flagged.md'), 'utf8');
+  assert.match(note, /## Dropped: over this job's candidate cap/, 'the CAP dropped it, not its flag');
+  assert.match(note, /may add at most 1 proposal file; it added 2/);
+  assert.match(note, /the frontier exemption is the scout's cap and no other/);
+  ctx.cleanup();
+});
+
+// ---------------------------------------------------------------------------
 // The stamp, and the same-type discard
 // ---------------------------------------------------------------------------
 
@@ -440,6 +532,119 @@ test('a noted proposal is read from front matter or from a body section, and ref
     notedProposal('---\nproposal:\n  slug: Not Kebab\n  type: repair\n---\n').why,
     /no kebab-case `slug`/,
   );
+});
+
+/** A candidate file's text, with whatever front-matter lines the case needs. */
+const cand = (slug, lines = []) =>
+  `---\nslug: ${slug}\ntype: post\ndate: 2026-09-10\n${lines.join('\n')}${lines.length ? '\n' : ''}---\n\nBody.\n`;
+
+const addedAll = (names) => names.map((n) => ({ status: 'A', path: `data/proposals/${n}` }));
+
+test('every shape of a flag that does not hold is dropped, and the note names the field', () => {
+  // The three refusals the build gate makes, made at the merge instead: no
+  // criterion, a criterion outside F1-F5, a domain outside the vocabulary. All
+  // three are the SAME rule as the build's — `frontierFlagProblems` in
+  // lib/domains.mjs — because a flag cannot hold at filing and fail at build.
+  const ctx = makeRepo({
+    files: {
+      'data/proposals/no-criterion.md': cand('no-criterion', ['frontier: true']),
+      'data/proposals/bad-criterion.md': cand('bad-criterion', ['frontier: true', 'frontier_reason: F6']),
+      'data/proposals/bad-domain.md': cand('bad-domain', [
+        'frontier: true',
+        'frontier_reason: F2',
+        'domains: [text]',
+      ]),
+      // The controls, in the same call: a valid flag with a domain, a valid
+      // flag with NO domain (K46 — absence is the vocabulary's unmarked
+      // "general"), and an unflagged candidate. A drop rule that took these too
+      // would satisfy every assertion above and destroy the mechanism.
+      'data/proposals/good-flag.md': cand('good-flag', [
+        'frontier: true',
+        'frontier_reason: F1',
+        'domains: [coding, agents]',
+      ]),
+      'data/proposals/general-flag.md': cand('general-flag', ['frontier: true', 'frontier_reason: F5']),
+      'data/proposals/plain.md': cand('plain'),
+    },
+  });
+  const r = applyProposalMergeRules(ctx, {
+    worktree: ctx.repoRoot,
+    jobId: 'j-test-02',
+    jobType: 'scout',
+    changed: addedAll([
+      'no-criterion.md',
+      'bad-criterion.md',
+      'bad-domain.md',
+      'good-flag.md',
+      'general-flag.md',
+      'plain.md',
+    ]),
+  });
+
+  assert.deepEqual(
+    r.dropped.map((d) => d.name).sort(),
+    ['bad-criterion.md', 'bad-domain.md', 'no-criterion.md'],
+  );
+  assert.deepEqual(
+    r.kept.sort(),
+    ['general-flag.md', 'good-flag.md', 'plain.md'],
+    'two valid flags and one unflagged candidate: nine files would still fit, because only the unflagged one counts',
+  );
+  // The note names the FIELD, per drop, and they are not the same field.
+  const fields = Object.fromEntries(r.dropped.map((d) => [d.name, d.flag]));
+  assert.deepEqual(fields['no-criterion.md'], ['frontier_reason']);
+  assert.deepEqual(fields['bad-criterion.md'], ['frontier_reason']);
+  assert.deepEqual(fields['bad-domain.md'], ['domains.0']);
+  const note = readFileSync(join(ctx.proposalsDir, 'dropped', 'bad-domain.md'), 'utf8');
+  assert.match(note, /invalid domain "text"/);
+  assert.match(note, /"general" is the UNMARKED default/);
+  ctx.cleanup();
+});
+
+test('a non-boolean `frontier` is refused rather than read as an absent flag', () => {
+  // `frontier: yes` is a STRING under YAML 1.2. Read as unflagged it loses a
+  // real declaration in silence; read as flagged it lets a value the machinery
+  // cannot parse buy an exemption. It is refused, which does neither, and it is
+  // what the schema does with the same bytes.
+  const ctx = makeRepo({
+    files: { 'data/proposals/yes-flag.md': cand('yes-flag', ['frontier: yes', 'frontier_reason: F1']) },
+  });
+  const r = applyProposalMergeRules(ctx, {
+    worktree: ctx.repoRoot,
+    jobId: 'j-test-03',
+    jobType: 'scout',
+    changed: addedAll(['yes-flag.md']),
+  });
+  assert.deepEqual(r.kept, []);
+  assert.deepEqual(r.dropped.map((d) => d.flag), [['frontier']]);
+  ctx.cleanup();
+});
+
+test('the documented order still holds for a flagged candidate: cap, stamp, discard', () => {
+  // A scout filing a validly flagged `scout` proposal. The exemption keeps it
+  // past the cap; the stamp is written; the self-amplification rule then reads
+  // the stamp back and discards it. The exemption is from the COUNT and from
+  // nothing else — it is not a licence to skip the rules that follow it.
+  const ctx = makeRepo({
+    files: {
+      'data/proposals/more-scouting.md':
+        '---\nslug: more-scouting\ntype: scout\ndate: 2026-09-10\nfrontier: true\n'
+        + 'frontier_reason: F2\ndomains: [research]\n---\n\nBody.\n',
+    },
+  });
+  const r = applyProposalMergeRules(ctx, {
+    worktree: ctx.repoRoot,
+    jobId: 'j-test-04',
+    jobType: 'scout',
+    changed: addedAll(['more-scouting.md']),
+  });
+  assert.deepEqual(r.dropped, [], 'the flag held, so the drop rule did not fire');
+  assert.deepEqual(r.rejected.map((x) => x.name), ['more-scouting.md']);
+  assert.deepEqual(r.kept, [], 'kept minus rejected');
+  const text = readFileSync(join(ctx.proposalsDir, 'rejected', 'more-scouting.md'), 'utf8');
+  assert.match(text, /## Auto-discarded: a job may not propose more of itself/);
+  assert.equal(matter(text).data.proposed_by_type, 'scout', 'the stamp ran before the discard read it');
+  ctx.cleanup();
 });
 
 test('applyProposalMergeRules reports what it did without a loop run', () => {
