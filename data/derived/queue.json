@@ -1,7 +1,16 @@
 {
   "cap": 50,
-  "count": 32,
+  "count": 33,
   "items": [
+    {
+      "detail": "2 findings carried by reviewers against `content/blog/anthropic-enterprise-frontier-safeguards.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Fix \"whenever\" to \"whatever\" in the closing sentence of the lockout section\n\nCarried in `data/carried/j-20260906-14-carry-1.md`.\n\nThe post's lockout section closes: It ends it whenever \"later this fall\" turns out to mean. That is ungrammatical — \"whenever\" takes a time, \"mean\" takes a thing. The fix is one word: It ends it whatever \"later this fall\" turns out to mean.\n\n### Header rounds the lockout up to three months where the body says \"coming up on three\"\n\nCarried in `data/carried/j-20260906-14-carry-2.md`.\n\nThe header reads \"you have already been locked out for three months\"; the body two paragraphs later reads \"for coming up on three months\". The body is right — Covered Models designation for Fable 5 and Mythos 5 is 9 June 2026 and the post is dated 6 September 2026, which is two months and twenty-eight days. The header is the summary line and should not be the looser of the two. \"for nearly three months\" fixes it and costs nothing.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260906-14-carry-1.md`\n- `data/carried/j-20260906-14-carry-2.md`",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/blog/anthropic-enterprise-frontier-safeguards.md",
+      "target": "content/blog/anthropic-enterprise-frontier-safeguards.md",
+      "title": "Clear the 2 carried findings on content/blog/anthropic-enterprise-frontier-safeguards.md",
+      "type": "repair"
+    },
     {
       "detail": "The body no longer implies Reuters is the only outlet naming the two secretaries, but the Sources list still does. Line 80 describes the Globe and Mail item as \"the account that names Lutnick and Bessent\" — the definite article makes the same uniqueness claim this job removed two screens above. Time's 3 July 2026 write-up of the same FT reporting names all three (\"The FT said among those Altman was in active talks with about public ownership were Trump himself, Treasury Secretary Scott Bessent, and Commerce Secretary Howard Lutnick\", https://time.com/article/2026/07/03/openai-invest-ai-trump-administration-sam-altman/, retrieved 5 September 2026). \"an account that names Lutnick and Bessent\" fixes it. The adjacent CNN annotation, \"it names neither secretary\", is a claim about CNN specifically and needs no change.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-11 (`j-20260905-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -291,5 +300,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 32
+  "total_before_cap": 33
 }

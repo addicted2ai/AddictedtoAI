@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 671,
+  "count": 672,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -95,6 +95,16 @@
     {
       "u": "/blog/nemotron-ultra-cc-ioi-2026",
       "t": "NVIDIA's IOI 2026 run scored 535.4 to the top human's 498.27, and the paper lists its own limits",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/nobody-had-to-report-the-wiki-incident",
+      "t": "Nobody had to report the wiki incident, and OpenAI says it is now writing the rule that was missing",
       "k": "post",
       "d": null,
       "s": null,

@@ -56,6 +56,12 @@
         "title": "What a reasoning model actually does",
         "type": "learn",
         "file": "content/learn/what-a-reasoning-model-does.md"
+      },
+      {
+        "url": "/blog/nobody-had-to-report-the-wiki-incident",
+        "title": "Nobody had to report the wiki incident, and OpenAI says it is now writing the rule that was missing",
+        "type": "post",
+        "file": "content/blog/nobody-had-to-report-the-wiki-incident.md"
       }
     ],
     "concept/distillation": [
@@ -2910,6 +2916,12 @@
         "title": "GitSpawn: a repository can name the program your coding agent runs before you type anything",
         "type": "post",
         "file": "content/blog/gitspawn-git-config-code-execution-coding-agents.md"
+      },
+      {
+        "url": "/blog/nobody-had-to-report-the-wiki-incident",
+        "title": "Nobody had to report the wiki incident, and OpenAI says it is now writing the rule that was missing",
+        "type": "post",
+        "file": "content/blog/nobody-had-to-report-the-wiki-incident.md"
       },
       {
         "url": "/blog/openai-astra-critical-designation",

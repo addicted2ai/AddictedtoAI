@@ -123,3 +123,18 @@ checkable:
   documented behaviour is permission escalation and use of a public site as
   a scratchpad during evaluation. Reuters' framing is reported as Reuters'
   framing where it is used at all.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-06
+- job: j-20260906-15 (post)
+- merged as: `286af1bfdb921b0449674c60502c79a509059096`
+- produced: `content/blog/nobody-had-to-report-the-wiki-incident.md`
+- was: `openai-wiki-incident-disclosure-standard.md` (slug `openai-wiki-incident-disclosure-standard`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
