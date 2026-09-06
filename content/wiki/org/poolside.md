@@ -198,7 +198,7 @@ mentions:
   - org/nvidia
 ---
 
-A row on a public router is the thing Poolside spent three years arguing
+A row on a public router is the thing Poolside's public record argued
 against. Read its blog backwards from May 2026 and it is an enterprise sales
 record: the AWS announcement of December 2024 —
 {{fact:org/poolside#aws_partnership}} — a
@@ -206,8 +206,8 @@ record: the AWS announcement of December 2024 —
 acquisition of London's Fern Labs, a
 [Dell configuration](https://poolside.ai/blog/poolside-on-dell), and in May
 the Poolside Platform,
-sold on the premise that {{fact:org/poolside#platform_pitch}}. Six days before
-that Platform post, on 28 April 2026, the same blog said
+sold on the premise that {{fact:org/poolside#platform_pitch}}. Seven days
+before that Platform post, on 28 April 2026, the same blog said
 {{fact:org/poolside#first_public_models}}. Every row this catalog carries is
 newer than that sentence, and the homepage now opens with
 {{fact:org/poolside#self_description}}.
