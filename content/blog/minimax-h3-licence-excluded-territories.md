@@ -1,6 +1,10 @@
 ---
 title: "MiniMax H3's licence excludes the EU, the UK, South Korea and the US"
 date: "2026-08-31"
+frontier: true
+frontier_reason: "F5"
+domains:
+  - "video"
 ---
 
 MiniMax H3 is a video generation model, open-weight and downloadable on Hugging Face since 3 August 2026. Its community licence, effective 2 August 2026, defines the model's "Applicable Territory" as worldwide excluding the European Union, the United Kingdom, the Republic of Korea and the United States of America. Hugging Face's own count stood at **5,362,365 downloads in the 30 days to 31 August 2026**.

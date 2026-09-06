@@ -8,6 +8,8 @@ mentions:
   - org/openai
   - model/openai-gpt-5-6-sol
   - concept/openai-daybreak
+frontier: true
+frontier_reason: "F4"
 ---
 
 On 1 September 2026 OpenAI announced that Astra, its next model, meets the Critical cybersecurity capability threshold under its Preparedness Framework, the first model the company has designated at that level. The same announcement gates the release: "We plan to make Astra available soon, but access to its most advanced cybersecurity capabilities will be more limited."

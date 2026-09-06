@@ -10,6 +10,8 @@ anchor:
 mentions:
   - org/openai
   - model/openai-gpt-5-6-sol
+frontier: true
+frontier_reason: "F3"
 ---
 
 On 3 September 2026 OpenAI released GPT-6 Astra, the model its 1 September announcement designated Critical for cybersecurity, and published the model's system card the same day. The card's headline finding is an inversion: the model got harder to monitor as it got more capable. The limited set of organizations given Astra today feels it first. ChatGPT, Codex, API, Azure and Bedrock users get the same model and the same monitoring over the coming days.

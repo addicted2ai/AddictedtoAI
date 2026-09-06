@@ -1,0 +1,132 @@
+# The vocabulary, read from lib/domains.mjs (not restated)
+DOMAINS           = coding, agents, image, video, audio, research, science-math, robotics
+FRONTIER_REASONS  = F1, F2, F3, F4, F5
+
+# 16 post files under content/blog/ (README.md excluded)
+
+| file | frontier | frontier_reason | domains (as parsed) | schema |
+|---|---|---|---|---|
+| anthropic-enterprise-frontier-safeguards.md | true | F5 | (absent = general) | ok |
+| anthropic-usage-policy-government-exceptions.md | false | — | (absent = general) | ok |
+| claude-session-theft-infostealers.md | false | — | (absent = general) | ok |
+| doj-statement-of-interest-llm-training-fair-use.md | false | — | (absent = general) | ok |
+| eu-ai-office-first-enforcement-rfis.md | false | — | (absent = general) | ok |
+| gitspawn-git-config-code-execution-coding-agents.md | false | — | (absent = general) | ok |
+| glm-5-3-license-revenue-gate.md | true | F5 | (absent = general) | ok |
+| ifm-k2-horizon-open-fleet.md | false | — | (absent = general) | ok |
+| minimax-h3-licence-excluded-territories.md | true | F5 | video | ok |
+| nemotron-ultra-cc-ioi-2026.md | true | F1 | coding | ok |
+| nobody-had-to-report-the-wiki-incident.md | false | — | (absent = general) | ok |
+| openai-astra-critical-designation.md | true | F4 | (absent = general) | ok |
+| openai-daybreak-frontline-defenders.md | false | — | (absent = general) | ok |
+| openai-gpt-6-astra-system-card.md | true | F3 | (absent = general) | ok |
+| thomson-reuters-thomson-model.md | false | — | (absent = general) | ok |
+| three-accounts-hugging-face-intrusion.md | false | — | (absent = general) | ok |
+
+# split: 6 flagged, 10 declined, 16 total
+
+# content/wiki/org/ — 24 entries
+aion-labs, alibaba-cloud, amazon, anthropic, bytedance-seed, cohere, deepseek, google-deepmind, inception-labs, inclusionai, meta-superintelligence-labs, microsoft, minimax, mistral-ai, moonshot-ai, nous-research, nvidia, openai, perplexity, poolside, spacexai, tencent, thinking-machines-lab, z-ai
+
+| organisation | has content/wiki/org/ entry |
+|---|---|
+| openai (F3, F4 flags) | yes |
+| anthropic (F5 flag) | yes |
+| z-ai (F5 flag) | yes |
+| minimax (F5 flag) | yes |
+| nvidia (F1 flag) | yes |
+| IFM / MBZUAI (decline) | NO |
+| MBZUAI (decline, alternate slug) | NO |
+| Thomson Reuters (decline) | NO |
+
+RESULT: every post satisfies postSchema and matches the committed decision table.
+
+
+===== node scripts/verify-launch.mjs --no-build — REVIEW RECORDS section (exit 1) =====
+verify-launch — the launch minimums for build-initial-site (task 6.6)
+  content D:\addictedtoai-worktrees\j-20260906-17\content
+  data    D:\addictedtoai-worktrees\j-20260906-17\data
+
+CORPUS
+------
+  553 entry, 38 learn, 4 tutorial, 16 post, 35 tool, 27 delta = 673 page(s), plus 0 claim record(s), which are content and not pages
+  PASS  every content file is valid        no errors  (no errors)
+        Schema, ids, kinds, duplicates and cross-file references all resolve.
+
+CONTENT FLOORS (task 6.6)
+-------------------------
+  PASS  wiki entries                       553  (floor 40)
+        TRIVIALLY MET — 445 of these are mechanically minted stubs (openrouter-models: 445); the floor clears on minting alone.
+        108 entries are hand-authored (not in any mint ledger).
+        This count measures corpus size, not curation. The prose floors below do that.
+  PASS  entries with a prose body          95  (floor 12)
+        LOAD-BEARING — every one is hand-authored; no mechanical process produces a body. Margin over the floor: 83.
+        Measured as >= 60 words of running prose (code fences, headings, transclusions, list markers and link targets removed).
+        The build's looser test (any non-whitespace body) counts 95. The two agree on every file.
+  PASS  themed prose bodies                33  (floor 3)
+        LOAD-BEARING — this is the floor that keeps the site from being a price sheet. Margin over the floor: 30.
+        themes: must contain one of history / culture / argument — history: 16, culture: 6, argument: 25.
+        Counted only among entries that passed the prose bar above, never among stubs.
+        e.g. concept/ai-winter, concept/chain-of-thought, concept/distillation
+  PASS  learn pages                        38  (floor 4)
+        LOAD-BEARING — all hand-authored. Margin over the floor: 34.
+  PASS  tutorials                          4  (floor 2)
+        LOAD-BEARING — all hand-authored. Margin over the floor: 2.
+  PASS  blog posts                         16  (floor 0)
+        NO FLOOR — this surface is quality-gated, not quota-driven; 16 is a valid count.
+  PASS  Impossible -> Routine deltas       27  (floor 12)
+        LOAD-BEARING — all hand-authored. Margin over the floor: 15.
+
+CURATED TOOLS — count AND resolution (task 6.6, 6.7)
+----------------------------------------------------
+  PASS  curated tool listings              35  (floor 20)
+        LOAD-BEARING — all hand-curated.
+  PASS  each links a resolvable entry      35/35 resolve, 35 distinct  (all resolve, >= 20 distinct)
+        LOAD-BEARING — a count of listing files is not a check that the links work. Every `entry:` id is resolved against the loaded entry corpus, and the distinct-target count is required too, because 20 listings pointing at one entry would pass a count.
+        Every listing resolves to an entry that exists.
+
+DERIVED DATA (the Pulse and the build must have run)
+----------------------------------------------------
+  PASS  model catalog rows                 431  (> 0)
+        data/derived/catalog.json — written by the Pulse from the source snapshots.
+  PASS  changed feed (seeded)              182 line(s), 60 seeded  (non-empty, >= 1 seeded)
+        The home page renders this feed. An empty feed at launch is the failure task 3.8 seeding exists to prevent, so the seeded count is checked separately from the total.
+  PASS  search index                       673 doc(s) for 673 page(s)  (present and covering every page)
+        specs/site: the index covers every page including stubs. "Present" is not enough — an index that is stale by 400 pages exists and finds nothing, so the row count is required to equal the loaded corpus.
+
+REVIEW RECORDS (specs/review — every seed prose piece, approved)
+----------------------------------------------------------------
+  FAIL  seed prose pieces reviewed         180/180 approved with a non-empty would-cite  (all, none blank, none duplicated)
+        LOAD-BEARING — matched piece by piece, never counted. A file count in data/reviews/ would pass with every record attached to the same piece.
+        Pieces: 95 entry bodies, 38 learn, 4 tutorial, 16 post, 27 delta.
+        357 record(s) in data/reviews/. 118 claimed by no piece: j-20260829-01.md, j-20260829-02.md, j-20260829-03.md, j-20260830-01.md, j-20260830-02.md, j-20260831-01.md, j-20260831-03.md, j-20260831-04.md, j-20260831-05.md, j-20260831-07.md, j-20260831-08.md, j-20260831-12.md, j-20260901-01.md, j-20260901-02.md, j-20260901-03.md, j-20260901-04.md, j-20260901-05.md, j-20260901-05.pass2.md, j-20260901-06.md, j-20260901-07.md, j-20260901-08.md, j-20260901-09.md, j-20260901-10.md, j-20260901-11.md, j-20260901-12.md, j-20260901-13.md, j-20260901-16.md, j-20260901-20.md, j-20260901-23.md, j-20260902-01.md, j-20260902-02.md, j-20260902-02.pass2.md, j-20260902-03.md, j-20260902-04.md, j-20260902-07.md, j-20260902-08.md, j-20260902-11.md, j-20260902-12.md, j-20260902-13.md, j-20260902-14.md, j-20260902-15.md, j-20260902-15.pass2.md, j-20260902-16.md, j-20260902-16.pass2.md, j-20260902-17.md, j-20260902-18.md, j-20260902-19.md, j-20260902-20.md, j-20260902-21.md, j-20260902-24.md, j-20260902-25.md, j-20260903-03.md, j-20260903-03.pass2.md, j-20260903-06.md, j-20260903-07.md, j-20260903-08.md, j-20260903-09.md, j-20260903-11.md, j-20260903-12.md, j-20260903-14.md, j-20260904-02.md, j-20260904-06.md, j-20260904-07.md, j-20260904-08.md, j-20260904-17.md, j-20260904-22.md, j-20260904-25.md, j-20260904-27.md, j-20260904-30.md, j-20260904-30.pass2.md, j-20260904-32.md, j-20260904-33.md, j-20260904-34.md, j-20260904-35.md, j-20260904-36.md, j-20260904-37.md, j-20260904-39.md, j-20260904-40.md, j-20260904-41.md, j-20260904-42.md, j-20260904-43.md, j-20260904-44.md, j-20260904-45.md, j-20260904-46.md, j-20260904-48.md, j-20260904-49.md, j-20260904-50.md, j-20260904-51.md, j-20260904-52.md, j-20260904-53.md, j-20260904-54.md, j-20260904-55.md, j-20260904-56.md, j-20260905-03.md, j-20260905-05.md, j-20260905-13.md, j-20260905-15.md, j-20260905-16.md, j-20260905-16.pass2.md, j-20260905-18.md, j-20260905-19.md, j-20260905-21.md, j-20260905-22.md, j-20260905-24.md, j-20260905-25.md, j-20260906-05.md, j-20260906-06.md, j-20260906-07.md, j-20260906-11.md, j-20260906-12.md, seed-impossible-routine-face-verification.md, seed-impossible-routine-price-of-a-million-tokens.md, seed-org-moonshot-ai.md, seed-superhuman-go.md, seed-tutorials-tokenizer-tax-measured.md, seed-wiki-model-deepseek-deepseek-v4-flash-0731.md, seed-wiki-model-minimax-minimax-m2.md, seed-wiki-org-perplexity.md — an orphan beside a missing piece means the naming does not match, not that a review is absent.
+        Binding, over all 180 reviewable piece(s): recorded 49, mismatched 6, unbound 125, missing 0. A record names the bytes it judged (`reviewed:`), so `mismatched` — reviewed and then changed — is a different finding from `missing`, which is unreviewed. `mismatched` fails this check and never changes a page's indexability. `unbound` is a record written before that key existed: it is counted, it fails nothing, and the only thing to watch is that the number falls.
+        Verdict parsing and the duplicate rule come from loop/lib/verdict.mjs, so this check and the loop's merge gate agree on what a valid record is. The piece -> record lookup comes from lib/reviews.mjs, so this check and the build's indexability rule agree on which record belongs to which piece.
+        The voice bar — a non-empty, non-duplicated `reads-human` — is applied to 16 piece(s): the post type(s) loop/lib/review.mjs scopes it to, imported rather than restated. Its duplicate sweep reads all 30 distinct `reads-human` value(s) across every record, not just the post ones, because the merge gate does.
+        88 record(s) matched by an accepted alternate name rather than the canonical one: seed-ai-winter.md, j-20260906-16.md (matched by front matter, not by name), seed-concept-effective-context-length.md, seed-concept-kv-cache.md, seed-concept-model-context-protocol.md, j-20260904-15.md (matched by front matter, not by name), +82 more
+        3 record(s) in data/reviews/ carry a well-formed `corrections:` entry — front matter is append-only history (addictedtoai-4fo): a stale `would-cite` is corrected by appending a dated `{date, text}` entry, never by editing the field, and a malformed entry fails this check by name.
+        SHORTFALL: 6 of 180 piece(s) are not cleared to launch
+
+        Every uncleared piece is listed — none is elided, because a review check that
+        shows the first ten is a review check nobody can act on. A record is looked up
+        by the canonical name shown, then by these alternates, then by a front-matter
+        field naming the file (subject / piece / file / path / target / slug / entry / id / job):
+          seed-<kind>-<slug>.md, seed-<type>-<slug>.md, seed-<slug>.md
+
+          - content/blog/anthropic-enterprise-frontier-safeguards.md: REVIEWED THEN CHANGED — j-20260906-14.md records a verdict on a different reviewed surface than this file now has. The approval describes text that no longer exists; re-review the piece so a record binds to what it says.
+          - content/blog/glm-5-3-license-revenue-gate.md: REVIEWED THEN CHANGED — j-20260903-15.md records a verdict on a different reviewed surface than this file now has. The approval describes text that no longer exists; re-review the piece so a record binds to what it says.
+          - content/blog/minimax-h3-licence-excluded-territories.md: REVIEWED THEN CHANGED — j-20260831-13.md records a verdict on a different reviewed surface than this file now has. The approval describes text that no longer exists; re-review the piece so a record binds to what it says.
+          - content/blog/nemotron-ultra-cc-ioi-2026.md: REVIEWED THEN CHANGED — orch-20260906-02.md records a verdict on a different reviewed surface than this file now has. The approval describes text that no longer exists; re-review the piece so a record binds to what it says.
+          - content/blog/openai-astra-critical-designation.md: REVIEWED THEN CHANGED — j-20260904-12.md records a verdict on a different reviewed surface than this file now has. The approval describes text that no longer exists; re-review the piece so a record binds to what it says.
+          - content/blog/openai-gpt-6-astra-system-card.md: REVIEWED THEN CHANGED — j-20260904-13.md records a verdict on a different reviewed surface than this file now has. The approval describes text that no longer exists; re-review the piece so a record binds to what it says.
+
+BUILD
+-----
+  SKIP  npm run build                      not measured this run
+        --no-build was passed. THE BUILD WAS NOT VERIFIED BY THIS RUN. A launch decision needs it; run without the flag.
+
+RESULT
+------
+  1 of 15 check(s) FAILED:
+    - seed prose pieces reviewed: 6 of 180 piece(s) are not cleared to launch
+  The launch minimums are NOT met.
