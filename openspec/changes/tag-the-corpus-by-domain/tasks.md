@@ -1,8 +1,16 @@
 # Tasks
 
-Drafted, not implemented. Every box below is open except task 14, which is the
-drafting gate and was run. The change is deliberately not archived: it has no
-implemented tasks, and DESK-ORDER-001 §6 sequences §3 after §1.
+**Implemented 2026-09-06** on branch `impl/domain`, tasks 1-13, under the
+keeper's parallel-implementation authorisation (mission bead
+`addictedtoai-h0z0`). Task 14 was the drafting gate and had already been run.
+Task 15 — the six gates — is deliberately left open: it is run once on the
+merged `main`, not per stream, and a stream that ticked it would be reporting a
+result about a tree nobody has assembled yet.
+
+*(The header this replaces read "Drafted, not implemented. Every box below is
+open except task 14." It was true when it was written and stopped being true the
+moment the first box was ticked; a task file whose prose contradicts its own
+boxes is the sort of stale artifact this repository keeps finding.)*
 
 **The ui-loop review the maintainer required has happened** (2026-09-05,
 recorded in DESK-ORDER-001 §3 under "Amendments from the 1hjf draft review").
@@ -19,14 +27,14 @@ an ordering accident.
 
 ## The schema, on both record types
 
-- [ ] 1. `lib/schema.mjs`, `entrySchema` (line 209): add `domains`,
+- [x] 1. `lib/schema.mjs`, `entrySchema` (line 209): add `domains`,
       `domains_excluded` and `domains_seeded`, each an optional array of values
       from `DOMAINS` imported from `lib/domains.mjs`. The schema is `.strict()`,
       so without this the three keys are rejected outright and no entry can
       carry them. Use the existing `closedList` helper so the error names the
       file, the field, the offending value and the allowed values — the message
       shape an unknown `kind` already produces.
-- [ ] 2. `lib/schema.mjs`, `entrySchema.superRefine`, two checks, each an issue
+- [x] 2. `lib/schema.mjs`, `entrySchema.superRefine`, two checks, each an issue
       whose `path` names the field and the value: a value present in both
       `domains` and `domains_excluded`; and a value in `domains_excluded` that
       is in neither `domains_seeded` nor `domains` — an exclusion that removes
@@ -35,18 +43,18 @@ an ordering accident.
       that is what keeps an editorial key uncoupled from the feed, and it holds
       only because seeding is append-only, so a publisher dropping a signal
       never removes the value the exclusion is answering.
-- [ ] 3. `lib/schema.mjs`, `toolSchema` (line 359): add `domains` only —
+- [x] 3. `lib/schema.mjs`, `toolSchema` (line 359): add `domains` only —
       optional, same closed list. Not `domains_seeded` and not
       `domains_excluded`: no feed seeds a tool listing, so there is nothing to
       exclude, and a key that can never do anything is a key that will be
       misread. `category` is untouched.
-- [ ] 4. Confirm `postSchema` (line 341) still does **not** accept
+- [x] 4. Confirm `postSchema` (line 341) still does **not** accept
       `domains_seeded`. It is `.strict()` and does not declare the key, so this
       holds today; task 10 makes it hold tomorrow.
 
 ## The reviewed surface, which is where this change can do silent damage
 
-- [ ] 5. `lib/review-hash.mjs`: add `'domains_seeded'` to
+- [x] 5. `lib/review-hash.mjs`: add `'domains_seeded'` to
       `MECHANICAL_FRONT_MATTER_KEYS` (line 71) beside `'timeline'`, and extend
       the header comment — the file's own docblock says the list is the one
       declared place and that an unlisted mechanical key produces mismatches on
@@ -55,11 +63,11 @@ an ordering accident.
       `domains` would exempt a *post's* editorial `domains` from review, because
       the filter matches by name across every content kind with no per-kind
       scoping (`lib/review-hash.mjs:99-102`).
-- [ ] 6. `lib/review-hash.test.mjs`: update the exact-contents assertion at
+- [x] 6. `lib/review-hash.test.mjs`: update the exact-contents assertion at
       line 57, which currently asserts `['timeline']` and will fail on task 5 —
       it is meant to. Assert the new list exactly, and assert it is still
       frozen.
-- [ ] 7. `lib/review-hash.test.mjs`: assert that `domains` and
+- [x] 7. `lib/review-hash.test.mjs`: assert that `domains` and
       `domains_excluded` are **absent** from the list, and that an entry
       gaining either changes its `reviewedHash` while an entry gaining
       `domains_seeded` does not. Three assertions, because the pair is the
@@ -68,7 +76,7 @@ an ordering accident.
 
 ## The tests that make the gate a mechanism
 
-- [ ] 8. Tests beside `lib/schema.mjs`, one per refusal, each naming the field
+- [x] 8. Tests beside `lib/schema.mjs`, one per refusal, each naming the field
       it expects in the error: an entry with `domains: [legal]`; an entry with
       `domains: [text]` (the vocabulary deliberately excludes it — general is
       unmarked); an entry with `domains: [general]` (there is no such value);
@@ -78,7 +86,7 @@ an ordering accident.
       in neither `domains_seeded` nor `domains`; a tool listing with
       `domains: [legal]`; a tool listing with `domains_seeded: []`, which the
       tool schema must reject as an unknown key.
-- [ ] 9. The controls, without which task 8 proves nothing: an entry with none
+- [x] 9. The controls, without which task 8 proves nothing: an entry with none
       of the three keys validates exactly as before; an entry with
       `domains: []` validates; an entry excluding a value its own
       `domains_seeded` carries validates (the legal exclusion, which is what
@@ -87,7 +95,7 @@ an ordering accident.
       one of the eight vocabulary values validates in each of the three fields
       — in `domains_excluded` alongside the same value in `domains_seeded`,
       since a bare exclusion is now an error.
-- [ ] 10. A test asserting `postSchema` **rejects** `domains_seeded`. This is
+- [x] 10. A test asserting `postSchema` **rejects** `domains_seeded`. This is
       not a tautology about `.strict()`: it is the guard on the one crossing
       that would silently undo `flag-what-moved-the-frontier`'s review
       requirement, and it must fail loudly if someone later relaxes the post
@@ -95,7 +103,7 @@ an ordering accident.
 
 ## The seeding, which is the Pulse's and is append-only
 
-- [ ] 11. `pulse/`, in the data-layer update step: derive `domains_seeded` from
+- [x] 11. `pulse/`, in the data-layer update step: derive `domains_seeded` from
       named feed fields on entries that declare a joined row, and **append
       only** — a signal absent from the current snapshot removes nothing, and
       the disappearance appends no line to `data/changes.jsonl` (decided
@@ -107,7 +115,7 @@ an ordering accident.
       `research`, `science-math` and `robotics` have no feed signal and are
       editorial only. No model invocation on any path, and no index value is
       read onto a page — only whether the field is present.
-- [ ] 12. Tests in `pulse/`: a second run over an unchanged snapshot appends
+- [x] 12. Tests in `pulse/`: a second run over an unchanged snapshot appends
       nothing (idempotence). A snapshot that has **lost** the field that seeded
       a value leaves that value in place — the regression test for the measured
       166→99 `agentic_index` drop across the 2026-09-04 and 2026-09-05
@@ -116,7 +124,7 @@ an ordering accident.
       `data/changes.jsonl`, which is where the declined recommendation becomes
       a mechanism instead of a sentence. A snapshot that gains a signal appends
       exactly one value and not a duplicate.
-- [ ] 13. A test that a seeding run over an entry with a bound review record
+- [x] 13. A test that a seeding run over an entry with a bound review record
       leaves that record reporting **matched**, joining tasks 5 and 11 at the
       point they are supposed to meet. Verify by running the seed and
       recomputing the hash, not by asserting the key is on a list — the list
