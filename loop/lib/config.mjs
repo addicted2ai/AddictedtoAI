@@ -241,9 +241,37 @@ export const MIN_INVOCATION_MINUTES = 15;
  * a value at the floor is re-broken by the next delta that lands, and this
  * constant has now been re-measured twice for exactly that reason. The gap is
  * roughly one more source's share for the capability under heaviest amendment.
+ *
+ * RE-MEASURED A THIRD TIME, 2026-09-05, AND THE WAY IT BROKE IS THE USEFUL
+ * PART. Job j-20260905-17 was drafting an OpenSpec change and FAILED ITS OWN
+ * GATES on this test — because the third in-flight change it had just written
+ * was in its worktree when the gates ran. That is the shape to remember: a
+ * spec-drafting job is measured against a tree that includes its own output,
+ * so it can break a budget that the tree it branched from satisfied. The live
+ * tree passed both before and after, which is why the failure looked transient
+ * and was not.
+ *
+ * MEASURED by copying `openspec/` to a temp root, adding synthetic changes
+ * modelled on the real ones (same capabilities, same delta sizes), and binary-
+ * searching the lowest budget at which no job type cuts:
+ *
+ *     in-flight changes    2 -> 23,090      3 -> 39,085
+ *                          4 -> 50,703      5 -> 63,080
+ *
+ * So 24,000 was already within 910 characters of its floor, and the third
+ * change overshot it by fifteen thousand. The cost is roughly 13,000
+ * characters per additional change amending the same capabilities.
+ *
+ * 56,000 is set: clean at four in-flight changes with headroom, which is one
+ * more than the planned peak of three (addictedtoai-9c9t, -1hjf, and the §4
+ * claim-record change). The growth is LINEAR IN IN-FLIGHT CHANGES and this
+ * constant will therefore be re-broken again — raising it is restoring service,
+ * not a fix, and the structural answer is filed as addictedtoai-2sx8. Archiving
+ * a finished change is what actually lowers this number, which is one more
+ * reason not to leave changes unarchived.
  * ---------------------------------------------------------------------------
  */
-export const BRIEF_EXCERPT_MAX_CHARS = 24000;
+export const BRIEF_EXCERPT_MAX_CHARS = 56000;
 // `BLOG_CEILING_POSTS` / `BLOG_CEILING_DAYS` stood here and are gone
 // (make-the-blog-worth-sending, task 1.3). Publishing is quality-gated, never
 // quota-driven: no selector rule counts published posts. What limits volume now

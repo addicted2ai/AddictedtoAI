@@ -105,13 +105,24 @@ test('ccs assembleBrief passes BRIEF_EXCERPT_MAX_CHARS, not specs.mjs\'s own sma
   ctx.cleanup();
 });
 
-test('ccs BRIEF_EXCERPT_MAX_CHARS is 24,000 — the measured number, not a placeholder', () => {
+test('ccs BRIEF_EXCERPT_MAX_CHARS is 56,000 — the measured number, not a placeholder', () => {
   // Re-measured 2026-08-31 when a third in-flight delta began amending `loop`
   // and the per-source share fell to a third of the budget: at 20,000 the
-  // `scout` type cut two sections mid-requirement. The measured floor for
-  // today's tree is 21,500; 24,000 is set for headroom, because a value at the
-  // floor is re-broken by the next delta. See `loop/lib/config.mjs`.
-  assert.equal(BRIEF_EXCERPT_MAX_CHARS, 24000);
+  // `scout` type cut two sections mid-requirement. That measurement gave a
+  // floor of 21,500 and 24,000 was set for headroom.
+  //
+  // Re-measured again 2026-09-05, after job j-20260905-17 failed its own gates
+  // on the live-tree test below while drafting an OpenSpec change — the third
+  // in-flight change was its own output, sitting in its worktree when the gates
+  // ran. Floors, by binary search against a temp copy of `openspec/` with
+  // synthetic changes modelled on the real ones: 2 -> 23,090, 3 -> 39,085,
+  // 4 -> 50,703, 5 -> 63,080. 24,000 was within 910 characters of its floor.
+  // 56,000 is clean at four in-flight changes, one more than the planned peak.
+  //
+  // The growth is linear in in-flight changes, so this WILL be re-broken; see
+  // `loop/lib/config.mjs` and addictedtoai-2sx8. Archiving a finished change is
+  // what lowers it again.
+  assert.equal(BRIEF_EXCERPT_MAX_CHARS, 56000);
 });
 
 /* ---------------------------------------------------------------------------
