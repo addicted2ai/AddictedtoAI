@@ -9,6 +9,7 @@
  *   (d) the same leader marked down, no identity change -> the OTHER event
  *   (e) re-running (b)             -> appends nothing
  *   (f) deleting the line and re-running -> restores it
+ *   (g) no leader on the PREVIOUS snapshot -> zero lines (added in review round 2)
  *
  * (e) and (f) are the idempotence and restore proofs: the key is a pure
  * function of the two snapshot row hashes, the metric and the kind, so a re-run
@@ -30,6 +31,7 @@ import {
   readText,
   runPulse,
   serve,
+  writeEntry,
   writeJson,
 } from './helpers.mjs';
 // The key's INPUTS, computed independently in the test rather than matched as a
@@ -407,6 +409,205 @@ test('(e) re-running over the same pair appends nothing, and (f) a deleted line 
   const restored = leadLines(root);
   assert.equal(restored.length, 1, 'and comes back on the next run');
   assert.equal(restored[0].key, key, 'with the identical key, because the key is a function of state');
+});
+
+test('(g) no leader on the previous snapshot is not a lead change, and the control proves the engine still emits', async (t) => {
+  /*
+   * NOTHING WAS LEADING, SO NOTHING CHANGED HANDS. Before the guard existed
+   * `leadersChanged` compared `''` against `'acme/one'`, called them different,
+   * and a line was written with `outgoing: []` and `cause: 'arrival'` — the
+   * strip rendering "Acme One — lead changed on Fixture Index" about a day on
+   * which no lead moved. That is the semantic-mislabel class (implementer-ledger
+   * rows 2, 4 and 5) on an APPEND-ONLY file, so the false line could never have
+   * been removed.
+   *
+   * Reachable rather than theoretical: the registry's own `declined_fields` note
+   * records the Artificial Analysis v4.2 rebase sending 181 values
+   * number->null overnight. A metric on such a path reaching zero eligible rows
+   * on one snapshot and recovering on the next writes exactly this line.
+   */
+  let rows = [row('acme/one', 'Acme One', null), row('acme/two', 'Acme Two', null)];
+  const server = await serve(() => ({ status: 200, body: body(rows) }));
+  const root = frontierRoot(`${server.url}/models`);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  assert.equal((await runPulse(root, ARGS)).status, 0);
+  assertIngested(root, ['models'], 'first ingest');
+  assert.deepEqual(readJson(frontierFile(root)).metrics[0].leaders, [], 'the previous snapshot has no eligible row at all');
+
+  rows = [row('acme/one', 'Acme One', 50), row('acme/two', 'Acme Two', null)];
+  assert.equal((await runPulse(root, [...ARGS, '--force'])).status, 0);
+
+  assert.equal(leadLines(root).length, 0, 'observation began; no lead changed hands, so no line says one did');
+
+  // THE HALF THAT KEEPS THE ZERO FROM BEING AN ENGINE THAT NEVER RAN: the
+  // metric is live, the leader is computed, and the row without a value is
+  // counted. The absence above is a refusal, not a vacuum.
+  const data = readJson(frontierFile(root));
+  assert.deepEqual(data.metrics[0].leaders.map((l) => l.row_id), ['acme/one']);
+  assert.equal(data.metrics[0].counts.rows_without_value, 1);
+
+  // THE CONTROL, on a second fixture: the same engine, the same metric, a leader
+  // on BOTH ends — and it does emit. Without this the new guard could be
+  // satisfied by an engine that emits nothing at all.
+  let ctrlRows = BASE;
+  const ctrlServer = await serve(() => ({ status: 200, body: body(ctrlRows) }));
+  const ctrl = frontierRoot(`${ctrlServer.url}/models`);
+  t.after(async () => {
+    await ctrlServer.close();
+    cleanup(ctrl);
+  });
+  assert.equal((await runPulse(ctrl, ARGS)).status, 0);
+  assertIngested(ctrl, ['models'], 'control ingest');
+  ctrlRows = [...BASE, row('acme/three', 'Acme Three', 90)];
+  assert.equal((await runPulse(ctrl, [...ARGS, '--force'])).status, 0);
+  const ctrlLines = leadLines(ctrl);
+  assert.equal(ctrlLines.length, 1, 'a lead that genuinely changed hands is still recorded');
+  assert.deepEqual(ctrlLines[0].outgoing.map((r) => r.row_id), ['acme/one'], 'and it names what lost the lead');
+});
+
+test('the leaders join their entries by the DECLARED feed row id, and a row no entry declares still ranks', async (t) => {
+  /*
+   * specs/pulse states the join as a SHALL — the ranked rows are "each row
+   * joined to its entry by the **declared** feed row id and never by name" — and
+   * until this fixture existed no test could see it work: every fixture root is
+   * built by `makeRoot`, which creates an EMPTY `content/wiki`, so `entryIdFor`
+   * returned null on every row in every case and `entry_id: null` passed the
+   * whole suite. A typo in the composite key (`${source.id}\0${rowId}` against
+   * feedBindings' `${b.source}\0${b.row_id}`) would have shipped with every gate
+   * green and the surface would link nothing. Ledger row 6 one level down: a
+   * field produced by code no data could reach.
+   */
+  let rows = [...BASE, row('acme/three', 'Acme Three', 90)];
+  const server = await serve(() => ({ status: 200, body: body(rows) }));
+  const root = frontierRoot(`${server.url}/models`);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  // ONE entry, declaring ONE row. The negative half rides in the same fixture:
+  // `acme/one` and `acme/two` are declared by nobody, so an implementation that
+  // matched everything would fail here rather than passing quietly.
+  writeEntry(
+    root,
+    'content/wiki/model/acme-three.md',
+    {
+      id: 'model/acme-three',
+      kind: 'model',
+      display_name: 'Acme Three',
+      aliases: [],
+      feeds: { models: 'acme/three' },
+      facts: [],
+      mentions: [],
+    },
+    'A fixture entry that declares which feed row it is about.',
+  );
+
+  assert.equal((await runPulse(root, ARGS)).status, 0);
+  assertIngested(root, ['models'], 'first ingest');
+
+  const metric = readJson(frontierFile(root)).metrics[0];
+  assert.deepEqual(metric.leaders.map((l) => l.row_id), ['acme/three']);
+  assert.equal(metric.leaders[0].entry_id, 'model/acme-three', 'the leader is joined to the entry that DECLARES its row id');
+  const byRow = Object.fromEntries(metric.ranked.map((r) => [r.row_id, r.entry_id]));
+  assert.equal(byRow['acme/one'], null, 'a row no entry declares still ranks; it just has no entry');
+  assert.equal(byRow['acme/two'], null);
+
+  // AND NEVER BY NAME. The entry's `display_name` matches the row's `name`
+  // exactly, so a join that fell back to names would be indistinguishable from
+  // the declared one above — this row's name is identical and its ROW ID is not
+  // declared anywhere, and it must come back null.
+  rows = [...rows, row('acme/nine', 'Acme Three', 10)];
+  assert.equal((await runPulse(root, [...ARGS, '--force'])).status, 0);
+  const after = readJson(frontierFile(root)).metrics[0];
+  const nine = after.ranked.find((r) => r.row_id === 'acme/nine');
+  assert.equal(nine.display_name, 'Acme Three', 'the fixture is only interesting if the names collide');
+  assert.equal(nine.entry_id, null, 'a matching display name joins nothing: the join is the declared row id');
+});
+
+test('a tie is all of the leaders, and the row id decides a link rather than who leads', async (t) => {
+  /*
+   * specs/pulse: "Ties SHALL all be leaders and the surface SHALL say so; no
+   * tie-break invents an order." Both halves were asserted only on the SURFACE
+   * (`lib/render/frontier.test.mjs` hands `renderIndexLeaders` a hand-written
+   * two-leader array), which proves the renderer prints "tied:" when someone
+   * gives it a tie and nothing about whether a tie ever reaches it. No fixture
+   * held two rows at the same value, so `leaders: ranked.filter(r => r.value ===
+   * best)` could be `ranked.slice(0, 1)` — the row id silently deciding who
+   * leads — and the whole suite stayed green.
+   */
+  let rows = BASE;
+  const server = await serve(() => ({ status: 200, body: body(rows) }));
+  const root = frontierRoot(`${server.url}/models`);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  assert.equal((await runPulse(root, ARGS)).status, 0);
+  assertIngested(root, ['models'], 'first ingest');
+
+  // `acme/two` is marked up to exactly the leader's value: two rows hold the
+  // best value and neither overtook the other.
+  rows = [row('acme/one', 'Acme One', 50), row('acme/two', 'Acme Two', 50), row('acme/three', 'Acme Three', 20)];
+  assert.equal((await runPulse(root, [...ARGS, '--force'])).status, 0);
+
+  const metric = readJson(frontierFile(root)).metrics[0];
+  assert.deepEqual(
+    metric.leaders.map((l) => l.row_id),
+    ['acme/one', 'acme/two'],
+    'every row holding the best value is a leader, in row-id order',
+  );
+  assert.deepEqual([...new Set(metric.leaders.map((l) => l.value))], [50], 'and they are leaders because the value is equal');
+
+  const line = leadLines(root)[0];
+  assert.deepEqual(line.incoming.map((r) => r.row_id), ['acme/one', 'acme/two'], 'the whole tie travels in the line');
+  assert.equal(
+    line.row_id,
+    'acme/one',
+    'the line`s own row_id is the changed feed`s join key — the first incoming leader by row id, a LINK choice',
+  );
+  assert.equal(line.incoming.length > 1, true, 'so the row id above cannot be read as the tie-break that picked a winner');
+});
+
+test('a metric declaring direction "lower" leads from the other end', async (t) => {
+  /*
+   * `direction` is validated against a closed set by `pulse/lib/registry.mjs`
+   * and its EFFECT was half measured: no fixture anywhere declared `lower`, so
+   * `const sign = metric.direction === 'lower' ? 1 : -1` could be `const sign =
+   * -1` with the registry gate green and the whole suite green. A latency, a
+   * cost-per-task or an error-rate index — the kinds a frontier board would want
+   * beside an intelligence index — would have ranked backwards, named the wrong
+   * leader, and written lead-change lines about the wrong transitions.
+   */
+  const lower = { ...METRIC, id: 'fixture-cost', field: 'fixture_cost', label: 'Fixture Cost', direction: 'lower' };
+  let rows = BASE;
+  const server = await serve(() => ({ status: 200, body: body(rows) }));
+  const root = frontierRoot(`${server.url}/models`, { metrics: [lower] });
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  assert.equal((await runPulse(root, ARGS)).status, 0);
+  assertIngested(root, ['models'], 'first ingest');
+  const first = readJson(frontierFile(root)).metrics[0];
+  assert.equal(first.direction, 'lower');
+  assert.deepEqual(first.leaders.map((l) => l.row_id), ['acme/two'], 'the LOWEST value leads — 40, not 50');
+  assert.deepEqual(first.ranked.map((r) => r.value), [40, 50], 'and the whole ranking runs the other way');
+
+  // And the lead changes at the other end too: a cheaper row arrives.
+  rows = [...BASE, row('acme/three', 'Acme Three', 10)];
+  assert.equal((await runPulse(root, [...ARGS, '--force'])).status, 0);
+  const line = leadLines(root)[0];
+  assert.equal(line.metric, 'fixture-cost');
+  assert.equal(line.cause, 'arrival');
+  assert.deepEqual(line.incoming.map((r) => r.row_id), ['acme/three']);
+  assert.deepEqual(line.outgoing.map((r) => r.row_id), ['acme/two']);
 });
 
 test('with no metric registered the derived file still exists, empty and dated', async (t) => {

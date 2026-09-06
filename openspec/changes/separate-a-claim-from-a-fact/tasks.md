@@ -148,6 +148,15 @@ promises.
       (d) the same leader marked down with no identity change → the other event,
       not a lead change; (e) re-running (b) appends nothing; (f) deleting the
       appended line and re-running restores it.
+      Review round 2 added (g) — a previous snapshot with no eligible row for the
+      metric produces ZERO lines, with the control that a leader on both ends
+      still produces one — and three producer-side controls the six cases left
+      unmeasured: the entry join by declared feed row id (every fixture root has
+      an empty `content/wiki`, so `entry_id` was null everywhere and `entry_id:
+      null` passed the whole suite), ties all being leaders (no fixture held two
+      rows at one value, so `ranked.slice(0, 1)` passed), and `direction: 'lower'`
+      (no fixture declared it, so a constant sign passed). Each was falsified by
+      the mutation named beside it.
 - [x] 25. A one-time seeding script run by the orchestrator, not by a job and not
       by the Pulse: replay the committed snapshot blobs via Node plumbing
       (`execFileSync('git', ['show', '<sha>:<path>'])`, never `git show` through

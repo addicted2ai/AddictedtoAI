@@ -160,27 +160,79 @@ test('a second run appends nothing, and an observed line is never duplicated', (
   assert.match(said.join(''), /3 candidate\(s\), 0 appended, 3 already present/);
 
   // An OBSERVED line — written by the engine from the standing diff, keyed on
-  // the row hashes — must not acquire a seeded twin for the same event.
+  // the row hashes — must not acquire a seeded twin for the SAME EVENT. The
+  // line carries `incoming` and `outgoing` because every line the engine writes
+  // does, and because those are half the predicate: the guard matches the event,
+  // not the metric and the date.
+  const observedLine = {
+    key: 'models|aaaa|bbbb|fixture-index|lead-change',
+    date: '2026-09-03',
+    kind: 'lead-change',
+    metric: 'fixture-index',
+    source: 'models',
+    row_id: 'acme/three',
+    cause: 'arrival',
+    incoming: [{ row_id: 'acme/three', display_name: 'Acme Three', value: 90 }],
+    outgoing: [{ row_id: 'acme/one', display_name: 'Acme One', value: 50 }],
+  };
   const fresh = makeRepo(HISTORY);
   t.after(() => rmSync(fresh, { recursive: true, force: true }));
-  writeFileSync(
-    join(fresh, 'data', 'changes.jsonl'),
-    JSON.stringify({
-      key: 'models|aaaa|bbbb|fixture-index|lead-change',
-      date: '2026-09-03',
-      kind: 'lead-change',
-      metric: 'fixture-index',
-      source: 'models',
-      row_id: 'acme/three',
-      cause: 'arrival',
-    }) + '\n',
-  );
+  writeFileSync(join(fresh, 'data', 'changes.jsonl'), JSON.stringify(observedLine) + '\n');
   seedFrontierHistory(fresh, { write: () => {} });
   const leads = lines(fresh).filter((l) => l.kind === 'lead-change');
   assert.deepEqual(
     leads.map((l) => `${l.date}${l.seeded ? ' seeded' : ' observed'}`),
     ['2026-09-03 observed', '2026-09-04 seeded'],
     'the observed event keeps its own line; only the day it does not cover is seeded',
+  );
+});
+
+test('a DIFFERENT event on a date the observed history already touches is still seeded', (t) => {
+  /*
+   * THE OTHER HALF OF ONE PREDICATE. The two ends of this duplicate guard used
+   * to disagree: `computeFrontier` matched the whole EVENT — metric, date,
+   * incoming leaders, outgoing leaders — and the seeder matched metric + date
+   * alone, dropping any seeded candidate on a date an observed line touched at
+   * all. That is exactly the predicate `pulse/lib/frontier.mjs` argues against
+   * in its own header and `pulse/tests/frontier.test.mjs` has a case for ("two
+   * lead changes on the same date get two keys"), because it suppresses a
+   * GENUINE second lead change on the same metric on the same day.
+   *
+   * It was safe only by accident of shape — the dated replay keeps one blob per
+   * date and cannot produce two same-date events itself — but the OTHER side of
+   * the comparison is observed history, which can: the engine sees an intra-day
+   * pair the replay collapses away. This is that case. `true by the incidental
+   * shape of a filter` is what this change refuses elsewhere; it is refused here
+   * too.
+   */
+  const root = makeRepo(HISTORY);
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+
+  // An observed line on 2026-09-03 about a DIFFERENT pair of rows — an
+  // intra-day change the dated replay cannot see, because only the last blob of
+  // the day survives into `committedSnapshots`.
+  writeFileSync(
+    join(root, 'data', 'changes.jsonl'),
+    JSON.stringify({
+      key: 'models|aaaa|bbbb|fixture-index|lead-change',
+      date: '2026-09-03',
+      kind: 'lead-change',
+      metric: 'fixture-index',
+      source: 'models',
+      row_id: 'acme/two',
+      cause: 'rescored',
+      incoming: [{ row_id: 'acme/two', display_name: 'Acme Two', value: 60 }],
+      outgoing: [{ row_id: 'acme/one', display_name: 'Acme One', value: 50 }],
+    }) + '\n',
+  );
+  seedFrontierHistory(root, { write: () => {} });
+
+  const onThatDay = lines(root).filter((l) => l.kind === 'lead-change' && l.date === '2026-09-03');
+  assert.equal(onThatDay.length, 2, 'two distinct events on one date, both recorded');
+  assert.deepEqual(
+    onThatDay.map((l) => `${l.seeded ? 'seeded' : 'observed'} ${l.incoming[0].row_id}`),
+    ['observed acme/two', 'seeded acme/three'],
+    'the seeded line records the event the observed one does not, rather than being dropped for sharing its date',
   );
 });
 
@@ -220,6 +272,35 @@ test('the engine does not re-record an event a seeded line already carries — t
   assert.equal(fresh.length, 1, 'an event no seeded line covers is still recorded');
   assert.deepEqual(fresh[0].incoming.map((r) => r.row_id), ['acme/two']);
   assert.equal(fresh[0].seeded, undefined, 'and it is an observed line, not a seeded one');
+});
+
+test('a day the metric had no leader on is not replayed as a lead change', (t) => {
+  /*
+   * The seeder's half of the same guard `computeFrontier` carries. `before ===
+   * after` catches empty against empty and NOT empty against non-empty, so a
+   * replay whose earlier blob carried no eligible row would have recovered a
+   * "lead change" — with `outgoing: []` — for a day on which observation merely
+   * began. `data/changes.jsonl` is append-only, so a seeded line saying that
+   * could never be taken back. The baseline annotation is the one line entitled
+   * to say "observation began here", and it says it about the first blob only.
+   */
+  const late = [
+    snapshot('2026-09-01', [row('acme/one', 'Acme One', null), row('acme/two', 'Acme Two', null)]),
+    snapshot('2026-09-02', [row('acme/one', 'Acme One', 50), row('acme/two', 'Acme Two', 40)]),
+    // The control, in the same replay: a day on which the lead genuinely changed
+    // hands still produces a line, so the zero above is a refusal and not a
+    // seeder that recovered nothing.
+    snapshot('2026-09-03', [row('acme/one', 'Acme One', 50), row('acme/two', 'Acme Two', 40), row('acme/three', 'Acme Three', 90)]),
+  ];
+  const root = makeRepo(late);
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  seedFrontierHistory(root, { write: () => {} });
+
+  const leads = lines(root).filter((l) => l.kind === 'lead-change');
+  assert.deepEqual(leads.map((l) => l.date), ['2026-09-03'], 'the day the index first carried a value changed no lead');
+  assert.deepEqual(leads[0].outgoing.map((r) => r.row_id), ['acme/one'], 'and the line that IS written names what lost the lead');
+  const baselines = lines(root).filter((l) => l.baseline);
+  assert.deepEqual(baselines.map((l) => l.date), ['2026-09-01'], 'the earliest blob is where observation began, and it says so');
 });
 
 test('--dry-run writes nothing, and no declared metric seeds nothing', (t) => {

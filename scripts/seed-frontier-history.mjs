@@ -55,10 +55,15 @@
  * Two guards, and they are different. `appendChanges` skips any key already in
  * the file, which makes a second run of this script a no-op. And before that,
  * a seeded candidate is dropped when an OBSERVED (non-seeded) `lead-change` line
- * already records the same metric on the same date — the observed line was
- * written by the engine from the standing diff, it carries the row hashes in its
- * key, and a seeded line beside it would be the same event recorded twice under
- * two different keys. Nothing here ever edits or deletes a line.
+ * already records the same EVENT — same metric, same date, same incoming and
+ * outgoing leaders. The observed line was written by the engine from the
+ * standing diff, it carries the row hashes in its key, and a seeded line beside
+ * it would be the same event recorded twice under two different keys. Matching
+ * the event and not the metric and date alone is what keeps a GENUINE second
+ * lead change on that date — one the engine saw intra-day and the dated replay
+ * collapsed — from being silently dropped; it is the same predicate
+ * `computeFrontier` uses for the mirror guard, imported rather than restated.
+ * Nothing here ever edits or deletes a line.
  *
  * **And the guard runs in BOTH directions, which it did not at first.** This
  * script's newest recovered line comes from the two newest committed snapshot
@@ -76,7 +81,7 @@ import { pathToFileURL } from 'node:url';
 import { paths, readJsonl } from '../pulse/lib/core.mjs';
 import { loadRegistry } from '../pulse/lib/registry.mjs';
 import { appendChanges } from '../pulse/lib/diff.mjs';
-import { rankRows, leadChangeCause } from '../pulse/lib/frontier.mjs';
+import { rankRows, leadChangeCause, eventSignature } from '../pulse/lib/frontier.mjs';
 import { frontierBlock } from '../lib/frontier-metrics.mjs';
 import { KIND } from '../lib/change-kinds.mjs';
 import { ROOT } from '../lib/paths.mjs';
@@ -133,16 +138,30 @@ export function committedSnapshots(root, sourceId) {
   return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }
 
-/** `metric id -> Set of dates` an observed (non-seeded) lead-change line already covers. */
-function observedDates(lines) {
-  const byMetric = new Map();
+/**
+ * The EVENTS an observed (non-seeded) lead-change line already records.
+ *
+ * ONE PREDICATE FOR BOTH HALVES OF THE GUARD. This used to match on metric and
+ * date alone while `computeFrontier`'s mirror half matched the whole event —
+ * metric, date, incoming leaders, outgoing leaders. The asymmetry was not a
+ * style point: metric + date is the predicate `pulse/lib/frontier.mjs` argues
+ * against in its own header and `pulse/tests/frontier.test.mjs` has a case for
+ * ("two lead changes on the same date get two keys"), because it suppresses a
+ * GENUINE second lead change on the same metric on the same day. It was safe
+ * here only because the dated replay keeps one blob per date and therefore
+ * cannot produce two same-date events itself — but the OTHER side of the
+ * comparison is the observed history, which can and does. An engine line
+ * recording an intra-day change the replay collapsed away would have deleted the
+ * seeded line for the different event on that date, silently.
+ */
+function observedEvents(lines) {
+  const seen = new Set();
   for (const l of lines) {
     if (!l || l.kind !== KIND.LEAD_CHANGE || l.seeded) continue;
     if (!l.metric || !l.date) continue;
-    if (!byMetric.has(l.metric)) byMetric.set(l.metric, new Set());
-    byMetric.get(l.metric).add(l.date);
+    seen.add(eventSignature(l));
   }
-  return byMetric;
+  return seen;
 }
 
 /**
@@ -151,7 +170,7 @@ function observedDates(lines) {
  */
 export function seedCandidates(root, registry, { lines = [] } = {}) {
   const { metrics, row_exclusions } = frontierBlock(registry);
-  const observed = observedDates(lines);
+  const observed = observedEvents(lines);
   const snapshotsBySource = new Map();
   const candidates = [];
 
@@ -205,15 +224,24 @@ export function seedCandidates(root, registry, { lines = [] } = {}) {
       const previousRank = rankRows(source, metric, previous, row_exclusions, entryIdFor);
       const latestRank = rankRows(source, metric, latest, row_exclusions, entryIdFor);
       if (latestRank.leaders.length === 0) continue;
+      // NOTHING WAS LEADING, SO NOTHING CHANGED HANDS — the same guard, and the
+      // same reason, as `computeFrontier`'s. `before === after` below catches
+      // empty against empty and not empty against non-empty, so without this a
+      // replay whose earlier blob carried no eligible row for the metric would
+      // recover a "lead change" for a day on which observation merely resumed.
+      // The baseline annotation is the line that may say that, and it says it
+      // about the first blob only.
+      if (previousRank.leaders.length === 0) continue;
       const before = previousRank.leaders.map((r) => r.row_id).join(' ');
       const after = latestRank.leaders.map((r) => r.row_id).join(' ');
       if (before === after) continue;
 
       const date = history[i].date;
-      if (observed.get(metric.id)?.has(date)) continue; // the engine already recorded this one
-
       const incoming = latestRank.leaders.map((r) => ({ row_id: r.row_id, display_name: r.display_name, value: r.value }));
       const outgoing = previousRank.leaders.map((r) => ({ row_id: r.row_id, display_name: r.display_name, value: r.value }));
+      // The engine already recorded THIS EVENT — same metric, same date, same
+      // rows on both ends. A different event on the same date is still seeded.
+      if (observed.has(eventSignature({ metric: metric.id, date, incoming, outgoing }))) continue;
       candidates.push({
         // Derived from the snapshot DATE rather than from the row hashes, which
         // is what makes seeding idempotent forever: the same replay recomputes

@@ -24,7 +24,7 @@ import { anchorCheckStep } from '../lib/anchors.mjs';
 import { checkPostVoiceStep } from './check-post-voice.mjs';
 import { checkSpecDeltasStep } from './check-spec-deltas.mjs';
 import { arxivPinStep } from '../lib/arxiv-pin.mjs';
-import { declinedFieldsStep } from '../lib/declined-fields.mjs';
+import { declinedFieldsStep, debtExposure, readDeclinedDebt } from '../lib/declined-fields.mjs';
 import { changeKindsReportStep } from '../lib/changes.mjs';
 import { frontierMetricsReport } from '../lib/frontier-metrics.mjs';
 // The registry is loaded HERE rather than inside `frontier-metrics.mjs`, which
@@ -161,7 +161,19 @@ const STEPS = [
   // report-not-fail: the registry load already refuses a MALFORMED decision, and
   // declaring a metric before answering its rights question is a legal, honest
   // intermediate state.
-  { name: 'frontier-metrics', run: () => frontierMetricsReport(loadRegistry(ROOT)) },
+  //
+  // It is handed the recorded declined-binding debt as well, so the report says
+  // in one breath what its own gate covers and what it does not: the registry
+  // gate binds surfaces that read the registry, while the fact bindings that
+  // print `benchmarks.artificial_analysis.*` in prose are content, ratcheted by
+  // the `declined-fields` step above. Leaving that join unsaid is what let a
+  // reader of the requirement believe the site prints no unregistered index
+  // value anywhere.
+  {
+    name: 'frontier-metrics',
+    run: async () =>
+      frontierMetricsReport(loadRegistry(ROOT), undefined, debtExposure(await readDeclinedDebt())),
+  },
 
   // make-the-blog-worth-sending task 3.7 — the voice lint. **ADVISORY: it
   // warns and never fails the build**, by the spec's own emphasis and for a

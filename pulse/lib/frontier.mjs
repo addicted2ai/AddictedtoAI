@@ -229,8 +229,22 @@ function lineRow(r) {
   return { row_id: r.row_id, display_name: r.display_name, value: r.value };
 }
 
-/** The identity of an EVENT, independent of which key recorded it. */
-function eventSignature(line) {
+/**
+ * The identity of an EVENT, independent of which key recorded it.
+ *
+ * Exported because the duplicate guard has two halves and they must not use two
+ * predicates. `scripts/seed-frontier-history.mjs` drops a seeded candidate an
+ * observed line already covers; this module drops an observed candidate a seeded
+ * line already covers. The seeder's half used to match on metric + date alone,
+ * which is the predicate this file's own comment (and the test at "two lead
+ * changes on the same date get two keys") argues is wrong: it suppresses a
+ * GENUINE second lead change on the same metric on the same day. It was safe
+ * there only because the dated replay keeps one blob per date and so cannot
+ * itself produce two same-date events — "true by the incidental shape of a
+ * filter", which is what this change refuses elsewhere. Both halves now call
+ * this.
+ */
+export function eventSignature(line) {
   const ids = (rows) => (rows ?? []).map((r) => r?.row_id).sort().join('\0');
   return `${line.metric}\0${line.date}\0${ids(line.incoming)}\0${ids(line.outgoing)}`;
 }
@@ -328,10 +342,32 @@ export function computeFrontier(root, registry, corpus, { write = true, lines } 
       counts: latestRank.counts,
     });
 
-    // A lead change needs two snapshots to compare and a leader on the latest
-    // one. Nothing else in this module writes a line.
+    // A lead change needs two snapshots to compare and a leader on BOTH ENDS.
+    // Nothing else in this module writes a line.
     if (!latest || !previous) continue;
     if (latestRank.leaders.length === 0) continue;
+    /*
+     * NOTHING WAS LEADING, SO NOTHING CHANGED HANDS. Without this guard
+     * `leadersChanged` compares `''` against `'acme/one'`, finds them different,
+     * and a line is written with `outgoing: []` — the strip then reads "Acme One
+     * — lead changed on Fixture Index" about a day on which no lead moved. The
+     * requirement is precise about which of the two sentences a line may say: a
+     * `lead-change` line "SHALL record that the leader of a declared metric
+     * CHANGED between two consecutive snapshots", and the seeding clause beside
+     * it draws the distinction in as many words — "a baseline line says
+     * *observation began here*, not *this model became the leader here*". With
+     * an empty previous leader set the true statement is the first one, and this
+     * module has no baseline to say it with, so it says nothing.
+     *
+     * It is reachable rather than theoretical: a metric's path can go absent
+     * across every row on one snapshot and come back on the next. The registry's
+     * own `declined_fields` note records that shape — the Artificial Analysis
+     * v4.2 rebase sent 181 values number->null overnight and left
+     * `intelligence_index` on 52 rows where it had been on 164 — and
+     * `data/changes.jsonl` is append-only, so a false line written on such a day
+     * can never be removed.
+     */
+    if (previousRank.leaders.length === 0) continue;
     if (!leadersChanged(previousRank, latestRank)) continue;
 
     const from = rowsHash(previous);
