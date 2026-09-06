@@ -32,6 +32,7 @@ deltas, never restatements; structured over prose; a `depends_on` that names not
 | `GR` | gate report (machine-written) | 6000 |
 | `IR` | implementer report (finalist build / revision) | 7000 |
 | `BLIND` | blind-arbiter test: what needs the keeper (K32) | 6000 |
+| `SPECREV` | spec-draft review (K45) | 9000 |
 | `JURY` | jury: one-order pairwise half (`JURY-<brief>-AB`/`-BA`) or the merged frontier (`JURY-<brief>`) | 10000 |
 | `state.md` | resume file | 8000 |
 
