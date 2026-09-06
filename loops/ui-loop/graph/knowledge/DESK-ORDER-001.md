@@ -68,9 +68,11 @@ organisation entries; 34 catalog providers have no entry and never surface. Orde
 `content/wiki/org/` coverage far beyond API-model vendors — labs without an API product,
 open-weights groups, image/video/audio, robotics, research groups. Each new org entry needs its
 `feeds` map (the join the board relies on) or it renders an all-blank row (allowed, honest). Each org
-entry should also list its PRODUCT-BRAND domains as aliases (e.g. Moonshot's `kimi.ai`): the board
-attributes a vendor claim only when the cited source's registrable domain is the vendor's own, so a
-brand domain missing from the aliases makes a real vendor claim render as a blank (RT FM-N6).
+entry also records the hosts it PUBLISHES FROM, brand domains included (e.g. Moonshot's `kimi.ai`),
+in the `publishes_from` field defined by the §4 change (K48: originally worded "as aliases"; an alias is
+a NAME and the alias registry decides linking, so hosts get their own field). The board attributes a
+vendor claim only when the cited source's registrable domain is the vendor's own, so a missing brand
+domain makes a real vendor claim render as an honest-looking blank with nothing failing (RT FM-N6).
 
 ## 3. The `domain` facet (K22) — OpenSpec: wiki schema, directory
 
@@ -137,7 +139,7 @@ through the Desk's change process first; the lines below are the jobs that follo
 - machinery: add `lead-change` (arrival vs rescoring) to changes.jsonl and derive data/derived/frontier.json per frontier-plan §2.3; DESK-ORDER-001 §4
 - machinery: define the vendor-claim record (verbatim, source, accessed, ability named, verified{by,url,date}) and migrate the 21 cited facts that are claims; DESK-ORDER-001 §4
 - verify: check Artificial Analysis and Design Arena republication terms; record the outcome in the registry; no index value renders until cleared; DESK-ORDER-001 §4
-- entry: org entries for the 34 catalog providers with no wiki entry (one line per org when filed), each with its `feeds` map; DESK-ORDER-001 §2
+- entry: org entries for the 34 catalog providers with no wiki entry (one line per org when filed), each with its `feeds` map and `publishes_from` hosts; DESK-ORDER-001 §2
 ```
 
 ## Amendments from the handoff (2026-09-05, K44; orchestrator's questions, ui-loop's answers)
