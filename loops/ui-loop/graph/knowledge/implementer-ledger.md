@@ -18,7 +18,18 @@ file is the evidence. Sonnet is the implementer tier under K13.
 | 8 | 2026-09-05 | CP-UI-001-2 RD-002 revision | **Opus** (K29) | Comparison row, not a defect: five of five fixes met, no declines, 12 hatched cells now render; found and fixed a second R2 overflow the widened check exposed; caught two of its OWN vacuous checks during falsification (S18 measured box height, S5 selector matched nothing) and recorded both. Report 7268 B vs 7000 budget (trim requested). Panel pending. | (none yet) | orchestrator reading IR-CP-UI-001-2-2 | — |
 | 9 | 2026-09-05 | CP-UI-001-2 RD-002 revision | Opus (K29) | Home door draws a hairline between its three rows, against RD-002 fix 3's own text ("no per-row rules (R8)"). Small, and the only defect the panel found in the Opus run against seven in the two Sonnet builds. | rule-violation-quiet | judge-hierarchy JV-hier-CP-UI-001-2-3 F-hier-11 | one-line fix |
 | 10 | 2026-09-05 | CP-UI-001-2 RD-003 (iteration 4) | Opus | Tier-2 "quantified" allow-list admitted third-party MEASUREMENTS (OpenRouter observed_throughput_p50; llm-releases.com cost/tokens per task) as VENDOR CLAIMS under a lede saying "quoted verbatim from the vendor". Field-name test without a source test. | semantic-mislabel | red-team RT-CP-UI-001-2-4 FM-N3 (risk 80) | RD-004, one more iteration |
+| 11 | 2026-09-06 | K49 stream 3a (claim record) | stream implementer (model per a4's run) | Claim renderer attributed every claim to the subject unconditionally, never consulting the vendor test. | semantic-mislabel | sealed reviewer, mutation | fixed before merge |
+| 12 | 2026-09-06 | K49 stream 3a (claim record) | stream implementer | `publishes_from` gate accepted full URLs and paths as hosts. | rule-violation-quiet | sealed reviewer, mutation | fixed before merge |
 
 Classes: wrong-decline · semantic-mislabel · fake-empty-state · rule-violation-quiet · scope-creep · gate-skipped ·
 data-invented · content-edit-in-disguise. Reads: `IR-*` reports, `JV-*` findings routed
 `ui-fixable`, `RT-*` modes grounded in an implementer choice.
+
+## Pitfall list outcomes (K49 implementation, 2026-09-06, reported by the orchestrator)
+
+Of the 21 pitfalls sent before the streams ran: #2 kept a reviewer from making S22(e) import the
+renderer; #7 caught the renderer hard-wiring the empty state (frontier.json is now looked up and
+collapsed); #10 held across three streams' tests (`domains_seeded` the only new mechanical key, bare
+`domains` asserted absent twice); #14 kept the ≥1-domain bar from being resurrected in the schema gate.
+Not predicted, found by mutation: rows 11 and 12 above. Process lesson (theirs): archiving a change
+moves its paths; a test that read a delta at its change directory failed the final gates.
