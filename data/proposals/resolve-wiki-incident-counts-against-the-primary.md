@@ -30,6 +30,8 @@ evidence: >
   (14,591 saved revisions across 4,579 pages, 5,217 deletion events, and the
   day-by-day dating, with the explicit warning that these "should not be treated
   as interchangeable" with Reuters' >15,000 edits).
+proposed_by_job: j-20260906-15
+proposed_by_type: post
 ---
 
 # Settle the DseWiki counts against the report that produced them
