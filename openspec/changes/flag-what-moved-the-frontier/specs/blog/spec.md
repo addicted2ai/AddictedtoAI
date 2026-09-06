@@ -26,15 +26,17 @@ a claim this site states on its own authority (`directory`), and a table of
 positions has no motion in it — which is the whole reason a dated record and
 not a leaderboard is what a frontier surface is built from.
 
-Three front-matter keys, and the flag is the only optional one:
+Three front-matter keys, and only one of them is ever required:
 
 - `frontier: true` — optional; absent means false.
 - `frontier_reason` — REQUIRED when `frontier: true`; exactly one of `F1`,
   `F2`, `F3`, `F4`, `F5`.
-- `domains` — REQUIRED when `frontier: true`; at least one value from the
-  closed domain vocabulary: `coding`, `agents`, `image`, `video`, `audio`,
-  `research`, `science-math`, `robotics`. "General" is the unmarked default and
-  is not a value; `text` is not a value.
+- `domains` — OPTIONAL, flagged or not; zero or more values from the closed
+  domain vocabulary: `coding`, `agents`, `image`, `video`, `audio`, `research`,
+  `science-math`, `robotics`. "General" is the unmarked default and is not a
+  value; `text` is not a value. **Absence is that default, spelled out**: a
+  flagged record carrying no `domains` is a general one, not an untagged one,
+  and an empty list means what an absent key means.
 
 The criteria, one of which is cited and only one:
 
@@ -56,12 +58,37 @@ list to be extended: *what every other AI news site already shows does not
 qualify on its own.*
 
 The build SHALL fail a post declaring `frontier: true` with no
-`frontier_reason`, with a `frontier_reason` outside F1–F5, with no `domains`,
-or with any `domains` value outside the closed vocabulary — naming the post
-file and the offending field, before any page renders. The domain vocabulary
-SHALL have exactly one definition in the source tree, shared with every other
-surface that reads a domain, because two closed lists of the same eight values
-drift and the drift is silent.
+`frontier_reason`, with a `frontier_reason` outside F1–F5, or with any
+`domains` value outside the closed vocabulary — naming the post file and the
+offending field, before any page renders. **A post carrying no `domains` SHALL
+NOT fail**, flagged or not. The domain vocabulary SHALL have exactly one
+definition in the source tree, shared with every other surface that reads a
+domain, because two closed lists of the same eight values drift and the drift
+is silent.
+
+**That the absent case passes is a decision, and it is recorded here because it
+is the kind of bar that gets re-tightened by someone who has forgotten why it
+loosened.** An earlier draft of this requirement made `domains` required when
+the flag is set, transcribing DESK-ORDER-001 §1 as it then stood. The bar was
+withdrawn as keeper ruling K46, on the blind arbiter record
+`loops/ui-loop/graph/artifacts/BLIND-002.md`, and §1's own gate line was
+amended to match. Two reasons, and both are about the vocabulary rather than
+about this surface. First, K38 makes "general" the **unmarked** default and
+removes `text`, so absence is not a missing value but a stated one — and a gate
+that fails a record for carrying the vocabulary's own default contradicts the
+vocabulary it is enforcing. Second, the ≥1 bar was written while `text` was
+still a value a general story could carry; at that moment it excluded nothing,
+and it acquired an editorial effect no ruling ever stated only when K38 removed
+the value. The cost is concrete: a court filing, a regulator's enforcement
+action, a licence revenue gate and a system card are F4- and F5-shaped events,
+and four such posts existed on 2026-09-05 —
+`content/blog/doj-statement-of-interest-llm-training-fair-use.md`,
+`content/blog/eu-ai-office-first-enforcement-rfis.md`,
+`content/blog/glm-5-3-license-revenue-gate.md` and
+`content/blog/openai-gpt-6-astra-system-card.md` — none of which maps to any
+value in the vocabulary. Under the withdrawn bar not one of them could be
+flagged at all, which would make the criteria above unreachable on the one
+surface the flag exists to populate.
 
 These three keys are **editorial judgment and not machine-maintained data**.
 They SHALL NOT be exempted from a post's reviewed surface: adding or changing
@@ -80,10 +107,18 @@ judgment this site does not let publish unreviewed.
 #### Scenario: A flag with a domain outside the vocabulary fails the build
 
 - **WHEN** a post declares `frontier: true`, a valid `frontier_reason`, and
-  `domains: [legal]`
+  `domains: [text]`
 - **THEN** the build fails naming the post file and the invalid value — the
-  vocabulary is closed, and a domain the section cannot group by is not a
-  domain
+  vocabulary is closed, `text` is the value K38 removed from it rather than one
+  it forgot, and a domain the section cannot group by is not a domain
+
+#### Scenario: A flagged story with no domain is general, not invalid
+
+- **WHEN** a post covering a court filing declares `frontier: true` and a valid
+  `frontier_reason`, and declares no `domains` at all
+- **THEN** the build passes and the post is flagged — its absent `domains` is
+  the vocabulary's unmarked "general", not an unfilled field, and nothing
+  treats the absence as a defect to be repaired
 
 #### Scenario: A price change is not a frontier story
 
@@ -182,8 +217,8 @@ its own named point:
 - the scout's cap of three candidates per day, mechanical at its merge
   (see `loop`), from which a candidate flagged `frontier: true` is exempt —
   the flag carries its own bar (the frontier requirement in this
-  specification), and a flag citing no valid criterion or no valid domain is
-  not filed at all;
+  specification), and a flag citing no valid criterion, or a domain outside
+  the vocabulary, is not filed at all;
 - the editorial bar, applied by the author (an honest `blocked:` is a
   success) and by review's kill discipline, with declined candidates
   recorded rather than deferred;
