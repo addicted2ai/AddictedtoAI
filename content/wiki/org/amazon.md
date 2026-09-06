@@ -132,9 +132,10 @@ each from Meta, Moonshot AI, Qwen, Writer, xAI and Z.ai, alongside Amazon's own
 handful. Bedrock is also the only endpoint OpenRouter lists behind each Nova
 row, so on this router Amazon is both the author and the host of its own
 models, and the host of 27 more that belong to other people. A catalog built
-from the models feed sees none of that half: each row carries an author and a
-`top_provider` block holding a context length, a moderation flag and a
-completion cap, and no provider name anywhere. The company that serves Claude
+from the models feed sees none of that half: a row names its author in its id
+and carries a `top_provider` block holding a context length, a moderation flag
+and a completion cap — and no provider name anywhere. The company that serves
+Claude
 and GPT is invisible to the table; the company that ships Nova gets a column.
 
 One of those rows is current and the rest are not. Micro, Lite and Pro were
@@ -160,8 +161,8 @@ can call from Amazon belongs to a generation the vendor's own menu no longer
 acknowledges, and the generation that replaced it contains exactly one
 general-purpose text model. Its name is Lite, and its window is
 {{fact:model/amazon-nova-2-lite-v1#context_window}} against
-{{fact:model/amazon-nova-micro-v1#context_window}} on the oldest row it
-supersedes.
+{{fact:model/amazon-nova-lite-v1#context_window}} on the row whose name it
+takes over.
 
 There is no Nova 2 Pro and no Nova 2 Premier, and Amazon's answer to where the
 top of the line went is not a model. On 2 December 2025, the same day as Nova 2
