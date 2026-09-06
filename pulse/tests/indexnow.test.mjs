@@ -281,11 +281,21 @@ test('nothing in indexnow.mjs writes HOLD.md or exits — a failed ping is not a
   assert.ok(!/writeFileSync|appendFileSync/.test(code), 'and writes no state at all');
 });
 
-test('the Pulse reaches outside pulse/ for exactly two modules, and both are import-free', () => {
-  // The precedent this change sets, pinned so it cannot widen quietly. Both
-  // targets are plain constant files with no dependency of their own, which is
-  // what keeps `pulse/tests/zero-model.test.mjs`'s property true: neither can
-  // pull anything into the Pulse's dependency graph.
+test('the Pulse reaches outside pulse/ for exactly three modules, and all are import-free', () => {
+  // The precedent this change sets, pinned so it cannot widen quietly. Every
+  // target is a plain constant file with no dependency of its own, which is
+  // what keeps `pulse/tests/zero-model.test.mjs`'s property true: none of them
+  // can pull anything into the Pulse's dependency graph.
+  //
+  // WIDENED ONCE, to three, by the change `tag-the-corpus-by-domain`, and the
+  // argument belongs here rather than in a commit message. `lib/domains.mjs` is
+  // the ONE declared home of the closed domain vocabulary. The Pulse's seeding
+  // step writes domain ids into content front matter (`domains_seeded`), and
+  // the build gates those ids against that same list — so the engine either
+  // reads the list or keeps a second copy of it, and a second copy is the drift
+  // the single home exists to prevent: the moment the two disagreed, the Pulse
+  // would write files its own rebuild rejects. The file is frozen constants
+  // with no imports, so the boundary this test defends is unmoved.
   const files = fg.sync('**/*.mjs', { cwd: PULSE, absolute: true, ignore: ['tests/**'] });
   const outside = new Set();
   for (const file of files) {
@@ -293,7 +303,7 @@ test('the Pulse reaches outside pulse/ for exactly two modules, and both are imp
   }
   assert.deepEqual(
     [...outside].sort(),
-    ['../../lib/asset-routes.mjs', '../../lib/site-config.mjs'],
+    ['../../lib/asset-routes.mjs', '../../lib/domains.mjs', '../../lib/site-config.mjs'],
     'a new cross-boundary import into pulse/ needs its own argument, in its own review',
   );
   for (const rel of outside) {
