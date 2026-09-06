@@ -105,6 +105,12 @@
 
 import { appendJsonl, daysSince, getPath, readJsonl, today } from './core.mjs';
 import { rowsHash } from './sources.mjs';
+// The closed kind list, declared once (`lib/change-kinds.mjs`). Every emission
+// site below reads it rather than carrying a literal, and `appendChanges`
+// refuses a candidate whose kind is not a member — that is the point the
+// mistake is made, and a refusal there costs a failing test rather than a
+// corrupt append-only history.
+import { CHANGE_KINDS, KIND, isChangeKind } from '../../lib/change-kinds.mjs';
 
 /** Material fields whose change is worth a human interpretation (specs/pulse). */
 export const INTERPRET_FIELDS = new Set(['price_input', 'price_output', 'price', 'license', 'licence', 'status']);
@@ -206,7 +212,7 @@ export function diffSnapshots(source, previous, latest, { date = today() } = {})
       changes.push({
         ...base,
         key: key(rowId, '$arrival'),
-        kind: 'arrival',
+        kind: KIND.ARRIVAL,
         row_id: rowId,
         display_name: displayName(source, row),
         field: null,
@@ -229,7 +235,7 @@ export function diffSnapshots(source, previous, latest, { date = today() } = {})
       changes.push({
         ...base,
         key: key(rowId, spec.field),
-        kind: 'field_change',
+        kind: KIND.FIELD_CHANGE,
         row_id: rowId,
         display_name: displayName(source, row),
         field: spec.field,
@@ -247,7 +253,7 @@ export function diffSnapshots(source, previous, latest, { date = today() } = {})
       changes.push({
         ...base,
         key: key(rowId, '$retirement'),
-        kind: 'retirement',
+        kind: KIND.RETIREMENT,
         row_id: rowId,
         display_name: displayName(source, row),
         field: null,
@@ -298,7 +304,7 @@ export function seedChanges(source, latest) {
       // stamped one. That is inherent in reading a foreign timestamp at all —
       // the alternative is not "no skew", it is "skew that varies by machine".
       date: parsed.toISOString().slice(0, 10),
-      kind: 'release',
+      kind: KIND.RELEASE,
       seeded: true,
       source: source.id,
       source_url: (cfg.source_url_field ? row[cfg.source_url_field] : null) ?? source.url,
@@ -335,6 +341,28 @@ export function appendChanges(changesFile, candidates) {
   const known = existingKeys(changesFile);
   const fresh = [];
   for (const c of candidates) {
+    // THE WRITE-SIDE REFUSAL (specs/pulse: "The Pulse SHALL refuse to append a
+    // line whose kind is not a member, naming the kind and the caller").
+    //
+    // It throws rather than skipping, and appends NOTHING when it fires: the
+    // caller asked for a line the history has no word for, and silently
+    // dropping it would leave the run reporting success over a candidate that
+    // never landed. The message names the kind, the key and the source, which
+    // is what identifies the emitter — a stack trace names the function, and
+    // the key names which of that function's candidates went wrong.
+    //
+    // Asymmetric with the read side ON PURPOSE, and the asymmetry is the
+    // decision, not an oversight: the BUILD only reports a committed line whose
+    // kind is undeclared (`changeKindsReportStep`), because this file is
+    // append-only history, a bad line already committed cannot be removed, and
+    // one of them must never take the whole site down.
+    if (!isChangeKind(c?.kind)) {
+      throw new Error(
+        `changes.jsonl: refusing to append a line whose kind is not declared — kind ${JSON.stringify(c?.kind)}, ` +
+          `key ${JSON.stringify(c?.key ?? null)}, source ${JSON.stringify(c?.source ?? null)}. ` +
+          `The closed list is ${CHANGE_KINDS.join(', ')} (lib/change-kinds.mjs); add a kind there before emitting it.`,
+      );
+    }
     if (known.has(c.key)) continue;
     known.add(c.key);
     fresh.push(c);
@@ -392,9 +420,14 @@ export function isNonEventField(registry, sourceId, field) {
 export function uninterpretedChanges(changesFile, { windowDays = 14, from = undefined, registry = null } = {}) {
   const lines = readJsonl(changesFile);
   const annotated = new Set();
-  for (const l of lines) if (l?.kind === 'annotation' && l.annotates) annotated.add(l.annotates);
+  for (const l of lines) if (l?.kind === KIND.ANNOTATION && l.annotates) annotated.add(l.annotates);
   return lines.filter((l) => {
-    if (!l || l.kind !== 'field_change' || l.seeded) return false;
+    // Material FIELD changes only, which is what makes a `lead-change` line
+    // produce no `interpret` work: a lead change is an event the site states
+    // outright, not a movement needing a human interpretation (specs/pulse; the
+    // test that makes this a decision rather than an accident of this filter's
+    // shape is `pulse/tests/frontier.test.mjs`).
+    if (!l || l.kind !== KIND.FIELD_CHANGE || l.seeded) return false;
     if (isNonEventField(registry, l.source, l.field)) return false;
     if (!INTERPRET_FIELDS.has(l.field)) return false;
     if (annotated.has(l.key)) return false;

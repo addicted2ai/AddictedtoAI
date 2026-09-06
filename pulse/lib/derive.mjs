@@ -19,6 +19,12 @@ import { deriveStatus, materialValue, displayName } from './diff.mjs';
 import { loadSnapshot, loadState } from './sources.mjs';
 import { feedBindings } from './corpus.mjs';
 import { sortedSources } from './registry.mjs';
+// The closed kind list has one home (`separate-a-claim-from-a-fact` task 19):
+// every consumer reads the declaration instead of restating a literal, so a
+// misspelled kind is a missing property here rather than a branch that silently
+// never matches. `pulse/lib/` already imports from `../../lib/`
+// (`pulse/lib/indexnow.mjs`), so one home is reachable from both sides.
+import { KIND } from '../../lib/change-kinds.mjs';
 
 /** `anthropic/claude-opus-5` -> `anthropic`. Null when the id carries no prefix. */
 export function providerOf(rowId) {
@@ -145,7 +151,7 @@ export function deriveDataLayer(root, registry, corpus) {
     .sort((a, b) => (a.row_id < b.row_id ? -1 : 1));
 
   const changed30 = readJsonl(p.changes)
-    .filter((l) => l && l.kind !== 'annotation')
+    .filter((l) => l && l.kind !== KIND.ANNOTATION)
     .filter((l) => {
       const age = daysSince(l.date);
       return age !== null && age >= 0 && age <= 30;

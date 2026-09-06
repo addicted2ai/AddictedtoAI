@@ -25,6 +25,7 @@ import { checkPostVoiceStep } from './check-post-voice.mjs';
 import { checkSpecDeltasStep } from './check-spec-deltas.mjs';
 import { arxivPinStep } from '../lib/arxiv-pin.mjs';
 import { declinedFieldsStep } from '../lib/declined-fields.mjs';
+import { changeKindsReportStep } from '../lib/changes.mjs';
 import { acquireBuildLock, DEFAULT_WAIT_MS } from './build-lock.mjs';
 import { isDirty, dirtyPaths } from '../lib/stamp.mjs';
 
@@ -131,6 +132,18 @@ const STEPS = [
   // registry and the corpus at once and the prebuild is the only place that
   // holds both — see the header of lib/declined-fields.mjs.
   { name: 'declined-fields', run: declinedFieldsStep },
+
+  // `separate-a-claim-from-a-fact` task 20 — the change-kind report. The kinds
+  // a `data/changes.jsonl` line may carry are a closed list with one home
+  // (`lib/change-kinds.mjs`); `appendChanges` REFUSES an undeclared kind at the
+  // write side, and this end only REPORTS the count of committed lines carrying
+  // one. **It never fails the build**, deliberately and by the spec's own
+  // words: the file is append-only history, a line already committed cannot be
+  // removed, and a build that failed here would let one bad historical line
+  // take the whole site down. It joins the currency-literal warning and the
+  // voice lint as a report-not-fail check; a build failing on this step is a
+  // defect in it.
+  { name: 'change-kinds', run: changeKindsReportStep },
 
   // make-the-blog-worth-sending task 3.7 — the voice lint. **ADVISORY: it
   // warns and never fails the build**, by the spec's own emphasis and for a

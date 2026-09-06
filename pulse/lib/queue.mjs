@@ -40,6 +40,7 @@ import matter from 'gray-matter';
 import { daysSince, now, paths, readJson, readJsonl, today, writeJson } from './core.mjs';
 import { uninterpretedChanges } from './diff.mjs';
 import { isConfirmedBroken } from './linkcheck.mjs';
+import { KIND } from '../../lib/change-kinds.mjs';
 
 export const QUEUE_CAP = 50;
 export const WANT_ELIGIBLE_AT = 3; // specs/wiki: "a name wanted by 3 or more distinct pages"
@@ -320,7 +321,7 @@ export function coveredKeys(root, { dir = join(paths(root).content, 'blog') } = 
  */
 export function uncoveredEvents(changesFile, { at = now(), windowDays = SCOUT_CONTEXT_DAYS, covered = new Set() } = {}) {
   return readJsonl(changesFile).filter((l) => {
-    if (!l || l.kind === 'annotation') return false;
+    if (!l || l.kind === KIND.ANNOTATION) return false;
     if (l.key && covered.has(l.key)) return false;
     const age = daysSince(l.date, at);
     return age !== null && age >= 0 && age <= windowDays;
