@@ -13,6 +13,128 @@ data-only, `manual`-classed aliases, no prose.
 
 ---
 
+## Choosing the kind
+
+The list above says what the values are. It does not say how to choose between
+them, and the first place that gap bit was the catalog-coverage backlog.
+
+### `org` is for organisations, and the absent `person` kind is why that binds
+
+**Ruled 2026-09-05 (beads `addictedtoai-2ok0`).** `/frontier`'s Players Board
+joins `content/wiki/org/*.md` to catalog providers by alias
+(`lib/render/frontier.mjs:50`), so a provider no org entry matches never
+surfaces on it. Replaying that join over `data/derived/catalog.json` on
+2026-09-05: 431 rows, all `"source": "openrouter-models"`, carrying 58 distinct
+`provider` values; 16 org entries match 24 of them and **34 are unmatched**.
+Read the 58 with care — seven of those values are OpenRouter's `~`-prefixed
+"latest" twins (`~anthropic`, `~deepseek`, `~google`, `~moonshotai`, `~openai`,
+`~x-ai`, `~z-ai`), which the join's normaliser strips, so all seven land on an
+org that was already matched. The distinct publishers are 51, matched 17. **The
+34 is the figure that does not move**, and it is the one the backlog rests on.
+`addictedtoai-2ok0` tracks closing that gap, and its acceptance criteria already
+name the second acceptable answer — an org entry with a feeds map, *"or a
+recorded decision not to cover them"*. This is that decision, for the part of
+the 34 that is not organisations.
+
+> **An `org` entry asserts that an organisation exists. File one only where you
+> can source that one does.** Where the only thing sourceable is a publishing
+> handle, `org` is the wrong kind, and the honest output is no entry — not a
+> thin one.
+
+The reason is not that such an entry would be thin. `specs/wiki` closes the kind
+list and then says why one member is absent: *"There is deliberately no `person`
+kind. People appear in prose as plain text, optionally with an external link.
+This removes the nastiest alias-collision family (person vs. product) and the
+defamation-adjacent risk of maintaining claims about living people."* Filing a
+person's handle under `org` does not sidestep that decision — it takes both
+risks the absent kind was removed to avoid, and adds a third thing the corpus
+may not do, which is state that a company exists when nobody has shown one does.
+Note which way the burden runs. The test fails for want of evidence, never on a
+finding about the publisher: "no organisation is sourceable here" is a statement
+about this repository's evidence and a reader can check it, while "this is a
+private individual" is a claim about a living person, which is the exact thing
+there is no kind for.
+
+**Applying it, on evidence in this repository.** Four of the unmatched providers
+are decided by their own feed rows in
+`data/sources/openrouter-models/latest.json` (fetched `2026-09-05T06:00:04.599Z`),
+which credit a handle and no organisation. Every quotation in this ruling is
+from a row's `description` field in that snapshot:
+
+| provider | rows | what the row carries |
+|---|---|---|
+| `sao10k` | 3 | two descriptions credit the model `from [Sao10k](https://ko-fi.com/sao10k)` — a handle and a donation page, no company; `hugging_face_id` `Sao10K/…` on all three |
+| `thedrummer` | 3 | `unslopnemo-12b` reads *"the latest addition from the creator of Rocinante"* — a creator, singular, with no organisation anywhere in the row; `hugging_face_id` is the same handle on all three (`TheDrummer/…` twice, `thedrummer/…` once) |
+| `gryphe` | 1 | `mythomax-l2-13b`: *"One of the highest performing and most popular fine-tunes of Llama 2 13B… #merge"*; `hugging_face_id` `Gryphe/MythoMax-L2-13b` |
+| `undi95` | 1 | `remm-slerp-l2-13b`: *"A recreation trial of the original MythoMax-L2-B13 but with updated models. #merge"*; `hugging_face_id` `Undi95/…` |
+
+**Four more are not settled by that evidence and are not decided here**, because
+the same rows point the other way or say nothing. `cognitivecomputations`'s one
+row says its model was *"developed by dphn.ai in collaboration with Venice.ai"*,
+which names entities rather than a handle. `dots-studio`'s row describes *"an
+open-weight mixture-of-experts model from Dots Studio, with 16B active
+parameters out of 280B total"* and *"the lightest model in the Dots 3 family"* —
+a family of models from a named studio, not a fine-tune under a handle.
+`anthracite-org`'s handle carries `-org` and its row describes *"a series of
+models"* while saying nothing about who publishes them. `mancer`'s row carries a
+null `hugging_face_id` and identifies no publisher at all. Each needs the source
+test run against a page the provider publishes before either an entry or a
+decline is filed. **Recording four as undecided is the ruling working**: the
+test is a source test, and a handle that merely looks personal is a name test —
+the failure mode this corpus keeps catching.
+
+### OpenRouter is an organisation, and already has an entry of a different kind
+
+**Same ruling, 2026-09-05.** `openrouter` is the ninth unmatched provider, and
+it is the opposite case. It is an organisation, and the most load-bearing one in
+this data layer: every catalog row in the corpus arrives through it — all 431
+rows of `data/derived/catalog.json` carry `"source": "openrouter-models"`.
+
+Its six catalog rows are not the argument for that entry and must not be made
+into one. They are routing products: `openrouter/auto` ("Auto Router"),
+`auto-beta`, `free` ("Free Models Router"), `pareto-code` ("Pareto Code
+Router"), `fusion` and `bodybuilder`. The Pulse has minted a `model/` stub for
+each, correctly and mechanically — an undeclared row mints a stub and never
+asks what the row is (`specs/pulse`).
+
+**What exists and what does not.** `content/wiki/tool/openrouter.md` covers
+OpenRouter as a tool and `content/directory/tools/openrouter.md` lists it; there
+is no `org/openrouter`. The board joins **orgs**, so the tool entry does not put
+OpenRouter on it. Two entries of different kinds for one company is the corpus
+working as designed rather than a duplicate, and nothing collides: the tool
+entry claims the alias "OpenRouter" as `manual`, and a name two entries declare
+is simply not linkable — not a build failure, which only a doubly-claimed
+`exclusive` is (`lib/aliases.mjs:10-13`).
+
+### What carries the independent fine-tuners
+
+Nothing new has to, and no new kind may be created for them — the list is closed
+and opening it is an OpenSpec change. Three answers, in the order they apply:
+
+1. **The models are already carried.** All 18 catalog rows across those nine
+   providers have a minted `model/` entry — `data/derived/catalog.json` gives
+   every one of the 18 a non-null `entry_id`, and the files are in
+   `content/wiki/model/`. "They never surface" is true of the Players Board,
+   which is an org board, and false of the corpus.
+2. **The publishers appear in prose as plain text**, which is what the absent
+   `person` kind already prescribes, with an external link where one is
+   warranted. That is the whole mechanism, and it needs no new file.
+3. **The practice is what deserves an entry, and its kind is `technique`.**
+   Merging and community fine-tuning of open-weight base models is a technique
+   this corpus does not cover: `content/wiki/technique/` carries
+   `low-rank-adaptation.md`, `quantization.md` and `pruning.md`, and nothing on
+   merging — while the feed labels two of these very rows `#merge` in its own
+   description text. One entry about the practice can name the people who do it
+   in prose, which is both the correct kind and the correct treatment.
+
+**Not the directory.** `content/directory/tools/` is curated tool listings, one
+file per tool, each declaring `url`, `pricing` and `last_verified`
+(`content/directory/tools/README.md`). A person who publishes model weights is
+not a tool with a pricing page, and listing one there would restate the same
+category error in a second place.
+
+---
+
 ## Editorial standards for entry prose
 
 Three rulings that bind every entry, written here because this is the file an
