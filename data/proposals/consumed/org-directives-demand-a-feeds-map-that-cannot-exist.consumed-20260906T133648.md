@@ -71,3 +71,18 @@ Where the ruling should live is part of the job, exactly as it was for
 `j-20260905-25`: the directive text itself is the place the next author meets
 it, and `lib/render/frontier.mjs`'s block comment is the place the next
 implementer does.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-06
+- job: j-20260906-11 (interpret)
+- merged as: `b72ab4bcacf5cd62815532d58398000c00752f71`
+- produced: `content/wiki/README.md`
+- was: `org-directives-demand-a-feeds-map-that-cannot-exist.md` (slug `org-directives-demand-a-feeds-map-that-cannot-exist`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
