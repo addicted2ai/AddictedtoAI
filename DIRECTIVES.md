@@ -111,4 +111,29 @@ is never silently re-run. Removing finished lines is yours, at leisure.
 
 - entry: write the wiki org entry for the catalog provider `microsoft` — Microsoft, whose Phi line is in the catalog — a case where the obvious facts are widely known and the editorial bar therefore demands something an enthusiast does not already have. It carries 2 catalog rows and has no entry today. DESK-ORDER-001 §2 and keeper ruling K21: a player is on the board because the site COVERS it, never because a feed carries it — feeds fill cells, they do not decide membership. The board today has 16 org entries against 58 catalog providers, so 34 providers never surface at all. WHAT THE ENTRY MUST CARRY OR THE ROW IS BLANK: its `feeds` map, which is the join the board relies on, and its product-brand registrable domains in `publishes_from` (ui-loop K48 — NOT `aliases`, because an alias is a NAME and the alias registry decides linking, `lib/schema.mjs:492`). THE BRAND DOMAIN IS NOT PAPERWORK: the board attributes a vendor claim only when the cited source's registrable domain is the vendor's own, so a missing one makes a REAL vendor claim render as an honest-looking blank — and NOTHING FAILS when the declaration is absent (red-team FM-N6), which is exactly why the burden sits on this entry rather than on the renderer. An org with no feed binding still renders an all-blank row, which is allowed and honest; an org with a wrong one is not. Apply `specs/editorial`: give an enthusiast something they did not know or assemble scattered things for the first time, be specific with dates and mechanisms, and source every new claim from a page you actually fetched. Do not restate a facts table in sentences. Written by the orchestrator, not the maintainer. addictedtoai-2ok0 [done 2026-09-06 j-20260906-09]
 
-- verify: backfill `frontier` / `frontier_reason` / `domains` on every existing blog post against DESK-ORDER-001 §1's criteria F1–F5; record each decline with its reason in the review; addictedtoai-9c9t WHY THIS LINE SITS AT THE FOOT OF THE FILE RATHER THAN BESIDE THE OTHER §1 WORK: it cannot succeed until §1 is IMPLEMENTED, because `lib/schema.mjs` fails the build on an unknown front-matter key and these three keys do not exist yet — and §1's implementation is a `machinery` line, currently refused at the 10% budget ceiling. Directives are taken topmost-first and a directive that does not merge is never marked done (`loop/run.mjs:1236` appends the marker only on the merged path), so a line that is certain to block, sitting above lines that can run, is re-selected on every run and starves everything below it. Moved here by the orchestrator for that reason and no other; move it back above the ready work once §1 has landed. If you are reading this and the three keys DO exist in the schema, this line is ready and the note is stale — say so and proceed.
+---
+
+## Parked — recorded, deliberately NOT selectable
+
+These are real, wanted work whose precondition is not met. They are written
+WITHOUT a leading `-` so `parseDirectives` cannot see them at all — it matches
+list items only. To make one live again, put `- ` back at the front of the line
+and move it up into the directive list. Nothing else about the line changes.
+
+Parking rather than leaving them in the list is not tidiness. A directive is
+work source 1 and outranks the ENTIRE derived queue, so ONE unrunnable line
+starves every queue item on every run — it is selected, it produces nothing, it
+is never marked done (the completion marker is appended only on the merged
+path, `loop/run.mjs:1236`), and the next run does it again. That happened on
+2026-09-06: job `j-20260906-10` took the line below, ran 5.07 model-minutes,
+wrote no `RESULT.md`, and ended `interrupted`, while 26 queue items waited.
+Moving such a line to the foot of THIS file does not help, because the ordering
+that matters is directives-before-queue, not the order within the file.
+
+The mechanical fix is `addictedtoai-fa8a` — a precondition the selector can
+evaluate, so a line whose precondition is false is SKIPPED with a warning
+instead of attempted. Until that exists, parking is the honest substitute.
+
+**Waiting on DESK-ORDER-001 §1 being implemented** (`lib/schema.mjs` must accept `frontier`, `frontier_reason` and `domains` before any post can carry them; the implementing line is `machinery`, currently refused at the 10% ceiling):
+
+verify: backfill `frontier` / `frontier_reason` / `domains` on every existing blog post against DESK-ORDER-001 §1's criteria F1–F5; record each decline with its reason in the review; addictedtoai-9c9t WHY THIS LINE SITS AT THE FOOT OF THE FILE RATHER THAN BESIDE THE OTHER §1 WORK: it cannot succeed until §1 is IMPLEMENTED, because `lib/schema.mjs` fails the build on an unknown front-matter key and these three keys do not exist yet — and §1's implementation is a `machinery` line, currently refused at the 10% budget ceiling. Directives are taken topmost-first and a directive that does not merge is never marked done (`loop/run.mjs:1236` appends the marker only on the merged path), so a line that is certain to block, sitting above lines that can run, is re-selected on every run and starves everything below it. Moved here by the orchestrator for that reason and no other; move it back above the ready work once §1 has landed. If you are reading this and the three keys DO exist in the schema, this line is ready and the note is stale — say so and proceed.
