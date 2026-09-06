@@ -281,7 +281,7 @@ test('nothing in indexnow.mjs writes HOLD.md or exits — a failed ping is not a
   assert.ok(!/writeFileSync|appendFileSync/.test(code), 'and writes no state at all');
 });
 
-test('the Pulse reaches outside pulse/ for exactly four modules, and all are import-free', () => {
+test('the Pulse reaches outside pulse/ for exactly five modules, and all are import-free', () => {
   // The precedent this change sets, pinned so it cannot widen quietly. Every
   // target is a plain declaration file with no dependency of its own, which is
   // what keeps `pulse/tests/zero-model.test.mjs`'s property true: none can
@@ -305,6 +305,16 @@ test('the Pulse reaches outside pulse/ for exactly four modules, and all are imp
   //   and "cleared" is a rights answer that can drift, which is the one kind of
   //   drift K24 cannot tolerate. Its header records that it must stay
   //   import-free for this test's sake.
+  //
+  //   `lib/domains.mjs` — widened by the change `tag-the-corpus-by-domain`, and
+  //   the argument belongs here rather than in a commit message. It is the ONE
+  //   declared home of the closed domain vocabulary. The Pulse's seeding step
+  //   writes domain ids into content front matter (`domains_seeded`), and the
+  //   build gates those ids against that same list — so the engine either reads
+  //   the list or keeps a second copy of it, and a second copy is the drift the
+  //   single home exists to prevent: the moment the two disagreed, the Pulse
+  //   would write files its own rebuild rejects. The file is frozen constants
+  //   with no imports, so the boundary this test defends is unmoved.
   const files = fg.sync('**/*.mjs', { cwd: PULSE, absolute: true, ignore: ['tests/**'] });
   const outside = new Set();
   for (const file of files) {
@@ -315,6 +325,7 @@ test('the Pulse reaches outside pulse/ for exactly four modules, and all are imp
     [
       '../../lib/asset-routes.mjs',
       '../../lib/change-kinds.mjs',
+      '../../lib/domains.mjs',
       '../../lib/frontier-metrics.mjs',
       '../../lib/site-config.mjs',
     ],

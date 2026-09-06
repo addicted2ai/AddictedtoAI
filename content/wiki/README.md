@@ -144,8 +144,11 @@ category error in a second place.
 directives for uncovered catalog providers each carried the sentence *"WHAT THE
 ENTRY MUST CARRY OR THE ROW IS BLANK: its `feeds` map, which is the join the
 board relies on, and its product-brand registrable domains in
-`publishes_from`"*. Both halves are false against the code, and the section
-above repeats the first of them in passing — its *"an org entry with a feeds
+`publishes_from`"*. **The first half is false against the code and stays false;
+the second half was false when it was ruled on and is now true** — `publishes_from`
+landed with `separate-a-claim-from-a-fact`, and the section below says what it
+is and how to fill it. The ruling stands as written about `feeds`, and the
+section above repeats that half in passing — its *"an org entry with a feeds
 map"* is `addictedtoai-2ok0`'s wording, quoted, and it is not the answer.
 
 **The join is the alias join.** `matchProviders`
@@ -175,40 +178,60 @@ it:
 Measured 2026-09-06: none of the 24 files in `content/wiki/org/` contains the
 string `feeds`, which is the corpus already agreeing with this ruling.
 
-### The brand-domain half is real, and is not an entry's to close today
+### `publishes_from` — the brand domains, and why omitting one is invisible
 
-The same directives are right that a missing brand domain costs something. The
-board attributes a vendor claim through `isVendorSourced`
-(`lib/render/frontier.mjs:329-341`), and a cited fact whose source is not the
-vendor's own is dropped from the column (`claimRank`, `:344-352`) — so a real
-vendor claim renders as an honest-looking blank and nothing fails, which is the
-gap the directives call FM-N6.
+**Optional, set-valued, and empty is the common case.** Nothing requires an org
+entry to declare a domain. But **omitting one that exists is the single failure
+on this surface that nothing can detect**, so this is the paragraph to read
+before deciding you have nothing to declare.
 
-What they get wrong is where the fix lives. Both halves of that test are gated
-on the org's own name tokens: the recorded half reads only domains the entry
-already cites itself from **and** whose registrable label is one of those
-tokens (`orgOwnDomains`, `:317-326`, the test at `:323`), and the named half is
-that label test directly (`:340`). So a host whose registrable label is not one
-of the org's name tokens cannot pass, whatever the entry records. The file's own
-example: `blog.google` reduces to the label `blog`, which names nobody, and
-drops out; `deepmind.google` reduces to `deepmind`, which is a token, and
-passes (`:309-315`). The proposal names the same shape on `org/minimax`, whose
-tokens derive from `MiniMax` and `MiniMax Group Inc.`: `minimax.io` passes,
-while the product domains `hailuoai.video` and `talkie-ai.com` do not.
+**What it is for.** A vendor claim renders as the vendor's own words only when
+the claim's source belongs to the vendor. That question is answered off the
+**registrable domain** of the source — the string a registrant actually bought —
+by one rule, in `lib/vendor-domain.mjs`, with three admission paths and nothing
+else: the domain is one the entry declares in `publishes_from`; it is one the
+entry already records citing itself from; or its ownership label is one of the
+entry's name tokens (`display_name` and `aliases`, minus the generic corporate
+words — `ai`, `labs`, `cloud`, `research` and that family name nobody).
 
-`publishes_from` is the key that would close it, and **it does not exist**:
-`entrySchema` is `.strict()` (`lib/schema.mjs:208-223`) and defines no such
-key, so an entry that declares one fails the build on an unknown key. Landing
-it is tasks 12–16 of
-`openspec/changes/separate-a-claim-from-a-fact/tasks.md` — all five unchecked
-on 2026-09-06 — of which task 12 adds the key and task 15 the gate that a value
-must equal its own registrable-domain reduction.
+**A product-brand domain reaches none of those paths but the first.** It is not
+a name token, and it need not appear in any source the entry is cited from.
+Moonshot AI publishes from `kimi.ai`; `org/minimax`'s tokens come from
+`MiniMax` and `MiniMax Group Inc.`, so `minimax.io` passes on its own while the
+product domains `hailuoai.video` and `talkie-ai.com` do not. Undeclared, a real
+vendor claim from one of those renders as a blank.
+
+**And the blank is byte-identical to the correct one.** Nothing compares a
+declared set against the entry's cited domains for completeness, and nothing
+could: the entry validates, the claim validates, the render is well-formed. A
+gate can catch a wrong declaration and can never catch a missing one — so the
+burden is editorial, it is yours, and *"we declared nothing"* is not the safe
+default it looks like. This is red-team finding FM-N6, and it is the failure
+mode hardest to notice precisely because absence looks like correctness.
+
+**How to choose a value.** Each one is a **registrable domain** — the public
+suffix plus the one label to its left. Reduce before you declare:
+`platform.kimi.ai` → **`kimi.ai`**; `www.tencent.com` → **`tencent.com`**;
+`deepmind.google` is already registrable, because `.google` is a single-label
+brand TLD (and for the same reason `blog.google` is a *different* registrant, not
+a subdomain of it). Declaring the registrable domain covers every host under it,
+which is what makes the field a statement about a registrant rather than a list
+of URLs to keep current. The build fails a value that is not its own reduction,
+naming the entry, the value and the reduction to declare instead — and refuses a
+value shaped like a public suffix outright, because declaring one would attribute
+every registrant under it to this entry.
+
+**It publishes through review.** Asserting that a domain belongs to an
+organisation is a judgment about who owns what, and a wrong one attributes a
+stranger's words to a named company. `publishes_from` is on the reviewed
+surface: adding it to an entry with an approved record marks that record
+mismatched until a fresh verdict is recorded. That cost is the point.
 
 **Do not reach for an alias instead.** Adding `hailuoai` to an org's `aliases`
 would make the vendor test pass, and would also change the board join above,
 the alias registry and every wrap-only link in the corpus — one name declared
-for its side effect on a fourth mechanism. Until task 12 lands, the honest
-treatment is the blank cell, and the entry says nothing about domains at all.
+for its side effect on a fourth mechanism. An alias is a **name**; a host is
+not.
 
 ---
 

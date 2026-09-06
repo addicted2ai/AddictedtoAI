@@ -1896,6 +1896,77 @@ body:has(#catalog-table-wrap) .site-footer {
   gap: 0.15rem 0.6rem;
 }
 
+/* ---------------------------------------------------------------------------
+   Claim records on an entry page (specs/wiki, separate-a-claim-from-a-fact).
+
+   NOT CLAMPED, and that is the point of putting them here rather than in a
+   table cell. The board's one-line clamp is what elided an attribution before
+   the words it attributed (F-sys-5-1); a full-measure list has room for the
+   party AND the quotation, so the requirement "the fragment takes the
+   truncation" is satisfied by there being no truncation to take. The
+   attributing party still renders first, because the rule is about reading
+   order as much as about pixels.
+   --------------------------------------------------------------------------- */
+.claims {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: var(--measure);
+}
+
+.claim {
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--rule);
+}
+
+.claim-line {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.5rem;
+}
+
+/* The attributing party, first and never abbreviated. */
+.claim-src {
+  font-weight: 600;
+}
+
+.claim-quote {
+  /* `q` supplies its own quotation marks; the record is verbatim, so nothing
+     here may restyle it into looking like the site's own sentence. */
+  color: var(--ink);
+}
+
+.claim-meta {
+  margin: 0.2rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.6rem;
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.claim-field {
+  font-family: var(--mono);
+}
+
+/* `false` renders; ABSENT renders nothing at all and so has no rule here —
+   there is no element to style, deliberately (specs/wiki: a surface SHALL NOT
+   say "unverified" about a claim nobody has checked). */
+.claim-unverified {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+}
+
+.claim-verified {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.4rem;
+}
+
 /* A transcluded fact sits inside a sentence, so it must not inherit the
    flex layout the standalone .fact block uses. The wiki spec requires
    volatile values to be transcluded rather than typed, so without this

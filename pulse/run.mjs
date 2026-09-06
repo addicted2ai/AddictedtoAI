@@ -42,6 +42,7 @@ import { readCorpus, corpusLinks } from './lib/corpus.mjs';
 import { deriveDataLayer } from './lib/derive.mjs';
 import { computeFrontier } from './lib/frontier.mjs';
 import { mintStubs, appendTimelineEvents } from './lib/mint.mjs';
+import { seedDomains } from './lib/domain-seeds.mjs';
 import { rollingLinkCheck } from './lib/linkcheck.mjs';
 import { computeFreshness } from './lib/freshness.mjs';
 import { computeQueue, writeQueue } from './lib/queue.mjs';
@@ -153,6 +154,30 @@ if (options.noMint) {
 const timeline = appendTimelineEvents(root, corpus, freshChanges);
 log.step('timeline', `${timeline.appended.length} lifecycle event(s) appended to joined entries`);
 if (timeline.appended.length) corpus = readCorpus(root);
+
+// Domain seeding, APPEND-ONLY (change `tag-the-corpus-by-domain`, K47). It
+// reads named feed fields on entries that declare a joined row and adds to
+// `domains_seeded`; a signal that has left the snapshot removes nothing and
+// writes no line to `data/changes.jsonl` — the reasoning and its measurements
+// are in `pulse/lib/domain-seeds.mjs`. No model is invoked and no index value
+// is read, only whether a field is present.
+const domainSeeding = seedDomains(root, registry, corpus);
+log.step(
+  'domains',
+  `${domainSeeding.appended.length} entr(ies) gained a seeded domain` +
+    (domainSeeding.unmapped.length
+      ? `, ${domainSeeding.unmapped.length} feed modality token(s) the seeding table does not account for`
+      : ''),
+);
+// Named rather than counted, because an unaccounted upstream value is a
+// question nobody has answered and it should not look like an answered one.
+for (const u of domainSeeding.unmapped) {
+  log.warn(
+    `domain seeding: source "${u.source}" serves modality "${u.token}", which MODALITY_DOMAIN does ` +
+      'not map — no domain was seeded from it; decide it in pulse/lib/domain-seeds.mjs',
+  );
+}
+if (domainSeeding.appended.length) corpus = readCorpus(root);
 
 // The frontier: leaders, ranked rows and counts for every DECLARED index metric
 // into `data/derived/frontier.json`, plus a `lead-change` line where a metric's
@@ -301,6 +326,11 @@ if (!buildFailed) {
   const owned = [
     ...mints.minted.map((m) => m.path),
     ...timeline.appended.map((a) => a.path),
+    // `domainSeeding.appended[].path` is the same repo-relative POSIX path from
+    // `relPosix` in corpus.mjs. An entry the seeding step rewrote is this run's
+    // work and has to be declared, or it stays dirty in the tree for whoever
+    // runs next to trip over.
+    ...domainSeeding.appended.map((s) => s.path),
     ...vanishedPaths,
   ];
   await publishStep(root, { dryRun: options.dryRun, assumePublish: options.assumePublish, log, owned });
