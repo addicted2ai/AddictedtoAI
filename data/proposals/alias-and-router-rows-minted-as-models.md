@@ -27,7 +27,7 @@ evidence: >
   "Auto Router (Beta)", "Free Models Router", "Pareto Code Router", "OpenRouter:
   Fusion", "Body Builder (beta)" — and each has a minted entry too. This
   repository has already reasoned from the same premise once, in
-  `data/proposals/rejected/zai-glm-flash-latest-alias.md` (2026-09-02): "An
+  `data/proposals/dropped/zai-glm-flash-latest-alias.md` (2026-09-02): "An
   alias row is a router convenience: it names a pointer that already resolves to
   a live model." That declination was about a blog note; nothing has ever
   measured the population inside the wiki.

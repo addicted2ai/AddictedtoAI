@@ -22,8 +22,11 @@ evidence: >
   `data/changes.jsonl` records both identically, as `kind: "retirement"` (the
   file's last line, `key` ending `|qwen/qwen3.8-max|$retirement`).
   `lib/changes.mjs:173` maps that kind to the string `retired`, asserted at
-  `lib/changes.test.mjs:84`, and `MATERIAL_KINDS` at `lib/changes.mjs:35`
-  carries it onto the home changed feed — where it is not a hypothetical:
+  `lib/changes.test.mjs:84`, and `lib/site.mjs:118` — `changes:
+  changedFeed(changeLines, { entries: corpus.entry })` — carries it onto the
+  home changed feed, unfiltered: `changedFeed` drops only `kind:
+  "annotation"`, so every other line reaches the reader with no material-kind
+  gate anywhere in the path — where it is not a hypothetical:
   `out/index.html`, built from this branch on 2026-09-05, renders the two lines
   adjacent, "2026-09-05 Qwen: Qwen3.8 Max (0902) arrival" immediately followed
   by "2026-09-05 Qwen: Qwen3.8 Max retired". Only one of the two was a
