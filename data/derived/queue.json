@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 12,
+  "count": 13,
   "items": [
     {
       "detail": "The body no longer implies Reuters is the only outlet naming the two secretaries, but the Sources list still does. Line 80 describes the Globe and Mail item as \"the account that names Lutnick and Bessent\" — the definite article makes the same uniqueness claim this job removed two screens above. Time's 3 July 2026 write-up of the same FT reporting names all three (\"The FT said among those Altman was in active talks with about public ownership were Trump himself, Treasury Secretary Scott Bessent, and Commerce Secretary Howard Lutnick\", https://time.com/article/2026/07/03/openai-invest-ai-trump-administration-sam-altman/, retrieved 5 September 2026). \"an account that names Lutnick and Bessent\" fixes it. The adjacent CNN annotation, \"it names neither secretary\", is a claim about CNN specifically and needs no change.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-11 (`j-20260905-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -84,6 +84,15 @@
       "type": "repair"
     },
     {
+      "detail": "`proposal.md` says \"Resolved as keeper ruling K46\" and `specs/blog/spec.md` says \"The bar was withdrawn as keeper ruling K46\". The record does not support \"keeper\". `loops/ui-loop/state.md:59` records it as \"**K46** (BLIND-002)\" with no keeper attribution, in a list that marks keeper decisions explicitly (\"K23 keeper, K24–K29 delegated\"; \"**K43** (keeper, 2026-09-05)\"; \"**K45** (keeper via orchestrator)\"). BLIND-002's own \"Scope of the ruling\" says the opposite in as many words: \"This is not escalated: under K40 it is far short of 'insane catastrophic project threatening'.\" K46 was taken under K40 blanket delegation while the keeper was away. Replacing \"keeper ruling K46\" with \"ruling K46, taken under the K40 delegation\" in both places fixes it, and it matters precisely because the passage exists to tell a later reader who decided this and on what authority.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-19 (`j-20260905-19.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "openspec/changes/flag-what-moved-the-frontier/specs/blog/spec.md",
+      "target": "openspec/changes/flag-what-moved-the-frontier/specs/blog/spec.md",
+      "title": "Call K46 a delegated ruling, not a keeper ruling",
+      "type": "repair"
+    },
+    {
       "detail": "The proposal says of `MATERIAL_KINDS`: \"`price`, `context` and `status` are material **field** names — they travel on a line's `field`\". Parsing all 182 lines, the `field` values actually carried are `price_input` (8), `price_output` (8), `status` (6) and `context_window` (1). Only `status` travels verbatim; `price` and `context` are the spec's and registry's names for the material-field *categories* (`data/sources/registry.json` declares `price_input`, `price_output`, `context_window`). The load-bearing half of the sentence is exactly right and I confirmed it — all three appear as a `kind` on zero of the 182 lines — so this is a dropped qualifier, not a wrong claim. \"are the material field categories, carried on a line's `field` as `price_input`, `price_output` and `context_window`\" would fix it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-18 (`j-20260905-18.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
@@ -111,5 +120,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 12
+  "total_before_cap": 13
 }
