@@ -141,21 +141,22 @@ A post-training lab has no base models of its own, so its history is a list of
 other people's. Nous Research's is unusually legible, because OpenRouter never
 deletes an author page. Read
 [theirs](https://openrouter.ai/nousresearch) from the bottom and it goes:
-Hermes 13B and 70B on Llama 2; Capybara and the Hermes 2 family on Yi 34B, on
-Mixtral 8x7B in both DPO and SFT cuts, and on Mistral 7B; Hermes 2 Pro and
-Theta on Llama 3 8B; DeepHermes 3 on Mistral 24B; then Hermes 3 and Hermes 4 on
-Llama 3.1 at 70B and 405B. It is a record of which open base was worth building
-on in a given quarter, kept by a lab that had to choose one every time.
+Hermes 13B and 70B on Llama 2, with two Capybara releases beside them; the
+Hermes 2 family on Mistral 7B, on Mixtral 8x7B in both DPO and SFT cuts, and on
+Yi 34B; Hermes 2 Pro and Theta on Llama 3 8B; DeepHermes 3 on Mistral 24B and
+on Llama 3 8B; then Hermes 3 and Hermes 4 on Llama 3.1 at 70B and 405B. It is a
+record of which open base was worth building on in a given quarter, kept by a
+lab that had to choose one every time.
 
 The choosing stopped being visible there on 26 August 2025, when Hermes 4 70B
 and 405B were listed — still on the Llama 3.1 weights the router had been
-serving Hermes 3 from since the previous August. Four days later Nous published
+serving Hermes 3 from since August 2024. Four days later Nous published
 Hermes-4-14B on {{fact:org/nous-research#hermes_4_14b_base}}. In November came
 Hermes 4.3 on {{fact:org/nous-research#hermes_4_3_base}}; in December, Nomos 1,
 a proof-writing specialisation of {{fact:org/nous-research#nomos_1_base}} built
 with Hillclimb AI, whose card scores it at
-{{fact:org/nous-research#nomos_1_putnam}}. The router lists none of them, and
-the most-liked repository in the whole Hermes 4 line is one of them:
+{{fact:org/nous-research#nomos_1_putnam}}. The router lists none of the three,
+and the most-liked repository in the whole Hermes 4 line is among them:
 Hermes-4.3-36B has {{fact:org/nous-research#hermes_4_likes}}.
 
 So the Llama chapter is the only one the catalog carries, and it closed while
@@ -164,21 +165,19 @@ weights. Hermes 4.3 is, in Nous's words,
 {{fact:org/nous-research#psyche_production_first}} — the distributed-training
 network it had announced six months earlier, on 14 May 2025, which shards a run
 across idle hardware and settles who did what through Solana smart contracts.
-Decentralised training is the thing Nous is distinguished by and had never
-shipped in a product; the first model that carries it is one of the ones with
-no row.
+Distributed training is what Nous is known for and had never put inside a
+shipped model; the first one that carries it is among the three the router does
+not list.
 
 Psyche's own first run went further and hid better. Consilience 40B was
 pretrained from scratch over the internet —
 {{fact:org/nous-research#consilience_architecture}} — with no annealing pass,
 on the stated ground that annealing "may potentially constrain creativity and
 interesting behaviors", and released under
-{{fact:org/nous-research#consilience_license}}. The lab that had spent its
-whole existence post-training other companies' foundation models had built one
-and put it in the public domain. It sits on Hugging Face under
-`PsycheFoundation`, not `NousResearch`, invisible to anyone browsing the lab's
-own model list — and on any router that carried it the author prefix would not
-be `nousresearch` either.
+{{fact:org/nous-research#consilience_license}}. The lab whose entire router
+history is other companies' bases had built one of its own and put it in the
+public domain. It sits on Hugging Face under `PsycheFoundation`, not
+`NousResearch`, so it is invisible to anyone browsing the lab's own model list.
 
 The last thing a four-row column cannot show is that Nous now runs a catalog of
 its own. Nous Portal bills itself as
