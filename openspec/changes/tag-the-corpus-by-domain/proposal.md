@@ -17,11 +17,22 @@ of 'domain' … to tie things together (tools, frontier, wiki)"*.
 The obvious place to put it is the place that is already taken. A tool
 listing's `category` is *"the job it is for"* (`directory`), which sounds like
 the same question and is not. Measured on 2026-09-05: of the 35 curated
-listings under `content/directory/tools/`, **28 map to no domain at all** —
-`local`, `inference`, `training`, `observability`, `data`, `frameworks` and
-`evaluation` are jobs performed across every domain and belonging to none. An
-axis that leaves four listings in five with nothing to say is a different axis,
-not a refinement of the existing one.
+listings under `content/directory/tools/`, **23 map to no domain at all** —
+`local` (5), `inference` (5), `training` (3), `observability` (3), `data` (3),
+`frameworks` (2) and `evaluation` (2) are jobs performed across every domain
+and belonging to none. That is the count under `EN-domain-facet.md` §4's own
+mapping, which sends `retrieval` (3) → `research`; leaving `retrieval` unmapped
+instead gives 26. An axis that leaves at least two listings in three with
+nothing to say is a different axis, not a refinement of the existing one.
+
+*(The upstream artifacts state 28 here — `EN-domain-facet.md` §4,
+DESK-ORDER-001 §3 and `SPEC-REVIEW-GUIDE.md` row 36 all say "28 of 35 listings
+map to no domain". Recounted from the tree on 2026-09-05, the seven categories
+§4 itself lists as mapping to nothing hold 5+5+3+3+3+2+2 = 23 listings, and §4's
+mapping accounts for the other twelve — coding (3), agents (2), image (2),
+audio (2), retrieval (3). 28 is 35 minus the seven category **names**. The
+conclusion §4 draws is untouched by the recount: most listings map to nothing,
+so `domains` is optional on tools.)*
 
 This change adds that second axis to `wiki` and to `directory`. It re-decides
 nothing: the vocabulary, the closure, the two-field split and the ordering rule

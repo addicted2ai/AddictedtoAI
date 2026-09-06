@@ -2,8 +2,9 @@
 
 Drafted, not implemented. Every box below is open except task 14, which is the
 drafting gate and was run. The change is deliberately not archived: it has no
-implemented tasks, and DESK-ORDER-001 §6 sequences §3 after §1 and after the
-reviewing session has read this delta.
+implemented tasks; DESK-ORDER-001 §6 sequences §3 after §1 (§6 says nothing
+about review); and the maintainer's 2026-09-05 instruction is that the ui-loop
+session reads this delta before it is treated as final.
 
 **Task 1 of `flag-what-moved-the-frontier` is a hard prerequisite.** That change
 creates `lib/domains.mjs`; this one reads it and creates no second constant. If

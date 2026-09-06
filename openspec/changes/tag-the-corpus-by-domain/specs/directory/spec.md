@@ -20,17 +20,27 @@ serves**. These are different questions and neither answers the other, which is
 why the facet is added rather than folded into the category list.
 
 The measurement that settles it: of the 35 curated listings under
-`content/directory/tools/` on 2026-09-05, **28 map to no domain at all**.
-Their categories — `local`, `inference`, `training`, `observability`, `data`,
-`frameworks`, `evaluation` — describe jobs that are performed across every
-domain and belong to none. An inference server is not less of an inference
-server for being domain-neutral.
+`content/directory/tools/` on 2026-09-05, **23 map to no domain at all**.
+Their categories — `local` (5), `inference` (5), `training` (3),
+`observability` (3), `data` (3), `frameworks` (2), `evaluation` (2) — describe
+jobs that are performed across every domain and belong to none. That count
+follows `loops/ui-loop/graph/knowledge/EN-domain-facet.md` §4's own mapping,
+under which `retrieval` (3) → `research`; treating `retrieval` as unmapped gives
+26 instead. An inference server is not less of an inference server for being
+domain-neutral.
+
+*(The upstream artifacts all state 28 here — DESK-ORDER-001 §3,
+`loops/ui-loop/graph/knowledge/EN-domain-facet.md` §4, and
+`loops/ui-loop/graph/knowledge/SPEC-REVIEW-GUIDE.md` row 36. Recounted from the
+tree on 2026-09-05, the seven domain-neutral categories hold 23 listings; 28 is
+35 minus the seven category names. The conclusion those artifacts draw is
+unaffected.)*
 
 Therefore:
 
 - `domains` on a tool listing SHALL be **optional**, and the empty set SHALL be
   the common case rather than an omission to be chased. A required field here
-  would force a wrong answer onto four listings in five.
+  would force a wrong answer onto at least two listings in three.
 - It SHALL be **set-valued**, drawing on the same closed vocabulary, with the
   same single definition in the source tree and the same build-time gate, as
   the domain facet in `wiki`. There is not a second vocabulary for tools.
