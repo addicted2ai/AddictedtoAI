@@ -130,7 +130,7 @@ itself.**
 
 #### Scenario: A frontier story is filed beside a full docket
 
-- **WHEN** a scout run has already filed three candidates and finds a sixth
+- **WHEN** a scout run has already filed three candidates and finds a fourth
   story that qualifies under F1–F5 in a domain the vocabulary carries
 - **THEN** it files that story as a fourth candidate declaring `frontier: true`,
   its criterion and its domains, and the merge keeps all four — the cap counts

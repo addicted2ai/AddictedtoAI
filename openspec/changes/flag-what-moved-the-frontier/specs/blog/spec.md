@@ -20,6 +20,12 @@ does, the flag SHALL carry its bar with it — the criterion it qualifies under
 and the domain it lands in — because the flag buys an exemption from the
 scout's candidate cap, and an exemption without a bar is a loophole.
 
+What the flag marks is a **record**: something that happened, on a date, with
+evidence a reader can check. It is never a position in a ranking. A rank is not
+a claim this site states on its own authority (`directory`), and a table of
+positions has no motion in it — which is the whole reason a dated record and
+not a leaderboard is what a frontier surface is built from.
+
 Three front-matter keys, and the flag is the only optional one:
 
 - `frontier: true` — optional; absent means false.

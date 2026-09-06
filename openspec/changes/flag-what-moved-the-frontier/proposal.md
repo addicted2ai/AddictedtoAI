@@ -160,6 +160,15 @@ implements §3 to discover, and named as a task below.
   visibly separate."* The empty-state half of that clause is not decoration:
   the red team's rot-within-a-week finding and Dated Ledger's 32 identical
   empty cells reading as a broken page (JV-sys v2) are what produced it.
+- **It does not settle date semantics or title handling on the rendered
+  section.** Two rules from the same round belong with the display contract and
+  are recorded here so they travel with it rather than being lost between
+  changes: **one date meaning per record kind, labelled** — a release date is
+  the publication date, an arrival date is the catalog listing date, a claim
+  date is the accessed date, and mixing them silently is the rot mode this was
+  written against; and **news titles are carried verbatim and attributed, with
+  any hype check applied to fixed copy only**, because release notes are hype
+  by trade and rewriting a vendor's headline is not this site's job.
 - **It does not register the radar feeds.** Hugging Face Hub, covered
   organisations' release RSS, arXiv listings and GitHub releases are §5, and
   §5 is ordinary registry data — `specs/pulse` says adding a source is not an
