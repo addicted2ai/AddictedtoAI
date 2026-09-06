@@ -7,18 +7,18 @@ lines after this delta lands and after the reviewing session has read it.
 
 ## The vocabulary and the schema
 
-- [ ] 1. `lib/domains.mjs` (new): the closed domain vocabulary — `coding`,
+- [x] 1. `lib/domains.mjs` (new): the closed domain vocabulary — `coding`,
       `agents`, `image`, `video`, `audio`, `research`, `science-math`,
       `robotics` — as one frozen constant, and the frontier criteria `F1`–`F5`
       as another. **One definition in the source tree**: the §3 wiki facet
       reads this file when it lands rather than restating the list. Two closed
       lists of the same eight values drift, and the drift is silent.
-- [ ] 2. `lib/schema.mjs`: add `frontier`, `frontier_reason` and `domains` to
+- [x] 2. `lib/schema.mjs`: add `frontier`, `frontier_reason` and `domains` to
       `postSchema`. The schema is `.strict()`, so without this the three keys
       are rejected outright and no post can carry them. `frontier` defaults
       false; the other two are optional at the field level and made conditional
       by task 3, because a required field would reject every unflagged post.
-- [ ] 3. `lib/schema.mjs`: a `superRefine` on `postSchema` — `frontier: true`
+- [x] 3. `lib/schema.mjs`: a `superRefine` on `postSchema` — `frontier: true`
       with no `frontier_reason`, a `frontier_reason` outside F1–F5, or any
       `domains` value outside the vocabulary is an issue whose `path` names the
       offending field. **An absent or empty `domains` is not an issue**,
@@ -30,17 +30,17 @@ lines after this delta lands and after the reviewing session has read it.
 
 ## The tests that make the gate a mechanism
 
-- [ ] 4. Tests beside `lib/schema.mjs`, one per refusal, each naming the field
+- [x] 4. Tests beside `lib/schema.mjs`, one per refusal, each naming the field
       it expects in the error: flag with no reason; flag with `frontier_reason:
       F6`; flag with `domains: [legal]`; flag with `domains: [text]` (the
       vocabulary deliberately excludes it — general is unmarked).
-- [ ] 5. The controls, without which task 4 proves nothing: a post with no
+- [x] 5. The controls, without which task 4 proves nothing: a post with no
       `frontier` key validates exactly as before; a post with
       `frontier: false` and no other new key validates; a fully valid flagged
       post validates and round-trips all three values; and — the control that
       pins K46 — a flagged post with a valid `frontier_reason` and **no**
       `domains` key validates, as does one with `domains: []`.
-- [ ] 6. `lib/review-hash.test.mjs`: assert that `frontier`, `frontier_reason`
+- [x] 6. `lib/review-hash.test.mjs`: assert that `frontier`, `frontier_reason`
       and `domains` are **absent** from `MECHANICAL_FRONT_MATTER_KEYS`, and
       that a post gaining any of them changes its `reviewedHash`. This is a
       guard against a specific, identified future defect, not a tautology:
