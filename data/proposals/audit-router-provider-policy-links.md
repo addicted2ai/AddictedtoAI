@@ -31,6 +31,8 @@ evidence: >
   (`https://www.aionlabs.ai/terms/`, fetched 2026-09-06).
   One provider out of 106 is one sample; the point of the job is that nobody has
   taken the other 105.
+proposed_by_job: j-20260906-08
+proposed_by_type: entry
 ---
 
 This is a live derived view of a thing that is published, machine-readable, and
