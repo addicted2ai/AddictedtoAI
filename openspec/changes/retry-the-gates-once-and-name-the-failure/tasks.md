@@ -60,14 +60,23 @@ satisfies it and the task that measures it.
       red build instead of a silent policy change. Pair it with the existing
       `gate-transport-retry.test.mjs:549` control — a retried-then-**passed**
       gate is not a failure toward breaker 1 — so the two together say exactly
-      where the line is.
-- [ ] 6. **N5 — BUILD.** A source guard beside the test: `loop/lib/breakers.mjs`
-      contains no read of the classification. Scan the file for the exported
-      marker constant, for `transport`, and for the accessor names
-      `isTransportFailure` / `gatesHitTransportFailure`, and fail on a hit,
-      naming this requirement. A guardrail is a mechanism, not an instruction,
-      and the instruction "do not exempt marked failures" is otherwise enforced
-      by nothing at all.
+      where the line is. **The budget leg of N5 is asserted here too**, because
+      "any count, any breaker or any budget" is three claims and the breaker
+      count is only one of them: assert that a marked twice-failed job's ledger
+      line carries an `mm` computed exactly as an unmarked twice-failed job's
+      does — the same two runs' spend, recorded, not waived — comparing the two
+      lines field for field rather than asserting `mm > 0`.
+- [ ] 6. **N5 — BUILD.** A source guard beside the test: neither
+      `loop/lib/breakers.mjs` **nor `loop/lib/budget.mjs`** contains a read of
+      the classification. Scan both files for the exported marker constant, for
+      `transport`, and for the accessor names `isTransportFailure` /
+      `gatesHitTransportFailure`, and fail on a hit, naming this requirement.
+      Both files grep clean today (measured 2026-09-06: `budget.mjs` returns
+      zero hits for `transport`/`TRANSPORT`), so the guard starts green and its
+      whole value is the day someone makes it red. A guardrail is a mechanism,
+      not an instruction, and the instruction "do not exempt marked failures" is
+      otherwise enforced by nothing at all — least of all on the budget, where
+      no test looks at all.
 
 ## The record
 
@@ -92,13 +101,35 @@ satisfies it and the task that measures it.
       **(b)** allow a second retry — task 1's no-third-run assertion must fail
       alone;
       **(c)** add an exemption to `checkConsecutiveFailures` that skips a
-      failure whose note contains `transport-marked` — task 5 must fail and task
-      6 must fail, and every existing breaker test must still pass, which is the
-      point: the exemption is invisible to every test that exists today;
+      failure whose note contains `transport-marked` — task 5's breaker control
+      must fail and task 6 must fail, and every existing breaker test must still
+      pass, which is the point: the exemption is invisible to every test that
+      exists today;
       **(d)** move the `transport` computation after the log truncation — task
-      4's covering test must fail alone.
-      Four mutations failing four disjoint sets is the evidence these are four
-      mechanisms rather than one described four times.
+      4's covering test must fail alone;
+      **(e)** hard-code a second literal copy of the marker sentence in one
+      `loop/` emitting site instead of interpolating
+      `TRANSPORT_FAILURE_MARKER` — **task 3's new `loop/` scan must fail, and
+      the existing `pulse/` scan (`gate-transport-retry.test.mjs:276`) must
+      stay green**. That asymmetry is exactly why task 3 exists: the guard
+      written after the first re-invention watches only the directory the
+      re-invention happened in, and a literal copy inside `loop/` is invisible
+      to every test on this tree today, including the marker-presence
+      assertion at `:249`, which a byte-identical copy satisfies;
+      **(f)** return the flat string `gates failed` from `gateFailureNote`
+      (`gates.mjs:118`) — task 7's substring assertion must fail alone. This is
+      the exact regression the beads were filed about, so a mutation that
+      restores it and breaks nothing would mean the change bought no protection
+      against it recurring;
+      **(g)** drop `first_failed` from `authorPhase.gates`
+      (`run.mjs:488-493`) — task 8's covering test
+      (`gate-transport-retry.test.mjs:508`) must fail alone;
+      **(h)** waive the second run's spend for a marked failure in the ledger
+      write — task 5's `mm` comparison must fail alone, and no breaker test may
+      move, which is the budget leg of N5 and the one a breaker-only mutation
+      cannot reach.
+      Eight mutations failing eight disjoint sets is the evidence these are
+      distinct mechanisms rather than one described eight times.
 
 ## Gates
 
