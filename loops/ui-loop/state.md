@@ -56,7 +56,8 @@ process each round knows only what this file says. Every claim cites an artifact
   machine-maintained (beside `timeline`), editorial ones go through review; the vendor-claim record
   lives BESIDE the entry as its own OpenSpec change, source host + tri-state `verified`. **K45**
   (keeper via orchestrator): this session REVIEWS the three OpenSpec drafts before implementation;
-  origin map `knowledge/SPEC-REVIEW-GUIDE.md`.
+  origin map `knowledge/SPEC-REVIEW-GUIDE.md`. **K46** (BLIND-002): `domains` optional on a flagged
+  record, absent = general (a general lane). **K47**: seeding append-only; removal editorial.
 - **Round-2 rulings (2026-09-05; K23 keeper, K24–K29 delegated).** **K23** PLAYERS BOARD carried
   forward; Dated Ledger's branch kept as a record. **K24** index columns only when a registry index
   exists. **K25** the nav discharges K19 at 390. **K26** door rows by most-recent change. **K27** PB's
@@ -74,15 +75,10 @@ process each round knows only what this file says. Every claim cites an artifact
   feeds fill cells; no label assumes one source. **K22** a closed, small `domain` facet joins the Desk
   order (`EN-domain-facet.md`); the graph ASSUMES it: finalists absorb a domain as data, no template edit.
 
-## Known evidence lies
+## Known evidence lies · Failure modes to guard
 
-L7 (model pages render "not published": Desk backlog, never a UI finding), L8 (concurrent builds
-ENOENT): text in `state-archive.md`; also `JUDGE.md` L1–L8. Binding.
-
-## Failure modes to guard
-
-Binding; text in `state-archive.md`: build-lock pid reuse; keeper items age (F17); a gate that sees
-nothing fails; judges scoped by oracle, code totals; this file over budget (now 4×) — check first.
+Both binding; text in `state-archive.md` and `JUDGE.md` L1–L8. L7: "not published" on model pages is
+Desk backlog, never a UI finding. Check this file's size before every commit (over budget 4× so far).
 
 ## Next (keeper decisions)
 
