@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 13,
+  "count": 14,
   "items": [
     {
       "detail": "The body no longer implies Reuters is the only outlet naming the two secretaries, but the Sources list still does. Line 80 describes the Globe and Mail item as \"the account that names Lutnick and Bessent\" — the definite article makes the same uniqueness claim this job removed two screens above. Time's 3 July 2026 write-up of the same FT reporting names all three (\"The FT said among those Altman was in active talks with about public ownership were Trump himself, Treasury Secretary Scott Bessent, and Commerce Secretary Howard Lutnick\", https://time.com/article/2026/07/03/openai-invest-ai-trump-administration-sam-altman/, retrieved 5 September 2026). \"an account that names Lutnick and Bessent\" fixes it. The adjacent CNN annotation, \"it names neither secretary\", is a claim about CNN specifically and needs no change.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-11 (`j-20260905-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -111,6 +111,15 @@
       "type": "repair"
     },
     {
+      "detail": "proposal.md counts \"71 lines\" as 69 `agentic_index` plus 2 `coding_index` number→absent transitions, and I reproduce those two figures exactly from `previous.json` (2026-09-04T06:00:03.738Z, 427 rows) and `latest.json` (2026-09-05T06:00:04.599Z, 431 rows). But 3 of the 71 are rows that left the snapshot entirely rather than rows that dropped the field: `qwen/qwen3.8-max` (carried both indices) and `ibm-granite/granite-4.1-8b` (carried `coding_index`). Excluding those, 68 surviving rows lost `agentic_index` and **zero** surviving rows lost `coding_index` — a vanished row is handled by the separate last-known-value/repair rule in `specs/wiki`, not by a seeding-signal disappearance. Same instrument shows the \"2 gained it\" on `coding_index` are the two new arrivals `openai/gpt-6-astra` and its `:batch` twin, not existing rows regaining a value, so the parenthetical \"2 rows lost `coding_index` and 2 gained it — so even the stable row is not stationary\" is row churn described as field churn. The conclusion is untouched (68/182 is still two fifths), and the draft already flags that instruments differ; the fix is one clause — \"71 number→absent transitions, 3 of them rows that left the snapshot altogether\" — in proposal.md's finding 2 and in the matching sentence of `specs/wiki/spec.md`.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-21 (`j-20260905-21.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "openspec/changes/tag-the-corpus-by-domain/proposal.md",
+      "target": "openspec/changes/tag-the-corpus-by-domain/proposal.md",
+      "title": "Say that 3 of the 71 counted transitions are vanished rows, not vanished fields",
+      "type": "repair"
+    },
+    {
       "detail": "The revision replaced the old \"four listings in five\" with \"at least two listings in three\", in the proposal (\"An axis that leaves at least two listings in three with nothing to say\") and in the directory delta (\"A required field here would force a wrong answer onto at least two listings in three\"). At the lower of the two readings the same sentences state — 23 of 35 — the fraction is 0.6571, and two in three of 35 is 23.33, so the \"at least\" floor is breached by a third of a listing. It holds at the 26 reading (0.7429). Both exact counts are printed alongside, so nothing is hidden, but the qualifier is doing work it does not quite earn. \"roughly two listings in three\", or simply \"onto 23 of the 35\", would be exact under either reading.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-16 (`j-20260905-16.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
@@ -120,5 +129,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 13
+  "total_before_cap": 14
 }
