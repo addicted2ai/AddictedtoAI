@@ -28,7 +28,7 @@ feed, not a ranking.
 ```yaml
 frontier: true                 # optional; absent = false
 frontier_reason: F1 | F2 | F3 | F4 | F5     # required when frontier: true; one of the criteria below
-domains: [coding, agents]      # required when frontier: true; ≥1 value from the closed vocabulary (§3)
+domains: [coding, agents]      # OPTIONAL (K46, BLIND-002): values from the closed vocabulary (§3); absent = general
 ```
 
 **Criteria (exactly one cited; the scout's "why passed" record shows frontier candidates declined):**
@@ -49,8 +49,11 @@ domains, using the radar feeds in §5 as inputs. **Cap clause (blog spec):** a s
 `frontier: true` does not count against the three-candidates-per-day cap; the new-writing budget
 share (≤45%) still binds it; the flag must cite its criterion or the candidate fails filing.
 
-**Gate (build):** `frontier: true` without `frontier_reason` in F1–F5 or without ≥1 valid
-`domains` value fails the build. **Backfill:** tag the existing posts (15 on 2026-09-05) once,
+**Gate (build):** `frontier: true` without `frontier_reason` in F1–F5, or with any `domains` value
+outside the vocabulary, fails the build. `domains` may be absent: by K38 absence IS the value
+"general" (K46, BLIND-002 — the ≥1 bar was written while `text` still existed to carry general
+stories; a court filing, a regulator's action, a licence term or a system card are frontier events
+with no domain). The section renders a "general" lane under the same three-most-recent rule. **Backfill:** tag the existing posts (15 on 2026-09-05) once,
 editorially; the section is then not empty on day one.
 
 **Display contract (UI, next brief):** per domain, the three most recent flagged records by
