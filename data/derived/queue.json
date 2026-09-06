@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 6,
+  "count": 7,
   "items": [
     {
       "detail": "The body no longer implies Reuters is the only outlet naming the two secretaries, but the Sources list still does. Line 80 describes the Globe and Mail item as \"the account that names Lutnick and Bessent\" — the definite article makes the same uniqueness claim this job removed two screens above. Time's 3 July 2026 write-up of the same FT reporting names all three (\"The FT said among those Altman was in active talks with about public ownership were Trump himself, Treasury Secretary Scott Bessent, and Commerce Secretary Howard Lutnick\", https://time.com/article/2026/07/03/openai-invest-ai-trump-administration-sam-altman/, retrieved 5 September 2026). \"an account that names Lutnick and Bessent\" fixes it. The adjacent CNN annotation, \"it names neither secretary\", is a claim about CNN specifically and needs no change.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-11 (`j-20260905-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -18,6 +18,15 @@
       "subject": "content/blog/nemotron-ultra-cc-ioi-2026.md",
       "target": "content/blog/nemotron-ultra-cc-ioi-2026.md",
       "title": "Say that 343.9 and 502.0 are means of five runs, not single scores",
+      "type": "repair"
+    },
+    {
+      "detail": "The entry renders every declared fact (`renderFacts` in `lib/render/entry.mjs` lays out all of `doc.factsHtml`), so its Facts section shows the feed's `intelligence_index` of 47.1 beside the cited `intelligence_index_by_effort`, \"59 at high reasoning, 57 at medium, 52 at low; up 3 from Gemini 3.7 Flash at high, level with sub-maximum efforts of GPT-5.6 Sol and Grok 4.6\" (accessed 2026-09-03, the day before the rebase). Three things collide on screen, measured against latest.json today: every effort level sits above the 47.1 headline for the same model; \"up 3 from Gemini 3.7 Flash at high\" contradicts the live gap of 47.1 - 45.2 = 1.9; and \"level with sub-maximum efforts of GPT-5.6 Sol and Grok 4.6\" is false where Sol is 51.3 and Grok 4.6 is 50.6, both maxima below the quoted 52. This is the defect job j-20260905-13 was dispatched to end, on a page its directive put out of scope (\"and nothing else\"), which is why it is carried rather than blocked. The fix is a line of attribution marking the split as a pre-v4.2 reading, per addictedtoai-ego8 — not deletion of the fact.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-13 (`j-20260905-13.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/google-gemini-3-8-flash.md",
+      "target": "content/wiki/model/google-gemini-3-8-flash.md",
+      "title": "Attribute the by-effort split on the 3.8 Flash entry as a pre-v4.2 reading",
       "type": "repair"
     },
     {
@@ -57,5 +66,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 6
+  "total_before_cap": 7
 }
