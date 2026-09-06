@@ -20,7 +20,7 @@ import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { makeContext } from './lib/paths.mjs';
-import { loadConfig } from './lib/config.mjs';
+import { loadConfig, JOB_TYPES } from './lib/config.mjs';
 import { loadRunners, pickRunner, conformanceGate, loadConformance } from './lib/runners.mjs';
 import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LEDGER_FIELDS } from './lib/ledger.mjs';
 import { invocationAllowance, jobTotalMinutes, lanePause, minInvocationMinutes } from './lib/budget.mjs';
@@ -792,8 +792,44 @@ export async function runLoop(ctx, opts = {}) {
       ctx.log(`${branch} has no committed .job/brief.md — cannot resume it honestly; leaving it for the maintainer`);
       return { started: true, selected: null, reason: 'unresumable branch' };
     }
+    // Where this job came from, read off the branch rather than remembered.
+    // Without it a resumed proposal job merges and leaves its proposal
+    // selectable, which is the same defect through the resumption door.
+    const origin = readCommittedJobSource(ctx.repoRoot, branch);
+    // -----------------------------------------------------------------------
+    // THE TYPE IS READ OFF THE BRANCH FIRST, AND THE ORDER IS THE WHOLE FIX
+    // (beads addictedtoai-bze3).
+    //
+    // The type was decided at SELECTION and written into `.job/source.json`
+    // beside the brief (see the write below, ~120 lines on). Until 2026-09-06
+    // this line consulted only the job's last LEDGER line and hard-coded
+    // `machinery` when there wasn't one — which is precisely the state a branch
+    // interrupted before its first ledger line is in. Measured: j-20260906-10,
+    // a `verify` job whose first run died removing its worktree, resumed as
+    // `machinery` and charged 7.67 model-minutes to the tightest ceiling in
+    // `data/config.json`. The correct value was committed on the branch the
+    // whole time and `readCommittedJobSource` was already being called for it,
+    // thirty lines after the decision.
+    //
+    // `machinery` READS AS THE CONSERVATIVE DEFAULT AND IS NOT: the type picks
+    // the budget category, the per-type wall-clock cap and the shed level, and
+    // it is written into the append-only ledger permanently. Falling back to it
+    // is a guess, so it stays last and it says so in the log.
+    //
+    // The committed value is checked against `JOB_TYPES` because it comes off a
+    // branch: an unrecognised type would index `job_caps_minutes` at `undefined`
+    // rather than fail, and a value that cannot be a job type has not "been
+    // found". The ledger fallback is left exactly as it was.
+    // -----------------------------------------------------------------------
+    const committedType = JOB_TYPES.includes(origin?.type) ? origin.type : null;
     const lastType = resumeTarget.last?.type;
-    job = { type: lastType ?? 'machinery', source: 'resumed', title: `resume ${jobId}`, detail: '' };
+    const typed = committedType
+      ? { type: committedType, from: '.job/source.json, committed at selection' }
+      : lastType
+        ? { type: lastType, from: "the job's last ledger line" }
+        : { type: 'machinery', from: 'NEITHER a committed source record nor a ledger line — this is the fallback, not a measurement' };
+    ctx.log(`resumed job type: ${typed.type} (from ${typed.from})`);
+    job = { type: typed.type, source: 'resumed', title: `resume ${jobId}`, detail: '' };
     // The committed brief's spend figures are frozen at the run that wrote it.
     // For a resumed job they are stale by construction, so the current ones go
     // above it and say so.
@@ -820,10 +856,8 @@ export async function runLoop(ctx, opts = {}) {
       };
     })());
     ctx.log(`resuming ${branch} (${resumeTarget.reason}, ${resumeTarget.ageDays.toFixed(1)} days old) — no retry consumed`);
-    // Where this job came from, read off the branch rather than remembered.
-    // Without it a resumed proposal job merges and leaves its proposal
-    // selectable, which is the same defect through the resumption door.
-    const origin = readCommittedJobSource(ctx.repoRoot, branch);
+    // The rest of what the branch records about its own selection — read once,
+    // above, before the type was chosen.
     if (Array.isArray(origin?.issues) && origin.issues.length) {
       jobIssues = origin.issues.filter(isIssueId);
       ctx.log(`this branch records that it serves ${jobIssues.join(', ')}`);
