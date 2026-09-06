@@ -128,8 +128,31 @@ bytes, so no record of theirs moves.
 
 ## Runs
 
+All three were run in this worktree on **2026-09-06**, and their transcripts are
+appended to `verify-frontier-backfill-blog-posts.raw.txt` under
+`SECOND INVOCATION` rather than summarised here. The worktree carries no
+`node_modules` — git does not track it — so the repository's tree was junctioned
+in exactly as `loop/lib/gates.mjs`'s `linkNodeModules` does, and removed again
+afterwards, which is the only reason `npm` could run at all
+(`data/proposals/author-worktrees-carry-no-node-modules.md` is the standing
+report of that gap).
+
 | command | result |
 |---|---|
-| `node tools/check-frontier-backfill.mjs` | exit 0 — 16/16 parse under `postSchema`; 6 flagged, 10 declined, matching the table above |
-| `npm run build` | see below |
-| `npm test` | see below |
+| `node tools/check-frontier-backfill.mjs` | **exit 0** — 16/16 parse under `postSchema`; 6 flagged, 10 declined, matching the table above |
+| `npm test` | **exit 0** — 105 test files, 1479 pass, 0 fail, 0 skipped |
+| `npm run build` | **exit 0** — `prebuild: content ok`, 690/690 static pages generated, export complete |
+
+Two numbers from the build that a reviewer should not have to go looking for:
+
+- `prebuild: volatile-literal coverage — post: 0 document(s) with an
+  author-prose front-matter field scanned, 16 with none`. The three keys this
+  job adds are scanned by nothing, so the run's 159 currency-literal warnings
+  are the pre-existing corpus-wide set; every blog warning in it names a body
+  line this diff does not touch.
+- `prebuild: review binding — of 180 reviewable piece(s): recorded 49,
+  mismatched 6, unbound 125, missing 0`. The six are this job's six flagged
+  posts, for the reason the section above states. `verify-launch` fails on them
+  until a verdict binds the changed bytes, and a job does not write its own
+  verdict — so that failure is this job's expected end state, not a defect it
+  can clear from the inside.

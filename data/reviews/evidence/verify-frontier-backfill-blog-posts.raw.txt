@@ -130,3 +130,55 @@ RESULT
   1 of 15 check(s) FAILED:
     - seed prose pieces reviewed: 6 of 180 piece(s) are not cleared to launch
   The launch minimums are NOT met.
+
+
+===== SECOND INVOCATION, 2026-09-06 — the acceptance gates, run in this worktree =====
+
+The first invocation left the `npm run build` / `npm test` rows of the evidence
+file reading "see below" with nothing below. This is that run. The worktree had
+no `node_modules` (git does not carry it), so the repository tree was junctioned
+in exactly as `loop/lib/gates.mjs:linkNodeModules` does it and removed again
+afterwards; the link is the only reason these commands could run at all.
+
+--- node tools/check-frontier-backfill.mjs (re-run, exit 0) ---
+# split: 6 flagged, 10 declined, 16 total
+
+RESULT: every post satisfies postSchema and matches the committed decision table.
+
+--- npm test (exit 0) ---
+npm test: 105 test file(s)
+ℹ tests 1479
+ℹ suites 0
+ℹ pass 1479
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 266173.0466
+
+--- npm run build (exit 0) ---
+prebuild: content — 553 entry, 38 learn, 4 tutorial, 16 post, 35 tool, 27 delta, 0 claim, 673 documents; 89 linkable alias(es), 0 want(s), 5 redirect(s), 159 warning(s)
+prebuild: reviews — 357 record(s); of 95 entry prose body/bodies: 95 approved, 0 not approved (noindex), 0 with no record the join recognises (indexed on body presence — see verify-launch)
+prebuild: review binding — of 180 reviewable piece(s): recorded 49, mismatched 6, unbound 125, missing 0 (mismatched = reviewed then changed; it fails verify-launch and never changes indexability)
+prebuild: volatile-literal coverage — post: 0 document(s) with an author-prose front-matter field scanned, 16 with none
+prebuild: content ok
+prebuild: anchors — 16 post(s), 15 declaring an anchor, 17 declared anchor(s) checked against 182 change line(s)
+prebuild: post-voice — 16 post(s), 0 tripping at least one marker, 0 warning(s). ADVISORY: the reviewer is the gate (reads-as-generated), not this count
+prebuild: post-voice ok
+ ✓ Compiled successfully in 7.4s
+ ✓ Generating static pages (690/690)
+ ✓ Exporting (2/2)
+npm run build exit=0
+
+The 159 prebuild warnings are the corpus-wide currency-literal advisory and are
+unchanged by this diff: `post` shows 0 documents with an author-prose front-matter
+field scanned, so the three keys this job added are scanned by nothing and can add
+no warning. Every blog warning in the run names a body line this job did not touch.
+
+The six mismatched pieces are this job's own six flagged posts and are the
+expected, spec'd consequence recorded in the evidence file: `frontier`,
+`frontier_reason` and `domains` are editorial keys outside
+MECHANICAL_FRONT_MATTER_KEYS, so tagging a post edits its reviewed surface.
+verify-launch fails on them until this job's own review record binds the changed
+bytes. That is not a defect this run can repair from inside the job — a job does
+not write its own verdict.
