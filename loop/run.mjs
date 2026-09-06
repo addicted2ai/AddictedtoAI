@@ -43,6 +43,7 @@ import {
 import { scanJobBranches, readCommittedBrief, readCommittedJobSource } from './lib/resume.mjs';
 import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './lib/health.mjs';
 import {
+  gateCommand,
   gateFailureNote,
   gatesHitTransportFailure,
   runGates,
@@ -447,6 +448,13 @@ async function executeJob(ctx, opts) {
       // Named BEFORE the retry overwrites `gateResult`. These are the scripts,
       // not their output — cheap enough to carry on the job's permanent record,
       // which a log that is never kept is not.
+      // GATE NAMES, deliberately, and they stay gate names: this array is
+      // written into the ledger as `phases[].gates.first_failed`, where every
+      // line already written carries names, and a field whose contents change
+      // shape mid-history cannot be counted across it. The brief renders each
+      // name as the command that would reproduce it (`gateCommandForName`),
+      // which is where the distinction between an npm gate and a node one
+      // belongs (beads addictedtoai-one6).
       const firstFailed = (gateResult.results ?? []).filter((r) => !r.ok).map((r) => r.script);
       ctx.log(
         marked

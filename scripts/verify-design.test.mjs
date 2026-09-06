@@ -35,7 +35,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -221,4 +221,43 @@ test('0qs reproduction: the exact /tools sequence — flagged before the route w
   // the same fixture now reports clean.
   const after = findUnsampledFocusableTags(routeTags, ['/', '/catalog', '/tools']);
   assert.deepEqual(after, []);
+});
+
+// ---------------------------------------------------------------------------
+// A GATE IS A CHECK, NOT A MEASUREMENT OF RECORD (beads addictedtoai-one6).
+// ---------------------------------------------------------------------------
+//
+// The Desk now runs this script as a per-job merge gate, inside the job's own
+// worktree, with `ATAI_VERIFY_DESIGN_NO_RECORD=1`. Left recording, every gated
+// worktree would end dirty with a branch-local `data/launch.json` — and a job
+// that goes on to a revision pass commits its whole worktree with `git add -A`
+// (`loop/run.mjs`, `commitAll`), so that number would MERGE, reaching the
+// reviewer as a diff hunk nobody wrote.
+//
+// MEASURED 2026-09-06 by running the real script twice against the built export
+// in `D:/AddictedtoAI/out`, each time with `design_verification` first deleted
+// from `data/launch.json` so the control is a key the script actually rewrites:
+//
+//     ATAI_VERIFY_DESIGN_NO_RECORD=1  exit 0, 51.0s, design_verification NOT rewritten
+//     ATAI_VERIFY_DESIGN_NO_RECORD=0  exit 0, 45.3s, design_verification rewritten
+//
+// 46 checks, 0 failures both times — the guard skips the WRITE and nothing
+// else. That measurement costs ~50s of Playwright per run, which is why it was
+// taken by hand and is recorded here rather than re-run on every suite; this
+// test is the cheap ratchet that stops the guard from being deleted silently.
+
+test('one6 the launch.json write is guarded, so a gate run records nothing', async () => {
+  const src = await readFile(new URL('./verify-design.mjs', import.meta.url), 'utf8');
+  assert.match(
+    src,
+    /const RECORD = process\.env\.ATAI_VERIFY_DESIGN_NO_RECORD !== '1';/,
+    'the opt-out the Desk sets must still exist',
+  );
+  assert.match(src, /if \(RECORD\) await writeFile\(LAUNCH_FILE,/, 'and the write must still be behind it');
+  assert.equal(
+    (src.match(/writeFile\(LAUNCH_FILE/g) ?? []).length,
+    1,
+    'one write, so guarding it guards all of it',
+  );
+  assert.match(src, /NOT recorded — ATAI_VERIFY_DESIGN_NO_RECORD=1/, 'and the run says which mode it was in');
 });

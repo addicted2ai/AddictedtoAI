@@ -214,6 +214,14 @@ function repoWithRealGates(reviewerMode = 'review-approve') {
           null,
           2,
         ) + '\n',
+      // The two gates that are NOT npm scripts (beads addictedtoai-one6). They
+      // are real files run by a real `node`, exactly as the loop runs the
+      // shipped ones; what they CHECK is not this fixture's subject, so they
+      // pass trivially. A fixture that omitted them would fail its gates on
+      // "the worktree has no scripts/verify-surfaces.mjs", which is the correct
+      // production behaviour and would say nothing about the review brief.
+      'scripts/verify-surfaces.mjs': 'process.stdout.write("verify-surfaces: fixture stub\\n");\n',
+      'scripts/verify-design.mjs': 'process.stdout.write("verify-design: fixture stub\\n");\n',
     },
   });
   writeQueue(ctx, [{ type: 'entry', title: 'write the entry for the fixture subject' }]);
@@ -229,6 +237,11 @@ test('the review brief states which gates really ran on this branch, and on whic
   assert.match(brief, /## What the loop has already verified on this branch/);
   assert.match(brief, /`npm run test` — \*\*PASS\*\*/);
   assert.match(brief, /`npm run build` — \*\*PASS\*\*/);
+  // The two content-shaped verifications the per-job set gained (beads
+  // addictedtoai-one6), named by the command that ran them rather than by an
+  // `npm run` that does not exist.
+  assert.match(brief, /`node scripts\/verify-surfaces\.mjs out` — \*\*PASS\*\*/);
+  assert.match(brief, /`node scripts\/verify-design\.mjs out \d+` — \*\*PASS\*\*/);
   assert.match(brief, /on commit `[0-9a-f]{12}`/, 'which commit, not just "the branch"');
   assert.match(brief, /\*\*Do not re-run them\.\*\*/);
   assert.match(brief, /run\s+\*\*that\*\* check/);
@@ -395,13 +408,23 @@ test('a reviewer told the gates passed is told when they passed on a SECOND run'
       results: [{ script: 'test', ok: true, status: 0 }],
       retried: true,
       transport: false,
-      firstFailed: ['test'],
+      // Gate NAMES, as the ledger records them; the section renders each as the
+      // command that would reproduce it (beads addictedtoai-one6), which is not
+      // `npm run` for the two gates that are not npm scripts.
+      firstFailed: ['test', 'verify-surfaces'],
     },
     'abcdef0123456789',
   );
   assert.match(retried, /\*\*These gates were run twice\.\*\*/);
   assert.match(retried, /The first run FAILED and the second PASSED/);
   assert.match(retried, /What failed the first time: `npm run test`/);
+  assert.match(
+    retried,
+    /`node scripts\/verify-surfaces\.mjs`/,
+    'a gate that is not an npm script is named by the command that would reproduce it',
+  );
+  assert.doesNotMatch(retried, /`npm run verify-surfaces`/, 'and never by an npm script that does not exist');
+  assert.doesNotMatch(retried, /npm run node scripts/, 'and never wrapped in an `npm run` that does not exist');
   assert.match(retried, /carried NO machine-failure marker/, 'stated as a measurement, not a reassurance');
   // And it must not turn into the one instruction this section exists to refuse.
   assert.match(retried, /\*\*Do not re-run them\.\*\*/);

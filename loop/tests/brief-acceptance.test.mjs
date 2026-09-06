@@ -32,6 +32,7 @@ import assert from 'node:assert/strict';
 
 import { assembleBrief, ACCEPTANCE_BY_TYPE, acceptanceChecksFor, proposalRule } from '../lib/brief.mjs';
 import { JOB_TYPES } from '../lib/config.mjs';
+import { DEFAULT_GATES, gateCommandForName } from '../lib/gates.mjs';
 import { DOMAINS, FRONTIER_CRITERIA, FRONTIER_REASONS } from '../../lib/domains.mjs';
 import { makeRepo } from './helpers.mjs';
 
@@ -659,4 +660,22 @@ test('every job type in the closed list has non-empty acceptance checks', () => 
 
   const extra = Object.keys(ACCEPTANCE_BY_TYPE).filter((t) => !JOB_TYPES.includes(t));
   assert.deepEqual(extra, [], `acceptance checks for types that are not jobs: ${extra.join(', ')}`);
+});
+
+test('one6 every brief names the WHOLE gate set its branch will be judged by', (t) => {
+  // The acceptance checks named `npm run build` and `npm test` and nothing
+  // else, so when the merge gate gained `verify-surfaces` and `verify-design`
+  // (beads addictedtoai-one6) the author would have been judged by two checks
+  // it was never told about — and `.job/brief.md` is its only channel. The line
+  // is GENERATED from `DEFAULT_GATES`, so this asserts the whole set for every
+  // job type rather than two literals that can go stale.
+  for (const type of JOB_TYPES) {
+    const text = brief(t, type);
+    for (const g of DEFAULT_GATES) {
+      assert.ok(
+        text.includes(`\`${gateCommandForName(g)}\``),
+        `${type}: the brief never names the ${g} gate its branch will be judged by`,
+      );
+    }
+  }
 });
