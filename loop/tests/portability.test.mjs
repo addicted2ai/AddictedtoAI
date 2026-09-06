@@ -133,18 +133,120 @@ test('no machinery path references a runner by id', () => {
   }
 });
 
+/**
+ * Import specifiers, read from STATEMENTS rather than from the whole file text
+ * (beads addictedtoai-5tq5).
+ *
+ * The pattern used to be applied to the file as one string:
+ *
+ *     /(?:from|import)\s+['"]([^'"]+)['"]/g
+ *
+ * which reads an ordinary English sentence that quotes a phrase after the word
+ * "from" as an import, and then reports it as one. Measured twice in one change
+ * on 2026-09-03: a comment in `loop/run.mjs` and a TEST NAME in
+ * `loop/tests/records-commit.test.mjs`, both of which had to be reworded to get
+ * the gate green. Nothing about the check's purpose was wrong; it was reading
+ * prose.
+ *
+ * Anchoring to the start of a line catches every real import in this repository
+ * — they are all top-level statements — while a sentence, a comment (` * …`)
+ * and a `test('…')` line are all disqualified by their first characters. The
+ * cost is stated rather than hidden: a forbidden import written INSIDE a
+ * comment, at a line start with no comment prefix, is no longer read. That is
+ * not a thing the module system executes, and this check's whole value is in
+ * its refusals of things that run.
+ *
+ * The quote must follow the keyword DIRECTLY (`import 'x'`) or follow `from`
+ * (`import … from 'x'`, `export … from 'x'`), and each half of that was learned
+ * by measurement here rather than reasoned about — every looser form tried
+ * first read something real in this repository as an import:
+ *
+ *  - `export function conformanceBrief(…)` (`loop/conformance.mjs`) reads as
+ *    importing "DRYRUN", the next quoted string in the file, unless `export`
+ *    requires `from`. An `export` without one re-exports names imported above
+ *    and names no module at all.
+ *  - `import(pathToFileURL(shared).href)` (`loop/lib/rederive.mjs`, three of
+ *    them at line starts) is the dynamic form, and reads as importing whatever
+ *    is quoted next unless the quote must come straight after `import `.
+ *  - `import { localDate } from ${JSON.stringify(url('dates.mjs'))}` inside a
+ *    generated-source template (`loop/tests/dates.test.mjs`) reads as importing
+ *    "dates.mjs" unless the quote must come straight after `from`.
+ *
+ * `[^'";]*` bounds a match to its own statement while still spanning newlines,
+ * so the multi-line form (`import {\n  x,\n} from 'node:fs'`) is read from its
+ * own first line.
+ */
+const IMPORT_STATEMENT =
+  /^[ \t]*(?:import[ \t]+|(?:import|export)\b[^'";]*\bfrom[ \t]+)['"]([^'"]+)['"]/gm;
+
+function importSpecifiers(text) {
+  const s = String(text);
+  return [...s.matchAll(IMPORT_STATEMENT)].map((m) => ({
+    specifier: m[1],
+    line: s.slice(0, m.index).split('\n').length,
+  }));
+}
+
+test('the import scan reads import statements, not English prose that mentions one', () => {
+  // The two measured false positives, in the shapes they really had, beside the
+  // real imports that must still be read — including the forbidden one, because
+  // a scan that stopped refusing would pass every test that only checks what it
+  // ignores.
+  const fixture = [
+    '/**',
+    ' * A job resumed from "stopped somewhere between the transcription and the commit".',
+    ' */',
+    "import { parse } from 'yaml';",
+    'import {',
+    '  readFileSync,',
+    "} from 'node:fs';",
+    "import { thing } from './lib/x.mjs';",
+    "export { other } from './lib/y.mjs';",
+    "test('the ledger line lands even when the commit returns from \"could not stage\"', () => {});",
+    "const note = 'a sentence quoting from \"somewhere\" inside a string';",
+    "export function briefFor(check) { return `${check} says \"not an import\"`; }",
+    `import Sdk from '${'a-vendor' + '-sdk'}';`,
+  ].join('\n');
+  // The forbidden specifier is assembled rather than typed: `loop/` may not
+  // contain a vendor's name at all, and the test above this one enforces that
+  // over this very file.
+  const forbidden = 'a-vendor' + '-sdk';
+
+  // The defect, reproduced: the whole-file pattern reads both prose phrases as
+  // imports. Built at run time so this file does not carry the pattern it
+  // replaced as something a later reader could copy back.
+  const wholeFile = new RegExp("(?:from|import)\\s+['\"]([^'\"]+)['\"]", 'g');
+  const loose = [...fixture.matchAll(wholeFile)].map((m) => m[1]);
+  assert.ok(loose.includes('stopped somewhere between the transcription and the commit'));
+  assert.ok(loose.includes('could not stage'));
+
+  const read = importSpecifiers(fixture);
+  assert.deepEqual(
+    read.map((r) => r.specifier),
+    ['yaml', 'node:fs', './lib/x.mjs', './lib/y.mjs', forbidden],
+    'every real statement, and nothing that is only prose about one',
+  );
+  // THE CONTROL: the forbidden specifier is still caught, and still named with
+  // the line it is on. The check's value is entirely in its refusals, so a
+  // change to the pattern that stops refusing must fail here.
+  const bare = read.filter((r) => !r.specifier.startsWith('.') && !r.specifier.startsWith('node:'));
+  assert.deepEqual(
+    bare.filter((r) => !['yaml', 'gray-matter'].includes(r.specifier)).map((r) => `${r.line}:${r.specifier}`),
+    [`13:${forbidden}`],
+  );
+});
+
 test('the loop imports no model SDK and runs no push', () => {
   const sources = filesUnder(join(ROOT, 'loop'), ['.mjs']);
   assert.ok(sources.length > 5);
   for (const p of sources) {
     const text = readFileSync(p, 'utf8');
-    const imports = [...text.matchAll(/(?:from|import)\s+['"]([^'"]+)['"]/g)].map((m) => m[1]);
-    for (const i of imports) {
+    for (const { specifier: i, line } of importSpecifiers(text)) {
       const bare = !i.startsWith('.') && !i.startsWith('node:');
       if (bare) {
         assert.ok(
           ['yaml', 'gray-matter'].includes(i),
-          `${relative(ROOT, p)} imports "${i}" — the loop depends on a YAML reader and a front-matter reader and nothing else. A model SDK here would make one vendor a requirement.`,
+          `${relative(ROOT, p)}:${line} imports "${i}" — the loop depends on a YAML reader and a front-matter reader and nothing else. A model SDK here would make one vendor a requirement.`,
         );
       }
     }
