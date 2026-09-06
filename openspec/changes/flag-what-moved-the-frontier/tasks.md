@@ -52,7 +52,12 @@ lines after this delta lands and after the reviewing session has read it.
 - [ ] 7. `loop/lib/proposals.mjs`, `applyProposalMergeRules` (line 674): before
       the `entries.slice(cap)` split, partition the added candidate files into
       three groups — valid-flagged, unflagged, and invalid-flagged. Only
-      unflagged files are counted against `proposalCapFor(type)`.
+      unflagged files are counted against `proposalCapFor(type)`. **The
+      exemption applies to the scout's cap and to no other**: DESK-ORDER-001
+      exempts a flagged story from the three-candidates-per-day cap, and
+      nothing decided that an ordinary job's one-proposal side-output rule may
+      be lifted by flagging. A non-scout job's flagged proposal is capped
+      exactly as before.
       Valid-flagged files are all kept. Invalid-flagged files — `frontier:
       true` with no `frontier_reason`, a reason outside F1–F5, no `domains`, or
       a `domains` value outside the vocabulary — go to
