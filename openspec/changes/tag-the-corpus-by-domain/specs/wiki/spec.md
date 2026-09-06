@@ -13,6 +13,15 @@ them. They are not re-decided here. The research behind the vocabulary is
 for each clause is `loops/ui-loop/graph/knowledge/SPEC-REVIEW-GUIDE.md`, the
 rubric this draft was written against.
 
+§3's later amendment — "Amendments from the 1hjf draft review", 2026-09-05 —
+ratifies this draft's open judgments rather than overturning them: the facet on
+every wiki kind, both tool sets, the three field names, the three-plain-string-
+lists shape, and the append-only seeding rule as **K47**. Those are settled and
+are not re-decided here either. The one requirement written after that review is
+the `domains_excluded` gate below, and the one open recommendation it left to
+the author — a change line when a seeding signal disappears — is decided against
+below, with the reasoning in `proposal.md`.
+
 ## ADDED Requirements
 
 ### Requirement: A domain says what a thing is for, and it cuts across kinds
@@ -159,11 +168,33 @@ from review whether or not a machine wrote it.
 value: that is a contradiction, not a precedence question, and resolving it
 silently in either direction would hide an editing mistake.
 
-**A `domains_excluded` value that is not currently seeded SHALL be legal and
-inert** — not a build error and not a warning. The opposite rule would couple
-an editorial key to the feed's current contents, so a publisher dropping a
-signal would turn a green build red on an entry nobody touched, which is the
-coupling this whole requirement exists to prevent.
+**A `domains_excluded` value that appears in neither `domains_seeded` nor
+`domains` SHALL fail the build**, naming the entry file, the field and the
+value. An exclusion that removes nothing is a **stale edit**: a value that was
+seeded or asserted once, then stopped being either, leaving behind a
+suppression nobody can see doing anything. It reads as deliberate and does
+nothing, which is the shape this repository keeps catching, and this gate is
+what keeps `domains_excluded` meaning what it says.
+
+Stated over the union although one branch of it is already covered: a value in
+both `domains` and `domains_excluded` fails as the contradiction above, so a
+legal exclusion in practice names a value in `domains_seeded`. The union is the
+form written down because it is the property that has to hold — an exclusion
+suppresses something — rather than the leftovers of another rule, and it stays
+true if the contradiction clause is ever restated.
+
+**The gate does not couple an editorial key to the feed, and the append-only
+rule below is what makes that true.** `domains_seeded` is an accumulated record
+in the entry's own front matter, not a view of the current snapshot: a publisher
+dropping a signal removes nothing from it, so no exclusion goes stale because a
+feed moved, and no entry nobody touched turns from green to red. Both fields
+this gate reads live in the file being validated, and the check is therefore a
+pure function of that file.
+
+The ordering it imposes is stated rather than discovered: an exclusion follows
+the value it suppresses and never precedes it. Writing `domains_excluded`
+against a seed that has not landed yet fails the build, and the remedy is to
+write it after the seeding run — not to loosen the gate.
 
 **Seeding SHALL be append-only.** A signal appearing in the snapshot adds a
 value to `domains_seeded`; a signal disappearing SHALL NOT remove one. This is
@@ -184,6 +215,30 @@ so it is a record of every signal ever observed and not a snapshot of the
 current feed. A re-seed from an empty corpus would produce a smaller set than
 the accumulated file. That is true of `timeline` for the same reason and is
 accepted on the same terms.
+
+**A disappearing signal writes no change line either.** The Pulse SHALL NOT
+append a line to `data/changes.jsonl` on account of a feed field that once
+seeded a domain ceasing to appear on a row. This governs seeding and nothing
+else: a field the source registry independently declares material keeps
+whatever change lines that declaration already produces, and what is forbidden
+is a second emitter that fires on seeding signals.
+
+The reason is that the source registry has already decided this exact block is
+not an event, and a second emitter would overturn that decision without ever
+reading it. `data/sources/registry.json` records, dated `2026-09-05`, that
+`benchmarks.artificial_analysis` is *"not carried"* — *"Not a column, not a
+fact, not an event"* — on the measurement that across the 2026-09-04 and
+2026-09-05 fetches *"181 values went number->null with 0 going null->number"*
+and that *"56 of the carrying row ids are `:batch`/`:free` twins of a
+canonical_slug already counted"*. A disappearance line would re-admit one
+publisher act to the changed feed through a second path that never reads that
+decision, and `pulse/lib/diff.mjs:377-378` states the principle it would break:
+a field *"is an event in one place or in neither"*. The volume is that one
+publisher act counted directly: across those two snapshots there were 71
+number→absent transitions on the two index fields whose presence is the proposed
+seeding signal for `coding` and `agents` — one line each — against the 182 lines
+`data/changes.jsonl` held on 2026-09-05. Nothing is lost by the silence,
+because seeding is append-only and the value stays on the entry.
 
 Seeding SHALL derive values only from named feed fields, and SHALL derive them
 from a field's **presence or contents**, never by republishing an index value
@@ -211,7 +266,8 @@ values; no index value renders anywhere in consequence of this requirement.
 - **WHEN** a snapshot arrives in which a row no longer carries the feed field
   that seeded one of its domains
 - **THEN** the entry keeps that value in `domains_seeded`, the Pulse removes
-  nothing, and any removal is made editorially through `domains_excluded`
+  nothing, no line is appended to `data/changes.jsonl` for the disappearance,
+  and any removal is made editorially through `domains_excluded`
 
 #### Scenario: An editorial exclusion suppresses a seeded value
 
@@ -221,12 +277,13 @@ values; no index value renders anywhere in consequence of this requirement.
   that domain on any surface, and `domains_seeded` is left as the machine wrote
   it
 
-#### Scenario: An exclusion that suppresses nothing is inert
+#### Scenario: An exclusion that suppresses nothing stops the build
 
-- **WHEN** an entry declares `domains_excluded: [video]` and no run has ever
-  seeded `video` on it
-- **THEN** the build passes with no error and no warning, and the key stays in
-  place against a future seed
+- **WHEN** an entry declares `domains_excluded: [video]` and `video` appears in
+  neither its `domains_seeded` nor its `domains`
+- **THEN** the build fails naming the entry file, the field and the value,
+  because an exclusion that removes nothing is a stale edit — it reads as a
+  decision and enacts none
 
 #### Scenario: Asserting and excluding the same domain fails the build
 

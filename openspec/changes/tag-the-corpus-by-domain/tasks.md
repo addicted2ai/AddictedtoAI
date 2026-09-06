@@ -2,9 +2,15 @@
 
 Drafted, not implemented. Every box below is open except task 14, which is the
 drafting gate and was run. The change is deliberately not archived: it has no
-implemented tasks; DESK-ORDER-001 §6 sequences §3 after §1 (§6 says nothing
-about review); and the maintainer's 2026-09-05 instruction is that the ui-loop
-session reads this delta before it is treated as final.
+implemented tasks, and DESK-ORDER-001 §6 sequences §3 after §1.
+
+**The ui-loop review the maintainer required has happened** (2026-09-05,
+recorded in DESK-ORDER-001 §3 under "Amendments from the 1hjf draft review").
+It approved the draft and ratified every open judgment in it. Two things
+followed and both are already in the task text below: the stale-edit gate on
+`domains_excluded` (tasks 2, 8, 9), and the decision against writing a change
+line when a seeding signal disappears (tasks 11, 12). No box was ticked for
+either — they are drafting corrections, not implementation.
 
 **Task 1 of `flag-what-moved-the-frontier` is a hard prerequisite.** That change
 creates `lib/domains.mjs`; this one reads it and creates no second constant. If
@@ -20,12 +26,15 @@ an ordering accident.
       carry them. Use the existing `closedList` helper so the error names the
       file, the field, the offending value and the allowed values — the message
       shape an unknown `kind` already produces.
-- [ ] 2. `lib/schema.mjs`, `entrySchema.superRefine`: a value present in both
-      `domains` and `domains_excluded` is an issue whose `path` names the field
-      and the value. Do **not** add a check that `domains_excluded` names a
-      currently-seeded value: that would couple an editorial key to the feed's
-      current contents and turn a green build red on an entry nobody touched,
-      which is the coupling the requirement exists to prevent.
+- [ ] 2. `lib/schema.mjs`, `entrySchema.superRefine`, two checks, each an issue
+      whose `path` names the field and the value: a value present in both
+      `domains` and `domains_excluded`; and a value in `domains_excluded` that
+      is in neither `domains_seeded` nor `domains` — an exclusion that removes
+      nothing, which is the stale edit the requirement names. Both read only
+      the front matter of the file being validated, never the current snapshot:
+      that is what keeps an editorial key uncoupled from the feed, and it holds
+      only because seeding is append-only, so a publisher dropping a signal
+      never removes the value the exclusion is answering.
 - [ ] 3. `lib/schema.mjs`, `toolSchema` (line 359): add `domains` only —
       optional, same closed list. Not `domains_seeded` and not
       `domains_excluded`: no feed seeds a tool listing, so there is nothing to
@@ -65,15 +74,19 @@ an ordering accident.
       unmarked); an entry with `domains: [general]` (there is no such value);
       an entry with `domains_seeded: [legal]`; an entry with
       `domains_excluded: [legal]`; an entry with `audio` in both `domains` and
-      `domains_excluded`; a tool listing with `domains: [legal]`; a tool
-      listing with `domains_seeded: []`, which the tool schema must reject as
-      an unknown key.
+      `domains_excluded`; an entry with `domains_excluded: [video]` and `video`
+      in neither `domains_seeded` nor `domains`; a tool listing with
+      `domains: [legal]`; a tool listing with `domains_seeded: []`, which the
+      tool schema must reject as an unknown key.
 - [ ] 9. The controls, without which task 8 proves nothing: an entry with none
       of the three keys validates exactly as before; an entry with
-      `domains: []` validates; an entry with `domains_excluded: [video]` and no
-      seed validates and stays inert; a fully populated entry round-trips all
-      three arrays; every one of the eight vocabulary values validates in each
-      of the three fields.
+      `domains: []` validates; an entry excluding a value its own
+      `domains_seeded` carries validates (the legal exclusion, which is what
+      makes task 8's refusal a check on staleness rather than on the key
+      existing); a fully populated entry round-trips all three arrays; every
+      one of the eight vocabulary values validates in each of the three fields
+      — in `domains_excluded` alongside the same value in `domains_seeded`,
+      since a bare exclusion is now an error.
 - [ ] 10. A test asserting `postSchema` **rejects** `domains_seeded`. This is
       not a tautology about `.strict()`: it is the guard on the one crossing
       that would silently undo `flag-what-moved-the-frontier`'s review
@@ -84,7 +97,9 @@ an ordering accident.
 
 - [ ] 11. `pulse/`, in the data-layer update step: derive `domains_seeded` from
       named feed fields on entries that declare a joined row, and **append
-      only** — a signal absent from the current snapshot removes nothing.
+      only** — a signal absent from the current snapshot removes nothing, and
+      the disappearance appends no line to `data/changes.jsonl` (decided
+      against with its measurements in `proposal.md`).
       Proposed field list, to be confirmed by the implementing change:
       `image`/`video`/`audio` from `architecture.input_modalities` and
       `output_modalities`; `coding` and `agents` from the *presence* of
@@ -97,8 +112,10 @@ an ordering accident.
       a value leaves that value in place — the regression test for the measured
       166→99 `agentic_index` drop across the 2026-09-04 and 2026-09-05
       snapshots, which under a recomputing rule would have untagged 67 entries.
-      A snapshot that gains a signal appends exactly one value and not a
-      duplicate.
+      That same test asserts the run appended **no** line to
+      `data/changes.jsonl`, which is where the declined recommendation becomes
+      a mechanism instead of a sentence. A snapshot that gains a signal appends
+      exactly one value and not a duplicate.
 - [ ] 13. A test that a seeding run over an entry with a bound review record
       leaves that record reporting **matched**, joining tasks 5 and 11 at the
       point they are supposed to meet. Verify by running the seed and
