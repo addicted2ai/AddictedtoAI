@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 17,
+  "count": 11,
   "items": [
     {
       "detail": "3 findings carried by reviewers against `content/blog/anthropic-enterprise-frontier-safeguards.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Fix \"whenever\" to \"whatever\" in the closing sentence of the lockout section\n\nCarried in `data/carried/j-20260906-14-carry-1.md`.\n\nThe post's lockout section closes: It ends it whenever \"later this fall\" turns out to mean. That is ungrammatical — \"whenever\" takes a time, \"mean\" takes a thing. The fix is one word: It ends it whatever \"later this fall\" turns out to mean.\n\n### Header rounds the lockout up to three months where the body says \"coming up on three\"\n\nCarried in `data/carried/j-20260906-14-carry-2.md`.\n\nThe header reads \"you have already been locked out for three months\"; the body two paragraphs later reads \"for coming up on three months\". The body is right — Covered Models designation for Fable 5 and Mythos 5 is 9 June 2026 and the post is dated 6 September 2026, which is two months and twenty-eight days. The header is the summary line and should not be the looser of the two. \"for nearly three months\" fixes it and costs nothing.\n\n### Add concept/covered-models to the EFS blog post's mentions\n\nCarried in `data/carried/j-20260906-16-carry-3.md`.\n\ncontent/blog/anthropic-enterprise-frontier-safeguards.md lists mentions of org/anthropic, model/anthropic-claude-fable-5 and model/anthropic-claude-fable-5-1, but not concept/covered-models, which did not exist when it was written. Backlinks are computed from mentions lists only, so the new entry ships with an empty \"Appears in\" rail even though the one prose page on the site about its subject is the post. Adding the id to that post's mentions is the whole fix.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260906-14-carry-1.md`\n- `data/carried/j-20260906-14-carry-2.md`\n- `data/carried/j-20260906-16-carry-3.md`",
@@ -100,61 +100,7 @@
       "target": "content/wiki/org/poolside.md",
       "title": "Clear the 3 carried findings on content/wiki/org/poolside.md",
       "type": "repair"
-    },
-    {
-      "detail": "The brief for this job says the entry \"MUST CARRY OR THE ROW IS BLANK ... its product-brand registrable domains in `publishes_from`\". Measured: `lib/schema.mjs` `entrySchema` is `.strict()` and its key list is id/kind/display_name/aliases/status/maintenance/feeds/facts/timeline/mentions/themes — there is no `publishes_from`, and `grep publishes_from lib/` returns zero files. The field is normative only in the in-flight change `separate-a-claim-from-a-fact`, whose tasks.md is 1 done / 27 outstanding. An author who obeys that sentence fails the build on an unknown front-matter key. The brief text should name the field as pending, or the boilerplate should drop it until the change lands.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260906-08 (`j-20260906-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/carried/j-20260906-08-carry-2.md",
-      "target": "data/carried/j-20260906-08-carry-2.md",
-      "title": "Stop the entry brief demanding `publishes_from` — the schema rejects it",
-      "type": "repair"
-    },
-    {
-      "detail": "The brief states the `feeds` map \"is the join the board relies on\". It is not. `lib/render/frontier.mjs:50` `matchProviders()` matches an org to catalog providers by normalised alias substring — its own comment says \"matched to the catalog providers it stands behind by alias, never invented\" — and the module never reads `feeds` at all. No org entry in the corpus carries a `feeds` map (grep over content/wiki/org: no matches), and there is no source whose row ids an org could bind to anyway — the two registered sources are openrouter-models (rows are models) and llm-releases. Repeating the sentence pushes future entry jobs toward declaring a binding that would be wrong.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260906-08 (`j-20260906-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "data/carried/j-20260906-08-carry-3.md",
-      "target": "data/carried/j-20260906-08-carry-3.md",
-      "title": "Correct the brief's claim that `feeds` is the players-board join",
-      "type": "repair"
-    },
-    {
-      "detail": "`proposal.md` says \"Resolved as keeper ruling K46\" and `specs/blog/spec.md` says \"The bar was withdrawn as keeper ruling K46\". The record does not support \"keeper\". `loops/ui-loop/state.md:59` records it as \"**K46** (BLIND-002)\" with no keeper attribution, in a list that marks keeper decisions explicitly (\"K23 keeper, K24–K29 delegated\"; \"**K43** (keeper, 2026-09-05)\"; \"**K45** (keeper via orchestrator)\"). BLIND-002's own \"Scope of the ruling\" says the opposite in as many words: \"This is not escalated: under K40 it is far short of 'insane catastrophic project threatening'.\" K46 was taken under K40 blanket delegation while the keeper was away. Replacing \"keeper ruling K46\" with \"ruling K46, taken under the K40 delegation\" in both places fixes it, and it matters precisely because the passage exists to tell a later reader who decided this and on what authority.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-19 (`j-20260905-19.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "openspec/changes/flag-what-moved-the-frontier/specs/blog/spec.md",
-      "target": "openspec/changes/flag-what-moved-the-frontier/specs/blog/spec.md",
-      "title": "Call K46 a delegated ruling, not a keeper ruling",
-      "type": "repair"
-    },
-    {
-      "detail": "`specs/pulse/spec.md` now reads \"it is the state both finalist builds were in when each hard-wired an empty element instead (`implementer-ledger.md` row 6: …)\". The ledger holds ten rows and exactly one `fake-empty-state` row — row 6 — and it names only `CP-UI-001-1 Dated Ledger`. No second row records the Players Board build hard-wiring an empty element. The directive itself kept the two apart (\"the exact day-one state BOTH finalist builds hit\" / \"ledger row 6 is Dated Ledger hard-wiring\"). Fix is a phrase: \"the state both finalist builds were in on day one, and the state in which one of them hard-wired an empty element instead\". The genuine two-builder recurrence in this corpus is the founding-date mislabel (ledger rows 2 and 4), which the same file cites correctly elsewhere.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-22 (`j-20260905-22.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "openspec/changes/separate-a-claim-from-a-fact/specs/pulse/spec.md",
-      "target": "openspec/changes/separate-a-claim-from-a-fact/specs/pulse/spec.md",
-      "title": "Attribute the hard-wired empty state to one build, not both",
-      "type": "repair"
-    },
-    {
-      "detail": "proposal.md counts \"71 lines\" as 69 `agentic_index` plus 2 `coding_index` number→absent transitions, and I reproduce those two figures exactly from `previous.json` (2026-09-04T06:00:03.738Z, 427 rows) and `latest.json` (2026-09-05T06:00:04.599Z, 431 rows). But 3 of the 71 are rows that left the snapshot entirely rather than rows that dropped the field: `qwen/qwen3.8-max` (carried both indices) and `ibm-granite/granite-4.1-8b` (carried `coding_index`). Excluding those, 68 surviving rows lost `agentic_index` and **zero** surviving rows lost `coding_index` — a vanished row is handled by the separate last-known-value/repair rule in `specs/wiki`, not by a seeding-signal disappearance. Same instrument shows the \"2 gained it\" on `coding_index` are the two new arrivals `openai/gpt-6-astra` and its `:batch` twin, not existing rows regaining a value, so the parenthetical \"2 rows lost `coding_index` and 2 gained it — so even the stable row is not stationary\" is row churn described as field churn. The conclusion is untouched (68/182 is still two fifths), and the draft already flags that instruments differ; the fix is one clause — \"71 number→absent transitions, 3 of them rows that left the snapshot altogether\" — in proposal.md's finding 2 and in the matching sentence of `specs/wiki/spec.md`.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-21 (`j-20260905-21.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "openspec/changes/tag-the-corpus-by-domain/proposal.md",
-      "target": "openspec/changes/tag-the-corpus-by-domain/proposal.md",
-      "title": "Say that 3 of the 71 counted transitions are vanished rows, not vanished fields",
-      "type": "repair"
-    },
-    {
-      "detail": "The revision replaced the old \"four listings in five\" with \"at least two listings in three\", in the proposal (\"An axis that leaves at least two listings in three with nothing to say\") and in the directory delta (\"A required field here would force a wrong answer onto at least two listings in three\"). At the lower of the two readings the same sentences state — 23 of 35 — the fraction is 0.6571, and two in three of 35 is 23.33, so the \"at least\" floor is breached by a third of a listing. It holds at the 26 reading (0.7429). Both exact counts are printed alongside, so nothing is hidden, but the qualifier is doing work it does not quite earn. \"roughly two listings in three\", or simply \"onto 23 of the 35\", would be exact under either reading.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-16 (`j-20260905-16.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "openspec/changes/tag-the-corpus-by-domain/specs/directory/spec.md",
-      "target": "openspec/changes/tag-the-corpus-by-domain/specs/directory/spec.md",
-      "title": "Soften \"at least two listings in three\" — 23 of 35 is 65.7%, just under two-thirds",
-      "type": "repair"
     }
   ],
-  "total_before_cap": 17
+  "total_before_cap": 11
 }
