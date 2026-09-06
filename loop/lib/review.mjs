@@ -263,7 +263,8 @@ export function verdictPath(ctx, jobId, pass = 1) {
  * the same place and just as plainly, because a brief that implies verification
  * which did not happen is worse than one that says nothing.
  *
- * @param {{ran: boolean, ok?: boolean, results?: Array, why?: string}|null|undefined} gates
+ * @param {{ran: boolean, ok?: boolean, results?: Array, why?: string,
+ *          retried?: boolean, transport?: boolean, firstFailed?: string[]}|null|undefined} gates
  * @param {string} [sha] the commit the gates ran on
  */
 export function gatesSection(gates, sha = '') {
@@ -280,13 +281,38 @@ judge it, and say in your notes what you ran and what you observed.
     (r) =>
       `- \`npm run ${r.script}\` — **${r.ok ? 'PASS' : `FAIL (exit ${r.status})`}**`,
   );
+  // THE SECOND RUN IS NOT THE ONLY RUN, AND SAYING SO IS THE POINT.
+  //
+  // Since beads addictedtoai-xzdd the loop retries a failing gate run ONCE on
+  // ANY failure, so the results above can be a second attempt. Reaching a review
+  // at all means the retry passed. That is worth stating rather than smoothing
+  // over: the reviewer is the only judgment in the loop that could notice a real
+  // intermittent defect the second run happened to miss, and it cannot weigh
+  // what it is not told. Stated as a MEASUREMENT — what ran, what it said — like
+  // the rest of this section, and never as an instruction to re-run the suite,
+  // which is the failure the paragraph below exists to prevent.
+  const retryNote = gates.retried
+    ? `
+**These gates were run twice.** The first run FAILED and the second PASSED; the
+results above are the second run's${
+        Array.isArray(gates.firstFailed) && gates.firstFailed.length
+          ? `. What failed the first time: ${gates.firstFailed.map((s) => `\`npm run ${s}\``).join(', ')}`
+          : ''
+      }. The first run's full output ${
+        gates.transport
+          ? 'carried the machine-failure marker, so something measured does say that failure was the machine rather than the diff'
+          : 'carried NO machine-failure marker, so nothing measured says whether that failure was the machine or the diff'
+      } — only that a second run of the same gates, on the same commit, in the
+same worktree, disagreed with the first. Weigh that as you judge the diff.
+`
+    : '';
   return `## What the loop has already verified on this branch
 
 The loop ran these itself, in this branch's own worktree, immediately before
 this review${on} — the same commit the diff below was computed from:
 
 ${lines.join('\n') || '- (no gate ran)'}
-
+${retryNote}
 **Do not re-run them.** They have run, on this branch, and their result is above.
 A review on this loop once spent its entire run re-running exactly this suite,
 formed its judgment, and ended before writing it down; the job was discarded and

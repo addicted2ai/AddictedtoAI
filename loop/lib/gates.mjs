@@ -50,6 +50,16 @@ import { join } from 'node:path';
  * `loop/tests/gate-transport-retry.test.mjs` runs both real emitters against
  * real fixtures and asserts the thrown text contains this string, so the two
  * cannot drift apart without a red test.
+ *
+ * WHAT THIS MARKER IS NO LONGER: the precondition for retrying. Since beads
+ * addictedtoai-xzdd the Desk retries the gates once on ANY failure, because the
+ * property that makes a retry safe — a real defect still fails twice — holds for
+ * any retry-once policy and never came from the marker. Three unreproduced
+ * intermittent failures in one day, in tests that emit no marker at all, each
+ * cost a whole job's authored work. The marker is kept, unwidened, and it still
+ * earns its place: it says WHY a retry happened, in the log and in the ledger
+ * note, which is the difference between a machine that ran out of sockets and a
+ * failure nobody has explained yet.
  */
 export const TRANSPORT_FAILURE_MARKER = 'This is a TRANSPORT failure, not a logic failure';
 
@@ -95,11 +105,16 @@ export function gateFailureNote(result = {}, { retried = false } = {}) {
         .map((r) => `npm run ${r.script} (${r.status === null ? 'could not run' : `exit ${r.status}`})`)
         .join(', ')
     : 'no per-gate result was recorded';
-  const kind = gatesHitTransportFailure(result)
-    ? retried
-      ? 'transport-marked, retried once and failed again'
-      : 'transport-marked'
+  // The marker no longer decides WHETHER the gates were retried — since beads
+  // addictedtoai-xzdd every gate failure is retried once — so the note keeps the
+  // two facts separate: what the output said, and whether a second run agreed.
+  // A note that said only "transport-marked" would leave the ledger unable to
+  // tell a first failure from a confirmed one, which is the exact readability
+  // this function was written for.
+  const marker = gatesHitTransportFailure(result)
+    ? 'transport-marked'
     : 'no transport marker in the captured output';
+  const kind = retried ? `${marker}, retried once and failed again` : marker;
   return `gates failed: ${which} — ${kind}`;
 }
 

@@ -20,7 +20,7 @@ import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { makeContext } from './lib/paths.mjs';
-import { loadConfig } from './lib/config.mjs';
+import { loadConfig, JOB_TYPES } from './lib/config.mjs';
 import { loadRunners, pickRunner, conformanceGate, loadConformance } from './lib/runners.mjs';
 import { appendLedger, jobSpendSoFar, makeLedgerLine, nextJobId, readLedger, LEDGER_FIELDS } from './lib/ledger.mjs';
 import { invocationAllowance, jobTotalMinutes, lanePause, minInvocationMinutes } from './lib/budget.mjs';
@@ -221,9 +221,20 @@ async function executeJob(ctx, opts) {
   // could never move however dead it was). health.mjs's `noOutputStreak` now
   // reads a `review*`-role phase's own `signal` field the same way it reads
   // the line's, per runner id.
+  // -------------------------------------------------------------------------
+  // `phase()` RETURNS the entry it pushed, so a later measurement about the SAME
+  // invocation can be attached to it. `gates` is the one that does (beads
+  // addictedtoai-xzdd): a gate retry belongs to the author run whose work the
+  // gates were judging. It is attached rather than pushed as a phase of its own
+  // because a gate run is not a model invocation — `phases.length` is what the
+  // reviewer brief counts invocations with, and an entry carrying no runner and
+  // no minutes would make that count wrong in order to say this. Additive in
+  // exactly the way `signal` is: absent unless there is something to say, and a
+  // reader that does not know the key is unaffected.
+  // -------------------------------------------------------------------------
   const phases = [];
-  const phase = (role, who, r, outcome, signal) =>
-    phases.push({
+  const phase = (role, who, r, outcome, signal) => {
+    const entry = {
       role,
       runner: who.id,
       mm: Math.round(r.mm * 100) / 100,
@@ -231,7 +242,10 @@ async function executeJob(ctx, opts) {
       code: r.code ?? null,
       outcome,
       ...(signal ? { signal } : {}),
-    });
+    };
+    phases.push(entry);
+    return entry;
+  };
   /** Every exit from this function carries the phases recorded up to it. */
   const finish = (o) => ({ ...o, phases });
 
@@ -268,7 +282,7 @@ async function executeJob(ctx, opts) {
   const fileResult = readResult(worktree);
   const classified = classifyRun(run, fileResult, runner);
   ctx.log(`result protocol: ${classified.status} — ${classified.evidence}`);
-  phase('author', runner, run, classified.status);
+  const authorPhase = phase('author', runner, run, classified.status);
 
   // Commit whatever the executor left, INCLUDING on a kill: the branch, not
   // the scratch worktree, is what resumption reads.
@@ -346,62 +360,142 @@ async function executeJob(ctx, opts) {
   let gateReport = { ran: false, why: 'the loop was run with --no-gates' };
   if (gates !== false) {
     const runTheGates = () => (typeof gates === 'function' ? gates(ctx, worktree) : runGates(ctx, worktree));
+    // -----------------------------------------------------------------------
+    // PRINT WHY, NOT JUST THAT — at the moment of the failure, not at the end
+    // of the block.
+    //
+    // The worktree is torn down in the caller's `finally`, so the moment a gate
+    // run fails is the only moment its evidence exists: a gate failure nobody
+    // can diagnose is a gate failure nobody can act on. Observed on job
+    // j-20260828-01, whose only record was `gates: FAIL`.
+    //
+    // IT IS A FUNCTION BECAUSE THE RETRY MOVED WHERE THAT LOSS HAPPENS. Until
+    // 2026-09-06 a gate failure only ever ended one way — `failed` — so
+    // printing once, at the end, printed everything there was. Retrying on ANY
+    // failure (beads addictedtoai-xzdd) makes a failure that PASSES on the
+    // second run the COMMON path, and that path overwrites `gateResult`: the
+    // first run's failing script, its exit status and its captured output are
+    // gone, and `gates: FAIL` plus three booleans is all that is left. Those
+    // are exactly the runs xzdd exists to characterise — it asks whether the
+    // intermittency can be made deterministic, and that question cannot be
+    // answered from a boolean per job. So the evidence is emitted where it is
+    // still in hand, whichever way the retry ends.
+    // -----------------------------------------------------------------------
+    const emitGateEvidence = (result, what) => {
+      ctx.log(`--- ${what} ---`);
+      for (const r of result.results ?? []) {
+        ctx.log(`  gate ${r.script}: ${r.ok ? 'PASS' : `FAIL (exit ${r.status})`}`);
+      }
+      ctx.log('--- gate output ---');
+      ctx.log(result.output ?? '(no output captured)');
+      ctx.log('--- end gate output ---');
+    };
     ctx.log('running the schema/build gates on the branch');
     gateResult = runTheGates();
     gateReport = { ran: true, ok: gateResult.ok, results: gateResult.results ?? [] };
     ctx.log(`gates: ${gateResult.ok ? 'PASS' : 'FAIL'}`);
 
     // -----------------------------------------------------------------------
-    // A TRANSPORT FAILURE IS NOT A DEFECT, AND IT WAS BEING COUNTED AS ONE.
+    // A GATE FAILURE IS RETRIED ONCE, WHATEVER IT SAID. The marker explains WHY
+    // a retry happened; it is not what makes retrying safe.
     //
-    // Measured 2026-09-04: job j-20260904-38 authored its repair successfully
-    // (7.96 model-minutes, author outcome `done`), its gate run failed, and the
-    // job was recorded `failed` with its branch left unmerged; the closing
-    // six-gate pass failed the same way minutes later. Re-run alone with
-    // nothing else on the machine, the same suite passed 1201/1201. Neither
-    // was a defect — both were `connect EADDRINUSE` from ephemeral-port
-    // exhaustion under concurrent load (beads addictedtoai-ar0). Three such
-    // runs trip breaker 1 and halt the whole Desk on nothing.
+    // The original measurement (beads addictedtoai-ar0), 2026-09-04: job
+    // j-20260904-38 authored its repair successfully (7.96 model-minutes,
+    // author outcome `done`), its gate run failed, and the job was recorded
+    // `failed` with its branch left unmerged; the closing six-gate pass failed
+    // the same way minutes later. Re-run alone on an idle machine, the same
+    // suite passed 1201/1201. Neither was a defect — both were `connect
+    // EADDRINUSE` from ephemeral-port exhaustion under concurrent load. Three
+    // such runs trip breaker 1 and halt the whole Desk on nothing.
     //
-    // So: when the captured output carries the marker the emitting code writes,
-    // run the gates ONCE more. A pass means the run continues normally and
-    // nothing is recorded as a failure; a second failure is recorded `failed`
-    // exactly as before. ONCE, never in a loop — a real defect still fails
-    // twice, which is the property that makes this safe, and no new outcome and
-    // no change to breaker semantics is needed for it.
+    // WHY THE MARKER STOPPED BEING ENOUGH (beads addictedtoai-xzdd), measured
+    // 2026-09-06: four gate failures in ~20 jobs. One was real. The other three
+    // were intermittent failures in tests that emit NO marker — a publish-verify
+    // assertion, an exit-code test — in files with nothing to do with the job's
+    // own work, and none of them reproduced afterwards: 6 standalone runs, 5
+    // more, 6-way concurrency and 4 full-suite runs, all clean. Roughly one job
+    // in seven lost its entire authored work to a failure nobody could
+    // reproduce, and each one counts toward breaker 1.
     //
-    // THE DECISION IS READ, NOT RE-DERIVED. `gateResult.output` is a truncated
-    // human-readable log — each script's last 6000 characters — so a marker
-    // raised early in a 1201-test run is not in it (beads addictedtoai-kisa).
-    // `runGates` computes `transport` over the FULL output at the point of
-    // capture; `gatesHitTransportFailure` reads that flag, and falls back to
-    // scanning only for a result that never came from `runGates`.
+    // THE INSTINCT IS TO WIDEN THE MARKER; THAT IS THE WRONG FIX. A marker that
+    // matches more is a marker the next fixture can evade, which is how the
+    // original defect was born. Look instead at where the safety comes from: the
+    // property that makes a retry safe is A REAL DEFECT STILL FAILS TWICE, and
+    // that property holds for ANY retry-once policy. It never came from the
+    // marker. The marker is a COST optimisation — it avoids spending a second
+    // full gate run on a failure already known to be a machine failure — so
+    // dropping it as a PRECONDITION costs one extra gate run (~4 minutes) on
+    // genuinely failing jobs, against a ~1-in-7 loss of complete jobs.
+    //
+    // So: ONCE on any failure, never in a loop. A pass means the run continues
+    // normally and nothing is recorded as a failure; a second failure is
+    // recorded `failed` exactly as before, and no outcome and no breaker
+    // semantics change. The marker is still read, still logged, and still says
+    // in the ledger note which kind of failure this was.
+    //
+    // THE MARKER DECISION IS READ, NOT RE-DERIVED. `gateResult.output` is a
+    // truncated human-readable log — each script's last 6000 characters — so a
+    // marker raised early in a 1201-test run is not in it (beads
+    // addictedtoai-kisa). `runGates` computes `transport` over the FULL output
+    // at the point of capture; `gatesHitTransportFailure` reads that flag, and
+    // falls back to scanning only for a result that never came from `runGates`.
     // -----------------------------------------------------------------------
     let retried = false;
-    if (!gateResult.ok && gatesHitTransportFailure(gateResult)) {
+    if (!gateResult.ok) {
       retried = true;
+      const marked = gatesHitTransportFailure(gateResult);
+      // Named BEFORE the retry overwrites `gateResult`. These are the scripts,
+      // not their output — cheap enough to carry on the job's permanent record,
+      // which a log that is never kept is not.
+      const firstFailed = (gateResult.results ?? []).filter((r) => !r.ok).map((r) => r.script);
       ctx.log(
-        `a gate's full output carried the marker \`${TRANSPORT_FAILURE_MARKER}\` — this is the ` +
-          `machine, not the diff. It may not appear in the truncated log printed below, which is why ` +
-          `the decision is made at capture. Running the gates ONCE more; a second failure is recorded ` +
-          `\`failed\` as usual.`,
+        marked
+          ? `a gate's full output carried the marker \`${TRANSPORT_FAILURE_MARKER}\` — this is the ` +
+              `machine, not the diff. It may not appear in the truncated log printed below, which is ` +
+              `why the decision is made at capture. transport marker: running the gates ONCE more.`
+          : `no transport marker in the captured output — this may be a real defect, and it may be ` +
+              `the intermittency that has cost whole jobs (beads addictedtoai-xzdd). The gates are ` +
+              `run ONCE more either way: a real defect still fails twice, which is the only property ` +
+              `that ever made this safe. unmarked failure, retrying once.`,
       );
+      // The whole of the first run, while it still exists. If the retry passes
+      // this is the ONLY record that anything failed at all, and it is the
+      // record the measurement xzdd asks for has to be made from.
+      emitGateEvidence(gateResult, 'the FIRST gate run, which FAILED (its evidence, before the retry replaces it)');
       gateResult = runTheGates();
-      gateReport = { ran: true, ok: gateResult.ok, results: gateResult.results ?? [], retried: true };
-      ctx.log(`gates (retry after a transport failure): ${gateResult.ok ? 'PASS' : 'FAIL'}`);
+      gateReport = {
+        ran: true,
+        ok: gateResult.ok,
+        results: gateResult.results ?? [],
+        retried: true,
+        transport: marked,
+        firstFailed,
+      };
+      ctx.log(
+        `gates (retry after a ${marked ? 'transport failure' : 'gate failure with no transport marker'}): ` +
+          `${gateResult.ok ? 'PASS' : 'FAIL'}`,
+      );
+      // On the job's permanent record, not only in a log that is not kept: the
+      // author invocation's phase entry says a retry happened and how it ended.
+      // Without it the ledger cannot tell a job that passed first time from one
+      // that needed a second run — which is the number that says whether this
+      // policy is paying for itself.
+      // `first_failed` names the scripts the first run failed on. Without it a
+      // retried-then-passed job's permanent record is three booleans, and no
+      // later reader could tell a flaky publish-verify from a flaky
+      // exit-code test — which is the distinction xzdd is about.
+      if (authorPhase) {
+        authorPhase.gates = {
+          retried: true,
+          passed: gateResult.ok,
+          transport: marked,
+          first_failed: firstFailed,
+        };
+      }
     }
 
     if (!gateResult.ok) {
-      // Print WHY, not just THAT. The worktree is torn down in the caller's
-      // `finally`, so this is the only moment the evidence exists: a gate
-      // failure nobody can diagnose is a gate failure nobody can act on.
-      // Observed on job j-20260828-01, whose only record was `gates: FAIL`.
-      for (const r of gateResult.results ?? []) {
-        ctx.log(`  gate ${r.script}: ${r.ok ? 'PASS' : `FAIL (exit ${r.status})`}`);
-      }
-      ctx.log('--- gate output ---');
-      ctx.log(gateResult.output ?? '(no output captured)');
-      ctx.log('--- end gate output ---');
+      emitGateEvidence(gateResult, retried ? 'the RETRY, which FAILED too' : 'the gate run, which FAILED');
       const note = gateFailureNote(gateResult, { retried });
       ctx.log(note);
       return finish({ outcome: 'failed', mm, changed, note, gateOutput: gateResult.output });
@@ -631,6 +725,34 @@ export async function runLoop(ctx, opts = {}) {
 
   // --- Resumption, before the three work sources. -------------------------
   const scan = scanJobBranches(ctx, { ledger, base });
+
+  // -------------------------------------------------------------------------
+  // ONE ANSWER TO "WHAT TYPE IS THIS BRANCH'S JOB", SHARED BY BOTH CONSUMERS
+  // (beads addictedtoai-bze3).
+  //
+  // Two places decide it: the budget-exhaustion sweep just below, and the
+  // resume path further down. They must not be able to disagree — a branch the
+  // sweep measures as `machinery` and the resume path runs as `verify` would be
+  // let past a check it should not have passed, and then abandoned one step
+  // late by `executeJob`'s defence-in-depth, after a worktree exists. The
+  // requirement puts that abandonment BEFORE selection, so the two reads are
+  // one read here.
+  //
+  // The precedence is the fix's precedence, in one place: the record selection
+  // committed to the branch, checked against `JOB_TYPES` because it is input
+  // off a branch; then the job's last ledger line; then `machinery`, which is a
+  // guess and is logged as one. Memoised because `git show` per branch per
+  // consumer is a cost with no answer to add.
+  // -------------------------------------------------------------------------
+  const committedSources = new Map();
+  const committedSourceFor = (branch) => {
+    if (!committedSources.has(branch)) committedSources.set(branch, readCommittedJobSource(ctx.repoRoot, branch));
+    return committedSources.get(branch);
+  };
+  const committedTypeFor = (branch) => {
+    const src = committedSourceFor(branch);
+    return JOB_TYPES.includes(src?.type) ? src.type : null;
+  };
   for (const b of scan.abandonable) {
     const last = b.last;
     ctx.log(`abandoning ${b.branch}: ${b.ageDays.toFixed(1)} days old, past the 14-day limit`);
@@ -684,7 +806,11 @@ export async function runLoop(ctx, opts = {}) {
   // -------------------------------------------------------------------------
   const resumable = [];
   for (const b of scan.resumable) {
-    const type = b.last?.type ?? 'machinery';
+    // The branch's own committed record first, exactly as the resume path reads
+    // it. Reading only the ledger here would measure the budget of a type the
+    // job never was — and, worse, write that wrong type onto the permanent
+    // `abandoned` line, minting a false record while fixing one (bze3).
+    const type = committedTypeFor(b.branch) ?? b.last?.type ?? 'machinery';
     const spend = jobSpendSoFar(ledger, b.id);
     const allow = invocationAllowance(cfg, {
       type,
@@ -792,8 +918,49 @@ export async function runLoop(ctx, opts = {}) {
       ctx.log(`${branch} has no committed .job/brief.md — cannot resume it honestly; leaving it for the maintainer`);
       return { started: true, selected: null, reason: 'unresumable branch' };
     }
+    // Where this job came from, read off the branch rather than remembered.
+    // Without it a resumed proposal job merges and leaves its proposal
+    // selectable, which is the same defect through the resumption door.
+    const origin = committedSourceFor(branch);
+    // -----------------------------------------------------------------------
+    // THE TYPE IS READ OFF THE BRANCH FIRST, AND THE ORDER IS THE WHOLE FIX
+    // (beads addictedtoai-bze3).
+    //
+    // The type was decided at SELECTION and written into `.job/source.json`
+    // beside the brief (see the write below, ~120 lines on). Until 2026-09-06
+    // this line consulted only the job's last LEDGER line and hard-coded
+    // `machinery` when there wasn't one — which is precisely the state a branch
+    // interrupted before its first ledger line is in. Measured: j-20260906-10,
+    // a `verify` job whose first run died removing its worktree, resumed as
+    // `machinery` and charged 7.67 model-minutes to the tightest ceiling in
+    // `data/config.json`. The correct value was committed on the branch the
+    // whole time and `readCommittedJobSource` was already being called for it,
+    // thirty lines after the decision.
+    //
+    // `machinery` READS AS THE CONSERVATIVE DEFAULT AND IS NOT: the type picks
+    // the budget category, the per-type wall-clock cap and the shed level, and
+    // it is written into the append-only ledger permanently. Falling back to it
+    // is a guess, so it stays last and it says so in the log.
+    //
+    // The committed value is checked against `JOB_TYPES` because it comes off a
+    // branch: an unrecognised type would index `job_caps_minutes` at `undefined`
+    // rather than fail, and a value that cannot be a job type has not "been
+    // found". The ledger fallback is left exactly as it was.
+    //
+    // `committedTypeFor` is the SAME function the budget-exhaustion sweep uses,
+    // and that is not tidiness: two implementations of this precedence can
+    // disagree about one branch, and a branch the sweep passed on the wrong
+    // type is abandoned after a worktree exists rather than before selection.
+    // -----------------------------------------------------------------------
+    const committedType = committedTypeFor(branch);
     const lastType = resumeTarget.last?.type;
-    job = { type: lastType ?? 'machinery', source: 'resumed', title: `resume ${jobId}`, detail: '' };
+    const typed = committedType
+      ? { type: committedType, from: '.job/source.json, committed at selection' }
+      : lastType
+        ? { type: lastType, from: "the job's last ledger line" }
+        : { type: 'machinery', from: 'NEITHER a committed source record nor a ledger line — this is the fallback, not a measurement' };
+    ctx.log(`resumed job type: ${typed.type} (from ${typed.from})`);
+    job = { type: typed.type, source: 'resumed', title: `resume ${jobId}`, detail: '' };
     // The committed brief's spend figures are frozen at the run that wrote it.
     // For a resumed job they are stale by construction, so the current ones go
     // above it and say so.
@@ -820,10 +987,8 @@ export async function runLoop(ctx, opts = {}) {
       };
     })());
     ctx.log(`resuming ${branch} (${resumeTarget.reason}, ${resumeTarget.ageDays.toFixed(1)} days old) — no retry consumed`);
-    // Where this job came from, read off the branch rather than remembered.
-    // Without it a resumed proposal job merges and leaves its proposal
-    // selectable, which is the same defect through the resumption door.
-    const origin = readCommittedJobSource(ctx.repoRoot, branch);
+    // The rest of what the branch records about its own selection — read once,
+    // above, before the type was chosen.
     if (Array.isArray(origin?.issues) && origin.issues.length) {
       jobIssues = origin.issues.filter(isIssueId);
       ctx.log(`this branch records that it serves ${jobIssues.join(', ')}`);
@@ -904,7 +1069,8 @@ export async function runLoop(ctx, opts = {}) {
     ctx.log(
       'plus, when they apply: "note", "signal" (no-output), "phases" — one ' +
         '{role, runner, mm, killed, code, outcome} per invocation (author / review1 / ' +
-        'revision / review2) — and "issues", the beads ids this job serves. "mm" above ' +
+        'revision / review2), the author\'s carrying "gates" {retried, passed, transport} ' +
+        'when a gate failure was retried — and "issues", the beads ids this job serves. "mm" above ' +
         'stays the JOB TOTAL; "phases" is what says where a per-invocation cap belongs. ' +
         '"issues" is omitted when the job serves none, which is the common case: routine ' +
         'upkeep has nothing behind it and an id per job would manufacture backlog noise.',
