@@ -756,6 +756,78 @@ test('the exemption lifts a COUNT: four unflagged plus one flagged keeps three p
   ctx.cleanup();
 });
 
+test('a flag that does not hold is NOT the exempt one — the drop record must not name a refused candidate', () => {
+  // The half of `validFlagged` nothing measured. Deleting `&& e.flagProblems
+  // .length === 0` from proposals.mjs leaves every kept/dropped assertion in
+  // this file green, because routing is decided by `invalidSet` and the broken
+  // file is excluded from `counted` and `kept` either way. What the deletion
+  // corrupts is the RECORD: `exempt` would then contain the broken file, and
+  // the cap drop-note — plus the `proposal cap:` run-log line that repeats it —
+  // would say "1 valid frontier-flagged candidate (`broken.md`) did not count
+  // against it", about a file this same run dropped for a flag that does NOT
+  // hold.
+  //
+  // `data/proposals/dropped/` is the only durable record of why a fourth file
+  // survived and a fifth did not. A note naming a REFUSED candidate as the
+  // exempt one is a false record with nothing anywhere to contradict it, and
+  // both notes are model-free text nobody reviews.
+  const ctx = makeRepo({
+    files: {
+      'data/proposals/u1.md': cand('u1', ['rank: 1']),
+      'data/proposals/u2.md': cand('u2', ['rank: 2']),
+      'data/proposals/u3.md': cand('u3', ['rank: 3']),
+      'data/proposals/u4.md': cand('u4', ['rank: 4']),
+      // Declares the flag and does not hold it: no `frontier_reason`.
+      'data/proposals/broken.md': cand('broken', ['rank: 5', 'frontier: true']),
+    },
+  });
+  const r = applyProposalMergeRules(ctx, {
+    worktree: ctx.repoRoot,
+    jobId: 'j-test-07',
+    jobType: 'scout',
+    changed: addedAll(['u1.md', 'u2.md', 'u3.md', 'u4.md', 'broken.md']),
+  });
+
+  // Routing first, as the control: it is identical with or without the
+  // `flagProblems` half, which is exactly why the record is the thing to
+  // assert.
+  assert.equal(r.cap, 3);
+  assert.deepEqual(r.kept.sort(), ['u1.md', 'u2.md', 'u3.md'], 'the broken flag bought nothing');
+  assert.deepEqual(
+    r.dropped.map((d) => d.name).sort(),
+    ['broken.md', 'u4.md'],
+    'one dropped for the flag, one for the cap',
+  );
+  const byName = Object.fromEntries(r.dropped.map((d) => [d.name, d]));
+  assert.deepEqual(byName['broken.md'].flag, ['frontier_reason'], 'and it went for the FLAG');
+  assert.equal(byName['u4.md'].flag, undefined, 'while the fourth unflagged one went for the cap');
+
+  // The record itself. The cap note is written for `u4.md`, and with no valid
+  // flag in the run there is nothing for it to call exempt.
+  const capFile = readFileSync(join(ctx.proposalsDir, 'dropped', 'u4.md'), 'utf8');
+  assert.match(capFile, /## Dropped: over this job's candidate cap/);
+  assert.ok(!capFile.includes('- exempt:'), 'no candidate here was exempt — the only flag in the run does not hold');
+  assert.ok(
+    !capFile.includes('valid frontier-flagged candidate'),
+    'and nothing may describe the refused file as a valid frontier-flagged candidate',
+  );
+  assert.ok(!capFile.includes('broken.md'), 'the cap note must not name the file the FLAG rule dropped');
+  assert.match(capFile, /it added 4/, 'four candidates counted: the broken one is not among them either');
+
+  // The run log repeats the same sentence and goes wrong the same way.
+  const capNote = r.notes.find((n) => n.startsWith('proposal cap:'));
+  assert.ok(capNote, 'the run log records the cap firing');
+  assert.ok(!capNote.includes('valid frontier-flagged candidate'), capNote);
+  assert.ok(!capNote.includes('broken.md'), capNote);
+
+  // And the flag note is the honest one, in both places.
+  const flagFile = readFileSync(join(ctx.proposalsDir, 'dropped', 'broken.md'), 'utf8');
+  assert.match(flagFile, /## Dropped: the frontier flag it declared does not hold/);
+  const flagNote = r.notes.find((n) => n.startsWith('frontier flag:'));
+  assert.match(flagNote, /broken\.md: frontier_reason/);
+  ctx.cleanup();
+});
+
 test('the documented order still holds for a flagged candidate: cap, stamp, discard', () => {
   // A scout filing a validly flagged `scout` proposal. The exemption keeps it
   // past the cap; the stamp is written; the self-amplification rule then reads
