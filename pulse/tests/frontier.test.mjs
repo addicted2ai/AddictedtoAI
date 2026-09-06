@@ -162,6 +162,35 @@ test('(b) a new row taking the lead appends exactly one line, cause: arrival', a
   assert.equal(line.excerpt.rows['acme/three']['benchmarks.idx'], 90);
   assert.ok(LEAD_CHANGE_CAUSES.includes(line.cause), 'the cause is a member of the closed set, which is read');
 
+  /*
+   * THE PUBLISHER, WHICH THE REQUIREMENT NAMES AND NOTHING READ. specs/pulse
+   * says a `lead-change` line "SHALL carry the metric, the snapshot date the
+   * change was observed in, the outgoing and incoming rows, THE PUBLISHER, and
+   * the archived source excerpt every material change entry already carries" —
+   * and every clause of that sentence had an assertion above except the
+   * publisher. A review deleted `publisher`, `metric_label` and `republisher`
+   * from the emitted candidate in `pulse/lib/frontier.mjs` and this file still
+   * went green, so the three fields were unmeasured: a line that named no
+   * publisher would have shipped an unattributed claim to the strip, which is
+   * the precise thing this change exists to prevent.
+   *
+   * The expected values are READ BACK OUT OF THE FIXTURE'S REGISTRY on disk
+   * rather than written as literals here. That is the difference between
+   * measuring "the line carries what the registry declared" and measuring "the
+   * line carries the string I typed in two places" — the second passes just as
+   * happily when the emitter invents a value, as long as the invention matches.
+   */
+  const registry = readJson(join(root, 'data', 'sources', 'registry.json'));
+  const declared = registry.frontier.metrics.find((m) => m.id === line.metric);
+  assert.ok(declared, 'the line names a metric the registry actually declares');
+  assert.ok(
+    declared.publisher && declared.label && declared.republisher,
+    'the fixture declares all three, so none of the three assertions below can pass vacuously on undefined',
+  );
+  assert.equal(line.publisher, declared.publisher, 'the line carries the registry-declared publisher of the index');
+  assert.equal(line.metric_label, declared.label, "the line carries the metric's registry-declared label");
+  assert.equal(line.republisher, declared.republisher, 'the line carries the registry-declared republisher the value reached us through');
+
   // THE KEY'S INPUTS, NOT ITS SUFFIX. `assert.match(key, /\|fixture-index\|lead-change$/)`
   // used to stand here alone, and a mutant keyed on the SNAPSHOT DATE instead of
   // the two row hashes matched it and passed every test in the change. The
