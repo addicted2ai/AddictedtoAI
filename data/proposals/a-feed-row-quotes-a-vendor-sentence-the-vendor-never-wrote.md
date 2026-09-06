@@ -30,6 +30,8 @@ evidence: >
   is from a different post (introducing-laguna-xs2-m1, 2026-04-28) and is
   about the ecosystem, not the model. The same snapshot's other 59 rows were
   not checked, which is the job.
+proposed_by_job: j-20260906-05
+proposed_by_type: entry
 ---
 
 Why this is a `verify` and not a repair. Nothing in the corpus is wrong today:
