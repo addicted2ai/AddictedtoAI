@@ -143,9 +143,15 @@ through the Desk's change process first; the lines below are the jobs that follo
   and version, date, direction, coverage change — with no index value, ratio, rank or per-model score
   in its copy; the publisher's own changelog is the anchor. Artificial Analysis's 2026-09-04 v4.2
   rebase qualifies.
-- **§3 implementation line** (was missing). Seeded `domains` values are machine-maintained and sit
-  beside `timeline` in `MECHANICAL_FRONT_MATTER_KEYS`; editorial assignments and overrides are a
-  separate field and go through review. One field must not carry two freshness regimes.
+- **§3 implementation line** (was missing). Seeded domain values are machine-maintained and sit
+  beside `timeline` in `MECHANICAL_FRONT_MATTER_KEYS` **under a key of their own (`domains_seeded`),
+  never the literal key `domains`**: that list is matched by key NAME across every content kind
+  (`lib/review-hash.mjs:71, 99-102`), so exempting `domains` would silently remove a POST's editorial
+  `domains` from the reviewed surface and delete 9c9t's review requirement with no error anywhere
+  (found by the 9c9t author, 2026-09-05). Editorial assignments and overrides are the `domains` field
+  and go through review. One field must not carry two freshness regimes; one key name must not carry
+  two kinds' regimes either — a key-name filter is not a per-kind rule (the same lesson as "a
+  field-name test is not a source test", implementer ledger #10).
 - **§4 is its own OpenSpec change**, drafted by an interpret line before its machinery lines. The
   vendor-claim record lives BESIDE the entry (its own clock; a later verification must not dirty
   prose), carries the source URL host (for the board's registrable-domain vendor test, S22(e)), and
