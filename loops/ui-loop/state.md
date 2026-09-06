@@ -89,9 +89,9 @@ Desk backlog, never a UI finding. Check this file's size before every commit (ov
 
 ## Next (loop work, in order)
 
-1.–10. Rounds 0–6 done 2026-09-05 (six iterations). **MERGED to `main` @ `b6ac95d`, pushed** with the
-   three record branches; gates on main green (build, verify-design 46/46, surfaces, invariants 24/24,
-   tests 1229). Final `SCORE-CP-UI-001-2-6` 88.3, zero RT criticals. Handoff ACCEPTED (K31); STOP
-   removed (K33); Desk running, publish still false; K44 in DIRECTIVES (4578d8a). Machinery at its 10%
-   ceiling → specs, backfill, rights, org entries first; implementations when the window rolls.
-11. Next: BRIEF-UI-002 when the keeper drafts it; spec reviews (K45) as drafts land.
+1.–10. Rounds 0–6 done 2026-09-05; **merged to `main` @ `b6ac95d`, pushed**; final 88.3, zero RT
+   criticals; handoff accepted (K31), STOP removed (K33), Desk resumed. Detail: `state-archive.md`.
+11. Specs reviewed (K45) and IMPLEMENTED in parallel (K49, 2026-09-06): domain facet `fa555a4`, claim
+   record + vendor test `ca44bac`, frontier flag `b423696`, sealed-reviewed with mutation proofs;
+   lead-change/frontier.json and radar rows pending; 1401 tests green. Next: BRIEF-UI-002 (Frontier
+   domain section + general lane; deferred layout items) once the data is live.
