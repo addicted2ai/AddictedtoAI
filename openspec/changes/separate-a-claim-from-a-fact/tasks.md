@@ -11,11 +11,11 @@ promises.
 
 ## The claim record — a seventh content type
 
-- [ ] 1. `lib/paths.mjs`, `CONTENT_TYPES` (line 42): add
+- [x] 1. `lib/paths.mjs`, `CONTENT_TYPES` (line 42): add
       `claim: { dir: 'claims', glob: 'claims/**/*.md' }`. Create
       `content/claims/README.md`, which the loader skips as it skips
       `content/wiki/README.md`.
-- [ ] 2. `lib/schema.mjs`: a `claimSchema`, `.strict()`, registered in `SCHEMAS`
+- [x] 2. `lib/schema.mjs`: a `claimSchema`, `.strict()`, registered in `SCHEMAS`
       (line 420). `subject` reusing the existing `entryId`; `field` reusing
       `FIELD_NAME_RE`; `quote` a non-empty string; `source_url` reusing
       `httpUrl`; `source_host` a lowercase host; `accessed` reusing `isoDate`;
@@ -24,7 +24,7 @@ promises.
       **`verified: true` must produce a message naming the file and saying a
       confirmation carries `by`, `url` and `date`** — a bare union rejection
       would name the union and teach nothing.
-- [ ] 3. `lib/schema.mjs`: `PROSE_FIELDS.claim` and `NON_PROSE_FIELDS.claim`,
+- [x] 3. `lib/schema.mjs`: `PROSE_FIELDS.claim` and `NON_PROSE_FIELDS.claim`,
       every string field classified with its reason. Without this
       `assertFieldsClassified` (line 663) fails the build, which is the intended
       behaviour of that gate and the reason this is a task rather than an
@@ -33,38 +33,38 @@ promises.
       volatile-literal scan would in any case exempt it, because the record
       carries a sibling `accessed` date — the mechanical exemption in
       `lib/currency.mjs`, not a blessed-field list.
-- [ ] 4. `claimSchema.superRefine`: `source_host` equals the host parsed from
+- [x] 4. `claimSchema.superRefine`: `source_host` equals the host parsed from
       `source_url`, lowercased. Message names both values.
-- [ ] 5. `lib/corpus.mjs`, `urlFor` (lines 30-49) **throws for an unknown type**,
+- [x] 5. `lib/corpus.mjs`, `urlFor` (lines 30-49) **throws for an unknown type**,
       so a seventh type without a branch breaks the build immediately. A claim's
       URL is its subject entry's URL plus a stable fragment
       (`/wiki/org/moonshot-ai#claim-<slug>`), which requires the subject lookup —
       decide whether `urlFor` takes the corpus or whether claims are resolved in
       a separate pass, and record the decision in the code.
-- [ ] 6. The carve-outs a route-less content type needs, each verified by
+- [x] 6. The carve-outs a route-less content type needs, each verified by
       grepping for how the six existing types reach the surface: the sitemap
       (`app/sitemap.ts`), the search index, `lib/crawlers.mjs`'s llms.txt, and
       the indexability join. A claim is **not** a document; it must not appear in
       any of them in its own right. This is the largest unknown in the change and
       the reason item 2 of the proposal's uncertainty list exists.
-- [ ] 7. `lib/corpus.mjs`, `checkReferences` (lines 162-219): resolve a claim's
+- [x] 7. `lib/corpus.mjs`, `checkReferences` (lines 162-219): resolve a claim's
       `subject` against `corpus.byId` exactly as `mentions` is resolved, so an
       unresolvable subject fails the build naming the file and the id.
-- [ ] 8. A duplicate check: two claim records sharing all of `subject`, `field`,
+- [x] 8. A duplicate check: two claim records sharing all of `subject`, `field`,
       `source_url` and `accessed` fail the build naming both files. Records
       sharing only `subject` and `field` are legal — a vendor repeating itself is
       real — and a test asserts that.
-- [ ] 9. `lib/reviews.mjs`, `reviewablePieces` (line 280): append claims to the
+- [x] 9. `lib/reviews.mjs`, `reviewablePieces` (line 280): append claims to the
       fixed list. The comment above it says the order is part of the join, so add
       at the end and say why in the same comment.
-- [ ] 10. **Do not add anything to `MECHANICAL_FRONT_MATTER_KEYS`**
+- [x] 10. **Do not add anything to `MECHANICAL_FRONT_MATTER_KEYS`**
       (`lib/review-hash.mjs:71`). A test asserts that neither `verified` nor
       `claims` is a member, with the reason in the assertion message: the filter
       matches by key name across every content kind (`:99-102`), so exempting
       `verified` would exempt any key of that name on any kind, and a
       verification is a judgment that publishes through review. This is the same
       mechanism `tag-the-corpus-by-domain` navigated from the other side.
-- [ ] 11. Render claims on the subject entry's page: the label on the claim, the
+- [x] 11. Render claims on the subject entry's page: the label on the claim, the
       attributing party before the fragment, the three verification states as
       three renderings and absent as none, the source link and `accessed` date.
       One test per state, and a test that a subject with cited facts and no claim
@@ -72,15 +72,15 @@ promises.
 
 ## The vendor test — one implementation, no second copy
 
-- [ ] 12. `lib/schema.mjs`, `entrySchema` (line 209): `publishes_from`, optional
+- [x] 12. `lib/schema.mjs`, `entrySchema` (line 209): `publishes_from`, optional
       array of strings. The schema is `.strict()`, so without this the key is
       rejected outright.
-- [ ] 13. A new module holding the registrable-domain rule and the multi-label
+- [x] 13. A new module holding the registrable-domain rule and the multi-label
       public-suffix table, read by every consumer. Precedent for the shape:
       `TOOL_CATEGORIES` was split into `lib/tool-categories.mjs` (beads
       `addictedtoai-bju`) so a second consumer could read the closed list without
       a second copy, and that file's header says nothing else should declare one.
-- [ ] 14. Tests for that module drawn from the round-5 addendum's own worked
+- [x] 14. Tests for that module drawn from the round-5 addendum's own worked
       cases, because they are the ones the two previous implementations got
       wrong: `www.tencent.com` → `tencent.com`; `deepmind.google` →
       `deepmind.google`; `blog.google` → `blog.google`, and **not** equal to
@@ -89,10 +89,10 @@ promises.
       label-identity test that clears `google.<anyone-else>`, and an
       `endsWith('.' + recorded)` test, each asserted to be wrong on a case the
       correct rule gets right.
-- [ ] 15. A build gate: a `publishes_from` value that is not equal to its own
+- [x] 15. A build gate: a `publishes_from` value that is not equal to its own
       registrable-domain reduction fails, naming the entry, the value and the
       reduction to declare instead (`platform.kimi.ai` → `kimi.ai`).
-- [ ] 16. The attribution function itself, in one place: a claim is the subject's
+- [x] 16. The attribution function itself, in one place: a claim is the subject's
       when `source_host`'s registrable domain is in the subject's
       `publishes_from`, or its registrable label is one of the subject's name
       tokens (`display_name` and declared `aliases`). Nothing else. A test per
