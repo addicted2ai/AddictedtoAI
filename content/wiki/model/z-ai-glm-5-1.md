@@ -82,10 +82,7 @@ single step anywhere in the GLM line — while its input listing stayed
 beside this row's instead of climbing with the window:
 {{fact:model/z-ai-glm-5-2#price_input}} there against
 {{fact:model/z-ai-glm-5-1#price_input}} here. Those two figures come from
-different top providers, so which of them is fractionally lower is a fact
-about hosts rather than about the models; what the pair does show is that a
-fivefold window did not arrive with a fivefold price. Artificial Analysis's
-index rose with it, from {{fact:model/z-ai-glm-5-1#intelligence_index}}
-here to {{fact:model/z-ai-glm-5-2#intelligence_index}} there, so the extra
-room did not come out of measured capability. This row is the last of the
+different top providers, so how they line up is a fact about hosts rather
+than about the models; what the pair does show is that a fivefold
+window did not arrive with a fivefold price. This row is the last of the
 main line on the old envelope.

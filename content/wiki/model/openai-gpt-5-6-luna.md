@@ -81,24 +81,21 @@ Luna's price by 80% on 30 July 2026, four weeks before that reading, and
 the two rows have only lined up since. Nothing else matches: Luna's
 context window runs
 {{fact:model/openai-gpt-5-6-luna#context_window}} against Nano's
-{{fact:model/openai-gpt-5-4-nano#context_window}}, and the scoreboard gap
-is wider still — intelligence
-{{fact:model/openai-gpt-5-6-luna#intelligence_index}} against
-{{fact:model/openai-gpt-5-4-nano#intelligence_index}}, coding
-{{fact:model/openai-gpt-5-6-luna#coding_index}} against
-{{fact:model/openai-gpt-5-4-nano#coding_index}}, agentic
-{{fact:model/openai-gpt-5-6-luna#agentic_index}} against
-{{fact:model/openai-gpt-5-4-nano#agentic_index}}.
+{{fact:model/openai-gpt-5-4-nano#context_window}}, and Artificial
+Analysis's coding index, read on 5 September 2026, separates them the same
+way — {{fact:model/openai-gpt-5-6-luna#coding_index}} here against Nano's
+{{fact:model/openai-gpt-5-4-nano#coding_index}}.
 
 Luna is also the cheapest of the three GPT-5.6 models by a wide margin —
 only its own `openai/gpt-5.6-luna-pro` sibling matches it. In the same
 28 August 2026 reading its
 {{fact:model/openai-gpt-5-6-luna#price_input}} input undercuts Sol's
 {{fact:model/openai-gpt-5-6-sol#price_input}} — the number Terra's row
-lists too — by a factor of ten, while its intelligence index
-({{fact:model/openai-gpt-5-6-luna#intelligence_index}}) trails Sol's
-({{fact:model/openai-gpt-5-6-sol#intelligence_index}}) by a far smaller
-proportion than its price does. Both of those rates are the top listed
+lists too — by a factor of ten. On the intelligence index as it reads on
+5 September 2026, Luna's
+{{fact:model/openai-gpt-5-6-luna#intelligence_index}} trails Sol's
+{{fact:model/openai-gpt-5-6-sol#intelligence_index}} by a far smaller
+proportion than that. Both of those rates are the top listed
 provider's for their row rather than necessarily OpenAI's own, and two
 rows need not be headed by the same provider, so the ten-fold gap is one
 between listings. It shipped inside the same government-requested

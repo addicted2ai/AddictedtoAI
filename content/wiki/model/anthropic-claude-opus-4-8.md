@@ -61,15 +61,8 @@ row rather than necessarily Anthropic's own, and the 4.1 row is headed by
 resellers, so the step down sits between listings rather than being a price
 Anthropic announced.
 
-Nothing about the model stayed flat over that stretch. The Artificial
-Analysis intelligence index reads
-{{fact:model/anthropic-claude-opus-4-7#intelligence_index}} on 4.7,
-{{fact:model/anthropic-claude-opus-4-8#intelligence_index}} on this row,
-and {{fact:model/anthropic-claude-opus-5#intelligence_index}} on Opus 5 two
-releases later — eight points of climb while the row listed the same five
-times running.
-
-The context window moved on a different schedule than the price.
+Nothing about the row stayed flat over that stretch, but what moved was the
+context window rather than the price.
 `anthropic/claude-opus-4.5` still capped at
 {{fact:model/anthropic-claude-opus-4-5#context_window}}, the same
 ceiling the line had shipped with since the first Opus 4. The next

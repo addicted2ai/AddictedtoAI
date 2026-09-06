@@ -92,11 +92,11 @@ of it was a hosted endpoint rather than the model, since K2.5's weights
 ship under {{fact:model/moonshotai-kimi-k2-5#license}} and stay
 downloadable.
 
-Whether the bigger model is also the better one is a question this
-catalog answers directly rather than by press release. On the Artificial
-Analysis intelligence index, K3 scores
-{{fact:model/moonshotai-kimi-k3#intelligence_index}} against K2.5's
-{{fact:model/moonshotai-kimi-k2-5#intelligence_index}} in the same
-snapshot — both the parameter increase above and whatever it bought sit in
-the same table, checkable against each other rather than taken on either
-model's word.
+Whether the bigger model is worth the difference is a question this catalog
+puts side by side rather than leaving to either release's launch copy. Both
+rows are still listed: K3 heads at
+{{fact:model/moonshotai-kimi-k3#price_input}} input against K2.5's
+{{fact:model/moonshotai-kimi-k2-5#price_input}}, so the older and smaller
+model is the cheaper call by a wide margin, and it is still a call you can
+make. Each of those is the top listed provider's rate for its row rather
+than necessarily Moonshot's own.
