@@ -12,7 +12,9 @@ product. `source: cited` records that a value carries a citation, never that
 the citation is the vendor's own assertion — and both finalist builds of the
 Frontier rendered organisation founding dates under "claimed · unverified"
 because the corpus offered no other structure. Every one of those thirteen
-`founded` facts cites `en.wikipedia.org`.
+`founded` facts cites `en.wikipedia.org` (measured 2026-09-05; re-measured
+2026-09-06 as fifteen of sixteen across a widened `content/wiki/org/`, one entry
+citing `github.com` instead).
 
 **The record sits beside the entry, never on it.** A claim ages on its
 source's clock, not the entry's: *"Anthropic said this on 2026-08-27"* is true

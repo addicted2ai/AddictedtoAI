@@ -241,6 +241,31 @@ what may not render until it does.
   stated decision") and neither is needed to file a claim record.
 - **It does not touch `data/config.json`, `package.json` or
   `openspec/specs/`.**
+- **It does not replace `/frontier`'s Vendor claim column, which builds a claim
+  from an entry's `facts` — and the requirement above forbids that on every
+  surface, so the contradiction is named here rather than left for the archive to
+  discover.** The delta states it without an exemption: *"No surface SHALL
+  construct a claim from an entry's `facts`, whatever those facts are named and
+  whatever their `source_url` says. A claim surface with no claim records renders
+  empty."* `lib/render/frontier.mjs`'s `vendorClaimFact` / `claimRank` walks
+  `modelDoc.data.facts`, and `app/frontier/page.tsx` renders the result as
+  `claimed · unverified`. **Measured on the real corpus 2026-09-06 with the
+  board's own predicate** (`source === 'cited'`, a digit in the value, field in
+  `CLAIM_FIELDS_BENCHMARK`, `isSubjectOwnedUrl` against an org entry): 15
+  candidate facts on model entries, **4 of which render**, on **2** model entries
+  — `model/google-gemini-3-8-flash` (`hle_verified`, `vals_finance_agent_v2`,
+  `harveys_legal_agent_benchmark`, all cited to `deepmind.google`) and
+  `model/tencent-hy4-preview` (`internal_blind_eval`, `www.tencent.com`). So this
+  is not a latent contradiction: when this delta archives into
+  `openspec/specs/wiki/spec.md` the constitution will forbid something the
+  flagship route does today on live data. **`BRIEF-UI-002` owns replacing that
+  column with a read of the claim record**, and until it does the board's own
+  vendor test is what keeps the cell honest — which is why the fix is a column
+  rewrite on the UI loop's clock rather than an edit from here (this stream owns
+  tasks 1-16, and the board is the UI loop's brief per the first bullet above).
+  Recorded for the same reason the `S22` (e) hand-over below is: an untasked
+  SHALL is invisible twice over, and this one sits on the exact defect class
+  (ledger rows 2, 4 and 10) the change exists to end.
 - **It does not touch `tools/ui-invariants.mjs` or `loops/ui-loop/RULES.md`**,
   and one consequence has to be handed over rather than fixed here. Invariant
   `S22` clause (e) deliberately RE-DERIVES the vendor test — its own suffix
