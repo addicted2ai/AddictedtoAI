@@ -36,6 +36,14 @@ tested.
       hand-written refusal. Confirm by test that strictness is what does it;
       a refusal that depends on a separate branch is a refusal that can be
       deleted without a failing test.
+      **Classify the two new string-valued fields in the same edit** or the
+      build fails before a file is read: `classificationProblems`
+      (`lib/schema.mjs:1025`) rejects any string-valued schema field in neither
+      `PROSE_FIELDS` nor `NON_PROSE_FIELDS`, and `assertFieldsClassified` runs at
+      `lib/build-content.mjs:97`. Add to `NON_PROSE_FIELDS.entry` (line 852):
+      `facts[].census` — 'a census id from the closed registry' — and
+      `facts[].scope` — 'a provider prefix — a row-id segment, not a sentence'.
+      `facts[].feed` is already classified and needs nothing.
 - [ ] 4. `lib/schema.mjs`: a refinement rejecting a census fact whose `census`
       id is absent from the registry and one whose `feed` is not the source
       that census names, each naming the entry, the field and the offending
@@ -47,9 +55,28 @@ tested.
       no data layer renders absent; a scope the snapshot matches on no row
       renders absent. Every branch emits a source element, as every existing
       branch does.
-- [ ] 6. The repair finding for a scope that matches nothing: one queue item per
-      entry and scope, in the derived queue, by the same route a vanished row's
-      repair finding takes. Never a silent `0`.
+- [ ] 6. `pulse/lib/queue.mjs`: the repair finding for a scope that matches
+      nothing, as a **computed** item class — `censusScopeItems(root)`, beside
+      `vanishedRowItems` and `curriculumGapItems` and pushed into
+      `computeQueue`'s list the same way, reading each entry's `facts` through
+      `pulse/lib/corpus.mjs` (which already carries `facts`) and the provider
+      prefixes of each named source's `latest` snapshot. **The derived queue is
+      the Pulse's**, recomputed from state every run; `lib/facts.mjs` is the
+      build and cannot put an item in it, so the producer lives here and the
+      renderer's only job is to render absent. Type `repair` — already in
+      `QUEUE_PRODUCIBLE_TYPES`, so **no `pulse` delta is needed** — reason
+      `census-scope-unmatched`, with its own `RANKS` entry at **81**, between
+      `slug-collision` (82) and `suspect-source` (80): it is the same thing both
+      of those are, a corpus/world mismatch measured today, and a page rendering
+      absent where it should render a number outranks a source that has merely
+      gone quiet. One item per (entry, scope), naming both.
+      **Computed, not a durable record, and that is the whole of the choice.**
+      `vanishedRowItems` reads `data/vanished/` because a withdrawn row is
+      absent from the snapshot forever, so a computed form could never retire
+      and re-dispatched finished work at rank 85 (addictedtoai-u0n5). A mistyped
+      prefix is the opposite case: the fix is an edit to the entry's own `scope`,
+      after which the item must disappear by recomputation with no record to
+      delete. Never a silent `0`.
 
 ## The tests that make the census a mechanism
 
@@ -69,21 +96,30 @@ tested.
       census id; one whose `feed` disagrees with the census's own source. Plus
       the controls without which those prove nothing: a valid census fact
       validates and round-trips, and a `cited` and a `feed` fact each validate
-      exactly as before.
+      exactly as before. Plus the control the existing "A new field cannot
+      arrive unclassified" requirement asks for: `classificationProblems()`
+      returns `[]` after the schema change.
 - [ ] 9. Tests beside `lib/facts.mjs` for the four render outcomes, asserted on
       the rendered markup rather than on the resolver's return: counted (value
       plus source plus snapshot date), zero (`0`, not absent), no data layer
-      (absent, not `0`), scope-matches-nothing (absent, plus the queue item).
-      The zero-versus-absent pair is the point of the test and must be two
-      separate assertions.
-- [ ] 10. Mutation proof, three mutations run separately: make
+      (absent, not `0`), scope-matches-nothing (absent). The zero-versus-absent
+      pair is the point of the test and must be two separate assertions. The
+      queue item is **not** asserted here: this test sits beside `lib/facts.mjs`,
+      which cannot observe the derived queue — task 10 is where that is measured.
+- [ ] 10. A test in `pulse/tests/queue.test.mjs` for `censusScopeItems`, over a
+      pinned fixture corpus and snapshot: one `census-scope-unmatched` item per
+      (entry, scope) whose prefix no row carries, naming the entry and the scope;
+      **none** once the scope matches a row, which is the retirement condition
+      and the half a durable-record route could not have; and none for a census
+      declaring no scope at all.
+- [ ] 11. Mutation proof, three mutations run separately: make
       scope-matches-nothing return `0`, and confirm only the scope test fails;
       make the no-data-layer branch return `0`, and confirm only that test
       fails; drop the snapshot date from the census source element, and confirm
       the source-reachability test fails. Three mutations failing disjoint sets
       is the evidence these are three mechanisms rather than one described
       three times. Restore and verify each file byte-identical by hash.
-- [ ] 11. An end-to-end test that a census transclusion renders in prose through
+- [ ] 12. An end-to-end test that a census transclusion renders in prose through
       `{{fact:<kind>/<slug>#<field>}}` with no change to `lib/transclude.mjs`,
       and that advancing the fixture snapshot changes the rendered number with
       no file edited and no build error. That second half is the requirement's
@@ -91,22 +127,45 @@ tested.
 
 ## The timeline binding
 
-- [ ] 12. `lib/schema.mjs`: the two timeline forms. `source` optional, absent
+- [ ] 13. `lib/schema.mjs`: the two timeline forms. `source` optional, absent
       meaning `cited`, so all 285 existing events validate untouched — see
       `design.md` §6 for the `discriminatedUnion` hazard this walks into if the
       discriminator is assumed present. The feed form declares `event`,
       `source`, `feed` and `path` and **no `date`**; strictness rejects a
       `date` beside a binding, and the error names the entry and the event.
-- [ ] 13. `lib/schema.mjs` or the corpus loader: reject a feed-bound event whose
+      **Classify the three new string-valued fields in the same edit**, for the
+      reason task 3 gives: add to `NON_PROSE_FIELDS.entry` `timeline[].source`
+      ('a discriminator literal'), `timeline[].feed` ('a source id') and
+      `timeline[].path` ('a dotted path into a feed row'). `timeline[].date`,
+      `timeline[].event` and `timeline[].source_url` are already classified.
+- [ ] 14. `lib/schema.mjs` or the corpus loader: reject a feed-bound event whose
       `feed` is absent from the entry's own `feeds` map, naming the entry and
       the event. The join is declared or it does not exist.
-- [ ] 14. Resolve the timeline once, where the entry is loaded into the corpus:
-      each event becomes `date`, `event` and a reachable source, with the
-      feed-bound date computed as the UTC calendar date of the instant at
-      `path`. A vanished row resolves to its last-known instant, marked as-of,
-      with a repair finding in the derived queue, and the event stays on the
-      timeline. No consumer is taught the two forms.
-- [ ] 15. Confirm by reading, not by assuming, that the four consumers measured
+- [ ] 15. Resolve the timeline once, in `lib/build-content.mjs` **phase 2** —
+      after `loadDataLayer()` (line 106) and before the `for (const doc of
+      corpus.entry)` loop (line 130), so `indexability` (153), `renderTimeline`,
+      `dataset.timelineRows` and `dormantAsOf` all read resolved events. **Not
+      in `loadCorpus`**: its options are `{contentRoot, diags, checkReferences}`
+      (`lib/corpus.mjs:347`), it has no data layer, the layer is loaded six lines
+      after it, and it has 22 other callers — `scripts/verify-launch.mjs`,
+      `scripts/check-post-voice.mjs`, `lib/arxiv-pin.mjs`, `lib/anchors.mjs`,
+      `lib/declined-fields.mjs` and the fixture tests among them — that build no
+      data layer at all. Resolution rewrites `doc.data.timeline` in place, which
+      is what carries it to `site-assets.mjs:181`'s `timelineRows(site.corpus)`
+      without a signature change anywhere. Each event becomes `date`, `event` and
+      a reachable source, the feed-bound date computed as the UTC calendar date
+      of the instant at `path`. **A feed-bound event's source is the named
+      source's registry `url`** (`data/sources/registry.json`, e.g.
+      `openrouter-models` → `https://openrouter.ai/api/v1/models`) written to
+      `source_url`, so `lib/dataset.mjs:95` reads a filled column for both forms
+      and the export gains no column. A vanished row resolves to its last-known
+      instant, marked as-of, and the event stays on the timeline. No consumer is
+      taught the two forms.
+      If a later caller genuinely needs resolution without phase 2, give
+      `loadCorpus` an **optional** `dataLayer` and state in this task what a
+      feed-bound event resolves to when none is passed — do not change the
+      signature's required shape.
+- [ ] 16. Confirm by reading, not by assuming, that the four consumers measured
       in the proposal — `lib/render/entry.mjs`'s sort, `lib/dataset.mjs`'s
       export, `lib/facts.mjs`'s dormant stamp and `lib/indexability.mjs`'s
       count — need no edit once resolution runs first, and record in the task
@@ -114,44 +173,51 @@ tested.
 
 ## The tests for the timeline binding
 
-- [ ] 16. Tests beside `lib/schema.mjs`: a cited event with no `source` key
+- [ ] 17. Tests beside `lib/schema.mjs`: a cited event with no `source` key
       validates unchanged (the backward-compatibility control, and the most
       important test here); a feed-bound event validates; a feed-bound event
       carrying `date` is refused naming the event; an event naming a source the
-      entry does not join is refused naming the event.
-- [ ] 17. A resolution test over a pinned fixture: a feed-bound event resolves
+      entry does not join is refused naming the event. And the same
+      classification control as task 8: `classificationProblems()` returns `[]`
+      after the timeline schema change.
+- [ ] 18. A resolution test over a pinned fixture: a feed-bound event resolves
       to the UTC calendar date of the row's instant, and the same instant read
       in a non-UTC zone resolves to the same date — run with `TZ` set either
       side of UTC, because a zone-dependent date is the defect this convention
       exists to prevent.
-- [ ] 18. A vanished-row test: the event keeps its last-known date, renders the
-      as-of marker, files the queue item, and is still present in the rendered
-      timeline and in the exported dataset row.
-- [ ] 19. Mutation proof, two mutations run separately: resolve the instant in
+- [ ] 19. A vanished-row test: the event keeps its last-known date, renders the
+      as-of marker, and is still present in the rendered timeline and in the
+      exported dataset row — asserting that row's `source_url` **column value**
+      is the source's registry `url`, not merely that the row is present. The
+      repair finding here is the **existing** `vanished-feed-row` item the
+      entry's own `feeds` declaration already produces through
+      `data/vanished/`; this change files no second item for it, and the test
+      asserts no new queue item.
+- [ ] 20. Mutation proof, two mutations run separately: resolve the instant in
       local time instead of UTC and confirm only the zone test fails; drop the
       event from the timeline when its row has vanished and confirm only the
       vanished-row test fails. Restore and verify byte-identical by hash.
 
 ## The reviewer's checklist
 
-- [ ] 20. `loop/lib/review.mjs`: the prose checklist item gains the census case
+- [ ] 21. `loop/lib/review.mjs`: the prose checklist item gains the census case
       — a row count typed as a numeral where a census fact could carry it is
       rejected as `spec-violation` naming the census that would have carried
       it, and a date beside the numeral does not clear it. A reviewer receives
       no spec text of its own, so a rule that is not in the checklist is a rule
       no reviewer applies. Tested in `loop/tests/` by the same shape the blog
       bar tests use.
-- [ ] 21. `loop/lib/brief.mjs`: the authoring brief for entry and prose work
+- [ ] 22. `loop/lib/brief.mjs`: the authoring brief for entry and prose work
       names the two bindings and when each applies — a count is a census fact,
       a catalog listing date is a bound timeline event — because a Desk job is
       one written prompt in and files out, and an untold job cannot know.
 
 ## Gates
 
-- [ ] 22. `openspec validate bind-what-the-catalog-knows --type change --strict
+- [ ] 23. `openspec validate bind-what-the-catalog-knows --type change --strict
       --no-interactive`, and `node scripts/check-spec-deltas.mjs --strict`. Run
       at drafting time.
-- [ ] 23. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
+- [ ] 24. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
       `verify-surfaces`, `verify-analytics`.
 
 ## Not tasks here, recorded so they are not read as omissions

@@ -116,11 +116,31 @@ maximum of the dates; indexability counts events. Two ways to handle it:
   unbounded number tomorrow, and each one is an independent chance to get the
   zone or the vanished-row case wrong.
 - **Resolve once, early — chosen.** The timeline is resolved to one shape
-  (`date`, `event`, and a reachable source) at the point the entry is loaded
-  into the corpus, so no consumer learns that binding exists and the exported
-  dataset's columns do not change. This is the same move `currentStatusOf` made
-  for a different question and for the same reason: one resolution, or one
-  defect per call site.
+  (`date`, `event`, and a reachable source) so no consumer learns that binding
+  exists and the exported dataset's columns do not change. This is the same move
+  `currentStatusOf` made for a different question and for the same reason: one
+  resolution, or one defect per call site.
+
+**Where "early" actually is, because the obvious answer is wrong.** Not
+`loadCorpus`: resolution needs the data layer, and `loadCorpus`
+(`lib/corpus.mjs:347`) takes `{contentRoot, diags, checkReferences}` and has no
+layer to read — `lib/build-content.mjs` loads the corpus at line 100 and the
+data layer at 106, and 22 other callers of `loadCorpus` (`verify-launch`,
+`check-post-voice`, `arxiv-pin`, `anchors`, `declined-fields`, the fixture
+tests) never build one. Putting resolution there would mean a required signature
+change across all of them, or a corpus whose timeline shape depends on who
+loaded it. The seam is **`build-content.mjs` phase 2**, between `loadDataLayer()`
+and the `corpus.entry` loop at 130: `indexability` runs at 153 and
+`renderTimeline`, `timelineRows` and `dormantAsOf` all read the same docs later,
+so resolving in place there reaches every consumer — including
+`site-assets.mjs:181`'s `timelineRows(site.corpus)`, which is handed the same
+mutated corpus `buildContent` returns. `currentStatusOf` is computed at exactly
+this point (line 152) for exactly this reason.
+
+The feed form's reachable source is the **named source's registry `url`**, so
+`lib/dataset.mjs:95`'s `source_url` column is filled for both forms and the
+published dataset gains no column: a cited event keeps the URL its author read,
+a bound event carries the endpoint the instant came from.
 
 **The schema hazard, named because it will bite the implementer.** The fact
 union is a `discriminatedUnion` on `source`, which works because every fact
