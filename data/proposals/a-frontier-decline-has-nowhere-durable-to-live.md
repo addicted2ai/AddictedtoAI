@@ -32,6 +32,8 @@ evidence: >
   assumption that no longer holds. DESK-ORDER-001 §1 already asks the SCOUT for
   a declines record ("the scout's 'why passed' record shows frontier candidates
   declined"); there is no equivalent for a post that already exists.
+proposed_by_job: j-20260906-17
+proposed_by_type: verify
 ---
 
 # A frontier decline is a judgment with an expiry, filed where nothing can read it
