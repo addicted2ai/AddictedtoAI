@@ -1,6 +1,6 @@
 {
   "cap": 50,
-  "count": 7,
+  "count": 9,
   "items": [
     {
       "detail": "The body no longer implies Reuters is the only outlet naming the two secretaries, but the Sources list still does. Line 80 describes the Globe and Mail item as \"the account that names Lutnick and Bessent\" — the definite article makes the same uniqueness claim this job removed two screens above. Time's 3 July 2026 write-up of the same FT reporting names all three (\"The FT said among those Altman was in active talks with about public ownership were Trump himself, Treasury Secretary Scott Bessent, and Commerce Secretary Howard Lutnick\", https://time.com/article/2026/07/03/openai-invest-ai-trump-administration-sam-altman/, retrieved 5 September 2026). \"an account that names Lutnick and Bessent\" fixes it. The adjacent CNN annotation, \"it names neither secretary\", is a claim about CNN specifically and needs no change.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-11 (`j-20260905-11.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
@@ -21,12 +21,30 @@
       "type": "repair"
     },
     {
+      "detail": "The repaired paragraph opens \"Nothing about the row stayed flat over that stretch, but what moved was the context window rather than the price.\" The preceding paragraph spends its whole length proving the opposite — \"Same number, five times running\" — and the sentence's own second clause concedes it. The opener made sense before the repair, when the thing that moved was the intelligence index; with that sentence gone the claim is left asserting something the page disproves one paragraph earlier. One word fixes it: \"Not everything about the row stayed flat over that stretch: what moved was the context window, not the price.\" Worth noting too that the new opener now states the conclusion the paragraph already ends on (\"Price and context window are two separate dials ... they don't turn together\"), so the closing line has become a restatement.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-14 (`j-20260905-14.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/anthropic-claude-opus-4-8.md",
+      "target": "content/wiki/model/anthropic-claude-opus-4-8.md",
+      "title": "Fix the self-contradicting topic sentence on the Opus 4.8 page",
+      "type": "repair"
+    },
+    {
       "detail": "The entry renders every declared fact (`renderFacts` in `lib/render/entry.mjs` lays out all of `doc.factsHtml`), so its Facts section shows the feed's `intelligence_index` of 47.1 beside the cited `intelligence_index_by_effort`, \"59 at high reasoning, 57 at medium, 52 at low; up 3 from Gemini 3.7 Flash at high, level with sub-maximum efforts of GPT-5.6 Sol and Grok 4.6\" (accessed 2026-09-03, the day before the rebase). Three things collide on screen, measured against latest.json today: every effort level sits above the 47.1 headline for the same model; \"up 3 from Gemini 3.7 Flash at high\" contradicts the live gap of 47.1 - 45.2 = 1.9; and \"level with sub-maximum efforts of GPT-5.6 Sol and Grok 4.6\" is false where Sol is 51.3 and Grok 4.6 is 50.6, both maxima below the quoted 52. This is the defect job j-20260905-13 was dispatched to end, on a page its directive put out of scope (\"and nothing else\"), which is why it is carried rather than blocked. The fix is a line of attribution marking the split as a pre-v4.2 reading, per addictedtoai-ego8 — not deletion of the fact.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-13 (`j-20260905-13.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
       "subject": "content/wiki/model/google-gemini-3-8-flash.md",
       "target": "content/wiki/model/google-gemini-3-8-flash.md",
       "title": "Attribute the by-effort split on the 3.8 Flash entry as a pre-v4.2 reading",
+      "type": "repair"
+    },
+    {
+      "detail": "The rewritten paragraph opens \"Whether the bigger model is worth the difference is a question this catalog puts side by side\" and then compares only price ($3/M against $0.45/M). It never puts capability side by side, so the topic sentence promises more than the paragraph delivers. The comparison was available: K3's coding_index (76.2) and K2.5's (46.8) both survived the rebase — I resolved both from data/derived/feed-rows.json, as_of 2026-09-05 — which is the same move the author made correctly on the Luna page. Restoring the paragraph's original question (\"whether the bigger model is also the better one\") on the coding index, alongside the price, would answer what the opener claims to answer. Not blocking: nothing in the paragraph as written is false.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260905-14 (`j-20260905-14.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "content/wiki/model/moonshotai-kimi-k3.md",
+      "target": "content/wiki/model/moonshotai-kimi-k3.md",
+      "title": "Kimi K3 dropped a capability comparison it could still make",
       "type": "repair"
     },
     {
@@ -66,5 +84,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 7
+  "total_before_cap": 9
 }
