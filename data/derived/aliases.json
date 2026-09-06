@@ -3729,6 +3729,26 @@
       ]
     },
     {
+      "name": "Nous",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/nous-research",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "Nous Research",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/nous-research",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Nous: Hermes 3 405B Instruct",
       "linkable": false,
       "claimed_by": [
@@ -3765,6 +3785,16 @@
         {
           "id": "model/nousresearch-hermes-4-70b",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "NousResearch",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/nous-research",
+          "class": "shared"
         }
       ]
     },

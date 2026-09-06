@@ -1560,6 +1560,38 @@
         "file": "content/wiki/org/moonshot-ai.md"
       }
     ],
+    "model/nousresearch-hermes-3-llama-3-1-405b": [
+      {
+        "url": "/wiki/org/nous-research",
+        "title": "Nous Research",
+        "type": "entry",
+        "file": "content/wiki/org/nous-research.md"
+      }
+    ],
+    "model/nousresearch-hermes-3-llama-3-1-70b": [
+      {
+        "url": "/wiki/org/nous-research",
+        "title": "Nous Research",
+        "type": "entry",
+        "file": "content/wiki/org/nous-research.md"
+      }
+    ],
+    "model/nousresearch-hermes-4-405b": [
+      {
+        "url": "/wiki/org/nous-research",
+        "title": "Nous Research",
+        "type": "entry",
+        "file": "content/wiki/org/nous-research.md"
+      }
+    ],
+    "model/nousresearch-hermes-4-70b": [
+      {
+        "url": "/wiki/org/nous-research",
+        "title": "Nous Research",
+        "type": "entry",
+        "file": "content/wiki/org/nous-research.md"
+      }
+    ],
     "model/nvidia-nemotron-3-5-content-safety-free": [
       {
         "url": "/wiki/org/nvidia",
@@ -2368,6 +2400,12 @@
         "file": "content/wiki/org/moonshot-ai.md"
       },
       {
+        "url": "/wiki/org/nous-research",
+        "title": "Nous Research",
+        "type": "entry",
+        "file": "content/wiki/org/nous-research.md"
+      },
+      {
         "url": "/blog/gitspawn-git-config-code-execution-coding-agents",
         "title": "GitSpawn: a repository can name the program your coding agent runs before you type anything",
         "type": "post",
@@ -2442,6 +2480,14 @@
         "file": "content/blog/gitspawn-git-config-code-execution-coding-agents.md"
       }
     ],
+    "org/bytedance-seed": [
+      {
+        "url": "/wiki/org/nous-research",
+        "title": "Nous Research",
+        "type": "entry",
+        "file": "content/wiki/org/nous-research.md"
+      }
+    ],
     "org/deepseek": [
       {
         "url": "/impossible-routine/machine-checked-proofs",
@@ -2466,6 +2512,12 @@
         "title": "MiniMax: MiniMax M2",
         "type": "entry",
         "file": "content/wiki/model/minimax-minimax-m2.md"
+      },
+      {
+        "url": "/wiki/org/nous-research",
+        "title": "Nous Research",
+        "type": "entry",
+        "file": "content/wiki/org/nous-research.md"
       },
       {
         "url": "/wiki/org/thinking-machines-lab",

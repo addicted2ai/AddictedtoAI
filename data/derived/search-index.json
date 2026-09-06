@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 665,
+  "count": 666,
   "docs": [
     {
       "u": "/blog/anthropic-usage-policy-government-exceptions",
@@ -6225,6 +6225,19 @@
         "月之暗面"
       ],
       "b": true
+    },
+    {
+      "u": "/wiki/org/nous-research",
+      "t": "Nous Research",
+      "k": "entry",
+      "d": "org",
+      "s": "active",
+      "i": "org/nous-research",
+      "a": [
+        "NousResearch",
+        "Nous"
+      ],
+      "b": false
     },
     {
       "u": "/wiki/org/nvidia",
