@@ -65,12 +65,25 @@ registers the permitted alternative (arXiv's `rss.arxiv.org` feeds, GitHub's
 **A row's own `url` is usually repeated as one of its `feeds` entries** — three
 of the four launch rows do exactly that — so refusing that feed is the shape a
 real refusal will be written in when a publisher's terms turn. Both halves
-honour it: `radarReadableUrls()` filters the row url through its own row's
-refused feed urls, and `loadRegistry` refuses a row whose `url` is declared as
-a `registered: false` feed outright, because a row that both refuses a URL and
-offers it is a contradiction the file should name rather than resolve in
-favour of reading. Refuse the row itself (`registered: false` on the row) or
-register the feed; the registry will not accept both at once.
+honour it: `radarReadableUrls()` filters the row url through the refused urls,
+and `loadRegistry` refuses a row whose `url` is declared as a `registered:
+false` feed outright, because a row that both refuses a URL and offers it is a
+contradiction the file should name rather than resolve in favour of reading.
+Refuse the row itself (`registered: false` on the row) or register the feed;
+the registry will not accept both at once.
+
+**A refusal is a fact about a URL, not about the row that records it.** The
+refused set is built ONCE from every row and every feed in the array, so a URL
+refused anywhere is refused everywhere: listing NVIDIA's feed as a registered
+feed under a second row does not un-refuse it, and `radarReadableUrls()` will
+not return it. `loadRegistry` goes further and refuses to load a registry in
+which one URL is `registered: false` in one row and offered in another, naming
+both rows — either the refusal is stale or the offer was pasted without a
+check, and the file has to say which, rather than the loader resolving it in
+favour of reading. Matching is the exact URL string after `trim()`: two
+spellings of the same feed are two URLs and both need refusing explicitly,
+because a refusal that silently widens by host normalisation is as wrong as
+one that silently narrows.
 
 `loadRegistry` refuses a radar row that carries any field meaning "the data
 layer carries this" (`material_fields`, `mints`, `seeds`, `rows_path`,

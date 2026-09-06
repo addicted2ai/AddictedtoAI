@@ -430,3 +430,158 @@ test('a refused feed that repeats its row url is refused, not handed out through
     cleanup(root);
   }
 });
+
+// ---------------------------------------------------------------------------
+// A refusal is a fact about a URL, not about the row that records it.
+//
+// The check above is scoped to ONE row, and that scoping was the hole: the
+// refused set was rebuilt per row, so row B never consulted row A's refusals.
+// The three tests below are the cross-row case — the leak, the refusal to load
+// the contradiction, and the positive control that the widened rule does not
+// start eating URLs nobody refused.
+// ---------------------------------------------------------------------------
+
+/** A well-formed feed entry; `registered` is the only thing under test. */
+function radarFeed(url, registered, extra = {}) {
+  return {
+    url,
+    format: 'rss',
+    registered,
+    robots: { url: 'https://example.invalid/robots.txt', checked_on: '2026-09-06', result: 'allowed' },
+    terms: { url: 'https://example.invalid/terms', read_on: '2026-09-06', result: 'permitted' },
+    verified_on: '2026-09-06',
+    ...extra,
+  };
+}
+
+const WHY = { not_registered_because: 'the Terms of Service prohibit crawlers and the scope question is unresolved' };
+
+test('a URL refused in one row is refused in every row: the scout never gets it through a second listing', () => {
+  // THE LEAK. `refused` used to be built from the row being emitted, so the
+  // NVIDIA feed — refused in `covered-org-releases` with a dated ToS quote —
+  // came straight back out of the helper the moment any other row listed it.
+  // The refusal is a fact about that URL; the row that happens to record it is
+  // bookkeeping. Both routes back in are tested: a second row listing the URL
+  // as a registered FEED, and a second row whose own `url` IS the refused one.
+  const forbidden = 'https://blogs.nvidia.invalid/feed/';
+
+  const viaFeed = {
+    radar: [
+      radarRow('row-a', 'https://a.invalid/feed.xml', {
+        feeds: [radarFeed('https://a.invalid/feed.xml', true), radarFeed(forbidden, false, WHY)],
+      }),
+      radarRow('row-b', 'https://b.invalid/feed.xml', {
+        feeds: [radarFeed('https://b.invalid/feed.xml', true), radarFeed(forbidden, true)],
+      }),
+    ],
+  };
+  assert.deepEqual(
+    radarReadableUrls(viaFeed),
+    ['https://a.invalid/feed.xml', 'https://b.invalid/feed.xml'],
+    'a URL refused in row-a must not be handed back because row-b registers it',
+  );
+
+  // The other door: row-b's own url is the URL row-a refused, and row-b
+  // declares no feeds at all, so nothing local to row-b knows about the
+  // refusal. Only a set built across the whole array closes this one.
+  const viaRowUrl = {
+    radar: [
+      radarRow('row-a', 'https://a.invalid/feed.xml', {
+        feeds: [radarFeed('https://a.invalid/feed.xml', true), radarFeed(forbidden, false, WHY)],
+      }),
+      radarRow('row-b', forbidden),
+    ],
+  };
+  assert.deepEqual(
+    radarReadableUrls(viaRowUrl),
+    ['https://a.invalid/feed.xml'],
+    "a refused URL must not be handed back as some other row's own url",
+  );
+
+  // And a row refused WHOLESALE refuses its url for everybody, not just itself.
+  const rowLevel = {
+    radar: [
+      radarRow('row-a', forbidden, { registered: false, ...WHY }),
+      radarRow('row-b', 'https://b.invalid/feed.xml', { feeds: [radarFeed(forbidden, true)] }),
+    ],
+  };
+  assert.deepEqual(radarReadableUrls(rowLevel), ['https://b.invalid/feed.xml']);
+});
+
+test('the registry refuses to load a URL that is registered in one row and refused in another, naming both rows', () => {
+  // A filter alone would be the wrong fix: it would leave the file saying two
+  // contradictory things and quietly honour one of them, which is the failure
+  // mode this repository names everywhere — a decision written where it reads
+  // as settled and does nothing. The loader refuses, and it names BOTH rows
+  // because either may be the wrong one: the refusal may be stale, or the
+  // offer may have been pasted from a row that never did the reading.
+  const forbidden = 'https://blogs.nvidia.invalid/feed/';
+  const radar = [
+    radarRow('covered-org-releases', 'https://a.invalid/feed.xml', {
+      feeds: [radarFeed('https://a.invalid/feed.xml', true), radarFeed(forbidden, false, WHY)],
+    }),
+    radarRow('vendor-blogs', 'https://b.invalid/feed.xml', {
+      feeds: [radarFeed('https://b.invalid/feed.xml', true), radarFeed(forbidden, true)],
+    }),
+  ];
+
+  const root = makeRoot([]);
+  withRadar(root, radar);
+  try {
+    assert.throws(
+      () => loadRegistry(root),
+      (err) => {
+        assert.match(err.message, /covered-org-releases/, 'the error names the row that refused the URL');
+        assert.match(err.message, /vendor-blogs/, 'the error names the row that offered it');
+        assert.ok(err.message.includes(forbidden), 'the error names the URL in dispute');
+        assert.match(err.message, /prohibit crawlers/, 'and carries the recorded reason for the refusal');
+        return true;
+      },
+    );
+  } finally {
+    cleanup(root);
+  }
+
+  // The same contradiction written the other way round — refused as a whole row
+  // in one place, offered as a feed in another — is the same refusal.
+  const crossed = [
+    radarRow('nvidia-blog', forbidden, { registered: false, ...WHY }),
+    radarRow('vendor-blogs', 'https://b.invalid/feed.xml', { feeds: [radarFeed(forbidden, true)] }),
+  ];
+  const root2 = makeRoot([]);
+  withRadar(root2, crossed);
+  try {
+    assert.throws(() => loadRegistry(root2), /nvidia-blog[\s\S]*vendor-blogs|vendor-blogs[\s\S]*nvidia-blog/);
+  } finally {
+    cleanup(root2);
+  }
+});
+
+test('POSITIVE CONTROL: a URL nobody refused is returned once, even when two rows list it', () => {
+  // The widened rule must not start eating URLs. Two rows legitimately reading
+  // the same feed is an ordinary shape — arXiv's cs.AI listing is plausibly an
+  // input to more than one sweep — and it is one readable URL, returned once,
+  // with the registry loading without complaint.
+  const shared = 'https://rss.arxiv.invalid/rss/cs.AI';
+  const radar = [
+    radarRow('arxiv-listings', shared, { feeds: [radarFeed(shared, true)] }),
+    radarRow('paper-sweep', 'https://p.invalid/feed.xml', {
+      feeds: [radarFeed('https://p.invalid/feed.xml', true), radarFeed(shared, true)],
+    }),
+  ];
+
+  assert.deepEqual(
+    radarReadableUrls({ radar }),
+    [shared, 'https://p.invalid/feed.xml'],
+    'the shared URL appears exactly once and the row-specific one survives',
+  );
+
+  const root = makeRoot([]);
+  withRadar(root, radar);
+  try {
+    const registry = loadRegistry(root);
+    assert.deepEqual(radarReadableUrls(registry), [shared, 'https://p.invalid/feed.xml']);
+  } finally {
+    cleanup(root);
+  }
+});
