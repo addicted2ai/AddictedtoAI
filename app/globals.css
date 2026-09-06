@@ -1040,6 +1040,15 @@ a.change-name:focus-visible {
   /* S2 (iter-01): no per-row rule; .strip carries the group's one boundary. */
 }
 
+/* Where the record begins (specs/pulse). It states the LIMITS of what is above
+   it, so it sits quietly under the strip rather than competing with the events
+   in it — same weight as the strip's own rows, muted, no rule of its own. */
+.strip-baseline {
+  margin: 0.5rem 0 0;
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
 .latest {
   display: grid;
   gap: 0.75rem;

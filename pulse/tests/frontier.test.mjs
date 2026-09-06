@@ -32,6 +32,10 @@ import {
   serve,
   writeJson,
 } from './helpers.mjs';
+// The key's INPUTS, computed independently in the test rather than matched as a
+// suffix — see the key assertion in (b) for why a suffix match measures nothing.
+import { rowsHash } from '../lib/sources.mjs';
+import { LEAD_CHANGE_CAUSES } from '../lib/frontier.mjs';
 
 const ARGS = ['--no-build', '--no-mint'];
 const frontierFile = (root) => join(root, 'data', 'derived', 'frontier.json');
@@ -59,10 +63,14 @@ const EXCLUSIONS = [
 
 /** A fixture root whose registry declares the metric and the exclusions. */
 function frontierRoot(url, { metrics = [METRIC], exclusions = EXCLUSIONS } = {}) {
-  // The metric's path is ALSO a declared material field here, deliberately:
-  // that is what makes case (d) show "the other event" as a real line rather
-  // than as an absence. A metric may be carried or not carried; what the
-  // registry refuses is a metric on a path the same source DECLINES.
+  // The metric's path is ALSO a declared material field here, and that is now
+  // REQUIRED rather than a fixture convenience: `validateFrontier` refuses a
+  // metric whose path is not an event-bearing `material_fields` path on its own
+  // source, because `diffSnapshots`' field_change line is the only recorder of
+  // "a value moved under an unchanged leader" — case (d)'s other event. Before
+  // the cross-check existed this fixture's declaration was the only thing making
+  // case (d) pass, and both real candidate metrics sit on paths that would have
+  // had no recorder at all. `pulse/tests/registry.test.mjs` measures the refusal.
   const root = makeRoot([
     jsonSource('models', url, {
       material_fields: [
@@ -150,7 +158,24 @@ test('(b) a new row taking the lead appends exactly one line, cause: arrival', a
   assert.equal(line.date, readJson(paths.latest(root, 'models')).date, "the snapshot's own date, never a clock read");
   assert.ok(line.excerpt.rows['acme/three'], 'the archived source reference travels with the line');
   assert.equal(line.excerpt.rows['acme/three']['benchmarks.idx'], 90);
-  assert.match(line.key, /\|fixture-index\|lead-change$/);
+  assert.ok(LEAD_CHANGE_CAUSES.includes(line.cause), 'the cause is a member of the closed set, which is read');
+
+  // THE KEY'S INPUTS, NOT ITS SUFFIX. `assert.match(key, /\|fixture-index\|lead-change$/)`
+  // used to stand here alone, and a mutant keyed on the SNAPSHOT DATE instead of
+  // the two row hashes matched it and passed every test in the change. The
+  // property is not decorative: with a date-derived key a second lead change on
+  // the same metric on the same day — two fetches, or a re-fetch after a
+  // publisher correction — collides with the first key and `appendChanges`
+  // silently drops it. So the two hashes are computed here, from the snapshot
+  // files on disk, and the whole key is asserted.
+  const from = rowsHash(readJson(paths.previous(root, 'models')));
+  const to = rowsHash(readJson(paths.latest(root, 'models')));
+  assert.equal(
+    line.key,
+    `models|${from}|${to}|fixture-index|lead-change`,
+    'the key is a pure function of the two snapshot row hashes, the metric and the kind',
+  );
+  assert.equal(line.key.includes(line.date), false, 'and carries no date, which is what makes a same-day pair distinct');
 
   // Excluded rows cannot take the lead, and the exclusion is a DECLARED pattern.
   rows = [...rows, row('acme/four:batch', 'Acme Four batch', 99), row('openrouter/auto', 'Auto Router', 98)];
@@ -212,6 +237,105 @@ test('(c2) the previous leader leaving the snapshot is a withdrawal', async (t) 
   const lines = leadLines(root);
   assert.equal(lines.length, 1);
   assert.equal(lines[0].cause, 'withdrawn', 'no incoming leader is new, and the outgoing one is gone');
+});
+
+test('(c3) an arrival that coincides with a withdrawal is an arrival, and the precedence is measured', async (t) => {
+  // THE ONE JUDGMENT CALL IN `leadChangeCause`, and until this fixture existed it
+  // was a sentence in a module header that nothing could contradict: swapping the
+  // two loops so `withdrawn` is tested first passed every test in the change.
+  // The overlap is real — the outgoing leader leaves the snapshot on the same day
+  // a new row arrives and takes the lead — and the header's reason decides it:
+  // the question a history line answers is how the NEW leader got there, so if it
+  // is new, it arrived, whatever the outgoing leader did.
+  let rows = BASE;
+  const server = await serve(() => ({ status: 200, body: body(rows) }));
+  const root = frontierRoot(`${server.url}/models`);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  assert.equal((await runPulse(root, ARGS)).status, 0);
+  assertIngested(root, ['models'], 'first ingest');
+
+  // `acme/one` (the leader) leaves AND `acme/three` arrives above everything.
+  rows = [row('acme/two', 'Acme Two', 40), row('acme/three', 'Acme Three', 90)];
+  assert.equal((await runPulse(root, [...ARGS, '--force'])).status, 0);
+
+  const lines = leadLines(root);
+  assert.equal(lines.length, 1);
+  assert.deepEqual(lines[0].incoming.map((r) => r.row_id), ['acme/three']);
+  assert.deepEqual(lines[0].outgoing.map((r) => r.row_id), ['acme/one']);
+  assert.equal(
+    lines[0].cause,
+    'arrival',
+    'arrival is tested before withdrawal: the line answers how the NEW leader got there, and it is new',
+  );
+});
+
+test('two lead changes on the same date get two keys, because the key carries no date', async (t) => {
+  // The failure a date-derived key would cause, made reachable. Two snapshot
+  // pairs land on the same local date — an ordinary second fetch — and each is a
+  // distinct event. Keyed on the date they would collide and `appendChanges`
+  // would silently drop the second, losing an event nobody would look for again.
+  let rows = BASE;
+  const server = await serve(() => ({ status: 200, body: body(rows) }));
+  const root = frontierRoot(`${server.url}/models`);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  assert.equal((await runPulse(root, ARGS)).status, 0);
+  assertIngested(root, ['models'], 'first ingest');
+
+  rows = [...BASE, row('acme/three', 'Acme Three', 90)];
+  assert.equal((await runPulse(root, [...ARGS, '--force'])).status, 0);
+  rows = [...rows, row('acme/four', 'Acme Four', 95)];
+  assert.equal((await runPulse(root, [...ARGS, '--force'])).status, 0);
+
+  const lines = leadLines(root);
+  assert.equal(lines.length, 2, 'two lead changes, both recorded');
+  assert.equal(lines[0].date, lines[1].date, 'on one date — the fixture is only interesting if they collide by date');
+  assert.notEqual(lines[0].key, lines[1].key, 'and under two keys, because the key is the two row hashes');
+  assert.deepEqual(lines.map((l) => l.row_id).sort(), ['acme/four', 'acme/three']);
+});
+
+test('the line and the derived file carry the snapshot date, on a run whose clock says otherwise', async (t) => {
+  // THE CLOCK, MEASURED. The assertion `line.date === latest.date` was vacuous
+  // while the fixture ingested on the real clock: the snapshot's own date WAS
+  // today's date, so `today()` and `latest.date` were indistinguishable and
+  // substituting one for the other passed every test. Here the snapshot pair is
+  // frozen at 2026-01-03 and the run that recomputes the line happens on
+  // 2026-06-15 — `PULSE_NOW`, the pinned clock the helpers already support.
+  let rows = BASE;
+  const server = await serve(() => ({ status: 200, body: body(rows) }));
+  const root = frontierRoot(`${server.url}/models`);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  assert.equal((await runPulse(root, ARGS, { PULSE_NOW: '2026-01-02' })).status, 0);
+  assertIngested(root, ['models'], 'first ingest');
+  rows = [...BASE, row('acme/three', 'Acme Three', 90)];
+  assert.equal((await runPulse(root, [...ARGS, '--force'], { PULSE_NOW: '2026-01-03' })).status, 0);
+  assert.equal(readJson(paths.latest(root, 'models')).date, '2026-01-03');
+  const key = leadLines(root)[0].key;
+
+  // Delete the line and re-run on a LATER day with the source unchanged. The
+  // snapshots do not rotate when the body is unchanged, so the pair — and its
+  // date — stay at 2026-01-03 while the clock says June.
+  const kept = readLines(paths.changes(root)).filter((l) => l.key !== key);
+  writeFileSync(paths.changes(root), kept.map((l) => JSON.stringify(l)).join('\n') + (kept.length ? '\n' : ''), 'utf8');
+  assert.equal((await runPulse(root, [...ARGS, '--force'], { PULSE_NOW: '2026-06-15' })).status, 0);
+
+  const line = leadLines(root)[0];
+  assert.equal(line.date, '2026-01-03', "the line carries the snapshot's own date");
+  assert.notEqual(line.date, '2026-06-15', 'and never the clock of the run that recomputed it');
+  const data = readJson(frontierFile(root));
+  assert.equal(data.snapshot_date, '2026-01-03', 'the derived file reads the same date from the same place');
+  assert.notEqual(data.snapshot_date, '2026-06-15');
 });
 
 test('(d) the same leader marked down is the other event, and not a lead change', async (t) => {

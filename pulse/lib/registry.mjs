@@ -173,6 +173,13 @@ const DIRECTIONS = new Set(['higher', 'lower']);
  * two decisions silently disagreeing. This is the same shape as
  * `validateDeclinedFields`' own carried/refused check, applied to the third
  * list, and it fails loudly naming both ends and the remedy.
+ *
+ * ## The material-fields cross-check
+ *
+ * A registered metric's path must ALSO be a `material_fields` path on its own
+ * source, and not one marked `event: false`. That is not tidiness: it is the
+ * only thing that gives "a value moved under an unchanged leader" a recorder at
+ * all, and the reason is written out in full at the check itself.
  */
 function validateFrontier(raw) {
   const frontier = raw.frontier;
@@ -243,6 +250,45 @@ function validateFrontier(raw) {
         );
       }
     }
+    /*
+     * THE OTHER EVENT MUST HAVE A RECORDER, and this is what declares it.
+     *
+     * specs/pulse: "A change in the leader's VALUE with no change in the
+     * leader's IDENTITY is a different event and SHALL be recorded as such,
+     * distinguishable by kind or by a declared field." `pulse/lib/frontier.mjs`
+     * deliberately emits nothing for that case — recording it under a kind that
+     * says the lead changed is the conflation the requirement forbids — so the
+     * only thing that records it is `diffSnapshots`' `field_change` line, which
+     * fires ONLY for a path declared in the same source's `material_fields` and
+     * NOT marked `event: false` (`pulse/lib/diff.mjs`). Nothing coupled the two
+     * lists, so a metric could be registered on a path no material field covers
+     * and the value move under an unchanged leader would be recorded NOWHERE,
+     * with every gate green: the derived file is recomputed from scratch each
+     * run and carries only the current value, so it records no movement at all.
+     * Measured on the real registry before this check existed: neither
+     * `benchmarks.artificial_analysis.*` nor `benchmarks.design_arena[]` is a
+     * material field on `openrouter-models`, so BOTH real candidate metrics
+     * would have landed in exactly that hole.
+     */
+    const material = (source.material_fields ?? []).find((f) => f?.path === m.path);
+    if (!material) {
+      throw new Error(
+        `${at}: path "${m.path}" is declared a frontier metric but is not a "material_fields" path on source ` +
+          `"${source.id}" — so a change in the leader's VALUE with no change in its IDENTITY would be recorded ` +
+          `nowhere (specs/pulse requires that event to be distinguishable by kind or by a declared field, and ` +
+          `the only recorder is diffSnapshots' field_change line). Declare the path in "material_fields" on ` +
+          `source "${source.id}", or withdraw the metric`,
+      );
+    }
+    if (material.event === false) {
+      throw new Error(
+        `${at}: path "${m.path}" is a "material_fields" entry on source "${source.id}" marked "event": false, ` +
+          `so no field_change line is ever written for it and a value move under an unchanged leader would be ` +
+          `recorded nowhere. A frontier metric's movement IS an event; drop the "event": false on field ` +
+          `"${material.field}", or withdraw the metric`,
+      );
+    }
+
     const rights = m.rights;
     if (rights === undefined || rights === null) continue; // unanswered; reported by the build, never permitted
     if (typeof rights !== 'object' || Array.isArray(rights)) throw new Error(`${at}: "rights" must be an object`);
@@ -259,10 +305,20 @@ function validateFrontier(raw) {
     if (!DATE.test(rights.checked_on ?? '')) {
       throw new Error(`${at}: "rights.checked_on" must be the LOCAL date the terms were read (yyyy-mm-dd)`);
     }
-    if (rights.outcome === 'cleared' && (typeof rights.excerpt !== 'string' || rights.excerpt.trim() === '')) {
+    // The excerpt is required of every ANSWERED outcome, not only of a cleared
+    // one. The delta says a decision carries "the URL of the terms that were
+    // read, the local date they were read, the outcome, and a verbatim excerpt
+    // of the terms the outcome rests on" — and a REFUSAL rests on words just as
+    // a clearance does: somebody read a sentence that refused, and that sentence
+    // is the evidence. `unresolved` is the one exemption, and it is a measured
+    // one rather than a convenience: Artificial Analysis's terms URL 404'd on
+    // 2026-09-05 (addictedtoai-ego8), so there is nothing to quote and demanding
+    // a quotation would force an invented one.
+    if (rights.outcome !== 'unresolved' && (typeof rights.excerpt !== 'string' || rights.excerpt.trim() === '')) {
       throw new Error(
-        `${at}: "rights.outcome" is "cleared" with no verbatim "excerpt" — a cleared right must rest on the words ` +
-          `that grant it, or it is an opinion about a document nobody can re-read`,
+        `${at}: "rights.outcome" is "${rights.outcome}" with no verbatim "excerpt" — an answered right must rest ` +
+          `on the words that decided it, or it is an opinion about a document nobody can re-read. Only ` +
+          `"unresolved" is excused, because a question nobody could read has nothing to quote`,
       );
     }
   }

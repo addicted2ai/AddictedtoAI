@@ -284,6 +284,39 @@ test('a metric may not be declared on a path the same source declines', () => {
   assert.match(loadFrontier({ metrics: [{ ...METRIC, path: 'benchmarks.idx.sub' }] }, source), /declined on source/);
 });
 
+test('a metric must be declared on a path that has a recorder for the other event', () => {
+  // specs/pulse: "A change in the leader's VALUE with no change in the leader's
+  // IDENTITY is a different event and SHALL be recorded as such, distinguishable
+  // by kind or by a declared field." `pulse/lib/frontier.mjs` emits nothing for
+  // that case on purpose, so the ONLY recorder is `diffSnapshots`' field_change
+  // line — which fires only for a `material_fields` path not marked
+  // `event: false`. Uncoupled, a metric on any other path made that event
+  // unrecordable with every gate green, and BOTH real candidate metrics
+  // (`benchmarks.artificial_analysis.*`, `benchmarks.design_arena[]`) are on
+  // paths `openrouter-models` does not declare as material fields.
+  const noMaterial = { ...FRONTIER_SOURCE, material_fields: [] };
+  const message = loadFrontier({ metrics: [METRIC] }, noMaterial);
+  assert.match(message, /not a "material_fields" path on source "models"/);
+  assert.match(message, /recorded nowhere/, 'the message says what is lost, not only what is missing');
+  assert.match(message, /Declare the path in "material_fields"|withdraw the metric/, 'and names the remedy');
+
+  // A path declared but marked `event: false` is the same hole with a different
+  // shape: the field is a catalog column and a bound fact, and no field_change
+  // line is ever written for it.
+  const silenced = { ...FRONTIER_SOURCE, material_fields: [{ field: 'idx', path: 'benchmarks.idx', event: false }] };
+  assert.match(loadFrontier({ metrics: [METRIC] }, silenced), /"event": false/);
+
+  // The control: the declared, event-bearing path loads.
+  assert.equal(loadFrontier({ metrics: [METRIC] }), null);
+
+  // A near-miss path is not covered by a material field either — the check is
+  // on the path the field_change line is actually keyed to, not on a prefix.
+  assert.match(
+    loadFrontier({ metrics: [{ ...METRIC, path: 'benchmarks.idx.sub' }] }),
+    /not a "material_fields" path/,
+  );
+});
+
 test('a rights decision is malformed or absent, and the two are different states', () => {
   const rights = {
     terms_url: 'https://fixture.invalid/terms',
@@ -319,6 +352,17 @@ test('a rights decision is malformed or absent, and the two are different states
     loadFrontier({ metrics: [{ ...METRIC, rights: { ...rights, excerpt: '   ' } }] }),
     /"cleared" with no verbatim "excerpt"/,
     'a cleared right must rest on the words that grant it',
+  );
+  // A REFUSAL rests on words too, and they are the evidence. Excusing it would
+  // record "somebody said no" with nothing anyone can re-read.
+  assert.match(
+    loadFrontier({ metrics: [{ ...METRIC, rights: { ...rights, outcome: 'refused', excerpt: undefined } }] }),
+    /"refused" with no verbatim "excerpt"/,
+  );
+  assert.equal(
+    loadFrontier({ metrics: [{ ...METRIC, rights: { ...rights, outcome: 'refused', excerpt: 'No republication of these values is permitted.' } }] }),
+    null,
+    'a refusal quoting the words that refused is a complete decision',
   );
   // An unresolved question needs no excerpt — there may be nothing to quote,
   // which is exactly what Artificial Analysis's 404'd terms URL looks like.

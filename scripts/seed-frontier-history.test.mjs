@@ -16,6 +16,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { seedFrontierHistory, committedSnapshots } from './seed-frontier-history.mjs';
+import { loadRegistry } from '../pulse/lib/registry.mjs';
+import { computeFrontier } from '../pulse/lib/frontier.mjs';
 
 const METRIC = {
   id: 'fixture-index',
@@ -180,6 +182,44 @@ test('a second run appends nothing, and an observed line is never duplicated', (
     ['2026-09-03 observed', '2026-09-04 seeded'],
     'the observed event keeps its own line; only the day it does not cover is seeded',
   );
+});
+
+test('the engine does not re-record an event a seeded line already carries — the mirror guard', (t) => {
+  // THE OTHER DIRECTION, and the one that actually fires. `observedDates` above
+  // stops a seeded line landing beside an observed one. Nothing stopped the
+  // reverse: this script's newest recovered line comes from the two newest
+  // committed blobs, which are exactly the `previous.json`/`latest.json` pair the
+  // Pulse re-diffs on its very next run — so seeding and then running the Pulse
+  // wrote one event twice, under two keys, one of them marked "seeded from the
+  // archive" on the strip. Moot while no metric is registered, which is why it
+  // would not have been noticed until it shipped.
+  const root = makeRepo(HISTORY);
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  seedFrontierHistory(root, { write: () => {} });
+
+  // The state the Pulse would be in immediately after seeding: the newest
+  // committed pair sitting on disk as previous/latest.
+  const dir = join(root, 'data', 'sources', 'models');
+  writeFileSync(join(dir, 'previous.json'), JSON.stringify(HISTORY[2], null, 2) + '\n');
+  writeFileSync(join(dir, 'latest.json'), JSON.stringify(HISTORY[3], null, 2) + '\n');
+
+  const registry = loadRegistry(root);
+  const { candidates } = computeFrontier(root, registry, { entries: [] }, { write: false });
+  assert.deepEqual(candidates, [], 'the seeded line already records this event; one event, one line');
+
+  // THE CONTROL, without which the assertion above would pass on an engine that
+  // never produces a candidate at all. A pair the seeder never saw is recorded.
+  const next = snapshot('2026-09-05', [
+    row('acme/one', 'Acme One', 50),
+    row('acme/two', 'Acme Two', 99),
+    row('acme/three', 'Acme Three', 20),
+  ]);
+  writeFileSync(join(dir, 'previous.json'), JSON.stringify(HISTORY[3], null, 2) + '\n');
+  writeFileSync(join(dir, 'latest.json'), JSON.stringify(next, null, 2) + '\n');
+  const fresh = computeFrontier(root, registry, { entries: [] }, { write: false }).candidates;
+  assert.equal(fresh.length, 1, 'an event no seeded line covers is still recorded');
+  assert.deepEqual(fresh[0].incoming.map((r) => r.row_id), ['acme/two']);
+  assert.equal(fresh[0].seeded, undefined, 'and it is an observed line, not a seeded one');
 });
 
 test('--dry-run writes nothing, and no declared metric seeds nothing', (t) => {

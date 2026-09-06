@@ -59,6 +59,16 @@
  * written by the engine from the standing diff, it carries the row hashes in its
  * key, and a seeded line beside it would be the same event recorded twice under
  * two different keys. Nothing here ever edits or deletes a line.
+ *
+ * **And the guard runs in BOTH directions, which it did not at first.** This
+ * script's newest recovered line comes from the two newest committed snapshot
+ * blobs — exactly the `previous.json`/`latest.json` pair the Pulse re-diffs on
+ * every run — so seeding and then running the Pulse would have produced two
+ * lines for one event, one of them marked "seeded from the archive" on the
+ * strip. `computeFrontier` (`pulse/lib/frontier.mjs`, `seededEvents`) now drops a
+ * candidate whose EVENT — metric, date, incoming leaders, outgoing leaders — a
+ * seeded line already records. It matches the event and not the metric and date
+ * alone, so a genuine second lead change on the same day is still recorded.
  */
 
 import { execFileSync } from 'node:child_process';

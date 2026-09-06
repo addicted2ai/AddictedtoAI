@@ -36,12 +36,25 @@
  * ## What is NOT a lead change
  *
  * A change in the leader's VALUE with no change in the leader's IDENTITY. It is
- * a different event and this module emits nothing for it: where the metric's
- * path is also a declared `material_field`, `diffSnapshots` already writes the
- * `field_change` line that records it, keyed to the row and the field. Recording
- * it a second time here — under a kind that says the lead changed — is exactly
- * the conflation the requirement forbids. The derived file records the movement
- * either way, because it carries the current value of every eligible row.
+ * a different event and this module emits nothing for it: `diffSnapshots`
+ * already writes the `field_change` line that records it, keyed to the row and
+ * the field. Recording it a second time here — under a kind that says the lead
+ * changed — is exactly the conflation the requirement forbids.
+ *
+ * **That delegation is only true because the registry now enforces it.**
+ * `field_change` fires ONLY for a path declared in the same source's
+ * `material_fields` and not marked `event: false` (`pulse/lib/diff.mjs`), so
+ * without a cross-check a metric could be registered on a path no material field
+ * covers and the value move would be recorded NOWHERE. `validateFrontier`
+ * (`pulse/lib/registry.mjs`) refuses that registration, naming both ends and the
+ * remedy — so "the other event has a recorder" is a declared coupling rather
+ * than a coincidence of how the two lists happen to overlap today.
+ *
+ * And it is NOT recorded by the derived file, which an earlier draft of this
+ * header wrongly claimed. `data/derived/frontier.json` is recomputed from
+ * scratch on every run and carries only the CURRENT value of every eligible row;
+ * it holds no history, so it records no movement at all. The history is
+ * `data/changes.jsonl` and nothing else.
  *
  * ## Keys, and why there is no clock in this file
  *
@@ -76,7 +89,7 @@
  * time by a renderer that must ask at build time.
  */
 
-import { getPath, paths, writeJson } from './core.mjs';
+import { getPath, paths, readJsonl, writeJson } from './core.mjs';
 import { displayName, excerptRow } from './diff.mjs';
 import { loadSnapshot, rowsHash } from './sources.mjs';
 import { feedBindings } from './corpus.mjs';
@@ -84,7 +97,15 @@ import { sortedSources } from './registry.mjs';
 import { KIND } from '../../lib/change-kinds.mjs';
 import { frontierBlock, isRowExcluded } from '../../lib/frontier-metrics.mjs';
 
-/** The causes a `lead-change` line may carry. Closed, and computed, never judged. */
+/**
+ * The causes a `lead-change` line may carry. Closed, and computed, never judged.
+ *
+ * It has a READER — `leadChangeCause` below checks its own answer against it —
+ * because a frozen list nothing consults is the `MATERIAL_KINDS` decoy this same
+ * change deletes in task 18, reintroduced: authoritative-looking, unread, and
+ * free to disagree with the data. The delta says `cause` is "drawn from a closed
+ * set"; a closed set with no reader is the weakest possible form of that.
+ */
 export const LEAD_CHANGE_CAUSES = Object.freeze(['arrival', 'rescored', 'withdrawn']);
 
 /**
@@ -164,6 +185,20 @@ function leadersChanged(previous, latest) {
  * snapshots. See the header for why the tests are in this order.
  */
 export function leadChangeCause(metric, previousRows, latestRows, previousRank, latestRank) {
+  const cause = computeCause(metric, previousRows, latestRows, previousRank, latestRank);
+  // The closed set is READ, not decoration. A fourth cause added to the function
+  // and not to the list stops here rather than reaching the history.
+  if (!LEAD_CHANGE_CAUSES.includes(cause)) {
+    throw new Error(
+      `lead-change cause ${JSON.stringify(cause)} is not in the closed set ` +
+        `(${LEAD_CHANGE_CAUSES.join(', ')}) — a cause is computed from the two snapshots and drawn from that ` +
+        `set; add it to LEAD_CHANGE_CAUSES before emitting it`,
+    );
+  }
+  return cause;
+}
+
+function computeCause(metric, previousRows, latestRows, previousRank, latestRank) {
   for (const leader of latestRank.leaders) {
     const before = previousRows?.[leader.row_id];
     if (before === undefined) return 'arrival';
@@ -194,19 +229,62 @@ function lineRow(r) {
   return { row_id: r.row_id, display_name: r.display_name, value: r.value };
 }
 
+/** The identity of an EVENT, independent of which key recorded it. */
+function eventSignature(line) {
+  const ids = (rows) => (rows ?? []).map((r) => r?.row_id).sort().join('\0');
+  return `${line.metric}\0${line.date}\0${ids(line.incoming)}\0${ids(line.outgoing)}`;
+}
+
+/**
+ * The events a SEEDED lead-change line already records.
+ *
+ * The other half of a guard that ran in one direction only. `scripts/seed-frontier-history.mjs`
+ * drops a seeded candidate when an OBSERVED line already covers that metric and
+ * date; nothing stopped the reverse, and the reverse is the one that actually
+ * fires. The seeder's newest recovered line is computed from the two newest
+ * committed snapshot blobs — which are exactly the `previous.json`/`latest.json`
+ * pair this module re-diffs on every run — so seeding and then running the Pulse
+ * produced two lines for one event under two different keys, one of them marked
+ * "seeded from the archive" on the strip. Moot while no metric is registered,
+ * which is precisely why it would not have been noticed until it shipped.
+ *
+ * The match is the EVENT, not the metric and date alone: same metric, same date,
+ * same incoming leaders, same outgoing leaders. A genuine second lead change on
+ * the same metric on the same day moves a different pair of rows and is still
+ * recorded — the case `frontier.test.mjs` covers under "two lead changes on the
+ * same date get two keys". Only the seeded line's own event is suppressed, and
+ * nothing is edited or deleted: the seeded line stands, because this file is
+ * append-only and a seeded line is real recovered history, not a placeholder.
+ */
+function seededEvents(lines) {
+  const seen = new Set();
+  for (const l of lines ?? []) {
+    if (!l || l.kind !== KIND.LEAD_CHANGE || !l.seeded) continue;
+    seen.add(eventSignature(l));
+  }
+  return seen;
+}
+
 /**
  * Compute `data/derived/frontier.json` and the `lead-change` candidates.
  *
  * Pure with respect to the clock and the network: it reads the registry, the
- * corpus's declared feed bindings and the two committed snapshots per source,
- * and nothing else. `write: false` returns the same result without touching the
- * derived file, which is what a test that only wants the candidates uses.
+ * corpus's declared feed bindings, the two committed snapshots per source, and
+ * the existing change lines — all state on disk, no clock and no network.
+ * `write: false` returns the same result without touching the derived file,
+ * which is what a test that only wants the candidates uses.
+ *
+ * `lines` defaults to the committed history and exists so a caller can supply
+ * it; it is read ONLY to suppress an event a seeded line already records (see
+ * `seededEvents`), never to decide a leader or a value. The derived file does
+ * not depend on it at all.
  *
  * @returns {{ data: object, candidates: object[] }}
  */
-export function computeFrontier(root, registry, corpus, { write = true } = {}) {
+export function computeFrontier(root, registry, corpus, { write = true, lines } = {}) {
   const p = paths(root);
   const { metrics, row_exclusions } = frontierBlock(registry);
+  const seeded = seededEvents(lines ?? readJsonl(p.changes));
 
   const entryIdByRow = new Map();
   for (const b of feedBindings(corpus ?? { entries: [] })) entryIdByRow.set(`${b.source}\0${b.row_id}`, b.entry_id);
@@ -263,6 +341,13 @@ export function computeFrontier(root, registry, corpus, { write = true } = {}) {
     const cause = leadChangeCause(metric, previous.rows, latest.rows, previousRank, latestRank);
     const incoming = latestRank.leaders.map(lineRow);
     const outgoing = previousRank.leaders.map(lineRow);
+
+    // ONE EVENT, ONE LINE — the seeder's mirror image. Its newest recovered line
+    // is computed from the same snapshot pair this diff sees, so without this the
+    // backfill and the next Pulse run both record it, under two keys. See
+    // `seededEvents`.
+    if (seeded.has(eventSignature({ metric: metric.id, date: latest.date ?? null, incoming, outgoing }))) continue;
+
     candidates.push({
       // A pure function of the two row hashes, the metric and the kind — no
       // clock, no counter, no ordinal.
