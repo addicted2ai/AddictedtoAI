@@ -14,6 +14,21 @@
 import { RESULT_PROTOCOL_INSTRUCTION } from './result.mjs';
 import { excerptsFor, PROSE_TYPES } from './specs.mjs';
 import { BRIEF_EXCERPT_MAX_CHARS, JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
+import { DOMAINS, FRONTIER_CRITERIA, FRONTIER_REASONS } from '../../lib/domains.mjs';
+
+/**
+ * The five criteria and the eight domains, rendered for a brief from the ONE
+ * place that defines them (`lib/domains.mjs`) rather than retyped here.
+ *
+ * A Desk job is one written prompt in and files out: no session, no memory, no
+ * way to ask. So the brief has to carry the whole bar — and a hand-copied bar
+ * is a second definition that drifts from the delta the moment either moves,
+ * after which the job is told one rule and judged by another.
+ */
+const FRONTIER_CRITERIA_LINES = FRONTIER_CRITERIA
+  .map((c) => `**${c.id}** ${c.text}`)
+  .join(' ');
+const DOMAIN_VOCABULARY = DOMAINS.join(', ');
 
 /** The reserved paths, exactly (specs/loop breaker 4). */
 export const RESERVED_PATHS = Object.freeze([
@@ -124,15 +139,23 @@ export const ACCEPTANCE_BY_TYPE = {
     'The title and excerpt claim no more than the body proves.',
     'Dates are explicit; nothing reads as current that is merely recent.',
     'It is worth an enthusiast’s time. If it is not, write nothing and report `blocked:` — a post exists because something happened, never because a slot was open.',
+    `THE FRONTIER FLAG, IF THE STORY EARNS IT. Three front-matter keys, and only one of them is ever required: \`frontier: true\` (optional; absent means false); \`frontier_reason\` (REQUIRED when \`frontier: true\` — exactly one of ${FRONTIER_CRITERIA_LINES}); and \`domains\` (OPTIONAL, flagged or not — zero or more of ${DOMAIN_VOCABULARY}). "General" is the UNMARKED default and is not a value; \`text\` is not a value; an absent \`domains\` is that default spelled out, so a flagged record with no domain is a general one rather than an untagged one. NOT QUALIFYING: a new checkpoint, a price change, a benchmark post with no new artifact, a tool release — what every other AI news site already shows does not qualify on its own. The build FAILS a flag with no criterion, a criterion outside F1-F5, or a domain outside the vocabulary, naming the file and the field; it does not fail an absent \`domains\`.`,
+    'AN F2 RECORD CARRIES THE PUBLISHER\'S ACT, NEVER THE PUBLISHER\'S NUMBERS, and both lists below are normative — neither may be dropped as redundant. **PERMITTED in an F2 record\'s copy:** the publisher; the index name and its version; the date; the direction of the rescoring; the coverage change, as a count of rows scored before and after; the fact that a non-uniform rescoring can invert orderings. **FORBIDDEN in an F2 record\'s copy:** any index value, any ratio, any rank, any per-model score. Those are derived from republished numbers — they belong in the review record, where a reviewer can check your work, and never on a rendered page. A median is a value however it is aggregated; a leaderboard position is a rank. The reason BOTH lists are here: a list that says only what is permitted is not a source test but a field-name test, and a field-name test has already failed in this corpus — an allow-list keyed on field names admitted a router\'s measured throughput and a third-party analysis site as vendor claims, because the names matched and the sources did not. A rescoring described by its numbers becomes a republished value BY ACCIDENT, with nobody having decided to republish anything. An F2 record anchors on the PUBLISHER\'S OWN changelog or announcement, cited and quoted verbatim; where that page states the act but not its shape, say so and rest the shape on your own measurement of what you observed.',
+    'THE THREE FRONTIER KEYS ARE EDITORIAL, NOT MECHANICAL. They are part of a post\'s reviewed surface, so adding or changing any of them on a post that already carries an approved review record makes that record report `mismatched`, and the post is not cleared until a new verdict is recorded against the changed bytes. That is a REVIEW EVENT, not a correction to route around: what a story is, and where it lands, is exactly the kind of judgment this site does not let publish unreviewed. Do not exempt the keys, and do not avoid the cost by leaving a story untagged.',
   ],
   scout: [
     'THE CHARGE IS OUTWARD: bring back work the site could not have thought of by looking at itself. Sweep the world beyond this repository and beyond its registered sources — vendor announcements and documentation, papers, incidents, pricing and licence pages, community signal. The queue item’s assembled feed context is one input among them, never the sweep. Every filed candidate carries externally retrieved evidence: URLs you actually fetched during this job, each with the date you retrieved it. A run in which every filed candidate could have been written without leaving this repository is rejected in review as `spec-violation` naming this charge.',
     'Everything you found is judged against the two tests before anything is filed: **worth a stranger’s attention** — for a post, in its would-SEND form, someone who follows the topic would send it to a specific person with no more explanation than "look at this" — and **true, checkable and current**. Correct, sourced and forgettable fails the bar; it is not a near miss.',
-    'AT MOST THREE candidates are filed per run — the most worthy three, not the first three — as proposal files in `data/proposals/`. State your ranking in `RESULT.md`. The cap is mechanical, not a request: at merge the loop keeps three, by your stated ranking where you gave one and by filename where you did not, and moves the excess to `data/proposals/dropped/` with a note. Three bounds a burst; nothing anywhere treats it as a target, and filing one candidate or none is a complete run.',
+    'AT MOST THREE UNFLAGGED candidates are filed per run — the most worthy three, not the first three — as proposal files in `data/proposals/`. State your ranking in `RESULT.md`. **A candidate carrying a valid `frontier: true` does not count against those three**: file it as a fourth where a fourth story genuinely qualifies under F1-F5, and see the frontier sweep below for what the flag costs and what it does not buy. The cap is mechanical, not a request: at merge the loop keeps three UNFLAGGED candidates — by your stated ranking where you gave one and by filename where you did not — plus every validly flagged one, and moves the excess UNFLAGGED candidates to `data/proposals/dropped/` with a note. A candidate whose flag does not hold is dropped naming the offending field and does NOT rejoin the three. Three bounds a burst of ordinary candidates; nothing anywhere treats it as a target, and filing one candidate or none is a complete run.',
     'Each candidate carries the full docket, written at filing time and not left to the job that picks it up: a kebab-case `slug`, a `type` from the closed job-type list, an `expires:` date — **at most 7 days out for an event-driven candidate, at most 14 for a synthesis** — a why-now, the retrieved evidence with URLs and retrieval dates, and done-when acceptance lines.',
-    'EVERY STORY CONSIDERED AND DECLINED becomes one record in `data/proposals/dropped/`, naming which of the two tests it failed and what would make it worth refiling. Declines are recorded, never silently dropped, and `dropped/` is a record rather than a block — a slug there does not suppress a later filing, so a story returns when its refile condition arrives. Stated honestly: these records prove the FORM of the bar, not its rate — nothing measures how many stories you considered.',
+    'EVERY STORY CONSIDERED AND DECLINED becomes one record in `data/proposals/dropped/`, naming which of the two tests it failed and what would make it worth refiling. AND WHERE YOU WEIGHED THE STORY AS A FRONTIER CANDIDATE, that record ALSO NAMES WHICH CRITERION (F1-F5) IT WAS WEIGHED AGAINST AND WHY IT FAILED. That is unconditional — every run, every domain, whether or not the domain is quiet and whether or not anything else was filed that day. The surface this feeds claims to show what other AI news sites do not, and these declines are the ONLY record of where that line was drawn: a run whose drop records name only the two-test bar leaves the frontier judgment unauditable. Declines are recorded, never silently dropped, and `dropped/` is a record rather than a block — a slug there does not suppress a later filing, so a story returns when its refile condition arrives. Stated honestly: these records prove the FORM of the bar, not its rate — nothing measures how many stories you considered.',
     'A QUIET DAY OPENS THE SYNTHESIS BRANCH, and never a floor. When no external story clears the bar, consider whether the accumulated recorded evidence — `data/changes.jsonl`, the snapshots, the corpus’s data layer — supports a synthesis candidate instead. That branch is an opportunity, not an obligation: a candidate filed to fill a day is the failure it exists to prevent.',
     'WHEN NOTHING CLEARS THE BAR ON EITHER BRANCH, file nothing and end `RESULT.md` with the first line exactly `blocked: nothing cleared the bar`. That is a **success**, recorded as one — the ledger keeps it, no breaker counts it, and nothing anywhere treats the day as a failure. Zero candidates on a quiet day is the bar working.',
+    `THE FRONTIER SWEEP IS A STANDING QUESTION, asked on EVERY run across EVERY domain, not a mode you enter on a good day: did anything move the frontier since the last sweep? The five criteria, exactly one of which a flagged candidate cites: ${FRONTIER_CRITERIA_LINES} The surface this feeds shows the most recent flagged records per domain, so a domain nobody swept goes quiet without anybody deciding it should — which is why the question is asked of every domain rather than of the ones with news in them.`,
+    'NOT QUALIFYING, and this list is the point of the criteria rather than an afterthought: a new checkpoint, a price change, a benchmark post with no new artifact, a tool release. The test, stated as a test rather than as a list to be extended: **what every other AI news site already shows does not qualify on its own.**',
+    `A CANDIDATE MAY DECLARE \`frontier: true\`, and when it does it carries the same bar a post carries: \`frontier_reason\`, exactly one of F1-F5, and every \`domains\` value from the closed vocabulary — ${DOMAIN_VOCABULARY}. \`domains\` is OPTIONAL: "general" is the UNMARKED default, so a frontier event with no modality (a court filing, a regulator's action, a licence term, a system card) declares no \`domains\` at all and is a general record rather than an untagged one. \`text\` is not a value. A candidate declaring the flag with no valid criterion, or with a domain outside the vocabulary, IS NOT FILED — the merge drops it to \`data/proposals/dropped/\` naming the offending field, mechanically, and it does not take one of the three unflagged places by failing.`,
+    'A VALID FLAG DOES NOT SPEND ONE OF THE THREE. A candidate carrying a valid `frontier: true` is exempt from the cap of three — file it as a fourth if a fourth story genuinely qualifies. The exemption is from the COUNT and from nothing else: the candidate cools, expires, is swept and is judged exactly as any other, and the new-writing budget ceiling refuses a flagged candidate over the ceiling exactly as it refuses an unflagged one. **A flag applied to fill a quiet domain is the failure the criteria exist to prevent**, and it is the reason the exemption has a bar in front of it at all. Where a domain has had no qualifying event for weeks and the sweep finds only routine checkpoints and price moves in it, flag none of them, record the declines against the criteria they failed, and let the domain stay quiet: nothing qualified is a finding.',
+    'RADAR FEEDS ARE INPUTS TO THE SWEEP AND ARE NEVER DISPLAYED RAW — open-weights hubs, covered organisations\' release feeds, preprint listings, source-release feeds. They exist to tell you where to look. Rendered directly they would saturate the surface immediately, which is the failure that made this a curated surface rather than a feed. A candidate is what you judged, never what a feed handed you.',
   ],
   education: [
     'No perishable literal appears anywhere on the page.',
@@ -219,8 +242,10 @@ export function proposalRule(type) {
 
   const body = scout
     ? `Filing candidates **is** this job's outcome, not a side-output: at most three
-per run, the most worthy three, as proposal files in \`data/proposals/\`, plus one
-record in \`data/proposals/dropped/\` for every story you considered and declined.
+UNFLAGGED candidates per run, the most worthy three, as proposal files in
+\`data/proposals/\`, plus every candidate carrying a valid \`frontier: true\` —
+which is exempt from that count — plus one record in
+\`data/proposals/dropped/\` for every story you considered and declined.
 The acceptance checks above are the bar each candidate must clear; this section
 is the file format they must be written in.`
     : `You MAY end this job by filing **at most one** proposal in \`data/proposals/\`,
@@ -230,11 +255,85 @@ diff is still judged against the one stated outcome, and work you do beyond it i
 a \`scope-violation\` — it is where a thing you noticed and are *not* doing goes so
 that it is not lost.`;
 
-  const n = scout ? 'three' : 'one';
-  const mechanics = `The cap is a mechanism, not a request. If this branch adds more than ${n}
-proposal file${scout ? 's' : ''}, the loop keeps ${n} — by your stated ranking where you gave
+  // The counted-set sentence is the scout's alone, because `flag-what-moved-the-
+  // frontier` modified the scout's cap and nothing else: specs/loop now reads
+  // "the loop keeps at most three **unflagged** candidate files … and every
+  // excess unflagged candidate is moved to the drop record". An ordinary job's
+  // one-proposal side-output rule was NOT modified — the exemption is the
+  // scout's cap and no other (`proposals.mjs`, "TWO BOUNDARIES") — so the
+  // non-scout paragraph below is the pre-change wording, unchanged on purpose.
+  //
+  // Both halves must say the same thing, and this is the half that WRITES. The
+  // reviewer's copy of this rule (`review.mjs`, CHECKLISTS.scout) was corrected
+  // first and this one was left behind for a round: a job told "at most three
+  // candidates are filed per run" and "the loop keeps three and moves the rest
+  // to dropped/" does not file the fourth, so the exemption never fires in
+  // production and nothing anywhere reports that it did not. That is the
+  // "a job is told or it cannot know" failure, arriving through the one channel
+  // a job has.
+  const cap = scout
+    ? `The cap is a mechanism, not a request. If this branch adds more than three
+UNFLAGGED proposal files, the loop keeps three — by your stated ranking where you gave
+one in \`RESULT.md\`, else by filename — and moves the excess UNFLAGGED ones to
+\`data/proposals/dropped/\` with a note naming them. Every candidate carrying a
+valid \`frontier: true\` is kept BESIDE those three and is never the one moved:
+the flag lifts the COUNT and lifts nothing else. A candidate that declares the
+flag without holding it — no \`frontier_reason\`, a reason outside F1-F5, or a
+\`domains\` value outside the vocabulary — is moved to \`data/proposals/dropped/\`
+naming the offending field, and it does NOT rejoin the three: a flag must not be
+able to buy a place among them by failing.`
+    : `The cap is a mechanism, not a request. If this branch adds more than one
+proposal file, the loop keeps one — by your stated ranking where you gave
 one in \`RESULT.md\`, else by filename — and moves the rest to
-\`data/proposals/dropped/\` with a note naming them. A proposal on a branch that
+\`data/proposals/dropped/\` with a note naming them. Declaring \`frontier: true\`
+does not lift it: the frontier exemption is the SCOUT'S cap and no other job's,
+and a \`${type}\` job's flagged proposal is counted exactly as before.`;
+  // THE FORMAT BLOCK IS THE ONE THAT SAYS "EXACTLY", so the flag keys have to be
+  // IN it (`flag-what-moved-the-frontier`, task 10).
+  //
+  // The scout body above says of this section "this section is the file format
+  // they must be written in", the acceptance checks require a qualifying
+  // candidate to declare `frontier: true`, `frontier_reason` and — where they
+  // apply — `domains`, and the cap paragraph is written around the exemption
+  // those keys buy. A block introduced by "front matter exactly:" that lists six
+  // keys and none of those three hands the job two contradictory instructions
+  // and makes the narrower one authoritative.
+  //
+  // The failure it produced is the undetectable kind, which is why it is worth
+  // this much comment: a scout obeying "exactly" files an ordinary candidate,
+  // the merge sees no flag, no drop record is written, the cap silently spends
+  // one of the three on a frontier story, and NOTHING anywhere records that a
+  // qualifying story went untagged. There is no error to find afterwards. It is
+  // the same "a job is told or it cannot know" failure the cap sentence above
+  // was repaired for one round earlier, arriving through the one channel a job
+  // has.
+  //
+  // Rendered from `FRONTIER_REASONS` and `DOMAINS` rather than retyped: two
+  // copies of a closed list drift, and the copy in a brief drifts unobserved
+  // because nothing validates a prompt.
+  //
+  // The scout's alone, deliberately. A scout is TOLD to declare the flag; no
+  // other job is, and for them "front matter exactly" without the keys is the
+  // correct instruction rather than a contradiction — the paragraph above
+  // already tells them the flag would buy their cap nothing.
+  const frontierKeys = scout
+    ? `frontier: true            # OPTIONAL. Declare it ONLY for a candidate that
+                          # meets one of F1-F5 above. A valid flag is exempt
+                          # from the three; a flag that does not hold is moved
+                          # to data/proposals/dropped/ and is NOT filed.
+frontier_reason: <${FRONTIER_REASONS.join('|')}>  # REQUIRED when \`frontier: true\`, and it is
+                          # the criterion's ID ALONE — not a sentence saying
+                          # why. Say why in the body.
+domains: [<from the closed vocabulary>]  # OPTIONAL, flagged or not.
+                          # ${DOMAINS.join(', ')}.
+                          # ABSENT means general — "general" is the UNMARKED
+                          # default and is not a value you may write, and
+                          # \`text\` is not a value. A value outside this list
+                          # drops the candidate.
+`
+    : '';
+
+  const mechanics = `${cap} A proposal on a branch that
 is DISCARDED dies with the branch: ideas do not
 outlive the rejection of the work that produced them. At merge the loop stamps
 this job's type (\`${type}\`) onto each kept proposal, overwriting whatever you
@@ -275,7 +374,7 @@ expires: <YYYY-MM-DD>     # OPTIONAL, and it changes the timing entirely.
                           # proposal is swept to data/proposals/dropped/ with a
                           # note naming the expiry. Use it for evidence with a
                           # shelf life; nothing carries forward unjudged.
----
+${frontierKeys}---
 \`\`\`
 
 The body below the front matter is the proposal's own argument. Cooling filters

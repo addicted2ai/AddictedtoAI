@@ -41,6 +41,25 @@ import { GROUND_RULES, subjectLines } from './brief.mjs';
 import { REASONS, VERDICTS, parseVerdict, normalizeWouldCite, normalizeField } from './verdict.mjs';
 import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
 import { reviewedOf } from '../../lib/reviews.mjs';
+import { DOMAINS, FRONTIER_CRITERIA } from '../../lib/domains.mjs';
+
+/**
+ * The five criteria and the eight domains, rendered for a REVIEW checklist from
+ * the one place that defines them, exactly as `brief.mjs` renders them for an
+ * author brief.
+ *
+ * A reviewer receives the diff and the checklist and nothing else — no spec
+ * text reaches it (`excerptsFor` is called from the author brief alone), so a
+ * rule that is not in the checklist is a rule the reviewer was never given, and
+ * a scenario whose THEN is "review rejects it naming the list" cannot happen.
+ * Read from `lib/domains.mjs` rather than retyped, for the reason that file
+ * states: a second copy of a closed list drifts, and then the side that writes
+ * and the side that judges are held to two different rules wearing one name.
+ */
+const FRONTIER_CRITERIA_LINES = FRONTIER_CRITERIA
+  .map((c) => `**${c.id}** ${c.text}`)
+  .join(' ');
+const DOMAIN_VOCABULARY = DOMAINS.join(', ');
 
 /**
  * Reading a verdict record lives in `verdict.mjs` — a leaf module with no
@@ -133,14 +152,16 @@ const CHECKLISTS = {
     "The subject is the world's AI, never this site. A post whose subject is this site's machinery, corpus, build, process or history is `spec-violation` naming that rule, however well written. Using the site's own data layer as *evidence* about the world is fine — the subject is the vendor's change, not the snapshot.",
     '**Judge the prose against the house voice of record at `openspec/style/blog-voice.md`, and reject `reads-as-generated` where it reads machine-made** — uniform rhythm and paragraph shape, structure signposted rather than felt, meta-commentary narrating its own method, no willingness to be blunt. The prebuild voice lint is ADVISORY: it warns and never fails the build, so it stopped nothing. You may cite its warnings as evidence; the verdict is yours, not the count\'s, and a draft that trips no marker and still reads machine-made is still `reads-as-generated`.',
     "The site's disclosure of AI authorship stands. A diff that hides, softens or qualifies it so posts \"feel human\" is `spec-violation`. The writing must not read machine-made; the site must not pretend human-made. Both, always.",
+    `**THE FRONTIER FLAG, WHERE THE POST DECLARES ONE — check that it was EARNED, not merely well formed.** The build already refuses a flag with no criterion, a criterion outside F1-F5, or a domain outside the vocabulary; what it cannot judge is whether the story qualifies, and that is yours. The five criteria, exactly one of which a flagged post cites: ${FRONTIER_CRITERIA_LINES} **NOT QUALIFYING:** a new checkpoint, a price change, a benchmark post with no new artifact, a tool release. The test, stated as a test rather than as a list to be extended: *what every other AI news site already shows does not qualify on its own.* A flag on one of those is \`spec-violation\` **naming the not-qualifying list** — a price change is not F5, which is a change in ACCESS and not in price. \`domains\` is OPTIONAL flagged or not (${DOMAIN_VOCABULARY}): "general" is the UNMARKED default and \`text\` is not a value, so a flagged post carrying no \`domains\` is a general record and is NOT a defect to ask repaired.`,
+    "**AN F2 RECORD CARRIES THE PUBLISHER'S ACT, NEVER THE PUBLISHER'S NUMBERS, and BOTH lists below are normative — neither may be dropped as redundant.** **PERMITTED in an F2 record's copy:** the publisher; the index name and its version; the date; the direction of the rescoring; the coverage change, as a count of rows scored before and after; the fact that a non-uniform rescoring can invert orderings. **FORBIDDEN in an F2 record's copy:** any index value, any ratio, any rank, any per-model score. A median is a value however it is aggregated; a leaderboard position is a rank. A draft carrying any of the forbidden four is `spec-violation` **naming the forbidden list** — those are derived from republished numbers, they belong in the review record where you can check the author's work, and never on a rendered page. Check the ANCHOR too: an F2 record anchors on the **publisher's own changelog or announcement** for the rescoring, cited and quoted verbatim, and a third-party write-up is not that anchor; where the publisher's page states the act but not its shape, the record says so and rests its shape on its own measurement. Why BOTH lists reach you rather than only the permitted one: a list that says only what is permitted is not a source test but a field-name test, and a field-name test has already failed in this corpus — an allow-list keyed on field names admitted a router's measured throughput and a third-party analysis site as vendor claims, because the names matched and the sources did not. A rescoring described by its numbers becomes a republished value BY ACCIDENT, with nobody having decided to republish anything.",
     '**Answer both questions in your own words: the send question in `would-cite` (who would send this, and to whom?) and the voice question in `reads-human` (where does this read machine-made, or why does it not?).** For a post, being worth citing alone does not publish — a correct, sourced, forgettable draft is `not-worth-reading`, in those words.',
   ],
   scout: [
     "**The charge is checked first, before anything else: bring back work the site could not have thought of by looking at itself.** If every filed candidate could have been written without leaving this repository — from the change feed, the snapshots, the corpus — reject the run `spec-violation` naming the charge. An inward run that is otherwise flawless still fails this.",
     "**Spot-fetch the evidence URLs yourself.** A URL in a candidate is a claim until you open it: confirm the page exists and says what the candidate says it says. Externally *retrieved* is the point; a plausible-looking link is not retrieval.",
     'Every candidate carries the docket discipline in full: a kebab-case `slug`, a proposed job `type` from the closed list, an `expires:` date (at most 7 days out for an event-driven candidate, at most 14 for a synthesis), a why-now, externally retrieved evidence with URLs **and retrieval dates**, and done-when acceptance lines written at filing time. A missing field is a missing field — say which candidate and which field.',
-    'Every declined story has one record in `data/proposals/dropped/` naming **which test it failed** and **what would make it worth refiling**. A drop record that names neither is not a record. (These prove the *form* of the bar, never its *rate*: nothing measures how many stories were considered, so do not read three drop records as evidence of a wide sweep.)',
-    '**At most three candidates are filed.** Count the added proposal files. The merge enforces this mechanically, so a fourth is a signal about the run, not a thing you must stop.',
+    'Every declined story has one record in `data/proposals/dropped/` naming **which test it failed** and **what would make it worth refiling**. A drop record that names neither is not a record. **Where a story was weighed as a frontier candidate, that record ALSO names which criterion (F1-F5) it was weighed against and why it failed** — unconditionally, not only in a domain that has gone quiet and not only on a day something was filed. The declines are the only record of where the frontier line was drawn, so a drop record that names only the two-test bar leaves that judgment unauditable: say which run it applies to and ask for it. (These prove the *form* of the bar, never its *rate*: nothing measures how many stories were considered, so do not read three drop records as evidence of a wide sweep.)',
+    '**At most three UNFLAGGED candidates are filed.** Count the added proposal files that do NOT carry a valid `frontier: true` — a candidate carrying a valid flag (`frontier_reason`, exactly one of F1-F5, and every `domains` value from the closed vocabulary) is exempt from the COUNT and from nothing else, so a fourth file is expected rather than over-filing when one of them is validly flagged. A candidate whose flag does not hold is dropped at merge with the offending field named and does not rejoin the three. The merge enforces all of that mechanically, so a fourth *unflagged* file is a signal about the run, not a thing you must stop.',
     'Zero candidates is not a defect. A run that swept honestly and found nothing that clears the bar is the bar working — judge what was filed and what was declined, never the count.',
   ],
   education: [

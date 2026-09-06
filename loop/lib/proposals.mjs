@@ -59,6 +59,7 @@ import {
 import { join, basename } from 'node:path';
 import matter from 'gray-matter';
 import { JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
+import { frontierFlagProblems } from '../../lib/domains.mjs';
 import { declaredIssueIds, ISSUE_PREFIX } from './issues.mjs';
 import { localDate } from './dates.mjs';
 
@@ -670,6 +671,45 @@ export function addedProposalPaths(changed) {
  * lives only on the branch, the branch is never merged, and `data/proposals/`
  * in the working tree never sees it. Ideas do not outlive the rejection of the
  * work that produced them.
+ *
+ * ---------------------------------------------------------------------------
+ * THE FRONTIER EXEMPTION (flag-what-moved-the-frontier, specs/loop).
+ *
+ * A candidate declaring a VALID `frontier: true` does not count against the
+ * scout's cap of three. The added files are partitioned in three before the cap
+ * is applied, and each group is treated differently:
+ *
+ *  - **valid-flagged** — kept, and not counted. The exemption is from the count
+ *    and from nothing else: the candidate still cools, expires, is swept and is
+ *    judged like any other, and the new-writing ceiling refuses a flagged
+ *    candidate over budget exactly as it refuses an unflagged one. The flag
+ *    lifts a COUNT, never a BUDGET.
+ *  - **unflagged** — counted against `proposalCapFor(type)`, exactly as before.
+ *  - **invalid-flagged** — `frontier: true` with no criterion, a criterion
+ *    outside F1–F5, or a `domains` value outside the closed vocabulary. Dropped
+ *    with a note naming the offending field, and NOT rejoined to the unflagged
+ *    group: a flag that does not hold must not be able to buy a place among the
+ *    three by failing. Refused at filing rather than discovered at the build,
+ *    because the flag's whole effect happens before any post exists.
+ *
+ * TWO BOUNDARIES, both deliberate, both decided by the change's task 7 and
+ * recorded here because a later reader will otherwise "simplify" one of them
+ * away:
+ *
+ *  - **The exemption is the SCOUT'S and no other job's.** DESK-ORDER-001 exempts
+ *    a flagged story from the three-candidates-per-day cap, which is the
+ *    scout's cap; nothing decided that an ordinary job's one-proposal
+ *    side-output rule may be lifted by flagging. A non-scout job's flagged
+ *    proposal is counted exactly as before, and the note it gets when it is
+ *    dropped says why.
+ *  - **The bar on the flag binds EVERY job type.** The exemption is a privilege
+ *    the scout has; the bar is what the flag means, and a flag that does not
+ *    hold is not filed by anybody. A non-scout job whose flag is broken has
+ *    written a candidate that would fail the build the day it became a post, so
+ *    dropping it here is the same refusal one step earlier — and the
+ *    alternative, keeping it because its job type has no exemption to lose, is
+ *    a broken declaration surviving into `data/proposals/` for the reason that
+ *    it could not have profited from it.
  */
 export function applyProposalMergeRules(ctx, { worktree, jobId, jobType, changed }) {
   const cap = proposalCapFor(jobType);
@@ -698,23 +738,98 @@ export function applyProposalMergeRules(ctx, { worktree, jobId, jobType, changed
     return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
   });
 
-  const kept = entries.slice(0, cap);
-  const over = entries.slice(cap);
+  // The three-way partition, before the cap. `frontierFlagProblems` is the ONE
+  // rule (`lib/domains.mjs`), shared with the build gate in `postSchema` —
+  // whether a flag holds cannot be one thing at filing and another at build.
+  for (const e of entries) {
+    e.flagProblems = frontierFlagProblems(e.fm);
+    e.flagged = e.fm?.frontier !== undefined && e.fm?.frontier !== null && e.fm?.frontier !== false;
+    e.validFlagged = e.fm?.frontier === true && e.flagProblems.length === 0;
+  }
+  const invalidFlagged = entries.filter((e) => e.flagged && e.flagProblems.length > 0);
+  // The exemption is the SCOUT'S. For every other job type the valid-flagged
+  // files fall through into the counted group and the cap binds them as before.
+  const exempt = jobType === 'scout' ? entries.filter((e) => e.validFlagged) : [];
+  const exemptSet = new Set(exempt);
+  const invalidSet = new Set(invalidFlagged);
+  const counted = entries.filter((e) => !exemptSet.has(e) && !invalidSet.has(e));
+
+  const over = counted.slice(cap);
+  const overSet = new Set(over);
+  // Ranking order is preserved rather than "exempt first": what is kept is a
+  // set, and a reader of the note should see the job's own ordering.
+  const kept = entries.filter((e) => !overSet.has(e) && !invalidSet.has(e));
   const dropped = [];
   const rejected = [];
   const today = localDate(ctx.now());
 
+  const droppedDirPath = join(worktree, 'data', 'proposals', 'dropped');
+
+  if (invalidFlagged.length) {
+    mkdirSync(droppedDirPath, { recursive: true });
+    for (const e of invalidFlagged) {
+      const dest = join(droppedDirPath, e.name);
+      const fields = e.flagProblems
+        .map((p) => `  - \`${p.path.join('.')}\`: ${p.message}\n`)
+        .join('');
+      const note =
+        `\n\n---\n\n## Dropped: the frontier flag it declared does not hold\n\n` +
+        `- date: ${today}\n` +
+        `- job: ${jobId} (${jobType})\n` +
+        `- rule: a candidate declaring \`frontier: true\` carries the same bar a post ` +
+        `carries — \`frontier_reason\`, exactly one of F1–F5, and every \`domains\` ` +
+        `value from the closed vocabulary (specs/blog, specs/loop)\n` +
+        `- what does not hold:\n${fields}\n` +
+        `The flag is refused at FILING, not discovered at the build, because the ` +
+        `flag's whole effect happens before any post exists: it exempts a candidate ` +
+        `from the candidate cap. A flag that does not hold is not a flagged ` +
+        `candidate, and it does not rejoin the counted group — a flag must not be ` +
+        `able to buy a place among the allowed candidates by failing.\n\n` +
+        `\`domains\` may be ABSENT: absence is the vocabulary's unmarked "general", ` +
+        `not an unfilled field, and it is never what dropped a candidate here.\n\n` +
+        `No model was invoked and no inference was spent.\n\n` +
+        `\`data/proposals/dropped/\` is a record, never a block — it does not feed ` +
+        `slug suppression, so this may be refiled with a flag that holds, or ` +
+        `without one.\n`;
+      writeFileSync(dest, e.raw + note, 'utf8');
+      if (existsSync(e.abs)) unlinkSync(e.abs);
+      dropped.push({
+        name: e.name,
+        from: e.rel,
+        to: `data/proposals/dropped/${e.name}`,
+        rank: e.rank,
+        flag: e.flagProblems.map((p) => p.path.join('.')),
+      });
+    }
+    notes.push(
+      `frontier flag: the ${jobType} job declared \`frontier: true\` on ` +
+        `${invalidFlagged.length} candidate${invalidFlagged.length === 1 ? '' : 's'} whose flag ` +
+        `does not hold (${invalidFlagged
+          .map((e) => `${e.name}: ${e.flagProblems.map((p) => p.path.join('.')).join(', ')}`)
+          .join('; ')}); moved to data/proposals/dropped/ with a note, and not counted ` +
+        `against the cap`,
+    );
+  }
+
   if (over.length) {
-    const dir = join(worktree, 'data', 'proposals', 'dropped');
-    mkdirSync(dir, { recursive: true });
+    mkdirSync(droppedDirPath, { recursive: true });
     for (const e of over) {
-      const dest = join(dir, e.name);
+      const dest = join(droppedDirPath, e.name);
       const note =
         `\n\n---\n\n## Dropped: over this job's candidate cap\n\n` +
         `- date: ${today}\n` +
         `- job: ${jobId} (${jobType})\n` +
         `- rule: a merged \`${jobType}\` branch may add at most ${cap} proposal ` +
-        `file${cap === 1 ? '' : 's'}; it added ${entries.length}\n` +
+        `file${cap === 1 ? '' : 's'}; it added ${counted.length}\n` +
+        (exempt.length
+          ? `- exempt: ${exempt.length} valid frontier-flagged candidate` +
+            `${exempt.length === 1 ? '' : 's'} (${exempt.map((k) => `\`${k.name}\``).join(', ')}) ` +
+            `did not count against it — the flag lifts a count, never a budget\n`
+          : '') +
+        (jobType !== 'scout' && entries.some((e2) => e2.validFlagged)
+          ? `- note: the frontier exemption is the scout's cap and no other — a ` +
+            `\`${jobType}\` job's flagged proposal is counted exactly as before\n`
+          : '') +
         `- ranked: ${e.rank === null ? 'no `rank:` declared; ordered by filename' : `rank ${e.rank}`}\n` +
         `- kept instead: ${kept.map((k) => `\`${k.name}\``).join(', ') || '(none)'}\n\n` +
         `The cap is a mechanism, not a request: the loop kept the allowed number ` +
@@ -727,8 +842,12 @@ export function applyProposalMergeRules(ctx, { worktree, jobId, jobType, changed
       dropped.push({ name: e.name, from: e.rel, to: `data/proposals/dropped/${e.name}`, rank: e.rank });
     }
     notes.push(
-      `proposal cap: the ${jobType} job added ${entries.length} proposal files and may add ${cap}; ` +
-        `kept ${kept.map((k) => k.name).join(', ')} and moved ${dropped.map((d) => d.name).join(', ')} ` +
+      `proposal cap: the ${jobType} job added ${counted.length} proposal files and may add ${cap}; ` +
+        (exempt.length
+          ? `${exempt.length} valid frontier-flagged candidate${exempt.length === 1 ? '' : 's'} ` +
+            `(${exempt.map((k) => k.name).join(', ')}) did not count; `
+          : '') +
+        `kept ${kept.map((k) => k.name).join(', ')} and moved ${over.map((d) => d.name).join(', ')} ` +
         `to data/proposals/dropped/ with a note`,
     );
   }

@@ -32,6 +32,7 @@ import assert from 'node:assert/strict';
 
 import { assembleBrief, ACCEPTANCE_BY_TYPE, acceptanceChecksFor, proposalRule } from '../lib/brief.mjs';
 import { JOB_TYPES } from '../lib/config.mjs';
+import { DOMAINS, FRONTIER_CRITERIA, FRONTIER_REASONS } from '../../lib/domains.mjs';
 import { makeRepo } from './helpers.mjs';
 
 /** Assemble one brief of `type` against a spec-less fixture repository. */
@@ -85,7 +86,7 @@ test('2.3 the scout brief carries the two tests, the cap of three, and the docke
       'worth a stranger',           // test 1, in its would-send form for a post
       'would-SEND form',
       'true, checkable and current', // test 2
-      'AT MOST THREE',
+      'AT MOST THREE UNFLAGGED',
       'the most worthy three, not the first three',
       'data/proposals/',
       'kebab-case `slug`',
@@ -96,6 +97,90 @@ test('2.3 the scout brief carries the two tests, the cap of three, and the docke
       'done-when acceptance lines',
     ],
     '2.3 bar and docket',
+  );
+});
+
+// ── the cap sentence the WRITING side is given (flag-what-moved-the-frontier)
+//
+// `flag-what-moved-the-frontier` modified exactly one sentence of the scout's
+// cap: specs/loop now reads "the loop keeps at most three **unflagged**
+// candidate files … and every excess unflagged candidate is moved to the drop
+// record". Round 1 rewrote that sentence on the side that JUDGES
+// (`review.mjs`, CHECKLISTS.scout — pinned at review-blog-bar.test.mjs:383)
+// and left the superseded absolute standing on the side that WRITES, three
+// times over: the acceptance check and both halves of `proposalRule`.
+//
+// That asymmetry is invisible to every other assertion in this file. The cap
+// assertions were the bare substrings "AT MOST THREE" and "at most three",
+// which pass on the pre-change sentence and on the corrected one alike — so
+// nothing pinned the author side in EITHER direction, and the pre-change
+// wording survived a full green suite. The delta's own scenario "A frontier
+// story is filed beside a full docket" requires the scout to FILE a fourth
+// candidate; a job whose brief says "AT MOST THREE candidates are filed per
+// run" and "the loop keeps three … and moves the rest to dropped/" does not
+// file it. The exemption then never fires in production, and because the merge
+// rule is what would have reported it, nothing reports that it did not.
+//
+// A Desk job is one written prompt in and files out. The brief is its only
+// channel; an untold job cannot know. So the sentence is pinned here.
+test('the scout brief’s OWN cap sentence counts unflagged candidates, not candidates', (t) => {
+  const text = brief(t, 'scout');
+  carries(
+    text,
+    [
+      // The acceptance check (ACCEPTANCE_BY_TYPE.scout).
+      'AT MOST THREE UNFLAGGED candidates are filed per run',
+      'A candidate carrying a valid `frontier: true` does not count against those three',
+      'the loop keeps three UNFLAGGED candidates',
+      'moves the excess UNFLAGGED candidates to `data/proposals/dropped/`',
+      // The proposal rule's body and its merge mechanics (proposalRule('scout')).
+      'at most three\nUNFLAGGED candidates per run',
+      'every candidate carrying a valid `frontier: true` —\nwhich is exempt from that count',
+      'If this branch adds more than three\nUNFLAGGED proposal files, the loop keeps three',
+      'moves the excess UNFLAGGED ones to',
+      'is kept BESIDE those three and is never the one moved',
+      // And the half that keeps the exemption from being read as a budget.
+      'the flag lifts the COUNT and lifts nothing else',
+      'it does NOT rejoin the three',
+    ],
+    'scout author-side cap',
+  );
+  // The superseded absolute must not survive anywhere in the writing side. This
+  // is the assertion that would have failed in round 1: each of these three
+  // reads as a flat cap of three files, which is what the delta modified.
+  for (const gone of [
+    'AT MOST THREE candidates are filed per run',
+    'at most three\nper run, the most worthy three',
+    'If this branch adds more than three\nproposal files, the loop keeps three',
+  ]) {
+    assert.ok(
+      !text.includes(gone),
+      `the scout brief still carries the PRE-CHANGE cap sentence ${JSON.stringify(gone)} — `
+        + 'a job told a flat cap of three does not file the validly flagged fourth the '
+        + 'exemption exists for, and nothing downstream reports that it did not',
+    );
+  }
+});
+
+test('the frontier exemption is NOT offered to a non-scout brief', (t) => {
+  // The paired boundary, from the other side. `proposals.mjs` enforces that the
+  // exemption is the scout's cap and no other job's; a brief that offered an
+  // `entry` job a flag-shaped way out of its one-proposal rule would be telling
+  // it to file something the merge then drops — the worst of both, since the
+  // job spent the work and the rule still held.
+  const text = brief(t, 'entry');
+  carries(
+    text,
+    [
+      'If this branch adds more than one\nproposal file, the loop keeps one',
+      'the frontier exemption is the SCOUT’S cap and no other job’s'.replace(/’/g, "'"),
+      "a `entry` job's flagged proposal is counted exactly as before",
+    ],
+    'non-scout cap',
+  );
+  assert.ok(
+    !text.includes('UNFLAGGED'),
+    'an ordinary job has no unflagged/flagged distinction to make — its cap counts every proposal',
   );
 });
 
@@ -313,6 +398,222 @@ test('3.8 the proposal rule is plain markdown, like the rest of a brief', (t) =>
       assert.ok(!bad.test(text), `${type}: the proposal rule must carry no harness-specific syntax (${bad})`);
     }
   }
+});
+
+// ---------------------------------------------------------------------------
+// The frontier flag (flag-what-moved-the-frontier, tasks 10-11)
+//
+// A Desk job is one written prompt in and files out: no session, no memory
+// across invocations, no way to ask. An untold job cannot know, so everything
+// the flag requires has to reach the assembled markdown — and these fixtures
+// have no `openspec/` tree at all, so nothing below can be carried by a spec
+// excerpt that happens to quote the delta today.
+// ---------------------------------------------------------------------------
+
+test('10 the scout brief carries the standing sweep, the five criteria and the not-qualifying test', (t) => {
+  const text = brief(t, 'scout');
+  carries(
+    text,
+    [
+      'asked on EVERY run across EVERY domain',
+      'NOT QUALIFYING',
+      'a new checkpoint, a price change, a benchmark post with no new artifact, a tool release',
+      'what every other AI news site already shows does not qualify on its own',
+    ],
+    '10 sweep',
+  );
+  // Every criterion, by id AND by its text — an id list would tell a job which
+  // labels exist and nothing about what they mean.
+  for (const c of FRONTIER_CRITERIA) {
+    assert.ok(text.includes(`**${c.id}**`), `the scout brief omits ${c.id}`);
+    assert.ok(text.includes(c.text), `the scout brief omits what ${c.id} means`);
+  }
+});
+
+test('10 the scout brief carries the flag’s own bar, the vocabulary, and the exemption', (t) => {
+  const text = brief(t, 'scout');
+  carries(
+    text,
+    [
+      '`frontier_reason`, exactly one of F1-F5',
+      'IS NOT FILED',
+      'A VALID FLAG DOES NOT SPEND ONE OF THE THREE',
+      'The exemption is from the COUNT and from nothing else',
+      'refuses a flagged candidate over the ceiling exactly as it refuses an unflagged one',
+      'A flag applied to fill a quiet domain is the failure the criteria exist to prevent',
+      'RADAR FEEDS ARE INPUTS TO THE SWEEP AND ARE NEVER DISPLAYED RAW',
+    ],
+    '10 bar and exemption',
+  );
+  for (const d of DOMAINS) assert.ok(text.includes(d), `the scout brief omits the domain ${d}`);
+  // K46, in the brief rather than only in the schema: a job told "at least one
+  // domain" would decline to flag a court filing at all, and nothing would
+  // report that it had.
+  assert.match(text, /`domains` is OPTIONAL/);
+  assert.match(text, /"general" is the UNMARKED default/);
+});
+
+/**
+ * The front-matter block of one job type's proposal rule — the text BETWEEN
+ * "front matter exactly:" and the fence that closes it.
+ *
+ * Everything else in the brief is prose the job weighs; this block is the one
+ * passage that says "exactly", and a key absent from it is a key the job is
+ * told not to write. So the flag assertions have to be scoped to it: every
+ * existing frontier assertion in this file passes on a brief whose format block
+ * contradicts them, which is exactly how the contradiction survived a round.
+ */
+function frontMatterBlock(type) {
+  const text = proposalRule(type);
+  const lead = text.indexOf('front matter exactly');
+  assert.notEqual(lead, -1, `the ${type} proposal rule states no front-matter contract`);
+  const open = text.indexOf('```', lead);
+  const close = text.indexOf('```', open + 3);
+  assert.ok(open !== -1 && close !== -1, `the ${type} front-matter contract is not fenced`);
+  return text.slice(open + 3, close);
+}
+
+test('10 the scout’s "front matter exactly" block CARRIES the three flag keys', (t) => {
+  // The block is introduced by the scout body's own sentence "this section is
+  // the file format they must be written in" and by the words "front matter
+  // exactly". A block listing six keys and none of the three the acceptance
+  // checks demand tells the job, in the most authoritative sentence in the
+  // section, to omit them.
+  //
+  // What that costs is undetectable after the fact, which is why it is asserted
+  // here and not left to the prose: a scout that obeys "exactly" files an
+  // ordinary candidate, the merge sees no flag, no drop record is written, the
+  // cap spends one of its three on a frontier story, and nothing anywhere
+  // records that a qualifying story went untagged. The loop delta's scenario
+  // "A frontier story is filed beside a full docket" cannot occur.
+  const block = frontMatterBlock('scout');
+  for (const key of ['frontier:', 'frontier_reason:', 'domains:']) {
+    assert.ok(block.includes(key), `the scout's front-matter block omits "${key}" — it says "exactly"`);
+  }
+  // Rendered from the closed lists, not retyped: a brief is not validated by
+  // anything, so a drifting copy of a vocabulary drifts unobserved.
+  for (const id of FRONTIER_REASONS) {
+    assert.ok(block.includes(id), `the scout's front-matter block omits the criterion ${id}`);
+  }
+  for (const d of DOMAINS) {
+    assert.ok(block.includes(d), `the scout's front-matter block omits the domain ${d}`);
+  }
+  // The two things a job gets wrong when it is told only that the keys exist:
+  // that the reason is REQUIRED with the flag, and that it is the id alone.
+  assert.match(block, /REQUIRED when `frontier: true`/);
+  assert.match(block, /ID ALONE/);
+  // And K46, in the block itself: `domains` is optional and absence is general.
+  assert.match(block, /OPTIONAL, flagged or not/);
+  assert.match(block, /ABSENT means general/);
+  // The whole brief still assembles with it — the block is generated text and a
+  // template error would show up here rather than in a job's prompt at 03:00.
+  assert.ok(brief(t, 'scout').includes(block.trim().split('\n')[0].trim()));
+});
+
+test('10 CONTROL — a non-scout brief’s block does NOT carry them, and that is not a contradiction', () => {
+  // The scout is TOLD to declare the flag; no other job is. For an `entry` job
+  // "front matter exactly" without the keys is the correct instruction rather
+  // than a contradiction, and its cap paragraph already says the flag would buy
+  // its cap nothing. This control is what stops the fix above from being read
+  // as "put the keys in every block".
+  const block = frontMatterBlock('entry');
+  assert.ok(!block.includes('frontier'), 'an ordinary job is not told to declare a flag in its file format');
+  // But the six-key contract is intact in both, which is the half that must not
+  // regress while the scout's block grows.
+  for (const key of FRONT_MATTER_CONTRACT) {
+    assert.ok(block.includes(key), `the entry front-matter block omits ${key}`);
+    assert.ok(frontMatterBlock('scout').includes(key), `the scout front-matter block omits ${key}`);
+  }
+});
+
+test('10 a frontier decline names its criterion, and the rule is UNCONDITIONAL', (t) => {
+  // The loop delta adds a SHALL to the drop-record bullet: "A story considered
+  // as a frontier candidate and declined SHALL name which criterion it was
+  // weighed against and why it failed — the surface's own claim is that it shows
+  // what other AI news sites do not, and the declines are the only record of
+  // where that line was drawn."
+  //
+  // The defect this pins is a conditional standing in for an unconditional rule.
+  // The quiet-domain check already says "record the declines against the
+  // criteria they failed", which satisfies the sentence in the one case a domain
+  // has gone quiet and defeats it everywhere else — so a scout that weighs eight
+  // stories against F1-F5 and declines all eight writes eight records naming
+  // only the two-test bar, and where the frontier line was drawn that day is
+  // unrecoverable.
+  const text = brief(t, 'scout');
+  carries(
+    text,
+    [
+      'ALSO NAMES WHICH CRITERION (F1-F5) IT WAS WEIGHED AGAINST AND WHY IT FAILED',
+      'That is unconditional — every run, every domain',
+      'whether or not the domain is quiet',
+      'these declines are the ONLY record of where that line was drawn',
+    ],
+    '10 frontier declines',
+  );
+  // Measured, not assumed: the sentence must be in the DROP-RECORD check, not
+  // only inside the quiet-domain one it is too easily read as a restatement of.
+  const dropCheck = ACCEPTANCE_BY_TYPE.scout.find((c) => c.startsWith('EVERY STORY CONSIDERED AND DECLINED'));
+  assert.ok(dropCheck, 'the scout brief has no drop-record acceptance check');
+  assert.ok(
+    /WHICH CRITERION \(F1-F5\)/.test(dropCheck),
+    'the frontier half of the drop-record rule lives outside the drop-record check, where it reads as conditional',
+  );
+});
+
+test('11 the post brief carries the three keys and their gate', (t) => {
+  const text = brief(t, 'post');
+  carries(
+    text,
+    [
+      '`frontier: true` (optional; absent means false)',
+      'REQUIRED when `frontier: true`',
+      '`domains` (OPTIONAL, flagged or not',
+      '`text` is not a value',
+      'it does not fail an absent `domains`',
+    ],
+    '11 keys',
+  );
+  for (const c of FRONTIER_CRITERIA) assert.ok(text.includes(c.text), `post brief omits ${c.id}`);
+  for (const d of DOMAINS) assert.ok(text.includes(d), `the post brief omits the domain ${d}`);
+});
+
+test('11 the post brief carries BOTH F2 lists, in full, and why both are there', (t) => {
+  // The load-bearing one. A brief carrying only the permitted list re-teaches
+  // the field-name-is-not-a-source-test lesson at full price: it reads as
+  // complete, and the author fills the gap with the numbers that describe the
+  // rescoring, which republishes an index value with nobody having decided to.
+  const text = brief(t, 'post');
+  carries(
+    text,
+    [
+      // permitted, all six, verbatim from the blog delta
+      'the publisher; the index name and its version; the date; the direction of the rescoring; '
+        + 'the coverage change, as a count of rows scored before and after; the fact that a '
+        + 'non-uniform rescoring can invert orderings',
+      // forbidden, all four
+      'any index value, any ratio, any rank, any per-model score',
+      'A median is a value however it is aggregated; a leaderboard position is a rank',
+      'they belong in the review record, where a reviewer can check your work',
+      'BY ACCIDENT',
+      "anchors on the PUBLISHER'S OWN changelog",
+    ],
+    '11 F2 lists',
+  );
+  assert.match(text, /both lists below are normative — neither may be dropped as redundant/);
+});
+
+test('11 the post brief says tagging a reviewed post is a review event, not a correction', (t) => {
+  carries(
+    brief(t, 'post'),
+    [
+      'THE THREE FRONTIER KEYS ARE EDITORIAL, NOT MECHANICAL',
+      'report `mismatched`',
+      'REVIEW EVENT, not a correction to route around',
+      'Do not exempt the keys',
+    ],
+    '11 review event',
+  );
 });
 
 // ---------------------------------------------------------------------------
