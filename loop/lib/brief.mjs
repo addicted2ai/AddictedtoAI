@@ -146,7 +146,7 @@ export const ACCEPTANCE_BY_TYPE = {
   scout: [
     'THE CHARGE IS OUTWARD: bring back work the site could not have thought of by looking at itself. Sweep the world beyond this repository and beyond its registered sources — vendor announcements and documentation, papers, incidents, pricing and licence pages, community signal. The queue item’s assembled feed context is one input among them, never the sweep. Every filed candidate carries externally retrieved evidence: URLs you actually fetched during this job, each with the date you retrieved it. A run in which every filed candidate could have been written without leaving this repository is rejected in review as `spec-violation` naming this charge.',
     'Everything you found is judged against the two tests before anything is filed: **worth a stranger’s attention** — for a post, in its would-SEND form, someone who follows the topic would send it to a specific person with no more explanation than "look at this" — and **true, checkable and current**. Correct, sourced and forgettable fails the bar; it is not a near miss.',
-    'AT MOST THREE candidates are filed per run — the most worthy three, not the first three — as proposal files in `data/proposals/`. State your ranking in `RESULT.md`. The cap is mechanical, not a request: at merge the loop keeps three, by your stated ranking where you gave one and by filename where you did not, and moves the excess to `data/proposals/dropped/` with a note. Three bounds a burst; nothing anywhere treats it as a target, and filing one candidate or none is a complete run.',
+    'AT MOST THREE UNFLAGGED candidates are filed per run — the most worthy three, not the first three — as proposal files in `data/proposals/`. State your ranking in `RESULT.md`. **A candidate carrying a valid `frontier: true` does not count against those three**: file it as a fourth where a fourth story genuinely qualifies under F1-F5, and see the frontier sweep below for what the flag costs and what it does not buy. The cap is mechanical, not a request: at merge the loop keeps three UNFLAGGED candidates — by your stated ranking where you gave one and by filename where you did not — plus every validly flagged one, and moves the excess UNFLAGGED candidates to `data/proposals/dropped/` with a note. A candidate whose flag does not hold is dropped naming the offending field and does NOT rejoin the three. Three bounds a burst of ordinary candidates; nothing anywhere treats it as a target, and filing one candidate or none is a complete run.',
     'Each candidate carries the full docket, written at filing time and not left to the job that picks it up: a kebab-case `slug`, a `type` from the closed job-type list, an `expires:` date — **at most 7 days out for an event-driven candidate, at most 14 for a synthesis** — a why-now, the retrieved evidence with URLs and retrieval dates, and done-when acceptance lines.',
     'EVERY STORY CONSIDERED AND DECLINED becomes one record in `data/proposals/dropped/`, naming which of the two tests it failed and what would make it worth refiling. AND WHERE YOU WEIGHED THE STORY AS A FRONTIER CANDIDATE, that record ALSO NAMES WHICH CRITERION (F1-F5) IT WAS WEIGHED AGAINST AND WHY IT FAILED. That is unconditional — every run, every domain, whether or not the domain is quiet and whether or not anything else was filed that day. The surface this feeds claims to show what other AI news sites do not, and these declines are the ONLY record of where that line was drawn: a run whose drop records name only the two-test bar leaves the frontier judgment unauditable. Declines are recorded, never silently dropped, and `dropped/` is a record rather than a block — a slug there does not suppress a later filing, so a story returns when its refile condition arrives. Stated honestly: these records prove the FORM of the bar, not its rate — nothing measures how many stories you considered.',
     'A QUIET DAY OPENS THE SYNTHESIS BRANCH, and never a floor. When no external story clears the bar, consider whether the accumulated recorded evidence — `data/changes.jsonl`, the snapshots, the corpus’s data layer — supports a synthesis candidate instead. That branch is an opportunity, not an obligation: a candidate filed to fill a day is the failure it exists to prevent.',
@@ -242,8 +242,10 @@ export function proposalRule(type) {
 
   const body = scout
     ? `Filing candidates **is** this job's outcome, not a side-output: at most three
-per run, the most worthy three, as proposal files in \`data/proposals/\`, plus one
-record in \`data/proposals/dropped/\` for every story you considered and declined.
+UNFLAGGED candidates per run, the most worthy three, as proposal files in
+\`data/proposals/\`, plus every candidate carrying a valid \`frontier: true\` —
+which is exempt from that count — plus one record in
+\`data/proposals/dropped/\` for every story you considered and declined.
 The acceptance checks above are the bar each candidate must clear; this section
 is the file format they must be written in.`
     : `You MAY end this job by filing **at most one** proposal in \`data/proposals/\`,
@@ -253,11 +255,40 @@ diff is still judged against the one stated outcome, and work you do beyond it i
 a \`scope-violation\` — it is where a thing you noticed and are *not* doing goes so
 that it is not lost.`;
 
-  const n = scout ? 'three' : 'one';
-  const mechanics = `The cap is a mechanism, not a request. If this branch adds more than ${n}
-proposal file${scout ? 's' : ''}, the loop keeps ${n} — by your stated ranking where you gave
+  // The counted-set sentence is the scout's alone, because `flag-what-moved-the-
+  // frontier` modified the scout's cap and nothing else: specs/loop now reads
+  // "the loop keeps at most three **unflagged** candidate files … and every
+  // excess unflagged candidate is moved to the drop record". An ordinary job's
+  // one-proposal side-output rule was NOT modified — the exemption is the
+  // scout's cap and no other (`proposals.mjs`, "TWO BOUNDARIES") — so the
+  // non-scout paragraph below is the pre-change wording, unchanged on purpose.
+  //
+  // Both halves must say the same thing, and this is the half that WRITES. The
+  // reviewer's copy of this rule (`review.mjs`, CHECKLISTS.scout) was corrected
+  // first and this one was left behind for a round: a job told "at most three
+  // candidates are filed per run" and "the loop keeps three and moves the rest
+  // to dropped/" does not file the fourth, so the exemption never fires in
+  // production and nothing anywhere reports that it did not. That is the
+  // "a job is told or it cannot know" failure, arriving through the one channel
+  // a job has.
+  const cap = scout
+    ? `The cap is a mechanism, not a request. If this branch adds more than three
+UNFLAGGED proposal files, the loop keeps three — by your stated ranking where you gave
+one in \`RESULT.md\`, else by filename — and moves the excess UNFLAGGED ones to
+\`data/proposals/dropped/\` with a note naming them. Every candidate carrying a
+valid \`frontier: true\` is kept BESIDE those three and is never the one moved:
+the flag lifts the COUNT and lifts nothing else. A candidate that declares the
+flag without holding it — no \`frontier_reason\`, a reason outside F1-F5, or a
+\`domains\` value outside the vocabulary — is moved to \`data/proposals/dropped/\`
+naming the offending field, and it does NOT rejoin the three: a flag must not be
+able to buy a place among them by failing.`
+    : `The cap is a mechanism, not a request. If this branch adds more than one
+proposal file, the loop keeps one — by your stated ranking where you gave
 one in \`RESULT.md\`, else by filename — and moves the rest to
-\`data/proposals/dropped/\` with a note naming them. A proposal on a branch that
+\`data/proposals/dropped/\` with a note naming them. Declaring \`frontier: true\`
+does not lift it: the frontier exemption is the SCOUT'S cap and no other job's,
+and a \`${type}\` job's flagged proposal is counted exactly as before.`;
+  const mechanics = `${cap} A proposal on a branch that
 is DISCARDED dies with the branch: ideas do not
 outlive the rejection of the work that produced them. At merge the loop stamps
 this job's type (\`${type}\`) onto each kept proposal, overwriting whatever you

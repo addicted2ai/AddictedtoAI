@@ -86,7 +86,7 @@ test('2.3 the scout brief carries the two tests, the cap of three, and the docke
       'worth a stranger',           // test 1, in its would-send form for a post
       'would-SEND form',
       'true, checkable and current', // test 2
-      'AT MOST THREE',
+      'AT MOST THREE UNFLAGGED',
       'the most worthy three, not the first three',
       'data/proposals/',
       'kebab-case `slug`',
@@ -97,6 +97,90 @@ test('2.3 the scout brief carries the two tests, the cap of three, and the docke
       'done-when acceptance lines',
     ],
     '2.3 bar and docket',
+  );
+});
+
+// ── the cap sentence the WRITING side is given (flag-what-moved-the-frontier)
+//
+// `flag-what-moved-the-frontier` modified exactly one sentence of the scout's
+// cap: specs/loop now reads "the loop keeps at most three **unflagged**
+// candidate files … and every excess unflagged candidate is moved to the drop
+// record". Round 1 rewrote that sentence on the side that JUDGES
+// (`review.mjs`, CHECKLISTS.scout — pinned at review-blog-bar.test.mjs:383)
+// and left the superseded absolute standing on the side that WRITES, three
+// times over: the acceptance check and both halves of `proposalRule`.
+//
+// That asymmetry is invisible to every other assertion in this file. The cap
+// assertions were the bare substrings "AT MOST THREE" and "at most three",
+// which pass on the pre-change sentence and on the corrected one alike — so
+// nothing pinned the author side in EITHER direction, and the pre-change
+// wording survived a full green suite. The delta's own scenario "A frontier
+// story is filed beside a full docket" requires the scout to FILE a fourth
+// candidate; a job whose brief says "AT MOST THREE candidates are filed per
+// run" and "the loop keeps three … and moves the rest to dropped/" does not
+// file it. The exemption then never fires in production, and because the merge
+// rule is what would have reported it, nothing reports that it did not.
+//
+// A Desk job is one written prompt in and files out. The brief is its only
+// channel; an untold job cannot know. So the sentence is pinned here.
+test('the scout brief’s OWN cap sentence counts unflagged candidates, not candidates', (t) => {
+  const text = brief(t, 'scout');
+  carries(
+    text,
+    [
+      // The acceptance check (ACCEPTANCE_BY_TYPE.scout).
+      'AT MOST THREE UNFLAGGED candidates are filed per run',
+      'A candidate carrying a valid `frontier: true` does not count against those three',
+      'the loop keeps three UNFLAGGED candidates',
+      'moves the excess UNFLAGGED candidates to `data/proposals/dropped/`',
+      // The proposal rule's body and its merge mechanics (proposalRule('scout')).
+      'at most three\nUNFLAGGED candidates per run',
+      'every candidate carrying a valid `frontier: true` —\nwhich is exempt from that count',
+      'If this branch adds more than three\nUNFLAGGED proposal files, the loop keeps three',
+      'moves the excess UNFLAGGED ones to',
+      'is kept BESIDE those three and is never the one moved',
+      // And the half that keeps the exemption from being read as a budget.
+      'the flag lifts the COUNT and lifts nothing else',
+      'it does NOT rejoin the three',
+    ],
+    'scout author-side cap',
+  );
+  // The superseded absolute must not survive anywhere in the writing side. This
+  // is the assertion that would have failed in round 1: each of these three
+  // reads as a flat cap of three files, which is what the delta modified.
+  for (const gone of [
+    'AT MOST THREE candidates are filed per run',
+    'at most three\nper run, the most worthy three',
+    'If this branch adds more than three\nproposal files, the loop keeps three',
+  ]) {
+    assert.ok(
+      !text.includes(gone),
+      `the scout brief still carries the PRE-CHANGE cap sentence ${JSON.stringify(gone)} — `
+        + 'a job told a flat cap of three does not file the validly flagged fourth the '
+        + 'exemption exists for, and nothing downstream reports that it did not',
+    );
+  }
+});
+
+test('the frontier exemption is NOT offered to a non-scout brief', (t) => {
+  // The paired boundary, from the other side. `proposals.mjs` enforces that the
+  // exemption is the scout's cap and no other job's; a brief that offered an
+  // `entry` job a flag-shaped way out of its one-proposal rule would be telling
+  // it to file something the merge then drops — the worst of both, since the
+  // job spent the work and the rule still held.
+  const text = brief(t, 'entry');
+  carries(
+    text,
+    [
+      'If this branch adds more than one\nproposal file, the loop keeps one',
+      'the frontier exemption is the SCOUT’S cap and no other job’s'.replace(/’/g, "'"),
+      "a `entry` job's flagged proposal is counted exactly as before",
+    ],
+    'non-scout cap',
+  );
+  assert.ok(
+    !text.includes('UNFLAGGED'),
+    'an ordinary job has no unflagged/flagged distinction to make — its cap counts every proposal',
   );
 });
 
