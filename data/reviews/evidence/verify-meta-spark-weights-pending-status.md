@@ -3,9 +3,11 @@
 Job j-20260903-14 (verify). Re-checked, against Meta's own channels rather
 than the third-party catalogue, whether the Muse Spark flagship weights have
 moved from "pending". Raw transcript: `verify-meta-spark-weights-pending-status.raw.txt`
-in this directory (node fetch+strip+count script, 2026-09-03; the
-huggingface.co/meta-models org page was fetched twice because its activity
-feed renders intermittently).
+in this directory (node fetch+strip+count script, 2026-09-03; eleven fetch
+blocks, one per URL). The huggingface.co/meta-models org page renders its
+activity feed intermittently, so its stripped length is not stable from one
+fetch to the next; the transcript captures a single fetch of it, at
+`STRIPPED 2556`, and that is the only capture of that page in this file.
 
 ## What was fetched (all 2026-09-03, all HTTP 200)
 
