@@ -2249,6 +2249,16 @@
       ]
     },
     {
+      "name": "IAI",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/inclusionai",
+          "class": "manual"
+        }
+      ]
+    },
+    {
       "name": "IBM: Granite 4.0 Micro",
       "linkable": false,
       "claimed_by": [
@@ -2365,6 +2375,16 @@
         {
           "id": "model/inception-mercury-2-5-preview",
           "class": "manual"
+        }
+      ]
+    },
+    {
+      "name": "InclusionAI",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/inclusionai",
+          "class": "exclusive"
         }
       ]
     },
@@ -6944,6 +6964,16 @@
       "claimed_by": [
         {
           "id": "model/inception-mercury-2-5-preview",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "inclusionAI",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/inclusionai",
           "class": "exclusive"
         }
       ]
