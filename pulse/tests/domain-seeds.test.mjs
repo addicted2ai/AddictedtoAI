@@ -153,6 +153,22 @@ test('12 the domain is read from the CONTENTS of a named field, never from a fie
   );
 });
 
+test('12 a rule that produced a value outside the vocabulary stops the engine', () => {
+  // The defensive check in `signalsForRow` cannot fire against the shipped
+  // table — measured over both committed snapshots, every value it produces is
+  // in DOMAINS and no modality token is unaccounted — so it is fired here
+  // deliberately with a broken rule. A check nothing can make fire is
+  // indistinguishable from a check that does nothing.
+  assert.throws(
+    () =>
+      signalsForRow(row({ coding: 23 }), [
+        { kind: 'present', path: 'benchmarks.artificial_analysis.coding_index', domain: 'legal' },
+      ]),
+    /not in the closed vocabulary/,
+    'the engine must stop rather than write front matter its own rebuild rejects',
+  );
+});
+
 // ---------------------------------------------------------------------------
 // The engine, end to end.
 // ---------------------------------------------------------------------------
