@@ -1,7 +1,7 @@
 {
   "sources": [
     {
-      "days_since_change": 1,
+      "days_since_change": 2,
       "expected_change_days": 3,
       "fetch_every_days": 1,
       "format": "rss",
@@ -20,7 +20,7 @@
       "url": "https://llm-releases.com/feed.xml"
     },
     {
-      "days_since_change": 0,
+      "days_since_change": 1,
       "expected_change_days": 3,
       "fetch_every_days": 1,
       "format": "json",

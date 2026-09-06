@@ -2879,6 +2879,26 @@
       ]
     },
     {
+      "name": "MiniMax",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/minimax",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
+      "name": "MiniMax Group Inc.",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/minimax",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "MiniMax: MiniMax M1",
       "linkable": false,
       "claimed_by": [
@@ -7074,6 +7094,16 @@
       "claimed_by": [
         {
           "id": "org/deepseek",
+          "class": "shared"
+        }
+      ]
+    },
+    {
+      "name": "稀宇科技",
+      "linkable": false,
+      "claimed_by": [
+        {
+          "id": "org/minimax",
           "class": "shared"
         }
       ]

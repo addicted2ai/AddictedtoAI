@@ -1252,6 +1252,94 @@
         "file": "content/wiki/org/meta-superintelligence-labs.md"
       }
     ],
+    "model/minimax-minimax-01": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
+    "model/minimax-minimax-m1": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
+    "model/minimax-minimax-m2": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
+    "model/minimax-minimax-m2-1": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
+    "model/minimax-minimax-m2-5": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
+    "model/minimax-minimax-m2-7": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
+    "model/minimax-minimax-m2-7-free": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
+    "model/minimax-minimax-m2-her": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
+    "model/minimax-minimax-m3": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
+    "model/minimax-minimax-m3-batch": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
+    "model/minimax-minimax-m3-free": [
+      {
+        "url": "/wiki/org/minimax",
+        "title": "MiniMax",
+        "type": "entry",
+        "file": "content/wiki/org/minimax.md"
+      }
+    ],
     "model/mistralai-devstral-2512": [
       {
         "url": "/wiki/org/mistral-ai",

@@ -3064,52 +3064,6 @@
       "seeded": true,
       "source": "llm-releases",
       "source_url": "https://research.meta.ai/blog/introducing-muse-glimmer-open-agentic-model"
-    },
-    {
-      "date": "2026-08-06",
-      "display_name": "Ant Group open-weights Ling-3.0-tiny",
-      "excerpt": {
-        "description": "Ant Group (inclusionAI) - Ant Group inclusionAI open-weighted Ling-3.0-tiny under MIT — a sparse MoE with 7.9B total / ~1.3B active parameters and a 262K context, distinct from the API-only Ling-3.0-flash. Weights ship in BF16, FP8, and INT4.",
-        "guid": "8e267a8e-e4b4-4e41-923e-bdafbc4ea5da",
-        "link": "https://llm-releases.com/models/ling-3-0-tiny",
-        "pubDate": "Thu, 06 Aug 2026 00:00:00 GMT",
-        "source_name": "Ant Group (inclusionAI)",
-        "source_url": "https://huggingface.co/inclusionAI/Ling-3.0-tiny",
-        "title": "Ant Group open-weights Ling-3.0-tiny"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/ling-3-0-tiny",
-      "key": "seed|llm-releases|8e267a8e-e4b4-4e41-923e-bdafbc4ea5da",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "8e267a8e-e4b4-4e41-923e-bdafbc4ea5da",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://huggingface.co/inclusionAI/Ling-3.0-tiny"
-    },
-    {
-      "date": "2026-08-06",
-      "display_name": "Liquid AI releases LFM2.5-2.6B",
-      "excerpt": {
-        "description": "Liquid AI - Liquid AI released LFM2.5-2.6B, a 2.69B dense on-device model on a hybrid conv + GQA stack with a 131K context, built to plan and call tools entirely on-device. Open weights under the LFM Open License, shipped day-one in GGUF, MLX, and ONNX.",
-        "guid": "72f66e55-ef65-4b3a-80f9-506b43566a4c",
-        "link": "https://llm-releases.com/models/lfm2-5-2-6b",
-        "pubDate": "Thu, 06 Aug 2026 00:00:00 GMT",
-        "source_name": "Liquid AI",
-        "source_url": "https://www.liquid.ai/blog/lfm2-5-2-6b",
-        "title": "Liquid AI releases LFM2.5-2.6B"
-      },
-      "field": null,
-      "item_url": "https://llm-releases.com/models/lfm2-5-2-6b",
-      "key": "seed|llm-releases|72f66e55-ef65-4b3a-80f9-506b43566a4c",
-      "kind": "release",
-      "new": null,
-      "old": null,
-      "row_id": "72f66e55-ef65-4b3a-80f9-506b43566a4c",
-      "seeded": true,
-      "source": "llm-releases",
-      "source_url": "https://www.liquid.ai/blog/lfm2-5-2-6b"
     }
   ],
   "deprecations": [
@@ -3198,7 +3152,7 @@
       "status": "deprecated"
     }
   ],
-  "generated_on": "2026-09-05",
+  "generated_on": "2026-09-06",
   "sort_criterion": {
     "catalog": "source then row id, ascending",
     "changed_30d": "date, newest first",
