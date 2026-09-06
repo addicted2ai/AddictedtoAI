@@ -53,6 +53,8 @@ evidence: >
   those posts anchor on are re-fetched at writing time rather than restated
   from the corpus.
 expires: 2026-09-20
+proposed_by_job: j-20260906-12
+proposed_by_type: scout
 ---
 
 # Same weights, two access envelopes

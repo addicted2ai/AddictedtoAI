@@ -54,6 +54,8 @@ evidence: >
   network filter is interposing, not the origin refusing. The primary
   artifact is therefore unconfirmed here.
 expires: 2026-09-13
+proposed_by_job: j-20260906-12
+proposed_by_type: scout
 ---
 
 # The wiki incident, and the standard OpenAI is writing after it

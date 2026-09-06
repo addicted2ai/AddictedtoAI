@@ -44,6 +44,8 @@ evidence: >
   procurement framing and for confirming the customer-keys/customer-audit
   detail is being read the same way elsewhere.
 expires: 2026-09-13
+proposed_by_job: j-20260906-12
+proposed_by_type: scout
 ---
 
 # Anthropic moves misuse detection into the customer's own bucket
