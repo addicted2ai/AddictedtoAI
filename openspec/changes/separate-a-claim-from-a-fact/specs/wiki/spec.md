@@ -224,14 +224,32 @@ standing in for a source test.
   subject.
 
   The recorded half is half the live rule and is written here because dropping it
-  is invisible: R13 (v) carries both halves, `lib/render/frontier.mjs`'s
-  `orgOwnDomains` implements it, and invariant `S22` clause (e) re-derives both —
+  is invisible: R13 (v) carries both halves, `lib/vendor-domain.mjs`'s
+  `recordedDomains` implements it — extracted from the board's own former helper
+  in `lib/render/frontier.mjs`, which the board now reads rather than copies, so
+  that name no longer exists in the tree — and invariant
+  `S22` clause (e) re-derives both —
   so a spec carrying one half reads as a correction of the other two rather than
   as an omission, and the next implementer "fixes" the gate back to match it. Its
   own name-token filter is not decoration: **all thirteen** `founded` facts in
-  this corpus cite `en.wikipedia.org`, so an unfiltered "records citing itself
+  this corpus cite `en.wikipedia.org` (measured 2026-09-05; re-measured
+  2026-09-06 as fifteen of sixteen across a widened `content/wiki/org/`, one
+  entry citing `github.com` instead), so an unfiltered "records citing itself
   from" admits an encyclopaedia as a vendor-owned domain — the exact defect the
   first requirement exists to end, re-entering through the test meant to catch it.
+
+  **And because of that filter the recorded half admits nothing the name-token
+  half does not.** It keeps a cited domain only where the domain's own
+  registrable label is a name token, which is the same predicate the third path
+  tests, so it is a strict subset of the third and can never fire alone. That is
+  stated so an implementer told to build three admission paths is not left
+  hunting for the case that exercises the second. It is written out anyway, and
+  the reason is the paragraph above: a rule carrying one half of what R13 (v),
+  `lib/vendor-domain.mjs` and `S22` clause (e) all carry reads as a correction
+  of them. If the name-token path is ever narrowed, this half stops being a
+  subset and starts doing work. *(Finding `j-20260905-22-carry-3`, verified
+  against the implementation and applied 2026-09-06; asserted in
+  `lib/vendor-domain.test.mjs` so the subset relation cannot rot silently.)*
 
 - **Name tokens are identifying words, and a generic corporate word is not one.**
   The tokens of a subject are the normalised whole names — its `display_name` and

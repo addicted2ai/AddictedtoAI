@@ -168,6 +168,15 @@ from a reviewer's own run. Worse than dead: its five values are `price`,
 `context`, `status`, `release`, `retirement`, and three of them are not kinds at
 all. `price`, `context` and `status` are material **field** names — they travel
 on a line's `field`, and they appear as a `kind` on **zero of the 182 lines**.
+*(Qualified, finding `j-20260905-18-carry-2`, verified and applied 2026-09-06:
+`price` and `context` are the spec's and registry's names for material field
+**categories**, and what a line actually carries on its `field` is
+`price_input`, `price_output`, `context_window` — or, for `status`, the word
+itself. Re-parsing all 182 lines on 2026-09-06 gives `price_input` 8,
+`price_output` 8, `status` 6, `context_window` 1, unchanged from the reviewer's
+own run. The load-bearing half stands exactly as written and was re-measured
+with it: all three appear as a `kind` on zero of the 182 lines.)*
+
 `frontier-plan.md` §8 proposed that `MATERIAL_KINDS` *"gains the two kinds if the
 feed filters on it"*; it does not filter, so that edit would have added
 `lead-change` to a list nothing reads, in a file where `lead-change` was already
@@ -232,6 +241,48 @@ what may not render until it does.
   stated decision") and neither is needed to file a claim record.
 - **It does not touch `data/config.json`, `package.json` or
   `openspec/specs/`.**
+- **It does not replace `/frontier`'s Vendor claim column, which builds a claim
+  from an entry's `facts` — and the requirement above forbids that on every
+  surface, so the contradiction is named here rather than left for the archive to
+  discover.** The delta states it without an exemption: *"No surface SHALL
+  construct a claim from an entry's `facts`, whatever those facts are named and
+  whatever their `source_url` says. A claim surface with no claim records renders
+  empty."* `lib/render/frontier.mjs`'s `vendorClaimFact` / `claimRank` walks
+  `modelDoc.data.facts`, and `app/frontier/page.tsx` renders the result as
+  `claimed · unverified`. **Measured on the real corpus 2026-09-06 with the
+  board's own predicate** (`source === 'cited'`, a digit in the value, field in
+  `CLAIM_FIELDS_BENCHMARK`, `isSubjectOwnedUrl` against an org entry): 15
+  candidate facts on model entries, **4 of which render**, on **2** model entries
+  — `model/google-gemini-3-8-flash` (`hle_verified`, `vals_finance_agent_v2`,
+  `harveys_legal_agent_benchmark`, all cited to `deepmind.google`) and
+  `model/tencent-hy4-preview` (`internal_blind_eval`, `www.tencent.com`). So this
+  is not a latent contradiction: when this delta archives into
+  `openspec/specs/wiki/spec.md` the constitution will forbid something the
+  flagship route does today on live data. **`BRIEF-UI-002` owns replacing that
+  column with a read of the claim record**, and until it does the board's own
+  vendor test is what keeps the cell honest — which is why the fix is a column
+  rewrite on the UI loop's clock rather than an edit from here (this stream owns
+  tasks 1-16, and the board is the UI loop's brief per the first bullet above).
+  Recorded for the same reason the `S22` (e) hand-over below is: an untasked
+  SHALL is invisible twice over, and this one sits on the exact defect class
+  (ledger rows 2, 4 and 10) the change exists to end.
+- **It does not touch `tools/ui-invariants.mjs` or `loops/ui-loop/RULES.md`**,
+  and one consequence has to be handed over rather than fixed here. Invariant
+  `S22` clause (e) deliberately RE-DERIVES the vendor test — its own suffix
+  table, importing nothing, which is what keeps it a check rather than a
+  restatement of the code it checks. But the rule underneath it widened: the
+  shared module now has **three** admission paths and `S22` (e) has two.
+  `publishes_from` appears in neither `tools/ui-invariants.mjs` nor
+  `loops/ui-loop/RULES.md` (grepped 2026-09-06). So the first org entry that
+  declares a brand domain and carries a fact cited from it will render
+  **correctly** on the board and `S22` (e) will report *"a vendor-claim cell
+  renders a fact cited to a third party"* — verify-design red on a right page,
+  which is the failure that teaches people to switch a gate off. It cannot fire
+  today: zero of 553 entries declare the field (measured 2026-09-06). **`S22`
+  (e) needs a third branch, derived from the org corpus's own `publishes_from`
+  and still importing nothing, before the first declaration lands** — with its
+  paired `RULES.md` line and falsified both ways with `--break`, which is the
+  ui-loop's procedure and the reason this is not an edit to make from here.
 
 ## What I was least sure about
 
@@ -257,6 +308,25 @@ change if the round chose otherwise. **Ranked most to least likely to be wrong.*
    meant `aliases` because it wanted no new field, the mechanical consequences
    above are the argument to weigh, and this is the single item I would most want
    re-decided.
+
+   **The strongest argument is not about `aliases` at all — it is about what
+   the alternative to a *declared* field is, and this tree answers it.** The
+   requirement says `publishes_from` *"SHALL NOT be inferred from the entry's own
+   cited source URLs"* and did not say what goes wrong if it is. What goes wrong
+   is the change's own motivating defect: every `founded` fact on
+   `content/wiki/org/` was cited from `en.wikipedia.org` when this was drafted,
+   so every one of those org entries "records citing itself from"
+   `wikipedia.org` — and a derived, unfiltered branch run against this corpus
+   attributes a Wikipedia-sourced claim to a named lab as that lab's own words.
+   Ledger rows 2 and 4, arriving through the repair. That is a stronger argument
+   than `aliases[].name` being classified as a name, and it is the one to put in
+   front of a session asked to re-decide the field. *(Finding
+   `j-20260905-18-carry-1`, verified and applied 2026-09-06. **Re-measured that
+   day, and the count has moved:** `content/wiki/org/` now holds 24 entries
+   carrying 16 cited `founded` facts, 15 of them from `en.wikipedia.org` and one
+   from `github.com` (`org/bytedance-seed`). The argument is unchanged; the
+   "thirteen of sixteen" figure elsewhere in this change is a 2026-09-05
+   measurement and should be read with its date.)*
 2. **Making the claim record a content type rather than a data record.** The
    directive says "a content record type", so `content/claims/` with a
    `claimSchema` in `SCHEMAS` is the literal reading, and it is the one that puts
@@ -329,11 +399,22 @@ and a justification nobody re-checks is how a settled decision gets reopened.
 ## What the review answered, and the two calls it left to me
 
 `loops/ui-loop/graph/artifacts/SPECREV-001.md` (2026-09-05) returned **approve
-with corrections** and answered all seven items above in its "AUTHOR'S
-QUESTIONS" section: item 1 stands as drafted and the divergence is now named in
-the requirement rather than left implicit; items 2, 3, 4 and 6 stand as drafted;
-item 5 keeps its narrow form; item 7 is recorded for §4 v2 and is not a defect
-here. The seven corrections are applied. Two of them required a judgment the
+with corrections** and answered six of the seven items above in its "AUTHOR'S
+QUESTIONS" section: items 2, 3, 4 and 6 stand as drafted; item 5 keeps its
+narrow form; item 7 is recorded for §4 v2 and is not a defect here.
+
+**Item 1 the review deliberately did not decide.** D1 ends *"**KEEPER-CLASS** —
+not decided here"*, and its answer to the question is *"the record does say
+'aliases' and the author's three mechanical reasons are all real."* What
+accepted the field was the **directive**, not the review: DESK-ORDER-001 §2 now
+records the hosts field as the one to use, *"K48: originally worded 'as
+aliases'; an alias is a NAME and the alias registry decides linking, so hosts
+get their own field."* The distinction is the whole purpose of D1 — a divergence
+has to read as a decision by a named decider rather than as compliance — so the
+decider is named here. The requirement text is unchanged; only this sentence
+was wrong. *(Finding `j-20260905-22-carry-2`, verified against SPECREV-001 and
+DESK-ORDER-001 §2 and applied 2026-09-06.)* The divergence is also named in the
+requirement itself rather than left implicit. The seven corrections are applied. Two of them required a judgment the
 review's own edit text did not spell out, and both are here rather than in the
 spec because they are about how far a correction reaches, not about what the
 requirement says.

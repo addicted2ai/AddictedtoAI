@@ -437,7 +437,11 @@ function checkDerived(corpus, dataDir) {
   } catch (err) {
     indexErr = err.message;
   }
-  const pages = corpus.all.length;
+  // `documents`, not `all`: the index covers every PAGE, and a claim record is
+  // content that mints no page (specs/wiki, separate-a-claim-from-a-fact). With
+  // `all` this check would start failing the launch the day the first claim
+  // record is filed, for the carve-out working correctly.
+  const pages = corpus.documents.length;
   const covers = count !== null && count === docsLen && docsLen === pages;
   record({
     id: 'search-index',
@@ -823,7 +827,8 @@ export async function verifyLaunch(opts = {}) {
   out(
     `  ${corpus.entry.length} entry, ${corpus.learn.length} learn, ${corpus.tutorial.length} tutorial, ` +
       `${corpus.post.length} post, ${corpus.tool.length} tool, ${corpus.delta.length} delta ` +
-      `= ${corpus.all.length} page(s)\n`,
+      `= ${corpus.documents.length} page(s), plus ${corpus.claim.length} claim record(s), ` +
+      'which are content and not pages\n',
   );
   record({
     id: 'corpus-loads',
