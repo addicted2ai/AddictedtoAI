@@ -4999,6 +4999,16 @@
       ]
     },
     {
+      "name": "Poolside",
+      "linkable": true,
+      "claimed_by": [
+        {
+          "id": "org/poolside",
+          "class": "exclusive"
+        }
+      ]
+    },
+    {
       "name": "Poolside: Laguna S 2.1",
       "linkable": false,
       "claimed_by": [
