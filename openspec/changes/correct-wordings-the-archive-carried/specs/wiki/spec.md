@@ -1,119 +1,26 @@
-# wiki — delta for tag-the-corpus-by-domain
+# wiki — delta for correct-wordings-the-archive-carried
 
-Two requirements added. Nothing here changes what an entry is, how it is
-identified, how its facts are sourced, or how it is reviewed. `kind` is
-untouched and still a closed partition; `domain` is a second, orthogonal axis
-that sits beside it.
+Wording only. This delta changes no requirement, no gate, no field and no
+behaviour: the MODIFIED block below is the live requirement copied whole, with
+one sentence corrected. It exists because the sentence sat INSIDE a requirement
+block when `tag-the-corpus-by-domain` was archived on 2026-09-06, so the archive merged it into
+this constitution, and a live spec is only editable through a change.
 
-The vocabulary and the two-field split are transcribed from
-`loops/ui-loop/graph/knowledge/DESK-ORDER-001.md` §3 (keeper-signed 2026-09-05)
-and its K44 amendment, with the three open questions answered as §3 records
-them. They are not re-decided here. The research behind the vocabulary is
-`loops/ui-loop/graph/knowledge/EN-domain-facet.md`; the round-by-round reason
-for each clause is `loops/ui-loop/graph/knowledge/SPEC-REVIEW-GUIDE.md`, the
-rubric this draft was written against.
+The finding, the re-measurement and why each correction is wording rather than
+substance are in this change's `proposal.md`.
 
-§3's later amendment — "Amendments from the 1hjf draft review", 2026-09-05 —
-ratifies this draft's open judgments rather than overturning them: the facet on
-every wiki kind, both tool sets, the three field names, the three-plain-string-
-lists shape, and the append-only seeding rule as **K47**. Those are settled and
-are not re-decided here either. The one requirement written after that review is
-the `domains_excluded` gate below, and the one open recommendation it left to
-the author — a change line when a seeding signal disappears — is decided against
-below, with the reasoning in `proposal.md`.
+**The correction:** the volume sentence gains one clause — "3 of them rows
+that left the snapshot altogether". Re-measured over the same two snapshots
+(`previous.json` 2026-09-04, 427 rows; `latest.json` 2026-09-05, 431 rows), 3
+of the 71 number→absent transitions are rows that left the snapshot entirely
+rather than surviving rows that dropped the field: `qwen/qwen3.8-max` (both
+indices) and `ibm-granite/granite-4.1-8b` (`coding_index`). A vanished row is
+handled by the separate last-known-value rule in this capability, not by a
+seeding-signal disappearance, so counting it as one is field churn described
+over row churn. The 71 and the 182 are both reproduced exactly and neither
+changes; the conclusion the requirement draws is untouched.
 
-## ADDED Requirements
-
-### Requirement: A domain says what a thing is for, and it cuts across kinds
-
-`kind` says what a thing **is** — `model`, `org`, `tool`, `technique`,
-`benchmark`. It is a partition: exactly one value, closed, permanent, never
-reused. That is the right shape for identity and the wrong shape for the
-question a reader actually arrives with. "What is happening in video
-generation" has no answer inside any partition by kind, because the answer is a
-model, an org, a tool and a technique at once.
-
-`domain` is that second axis. An entry MAY declare the domains it belongs to.
-The facet SHALL be:
-
-- **set-valued** — a thing may be in several domains at once, and a
-  multimodal model routinely is. There is deliberately no `multimodal` value:
-  that is the union of several domains, not a member of the list.
-- **optional, with the empty set legal and common** — "general" is the
-  **unmarked default**. There is no `general` value to declare and no `text`
-  value. An entry carrying no domain is not untagged-and-pending; it is
-  general, and that is a complete answer.
-- **orthogonal to `kind`** — it neither replaces `kind` nor is derivable from
-  it. Every kind may bear it.
-
-The vocabulary is these eight values and no others:
-
-`coding`, `agents`, `image`, `video`, `audio`, `research`, `science-math`,
-`robotics`.
-
-**`text` is not a value, and the reason is a measurement.** Read from
-`data/sources/openrouter-models/latest.json` on 2026-09-05 (`fetched_at`
-`2026-09-05T06:00:04.599Z`, `row_count` 431): every one of the 431 rows takes
-text in, out, or both. A facet value carried by every member of the set it is
-meant to divide discriminates nothing, and a filter that selects everything is
-a filter a reader learns to distrust. Absence carries the same meaning at no
-cost.
-
-**The vocabulary SHALL have exactly one definition in the source tree.** That
-definition is `lib/domains.mjs`, created by the change
-`flag-what-moved-the-frontier` for the post-level frontier gate, and read
-unchanged by every other surface that reads a domain — this facet included.
-This specification names the eight values so that the requirement is readable
-and a reviewer can check it; that is not a second definition, and a build in
-which this text and `lib/domains.mjs` disagree has a defect in one of them.
-Two closed lists of the same eight strings drift, and the moment they do, the
-post gate and the entry gate are two different checks wearing one name — which
-is the reads-as-present-and-does-nothing shape this repository keeps catching.
-
-**A value outside the vocabulary SHALL fail the build**, naming the file, the
-field, the offending value and the values that are allowed. This is the
-treatment an unknown `kind` and an unknown tool `category` already receive, for
-the same reason: an open field drifts into `coding` / `code` / `Coding` and the
-grouping stops being a partition. It is also what keeps the ordering guarantee
-in `directory` honest — an order that is a pure function of the domain ids is
-only a guarantee if the set of ids is closed.
-
-The facet is **declared data, never inferred from prose.** No heuristic over an
-entry's title, body, aliases or URL may assign a domain. A domain that arrives
-mechanically arrives from a named feed field under the seeding requirement
-below, and from nowhere else.
-
-#### Scenario: A domain outside the vocabulary stops the build
-
-- **WHEN** an entry declares a domain value of `legal`
-- **THEN** the build fails naming the entry file, the field, the value `legal`
-  and the eight allowed values, and no page is published
-
-#### Scenario: `text` is not a domain
-
-- **WHEN** an entry declares a domain value of `text`
-- **THEN** the build fails exactly as it does for any other value outside the
-  vocabulary — general is the unmarked default, and it is expressed by carrying
-  no domain rather than by carrying a value every entry would qualify for
-
-#### Scenario: An untagged entry is general, not incomplete
-
-- **WHEN** an entry declares no domain at all
-- **THEN** it validates, it publishes, and no marker, warning or work-queue
-  item treats the absence as a defect to be repaired
-
-#### Scenario: One thing is in several domains
-
-- **WHEN** a model takes text, image and video input and its entry declares
-  `image` and `video`
-- **THEN** both values validate, and the entry appears under both domains on
-  any surface that groups by domain
-
-#### Scenario: A domain does not displace a kind
-
-- **WHEN** a `technique` entry for computer use declares the domain `agents`
-- **THEN** its `kind` remains `technique`, its id is unchanged, and nothing
-  about the domain makes `agents` a kind — the two axes are read independently
+## MODIFIED Requirements
 
 ### Requirement: A seeded domain and an editorial domain are separate fields
 

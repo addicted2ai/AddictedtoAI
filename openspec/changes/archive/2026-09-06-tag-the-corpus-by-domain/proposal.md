@@ -22,8 +22,8 @@ listings under `content/directory/tools/`, **23 map to no domain at all** —
 `frameworks` (2) and `evaluation` (2) are jobs performed across every domain
 and belonging to none. That is the count under `EN-domain-facet.md` §4's own
 mapping, which sends `retrieval` (3) → `research`; leaving `retrieval` unmapped
-instead gives 26. An axis that leaves at least two listings in three with
-nothing to say is a different axis, not a refinement of the existing one.
+instead gives 26. An axis that leaves 23 of the 35 with nothing to say is a
+different axis, not a refinement of the existing one.
 
 *(The upstream artifacts state 28 here — `EN-domain-facet.md` §4,
 DESK-ORDER-001 §3 and `SPEC-REVIEW-GUIDE.md` row 36 all say "28 of 35 listings
@@ -147,7 +147,9 @@ findings, each checkable in this tree, decide it against.
    rows (and absent→number on 2, which is why the net is 67), and
    `coding_index` — whose presence "held" at 181→181 — went number→absent on
    **2** and absent→number on **2** underneath that flat total. So one night's
-   rebase writes **71 lines**. `data/changes.jsonl` holds **182 lines**,
+   rebase writes **71 lines** — **71 number→absent transitions, 3 of them rows
+   that left the snapshot altogether** rather than surviving rows that dropped
+   the field. `data/changes.jsonl` holds **182 lines**,
    counted in this tree on 2026-09-05 and the same total the
    `separate-a-claim-from-a-fact` delta measures independently: one publisher
    act would enlarge the site's entire recorded history by two fifths

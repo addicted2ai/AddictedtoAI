@@ -125,8 +125,8 @@ day one, because no such line has ever been written.
 - **With zero declared metrics the file SHALL still be written**, carrying an
   empty `metrics` collection — no leaders, no ranked rows — and the snapshot's
   own date. It SHALL NOT be absent and SHALL NOT be stood in for by a placeholder
-  anywhere downstream. This is the day-one state, and it is the state both
-  finalist builds were in when each hard-wired an empty element instead
+  anywhere downstream. This is the state both finalist builds were in on
+  day one, and the state in which one of them hard-wired an empty element instead
   (`implementer-ledger.md` row 6: a cell renderer that ignored both its arguments
   and returned the same string). A surface SHALL therefore be able to **look the
   metric up and then collapse**, so that declaring one cleared metric populates it

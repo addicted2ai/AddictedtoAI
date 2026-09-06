@@ -70,7 +70,7 @@ is silent.
 is the kind of bar that gets re-tightened by someone who has forgotten why it
 loosened.** An earlier draft of this requirement made `domains` required when
 the flag is set, transcribing DESK-ORDER-001 §1 as it then stood. The bar was
-withdrawn as keeper ruling K46, on the blind arbiter record
+withdrawn as ruling K46, taken under the K40 delegation, on the blind arbiter record
 `loops/ui-loop/graph/artifacts/BLIND-002.md`, and §1's own gate line was
 amended to match. Two reasons, and both are about the vocabulary rather than
 about this surface. First, K38 makes "general" the **unmarked** default and
