@@ -16,6 +16,15 @@ transcribed by a model from a page the reviewer can fetch. Every one of those is
 checkable, and each has a failure mode that a reader of the diff alone would
 miss. Where a diff contains claim records, the reviewer SHALL additionally:
 
+**The build can check every field of this record except the one that matters.**
+`source_host` is a string comparison, `subject` is a corpus lookup, `accessed` is
+a date, `verified: true` is a shape — all of them gates. `quote` is none of them:
+verbatim-ness is a comparison against a document the build never fetches, and a
+build that did fetch it would make every rebuild depend on a third party's
+uptime and on the page not having changed since. So this one clause belongs to
+the reviewer and to nobody else, and there is no gate to fall back on if the
+reviewer skips it.
+
 - **Fetch `source_url` and confirm `quote` is present in the fetched bytes,
   verbatim.** Plausibility is not verification. The instrument SHALL be ruled out
   before absence is concluded — inflate compressed streams and read
