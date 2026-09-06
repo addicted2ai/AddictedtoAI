@@ -95,7 +95,7 @@ an ordering accident.
 
 ## The seeding, which is the Pulse's and is append-only
 
-- [ ] 11. `pulse/`, in the data-layer update step: derive `domains_seeded` from
+- [x] 11. `pulse/`, in the data-layer update step: derive `domains_seeded` from
       named feed fields on entries that declare a joined row, and **append
       only** — a signal absent from the current snapshot removes nothing, and
       the disappearance appends no line to `data/changes.jsonl` (decided
@@ -107,7 +107,7 @@ an ordering accident.
       `research`, `science-math` and `robotics` have no feed signal and are
       editorial only. No model invocation on any path, and no index value is
       read onto a page — only whether the field is present.
-- [ ] 12. Tests in `pulse/`: a second run over an unchanged snapshot appends
+- [x] 12. Tests in `pulse/`: a second run over an unchanged snapshot appends
       nothing (idempotence). A snapshot that has **lost** the field that seeded
       a value leaves that value in place — the regression test for the measured
       166→99 `agentic_index` drop across the 2026-09-04 and 2026-09-05
@@ -116,7 +116,7 @@ an ordering accident.
       `data/changes.jsonl`, which is where the declined recommendation becomes
       a mechanism instead of a sentence. A snapshot that gains a signal appends
       exactly one value and not a duplicate.
-- [ ] 13. A test that a seeding run over an entry with a bound review record
+- [x] 13. A test that a seeding run over an entry with a bound review record
       leaves that record reporting **matched**, joining tasks 5 and 11 at the
       point they are supposed to meet. Verify by running the seed and
       recomputing the hash, not by asserting the key is on a list — the list
