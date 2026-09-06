@@ -32,7 +32,7 @@ import assert from 'node:assert/strict';
 
 import { assembleBrief, ACCEPTANCE_BY_TYPE, acceptanceChecksFor, proposalRule } from '../lib/brief.mjs';
 import { JOB_TYPES } from '../lib/config.mjs';
-import { DOMAINS, FRONTIER_CRITERIA } from '../../lib/domains.mjs';
+import { DOMAINS, FRONTIER_CRITERIA, FRONTIER_REASONS } from '../../lib/domains.mjs';
 import { makeRepo } from './helpers.mjs';
 
 /** Assemble one brief of `type` against a spec-less fixture repository. */
@@ -451,6 +451,79 @@ test('10 the scout brief carries the flag’s own bar, the vocabulary, and the e
   // report that it had.
   assert.match(text, /`domains` is OPTIONAL/);
   assert.match(text, /"general" is the UNMARKED default/);
+});
+
+/**
+ * The front-matter block of one job type's proposal rule — the text BETWEEN
+ * "front matter exactly:" and the fence that closes it.
+ *
+ * Everything else in the brief is prose the job weighs; this block is the one
+ * passage that says "exactly", and a key absent from it is a key the job is
+ * told not to write. So the flag assertions have to be scoped to it: every
+ * existing frontier assertion in this file passes on a brief whose format block
+ * contradicts them, which is exactly how the contradiction survived a round.
+ */
+function frontMatterBlock(type) {
+  const text = proposalRule(type);
+  const lead = text.indexOf('front matter exactly');
+  assert.notEqual(lead, -1, `the ${type} proposal rule states no front-matter contract`);
+  const open = text.indexOf('```', lead);
+  const close = text.indexOf('```', open + 3);
+  assert.ok(open !== -1 && close !== -1, `the ${type} front-matter contract is not fenced`);
+  return text.slice(open + 3, close);
+}
+
+test('10 the scout’s "front matter exactly" block CARRIES the three flag keys', (t) => {
+  // The block is introduced by the scout body's own sentence "this section is
+  // the file format they must be written in" and by the words "front matter
+  // exactly". A block listing six keys and none of the three the acceptance
+  // checks demand tells the job, in the most authoritative sentence in the
+  // section, to omit them.
+  //
+  // What that costs is undetectable after the fact, which is why it is asserted
+  // here and not left to the prose: a scout that obeys "exactly" files an
+  // ordinary candidate, the merge sees no flag, no drop record is written, the
+  // cap spends one of its three on a frontier story, and nothing anywhere
+  // records that a qualifying story went untagged. The loop delta's scenario
+  // "A frontier story is filed beside a full docket" cannot occur.
+  const block = frontMatterBlock('scout');
+  for (const key of ['frontier:', 'frontier_reason:', 'domains:']) {
+    assert.ok(block.includes(key), `the scout's front-matter block omits "${key}" — it says "exactly"`);
+  }
+  // Rendered from the closed lists, not retyped: a brief is not validated by
+  // anything, so a drifting copy of a vocabulary drifts unobserved.
+  for (const id of FRONTIER_REASONS) {
+    assert.ok(block.includes(id), `the scout's front-matter block omits the criterion ${id}`);
+  }
+  for (const d of DOMAINS) {
+    assert.ok(block.includes(d), `the scout's front-matter block omits the domain ${d}`);
+  }
+  // The two things a job gets wrong when it is told only that the keys exist:
+  // that the reason is REQUIRED with the flag, and that it is the id alone.
+  assert.match(block, /REQUIRED when `frontier: true`/);
+  assert.match(block, /ID ALONE/);
+  // And K46, in the block itself: `domains` is optional and absence is general.
+  assert.match(block, /OPTIONAL, flagged or not/);
+  assert.match(block, /ABSENT means general/);
+  // The whole brief still assembles with it — the block is generated text and a
+  // template error would show up here rather than in a job's prompt at 03:00.
+  assert.ok(brief(t, 'scout').includes(block.trim().split('\n')[0].trim()));
+});
+
+test('10 CONTROL — a non-scout brief’s block does NOT carry them, and that is not a contradiction', () => {
+  // The scout is TOLD to declare the flag; no other job is. For an `entry` job
+  // "front matter exactly" without the keys is the correct instruction rather
+  // than a contradiction, and its cap paragraph already says the flag would buy
+  // its cap nothing. This control is what stops the fix above from being read
+  // as "put the keys in every block".
+  const block = frontMatterBlock('entry');
+  assert.ok(!block.includes('frontier'), 'an ordinary job is not told to declare a flag in its file format');
+  // But the six-key contract is intact in both, which is the half that must not
+  // regress while the scout's block grows.
+  for (const key of FRONT_MATTER_CONTRACT) {
+    assert.ok(block.includes(key), `the entry front-matter block omits ${key}`);
+    assert.ok(frontMatterBlock('scout').includes(key), `the scout front-matter block omits ${key}`);
+  }
 });
 
 test('10 a frontier decline names its criterion, and the rule is UNCONDITIONAL', (t) => {

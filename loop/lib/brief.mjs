@@ -14,7 +14,7 @@
 import { RESULT_PROTOCOL_INSTRUCTION } from './result.mjs';
 import { excerptsFor, PROSE_TYPES } from './specs.mjs';
 import { BRIEF_EXCERPT_MAX_CHARS, JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
-import { DOMAINS, FRONTIER_CRITERIA } from '../../lib/domains.mjs';
+import { DOMAINS, FRONTIER_CRITERIA, FRONTIER_REASONS } from '../../lib/domains.mjs';
 
 /**
  * The five criteria and the eight domains, rendered for a brief from the ONE
@@ -288,6 +288,51 @@ one in \`RESULT.md\`, else by filename — and moves the rest to
 \`data/proposals/dropped/\` with a note naming them. Declaring \`frontier: true\`
 does not lift it: the frontier exemption is the SCOUT'S cap and no other job's,
 and a \`${type}\` job's flagged proposal is counted exactly as before.`;
+  // THE FORMAT BLOCK IS THE ONE THAT SAYS "EXACTLY", so the flag keys have to be
+  // IN it (`flag-what-moved-the-frontier`, task 10).
+  //
+  // The scout body above says of this section "this section is the file format
+  // they must be written in", the acceptance checks require a qualifying
+  // candidate to declare `frontier: true`, `frontier_reason` and — where they
+  // apply — `domains`, and the cap paragraph is written around the exemption
+  // those keys buy. A block introduced by "front matter exactly:" that lists six
+  // keys and none of those three hands the job two contradictory instructions
+  // and makes the narrower one authoritative.
+  //
+  // The failure it produced is the undetectable kind, which is why it is worth
+  // this much comment: a scout obeying "exactly" files an ordinary candidate,
+  // the merge sees no flag, no drop record is written, the cap silently spends
+  // one of the three on a frontier story, and NOTHING anywhere records that a
+  // qualifying story went untagged. There is no error to find afterwards. It is
+  // the same "a job is told or it cannot know" failure the cap sentence above
+  // was repaired for one round earlier, arriving through the one channel a job
+  // has.
+  //
+  // Rendered from `FRONTIER_REASONS` and `DOMAINS` rather than retyped: two
+  // copies of a closed list drift, and the copy in a brief drifts unobserved
+  // because nothing validates a prompt.
+  //
+  // The scout's alone, deliberately. A scout is TOLD to declare the flag; no
+  // other job is, and for them "front matter exactly" without the keys is the
+  // correct instruction rather than a contradiction — the paragraph above
+  // already tells them the flag would buy their cap nothing.
+  const frontierKeys = scout
+    ? `frontier: true            # OPTIONAL. Declare it ONLY for a candidate that
+                          # meets one of F1-F5 above. A valid flag is exempt
+                          # from the three; a flag that does not hold is moved
+                          # to data/proposals/dropped/ and is NOT filed.
+frontier_reason: <${FRONTIER_REASONS.join('|')}>  # REQUIRED when \`frontier: true\`, and it is
+                          # the criterion's ID ALONE — not a sentence saying
+                          # why. Say why in the body.
+domains: [<from the closed vocabulary>]  # OPTIONAL, flagged or not.
+                          # ${DOMAINS.join(', ')}.
+                          # ABSENT means general — "general" is the UNMARKED
+                          # default and is not a value you may write, and
+                          # \`text\` is not a value. A value outside this list
+                          # drops the candidate.
+`
+    : '';
+
   const mechanics = `${cap} A proposal on a branch that
 is DISCARDED dies with the branch: ideas do not
 outlive the rejection of the work that produced them. At merge the loop stamps
@@ -329,7 +374,7 @@ expires: <YYYY-MM-DD>     # OPTIONAL, and it changes the timing entirely.
                           # proposal is swept to data/proposals/dropped/ with a
                           # note naming the expiry. Use it for evidence with a
                           # shelf life; nothing carries forward unjudged.
----
+${frontierKeys}---
 \`\`\`
 
 The body below the front matter is the proposal's own argument. Cooling filters
