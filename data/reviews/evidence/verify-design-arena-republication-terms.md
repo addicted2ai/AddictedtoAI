@@ -209,10 +209,15 @@ Required before any absence is reported (`CLAUDE.md`):
   documents with their fetch dates and quotes, and the measurement above.
 - `data/reviews/evidence/verify-design-arena-republication-terms.md` — this
   narrative; `.raw.txt` — the run transcript.
-- `tools/measure-design-arena.mjs`, `tools/measure-design-arena-history.mjs`,
-  `tools/check-quotes.mjs`, `tools/fetch-design-arena-terms.mjs`,
-  `tools/strip-body.mjs` — the scripts that produced every number and every
-  quote check above, kept so the run is reproducible rather than described.
+- Seven scripts under `tools/`, kept so the run reproduces rather than being
+  described: `fetch-design-arena-terms.mjs` (the fetches and the transcript),
+  `strip-body.mjs` (HTML → text), `measure-design-arena.mjs` and
+  `measure-design-arena-history.mjs` (the feed counts, current and across all
+  nine committed snapshots), `check-quotes.mjs` (every quotation against the
+  fetched bytes), `scan-out-for-design-arena.mjs` (the exhaustive `out/` scan)
+  and `append-evidence-transcripts.mjs` (which puts those four runs' real
+  stdout into the `.raw.txt` instead of retyping them). Fetched bodies are
+  written under the OS temp directory, never into the tree.
 
 No value was registered as material and nothing was made to render. The next
 step, if the maintainer wants these numbers on the board, is stated in the
