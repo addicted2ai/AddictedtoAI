@@ -184,8 +184,74 @@ test('(b) a new row taking the lead appends exactly one line, cause: arrival', a
   assert.equal((await runPulse(root, [...ARGS, '--force'])).status, 0);
   const data = readJson(frontierFile(root));
   assert.deepEqual(data.metrics[0].leaders.map((l) => l.row_id), ['acme/three'], 'a service variant and a router pseudo-row are not distinct listed models');
-  assert.equal(data.metrics[0].counts.rows_excluded, 2);
+  const counts = data.metrics[0].counts;
+  assert.equal(counts.rows_excluded, 2);
+  // ALL FOUR COUNTS ARE LOAD-BEARING, and until this block only two of them
+  // were. `rows_total` could be hard-wired to 0 and `rows_eligible` to any
+  // number at all with the whole change still green — measured by mutating
+  // `rows_total: Object.keys(rows).length` to `rows_total: 0`. specs/pulse asks
+  // the derived file for "the ranked eligible rows, AND THE COUNTS BEHIND
+  // THEM": the counts are what lets a surface say how many rows the leader beat
+  // and how many the metric does not cover, so a wrong one is a wrong sentence
+  // on the page, not a cosmetic field.
+  assert.equal(counts.rows_total, 5, 'five rows are in the snapshot');
+  assert.equal(counts.rows_eligible, 3, 'and three of them carry a value at the declared path');
+  assert.equal(
+    counts.rows_total,
+    counts.rows_excluded + counts.rows_without_value + counts.rows_eligible,
+    'the four counts partition the snapshot — every row is excluded, unscored or ranked, exactly once',
+  );
   assert.equal(leadLines(root).length, 1, 'and no second lead change was recorded');
+});
+
+test('(b2) a row PRESENT but unscored on the previous snapshot arriving is also an arrival', async (t) => {
+  // THE SECOND HALF OF THE `arrival` CAUSE, which had no fixture behind it.
+  // specs/pulse states it in two clauses — the new leader "was absent from the
+  // previous snapshot, OR present and unscored" — and case (b) covers only the
+  // first. The branch at `computeCause`'s `metricValue(before, …) === null` was
+  // correct code no test reached: disabling it left 22/22 green, and the line
+  // then says `rescored`, asserting the publisher re-scored an existing leader
+  // when nothing of the kind happened. That is the semantic-mislabel class
+  // (implementer-ledger rows 2, 4, 5) on an APPEND-ONLY file — `changes.jsonl`
+  // cannot be corrected by deletion, only by a further line.
+  //
+  // The shape is the one the registry's own `declined_fields` note records: the
+  // Artificial Analysis v4.2 rebase sent 181 values number->null overnight and
+  // left `intelligence_index` on 52 rows where it had been on 164, so a row
+  // sitting in the feed with no value at the metric path and gaining one later
+  // is this feed's ordinary behaviour, not a contrivance. Case (g) builds the
+  // same shape but its own guard (`previousRank.leaders.length === 0`) returns
+  // before a cause is computed; here `acme/one` keeps a value throughout, so
+  // there IS a previous leader and the cause is reached.
+  let rows = [row('acme/one', 'Acme One', 50), row('acme/two', 'Acme Two', null)];
+  const server = await serve(() => ({ status: 200, body: body(rows) }));
+  const root = frontierRoot(`${server.url}/models`);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  assert.equal((await runPulse(root, ARGS)).status, 0);
+  assertIngested(root, ['models'], 'first ingest');
+  const first = readJson(frontierFile(root));
+  assert.deepEqual(first.metrics[0].leaders.map((l) => l.row_id), ['acme/one'], 'the unscored row is not a leader');
+  assert.equal(first.metrics[0].counts.rows_without_value, 1, 'it is counted as present and uncovered');
+
+  rows = [row('acme/one', 'Acme One', 50), row('acme/two', 'Acme Two', 90)];
+  assert.equal((await runPulse(root, [...ARGS, '--force'])).status, 0);
+
+  const lines = leadLines(root);
+  assert.equal(lines.length, 1, 'exactly one line for one lead change');
+  const line = lines[0];
+  assert.equal(
+    line.cause,
+    'arrival',
+    'the index first covered this row — the publisher scored something it had not scored, it did not re-score a leader',
+  );
+  assert.notEqual(line.cause, 'rescored', 'and `rescored` is exactly what the unguarded fall-through produces');
+  assert.deepEqual(line.incoming.map((r) => r.row_id), ['acme/two']);
+  assert.deepEqual(line.outgoing.map((r) => r.row_id), ['acme/one']);
+  assert.equal(line.excerpt.rows['acme/two']['benchmarks.idx'], 90);
 });
 
 test('(c) the old leader marked down is a rescoring, not an overtaking', async (t) => {

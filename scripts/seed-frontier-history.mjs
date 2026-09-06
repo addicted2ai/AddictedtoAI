@@ -80,8 +80,19 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { paths, readJsonl } from '../pulse/lib/core.mjs';
 import { loadRegistry } from '../pulse/lib/registry.mjs';
-import { appendChanges } from '../pulse/lib/diff.mjs';
-import { rankRows, leadChangeCause, eventSignature } from '../pulse/lib/frontier.mjs';
+// `excerptRow` is THE definition of "the archived source excerpt" — the row id,
+// the display name, the lifecycle fields and the source's own declared material
+// field paths, and nothing else. The seeder used to write the whole raw row
+// instead, which was a second implementation of a rule that already has one
+// home (the exact duplication tasks 17-18 spend themselves removing) and was
+// not an excerpt in the first place: an `openrouter-models` row carries a
+// multi-kilobyte `description` plus architecture and pricing blocks, so a
+// backfill of three metrics across eight committed snapshot days would have
+// appended well over a hundred kilobytes of duplicated feed body to an
+// append-only file that today holds 182 lines — and append-only means it could
+// never be taken back out.
+import { appendChanges, excerptRow } from '../pulse/lib/diff.mjs';
+import { rankRows, leadChangeCause, eventSignature, metricValue } from '../pulse/lib/frontier.mjs';
 import { frontierBlock } from '../lib/frontier-metrics.mjs';
 import { KIND } from '../lib/change-kinds.mjs';
 import { ROOT } from '../lib/paths.mjs';
@@ -271,11 +282,20 @@ export function seedCandidates(root, registry, { lines = [] } = {}) {
           snapshot_date: date,
           from_commit: history[i - 1].sha,
           to_commit: history[i].sha,
+          // Built exactly as `leadExcerpt` builds the engine's: the declared
+          // excerpt, plus the metric path's own value beside it. One rule, one
+          // home — see the import above. `from_commit`/`to_commit` stay,
+          // because they are the seeder's own honest addition: a replayed line
+          // can name the two commits it was recovered from and a live one
+          // cannot.
           rows: Object.fromEntries(
-            [...outgoing, ...incoming].map((r) => [
-              r.row_id,
-              latest.rows?.[r.row_id] ?? previous.rows?.[r.row_id] ?? null,
-            ]),
+            [...outgoing, ...incoming]
+              .map((r) => {
+                const row = latest.rows?.[r.row_id] ?? previous.rows?.[r.row_id] ?? null;
+                if (!row) return null;
+                return [r.row_id, { ...excerptRow(source, row), [metric.path]: metricValue(row, metric.path) }];
+              })
+              .filter(Boolean),
           ),
         },
       });

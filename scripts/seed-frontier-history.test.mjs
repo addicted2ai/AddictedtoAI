@@ -46,7 +46,14 @@ const SOURCE = {
   verification: { date: '2026-09-06', result: 'live' },
 };
 
-const row = (id, name, idx) => (idx === null ? { id, name } : { id, name, benchmarks: { idx } });
+// `description` stands for everything a real feed row carries that the source
+// does NOT declare — on `openrouter-models` it is a multi-kilobyte block, and
+// architecture and pricing sit beside it. It is here so the excerpt assertion
+// below has something to be wrong about: a seeder writing the raw row would
+// carry it into `data/changes.jsonl`, which is append-only.
+const BULK = 'x'.repeat(64);
+const row = (id, name, idx) =>
+  idx === null ? { id, name, description: BULK } : { id, name, description: BULK, benchmarks: { idx } };
 const snapshot = (date, rows) => ({
   source: 'models',
   url: SOURCE.url,
@@ -132,6 +139,59 @@ test('the replay recovers the lead changes in committed history, each marked see
   assert.deepEqual(leads[1].incoming.map((r) => r.row_id), ['acme/one'], 'a rescoring hands the lead back without anything shipping');
 });
 
+test('a seeded excerpt is an EXCERPT, built by the one definition the engine uses', (t) => {
+  // ONE RULE, ONE HOME. `excerptRow` (pulse/lib/diff.mjs) decides what "the
+  // archived source excerpt" is: the row id, the display name, the lifecycle
+  // fields, and the source's own DECLARED material field paths. The seeder used
+  // to write `latest.rows[id] ?? previous.rows[id]` — the whole raw row — which
+  // was both a second implementation of that rule and not an excerpt: a real
+  // `openrouter-models` row carries a multi-kilobyte `description` plus
+  // architecture and pricing blocks, so a backfill of three metrics across
+  // eight committed days would have appended well over a hundred kilobytes of
+  // duplicated feed body to a file that today holds 182 lines and from which
+  // nothing can be removed.
+  //
+  // The assertion is on the RULE rather than on the one field: any key the
+  // source declares neither as row id, display name, lifecycle field nor
+  // material field is a key the excerpt must not carry.
+  const root = makeRepo(HISTORY);
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  seedFrontierHistory(root, { write: () => {} });
+
+  const declared = new Set([
+    SOURCE.row_id_field,
+    SOURCE.display_name_field,
+    'created',
+    'expiration_date',
+    'canonical_slug',
+    ...SOURCE.material_fields.map((f) => f.path),
+    METRIC.path,
+  ]);
+  const leads = lines(root).filter((l) => l.kind === 'lead-change');
+  assert.ok(leads.length >= 2, 'the fixture seeds lead changes to inspect');
+  for (const l of leads) {
+    for (const [rowId, excerpt] of Object.entries(l.excerpt.rows)) {
+      for (const key of Object.keys(excerpt)) {
+        assert.ok(
+          declared.has(key),
+          `${l.date} ${rowId}: "${key}" is carried by no declaration of source "${SOURCE.id}" — ` +
+            'the excerpt is `excerptRow(source, row)` plus the metric path, not the raw feed row',
+        );
+      }
+      assert.equal(excerpt.description, undefined, 'the undeclared feed body never reaches the append-only history');
+    }
+    // The positive control, so the assertion above cannot pass by the excerpt
+    // being empty: the metric's own value IS carried, flattened at its declared
+    // path exactly as `leadExcerpt` writes it.
+    assert.equal(
+      typeof l.excerpt.rows[l.row_id][METRIC.path],
+      'number',
+      'and the metric path the line is about is carried, at the path, as a number',
+    );
+    assert.ok(l.excerpt.from_commit && l.excerpt.to_commit, 'the seeder’s own honest addition survives');
+  }
+});
+
 test('the baseline says observation began here, and never that a lead changed', (t) => {
   const root = makeRepo(HISTORY);
   t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -211,6 +271,22 @@ test('a DIFFERENT event on a date the observed history already touches is still 
   // An observed line on 2026-09-03 about a DIFFERENT pair of rows — an
   // intra-day change the dated replay cannot see, because only the last blob of
   // the day survives into `committedSnapshots`.
+  //
+  // THE SECOND OBSERVED LINE IS WHAT MAKES `outgoing` LOAD-BEARING. With only
+  // the first, the two events differ in `incoming` as well, and removing the
+  // `outgoing` component from `eventSignature` entirely left this file and
+  // pulse/tests/frontier.test.mjs at 22/22 — measured. Half of a predicate whose
+  // own header argues it must match the whole EVENT was itself decoration, and a
+  // later simplification back toward metric + incoming would have passed
+  // everything, which is precisely how the metric + date predicate survived in
+  // the first place.
+  //
+  // The shape is reachable, not a contrivance: a tie broken from both sides on
+  // one day. `acme/three` takes the lead from `acme/two` intra-day (observed),
+  // and by the day's last blob it holds it against `acme/one` (the seeded
+  // replay). Same metric, same date, same incoming leader, different outgoing —
+  // two genuinely different events, and `outgoing` is the only thing that tells
+  // them apart.
   writeFileSync(
     join(root, 'data', 'changes.jsonl'),
     JSON.stringify({
@@ -223,16 +299,30 @@ test('a DIFFERENT event on a date the observed history already touches is still 
       cause: 'rescored',
       incoming: [{ row_id: 'acme/two', display_name: 'Acme Two', value: 60 }],
       outgoing: [{ row_id: 'acme/one', display_name: 'Acme One', value: 50 }],
-    }) + '\n',
+    }) +
+      '\n' +
+      JSON.stringify({
+        key: 'models|bbbb|cccc|fixture-index|lead-change',
+        date: '2026-09-03',
+        kind: 'lead-change',
+        metric: 'fixture-index',
+        source: 'models',
+        row_id: 'acme/three',
+        cause: 'arrival',
+        incoming: [{ row_id: 'acme/three', display_name: 'Acme Three', value: 90 }],
+        outgoing: [{ row_id: 'acme/two', display_name: 'Acme Two', value: 60 }],
+      }) +
+      '\n',
   );
   seedFrontierHistory(root, { write: () => {} });
 
   const onThatDay = lines(root).filter((l) => l.kind === 'lead-change' && l.date === '2026-09-03');
-  assert.equal(onThatDay.length, 2, 'two distinct events on one date, both recorded');
+  assert.equal(onThatDay.length, 3, 'three distinct events on one date, all recorded');
   assert.deepEqual(
-    onThatDay.map((l) => `${l.seeded ? 'seeded' : 'observed'} ${l.incoming[0].row_id}`),
-    ['observed acme/two', 'seeded acme/three'],
-    'the seeded line records the event the observed one does not, rather than being dropped for sharing its date',
+    onThatDay.map((l) => `${l.seeded ? 'seeded' : 'observed'} ${l.incoming[0].row_id} from ${l.outgoing[0].row_id}`),
+    ['observed acme/two from acme/one', 'observed acme/three from acme/two', 'seeded acme/three from acme/one'],
+    'the seeded line records the event neither observed line does — it shares a date with one and an ' +
+      'incoming leader with the other, and is dropped by neither',
   );
 });
 
