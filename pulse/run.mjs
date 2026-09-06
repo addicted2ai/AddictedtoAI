@@ -160,23 +160,23 @@ if (timeline.appended.length) corpus = readCorpus(root);
 // writes no line to `data/changes.jsonl` — the reasoning and its measurements
 // are in `pulse/lib/domain-seeds.mjs`. No model is invoked and no index value
 // is read, only whether a field is present.
-const seeded = seedDomains(root, registry, corpus);
+const domainSeeding = seedDomains(root, registry, corpus);
 log.step(
   'domains',
-  `${seeded.appended.length} entr(ies) gained a seeded domain` +
-    (seeded.unmapped.length
-      ? `, ${seeded.unmapped.length} feed modality token(s) the seeding table does not account for`
+  `${domainSeeding.appended.length} entr(ies) gained a seeded domain` +
+    (domainSeeding.unmapped.length
+      ? `, ${domainSeeding.unmapped.length} feed modality token(s) the seeding table does not account for`
       : ''),
 );
 // Named rather than counted, because an unaccounted upstream value is a
 // question nobody has answered and it should not look like an answered one.
-for (const u of seeded.unmapped) {
+for (const u of domainSeeding.unmapped) {
   log.warn(
     `domain seeding: source "${u.source}" serves modality "${u.token}", which MODALITY_DOMAIN does ` +
       'not map — no domain was seeded from it; decide it in pulse/lib/domain-seeds.mjs',
   );
 }
-if (seeded.appended.length) corpus = readCorpus(root);
+if (domainSeeding.appended.length) corpus = readCorpus(root);
 
 const derived = deriveDataLayer(root, registry, corpus);
 log.step(
@@ -304,11 +304,11 @@ if (!buildFailed) {
   const owned = [
     ...mints.minted.map((m) => m.path),
     ...timeline.appended.map((a) => a.path),
-    // `seeded.appended[].path` is the same repo-relative POSIX path from
+    // `domainSeeding.appended[].path` is the same repo-relative POSIX path from
     // `relPosix` in corpus.mjs. An entry the seeding step rewrote is this run's
     // work and has to be declared, or it stays dirty in the tree for whoever
     // runs next to trip over.
-    ...seeded.appended.map((s) => s.path),
+    ...domainSeeding.appended.map((s) => s.path),
     ...vanishedPaths,
   ];
   await publishStep(root, { dryRun: options.dryRun, assumePublish: options.assumePublish, log, owned });
