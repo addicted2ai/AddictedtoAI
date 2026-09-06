@@ -44,6 +44,8 @@ evidence: >
   (Google DeepMind, which is the intended case). `chat` and `team` are the
   sharp ones: both are registrable labels under `.com` today, and neither
   belongs to the org the test would hand it to.
+proposed_by_job: j-20260906-02
+proposed_by_type: entry
 ---
 
 The reason this belongs to machinery rather than to the entries is that no
