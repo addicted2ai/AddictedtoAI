@@ -138,13 +138,47 @@ export function commitAll(repo, dir, message, { exclude = [] } = {}) {
   return { committed: true, sha: headSha(dir) };
 }
 
+/**
+ * Retry a READ-ONLY git call once after a short pause, and when it fails
+ * twice, throw with the child's stderr appended to the message.
+ *
+ * Twice a run died right after its runner returned, on
+ * `git diff --name-status <base>...<branch>` — "Command failed", nothing else
+ * — and the identical command succeeded ninety seconds later (addictedtoai-vd5y:
+ * j-20260906-18 on 2026-09-06, j-20260907-11 on 2026-09-07). The cause is not
+ * known and the log could not say, because execFileSync puts only the command
+ * line in `message`. A read has no side effect, so one retry costs nothing and
+ * carries the run to review; the stderr is what the next reader needs when it
+ * fails anyway. Reserved for reads: a retried WRITE could commit twice.
+ */
+export function retryOnce(fn, { sleepMs = 2000, onRetry } = {}) {
+  try {
+    return fn();
+  } catch (first) {
+    if (onRetry) onRetry(first);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, sleepMs);
+    try {
+      return fn();
+    } catch (second) {
+      const stderr = second && second.stderr ? String(second.stderr).trim() : '';
+      if (stderr && !String(second.message).includes(stderr)) {
+        second.message = `${second.message}\n${stderr}`;
+      }
+      throw second;
+    }
+  }
+}
+
+const retryLog = (what) => (e) =>
+  console.error(`git: ${what} failed once (${String(e && e.message).split('\n')[0]}); retrying in 2 s`);
+
 /** The loop computes the diff itself, from branch state (specs/loop rule 5). */
 export function diffAgainst(repo, base, head) {
-  return git(repo, ['diff', '--no-color', `${base}...${head}`]);
+  return retryOnce(() => git(repo, ['diff', '--no-color', `${base}...${head}`]), { onRetry: retryLog('diff') });
 }
 
 export function changedPaths(repo, base, head) {
-  return git(repo, ['diff', '--name-only', `${base}...${head}`])
+  return retryOnce(() => git(repo, ['diff', '--name-only', `${base}...${head}`]), { onRetry: retryLog('diff --name-only') })
     .split('\n')
     .map((s) => s.trim())
     .filter(Boolean);
@@ -152,7 +186,7 @@ export function changedPaths(repo, base, head) {
 
 /** `[{status, path}]` — status matters for the reserved-path check: deleting HOLD.md is itself a violation. */
 export function changedPathsWithStatus(repo, base, head) {
-  return git(repo, ['diff', '--name-status', `${base}...${head}`])
+  return retryOnce(() => git(repo, ['diff', '--name-status', `${base}...${head}`]), { onRetry: retryLog('diff --name-status') })
     .split('\n')
     .map((s) => s.trim())
     .filter(Boolean)

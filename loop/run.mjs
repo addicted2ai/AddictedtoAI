@@ -2152,7 +2152,13 @@ async function main() {
     });
     return exitCodeFor(res);
   } catch (e) {
-    ctx.log(`loop error: ${e.message}`);
+    // A child process's stderr is the whole diagnosis of a "Command failed"
+    // (execFileSync puts only the command line in `message`); twice a run died
+    // here on a transient `git diff` with nothing to read afterwards
+    // (addictedtoai-vd5y: j-20260906-18, j-20260907-11).
+    const stderr = e && e.stderr ? String(e.stderr).trim() : '';
+    const status = e && e.status != null ? ` (exit ${e.status})` : '';
+    ctx.log(`loop error: ${e.message}${status}${stderr ? `\n${stderr}` : ''}`);
     if (process.env.LOOP_DEBUG) ctx.log(e.stack ?? '');
     return 1;
   }
