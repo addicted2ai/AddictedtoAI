@@ -43,6 +43,21 @@ tested.
         `$vanished` row, never only the declared bindings — reading the new
         derived file, absent before the first Pulse run exactly as the other
         members are. Update the module header, which is the read contract.
+        **What it returns when the new derived file is absent while
+        `feed-rows.json` is present is the load-bearing case, not a corner
+        one.** `data/derived/` is committed, so every checkout between this code
+        landing and the next Pulse run is exactly that state, and the layer does
+        not notice: `present` is `feedRows != null && sources != null`
+        (`lib/data-layer.mjs:93`, re-read 2026-09-06), so it reports
+        `present: true` while the rows file it now also needs is missing.
+        `rows(sourceId)` therefore SHALL distinguish the two absences — `null`
+        when the rows file itself is missing, `[]` when the file is present and
+        holds no rows under that source id — and `makeDataLayer` SHALL return
+        `null` from `rows` whenever it was built with no rows file at all,
+        including from `emptyDataLayer()`. An accessor returning `[]` for both
+        would render every census `0` across the live site for a day, which is
+        precisely what the delta forbids: `0` is a claim and "not fetched" is
+        not.
 - [ ] 2a. `lib/census.mjs`: `countCensus(id, scope, dataLayer)` — resolves a
       census id against the registry, applies its predicate over the rows
       `dataLayer.rows(<the census's source>)` returns, and returns the count,
@@ -52,6 +67,14 @@ tested.
       file — so the fact renderer and any later consumer cannot disagree about
       what a census means, and the function stays unit-testable against a fake
       layer with no Pulse run.
+      **`rows(...)` returning `null` is the `no data layer` outcome, whatever
+      `dataLayer.present` says**, and that branch is decided on the accessor's
+      answer rather than on `present`: the state task 2 names — layer present,
+      rows file missing — reports `present: true` and has no rows, and a
+      `present`-keyed branch would fall through to `counted` with a count of
+      `0`. An empty array, by contrast, is `zero` or `scope-matches-nothing` as
+      the scope decides. Absent and `0` are different answers here for the same
+      reason they are different on the page.
 
 ## The census fact
 
@@ -145,7 +168,16 @@ tested.
       as two separate assertions that the rendered markup carries **no**
       `fact-overdue` element and **no** `fact-as-of` element. "Renders with no
       overdue marker and no as-of hedge" is a claim about what is not there, and
-      a value-and-source assertion passes just as well when both are. The
+      a value-and-source assertion passes just as well when both are.
+      **Plus the state every checkout is in for up to a day after the code
+      merges, as a fifth case beside the four outcomes**: a data layer built
+      with `feed-rows.json` and `sources.json` present — so `present` is `true`
+      — and the new rows file absent renders the census **absent**, and the
+      rendered markup contains no `0`. Assert the absence of `0` explicitly and
+      not merely the absence of a value element; this is the same
+      zero-versus-absent distinction as the no-data-layer case, reached from the
+      other side, and it is the only one of the five that a `present`-keyed
+      implementation gets wrong. The
       queue item is **not** asserted here: this test sits beside `lib/facts.mjs`,
       which cannot observe the derived queue — task 10 is where that is measured.
 - [ ] 10. A test in `pulse/tests/queue.test.mjs` for `censusScopeItems`, over a
@@ -154,13 +186,18 @@ tested.
       **none** once the scope matches a row, which is the retirement condition
       and the half a durable-record route could not have; and none for a census
       declaring no scope at all.
-- [ ] 11. Mutation proof, three mutations run separately: make
+- [ ] 11. Mutation proof, four mutations run separately: make
       scope-matches-nothing return `0`, and confirm only the scope test fails;
-      make the no-data-layer branch return `0`, and confirm only that test
-      fails; drop the snapshot date from the census source element, and confirm
-      the source-reachability test fails. Three mutations failing disjoint sets
-      is the evidence these are three mechanisms rather than one described
-      three times. Restore and verify each file byte-identical by hash.
+      make the no-data-layer branch return `0`, and confirm the two tests that
+      reach it fail — the pre-first-Pulse case and task 9's missing-rows-file
+      case — and nothing else, which is itself the evidence they are one branch;
+      key that branch on `dataLayer.present` instead of on `rows(...) === null`,
+      and confirm **only** the missing-rows-file case fails, which is the
+      measurement that the day-long live-site `0` cannot come back; drop the
+      snapshot date from the census source element, and confirm the
+      source-reachability test fails. Four mutations failing disjoint sets is
+      the evidence these are four mechanisms rather than one described four
+      times. Restore and verify each file byte-identical by hash.
 - [ ] 12. An end-to-end test that a census transclusion renders in prose through
       `{{fact:<kind>/<slug>#<field>}}` with no change to `lib/transclude.mjs`,
       and that advancing the fixture snapshot changes the rendered number with
@@ -227,14 +264,38 @@ tested.
       in a non-UTC zone resolves to the same date — run with `TZ` set either
       side of UTC, because a zone-dependent date is the defect this convention
       exists to prevent.
+      **Plus the consumer the requirement names first, on the rendered page and
+      not on the resolver's return.** The delta's "resolved before anything
+      consumes the timeline" names the entry page's ordering as its first
+      consumer, and the only rendered-page assertion otherwise is task 19's
+      vanished case. On a resolved fixture entry carrying two cited events and
+      one feed-bound event whose resolved date falls **between** the two cited
+      dates — not first and not last, so an implementation that appends
+      unresolved events or sorts them to an end fails — assert the rendered
+      entry page lists the three in descending date order with the feed-bound
+      one in its resolved position, and that its named source appears beside it.
+      `lib/render/entry.mjs:114` sorts on `b.date.localeCompare(a.date)`
+      (re-read 2026-09-06) and would throw or mis-sort on an unresolved event,
+      so this is the assertion that no consumer had to learn the second form.
 - [ ] 19. A vanished-row test: the event keeps its last-known date, renders the
       as-of marker, and is still present in the rendered timeline and in the
       exported dataset row — asserting that row's `source_url` **column value**
       is the source's registry `url`, not merely that the row is present. The
       repair finding here is the **existing** `vanished-feed-row` item the
       entry's own `feeds` declaration already produces through
-      `data/vanished/`; this change files no second item for it, and the test
-      asserts no new queue item.
+      `data/vanished/`, and this change files no second item for it.
+      **Assert both halves of that, not only the negative one.** The delta says
+      *a repair finding enters the derived queue*, so the test measures that the
+      finding is **there**: on the fixture, `data/vanished/` carries the record
+      for that (source, row) — `recordVanishedRows` (`pulse/lib/vanished.mjs:128`,
+      re-read 2026-09-06) mints it from the declared bindings, which the join
+      task 14 requires guarantees exist — and the recomputed queue holds
+      **exactly one** `vanished-feed-row` item for it, carrying the
+      `<source>:<rowId>` subject `vanishedRowItems`
+      (`pulse/lib/queue.mjs:543-581`) builds. Then, and only then, the negative
+      half: no *second* item and no new reason code for the same (source, row).
+      An assertion that only counts new items passes just as well against an
+      empty queue, which is the failure it exists to catch.
       **Plus the two consumers task 16 only reads**, so that all four the
       requirement names are measured and not merely inspected. On the resolved
       fixture corpus, with a stub entry carrying two facts and one feed-bound
@@ -255,13 +316,39 @@ tested.
 
 ## The reviewer's checklist
 
-- [ ] 21. `loop/lib/review.mjs`: the prose checklist item gains the census case
-      — a row count typed as a numeral where a census fact could carry it is
-      rejected as `spec-violation` naming the census that would have carried
-      it, and a date beside the numeral does not clear it. A reviewer receives
-      no spec text of its own, so a rule that is not in the checklist is a rule
-      no reviewer applies. Tested in `loop/tests/` by the same shape the blog
-      bar tests use.
+- [ ] 21. `loop/lib/review.mjs`: the census case reaches **every checklist a
+      prose job can be routed to**, named by key rather than as "the prose
+      checklist item", which is not one item. Re-read 2026-09-06: `CHECKLISTS`
+      (`loop/lib/review.mjs:129-178`) is keyed `entry`, `tutorial`, `post`,
+      `scout`, `education`, `directory` and `machinery`, and
+      `CHECKLIST_FOR_TYPE` (`:180-191`) routes `entry`/`interpret`/`prune` →
+      `entry`, `verify`/`tutorial` → `tutorial`, `post` → `post` and
+      `education` → `education`. The requirement's own scope is *wiki bodies,
+      education pages, tutorials, blog posts*, which is those **four** keys, so
+      the sentence goes in all four:
+      - `entry` (`:130-135`) — beside the existing "Volatile values are
+        transclusions or feed-bound, not literals." (`:132`), which is the
+        item the census case extends.
+      - `education` (`:167-171`) — beside "No perishable literals." (`:168`).
+      - `tutorial` (`:136-141`) and `post` (`:142-158`) — **added, and the
+        decision is deliberate**: neither carries a literal-count item today
+        (`tutorial` has "Every perishable is declared.", `post` has "Dates are
+        explicit."), so a prose job routed to either would apply no census rule
+        at all, and a typed row count is exactly the sentence a post is most
+        likely to write. `post` is where the date confusion lands hardest, and
+        its item says so: a date beside the numeral does not clear it.
+      The sentence itself, in whichever wording each checklist's voice takes: a
+      row count typed as a numeral where a registered census could carry it is
+      `spec-violation`, naming the census that would have carried it, and a
+      date written beside the numeral does not clear it. A reviewer receives no
+      spec text of its own, so a rule that is not in the checklist is a rule no
+      reviewer applies. Tested in `loop/tests/` by the same shape the blog bar
+      tests use: **one assertion per key** that the census sentence is present
+      in `CHECKLISTS[key]`, and one that every job type `CHECKLIST_FOR_TYPE`
+      routes to one of those four keys reaches a checklist carrying it — so a
+      later job type added to a prose route cannot silently miss the rule. Four
+      keys asserted individually, not a substring search over the whole table,
+      which passes on one.
 - [ ] 22. `loop/lib/brief.mjs`: the authoring brief for entry and prose work
       names the two bindings and when each applies — a count is a census fact,
       a catalog listing date is a bound timeline event — because a Desk job is
