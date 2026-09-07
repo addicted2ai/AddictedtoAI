@@ -17,7 +17,7 @@ fetch is switched on; the tasks below build the shape and the bar.
 
 ## The companion fetch, and the bar in front of it
 
-- [ ] 1. `pulse/lib/registry.mjs`: validate a `companion` block on a source entry
+- [x] 1. `pulse/lib/registry.mjs`: validate a `companion` block on a source entry
       — a URL template, a cadence, a rule for which rows it covers, the snapshot
       it writes, `declared_on` (a local date), `canonical_tier` (the service tier
       of the companion listing this source's rates are read at), `provider_field`
@@ -38,7 +38,15 @@ fetch is switched on; the tasks below build the shape and the bar.
       whose value is not a slug-shaped string — and nothing reads a display
       name. The covered set is expressed as a rule over the snapshot (a field
       test and a key), never as a list of ids, and validation refuses a
-      hand-maintained list. Implements: *a companion fetch SHALL declare: its URL
+      hand-maintained list. Two more fields are validated separately from the
+      eight, because each fails on its own argument rather than the shared
+      "declaration is incomplete" one: `rates` (required — a non-empty map from
+      the field name a bound rate is carried under to the path it is read from
+      in a companion-listing row; a companion that binds no rate makes the same
+      hundreds-of-requests-a-day cost for no value, the argument design D3
+      already makes for a companion with no canonical tier) and `rows_path`
+      (optional — a string naming where the listing's rows sit in the response;
+      absent means the response body is itself the array). Implements: *a companion fetch SHALL declare: its URL
       template, its cadence, the rule …, `declared_on` …, which service tier … is
       canonical, the field of a companion-listing row that carries the provider
       identity (`provider_field`), and an author-identity map …*, *a declaration
@@ -46,7 +54,7 @@ fetch is switched on; the tasks below build the shape and the bar.
       missing field*, *both sides of every map entry SHALL be machine keys*, and
       *the covered set SHALL be computable from the snapshot alone … The build
       SHALL refuse a declaration that enumerates row ids*.
-- [ ] 2. `pulse/lib/registry.mjs`: export the `provider_field` split as one
+- [x] 2. `pulse/lib/registry.mjs`: export the `provider_field` split as one
       function — given a companion-listing row and the declared `provider_field`
       name, split that row's value on its first `/`: the text before is the
       provider slug; the text after, when there is one, is the tier; when there
@@ -60,7 +68,7 @@ fetch is switched on; the tasks below build the shape and the bar.
       splitting it on its first `/`: the text before the `/` is the provider
       slug and the text after it is the tier; a value with no `/` names the
       provider slug alone and denotes that provider's own standard tier*.
-- [ ] 3. `pulse/lib/registry.mjs`: refuse a `companion` declaration on three
+- [x] 3. `pulse/lib/registry.mjs`: refuse a `companion` declaration on three
       independent, separately-named conditions — `robots.checked_on` earlier than
       the block's `declared_on`; `robots.requests_per_day` absent; and
       `robots.requests_per_day` less than the number of **distinct keys** the
@@ -74,14 +82,14 @@ fetch is switched on; the tasks below build the shape and the bar.
       naming the source and which condition tripped. Implements: *a companion
       fetch SHALL NOT be enabled until the source's robots/terms record has been
       re-checked at the new volume … the build SHALL refuse*.
-- [ ] 4. `pulse/lib/sources.mjs`: fetch the companion once per covered key, keyed
+- [x] 4. `pulse/lib/sources.mjs`: fetch the companion once per covered key, keyed
       on `canonical_slug` rather than row id (design D1 — 335 keys against 404
       rows on the committed snapshot), writing one dated snapshot per cycle
       holding only the fields the site binds. Rotation follows the existing rule:
       `previous` is replaced only when the fetched rows differ from `latest`.
       Implements: *the per-row provider listing SHALL be snapshotted like any
       other fetch*.
-- [ ] 5. `pulse/lib/sources.mjs`: a companion failure is per **key** — an error,
+- [x] 5. `pulse/lib/sources.mjs`: a companion failure is per **key** — an error,
       a timeout or a refusal on one key's fetch yields an absent value, recorded
       with its date, for every row that key covers, and rows under every other
       key are unaffected. A refusal is recorded as a refusal under the existing
@@ -89,7 +97,7 @@ fetch is switched on; the tasks below build the shape and the bar.
       NOT fail the run: a key whose companion fetch errors or refuses SHALL
       yield an absent value … for every row that key covers … and every row
       under a different key SHALL be unaffected*.
-- [ ] 6. `pulse/tests/registry.test.mjs`: fourteen cases over one companion
+- [x] 6. `pulse/tests/registry.test.mjs`: fourteen cases over one companion
       declaration. It validates when every required field is present,
       `robots.checked_on` is on or after `declared_on`, and
       `robots.requests_per_day` is at least the distinct-key count. It is
@@ -114,14 +122,14 @@ fetch is switched on; the tasks below build the shape and the bar.
       the eight are independent rather than one condition described eight times;
       drop the slug-shape check on map values and confirm only the display-name
       case stops refusing. Tests tasks 1 and 3.
-- [ ] 7. `pulse/tests/registry.test.mjs`: the split function on its own —
+- [x] 7. `pulse/tests/registry.test.mjs`: the split function on its own —
       `tag: "anthropic/fast"` splits to provider slug `anthropic` and tier
       `fast`; a bare `tag: "openai"` splits to provider slug `openai` and tier
       `standard`; a `tag` with leading/trailing whitespace around the slash still
       splits on the first `/` alone. Mutation: drop the no-`/` branch so a bare
       value returns no tier and confirm this test fails on the bare case while
       the tiered case still passes. Tests task 2.
-- [ ] 8. `pulse/tests/sources.test.mjs`: a fixture whose snapshot holds four
+- [x] 8. `pulse/tests/sources.test.mjs`: a fixture whose snapshot holds four
       priced rows over three canonical slugs issues **three** companion fetches,
       not four; one of the three errors and only the rows it covers report an
       absent value while the other two resolve; the run exits 0. The snapshot
@@ -136,7 +144,7 @@ fetch is switched on; the tasks below build the shape and the bar.
 
 ## The vendor-posted rate
 
-- [ ] 9. `pulse/lib/derive.mjs`: resolve a vendor-posted rate for a row — split
+- [x] 9. `pulse/lib/derive.mjs`: resolve a vendor-posted rate for a row — split
       every entry in that row's companion listing's declared `provider_field`
       value using task 2's function, keep the entries whose tier equals the
       source's declared `canonical_tier`, and among those the one whose provider
@@ -160,7 +168,7 @@ fetch is switched on; the tasks below build the shape and the bar.
       not give SHALL resolve absent … and SHALL NOT be matched by raw string
       equality as a fallback*, and *a bound vendor-posted rate SHALL carry the
       provider and the service tier it was posted at*.
-- [ ] 10. `pulse/lib/derive.mjs`: absence, with no fallback path in the code at
+- [x] 10. `pulse/lib/derive.mjs`: absence, with no fallback path in the code at
       all — author absent from the listing, author present only at tiers other
       than the canonical one, author with no declared provider slug, or a listing
       that did not fetch, each resolves to absent. There is no branch that reads
@@ -173,16 +181,16 @@ fetch is switched on; the tasks below build the shape and the bar.
       absent … SHALL NOT fall back to the headline* and *an absent vendor-posted
       rate SHALL carry the reason it is absent … and in that last case the
       reason SHALL name the tiers it found*.
-- [ ] 11. `pulse/lib/derive.mjs`: the derived catalog row carries the vendor rate
+- [x] 11. `pulse/lib/derive.mjs`: the derived catalog row carries the vendor rate
       under its own name beside the listing rate, and the listing rate's own
       value and name are unchanged from today. Implements: *the vendor-posted
       rate SHALL sit beside the listing rate … and SHALL NOT overwrite it*.
-- [ ] 12. `pulse/lib/diff.mjs`: emit the price event from the vendor-posted rate
+- [x] 12. `pulse/lib/diff.mjs`: emit the price event from the vendor-posted rate
       — the model, the provider, the tier, both values, the source — and from
       nothing else. No threshold appears anywhere on this path. Implements: *a
       price event SHALL NOT be derived from the top-provider headline, at any
       threshold* and *no percentage threshold SHALL be used*.
-- [ ] 13. `pulse/tests/derive.test.mjs`: seven rows, each row's companion
+- [x] 13. `pulse/tests/derive.test.mjs`: seven rows, each row's companion
       listing entries given as literal `provider_field` values in the shape this
       source actually publishes (a `tag` string), never as pre-split fields —
       the split under test is task 2's, not the fixture's. Two resolve: an
@@ -212,22 +220,22 @@ fetch is switched on; the tasks below build the shape and the bar.
       exactly two fail — the `google` row, which stops resolving, and the
       unmapped row, which starts — which is the pair that measures the identity
       map itself. Tests tasks 9 and 10.
-- [ ] 14. `pulse/tests/derive.test.mjs`: the catalog row carries both fields with
+- [x] 14. `pulse/tests/derive.test.mjs`: the catalog row carries both fields with
       their own names and the listing field is byte-identical to what the same
       fixture produces today. Mutation: overwrite the listing field with the
       vendor rate and confirm only this test fails. Tests task 11.
-- [ ] 15. `pulse/tests/diff.test.mjs`: a 2% move in a vendor-posted rate emits an
+- [x] 15. `pulse/tests/diff.test.mjs`: a 2% move in a vendor-posted rate emits an
       event; a 60% move in the **headline** with the vendor rate unchanged emits
       none; a row with no vendor rate emits none however far its headline moved.
       The first and second together are the threshold proof: any threshold
       implementation fails at least one of them. Mutation: gate emission on a 5%
       change and confirm the 2% test fails while the other two pass. Tests task
       12.
-- [ ] 16. `pulse/tests/diff.test.mjs`: the emitted line carries the provider and
+- [x] 16. `pulse/tests/diff.test.mjs`: the emitted line carries the provider and
       the tier, and a line missing either is refused at the append point rather
       than written — the same stance `A change line's kind comes from a closed
       list with one home` takes on kinds. Tests task 9's second half.
-- [ ] 17. `pulse/tests/registry.test.mjs` (a source-scanning assertion, not a
+- [x] 17. `pulse/tests/registry.test.mjs` (a source-scanning assertion, not a
       behavioural fixture): grep `pulse/lib/**/*.mjs` for the property accesses
       `.provider_identities` and `.provider_field` and assert the set of files
       that read either is exactly `{registry.mjs, derive.mjs}` — task 1's
@@ -239,7 +247,7 @@ fetch is switched on; the tasks below build the shape and the bar.
 
 ## Gates
 
-- [ ] 18. `openspec validate bind-a-price-to-the-vendor-that-posts-it --type
+- [x] 18. `openspec validate bind-a-price-to-the-vendor-that-posts-it --type
       change --strict --no-interactive`, and `node
       scripts/check-spec-deltas.mjs --strict`. Run at drafting time.
 - [ ] 19. `npm test`, `npm run build`, `verify-launch`, `verify-design`,

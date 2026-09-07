@@ -36,8 +36,8 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { makeLogger, paths, readJson, readJsonl, repoRoot, today } from './lib/core.mjs';
 import { loadRegistry, sortedSources } from './lib/registry.mjs';
-import { ingestSource, loadSnapshot, loadState, saveState } from './lib/sources.mjs';
-import { appendChanges, diffSnapshots, seedChanges } from './lib/diff.mjs';
+import { ingestCompanion, ingestSource, loadCompanionSnapshot, loadSnapshot, loadState, saveState } from './lib/sources.mjs';
+import { appendChanges, diffSnapshots, seedChanges, vendorPriceChanges } from './lib/diff.mjs';
 import { readCorpus, corpusLinks } from './lib/corpus.mjs';
 import { deriveDataLayer } from './lib/derive.mjs';
 import { computeFrontier } from './lib/frontier.mjs';
@@ -101,9 +101,31 @@ for (const source of sortedSources(registry)) {
           : `${result.action}, ${result.rows} row(s)${result.skipped ? `, ${result.skipped} row(s) without an id skipped` : ''}`;
   log.step(`source ${source.id}`, detail);
 
+  // The companion fetch, where one is declared: one request per covered KEY, its
+  // own snapshot, per-key failures that go absent rather than failing the run.
+  // It runs before the diff so a vendor-posted rate that moved today reaches
+  // this run's own changed feed rather than waiting a day.
+  const companion = await ingestCompanion(root, source, { force: options.force, offline: options.offline });
+  if (companion) {
+    log.step(
+      `companion ${source.id}`,
+      `${companion.action}, ${companion.keys} key(s)` +
+        (companion.failed ? `, ${companion.failed} key(s) absent (fetch failed or refused)` : '') +
+        (companion.why ? ` — ${companion.why}` : ''),
+    );
+  }
+
   const latest = loadSnapshot(root, source.id, 'latest');
   const previous = loadSnapshot(root, source.id, 'previous');
   const candidates = diffSnapshots(source, previous, latest);
+  candidates.push(
+    ...vendorPriceChanges(
+      source,
+      loadCompanionSnapshot(root, source, 'previous'),
+      loadCompanionSnapshot(root, source, 'latest'),
+      latest,
+    ),
+  );
 
   // Launch-feed seeding: once per source, on the first ingestion of a source
   // whose rows carry their own dated historical records (specs/pulse).

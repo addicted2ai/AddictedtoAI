@@ -23,7 +23,7 @@
  * arrive at one by iterating what it already iterates.
  */
 
-import { paths, readJson } from './core.mjs';
+import { getPath, paths, readJson, sourcePaths } from './core.mjs';
 
 const FORMATS = new Set(['json', 'rss']);
 
@@ -168,6 +168,352 @@ function validateDeclinedFields(source, where) {
         );
       }
     }
+  }
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * THE COMPANION FETCH (specs/pulse, "Sources live in a registry and refusals
+ * are data"; change `bind-a-price-to-the-vendor-that-posts-it`, tasks 1-3).
+ *
+ * A source MAY declare a second URL, templated from a row of its own snapshot
+ * and fetched once per covered KEY rather than once per covered row. It exists
+ * for the case where the row-level feed carries a value whose referent is only
+ * recoverable one level down: the models feed's headline price is "pricing from
+ * the top provider for this model", and the rate a named vendor actually posts
+ * lives on that model's per-provider endpoint listing.
+ *
+ * The declaration multiplies a source's request rate by the number of distinct
+ * keys its own coverage rule yields — 335 on this repository's committed
+ * snapshot, against one request a day today. So the bar in front of it is a
+ * BUILD REFUSAL and not a sentence asking a reader to be careful: the source's
+ * robots record must have been re-checked on or after the declaration's
+ * `declared_on`, and must carry `robots.requests_per_day` — an INTEGER, at
+ * least as large as the measured distinct-key count. A build can compare an
+ * integer to a count; it cannot tell a true prose sentence from a stale one,
+ * and the sentence that was true at one request a day ("fetched once per day")
+ * stays true-looking at three hundred. Nothing here reads `robots.detail`.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+/**
+ * The eight fields a companion declaration must carry, AS ONE LIST.
+ *
+ * One list on purpose: the check below iterates this array, so a field added
+ * here is validated by the same code that validates the other seven and cannot
+ * be "validated by accident on seven of eight". Shortening this list is the
+ * mutation `pulse/tests/registry.test.mjs` uses to prove the eight omission
+ * cases are eight independent refusals rather than one condition described
+ * eight times.
+ */
+export const COMPANION_REQUIRED = Object.freeze([
+  'url_template',
+  'fetch_every_days',
+  'covers',
+  'snapshot',
+  'declared_on',
+  'canonical_tier',
+  'provider_field',
+  'provider_identities',
+]);
+
+/**
+ * The tier a `provider_field` value with no `/` denotes.
+ *
+ * Not a guess: this repository's own measured tier spread
+ * (`data/price-attribution-debt.json`'s `residual_hazard`) prices `openai` bare
+ * at 1x, `openai/flex` at 0.5x and `openai/fast` at 2x — so the bare slug is
+ * already the word for that provider's own standard tier in the data the site
+ * has measured.
+ */
+export const STANDARD_TIER = 'standard';
+
+/** The two field tests a coverage rule may apply. Closed, so it stays readable. */
+const COVERAGE_TESTS = new Set(['present', 'nonzero']);
+
+/**
+ * A machine key: a provider slug or an author segment. Lower-case, no spaces.
+ *
+ * This is what makes "both sides of every map entry SHALL be machine keys"
+ * enforceable rather than advisory. `OpenAI` is a DISPLAY NAME — a label whoever
+ * writes the listing may set to anything, which several providers may share, and
+ * which a rename or a lookalike can make match. It fails here on the capital.
+ */
+const SLUG = /^[a-z0-9]+(?:[._~-][a-z0-9]+)*$/;
+
+/**
+ * Read the provider slug and the service tier out of one `provider_field` value.
+ *
+ * ONE FUNCTION, because the registry's own validation and `derive.mjs`'s
+ * resolution must read a value the same way and cannot be allowed to drift
+ * apart. Split on the FIRST `/`: the text before it is the provider slug, the
+ * text after it is the tier; a value with no `/` names the provider slug alone
+ * and denotes that provider's own standard tier.
+ *
+ * WHY A SPLIT AT ALL, rather than reading a slug field: measured on this
+ * source's own `/endpoints` response (`data/reviews/j-20260902-01.md:93`), an
+ * endpoint is `{"provider_name":"Anthropic","tag":"anthropic/fast", ...}` —
+ * there is no field naming a slug alone. `provider_slug`/`service_tier` exist
+ * only in a DIFFERENT fetch (the model page's embedded payload) and disagree
+ * with the tag's own suffix there, so neither is read.
+ *
+ * Trimming and case-folding happen here, so the two sides of the identity
+ * comparison in `derive.mjs` are normalised by one rule rather than two.
+ */
+export function splitProviderField(row, providerField) {
+  if (!row || typeof row !== 'object') return null;
+  if (typeof providerField !== 'string' || providerField === '') return null;
+  const raw = row[providerField];
+  if (typeof raw !== 'string') return null;
+  const value = raw.trim();
+  if (value === '') return null;
+  const slash = value.indexOf('/');
+  if (slash < 0) return { provider_slug: value.toLowerCase(), tier: STANDARD_TIER };
+  const slug = value.slice(0, slash).trim().toLowerCase();
+  const tier = value.slice(slash + 1).trim().toLowerCase();
+  if (slug === '' || tier === '') return null;
+  return { provider_slug: slug, tier };
+}
+
+/**
+ * The companion key one row of the source's own snapshot is covered by, or null
+ * when the coverage rule does not cover it.
+ *
+ * A rule, never a list: a field test (`covers.field` + `covers.test`) and a key
+ * (`covers.key`). A hand-maintained list of row ids silently stops covering
+ * rows the feed adds, and a coverage gap nothing can detect is how an absent
+ * value becomes indistinguishable from an unasked question.
+ */
+export function companionKeyForRow(companion, row) {
+  const covers = companion?.covers;
+  if (!covers || typeof covers !== 'object' || Array.isArray(covers) || !row) return null;
+  const value = getPath(row, covers.field);
+  if (covers.test === 'nonzero') {
+    const n = Number(value);
+    if (value === undefined || value === null || value === '' || Number.isNaN(n) || n === 0) return null;
+  } else if (value === undefined || value === null || value === '') return null;
+  const key = row[covers.key];
+  return typeof key === 'string' && key !== '' ? key : null;
+}
+
+/**
+ * The DISTINCT keys the coverage rule yields over a snapshot, sorted.
+ *
+ * This count — not the larger count of rows those keys cover — is what the site
+ * will actually spend, and it is what the robots bar is compared against.
+ * Measured 2026-09-06 on the committed models snapshot: 404 priced rows spanning
+ * 335 distinct `canonical_slug` values, because 69 ids are `:free`/`:batch`
+ * variants of a slug already counted.
+ */
+export function companionKeys(companion, snapshot) {
+  const rows = snapshot?.rows ?? {};
+  const keys = new Set();
+  for (const rowId of Object.keys(rows)) {
+    const key = companionKeyForRow(companion, rows[rowId]);
+    if (key !== null) keys.add(key);
+  }
+  return [...keys].sort();
+}
+
+/** Where a companion listing's rows live in its response body, or null for a bare array. */
+export function companionRowsPath(companion) {
+  const path = companion?.rows_path;
+  return typeof path === 'string' && path !== '' ? path : null;
+}
+
+/**
+ * Reduce one companion-listing row to the fields the site binds.
+ *
+ * The reduction is deliberate and D4 states the two reasons: the models snapshot
+ * is already 1.1 MB per rotation for 431 rows and a full per-provider payload
+ * for 335 slugs would dwarf it in a repository that commits its data in full;
+ * and the diff that matters is over the fields the site binds, so storing more
+ * would add bytes no comparison reads.
+ *
+ * The provider identity is stored AS THE SOURCE PUBLISHES IT — unsplit — so the
+ * split that decides an attribution is `splitProviderField`'s at resolution
+ * time and never a shape a snapshot writer chose. This function lives here, and
+ * not in `sources.mjs`, so that the declaration's field names are read in the
+ * two places the map is allowed to be read and nowhere else.
+ */
+export function reduceCompanionRow(companion, row) {
+  if (!row || typeof row !== 'object') return null;
+  const field = companion?.provider_field;
+  if (typeof field !== 'string' || field === '') return null;
+  const out = {};
+  out[field] = typeof row[field] === 'string' ? row[field] : null;
+  for (const [name, path] of Object.entries(companion?.rates ?? {})) {
+    const v = getPath(row, path);
+    out[name] = v === undefined || v === null ? null : String(v);
+  }
+  return out;
+}
+
+/**
+ * Validate a source's optional `companion` block, and the courtesy bar in front
+ * of it.
+ *
+ * `root` is needed because the third robots condition is a comparison against a
+ * MEASUREMENT — the distinct-key count the block's own coverage rule yields when
+ * run over the source's latest snapshot — not against a number somebody typed.
+ * With no snapshot on disk the rule yields no keys and the count is zero, which
+ * is the honest answer: a companion fetch templated from a snapshot that does
+ * not exist makes no requests.
+ */
+function validateCompanion(root, source, where) {
+  const companion = source.companion;
+  if (companion === undefined || companion === null) return;
+  const at = `${where}: "companion"`;
+  if (typeof companion !== 'object' || Array.isArray(companion)) throw new Error(`${at} must be an object`);
+
+  for (const field of COMPANION_REQUIRED) {
+    const value = companion[field];
+    const missing =
+      value === undefined || value === null || (typeof value === 'string' && value.trim() === '');
+    if (missing) {
+      throw new Error(
+        `${at} is missing "${field}" — a companion declares all of ${COMPANION_REQUIRED.join(', ')}, and a ` +
+          `declaration missing any of them is refused: it multiplies this source's request rate and every one of ` +
+          `those fields is load-bearing for what the fetched value may then be bound to`,
+      );
+    }
+  }
+
+  if (typeof companion.url_template !== 'string' || !companion.url_template.includes('{key}')) {
+    throw new Error(`${at}: "url_template" must be a string carrying the "{key}" placeholder the covered key fills`);
+  }
+  if (!Number.isFinite(companion.fetch_every_days)) throw new Error(`${at}: "fetch_every_days" must be numeric`);
+  if (typeof companion.snapshot !== 'string') throw new Error(`${at}: "snapshot" must name the snapshot it writes`);
+  if (!DATE.test(companion.declared_on ?? '')) {
+    throw new Error(`${at}: "declared_on" must be the LOCAL date this companion was declared on (yyyy-mm-dd)`);
+  }
+  if (typeof companion.canonical_tier !== 'string') throw new Error(`${at}: "canonical_tier" must be a string`);
+  if (typeof companion.provider_field !== 'string') throw new Error(`${at}: "provider_field" must be a string`);
+
+  validateCompanionCoverage(companion, at);
+  validateCompanionIdentities(companion, at);
+
+  // Not one of the eight, and separately named. A companion that cannot say
+  // where the listing's rows are, or which of their paths carry the rates, can
+  // bind nothing — which would be a fetch costing the source hundreds of
+  // requests a day for no value, the same argument D3 makes for canonical_tier.
+  if (companion.rows_path !== undefined && typeof companion.rows_path !== 'string') {
+    throw new Error(`${at}: "rows_path" must be a string when present (absent means the response body IS the array)`);
+  }
+  const rates = companion.rates;
+  if (!rates || typeof rates !== 'object' || Array.isArray(rates) || Object.keys(rates).length === 0) {
+    throw new Error(
+      `${at}: "rates" must be a non-empty object mapping the field name a bound rate is carried under to the ` +
+        `path it is read from in a companion-listing row — a companion that binds no rate makes hundreds of ` +
+        `requests a day and produces nothing`,
+    );
+  }
+  for (const [name, path] of Object.entries(rates)) {
+    if (typeof path !== 'string' || path.trim() === '') {
+      throw new Error(`${at}: "rates" entry "${name}" is not a path into a companion-listing row`);
+    }
+  }
+
+  validateCompanionRobots(root, source, companion, at);
+}
+
+/** A rule over the snapshot — a field test and a key — never a list of ids. */
+function validateCompanionCoverage(companion, at) {
+  const covers = companion.covers;
+  if (Array.isArray(covers) || covers?.row_ids !== undefined || covers?.ids !== undefined) {
+    throw new Error(
+      `${at}: "covers" enumerates row ids — the covered set must be a RULE over the source's own snapshot (a ` +
+        `field test and a key) so it is computable from the snapshot alone. A hand-maintained list silently ` +
+        `stops covering rows the feed adds, and a coverage gap that nothing can detect is how an absent value ` +
+        `becomes indistinguishable from an unasked question`,
+    );
+  }
+  if (typeof covers !== 'object') throw new Error(`${at}: "covers" must be an object`);
+  if (typeof covers.field !== 'string' || covers.field === '') {
+    throw new Error(`${at}: "covers" needs a string "field" — the path the coverage test reads`);
+  }
+  if (!COVERAGE_TESTS.has(covers.test)) {
+    throw new Error(`${at}: "covers.test" must be one of ${[...COVERAGE_TESTS].join(', ')}`);
+  }
+  if (typeof covers.key !== 'string' || covers.key === '') {
+    throw new Error(`${at}: "covers" needs a string "key" — the row field the companion fetch is keyed on`);
+  }
+}
+
+/**
+ * The author-identity map: author segment -> the provider slug that author posts
+ * under, each entry dated.
+ *
+ * WHY IT IS DECLARED AND NOT INFERRED. An author segment and a provider slug are
+ * two namespaces. Measured 2026-09-06 over the 431 committed rows (58 distinct
+ * author segments): `openai` (93 rows) and `anthropic` (27) coincide with the
+ * provider slug, and `google` (43), `mistralai` (20), `x-ai` (7) and `amazon`
+ * (5) do not — this repository's own `data/price-attribution-debt.json` names
+ * Google's listing `google-ai-studio`. Raw string equality would therefore
+ * resolve a rate for the majors whose spellings agree, resolve nothing for a
+ * third of the rest, and look identical either way.
+ *
+ * Both sides are machine keys. A display name is not an identity, and the
+ * slug-shape check below is the only thing that stops one being written here.
+ */
+function validateCompanionIdentities(companion, at) {
+  const map = companion.provider_identities;
+  if (typeof map !== 'object' || Array.isArray(map)) {
+    throw new Error(`${at}: "provider_identities" must be an object mapping an author segment to a provider slug`);
+  }
+  for (const [author, entry] of Object.entries(map)) {
+    const ent = `${at}: "provider_identities" entry "${author}"`;
+    if (!SLUG.test(author)) {
+      throw new Error(`${ent}: the author segment is not a machine key — it must be a slug, never a display name`);
+    }
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      throw new Error(`${ent}: must be an object carrying "provider_slug" and "declared_on"`);
+    }
+    if (typeof entry.provider_slug !== 'string' || !SLUG.test(entry.provider_slug)) {
+      throw new Error(
+        `${ent}: "provider_slug" is ${JSON.stringify(entry.provider_slug)}, which is not a machine key. Both ` +
+          `sides of a map entry are slugs as the split rule reads them — a display name is a label whoever ` +
+          `writes the listing may set to anything, and matching on one makes an attribution a rename or a ` +
+          `lookalike can forge`,
+      );
+    }
+    if (!DATE.test(entry.declared_on ?? '')) {
+      throw new Error(`${ent}: needs a "declared_on" date (yyyy-mm-dd) — an undeclared author is a dated absence`);
+    }
+  }
+}
+
+/**
+ * The three refusals, independent and separately named.
+ *
+ * A stale check, an unstated volume and an understated volume are three
+ * different failures, and a reader fixing one needs to be told which.
+ */
+function validateCompanionRobots(root, source, companion, at) {
+  const robots = source.robots ?? {};
+  if (!DATE.test(robots.checked_on ?? '') || robots.checked_on < companion.declared_on) {
+    throw new Error(
+      `${at}: the source's robots record was checked on ${JSON.stringify(robots.checked_on ?? null)}, earlier ` +
+        `than this companion's "declared_on" ${companion.declared_on} — a companion fetch is not enabled until ` +
+        `the robots/terms record has been re-checked AT THE NEW VOLUME. Re-fetch it, re-date it, and state the ` +
+        `rate as "robots.requests_per_day"`,
+    );
+  }
+  if (!Number.isInteger(robots.requests_per_day)) {
+    throw new Error(
+      `${at}: the source's robots record carries no integer "robots.requests_per_day". The volume claim is the ` +
+        `integer and nothing else: a build can compare an integer to a measured count, and no test can tell a ` +
+        `true sentence in "robots.detail" from a stale one`,
+    );
+  }
+  const keys = companionKeys(companion, readJson(sourcePaths(root, source.id).latest, null));
+  if (robots.requests_per_day < keys.length) {
+    throw new Error(
+      `${at}: "robots.requests_per_day" is ${robots.requests_per_day}, fewer than the ${keys.length} distinct ` +
+        `key(s) this companion's own coverage rule yields from the latest snapshot — one request per key is what ` +
+        `the site will actually spend. Re-check the robots record at that rate and state it, or narrow the ` +
+        `coverage rule`,
+    );
   }
 }
 
@@ -608,6 +954,7 @@ export function loadRegistry(root) {
     }
     if (s.format === 'json' && !s.rows_path) throw new Error(`${where}: json format needs "rows_path"`);
     validateDeclinedFields(s, where);
+    validateCompanion(p.root, s, where);
   }
   validateFrontier(raw);
   validateRadar(raw, `source registry ${p.registry}`);

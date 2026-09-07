@@ -21,6 +21,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describeFetchError } from '../lib/sources.mjs';
 import {
   assertIngested,
@@ -188,4 +189,149 @@ test('and it stays quiet when the source really did ingest — the control', asy
 
   assert.equal((await runPulse(root, ['--no-build'])).status, 0);
   assert.doesNotThrow(() => assertIngested(root, 'models', 'control'));
+});
+
+/*
+ * ── The companion fetch: once per KEY, failing per key ───────────────────────
+ *
+ * Change `bind-a-price-to-the-vendor-that-posts-it`, task 8. specs/pulse: "the
+ * per-row provider listing SHALL be snapshotted like any other fetch", and "a
+ * companion fetch's failures SHALL be per key and SHALL NOT fail the run".
+ *
+ * Four priced rows over three canonical slugs, so the count that matters is
+ * THREE — design D1's saving, measured at 404 rows over 335 keys on the
+ * committed snapshot. Keying on the row id would fetch one provider listing
+ * twice for two variants of one model.
+ */
+
+const COMPANION_ROWS = [
+  { id: 'acme/one', name: 'Acme One', canonical_slug: 'k-one', pricing: { prompt: '0.000001' } },
+  { id: 'acme/one:free', name: 'Acme One (free)', canonical_slug: 'k-one', pricing: { prompt: '0.000002' } },
+  { id: 'acme/two', name: 'Acme Two', canonical_slug: 'k-two', pricing: { prompt: '0.000003' } },
+  { id: 'acme/three', name: 'Acme Three', canonical_slug: 'k-three', pricing: { prompt: '0.000004' } },
+];
+
+function companionSource(url) {
+  return {
+    id: 'models',
+    url: `${url}/models`,
+    format: 'json',
+    rows_path: 'data',
+    row_id_field: 'id',
+    display_name_field: 'name',
+    yields: ['id', 'name', 'pricing.prompt', 'canonical_slug'],
+    fetch_every_days: 1,
+    expected_change_days: 3,
+    material_fields: [{ field: 'price_input', path: 'pricing.prompt', event: false }],
+    mints: null,
+    robots: { checked_on: '2026-09-07', result: 'allowed', requests_per_day: 10 },
+    verification: { date: '2026-09-07', result: 'live' },
+    companion: {
+      url_template: `${url}/endpoints/{key}`,
+      fetch_every_days: 1,
+      covers: { field: 'pricing.prompt', test: 'nonzero', key: 'canonical_slug' },
+      snapshot: 'endpoints',
+      declared_on: '2026-09-07',
+      canonical_tier: 'standard',
+      provider_field: 'tag',
+      provider_identities: { acme: { provider_slug: 'acme', declared_on: '2026-09-07' } },
+      rows_path: 'data.endpoints',
+      rates: { price_input: 'pricing.prompt', price_output: 'pricing.completion' },
+    },
+  };
+}
+
+/**
+ * A server that counts companion requests and fails exactly one model's listing.
+ *
+ * The failure is keyed on the MODEL rather than on the literal key string, so
+ * mutating the code to fetch once per row id instead of once per key changes the
+ * request COUNT and nothing else — which is what makes that mutation a clean
+ * measurement of the count assertion rather than of three assertions at once.
+ */
+async function companionServer(fails = 'two') {
+  let endpointCalls = 0;
+  const server = await serve((pathname) => {
+    if (pathname === '/models') return { status: 200, body: JSON.stringify({ data: COMPANION_ROWS }) };
+    if (pathname.startsWith('/endpoints/')) {
+      endpointCalls++;
+      const key = pathname.slice('/endpoints/'.length);
+      if (key.includes(fails)) return { status: 500, body: 'upstream is unwell' };
+      return {
+        status: 200,
+        body: JSON.stringify({
+          data: {
+            endpoints: [
+              { tag: 'acme', provider_name: 'Acme', pricing: { prompt: '0.00001', completion: '0.00002' } },
+            ],
+          },
+        }),
+      };
+    }
+    return { status: 404, body: '' };
+  });
+  return { server, calls: () => endpointCalls };
+}
+
+test('a companion is fetched once per key, one key can fail alone, and the run exits 0', async (t) => {
+  const { server, calls } = await companionServer();
+  const root = makeRoot([companionSource(server.url)]);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  const run = await runPulse(root, ['--no-build', '--no-mint']);
+  assert.equal(run.status, 0, run.out);
+  assertIngested(root, 'models', 'the companion fixture');
+
+  // THREE, not four. Two rows share `k-one`, and both read the one listing
+  // fetched on that key's behalf.
+  assert.equal(calls(), 3, 'one request per distinct key, not one per covered row');
+
+  const rows = new Map(readJson(paths.catalog(root)).rows.map((r) => [r.row_id, r]));
+  for (const rowId of ['acme/one', 'acme/one:free', 'acme/three']) {
+    const vendor = rows.get(rowId).vendor_posted_rate;
+    assert.equal(vendor.absent, false, `${rowId} resolves`);
+    assert.equal(vendor.provider_slug, 'acme');
+    assert.equal(vendor.tier, 'standard');
+    assert.equal(vendor.rates.price_input, '0.00001');
+  }
+  // The failed key, and only the rows it covers.
+  const failed = rows.get('acme/two').vendor_posted_rate;
+  assert.equal(failed.absent, true);
+  assert.equal(failed.reason.code, 'listing_did_not_fetch');
+  assert.ok(failed.as_of, 'and the absence is dated');
+  assert.equal(rows.get('acme/two').price_input, '0.000003', 'while the listing rate is untouched');
+
+  // ── The snapshot half: what makes the claim false-able after the vendor
+  //    changes its price. Asserted on the written file's KEY SET, not on its
+  //    existence — the reduction to the bound fields is the decision (design
+  //    D4), and a snapshot storing the whole upstream response for 335 slugs
+  //    would dwarf the 1.1 MB models snapshot in a repository that commits its
+  //    data in full.
+  const snapshotFile = join(root, 'data', 'sources', 'models', 'endpoints.latest.json');
+  const snapshot = readJson(snapshotFile);
+  assert.match(snapshot.date, /^\d{4}-\d{2}-\d{2}$/, 'the companion snapshot is dated');
+  assert.deepEqual(Object.keys(snapshot.keys).sort(), ['k-one', 'k-three', 'k-two']);
+  assert.deepEqual(
+    Object.keys(snapshot.keys['k-one'].endpoints[0]).sort(),
+    ['price_input', 'price_output', 'tag'],
+    'only the fields the site binds: the provider identity as published, and the posted rates',
+  );
+  assert.equal(snapshot.keys['k-two'].status, 'error', 'and a failed key records its status, not a guess');
+  assert.equal(snapshot.keys['k-two'].endpoints, null);
+
+  // ── Rotation follows the existing rule: an unchanged listing costs one
+  //    request per key and no bytes.
+  const latestBefore = readJson(snapshotFile);
+  const previousBefore = readJson(join(root, 'data', 'sources', 'models', 'endpoints.previous.json'));
+  assert.equal((await runPulse(root, ['--no-build', '--no-mint', '--force'])).status, 0);
+  assert.equal(calls(), 6, 'the second run really did fetch again — the rotation is choosing not to write');
+  assert.deepEqual(readJson(snapshotFile), latestBefore, 'latest is not rewritten when nothing changed');
+  assert.deepEqual(
+    readJson(join(root, 'data', 'sources', 'models', 'endpoints.previous.json')),
+    previousBefore,
+    'and previous is replaced only when the fetched rows differ from latest',
+  );
 });
