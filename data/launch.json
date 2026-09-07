@@ -7,9 +7,9 @@
       "/": {
         "label": "home",
         "chunks_kb_gzipped": 104.4,
-        "inline_kb_gzipped": 7.4,
+        "inline_kb_gzipped": 7.5,
         "total_kb_gzipped": 111.6,
-        "html_kb_gzipped": 12.4
+        "html_kb_gzipped": 12.6
       },
       "/wiki/concept/ai-winter": {
         "label": "entry",
@@ -21,9 +21,9 @@
       "/catalog": {
         "label": "table",
         "chunks_kb_gzipped": 104.8,
-        "inline_kb_gzipped": 19,
-        "total_kb_gzipped": 123.9,
-        "html_kb_gzipped": 36
+        "inline_kb_gzipped": 18.9,
+        "total_kb_gzipped": 123.7,
+        "html_kb_gzipped": 35.8
       }
     }
   },
