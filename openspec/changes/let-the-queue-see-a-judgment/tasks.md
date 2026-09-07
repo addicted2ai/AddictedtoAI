@@ -161,7 +161,7 @@ testing task names the mutation that proves it measures something.
       the module boundary — no import of a write-capable filesystem call in this
       file's adjudication path. Implements: *the Pulse SHALL NOT write, edit or
       delete an adjudication record*.
-- [ ] 16. `pulse/tests/corroboration.test.mjs`: four fixtures over one
+- [ ] 16. `pulse/tests/corroboration.test.mjs`: five fixtures over one
       disagreeing pair — no record (item produced); a record pinning today's two
       values (no item, and the finding still returned and marked adjudicated
       **carrying all four values — both pinned and both current** — asserted
@@ -169,9 +169,17 @@ testing task names the mutation that proves it measures something.
       pin no longer matches (item produced, naming the record); a record whose
       **feed-bound** pin no longer matches (item produced, naming the record).
       The fourth is the one that matters and the one a front-matter note could
-      not have caught — see design D4. Mutation: suppress on the record's
+      not have caught — see design D4. The fifth is the **incomplete record**: one
+      that names the pair but carries no pinned value for one side, and a variant
+      carrying no date. Neither suppresses — the item is produced, and the run's
+      corroboration output reports the record as **skipped**, not as an
+      adjudication, so a record that pins nothing is visibly not an adjudication
+      rather than silently a total one. Without it the equality rule is the only
+      thing standing between an empty record and a silenced finding and nothing
+      measures that it holds. Mutations: suppress on the record's
       existence rather than on value equality and confirm the third and fourth
-      fail while the second passes. Tests tasks 11–13.
+      fail while the second passes; treat a record with a missing pin as matching
+      and confirm only the fifth fails. Tests tasks 11–13.
 - [ ] 17. `pulse/tests/corroboration.test.mjs`: run the whole path twice against
       a read-only fixture directory and assert no adjudication record was
       created, altered or removed, and that the second run's findings are
