@@ -137,9 +137,10 @@ an ordinary data change, not an OpenSpec change.
 
 A source entry MAY additionally declare a **companion fetch**: a second URL,
 templated from a row of that source's own snapshot and fetched once per covered
-row, with its own cadence, its own snapshot, and its own robots/terms record.
-It exists for the case where the row-level feed carries a value whose referent is
-only recoverable per row.
+**key** — the value the template is keyed on, which may cover several rows —
+with its own cadence, its own snapshot, under the source's robots/terms record
+re-checked as the third bullet requires. It exists for the case where the
+row-level feed carries a value whose referent is only recoverable per row.
 
 - A companion fetch SHALL declare: its URL template, its cadence, the rule that
   computes which rows it covers, the snapshot it writes, **the local date it was
@@ -161,8 +162,9 @@ only recoverable per row.
   — `robots.requests_per_day`, an integer. The build SHALL refuse a companion
   declaration whose source's `robots.checked_on` is earlier than the
   declaration's `declared_on`, whose `robots.requests_per_day` is absent, or
-  whose `robots.requests_per_day` is less than the size of the covered set
-  measured from the latest snapshot. A number no smaller than what the site will
+  whose `robots.requests_per_day` is less than the number of companion requests
+  the coverage rule yields from the latest snapshot — one per distinct key. A
+  number no smaller than what the site will
   actually request is the only form of this claim a build can check; prose in
   `robots.detail` stating a volume is a sentence, and no test can tell a true
   one from a stale one.
@@ -182,8 +184,8 @@ only recoverable per row.
 
 - **WHEN** a source declares a companion fetch and its robots record's
   `checked_on` is earlier than the declaration's `declared_on`, or carries no
-  `robots.requests_per_day`, or carries one smaller than the covered set
-  measured from the latest snapshot
+  `robots.requests_per_day`, or carries one smaller than the number of distinct
+  keys the coverage rule yields from the latest snapshot
 - **THEN** the build fails, naming the source and which of the three it failed,
   and no companion request is made
 

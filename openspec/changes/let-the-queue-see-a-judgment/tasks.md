@@ -42,11 +42,18 @@ testing task names the mutation that proves it measures something.
       detail naming the piece, the binding record and its date. Implements: *the
       item SHALL propose a `verify` job … and SHALL name the piece, the record
       that binds it, and that record's date*.
-- [ ] 4. `pulse/lib/queue.mjs`: rank it in `RANKS` strictly above
-      `corroboration` (68) and strictly below `listing-could-not-verify` (75),
-      with the comment stating why in the table's own idiom. Implements: *the
-      item SHALL rank above the corroboration disagreement and below every
-      finding that reports a dead or unreachable resource*.
+- [ ] 4. `pulse/lib/queue.mjs`: rank it in `RANKS` at **69** — above
+      `corroboration` (68), below `tutorial-demoted` (70) and `reference-drift`
+      (72), because both of those are already visibly wrong on a rendered page
+      and a stale approval is not, and below every dead-resource finding
+      (`listing-could-not-verify` 75 and above). The rank is pinned rather than
+      left to a band because 69–74 is not empty: `tutorial-demoted` and
+      `reference-drift` sit in it, and the corroboration comment already states
+      that it "sits under" them for exactly that reason, so a free choice of 73
+      would silently invert an ordering the table declares. Carry that reason
+      into the comment in the table's own idiom. Implements: *the item SHALL
+      rank above the corroboration disagreement and below every finding that
+      reports a dead or unreachable resource*.
 - [ ] 5. `pulse/lib/review-state.mjs`: return **only** `mismatched`. `unbound`,
       `missing` and `recorded` are dropped at the source, not filtered
       downstream, so no later edit can widen the producer by accident.
@@ -63,8 +70,10 @@ testing task names the mutation that proves it measures something.
       and the new reason; **its detail names the piece, the binding record's file
       name and that record's date**, asserted on the three values the fixture put
       there rather than on the presence of a field; and it sorts above a
-      corroboration item and below a `listing-could-not-verify` item in the same
-      queue — asserted on the produced order, not on the constant. Mutations:
+      corroboration item and below both a `tutorial-demoted` item and a
+      `listing-could-not-verify` item in the same queue — asserted on the
+      produced order, not on the constant. The `tutorial-demoted` assertion is
+      the one that catches a rank chosen anywhere in 69–74. Mutations:
       move the rank below `corroboration` and confirm only the ordering assertion
       fails; drop the record's date from the detail and confirm only the detail
       assertion fails. Tests tasks 3 and 4.
