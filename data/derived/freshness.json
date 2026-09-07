@@ -51,11 +51,11 @@
   ],
   "date": "2026-09-06",
   "link_check": {
-    "checked": 25,
+    "checked": 0,
     "confirm_after_failures": 2,
     "declined": 7,
     "drifted": 0,
-    "due": 131,
+    "due": 106,
     "excluded": 0,
     "interval_days": 30,
     "redirected": 19,
