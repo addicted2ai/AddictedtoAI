@@ -6039,7 +6039,7 @@
       "s": "active",
       "i": "model/z-ai-glm-5-2-free",
       "a": [],
-      "b": true
+      "b": false
     },
     {
       "u": "/wiki/model/z-ai-glm-5-3",

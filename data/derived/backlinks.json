@@ -2494,6 +2494,12 @@
         "file": "content/wiki/model/z-ai-glm-5-1.md"
       },
       {
+        "url": "/wiki/model/z-ai-glm-5-2-free",
+        "title": "Z.ai: GLM 5.2 (free)",
+        "type": "entry",
+        "file": "content/wiki/model/z-ai-glm-5-2-free.md"
+      },
+      {
         "url": "/wiki/org/z-ai",
         "title": "Z.ai",
         "type": "entry",
