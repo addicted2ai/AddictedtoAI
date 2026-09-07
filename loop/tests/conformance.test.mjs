@@ -116,9 +116,9 @@ test('a check completed without a well-formed RESULT.md FAILs regardless of the 
 });
 
 test('a check directory a harness child still holds is retried, and a verdict is never lost to it', () => {
-  // Measured 2026-09-07 08:05 on the first real run of a new OpenCode runner:
-  // the first check PASSED and a single rmSync of its worktree threw EPERM
-  // (a child of `opencode run` still held the directory), which killed the
+  // Measured 2026-09-07 08:05 on the first real run of a newly registered
+  // runner: the first check PASSED and a single rmSync of its worktree threw
+  // EPERM (a child process of the harness still held the directory), which killed the
   // whole run with nothing recorded. The same directory removed cleanly a
   // minute later. So the removal retries, and at teardown a directory that
   // still will not go is reported rather than fatal.

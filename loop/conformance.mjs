@@ -272,11 +272,11 @@ ${RESULT_PROTOCOL_INSTRUCTION}
 /**
  * Remove a throwaway check directory, retrying, and never throwing.
  *
- * Measured 2026-09-07 08:05 on the first real run of `opencode-muse-spark`:
- * the trivial-edit check PASSED (the edit was made, RESULT.md said `done`)
- * and then a single `rmSync` of its worktree threw EPERM, because a child of
- * `opencode run` was still holding the directory in the second after the
- * harness returned. The script died on line 329 with the verdict already in
+ * Measured 2026-09-07 08:05 on the first real run of a newly registered
+ * runner: the trivial-edit check PASSED (the edit was made, RESULT.md said
+ * `done`) and then a single `rmSync` of its worktree threw EPERM, because a
+ * child process of the harness was still holding the directory in the second
+ * after the harness returned. The script died on line 329 with the verdict already in
  * hand and NOTHING recorded — four checks' worth of evidence lost to a
  * cleanup step. The same directory removed cleanly by hand a minute later.
  *
