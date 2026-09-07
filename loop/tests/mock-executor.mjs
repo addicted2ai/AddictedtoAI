@@ -122,7 +122,7 @@ switch (mode) {
   // is a refusal of a SHAPE, and a diff that carries the fix clears it.
   case 'retire-carried-then-fix': {
     rmSync(join(cwd, 'data', 'carried', 'j-seed-carry-1.md'), { force: true });
-    if (/Revision pass \(one only\)/.test(brief)) {
+    if (/Revision pass \(one only\)/.test(brief) && /claims a fix it does not contain/.test(brief)) {
       mkdirSync(join(cwd, 'content', 'wiki', 'model'), { recursive: true });
       write('content/wiki/model/fixture-model.md', '---\nid: model/fixture-model\n---\n\nThe fix the finding asked for.\n');
       result('done\n\nMade the change and retired the finding.\n');
