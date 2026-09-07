@@ -163,9 +163,9 @@ row-level feed carries a value whose referent is only recoverable per row.
   declaration whose source's `robots.checked_on` is earlier than the
   declaration's `declared_on`, whose `robots.requests_per_day` is absent, or
   whose `robots.requests_per_day` is less than the number of companion requests
-  the coverage rule yields from the latest snapshot — one per distinct key. A
-  number no smaller than what the site will
-  actually request is the only form of this claim a build can check; prose in
+  the coverage rule yields from the latest snapshot — one per distinct key, not
+  one per covered row. A number no smaller than what the site will actually
+  request is the only form of this claim a build can check; prose in
   `robots.detail` stating a volume is a sentence, and no test can tell a true
   one from a stale one.
 - A companion fetch's failures SHALL be per row and SHALL NOT fail the run: a

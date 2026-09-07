@@ -26,9 +26,11 @@ fetch is switched on; the tasks below build the shape and the bar.
 - [ ] 2. `pulse/lib/registry.mjs`: refuse a `companion` declaration on three
       independent, separately-named conditions — `robots.checked_on` earlier than
       the block's `declared_on`; `robots.requests_per_day` absent; and
-      `robots.requests_per_day` less than the covered set's size measured from
-      the source's latest snapshot by running the block's own coverage rule over
-      it. Nothing here reads `robots.detail`: the volume claim is the integer,
+      `robots.requests_per_day` less than the number of **distinct keys** the
+      block's own coverage rule yields when run over the source's latest
+      snapshot — one companion request per key, which is what the site will
+      actually spend, not the larger count of rows those keys cover.
+      Nothing here reads `robots.detail`: the volume claim is the integer,
       because a build can compare an integer to a measured count and cannot tell
       a true sentence from a stale one. The refusal is a `throw` in the same
       family as the existing `declined_fields` refusals, so it fails the build
@@ -49,11 +51,12 @@ fetch is switched on; the tasks below build the shape and the bar.
       SHALL be per row and SHALL NOT fail the run*.
 - [ ] 5. `pulse/tests/registry.test.mjs`: six cases over one companion
       declaration. It validates when `robots.checked_on` is on or after
-      `declared_on` and `robots.requests_per_day` is at least the covered count.
-      It is refused, naming the source and the condition, when: the robots record
-      is dated before `declared_on`; `robots.requests_per_day` is absent;
-      `robots.requests_per_day` is one less than the covered set measured from
-      the fixture snapshot; the block names no `canonical_tier`; and the block
+      `declared_on` and `robots.requests_per_day` is at least the distinct-key
+      count. It is refused, naming the source and the condition, when: the robots
+      record is dated before `declared_on`; `robots.requests_per_day` is absent;
+      `robots.requests_per_day` is one less than the number of distinct keys the
+      coverage rule yields from the fixture snapshot; the block names no
+      `canonical_tier`; and the block
       expresses its coverage as a list of row ids rather than a rule. Mutations:
       drop the date comparison and confirm only the first refusal passes;
       drop the count comparison and confirm only the third does — five refusals

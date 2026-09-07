@@ -121,14 +121,16 @@ any threshold anybody would set, while a real 2% repricing is suppressed by all
 of them. The test is whose rate moved, never how far.
 
 **A companion fetch is a declared registry shape with a courtesy bar in front of
-it.** The registry gains the ability to declare a second, per-row URL with its
-own cadence, its own snapshot, the local date it was declared on, and the service
-tier its rates are read at. Because that multiplies a source's request rate by
-the size of its covered set, the bar in front of it is a **build refusal** and
-not a reading instruction: a declaration is refused unless the source's robots
-record was checked on or after the declaration's `declared_on` and carries a
-`robots.requests_per_day` at least as large as the covered set measured from the
-snapshot. Comparing an integer to a measured count is something a build can do;
+it.** The registry gains the ability to declare a second URL, fetched once per
+covered **key** rather than once per covered row, with its own cadence, its own
+snapshot, the local date it was declared on, and the service tier its rates are
+read at. Because that multiplies a source's request rate by the number of
+distinct keys its coverage rule yields, the bar in front of it is a **build
+refusal** and not a reading instruction: a declaration is refused unless the
+source's robots record was checked on or after the declaration's `declared_on`
+and carries a `robots.requests_per_day` at least as large as that number of
+distinct keys, measured from the latest snapshot by running the declaration's own
+coverage rule over it. Comparing an integer to a measured count is something a build can do;
 reading a prose sentence for whether it "states a request volume" is not, and a
 sentence that was true at one request a day stays true-looking at three hundred.
 
@@ -142,8 +144,9 @@ sentence that was true at one request a day stays true-looking at three hundred.
   Registering the row is a data change like any other — and it is a data change
   the **build refuses** until the source's robots record has been re-fetched,
   re-dated on or after the declaration's `declared_on`, and given a
-  `robots.requests_per_day` no smaller than the covered set the declaration's own
-  rule measures from the snapshot. That is the whole of the carve-out: the shape
+  `robots.requests_per_day` no smaller than the number of distinct keys the
+  declaration's own coverage rule yields from the snapshot — 335 on the committed
+  one, one request per canonical slug. That is the whole of the carve-out: the shape
   is specified here, the bar is a build refusal rather than a sentence telling a
   reader that this data change is special, and the day the row is filled in is
   the day the re-check has to be true. The re-check is a courtesy act with a
