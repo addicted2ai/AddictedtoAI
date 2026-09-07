@@ -105,7 +105,7 @@ test('ccs assembleBrief passes BRIEF_EXCERPT_MAX_CHARS, not specs.mjs\'s own sma
   ctx.cleanup();
 });
 
-test('ccs BRIEF_EXCERPT_MAX_CHARS is 56,000 — the measured number, not a placeholder', () => {
+test('ccs BRIEF_EXCERPT_MAX_CHARS is 88,000 — the measured number, not a placeholder', () => {
   // Re-measured 2026-08-31 when a third in-flight delta began amending `loop`
   // and the per-source share fell to a third of the budget: at 20,000 the
   // `scout` type cut two sections mid-requirement. That measurement gave a
@@ -122,7 +122,15 @@ test('ccs BRIEF_EXCERPT_MAX_CHARS is 56,000 — the measured number, not a place
   // The growth is linear in in-flight changes, so this WILL be re-broken; see
   // `loop/lib/config.mjs` and addictedtoai-2sx8. Archiving a finished change is
   // what lowers it again.
-  assert.equal(BRIEF_EXCERPT_MAX_CHARS, 56000);
+  //
+  // Re-measured a fourth time 2026-09-07, on the live tree, with SEVEN drafts
+  // in flight: floors per type interpret 73,473, repair 57,693, entry 39,087,
+  // verify 38,697, scout 33,729, post 27,105, education 24,183, tutorial
+  // 23,013, machinery 17,169, prune 13,857. At 56,000 interpret cut two and
+  // repair one (Desk job j-20260907-03 failed its gates on the test below).
+  // 88,000 = the floor plus one more change's share, for the eighth draft
+  // still on its branch. config.mjs carries the full record.
+  assert.equal(BRIEF_EXCERPT_MAX_CHARS, 88000);
 });
 
 /* ---------------------------------------------------------------------------

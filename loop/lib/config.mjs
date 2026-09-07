@@ -269,9 +269,32 @@ export const MIN_INVOCATION_MINUTES = 15;
  * not a fix, and the structural answer is filed as addictedtoai-2sx8. Archiving
  * a finished change is what actually lowers this number, which is one more
  * reason not to leave changes unarchived.
+ *
+ * RE-MEASURED A FOURTH TIME, 2026-09-07, after SEVEN reviewed OpenSpec drafts
+ * were merged to main in one evening (bind-a-price-to-the-vendor-that-posts-it,
+ * bind-what-the-catalog-knows, keep-the-map-describing-the-territory,
+ * let-the-queue-see-a-judgment, retry-the-gates-once-and-name-the-failure,
+ * say-what-a-review-record-covers, tell-a-missed-deploy-from-a-slow-one) and
+ * Desk job j-20260907-03 failed its gates on the live-tree test — exactly the
+ * linear growth predicted above, three changes past the value's design point.
+ * Measured on the live tree itself this time (no synthetic copy): for each
+ * job type, the lowest budget at which `excerptsFor` cuts nothing —
+ *
+ *     interpret 73,473   repair  57,693   entry  39,087   verify  38,697
+ *     scout     33,729   post    27,105   education 24,183   tutorial 23,013
+ *     machinery 17,169   prune   13,857
+ *
+ * so at 56,000 `interpret` cut two requirements and `repair` cut one. 88,000 is
+ * set: the 73,473 floor plus roughly one more change's share for the
+ * capability under heaviest amendment (the eighth draft, say-what-the-run-
+ * could-not-do, is still on its branch). Every brief for those two types is
+ * now that much longer, which is the running cost of seven unarchived changes;
+ * the implementation waves that archive them one by one are what bring it
+ * back down (the measurement script: session scratchpad
+ * orch-measure-brief-budget.mjs, the binary search over the live tree).
  * ---------------------------------------------------------------------------
  */
-export const BRIEF_EXCERPT_MAX_CHARS = 56000;
+export const BRIEF_EXCERPT_MAX_CHARS = 88000;
 // `BLOG_CEILING_POSTS` / `BLOG_CEILING_DAYS` stood here and are gone
 // (make-the-blog-worth-sending, task 1.3). Publishing is quality-gated, never
 // quota-driven: no selector rule counts published posts. What limits volume now
