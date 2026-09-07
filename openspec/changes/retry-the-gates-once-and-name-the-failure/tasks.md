@@ -20,7 +20,7 @@ satisfies it and the task that measures it.
 
 ## The retry itself
 
-- [ ] 1. **N1 — PIN.** `loop/run.mjs:443-502`: a failing gate run is followed by
+- [x] 1. **N1 — PIN.** `loop/run.mjs:443-502`: a failing gate run is followed by
       exactly one more run of the same scripts in the same worktree; a passing
       retry continues the run and records no failure; a failing retry settles
       `failed`. Covered today by
@@ -28,7 +28,7 @@ satisfies it and the task that measures it.
       the sentence the tests do not assert: that there is **no third run** —
       a gate hook counting its invocations, asserted at exactly 2 on a failure
       that never passes.
-- [ ] 2. **N2 — PIN.** The retry reads no classification as a precondition.
+- [x] 2. **N2 — PIN.** The retry reads no classification as a precondition.
       `gate-transport-retry.test.mjs:373` covers an explicitly unflagged
       failure; extend it so the assertion is about the **call count** on a
       failure whose output carries no marker and whose `transport` flag is
@@ -38,21 +38,21 @@ satisfies it and the task that measures it.
 
 ## The marker and where the decision is made
 
-- [ ] 3. **N3 — PIN.** One declared wording in one place
+- [x] 3. **N3 — PIN.** One declared wording in one place
       (`loop/lib/gates.mjs:64`), both emitting sites interpolating it, an
       unmarked failure classifying as unexplained. Covered by
       `gate-transport-retry.test.mjs:163, 249, 260, 276`. Add the missing
       negative: `loop/` itself carries no second hard-coded copy of the
       sentence, scanned the way `pulse/` already is at line 276 — the guard
       currently watches only the directory the first re-invention happened in.
-- [ ] 4. **N4 — PIN.** The classification is computed over each script's full
+- [x] 4. **N4 — PIN.** The classification is computed over each script's full
       output at capture (`gates.mjs:211`) and read from the flag
       (`gatesHitTransportFailure`, `gates.mjs:86-89`), never re-derived from the
       truncated log. Covered by `gate-transport-retry.test.mjs:331, 358`.
 
 ## The refusal, which is the only new mechanism in this change
 
-- [ ] 5. **N5 — BUILD.** `loop/tests/breakers.test.mjs`: the control that does
+- [x] 5. **N5 — BUILD.** `loop/tests/breakers.test.mjs`: the control that does
       not exist today. Three consecutive same-type jobs, each failing its gates
       **twice** with the machine-failure marker present in every run, trip
       breaker 1 and write `HOLD.md`. Today this passes by construction because
@@ -66,7 +66,7 @@ satisfies it and the task that measures it.
       line carries an `mm` computed exactly as an unmarked twice-failed job's
       does — the same two runs' spend, recorded, not waived — comparing the two
       lines field for field rather than asserting `mm > 0`.
-- [ ] 6. **N5 — BUILD.** A source guard beside the test: neither
+- [x] 6. **N5 — BUILD.** A source guard beside the test: neither
       `loop/lib/breakers.mjs` **nor `loop/lib/budget.mjs`** contains a read of
       the classification. Scan both files for the exported marker constant, for
       `transport`, and for the accessor names `isTransportFailure` /
@@ -80,24 +80,32 @@ satisfies it and the task that measures it.
 
 ## The record
 
-- [ ] 7. **N6 — PIN.** `gateFailureNote` (`gates.mjs:101-119`) names each failing
+- [x] 7. **N6 — PIN.** `gateFailureNote` (`gates.mjs:101-119`) names each failing
       script with its exit status (or "could not run"), says whether the marker
       was present, and says when a retry failed again. Covered by
       `gate-transport-retry.test.mjs:187, 211, 229`. Add the assertion that the
       literal unqualified string `gates failed` never appears **alone** as a
       note — a substring assertion on the ledger line, so a future refactor
       cannot regress to the flat note the beads were filed about.
-- [ ] 8. **N7 — PIN.** The job's permanent record carries
+- [x] 8. **N7 — PIN.** The job's permanent record carries
       `gates = {retried, passed, transport, first_failed}` on a retried run and
       **no** `gates` key on a run whose gates passed first time
       (`run.mjs:487-494`). Covered by `gate-transport-retry.test.mjs:508, 536`.
 
 ## Mutation proof
 
-- [ ] 9. Each mutation applied alone, then reverted with the file's hash
+- [x] 9. Each mutation applied alone, then reverted with the file's hash
       compared before and after:
       **(a)** make the retry conditional on `gatesHitTransportFailure` — task 2's
-      call-count test must fail while task 1's and task 5's still pass;
+      call-count test must fail while task 1's and task 5's breaker control still
+      pass. CORRECTED AT IMPLEMENTATION, 2026-09-07: the drafted clause claimed
+      more than the mutation can leave standing. Task 5's BUDGET leg also fails
+      under (a), and necessarily — that test compares a marked twice-failed job
+      against an unmarked one, an unmarked twice-failed job is its control half,
+      and a retry conditional on the marker never gives that half a second run.
+      Measured: (a) fails task 2's test and task 5's `mm` comparison, and leaves
+      task 1's no-third-run test and task 5's three-marked-jobs breaker control
+      green (breakers 16/17, the single failure being the budget leg);
       **(b)** allow a second retry — task 1's no-third-run assertion must fail
       alone;
       **(c)** add an exemption to `checkConsecutiveFailures` that skips a
@@ -133,7 +141,7 @@ satisfies it and the task that measures it.
 
 ## Gates
 
-- [ ] 10. `openspec validate retry-the-gates-once-and-name-the-failure --type
+- [x] 10. `openspec validate retry-the-gates-once-and-name-the-failure --type
       change --strict --no-interactive`, and `node
       scripts/check-spec-deltas.mjs --strict`. Run at drafting time.
 - [ ] 11. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
