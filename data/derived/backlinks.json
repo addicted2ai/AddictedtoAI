@@ -70,6 +70,14 @@
         "file": "content/blog/pachocki-an-alien-mind-monitorability.md"
       }
     ],
+    "concept/covered-models": [
+      {
+        "url": "/blog/anthropic-enterprise-frontier-safeguards",
+        "title": "Anthropic will put Claude misuse logs in your own bucket. Its support pages say what it keeps.",
+        "type": "post",
+        "file": "content/blog/anthropic-enterprise-frontier-safeguards.md"
+      }
+    ],
     "concept/distillation": [
       {
         "url": "/learn/what-it-costs-to-build-and-run-ai",
