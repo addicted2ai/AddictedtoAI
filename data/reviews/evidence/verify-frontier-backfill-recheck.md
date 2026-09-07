@@ -173,7 +173,19 @@ is the F5 judgment the finding said was owed.
 
 ## Gates
 
-Run in this worktree on **2026-09-06**. The worktree carries no `node_modules`
+Run in this worktree on **2026-09-06**, and **run a second time on the same
+local date** after this job's first invocation was interrupted before it could
+write `RESULT.md`. Both invocations executed the same commands and observed the
+same results; the table below is the second run's, which is the one this diff
+carries. The transcript header stamps UTC
+(`2026-09-07T05:05:24.632Z` — local **2026-09-06** 23:05 Mountain, and every
+date in this repository is the local one), which is why it reads a day ahead of
+the date in this sentence. The first invocation's stamp was
+`2026-09-06T23:58:23.983Z`; the two transcripts are byte-identical apart from
+that one line, which is the direct measurement that nothing under
+`content/blog/` moved between them either.
+
+The worktree carries no `node_modules`
 — git does not track it — so the repository's tree was junctioned in exactly as
 `loop/lib/gates.mjs`'s `linkNodeModules` does, which is the only reason `npm`
 could run at all (`data/proposals/author-worktrees-carry-no-node-modules.md` is

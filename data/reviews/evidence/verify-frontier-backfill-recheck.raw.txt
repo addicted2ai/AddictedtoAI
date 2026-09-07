@@ -1,5 +1,5 @@
 # job j-20260906-18 — re-execution of the DESK-ORDER-001 §1 backfill check
-# node v24.13.0, 2026-09-06T23:58:23.983Z
+# node v24.13.0, 2026-09-07T05:05:24.632Z
 
 $ node tools/check-frontier-backfill.mjs
 # The vocabulary, read from lib/domains.mjs (not restated)
