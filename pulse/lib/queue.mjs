@@ -754,12 +754,14 @@ export function computeQueue(root, { freshness, changesFile, wants = readWants(r
     // selects first, and that may have healed by the time it is selected, at
     // the top of the queue. See CONFIRM_AFTER_FAILURES in linkcheck.mjs.
     if (!isConfirmedBroken(l.consecutive_failures)) continue;
+    const failure =
+      l.status != null ? `HTTP ${l.status}` : `unreachable: ${l.error ?? 'unreachable'}`;
     items.push(
       item(
         'repair',
         'broken-link',
         l.url,
-        `HTTP ${l.status ?? l.error ?? 'unreachable'} on ${l.consecutive_failures} consecutive check(s); cited by ${l.cited_by.length} file(s)`,
+        `${failure} on ${l.consecutive_failures} consecutive check(s); cited by ${l.cited_by.length} file(s)`,
         l.cited_by[0] ?? null,
       ),
     );
