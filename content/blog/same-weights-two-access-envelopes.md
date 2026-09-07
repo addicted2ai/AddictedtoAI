@@ -1,5 +1,5 @@
 ---
-title: "Anthropic, Google and OpenAI each shipped one model in two safeguard tiers in three days. Two of the three describe the permissive tier in the future tense."
+title: "Anthropic, Google and OpenAI each shipped one model in two safeguard tiers in three days. Two of the three describe the permissive cyber tier in the future tense."
 date: "2026-09-07"
 mentions:
   - org/anthropic
@@ -13,7 +13,7 @@ frontier: true
 frontier_reason: "F5"
 ---
 
-Between 1 and 3 September 2026 three labs released a new frontier model, and all three shipped it under two safeguard settings rather than one. Anthropic gave the looser setting its own name. So did Google. OpenAI did not, and said the loosening is coming. In all three the route to the looser setting is an application form.
+Between 1 and 3 September 2026 three labs released a new frontier model, and all three shipped it under two safeguard settings rather than one. Anthropic gave the looser setting its own name. So did Google. OpenAI did not, and said the loosening is coming. In all three, reaching the looser setting means being admitted to a programme the vendor runs.
 
 The thing being rationed is not the model. It is the permission to use it, and the gate is a programme the vendor admits you to.
 
@@ -35,13 +35,13 @@ The Life Sciences Verification Program has people in it: "In partnership with th
 
 So on 7 September, six days after launch, a cyberdefender admitted to the CVP gets Opus- and Sonnet-class models with reduced safeguards. Not Mythos 5.1. The page's own call to action matches: "To register interest in access to Claude Mythos 5.1 for cyberdefense through the CVP, head here." Register interest. That is a waiting list, not a door.
 
-OpenAI is in the same position by its own wording: less restrictive safeguards "in the coming weeks", after an initial period where "Access to Astra for advanced cybersecurity workflows will initially be available to a small group of alpha testers, with access through Daybreak Blue expanding afterward to support defensive use."
+OpenAI is in the same position by its own wording. The release page promises the less restrictive safeguards "in the coming weeks"; the 1 September page it follows says that "Access to Astra for advanced cybersecurity workflows will initially be available to a small group of alpha testers, with access through Daybreak Blue expanding afterward to support defensive use." A small group, then a bigger one, at some point.
 
 Google is the exception. Fairwind is described in the present tense — "Through our new Fairwind Program, we're providing trusted government authorities, as well as critical infrastructure operators and software maintainers with prioritized access to Gemini 3.8 Flash Cyber" — and the page ends with a live "Apply for access" link. Whether anyone has been let through, the page does not say.
 
 ## The refused tasks have names, and they are the ones security teams do
 
-If you want to know whether this lands on you, the vendors are specific enough to check yourself against.
+Both companies are specific enough about what the general tier still refuses that a reader can check their own work against it.
 
 Anthropic loosened the general tier and published the residue. Fable 5.1 may now be used "to conduct the kind of defensive work that improves software security", and Claude Code users "can expect an average of around 60% fewer interventions per session from our cyber safeguards, relative to the previous safeguards on Fable 5." But the safeguards "still redirect several kinds of dual-use cybersecurity tasks (tasks that might have helpful or harmful applications) to our Opus models. This includes penetration testing, exploit generation, and binary-based vulnerability scanning."
 
@@ -55,13 +55,11 @@ Anthropic's page puts the US government in twice. The biology programme was "dev
 
 Google's Fairwind names "trusted government authorities" first among its three eligible categories, ahead of critical infrastructure operators and software maintainers.
 
-The Anthropic case has a precedent with a date on it, on Anthropic's own Mythos product page. Under the heading "Claude Mythos 5 export controls have been lifted", dated 1 July 2026: "We have restored access to Mythos 5 for a set of US organizations, following the US government's approval." Three weeks earlier the same page carries "Claude Mythos 5 is currently unavailable", dated 12 June 2026. Anthropic does not say on that page what the approval covered or who granted it.
-
-None of that is a claim about why any of these programmes exist, or about whether the gating is the right amount. Those are not checkable from a launch page.
+The Anthropic case has a precedent with a date on it, on Anthropic's own Mythos product page. Under the heading "Claude Mythos 5 export controls have been lifted", dated 1 July 2026: "We have restored access to Mythos 5 for a set of US organizations, following the US government's approval." Three weeks earlier the same page carries "Claude Mythos 5 is currently unavailable", dated 12 June 2026. What the approval covered, and what it was approval of, that page does not say.
 
 ## What the vendors publish is the gate, not the roll
 
-How many organisations are actually inside the CVP, the LSVP or Fairwind appears on none of the five vendor pages, and there is no way to find out from outside. Anthropic says "a set of US organizations" and "our first participants". Google says "trusted defenders". OpenAI said "a small group of alpha testers" on 1 September and has not published a number since. Every one of those is a quantity written as a word.
+No count of the organisations actually inside the CVP, the LSVP or Fairwind appears on any of the five vendor pages, and there is no way to get one from outside. Anthropic says "a set of US organizations" and "our first participants". Google says "trusted defenders". OpenAI said "a small group of alpha testers" on 1 September and has not published a number since. Every one of those is a quantity written as a word.
 
 There is one thing the outside can see. The gateway model list this site tracks holds 186 recorded changes, 95 of which are catalog rows for an individual model id. Zero of those 95 ids contain "mythos" or "cyber". The generally available twin of each release turned up on schedule: `anthropic/claude-fable-5.1` on 2 September, `google/gemini-3.8-flash` on 3 September, `openai/gpt-6-astra` on 5 September.
 

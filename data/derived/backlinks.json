@@ -354,6 +354,12 @@
         "title": "OpenAI commits $1B in subsidized Daybreak access for water utilities, grid operators and local governments",
         "type": "post",
         "file": "content/blog/openai-daybreak-frontline-defenders.md"
+      },
+      {
+        "url": "/blog/same-weights-two-access-envelopes",
+        "title": "Anthropic, Google and OpenAI each shipped one model in two safeguard tiers in three days. Two of the three describe the permissive cyber tier in the future tense.",
+        "type": "post",
+        "file": "content/blog/same-weights-two-access-envelopes.md"
       }
     ],
     "concept/reversal-curse": [
@@ -850,6 +856,12 @@
         "title": "Anthropic will put Claude misuse logs in your own bucket. Its support pages say what it keeps.",
         "type": "post",
         "file": "content/blog/anthropic-enterprise-frontier-safeguards.md"
+      },
+      {
+        "url": "/blog/same-weights-two-access-envelopes",
+        "title": "Anthropic, Google and OpenAI each shipped one model in two safeguard tiers in three days. Two of the three describe the permissive cyber tier in the future tense.",
+        "type": "post",
+        "file": "content/blog/same-weights-two-access-envelopes.md"
       }
     ],
     "model/anthropic-claude-haiku-4-5": [
@@ -1300,6 +1312,12 @@
         "title": "Google DeepMind",
         "type": "entry",
         "file": "content/wiki/org/google-deepmind.md"
+      },
+      {
+        "url": "/blog/same-weights-two-access-envelopes",
+        "title": "Anthropic, Google and OpenAI each shipped one model in two safeguard tiers in three days. Two of the three describe the permissive cyber tier in the future tense.",
+        "type": "post",
+        "file": "content/blog/same-weights-two-access-envelopes.md"
       }
     ],
     "model/ibm-granite-granite-4-2-8b": [
@@ -2086,6 +2104,14 @@
         "file": "content/wiki/model/openai-gpt-5-5.md"
       }
     ],
+    "model/openai-gpt-6-astra": [
+      {
+        "url": "/blog/same-weights-two-access-envelopes",
+        "title": "Anthropic, Google and OpenAI each shipped one model in two safeguard tiers in three days. Two of the three describe the permissive cyber tier in the future tense.",
+        "type": "post",
+        "file": "content/blog/same-weights-two-access-envelopes.md"
+      }
+    ],
     "model/openai-o3": [
       {
         "url": "/impossible-routine/competitive-programming",
@@ -2642,6 +2668,12 @@
         "title": "GitSpawn: a repository can name the program your coding agent runs before you type anything",
         "type": "post",
         "file": "content/blog/gitspawn-git-config-code-execution-coding-agents.md"
+      },
+      {
+        "url": "/blog/same-weights-two-access-envelopes",
+        "title": "Anthropic, Google and OpenAI each shipped one model in two safeguard tiers in three days. Two of the three describe the permissive cyber tier in the future tense.",
+        "type": "post",
+        "file": "content/blog/same-weights-two-access-envelopes.md"
       }
     ],
     "org/bytedance-seed": [
@@ -2744,6 +2776,12 @@
         "title": "The EU's first AI Act enforcement RFIs are out. The open-source carve-out does not cover the training-data summary they ask for",
         "type": "post",
         "file": "content/blog/eu-ai-office-first-enforcement-rfis.md"
+      },
+      {
+        "url": "/blog/same-weights-two-access-envelopes",
+        "title": "Anthropic, Google and OpenAI each shipped one model in two safeguard tiers in three days. Two of the three describe the permissive cyber tier in the future tense.",
+        "type": "post",
+        "file": "content/blog/same-weights-two-access-envelopes.md"
       }
     ],
     "org/meta-superintelligence-labs": [
@@ -2958,6 +2996,12 @@
         "title": "GPT-6 Astra shipped, and OpenAI's system card says the model got harder to monitor",
         "type": "post",
         "file": "content/blog/openai-gpt-6-astra-system-card.md"
+      },
+      {
+        "url": "/blog/same-weights-two-access-envelopes",
+        "title": "Anthropic, Google and OpenAI each shipped one model in two safeguard tiers in three days. Two of the three describe the permissive cyber tier in the future tense.",
+        "type": "post",
+        "file": "content/blog/same-weights-two-access-envelopes.md"
       },
       {
         "url": "/blog/three-accounts-hugging-face-intrusion",
