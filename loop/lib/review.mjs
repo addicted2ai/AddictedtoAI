@@ -40,9 +40,16 @@ import { rejectionIndexText } from './proposals.mjs';
 import { localDate } from './dates.mjs';
 import { GROUND_RULES, subjectLines } from './brief.mjs';
 import { gateCommand, gateCommandForName } from './gates.mjs';
-import { REASONS, VERDICTS, parseVerdict, normalizeWouldCite, normalizeField } from './verdict.mjs';
+import {
+  REASONS,
+  VERDICTS,
+  parseVerdict,
+  parseReadsHumanFrom,
+  normalizeWouldCite,
+  normalizeField,
+} from './verdict.mjs';
 import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
-import { reviewedOf } from '../../lib/reviews.mjs';
+import { recordFileName, recordNamesPath, reviewedOf } from '../../lib/reviews.mjs';
 import { DOMAINS, FRONTIER_CRITERIA } from '../../lib/domains.mjs';
 
 /**
@@ -69,7 +76,7 @@ const DOMAIN_VOCABULARY = DOMAINS.join(', ');
  * the one parser without importing the Desk. Re-exported here because this is
  * where every caller already looks for it.
  */
-export { REASONS, VERDICTS, parseVerdict, normalizeWouldCite, normalizeField };
+export { REASONS, VERDICTS, parseVerdict, parseReadsHumanFrom, normalizeWouldCite, normalizeField };
 
 /**
  * Job types whose verdict must additionally answer the VOICE question
@@ -1067,10 +1074,18 @@ export function writeRecordSubjects(path, subjects, { repoRoot = '' } = {}) {
  * record with NO `reads-human` key rather than an empty one, because both are
  * refused by the merge gate for a post and only the first is honest about what
  * the caller supplied.
+ *
+ * `readsHumanFrom` is written on exactly the same terms: an EMPTY LIST produces
+ * no key at all, never an empty one, because absent and empty are different
+ * findings and the gate distinguishes them — absent is "this record answers
+ * afresh or not at all", empty is "the reviewer wrote a carry-forward block
+ * that answers for nothing". Written as a YAML list of mappings, one per post,
+ * so the record round-trips through `parseReadsHumanFrom` unchanged.
  */
-export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCite = '', readsHuman = '', notes = '', pass = 1, reviewer = '' }) {
+export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCite = '', readsHuman = '', readsHumanFrom = [], notes = '', pass = 1, reviewer = '' }) {
   mkdirSync(ctx.reviewsDir, { recursive: true });
   const p = verdictPath(ctx, jobId, pass);
+  const carried = (Array.isArray(readsHumanFrom) ? readsHumanFrom : [readsHumanFrom]).filter(Boolean);
   const fm = [
     '---',
     `job: ${jobId}`,
@@ -1078,6 +1093,18 @@ export function writeVerdictRecord(ctx, jobId, { verdict, reasons = [], wouldCit
     `reasons: [${reasons.join(', ')}]`,
     `would-cite: ${JSON.stringify(wouldCite)}`,
     readsHuman ? `reads-human: ${JSON.stringify(readsHuman)}` : null,
+    carried.length
+      ? [
+          'reads-human-from:',
+          ...carried.map((e) =>
+            [
+              `  - subject: ${JSON.stringify(String(e.subject ?? ''))}`,
+              `    record: ${JSON.stringify(String(e.record ?? ''))}`,
+              `    why: ${JSON.stringify(String(e.why ?? ''))}`,
+            ].join('\n'),
+          ),
+        ].join('\n')
+      : null,
     reviewer ? `reviewer: ${reviewer}` : null,
     // LOCAL, not UTC. `date:` on a review record is the first category in
     // CLAUDE.md's convention paragraph by name, and `lib/reviews.mjs` compares

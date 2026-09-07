@@ -12,7 +12,7 @@ that no test attempts is a refusal that has never run.
 
 ## The carry-forward field, and the parser that reads it
 
-- [ ] 1. **N1's shape half** — `loop/lib/verdict.mjs`: parse a
+- [x] 1. **N1's shape half** — `loop/lib/verdict.mjs`: parse a
       `reads-human-from` block into `readsHumanFrom: [{ subject, record, why }]`
       — a **list**, one entry per post answered for, each naming the post it
       answers for, the record it stands on and the reviewer's own-words
@@ -36,7 +36,7 @@ that no test attempts is a refusal that has never run.
       less the `README.md` both loaders skip, `lib/reviews.mjs:143` and
       `loop/lib/review.mjs:579`; re-counted 2026-09-06) is such a record and
       none of them may start parsing differently.
-- [ ] 2. `loop/lib/verdict.mjs` + `loop/lib/review.mjs`
+- [x] 2. `loop/lib/verdict.mjs` + `loop/lib/review.mjs`
       (`writeVerdictRecord`): write `reads-human-from` only when given, on the
       same terms as `readsHuman` at `review.mjs:947-961` — an empty list
       produces **no key**, never an empty one, because absent and empty are

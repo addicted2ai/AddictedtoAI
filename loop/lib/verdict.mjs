@@ -149,6 +149,67 @@ export function parseCorrections(data) {
   return { corrections, correctionWarnings };
 }
 
+/**
+ * `reads-human-from:` — a voice verdict CARRIED FORWARD, per post
+ * (specs/review, beads addictedtoai-37rb).
+ *
+ * A `reads-human` answers for the bytes its writer read. A repair, a revision
+ * or any later job may rewrite those bytes and be approved by a reviewer of its
+ * own, and the piece is then bound and clean while the only reviewer that ever
+ * answered the voice question read an older version. Asking that reviewer for a
+ * fresh voice verdict asks it of a DIFF — a three-sentence licence correction
+ * has no voice to speak of, and the sentence it would write is the
+ * forced-judgment field the duplicate rule already exists to catch. So the
+ * second branch is to name the record the answer already lives in and say why
+ * this diff did not move it, which is answerable from what such a reviewer
+ * actually sees.
+ *
+ * A LIST, one entry per post answered for, and the list is the requirement
+ * rather than a convenience: one job's merged subjects may hold more than one
+ * blog post, each post's voice verdict lives in a record of its own, and a
+ * single record-wide `{record, why}` could only ever answer for one of them —
+ * approving one post while leaving another bound and unanswered.
+ *
+ * Shaped like `carry:` and parsed by the same rules: a single mapping given
+ * where a list is expected is read as a one-entry list, and an entry missing
+ * any of `subject`, `record` or `why` is DROPPED with a warning. Dropping is
+ * the fail-closed direction — the post that entry meant to answer for is then
+ * unanswered, and the merge gate refuses the approve on that post rather than
+ * accepting a half-written carry-forward as an answer.
+ */
+export function parseReadsHumanFrom(data) {
+  const raw =
+    data?.['reads-human-from'] ?? data?.reads_human_from ?? data?.readsHumanFrom;
+  if (raw === undefined || raw === null) return { readsHumanFrom: [], readsHumanFromWarnings: [] };
+  const list = Array.isArray(raw) ? raw : [raw];
+  const readsHumanFrom = [];
+  const readsHumanFromWarnings = [];
+  list.forEach((entry, i) => {
+    const at = `reads-human-from[${i}]`;
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      readsHumanFromWarnings.push(`${at}: not a mapping with subject/record/why — skipped`);
+      return;
+    }
+    const subject = String(entry.subject ?? '').trim().replace(/\\/g, '/');
+    const record = String(entry.record ?? '').trim();
+    const why = String(entry.why ?? '').trim();
+    if (!subject) {
+      readsHumanFromWarnings.push(`${at}: no non-empty \`subject\` — skipped (an entry answers for ONE named post)`);
+      return;
+    }
+    if (!record) {
+      readsHumanFromWarnings.push(`${at} (${subject}): no non-empty \`record\` — skipped (a carry-forward stands on a named record)`);
+      return;
+    }
+    if (!why) {
+      readsHumanFromWarnings.push(`${at} (${subject}): no non-empty \`why\` — skipped (say in your own words why this diff did not move the post's voice)`);
+      return;
+    }
+    readsHumanFrom.push({ subject, record, why });
+  });
+  return { readsHumanFrom, readsHumanFromWarnings };
+}
+
 /** Parse a verdict record. Front matter first; a plain-text fallback keeps weaker runners usable. */
 export function parseVerdict(text) {
   let data = {};
@@ -205,12 +266,19 @@ export function parseVerdict(text) {
   // produce a carry entry that parses into something it did not mean.
   const { carry, carryWarnings } = parseCarry(hasFrontMatter ? data : {});
   const { corrections, correctionWarnings } = parseCorrections(hasFrontMatter ? data : {});
+  // Read INDEPENDENTLY of `readsHuman`, `wouldCite` and the verdict itself, the
+  // way `carry:` is: a malformed carry-forward drops its own entries and can
+  // never alter the verdict value, and a record carrying neither voice field
+  // parses exactly as it did before this key existed.
+  const { readsHumanFrom, readsHumanFromWarnings } = parseReadsHumanFrom(hasFrontMatter ? data : {});
 
   return {
     verdict,
     reasons,
     wouldCite: String(wouldCite ?? '').trim(),
     readsHuman: String(readsHuman ?? '').trim(),
+    readsHumanFrom,
+    readsHumanFromWarnings,
     carry,
     carryWarnings,
     corrections,
