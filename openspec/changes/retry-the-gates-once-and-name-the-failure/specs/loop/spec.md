@@ -42,7 +42,7 @@ The mechanical gates run a job's branch before review. When they fail, the loop
 SHALL run them exactly once more — the same scripts, in the same worktree — and
 SHALL NOT run them a third time. A retry that passes SHALL let the run continue
 normally and SHALL NOT be recorded as a failure of any kind; a retry that fails
-SHALL settle the job `failed`, exactly as a single failure did before.
+SHALL settle the job `failed`.
 
 - **The decision to retry SHALL NOT depend on any classification of the
   failure.** Every gate failure is retried, whatever its output said. The
@@ -91,7 +91,7 @@ SHALL settle the job `failed`, exactly as a single failure did before.
 - **WHEN** a job's diff genuinely breaks a test and both gate runs fail
 - **THEN** the job is settled `failed`, the ledger note names the failing script
   and says no marker was present, and the outcome advances breaker 1's count
-  exactly as it did before the retry existed
+  exactly as any other `failed` outcome does
 
 #### Scenario: A marked failure that repeats is still a failure
 

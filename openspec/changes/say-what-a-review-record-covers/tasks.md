@@ -12,9 +12,22 @@ that no test attempts is a refusal that has never run.
 
 ## The carry-forward field, and the parser that reads it
 
-- [ ] 1. `loop/lib/verdict.mjs`: parse a `reads-human-from` block into
-      `readsHumanFrom: { record, why }` — the name of the record it stands on
-      and the reviewer's own-words statement. Parsed independently of
+- [ ] 1. **N1's shape half** — `loop/lib/verdict.mjs`: parse a
+      `reads-human-from` block into `readsHumanFrom: [{ subject, record, why }]`
+      — a **list**, one entry per post answered for, each naming the post it
+      answers for, the record it stands on and the reviewer's own-words
+      statement. Shaped like `carry:` (`verdict.mjs:64-90`) and parsed by the
+      same rules, for the same reason `carry:` is a list: one job's merged
+      subjects may hold more than one blog post — 16 `content/blog/` posts exist
+      today and a single `verify` job could land on all of them (see the
+      proposal's re-measurement) — and one record-wide `{record, why}` could
+      only ever answer for one of them. A single mapping given where a list is
+      expected is read as a one-entry list, exactly as `parseCarry` does at
+      `verdict.mjs:67`. An entry missing any of the three fields is **dropped
+      with a warning**, again as `parseCarry` does, and is not an accepted
+      answer: the post it meant to answer for is then unanswered and task 3's
+      refusal fires on it, which is the fail-closed direction. Parsed
+      independently of
       `readsHuman`, `wouldCite` and `carry:`, the way `parseVerdict` already
       reads the verdict and `carry:` independently, so a malformed
       carry-forward can never alter the verdict value itself. A record carrying
@@ -25,9 +38,11 @@ that no test attempts is a refusal that has never run.
       none of them may start parsing differently.
 - [ ] 2. `loop/lib/verdict.mjs` + `loop/lib/review.mjs`
       (`writeVerdictRecord`): write `reads-human-from` only when given, on the
-      same terms as `readsHuman` at `review.mjs:947-961` — an empty value
+      same terms as `readsHuman` at `review.mjs:947-961` — an empty list
       produces **no key**, never an empty one, because absent and empty are
-      different findings and the gate below distinguishes them.
+      different findings and the gate below distinguishes them. Written as a
+      YAML list of mappings, each with `subject`, `record` and `why`, so a
+      record round-trips through the parser in task 1 unchanged.
 
 ## The gate, which is where sentences N1–N3 become mechanisms
 
@@ -35,10 +50,20 @@ that no test attempts is a refusal that has never run.
       `reads-human-empty` branch (`review.mjs:682-706`). **The choose-one-of-two
       gate keys on `subjects`, not on `type`.** `mergeGate` already receives the
       merged subject list (`review.mjs:611`, the same list it compares against
-      `reviewed:` at `:709`, built by `joinableSubjects` in `run.mjs:553`): an
-      `approve` whose `subjects` contain a `content/blog/*.md` path and that
-      carries neither a non-empty `reads-human` nor a `reads-human-from` is
-      refused. Keying on the job type instead is what leaves the bead's own
+      `reviewed:` at `:709`, built by `joinableSubjects` in `run.mjs:553`).
+      **The refusal resolves per post, not per record.** Take every
+      `content/blog/*.md` path in `subjects`; a post is answered if the record
+      carries a non-empty `reads-human` **or** a `reads-human-from` entry whose
+      `subject` is that post; an `approve` leaving any of them unanswered is
+      refused, and the message names the unanswered posts. Refusing on the
+      record as a whole — one entry anywhere satisfies it — is the hole this
+      wording closes: a job merging two posts would then approve with an entry
+      for post A while post B stayed bound and unanswered, and task 9's
+      per-post launch check would report B as voice-missing, which is the
+      two-ends drift this change exists to stop. Also refuse an entry whose
+      `subject` is not among the merged subjects, in task 4's code, so an entry
+      cannot answer for a post this job did not touch. Keying on the job type
+      instead is what leaves the bead's own
       instance uncaught: `needsReadsHuman` reads the type (`review.mjs:682`),
       `READS_HUMAN_TYPES` is `['post']` (`:80`), and `j-20260902-23` is type
       `repair` (`data/ledger.jsonl:68`) whose record approves
@@ -52,15 +77,19 @@ that no test attempts is a refusal that has never run.
       is not gated here, exactly as the `reviewed:`/`subject:` equality check at
       `:709` is not.
 - [ ] 4. **N2** — the anchor refusal, new code `reads-human-from-unanchored`,
-      applied **whenever a `reads-human-from` is present** and not only inside
-      task 3's branch, so the three refusals are three separable mechanisms and
-      a record cannot dodge the anchor check by carrying the field on a job the
-      branch does not reach:
-      the named record must exist in `data/reviews/`, must name this same piece
-      (through the join in `lib/reviews.mjs`, not a string compare on the
+      applied **to every entry**, whenever a `reads-human-from` is present and
+      not only inside task 3's branch, so the three refusals are three separable
+      mechanisms and a record cannot dodge the anchor check by carrying the
+      field on a job the branch does not reach. Per entry: its `subject` must be
+      among the merged subjects, and the named record must exist in
+      `data/reviews/`, must name **that entry's own subject** (through the join
+      in `lib/reviews.mjs`, not a string compare on the
       subject line), must record `approve`, and must itself carry a non-empty
-      `reads-human`. Any of the four failing is the refusal, and its message
-      names which. **A carry-forward is one hop and never a chain: the anchor
+      `reads-human`. Any of the five failing is the refusal, and its message
+      names which entry and which leg — "this same piece" is resolved from the
+      entry, never from "the record's post", because a record may now carry
+      entries for several posts and a message naming only the record would not
+      say which one failed. **A carry-forward is one hop and never a chain: the anchor
       must itself answer.** An anchor whose own record carries only a
       `reads-human-from` is refused by the fourth leg — it "carries no non-empty
       `reads-human` of its own" — and the message says so, so the reviewer is
@@ -68,9 +97,14 @@ that no test attempts is a refusal that has never run.
       own carry-forward; the spec's refusal is the whole rule, and a resolver
       that walked a chain here would accept records the merge refuses.
 - [ ] 5. **N3** — the statement refusal, new code
-      `reads-human-from-duplicate`: the `why` half is held to the same two
+      `reads-human-from-duplicate`: each entry's `why` is held to the same two
       rules `reads-human` carries — non-empty after trimming, and not exactly
-      identical after trimming to the `why` of any other record. Reuse
+      identical after trimming to the `why` of any entry in any **other**
+      record. **Two entries in the same record may share a `why`** and that is
+      not a refusal: one job making the same trivial correction to two posts has
+      one honest sentence to write about both, and forcing variation there is
+      the manufactured-judgment failure the rule is meant to prevent, not catch.
+      Reuse
       `normalizeField` and the `existingFieldValues` sweep at
       `review.mjs:568-600`; do not write a second normaliser. A reviewer that
       pastes the same "the diff did not move the voice" sentence into every
@@ -104,10 +138,17 @@ that no test attempts is a refusal that has never run.
 ## The launch check, sentences N4 and N7
 
 - [ ] 9. **N4** — `scripts/verify-launch.mjs:613-661`: the voice check follows
-      the carry-forward. It must accept the **current** record when that record
-      carries a valid carry-forward naming an approving record for this piece
-      with a non-empty `reads-human` of its own, and report the piece exactly as
-      it reports a bare missing `reads-human` when the named record is not one.
+      the carry-forward, **resolving per post**. This loop already runs over
+      pieces, so for the post in hand it must select the `reads-human-from`
+      entry whose `subject` is **that post** and ignore the record's other
+      entries entirely; a record carrying an entry for a different post answers
+      nothing here. It must accept the **current** record when that record
+      carries a valid entry for this post naming an approving record for this
+      piece with a non-empty `reads-human` of its own, and report the piece
+      exactly as it reports a bare missing `reads-human` when there is no such
+      entry or the record it names is not one. Selecting the record's first
+      entry regardless of its subject is the mistake this task exists to
+      prevent, and task 13's two-post fixture is what catches it.
       **One hop, resolved by the same rule the merge applies in task 4** — an
       anchor that itself carries only a `reads-human-from` is not an answering
       record here either, because a check that followed a chain would pass a
@@ -167,8 +208,19 @@ that no test attempts is a refusal that has never run.
       different piece; naming one that records `revise`; naming one carrying no
       `reads-human`; naming a record whose own answer is only a
       `reads-human-from`, refused as an anchor that carries no `reads-human` of
-      its own; a `why` that is blank; a `why` identical after trimming to
+      its own; an entry whose `subject` is not among the merged subjects; a
+      `why` that is blank; a `why` identical after trimming to
       another record's.
+      **The two-post fixture, which is the per-post half of N1 and is asserted
+      at both ends.** One job whose `subjects` hold two `content/blog/` posts,
+      approving with a single valid `reads-human-from` entry for post A and no
+      `reads-human`: the merge refuses, and the message names **post B**. Then
+      the same record with an entry for each post merges. Then take that
+      accepted two-entry record into the launch-check test of task 15 and assert
+      that **both** posts resolve through their own entry and pass — the merge
+      and the launch check agreeing post by post is the property the change
+      exists for, and a per-record resolver passes the first half of this
+      fixture while failing the second.
 - [ ] 14. The controls, without which task 13 proves nothing: a post `approve`
       with a normal non-empty `reads-human` and no carry-forward merges exactly
       as today; a valid carry-forward on a `repair` that touches a post merges;
@@ -180,7 +232,10 @@ that no test attempts is a refusal that has never run.
       asks for one of the two answers, not for exactly one, so carrying both is
       not a refusal, and task 4's anchor check still runs on the carry-forward
       it carries (an invalid anchor is still refused even beside a valid fresh
-      answer); and — the control that pins the parser — every record in
+      answer); **a two-entry record whose two entries carry the same `why`
+      merges** — the within-record allowance in N3, and the boundary that keeps
+      the duplicate rule from forcing invented variation on one job that made
+      the same trivial fix to two posts; and — the control that pins the parser — every record in
       `data/reviews/` parses to the same verdict, reasons, `would-cite` and
       `reads-human` values before and after task 1, compared field by field.
 - [ ] 15. **N4 and N7**, `scripts/verify-launch-voice-carry.test.mjs` (new): a
@@ -190,11 +245,20 @@ that no test attempts is a refusal that has never run.
       of its own — fails it with the same message shape as a bare missing
       `reads-human`; **a post whose current approving record carries neither
       field and whose earlier approving record carries a `reads-human`
-      passes** (N7 — the state
-      `data/reviews/j-20260902-23.md` is in on this tree today, asserted against
-      that record and not only against a fixture); and a post whose ONLY
-      approving record carries neither field fails, so the reach-back is a
-      reach-back and not an unconditional pass.
+      passes** (N7); and a post whose ONLY approving record carries neither
+      field fails, so the reach-back is a reach-back and not an unconditional
+      pass.
+      **Plus one assertion over the live corpus, written as an invariant and not
+      as a named record.** For every post whose CURRENT approving record carries
+      neither field, some approving record naming that post carries a non-empty
+      `reads-human` — so the reach-back is what keeps `verify-launch` green on
+      the corpus as it stands, measured rather than asserted from a fixture.
+      Naming `data/reviews/j-20260902-23.md` in the assertion instead would rot
+      the moment the next repair lands on the glm post and supersedes it, and a
+      test that turns red for a reason unrelated to what it measures is the
+      failure `lib/surfaces.test.mjs:320` avoids by loading the corpus and
+      asserting invariants over it. That record is named in the proposal as the
+      instance behind N7, which is where a date-stamped measurement belongs.
 - [ ] 16. **N5–N6**, `lib/reviews.test.mjs`: a fixture corpus with a body-less
       entry that carries a bound record and has since had a fact value changed
       reports **mismatched**, and `mismatchProblems` names it. A body-less entry
@@ -202,12 +266,26 @@ that no test attempts is a refusal that has never run.
       counts move by exactly the number of body-less entries added, so the
       report's `total` is asserted, not just its `mismatched` list.
 - [ ] 17. **N6's boundary, on the real corpus and not a fixture**: assert that
-      `verify-launch`'s required-record piece list is unchanged in length by
-      task 11 — the same 95 entry bodies it holds today — so an implementer who
-      wires the extended set into the wrong list gets a red test rather than 458
-      launch failures. Assert `reviewablePieces` grows by exactly 458 and that
-      **no `content/directory/tools/` path is in it**, so the "every wiki entry"
-      boundary is measured rather than assumed.
+      the entries in `verify-launch`'s required-record piece list are exactly
+      `corpus.entry.filter(hasProseBody)` — computed in the same test from the
+      same loaded corpus, with the `hasProseBody` that file already exports
+      (`verify-launch.mjs:194`), which is a word-count threshold and **not**
+      `corpus.entry`'s own `hasBody` flag, so the two lists must each be
+      measured with their own predicate — and that no body-less entry is in it,
+      so an implementer who wires the extended set into the wrong list gets a
+      red test rather than one launch failure per body-less entry. Assert that
+      `reviewablePieces` grows by
+      exactly `corpus.entry.filter((d) => !d.hasBody).length`, computed the same
+      way, and that **no `content/directory/tools/` path is in it**, so the
+      "every wiki entry" boundary is measured rather than assumed.
+      **Both assertions are computed, never literal.** The corpus was 95 bodied
+      and 458 body-less on 2026-09-06 and those numbers are recorded in the
+      proposal; a literal in the assertion turns red on the next entry the
+      Pulse adds, which is the failure CLAUDE.md's test convention names — "the
+      fixture corpora pin the clock so a passing test stays passing tomorrow" —
+      and which the repository's own real-corpus tests avoid
+      (`lib/surfaces.test.mjs:320, :409` load the corpus and assert invariants,
+      never a count).
 - [ ] 18. Mutation proof, each mutation applied alone and restored afterwards
       with the file's hash compared before and after:
       **(a)** revert task 3's subjects-keyed branch — task 13's
