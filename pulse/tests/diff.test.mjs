@@ -8,7 +8,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { assertIngested, cleanup, jsonSource, makeRoot, paths, readJson, readLines, runPulse, serve, writeJson } from './helpers.mjs';
-import { deriveStatus, isScheduled } from '../lib/diff.mjs';
+import { appendChanges, deriveStatus, isScheduled, VENDOR_BOUND } from '../lib/diff.mjs';
 
 const ARGS = ['--no-build', '--no-mint'];
 
@@ -289,4 +289,163 @@ test('the catalog row matches the raw snapshot value it came from', async (t) =>
   assert.equal(row.context_window, String(snapshot.rows['acme/two'].context_length));
   assert.equal(row.provider, 'acme');
   assert.equal(row.status, 'active');
+});
+
+/*
+ * ── The price event, keyed to the vendor-posted rate ─────────────────────────
+ *
+ * Change `bind-a-price-to-the-vendor-that-posts-it`, tasks 15 and 16.
+ * specs/pulse: "A price event SHALL NOT be derived from the top-provider
+ * headline, at any threshold. No percentage threshold SHALL be used to decide
+ * whether a price movement is an event."
+ *
+ * The first two assertions below are the threshold proof, and they are a proof
+ * because ANY threshold implementation fails at least one of them: a 2% move in
+ * a rate a named vendor posts is news, and a 60% move in the top-provider
+ * headline is a routing artifact. The measured failures are a 60% scheduled-
+ * window flip and a 14.7x routing flip, both of which clear any threshold anyone
+ * would set, against a genuine 2% repricing, which none of them would pass.
+ */
+
+const VENDOR_ROWS = [
+  { id: 'acme/moved', name: 'Acme Moved', canonical_slug: 'k-moved', pricing: { prompt: '0.000001' } },
+  { id: 'acme/flat', name: 'Acme Flat', canonical_slug: 'k-flat', pricing: { prompt: '0.000002' } },
+  { id: 'acme/none', name: 'Acme None', canonical_slug: 'k-none', pricing: { prompt: '0.000003' } },
+];
+
+function vendorSource(url) {
+  return {
+    id: 'models',
+    url: `${url}/models`,
+    format: 'json',
+    rows_path: 'data',
+    row_id_field: 'id',
+    display_name_field: 'name',
+    yields: ['id', 'name', 'pricing.prompt', 'canonical_slug'],
+    fetch_every_days: 1,
+    expected_change_days: 3,
+    // The headline stays a column and a bound fact and stops being an event —
+    // exactly as `openrouter-models` declares it today. So every line the run
+    // below writes is a vendor-posted one.
+    material_fields: [{ field: 'price_input', path: 'pricing.prompt', event: false }],
+    mints: null,
+    robots: { checked_on: '2026-09-07', result: 'allowed', requests_per_day: 10 },
+    verification: { date: '2026-09-07', result: 'live' },
+    companion: {
+      url_template: `${url}/endpoints/{key}`,
+      fetch_every_days: 1,
+      covers: { field: 'pricing.prompt', test: 'nonzero', key: 'canonical_slug' },
+      snapshot: 'endpoints',
+      declared_on: '2026-09-07',
+      canonical_tier: 'standard',
+      provider_field: 'tag',
+      provider_identities: { acme: { provider_slug: 'acme', declared_on: '2026-09-07' } },
+      rows_path: 'data.endpoints',
+      rates: { price_input: 'pricing.prompt', price_output: 'pricing.completion' },
+    },
+  };
+}
+
+test('a 2% vendor move is an event; a 60% headline move is not; a row with no vendor rate emits nothing', async (t) => {
+  let rows = VENDOR_ROWS.map((r) => ({ ...r, pricing: { ...r.pricing } }));
+  let movedRate = '1.00';
+  const server = await serve((pathname) => {
+    if (pathname === '/models') return { status: 200, body: catalogBody(rows) };
+    if (pathname === '/endpoints/k-moved') {
+      return { status: 200, body: JSON.stringify({ data: { endpoints: [{ tag: 'acme', pricing: { prompt: movedRate, completion: '5.00' } }] } }) };
+    }
+    if (pathname === '/endpoints/k-flat') {
+      return { status: 200, body: JSON.stringify({ data: { endpoints: [{ tag: 'acme', pricing: { prompt: '2.00', completion: '6.00' } }] } }) };
+    }
+    if (pathname === '/endpoints/k-none') {
+      // The row's own author posts nothing here, so the row has no vendor rate
+      // however far its headline moves.
+      return { status: 200, body: JSON.stringify({ data: { endpoints: [{ tag: 'somebody-else', pricing: { prompt: '3.00', completion: '7.00' } }] } }) };
+    }
+    return { status: 404, body: '' };
+  });
+  const root = makeRoot([vendorSource(server.url)]);
+  t.after(async () => {
+    await server.close();
+    cleanup(root);
+  });
+
+  assert.equal((await runPulse(root, ARGS)).status, 0);
+  assertIngested(root, 'models', 'before the world moves');
+  assert.equal(readLines(paths.changes(root)).length, 0, 'first ingest establishes both diff bases');
+
+  // Move the world: the vendor rate on one row by 2%, and the HEADLINE on the
+  // other two by 60% and 200% with their vendor rates untouched.
+  movedRate = '1.02';
+  rows = [
+    { ...VENDOR_ROWS[0] },
+    { ...VENDOR_ROWS[1], pricing: { prompt: '0.0000032' } },
+    { ...VENDOR_ROWS[2], pricing: { prompt: '0.000009' } },
+  ];
+
+  const run = await runPulse(root, [...ARGS, '--force']);
+  assert.equal(run.status, 0, run.out);
+
+  const lines = readLines(paths.changes(root));
+  assert.equal(lines.length, 1, `the 2% vendor move is the only event; got ${JSON.stringify(lines.map((l) => [l.row_id, l.field]))}`);
+  const line = lines[0];
+  assert.equal(line.bound_to, 'vendor_posted_rate');
+  assert.equal(line.row_id, 'acme/moved');
+  assert.equal(line.field, 'price_input');
+  assert.equal(line.old, '1.00');
+  assert.equal(line.new, '1.02', 'a 2% move is an event on the same terms as a move of 200%');
+
+  // Task 16: the line names the model, the PROVIDER, the TIER, both values and
+  // the source. A rate with no tier is under-specified even when the vendor is
+  // unambiguous, and a sentence naming the vendor and the number would be false
+  // about which of its prices it names.
+  assert.equal(line.provider_slug, 'acme');
+  assert.equal(line.tier, 'standard');
+  assert.equal(line.display_name, 'Acme Moved');
+  assert.equal(line.source, 'models');
+  assert.ok(line.source_url);
+  assert.match(line.date, /^\d{4}-\d{2}-\d{2}$/);
+  assert.ok(line.excerpt, 'and it embeds its archived source reference');
+
+  // The two that emit nothing, named rather than left to the count.
+  assert.equal(lines.filter((l) => l.row_id === 'acme/flat').length, 0, 'a 60% headline move is not an event');
+  assert.equal(lines.filter((l) => l.row_id === 'acme/none').length, 0, 'and a row with no vendor rate never is');
+});
+
+test('a vendor-posted price line that cannot name its provider and tier is refused at the append point', async (t) => {
+  // Task 16's other half, and it takes the same stance the closed-kind refusal
+  // takes: refused rather than written, because `changes.jsonl` is append-only
+  // history and a line already committed cannot be removed.
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+
+  const complete = {
+    date: '2026-09-07',
+    source: 'models',
+    source_url: 'http://fixture.invalid/models',
+    key: 'models|companion|aa|bb|acme/one|price_input',
+    kind: 'field_change',
+    bound_to: VENDOR_BOUND,
+    row_id: 'acme/one',
+    provider_slug: 'acme',
+    tier: 'standard',
+    field: 'price_input',
+    old: '1',
+    new: '2',
+  };
+  assert.equal(appendChanges(paths.changes(root), [complete]).length, 1, 'the complete line is written');
+
+  for (const missing of ['provider_slug', 'tier']) {
+    const broken = { ...complete, key: `${complete.key}|${missing}` };
+    delete broken[missing];
+    assert.throws(
+      () => appendChanges(paths.changes(root), [broken]),
+      (err) => {
+        assert.match(err.message, /does not name both the provider and the tier/, missing);
+        assert.match(err.message, /price_input/, 'and quotes the key that went wrong');
+        return true;
+      },
+    );
+  }
+  assert.equal(readLines(paths.changes(root)).length, 1, 'and nothing was appended by the refused calls');
 });

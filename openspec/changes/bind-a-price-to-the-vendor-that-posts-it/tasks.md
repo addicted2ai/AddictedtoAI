@@ -89,7 +89,7 @@ fetch is switched on; the tasks below build the shape and the bar.
       NOT fail the run: a key whose companion fetch errors or refuses SHALL
       yield an absent value … for every row that key covers … and every row
       under a different key SHALL be unaffected*.
-- [ ] 6. `pulse/tests/registry.test.mjs`: fourteen cases over one companion
+- [x] 6. `pulse/tests/registry.test.mjs`: fourteen cases over one companion
       declaration. It validates when every required field is present,
       `robots.checked_on` is on or after `declared_on`, and
       `robots.requests_per_day` is at least the distinct-key count. It is
@@ -114,14 +114,14 @@ fetch is switched on; the tasks below build the shape and the bar.
       the eight are independent rather than one condition described eight times;
       drop the slug-shape check on map values and confirm only the display-name
       case stops refusing. Tests tasks 1 and 3.
-- [ ] 7. `pulse/tests/registry.test.mjs`: the split function on its own —
+- [x] 7. `pulse/tests/registry.test.mjs`: the split function on its own —
       `tag: "anthropic/fast"` splits to provider slug `anthropic` and tier
       `fast`; a bare `tag: "openai"` splits to provider slug `openai` and tier
       `standard`; a `tag` with leading/trailing whitespace around the slash still
       splits on the first `/` alone. Mutation: drop the no-`/` branch so a bare
       value returns no tier and confirm this test fails on the bare case while
       the tiered case still passes. Tests task 2.
-- [ ] 8. `pulse/tests/sources.test.mjs`: a fixture whose snapshot holds four
+- [x] 8. `pulse/tests/sources.test.mjs`: a fixture whose snapshot holds four
       priced rows over three canonical slugs issues **three** companion fetches,
       not four; one of the three errors and only the rows it covers report an
       absent value while the other two resolve; the run exits 0. The snapshot
@@ -182,7 +182,7 @@ fetch is switched on; the tasks below build the shape and the bar.
       nothing else. No threshold appears anywhere on this path. Implements: *a
       price event SHALL NOT be derived from the top-provider headline, at any
       threshold* and *no percentage threshold SHALL be used*.
-- [ ] 13. `pulse/tests/derive.test.mjs`: seven rows, each row's companion
+- [x] 13. `pulse/tests/derive.test.mjs`: seven rows, each row's companion
       listing entries given as literal `provider_field` values in the shape this
       source actually publishes (a `tag` string), never as pre-split fields —
       the split under test is task 2's, not the fixture's. Two resolve: an
@@ -212,22 +212,22 @@ fetch is switched on; the tasks below build the shape and the bar.
       exactly two fail — the `google` row, which stops resolving, and the
       unmapped row, which starts — which is the pair that measures the identity
       map itself. Tests tasks 9 and 10.
-- [ ] 14. `pulse/tests/derive.test.mjs`: the catalog row carries both fields with
+- [x] 14. `pulse/tests/derive.test.mjs`: the catalog row carries both fields with
       their own names and the listing field is byte-identical to what the same
       fixture produces today. Mutation: overwrite the listing field with the
       vendor rate and confirm only this test fails. Tests task 11.
-- [ ] 15. `pulse/tests/diff.test.mjs`: a 2% move in a vendor-posted rate emits an
+- [x] 15. `pulse/tests/diff.test.mjs`: a 2% move in a vendor-posted rate emits an
       event; a 60% move in the **headline** with the vendor rate unchanged emits
       none; a row with no vendor rate emits none however far its headline moved.
       The first and second together are the threshold proof: any threshold
       implementation fails at least one of them. Mutation: gate emission on a 5%
       change and confirm the 2% test fails while the other two pass. Tests task
       12.
-- [ ] 16. `pulse/tests/diff.test.mjs`: the emitted line carries the provider and
+- [x] 16. `pulse/tests/diff.test.mjs`: the emitted line carries the provider and
       the tier, and a line missing either is refused at the append point rather
       than written — the same stance `A change line's kind comes from a closed
       list with one home` takes on kinds. Tests task 9's second half.
-- [ ] 17. `pulse/tests/registry.test.mjs` (a source-scanning assertion, not a
+- [x] 17. `pulse/tests/registry.test.mjs` (a source-scanning assertion, not a
       behavioural fixture): grep `pulse/lib/**/*.mjs` for the property accesses
       `.provider_identities` and `.provider_field` and assert the set of files
       that read either is exactly `{registry.mjs, derive.mjs}` — task 1's
@@ -239,7 +239,7 @@ fetch is switched on; the tasks below build the shape and the bar.
 
 ## Gates
 
-- [ ] 18. `openspec validate bind-a-price-to-the-vendor-that-posts-it --type
+- [x] 18. `openspec validate bind-a-price-to-the-vendor-that-posts-it --type
       change --strict --no-interactive`, and `node
       scripts/check-spec-deltas.mjs --strict`. Run at drafting time.
 - [ ] 19. `npm test`, `npm run build`, `verify-launch`, `verify-design`,

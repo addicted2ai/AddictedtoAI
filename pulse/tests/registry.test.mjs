@@ -9,9 +9,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { join, resolve, dirname } from 'node:path';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { loadRegistry, findSource } from '../lib/registry.mjs';
+import { COMPANION_REQUIRED, loadRegistry, findSource, splitProviderField } from '../lib/registry.mjs';
 import { cleanup, makeRoot } from './helpers.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -408,4 +408,191 @@ test('the launch registry declares a frontier block, with no metric registered a
     assert.match(ex.decided_on, /^\d{4}-\d{2}-\d{2}$/);
     assert.ok(ex.note.length > 80, 'each exclusion carries the measurement behind it, not a label');
   }
+});
+
+/*
+ * ── The companion fetch, and the bar in front of it ──────────────────────────
+ *
+ * Change `bind-a-price-to-the-vendor-that-posts-it`, tasks 6, 7 and 17.
+ * specs/pulse, "Sources live in a registry and refusals are data".
+ *
+ * A companion declaration multiplies a source's request rate by the number of
+ * distinct keys its own coverage rule yields. So what is measured here is what
+ * the load REFUSES: eight required fields, three independent robots conditions,
+ * a hand-maintained coverage list, and a display name written where a machine
+ * key belongs.
+ */
+
+/**
+ * Four rows over THREE covered rows and TWO distinct keys.
+ *
+ * `acme/one` and `acme/one:free` share one `canonical_slug`, which is the whole
+ * of design D1 in a fixture: the companion is fetched once per key, so the count
+ * the robots bar is compared against is 2 and not 3. `acme/free` prices at zero
+ * and the `nonzero` test excludes it, so the coverage rule is doing work rather
+ * than covering everything.
+ */
+const COMPANION_ROWS = {
+  'acme/one': { id: 'acme/one', canonical_slug: 'acme/one', pricing: { prompt: '0.000001' } },
+  'acme/one:free': { id: 'acme/one:free', canonical_slug: 'acme/one', pricing: { prompt: '0.000002' } },
+  'acme/two': { id: 'acme/two', canonical_slug: 'acme/two', pricing: { prompt: '0.000003' } },
+  'acme/free': { id: 'acme/free', canonical_slug: 'acme/free', pricing: { prompt: '0' } },
+};
+
+const COMPANION = {
+  url_template: 'http://fixture.invalid/models/{key}/endpoints',
+  fetch_every_days: 1,
+  covers: { field: 'pricing.prompt', test: 'nonzero', key: 'canonical_slug' },
+  snapshot: 'endpoints',
+  declared_on: '2026-09-07',
+  canonical_tier: 'standard',
+  provider_field: 'tag',
+  provider_identities: { acme: { provider_slug: 'acme', declared_on: '2026-09-07' } },
+  rows_path: 'data.endpoints',
+  rates: { price_input: 'pricing.prompt', price_output: 'pricing.completion' },
+};
+
+const COMPANION_HOST = {
+  id: 'x',
+  url: 'https://x.invalid',
+  format: 'json',
+  rows_path: 'data',
+  row_id_field: 'id',
+  fetch_every_days: 1,
+  expected_change_days: 3,
+  material_fields: [{ field: 'price_input', path: 'pricing.prompt', event: false }],
+  robots: { checked_on: '2026-09-07', result: 'allowed', requests_per_day: 2 },
+  verification: { date: '2026-09-07', result: 'live' },
+};
+
+/** Load a registry whose one source carries `companion`, over a written snapshot. */
+function loadCompanion(companion, { robots = COMPANION_HOST.robots, rows = COMPANION_ROWS } = {}) {
+  const root = makeRoot([{ ...COMPANION_HOST, robots, companion }]);
+  try {
+    const dir = join(root, 'data', 'sources', 'x');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, 'latest.json'),
+      JSON.stringify({ source: 'x', date: '2026-09-07', row_count: Object.keys(rows).length, rows }, null, 2),
+      'utf8',
+    );
+    loadRegistry(root);
+    return null;
+  } catch (err) {
+    return err.message;
+  } finally {
+    cleanup(root);
+  }
+}
+
+test('a companion declaration is refused on fourteen separate conditions, each named', () => {
+  // The control. Everything present, the robots record re-checked on the day the
+  // companion was declared, and the stated rate at least the distinct-key count.
+  assert.equal(loadCompanion(COMPANION), null, 'a complete companion declaration loads');
+
+  // ── The eight required fields, omitted IN TURN ────────────────────────────
+  // Eight refusals, not one loop asserted once: each case asserts the thrown
+  // message names THAT field. Shortening the required-field list in
+  // `registry.mjs` to `canonical_tier` alone makes exactly the other seven of
+  // these fail, which is the assertion that the eight are independent.
+  assert.equal(COMPANION_REQUIRED.length, 8, 'the required list is the eight the delta names');
+  for (const field of COMPANION_REQUIRED) {
+    const broken = { ...COMPANION };
+    delete broken[field];
+    const message = loadCompanion(broken);
+    assert.ok(message, `omitting ${field} must be refused`);
+    assert.match(message, new RegExp(`is missing "${field}"`), `and the message names ${field}`);
+    assert.match(message, /source "x"/, 'and names the source');
+  }
+
+  // ── The three robots conditions, independent and separately named ─────────
+  const stale = loadCompanion(COMPANION, {
+    robots: { checked_on: '2026-09-06', result: 'allowed', requests_per_day: 2 },
+  });
+  assert.match(stale, /earlier than this companion's "declared_on"/, 'a check older than the declaration');
+  assert.match(stale, /source "x"/);
+
+  const unstated = loadCompanion(COMPANION, { robots: { checked_on: '2026-09-07', result: 'allowed' } });
+  assert.match(unstated, /no integer "robots.requests_per_day"/, 'a volume nobody stated as a number');
+
+  const understated = loadCompanion(COMPANION, {
+    robots: { checked_on: '2026-09-07', result: 'allowed', requests_per_day: 1 },
+  });
+  assert.match(
+    understated,
+    /is 1, fewer than the 2 distinct key\(s\)/,
+    'one fewer than the distinct-key count the coverage rule yields from the snapshot',
+  );
+  // And the count is PER KEY, not per row: three rows are covered and two keys
+  // span them, so a stated rate of 2 is enough. That is design D1's saving, in
+  // the one place a build can measure it.
+  assert.equal(loadCompanion(COMPANION, { robots: { ...COMPANION_HOST.robots, requests_per_day: 2 } }), null);
+
+  // ── A hand-maintained coverage list ───────────────────────────────────────
+  const listed = loadCompanion({ ...COMPANION, covers: ['acme/one', 'acme/two'] });
+  assert.match(listed, /enumerates row ids/);
+  assert.match(listed, /coverage gap that nothing can detect/, 'and says what a list costs');
+  assert.match(listed, /source "x"/);
+
+  // ── The fourteenth: a display name where a machine key belongs ────────────
+  // The only test of "both sides of every map entry SHALL be machine keys", and
+  // the reason a rename or a lookalike cannot forge an attribution. `OpenAI` is
+  // a label whoever writes the listing sets; it is not a slug.
+  const displayName = loadCompanion({
+    ...COMPANION,
+    provider_identities: { acme: { provider_slug: 'OpenAI', declared_on: '2026-09-07' } },
+  });
+  assert.match(displayName, /not a machine key/);
+  assert.match(displayName, /entry "acme"/, 'and the message names that entry');
+  assert.match(displayName, /source "x"/);
+});
+
+test('the provider_field split reads a slug and a tier out of one value', () => {
+  // Task 7. The source publishes no bare provider-slug field: measured on its own
+  // /endpoints response (data/reviews/j-20260902-01.md:93), an endpoint is
+  // {"provider_name":"Anthropic","tag":"anthropic/fast", ...}. So the identity
+  // and the tier are both read out of `tag`, by splitting on its first `/`.
+  assert.deepEqual(splitProviderField({ tag: 'anthropic/fast' }, 'tag'), {
+    provider_slug: 'anthropic',
+    tier: 'fast',
+  });
+
+  // A value with no `/` names the provider slug alone and denotes that
+  // provider's own STANDARD tier — the reading this site's own measured tier
+  // spread already uses the word for: `openai` bare at 1x against `openai/flex`
+  // at 0.5x and `openai/fast` at 2x (data/price-attribution-debt.json).
+  assert.deepEqual(splitProviderField({ tag: 'openai' }, 'tag'), { provider_slug: 'openai', tier: 'standard' });
+
+  // Whitespace around the slash does not move the split: it is still the first
+  // `/` alone, with both halves trimmed and case-folded so the two sides of the
+  // identity comparison are normalised by one rule rather than two.
+  assert.deepEqual(splitProviderField({ tag: '  Anthropic / Fast  ' }, 'tag'), {
+    provider_slug: 'anthropic',
+    tier: 'fast',
+  });
+  assert.deepEqual(splitProviderField({ tag: 'azure/eu' }, 'tag'), { provider_slug: 'azure', tier: 'eu' });
+
+  assert.equal(splitProviderField({ tag: '' }, 'tag'), null, 'an empty value identifies nobody');
+  assert.equal(splitProviderField({ provider_name: 'Anthropic' }, 'tag'), null, 'a missing field identifies nobody');
+  assert.equal(splitProviderField(null, 'tag'), null);
+});
+
+test('the author-identity map and the provider field are read in exactly two files', () => {
+  // Task 17, and it is a SOURCE-SCANNING assertion rather than a behavioural
+  // fixture on purpose: "the map SHALL NOT be consulted for anything but that
+  // comparison" is a claim about where the code reads it, and no fixture can
+  // measure a read that does not happen on the path the fixture drives.
+  //
+  // `registry.mjs` validates the declaration and owns the split; `derive.mjs`
+  // resolves one row's vendor rate with it. A third reader is a second opinion
+  // about what an author's identity is, which is the thing the declaration
+  // exists to make singular.
+  const libDir = join(ROOT, 'pulse', 'lib');
+  const readers = new Set();
+  for (const name of readdirSync(libDir)) {
+    if (!name.endsWith('.mjs')) continue;
+    const text = readFileSync(join(libDir, name), 'utf8');
+    if (text.includes('.provider_identities') || text.includes('.provider_field')) readers.add(name);
+  }
+  assert.deepEqual([...readers].sort(), ['derive.mjs', 'registry.mjs']);
 });
