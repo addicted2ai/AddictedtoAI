@@ -152,7 +152,7 @@ satisfies it and the task that measures it.
 - [x] 10. `openspec validate retry-the-gates-once-and-name-the-failure --type
       change --strict --no-interactive`, and `node
       scripts/check-spec-deltas.mjs --strict`. Run at drafting time.
-- [ ] 11. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
+- [x] 11. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
       `verify-surfaces`, `verify-analytics`.
 
 ## Not tasks of this change, recorded so they are not read as omissions
