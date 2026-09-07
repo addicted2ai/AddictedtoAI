@@ -97,9 +97,12 @@ of it was a hosted endpoint rather than the model, since K2.5's weights
 ship under {{fact:model/moonshotai-kimi-k2-5#license}} and stay
 downloadable.
 
-Whether the bigger model is worth the difference is a question this catalog
-puts side by side rather than leaving to either release's launch copy. Both
-rows are still listed: K3 heads at
+Whether the bigger model is also the better one is a question this catalog
+puts side by side rather than leaving to either release's launch copy. The
+same snapshot's Artificial Analysis coding-index comparison puts K3 ahead of
+K2.5: K3 scores
+{{fact:model/moonshotai-kimi-k3#coding_index}}, while K2.5's row scores lower.
+Both rows are still listed: K3 heads at
 {{fact:model/moonshotai-kimi-k3#price_input}} input against K2.5's
 {{fact:model/moonshotai-kimi-k2-5#price_input}}, so the older and smaller
 model is the cheaper call by a wide margin, and it is still a call you can
