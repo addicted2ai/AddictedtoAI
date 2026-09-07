@@ -290,23 +290,38 @@ radar feeds: \`${err.message}\`. Sweep without them and say so in \`RESULT.md\`.
     // feeds — filtered through the ONE readable set the helper built from the
     // whole array. Nothing here decides what is readable; it only decides how
     // to group what already is, so a row cannot disagree with the helper.
-    const candidates = [row.url, ...(row.feeds ?? []).map((f) => f?.url)];
+    //
+    // Each candidate carries its OWN robots/terms finding rather than the
+    // row's: a `feeds` entry is validated with its own dated checks
+    // (`validateRadarChecks(feed, fat)` in pulse/lib/registry.mjs), and a row
+    // whose own url is refused can still contribute a permitted feed — so the
+    // row-level pair is not a fact about every URL the row lists underneath
+    // it, and rendering it as one was misattributing a dated rights finding
+    // to URLs it does not describe.
+    const candidates = [
+      { url: row.url, robots: row.robots, terms: row.terms },
+      ...(row.feeds ?? []).map((f) => ({ url: f?.url, robots: f?.robots, terms: f?.terms })),
+    ];
     const urls = [];
-    for (const u of candidates) {
-      if (typeof u !== 'string') continue;
-      const key = u.trim();
+    for (const c of candidates) {
+      if (typeof c.url !== 'string') continue;
+      const key = c.url.trim();
       if (!readable.has(key) || emitted.has(key)) continue;
       emitted.add(key);
-      urls.push(u);
+      urls.push(c);
     }
     if (urls.length === 0) continue;
     blocks.push(`### ${row.title ?? row.id} (\`${row.id}\`)
 
 - **Format**: ${row.format} — **verified live**: ${row.verified_on}
-- **Robots** (checked ${row.robots?.checked_on}): ${row.robots?.result}
-- **Terms** (read ${row.terms?.read_on}): ${row.terms?.result}
 - **Read these URLs**:
-${urls.map((u) => `  - \`${u}\``).join('\n')}`);
+${urls
+  .map(
+    (c) => `  - \`${c.url}\`
+    - **Robots** (checked ${c.robots?.checked_on}): ${c.robots?.result}
+    - **Terms** (read ${c.terms?.read_on}): ${c.terms?.result}`,
+  )
+  .join('\n')}`);
   }
 
   if (blocks.length === 0) {

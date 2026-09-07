@@ -115,6 +115,18 @@ test('a scout brief lists the radar feeds as inputs, with their terms', (t) => {
   assert.ok(brief.includes('**Terms** (read 2026-09-06): permitted'), 'the terms finding and the date it was read');
   assert.ok(brief.includes('**Robots** (checked 2026-09-06): allowed'), 'the robots finding and the date it was checked');
   assert.ok(brief.includes('inputs to the'), 'and the never-displayed rule the ruling turns on');
+
+  // The row/feed distinction, with teeth: `beta`'s OWN url is refused with a
+  // terms result of 'prohibited', and its feed (`permitted.xml`) is offered
+  // with a terms result of 'permitted' — the two disagree, on purpose. The
+  // brief must carry the feed's own finding against the feed's own url, never
+  // the refused row's finding hoisted over it. Asserting only on `alpha`
+  // (whose row and feed findings happen to agree) would pass even if the
+  // renderer still attributed the row's pair to every url beneath it.
+  assert.ok(
+    !brief.includes('prohibited'),
+    "the refused row's own terms finding ('prohibited') must never appear in the brief — the only url beta contributes is its permitted feed, which carries its own distinct finding",
+  );
 });
 
 test('a URL a radar row refuses never reaches an assembled brief', (t) => {
