@@ -91,7 +91,7 @@ that no test attempts is a refusal that has never run.
       entries for several posts and a message naming only the record would not
       say which one failed. **A carry-forward is one hop and never a chain: the anchor
       must itself answer.** An anchor whose own record carries only a
-      `reads-human-from` is refused by the fourth leg — it "carries no non-empty
+      `reads-human-from` is refused by the fifth leg — it "carries no non-empty
       `reads-human` of its own" — and the message says so, so the reviewer is
       sent to name the record that actually answered. Do not follow the anchor's
       own carry-forward; the spec's refusal is the whole rule, and a resolver
