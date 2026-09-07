@@ -179,9 +179,18 @@ ten in `education-static`, thirteen in `education-dynamic`, six new or changed i
       rejected; where the departure implies a change to a **different** entry,
       say so in `RESULT.md` and do not edit that entry, because that is the
       reviewer's finding to carry and not your diff to grow. Same for
-      `ACCEPTANCE_BY_TYPE.tutorial` against the tutorial map. **Implements:
-      `education-static` sentences 1–4 on the author side; `education-dynamic`
-      sentence 12 on the author side.**
+      `ACCEPTANCE_BY_TYPE.tutorial` against the tutorial map. Name the map's
+      path in both, in full: this text is keyed on the job's **type**, so it is
+      the only thing that reaches an `education` or `tutorial` job that names no
+      page — a scout proposal or a `DIRECTIVES.md` line sets `job.target` to
+      null (`loop/lib/brief.mjs:476-477`; `loop/lib/queue.mjs:77` is the only
+      place `target` is set, and `loop/lib/proposals.mjs` and
+      `loop/lib/directives.mjs` contain the string zero times each), and task 19
+      has nothing to look an entry up by. Path plus obligation is what such a
+      job can always be given. **Implements: `education-static` sentences 1–4 on
+      the author side, and sentence 7's always-half — the map's path and the
+      obligation on every route into the surface; `education-dynamic` sentence
+      12 on the author side.**
 - [ ] 19. `loop/lib/brief.mjs`, `assembleBrief`: where the job's target is a
       learn page or a tutorial, inject that page's curriculum entry verbatim,
       via task 17, under its own heading in the brief. **Key this on
@@ -192,8 +201,15 @@ ten in `education-static`, thirteen in `education-dynamic`, six new or changed i
       `education` job. A Desk job is one written prompt in and files out with no
       session and no memory; a brief that names a file the job must go and find
       is a step a job can skip, and the four standing deviations are what
-      skipping it costs. **Implements: the author's brief carries the page's
-      entry.**
+      skipping it costs. Head the injected section with the map's path and the
+      amendment obligation restated, so the routes whose type-keyed acceptance
+      does not carry them — a `repair` job's is `ACCEPTANCE_BY_TYPE.repair` —
+      receive both alongside the entry. Where the job has **no** target, this
+      task injects nothing and task 18's type-keyed text is what carries the
+      path and the obligation; that is the division the requirement's two halves
+      name. **Implements: sentence 7's named-page half — the author's brief
+      carries the page's curriculum entry verbatim wherever the job names its
+      page.**
 - [ ] 20. `loop/lib/review.mjs`, `CHECKLISTS.education` and `CHECKLISTS.tutorial`
       (three and four lines respectively, neither mentioning the curriculum):
       add the clause-by-clause comparison and **both** of its outcomes — a
@@ -231,9 +247,22 @@ ten in `education-static`, thirteen in `education-dynamic`, six new or changed i
       drains a finding whose subject is the curriculum of record, which is this
       change's own retirement path. Derive the touched paths from the **full**
       `diffText` before the 200 KB truncation at line 544, or the block goes
-      missing from exactly the diffs least reviewable by eye. **Implements:
+      missing from exactly the diffs least reviewable by eye. **Where the
+      touched paths include `openspec/curriculum/tutorials.md`, the appended
+      block additionally carries the admission-test clause and its
+      `spec-violation` outcome** — an entry the diff adds that neither can be
+      executed here without a paid account or special hardware nor names in
+      advance which steps will go unexecuted and why is rejected
+      `spec-violation` naming the admission test. That sentence is universal
+      over **diffs that add an entry to the map**, and task 20 reaches it only
+      through `CHECKLISTS.tutorial`: the diff that adds an entry is routinely
+      not a `tutorial` job's. A `repair` job draining a carried finding whose
+      subject is the map — this change's own retirement path — is reviewed
+      against the `directory` checklist (`loop/lib/review.mjs:172`, `:187`), and
+      this block is the only thing that reaches it. **Implements:
       `education-static` sentence 5 on every route into a learn page or a
-      tutorial, not only on the two job types.**
+      tutorial, not only on the two job types; `education-dynamic` sentence 5 on
+      every route that adds a map entry, not only on the `tutorial` checklist.**
 - [ ] 22. `loop/lib/brief.mjs`: the reviewer's own brief already runs in the
       job's worktree, so it can read either map; tasks 20 and 21 are what tell it
       to, and both name the map's path rather than inlining it. Confirm by
@@ -245,26 +274,49 @@ ten in `education-static`, thirteen in `education-dynamic`, six new or changed i
       `ACCEPTANCE_BY_TYPE.education`, `ACCEPTANCE_BY_TYPE.tutorial`,
       `CHECKLISTS.education` and `CHECKLISTS.tutorial` each name the map's path,
       the amend-in-the-same-diff obligation, the `spec-violation` outcome and
-      the `carry:` outcome; that `CHECKLISTS.tutorial` additionally names the
-      admission test and its `spec-violation` outcome; that a brief assembled
-      for an `education` job whose target is a declared page contains that
-      entry's text; and — for task 21 — that the review brief for a **`repair`**
-      job whose diff touches `content/learn/` carries the comparison block,
-      while the review brief for a `repair` job whose diff touches neither
-      content surface nor either map does not. The measurable form of the
-      failure this closes: the string `curriculum` occurs zero times in `loop/`
-      outside one comment in a test today. **Tests: `education-static` sentences
-      1–10; `education-dynamic` sentences 9–12 and the admission test's review
-      outcome.**
-- [ ] 24. Mutation proof on the review side, four mutations failing disjoint
-      assertions, because four separately stated rules are described here and one
+      the `carry:` outcome; that `CHECKLISTS.education` and `CHECKLISTS.tutorial`
+      each state the `spec-violation` is owed **whether or not the reviewer
+      agrees with the departure** — the sentence that a well-argued departure is
+      refused on the same terms as a bad one is a rule the reviewer has to be
+      told, and a checklist that names the outcome without naming its
+      independence from merit invites exactly the pass it forbids; that
+      `CHECKLISTS.tutorial` additionally names the admission test and its
+      `spec-violation` outcome; that a brief assembled for an `education` job
+      whose target is a declared page contains that entry's text; that a brief
+      assembled for an `education` job with **no** target — a proposal- or
+      directive-sourced job, which is every job that names no page — still names
+      the map's path and the amendment obligation, and contains no entry text,
+      which is the division tasks 18 and 19 draw; and — for task 21 — that the
+      review brief for a **`repair`** job whose diff touches `content/learn/`
+      carries the comparison block, that the review brief for a `repair` job
+      whose diff adds an entry to `openspec/curriculum/tutorials.md` names the
+      admission test and its `spec-violation` outcome, and that the review brief
+      for a `repair` job whose diff touches neither content surface nor either
+      map carries none of it. The measurable form of the failure this closes:
+      the string `curriculum` occurs zero times in `loop/` outside one comment
+      in a test today. **Tests: `education-static` sentences 1–10;
+      `education-dynamic` sentences 9–12, sentence 5 on the `repair` route, and
+      the admission test's review outcome.**
+- [ ] 24. Mutation proof on the review side, six mutations failing disjoint
+      assertions, because six separately stated rules are described here and one
       mutation would not tell them apart. Delete the `spec-violation` clause from
       `CHECKLISTS.education` and confirm only that assertion fails; delete the
-      `carry:` clause and confirm only that one fails; delete the admission-test
-      clause from `CHECKLISTS.tutorial` and confirm only that assertion fails
-      while the education assertions stay green; revert task 21's path-keyed
-      block and confirm only the `repair`-brief assertion fails while every
-      type-keyed checklist assertion passes. Restore and verify byte-identical
+      **"whether or not you agree with the departure"** clause from
+      `CHECKLISTS.education` and `CHECKLISTS.tutorial`, leaving the
+      `spec-violation` outcome itself intact, and confirm only the
+      merit-independence assertions fail while the outcome assertions stay green
+      — the two are one sentence apart in the checklist and a mutation that
+      cannot separate them is not proving the second one; delete the `carry:`
+      clause and confirm only that one fails; delete the admission-test clause
+      from `CHECKLISTS.tutorial` and confirm only that assertion fails while the
+      education assertions stay green; revert task 21's path-keyed block and
+      confirm the `repair`-brief assertions fail — both the `content/learn/` one
+      and the tutorial-map one — while every type-keyed checklist assertion
+      passes; delete the admission-test clause from task 21's block alone and
+      confirm only the tutorial-map `repair`-brief assertion fails while the
+      `content/learn/` one and `CHECKLISTS.tutorial`'s own admission-test
+      assertion stay green, which is what proves the block reaches the
+      `directory`-checklist route on its own. Restore and verify byte-identical
       by hash.
 - [ ] 25. Mutation proof on the injection: revert task 19 and confirm the
       assembled-brief test fails while the text-content tests still pass.

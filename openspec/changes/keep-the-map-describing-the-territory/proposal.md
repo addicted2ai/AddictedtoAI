@@ -66,6 +66,24 @@ name, and it already receives `diffText`) appends the comparison block whenever
 the diff touches either content surface or either map. No requirement moved; a
 task did.
 
+**A third route into a learn page, measured 2026-09-06 in the fix round, and it
+narrowed a sentence rather than a mechanism.** The author's-brief sentence had
+been written as a universal over jobs that write or edit a learn page — *carry
+that page's curriculum entry* — but not every such job names a page. `job.target`
+is set in exactly one place, `loop/lib/queue.mjs:77`
+(`target: it.target ?? it.path ?? null`), from a queue item; `loop/lib/
+proposals.mjs` and `loop/lib/directives.mjs` contain the string `target` **zero
+times each**, and `subjectLines` (`loop/lib/brief.mjs:476-477`) says so in its
+own comment — *"directive, proposal and resumed jobs set these null"*. An
+`education` job filed by the scout or by a `DIRECTIVES.md` line therefore has no
+page to look an entry up by, and a sentence demanding one would be unsatisfiable
+on that route rather than merely unimplemented. The sentence now states what the
+system does on every route — the map's path and the obligation always, the entry
+verbatim wherever the job names its page — and tasks 18, 19 and 23 carry both
+halves. Nothing was weakened: the entry injection is unchanged for the routes
+that have a target, and the type-keyed acceptance text is what reaches the ones
+that do not.
+
 **`addictedtoai-kat1` — still true, and the surrounding numbers are unchanged.**
 `QUEUE_PRODUCIBLE_TYPES` (`pulse/lib/queue.mjs:88-95`) holds six types and
 `tutorial` is not among them; its exclusion comment (lines 67-71) cites this

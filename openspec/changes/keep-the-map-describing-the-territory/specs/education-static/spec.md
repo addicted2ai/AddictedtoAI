@@ -59,12 +59,15 @@ clauses are the page's brief, and a page SHALL be written to them.
   non-blocking finding reaches work without editing anything") whose `subject`
   is the curriculum of record. That work is outside the diff under review, and
   a rule that forced it inside would trade a stale map for an unbounded one.
-- The author's brief for a job that writes or edits a learn page SHALL carry
-  that page's curriculum entry and the obligation above, and the reviewer's
-  checklist for such a job SHALL carry the clause-by-clause comparison and the
-  two outcomes it can produce. A job is one written prompt in and files out,
-  with no session and no memory: an obligation no actor is told about is not a
-  mechanism.
+- The author's brief for a job that writes or edits a learn page SHALL carry the
+  curriculum of record's path and the obligation above — and, where the job
+  names the page it is about, that page's curriculum entry verbatim — and the
+  reviewer's checklist for such a job SHALL carry the clause-by-clause
+  comparison and the two outcomes it can produce. A job is one written prompt in
+  and files out, with no session and no memory: an obligation no actor is told
+  about is not a mechanism. A job reaching this surface from a proposal or a
+  directive names no page, which is why the path and the obligation are owed
+  unconditionally and the entry is owed wherever the page is named.
 
 #### Scenario: A defensible departure amends the map beside the page
 
