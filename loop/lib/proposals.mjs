@@ -648,6 +648,108 @@ export function addedProposalPaths(changed) {
     .sort();
 }
 
+/** Every drop record a branch ADDS. `dropped/` only — not the top level, not `rejected/`. */
+export function addedDroppedRecordPaths(changed) {
+  return (changed ?? [])
+    .filter((e) => (typeof e === 'string' ? true : e.status === 'A'))
+    .map((e) => String(typeof e === 'string' ? e : e.path).replace(/\\/g, '/'))
+    .filter((p) => /^data\/proposals\/dropped\/[^/]+\.md$/.test(p) && basename(p) !== 'README.md')
+    .sort();
+}
+
+/**
+ * The two shapes a drop record's REQUIRED content may take, mirroring
+ * `notedProposal`'s two shapes and for the same stated reason: the executor
+ * contract admits runners that cannot emit structured YAML, so a rule that
+ * exists only as a front-matter key is a rule some conforming runner cannot
+ * satisfy. Both a `failed_test:` key and a `- failed test: …` line count.
+ */
+const FAILED_TEST_KEYS = ['failed_test', 'failed-test', 'failedTest'];
+const FAILED_TEST_LINE = /^[ \t]*[-*]?[ \t]*failed[ _-]?test[ \t]*:[ \t]*\S/im;
+const REFILE_KEYS = ['refile', 'refile_if', 'refile_when', 'refile_condition', 'would_refile'];
+const REFILE_HEADING = /^[ \t]*#{1,6}[ \t]+[^\n]*refil/im;
+const REFILE_LINE = /^[ \t]*[-*]?[ \t]*refile(?:[ _-]?(?:when|if|condition))?[ \t]*:[ \t]*\S/im;
+
+const nonEmpty = (v) => String(v ?? '').trim().length > 0;
+
+/**
+ * What a drop record must say, or a list of what it does not (beads
+ * addictedtoai-fyd3).
+ *
+ * THE REQUIREMENT WITH NO MECHANISM. specs/loop: "What the scout declines SHALL
+ * be recorded, never silently dropped: each considered-and-declined story
+ * becomes one record in `data/proposals/dropped/`, naming which test it failed
+ * and what would make it worth refiling." Measured on 2026-08-31 across all ten
+ * drop records then in the tree: 10/10 named a failed test, 10/10 named a
+ * refile condition, and 0/10 were validated by any code path. The executor
+ * complied voluntarily, which is exactly the shape this repository calls
+ * invisible — a literal implementer never builds it and the integrated check
+ * passes without it. Re-measured 2026-09-06 across all 46: still 46/46
+ * compliant, still nothing checking, so this guard refuses nothing that exists
+ * and refuses the empty file that has never yet been written.
+ *
+ * It checks that the record SAYS these things, never that what it says is true.
+ * A record naming a test it did not apply passes here, exactly as a
+ * fresh-but-vacuous `would-cite` passes the merge gate. The field's job is to
+ * make the question asked; the reviewer reads the answer.
+ *
+ * @param {string} text the record's bytes
+ * @returns {string[]} empty when the record carries all three
+ */
+export function dropRecordProblems(text) {
+  const problems = [];
+  let fm = {};
+  let body = String(text ?? '');
+  try {
+    const p = matter(body);
+    fm = p.data ?? {};
+    body = p.content ?? '';
+  } catch {
+    problems.push('its front matter does not parse');
+  }
+  if (!nonEmpty(fm.slug)) problems.push('no non-empty `slug`');
+  if (!FAILED_TEST_KEYS.some((k) => nonEmpty(fm[k])) && !FAILED_TEST_LINE.test(body)) {
+    problems.push('nothing naming which test it failed (a `failed_test:` key, or a `- failed test: …` line)');
+  }
+  if (
+    !REFILE_KEYS.some((k) => nonEmpty(fm[k])) &&
+    !REFILE_HEADING.test(body) &&
+    !REFILE_LINE.test(body)
+  ) {
+    problems.push(
+      'nothing saying what would make it worth refiling (a heading naming refiling, a ' +
+        '`- refile when: …` line, or a `refile:` key)',
+    );
+  }
+  return problems;
+}
+
+/**
+ * Every added drop record that does not carry what specs/loop requires of it,
+ * one line each, ready to be reported.
+ *
+ * Read from the WORKTREE, which is the branch as it stands, and measured before
+ * `applyProposalMergeRules` writes anything — so a refusal leaves the branch
+ * exactly as the job left it. The records the loop itself writes into
+ * `dropped/` (an over-cap candidate, a candidate whose frontier flag does not
+ * hold) are not measured here and cannot be: they are written after `changed`
+ * was computed, they are the loop's own words, and they carry the whole
+ * candidate they were made from.
+ */
+function droppedRecordRefusals(worktree, changed) {
+  const out = [];
+  for (const rel of addedDroppedRecordPaths(changed)) {
+    const abs = join(worktree, rel);
+    if (!existsSync(abs)) {
+      out.push(`${rel}: the branch adds it, but it is not in the worktree to be read`);
+      continue;
+    }
+    const problems = dropRecordProblems(readFileSync(abs, 'utf8'));
+    if (problems.length) out.push(`${rel}: ${problems.join('; ')}`);
+  }
+  return out;
+}
+
 /**
  * Apply the three merge mechanisms to the proposal files a job's branch adds,
  * IN THE BRANCH'S WORKTREE, before the merge — so that what merges is already
@@ -713,6 +815,27 @@ export function addedProposalPaths(changed) {
  */
 export function applyProposalMergeRules(ctx, { worktree, jobId, jobType, changed }) {
   const cap = proposalCapFor(jobType);
+  // REPORT AND STOP, before anything is written (beads addictedtoai-fyd3). A
+  // drop record the branch adds must name which test the story failed and what
+  // would make it worth refiling; the requirement had no mechanism at all, and
+  // a check that had already moved files around would leave a refused branch
+  // half-processed.
+  const refused = droppedRecordRefusals(worktree, changed);
+  if (refused.length) {
+    return {
+      cap,
+      added: [],
+      kept: [],
+      dropped: [],
+      rejected: [],
+      notes: [
+        `drop records: ${refused.length} added under data/proposals/dropped/ ` +
+          `${refused.length === 1 ? 'does' : 'do'} not carry what specs/loop requires of a ` +
+          `declined story; the proposal mechanics were not applied and nothing merges`,
+      ],
+      refused,
+    };
+  }
   const rel = addedProposalPaths(changed);
   const notes = [];
   const entries = rel.map((p) => {
@@ -900,6 +1023,7 @@ export function applyProposalMergeRules(ctx, { worktree, jobId, jobType, changed
     dropped,
     rejected,
     notes,
+    refused: [],
   };
 }
 

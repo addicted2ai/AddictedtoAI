@@ -50,7 +50,7 @@ import {
   unlinkNodeModules,
   TRANSPORT_FAILURE_MARKER,
 } from './lib/gates.mjs';
-import { isReissueRefusal, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
+import { isDiffRefusal, isReissueRefusal, joinableSubjects, mergeGate, runReview, verdictPath, writeRecordSubjects } from './lib/review.mjs';
 import {
   brakeScan,
   brakeState,
@@ -554,11 +554,17 @@ async function executeJob(ctx, opts) {
     // `mergeBaseSha`), re-read from the branch rather than reused from `changed`
     // above: a revision pass can add a file after the author run, and the gate
     // must compare the record against what is actually about to merge.
+    //
+    // ONE measurement, two arguments: `subjects` is derived from the same list
+    // the carried-deletion check reads, so the gate cannot be judging one diff
+    // for the record's `reviewed:` and another for what the branch deleted.
+    const gateChanged = changedPathsWithStatus(ctx.repoRoot, base, branch);
     const gate = mergeGate(ctx, {
       jobId,
       type: job.type,
       pass,
-      subjects: joinableSubjects(changedPathsWithStatus(ctx.repoRoot, base, branch)),
+      subjects: joinableSubjects(gateChanged),
+      changed: gateChanged,
     });
     // The reviewer analogue of the author's no-output detection (beads
     // addictedtoai-g8a): no verdict record, not killed, and nothing on stdout
@@ -618,7 +624,22 @@ async function executeJob(ctx, opts) {
       return finish({ outcome: 'discarded', mm, changed, note: gate.reason, verdict: gate.verdict, pass });
     }
     // One revision pass against the named findings, then a delta review.
-    findings = `${gate.verdict.reasons.join(', ')}\n\n${gate.verdict.notes}`;
+    //
+    // A DIFF-MEASURED refusal is added to them (beads addictedtoai-jdt8). The
+    // reviewer can write a well-formed `approve` and the merge still refuse —
+    // `carried-deletion-unearned` is measured from the branch, not from the
+    // record — so the record's `reasons:` and `notes:` say nothing about it,
+    // and an author handed only those two fields is being asked to fix
+    // findings that never mention why its work was refused. The predicate is
+    // `review.mjs`'s, not a `gate.code === '…'` literal here, for the reason
+    // `REISSUE_CODES` states.
+    findings = [
+      gate.verdict.reasons.join(', '),
+      gate.verdict.notes,
+      isDiffRefusal(gate.code) ? gate.reason : '',
+    ]
+      .filter((s) => String(s ?? '').trim())
+      .join('\n\n');
     // And the revision is an invocation like any other, so it is asked for the
     // same permission. Refusing HERE rather than at the delta review is the
     // cheaper stop of the two: the job ends one invocation earlier and the
@@ -1360,7 +1381,23 @@ export async function runLoop(ctx, opts = {}) {
       if (c.ok) ctx.log('dropped the branch\'s data/derived/ before merging — it is an output, not content (addictedtoai-dgj)');
     }
 
-    const merged = mergeLocal(ctx.repoRoot, branch, `job ${jobId} (${job.type}): ${String(job.title).slice(0, 60)}`);
+    // A drop record the branch adds must say what specs/loop requires of it
+    // (beads addictedtoai-fyd3): which test the story failed, and what would
+    // make it worth refiling. `applyProposalMergeRules` measures that BEFORE it
+    // writes anything, so a refusal here leaves the branch exactly as the job
+    // left it — nothing capped, nothing stamped, nothing moved. Reported
+    // through the merge's own failure path, which already logs the reason and
+    // records the outcome; a separate refusal path would be a second way to say
+    // "this did not merge".
+    const merged = proposals.refused.length
+      ? {
+          ok: false,
+          reason:
+            `${proposals.refused.length} drop record${proposals.refused.length === 1 ? '' : 's'} ` +
+            `the branch adds ${proposals.refused.length === 1 ? 'does' : 'do'} not carry what a ` +
+            `declined story must record (specs/loop): ${proposals.refused.join(' | ')}`,
+        }
+      : mergeLocal(ctx.repoRoot, branch, `job ${jobId} (${job.type}): ${String(job.title).slice(0, 60)}`);
     if (!merged.ok) {
       ctx.log(`merge failed: ${merged.reason}`);
       outcome = 'failed';

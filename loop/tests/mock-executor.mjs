@@ -108,6 +108,30 @@ switch (mode) {
     break;
   }
 
+  // A job dispatched at a carried finding that REALLY deletes the finding's
+  // file and changes nothing else — the shape a job reaches for when it cannot
+  // do the work (beads addictedtoai-jdt8). It deletes again on the revision
+  // pass (the file is already gone), so the branch never acquires any other
+  // change and the second review refuses on the same measurement.
+  case 'retire-carried-only':
+    rmSync(join(cwd, 'data', 'carried', 'j-seed-carry-1.md'), { force: true });
+    result('done\n\nRetired the carried finding.\n');
+    break;
+
+  // The same first move, then the actual work on the revision pass: the guard
+  // is a refusal of a SHAPE, and a diff that carries the fix clears it.
+  case 'retire-carried-then-fix': {
+    rmSync(join(cwd, 'data', 'carried', 'j-seed-carry-1.md'), { force: true });
+    if (/Revision pass \(one only\)/.test(brief) && /claims a fix it does not contain/.test(brief)) {
+      mkdirSync(join(cwd, 'content', 'wiki', 'model'), { recursive: true });
+      write('content/wiki/model/fixture-model.md', '---\nid: model/fixture-model\n---\n\nThe fix the finding asked for.\n');
+      result('done\n\nMade the change and retired the finding.\n');
+    } else {
+      result('done\n\nRetired the carried finding.\n');
+    }
+    break;
+  }
+
   case 'done-no-result': // really omits the file
     write('site-note.md', '# an edit with no result file\n');
     break;

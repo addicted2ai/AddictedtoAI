@@ -33,6 +33,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, rmSync
 import { join } from 'node:path';
 import { addWorktree, gitTry, headSha, removeWorktree } from './git.mjs';
 import { runExecutor, jobLogPath } from './exec.mjs';
+import { RESULT_FILENAME } from './result.mjs';
 import { PROSE_TYPES } from './specs.mjs';
 import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
@@ -125,6 +126,93 @@ export const REISSUE_CODES = Object.freeze([
 
 export function isReissueRefusal(code) {
   return REISSUE_CODES.includes(code);
+}
+
+/**
+ * Refusal codes the merge measured from the DIFF rather than from the verdict
+ * record. The record can be a perfectly formed `approve` and the merge still
+ * refuses, so the reviewer's own `reasons:` and `notes:` say nothing about why
+ * — which matters at exactly one place, `loop/run.mjs`'s revision brief, whose
+ * findings are otherwise assembled from those two fields alone. An author sent
+ * into a revision against findings that do not mention the refusal cannot
+ * answer it.
+ *
+ * Same shape as `REISSUE_CODES` and for the same reason: the literals live here
+ * and nowhere else, so a second diff-measured refusal joins that branch by
+ * being added to this list rather than by a `gate.code === '…'` comparison
+ * written out by hand at the call site.
+ */
+export const DIFF_REFUSAL_CODES = Object.freeze(['carried-deletion-unearned']);
+
+export function isDiffRefusal(code) {
+  return DIFF_REFUSAL_CODES.includes(code);
+}
+
+/** Job scaffolding: on the branch, never on `main`, and never work. */
+function isScaffolding(p) {
+  return p === RESULT_FILENAME || p === '.job' || p.startsWith('.job/');
+}
+
+/**
+ * A diff that DELETES a carried finding and does nothing else, or null.
+ *
+ * WHAT RETIRES A CARRIED FINDING TODAY. `data/carried/<file>.md`'s presence is
+ * the queue item (`loop/lib/carry.mjs`, `pulse/lib/queue.mjs`), and the fixing
+ * job's own diff deletes the file. Nothing mechanical checked that the deletion
+ * was earned: a job could delete the file, change nothing, and the only thing
+ * between that and a merge was the reviewer noticing (beads addictedtoai-jdt8).
+ *
+ * WHY THIS SHAPE AND NOT THE OBVIOUS ONE. The first proposal was: for every
+ * carried file deleted, require the diff to touch that finding's `subject:`.
+ * A real instance refutes it. On 2026-09-03, job j-20260903-20 deleted
+ * `data/carried/j-20260903-13-carry-1.md`, a finding naming TWO pages, having
+ * documented one of them; its `subject:` was the page it did touch, so that
+ * check would have passed a half-done finding. The review gate caught it. So
+ * the check here claims strictly less and can be believed: it refuses the one
+ * unambiguous shape — **the finding is gone and nothing else changed** — which
+ * is what a job reaches for when it cannot do the work. It never claims to
+ * judge whether a finding was satisfied; the finding is prose and its scope is
+ * prose, and the reviewer remains the only reader of that.
+ *
+ * THE SUBJECT-IS-THE-CARRIED-FILE CASE, which the subject-touching version got
+ * wrong twice over. A finding with no `subject:` is keyed by the queue on its
+ * own path (`pulse/lib/queue.mjs`: `const key = subject ?? 'data/carried/…'`),
+ * so a job dispatched at one has the carried file itself as its subject and
+ * "touched its subject" is satisfied by the deletion. Here nothing under
+ * `data/carried/` counts as work — not the deletion, and not an added or
+ * edited file beside it — so a subject-less finding is refused on exactly the
+ * same terms as any other, which is the intent.
+ *
+ * Scaffolding (`.job/`, `RESULT.md`) is not work either: `.job/brief.md` is
+ * committed to every branch by construction, so counting it would make this
+ * guard fire never.
+ *
+ * A finding whose correct resolution really is "nothing to do here" is refused
+ * by this, deliberately. That case is then argued explicitly in a revision —
+ * which is the whole point, since it is indistinguishable, in the diff, from a
+ * job that could not do the work.
+ *
+ * @param {Array<{path: string, status: string}|string>} changed
+ * @returns {{deleted: string[]}|null}
+ */
+export function unearnedCarriedDeletion(changed) {
+  if (!Array.isArray(changed)) return null;
+  const entries = changed.map((c) => ({
+    path: String(typeof c === 'string' ? c : (c?.path ?? '')).replace(/\\/g, '/'),
+    status: typeof c === 'string' ? '' : String(c?.status ?? ''),
+  }));
+  const deleted = entries
+    .filter(
+      (e) =>
+        e.status === 'D' &&
+        /^data\/carried\/[^/]+\.md$/.test(e.path) &&
+        !e.path.endsWith('/README.md'),
+    )
+    .map((e) => e.path);
+  if (!deleted.length) return null;
+  const work = entries.filter((e) => e.path && !e.path.startsWith('data/carried/') && !isScaffolding(e.path));
+  if (work.length) return null;
+  return { deleted: [...new Set(deleted)].sort() };
 }
 
 const CHECKLISTS = {
@@ -613,9 +701,14 @@ export function existingFieldValues(ctx, excludeJobId, field) {
  * before this mechanism existed is one, and the normal path writes `reviewed:`
  * after the merge, not before it — refusing here would refuse every merge.
  *
+ * `changed` is the branch's full changed-path list with statuses, from the same
+ * measurement `subjects` is derived from. It carries ONE refusal
+ * (`unearnedCarriedDeletion`), and it is optional in the same sense `subjects`
+ * is: absent, that check does not run.
+ *
  * @returns {{ok: boolean, reason?: string, verdict?: object}}
  */
-export function mergeGate(ctx, { jobId, type, pass = 1, subjects }) {
+export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed }) {
   const path = verdictPath(ctx, jobId, pass);
   if (!existsSync(path)) {
     return {
@@ -731,6 +824,25 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects }) {
         };
       }
     }
+  }
+  // A carried finding retired by deletion alone (beads addictedtoai-jdt8).
+  // Measured from the diff, not from the record — see `unearnedCarriedDeletion`
+  // for why this shape and not the subject-touching one, and for why nothing
+  // under `data/carried/` counts as the work.
+  const unearned = unearnedCarriedDeletion(changed);
+  if (unearned) {
+    return {
+      ok: false,
+      code: 'carried-deletion-unearned',
+      reason:
+        `the diff deletes ${unearned.deleted.length} carried finding` +
+        `${unearned.deleted.length === 1 ? '' : 's'} (${unearned.deleted.join(', ')}) and ` +
+        `changes nothing else. Deleting the file is what RETIRES the finding, so a diff of ` +
+        `that shape claims a fix it does not contain. Either make the change the finding ` +
+        `asks for in the same diff, or leave the file in place and argue in \`RESULT.md\` ` +
+        `that there is nothing to do — this refuses the shape, never the argument.`,
+      verdict: v,
+    };
   }
   // `corrections:` (specs/review, beads addictedtoai-4fo): front matter is
   // append-only history, and this is its correction path — same shape as
