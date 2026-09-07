@@ -250,7 +250,7 @@ fetch is switched on; the tasks below build the shape and the bar.
 - [x] 18. `openspec validate bind-a-price-to-the-vendor-that-posts-it --type
       change --strict --no-interactive`, and `node
       scripts/check-spec-deltas.mjs --strict`. Run at drafting time.
-- [ ] 19. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
+- [x] 19. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
       `verify-surfaces`, `verify-analytics` on merged `main`. The orchestrator's,
       not a job's.
 
