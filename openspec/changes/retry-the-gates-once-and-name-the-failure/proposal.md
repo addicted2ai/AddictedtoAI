@@ -94,6 +94,18 @@ authoring against gates nobody can believe.
   named ones" is not modified and its closed list of counting outcomes is
   unchanged. The decision above is precisely the decision not to touch it, and
   the new requirement says so in its own words so the two cannot drift.
+  **Checked against the one other unarchived change that does modify that
+  heading**, because this change's whole safety argument leans on its counting
+  rule: `say-what-the-run-could-not-do`
+  (`D:/addictedtoai-worktrees/impl-spec-loop`, drafted the same day) carries a
+  `MODIFIED` block on it. Read on 2026-09-06, its body keeps breaker 1 verbatim
+  — three consecutive `failed` (gates or review rejected finished work) or
+  `discarded`, with `blocked`, `interrupted`, `capacity` and `abandoned` never
+  counting — and adds only outcomes that do not halt. So the two changes are
+  compatible in either archive order, and no requirement heading is carried by
+  both: this change adds a heading that exists in no live spec and in no other
+  unarchived change (scanned across every worktree, 2026-09-06: zero
+  collisions).
 - **Widening the marker.** The delta requires one declared wording and forbids
   downstream string-guessing. It does not add a second marker, and
   `addictedtoai-brsp`'s fix — both emitters interpolating one constant — is
