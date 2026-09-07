@@ -65,10 +65,28 @@ for a ruling he had already delegated.
 - **The machine-readable acquisition work** (`k1j`): structured data, IndexNow,
   `llms.txt`, the crawler stance, `catalog.json` as a documented contract.
   Authorised 2026-09-01.
-- **Running Desk jobs on `opencode-deepseek` as the Pulse creates them**,
-  excluding `machinery` jobs for now. Instructed 2026-09-01, and reaffirmed
-  when the orchestrator asked a second time.
+- **Running Desk jobs as the Pulse creates them, on the runner he has named,
+  and chaining several runs at a time.** First instructed 2026-09-01 for
+  `opencode-deepseek` excluding `machinery` jobs; SUPERSEDED 2026-09-07, when
+  he moved the Desk to `codex-gpt-luna` for BOTH the author and reviewer roles
+  ("Run the next desk job using the new codex luna runner, and if it does well,
+  switch over to it for desk jobs"; then "No more opus reviewers. Return to the
+  normal operation of using the same runner model as the reviewer"; then
+  "Continue using luna to run the desk"). The `machinery` exclusion is gone
+  with it — machinery jobs have run on this runner since 2026-09-07. Which
+  runner is named is his; keeping the Desk fed with it is not.
 - **Spawning subagents**, 1–2 at a time, on whichever model the work warrants.
+- **The time-boxed push of 2026-09-06** (mission bead `addictedtoai-h0z0`):
+  finish the Frontier surface, dent the Desk queue, drain the beads backlog —
+  "override what is needed, restore every guardrail, do not ask for
+  authorisation inside those directives". The last clause is a standing
+  instruction NOT to escalate inside that scope, and it outranks the instinct
+  to check in.
+- **Direct fixes to `loop/`, `pulse/`, `lib/` and `scripts/` between runs.**
+  These are ordinary code, not reserved paths; nothing here has ever required
+  asking. The bar is the push bar — gates green — plus this repository's own
+  standard for a guardrail change: a test that fails without the fix, and a
+  mutation proof that it fails for the right reason.
 
 ## NOT GRANTED — these remain the maintainer's alone
 
@@ -95,8 +113,13 @@ for a ruling he had already delegated.
 - **Any credential**: the Hugging Face token, Search Console / Bing DNS
   verification, and any API token. Never manipulate credentials on a command
   line, and never print one, including partially.
-- **Creating a scheduler for the Desk.** Explicitly declined 2026-09-01: he is
-  measuring subscription burn and wants jobs started by hand for now.
+- **Creating a SCHEDULER for the Desk** — a cron entry, a service, anything
+  that starts Desk work with nobody having asked for it. Explicitly declined
+  2026-09-01: he is measuring subscription burn. NARROWED 2026-09-07, and the
+  distinction is the whole of it: a chain of N runs STARTED BY HAND on a runner
+  he named is instructed work, not a scheduler, and he has left one running
+  while stepping away. What is still declined is the unattended thing that
+  starts itself.
 
 ## STILL OPEN AND HIS — do not decide these
 
