@@ -38,7 +38,15 @@ fetch is switched on; the tasks below build the shape and the bar.
       whose value is not a slug-shaped string — and nothing reads a display
       name. The covered set is expressed as a rule over the snapshot (a field
       test and a key), never as a list of ids, and validation refuses a
-      hand-maintained list. Implements: *a companion fetch SHALL declare: its URL
+      hand-maintained list. Two more fields are validated separately from the
+      eight, because each fails on its own argument rather than the shared
+      "declaration is incomplete" one: `rates` (required — a non-empty map from
+      the field name a bound rate is carried under to the path it is read from
+      in a companion-listing row; a companion that binds no rate makes the same
+      hundreds-of-requests-a-day cost for no value, the argument design D3
+      already makes for a companion with no canonical tier) and `rows_path`
+      (optional — a string naming where the listing's rows sit in the response;
+      absent means the response body is itself the array). Implements: *a companion fetch SHALL declare: its URL
       template, its cadence, the rule …, `declared_on` …, which service tier … is
       canonical, the field of a companion-listing row that carries the provider
       identity (`provider_field`), and an author-identity map …*, *a declaration
