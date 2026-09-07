@@ -217,16 +217,24 @@ export async function submitIndexNow({ root, day, siteUrl, config, dryRun = fals
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(15000),
     });
-    // 200 means RECEIVED, never "indexed" — the protocol says so explicitly and
-    // it is worth not overstating in the log a person reads at 2am.
+    // 200 and 202 mean the request was received, never that URLs were indexed.
+    // The protocol gives each other status a distinct diagnosis; preserving that
+    // distinction in the log makes the one-shot, non-blocking step actionable.
+    const statusMessage = {
+      200: 'received; Bing, Yandex, Seznam and Naver — Google does not participate',
+      202: `received; validation pending — check ${INDEXNOW_KEY_ROUTE} if it never clears`,
+      400: 'bad request; check the JSON payload and URL list',
+      403: 'forbidden; check that the key is valid and served at the key file',
+      422: 'unprocessable; check that URLs belong to the host and the key matches',
+      429: 'too many requests; check submission frequency (nothing here retries and nothing here holds the deploy)',
+    }[res.status] ?? 'unknown response; inspect the IndexNow response and request configuration';
+    const submitted = res.status === 200 || res.status === 202;
     say(
       'indexnow',
       `submitted ${body.urlList.length} changed URL(s) to ${INDEXNOW_ENDPOINT} — HTTP ${res.status}` +
-        (res.status === 200
-          ? ' (received; Bing, Yandex, Seznam and Naver — Google does not participate)'
-          : ' (not accepted; nothing here retries and nothing here holds the deploy)'),
+        ` (${statusMessage})`,
     );
-    return { submitted: res.status === 200, reason: `http-${res.status}`, count: body.urlList.length, status: res.status };
+    return { submitted, reason: `http-${res.status}`, count: body.urlList.length, status: res.status };
   } catch (err) {
     // Deliberately not a throw and deliberately not a HOLD: the deploy landed,
     // a third party did not answer. See the header.
