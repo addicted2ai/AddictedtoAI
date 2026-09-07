@@ -55,13 +55,13 @@ facts:
   - field: portfolio
     source: cited
     value: "\"Nova models\", \"Nova Forge\" and \"Nova Act\" — the vendor's own three-part description of Amazon Nova"
-    source_url: "https://aws.amazon.com/ai/generative-ai/nova/"
+    source_url: "https://aws.amazon.com/nova/"
     accessed: "2026-09-06"
     volatility: slow
   - field: internal_origin
     source: cited
     value: "\"built on AI technologies originally developed for Amazon's internal applications, such as Alexa+, Amazon Ads, Amazon Catalog System Services, AWS Marketplace, and Amazon Stores\""
-    source_url: "https://aws.amazon.com/ai/generative-ai/nova/"
+    source_url: "https://aws.amazon.com/nova/"
     accessed: "2026-09-06"
     volatility: slow
   - field: frontier_route
@@ -129,7 +129,7 @@ catalog as observed on 5 September 2026. The other is a serving provider called
 [Amazon Bedrock](https://openrouter.ai/provider/amazon-bedrock), whose page
 names 32 model slugs across nine authors — 14 Anthropic, seven OpenAI, and one
 each from Meta, Moonshot AI, Qwen, Writer, xAI and Z.ai, alongside Amazon's own
-handful. Bedrock is also the only endpoint OpenRouter lists behind each Nova
+handful. Bedrock is also the only endpoint provider OpenRouter lists behind each Nova
 row, so on this router Amazon is both the author and the host of its own
 models, and the host of 27 more that belong to other people. A catalog built
 from the models feed sees none of that half: a row names its author in its id
