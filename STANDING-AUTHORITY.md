@@ -88,6 +88,31 @@ for a ruling he had already delegated.
   standard for a guardrail change: a test that fails without the fix, and a
   mutation proof that it fails for the right reason.
 
+## RESERVED BY PROCESS — not his, and not an ownership question
+
+Both entries here were listed for years under "the maintainer's alone", and
+both corrections are his, 2026-09-07: *"I have never edited a single file in
+this repo!"* and *"openspec/specs/ is reserved only because you are never
+supposed to edit a live spec outside of the change process."* Neither path
+waits on a person. Each is reserved from a particular ACTOR doing a particular
+thing, and reading them as ownership is what stalls work waiting for a
+signature nobody was ever going to give.
+
+- **`openspec/specs/`** — reserved from being edited BY HAND, by anyone,
+  including the orchestrator. A live spec is written by `openspec archive`
+  and by nothing else; authoring under `openspec/changes/` and archiving is
+  not a workaround, it is the sanctioned and only route. So amending a spec
+  needs no permission — it needs the change process.
+- **`runners.yml`** — reserved from a JOB. `loop/lib/breakers.mjs` route E
+  fires breaker 4 on a job's branch diff touching it, so a run cannot swap
+  its own runner mid-flight; that is a conflict of interest, not a permission.
+  The orchestrator may edit it between runs, and in fact every edit it has
+  ever had was typed by the orchestrator. WHAT IS HIS is the DECISION the file
+  records — which model, provider, harness and tier the Desk uses, and what a
+  runner costs him — which arrives as an instruction. How the machinery READS
+  an entry (a misfiring pattern, a malformed command template, a stale note)
+  is ordinary machinery work under the bar above.
+
 ## NOT GRANTED — these remain the maintainer's alone
 
 - **`bd dolt push`.** The beads remote is a decision he has not made. The `bd`
@@ -107,8 +132,6 @@ for a ruling he had already delegated.
   generalise: the next `STOP` is his again, and asking is the default. Recorded
   here rather than left in a transcript because a grant given in conversation
   is as real as one written down, and this file is where that is checked.
-- **`openspec/specs/` and `runners.yml`.** Reserved paths. Author changes under
-  `openspec/changes/` instead; the archive step is what writes to `specs/`.
 - **`package.json`.** Never edited. If something looks missing, stop and report.
 - **Any credential**: the Hugging Face token, Search Console / Bing DNS
   verification, and any API token. Never manipulate credentials on a command
