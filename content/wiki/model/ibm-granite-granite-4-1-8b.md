@@ -42,8 +42,8 @@ on 5 September 2026
 ([`https://openrouter.ai/api/v1/models`](https://openrouter.ai/api/v1/models),
 431 rows), confirmed the withdrawal: no `granite-4.1` row of any kind survived,
 while `ibm-granite/granite-4.0-h-micro` and `ibm-granite/granite-4.2-8b` were
-both still listed. The bound facts below render their last-known values as of
-2026-09-04.
+both still listed. Nothing below is a current price or context window: the
+row's last listing was 2026-09-04, and nothing has refreshed it since.
 
 The model is not retired. IBM still publishes the weights: the Hugging Face
 repository
