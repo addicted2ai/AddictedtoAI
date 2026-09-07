@@ -216,6 +216,24 @@ runners:
       already do; containment stays where this file says it is, at the git
       and review layer. The interactive Codex configuration is untouched.
 
+      NO `job_types` CLEARANCE HERE, DELIBERATELY, so this entry is cleared for
+      every job type — and that is what makes it the escalation half of the
+      pair. The maintainer, 2026-09-07: "Scout should be max effort for luna."
+      A `scout` job's product is a proposal for new writing and a `post` is the
+      writing itself; both are withheld from `codex-gpt-luna-medium`, so both
+      can only ever be authored here, at `model_reasoning_effort="max"`.
+
+      THE CLEARANCE ALONE ONLY GUARANTEES THE FLOOR, NOT THE ROUTING, and the
+      difference matters. The Desk picks its runner BEFORE the selector chooses
+      a candidate and cannot switch mid-run, so a chain authoring on the medium
+      entry refuses a scout candidate and moves on — the job is skipped, not
+      escalated. Routing is therefore the caller's job: the chain re-runs an
+      iteration on this entry when a run selected nothing and the ONLY refusal
+      was `runner:job-type`. It deliberately does not escalate past a
+      `degradation:`, `capacity:` or `budget` refusal, because those say "not
+      now" about the whole lane, and a second entry on the same subscription is
+      not a way around them.
+
       VERIFIED 2026-09-07 09:47 MDT with this template: `node
       loop/conformance.mjs --runner codex-gpt-luna` recorded four PASSes
       (2.61 / 2.28 / 2.26 / 0.66 model-minutes) in data/conformance.json.
