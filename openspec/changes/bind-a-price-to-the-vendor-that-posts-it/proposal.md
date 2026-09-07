@@ -59,6 +59,22 @@ Everything below was re-read or re-run in this worktree
   `openai/fast` at 2×; `google-ai-studio` flex/standard/priority at 1×/2×/3.6×;
   `azure/eu` and `azure/us` at +10%. So "OpenAI charges $2/M" is under-specified
   *even when OpenAI is the top provider and the attribution check is satisfied*.
+- **The same field is also the evidence that an author segment is not a provider
+  slug, which the first draft of this delta assumed it was.** Re-measured
+  2026-09-06 over the 431 rows: 58 distinct author segments, led by `openai` 93,
+  `qwen` 53, `google` 43, `anthropic` 27, `mistralai` 20, `deepseek` 16,
+  `z-ai` 16, `x-ai` 7, `amazon` 5. The `residual_hazard` sentence quoted above
+  names Google's own listing `google-ai-studio` — not `google` — so an identity
+  rule that compares the row's raw author segment to the endpoint's provider slug
+  by exact equality resolves nothing on Google's 43 rows, and on the same
+  evidence nothing on `mistralai`, `x-ai` or `amazon` either, while appearing to
+  work on `openai` and `anthropic`. That is the coverage gap the companion
+  requirement's own coverage-rule bullet forbids, one bullet away. The identity
+  is therefore a **declared, dated map** in the companion declaration, exactly as
+  `canonical_tier` is declared rather than inferred (design D3), with no
+  raw-equality fallback: an author the map does not name resolves absent with
+  that reason, which is visible, rather than resolving by coincidence, which is
+  not.
 - One data point in the other direction, and it is worth carrying because it is
   the only coverage evidence on disk: on the 22 rows fetched live on 2026-08-31
   (all HTTP 200, recorded in the same file), **the snapshot headline equalled the
@@ -102,12 +118,17 @@ would then be re-introduced in data.
 
 **The event is re-keyed to a vendor-posted rate, identified by provider *and*
 tier, or there is no event.** Absence is the house rule and it is applied without
-a fallback: a row whose author is absent from its own provider listing, or which
-posts at other tiers but not the one the source declares canonical, has no vendor
-rate, emits no price event, and does **not** borrow the headline. The identity
-that decides "the author" is the provider **slug** the source publishes against
-the author segment of the row's id, matched exactly — never the endpoint's
-display name, which is a label a rename or a lookalike can make match.
+a fallback: a row whose author is absent from its own provider listing, which posts
+at other tiers but not the one the source declares canonical, or whose author has
+no declared identity, has no vendor rate, emits no price event, and does **not**
+borrow the headline. Every such absence carries the reason it is absent, so a gap
+in this site's declarations is distinguishable from a fact about the vendor. The
+identity that decides "the author" is the provider **slug** the source publishes,
+matched exactly against the slug the source's declaration maps that author
+segment to — never the endpoint's display name, which is a label a rename or a
+lookalike can make match, and never the raw author segment, which is a different
+namespace that agrees with the provider slug on `openai` and disagrees on
+`google`.
 
 **The vendor rate sits beside the listing rate; it does not replace it.** ak9
 asks this to be settled and the answer is beside. Replacing the catalog column

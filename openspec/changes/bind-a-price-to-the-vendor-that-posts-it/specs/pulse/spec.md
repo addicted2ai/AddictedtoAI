@@ -45,13 +45,27 @@ moves, and a movement in it is a routing artifact rather than a repricing.
   identity matches the row's own author, at the service tier the registry
   declares canonical for that source. **The identity compared SHALL be the
   provider *slug* the source itself publishes for that endpoint, against the
-  author segment of the row's own id — the two machine keys, matched by exact
-  equality after case-folding and trimming, and nothing else.** A display name is
-  not an identity: `provider_name` is a label a source may set to anything,
-  several providers may carry the same one, and matching on it makes an
-  attribution that a rename or a lookalike can forge. A rate that cannot be
-  attributed to the row's author under that comparison is not that vendor's price
-  and SHALL NOT be treated as one.
+  provider slug the source's declared author-identity map gives for the author
+  segment of the row's own id — the two machine keys, matched by exact equality
+  after case-folding and trimming, and nothing else.** A display name is not an
+  identity: `provider_name` is a label a source may set to anything, several
+  providers may carry the same one, and matching on it makes an attribution that
+  a rename or a lookalike can forge. A rate that cannot be attributed to the
+  row's author under that comparison is not that vendor's price and SHALL NOT be
+  treated as one.
+- **The author segment and the provider slug are two namespaces, so the identity
+  is declared rather than assumed equal.** An author segment whose declared
+  provider slug the map does not give SHALL resolve absent, on the same terms as
+  every other absence in this requirement, and SHALL NOT be matched by raw string
+  equality as a fallback. Comparing the two raw strings looks like an identity
+  test and is a coincidence test: measured on the committed models snapshot on
+  2026-09-06, author `google` covers 43 of 431 rows and posts its own rates under
+  the provider slug `google-ai-studio` — the very listing whose tiers this
+  requirement's tier rule is drawn from — and `mistralai` (20 rows), `x-ai` (7)
+  and `amazon` (5) are the same shape. Raw equality would attribute nothing on
+  those rows while returning a value on `openai` and `anthropic`, which is a
+  coverage gap that reads as a working feature. A declared map makes the identity
+  reviewable, and an undeclared author a dated absence somebody can see.
 - A price event SHALL NOT be derived from the top-provider headline, at any
   threshold. **No percentage threshold SHALL be used to decide whether a price
   movement is an event**: the measured failures are a 60% scheduled-window flip
@@ -63,13 +77,20 @@ moves, and a movement in it is a routing artifact rather than a repricing.
   tier at twice it — so a rate with no tier is under-specified even when the
   vendor is unambiguous, and a sentence naming the vendor and the number would be
   false about which of its prices it names.
-- Where the row's author is **absent** from that row's provider listing, or is
-  present but posts nothing at the tier the source declares canonical, the
-  vendor-posted rate SHALL be **absent**. Absence SHALL produce no event, SHALL
-  be carried in the derived catalog row as an absent value with its date rather
-  than as a missing field, and SHALL NOT fall back to the headline: a fallback is
-  how a listing rate becomes a vendor attribution silently, which is the defect
-  this requirement exists to close.
+- Where the row's author is **absent** from that row's provider listing, is
+  present but posts nothing at the tier the source declares canonical, or has no
+  declared provider slug, the vendor-posted rate SHALL be **absent**. Absence
+  SHALL produce no event, SHALL be carried in the derived catalog row as an
+  absent value with its date rather than as a missing field, and SHALL NOT fall
+  back to the headline: a fallback is how a listing rate becomes a vendor
+  attribution silently, which is the defect this requirement exists to close.
+- **An absent vendor-posted rate SHALL carry the reason it is absent**, from the
+  closed set the previous bullet enumerates: the author is not in the listing,
+  the author's identity is not declared, the listing did not fetch, or the author
+  posted only at other tiers — and in that last case the reason SHALL name the
+  tiers it found. Four different conditions render as the same empty cell, and
+  the one that is a data-declaration gap on this site is indistinguishable from
+  the three that are facts about the vendor unless the row says which it is.
 - The vendor-posted rate SHALL sit **beside** the listing rate in the derived
   catalog row, under its own name, and SHALL NOT overwrite it. Replacing the
   column would blank it on every row with no vendor endpoint; both values are
@@ -96,8 +117,23 @@ moves, and a movement in it is a routing artifact rather than a repricing.
 
 - **WHEN** the row's author posts several tiers and none of them is the tier the
   source declares canonical
-- **THEN** the vendor-posted rate is absent rather than guessed, and the
-  ambiguity is reported rather than resolved
+- **THEN** the vendor-posted rate is absent rather than guessed, and the dated
+  absent value carries the reason, naming the tiers that were found
+
+#### Scenario: An author the identity map does not name resolves absent
+
+- **WHEN** a row's author segment has no provider slug declared for it, and a
+  provider whose slug is that same raw string posts a rate on the row's listing
+- **THEN** the vendor-posted rate is absent, carrying the reason that the
+  author's identity is not declared, and the raw strings are not compared
+
+#### Scenario: A declared identity that differs from the author segment resolves
+
+- **WHEN** a row's author segment is `google`, the source's declaration maps it
+  to the provider slug `google-ai-studio`, and that provider posts a rate at the
+  canonical tier on the row's listing
+- **THEN** the rate resolves as the vendor-posted rate, carrying that provider
+  slug and that tier
 
 #### Scenario: A matching display name is not a matching vendor
 
@@ -144,11 +180,18 @@ row-level feed carries a value whose referent is only recoverable per row.
 
 - A companion fetch SHALL declare: its URL template, its cadence, the rule that
   computes which rows it covers, the snapshot it writes, **the local date it was
-  declared on (`declared_on`)**, and **which service tier of the companion
-  listing is canonical for this source**. A declaration missing any of these
-  SHALL fail the build naming the source. `declared_on` is what the robots
-  re-check is dated against; the canonical tier is what a bound rate is resolved
-  at, and a companion with none declared can bind nothing.
+  declared on (`declared_on`)**, **which service tier of the companion listing is
+  canonical for this source**, and **an author-identity map giving, for each
+  author segment of this source's row ids, the provider slug that author posts
+  under in the companion listing, each entry carrying the local date it was
+  declared on**. A declaration missing any of these SHALL fail the build naming
+  the source and the missing field. `declared_on` is what the robots re-check is
+  dated against; the canonical tier is what a bound rate is resolved at, and a
+  companion with none declared can bind nothing; the identity map is what stops
+  an attribution resting on two namespaces happening to spell a vendor the same
+  way. Both sides of every map entry SHALL be machine keys — an author segment
+  and a provider slug as the source publishes them — never a display name, and
+  the map SHALL NOT be consulted for anything but that comparison.
 - A companion fetch SHALL declare its covered rows as a rule over the source's
   own snapshot — a field test and a key — and the covered set SHALL be
   computable from the snapshot alone rather than being a list somebody maintains
@@ -188,6 +231,14 @@ row-level feed carries a value whose referent is only recoverable per row.
   keys the coverage rule yields from the latest snapshot
 - **THEN** the build fails, naming the source and which of the three it failed,
   and no companion request is made
+
+#### Scenario: A companion declaration missing a required field is refused
+
+- **WHEN** a companion declaration omits any one of its URL template, its
+  cadence, its coverage rule, the snapshot it writes, `declared_on`, its
+  canonical tier, or its author-identity map
+- **THEN** the build fails, naming the source and the missing field, and no
+  companion request is made
 
 #### Scenario: A hand-maintained coverage list is refused
 

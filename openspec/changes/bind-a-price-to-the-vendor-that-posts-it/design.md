@@ -64,11 +64,33 @@ compares the endpoint's `provider_name` — a display string like `OpenAI` — t
 row's author, case-folded. That is a label match, which this repository has
 already recorded as spoofable: a display name is settable by whoever writes the
 listing, several providers can carry one, and a rename silently makes or breaks
-an attribution. The comparison is between the two machine keys — the provider
-slug the source publishes for that endpoint and the author segment of the row's
-id — by exact equality after trimming and lower-casing. Nothing on this path
-reads the display name at all, which is why task 7 says so in the code rather
-than only here.
+an attribution. The comparison is between machine keys — the provider slug the
+source publishes for that endpoint and the slug declared for the author segment
+of the row's id — by exact equality after trimming and lower-casing. Nothing on
+this path reads the display name at all, which is why task 7 says so in the code
+rather than only here.
+
+**But the two machine keys are not the same key, and the first draft assumed they
+were.** Exact equality between the endpoint's provider slug and the row's raw
+author segment is an identity test only where the two namespaces happen to
+coincide. Measured on `data/sources/openrouter-models/latest.json` on 2026-09-06
+(431 rows, 58 distinct author segments): `openai` (93 rows) and `anthropic` (27)
+coincide, and `google` (43), `mistralai` (20), `x-ai` (7) and `amazon` (5) do
+not — this repository's own `data/price-attribution-debt.json` names Google's own
+listing `google-ai-studio`, in the same sentence whose tier spread D3 rests on.
+So raw equality would resolve a rate for the majors whose spellings agree, return
+nothing for a third of the rest, and look identical either way — the coverage gap
+that nothing can detect which the coverage-rule bullet already refuses one
+paragraph away.
+
+The fix is D3's own move, applied once more: the identity is **declared registry
+data, dated and reviewable**, not a rule the code infers. The companion
+declaration carries a map from author segment to provider slug, both machine
+keys, each entry dated; resolution is exact equality on the declared pair; an
+author the map does not name resolves absent with that reason, rather than
+falling back to raw equality. A fallback would restore exactly the silent
+half-coverage the map exists to remove, and would make the declaration optional
+in practice on precisely the authors where it happens to be unnecessary.
 
 ## D4. What a companion snapshot looks like, and why it is snapshotted at all
 
