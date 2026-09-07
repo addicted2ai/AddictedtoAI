@@ -580,6 +580,17 @@ test('the "rates" companion field and the identity entry\'s "declared_on" are ea
   });
   assert.match(undated, /needs a "declared_on" date/);
   assert.match(undated, /entry "acme"/);
+
+  // The AUTHOR side of the map: the delta says both sides of every entry are
+  // machine keys, and the fourteenth case above tests only the VALUE side.
+  // Measured by the round-three reviewer: disabling the key-side guard
+  // (registry.mjs `if (!SLUG.test(author))`) left every companion test green.
+  const displayAuthor = loadCompanion({
+    ...COMPANION,
+    provider_identities: { 'Acme Inc': { provider_slug: 'acme', declared_on: '2026-09-07' } },
+  });
+  assert.match(displayAuthor, /the author segment is not a machine key/);
+  assert.match(displayAuthor, /entry "Acme Inc"/);
 });
 
 test('the provider_field split reads a slug and a tier out of one value', () => {
