@@ -65,7 +65,15 @@ satisfies it and the task that measures it.
       count is only one of them: assert that a marked twice-failed job's ledger
       line carries an `mm` computed exactly as an unmarked twice-failed job's
       does — the same two runs' spend, recorded, not waived — comparing the two
-      lines field for field rather than asserting `mm > 0`.
+      lines field for field rather than asserting `mm > 0`. CORRECTED AT
+      REVIEW, 2026-09-07: the first draft compared the lines field for field
+      but still fell back to a bare `mm > 0` on the `mm` field itself, which a
+      proportional waiver (at both the phase and the total, so the total-
+      equals-sum check stays consistent) satisfies undetected — measured: a
+      50%-across-the-board waiver left breakers 17/17 green. Fixed by giving
+      the author a real wall-clock floor (`--sleep-ms 6000`) and asserting `mm`
+      against it instead of against zero; the same mutation now fails that one
+      test alone (breakers 16/17).
 - [x] 6. **N5 — BUILD.** A source guard beside the test: neither
       `loop/lib/breakers.mjs` **nor `loop/lib/budget.mjs`** contains a read of
       the classification. Scan both files for the exported marker constant, for

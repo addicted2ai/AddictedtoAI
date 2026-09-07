@@ -103,7 +103,7 @@ function unmarkedGateFailure() {
 function repairRepo() {
   const ctx = makeRepo({
     runners: runnersYaml({
-      command: mockCommand('done-edit', ' --sleep-ms 1200'),
+      command: mockCommand('done-edit', ' --sleep-ms 6000'),
       reviewerCommand: mockCommand('review-approve'),
     }),
   });
@@ -184,10 +184,21 @@ test('breaker 1 — a marked twice-failed job records the same spend an unmarked
   // So the honest statement of "not waived" is that the total still equals the
   // invocations' own recorded minutes — the identical computation applied to
   // both lines, with nothing subtracted for the marker.
+  //
+  // `mm > 0` alone is satisfied by a number that has been halved (or waived by
+  // any other proportion) — the author's own `--sleep-ms 6000` is a REAL wall-
+  // clock floor no waiver can be under and still look plausible: the recorded
+  // spend can never be less than the time the mock genuinely slept, so a floor
+  // set at that sleep (in minutes) catches a proportional waiver a bare
+  // positivity check cannot.
+  const SLEPT_MM = 6000 / 60000;
   for (const [label, line] of [['marked', marked], ['unmarked', unmarked]]) {
     const summed = Math.round(line.phases.reduce((s, p) => s + p.mm, 0) * 100) / 100;
     assert.equal(line.mm, summed, `${label}: the ledger total is not the spend its phases record`);
-    assert.ok(line.mm > 0, `${label}: the run spent minutes and they must be on the record`);
+    assert.ok(
+      line.mm >= SLEPT_MM,
+      `${label}: recorded ${line.mm} mm, below the ${SLEPT_MM} mm the author's own sleep guarantees — the spend was waived`,
+    );
   }
   // And the phase entries themselves match field for field but for the minutes
   // and the `gates` record — which is where the classification is SUPPOSED to

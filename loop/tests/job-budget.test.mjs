@@ -406,8 +406,12 @@ test('o5t the revision is not invoked once the job has spent its total', async (
   // write HOLD.md, halting the Desk until a human clears it. Thirty seconds per
   // gate run is cheaper than one false halt.
   //
-  // This is the only fixture in the repository that uses real wall-clock sleeps
-  // (grepped for `--sleep-ms`), so the class is contained to this one test.
+  // Real wall-clock sleeps (grepped for `--sleep-ms`) appear in exactly two
+  // fixtures in the repository: this 21s entry fixture, and the 6s repair
+  // fixture in breakers.test.mjs (the budget-leg control for breaker 1's
+  // marked/unmarked spend, which needs only a wall-clock floor no waiver can
+  // be under — far enough below the repair cap to carry none of the
+  // cap-relative scheduling-jitter risk this paragraph is about).
   const cfg = {
     ...DEFAULT_CONFIG,
     job_caps_minutes: { ...DEFAULT_CONFIG.job_caps_minutes, entry: 0.5 },
