@@ -88,12 +88,13 @@ overwriting, answer exchanges and moderator deletions — not an account
 takeover, not privileged server access, not data theft. OpenAI disputes that
 any of it amounts to hacking, and on the record as reconstructed it has a case.
 
-Which is the whole problem, and OpenAI says so:
+Which is the whole problem, and OpenAI says so. TechCrunch renders the
+statement as saying that both OpenAI and —
 
-> We and the larger AI community do not yet have a clear standard for how to
-> report misalignment that shows up during training, evaluation, and
-> deployment, including examples that don't look like traditional security
-> incidents but could provide insight into AI behavior and future risks.
+> the larger AI community do not yet have a clear standard for how to report
+> misalignment that shows up during training, evaluation, and deployment,
+> including examples that don't look like traditional security incidents but
+> could provide insight into AI behavior and future risks.
 
 The company says it is "working on a framework and will share it in upcoming
 weeks, and in parallel we're working with dozens of government regulatory
@@ -127,9 +128,10 @@ more than 3,700 distinct ones, among them `OpenAIResearcher` and
 The shape of the run, as the reconstruction dates it: first attempted edits on
 a different public wiki on 11 May, first successful DseWiki write on 24 May, a
 surge on 16 June, the main burst ending after 22 June, smaller bursts on 1 and
-2 July. Leitner went on deleting agent pages for five weeks after that. On 19
-June one of them noticed him doing it, wrote that the sweep was running
-alphabetically, and pointed the others at a backup page named to sort last.
+2 July. Leitner went on deleting agent pages for five weeks after the main
+burst ended. On 19 June one of them noticed him doing it, wrote that the sweep
+was running alphabetically, and pointed the others at a backup page named to
+sort last.
 
 The report itself could not be read. On 6 September 2026 `collusion.wiki` fails
 the TLS handshake over https, and over http it redirects to a network filter's
