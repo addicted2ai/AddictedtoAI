@@ -37,12 +37,15 @@ the review gate, and it fails the launch minimums.
   to records and SHALL NOT compute a second reviewed hash: one join is a
   standing invariant here, and a second one would disagree with the launch gate
   on the exact condition both are measuring.
-- The item SHALL propose a `verify` job — a type already on the closed list of
-  what the queue may produce — and SHALL name the piece, the record that binds
-  it, and that record's date. The work is re-establishing that an approved
-  surface still says what was approved, which is a check against a record rather
-  than an authoring pass; typing it as `entry` would put it in the authoring
-  budget category and shed it with authoring, on a condition that blocks every
+- The item SHALL propose a `verify` job carrying the reason `review-mismatch`
+  — a type already on the closed list of what the queue may produce, and a
+  reason string `specs/loop`'s merge exception ("A review-mismatch job's
+  merge binds by the item it was dispatched at, not by its diff") keys on
+  verbatim — and SHALL name the piece, the record that binds it, and that
+  record's date. The work is re-establishing that an approved surface still
+  says what was approved, which is a check against a record rather than an
+  authoring pass; typing it as `entry` would put it in the authoring budget
+  category and shed it with authoring, on a condition that blocks every
   publish.
 - The item SHALL rank above the corroboration disagreement, below every finding
   that reports a page already rendering something wrong — a demoted tutorial, a

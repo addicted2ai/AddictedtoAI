@@ -42,6 +42,13 @@ may be that the piece is fine as it stands, which changes no file under
   same way as for every other bound path, that path's current
   reviewed-surface hash written into `reviewed:` from the merged tree —
   whether or not the branch diff touched that path.
+- The item's reason and subject SHALL be recorded on the job's branch at
+  selection, so that a run resuming that branch binds by the same subject a
+  first run of the same job would. This is not a resumption detail: a
+  dispatched-but-interrupted `review-mismatch` job that resumes and reaches
+  merge without it would lose the exemption above, merge a record that binds
+  nothing, and leave the item it was dispatched to retire immortal — exactly
+  what this requirement exists to prevent.
 - A branch diff with no file under `content/`, on such a job, SHALL NOT be
   treated as `done with an empty diff`: it SHALL proceed to the ordinary gate
   and merge path exactly as a non-empty diff does, so that a `done` outcome

@@ -20,9 +20,18 @@ under `content/`, which is the common, honest outcome for this reason. The
 merge step derives `subject:`/`reviewed:` from the branch diff alone, so
 without an exception a job with that honest finding merges a record that binds
 nothing, and the item that reason exists to retire is immortal instead — the
-opposite of the safety property this change's own preamble states twice. Three
-tasks below (19–21) are therefore added under `specs/loop`, and Gates are
-renumbered to 22–23 to make room.
+opposite of the safety property this change's own preamble states twice.
+That immortality is exactly what a naive fix reproduces on the resume path:
+`readQueue` (`loop/lib/queue.mjs:69–82`) keeps a selected job's `reason` and
+`subject` only inside `raw`, nothing reads `raw` today, and a job resumed
+from an interrupted branch is rebuilt from `.job/source.json`
+(`loop/run.mjs:963, :1099–1117`), which records neither field — so a task
+written against `job.reason`/`job.subject` directly is unimplementable (no
+such fields exist on the job object at either construction site) and, even
+corrected to read through `.raw`, still loses the exemption the moment a
+review-mismatch job is interrupted and resumed. Four tasks below (19–22) are
+therefore added under `specs/loop`, and Gates are renumbered to 23–24 to make
+room.
 
 Each normative sentence has an implementing task and a testing task, and every
 testing task names the mutation that proves it measures something.
@@ -52,10 +61,13 @@ testing task names the mutation that proves it measures something.
       on fixtures with no repository behind it, and so `rederive` reproduces the
       derived tree byte-identically. See design D3.
 - [ ] 3. `pulse/lib/queue.mjs`: produce one item per mismatched piece — type
-      `verify`, a new reason on the closed reason vocabulary, subject the piece,
-      detail naming the piece, the binding record and its date. Implements: *the
-      item SHALL propose a `verify` job … and SHALL name the piece, the record
-      that binds it, and that record's date*.
+      `verify`, reason `review-mismatch` (a new entry on the closed reason
+      vocabulary, and the literal string `specs/loop`'s merge exception ("A
+      review-mismatch job's merge binds by the item it was dispatched at, not
+      by its diff") keys on), subject the piece, detail naming the piece, the
+      binding record and its date. Implements: *the item SHALL propose a
+      `verify` job carrying the reason `review-mismatch` … and SHALL name the
+      piece, the record that binds it, and that record's date*.
 - [ ] 4. `pulse/lib/queue.mjs`: rank it in `RANKS` at **69** — above
       `corroboration` (68), below `tutorial-demoted` (70) and `reference-drift`
       (72), because both of those are already visibly wrong on a rendered page
@@ -82,10 +94,11 @@ testing task names the mutation that proves it measures something.
       count; restore and verify the file byte-identical by hash. Tests tasks 1
       and 5.
 - [ ] 7. `pulse/tests/queue.test.mjs`: the item is produced with type `verify`
-      and the new reason, **the reason asserted verbatim as a string** — the
-      enumeration in `The work queue is derived, never accumulated` now names
-      this producer ("pieces whose recorded review no longer matches the file"),
-      and this assertion is what keeps that enumeration a true statement of what
+      and reason `review-mismatch`, **asserted verbatim as that exact string —
+      the one `specs/loop`'s merge exception keys on** — the enumeration in
+      `The work queue is derived, never accumulated` now names this producer
+      ("pieces whose recorded review no longer matches the file"), and this
+      assertion is what keeps that enumeration a true statement of what
       the queue produces; **its detail names the piece, the binding record's file
       name and that record's date**, asserted on the three values the fixture put
       there rather than on the presence of a field; and it sorts above a
@@ -95,7 +108,10 @@ testing task names the mutation that proves it measures something.
       the one that catches a rank chosen anywhere in 69–74. Mutations:
       move the rank below `corroboration` and confirm only the ordering assertion
       fails; drop the record's date from the detail and confirm only the detail
-      assertion fails. Tests tasks 3 and 4.
+      assertion fails; change the reason to a different string on the closed
+      vocabulary and confirm only this assertion fails, while task 6's
+      review-state test (which asserts nothing about the reason string) is
+      unaffected. Tests tasks 3 and 4.
 - [ ] 8. `pulse/tests/queue.test.mjs`: retirement. Recompute over a fixture where
       the piece has been re-reviewed and the newest record's hash matches — the
       item is absent, and no file anywhere records that it was done. Then the
@@ -218,26 +234,46 @@ testing task names the mutation that proves it measures something.
 
 ## The merge binds a review-mismatch job by its item, not by its diff
 
-- [ ] 19. `loop/run.mjs` (~:1330, the `joinableSubjects` call that feeds
-      `writeRecordSubjects`): when `job.reason === 'review-mismatch'`, union
-      `job.subject` (the queue item's subject — the mismatched piece's bare
-      content path, task 3) into the subjects array before it is passed to
-      `writeRecordSubjects`, deduplicated against any content paths the diff
-      already contributed. Implements: *the loop SHALL union that item's
-      subject into the set of paths bound to the job's verdict record … whether
-      or not the branch diff touched that path* (`specs/loop`, "A
-      review-mismatch job's merge binds by the item it was dispatched at, not
-      by its diff").
-- [ ] 20. `loop/run.mjs` (~:351–353, the empty-diff check): exempt a job whose
-      `job.reason === 'review-mismatch'` from the `outcome: 'failed'` / `'done
-      with an empty diff'` path — such a job proceeds to gates and merge exactly
-      as a job with a non-empty diff does, so task 19's union still runs.
-      Implements: *a branch diff with no file under `content/`, on such a job,
-      SHALL NOT be treated as `done with an empty diff`: it SHALL proceed to
-      the ordinary gate and merge path exactly as a non-empty diff does* and
-      *a job … carries any other reason, or none, is unaffected … an empty
-      branch diff SHALL still finish `failed`* (same requirement).
-- [ ] 21. `loop/tests/review.test.mjs`: a fixture merge for a `review-mismatch`
+- [ ] 19. `loop/run.mjs` (~:1099–1117, the `.job/source.json` write) and
+      (~:963, the resumed job rebuild): record the queue item's `reason` and
+      `subject` into `.job/source.json` alongside `type` and `issues` — as
+      `job.raw?.reason ?? null` and `job.raw?.subject ?? job.id ?? null`
+      (task 3's fields, read through `.raw` because `loop/lib/queue.mjs:69–82`
+      keeps them nowhere else; `job.id` is `loop/lib/select.mjs:74`'s fallback
+      to the queue item's subject) at the point `job = sel.selected`
+      (`:1034`) — and, on resume, rehydrate both from the `origin` object
+      `committedSourceFor(branch)` already reads at `:924` onto the resumed
+      job's own `raw: { reason: origin?.reason ?? null, subject:
+      origin?.subject ?? null }`, replacing today's bare `{ type, source,
+      title, detail }` rebuild at `:963` so a resumed job carries the same
+      `job.raw?.reason` / `job.raw?.subject` shape tasks 20 and 21 read.
+      Implements the bullet added after `specs/loop:44`: *the item's reason
+      and subject SHALL be recorded on the job's branch at selection, so that
+      a run resuming that branch binds by the same subject a first run of the
+      same job would*.
+- [ ] 20. `loop/run.mjs` (~:1330, the `joinableSubjects` call that feeds
+      `writeRecordSubjects`): when `job.raw?.reason === 'review-mismatch'`,
+      union `job.raw?.subject ?? job.id` (the queue item's subject — the
+      mismatched piece's bare content path, task 3) into the subjects array
+      before it is passed to `writeRecordSubjects`, deduplicated against any
+      content paths the diff already contributed. Read through `.raw` rather
+      than `job.reason`/`job.subject` directly — those fields do not exist on
+      the job object at either construction site, and task 19 is what makes
+      `.raw` populated on both the freshly-selected and the resumed path.
+      Implements: *the loop SHALL union that item's subject into the set of
+      paths bound to the job's verdict record … whether or not the branch
+      diff touched that path* (`specs/loop`, "A review-mismatch job's merge
+      binds by the item it was dispatched at, not by its diff").
+- [ ] 21. `loop/run.mjs` (~:351–353, the empty-diff check): exempt a job whose
+      `job.raw?.reason === 'review-mismatch'` from the `outcome: 'failed'` /
+      `'done with an empty diff'` path — such a job proceeds to gates and
+      merge exactly as a job with a non-empty diff does, so task 20's union
+      still runs. Implements: *a branch diff with no file under `content/`, on
+      such a job, SHALL NOT be treated as `done with an empty diff`: it SHALL
+      proceed to the ordinary gate and merge path exactly as a non-empty diff
+      does* and *a job … carries any other reason, or none, is unaffected …
+      an empty branch diff SHALL still finish `failed`* (same requirement).
+- [ ] 22. `loop/tests/review.test.mjs`: a fixture merge for a `review-mismatch`
       job whose branch diff carries only a file under `data/reviews/evidence/`
       (no file under `content/`) — assert the merged verdict record's
       `subject:` names the item's subject path and `reviewed:` carries that
@@ -247,19 +283,28 @@ testing task names the mutation that proves it measures something.
       `review-mismatch` job whose branch diff is completely empty still reaches
       merge and finishes `done`, bound to its subject path as above; a control
       in the same test — a job with the same empty diff but a different (or
-      absent) `job.reason` — still finishes `failed` with the note `done with
-      an empty diff`. Mutations: drop task 19's union and confirm the record's
-      `subject:` is absent (the pre-fix `{ok:false, why:'no joinable content
-      file merged'}` path); drop task 20's reason check and confirm the control
-      case fails while the `review-mismatch` case still reaches `done`. Tests
-      tasks 19 and 20.
+      absent) `job.raw?.reason` — still finishes `failed` with the note `done
+      with an empty diff`. A THIRD case, through the same `runLoop` harness,
+      tests task 19's resume half directly rather than by inference from the
+      non-resumed cases: start a `review-mismatch` job, let it commit
+      `.job/source.json` and its branch, interrupt before merge, resume it,
+      and let the resumed run reach merge with the same empty branch diff —
+      the merged record's `subject:` still names the item's subject. Mutations:
+      drop task 20's union and confirm the record's `subject:` is absent (the
+      pre-fix `{ok:false, why:'no joinable content file merged'}` path); drop
+      task 21's reason check and confirm the control case fails while the
+      `review-mismatch` case still reaches `done`; drop `reason`/`subject`
+      from task 19's `.job/source.json` write, or from its resume
+      rehydration, and confirm only the third (resumed) case's `subject:` is
+      absent while the first two cases still pass — the mutation task 19
+      itself names. Tests tasks 19, 20 and 21.
 
 ## Gates
 
-- [ ] 22. `openspec validate let-the-queue-see-a-judgment --type change --strict
+- [ ] 23. `openspec validate let-the-queue-see-a-judgment --type change --strict
       --no-interactive`, and `node scripts/check-spec-deltas.mjs --strict`. Run
       at drafting time.
-- [ ] 23. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
+- [ ] 24. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
       `verify-surfaces`, `verify-analytics` on merged `main`. The orchestrator's,
       not a job's. Note for whoever runs them: `verify-launch` is expected to
       report the same mismatched pieces the new queue reason names — 7 candidate
