@@ -72,7 +72,7 @@ this router any more. The model still resolves at
 and returns its metadata with an empty `endpoints` array. That is the delisting
 signature: the record survives, the supply is gone. Granite is still served
 through the router by Cloudflare (4.0 Micro) and by DeepInfra and CoreWeave
-(4.2 8B), and DeepInfra's own catalog
+(4.2 8B) (fetched 2026-09-06), and DeepInfra's own catalog
 ([`https://api.deepinfra.com/models/list`](https://api.deepinfra.com/models/list),
 fetched 2026-09-05) lists three Granite models — 4.2 3B, 4.2 8B and 4.2 30B —
 with no 4.1 among them.
