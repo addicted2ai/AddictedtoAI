@@ -98,6 +98,15 @@ tested.
       that census names, each naming the entry, the field and the offending
       value. Schema validation runs in the `content` prebuild step, which
       already reports file and field, so this needs no new step.
+      **A third refinement in the same place, and it is the one strictness
+      cannot do**: reject a census fact declaring a `scope` when the registered
+      census's predicate kind takes none — the providers-count kind — naming the
+      entry, the field and the scope. Task 3 makes `scope` optional on every
+      census fact and the predicate kind is known only through the registry, so
+      `.strict()` accepts it and an implementer with no refusal here silently
+      ignores it: a declared value that matches nothing and does nothing, which
+      is the inert-declaration shape `publishesFromMessage` and the guide's FM-N6
+      row already exist to refuse.
 - [ ] 5. `lib/facts.mjs`: a `census` branch in `resolveFact` and `renderFact` —
       the count, the source element naming the source and the snapshot date it
       was counted in, no overdue marker and no as-of hedge. `0` renders as `0`;
@@ -152,10 +161,15 @@ tested.
 - [ ] 8. Tests beside `lib/schema.mjs`, one per refusal, each asserting the
       field named in the error: a census fact carrying `value`; one carrying
       `accessed`; one carrying `volatility: fast`; one naming an unregistered
-      census id; one whose `feed` disagrees with the census's own source. Plus
+      census id; one whose `feed` disagrees with the census's own source; and
+      one naming the providers-count census — the kind that takes no scope —
+      while declaring a `scope`, asserting the error names the `scope` field and
+      not merely the fact. Plus
       the controls without which those prove nothing: a valid census fact
-      validates and round-trips, and a `cited` and a `feed` fact each validate
-      exactly as before. Plus the control the existing "A new field cannot
+      validates and round-trips, a `cited` and a `feed` fact each validate
+      exactly as before, and — the control the scope refusal needs, without
+      which a refusal of every providers-count census would pass just as well —
+      the same providers-count census **without** `scope` validates. Plus the control the existing "A new field cannot
       arrive unclassified" requirement asks for: `classificationProblems()`
       returns `[]` after the schema change.
 - [ ] 9. Tests beside `lib/facts.mjs` for the four render outcomes, asserted on

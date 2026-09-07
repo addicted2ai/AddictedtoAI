@@ -63,10 +63,14 @@ this closed list of predicate kinds:
 - **providers whose row count is at least a declared number** — a count of
   providers, not of rows, and the one kind that takes no scope.
 
-The first four kinds accept the optional `scope`. Adding a census over an
-existing predicate kind is an ordinary code change with a test; adding a new
-predicate **kind** is a change to this specification, because a predicate kind
-is a new shape of claim the corpus can make.
+The first four kinds accept the optional `scope`. A `scope` declared on a
+census whose kind takes none SHALL fail the build, naming the entry, the field
+and the scope — a declared value the predicate cannot use is an inert
+declaration, and this build refuses those.
+
+Adding a census over an existing predicate kind is an ordinary code change with
+a test; adding a new predicate **kind** is a change to this specification,
+because a predicate kind is a new shape of claim the corpus can make.
 
 **A census joins on a declared value, never on an entry's name.** `scope`
 carries the provider prefix the entry means, exactly as a feed-bound fact
@@ -131,6 +135,13 @@ specification; no new marker is introduced, and the syntax stays closed.
   not carry
 - **THEN** the build fails naming the entry, the field and the unknown id,
   before any page renders
+
+#### Scenario: A scope on a census that takes none fails the build
+
+- **WHEN** an entry declares a census fact naming the providers-count census —
+  the one predicate kind that takes no scope — and also declares a `scope`
+- **THEN** the build fails naming the entry, the field and the scope, before any
+  page renders
 
 #### Scenario: A census fact carrying a typed value fails the build
 
