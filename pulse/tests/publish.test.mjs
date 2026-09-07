@@ -182,6 +182,52 @@ test('--dry-run with publish assumed prints the exact commands and the poll targ
   assert.equal(existsSync(join(root, 'HOLD.md')), false);
 });
 
+test('dry-run reports an unreadable tree while real runs still refuse it', async (t) => {
+  const previewRoot = makeRoot([], { publish: true });
+  const preview = recorder();
+  t.after(() => cleanup(previewRoot));
+
+  const previewResult = await publishStep(previewRoot, {
+    owned: [],
+    dryRun: true,
+    assumePublish: true,
+    ...FAST,
+    log: preview.log,
+  });
+
+  assert.equal(previewResult.reason, 'dry-run');
+  assert.match(preview.said(), /cannot read the working tree .* a real run would publish nothing/);
+  assert.match(preview.said(), /DRY RUN — publish would run/);
+
+  const realRoot = makeRoot([], { publish: true });
+  const real = recorder();
+  t.after(() => cleanup(realRoot));
+
+  const realResult = await publishStep(realRoot, { owned: [], ...FAST, log: real.log });
+
+  assert.deepEqual(realResult, {
+    published: false,
+    reason: 'tree-unreadable',
+    commit: { attempted: true, committed: false, paths: [], reason: 'tree-unreadable' },
+  });
+  assert.doesNotMatch(real.said(), /DRY RUN/);
+
+  const readable = makeGitRoot({ publish: true, remote: false });
+  const readableLog = recorder();
+  t.after(() => dropRoot(readable.root));
+
+  const readableResult = await publishStep(readable.root, {
+    owned: [],
+    dryRun: true,
+    ...FAST,
+    log: readableLog.log,
+  });
+
+  assert.equal(readableResult.reason, 'dry-run');
+  assert.doesNotMatch(readableLog.said(), /cannot read the working tree/);
+  assert.match(readableLog.said(), /DRY RUN — publish would run/);
+});
+
 test('the run declares its own writes, so the step never falls back to wholesale staging', async (t) => {
   // Replaces 'an undeclared caller is told ... that it is staging wholesale',
   // which asserted the gap `addictedtoai-y7d` closed: `pulse/run.mjs` now
