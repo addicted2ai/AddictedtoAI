@@ -208,6 +208,32 @@ which fails the launch check by the rule already written.
   either bead asks for it. The delta states the boundary explicitly so an
   implementer does not read the extended binding as an extended obligation and
   turn the launch check red.
+- **The sitemap `lastModified` and JSON-LD `dateModified` that N5 puts on the
+  stubs it newly binds — accepted explicitly, not separately gated.**
+  `site.reviews.byFile` is `reviewablePieces`' own join (`lib/reviews.mjs`), and
+  `lib/sitemap-dates.mjs`'s `reviewedOn` reads it for any state but `missing`
+  — `recorded`, `mismatched` and `unbound` all yield a date. `lib/site.mjs:177,179`
+  feeds that into `contentChangedOn`/`postChangedOn`, which `app/sitemap.ts:151,157`
+  renders as `lastModified` and `app/wiki/[kind]/[slug]/page.tsx:64` renders as
+  `dateModified`. Measured against the corpus as N5 extends it (2026-09-06,
+  using `lib/reviews.mjs`'s own `reviewablePieces`/`resolveReviews` and
+  `lib/indexability.mjs`'s own `indexability`, not a recomputation): of the 13
+  body-less entries that join a record once the set is extended, 12 are
+  indexed and so appear in a browse listing and in `sitemap.xml`
+  (`content/wiki/model/minimax-minimax-m2.md` is the 13th — `unbound`, but not
+  indexed, so it appears in neither) — nine `recorded`
+  (`model/anthropic-claude-fable-5-1`, `-5`, `arcee-ai-virtuoso-large`,
+  `kwaipilot-kat-coder-air-v2-5`, and five `mistralai-*-batch` entries) and
+  three `unbound` (`model/deepseek-deepseek-v4-flash-0731`,
+  `org/moonshot-ai`, `org/perplexity`). Those 12 pages pick up a
+  `lastModified`/`dateModified` they do not carry today. This is accepted as
+  the correct behaviour of the mechanism already in place, not a new one N5
+  adds: `contentChangedOn`/`postChangedOn` already read `reviewedOn`
+  unconditionally for every piece `site.reviews.byFile` joins, exactly as they
+  do today for the 95 bodied entries and for `corpus.claim`; N5 only grows
+  which pieces that join reaches, and the date it contributes is the same
+  review record `date:` these two consumers already trust everywhere else. No
+  task adds a mechanism for this because none is needed.
 - **Demanding a *fresh* voice verdict of non-`post` types.** `READS_HUMAN_TYPES`
   stays `['post']` and no reviewer of a `repair`, a `revision` or any other type
   is ever asked to write a `reads-human` of its own — that is the demand the
