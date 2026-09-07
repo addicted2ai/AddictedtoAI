@@ -137,7 +137,7 @@ that no test attempts is a refusal that has never run.
 
 ## The launch check, sentences N4 and N7
 
-- [ ] 9. **N4** — `scripts/verify-launch.mjs:613-661`: the voice check follows
+- [x] 9. **N4** — `scripts/verify-launch.mjs:613-661`: the voice check follows
       the carry-forward, **resolving per post**. This loop already runs over
       pieces, so for the post in hand it must select the `reads-human-from`
       entry whose `subject` is **that post** and ignore the record's other
@@ -156,7 +156,7 @@ that no test attempts is a refusal that has never run.
       change exists to stop. Export the carry-forward resolver so it is testable
       without running a build — `hasProseBody` is already exported from this
       file for that reason.
-- [ ] 10. **N7** — the same function, the `hit.declaredBy` reach-back at
+- [x] 10. **N7** — the same function, the `hit.declaredBy` reach-back at
       `verify-launch.mjs:632-637`, which today accepts any approving record
       naming the piece that carries a non-empty `reads-human` and is how the
       verdict stopped being *lost*. It **stays**, and it stops being unstated:
@@ -174,7 +174,7 @@ that no test attempts is a refusal that has never run.
 
 ## The reviewable set, sentences N5–N6
 
-- [ ] 11. **N5** — `lib/reviews.mjs:298-307`, `reviewablePieces`: entries enter
+- [x] 11. **N5** — `lib/reviews.mjs:298-307`, `reviewablePieces`: entries enter
       the set whether or not they have a prose body. **Order is part of the
       join** (`reviews.mjs:270-297`): a record is claimed by the first piece
       that names it, so the body-less entries must not be inserted anywhere that
@@ -194,7 +194,7 @@ that no test attempts is a refusal that has never run.
       the same reason: inserting the body-less entries anywhere earlier would
       move which piece claims an ambiguously-named record for content nobody
       touched.
-- [ ] 12. **N6** — `scripts/verify-launch.mjs:473-478`, the `pieces` list the
+- [x] 12. **N6** — `scripts/verify-launch.mjs:473-478`, the `pieces` list the
       check requires a record for, keeps `hasProseBody` and does not change.
       `entryReviewGate` (`reviews.mjs:555-562`) keeps its `hasBody` skip, so no
       body-less entry's indexability changes. The only thing that changes is the

@@ -85,6 +85,8 @@ import { READS_HUMAN_TYPES, needsReadsHuman } from '../loop/lib/review.mjs';
 import {
   SUBJECT_KEYS,
   mismatchProblems,
+  recordFileName,
+  recordNamesPath,
   reviewCandidates,
   reviewJoin,
   reviewStateLine,
@@ -204,6 +206,57 @@ export function themesOf(doc) {
 // ---------------------------------------------------------------------------
 // Review records
 // ---------------------------------------------------------------------------
+
+/**
+ * WHICH RECORD ANSWERED THE VOICE QUESTION FOR THIS POST, AND HOW
+ * (specs/review, beads addictedtoai-37rb).
+ *
+ * Exported so it is testable without running a build, the same reason
+ * `hasProseBody` is exported from this file.
+ *
+ * RESOLVED PER POST. A record may now carry a `reads-human-from` entry for each
+ * post one job merged, so the entry this piece is answered by is the one whose
+ * `subject` is THIS file; a record carrying an entry for a different post
+ * answers nothing here. Selecting the record's first entry regardless of its
+ * subject is the mistake this function exists to prevent.
+ *
+ * ONE HOP, by the same rule the merge applies: the record a carry-forward names
+ * must itself approve this piece and carry a non-empty `reads-human`. Following
+ * a chain here would pass a hand-written record the merge refuses — the two
+ * ends drifting apart, which is what this whole change exists to stop.
+ *
+ * THE REACH-BACK (N7) is the third answer and it is bounded by the record
+ * itself, never by a date. A record that carries NEITHER field could not have
+ * carried a carry-forward: the merge did not ask for one when it was written,
+ * and now refuses to write one in that shape. Measured 2026-09-06:
+ * `data/reviews/j-20260902-23.md` is the current approving record for
+ * `content/blog/glm-5-3-license-revenue-gate.md`, carries neither field, and is
+ * reached only this way — reporting it as unanswered would redden this check
+ * over records nobody may now write, which is a guardrail firing on its own
+ * history.
+ *
+ * @param {{file: string, record: object, declaredBy?: object[], records?: Map}} args
+ * @returns {{how: 'fresh'|'carry'|'reach-back'|'unanswered', record: object|null,
+ *            entry: {subject: string, record: string, why: string}|null}}
+ */
+export function resolveVoiceAnswer({ file, record, declaredBy = [], records }) {
+  const answers = (r) =>
+    r?.verdict?.verdict === 'approve' && Boolean(normalizeField(r?.verdict?.readsHuman ?? ''));
+  if (answers(record)) return { how: 'fresh', record, entry: null };
+
+  const entry = (record?.verdict?.readsHumanFrom ?? []).find((e) => e.subject === file) ?? null;
+  if (entry) {
+    const anchor = records?.get?.(recordFileName(entry.record)) ?? null;
+    if (anchor && answers(anchor) && recordNamesPath(anchor, file)) {
+      return { how: 'carry', record: anchor, entry };
+    }
+    return { how: 'unanswered', record: null, entry };
+  }
+
+  const back = (declaredBy ?? []).find((r) => r !== record && answers(r)) ?? null;
+  if (back) return { how: 'reach-back', record: back, entry: null };
+  return { how: 'unanswered', record: null, entry: null };
+}
 
 // ---------------------------------------------------------------------------
 // Checks
@@ -625,16 +678,21 @@ function checkReviews(corpus, dataDir) {
       // read as though it never had.
       //
       // So the question is whether ANY approving reviewer ever answered it for
-      // this piece, not whether the newest one did. Whether a repair that
-      // rewrites a post's prose should re-take the voice verdict is a real and
-      // separate question — the `reviewed:` hash already tracks moved bytes —
-      // and it is carried by its own issue rather than decided here.
-      const voiceRec =
-        normalizeField(v.readsHuman) && v.verdict === 'approve'
-          ? rec
-          : (hit.declaredBy ?? []).find(
-              (r) => r.verdict?.verdict === 'approve' && normalizeField(r.verdict.readsHuman),
-            ) ?? null;
+      // this piece, not whether the newest one did — and, since the
+      // carry-forward landed (addictedtoai-37rb), WHICH record answered and how.
+      // `resolveVoiceAnswer` is the whole rule: the current record's own
+      // `reads-human`, else this post's OWN carry-forward entry resolved one hop
+      // to the record that answered, else the reach-back N7 sanctions for a
+      // record that carries neither field and therefore predates the
+      // requirement. The merge refuses any newly-written record in that last
+      // shape, so the two ends cannot drift.
+      const answer = resolveVoiceAnswer({
+        file: doc.file,
+        record: rec,
+        declaredBy: hit.declaredBy ?? [],
+        records,
+      });
+      const voiceRec = answer.record;
       if (!voiceRec) {
         const also = (hit.declaredBy ?? []).map((r) => r.name).filter((n) => n !== rec.name);
         problems.push(
@@ -643,7 +701,13 @@ function checkReviews(corpus, dataDir) {
             (also.length ? `, and the others naming this piece are ${also.join(', ')}` : '') +
             '. specs/review: the voice question is asked, not merely available, and the merge ' +
             'gate refuses such a record (`reads-human-empty`). The prebuild voice lint only ' +
-            'warns, so this field is the bar.',
+            'warns, so this field is the bar.' +
+            (answer.entry
+              ? ` This record carries a \`reads-human-from\` entry for this post naming ` +
+                `${answer.entry.record}, which is not a record that approves this piece with a ` +
+                '`reads-human` of its own — a carry-forward is one hop and the anchor must itself ' +
+                'answer, so this entry stands on nothing (`reads-human-from-unanchored` at merge).'
+              : ''),
         );
         continue;
       }
@@ -696,6 +760,11 @@ function checkReviews(corpus, dataDir) {
         'imported rather than restated. Its duplicate sweep reads all ' +
         `${voiceByValue.size} distinct \`reads-human\` value(s) across every record, not just the ` +
         'post ones, because the merge gate does.' +
+        ' A post whose current record carries a `reads-human-from` entry for it is answered by ' +
+        'the record that entry names, resolved ONE hop and required to approve this same piece ' +
+        'with a `reads-human` of its own; a post whose current record carries neither field is ' +
+        'answered by any earlier approving record naming it, which is the state records written ' +
+        'before the carry-forward existed are in and which the merge now refuses to write.' +
         (voiceHeld === 0
           ? ' NOTHING IS HELD TO IT THIS RUN — the surface is empty, so this rule is verified by ' +
             'its tests and not by this corpus.'
