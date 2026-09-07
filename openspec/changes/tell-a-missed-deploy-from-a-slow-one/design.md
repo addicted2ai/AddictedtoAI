@@ -1,6 +1,6 @@
 # Design
 
-Three choices in this change are not obvious from the requirement text, and one
+Five choices in this change are not obvious from the requirement text, and one
 of them replaces a rule that was written deliberately. They are recorded here so
 the next reader does not re-litigate them from the symptom.
 
@@ -69,11 +69,19 @@ whole of the diagnosis the maintainer had to perform by hand on 2026-09-01.
 `never-advanced`, `advanced-elsewhere`, `unreadable`. Closed, because an open
 string is what the current text effectively has — a conditional clause appended
 to prose — and nothing can assert on it. Three, because those are the three
-outcomes the polling loop can actually distinguish from what it read: the stamp
-never left the pre-push baseline; it moved to something that does not contain the
-pushed commit; or no reading succeeded at all. Computed rather than judged: each
-one is a comparison between values the loop already holds, so no model is
-involved and the Pulse's zero-model property is untouched.
+outcomes the polling loop can actually distinguish from what it read. **And
+exhaustive, which the first draft of this set was not.** Two of the three are
+positive tests — `unreadable` when no reading succeeded, `never-advanced` when
+every reading succeeded and every one equalled the pre-push baseline — and
+`advanced-elsewhere` is deliberately the **residual**: at least one reading
+succeeded and they were not all the baseline. Defining it instead as "the stamp
+moved to a commit that neither is nor contains the pushed commit" leaves two
+holes a real run can fall into — a baseline that was itself unreadable while
+later readings succeeded, and a reading that is not a commit at all (`unknown`,
+a bare timestamp) — and a run that matches none of three classifications has to
+either invent a fourth or write a hold that names none. Computed rather than
+judged: each test is a comparison between values the loop already holds, so no
+model is involved and the Pulse's zero-model property is untouched.
 
 The third is not decoration. `unreadable` is exactly the case the existing
 conditional clause silently drops — when the baseline itself could not be read,
@@ -81,7 +89,27 @@ conditional clause silently drops — when the baseline itself could not be read
 the push" clause fires on a run that saw nothing at all, which is the most
 misleading sentence the file can carry.
 
-## D4. Where the observation goes, and why that is a limit rather than a feature
+## D4. Why the hold carries a marker line, and why the re-test keys on it
+
+"On every invocation that finds a deploy hold standing" reads like a condition
+the code already has. It is not. `pulse/lib/publish.mjs:498` computes
+`held = existsSync(p.hold)` and stops there, and `HOLD.md` has four writers:
+this step, and the Desk's consecutive-failure, red-build and reserved-path
+breakers (`loop/lib/breakers.mjs:72, 80, 93`). **None of the three Desk breakers
+names a commit.** So "whether the commit the hold names is now served" has no
+referent on three quarters of the holds that can be standing, and a re-test that
+keyed on existence would fetch the live site to ask an unanswerable question
+about a reserved-path halt and then append an observation that reads as progress
+on it.
+
+The marker is therefore the mechanism and not a convenience: `writeHold` emits
+`deploy-hold: <pushed sha> <classification>` as its first body line, the re-test
+parses that line, and a hold without one is passed over untouched. Keying on the
+line rather than on which module wrote the file also survives the case that
+matters most — a `HOLD.md` a human wrote by hand, which gets no observations and
+should not.
+
+## D5. Where the observation goes, and why that is a limit rather than a feature
 
 `HOLD.md` is git-ignored (`.gitignore:68`). The appended observations are
 therefore local to the machine that ran the Pulse: not committed, not pushed,

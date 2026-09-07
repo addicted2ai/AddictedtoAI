@@ -1,9 +1,10 @@
 # Tasks
 
-Six normative sentences are added or changed in `specs/pulse`, "The Pulse
-publishes what it builds". Each has an implementing task and a testing task
-below, and every testing task names the mutation that proves it measures
-something.
+Seven normative bullets are added or changed in `specs/pulse`, "The Pulse
+publishes what it builds" (13 SHALL/MUST clauses when counted clause by clause,
+since several bullets state a rule and its fail-closed case together). Each has
+an implementing task and a testing task below, and every testing task names the
+mutation that proves it measures something.
 
 All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
 `loop/`, `lib/`, `content/` or `data/` is touched by this change.
@@ -58,55 +59,83 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
 ## The hold says which failure it is
 
 - [ ] 7. `pulse/lib/publish.mjs`: compute a classification from the readings the
-      loop already holds — `never-advanced`, `advanced-elsewhere`, `unreadable`
-      — as a frozen closed set in one place, and have `writeHold` state it
-      outright alongside the pushed commit, the last stamp read and both window
-      durations. The existing free-text clause `— unchanged since before the
-      push` is replaced by the named classification rather than kept beside it,
-      so there is one statement of the outcome and not two. Implements: *the
-      hold SHALL name which failure it is … and SHALL carry the pushed commit,
-      the last stamp read, both window durations, and the classification*.
-- [ ] 8. `pulse/tests/publish-verify.test.mjs`: three holds, one per
-      classification, each asserting the written file contains its name, the
-      pushed commit and the last stamp — including the `unreadable` case where
-      no reading succeeded at all, which is the case the clause being replaced
-      got wrong (`lastSeen === baseline` is `null === null`, so it claimed
-      "unchanged since before the push" on a run that saw nothing). Mutation:
-      collapse `unreadable` into `never-advanced` and confirm only that test
-      fails. Tests task 7.
+      loop already holds, as a frozen closed set in one place, decided in this
+      order so the set is exhaustive — `unreadable` when no reading succeeded;
+      `never-advanced` when every reading succeeded and every one equalled the
+      pre-push baseline; `advanced-elsewhere` for everything else, including a
+      baseline that could not be read while later readings could, and a reading
+      that is not a commit at all. `writeHold(root, reason)` gains the pushed
+      commit, the last stamp read, both window durations and the classification,
+      states them outright, and writes as its **first body line** the
+      machine-readable marker `deploy-hold: <pushed sha> <classification>` — one
+      line, exact prefix, so a later invocation can tell this hold from the three
+      the Desk's breakers write, none of which names a commit
+      (`loop/lib/breakers.mjs:72, 80, 93`). The existing free-text clause
+      `— unchanged since before the push` is replaced by the named
+      classification rather than kept beside it, so there is one statement of the
+      outcome and not two. Implements: *the hold SHALL name which failure it is …
+      and SHALL carry the pushed commit, the last stamp read, both window
+      durations, and the classification* and *a deploy hold SHALL be
+      machine-identifiable as one*.
+- [ ] 8. `pulse/tests/publish-verify.test.mjs`: five holds, each asserting the
+      written file carries the `deploy-hold:` marker line with the pushed commit,
+      the classification's name, the last stamp read and **both window durations
+      as written values, not merely a duration-shaped field** — one per
+      classification, plus the two residual edge cases: a baseline that was
+      unreadable while later readings succeeded, and a reading that is not a
+      commit at all (`unknown`), both of which classify `advanced-elsewhere`. The
+      `unreadable` case is the one the clause being replaced got wrong
+      (`lastSeen === baseline` is `null === null`, so it claimed "unchanged since
+      before the push" on a run that saw nothing). Mutations: collapse
+      `unreadable` into `never-advanced` and confirm only that test fails; drop
+      the confirmation-window duration from the hold text and confirm only the
+      duration assertions fail. Tests task 7.
 
 ## The read-only re-test of a standing hold
 
 - [ ] 9. `pulse/lib/publish.mjs`: at the standing-hold branch (`:568–570`
-      today, which returns before any live read), read the live build stamp once
-      and append one dated observation to `HOLD.md` saying whether the commit
-      the hold names is now served, under the same containment test as task 1.
-      No push, no remote write, no second reading, and no rewrite of an earlier
+      today, which returns before any live read), parse the file for task 7's
+      `deploy-hold: <sha> <classification>` marker. **With no marker, return
+      exactly as today and append nothing** — the hold belongs to another brake
+      and names no commit to ask about. With one, read the live build stamp once
+      and append one dated observation saying whether the commit **the marker
+      names** is now served, under the same containment test as task 1. No push,
+      no remote write, no second reading, and no rewrite of an earlier
       observation. Implements: *a standing deploy hold SHALL be re-tested, and
       the re-test SHALL take no outward action … at most one observation per
-      invocation*.
+      invocation* and *a standing hold carrying no such marker SHALL NOT be
+      re-tested*.
 - [ ] 10. `pulse/lib/publish.mjs`: the re-test returns the same
       `{ published: false, reason: 'hold' }` it returns today. It removes
       nothing, rewrites nothing, and does not reach the push. Implements: *the
       re-test SHALL NOT clear, weaken or rewrite the hold, and SHALL NOT resume
       publishing*.
-- [ ] 11. `pulse/tests/publish.test.mjs`: with a hold standing and a live stamp
-      that now contains the held commit, one invocation appends one observation
-      naming the date and the stamp; a second invocation appends a second
-      observation and leaves the first intact; the hold's original text is
+- [ ] 11. `pulse/tests/publish.test.mjs`: with a marked hold standing and a live
+      stamp that now contains the held commit, one invocation appends one
+      observation naming the date and the stamp; a second invocation appends a
+      second observation and leaves the first intact; the hold's original text is
       unchanged throughout; the file still exists; nothing was pushed (assert on
-      the git spy, not on the log line). Mutation: make the re-test delete the
+      the git spy, not on the log line); and **the live-stamp fetch spy records
+      exactly one call per invocation** — the assertion for *SHALL read the live
+      build stamp once*, whose mutation is a second read, which makes the count
+      two and fails it. Mutation: make the re-test delete the
       hold on a positive observation and confirm the "hold is still there" and
       "nothing was pushed" assertions fail while the append assertions pass —
       two failing assertions in disjoint places is the evidence that the append
       and the non-clearance are independent behaviours rather than one described
       twice. Tests tasks 9 and 10.
-- [ ] 12. `pulse/tests/publish.test.mjs`: the negative half — a hold standing
-      with a live stamp that does **not** contain the held commit appends an
-      observation saying exactly that, and a run whose live read fails appends
-      an observation saying the stamp was unreadable rather than appending
-      nothing. An observation that only ever fires on good news is a log line,
-      not a record. Tests task 9.
+- [ ] 12. `pulse/tests/publish.test.mjs`: the negative half — a marked hold
+      standing with a live stamp that does **not** contain the held commit
+      appends an observation saying exactly that, and a run whose live read fails
+      appends an observation saying the stamp was unreadable rather than
+      appending nothing. An observation that only ever fires on good news is a
+      log line, not a record. Then the other negative, on a different axis: a
+      hold written by the Desk's **reserved-path breaker** (breaker 3, no
+      `deploy-hold:` marker) is left byte-identical, with the live-stamp fetch
+      spy recording **zero** calls — a re-test that reads the site to decide
+      whether a reserved-path halt has cleared is asking a question that has no
+      answer. Mutation: key the re-test on the file's existence rather than on
+      the marker and confirm only this case fails. Tests task 9.
 
 ## Gates
 

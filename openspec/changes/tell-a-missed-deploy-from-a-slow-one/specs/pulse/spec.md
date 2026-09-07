@@ -31,9 +31,14 @@ controlled by the `publish` flag in `data/config.json`:
   commit that contains it** — the pushed SHA read from the repository *after*
   that commit exists, the stamp read as a hexadecimal abbreviation, resolved
   through the local repository to a commit object, and accepted only when the
-  pushed commit is that commit or an ancestor of it. The question the check
-  asks is whether the bytes this run pushed are being served; a later commit
-  that contains them serves them. The
+  pushed commit is that commit or an ancestor of it. The step MAY perform one
+  read-only `git fetch origin main` before resolving, so that a stamp naming a
+  commit another actor pushed can be resolved at all: a fetch reads the git
+  remote it has just pushed to and is neither a hosting-provider call nor a
+  GitHub API call, and it changes nothing outside the local object store. A
+  stamp still unresolvable after that fetch SHALL fail closed. The question the
+  check asks is whether the bytes this run pushed are being served; a later
+  commit that contains them serves them. The
   expected value SHALL NOT be read from the local build's own `status.json`:
   that file is written during the rebuild, which happens before the commit, so
   it names the *previous* commit and a check against it confirms the previous
@@ -49,24 +54,41 @@ controlled by the `publish` flag in `data/config.json`:
   recorded as the same fact. Only when the confirmation window also elapses is
   the deploy a failure: the Pulse SHALL then write
   `HOLD.md` naming the failure (breaker 2 in `loop`) and suspend further publish
-  attempts until the hold clears. Detection is by fetching the live page only —
-  no hosting-provider API, no GitHub API.
-- **The hold SHALL name which failure it is**, from a closed set computed from
-  the stamps the run actually read: `never-advanced` — every reading returned
-  the stamp that was live before the push; `advanced-elsewhere` — the stamp
-  moved to a commit that neither is nor contains the pushed commit; and
-  `unreadable` — no stamp could be read at all. The hold SHALL carry the pushed
-  commit, the last stamp read, both window durations, and the classification.
-  The three have different causes and different recoveries, and a hold that does
-  not say which one it is makes its reader re-measure what the run already knew.
+  attempts until the hold clears. Observation of the deploy is by fetching the
+  live page only — no hosting-provider API, no GitHub API; the read-only
+  `git fetch` above resolves a stamp against the git remote and is not an
+  observation of the deploy.
+- **The hold SHALL name which failure it is**, from a closed and exhaustive set
+  computed from the stamps the run actually read: `unreadable` — no reading
+  succeeded at all; `never-advanced` — every reading succeeded and every one
+  returned the stamp that was live before the push; and `advanced-elsewhere` —
+  the residual, meaning at least one reading succeeded and the readings were not
+  all the pre-push baseline, whether or not the value they carry names a commit
+  at all. The residual is written as a residual on purpose: a stamp that was
+  unreadable before the push and readable after, or one that moved to `unknown`
+  or a bare timestamp, is neither of the first two, and a classification with a
+  gap in it hands its reader a hold that says nothing. The hold SHALL carry the
+  pushed commit, the last stamp read, both window durations, and the
+  classification. The three have different causes and different recoveries, and
+  a hold that does not say which one it is makes its reader re-measure what the
+  run already knew.
+- **A deploy hold SHALL be machine-identifiable as one.** The publish step SHALL
+  write into `HOLD.md`, on its own line, a marker naming the commit the hold is
+  about and the classification. `HOLD.md` has other writers — the Desk's
+  consecutive-failure, red-build and reserved-path breakers all write it and none
+  of them is about a commit — and a re-test that could not tell them apart would
+  be asking whether a commit is served on a hold that names no commit.
 - **A standing deploy hold SHALL be re-tested, and the re-test SHALL take no
-  outward action.** On every invocation of the publish step that finds a deploy
-  hold standing, the Pulse SHALL read the live build stamp once — no push, no
-  commit to the remote, nothing that changes the world — and SHALL append one
-  dated observation to `HOLD.md` recording whether the commit the hold names is
-  now served, under the same containment test the check uses. It SHALL append at
-  most one observation per invocation and SHALL NOT rewrite an earlier one, so
-  the file records how long the condition persisted.
+  outward action.** On every invocation of the publish step that finds a standing
+  hold **carrying that marker**, the Pulse SHALL read the live build stamp once —
+  no push, no commit to the remote, nothing that changes the world beyond the
+  read-only resolution above — and SHALL append one dated observation to
+  `HOLD.md` recording whether the commit the marker names is now served, under
+  the same containment test the check uses. It SHALL append at most one
+  observation per invocation and SHALL NOT rewrite an earlier one, so the file
+  records how long the condition persisted. A standing hold carrying no such
+  marker SHALL NOT be re-tested and SHALL NOT be appended to: it was written by
+  another brake, about something else.
 - **The re-test SHALL NOT clear, weaken or rewrite the hold**, and SHALL NOT
   resume publishing. Breaker 2 keys on the file's existence and this appends to
   it; a brake that releases itself is not a brake, and clearing a diagnosed halt
@@ -136,6 +158,13 @@ changing is not a success when publishing is enabled.
 - **THEN** the step takes no outward action, appends one dated observation to
   `HOLD.md` saying the held commit is now served, and the hold file is still
   there afterwards
+
+#### Scenario: A hold another brake wrote is left alone
+
+- **WHEN** the Desk's reserved-path breaker has written `HOLD.md`, that file
+  carries no deploy marker, and the publish step is invoked
+- **THEN** no live stamp is read for it, nothing is appended, and the file is
+  byte-identical afterwards
 
 #### Scenario: The re-test does not resume publishing
 
