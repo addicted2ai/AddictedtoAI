@@ -326,6 +326,29 @@ test('breaker 4 — the target branch moving under a job, merged in by the autho
   ctx.cleanup();
 });
 
+test('the shared install is reachable from the worktree while the author runs, not only at gate time', async () => {
+  // Measured 2026-09-07 on j-20260907-14: the brief asks every author to run
+  // `npm test` and `npm run build` in the foreground, and the worktree had no
+  // `node_modules` until `runGates` linked it — after the author had already
+  // reported `blocked`. The link is a junction to the repository's install;
+  // the fixture's install is one marker file, gitignored like the real one.
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({ command: mockCommand('needs-node-modules'), reviewerCommand: mockCommand('review-approve') }),
+  });
+  mkdirSync(join(ctx.repoRoot, 'node_modules'), { recursive: true });
+  writeFileSync(join(ctx.repoRoot, 'node_modules', 'fixture-package.txt'), 'the shared install\n', 'utf8');
+  writeQueue(ctx, [{ type: 'machinery', title: 'a job whose author runs the checks' }]);
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.ok(!/node_modules is absent/.test(ctx.output()), ctx.output());
+  // the link never reaches the branch or main: node_modules is ignored, and the
+  // real install is untouched
+  assert.ok(existsSync(join(ctx.repoRoot, 'node_modules', 'fixture-package.txt')));
+  assert.ok(existsSync(join(ctx.repoRoot, 'site-note.md')), ctx.output());
+  ctx.cleanup();
+});
+
 // ---------------------------------------------------------------------------
 // Breaker 4's filesystem companion (beads addictedtoai-59q, addictedtoai-ut1).
 //

@@ -47,6 +47,7 @@ import {
   gateFailureNote,
   gatesHitTransportFailure,
   runGates,
+  linkNodeModules,
   unlinkNodeModules,
   TRANSPORT_FAILURE_MARKER,
 } from './lib/gates.mjs';
@@ -287,6 +288,19 @@ async function executeJob(ctx, opts) {
   // Breaker 4's filesystem companion needs a "before" for the two brakes, and
   // the window that matters is the executor's own run, not the whole job.
   let brakesBefore = brakeState(ctx);
+  // The brief tells the author to run `npm test` and `npm run build` in the
+  // foreground before it finishes, so the shared install has to be reachable
+  // from the worktree BEFORE the executor starts — not only inside `runGates`,
+  // which runs after it. Measured on j-20260907-08 (proposal
+  // link-node-modules-before-the-author-runs: every test file failed with
+  // ERR_MODULE_NOT_FOUND) and again on j-20260907-14, whose author reported
+  // `blocked` for exactly this. The link is a junction to the shared install;
+  // `unlinkNodeModules` below removes it before any git or delete touches the
+  // worktree, and `linkNodeModules` is idempotent for the gate-time call.
+  const authorLink = linkNodeModules(worktree, ctx.repoRoot);
+  if (!authorLink.linked && authorLink.why !== 'already present') {
+    ctx.log(`node_modules not linked for the author: ${authorLink.why}`);
+  }
   const run = await runExecutor({
     command: runner.command,
     cwd: worktree,
@@ -694,6 +708,11 @@ async function executeJob(ctx, opts) {
     // the maintainer can write one while the review is running, and a revision
     // that removes it is exactly the self-serving act breaker 4 names.
     brakesBefore = brakeState(ctx);
+    // Same reason as the author pass: a revision runs the gates its brief asks for.
+    const revisionLink = linkNodeModules(worktree, ctx.repoRoot);
+    if (!revisionLink.linked && revisionLink.why !== 'already present') {
+      ctx.log(`node_modules not linked for the revision: ${revisionLink.why}`);
+    }
     const run2 = await runExecutor({
       command: runner.command,
       cwd: worktree,

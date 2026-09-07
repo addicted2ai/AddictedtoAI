@@ -202,6 +202,21 @@ switch (mode) {
     break;
   }
 
+  // An author that does what every brief asks: it runs the repository's checks
+  // from the worktree, which needs the shared install reachable there. Measured
+  // 2026-09-07 (j-20260907-14): the worktree had no `node_modules` during the
+  // author phase — the loop linked it only for the gates — so the author could
+  // only report `blocked`. This mock stands in for `npm test` with the one
+  // question that matters: is the install here?
+  case 'needs-node-modules':
+    if (existsSync(join(cwd, 'node_modules', 'fixture-package.txt'))) {
+      write('site-note.md', '# a real edit\n\nWritten after the checks ran.\n');
+      result('done\n\nThe install was reachable; ran the checks; wrote site-note.md.\n');
+    } else {
+      result('blocked: node_modules is absent from this worktree, so the checks the brief requires cannot run\n');
+    }
+    break;
+
   // A job that writes the maintainer's brake into its own worktree, alongside
   // ordinary work so the run is otherwise mergeable. `STOP` is gitignored
   // (beads addictedtoai-ufu), so `commitAll`'s `git add -A` never stages it and

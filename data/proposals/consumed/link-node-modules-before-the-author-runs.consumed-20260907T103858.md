@@ -69,3 +69,15 @@ Worth a test, in the shape `loop/tests/` already uses: build a throwaway
 repository with a `node_modules` at its root, run the job scaffolding to the
 point where the executor would be invoked, and assert the worktree has a link.
 That assertion fails today.
+
+## Consumed: implemented by a direct fix between runs, not by a job
+
+2026-09-07, the orchestrator, under the standing grant for direct fixes to
+the machinery when a live hazard needs it. The proposal's exact change —
+`linkNodeModules(worktree, ctx.repoRoot)` immediately before the executor is
+invoked, for the author pass and the revision pass, with the gate-time link
+and both unlinks untouched — landed on main with a test
+(loop/tests/breakers.test.mjs, mock mode `needs-node-modules`) and a
+mutation proof. The hazard that made it urgent: j-20260907-14, the first
+Desk job on a runner that reports honestly, ended `blocked` for exactly
+the reason this proposal measured on j-20260907-08.
