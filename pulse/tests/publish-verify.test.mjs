@@ -588,17 +588,36 @@ test('declared: a stamp that arrives only after the first budget is a SLOW deplo
   const beforeTip = git(remote, ['rev-parse', 'main']);
   stageableChange(root, 'slow\n');
 
-  const step = publishStep(root, { ...DECLARED, ...SLOW, log: { step: () => {} } });
-  const pushed = await afterPush(remote, beforeTip);
-  const started = Date.now();
-  // Comfortably after the 500 ms first window and comfortably inside the
-  // 1500 ms confirmation window.
-  const timer = setTimeout(() => live.set(stamp(pushed.slice(0, 12), { dirty: true })), 900);
-  t.after(() => clearTimeout(timer));
+  let pushed;
+  let announcedConfirmationWindow = false;
+  const step = publishStep(root, {
+    ...DECLARED,
+    ...SLOW,
+    log: {
+      step: (n, d) => {
+        // Flip the stamp from the step's own confirmation-window announcement
+        // rather than from the clock: `pollWindow` always runs at least one
+        // iteration before its deadline check, so this guarantees the flip is
+        // observed once the confirmation window is polling, instead of racing
+        // a fixed-delay timer against however long a poll iteration happens to
+        // take on this machine right now. The flag records that the flip fired
+        // FROM that announcement — the deterministic proof that the first
+        // window was already exhausted, in place of a wall-clock comparison
+        // between two loosely-synchronised timers (the test's `Date.now()` and
+        // `publishStep`'s own), which is exactly the kind of race this whole
+        // fix removes.
+        if (pushed && /polling a confirmation window/.test(d)) {
+          announcedConfirmationWindow = true;
+          live.set(stamp(pushed.slice(0, 12), { dirty: true }));
+        }
+      },
+    },
+  });
+  pushed = await afterPush(remote, beforeTip);
 
   const res = await step;
   assert.equal(res.published, true, 'a commit that is not live at ten minutes and is live at thirty is a slow deploy');
-  assert.ok(Date.now() - started > SLOW.pollBudgetMs, 'it landed after the first budget had elapsed');
+  assert.ok(announcedConfirmationWindow, 'the flip happened only after the step itself announced the first window had elapsed');
   assert.equal(res.window, 'confirmation', 'the run records WHICH window it landed in — the two are not the same fact');
   assert.equal(existsSync(join(root, 'HOLD.md')), false, 'a slow deploy is not a halt');
 });
