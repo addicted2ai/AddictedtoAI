@@ -547,6 +547,41 @@ test('a companion declaration is refused on fourteen separate conditions, each n
   assert.match(displayName, /source "x"/);
 });
 
+test('the "rates" companion field and the identity entry\'s "declared_on" are each refused on their own', () => {
+  // The two refusals the fourteen-condition test above does not reach: `rates`
+  // is validated separately from the eight required fields (registry.mjs
+  // 403-415, documented into tasks.md:41-49 as its own companion field), and
+  // `declared_on` on a `provider_identities` entry (registry.mjs 480-482,
+  // specs/pulse:182-184 "each entry carrying the local date it was declared
+  // on") is a different field from the companion's own top-level `declared_on`
+  // the fourteen-condition test already covers. Deleting either condition
+  // leaves the suite above green, which is exactly the failure this proves.
+
+  // "rates" absent, and present but empty — both are "no rate bound".
+  const missing = loadCompanion({ ...COMPANION, rates: undefined });
+  assert.match(missing, /"rates" must be a non-empty object/);
+  assert.match(missing, /source "x"/);
+
+  const empty = loadCompanion({ ...COMPANION, rates: {} });
+  assert.match(empty, /"rates" must be a non-empty object/);
+  assert.match(empty, /source "x"/);
+
+  // A "rates" entry present but not a usable path.
+  const blankPath = loadCompanion({ ...COMPANION, rates: { price_input: '' } });
+  assert.match(blankPath, /"rates" entry "price_input"/);
+
+  // The control: a complete "rates" block still loads.
+  assert.equal(loadCompanion(COMPANION), null);
+
+  // An identity entry with no "declared_on" date of its own.
+  const undated = loadCompanion({
+    ...COMPANION,
+    provider_identities: { acme: { provider_slug: 'acme' } },
+  });
+  assert.match(undated, /needs a "declared_on" date/);
+  assert.match(undated, /entry "acme"/);
+});
+
 test('the provider_field split reads a slug and a tier out of one value', () => {
   // Task 7. The source publishes no bare provider-slug field: measured on its own
   // /endpoints response (data/reviews/j-20260902-01.md:93), an endpoint is
