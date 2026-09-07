@@ -71,6 +71,15 @@ export const GROUND_RULES = `## Ground rules (non-negotiable)
   run was recorded \`interrupted\`, and the orphaned suite kept running inside
   the deleted worktree and held the machine-wide test lock against every other
   suite on the machine.
+- **Never create or remove a git worktree, and never touch \`node_modules\`.**
+  \`node_modules\` in this worktree is a JUNCTION to the shared install, so
+  \`git worktree remove --force\`, \`rm -rf node_modules\`, \`npm ci\` and
+  \`npm install\` all go THROUGH it and empty the shared install for every
+  worktree and every running job on the machine at once. Measured on
+  2026-09-07 (job \`j-20260907-03\`): an author made a scratch worktree for a
+  measurement, removed it with \`--force\`, and the shared install was emptied
+  under every other suite on the machine for ten minutes. You do not need a
+  second checkout — this branch is the measurement; commit and compare.
 - **Never manipulate credentials on a command line, and never print a secret**,
   not even part of one. An auth failure is a finding to report — write it in
   \`RESULT.md\` and stop. Do not go looking for a broader-scoped credential.

@@ -127,6 +127,61 @@ test('A REMOVAL THAT THROWS STILL LEAVES THE LEDGER LINE AND THE RECORDS COMMIT'
   assert.match(out, /addictedtoai-osru/, 'and point at the finding');
 });
 
+/* ---------------------------------------------------------------------------
+ * A `node_modules` junction that will not unlink is a STOP. Measured 2026-09-07
+ * on job j-20260907-03: `git worktree remove --force` on a worktree whose
+ * junction was still linked followed the link into D:/AddictedtoAI/node_modules
+ * and emptied the shared install under every running suite on the machine.
+ * The removal must be REFUSED while the link stands — never attempted and
+ * reported afterwards, because the damage is done by the attempt.
+ * ------------------------------------------------------------------------ */
+function logger() {
+  const lines = [];
+  return { repoRoot: 'D:/nowhere', log: (l) => lines.push(l), lines };
+}
+
+test('A JUNCTION THAT WILL NOT UNLINK REFUSES THE REMOVAL — nothing recursive runs', () => {
+  const ctx = logger();
+  const calls = [];
+  const res = removeJobWorktree(ctx, join('D:/nowhere', 'wt'), {
+    lstat: () => ({ isSymbolicLink: () => true }), // the link is there, before and after the unlink
+    unlink: (p) => {
+      calls.push('unlink');
+      throw eperm(p);
+    },
+    remove: () => calls.push('remove'),
+    rm: () => calls.push('rm'),
+    prune: () => calls.push('prune'),
+  });
+  assert.equal(res.removed, false);
+  assert.equal(res.refused, true);
+  assert.deepEqual(calls, ['unlink', 'prune'], 'the unlink is retried, the prune still runs, and NEITHER removal is attempted');
+  assert.match(ctx.lines.join('\n'), /WORKTREE CLEANUP REFUSED/, 'the refusal is said out loud');
+  assert.match(ctx.lines.join('\n'), /shared node_modules/, 'and says what it protected');
+});
+
+test('a junction that DOES unlink lets the removal proceed (positive control)', () => {
+  const ctx = logger();
+  const calls = [];
+  let linked = true;
+  const res = removeJobWorktree(ctx, join('D:/nowhere', 'wt'), {
+    lstat: () => {
+      if (!linked) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+      return { isSymbolicLink: () => true };
+    },
+    unlink: () => {
+      calls.push('unlink');
+      linked = false;
+    },
+    remove: () => calls.push('remove'),
+    rm: () => calls.push('rm'),
+    prune: () => calls.push('prune'),
+  });
+  assert.equal(res.removed, true);
+  assert.deepEqual(calls, ['unlink', 'remove', 'rm', 'prune']);
+  assert.ok(!ctx.lines.some((l) => /REFUSED/.test(l)), 'no refusal when the link came off');
+});
+
 test('THE PRODUCTION SHAPE — an INTERRUPTED job records itself even when the worktree will not delete', async (t) => {
   // `j-20260906-17` exactly: an author that exits without `RESULT.md`, leaving
   // a process behind that pins the worktree. This is the only path on which the

@@ -15,7 +15,7 @@
  *   - report that nothing qualified, which is a normal, healthy outcome.
  */
 
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -749,7 +749,51 @@ export function removeJobWorktree(ctx, worktree, deps = {}) {
   const remove = deps.remove ?? removeWorktree;
   const rm = deps.rm ?? rmSync;
   const prune = deps.prune ?? ((repo) => void gitTry(repo, ['worktree', 'prune']));
+  const lstat = deps.lstat ?? lstatSync;
+  const unlink = deps.unlink ?? unlinkSync;
   const failures = [];
+
+  // A `node_modules` junction that is still linked is a STOP, not a cleanup
+  // failure to continue past. `git worktree remove --force` FOLLOWS a junction
+  // into its target, and the target is the repository's one shared install —
+  // measured 2026-09-07 on job j-20260907-03, when a scratch worktree's forced
+  // removal emptied D:/AddictedtoAI/node_modules under every running suite on
+  // the machine. `unlinkNodeModules` is best-effort (a link a process holds
+  // open will not unlink), so it is re-tried here and, if the link is STILL
+  // there, the removal is refused: the directory is left for the next run's
+  // startup sweep, which unlinks before it deletes, and the prune still runs.
+  const link = join(worktree, 'node_modules');
+  const isLinked = () => {
+    try {
+      return lstat(link).isSymbolicLink();
+    } catch {
+      return false;
+    }
+  };
+  if (isLinked()) {
+    try {
+      unlink(link);
+    } catch {
+      /* judged by the re-check below */
+    }
+  }
+  if (isLinked()) {
+    ctx.log(
+      `WORKTREE CLEANUP REFUSED: ${link} is still a junction to the shared node_modules, and ` +
+        `\`git worktree remove --force\` or a recursive delete would follow it into the real install ` +
+        `(measured 2026-09-07 on job j-20260907-03: the shared install was emptied). The directory ` +
+        `is left for the next run's startup sweep; the run CONTINUES to its ledger line and its ` +
+        `records commit.`,
+    );
+    const pruneOnly = [];
+    try {
+      prune(ctx.repoRoot);
+    } catch (e) {
+      pruneOnly.push('git worktree prune');
+      ctx.log(`WORKTREE CLEANUP FAILED: git worktree prune on ${worktree}: ${(e && e.message) || String(e)}`);
+    }
+    return { removed: false, failures: ['node_modules junction still linked', ...pruneOnly], refused: true };
+  }
   const step = (what, fn) => {
     try {
       fn();
@@ -1178,6 +1222,10 @@ export async function runLoop(ctx, opts = {}) {
   // --- Branch, worktree, committed brief. ---------------------------------
   mkdirSync(ctx.worktreeRoot, { recursive: true });
   const worktree = join(ctx.worktreeRoot, jobId);
+  // Unlink a lingering `node_modules` junction BEFORE the recursive delete, so a
+  // stale directory left by a refused cleanup (removeJobWorktree) is cleared
+  // without the delete ever reaching the shared install through the link.
+  unlinkNodeModules(worktree);
   rmSync(worktree, { recursive: true, force: true });
   addWorktree(ctx.repoRoot, worktree, branch, { create: !resumed, base });
   if (!resumed) {

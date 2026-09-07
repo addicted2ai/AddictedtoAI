@@ -316,6 +316,13 @@ test('a brief is self-contained plain markdown carrying the RESULT.md instructio
   assert.match(unwrapped, /This invocation ends the moment you end your turn/);
   assert.match(unwrapped, /never start a process in the background and then stop to wait for it/i);
   assert.match(unwrapped, /Run `npm test` and `npm run build` in the FOREGROUND/);
+  // The worktree/junction ground rule (measured 2026-09-07 on job
+  // j-20260907-03): an author's `git worktree remove --force` on a scratch
+  // worktree recursed through its node_modules junction and emptied the SHARED
+  // install under every other suite on the machine. The rule exists only if it
+  // is in the assembled brief.
+  assert.match(unwrapped, /Never create or remove a git worktree, and never touch `node_modules`/);
+  assert.match(unwrapped, /JUNCTION to the shared install/);
   assert.match(brief, /There is no prior conversation to recall and no session to resume/);
   // no harness-specific syntax anywhere in a brief
   for (const bad of [/<function_calls>/, /\bslash command\b/, /\/[a-z-]+\s+skill/i]) {
