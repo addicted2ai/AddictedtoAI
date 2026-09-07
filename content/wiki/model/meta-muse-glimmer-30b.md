@@ -77,6 +77,8 @@ timeline:
 mentions:
   - org/meta-superintelligence-labs
   - model/meta-muse-spark-1-2
+domains_seeded:
+  - image
 ---
 
 Glimmer's own card puts the count at

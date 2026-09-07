@@ -59,4 +59,8 @@ timeline:
     event: "designated a Covered Model by Anthropic"
     source_url: "https://support.claude.com/en/articles/15425695-covered-models"
 mentions: []
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---

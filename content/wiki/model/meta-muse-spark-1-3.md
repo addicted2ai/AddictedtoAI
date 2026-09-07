@@ -59,6 +59,10 @@ mentions:
   - org/meta-superintelligence-labs
   - model/meta-muse-spark-1-2
   - model/meta-muse-spark-1-3-contributor
+domains_seeded:
+  - audio
+  - image
+  - video
 ---
 
 Spark 1.3 is a point release whose one notable row in the catalog is the

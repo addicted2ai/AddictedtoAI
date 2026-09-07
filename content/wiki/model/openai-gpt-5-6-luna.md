@@ -69,6 +69,10 @@ mentions:
   - model/openai-gpt-5-6-sol
   - model/openai-gpt-5-6-terra
   - model/openai-gpt-5-4-nano
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---
 
 Luna's row lists identically to a much smaller, much older tier. As

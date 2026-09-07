@@ -53,6 +53,10 @@ timeline:
 mentions:
   - org/meta-superintelligence-labs
   - model/meta-muse-spark-1-3
+domains_seeded:
+  - audio
+  - image
+  - video
 ---
 
 The contributor row is Spark 1.3 with the training-permission trade applied.

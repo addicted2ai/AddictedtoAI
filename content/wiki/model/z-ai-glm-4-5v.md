@@ -38,4 +38,6 @@ timeline:
     event: deprecated
     source_url: https://openrouter.ai/api/v1/models
 mentions: []
+domains_seeded:
+  - image
 ---

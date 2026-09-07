@@ -37,4 +37,10 @@ facts:
     volatility: fast
 timeline: []
 mentions: []
+domains_seeded:
+  - agents
+  - audio
+  - coding
+  - image
+  - video
 ---

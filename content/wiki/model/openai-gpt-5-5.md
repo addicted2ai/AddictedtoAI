@@ -64,6 +64,10 @@ mentions:
   - model/openai-gpt-5-6-sol-pro
   - model/openai-gpt-5-6-terra
   - model/openai-gpt-5-6-luna
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---
 
 For three releases running, "Pro" listed at twelve times the price.

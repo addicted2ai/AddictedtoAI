@@ -50,6 +50,12 @@ mentions:
   - model/google-gemini-3-1-flash-lite-preview
   - model/google-gemini-3-1-flash-image
   - model/google-gemini-3-1-flash-image-preview
+domains_seeded:
+  - agents
+  - audio
+  - coding
+  - image
+  - video
 ---
 
 This row first appeared in OpenRouter's catalog on

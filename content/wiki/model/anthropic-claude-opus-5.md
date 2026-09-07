@@ -93,6 +93,10 @@ mentions:
   - model/anthropic-claude-opus-5-fast
   - model/anthropic-claude-opus-5-batch
   - model/anthropic-claude-opus-4-8
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---
 
 The quiet change in this row is a boolean. Opus 5 ships with reasoning

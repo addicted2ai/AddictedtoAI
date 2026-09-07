@@ -2,6 +2,42 @@
   "broken_links": [
     {
       "cited_by": [
+        "content/wiki/org/aion-labs.md"
+      ],
+      "consecutive_failures": 1,
+      "error": null,
+      "last_checked": "2026-09-06",
+      "last_ok": null,
+      "state": "failing-once",
+      "status": 404,
+      "url": "https://api.aionlabs.ai/v1"
+    },
+    {
+      "cited_by": [
+        "content/wiki/org/aion-labs.md"
+      ],
+      "consecutive_failures": 1,
+      "error": null,
+      "last_checked": "2026-09-06",
+      "last_ok": null,
+      "state": "failing-once",
+      "status": 404,
+      "url": "https://boson.ai/rpbench/"
+    },
+    {
+      "cited_by": [
+        "content/wiki/org/amazon.md"
+      ],
+      "consecutive_failures": 1,
+      "error": null,
+      "last_checked": "2026-09-06",
+      "last_ok": null,
+      "state": "failing-once",
+      "status": 404,
+      "url": "https://en.wikipedia.org/wiki/Amazon_(company"
+    },
+    {
+      "cited_by": [
         "content/learn/what-it-costs-to-build-and-run-ai.md"
       ],
       "consecutive_failures": 1,
@@ -15,14 +51,14 @@
   ],
   "date": "2026-09-06",
   "link_check": {
-    "checked": 0,
+    "checked": 25,
     "confirm_after_failures": 2,
     "declined": 7,
     "drifted": 0,
     "due": 131,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 18,
+    "redirected": 19,
     "total": 683
   },
   "listings": [
@@ -485,6 +521,18 @@
   "overdue_facts": [],
   "redirected_links": [
     {
+      "bytes": null,
+      "cited_by": [
+        "content/wiki/org/amazon.md"
+      ],
+      "final_url": "https://aws.amazon.com/nova/",
+      "kind": "same-site-move",
+      "last_checked": "2026-09-06",
+      "meta_refresh": null,
+      "url": "https://aws.amazon.com/ai/generative-ai/nova/",
+      "verdict_recorded": true
+    },
+    {
       "bytes": 140588,
       "cited_by": [
         "content/wiki/event/alphafold-casp14.md"
@@ -705,28 +753,28 @@
   "slug_collisions": [],
   "sources": [
     {
-      "days_since_change": 2,
-      "display_date": "2026-09-05",
+      "days_since_change": 0,
+      "display_date": "2026-09-06",
       "display_date_label": "last checked",
       "expected_change_days": 3,
       "id": "llm-releases",
-      "last_change_date": "2026-09-04",
-      "last_fetch_date": "2026-09-05",
+      "last_change_date": "2026-09-06",
+      "last_fetch_date": "2026-09-06",
       "refusing": null,
-      "snapshot_date": "2026-09-04",
+      "snapshot_date": "2026-09-06",
       "suspect": false,
       "suspect_after_days": 9
     },
     {
-      "days_since_change": 1,
-      "display_date": "2026-09-05",
+      "days_since_change": 0,
+      "display_date": "2026-09-06",
       "display_date_label": "last checked",
       "expected_change_days": 3,
       "id": "openrouter-models",
-      "last_change_date": "2026-09-05",
-      "last_fetch_date": "2026-09-05",
+      "last_change_date": "2026-09-06",
+      "last_fetch_date": "2026-09-06",
       "refusing": null,
-      "snapshot_date": "2026-09-05",
+      "snapshot_date": "2026-09-06",
       "suspect": false,
       "suspect_after_days": 9
     }
@@ -793,8 +841,8 @@
     },
     {
       "entry_id": "model/ibm-granite-granite-4-1-8b",
-      "has_last_known": true,
-      "last_seen_date": "2026-09-04",
+      "has_last_known": false,
+      "last_seen_date": null,
       "path": "content/wiki/model/ibm-granite-granite-4-1-8b.md",
       "row_id": "ibm-granite/granite-4.1-8b",
       "source": "openrouter-models"
@@ -809,10 +857,18 @@
     },
     {
       "entry_id": "model/qwen-qwen3-8-max",
-      "has_last_known": true,
-      "last_seen_date": "2026-09-04",
+      "has_last_known": false,
+      "last_seen_date": null,
       "path": "content/wiki/model/qwen-qwen3-8-max.md",
       "row_id": "qwen/qwen3.8-max",
+      "source": "openrouter-models"
+    },
+    {
+      "entry_id": "model/z-ai-glm-5-2-free",
+      "has_last_known": true,
+      "last_seen_date": "2026-09-05",
+      "path": "content/wiki/model/z-ai-glm-5-2-free.md",
+      "row_id": "z-ai/glm-5.2:free",
       "source": "openrouter-models"
     }
   ]

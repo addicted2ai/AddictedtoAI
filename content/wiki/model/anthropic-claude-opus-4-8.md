@@ -43,6 +43,10 @@ mentions:
   - model/anthropic-claude-opus-4-6
   - model/anthropic-claude-opus-4-7
   - model/anthropic-claude-opus-5
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---
 
 Five Opus releases in a row list at the same input price.

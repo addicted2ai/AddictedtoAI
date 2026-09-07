@@ -43,6 +43,10 @@ mentions:
   - model/anthropic-claude-opus-4-8-fast
   - model/anthropic-claude-opus-5
   - model/anthropic-claude-opus-5-fast
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---
 
 `anthropic/claude-opus-4.7-fast` is where the fast-mode option makes its

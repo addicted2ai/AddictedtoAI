@@ -38,6 +38,10 @@ mentions:
   - model/anthropic-claude-sonnet-5
   - model/anthropic-claude-opus-4
   - model/anthropic-claude-opus-4-6
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---
 
 Every other current Anthropic tier runs at a million-token context window.

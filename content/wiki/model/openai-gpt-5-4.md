@@ -49,6 +49,9 @@ mentions:
   - model/openai-gpt-5-6-sol
   - model/openai-gpt-5-6-terra
   - model/openai-gpt-5-6-luna
+domains_seeded:
+  - coding
+  - image
 ---
 
 Four releases in a row shipped with the same context ceiling: GPT-5, 5.1,

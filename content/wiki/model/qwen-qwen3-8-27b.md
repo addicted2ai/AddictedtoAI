@@ -59,6 +59,11 @@ mentions:
   - model/qwen-qwen3-8-max
   - model/qwen-qwen3-8-2-4t-a95b
   - model/qwen-qwen3-6-27b
+domains_seeded:
+  - agents
+  - coding
+  - image
+  - video
 ---
 
 The superlative on this model's card is not about this model. The Hugging

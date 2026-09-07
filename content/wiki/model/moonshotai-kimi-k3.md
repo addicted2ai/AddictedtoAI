@@ -69,6 +69,11 @@ timeline:
 mentions:
   - org/moonshot-ai
   - model/moonshotai-kimi-k2-5
+domains_seeded:
+  - agents
+  - coding
+  - image
+  - video
 ---
 
 Scale, not the licence, is the plainest thing that changed between

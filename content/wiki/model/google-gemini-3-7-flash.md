@@ -76,6 +76,12 @@ mentions:
   - org/google-deepmind
   - model/google-gemini-3-6-flash
   - model/google-gemini-3-1-pro-preview
+domains_seeded:
+  - agents
+  - audio
+  - coding
+  - image
+  - video
 ---
 
 Right now, this row costs exactly what its predecessor does. It lists at

@@ -57,4 +57,8 @@ facts:
     volatility: slow
 timeline: []
 mentions: []
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---

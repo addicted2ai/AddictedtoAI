@@ -54,6 +54,9 @@ mentions:
   - model/z-ai-glm-4-7
   - model/z-ai-glm-5
   - model/z-ai-glm-5-2
+domains_seeded:
+  - agents
+  - coding
 ---
 
 Four consecutive main-line GLM releases published the same context window.

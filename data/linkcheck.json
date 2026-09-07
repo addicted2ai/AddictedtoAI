@@ -117,6 +117,39 @@
       "ok": true,
       "status": 200
     },
+    "https://aionlabs.com/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://aionlabs.com/",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://api.aionlabs.ai/v1": {
+      "bytes": null,
+      "consecutive_failures": 1,
+      "error": null,
+      "final_url": "https://api.aionlabs.ai/v1",
+      "last_checked": "2026-09-06",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": false,
+      "status": 404
+    },
+    "https://api.aionlabs.ai/v1/models": {
+      "bytes": 1,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://api.aionlabs.ai/v1/models",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://api.crossref.org/works/10.1038/s41586-024-07566-y": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -135,6 +168,17 @@
       "final_url": "https://api.deepinfra.com/models/list",
       "last_checked": "2026-09-05",
       "last_ok": "2026-09-05",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://api.github.com/repos/boson-ai/RPBench-Auto/commits?path=results/leaderboard_for_display.csv&per_page=3": {
+      "bytes": 1318,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://api.github.com/repos/boson-ai/RPBench-Auto/commits?path=results/leaderboard_for_display.csv&per_page=3",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -233,6 +277,17 @@
       "final_url": "https://argilla.io/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://artificialanalysis.ai/methodology/intelligence-benchmarking": {
+      "bytes": 709671,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -1940,6 +1995,17 @@
       "ok": true,
       "status": 200
     },
+    "https://arxiv.org/abs/2508.18255v1": {
+      "bytes": 40104,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2508.18255v1",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://arxiv.org/abs/2509.04664": {
       "bytes": 41152,
       "consecutive_failures": 0,
@@ -1991,6 +2057,17 @@
       "final_url": "https://arxiv.org/abs/2608.27147v1",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://arxiv.org/abs/2609.02849v1": {
+      "bytes": 43037,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://arxiv.org/abs/2609.02849v1",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -2069,6 +2146,72 @@
       "ok": true,
       "status": 200
     },
+    "https://aws.amazon.com/ai/generative-ai/nova/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://aws.amazon.com/nova/",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://aws.amazon.com/blogs/aws/amazon-nova-premier-our-most-capable-model-for-complex-tasks-and-teacher-for-model-distillation/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://aws.amazon.com/blogs/aws/amazon-nova-premier-our-most-capable-model-for-complex-tasks-and-teacher-for-model-distillation/",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://aws.amazon.com/blogs/aws/introducing-amazon-nova-2-lite-a-fast-cost-effective-reasoning-model/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://aws.amazon.com/blogs/aws/introducing-amazon-nova-2-lite-a-fast-cost-effective-reasoning-model/",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://aws.amazon.com/blogs/aws/introducing-amazon-nova-forge-build-your-own-frontier-models-using-nova": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://aws.amazon.com/blogs/aws/introducing-amazon-nova-forge-build-your-own-frontier-models-using-nova/",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://aws.amazon.com/blogs/aws/introducing-amazon-nova-frontier-intelligence-and-industry-leading-price-performance/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://aws.amazon.com/blogs/aws/introducing-amazon-nova-frontier-intelligence-and-industry-leading-price-performance/",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://aws.amazon.com/nova/models/": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://aws.amazon.com/nova/models/",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://axolotl.ai/": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -2136,6 +2279,17 @@
       "last_ok": "2026-08-28",
       "ok": true,
       "status": 200
+    },
+    "https://boson.ai/rpbench/": {
+      "bytes": 7526,
+      "consecutive_failures": 1,
+      "error": null,
+      "final_url": "https://www.boson.ai/rpbench",
+      "last_checked": "2026-09-06",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": false,
+      "status": 404
     },
     "https://bounded-regret.ghost.io/ai-forecasting-one-year-in/": {
       "bytes": 10198,
@@ -2262,6 +2416,50 @@
       "error": null,
       "last_checked": "2026-08-28",
       "last_ok": "2026-08-28",
+      "ok": true,
+      "status": 200
+    },
+    "https://cveawg.mitre.org/api/cve/CVE-2026-19592": {
+      "bytes": 4405,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://cveawg.mitre.org/api/cve/CVE-2026-19592",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://cveawg.mitre.org/api/cve/CVE-2026-55607": {
+      "bytes": 3126,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://cveawg.mitre.org/api/cve/CVE-2026-55607",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://cveawg.mitre.org/api/cve/CVE-2026-71963": {
+      "bytes": 4051,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://cveawg.mitre.org/api/cve/CVE-2026-71963",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://cveawg.mitre.org/api/cve/CVE-2026-72718": {
+      "bytes": 3626,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://cveawg.mitre.org/api/cve/CVE-2026-72718",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
       "ok": true,
       "status": 200
     },
@@ -2564,6 +2762,17 @@
       "ok": true,
       "status": 200
     },
+    "https://en.wikipedia.org/wiki/Amazon_(company": {
+      "bytes": null,
+      "consecutive_failures": 1,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/Amazon_(company",
+      "last_checked": "2026-09-06",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": false,
+      "status": 404
+    },
     "https://en.wikipedia.org/wiki/Anthropic": {
       "consecutive_failures": 0,
       "error": null,
@@ -2625,6 +2834,17 @@
       "final_url": "https://en.wikipedia.org/wiki/High_Bandwidth_Memory",
       "last_checked": "2026-08-31",
       "last_ok": "2026-08-31",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://en.wikipedia.org/wiki/MiniMax_Group": {
+      "bytes": 38772,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://en.wikipedia.org/wiki/MiniMax_Group",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -2862,6 +3082,17 @@
       "ok": true,
       "status": 200
     },
+    "https://github.com/ByteDance-Seed": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://github.com/ByteDance-Seed",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://github.com/Microsoft/onnxruntime": {
       "bytes": null,
       "consecutive_failures": 0,
@@ -2880,6 +3111,39 @@
       "final_url": "https://github.com/MiniMax-AI/MiniMax-M2/blob/main/LICENSE",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://github.com/NousResearch/hermes-agent/commit/f6234d00c5d59450adea1d7edd30ad3859375c79": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://github.com/NousResearch/hermes-agent/commit/f6234d00c5d59450adea1d7edd30ad3859375c79",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://github.com/anthropics/claude-code/security/advisories": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://github.com/anthropics/claude-code/security/advisories",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://github.com/bytedance/UI-TARS": {
+      "bytes": null,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://github.com/bytedance/UI-TARS",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3056,6 +3320,17 @@
       "final_url": "https://huggingface.co/",
       "last_checked": "2026-08-29",
       "last_ok": "2026-08-29",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/ByteDance-Seed/UI-TARS-1.5-7B": {
+      "bytes": 415174,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/ByteDance-Seed/UI-TARS-1.5-7B",
+      "last_checked": "2026-09-06",
+      "last_ok": "2026-09-06",
       "meta_refresh": null,
       "ok": true,
       "status": 200

@@ -198,5 +198,5 @@ not a linkable alias here for a related reason: an unrelated
 selling itself on "the future of pharma" and "drug discovery and development".
 The second is that models are at most half the business. The front page gives
 equal billing to {{fact:org/aion-labs#second_product}} — a product line with no
-row in any catalog, sold by the company whose four rows in the catalog snapshot
-of 5 September 2026 are all any board can see of it.
+row in any catalog, sold by the company whose four rows in the catalog snapshot,
+as observed on 5 September 2026, are all any board can see of it.

@@ -32,4 +32,9 @@ facts:
     volatility: fast
 timeline: []
 mentions: []
+domains_seeded:
+  - audio
+  - coding
+  - image
+  - video
 ---

@@ -1,7 +1,7 @@
 {
-  "body_hash": "7727eeea56f92f3ce1a411e2b6a5d72613ceb2a0db629f0cb87be9c88d8684a8",
-  "date": "2026-09-03",
-  "fetched_at": "2026-09-03T06:00:03.790Z",
+  "body_hash": "89ba0b5826469e470798dec535ff4f22581d66194e1d7d3a5c755110a900d713",
+  "date": "2026-09-04",
+  "fetched_at": "2026-09-04T06:00:03.587Z",
   "row_count": 60,
   "rows": {
     "06a0c9a7-7f66-487f-8180-dbaae938de80": {
@@ -30,15 +30,6 @@
       "source_name": "Meta AI",
       "source_url": "https://research.meta.ai/blog/introducing-muse-glimmer-open-agentic-model",
       "title": "Meta releases the open-weight Muse Glimmer"
-    },
-    "0e69d10f-082f-44ce-a8dc-80e09bf6eb8b": {
-      "description": "Thinking Machines Lab - Mira Murati's lab ships its first model — a 975B-total / 41B-active multimodal MoE (text/image/audio in, text out) pretrained on ~45T tokens, released under Apache-2.0 with weights on Hugging Face (1M context) and hosted on the Tinker API (256K). Debuts at 41 on the Artificial Analysis Intelligence Index, the leading U.S. open-weights model.",
-      "guid": "0e69d10f-082f-44ce-a8dc-80e09bf6eb8b",
-      "link": "https://llm-releases.com/models/inkling",
-      "pubDate": "Wed, 15 Jul 2026 00:00:00 GMT",
-      "source_name": "Thinking Machines Lab",
-      "source_url": "https://thinkingmachines.ai/news/introducing-inkling/",
-      "title": "Thinking Machines releases Inkling"
     },
     "12f99309-06bd-41e3-a8df-c337553b2bac": {
       "description": "Ant Group (inclusionAI) - Ant Group inclusionAI launched Ling-3.0-flash-Fin, a finance-domain-tuned variant of Ling-3.0-flash (124B/5.1B MoE) for investment and banking workflows, with a 256K context and tool calling. Hosted API first with a one-month free OpenRouter window; open weights announced for the week of Aug 31 2026 (not yet posted at launch).",
@@ -111,6 +102,15 @@
       "source_name": "Alibaba (Qwen)",
       "source_url": "https://openrouter.ai/qwen/qwen3.7-flash",
       "title": "Alibaba quietly launches Qwen3.7-Flash"
+    },
+    "2e995e23-211e-4761-82fa-108db38b9489": {
+      "description": "OpenAI - OpenAI released GPT-6 Astra (API id gpt-6-astra), its new frontier flagship succeeding GPT-5.6 Sol, calling it its most intelligent and aligned model. It targets state-of-the-art computer/browser use, finished professional artifacts, long-session coding in Codex, and defensive cybersecurity. 1M-token context; available via the OpenAI API and Amazon Bedrock (and Azure), plus a GPT-6 Astra Pro tier for ChatGPT Pro/Business/Enterprise (off by default at launch). Standard pricing $10/$50 per Mtok, Fast mode ~$20/$100. Vendor-reported: OSWorld 2.0 72.6%, FrontierMath Tier 4 v2 97.6%, GPQA Diamond 96.0%, Terminal-Bench 4.0 57.7%, ExploitBench 100%; ARC-AGI-3 ~99.9% only under a stateful adapter harness, and it trails Claude Fable 5.1 on HLE with tools (57.2% vs 65.0%). Crosses the Critical cyber threshold, so exploit-creation is gated behind OpenAI's Daybreak program.",
+      "guid": "2e995e23-211e-4761-82fa-108db38b9489",
+      "link": "https://llm-releases.com/models/gpt-6-astra",
+      "pubDate": "Thu, 03 Sep 2026 00:00:00 GMT",
+      "source_name": "OpenAI",
+      "source_url": "https://openai.com/index/gpt-6-astra/",
+      "title": "OpenAI releases GPT-6 Astra"
     },
     "30eafd23-c168-426e-b63a-12ca88e89482": {
       "description": "Alibaba (Qwen) - Qwen3.8-Max went GA on 2026-08-03, two weeks after its WAIC preview: a 2.4T-parameter MoE (~95B active) with 1M-token context, multimodal input, and firm pricing of $2/$6 per Mtok. Alibaba committed to open weights for Qwen3.8-Max and a smaller Qwen3.8-27B checkpoint.",
@@ -229,15 +229,6 @@
       "source_url": "https://the-decoder.com/alibabas-qwen-team-releases-qwen-3-8-models-with-open-weights-under-the-apache-2-0-license/",
       "title": "Alibaba ships open weights for Qwen3.8-Max"
     },
-    "56037ef7-b4ec-48e0-bd9b-ec07fcbeeab0": {
-      "description": "Moonshot AI - Largest open-weight model to date: 2.8T-parameter MoE (896 experts, 16 active) with Kimi Delta Attention, native multimodal input, and a 1M-token context. API launched Jul 16 at $3/$15 per Mtok; full weights slated for Jul 27. Reported 93.5% GPQA Diamond (strongest published open-weight result).",
-      "guid": "56037ef7-b4ec-48e0-bd9b-ec07fcbeeab0",
-      "link": "https://llm-releases.com/models/kimi-k3",
-      "pubDate": "Thu, 16 Jul 2026 00:00:00 GMT",
-      "source_name": "Moonshot AI",
-      "source_url": "https://venturebeat.com/technology/chinas-moonshot-ai-releases-kimi-k3-the-largest-open-source-model-ever-rivaling-top-u-s-systems",
-      "title": "Moonshot AI releases Kimi K3"
-    },
     "574c56d8-1a40-41d1-bbe7-0d1a7be5e53f": {
       "description": "Thomson Reuters - Thomson Reuters announced Thomson, its first in-house proprietary LLM, trained on decades of Westlaw, Practical Law, Checkpoint, and Reuters content to a \"Fiduciary-Grade\" standard (~$40M training investment). First deployed inside Tabular Analysis in CoCounsel Legal; size, architecture, and context are undisclosed, and a smaller open-weight variant is being released for academic use. Status: preview.",
       "guid": "574c56d8-1a40-41d1-bbe7-0d1a7be5e53f",
@@ -345,15 +336,6 @@
       "source_name": "Anthropic",
       "source_url": "https://www.anthropic.com/claude-fable-and-mythos-5-1",
       "title": "Claude Mythos 5.1 ships to trusted-access programs"
-    },
-    "844690a4-074c-40aa-92bc-1e072dbef9dd": {
-      "description": "Kwaipilot (Kuaishou) - The efficient ~32B-active variant of KAT-Coder V2.5, sharing the 256K context and agentic tool-use focus at roughly a fifth of Pro's price ($0.15/$0.60 per Mtok).",
-      "guid": "844690a4-074c-40aa-92bc-1e072dbef9dd",
-      "link": "https://llm-releases.com/models/kat-coder-air-v2-5",
-      "pubDate": "Tue, 14 Jul 2026 00:00:00 GMT",
-      "source_name": "Kwaipilot (Kuaishou)",
-      "source_url": "https://openrouter.ai/kwaipilot/kat-coder-air-v2.5",
-      "title": "Kwaipilot ships KAT-Coder-Air V2.5"
     },
     "87ca00c6-7e0d-4748-8ffd-b3cd7a1304cd": {
       "description": "DeepSeek - V4-Flash, the efficient tier of the V4 family, exits preview alongside V4-Pro as DeepSeek retires its legacy deepseek-chat and deepseek-reasoner aliases (cutoff July 24, 2026).",
@@ -472,6 +454,15 @@
       "source_url": "https://codersera.com/blog/grok-4-6-launch-guide-2026/",
       "title": "xAI releases Grok 4.6"
     },
+    "de64458f-b86b-4489-8e9a-52730ee3a2b5": {
+      "description": "Google DeepMind - Alongside Gemini 3.8 Flash, Google DeepMind introduces Gemini 3.8 Flash Cyber — a cybersecurity-tuned variant built on the same foundational intelligence but shipping with more permissive cyber mitigations. It is restricted to trusted defenders (government authorities, critical-infrastructure operators, and software maintainers) via the new Fairwind Program. Google reports frontier-level autonomous vulnerability discovery on CyberGym, a >70% success rate on an internal real-world benchmark across 20 programming languages, and 47.2% pass@1 on the external CWE-Bench patching benchmark. Internally, the Chrome Security team reports 2.6x more correct patches than larger commercial models. 1M-token context, multimodal input, text output; not publicly token-billed. Vendor figures unverified by independent replication at launch.",
+      "guid": "de64458f-b86b-4489-8e9a-52730ee3a2b5",
+      "link": "https://llm-releases.com/models/gemini-3-8-flash-cyber",
+      "pubDate": "Wed, 02 Sep 2026 00:00:00 GMT",
+      "source_name": "Google DeepMind",
+      "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/3-8-flash-and-3-8-flash-cyber/",
+      "title": "Google DeepMind introduces Gemini 3.8 Flash Cyber"
+    },
     "e1f0b707-731b-4aed-af5d-9a84a74d7ac0": {
       "description": "DeepReinforce (Ornith) - The smallest Ornith-1.5 model, a 9B dense coding/agent model, released under MIT with weights on Hugging Face and a quantized Ornith-1.5-9B-Mobile build for iPhone and Android. Vendor-reported: 47.0 Terminal-Bench 2.1 and 70.6 SWE-Bench Verified.",
       "guid": "e1f0b707-731b-4aed-af5d-9a84a74d7ac0",
@@ -489,6 +480,15 @@
       "source_name": "NVIDIA",
       "source_url": "https://developer.nvidia.com/blog/nvidia-nemotron-3-5-lightning-delivers-fast-accurate-specialized-task-execution-for-long-running-agents/",
       "title": "NVIDIA releases Nemotron 3.5 Lightning"
+    },
+    "ea812fca-8fa9-44e3-bad5-7991b5f50f86": {
+      "description": "Meta AI - Meta ships Muse Spark 1.3, the successor to Muse Spark 1.2 — a multimodal reasoning model for long-running agentic, multi-agent, and coding workflows that tracks information across extended tasks, reconciles conflicting inputs, and asks for clarification when needed, with an emphasis on concise execution. Text + image input over a 1M-token context, text output. Standard API pricing $1.25 / $4.25 per Mtok in/out ($0.15 cached input), with a lower-cost muse-spark-1.3-contributor data-sharing tier. Served by Meta via OpenRouter.",
+      "guid": "ea812fca-8fa9-44e3-bad5-7991b5f50f86",
+      "link": "https://llm-releases.com/models/muse-spark-1-3",
+      "pubDate": "Wed, 02 Sep 2026 00:00:00 GMT",
+      "source_name": "Meta AI",
+      "source_url": "https://openrouter.ai/meta/muse-spark-1.3",
+      "title": "Meta releases Muse Spark 1.3"
     },
     "f5bb488c-1686-4027-be08-0b24ac2bb0ba": {
       "description": "Upstage - Upstage released Solar Pro 4, an agent-first reasoning workhorse with a 524K-token context and up to 131K output tokens, priced at $0.30/$1.20 per Mtok (launch promo $0.03/$0.12). Upstage is the first Korean company registered as an official model provider.",

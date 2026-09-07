@@ -85,6 +85,10 @@ mentions:
   - model/x-ai-grok-4-5
   - model/x-ai-grok-4-3
   - model/x-ai-grok-4-20
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---
 
 This release moved the scoreboard without moving anything a buyer pays

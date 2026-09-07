@@ -92,6 +92,10 @@ mentions:
   - model/openai-gpt-5-6-sol-pro
   - model/openai-gpt-5-5
   - model/openai-gpt-5-5-pro
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---
 
 Sol did not launch straight to the public. On 26 June 2026, OpenAI put the

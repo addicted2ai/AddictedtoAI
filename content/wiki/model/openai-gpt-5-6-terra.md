@@ -87,6 +87,10 @@ mentions:
   - model/openai-gpt-5-6-sol
   - model/openai-gpt-5-6-luna
   - model/openai-gpt-5-5
+domains_seeded:
+  - agents
+  - coding
+  - image
 ---
 
 OpenAI's own positioning for this row, in GitHub's launch note, is

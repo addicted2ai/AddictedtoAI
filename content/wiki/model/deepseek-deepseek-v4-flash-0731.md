@@ -115,4 +115,7 @@ mentions:
   - org/deepseek
   - model/deepseek-deepseek-v4-flash
   - model/deepseek-deepseek-v4-pro-0813
+domains_seeded:
+  - agents
+  - coding
 ---

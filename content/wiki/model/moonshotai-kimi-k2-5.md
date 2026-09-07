@@ -76,6 +76,9 @@ mentions:
   - org/moonshot-ai
   - model/moonshotai-kimi-k3
   - model/moonshotai-kimi-k2-7-code
+domains_seeded:
+  - coding
+  - image
 ---
 
 This row had a death date on it, which almost none do: only a handful of

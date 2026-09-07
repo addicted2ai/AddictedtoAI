@@ -56,6 +56,9 @@ facts:
 timeline: []
 mentions:
   - model/deepseek-deepseek-v4-flash-0731
+domains_seeded:
+  - agents
+  - coding
 ---
 
 The word "open" does less work on this row than it does on most of this

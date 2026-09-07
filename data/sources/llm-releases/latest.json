@@ -1,7 +1,7 @@
 {
-  "body_hash": "89ba0b5826469e470798dec535ff4f22581d66194e1d7d3a5c755110a900d713",
-  "date": "2026-09-04",
-  "fetched_at": "2026-09-04T06:00:03.587Z",
+  "body_hash": "948e5b15febb89e42cdbffdb05c704b07b49822bc0fbe6f41bb690fb088e3b66",
+  "date": "2026-09-06",
+  "fetched_at": "2026-09-07T00:00:04.614Z",
   "row_count": 60,
   "rows": {
     "06a0c9a7-7f66-487f-8180-dbaae938de80": {
@@ -39,15 +39,6 @@
       "source_name": "Ant Group (inclusionAI)",
       "source_url": "https://openrouter.ai/inclusionai/ling-3.0-flash-fin",
       "title": "Ant Group launches Ling-3.0-flash-Fin"
-    },
-    "1357d23a-6549-448a-8c55-b834830619c1": {
-      "description": "DeepSeek - DeepSeek moves the V4 model family (V4-Pro and V4-Flash) out of preview and into general availability, closing a run of just under three months from the April 24 preview. The legacy deepseek-chat and deepseek-reasoner API aliases are retired on July 24, 2026 with no fallback; production traffic must reference deepseek-v4-pro / deepseek-v4-flash.",
-      "guid": "1357d23a-6549-448a-8c55-b834830619c1",
-      "link": "https://llm-releases.com/models/deepseek-v4-pro",
-      "pubDate": "Mon, 20 Jul 2026 00:00:00 GMT",
-      "source_name": "DeepSeek",
-      "source_url": "https://api-docs.deepseek.com/news",
-      "title": "DeepSeek V4 family reaches general availability"
     },
     "16a51c05-6af5-4307-8fed-98490ebdb73e": {
       "description": "Cohere - Cohere released Parse 5 (parse-v5.0), a 2.3B document-intelligence vision-language model that converts PDFs, slides, and images into structured Markdown with tables, forms, and bounding boxes, across nine languages. Priced at $1.50 per 1,000 pages via API, with Model Vault, SageMaker, and Azure availability. Positioned on price-to-performance.",
@@ -112,6 +103,15 @@
       "source_url": "https://openai.com/index/gpt-6-astra/",
       "title": "OpenAI releases GPT-6 Astra"
     },
+    "309c6eac-3249-4a97-9f68-82241d592f25": {
+      "description": "Ant Group (inclusionAI) - Ant Group's inclusionAI releases Ling-3.0-flash-Sante (model id inclusionai/ling-3.0-flash-sante), a health- and medicine-tuned variant of Ling-3.0-flash on the same 124B-total / ~5.1B-active sparse MoE base. Post-trained for medical knowledge reasoning, clinical safety, evidence-based retrieval, and long-horizon medical tasks while retaining general reasoning, coding, and agentic ability. Text-only (no vision), 262,144-token (256K) context, up to 32,768 output tokens, with reasoning and function calling. Available via hosted serverless API (Novita, OpenRouter, Vercel AI Gateway) with a time-limited free launch window (free through Oct 4 on Vercel AI Gateway). Positioned as a developer API, not a medical device; no public benchmark table at launch, and Sante-specific open weights were not confirmed posted (base family is MIT).",
+      "guid": "309c6eac-3249-4a97-9f68-82241d592f25",
+      "link": "https://llm-releases.com/models/ling-3-0-flash-sante",
+      "pubDate": "Fri, 04 Sep 2026 00:00:00 GMT",
+      "source_name": "Ant Group (inclusionAI)",
+      "source_url": "https://openrouter.ai/inclusionai/ling-3.0-flash-sante",
+      "title": "inclusionAI releases the medical-tuned Ling-3.0-flash-Sante"
+    },
     "30eafd23-c168-426e-b63a-12ca88e89482": {
       "description": "Alibaba (Qwen) - Qwen3.8-Max went GA on 2026-08-03, two weeks after its WAIC preview: a 2.4T-parameter MoE (~95B active) with 1M-token context, multimodal input, and firm pricing of $2/$6 per Mtok. Alibaba committed to open weights for Qwen3.8-Max and a smaller Qwen3.8-27B checkpoint.",
       "guid": "30eafd23-c168-426e-b63a-12ca88e89482",
@@ -129,15 +129,6 @@
       "source_name": "Z.ai (Zhipu AI)",
       "source_url": "https://llmgateway.io/models/glm-5.2-fast",
       "title": "Z.ai surfaces GLM-5.2 Turbo fast-serving tier"
-    },
-    "387e3f1f-a7f2-491b-8a2b-b0377a0a4453": {
-      "description": "Google DeepMind - Bloomberg reports Google delayed Gemini 3.5 Pro again after the rebuilt model fell short of internal quality goals on hallucinations and reliability — its third slipped target after June and early July. Google DeepMind's Logan Kilpatrick said on July 21 the company is testing it with partners and hopes to \"land soon\"; there is still no model card or public API entry.",
-      "guid": "387e3f1f-a7f2-491b-8a2b-b0377a0a4453",
-      "link": "https://llm-releases.com/models/gemini-3-5-pro",
-      "pubDate": "Thu, 16 Jul 2026 00:00:00 GMT",
-      "source_name": "Google DeepMind",
-      "source_url": "https://www.techtimes.com/articles/320736/20260716/rebuilt-gemini-35-pro-misses-third-deadline-google-eyes-stopgap-release.htm",
-      "title": "Gemini 3.5 Pro slips past its July 17 target"
     },
     "3a0a128a-02f3-4d25-8979-e53df8b07fd9": {
       "description": "Google DeepMind - Google released Gemini 3.7 Flash, a fast, low-cost workhorse tuned for coding and agents: 1M-token context, 65K output, multimodal input, and $0.75/$3.75 per Mtok introductory pricing through 2026-12-31. Reported DeepSWE v1.1 jumped to 65.3% from 49.0% on Gemini 3.6 Flash.",
@@ -237,6 +228,15 @@
       "source_name": "Thomson Reuters",
       "source_url": "https://www.thomsonreuters.com/en/press-releases/2026/august/thomson-reuters-leverages-its-world-class-data-assets-to-launch-its-own-frontier-model",
       "title": "Thomson Reuters launches its in-house frontier model, Thomson"
+    },
+    "5917d953-8745-4e17-b26a-fbd932d04785": {
+      "description": "Alibaba (Qwen) - Alibaba's Qwen team releases Qwen3.8-Max-0902, a post-training upgrade of the flagship Qwen3.8-Max on the same 2.4T-parameter MoE base (~95B active). It targets engineering-scale coding, long-horizon autonomous development, multi-tool agent orchestration, and native vision (text/image/video in, text out), with a 1M-token context, ~131K max output, an optional 256K chain-of-thought thinking mode, and unchanged $2/$6 per Mtok pricing. Vendor-reported CodeArena rose +22 to 1,691 (first at launch); closed-weight, API-first.",
+      "guid": "5917d953-8745-4e17-b26a-fbd932d04785",
+      "link": "https://llm-releases.com/models/qwen3-8-max-0902",
+      "pubDate": "Wed, 02 Sep 2026 00:00:00 GMT",
+      "source_name": "Alibaba (Qwen)",
+      "source_url": "https://technode.com/2026/09/02/alibaba-upgrades-qwen38-max-with-new-0902-snapshot/",
+      "title": "Alibaba ships the Qwen3.8-Max-0902 snapshot"
     },
     "5d5598b5-39c4-40c4-9df0-b05fd2248364": {
       "description": "Alibaba (Qwen) - Alibaba announced Qwen3.8-Flash, the productionized, managed Qwen Cloud API twin of the open-weight Qwen3.8-Flash-Next, running the same Qwen4-preview MoE architecture. Defaults to a 1M-token context with built-in tools; list pricing $0.15 input / $0.47 output per Mtok. Recorded proprietary/API-only.",
@@ -373,15 +373,6 @@
       "source_url": "https://huggingface.co/dots-studio/dots3-note-prev",
       "title": "Dots Studio open-weights Dots3-Note Preview"
     },
-    "98dabcf8-1f59-4963-9612-09b9a7b00fc4": {
-      "description": "Alibaba (Qwen) - Alibaba launches Qwen3.8, a 2.4-trillion-parameter fully-multimodal model — more than double the size of its predecessor — which the Qwen team says ranks \"second only to Fable 5\" on overall performance (internal evals, no independent benchmarks yet). Qwen3.8-Max-Preview is available to developers via Alibaba's Token Plan subscription and the Qoder / QoderWork coding platforms, with open weights promised \"soon\" but no timeline, license, or architecture details disclosed.",
-      "guid": "98dabcf8-1f59-4963-9612-09b9a7b00fc4",
-      "link": "https://llm-releases.com/models/qwen3-8-max",
-      "pubDate": "Sun, 19 Jul 2026 00:00:00 GMT",
-      "source_name": "Alibaba (Qwen)",
-      "source_url": "https://dataconomy.com/2026/07/20/qwen3-8-24t-parameters-alibaba-ai-model-launch/",
-      "title": "Alibaba unveils Qwen3.8-Max-Preview"
-    },
     "9c8305f7-e613-4570-8d2c-d00813a1b685": {
       "description": "Alibaba (Qwen) - Alibaba published Qwen3.8-27B on Hugging Face under Apache 2.0 — the single-GPU open sibling of Qwen3.8-Max. A 27B dense, hybrid-attention model with a native 262K context (extendable to 1M via YaRN) and multimodal (text/image/video) input, promoting the earlier announced-only entry to generally available.",
       "guid": "9c8305f7-e613-4570-8d2c-d00813a1b685",
@@ -426,6 +417,15 @@
       "source_name": "Anthropic",
       "source_url": "https://www.anthropic.com/news/claude-opus-5",
       "title": "Anthropic releases Claude Opus 5"
+    },
+    "c7c42b5e-f0e8-44a4-944f-1a863a21ad1a": {
+      "description": "OpenAI - OpenAI releases GPT-6 Astra Pro (API id gpt-6-astra-pro), the higher-quality reasoning tier of GPT-6 Astra — the same underlying model served with reasoning.mode set to 'pro' for tougher professional, coding, research, computer-use, and agentic tasks. 1.05M-token context, up to 128K output. Standard pricing $10/$50 per Mtok (cached input $1/Mtok, batch half price), with a Fast mode at ~2x. Access is limited to ChatGPT Pro, Business, and Enterprise users, off by default at launch and enabled per workspace.",
+      "guid": "c7c42b5e-f0e8-44a4-944f-1a863a21ad1a",
+      "link": "https://llm-releases.com/models/gpt-6-astra-pro",
+      "pubDate": "Fri, 04 Sep 2026 00:00:00 GMT",
+      "source_name": "OpenAI",
+      "source_url": "https://openai.com/index/gpt-6-astra/",
+      "title": "OpenAI releases GPT-6 Astra Pro"
     },
     "cb5d8549-7349-4204-a98f-395119662b7e": {
       "description": "Google DeepMind - Fastest, most cost-effective 3.5-class model (~350 output tokens/s) for high-throughput agentic workloads, priced at $0.30 / $2.50 per Mtok with a 1M-token context and built-in computer use. Large step up on 3.1 Flash-Lite and beats 3 Flash on several agentic/coding evals.",
