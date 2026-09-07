@@ -123,6 +123,7 @@ function buildFixture() {
     reachBack: writePost(contentRoot, 'reach-back'),
     neverAnswered: writePost(contentRoot, 'never-answered'),
     other: writePost(contentRoot, 'other-note'),
+    misdirected: writePost(contentRoot, 'misdirected'),
     twoA: writePost(contentRoot, 'two-a'),
     twoB: writePost(contentRoot, 'two-b'),
   };
@@ -188,6 +189,25 @@ function buildFixture() {
   writeRecord(reviewsDir, 'j-20260903-05.md', {
     job: 'j-20260903-05', date: '2026-09-03', cite: 'the only record of never-answered',
     subject: files.neverAnswered,
+  });
+
+  // 5b. MISDIRECTED — an earlier approving record DID answer for this post, and
+  //     the current record carries a `reads-human-from` entry that stands on
+  //     nothing. The reach-back must not rescue it: a record carrying an entry
+  //     is a record written after this requirement, and N7's reach-back is for
+  //     a record that carries NEITHER field. This is the case that tells the
+  //     carry-forward branch apart from the reach-back at all — every VALID
+  //     carry-forward is also reachable by the reach-back, since a valid anchor
+  //     names the piece and therefore appears in `declaredBy`.
+  writeRecord(reviewsDir, 'j-20260901-08.md', {
+    job: 'j-20260901-08', date: '2026-09-01', cite: 'the post review of misdirected',
+    subject: files.misdirected,
+    readsHuman: 'Misdirected reads human: it is short, uneven and says what it does not know.',
+  });
+  writeRecord(reviewsDir, 'j-20260903-08.md', {
+    job: 'j-20260903-08', date: '2026-09-03', cite: 'the repair of misdirected',
+    subject: files.misdirected,
+    carry: [{ subject: files.misdirected, record: 'j-does-not-exist.md', why: `${WHY} (misdirected)` }],
   });
 
   // 6. TWO POSTS, one job, an entry each — the other end of the merge gate's
@@ -284,6 +304,24 @@ test('N4 each of two posts in one record resolves through ITS OWN entry', async 
   assert.notEqual(a.answer.record.name, b.answer.record.name, 'and not both through one entry');
 });
 
+test('N4 a broken entry is NOT rescued by the reach-back', async () => {
+  // The case that tells the two branches apart at all. Every VALID
+  // carry-forward is also reachable by the reach-back — a valid anchor names
+  // the piece, so it is in `declaredBy` — and only here do the two answers
+  // differ: a record that carries an entry was written after this requirement,
+  // so it does not get the state N7 reserves for records that could not have
+  // carried one. It is reported, and the reviewer is sent to fix its anchor.
+  const { fx, answerFor } = await resolveFixture();
+  const { hit, answer } = answerFor(fx.files.misdirected);
+  assert.equal(hit.record.name, 'j-20260903-08.md');
+  assert.ok(
+    (hit.declaredBy ?? []).some((r) => r.name === 'j-20260901-08.md'),
+    'an earlier record naming this post DID answer, so the reach-back would have found one',
+  );
+  assert.equal(answer.how, 'unanswered');
+  assert.equal(answer.entry.record, 'j-does-not-exist.md');
+});
+
 /* ---------------------------------------------------------------------------
  * N7 — the reach-back, bounded by the record itself and never by a date.
  * ------------------------------------------------------------------------ */
@@ -343,7 +381,7 @@ test('the launch check reports exactly the unanswered posts, in the bare-missing
   }
   // The three that are not, are — in the same shape a bare missing `reads-human`
   // is reported in, which is the sentence this check has always used.
-  for (const file of [fx.files.brokenAnchor, fx.files.chainedAnchor, fx.files.neverAnswered]) {
+  for (const file of [fx.files.brokenAnchor, fx.files.chainedAnchor, fx.files.neverAnswered, fx.files.misdirected]) {
     assert.ok(problem(file), `${file} is unanswered and must be reported\n${stdout}`);
   }
   // And a broken anchor says which record it stood on, because "no record

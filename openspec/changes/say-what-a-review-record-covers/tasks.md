@@ -291,7 +291,7 @@ that no test attempts is a refusal that has never run.
       and which the repository's own real-corpus tests avoid
       (`lib/surfaces.test.mjs:320, :409` load the corpus and assert invariants,
       never a count).
-- [ ] 18. Mutation proof, each mutation applied alone and restored afterwards
+- [x] 18. Mutation proof, each mutation applied alone and restored afterwards
       with the file's hash compared before and after:
       **(a)** revert task 3's subjects-keyed branch — task 13's
       **repair-on-post neither-field** refusal must fail, and it must be the
