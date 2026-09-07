@@ -166,17 +166,29 @@ judgment, and it costs nothing on top of a run that already resolves both.
   anyone — it is derived state like every other queue item and SHALL NOT
   accumulate.
 - **A disagreement MAY also be adjudicated, and an adjudication is a committed
-  record.** It SHALL live at `data/adjudications/`, one file per adjudicated
-  pair, named `<entry id>--<first field>--<second field>.md` with the two field
-  names in the order the entry's `corroborates` declaration gives them, and it
-  SHALL carry: the entry, both field names, the local date, the resolution in
-  the adjudicator's own words, and **both resolved values as they stood when the
-  adjudication was made**. A resolution with no pinned values is not an
-  adjudication of anything, because nothing later can tell whether the
-  disagreement it settled is the disagreement standing today.
+  record.** It SHALL live at `data/adjudications/`, one flat file per adjudicated
+  pair. Its name SHALL be `<entry>--<first field>--<second field>.md`, the two
+  field names in the order the entry's `corroborates` declaration gives them and
+  **each of the three components slugged** — lower-cased, every run of characters
+  outside `a-z0-9` replaced by a single `-`, leading and trailing `-` trimmed —
+  by the same rule `pulse/lib/vanished.mjs`'s `vanishedFileName` already applies
+  to a source and a row id. The slugging is the rule and not a formatting note:
+  an entry id is a kind and a slug joined by a slash
+  (`model/deepseek-deepseek-v4-flash-0731`) and a field path carries an
+  underscore, so the unslugged form names a path into a `model/`
+  subdirectory rather than a file in a flat one. The record SHALL carry: the
+  entry, both field names, the local date, the resolution in the adjudicator's
+  own words, and **both resolved values as they stood when the adjudication was
+  made**. A resolution with no pinned values is not an adjudication of anything,
+  because nothing later can tell whether the disagreement it settled is the
+  disagreement standing today. A record SHALL be bound to a pair by the entry and
+  field names it carries, never by parsing its name — the name is a deterministic
+  function of those three values, so a job can be told exactly what to create and
+  a reader can find it, while the slugging loses nothing the record does not
+  state outright.
 - **The queue item for an unadjudicated disagreement SHALL state in its own
-  detail how the record is written** — that directory, that file name, and every
-  field above. A Desk job is one written prompt in and one diff out, so an
+  detail how the record is written** — that directory, that file name computed in
+  full for this pair, and every field above. A Desk job is one written prompt in and one diff out, so an
   instruction that is not in the item is an instruction the job does not have;
   this is the same stance the vanished-row record takes when it tells its own
   fixing job where to move the file.
@@ -231,6 +243,15 @@ judgment, and it costs nothing on top of a run that already resolves both.
   both values, and both sides resolve today to exactly those values
 - **THEN** the queue carries no item for that pair, and the run's corroboration
   output still lists it, marked adjudicated
+
+#### Scenario: The record's name is one flat, slugged file name
+
+- **WHEN** an item is minted for the pair whose entry is
+  `model/deepseek-deepseek-v4-flash-0731` and whose fields are `context_length`
+  and `context_window`
+- **THEN** the item's detail names `data/adjudications/` and the single file
+  model-deepseek-deepseek-v4-flash-0731--context-length--context-window.md,
+  which contains no slash and names no subdirectory
 
 #### Scenario: A moved value revives it
 

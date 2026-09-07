@@ -2,13 +2,14 @@
 
 Twelve normative bullets are added across the two capabilities' worth of
 requirement text in `specs/pulse` — six in the added requirement, six in the
-modified corroboration requirement (14 SHALL/MUST clauses when counted clause by
+modified corroboration requirement (15 SHALL/MUST clauses when counted clause by
 clause, since several bullets state a rule and its exclusion together). The
 modification to `The work queue is
 derived, never accumulated` adds no new normative sentence: it extends the
 enumeration inside the existing `SHALL recompute … from current state` so the
-list stays a true statement of what the queue produces, and task 4's assertion on
-the reason vocabulary is what keeps it true.
+list stays a true statement of what the queue produces, and task 7's assertion —
+that the item is produced with the new reason, and that the reason is the one the
+enumeration names — is what keeps it true.
 
 Each normative sentence has an implementing task and a testing task, and every
 testing task names the mutation that proves it measures something.
@@ -68,7 +69,11 @@ testing task names the mutation that proves it measures something.
       count; restore and verify the file byte-identical by hash. Tests tasks 1
       and 5.
 - [ ] 7. `pulse/tests/queue.test.mjs`: the item is produced with type `verify`
-      and the new reason; **its detail names the piece, the binding record's file
+      and the new reason, **the reason asserted verbatim as a string** — the
+      enumeration in `The work queue is derived, never accumulated` now names
+      this producer ("pieces whose recorded review no longer matches the file"),
+      and this assertion is what keeps that enumeration a true statement of what
+      the queue produces; **its detail names the piece, the binding record's file
       name and that record's date**, asserted on the three values the fixture put
       there rather than on the presence of a field; and it sorts above a
       corroboration item and below both a `tutorial-demoted` item and a
@@ -104,15 +109,28 @@ testing task names the mutation that proves it measures something.
 ## The adjudication record
 
 - [ ] 11. `pulse/lib/corroboration.mjs`: a reader for adjudication records at
-      `data/adjudications/` — one file per pair, named
-      `<entry id>--<first field>--<second field>.md`, carrying the entry, both
+      `data/adjudications/` — one flat file per pair, carrying the entry, both
       field names, the local date, the resolution text, and both pinned values.
-      Malformed or unreadable records are skipped rather than treated as
-      suppressions, on the same terms as every other reader of a record
-      directory here. Implements: *it SHALL live at `data/adjudications/`, one
-      file per adjudicated pair, named `<entry id>--<first field>--<second
-      field>.md` … and it SHALL carry: the entry, both field names, the local
-      date, the resolution … and both resolved values as they stood*.
+      Export one `adjudicationFileName(entryId, fieldA, fieldB)` that slugs each
+      of the three components with the **same** rule as
+      `pulse/lib/vanished.mjs:88–94` `vanishedFileName` (lower-case,
+      `/[^a-z0-9]+/g → '-'`, leading and trailing `-` trimmed) and joins them
+      with `--`, so `model/deepseek-deepseek-v4-flash-0731` + `context_length` +
+      `context_window` becomes
+      `model-deepseek-deepseek-v4-flash-0731--context-length--context-window.md`
+      — one file name with no `/` in it, not a path into a `model/`
+      subdirectory. Reuse or factor the slug helper rather than restating the
+      regex, so the two directories cannot drift apart. A record binds to a pair
+      by the entry and field names **it carries**, never by parsing its name;
+      the name exists so a job can be told exactly what to create and a reader
+      can find it. Malformed or unreadable records are skipped rather than
+      treated as suppressions, on the same terms as every other reader of a
+      record directory here. Implements: *it SHALL live at `data/adjudications/`,
+      one flat file per adjudicated pair … each of the three components slugged
+      … it SHALL carry: the entry, both field names, the local date, the
+      resolution … and both resolved values as they stood* and *a record SHALL
+      be bound to a pair by the entry and field names it carries, never by
+      parsing its name*.
 - [ ] 12. `pulse/lib/corroboration.mjs`: mark a finding `adjudicated` exactly
       when a record names the pair **and** both of today's resolved values equal
       the pinned ones — equality with the pins and nothing else: not the
@@ -126,8 +144,9 @@ testing task names the mutation that proves it measures something.
       the item's detail. The detail of every corroboration item SHALL also carry
       the writing instruction, in the idiom `pulse/lib/vanished.mjs:195–198`
       already uses for its own fixing job: the directory `data/adjudications/`,
-      the file name `<entry id>--<first field>--<second field>.md` computed for
-      **this** pair, and the fields the record must carry — the entry, both field
+      the file name **as computed by task 11's `adjudicationFileName` for this
+      pair** — the literal slugged string, not the template — and the fields the
+      record must carry, the entry, both field
       names, the local date, the resolution in the job's own words, and both
       resolved values as they stand in that item. A Desk job is one written
       prompt in; an instruction that is not in the item does not reach it.
@@ -162,11 +181,19 @@ testing task names the mutation that proves it measures something.
       second, unadjudicated pair in the same run still does — the control
       without which task 16's suppression proves only that nothing was produced
       at all. The surviving item's detail is asserted to name
-      `data/adjudications/`, the exact file name computed for that pair, and each
-      of the record's required fields. Mutation: drop the file name from the
+      `data/adjudications/`, the exact file name for that pair **written out as a
+      literal in the test** — for a fixture entry `model/…` with fields carrying
+      `_`, the slugged single-segment name, asserted to contain no `/` — and each
+      of the record's required fields. Two mutations: drop the file name from the
       detail and confirm only that assertion fails — a job told the directory but
-      not the name writes the record somewhere the reader will not look. Tests
-      task 13.
+      not the name writes the record somewhere the reader will not look; and drop
+      the slugging so the raw entry id is interpolated, and confirm the same
+      assertion fails on the `/` — which is the whole reason the name is
+      specified rather than templated. A third fixture completes it: a record
+      whose file name is deliberately wrong but whose carried entry and field
+      names are right still suppresses, and one whose name is right but whose
+      carried names are wrong does not — the binding is the fields, not the name
+      (task 11). Tests tasks 11 and 13.
 
 ## Gates
 

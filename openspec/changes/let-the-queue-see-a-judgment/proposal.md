@@ -63,6 +63,16 @@ written 2026-08-31 and `addictedtoai-cct` on 2026-08-29, both last triaged
   safe only on pairs that already agree and therefore useless on the pairs that
   motivated it; the corpus has since voted with its feet. The check runs on every
   Pulse run over an empty set.
+- **An entry id is a path, not a name, and the first draft's record file name
+  ignored it.** Measured 2026-09-06: `content/wiki/model/deepseek-deepseek-v4-flash-0731.md:2`
+  carries `id: model/deepseek-deepseek-v4-flash-0731`, and field paths carry `_`.
+  So `<entry id>--<first field>--<second field>.md` interpolated literally is a
+  path into a `model/` subdirectory, not a file in a flat directory — and the
+  precedent this delta already cites had solved that: `vanishedFileName`
+  (`pulse/lib/vanished.mjs:88–94`) exists because "slashes and colons are common
+  in row ids … and none of them may reach a path segment". The delta now names
+  that slug rule as the encoding, and says that a record binds by the fields it
+  carries rather than by its name.
 
 ## The findings
 
