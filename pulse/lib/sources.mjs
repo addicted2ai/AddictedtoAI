@@ -19,8 +19,10 @@
  */
 
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import * as cheerio from 'cheerio';
-import { getPath, now, readJson, sha256, sourcePaths, stableStringify, today, writeJson } from './core.mjs';
+import { daysSince, getPath, now, readJson, sha256, sourcePaths, stableStringify, today, writeJson } from './core.mjs';
+import { companionKeys, companionRowsPath, reduceCompanionRow } from './registry.mjs';
 
 const USER_AGENT = 'AddictedtoAI-Pulse/0.1 (+https://www.addictedtoai.net)';
 const TIMEOUT_MS = 30000;
@@ -299,6 +301,144 @@ export async function ingestSource(root, source, { force = false, offline = fals
   state.consecutive_no_change_fetches = 0;
   saveState(root, source.id, state);
   return { source: source.id, action: 'changed', rows: rowCount, skipped, was_refusing: wasRefusing, state };
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * THE COMPANION FETCH (specs/pulse; change `bind-a-price-to-the-vendor-that-
+ * posts-it`, tasks 4 and 5).
+ *
+ * A second URL, templated from a row of the source's own snapshot and fetched
+ * ONCE PER COVERED KEY. Keying on the key and not on the row id is design D1 and
+ * it is a measured saving, not tidiness: on the committed snapshot 404 priced
+ * rows span 335 distinct keys, because 69 ids are `:free`/`:batch` variants of a
+ * slug already counted — and fetching per row would pull one provider listing up
+ * to three times for three variants of one model. Every variant row of one key
+ * then reads the same fetched listing, which is correct only because the listing
+ * itself enumerates tiers: a variant's price is a tier inside that listing, not
+ * a different listing.
+ *
+ * FAILURES ARE PER KEY AND NEVER FAIL THE RUN. A key whose fetch errors or
+ * refuses yields an absent value, recorded with its date, for every row that key
+ * covers; every row under a different key is unaffected. There is no per-row
+ * fetch beneath a key to fail independently — the fetch that failed was the one
+ * call made on that key's behalf.
+ *
+ * Nothing here reads the declaration's identity or rate field names: the
+ * reduction to "only the fields the site binds" is `registry.mjs`'s
+ * `reduceCompanionRow`, so the map and the provider field are read in exactly
+ * the two places allowed to read them.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+/** The companion snapshot's two files, inside the source's own snapshot directory. */
+export function companionPaths(root, source) {
+  const name = source?.companion?.snapshot;
+  const dir = sourcePaths(root, source.id).dir;
+  return { dir, latest: join(dir, `${name}.latest.json`), previous: join(dir, `${name}.previous.json`) };
+}
+
+export function loadCompanionSnapshot(root, source, which = 'latest') {
+  if (!source?.companion) return null;
+  return readJson(companionPaths(root, source)[which], null);
+}
+
+/** The hash the companion rotation keys off: the fetched per-key entries. */
+export function companionHash(snapshot) {
+  if (!snapshot || !snapshot.keys) return 'none';
+  return sha256(stableStringify(snapshot.keys)).slice(0, 16);
+}
+
+/** The listing rows of one companion response, per the declared rows path. */
+function extractCompanionRows(companion, body) {
+  const parsed = JSON.parse(body);
+  const path = companionRowsPath(companion);
+  const list = path ? getPath(parsed, path) : parsed;
+  if (!Array.isArray(list)) {
+    throw new Error(`companion rows_path ${JSON.stringify(path)} did not yield an array`);
+  }
+  return list;
+}
+
+/**
+ * Fetch a source's companion listing once per covered key and rotate its
+ * snapshot. Returns null when the source declares no companion.
+ *
+ * Rotation follows the existing rule exactly: `previous` is replaced only when
+ * the fetched entries differ from `latest`, so an unchanged set of provider
+ * listings costs one request per key and no bytes.
+ */
+export async function ingestCompanion(root, source, { force = false, offline = false } = {}) {
+  const companion = source?.companion;
+  if (!companion) return null;
+  const cp = companionPaths(root, source);
+  mkdirSync(cp.dir, { recursive: true });
+
+  const rowSnapshot = loadSnapshot(root, source.id, 'latest');
+  const keys = companionKeys(companion, rowSnapshot);
+  const latest = readJson(cp.latest, null);
+
+  if (offline) return { source: source.id, action: 'offline', keys: keys.length, failed: 0 };
+  const elapsed = latest ? daysSince(latest.date) : null;
+  if (!force && latest && elapsed !== null && elapsed < companion.fetch_every_days) {
+    return { source: source.id, action: 'skipped', why: `fetched ${elapsed}d ago`, keys: keys.length, failed: 0 };
+  }
+
+  const day = today();
+  const at = now().toISOString();
+  const entries = {};
+  let failed = 0;
+  for (const key of keys) {
+    // `{key}` is the whole templating language, deliberately: the endpoint path
+    // is addressed by the key and nothing else is interpolated.
+    const url = companion.url_template.replaceAll('{key}', encodeURI(key));
+    const res = await fetchSource({ url, format: 'json' });
+    if (res.outcome === 'refused') {
+      // Recorded as a refusal under the existing rule — no second attempt, no
+      // alternate endpoint, no widening. Every row this key covers goes absent.
+      entries[key] = { status: 'refused', error: `HTTP ${res.status}`, endpoints: null };
+      failed++;
+      continue;
+    }
+    if (res.outcome === 'error') {
+      entries[key] = { status: 'error', error: res.error, endpoints: null };
+      failed++;
+      continue;
+    }
+    try {
+      const rows = extractCompanionRows(companion, res.body);
+      entries[key] = {
+        status: 'ok',
+        error: null,
+        endpoints: rows.map((r) => reduceCompanionRow(companion, r)).filter(Boolean),
+      };
+    } catch (err) {
+      entries[key] = { status: 'error', error: `${err.name}: ${err.message}`, endpoints: null };
+      failed++;
+    }
+  }
+
+  const snapshot = {
+    source: source.id,
+    companion: companion.snapshot,
+    url_template: companion.url_template,
+    date: day,
+    fetched_at: at,
+    key_count: keys.length,
+    keys: entries,
+  };
+
+  if (!latest) {
+    writeJson(cp.latest, snapshot);
+    writeJson(cp.previous, snapshot);
+    return { source: source.id, action: 'first-ingest', keys: keys.length, failed };
+  }
+  if (companionHash(latest) === companionHash(snapshot)) {
+    return { source: source.id, action: 'unchanged', keys: keys.length, failed };
+  }
+  writeJson(cp.previous, latest);
+  writeJson(cp.latest, snapshot);
+  return { source: source.id, action: 'changed', keys: keys.length, failed };
 }
 
 /** Raw text of a snapshot file, for callers that need the exact bytes. */

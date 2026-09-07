@@ -16,9 +16,9 @@
 
 import { daysSince, paths, readJsonl, today, writeJson } from './core.mjs';
 import { deriveStatus, materialValue, displayName } from './diff.mjs';
-import { loadSnapshot, loadState } from './sources.mjs';
+import { loadCompanionSnapshot, loadSnapshot, loadState } from './sources.mjs';
 import { feedBindings } from './corpus.mjs';
-import { sortedSources } from './registry.mjs';
+import { companionKeyForRow, sortedSources, splitProviderField } from './registry.mjs';
 // The closed kind list has one home (`separate-a-claim-from-a-fact` task 19):
 // every consumer reads the declaration instead of restating a literal, so a
 // misspelled kind is a missing property here rather than a branch that silently
@@ -32,7 +32,104 @@ export function providerOf(rowId) {
   return i > 0 ? String(rowId).slice(0, i) : null;
 }
 
-function catalogRow(source, rowId, row, entryIdByRow) {
+/**
+ * The four reasons a vendor-posted rate can be absent. CLOSED, and every absent
+ * value carries one.
+ *
+ * Four different conditions render as the same empty cell, and the one that is a
+ * gap in THIS SITE'S declarations (`author_identity_not_declared`) is
+ * indistinguishable from the three that are facts about the vendor unless the
+ * row says which it is.
+ */
+export const VENDOR_ABSENT = Object.freeze({
+  AUTHOR_NOT_IN_LISTING: 'author_not_in_listing',
+  AUTHOR_IDENTITY_NOT_DECLARED: 'author_identity_not_declared',
+  LISTING_DID_NOT_FETCH: 'listing_did_not_fetch',
+  AUTHOR_POSTS_ONLY_OTHER_TIERS: 'author_posts_only_other_tiers',
+});
+
+/**
+ * The rate the row's own author posts, on that row's provider listing, at the
+ * tier the registry declares canonical — or a dated absence carrying its reason.
+ *
+ * ## The identity comparison, and the two edits that would weaken it
+ *
+ * These are written here rather than only in the design because they are the two
+ * edits a later change will make by accident, and each turns an attribution into
+ * something weaker than an attribution.
+ *
+ *  1. **NOTHING ON THIS PATH READS `provider_name`, OR ANY FIELD BUT THE
+ *     DECLARED `provider_field`.** A display name is a label whoever writes the
+ *     listing may set to anything; several providers may carry one; a rename
+ *     silently makes or breaks an attribution. The comparison is between machine
+ *     keys — the provider slug `splitProviderField` reads out of the declared
+ *     field, against the slug the source's own identity map gives for the
+ *     author segment of the row's id — and nothing else. The same split supplies
+ *     the tier, so a listing that also carries `provider_slug`/`service_tier`
+ *     fields (a different fetch's shape, measured to DISAGREE with the tag's own
+ *     suffix) is not consulted.
+ *
+ *  2. **THERE IS NO BRANCH THAT COMPARES THE AUTHOR SEGMENT TO A PROVIDER SLUG
+ *     DIRECTLY.** Raw equality is a coincidence test: measured 2026-09-06 over
+ *     431 rows, it agrees on `openai` (93 rows) and `anthropic` (27) and
+ *     measures absent on `google` (43), `mistralai` (20), `x-ai` (7) and
+ *     `amazon` (5) — resolving for the majors whose spellings happen to agree,
+ *     resolving nothing for a third of the rest, and looking identical either
+ *     way. An author the map does not name resolves ABSENT, with that reason.
+ *
+ * And there is no fallback anywhere below: an absent vendor rate never borrows
+ * the headline. A fallback is how a listing rate becomes a vendor attribution
+ * with nobody deciding to attribute anything.
+ */
+export function resolveVendorRate(source, rowId, row, companionSnapshot) {
+  const companion = source?.companion;
+  if (!companion) return null;
+  const asOf = companionSnapshot?.date ?? null;
+  const absent = (code, tiersFound = null) => ({
+    absent: true,
+    as_of: asOf,
+    provider_slug: null,
+    tier: null,
+    rates: null,
+    reason: { code, tiers_found: tiersFound },
+  });
+
+  const author = providerOf(rowId);
+  const declared = author === null ? null : companion.provider_identities?.[author];
+  const slug = typeof declared?.provider_slug === 'string' ? declared.provider_slug.trim().toLowerCase() : null;
+  if (slug === null || slug === '') return absent(VENDOR_ABSENT.AUTHOR_IDENTITY_NOT_DECLARED);
+
+  const key = companionKeyForRow(companion, row);
+  const entry = key === null ? null : companionSnapshot?.keys?.[key];
+  if (!entry || entry.status !== 'ok' || !Array.isArray(entry.endpoints)) {
+    return absent(VENDOR_ABSENT.LISTING_DID_NOT_FETCH);
+  }
+
+  const identified = entry.endpoints
+    .map((endpoint) => ({ endpoint, id: splitProviderField(endpoint, companion.provider_field) }))
+    .filter((x) => x.id !== null);
+  const mine = identified.filter((x) => x.id.provider_slug === slug);
+  if (mine.length === 0) return absent(VENDOR_ABSENT.AUTHOR_NOT_IN_LISTING);
+
+  const canonical = String(companion.canonical_tier).trim().toLowerCase();
+  const match = mine.find((x) => x.id.tier === canonical);
+  if (!match) {
+    // The tiers named here are always tiers the split rule actually produced,
+    // never strings read off some other field: guessing another of a vendor's
+    // tiers is how a site prints a fast-tier rate under a sentence about
+    // standard pricing.
+    return absent(VENDOR_ABSENT.AUTHOR_POSTS_ONLY_OTHER_TIERS, [...new Set(mine.map((x) => x.id.tier))].sort());
+  }
+
+  const rates = {};
+  for (const name of Object.keys(companion.rates ?? {})) {
+    const v = match.endpoint[name];
+    rates[name] = v === undefined ? null : v;
+  }
+  return { absent: false, as_of: asOf, provider_slug: match.id.provider_slug, tier: match.id.tier, rates, reason: null };
+}
+
+function catalogRow(source, rowId, row, entryIdByRow, companionSnapshot = null) {
   const out = {
     source: source.id,
     source_url: source.url,
@@ -49,6 +146,13 @@ function catalogRow(source, rowId, row, entryIdByRow) {
     const v = materialValue(source, row, spec);
     out[spec.field] = v === null ? null : v;
   }
+  // BESIDE, NOT INSTEAD (design D2). The listing rate above is untouched: every
+  // row has one, an unknown fraction of rows have a vendor rate, and replacing
+  // the column would trade a number that is true about a listing for a hole on
+  // every uncovered row. Two named fields is also the only arrangement in which
+  // the no-fallback rule is enforceable — with one field there is nowhere for an
+  // absent vendor rate to go except back to the headline, which is the defect.
+  if (source.companion) out.vendor_posted_rate = resolveVendorRate(source, rowId, row, companionSnapshot);
   return out;
 }
 
@@ -94,8 +198,9 @@ export function deriveDataLayer(root, registry, corpus) {
     });
 
     if (!latest || (source.material_fields ?? []).length === 0) continue;
+    const companionSnapshot = loadCompanionSnapshot(root, source, 'latest');
     for (const rowId of Object.keys(latest.rows ?? {}).sort()) {
-      rows.push(catalogRow(source, rowId, latest.rows[rowId], entryIdByRow));
+      rows.push(catalogRow(source, rowId, latest.rows[rowId], entryIdByRow, companionSnapshot));
     }
   }
 

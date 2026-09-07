@@ -104,7 +104,15 @@
  */
 
 import { appendJsonl, daysSince, getPath, readJsonl, today } from './core.mjs';
-import { rowsHash } from './sources.mjs';
+import { companionHash, rowsHash } from './sources.mjs';
+// A DELIBERATE IMPORT CYCLE, and the only one in `pulse/lib/`. `derive.mjs`
+// already imports this file's `deriveStatus`/`materialValue`/`displayName`, and
+// the vendor-rate resolution has to live there: it is the one place besides the
+// registry allowed to read the author-identity map, and a second copy of the
+// resolution here is exactly the drift the single-home rule exists to prevent.
+// Both sides export function declarations and neither uses the other at module
+// evaluation time, so the cycle is inert.
+import { resolveVendorRate } from './derive.mjs';
 // The closed kind list, declared once (`lib/change-kinds.mjs`). Every emission
 // site below reads it rather than carrying a literal, and `appendChanges`
 // refuses a candidate whose kind is not a member — that is the point the
@@ -268,6 +276,75 @@ export function diffSnapshots(source, previous, latest, { date = today() } = {})
 }
 
 /**
+ * What a price line is bound to. A line carrying this marker was keyed to a
+ * VENDOR-POSTED rate, and `appendChanges` refuses one that cannot name the
+ * provider and the tier it was posted at.
+ */
+export const VENDOR_BOUND = 'vendor_posted_rate';
+
+/**
+ * Price events, keyed to the vendor-posted rate and to NOTHING ELSE.
+ *
+ * ## What is compared, and what is not
+ *
+ * The comparison is between the rate a named provider posted at a named tier in
+ * the previous companion snapshot and the rate the same provider posts at the
+ * same tier in the latest one. The top-provider headline is not read here at
+ * any point: it is a rate on a listing whose referent is re-chosen on a rolling
+ * 30-second outage window, so a movement in it is a routing artifact rather than
+ * a repricing (this file's header carries the measurements).
+ *
+ * ## NO THRESHOLD APPEARS ON THIS PATH, and that is a decision with evidence
+ *
+ * The test is WHOSE RATE MOVED, never how far. A percentage gate fails exactly
+ * here: the measured artifacts are large — a 60% scheduled-window flip and a
+ * 14.7x routing flip — and both clear any threshold anybody would set, while a
+ * genuine 2% repricing is suppressed by all of them. A threshold suppresses the
+ * news and passes the noise.
+ *
+ * A row whose vendor rate is absent on either side emits nothing: an absence is
+ * not a movement, and pairing an absence with a number would state a repricing
+ * the vendor did not make.
+ */
+export function vendorPriceChanges(source, previousCompanion, latestCompanion, latest, { date = today() } = {}) {
+  if (!source?.companion || !previousCompanion || !latestCompanion || !latest) return [];
+  const from = companionHash(previousCompanion);
+  const to = companionHash(latestCompanion);
+  if (from === to) return [];
+
+  const changes = [];
+  const rows = latest.rows ?? {};
+  for (const rowId of Object.keys(rows).sort()) {
+    const row = rows[rowId];
+    const before = resolveVendorRate(source, rowId, row, previousCompanion);
+    const after = resolveVendorRate(source, rowId, row, latestCompanion);
+    if (!before || !after || before.absent || after.absent) continue;
+    for (const field of Object.keys(after.rates ?? {}).sort()) {
+      const old = before.rates?.[field] ?? null;
+      const now = after.rates[field] ?? null;
+      if (old === null || now === null || old === now) continue;
+      changes.push({
+        date,
+        source: source.id,
+        source_url: source.url,
+        key: `${source.id}|companion|${from}|${to}|${rowId}|${field}`,
+        kind: KIND.FIELD_CHANGE,
+        bound_to: VENDOR_BOUND,
+        row_id: rowId,
+        display_name: displayName(source, row),
+        provider_slug: after.provider_slug,
+        tier: after.tier,
+        field,
+        old,
+        new: now,
+        excerpt: excerptRow(source, row),
+      });
+    }
+  }
+  return changes;
+}
+
+/**
  * Historical records a source carries in its own rows, as dated, sourced,
  * `seeded: true` change lines (specs/pulse: "Launch day shows real history").
  * These are real sourced history, not synthesis; the marker only keeps them
@@ -361,6 +438,23 @@ export function appendChanges(changesFile, candidates) {
         `changes.jsonl: refusing to append a line whose kind is not declared — kind ${JSON.stringify(c?.kind)}, ` +
           `key ${JSON.stringify(c?.key ?? null)}, source ${JSON.stringify(c?.source ?? null)}. ` +
           `The closed list is ${CHANGE_KINDS.join(', ')} (lib/change-kinds.mjs); add a kind there before emitting it.`,
+      );
+    }
+    // THE SECOND WRITE-SIDE REFUSAL, and it takes the same stance the kind
+    // refusal above takes. A bound vendor-posted rate names the provider AND the
+    // service tier it was posted at: one provider commonly lists several tiers
+    // for one row — measured on this corpus as a flex tier at half the standard
+    // rate and a fast tier at twice it — so a line saying "this vendor moved
+    // this price" without naming which of its prices is a sentence that is false
+    // about the thing it names. Refused here rather than written, because
+    // `changes.jsonl` is append-only and a line already committed cannot be
+    // removed.
+    if (c?.bound_to === VENDOR_BOUND && (!c.provider_slug || !c.tier)) {
+      throw new Error(
+        `changes.jsonl: refusing to append a vendor-posted price line that does not name both the provider and ` +
+          `the tier — provider_slug ${JSON.stringify(c.provider_slug ?? null)}, tier ${JSON.stringify(c.tier ?? null)}, ` +
+          `key ${JSON.stringify(c.key ?? null)}, source ${JSON.stringify(c.source ?? null)}. A rate with no tier is ` +
+          `under-specified even when the vendor is unambiguous.`,
       );
     }
     if (known.has(c.key)) continue;
