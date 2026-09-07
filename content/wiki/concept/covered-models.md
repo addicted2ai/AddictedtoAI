@@ -119,8 +119,9 @@ partners is the pairing in the table:
 extra safeguards as what makes the wider release possible — "these safeguards
 allow us to share this intelligence more broadly" — but the retention terms
 attach to the underlying model rather than to the safeguards wrapped around it.
-Mythos 5 and 5.1 are listed "Limited availability", reachable only by "approved
-partners"; Fable 5 and 5.1 are generally available on
+As of 6 September 2026, the table listed Mythos 5 and 5.1 as "Limited
+availability", reachable only by "approved partners"; Fable 5 and 5.1 are
+generally available on
 {{fact:model/anthropic-claude-fable-5-1#covered_model_availability}}, under
 identical data handling. A customer who could never have called a Mythos model
 took on its retention posture the day they called Fable.
@@ -134,7 +135,7 @@ bill: "If you have zero data retention configured, then you will need to create
 and use a separate Azure Subscription to access these models."
 
 Anthropic has announced a way out — Enterprise Frontier Safeguards, which moves
-the retained window into storage the customer controls, and which
+the retained window into storage the customer controls.
 {{fact:concept/covered-models#efs_rollout}}. Two Anthropic documents describe
 the interim arrangement differently and this entry follows the narrower one. The
 1 September news page says eligible customers "will receive ZDR on Fable 5 and
@@ -145,7 +146,8 @@ Anthropic or a cloud provider makes contact or because the customer applies.
 Anyone building a product on Fable for their own customers is governed by a
 different sentence again — "Certain products built on Claude may extend the
 option to use ZDR with these models to their own eligible business customers
-under terms agreed with Anthropic."
+under terms agreed with Anthropic, and we are working to broaden product
+support over time."
 
 Retention is not unsupervised access. By default "no Anthropic personnel can
 read your retained conversations"; human review runs through "a controlled
