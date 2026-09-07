@@ -303,19 +303,33 @@ that no test attempts is a refusal that has never run.
       never a count).
 - [x] 18. Mutation proof, each mutation applied alone and restored afterwards
       with the file's hash compared before and after:
-      **(a)** revert task 3's subjects-keyed branch — task 13's
-      **repair-on-post neither-field** refusal must fail, and it must be the
-      only failure: task 13's **post**-type neither-field test still passes
-      (the surviving `reads-human-empty` branch catches that one), and task 14's
-      controls still pass (nothing gates a repair once the branch is gone). That
-      asymmetry is the whole evidence for keying the obligation on the merged
-      subjects — a gate keyed on the job type would leave every other test
-      green while the
-      bead's own instance walked through, so this single test is the only
-      witness that the obligation follows the subjects.
+      **(a)** revert task 3's subjects-keyed branch — the asymmetry is the
+      evidence, not a single isolated failure: the three tests asserting N1's
+      per-post refusal (`review-blog-bar.test.mjs:698, :850, :981`) fail,
+      while the post-**type** neither-field test (`:129`) and every task 14
+      control stay green (nothing gates a repair once the branch is gone). A
+      gate keyed on the job type would leave every one of those green while
+      the bead's own instance walked through, so that asymmetry — three N1
+      tests down, the type-keyed test and the controls up — is the whole
+      witness that the obligation follows the merged subjects.
+      **Correction (review round, 2026-09-07): this entry originally said "it
+      must be the only failure," which is false as measured** — three tests
+      fail, not one — and left standing in a durable artifact past its own
+      implementer's disclosure. The corrected claim is the asymmetry above.
       **(b)** revert task 4's anchor check — only the anchor tests fail;
       **(c)** revert task 5's duplicate sweep — only the duplicate test fails;
-      **(d)** revert task 9 — only the launch carry-forward test fails;
+      **(d)** revert task 9 — as written, this bites nothing: every valid
+      carry-forward is also reachable by N7's reach-back, so the launch
+      carry-forward test still passes once the branch is gone. It bites only
+      against the `misdirected` fixture case (task 15/`verify-launch-voice-
+      carry.test.mjs`), whose entry names a record that never answered for
+      that post at all, so only the reach-back — not the carry-forward — could
+      have found one; that test alone fails.
+      **Correction (review round, 2026-09-07): this entry originally said
+      "only the launch carry-forward test fails," which is false as measured
+      against the mutation** — nothing failed until the `misdirected` fixture
+      existed to make it bite, and that fixture is not one task 15 names. The
+      corrected claim is above.
       **(e)** make the reach-back an **unconditional pass** — a post whose
       current record carries neither field passes the voice check whether or not
       any earlier record answered — and only task 15's "ONLY approving record

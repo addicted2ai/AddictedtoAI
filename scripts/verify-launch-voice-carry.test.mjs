@@ -124,6 +124,7 @@ function buildFixture() {
     neverAnswered: writePost(contentRoot, 'never-answered'),
     other: writePost(contentRoot, 'other-note'),
     misdirected: writePost(contentRoot, 'misdirected'),
+    revisedAnchor: writePost(contentRoot, 'revised-anchor'),
     twoA: writePost(contentRoot, 'two-a'),
     twoB: writePost(contentRoot, 'two-b'),
   };
@@ -208,6 +209,25 @@ function buildFixture() {
     job: 'j-20260903-08', date: '2026-09-03', cite: 'the repair of misdirected',
     subject: files.misdirected,
     carry: [{ subject: files.misdirected, record: 'j-does-not-exist.md', why: `${WHY} (misdirected)` }],
+  });
+
+  // 5c. REVISED ANCHOR — an entry naming a record that DOES answer for THIS
+  //     post (the right subject, a non-empty `reads-human`) but whose verdict
+  //     is `revise`, not `approve`. `answers()` in `resolveVoiceAnswer` checks
+  //     both; a version that dropped the verdict check (mutation C) would call
+  //     this a valid anchor. Distinct from MISDIRECTED above: that entry names a
+  //     record that never approved this post at all (or does not exist);
+  //     this one names a record that unambiguously DOES cover this post and
+  //     still must not answer, because it never approved it.
+  writeRecord(reviewsDir, 'j-20260901-09.md', {
+    job: 'j-20260901-09', date: '2026-09-01', cite: 'the post review of revised-anchor',
+    subject: files.revisedAnchor, verdict: 'revise',
+    readsHuman: 'Revised-anchor reads human, in a record the merge never approved.',
+  });
+  writeRecord(reviewsDir, 'j-20260903-09.md', {
+    job: 'j-20260903-09', date: '2026-09-03', cite: 'the repair of revised-anchor',
+    subject: files.revisedAnchor,
+    carry: [{ subject: files.revisedAnchor, record: 'j-20260901-09.md', why: `${WHY} (revised-anchor)` }],
   });
 
   // 6. TWO POSTS, one job, an entry each — the other end of the merge gate's
@@ -320,6 +340,19 @@ test('N4 a broken entry is NOT rescued by the reach-back', async () => {
   );
   assert.equal(answer.how, 'unanswered');
   assert.equal(answer.entry.record, 'j-does-not-exist.md');
+});
+
+test('N4 an anchor that carries a reads-human but never approved this post does not answer', async () => {
+  // The `approve` leg of `answers()`, measured directly: the anchor names the
+  // right post and carries a non-empty `reads-human`, and still must not
+  // answer, because its verdict is `revise`. A resolver that checked only for
+  // a non-empty `reads-human` (mutation C) would call this a valid carry.
+  const { fx, answerFor } = await resolveFixture();
+  const { hit, answer } = answerFor(fx.files.revisedAnchor);
+  assert.equal(hit.record.name, 'j-20260903-09.md');
+  assert.equal(answer.how, 'unanswered');
+  assert.equal(answer.record, null);
+  assert.equal(answer.entry.record, 'j-20260901-09.md');
 });
 
 /* ---------------------------------------------------------------------------
