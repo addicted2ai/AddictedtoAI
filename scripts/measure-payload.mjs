@@ -34,9 +34,24 @@ import { join, resolve } from 'node:path';
 /** The budget from specs/site, in bytes. */
 export const BUDGET_BYTES = 150 * 1024;
 
-/** Recorded payload figures are rounded to whole KB; gzip noise is finer than that. */
+/**
+ * Route-B measured worst-case spread is 9 gzip bytes. The 51.2-byte half-step
+ * of 0.1 KB precision is included so a raw value cannot cross a display
+ * boundary merely because of that measured spread.
+ */
+export const RECORDED_NOISE_FLOOR_BYTES = 61;
+export const RECORDED_PRECISION_KB = 0.1;
+
 export function recordedKilobytes(bytes) {
-  return Math.round(bytes / 1024);
+  return Number((bytes / 1024).toFixed(1));
+}
+
+/** Keep the prior record inside the measured noise floor; retain real growth. */
+export function stableRecordedKilobytes(bytes, previous) {
+  if (typeof previous === 'number' && Math.abs(bytes - previous * 1024) <= RECORDED_NOISE_FLOOR_BYTES) {
+    return previous;
+  }
+  return recordedKilobytes(bytes);
 }
 
 const SCRIPT_RE = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;

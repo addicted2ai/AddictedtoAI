@@ -52,7 +52,9 @@ import * as cheerio from 'cheerio';
 import {
   measureRoute,
   formatMeasurement,
-  recordedKilobytes,
+  stableRecordedKilobytes,
+  RECORDED_NOISE_FLOOR_BYTES,
+  RECORDED_PRECISION_KB,
   BUDGET_BYTES,
 } from './measure-payload.mjs';
 import { ROOT } from '../lib/paths.mjs';
@@ -617,21 +619,24 @@ async function main() {
   launch.js_payload = {
     measured_on: todayIso(),
     budget_kb_gzipped: BUDGET_BYTES / 1024,
-    precision: 'whole KB, rounded to the nearest 1 KB; gzip -9 stamp noise is finer than this',
+    precision:
+      `${RECORDED_PRECISION_KB.toFixed(1)} KB with hysteresis: retain each prior value unless the raw ` +
+      `gzip measurement moves by more than ${RECORDED_NOISE_FLOOR_BYTES} bytes (measured worst-case ` +
+      'same-build spread 9 bytes plus the half-step needed to cross a 0.1 KB display boundary)',
     method:
       'gzip -9 over every <script src> a modern browser fetches (nomodule excluded) plus every ' +
       'inline <script> body, measured on the exported build in out/',
     pages: Object.fromEntries(
-      measurements.map((m) => [
-        m.route,
-        {
+      measurements.map((m) => {
+        const previous = launch.js_payload?.pages?.[m.route] ?? {};
+        return [m.route, {
           label: m.label,
-          chunks_kb_gzipped: recordedKilobytes(m.chunks.gzip),
-          inline_kb_gzipped: recordedKilobytes(m.inline.gzip),
-          total_kb_gzipped: recordedKilobytes(m.total.gzip),
-          html_kb_gzipped: recordedKilobytes(m.html_gzip),
-        },
-      ]),
+          chunks_kb_gzipped: stableRecordedKilobytes(m.chunks.gzip, previous.chunks_kb_gzipped),
+          inline_kb_gzipped: stableRecordedKilobytes(m.inline.gzip, previous.inline_kb_gzipped),
+          total_kb_gzipped: stableRecordedKilobytes(m.total.gzip, previous.total_kb_gzipped),
+          html_kb_gzipped: stableRecordedKilobytes(m.html_gzip, previous.html_kb_gzipped),
+        }];
+      }),
     ),
   };
   launch.design_verification = {
