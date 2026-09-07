@@ -105,7 +105,8 @@ ten in `education-static`, thirteen in `education-dynamic`, six new or changed i
 ## The producer (`pulse`, sentences 1, 6)
 
 - [ ] 9. `pulse/lib/queue.mjs`: add `'tutorial'` to `QUEUE_PRODUCIBLE_TYPES` and
-      replace the exclusion comment (lines 67–71) with the decision of record —
+      replace the exclusion comment (lines 66–71, re-counted 2026-09-06: the
+      `tutorial` bullet opens at 66, not 67) with the decision of record —
       the surface has a map, so its unmet declarations are the same set
       difference the learn surface already runs. `post`, `prune` and `machinery`
       keep their comments unchanged. **Implements: `tutorial` is on the list.**
@@ -147,7 +148,9 @@ ten in `education-static`, thirteen in `education-dynamic`, six new or changed i
       every-emitted-type-is-declared assertion to cover the new producer, and
       **assert `tutorial` is now on `QUEUE_PRODUCIBLE_TYPES` while `post`,
       `prune` and `machinery` are not**. The existing test asserts the absent
-      types by name (line 251); that list must shrink by one and not by two.
+      types by name — the array is line 248 and the negative assertion runs to
+      line 255, re-counted 2026-09-06 — and that list must shrink by one and not
+      by two.
       **Tests: `pulse` sentence 6.**
 - [ ] 15. Mutation proof, three halves. Revert the interlock and confirm the
       demoted-suppression test fails while the plain-derivation test passes.

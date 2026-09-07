@@ -86,7 +86,7 @@ that do not.
 
 **`addictedtoai-kat1` — still true, and the surrounding numbers are unchanged.**
 `QUEUE_PRODUCIBLE_TYPES` (`pulse/lib/queue.mjs:88-95`) holds six types and
-`tutorial` is not among them; its exclusion comment (lines 67-71) cites this
+`tutorial` is not among them; its exclusion comment (lines 66-71) cites this
 very bead. There is no `item('tutorial', …)` call anywhere in
 `pulse/lib/queue.mjs`. `tutorial` **is** a runnable type
 (`loop/lib/config.mjs:24-35`, ten types). `content/tutorials/` holds four
@@ -115,6 +115,21 @@ So the interlock cannot be written as "not `state === 'demoted'`" and be correct
 The requirement is stated in the semantic terms `education-dynamic` already
 uses, and aligning the Pulse's notion of `archived` with `lib/tutorials.mjs`'s is
 a named task.
+
+**A final re-measurement pass, 2026-09-06, over every line citation this change
+makes.** Every substantive claim above held on re-reading the worktree: `hiring`
+occurs 0 times in `where-ai-fails-people.md`, `recommend` 0 times in
+`what-ai-is-used-for.md`, `curriculum` once in all of `loop/` (a comment at
+`loop/lib/gates.mjs:46` naming a test file), `item('tutorial'` 0 times in
+`pulse/lib/queue.mjs`, `content/tutorials/` four published files plus its
+`README.md`, and `QUEUE_PRODUCIBLE_TYPES` six types at lines 88-95. Two
+**citations** were off by a line or three and are corrected here rather than
+left to be discovered by whoever implements against them: the `tutorial`
+exclusion comment opens at line **66**, not 67, and the existing test's
+absent-type array is at line **248** with its assertion running to 255, not at
+251. Nothing either citation supports changed; both were pointers, and a pointer
+that is a few lines off is the kind of small wrongness that costs an
+implementer's afternoon.
 
 ## The decision `addictedtoai-kat1` asks for, and it is a decision, not a finding
 
