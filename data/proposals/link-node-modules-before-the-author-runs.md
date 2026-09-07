@@ -30,6 +30,8 @@ evidence: >
   with the same `symlinkSync(target, link, 'junction')` call the loop's own
   helper makes, was enough for the suite to pass 1569 / fail 0 and for all four
   gates to pass unchanged.
+proposed_by_job: j-20260907-08
+proposed_by_type: repair
 ---
 
 Every Desk brief tells its author, in the ground rules, to "Run `npm test` and
