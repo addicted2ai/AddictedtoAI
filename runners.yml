@@ -148,7 +148,7 @@ runners:
 
   - id: codex-gpt-luna
     provider: openai
-    tier: frontier
+    tier: cheap
     roles: [author, reviewer]
     model: gpt-5.6-luna
     harness: codex-cli
@@ -191,6 +191,16 @@ runners:
       anthropic entries, so exhausting the Claude subscription does not pause
       this runner and vice versa. That is the lane concept doing real work
       rather than being described.
+
+      CHEAP TIER since 2026-09-07 10:45, the maintainer's decision ("The
+      codex Luna runner (all Luna runners actually) should be cheap tier").
+      Budget shares are computed within a tier, so this entry now draws on
+      the cheap tier's ceilings — and on its shed level: a `capacity` line
+      on any cheap-tier lane raises the tier's shed level for 48 hours
+      (data/config.json degradation.shed_levels; level 1 excludes post,
+      education and scout), which the frontier tier never shared. It is
+      the only registered runner on a Luna model; any later Luna entry is
+      cheap too.
 
       SANDBOX DROPPED FOR THIS ENTRY, 2026-09-07, the maintainer's decision
       ("drop the sandbox for the Desk runner only"), measured first: with
