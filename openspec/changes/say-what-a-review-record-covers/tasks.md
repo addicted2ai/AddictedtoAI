@@ -203,7 +203,7 @@ that no test attempts is a refusal that has never run.
 
 ## The tests that make each sentence a mechanism
 
-- [ ] 13. **N1–N3**, `loop/tests/review.test.mjs` and
+- [x] 13. **N1–N3**, `loop/tests/review.test.mjs` and
       `loop/tests/review-blog-bar.test.mjs`, one refusal per test, each asserting
       the refusal **code** and that the message names the offending record or
       field: post `approve` with neither field; **a `repair` job whose
@@ -226,7 +226,7 @@ that no test attempts is a refusal that has never run.
       and the launch check agreeing post by post is the property the change
       exists for, and a per-record resolver passes the first half of this
       fixture while failing the second.
-- [ ] 14. The controls, without which task 13 proves nothing: a post `approve`
+- [x] 14. The controls, without which task 13 proves nothing: a post `approve`
       with a normal non-empty `reads-human` and no carry-forward merges exactly
       as today; a valid carry-forward on a `repair` that touches a post merges;
       **a `repair` whose `subjects` contain no `content/blog/` path is asked for

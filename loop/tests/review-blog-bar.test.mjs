@@ -22,8 +22,9 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import matter from 'gray-matter';
 
 import { runLoop } from '../run.mjs';
 import { JOB_TYPES } from '../lib/config.mjs';
@@ -42,7 +43,9 @@ import {
   REASONS,
   REISSUE_CODES,
 } from '../lib/review.mjs';
+import { writeRecordSubjects } from '../lib/review.mjs';
 import { subjectsOf } from '../../lib/reviews.mjs';
+import { REVIEWS_DIR } from '../../lib/paths.mjs';
 import { DOMAINS, FRONTIER_CRITERIA } from '../../lib/domains.mjs';
 import { makeRepo, writeQueue, mockCommand, runnersYaml, HERE } from './helpers.mjs';
 
@@ -262,13 +265,18 @@ test('3.1 one normaliser and one sweep serve both fields', () => {
   ctx.cleanup();
 });
 
-test('3.1 the five re-issue refusals are named together, so callers need not list them by hand', () => {
+test('3.1 the re-issue refusals are named together, so callers need not list them by hand', () => {
   assert.deepEqual([...REISSUE_CODES], [
     'would-cite-empty',
     'would-cite-duplicate',
     'reads-human-empty',
     'reads-human-duplicate',
     'corrections-malformed',
+    // The carry-forward's two (addictedtoai-37rb): a reviewer's anchor or its
+    // recycled statement is a clerical failure in a field ABOUT the record, so
+    // the fix is a re-issued verdict, never an author revision pass.
+    'reads-human-from-unanchored',
+    'reads-human-from-duplicate',
   ]);
   for (const c of REISSUE_CODES) assert.equal(isReissueRefusal(c), true);
   for (const c of ['no-record', 'malformed-verdict', 'reviewed-subject-mismatch', 'revise', 'reject']) {
@@ -641,4 +649,452 @@ test('a reads-human record still parses everywhere else that reads one', () => {
   // beside `subject:`, not a change to it.
   assert.deepEqual(subjectsOf({ data: v.data }).slice(0, 1), ['content/blog/a-note.md']);
   ctx.cleanup();
+});
+
+/* ===========================================================================
+ * say-what-a-review-record-covers — THE CARRY-FORWARD (specs/review, beads
+ * addictedtoai-37rb). Tasks 13 and 14.
+ *
+ * A `reads-human` answers for the bytes its writer read. A repair, a revision
+ * or any later job may rewrite those bytes, be approved by a reviewer of its
+ * own, and leave the piece bound and clean while the only reviewer that ever
+ * answered the voice question read a version that is gone. The obligation
+ * therefore follows the MERGED SUBJECTS, not the job type — which is the one
+ * thing every test below turns on, because the bead's own instance
+ * (j-20260902-23, approving content/blog/glm-5-3-license-revenue-gate.md with
+ * no `reads-human`) is a `repair`, and a type-keyed gate asks that reviewer for
+ * neither field.
+ *
+ * One refusal per test, each asserting the CODE and that the message names the
+ * offending record, field or post; and the controls beside them, because a gate
+ * that refuses everything passes every refusal test and is useless.
+ * ======================================================================== */
+
+const POST_A = 'content/blog/a-note.md';
+const POST_B = 'content/blog/b-note.md';
+
+/**
+ * A record written the way the loop leaves one: the reviewer's fields, then the
+ * merge step's `subject:`. `subject:` is what makes the record NAME a piece, so
+ * an anchor written without it is not an anchor at all.
+ */
+function record(ctx, jobId, { subject, ...fields }) {
+  const p = writeVerdictRecord(ctx, jobId, { verdict: 'approve', notes: 'n', ...fields });
+  if (subject) writeRecordSubjects(p, Array.isArray(subject) ? subject : [subject]);
+  return p;
+}
+
+/** The anchor the happy path stands on: an approving post review with a voice verdict. */
+function anchorFor(ctx, post = POST_A, jobId = 'j-anchor') {
+  return record(ctx, jobId, {
+    subject: post,
+    wouldCite: `Someone citing ${post}.`,
+    readsHuman: `${post} argues with itself and the closing line is blunt; nothing narrates itself.`,
+  });
+}
+
+const CARRY_WHY = 'Three licence sentences changed; the prose, its rhythm and its point of view did not move.';
+
+test('37rb REFUSAL: a repair whose subjects include a post, approving with NEITHER field', () => {
+  // THE BEAD'S OWN SHAPE, and the one case a type-keyed gate lets through:
+  // `needsReadsHuman('repair')` is false, so the older branch asks this reviewer
+  // for nothing at all. The merged subjects are what make the demand.
+  const ctx = ctxAt();
+  record(ctx, 'j-repair', { wouldCite: 'a licence-tracking reader' });
+  const refused = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.code, 'reads-human-empty');
+  assert.match(refused.reason, /content\/blog\/a-note\.md/, 'the message names the unanswered post');
+  assert.match(refused.reason, /reads-human-from/);
+  assert.equal(needsReadsHuman('repair'), false, 'and the type-keyed rule still says nothing about it');
+  ctx.cleanup();
+});
+
+test('37rb CONTROL: the same repair with a valid carry-forward merges', () => {
+  const ctx = ctxAt();
+  anchorFor(ctx);
+  record(ctx, 'j-repair', {
+    wouldCite: 'a licence-tracking reader',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-anchor.md', why: CARRY_WHY }],
+  });
+  const gate = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(gate.ok, true, gate.reason);
+  // And the record round-trips: what the writer wrote is what the parser reads.
+  assert.deepEqual(gate.verdict.readsHumanFrom, [
+    { subject: POST_A, record: 'j-anchor.md', why: CARRY_WHY },
+  ]);
+  ctx.cleanup();
+});
+
+test('37rb CONTROL: a repair whose subjects hold no post is asked for neither field', () => {
+  // The boundary of the new branch, and the assertion that it keys on SUBJECTS
+  // rather than on "not a post job": nothing about a repair itself is gated.
+  const ctx = ctxAt();
+  record(ctx, 'j-wiki-repair', { wouldCite: 'a wiki reader' });
+  const gate = mergeGate(ctx, {
+    jobId: 'j-wiki-repair',
+    type: 'repair',
+    subjects: ['content/wiki/model/some-model.md', 'content/directory/tools/vllm.md'],
+  });
+  assert.equal(gate.ok, true, gate.reason);
+  assert.equal(gate.verdict.readsHuman, '');
+  assert.deepEqual(gate.verdict.readsHumanFrom, []);
+  ctx.cleanup();
+});
+
+test('37rb REFUSAL: a carry-forward naming a record that does not exist', () => {
+  const ctx = ctxAt();
+  record(ctx, 'j-repair', {
+    wouldCite: 'a licence-tracking reader',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-no-such-record.md', why: CARRY_WHY }],
+  });
+  const refused = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.code, 'reads-human-from-unanchored');
+  assert.match(refused.reason, /j-no-such-record\.md/);
+  assert.match(refused.reason, /does not exist/);
+  ctx.cleanup();
+});
+
+test('37rb REFUSAL: a carry-forward naming a record that names a different piece', () => {
+  const ctx = ctxAt();
+  record(ctx, 'j-elsewhere', {
+    subject: 'content/blog/some-other-note.md',
+    wouldCite: 'a reader of the other note',
+    readsHuman: 'The other note is blunt and short; it reads like a person wrote it.',
+  });
+  record(ctx, 'j-repair', {
+    wouldCite: 'a licence-tracking reader',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-elsewhere.md', why: CARRY_WHY }],
+  });
+  const refused = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.code, 'reads-human-from-unanchored');
+  assert.match(refused.reason, /j-elsewhere\.md/);
+  assert.match(refused.reason, /does not name this same piece/);
+  assert.match(refused.reason, /content\/blog\/a-note\.md/, 'and it names WHICH post failed');
+  ctx.cleanup();
+});
+
+test('37rb REFUSAL: a carry-forward naming a record that records `revise`', () => {
+  const ctx = ctxAt();
+  record(ctx, 'j-revised', {
+    verdict: 'revise',
+    reasons: ['not-worth-reading'],
+    subject: POST_A,
+    wouldCite: 'nobody yet',
+    readsHuman: 'It reads assembled: every paragraph is the same shape.',
+  });
+  record(ctx, 'j-repair', {
+    wouldCite: 'a licence-tracking reader',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-revised.md', why: CARRY_WHY }],
+  });
+  const refused = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.code, 'reads-human-from-unanchored');
+  assert.match(refused.reason, /j-revised\.md/);
+  assert.match(refused.reason, /records `revise`/);
+  ctx.cleanup();
+});
+
+test('37rb REFUSAL: a carry-forward naming a record that carries no reads-human', () => {
+  const ctx = ctxAt();
+  record(ctx, 'j-silent', { subject: POST_A, wouldCite: 'a reader of the note' });
+  record(ctx, 'j-repair', {
+    wouldCite: 'a licence-tracking reader',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-silent.md', why: CARRY_WHY }],
+  });
+  const refused = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.code, 'reads-human-from-unanchored');
+  assert.match(refused.reason, /j-silent\.md/);
+  assert.match(refused.reason, /carries no non-empty `reads-human` of its own/);
+  ctx.cleanup();
+});
+
+test('37rb REFUSAL: an anchor whose OWN answer is only a carry-forward — one hop, never a chain', () => {
+  // A resolver that walked the chain here would accept a record the launch check
+  // must then either refuse (the two ends disagreeing) or accept by walking the
+  // same chain — which is exactly the drift this change exists to stop. The
+  // reviewer is sent to name the record that actually answered.
+  const ctx = ctxAt();
+  anchorFor(ctx, POST_A, 'j-real-answer');
+  record(ctx, 'j-middle', {
+    subject: POST_A,
+    wouldCite: 'the middle repair',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-real-answer.md', why: 'A dead link was fixed; the prose is untouched.' }],
+  });
+  record(ctx, 'j-repair', {
+    wouldCite: 'a licence-tracking reader',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-middle.md', why: CARRY_WHY }],
+  });
+  const refused = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.code, 'reads-human-from-unanchored');
+  assert.match(refused.reason, /j-middle\.md/);
+  assert.match(refused.reason, /one hop and never a chain/);
+  ctx.cleanup();
+});
+
+test('37rb REFUSAL: an entry whose subject is not among the merged subjects', () => {
+  // An entry cannot answer for a post this job did not touch.
+  const ctx = ctxAt();
+  anchorFor(ctx, POST_B, 'j-anchor-b');
+  record(ctx, 'j-repair', {
+    wouldCite: 'a licence-tracking reader',
+    readsHuman: 'The note reads human: it is short and it refuses to hedge.',
+    readsHumanFrom: [{ subject: POST_B, record: 'j-anchor-b.md', why: CARRY_WHY }],
+  });
+  const refused = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.code, 'reads-human-from-unanchored');
+  assert.match(refused.reason, /content\/blog\/b-note\.md/);
+  assert.match(refused.reason, /did not merge/);
+  ctx.cleanup();
+});
+
+test('37rb REFUSAL: a blank `why` is dropped by the parser, and its post is then unanswered', () => {
+  // The fail-closed direction the parser was written for: a half-written entry
+  // is not a weaker answer, it is no answer, and the post it meant to answer
+  // for falls through to the choose-one-of-two refusal.
+  const ctx = ctxAt();
+  anchorFor(ctx);
+  mkdirSync(ctx.reviewsDir, { recursive: true });
+  writeFileSync(
+    verdictPath(ctx, 'j-blank-why'),
+    '---\njob: j-blank-why\nverdict: approve\nreasons: []\nwould-cite: "a licence-tracking reader"\n' +
+      `reads-human-from:\n  - subject: ${JSON.stringify(POST_A)}\n    record: "j-anchor.md"\n    why: ""\n---\n\nn\n`,
+    'utf8',
+  );
+  const parsed = parseVerdict(readFileSync(verdictPath(ctx, 'j-blank-why'), 'utf8'));
+  assert.deepEqual(parsed.readsHumanFrom, [], 'the entry is dropped, not accepted blank');
+  assert.match(parsed.readsHumanFromWarnings.join(' '), /no non-empty `why`/);
+
+  const refused = mergeGate(ctx, { jobId: 'j-blank-why', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.code, 'reads-human-empty');
+  assert.match(refused.reason, /content\/blog\/a-note\.md/);
+  assert.match(refused.reason, /Entries skipped as malformed/, 'and the reviewer is told why its entry vanished');
+  ctx.cleanup();
+});
+
+test('37rb REFUSAL: a `why` identical to another record\'s statement', () => {
+  const ctx = ctxAt();
+  anchorFor(ctx);
+  record(ctx, 'j-earlier-repair', {
+    subject: POST_A,
+    wouldCite: 'the earlier repair',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-anchor.md', why: CARRY_WHY }],
+  });
+  // Recycled verbatim except for whitespace and line endings — the same
+  // normalisation `would-cite` and `reads-human` are held to, through the same
+  // sweep and the same normaliser.
+  record(ctx, 'j-repair', {
+    wouldCite: 'a different argument entirely',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-anchor.md', why: `\r\n  ${CARRY_WHY}  \n` }],
+  });
+  const refused = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.code, 'reads-human-from-duplicate');
+  assert.match(refused.reason, /j-earlier-repair\.md/, 'and it names the record it collided with');
+  assert.match(refused.reason, /content\/blog\/a-note\.md/);
+  ctx.cleanup();
+});
+
+test('37rb CONTROL: two entries in the SAME record may share a `why`', () => {
+  // One job making the same trivial correction to two posts has one honest
+  // sentence to write about both. Forcing variation there manufactures the
+  // judgment the duplicate rule exists to catch, rather than catching it.
+  const ctx = ctxAt();
+  anchorFor(ctx, POST_A, 'j-anchor-a');
+  anchorFor(ctx, POST_B, 'j-anchor-b');
+  record(ctx, 'j-repair', {
+    wouldCite: 'a licence-tracking reader',
+    readsHumanFrom: [
+      { subject: POST_A, record: 'j-anchor-a.md', why: CARRY_WHY },
+      { subject: POST_B, record: 'j-anchor-b.md', why: CARRY_WHY },
+    ],
+  });
+  const gate = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A, POST_B] });
+  assert.equal(gate.ok, true, gate.reason);
+  ctx.cleanup();
+});
+
+test('37rb CONTROL: a record carrying BOTH a fresh reads-human and a valid carry-forward merges', () => {
+  // The requirement asks for one of the two answers, not for exactly one — and
+  // the anchor check still runs on the carry-forward it carries.
+  const ctx = ctxAt();
+  anchorFor(ctx);
+  record(ctx, 'j-both', {
+    wouldCite: 'a licence-tracking reader',
+    readsHuman: 'The rewritten half is blunt and uneven in a way no template produces.',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-anchor.md', why: CARRY_WHY }],
+  });
+  assert.equal(mergeGate(ctx, { jobId: 'j-both', type: 'repair', subjects: [POST_A] }).ok, true);
+
+  // And an INVALID anchor beside a valid fresh answer is still refused: the
+  // anchor check applies to every entry, not only inside the branch above.
+  record(ctx, 'j-both-bad', {
+    wouldCite: 'another licence-tracking reader',
+    readsHuman: 'A second fresh judgment, unlike the first, about the same rewritten half.',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-no-such-record.md', why: 'A different sentence about the same diff.' }],
+  });
+  const refused = mergeGate(ctx, { jobId: 'j-both-bad', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.code, 'reads-human-from-unanchored');
+  ctx.cleanup();
+});
+
+test('37rb the refusal resolves PER POST: one entry does not answer for a second post', () => {
+  // THE TWO-POST FIXTURE, asserted at this end; the launch check asserts the
+  // other end in scripts/verify-launch-voice-carry.test.mjs. Refusing on the
+  // record as a whole — one entry anywhere satisfies it — is the hole this
+  // wording closes: post B would stay bound and unanswered while the launch
+  // check reported it voice-missing, which is the two-ends drift this change
+  // exists to stop.
+  const ctx = ctxAt();
+  anchorFor(ctx, POST_A, 'j-anchor-a');
+  anchorFor(ctx, POST_B, 'j-anchor-b');
+  record(ctx, 'j-two-posts', {
+    wouldCite: 'a licence-tracking reader',
+    readsHumanFrom: [{ subject: POST_A, record: 'j-anchor-a.md', why: CARRY_WHY }],
+  });
+  const refused = mergeGate(ctx, { jobId: 'j-two-posts', type: 'repair', subjects: [POST_A, POST_B] });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.code, 'reads-human-empty');
+  assert.match(refused.reason, /content\/blog\/b-note\.md/, 'the message names post B');
+  assert.ok(
+    !/content\/blog\/a-note\.md/.test(refused.reason.split('Unanswered post(s):')[1] ?? ''),
+    'and does not name post A, which was answered',
+  );
+
+  // Re-issued — the same job, the same record path, now with an entry for each
+  // post — and it merges. Re-issuing under the same job id is what the refusal
+  // asks for, and it is also what keeps the duplicate sweep honest: a record
+  // does not collide with the version of itself it replaced.
+  record(ctx, 'j-two-posts', {
+    wouldCite: 'a licence-tracking reader, second pass',
+    readsHumanFrom: [
+      { subject: POST_A, record: 'j-anchor-a.md', why: CARRY_WHY },
+      { subject: POST_B, record: 'j-anchor-b.md', why: 'The same three licence sentences, in the second note; its voice is untouched.' },
+    ],
+  });
+  const gate = mergeGate(ctx, { jobId: 'j-two-posts', type: 'repair', subjects: [POST_A, POST_B] });
+  assert.equal(gate.ok, true, gate.reason);
+  ctx.cleanup();
+});
+
+test('37rb CONTROL: a fresh non-empty reads-human answers for every post in the diff', () => {
+  // "One such field answers for every post among the merged subjects that the
+  // record carries no carry-forward entry for" — the requirement does not
+  // divide one reviewer's own-words judgment per post.
+  const ctx = ctxAt();
+  record(ctx, 'j-fresh-both', {
+    wouldCite: 'a reader of both notes',
+    readsHuman: 'Both notes are short, blunt and unevenly paced; neither narrates its own method.',
+  });
+  assert.equal(
+    mergeGate(ctx, { jobId: 'j-fresh-both', type: 'repair', subjects: [POST_A, POST_B] }).ok,
+    true,
+  );
+  ctx.cleanup();
+});
+
+test('37rb a job with no measured subjects is not gated here, exactly as `reviewed:` is not', () => {
+  const ctx = ctxAt();
+  record(ctx, 'j-unmeasured', { wouldCite: 'a licence-tracking reader' });
+  assert.equal(mergeGate(ctx, { jobId: 'j-unmeasured', type: 'repair' }).ok, true);
+  ctx.cleanup();
+});
+
+test('37rb the brief and both checklists a repair reaches state the two branches', () => {
+  // A mechanism a reviewer is not told about is a mechanism that does not run.
+  // The bead's own instance is a `repair`, whose checklist is `directory` —
+  // there is no list named `repair`, and editing one that does not exist is how
+  // this gets done wrong.
+  const ctx = ctxAt();
+  assert.ok(
+    checklistFor('repair').some((c) => /Spot-check the changed rows against their sources/.test(c)),
+    'a repair gets the `directory` list — there is no CHECKLISTS entry named `repair`',
+  );
+  for (const type of ['repair', 'post']) {
+    const list = checklistFor(type).join('\n');
+    assert.match(list, /reads-human-from/, `${type}'s checklist never names the carry-forward`);
+    assert.match(list, /not a carry-forward/, `${type}'s checklist never says a rewrite is not one`);
+    assert.match(list, /`spec-violation`/, `${type}'s checklist never names the verdict for carrying one wrongly`);
+  }
+  // The brief itself, for every type held to the subjects-keyed branch rather
+  // than to the fresh answer.
+  for (const type of JOB_TYPES.filter((t) => !needsReadsHuman(t))) {
+    const brief = briefFor(ctx, type);
+    assert.match(brief, /If your diff lands on a blog post/, type);
+    assert.match(brief, /\*\*Answer it afresh\*\* in a non-empty `reads-human`/, type);
+    assert.match(brief, /\*\*Carry the prior answer forward\*\*, in a `reads-human-from` entry/, type);
+    assert.match(brief, /\*\*One entry per post\.\*\*/, type);
+    assert.match(brief, /one hop and never a\s+chain/, type);
+    assert.match(brief, /rewrites the post's prose is not a carry-forward/i, type);
+    assert.match(brief, /^# reads-human-from:/m, `${type}: the record skeleton carries the key`);
+  }
+  // And a `post` reviewer is still asked for the FRESH answer and given no
+  // second branch to take instead — the demand this change does not widen.
+  const post = briefFor(ctx, 'post');
+  assert.ok(!/If your diff lands on a blog post/.test(post));
+  assert.match(post, /\*\*Required, non-empty: `reads-human`\.\*\*/);
+  ctx.cleanup();
+});
+
+test('37rb THE PARSER CONTROL: every record in data/reviews/ parses exactly as it did', () => {
+  // Without this, the field could have changed how 357 existing records read and
+  // every test above would still pass. The reference below is `parseVerdict` as
+  // it stood BEFORE the carry-forward — copied deliberately, because the
+  // question is whether the two agree, and comparing the parser against itself
+  // answers nothing.
+  const reference = (text) => {
+    let data = {};
+    let body = text;
+    try {
+      const p = matter(text);
+      data = p.data ?? {};
+      body = p.content ?? '';
+    } catch {
+      data = {};
+    }
+    let verdict = String(data.verdict ?? '').trim().toLowerCase();
+    let wouldCite = data['would-cite'] ?? data.would_cite ?? data.wouldCite ?? '';
+    let readsHuman = data['reads-human'] ?? data.reads_human ?? data.readsHuman ?? '';
+    let reasons = data.reasons ?? [];
+    const hasFrontMatter = Object.keys(data).length > 0;
+    const fallbackText = hasFrontMatter ? body : text;
+    if (!verdict) {
+      const m = /^\s*(?:\*\*)?verdict(?:\*\*)?\s*:\s*`?([a-z]+)`?/im.exec(fallbackText);
+      if (m) verdict = m[1].toLowerCase();
+    }
+    if (!wouldCite && !hasFrontMatter) {
+      const m = /^\s*(?:\*\*)?would[-_ ]cite(?:\*\*)?\s*:\s*(.+)$/im.exec(fallbackText);
+      if (m) wouldCite = m[1];
+    }
+    if (!readsHuman && !hasFrontMatter) {
+      const m = /^\s*(?:\*\*)?reads[-_ ]human(?:\*\*)?\s*:\s*(.+)$/im.exec(fallbackText);
+      if (m) readsHuman = m[1];
+    }
+    if (!Array.isArray(reasons)) reasons = String(reasons).split(/[,\n]/);
+    if (reasons.length === 0) {
+      const m = /^\s*(?:\*\*)?reasons?(?:\*\*)?\s*:\s*(.+)$/im.exec(fallbackText);
+      if (m) reasons = m[1].split(',');
+    }
+    reasons = reasons.map((r) => String(r).trim().replace(/^[`'"]|[`'"]$/g, '')).filter(Boolean);
+    return {
+      verdict,
+      reasons,
+      wouldCite: String(wouldCite ?? '').trim(),
+      readsHuman: String(readsHuman ?? '').trim(),
+    };
+  };
+
+  const names = readdirSync(REVIEWS_DIR).filter((n) => n.endsWith('.md') && n !== 'README.md');
+  assert.ok(names.length > 100, `the real records directory is what this measures: ${names.length}`);
+  for (const name of names) {
+    const text = readFileSync(join(REVIEWS_DIR, name), 'utf8');
+    const now = parseVerdict(text);
+    const before = reference(text);
+    assert.equal(now.verdict, before.verdict, name);
+    assert.deepEqual(now.reasons, before.reasons, name);
+    assert.equal(now.wouldCite, before.wouldCite, name);
+    assert.equal(now.readsHuman, before.readsHuman, name);
+    // And none of them carries the new key, well-formed or malformed — so the
+    // reach-back the launch check applies to them is the whole answer for this
+    // corpus, and no existing record is silently reinterpreted.
+    assert.deepEqual(now.readsHumanFromWarnings, [], name);
+  }
 });
