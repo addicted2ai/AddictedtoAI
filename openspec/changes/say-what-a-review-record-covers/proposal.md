@@ -81,6 +81,17 @@ a `content/wiki/tool/` file — but the count itself now matches what the code
 loads, since the parser control in `tasks.md` task 14 compares against exactly
 that set.
 
+**One measurement about the delta itself, because a `MODIFIED` block is
+last-writer-wins on archive and `openspec validate` cannot see the collision.**
+Every unarchived change in every worktree on this machine was scanned on
+2026-09-06 for the headings it modifies: **no change other than this one carries
+a `MODIFIED` block on either "The reviewer judges quality with full standing,
+from a named reason list" or "A review record names the bytes it reviewed"**, and
+no other change touches `specs/review` at all. Both bodies were extracted
+programmatically from `openspec/specs/review/spec.md` and diffed against the
+delta the same day: the live text is present verbatim and every difference is an
+addition.
+
 ## The finding
 
 Both issues are the same defect seen from two sides: **a review record is read
