@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 18,
+  "count": 17,
   "items": [
-    {
-      "detail": "2 findings carried by reviewers against `content/blog/nobody-had-to-report-the-wiki-incident.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### Start the OpenAI blockquote where TechCrunch starts it\n\nCarried in `data/carried/j-20260906-15-carry-1.md`.\n\nThe blockquote rendered as OpenAI's words opens \"We and the larger AI community do not yet have a clear standard...\". I fetched the declared anchor and searched its bytes: \"We and the larger AI community do not yet have a clear standard\" is MISSING; what the page carries is TechCrunch's own bridge — OpenAI's statement \"stating that both OpenAI and 'the larger AI community do not yet have a clear standard for how to report misalignment that shows up during training, evaluation, and deployment, including examples that don't look like traditional security incidents but could provide insight into AI behavior and future risks.'\" Everything from \"the larger\" onward is verbatim; the two words \"We and\" are the post's own reconstruction of a pronoun TechCrunch elided. The meaning is identical and the primary (the X post) is unreachable, so this is not a wrong claim — but the post's own sourcing block says \"Every OpenAI quotation above is TechCrunch's rendering of that post\", and for two words it is not. Fix: open the blockquote at \"the larger AI community\" and lead in with TechCrunch's own framing (\"OpenAI's statement said that both it and...\").\n\n### Anchor the five weeks of cleanup to the main burst, not to the July bursts\n\nCarried in `data/carried/j-20260906-15-carry-2.md`.\n\nThe post reads \"...smaller bursts on 1 and 2 July. Leitner went on deleting agent pages for five weeks after that.\" WinBuzzer, the cited source, says he \"continued removing agent-created pages for five weeks after the main burst ended\" — and the main burst ended after 22 June, not after 2 July. As written, \"after that\" attaches the five weeks to the July bursts and moves the end of the cleanup about ten days later than the source puts it. Fix: \"for five weeks after the main burst ended.\"\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260906-15-carry-1.md`\n- `data/carried/j-20260906-15-carry-2.md`",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/blog/nobody-had-to-report-the-wiki-incident.md",
-      "target": "content/blog/nobody-had-to-report-the-wiki-incident.md",
-      "title": "Clear the 2 carried findings on content/blog/nobody-had-to-report-the-wiki-incident.md",
-      "type": "repair"
-    },
     {
       "detail": "Line 38 opens \"Every Astra call runs behind a monitor now.\" The card, in the sentence the same paragraph then quotes verbatim, says OpenAI \"added misalignment monitoring to all tool-using inference involved in our external deployment of Astra\" (fetched https://deploymentsafety.openai.com/gpt-6-astra/aggregate-monitorability-findings, HTTP 200, 2026-09-07). A call that uses no tools is outside what that sentence covers, so the topic sentence is one qualifier broader than its own source. The quotation immediately behind it narrows the claim for any reader who reads on, which is why this is carried rather than blocked. Fix: \"Every tool-using Astra call runs behind a monitor now.\"\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-06 (`j-20260907-06.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
@@ -165,5 +156,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 18
+  "total_before_cap": 17
 }
