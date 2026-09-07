@@ -1,0 +1,222 @@
+/**
+ * worktree-cleanup.test.mjs — a worktree that will not delete must not cost the
+ * run its record (beads addictedtoai-osru).
+ *
+ * ## The defect, measured 2026-09-06 on job `j-20260906-17`
+ *
+ * A `verify` job's author committed 527 lines of real work to its branch and
+ * exited without `RESULT.md`, so the run was classified `interrupted` —
+ * correctly. Then `run.mjs` reached three unguarded cleanup calls,
+ *
+ *     removeWorktree(ctx.repoRoot, worktree);
+ *     rmSync(worktree, { recursive: true, force: true });
+ *     gitTry(ctx.repoRoot, ['worktree', 'prune']);
+ *
+ * and the `rmSync` threw `EPERM` on
+ * `\\?\D:\addictedtoai-worktrees\j-20260906-17`, because a process the author
+ * had left running still had the worktree as its working directory. Windows
+ * lets the files go and refuses the directory.
+ *
+ * The throw escaped BEFORE `recordOutcome()` and before `commitJobRecords`. The
+ * run ended on `loop error: EPERM` with no ledger line (`data/ledger.jsonl`
+ * stopped at `j-16`), no verdict record, no records commit, and 11.91
+ * model-minutes unaccounted — and a resumed job reads its prior spend from the
+ * ledger, so the job's remaining budget was overstated by exactly the
+ * invocation that had produced the work.
+ *
+ * ## What these tests measure
+ *
+ * The invariant, not the wording: with the removal failing, the ledger line and
+ * the `job <id>: records (<outcome>)` commit still land, and the outcome they
+ * carry is the run's TRUE outcome — `done` for a merged job, `interrupted` for
+ * the shape that actually failed in production.
+ *
+ * The failure is injected through `ctx.worktreeCleanup`, the seam documented at
+ * `removeJobWorktree`. A genuinely undeletable directory is a Windows-only,
+ * timing-dependent condition that depends on a stray process; a guard measured
+ * only where it happens to reproduce is a guard measured nowhere. The injection
+ * reproduces production's shape exactly — `git worktree remove` does not take
+ * the directory, and the `rmSync` then throws an `EPERM` carrying the path.
+ *
+ * The positive control below runs the identical fixture with NO seam and
+ * asserts the worktree is really gone and no failure line was printed, so a
+ * `removeJobWorktree` that had quietly stopped removing anything would fail
+ * here rather than pass everything.
+ */
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { runLoop, removeJobWorktree } from '../run.mjs';
+import { makeRepo, writeQueue, runnersYaml, mockCommand, git } from './helpers.mjs';
+
+/** The error Windows actually raised, shaped the way `fs` raises it. */
+function eperm(path) {
+  const e = new Error(`EPERM: operation not permitted, rmdir '${path}'`);
+  e.code = 'EPERM';
+  e.errno = -4048;
+  e.syscall = 'rmdir';
+  e.path = path;
+  return e;
+}
+
+/**
+ * The production shape: `git worktree remove --force` does not take the
+ * directory (it never throws — `removeWorktree` is built on `gitTry`), and the
+ * `rmSync` fallback throws.
+ */
+const REFUSES_TO_DELETE = {
+  remove: () => {},
+  rm: (dir) => {
+    throw eperm(dir);
+  },
+};
+
+function fixture({ command, seam } = {}) {
+  const ctx = makeRepo({
+    runners: runnersYaml({
+      command: command ?? mockCommand('done-edit'),
+      reviewerCommand: mockCommand('review-approve'),
+    }),
+  });
+  writeQueue(ctx, [{ type: 'repair', title: 'a repair job, so the run reaches the cleanup' }]);
+  if (seam) ctx.worktreeCleanup = seam;
+  return ctx;
+}
+
+const go = (ctx) => runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+
+function ledgerLines(ctx) {
+  if (!existsSync(ctx.ledgerPath)) return [];
+  return readFileSync(ctx.ledgerPath, 'utf8')
+    .split('\n')
+    .filter((l) => l.trim() !== '')
+    .map((l) => JSON.parse(l));
+}
+
+test('A REMOVAL THAT THROWS STILL LEAVES THE LEDGER LINE AND THE RECORDS COMMIT', async (t) => {
+  const ctx = fixture({ seam: REFUSES_TO_DELETE });
+  t.after(() => ctx.cleanup());
+
+  const res = await go(ctx);
+
+  // The run does not die on the `rm`.
+  assert.equal(res.outcome, 'done', ctx.output());
+
+  // The ledger line — the record the budget is computed from, and the one thing
+  // a resumed job cannot reconstruct.
+  const lines = ledgerLines(ctx);
+  assert.equal(lines.length, 1, `no ledger line was written:\n${ctx.output()}`);
+  assert.equal(lines[0].id, res.jobId);
+  assert.equal(lines[0].outcome, 'done', 'and it carries the run\'s TRUE outcome, not a placeholder');
+
+  // The records commit.
+  const log = git(ctx.repoRoot, ['log', '--format=%s']);
+  assert.match(
+    log,
+    new RegExp(`job ${res.jobId}: records \\(done\\)`),
+    `the records commit never landed:\n${log}\n---\n${ctx.output()}`,
+  );
+
+  // And the failure was said out loud, naming the path and the errno.
+  const out = ctx.output();
+  assert.match(out, /WORKTREE CLEANUP FAILED/, 'a failed cleanup must not be silent');
+  assert.match(out, /EPERM/, 'and must carry the errno');
+  assert.match(out, /addictedtoai-osru/, 'and point at the finding');
+});
+
+test('THE PRODUCTION SHAPE — an INTERRUPTED job records itself even when the worktree will not delete', async (t) => {
+  // `j-20260906-17` exactly: an author that exits without `RESULT.md`, leaving
+  // a process behind that pins the worktree. This is the only path on which the
+  // defect was ever observed, so it gets its own test rather than riding on the
+  // merged-job one.
+  const ctx = fixture({ command: mockCommand('done-no-result'), seam: REFUSES_TO_DELETE });
+  t.after(() => ctx.cleanup());
+
+  const res = await go(ctx);
+
+  assert.equal(res.outcome, 'interrupted', ctx.output());
+  const lines = ledgerLines(ctx);
+  assert.equal(lines.length, 1, `no ledger line was written:\n${ctx.output()}`);
+  assert.equal(lines[0].outcome, 'interrupted', 'the recorded outcome is the real one');
+  assert.equal(lines[0].id, res.jobId);
+  assert.match(
+    git(ctx.repoRoot, ['log', '--format=%s']),
+    new RegExp(`job ${res.jobId}: records \\(interrupted\\)`),
+    ctx.output(),
+  );
+  // The work itself was never at risk — the branch is what carries it — but the
+  // test says so, because "the record is lost, not the work" is the reason a
+  // failed removal is allowed to be non-fatal at all.
+  assert.match(git(ctx.repoRoot, ['branch', '--list', `job/${res.jobId}`]), /job\//, 'the branch survives');
+});
+
+test('POSITIVE CONTROL — with no seam the worktree is really removed and nothing is logged', async (t) => {
+  // Without this, a `removeJobWorktree` that swallowed everything and deleted
+  // nothing would pass every test above.
+  const ctx = fixture();
+  t.after(() => ctx.cleanup());
+
+  const res = await go(ctx);
+
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.equal(
+    existsSync(join(ctx.worktreeRoot, res.jobId)),
+    false,
+    'the ordinary path must still delete the worktree directory',
+  );
+  assert.doesNotMatch(ctx.output(), /WORKTREE CLEANUP FAILED/, 'and must not print a failure line');
+  assert.equal(
+    git(ctx.repoRoot, ['worktree', 'list', '--porcelain']).match(/^worktree /gm).length,
+    1,
+    'and the admin entry under .git/worktrees/ must be pruned, leaving only the main worktree',
+  );
+});
+
+// ---------------------------------------------------------------------------
+// The unit: each step is guarded on its own, so one failure never skips the next.
+// ---------------------------------------------------------------------------
+
+test('the prune STILL RUNS when the remove throws — the steps are guarded separately', (t) => {
+  const ctx = makeRepo();
+  t.after(() => ctx.cleanup());
+  const ran = [];
+  const r = removeJobWorktree(ctx, join(ctx.worktreeRoot, 'j-x'), {
+    remove: () => {
+      throw new Error('git refused');
+    },
+    rm: () => ran.push('rm'),
+    prune: () => ran.push('prune'),
+  });
+
+  assert.deepEqual(ran, ['rm', 'prune'], 'a throw in one step must not skip the two after it');
+  assert.equal(r.removed, false);
+  assert.deepEqual(r.failures, ['git worktree remove']);
+});
+
+test('every step failing is reported once each, and the function still returns', (t) => {
+  const ctx = makeRepo();
+  t.after(() => ctx.cleanup());
+  const boom = () => {
+    throw new Error('no');
+  };
+  const r = removeJobWorktree(ctx, '/nowhere', { remove: boom, rm: boom, prune: boom });
+
+  assert.deepEqual(r.failures, ['git worktree remove', 'rmSync', 'git worktree prune']);
+  assert.equal(ctx.output().match(/WORKTREE CLEANUP FAILED/g).length, 3, 'one line per failed step');
+});
+
+test('the happy path reports nothing and really deletes', (t) => {
+  const ctx = makeRepo();
+  t.after(() => ctx.cleanup());
+  const dir = join(ctx.worktreeRoot, 'plain-dir');
+  mkdirSync(dir, { recursive: true });
+
+  const r = removeJobWorktree(ctx, dir);
+
+  assert.equal(r.removed, true);
+  assert.equal(existsSync(dir), false);
+  assert.equal(ctx.output(), '', 'a successful cleanup says nothing');
+});

@@ -14,6 +14,11 @@
 import { RESULT_PROTOCOL_INSTRUCTION } from './result.mjs';
 import { excerptsFor, PROSE_TYPES } from './specs.mjs';
 import { BRIEF_EXCERPT_MAX_CHARS, JOB_TYPES, PROPOSAL_COOLING_DAYS } from './config.mjs';
+// The gate set the author is told about, generated from the set that runs
+// (beads addictedtoai-one6). It used to be two hard-coded commands, so the two
+// content-shaped verifications the merge gate gained were checks the author was
+// never told its branch would be judged by.
+import { DEFAULT_GATES, gateCommandForName } from './gates.mjs';
 import { DOMAINS, FRONTIER_CRITERIA, FRONTIER_REASONS } from '../../lib/domains.mjs';
 
 /**
@@ -527,7 +532,9 @@ discard. Do not widen it: a diff that exceeds the stated outcome is a
 ## Acceptance checks
 
 ${checks.map((c) => `- ${c}`).join('\n')}
-- The repository still builds (\`npm run build\`) and \`npm test\` still passes.
+- The branch still passes every gate the loop runs on it before review:
+  ${DEFAULT_GATES.map((g) => `\`${gateCommandForName(g)}\``).join(', ')}. This list is
+  generated from the gate set itself, so it cannot drift from what will actually run.
 - The diff contains nothing you cannot defend from a source or a run.
 ${prose ? '- A reviewer with fresh context, seeing only your diff, can check every claim in it.\n' : ''}
 ## What happens next (so you know what your output is for)

@@ -38,6 +38,7 @@ import { JOB_TYPES } from './config.mjs';
 import { rejectionIndexText } from './proposals.mjs';
 import { localDate } from './dates.mjs';
 import { GROUND_RULES, subjectLines } from './brief.mjs';
+import { gateCommand, gateCommandForName } from './gates.mjs';
 import { REASONS, VERDICTS, parseVerdict, normalizeWouldCite, normalizeField } from './verdict.mjs';
 import { reviewedHashOfFile } from '../../lib/review-hash.mjs';
 import { reviewedOf } from '../../lib/reviews.mjs';
@@ -265,6 +266,12 @@ export function verdictPath(ctx, jobId, pass = 1) {
  *
  * @param {{ran: boolean, ok?: boolean, results?: Array, why?: string,
  *          retried?: boolean, transport?: boolean, firstFailed?: string[]}|null|undefined} gates
+ *   `firstFailed` carries gate NAMES, as the ledger records them, and each is
+ *   rendered through `gateCommandForName` (beads addictedtoai-one6): since the
+ *   per-job set gained `verify-surfaces` and `verify-design`, which are
+ *   `node scripts/*.mjs` invocations rather than npm scripts, a rendered
+ *   `npm run verify-design` would name a command that does not exist — and this
+ *   line is exactly what a reader pastes to reproduce.
  * @param {string} [sha] the commit the gates ran on
  */
 export function gatesSection(gates, sha = '') {
@@ -279,7 +286,7 @@ judge it, and say in your notes what you ran and what you observed.
   }
   const lines = (gates.results ?? []).map(
     (r) =>
-      `- \`npm run ${r.script}\` — **${r.ok ? 'PASS' : `FAIL (exit ${r.status})`}**`,
+      `- \`${gateCommand(r)}\` — **${r.ok ? 'PASS' : `FAIL (exit ${r.status})`}**`,
   );
   // THE SECOND RUN IS NOT THE ONLY RUN, AND SAYING SO IS THE POINT.
   //
@@ -296,7 +303,7 @@ judge it, and say in your notes what you ran and what you observed.
 **These gates were run twice.** The first run FAILED and the second PASSED; the
 results above are the second run's${
         Array.isArray(gates.firstFailed) && gates.firstFailed.length
-          ? `. What failed the first time: ${gates.firstFailed.map((s) => `\`npm run ${s}\``).join(', ')}`
+          ? `. What failed the first time: ${gates.firstFailed.map((s) => `\`${gateCommandForName(s)}\``).join(', ')}`
           : ''
       }. The first run's full output ${
         gates.transport

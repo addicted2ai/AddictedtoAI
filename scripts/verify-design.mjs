@@ -65,6 +65,24 @@ import { todayIso } from '../lib/facts.mjs';
 const LAUNCH_FILE = join(ROOT, 'data', 'launch.json');
 
 /**
+ * CHECK ONLY — run every measurement, record none of them (beads
+ * addictedtoai-one6).
+ *
+ * The Desk now runs this script as a per-job merge gate, inside the job's own
+ * worktree. A gate is a CHECK; `data/launch.json` is the repository's dated
+ * measurement RECORD, and the two must not be the same act. Writing it from a
+ * job branch would leave every gated worktree dirty with a branch-local number
+ * — and a job that goes on to a revision pass has its whole worktree committed
+ * with `git add -A`, so that number would merge, reaching the reviewer as a
+ * diff hunk nobody wrote and `main` as a measurement no run announced.
+ *
+ * The checks themselves are identical either way. Only the write is skipped,
+ * and the closing line says which mode ran, so a log can never be mistaken for
+ * a recording that did not happen.
+ */
+const RECORD = process.env.ATAI_VERIFY_DESIGN_NO_RECORD !== '1';
+
+/**
  * The three pages specs/site names for the **payload** bound. This list is not
  * a route sample — it is the specified set, and adding a fourth page to it
  * would invent a budget nobody wrote down.
@@ -616,10 +634,14 @@ async function main() {
     failures,
     checks: evidence.length,
   };
-  await writeFile(LAUNCH_FILE, JSON.stringify(launch, null, 2) + '\n', 'utf8');
+  if (RECORD) await writeFile(LAUNCH_FILE, JSON.stringify(launch, null, 2) + '\n', 'utf8');
 
   process.stdout.write(
-    `\nverify-design: ${evidence.length} check(s), ${failures} failure(s); recorded in data/launch.json\n`,
+    `\nverify-design: ${evidence.length} check(s), ${failures} failure(s); ${
+      RECORD
+        ? 'recorded in data/launch.json'
+        : 'NOT recorded — ATAI_VERIFY_DESIGN_NO_RECORD=1, so this run is a check and data/launch.json is untouched'
+    }\n`,
   );
   process.exit(failures === 0 ? 0 : 1);
 }

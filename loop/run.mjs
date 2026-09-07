@@ -43,6 +43,7 @@ import {
 import { scanJobBranches, readCommittedBrief, readCommittedJobSource } from './lib/resume.mjs';
 import { runnerHealthGate, NO_OUTPUT_STREAK_LIMIT, NO_OUTPUT_SIGNAL } from './lib/health.mjs';
 import {
+  gateCommand,
   gateFailureNote,
   gatesHitTransportFailure,
   runGates,
@@ -447,6 +448,13 @@ async function executeJob(ctx, opts) {
       // Named BEFORE the retry overwrites `gateResult`. These are the scripts,
       // not their output — cheap enough to carry on the job's permanent record,
       // which a log that is never kept is not.
+      // GATE NAMES, deliberately, and they stay gate names: this array is
+      // written into the ledger as `phases[].gates.first_failed`, where every
+      // line already written carries names, and a field whose contents change
+      // shape mid-history cannot be counted across it. The brief renders each
+      // name as the command that would reproduce it (`gateCommandForName`),
+      // which is where the distinction between an npm gate and a node one
+      // belongs (beads addictedtoai-one6).
       const firstFailed = (gateResult.results ?? []).filter((r) => !r.ok).map((r) => r.script);
       ctx.log(
         marked
@@ -674,6 +682,71 @@ async function executeJob(ctx, opts) {
     }
     pass = 2;
   }
+}
+
+/**
+ * Tear down a job's worktree. CLEANUP, NOT THE OUTCOME (beads
+ * addictedtoai-osru).
+ *
+ * MEASURED 2026-09-06 on job `j-20260906-17`. The author committed 527 lines to
+ * its branch and exited without `RESULT.md`, so the run was classified
+ * `interrupted` — correctly. Then the three calls below ran INLINE and
+ * unguarded, and `rmSync` threw
+ *     EPERM: operation not permitted, \\?\D:\addictedtoai-worktrees\j-20260906-17
+ * because a process the author had left running still had the worktree as its
+ * working directory. Windows lets the files go and refuses the directory. The
+ * throw escaped before `recordOutcome()` and before `commitJobRecords`, so the
+ * run ended on `loop error: EPERM` with NO ledger line (`data/ledger.jsonl`
+ * stopped at `j-16`), no verdict record, no records commit, and 11.91
+ * model-minutes unaccounted — and a resumed job reads its prior spend FROM the
+ * ledger, so that job's budget is now understated by exactly the invocation
+ * that produced the work.
+ *
+ * The branch survives either way (`resume.mjs` reads "no ledger line, but a
+ * brief is committed" as interrupted), so what the throw destroys is never the
+ * work; it is the RECORD of the work. That is the wrong thing to lose to a
+ * failed `rm`.
+ *
+ * So every step is guarded SEPARATELY and the run continues. Separately,
+ * because the prune is the step that matters most when the removal fails: it is
+ * the only one that can see what the `rmSync` did, and one failure must not
+ * skip it. A left-behind directory costs nothing that is not retried — the
+ * `rmSync(worktree)` before `addWorktree` (this file, ~line 1090) clears a
+ * stale directory, and `addWorktree` prunes a stale admin entry before it adds.
+ *
+ * `deps` is a seam, and it is reached end to end through `ctx.worktreeCleanup`,
+ * which nothing in production sets — `makeContext` does not create the field, so
+ * the loop's own call resolves to `{}` and every default below is the real
+ * function. It exists so a test can make the removal throw on ANY platform: a
+ * directory that is genuinely undeletable is a Windows-only, timing-dependent
+ * condition, and a guard measured only where it happens to reproduce is a guard
+ * measured nowhere.
+ *
+ * @returns {{removed: boolean, failures: string[]}}
+ */
+export function removeJobWorktree(ctx, worktree, deps = {}) {
+  const remove = deps.remove ?? removeWorktree;
+  const rm = deps.rm ?? rmSync;
+  const prune = deps.prune ?? ((repo) => void gitTry(repo, ['worktree', 'prune']));
+  const failures = [];
+  const step = (what, fn) => {
+    try {
+      fn();
+    } catch (e) {
+      failures.push(what);
+      const code = e && e.code ? ` (${e.code})` : '';
+      ctx.log(
+        `WORKTREE CLEANUP FAILED: ${what}${code} on ${worktree}: ${(e && e.message) || String(e)} — ` +
+          `the run CONTINUES to its ledger line and its records commit; the worktree is cleanup, not ` +
+          `the outcome, and the next run clears a stale directory before it adds one ` +
+          `(addictedtoai-osru)`,
+      );
+    }
+  };
+  step('git worktree remove', () => remove(ctx.repoRoot, worktree));
+  step('rmSync', () => rm(worktree, { recursive: true, force: true }));
+  step('git worktree prune', () => prune(ctx.repoRoot));
+  return { removed: failures.length === 0, failures };
 }
 
 export async function runLoop(ctx, opts = {}) {
@@ -1548,9 +1621,13 @@ export async function runLoop(ctx, opts = {}) {
   // prune, so both prunes leave it. That is not this failure mode — nothing in
   // the Desk locks a worktree — but a stale entry surviving here means look for a
   // lock, not for a missing prune.
-  removeWorktree(ctx.repoRoot, worktree);
-  rmSync(worktree, { recursive: true, force: true });
-  gitTry(ctx.repoRoot, ['worktree', 'prune']);
+  //
+  // GUARDED, and the guard is the whole point (addictedtoai-osru): every step
+  // below is cleanup, and a throw here used to escape before the ledger line and
+  // the records commit. `removeJobWorktree` logs each failure and continues. The
+  // seam it takes for its own test is documented at its definition; production
+  // passes two arguments.
+  removeJobWorktree(ctx, worktree, ctx.worktreeCleanup ?? {});
 
   // -------------------------------------------------------------------------
   // DELETE THE MERGED BRANCH — here, after the worktree, and read the answer.

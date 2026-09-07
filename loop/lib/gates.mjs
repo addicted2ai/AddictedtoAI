@@ -98,11 +98,36 @@ export function gatesHitTransportFailure(result = {}) {
  * counts toward breaker 1. Naming the failing script and the marker's presence
  * costs nothing and makes the ledger line answerable on its own.
  */
+/**
+ * How a gate result names the command it ran.
+ *
+ * Not every gate is an `npm` script any more (see `NODE_GATES`), and a log line
+ * that said `npm run verify-design` would name a command that does not exist —
+ * the exact thing a reader would paste to reproduce a failure. Older results,
+ * and any produced by a `gates` hook, carry no `command`; they are all npm
+ * scripts, so the fallback is the old wording exactly.
+ */
+export function gateCommand(result = {}) {
+  return result.command ?? gateCommandForName(result.script);
+}
+
+/**
+ * The same answer from a gate's NAME alone, for the one place that has only
+ * names: the ledger's `phases[].gates.first_failed`, which the review brief
+ * reads back. The arguments are omitted — a name is not a result and cannot
+ * know which port the run used — so this is what to reproduce, not a
+ * byte-exact replay.
+ */
+export function gateCommandForName(name) {
+  const node = NODE_GATES[name];
+  return node ? `node ${node.file}` : `npm run ${name}`;
+}
+
 export function gateFailureNote(result = {}, { retried = false } = {}) {
   const failed = (result.results ?? []).filter((r) => !r.ok);
   const which = failed.length
     ? failed
-        .map((r) => `npm run ${r.script} (${r.status === null ? 'could not run' : `exit ${r.status}`})`)
+        .map((r) => `${gateCommand(r)} (${r.status === null ? 'could not run' : `exit ${r.status}`})`)
         .join(', ')
     : 'no per-gate result was recorded';
   // The marker no longer decides WHETHER the gates were retried — since beads
@@ -173,6 +198,89 @@ function npmRun(worktree, script, timeoutMs) {
   });
   return {
     script,
+    command: `npm run ${script}`,
+    ok: r.status === 0,
+    status: r.status,
+    output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
+  };
+}
+
+/**
+ * THE GATES THAT ARE NOT `npm` SCRIPTS (beads addictedtoai-one6).
+ *
+ * `package.json` carries `verify:launch` and `verify:analytics` but no
+ * `verify:design` or `verify:surfaces`, and `package.json` is a file this
+ * repository does not edit. So these two are run the way the push bar runs
+ * them — `node scripts/<name>.mjs` against the export the `build` gate above
+ * has just produced in this same worktree.
+ *
+ * WHY THESE TWO AND NOT THE OTHER TWO. `verify-launch` runs its own build
+ * unless told not to, which would double every job's build cost;
+ * `verify-analytics` needs Playwright driving a served export to count GA4
+ * `page_view` hits, which is not a thing a content diff can plausibly break.
+ * These two are the ones that catch CONTENT-shaped defects, which is the class
+ * a Desk job can actually introduce — and one of them has already caught one in
+ * production, after the fact: job `j-20260903-15` merged on `gates: PASS`,
+ * published at `077ffcd5`, and the very next human-initiated run failed
+ *     FAIL  every dateModified equals that URL's <lastmod> in sitemap.xml
+ *           /blog/glm-5-3-license-revenue-gate: graph 2026-09-03 vs sitemap 2026-09-02
+ * which is a `verify-surfaces` check. The site was live with a failing gate for
+ * as long as it took a person to look.
+ *
+ * MEASURED COST, 2026-09-06, both run from a worktree against the already-built
+ * export in `D:/AddictedtoAI/out` while a Desk job and four agents shared the
+ * machine: `verify-surfaces` 4.7s, `verify-design` 40.2s — 45 seconds added to
+ * a gate run whose `npm test` alone is minutes. The bead asked for that number
+ * before committing to the change, because the Desk runs serially and a slower
+ * gate is a smaller queue drained per night. 45s is not that.
+ *
+ * ONE CORRECTION TO THE BEAD'S OWN PREMISE, measured rather than assumed: it
+ * calls both of these "static checks over out/". `verify-surfaces` is;
+ * `verify-design` is not — it starts `scripts/serve-static.mjs` and drives
+ * Chromium through Playwright, which is why it costs 40s rather than 5. It is
+ * still worth its place at that price, but it is the same KIND of check as
+ * `verify-analytics`, not a different one, and the reason to keep
+ * `verify-analytics` out is its subject, not its machinery.
+ *
+ * The port is deliberately NOT `verify-design`'s own default of 3111: the
+ * maintainer or the orchestrator running the push gate by hand on `main` binds
+ * that one, and two servers on one port is a gate failure that has nothing to
+ * do with the diff. `LOOP_VERIFY_DESIGN_PORT` overrides.
+ */
+export const NODE_GATES = Object.freeze({
+  'verify-surfaces': Object.freeze({
+    file: 'scripts/verify-surfaces.mjs',
+    args: () => ['out'],
+  }),
+  'verify-design': Object.freeze({
+    file: 'scripts/verify-design.mjs',
+    args: () => ['out', process.env.LOOP_VERIFY_DESIGN_PORT ?? '3211'],
+    // A GATE IS A CHECK, NOT A MEASUREMENT OF RECORD. `verify-design` writes
+    // its numbers into `data/launch.json`, which is the repository's dated
+    // measurement file. Left to write it here, every job's gate would leave the
+    // worktree dirty with a branch-local number — and a job that goes on to a
+    // REVISION pass has its whole worktree committed with `git add -A`
+    // (`run.mjs`, `commitAll`), so that number would merge, and reach the
+    // reviewer as an unexplained diff hunk nobody wrote.
+    env: { ATAI_VERIFY_DESIGN_NO_RECORD: '1' },
+  }),
+});
+
+/** The per-job merge gate, in order: the export must exist before it is checked. */
+export const DEFAULT_GATES = Object.freeze(['test', 'build', 'verify-surfaces', 'verify-design']);
+
+function nodeRun(worktree, name, spec, timeoutMs) {
+  const args = [spec.file, ...spec.args()];
+  const r = spawnSync(process.execPath, args, {
+    cwd: worktree,
+    encoding: 'utf8',
+    timeout: timeoutMs,
+    maxBuffer: 32 * 1024 * 1024,
+    env: { ...process.env, ...(spec.env ?? {}) },
+  });
+  return {
+    script: name,
+    command: `node ${args.join(' ')}`,
     ok: r.status === 0,
     status: r.status,
     output: `${r.stdout ?? ''}${r.stderr ?? ''}`,
@@ -188,13 +296,35 @@ function npmRun(worktree, script, timeoutMs) {
  *
  * @returns {{ok: boolean, results: Array, transport: boolean, output: string}}
  */
-export function runGates(ctx, worktree, { scripts = ['test', 'build'], timeoutMs = 20 * 60 * 1000 } = {}) {
+export function runGates(ctx, worktree, { scripts = DEFAULT_GATES, timeoutMs = 20 * 60 * 1000 } = {}) {
   linkNodeModules(worktree, ctx.repoRoot);
   const results = [];
   for (const s of scripts) {
+    const node = NODE_GATES[s];
+    if (node) {
+      // Same rule as an absent npm script, and it must stay the same rule: a
+      // gate whose script is not in the worktree is a FAILURE, never a silent
+      // skip. Skipping is how the whole gap this gate closes was invisible.
+      if (!existsSync(join(worktree, node.file))) {
+        results.push({
+          script: s,
+          command: `node ${node.file}`,
+          ok: false,
+          status: null,
+          output: `the worktree has no ${node.file}, so the gate could not run. ` +
+            `A gate that cannot run is a gate failure, not a pass.`,
+        });
+        continue;
+      }
+      const r = nodeRun(worktree, s, node, timeoutMs);
+      results.push(r);
+      if (!r.ok) break;
+      continue;
+    }
     if (!hasScript(worktree, s)) {
       results.push({
         script: s,
+        command: `npm run ${s}`,
         ok: false,
         status: null,
         output: `package.json in the worktree has no "${s}" script, so the gate could not run. ` +
@@ -214,7 +344,7 @@ export function runGates(ctx, worktree, { scripts = ['test', 'build'], timeoutMs
     results,
     transport,
     output: results
-      .map((r) => `--- npm run ${r.script} (${r.ok ? 'PASS' : `FAIL, exit ${r.status}`})\n${r.output.slice(-6000)}`)
+      .map((r) => `--- ${gateCommand(r)} (${r.ok ? 'PASS' : `FAIL, exit ${r.status}`})\n${r.output.slice(-6000)}`)
       .join('\n'),
   };
 }
