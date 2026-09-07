@@ -444,10 +444,26 @@ test('substitutionSuccessors pairs only what the two snapshots actually show', (
     [],
     'MMDD tails and version numbers are indistinguishable in the string, so neither is stripped',
   );
+  assert.deepEqual(
+    call(source, 'acme/max-invalid', row('acme/max-invalid', 'acme/max-20260231'), [
+      ['acme/max-0902', successor],
+    ]),
+    [],
+    'an eight-digit suffix that overflows February is not a calendar date and cannot create a stem',
+  );
+  assert.deepEqual(
+    call(source, 'acme/max', departed, [
+      ['acme/max-invalid', row('acme/max-invalid', 'acme/max-20260231')],
+    ]),
+    [],
+    'an invalid dated arrival is not treated as a valid same-stem successor',
+  );
 
-  // The variant, measured on the live snapshot: 78 canonical slugs are shared
-  // by a base row and its `:batch` sibling, byte for byte. Without the scoping
-  // each departure would pair with both arrivals.
+  // The current 430-row snapshot has 270 singleton canonical-slug groups, 74
+  // two-row groups and 4 three-row groups. The three-row groups contain base,
+  // `:batch` and `:free`; some two-row groups are base plus `:free`, so the
+  // duplicate groups are not uniformly base+batch. Without the declared
+  // variant scoping each departure would pair with every arriving sibling.
   const arrivals = [
     ['acme/max-0902', successor],
     ['acme/max-0902:batch', row('acme/max-0902:batch', 'acme/max-20260902', 'Acme Max (0902) batch')],

@@ -248,7 +248,21 @@ export function displayName(source, row) {
  * tells them apart — stripping them would fold `mistral-medium-3` and
  * `mistral-medium` into one stem and invent a substitution out of a version bump.
  */
-const DATED_SLUG_SUFFIX = /-(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])$/;
+const DATED_SLUG_SUFFIX = /-((?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01]))$/;
+
+/** A stem only exists when its eight-digit suffix is a real calendar date. */
+function datedSlugStem(slug) {
+  const match = slug.match(DATED_SLUG_SUFFIX);
+  if (!match) return null;
+  const digits = match[1];
+  const year = Number(digits.slice(0, 4));
+  const month = Number(digits.slice(4, 6));
+  const day = Number(digits.slice(6));
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = month === 2 ? (leap ? 29 : 28) : [4, 6, 9, 11].includes(month) ? 30 : 31;
+  if (day > daysInMonth) return null;
+  return slug.slice(0, match.index);
+}
 
 /** The declared slug of one row, or null when the rule does not apply to it. */
 function ruleSlug(rule, row) {
@@ -263,12 +277,13 @@ function ruleSlug(rule, row) {
  *
  * Without this the pairing is ambiguous on real data, which is why it is here
  * and not a refinement left for later. Measured on the 2026-09-07 snapshot: 87
- * of the 430 rows carry a `:` variant, and 78 canonical slugs are shared by
- * exactly two rows — in every case a base row and its `:batch` sibling, which
- * publish the SAME `canonical_slug` byte for byte. So a departing base row would
- * otherwise pair with both the arriving base row and the arriving batch row, and
- * a departing batch row with both as well. Scoping the match to rows carrying
- * the same variant keeps each departure paired with its own kind of row.
+ * of the 430 rows carry a `:` variant, and canonical-slug groups comprise 270
+ * singletons, 74 two-row groups and 4 three-row groups. The three-row groups
+ * contain base, `:batch` and `:free`; some two-row groups are base plus `:free`,
+ * so duplicate groups are not uniformly base+batch. A departing base row would
+ * otherwise pair with every arriving variant sibling. Scoping the match to rows
+ * carrying the same variant keeps each departure paired with its own kind of
+ * row.
  *
  * Absent `variant_separator` means no scoping, and every row's variant is `''`.
  */
@@ -298,16 +313,17 @@ function ruleVariant(rule, rowId) {
 export function substitutionSuccessors(source, departedId, departedRow, arrivals = []) {
   const rule = source?.substitution_rule;
   const slug = ruleSlug(rule, departedRow);
-  if (!slug || !DATED_SLUG_SUFFIX.test(slug)) return [];
-  const stem = slug.replace(DATED_SLUG_SUFFIX, '');
-  if (stem === '') return [];
+  const stem = slug ? datedSlugStem(slug) : null;
+  if (!stem) return [];
   const variant = ruleVariant(rule, departedId);
 
   const out = [];
   for (const [rowId, row] of arrivals) {
     if (ruleVariant(rule, rowId) !== variant) continue;
     const arriving = ruleSlug(rule, row);
-    if (!arriving || arriving.replace(DATED_SLUG_SUFFIX, '') !== stem) continue;
+    if (!arriving) continue;
+    const arrivingStem = datedSlugStem(arriving) ?? arriving;
+    if (arrivingStem !== stem) continue;
     out.push({ row_id: rowId, display_name: displayName(source, row) });
   }
   return out.sort((a, b) => (a.row_id < b.row_id ? -1 : a.row_id > b.row_id ? 1 : 0));
