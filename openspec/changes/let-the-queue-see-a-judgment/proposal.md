@@ -25,6 +25,17 @@ written 2026-08-31 and `addictedtoai-cct` on 2026-08-29, both last triaged
 - `pulse/lib/queue.mjs` still ranks `corroboration` at 68, above every timer in
   the table, and mints one item per disagreeing pair on every run inside the
   `for (const c of corroborations)` loop. `QUEUE_CAP` is 50 (`:45`).
+- **There are two corpora and they are not interchangeable**, re-read on
+  2026-09-06 after a first draft of the design assumed one. `pulse/run.mjs:129`
+  holds `readCorpus(root)` from `pulse/lib/corpus.mjs`, returning
+  `{ entries, tutorials, listings, prose, unreadable }` (`:212`).
+  `reviewablePieces(corpus)` reads `corpus.entry`, `.learn`, `.tutorial`,
+  `.post`, `.delta`, `.claim` (`lib/reviews.mjs:298–307`) — the shape
+  `lib/corpus.mjs`'s async `loadCorpus({ contentRoot, diags })` returns, which is
+  what `scripts/verify-launch.mjs:823` and `lib/build-content.mjs:125` pass to
+  `reviewJoin`. So the producer loads the build corpus rather than reusing the
+  Pulse's, and that is what puts the queue on the gate's own input instead of an
+  approximation of it (design D3).
 
 **Changed since triage, in ways that matter.**
 

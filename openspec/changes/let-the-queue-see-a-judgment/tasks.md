@@ -1,8 +1,10 @@
 # Tasks
 
-Eleven normative sentences are added across the two capabilities' worth of
-requirement text in `specs/pulse` — six in the added requirement, five in the
-modified corroboration requirement. The modification to `The work queue is
+Twelve normative bullets are added across the two capabilities' worth of
+requirement text in `specs/pulse` — six in the added requirement, six in the
+modified corroboration requirement (14 SHALL/MUST clauses when counted clause by
+clause, since several bullets state a rule and its exclusion together). The
+modification to `The work queue is
 derived, never accumulated` adds no new normative sentence: it extends the
 enumeration inside the existing `SHALL recompute … from current state` so the
 list stays a true statement of what the queue produces, and task 4's assertion on
@@ -13,21 +15,28 @@ testing task names the mutation that proves it measures something.
 
 ## The review-mismatch producer
 
-- [ ] 1. `pulse/lib/review-state.mjs` (new): one exported function taking the
-      loaded corpus and returning the pieces whose review state is `mismatched`,
-      each with the record that binds it and that record's date. It SHALL obtain
-      the state by calling `reviewJoin` from `lib/reviews.mjs` and SHALL contain
-      no hashing, no record-to-piece resolution and no re-implementation of
-      `reviewedSurface`. Implements: *reading that state from the single
-      piece-to-record join … SHALL NOT compute a second resolution … SHALL NOT
-      compute a second reviewed hash*.
-- [ ] 2. `pulse/run.mjs` and `pulse/lib/rederive.mjs`: call it beside
-      `corroborationFindings` (`run.mjs:270`, `rederive.mjs:73`), from the corpus
-      both already hold, and pass the result into `computeQueue` as one more
-      named option. `computeQueue` stays a function of its arguments so
-      `pulse/tests/queue.test.mjs` can still run it on fixtures with no
-      repository behind it, and so `rederive` reproduces the derived tree
-      byte-identically. See design D3.
+- [ ] 1. `pulse/lib/review-state.mjs` (new): an async exported function that
+      loads the **build** corpus with `loadCorpus({ contentRoot, diags })` from
+      `lib/corpus.mjs` — the same loader `scripts/verify-launch.mjs:823` and
+      `lib/build-content.mjs:125` hand to `reviewJoin`, and the only shape
+      `reviewablePieces` can read (`lib/reviews.mjs:298–307`; the Pulse's own
+      `readCorpus` returns `{ entries, tutorials, listings, prose, unreadable }`
+      and cannot be substituted) — and returns the pieces whose review state is
+      `mismatched`, each with the record that binds it and that record's date. It
+      SHALL obtain the state by calling `reviewJoin` from `lib/reviews.mjs` and
+      SHALL contain no hashing, no record-to-piece resolution and no
+      re-implementation of `reviewedSurface`. Implements: *reading that state
+      from the single piece-to-record join … SHALL NOT compute a second
+      resolution … SHALL NOT compute a second reviewed hash*. See design D3 for
+      why loading the gate's own corpus is what makes this one join rather than
+      two.
+- [ ] 2. `pulse/run.mjs` and `pulse/lib/rederive.mjs`: `await` it beside
+      `corroborationFindings` (`run.mjs:270`, `rederive.mjs:73`) — both call
+      sites are already in async context — and pass the result into
+      `computeQueue` as one more named option. `computeQueue` stays a synchronous
+      function of its arguments so `pulse/tests/queue.test.mjs` can still run it
+      on fixtures with no repository behind it, and so `rederive` reproduces the
+      derived tree byte-identically. See design D3.
 - [ ] 3. `pulse/lib/queue.mjs`: produce one item per mismatched piece — type
       `verify`, a new reason on the closed reason vocabulary, subject the piece,
       detail naming the piece, the binding record and its date. Implements: *the
@@ -51,11 +60,14 @@ testing task names the mutation that proves it measures something.
       count; restore and verify the file byte-identical by hash. Tests tasks 1
       and 5.
 - [ ] 7. `pulse/tests/queue.test.mjs`: the item is produced with type `verify`
-      and the new reason, and sorts above a corroboration item and below a
-      `listing-could-not-verify` item in the same queue — asserted on the
-      produced order, not on the constant. Mutation: move the rank below
-      `corroboration` and confirm only the ordering assertion fails. Tests tasks
-      3 and 4.
+      and the new reason; **its detail names the piece, the binding record's file
+      name and that record's date**, asserted on the three values the fixture put
+      there rather than on the presence of a field; and it sorts above a
+      corroboration item and below a `listing-could-not-verify` item in the same
+      queue — asserted on the produced order, not on the constant. Mutations:
+      move the rank below `corroboration` and confirm only the ordering assertion
+      fails; drop the record's date from the detail and confirm only the detail
+      assertion fails. Tests tasks 3 and 4.
 - [ ] 8. `pulse/tests/queue.test.mjs`: retirement. Recompute over a fixture where
       the piece has been re-reviewed and the newest record's hash matches — the
       item is absent, and no file anywhere records that it was done. Then the
@@ -81,9 +93,10 @@ testing task names the mutation that proves it measures something.
 
 ## The adjudication record
 
-- [ ] 11. `pulse/lib/corroboration.mjs`: a reader for adjudication records under
-      the data root — one file per pair, keyed by entry and both field names,
-      carrying the local date, the resolution text, and both pinned values.
+- [ ] 11. `pulse/lib/corroboration.mjs`: a reader for adjudication records at
+      `data/adjudications/` — one file per pair, named
+      `<entry id>--<first field>--<second field>.md`, carrying the entry, both
+      field names, the local date, the resolution text, and both pinned values.
       Malformed or unreadable records are skipped rather than treated as
       suppressions, on the same terms as every other reader of a record
       directory here. Implements: *an adjudication … SHALL live under the data
@@ -98,7 +111,16 @@ testing task names the mutation that proves it measures something.
       adjudication it supersedes*.
 - [ ] 13. `pulse/lib/queue.mjs`: skip adjudicated findings when minting items,
       and include the superseding ones with the superseded adjudication named in
-      the item's detail. Implements the queue half of task 12's two sentences.
+      the item's detail. The detail of every corroboration item SHALL also carry
+      the writing instruction, in the idiom `pulse/lib/vanished.mjs:195–198`
+      already uses for its own fixing job: the directory `data/adjudications/`,
+      the file name `<entry id>--<first field>--<second field>.md` computed for
+      **this** pair, and the fields the record must carry — the entry, both field
+      names, the local date, the resolution in the job's own words, and both
+      resolved values as they stand in that item. A Desk job is one written
+      prompt in; an instruction that is not in the item does not reach it.
+      Implements the queue half of task 12's two sentences and *the queue item
+      … SHALL state in its own detail how the record is written*.
 - [ ] 14. `pulse/lib/corroboration.mjs` and `pulse/run.mjs`: an adjudicated pair
       stays in the returned findings and in the run's `corroboration` log line,
       marked, with both pinned and both current values. Implements: *an
@@ -110,7 +132,9 @@ testing task names the mutation that proves it measures something.
       delete an adjudication record*.
 - [ ] 16. `pulse/tests/corroboration.test.mjs`: four fixtures over one
       disagreeing pair — no record (item produced); a record pinning today's two
-      values (no item, finding still returned and marked); a record whose cited
+      values (no item, and the finding still returned and marked adjudicated
+      **carrying all four values — both pinned and both current** — asserted
+      value by value, not on the mark alone); a record whose cited
       pin no longer matches (item produced, naming the record); a record whose
       **feed-bound** pin no longer matches (item produced, naming the record).
       The fourth is the one that matters and the one a front-matter note could
@@ -125,7 +149,12 @@ testing task names the mutation that proves it measures something.
 - [ ] 18. `pulse/tests/queue.test.mjs`: an adjudicated pair mints no item while a
       second, unadjudicated pair in the same run still does — the control
       without which task 16's suppression proves only that nothing was produced
-      at all. Tests task 13.
+      at all. The surviving item's detail is asserted to name
+      `data/adjudications/`, the exact file name computed for that pair, and each
+      of the record's required fields. Mutation: drop the file name from the
+      detail and confirm only that assertion fails — a job told the directory but
+      not the name writes the record somewhere the reader will not look. Tests
+      task 13.
 
 ## Gates
 

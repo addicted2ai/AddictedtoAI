@@ -6,8 +6,10 @@ this change adds retires by recomputation.
 
 Two judgments the engine already has in front of it are invisible to the queue,
 in opposite directions. A review verdict that has stopped applying to the file it
-approved fails the launch gate and cannot become work — so the only route to
-green is a person writing a directive by hand (`addictedtoai-ccky`). A declared
+approved fails the launch gate and cannot become work: nothing under `pulse/lib/`
+reads review state at all today, so no queue item can exist for it, no Desk job
+can select one, and the gate has no mechanical route back to green — the only
+route is a person writing a directive by hand (`addictedtoai-ccky`). A declared
 corroboration that two people have already adjudicated cannot be marked settled —
 so the mechanism is safe only on pairs that agree, which is the opposite of the
 pairs it was built for, and no entry declares one (`addictedtoai-cct`).
@@ -27,9 +29,7 @@ answers it` already established here.
 approved it and reports one of four states. `mismatched` — a record binds,
 carries a hash for that path, and the file's reviewed surface now hashes to
 something else — means a piece that was approved has since been edited outside
-the review gate. It fails the launch minimums. Nothing in `pulse/lib/` reads
-review state at all, so no queue item can exist for it, no Desk job can select
-one, and the gate has no mechanical route back to green.
+the review gate, and it fails the launch minimums.
 
 - The Pulse SHALL derive one queue item for each piece whose review state is
   `mismatched`, reading that state from the **single** piece-to-record join
@@ -162,12 +162,20 @@ judgment, and it costs nothing on top of a run that already resolves both.
   anyone — it is derived state like every other queue item and SHALL NOT
   accumulate.
 - **A disagreement MAY also be adjudicated, and an adjudication is a committed
-  record.** It SHALL live under the data root, one file per adjudicated pair,
-  and SHALL carry: the entry, both field names, the local date, the resolution in
+  record.** It SHALL live at `data/adjudications/`, one file per adjudicated
+  pair, named `<entry id>--<first field>--<second field>.md` with the two field
+  names in the order the entry's `corroborates` declaration gives them, and it
+  SHALL carry: the entry, both field names, the local date, the resolution in
   the adjudicator's own words, and **both resolved values as they stood when the
   adjudication was made**. A resolution with no pinned values is not an
   adjudication of anything, because nothing later can tell whether the
   disagreement it settled is the disagreement standing today.
+- **The queue item for an unadjudicated disagreement SHALL state in its own
+  detail how the record is written** — that directory, that file name, and every
+  field above. A Desk job is one written prompt in and one diff out, so an
+  instruction that is not in the item is an instruction the job does not have;
+  this is the same stance the vanished-row record takes when it tells its own
+  fixing job where to move the file.
 - The Pulse SHALL suppress the queue item for a declared pair **exactly when** an
   adjudication record names that pair and both sides resolve today to the values
   that record pinned. Suppression is by equality with the pinned values and by

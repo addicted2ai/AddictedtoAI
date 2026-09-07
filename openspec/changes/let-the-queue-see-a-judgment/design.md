@@ -55,12 +55,26 @@ shedding, and asks for a decision with a reason.
 is already a function over **already-computed** findings: `corroborationFindings`
 runs in `pulse/run.mjs:270` and `pulse/lib/rederive.mjs:73` and its result is
 passed in. The review state follows the same route — computed beside the
-corroboration findings from the corpus that both callers already hold, passed to
-`computeQueue` as one more named option — for three reasons that are properties
-of the code rather than preferences:
+corroboration findings and passed to `computeQueue` as one more named option —
+for three reasons that are properties of the code rather than preferences:
 
-1. `reviewJoin` needs the loaded corpus, and both callers already have it;
-   loading a second one inside the queue would double the read.
+1. **`reviewJoin` cannot read the corpus the Pulse already holds, so this
+   producer must load `lib`'s.** The two corpora are different shapes and it is
+   not a detail: `pulse/run.mjs:129` holds `readCorpus(root)` from
+   `pulse/lib/corpus.mjs`, which returns `{ entries, tutorials, listings, prose,
+   unreadable }` (`pulse/lib/corpus.mjs:212`), while `reviewablePieces(corpus)`
+   reads `corpus.entry`, `.learn`, `.tutorial`, `.post`, `.delta` and `.claim`
+   (`lib/reviews.mjs:298–307`) — the build corpus that `lib/corpus.mjs`'s async
+   `loadCorpus({ contentRoot, diags })` returns. So the producer loads the build
+   corpus itself, with the same loader `scripts/verify-launch.mjs:823` and
+   `lib/build-content.mjs:125` pass to `reviewJoin`. That is a second **read**,
+   and deliberately not a second **join**: the one-join invariant is that
+   `reviewJoin` over `lib`'s corpus is the only resolution of pieces to records
+   and the only reviewed hash anywhere, and it is precisely by loading the gate's
+   own input rather than approximating it from the Pulse's that the gate and the
+   queue are made unable to disagree. Loading it inside `computeQueue` instead
+   would put a filesystem read behind a pure function, which is what reasons 2
+   and 3 forbid.
 2. `computeQueue` stays a function of its arguments, which is what lets
    `pulse/tests/queue.test.mjs` run it on fixtures with no repository behind it.
 3. `rederive.mjs` exists to reproduce the derived tree byte-identically; a
