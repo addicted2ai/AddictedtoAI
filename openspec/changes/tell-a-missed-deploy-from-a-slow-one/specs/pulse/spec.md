@@ -75,9 +75,10 @@ controlled by the `publish` flag in `data/config.json`:
 - **A deploy hold SHALL be machine-identifiable as one.** The publish step SHALL
   write into `HOLD.md`, on its own line, a marker naming the commit the hold is
   about and the classification. `HOLD.md` has other writers — the Desk's
-  consecutive-failure, red-build and reserved-path breakers all write it and none
-  of them is about a commit — and a re-test that could not tell them apart would
-  be asking whether a commit is served on a hold that names no commit.
+  consecutive-failure, red-build, review-bypass and reserved-path breakers all
+  write it and not one of the four is about a commit — and a re-test that could
+  not tell them apart would be asking whether a commit is served on a hold that
+  names no commit.
 - **A standing deploy hold SHALL be re-tested, and the re-test SHALL take no
   outward action.** On every invocation of the publish step that finds a standing
   hold **carrying that marker**, the Pulse SHALL read the live build stamp once —

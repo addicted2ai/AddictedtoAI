@@ -68,9 +68,10 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       commit, the last stamp read, both window durations and the classification,
       states them outright, and writes as its **first body line** the
       machine-readable marker `deploy-hold: <pushed sha> <classification>` — one
-      line, exact prefix, so a later invocation can tell this hold from the three
+      line, exact prefix, so a later invocation can tell this hold from the four
       the Desk's breakers write, none of which names a commit
-      (`loop/lib/breakers.mjs:72, 80, 93`). The existing free-text clause
+      (`loop/lib/breakers.mjs:72, 80, 93, 233` — consecutive-failure, red-build,
+      review-bypass, reserved-path). The existing free-text clause
       `— unchanged since before the push` is replaced by the named
       classification rather than kept beside it, so there is one statement of the
       outcome and not two. Implements: *the hold SHALL name which failure it is …
@@ -130,8 +131,9 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       appends an observation saying the stamp was unreadable rather than
       appending nothing. An observation that only ever fires on good news is a
       log line, not a record. Then the other negative, on a different axis: a
-      hold written by the Desk's **reserved-path breaker** (breaker 3, no
-      `deploy-hold:` marker) is left byte-identical, with the live-stamp fetch
+      hold written by the Desk's **reserved-path breaker** (breaker 4,
+      `BREAKERS.RESERVED_PATH`, no `deploy-hold:` marker) is left byte-identical,
+      with the live-stamp fetch
       spy recording **zero** calls — a re-test that reads the site to decide
       whether a reserved-path halt has cleared is asking a question that has no
       answer. Mutation: key the re-test on the file's existence rather than on

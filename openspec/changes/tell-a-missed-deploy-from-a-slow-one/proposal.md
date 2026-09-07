@@ -14,7 +14,7 @@
 - One `writeHold` call site, at `pulse/lib/publish.mjs:705`, reached the moment
   the single deadline elapses. `grep -c writeHold` returns 2: the definition at
   `:381` and that one call.
-- `stampMatchesCommit` (`:372`) is prefix equality against **one** SHA:
+- `stampMatchesCommit` (`:371`) is prefix equality against **one** SHA:
   `sha.startsWith(seen)` behind a `/^[0-9a-f]{7,40}$/` guard. Nothing in the
   file resolves a stamp to a commit object, and nothing asks whether one commit
   contains another.

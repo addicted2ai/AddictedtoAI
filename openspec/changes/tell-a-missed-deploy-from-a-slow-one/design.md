@@ -93,11 +93,13 @@ misleading sentence the file can carry.
 
 "On every invocation that finds a deploy hold standing" reads like a condition
 the code already has. It is not. `pulse/lib/publish.mjs:498` computes
-`held = existsSync(p.hold)` and stops there, and `HOLD.md` has four writers:
-this step, and the Desk's consecutive-failure, red-build and reserved-path
-breakers (`loop/lib/breakers.mjs:72, 80, 93`). **None of the three Desk breakers
-names a commit.** So "whether the commit the hold names is now served" has no
-referent on three quarters of the holds that can be standing, and a re-test that
+`held = existsSync(p.hold)` and stops there, and `HOLD.md` has five writers:
+this step, and all four of the Desk's breakers — consecutive-failure, red-build,
+review-bypass and reserved-path, whose `writeHold` calls sit at
+`loop/lib/breakers.mjs:72, 80, 93, 233` and whose names are the frozen
+`BREAKERS` constants at `:19–24`. **None of the four Desk breakers names a
+commit.** So "whether the commit the hold names is now served" has no
+referent on four fifths of the holds that can be standing, and a re-test that
 keyed on existence would fetch the live site to ask an unanswerable question
 about a reserved-path halt and then append an observation that reads as progress
 on it.
