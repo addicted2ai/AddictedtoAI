@@ -243,7 +243,7 @@ that no test attempts is a refusal that has never run.
       the same trivial fix to two posts; and — the control that pins the parser — every record in
       `data/reviews/` parses to the same verdict, reasons, `would-cite` and
       `reads-human` values before and after task 1, compared field by field.
-- [ ] 15. **N4 and N7**, `scripts/verify-launch-voice-carry.test.mjs` (new): a
+- [x] 15. **N4 and N7**, `scripts/verify-launch-voice-carry.test.mjs` (new): a
       post whose current record carries only a valid carry-forward passes the
       voice check; one whose anchor is not an answering record — it does not
       exist, does not approve this piece, or carries only a `reads-human-from`
@@ -264,13 +264,13 @@ that no test attempts is a refusal that has never run.
       failure `lib/surfaces.test.mjs:320` avoids by loading the corpus and
       asserting invariants over it. That record is named in the proposal as the
       instance behind N7, which is where a date-stamped measurement belongs.
-- [ ] 16. **N5–N6**, `lib/reviews.test.mjs`: a fixture corpus with a body-less
+- [x] 16. **N5–N6**, `lib/reviews.test.mjs`: a fixture corpus with a body-less
       entry that carries a bound record and has since had a fact value changed
       reports **mismatched**, and `mismatchProblems` names it. A body-less entry
       with no record reports **missing** and produces no problem string. The
       counts move by exactly the number of body-less entries added, so the
       report's `total` is asserted, not just its `mismatched` list.
-- [ ] 17. **N6's boundary, on the real corpus and not a fixture**: assert that
+- [x] 17. **N6's boundary, on the real corpus and not a fixture**: assert that
       the entries in `verify-launch`'s required-record piece list are exactly
       `corpus.entry.filter(hasProseBody)` — computed in the same test from the
       same loaded corpus, with the `hasProseBody` that file already exports

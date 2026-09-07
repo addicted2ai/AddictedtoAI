@@ -516,20 +516,41 @@ function checkDerived(corpus, dataDir) {
   });
 }
 
-function checkReviews(corpus, dataDir) {
-  section('REVIEW RECORDS (specs/review — every seed prose piece, approved)');
-  const reviewsDir = join(dataDir, 'reviews');
-
-  // specs/editorial + task 6.5: "every seed prose piece (entry bodies,
-  // education pages, tutorials, posts, deltas)". Tool listings are data rows,
-  // not prose, and are not in that set.
-  const pieces = [
+/**
+ * The pieces this check REFUSES TO LAUNCH WITHOUT A RECORD.
+ *
+ * specs/editorial + task 6.5: "every seed prose piece (entry bodies, education
+ * pages, tutorials, posts, deltas)". Tool listings are data rows, not prose, and
+ * are not in that set.
+ *
+ * NOT the same list as `lib/reviews.mjs`'s `reviewablePieces`, and the
+ * difference is the whole of N6 (specs/review, beads addictedtoai-kpgn):
+ * extending the BINDING to body-less entries does not extend the obligation to
+ * HAVE a record. This list keeps its own prose bar — `hasProseBody`, a word
+ * count, which is stricter than the corpus's own `hasBody` flag — so a body-less
+ * entry reporting `missing` fails nothing, on the same terms and for the same
+ * reason `unbound` fails nothing. 445 body-less entries with no record is a
+ * corpus-wide backfill decision nothing here asks for.
+ *
+ * Exported so that boundary is measured rather than assumed: an implementer who
+ * wires the extended set into THIS list gets one red test instead of one launch
+ * failure per body-less entry (`lib/reviews.test.mjs`).
+ */
+export function requiredRecordPieces(corpus) {
+  return [
     ...corpus.entry.filter(hasProseBody),
     ...corpus.learn,
     ...corpus.tutorial,
     ...corpus.post,
     ...corpus.delta,
   ];
+}
+
+function checkReviews(corpus, dataDir) {
+  section('REVIEW RECORDS (specs/review — every seed prose piece, approved)');
+  const reviewsDir = join(dataDir, 'reviews');
+
+  const pieces = requiredRecordPieces(corpus);
 
   // The join is `lib/reviews.mjs`'s, run over its whole fixed piece list —
   // the build's list, which is a superset of the one checked below. Resolving
