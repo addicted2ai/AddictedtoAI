@@ -41,6 +41,8 @@ evidence: >
   scope by spec: `specs/review` states that verbatim-ness "belongs to the
   reviewer and to nobody else", because a build that fetched would make every
   rebuild depend on a third party's uptime.
+proposed_by_job: j-20260907-06
+proposed_by_type: post
 ---
 
 The corpus already assumes this check happens. `specs/review` makes the
