@@ -3,15 +3,6 @@
   "count": 17,
   "items": [
     {
-      "detail": "Line 38 opens \"Every Astra call runs behind a monitor now.\" The card, in the sentence the same paragraph then quotes verbatim, says OpenAI \"added misalignment monitoring to all tool-using inference involved in our external deployment of Astra\" (fetched https://deploymentsafety.openai.com/gpt-6-astra/aggregate-monitorability-findings, HTTP 200, 2026-09-07). A call that uses no tools is outside what that sentence covers, so the topic sentence is one qualifier broader than its own source. The quotation immediately behind it narrows the claim for any reader who reads on, which is why this is carried rather than blocked. Fix: \"Every tool-using Astra call runs behind a monitor now.\"\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-06 (`j-20260907-06.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/blog/pachocki-an-alien-mind-monitorability.md",
-      "target": "content/blog/pachocki-an-alien-mind-monitorability.md",
-      "title": "Restore the \"tool-using\" qualifier the card puts on its monitoring claim",
-      "type": "repair"
-    },
-    {
       "detail": "The gateway paragraph says \"The feed does carry both gated models — as release announcements, on 3 and 4 September\". Those are the dates the site's feed recorded the rows (changes.jsonl dates 2026-09-03 and 2026-09-04); the announcements' own pubDate is 1 and 2 September, and the post's whole first half establishes 1, 2 and 3 September as the release dates. A reader can take the two date pairs as a contradiction. The neighbouring clause about the generally available twins avoids this by saying they \"turned up in the gateway\", which reads as observation. Inserting one word — \"recorded on 3 and 4 September\" — fixes it.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-02 (`j-20260907-02.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
       "rank": 25,
       "reason": "carried-finding",
@@ -117,6 +108,15 @@
       "subject": "data/carried/j-20260907-06-carry-1.md",
       "target": "data/carried/j-20260907-06-carry-1.md",
       "title": "Restore data/launch.json to its pre-branch state before this job merges",
+      "type": "repair"
+    },
+    {
+      "detail": "`data/proposals/link-node-modules-before-the-author-runs.md` (added by this diff, 2026-09-07) proposes what `data/proposals/author-worktrees-carry-no-node-modules.md` (2026-09-04, still standing in the tree) already proposes: \"Link `node_modules` into a job worktree when the worktree is created, not only inside `runGates`.\" The slugs differ, so nothing auto-discards, and both are selectable. The new file is not redundant in every part — it adds that `linkNodeModules` is already idempotent, so the gate-time call needs no change, and it names the exact insertion point — while the older one carries a second half the new one drops: teaching `unlinkNodeModules` to tell a junction it created from a real directory a job installed, rather than calling `unlinkSync` on a directory and swallowing the throw. Whoever takes this should work from one file holding both halves and drop the other, rather than let two proposals for one fix compete for selection. (The older file's line citation has also drifted: it names `loop/lib/gates.mjs:177` for the sole `linkNodeModules` call, which is `:300` today.)\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-08 (`j-20260907-08.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
+      "rank": 25,
+      "reason": "carried-finding",
+      "subject": "data/carried/j-20260907-08-carry-1.md",
+      "target": "data/carried/j-20260907-08-carry-1.md",
+      "title": "Fold the new node_modules proposal into the standing one that already proposes it",
       "type": "repair"
     },
     {
