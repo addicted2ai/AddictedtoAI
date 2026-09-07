@@ -717,9 +717,16 @@ export async function publishStep(
   } else {
     const tree = classifyWorkingTree(root, declared);
     if (!tree.known) {
-      say('commit', `cannot read the working tree at ${root} with git, so nothing can be attributed to this run — nothing committed`);
+      say(
+        'commit',
+        dryRun
+          ? `cannot read the working tree at ${root} with git, so nothing can be attributed to this run — a real run would publish nothing`
+          : `cannot read the working tree at ${root} with git, so nothing can be attributed to this run — nothing committed`,
+      );
       commit = { attempted: true, committed: false, paths: [], reason: 'tree-unreadable' };
-      commitBlocked = 'tree-unreadable';
+      // A preview still prints the plan. A real run remains blocked exactly as
+      // before, because it cannot safely attribute anything to itself.
+      commitBlocked = dryRun ? null : 'tree-unreadable';
       stagePaths = [];
     } else if (tree.foreignContent.length) {
       const shown = tree.foreignContent.slice(0, 10).join(', ');
