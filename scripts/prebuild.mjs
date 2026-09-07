@@ -4,8 +4,8 @@
  *
  * `npm run build` is `node scripts/prebuild.mjs && next build`. This file
  * exists from task 1.1 so that later waves can add prebuild steps without
- * editing `package.json` (the manifest has a single owner — see
- * openspec/changes/build-initial-site/tasks.md).
+ * editing `package.json` (the manifest has a single owner — see the archived
+ * build-initial-site task record).
  *
  * Steps that belong here as they are implemented:
  *   - task 4.13  write the build stamp (UTC timestamp + short commit hash)

@@ -517,7 +517,7 @@ test('a missing openspec/ directory is zero changes, not a crash', async () => {
 // It asserted `changes.length > 0` — "expected at least one unarchived change"
 // — which is an assertion that the repository always has work in flight. That
 // held for as long as it happened to hold, and on 2026-09-01 a batch archive
-// emptied `openspec/changes/` and turned a green suite red. Nothing was wrong:
+// emptied the in-flight change directory and turned a green suite red. Nothing was wrong:
 // an empty in-flight set is the DESIRABLE state, the one where the constitution
 // and the code have finished disagreeing.
 //
