@@ -34,6 +34,11 @@ import { join, resolve } from 'node:path';
 /** The budget from specs/site, in bytes. */
 export const BUDGET_BYTES = 150 * 1024;
 
+/** Recorded payload figures are rounded to whole KB; gzip noise is finer than that. */
+export function recordedKilobytes(bytes) {
+  return Math.round(bytes / 1024);
+}
+
 const SCRIPT_RE = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 
 function attr(tag, name) {

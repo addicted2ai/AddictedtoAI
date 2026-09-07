@@ -49,7 +49,12 @@ import { AxeBuilder } from '@axe-core/playwright';
 import fg from 'fast-glob';
 import * as cheerio from 'cheerio';
 
-import { measureRoute, formatMeasurement, BUDGET_BYTES } from './measure-payload.mjs';
+import {
+  measureRoute,
+  formatMeasurement,
+  recordedKilobytes,
+  BUDGET_BYTES,
+} from './measure-payload.mjs';
 import { ROOT } from '../lib/paths.mjs';
 // The build's own LOCAL `YYYY-MM-DD`, imported rather than reimplemented: the
 // dates this script records into data/launch.json are CALENDAR DATES in a
@@ -612,6 +617,7 @@ async function main() {
   launch.js_payload = {
     measured_on: todayIso(),
     budget_kb_gzipped: BUDGET_BYTES / 1024,
+    precision: 'whole KB, rounded to the nearest 1 KB; gzip -9 stamp noise is finer than this',
     method:
       'gzip -9 over every <script src> a modern browser fetches (nomodule excluded) plus every ' +
       'inline <script> body, measured on the exported build in out/',
@@ -620,10 +626,10 @@ async function main() {
         m.route,
         {
           label: m.label,
-          chunks_kb_gzipped: Number((m.chunks.gzip / 1024).toFixed(1)),
-          inline_kb_gzipped: Number((m.inline.gzip / 1024).toFixed(1)),
-          total_kb_gzipped: Number((m.total.gzip / 1024).toFixed(1)),
-          html_kb_gzipped: Number((m.html_gzip / 1024).toFixed(1)),
+          chunks_kb_gzipped: recordedKilobytes(m.chunks.gzip),
+          inline_kb_gzipped: recordedKilobytes(m.inline.gzip),
+          total_kb_gzipped: recordedKilobytes(m.total.gzip),
+          html_kb_gzipped: recordedKilobytes(m.html_gzip),
         },
       ]),
     ),
