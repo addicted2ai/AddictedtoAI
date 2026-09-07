@@ -10,26 +10,84 @@
  * this module is deliberately the narrow form: `loop/`'s own helper, imported
  * only within `loop/`, crossing no directory boundary at all.
  *
- * MEASURED on 2026-08-31, by counting the import edges that already exist
- * between the five architectural directories `CLAUDE.md` names:
+ * RE-MEASURED on 2026-09-06 (beads addictedtoai-8tr0), by resolving every
+ * relative import in `lib/`, `loop/`, `pulse/`, `scripts/` and `app/` to the
+ * directory it lands in — every one, static `from '...'` and dynamic
+ * `await import('...')` alike, because a dynamic edge is still an edge. Re-run
+ * that method and it returns these numbers exactly; count only the static
+ * specifiers and the last two rows read 13 across 9 and 3 across 3 instead —
+ * two dynamic edges are the whole of the difference, and they are named in the
+ * rows below. The counts as of that date:
  *
- *   scripts/ -> lib/     14 imports across 5 files  (already open, already used
+ *   scripts/ -> lib/     34 imports across 10 files (already open, already used
  *                        for exactly this: `verify-design` and
  *                        `verify-analytics` both import `todayIso`)
- *   loop/    -> lib/      2 imports, both in `lib/review.mjs`, both about
- *                        review records (`review-hash.mjs`, `reviews.mjs`)
- *   pulse/   -> lib/      ZERO. Not one import, in either direction.
+ *   loop/    -> lib/     10 imports across 6 files  (review records and
+ *                        `lib/domains.mjs`, the shared frontier vocabulary)
+ *   pulse/   -> lib/     14 imports across 10 files — 9 of them in the ENGINE
+ *                        (`derive`, `diff`, `domain-seeds`, `frontier` x2,
+ *                        `indexnow` x2, `mint`, `queue`), 5 in its tests — the
+ *                        fifth is the dynamic one, `mint.test.mjs:230`
+ *   lib/     -> pulse/    4 imports across 3 files (`site.mjs` and
+ *                        `declined-fields.mjs` read the source registry, the
+ *                        latter twice — `:73` static and `:294` dynamic; plus
+ *                        one test)
  *
- * That last number is the whole argument. `pulse/` is specified as model-free
- * and independent of the site build, and it is not merely *described* that way
- * — it is measurably that way, with no edge to `lib/` anywhere. A shared helper
- * has to live somewhere, and every candidate is worse than three small copies:
+ * THE 2026-08-31 VERSION OF THIS COMMENT SAID THAT LAST PAIR WAS "ZERO. Not one
+ * import, in either direction", AND CALLED IT "the whole argument". It is no
+ * longer zero in either direction, and a stale measurement presented as current
+ * is the defect class the verification rules name, so the argument is restated
+ * here against what is actually true rather than left standing on a number that
+ * has moved.
  *
- *  - In `lib/`: the Pulse would import from the site build for the first time
- *    in the repository's life. `lib/facts.mjs` — where `todayIso()` lives —
- *    imports `lib/schema.mjs` (and therefore zod), `lib/data-layer.mjs` and
- *    `lib/units.mjs`. The model-free Pulse would acquire the site build's
- *    validation stack in order to learn what day it is.
+ * THE ARGUMENT SURVIVES, BECAUSE IT WAS NEVER REALLY ABOUT THE COUNT. What
+ * `pulse/` must not acquire is the SITE BUILD — its schema, its validation
+ * stack, its content layer. Measured the same day: every `lib/` module the
+ * Pulse ENGINE imports (`change-kinds.mjs`, `asset-routes.mjs`,
+ * `site-config.mjs`, `domains.mjs`, `frontier-metrics.mjs`) has ZERO imports of
+ * its own — counted the same way, each returns zero import lines. They are
+ * dependency-free leaf modules holding shared vocabulary — the closed list of
+ * change kinds, the site's hosts, the domain names — and a constant that two
+ * directories must agree on is exactly the thing that should have one
+ * definition.
+ *
+ * ENGINE IS LOAD-BEARING IN THAT SENTENCE AND IS NOT A HEDGE. The Pulse's
+ * TESTS, which the table above counts separately as its other 5 edges, already
+ * import three `lib/` modules that are NOT leaves: `review-hash.mjs` (3 imports
+ * of its own, incl. `./frontmatter.mjs`) and `reviews.mjs` (6, incl.
+ * `gray-matter` and `../loop/lib/verdict.mjs`) at
+ * `pulse/tests/domain-seeds.test.mjs:39-40`, and `schema.mjs` — zod itself, the
+ * exact acquisition this file argues against — at
+ * `pulse/tests/mint.test.mjs:230`. So the rule restated below binds the ENGINE
+ * and does not bind `pulse/tests/`: a test process is not the shipped
+ * model-free Pulse and never runs where the Pulse runs, so what a test may
+ * reach for is a different question from what the engine may. That records
+ * where the boundary actually sits today; it is not a grant, and whether the
+ * rule SHOULD bind the tests is open and is not answered here.
+ *
+ * `lib/facts.mjs`, where `todayIso()` lives, is the opposite shape
+ * and that is what settles this file: it imports `lib/schema.mjs` (and with it
+ * zod), `lib/data-layer.mjs` and `lib/units.mjs`, so the model-free Pulse would
+ * acquire the site build's validation stack in order to learn what day it is.
+ *
+ * So the boundary is not "nothing crosses" and was mis-stated as that; it is
+ * **what may cross**: a leaf module of shared constants may, and a module that
+ * drags the build behind it may not. That is a restatement, not a loosening —
+ * it forbids the same import it always forbade — and it is checkable, because
+ * "the module I am importing has no imports of its own" is a thing an author
+ * can measure in one command before adding the edge.
+ *
+ * A shared helper still has to live somewhere, and every candidate is still
+ * worse than three small copies:
+ *
+ *  - In `lib/`: the objection is the one measured above — not that the edge
+ *    would be the first (it would not be: commit `5afab61`, 2026-08-31, the
+ *    same day this comment was first written, gave `pulse/lib/indexnow.mjs`
+ *    `lib/asset-routes.mjs` and `lib/site-config.mjs`), but that `lib/facts.mjs`
+ *    is not a leaf and the five modules the Pulse already imports are. Putting the helper beside `todayIso()` hands the Pulse zod, and
+ *    putting a second, leaf date module in `lib/` beside `todayIso()` leaves
+ *    `lib/` with two date helpers and no rule about which to reach for — which
+ *    is the failure this whole class is made of.
  *  - In a new sixth top-level directory: an architectural element added to the
  *    five that `CLAUDE.md` says *are* the design, to hold three lines.
  *  - In `loop/`, imported by the others: same objection as `lib/`, pointed the

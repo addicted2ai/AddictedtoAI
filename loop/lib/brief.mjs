@@ -20,6 +20,11 @@ import { BRIEF_EXCERPT_MAX_CHARS, JOB_TYPES, PROPOSAL_COOLING_DAYS } from './con
 // never told its branch would be judged by.
 import { DEFAULT_GATES, gateCommandForName } from './gates.mjs';
 import { DOMAINS, FRONTIER_CRITERIA, FRONTIER_REASONS } from '../../lib/domains.mjs';
+// The radar rows are the scout's, and `pulse/lib/registry.mjs` is where they are
+// declared, validated and — the part that matters here — FILTERED. See
+// `radarInputs` below for why the Desk reads them through that module's own
+// helpers rather than parsing `data/sources/registry.json` itself.
+import { loadRegistry, radarFeeds, radarReadableUrls } from '../../pulse/lib/registry.mjs';
 
 /**
  * The five criteria and the eight domains, rendered for a brief from the ONE
@@ -55,6 +60,17 @@ export const GROUND_RULES = `## Ground rules (non-negotiable)
   \`git -C <repo>\`.
 - **Keep shell command strings short.** Write a script file and run it rather
   than composing a long one-liner.
+- **This invocation ends the moment you end your turn.** There is no next turn
+  here and nothing waits for you: the process exits when you stop speaking, and
+  any command still running is orphaned, not awaited. So **never start a
+  process in the background and then stop to wait for it.** Run \`npm test\` and
+  \`npm run build\` in the FOREGROUND, read their output, then write
+  \`RESULT.md\`, then stop. Measured on 2026-09-06 (job \`j-20260906-17\`): an
+  author committed its work, said it was waiting on the suite and ended its
+  turn; the process exited immediately, \`RESULT.md\` was never written so the
+  run was recorded \`interrupted\`, and the orphaned suite kept running inside
+  the deleted worktree and held the machine-wide test lock against every other
+  suite on the machine.
 - **Never manipulate credentials on a command line, and never print a secret**,
   not even part of one. An auth failure is a finding to report — write it in
   \`RESULT.md\` and stop. Do not go looking for a broader-scoped credential.
@@ -220,6 +236,125 @@ export function acceptanceChecksFor(type) {
     );
   }
   return checks;
+}
+
+/**
+ * The scout's radar feeds, rendered into its brief as INPUTS (beads
+ * addictedtoai-wg78; DESK-ORDER-001 §5; keeper ruling K30).
+ *
+ * The four rows were registered in `data/sources/registry.json` and validated by
+ * `pulse/lib/registry.mjs`, and then nothing read them: `radarFeeds` and
+ * `radarReadableUrls` had no caller anywhere under `loop/`, so the scout's
+ * acceptance checks told it "radar feeds are inputs to the sweep" while its
+ * brief — its ONLY channel — named not one of them. A registered feed nobody is
+ * handed is not a feed the scout has; it is a data file.
+ *
+ * THE REFUSAL IS THE REASON THIS GOES THROUGH `radarReadableUrls` AND NOT
+ * THROUGH THE JSON. Six of the seventeen declared radar URLs are refused — by
+ * `export.arxiv.org/robots.txt` ("Disallow: /"), by NVIDIA's Terms of Service,
+ * by `github.com/robots.txt`'s `Disallow: /*.atom$`, and by two organisations
+ * that publish no feed at all — each with the dated finding that produced it.
+ * A brief that listed `row.feeds` would hand every one of those to the scout,
+ * and "the registry recorded a refusal" would mean nothing, because recording a
+ * refusal and then routing around it is worse than never checking. So this
+ * function emits ONLY what `radarReadableUrls` returns, in that helper's own
+ * order, and a refused URL is never printed — not even as a refusal, because a
+ * URL in a brief is a URL the job can read.
+ *
+ * That is also why a job is told, in the section itself, that the list is
+ * closed: a missing URL is missing because reading it was refused, and going
+ * looking for it is the routing-around this whole mechanism exists to prevent.
+ *
+ * A registry this worktree cannot read is reported IN the section rather than
+ * thrown: `assembleBrief` runs for every job type against every fixture, a
+ * throw here would abort a run for a reason unrelated to its work, and the one
+ * thing that must not happen is a scout brief that silently omits the section
+ * and reads as though the radar were empty.
+ *
+ * @param {string} repoRoot
+ */
+export function radarInputs(repoRoot) {
+  let rows = [];
+  let readable = new Set();
+  try {
+    const registry = loadRegistry(repoRoot);
+    rows = radarFeeds(registry);
+    readable = new Set(radarReadableUrls(registry).map((u) => u.trim()));
+  } catch (err) {
+    return `## Radar inputs — unavailable
+
+The source registry in this worktree could not be read, so this brief carries no
+radar feeds: \`${err.message}\`. Sweep without them and say so in \`RESULT.md\`.
+`;
+  }
+
+  const emitted = new Set();
+  const blocks = [];
+  for (const row of rows) {
+    // Candidates in the helper's own order — the row's own url first, then its
+    // feeds — filtered through the ONE readable set the helper built from the
+    // whole array. Nothing here decides what is readable; it only decides how
+    // to group what already is, so a row cannot disagree with the helper.
+    //
+    // Each candidate carries its OWN robots/terms finding rather than the
+    // row's: a `feeds` entry is validated with its own dated checks
+    // (`validateRadarChecks(feed, fat)` in pulse/lib/registry.mjs), and a row
+    // whose own url is refused can still contribute a permitted feed — so the
+    // row-level pair is not a fact about every URL the row lists underneath
+    // it, and rendering it as one was misattributing a dated rights finding
+    // to URLs it does not describe.
+    const candidates = [
+      { url: row.url, robots: row.robots, terms: row.terms },
+      ...(row.feeds ?? []).map((f) => ({ url: f?.url, robots: f?.robots, terms: f?.terms })),
+    ];
+    const urls = [];
+    for (const c of candidates) {
+      if (typeof c.url !== 'string') continue;
+      const key = c.url.trim();
+      if (!readable.has(key) || emitted.has(key)) continue;
+      emitted.add(key);
+      urls.push(c);
+    }
+    if (urls.length === 0) continue;
+    blocks.push(`### ${row.title ?? row.id} (\`${row.id}\`)
+
+- **Format**: ${row.format} — **verified live**: ${row.verified_on}
+- **Read these URLs**:
+${urls
+  .map(
+    (c) => `  - \`${c.url}\`
+    - **Robots** (checked ${c.robots?.checked_on}): ${c.robots?.result}
+    - **Terms** (read ${c.terms?.read_on}): ${c.terms?.result}`,
+  )
+  .join('\n')}`);
+  }
+
+  if (blocks.length === 0) {
+    return `## Radar inputs — none registered
+
+No radar feed in this worktree's source registry is cleared for reading, so this
+sweep has none. That is a finding, not a blocker: sweep without them.
+`;
+  }
+
+  return `## Radar inputs — where to look (DESK-ORDER-001 §5)
+
+These are the registered radar feeds: the scout's radar, and **inputs to the
+sweep only**. Nothing from them is displayed, quoted as a feed, or filed as it
+arrived — a candidate is what you judged, never what a feed handed you. They
+tell you where to look; the charge is still outward, and a run whose candidates
+all came off this list has swept the list rather than the world.
+
+**The list is closed.** Every URL here was cleared against the publisher's
+robots and terms on the date shown. A radar URL this repository refuses is
+**not in this brief at all** — the refusals and the dated findings that produced
+them live in \`data/sources/registry.json\`, and a URL missing from this section
+is missing because reading it was refused, not because nobody thought of it. Do
+not go looking for the missing ones; recording a refusal and then routing around
+it is worse than never having checked.
+
+${blocks.join('\n\n')}
+`;
 }
 
 /**
@@ -509,6 +644,11 @@ export function assembleBrief(ctx, {
   const ex = excerptsFor(ctx.repoRoot, job.type, { maxChars: BRIEF_EXCERPT_MAX_CHARS });
   const checks = acceptanceChecksFor(job.type);
   const prose = PROSE_TYPES.includes(job.type);
+  // The scout's alone (beads addictedtoai-wg78). The rows exist to widen the
+  // sweep's aperture without saturating the surface, and no other job type
+  // sweeps; handing them to every brief would be handing every job a reading
+  // list it has no charge to read.
+  const radar = job.type === 'scout' ? `\n${radarInputs(ctx.repoRoot)}` : '';
 
   return `# Job ${jobId} — \`${job.type}\`
 
@@ -536,7 +676,7 @@ ${checks.map((c) => `- ${c}`).join('\n')}
   ${DEFAULT_GATES.map((g) => `\`${gateCommandForName(g)}\``).join(', ')}. This list is
   generated from the gate set itself, so it cannot drift from what will actually run.
 - The diff contains nothing you cannot defend from a source or a run.
-${prose ? '- A reviewer with fresh context, seeing only your diff, can check every claim in it.\n' : ''}
+${prose ? '- A reviewer with fresh context, seeing only your diff, can check every claim in it.\n' : ''}${radar}
 ## What happens next (so you know what your output is for)
 
 The loop computes the diff itself from this branch — it never takes your
