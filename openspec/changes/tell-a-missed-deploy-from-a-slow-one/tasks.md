@@ -11,7 +11,7 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
 
 ## The check: containment, not equality
 
-- [ ] 1. `pulse/lib/publish.mjs`: replace `stampMatchesCommit(id, sha)` with a
+- [x] 1. `pulse/lib/publish.mjs`: replace `stampMatchesCommit(id, sha)` with a
       containment test. Keep the existing hex-abbreviation guard
       (`/^[0-9a-f]{7,40}$/`, seven being git's own floor) and the
       `stampId`-reads-`commit` behaviour verbatim; add resolution of the stamp
@@ -21,20 +21,20 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       commit another actor pushed can be resolved at all. Implements: *the
       stamp identifies the commit this run pushed, or a commit that contains
       it*.
-- [ ] 2. `pulse/lib/publish.mjs`: fail closed on everything the test cannot
+- [x] 2. `pulse/lib/publish.mjs`: fail closed on everything the test cannot
       answer — a stamp that is not a hex abbreviation, one that resolves to no
       commit object after the fetch, one that resolves ambiguously, and a git
       invocation that errors. Each is "not landed", never "landed". Implements:
       *neither SHALL one that resolves to no commit the local repository can
       name … the check SHALL fail closed on it*.
-- [ ] 3. `pulse/tests/publish-verify.test.mjs`: a fixture repository where the
+- [x] 3. `pulse/tests/publish-verify.test.mjs`: a fixture repository where the
       live stamp names a descendant of the pushed commit — the check passes and
       no hold is written; and the control without which that proves nothing, a
       stamp naming a **sibling** commit on a fork of the same parent, which does
       not pass. Mutation: replace the ancestry test with string equality and
       confirm the descendant case fails while the sibling case still passes;
       restore and verify the file byte-identical by hash. Tests task 1.
-- [ ] 4. `pulse/tests/publish-verify.test.mjs`: four fail-closed cases, each
+- [x] 4. `pulse/tests/publish-verify.test.mjs`: four fail-closed cases, each
       asserting "not landed" — `unknown`, a bare timestamp, a well-formed
       abbreviation of a commit not in the repository, and a git failure injected
       at the ancestry call. Mutation: make the unresolvable case return `true`
@@ -42,14 +42,14 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
 
 ## The confirmation window
 
-- [ ] 5. `pulse/lib/publish.mjs`: after the first budget elapses with no match,
+- [x] 5. `pulse/lib/publish.mjs`: after the first budget elapses with no match,
       poll a second window of at least `3 × POLL_BUDGET_MS` before concluding
       failure. Both durations are parameters of the verify function (it already
       takes `pollBudgetMs`), so the tests can run them in milliseconds. The
       result SHALL record which window the match landed in. Implements: *the
       Pulse SHALL poll a second, confirmation window of at least three times the
       first … the two SHALL NOT be recorded as the same fact*.
-- [ ] 6. `pulse/tests/publish-verify.test.mjs`: a stamp that starts carrying the
+- [x] 6. `pulse/tests/publish-verify.test.mjs`: a stamp that starts carrying the
       pushed commit only after the first budget elapses — the deploy is landed,
       no `HOLD.md` exists afterwards, and the result names the confirmation
       window; plus the control, a stamp that never carries it, which still
@@ -58,7 +58,7 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
 
 ## The hold says which failure it is
 
-- [ ] 7. `pulse/lib/publish.mjs`: compute a classification from the readings the
+- [x] 7. `pulse/lib/publish.mjs`: compute a classification from the readings the
       loop already holds, as a frozen closed set in one place, decided in this
       order so the set is exhaustive. A *reading* is a poll of the live stamp
       after the push (the `before`/`baseline` read at `:637–638` is not one), so
@@ -84,7 +84,7 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       and SHALL carry the pushed commit, the last stamp read, both window
       durations, and the classification* and *a deploy hold SHALL be
       machine-identifiable as one*.
-- [ ] 8. `pulse/tests/publish-verify.test.mjs`: six holds, each asserting the
+- [x] 8. `pulse/tests/publish-verify.test.mjs`: six holds, each asserting the
       written file carries the `deploy-hold:` marker line with the pushed commit,
       the classification's name, the last stamp read and **both window durations
       as written values, not merely a duration-shaped field** — one per
