@@ -236,3 +236,38 @@ runners:
       UNVERIFIED until `node loop/conformance.mjs --runner opencode-deepseek`
       records four PASSes in data/conformance.json. The selector refuses any
       runner carrying a recorded FAIL.
+
+  - id: opencode-muse-spark
+    provider: opencode-go
+    tier: cheap
+    roles: [author, reviewer]
+    model: opencode-go/muse-spark-1.3-contributor
+    harness: opencode
+    command: 'opencode run --dir "{worktree}" --model opencode-go/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
+    capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
+    startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found)'
+    conformance: unverified
+    note: >-
+      Added 2026-09-07 on the maintainer's instruction ("I want to try a new
+      model runner"): Muse Spark 1.3 Contributor, on the same OpenCode Go
+      account and the same OpenCode harness as opencode-deepseek — so the
+      SAME LANE (`provider: opencode-go`): a capacity pause on either pauses
+      both, which is what sharing a subscription means here.
+
+      Identifiers verified against this machine the same day rather than
+      assumed. `opencode models` (opencode 1.18.18) lists
+      `opencode-go/muse-spark-1.3-contributor` (release 2026-09-02, context
+      1,048,576, output 131,072, reasoning and tool calls on); the bare
+      `opencode/muse-spark-1.3-contributor-free` row is the free tier, and
+      the OpenRouter rows are a different lane. The variants this model
+      declares are minimal / low / medium / high / xhigh — there is NO
+      `max` here, unlike deepseek-v4-flash, so the template asks for
+      `high`; raise it to `xhigh` in this file if the review gate says the
+      work is thin.
+
+      The template is otherwise the deepseek one verbatim, including the
+      load-bearing argument order (message first, `--file` last).
+
+      UNVERIFIED until `node loop/conformance.mjs --runner opencode-muse-spark`
+      records four PASSes in data/conformance.json. The selector refuses any
+      runner carrying a recorded FAIL.
