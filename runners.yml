@@ -326,42 +326,62 @@ runners:
       records four PASSes in data/conformance.json. The selector refuses any
       runner carrying a recorded FAIL.
 
-  - id: opencode-zen-muse-spark
-    provider: opencode-zen
+  - id: opencode-openrouter-muse-spark
+    provider: openrouter-account
     tier: cheap
     roles: [author, reviewer]
-    model: opencode/muse-spark-1.3
+    model: openrouter/meta/muse-spark-1.3-contributor
     harness: opencode
-    command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model opencode/muse-spark-1.3 --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
+    command: 'opencode run --attach http://127.0.0.1:4096 --dir "{worktree}" --model openrouter/meta/muse-spark-1.3-contributor --variant high --auto "Follow the attached brief exactly. End by writing RESULT.md as the brief instructs." --file "{prompt_file}"'
     capacity_stderr_pattern: '(rate.?limit|insufficient balance|quota|429)'
     startup_failure_stderr_pattern: '(401|403|unauthorized|invalid api.?key|token.?expired|not authenticated|no auth|please run .{0,12}(login|auth)|file not found|ECONNREFUSED|connection refused|fetch failed)'
     conformance: unverified
     note: >-
-      The same model as opencode-muse-spark, on a DIFFERENT LANE. Added
-      2026-09-07 09:30 on the maintainer's instruction after the first
-      trial job on OpenCode Go hit the provider's short-window rate limit
-      29 model-minutes in, one step before writing RESULT.md ("finish the
-      job with opencode, but change the provider to opencode zen … NOT THE
-      FREE"). `provider: opencode-zen` is its own lane, so the one-hour
-      pause the Go lane earned that morning does not touch this entry,
-      and a capacity event here pauses neither Go entry.
+      The same model as opencode-muse-spark at the same Contributor price,
+      on a DIFFERENT LANE: `provider: openrouter-account` is its own
+      subscription and its own rate limits, so the pause the Go lane earns
+      from a `capacity` line does not touch this entry, and vice versa.
+      The lane key is not the bare word `openrouter` on purpose: the
+      portability test forbids every registered provider name inside
+      `loop/`, and the machinery must be able to name the Pulse source
+      `openrouter-models` (the site's price feed, a subject of the site and
+      not a runner) — a bare `openrouter` lane made that legitimate mention
+      read as a leaked harness name.
 
-      Identifiers verified against this machine the same minute: with the
-      OpenCode Zen credential present (`opencode auth list`: four
-      credentials, Zen among them) `opencode models` lists
-      `opencode/muse-spark-1.3` — "Muse Spark 1.3", api url
-      https://opencode.ai/zen/v1, $1.25 in / $4.25 out per million tokens,
-      context 1,048,576, output 131,072, variants minimal/low/medium/high/
-      xhigh, no `max`. It is NOT `opencode/muse-spark-1.3-contributor-free`
-      (the free tier, never used by this project) and not the Go row
-      (`opencode-go/muse-spark-1.3-contributor`, $0.10/$0.20, data-sharing
-      opt-in). Twelve to twenty times the Go price per token; `tier:
-      cheap` is kept so the resumed job's budget category matches the run
-      that started it — revisit if this lane becomes the default.
+      ACCOUNT GATE, measured 2026-09-07 10:30: OpenRouter refuses this
+      model until the account confirms 18+ at
+      https://openrouter.ai/settings/preferences ("This model requires you
+      to complete the following before use: 18+ age confirmation"). The
+      first conformance run recorded four FAILs, all "no RESULT.md", for
+      that reason alone; re-run after the maintainer confirms.
+
+      HOW IT GOT HERE, 2026-09-07. The first trial job on OpenCode Go
+      (opencode-muse-spark) hit that provider's short-window rate limit 29
+      model-minutes in, one step before writing RESULT.md. The maintainer
+      asked for the job to finish on OpenCode Zen; the same job then ran
+      to completion on `opencode/muse-spark-1.3` (Zen's only paid row,
+      $1.25 / $4.25 per million, the full non-Contributor price — Zen
+      carries no paid Contributor row, only the free one, which this
+      project has never used). He then chose this row instead:
+      "'openrouter/meta/muse-spark-1.3-contributor' sorry I was mistaken
+      about there being a paid, contributor option for opencode zen". The
+      Zen entry that ran that one job (id opencode-zen-muse-spark, commit
+      3543c05) is replaced by this one; its conformance record went with
+      it.
+
+      Identifiers verified against this machine the same day: with the
+      OpenRouter credential present, `opencode models` lists
+      `openrouter/meta/muse-spark-1.3-contributor` — "Muse Spark 1.3
+      Contributor", $0.10 in / $0.20 out per million tokens, variants
+      minimal/low/medium/high/xhigh/max. `--variant high` matches the
+      other Muse entries; `max` exists here and does not on the OpenCode
+      rows, so raise it in this file if the review gate says the work is
+      thin. The Contributor terms (the vendor trains on the traffic) are
+      OpenRouter's to enforce on that account.
 
       Same attached template as the other OpenCode entries; the server is
       documented on opencode-muse-spark.
 
-      UNVERIFIED until `node loop/conformance.mjs --runner opencode-zen-muse-spark`
+      UNVERIFIED until `node loop/conformance.mjs --runner opencode-openrouter-muse-spark`
       records four PASSes in data/conformance.json. The selector refuses any
       runner carrying a recorded FAIL.

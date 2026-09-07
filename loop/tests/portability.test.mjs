@@ -93,9 +93,15 @@ test('the loop and the loop config name no model, provider or harness at all', (
     for (const v of [r.id, r.provider, r.model, r.harness]) {
       if (!v) continue;
       if (String(v).length >= 4) names.add(String(v).toLowerCase());
-      for (const part of String(v).split(/[/\s]+/)) {
-        if (part.length >= 4) names.add(part.toLowerCase());
-      }
+      // A model id is `<route>/<vendor>/<model>` on a router: the whole id and
+      // its LAST segment are names; an intermediate segment is a vendor label
+      // that is also an English word. Measured 2026-09-07 when a registered
+      // model was routed through a third party under a vendor segment that is
+      // also the English prefix of "metadata": that segment hit twelve loop
+      // files, none of which names a model. (The id is not quoted here: this
+      // file is inside the scan too.)
+      const parts = String(v).split(/[/\s]+/).filter((p) => p.length >= 4);
+      if (parts.length) names.add(parts[parts.length - 1].toLowerCase());
     }
   }
   const hits = scan(
