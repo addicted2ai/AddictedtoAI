@@ -99,6 +99,35 @@ export const NO_OUTPUT_SIGNAL = 'no-output';
 export const NON_RUN_OUTCOMES = Object.freeze(['abandoned']);
 
 /**
+ * The outcomes a genuine no-output invocation can carry, and the second half
+ * of the same rule `reviewProducedNothing` states in `result.mjs`: a signal is
+ * a MEASUREMENT, and a record whose outcome contradicts its own signal is not
+ * evidence of a runner that cannot run.
+ *
+ * A runner that truly produced nothing leaves exactly one of these behind. An
+ * author that wrote no RESULT.md classifies `interrupted`; a reviewer that
+ * wrote no verdict record makes the merge gate refuse with `no-record`. Any
+ * OTHER outcome beside a `no-output` signal is self-contradictory, because
+ * every one of them was derived by reading something the invocation produced —
+ * an `approve` or a `revise` outcome means the gate parsed a verdict record,
+ * which is the very artefact whose absence the signal is claiming.
+ *
+ * MEASURED, 2026-09-07: job j-20260907-16's two review phases carry
+ * `no-output` beside outcomes `revise` and `approve` — verdicts the gate could
+ * only have reached by reading the records both reviewers did write. The cause
+ * was a startup-failure pattern matching the runner's own transcript on
+ * stderr, fixed in `result.mjs` so no further such signals are written; this
+ * clause is what keeps the ones ALREADY in the ledger from disabling a working
+ * runner, without rewriting a line of recorded history.
+ *
+ * A contradicted signal ENDS the streak rather than being skipped: the
+ * contradiction is positive proof the runner produced something, and this
+ * module's rule is that a runner which produced anything, in any role, is
+ * working.
+ */
+export const NO_OUTPUT_OUTCOMES = Object.freeze(['interrupted', 'no-record']);
+
+/**
  * THE RESIDUAL GAP (beads addictedtoai-g8a, found by the clause-by-clause
  * audit that opened addictedtoai-pfv). A ledger LINE's own `runner` field
  * always names the AUTHOR of that Desk run — `run.mjs` writes it from the
@@ -176,7 +205,7 @@ export function noOutputStreak(ledger, runnerId) {
   const ids = [];
   for (let i = mine.length - 1; i >= 0; i--) {
     if (NON_RUN_OUTCOMES.includes(mine[i].outcome)) continue;
-    if (mine[i].signal === NO_OUTPUT_SIGNAL) {
+    if (mine[i].signal === NO_OUTPUT_SIGNAL && NO_OUTPUT_OUTCOMES.includes(mine[i].outcome)) {
       n++;
       ids.push(mine[i].id);
     } else break;

@@ -579,3 +579,134 @@ test('G8A author-side streak behaviour is byte-for-byte unchanged: line-level on
     'mock-other-lane produced a real approve every time',
   );
 });
+
+/**
+ * A HARNESS THAT NARRATES ON STDERR IS NOT A HARNESS THAT NEVER STARTED
+ * (measured on job j-20260907-16). The startup-failure pattern is matched
+ * against the whole stderr stream, and a runner whose transcript arrives there
+ * quotes commit ids, hash keys and test line numbers back into it — text that
+ * matches a pattern written to catch `401`/`403` from a login failure. Both of
+ * that job's review passes wrote full verdict records the merge gate then read
+ * and acted on, and both were recorded `no-output` anyway.
+ *
+ * WHAT THAT COSTS, measured rather than assumed, because the first reading of
+ * it was wrong. Where ONE runner both authors and reviews, the streak caps at
+ * two and the runner is never refused: the job's own line-level record carries
+ * the author's `done` with no signal, and `invocationsFor` pushes it after that
+ * line's review phases, so reading backwards it ends the streak every job. The
+ * refusal is reachable in the two shapes where nothing intervenes — a
+ * REVIEWER-ONLY runner (no line-level record of its own; three review passes
+ * reach the limit) and a runner whose AUTHOR phase also goes silent (the
+ * line-level signal then counts too). Both measured at streak 3, refused.
+ *
+ * So this is a false measurement that disables a working runner in one
+ * configuration and merely pollutes the ledger in another — not an imminent
+ * halt in either.
+ */
+test('a runner that wrote its verdict record is not "produced nothing", whatever its stderr says', () => {
+  // The real shape: an ordinary login-failure pattern, and a transcript quoting a
+  // commit id and a test line number that happen to contain those digits.
+  const runner = {
+    startup_failure_stderr_pattern: '(401|403|token.?expired|unauthorized|no credentials)',
+  };
+  const narrated = {
+    stdout: '',
+    stderr: [
+      'this review on commit `ca7401e5f8ea` — the same commit the diff was computed from',
+      'pulse\tests\diff.test.mjs:403:  const call = (src, id, dep, arrivals) => successors(src, id);',
+    ].join('\n'),
+    killed: false,
+    code: 0,
+  };
+  assert.equal(
+    reviewProducedNothing(narrated, true, runner),
+    false,
+    'a verdict record on disk is positive evidence the reviewer ran; the pattern may not outrank it',
+  );
+  // The guard is exactly one clause wide: with NO record and nothing on stdout
+  // the same stderr still reads as a runner that never started, which is the
+  // case the pattern exists for and must keep catching.
+  assert.equal(
+    reviewProducedNothing(narrated, false, runner),
+    true,
+    'no record and silence: the pattern still speaks, unchanged',
+  );
+  // Positive evidence on the other channel does the same work.
+  assert.equal(
+    reviewProducedNothing({ ...narrated, stdout: 'verdict: approve' }, false, runner),
+    false,
+    'output on stdout is also positive evidence',
+  );
+});
+
+test('classifyRun gives the author role the same guard: a written RESULT.md outranks the pattern', () => {
+  const runner = { startup_failure_stderr_pattern: 'MOCK-AUTH-FAILURE' };
+  const present = { status: 'interrupted', present: true, malformed: true, why: 'first line is malformed' };
+  const absent = { status: 'interrupted', present: false, why: 'RESULT.md is absent' };
+  const run = { stderr: 'wrote MOCK-AUTH-FAILURE handling into the fixture', stdout: '', killed: false, code: 0 };
+
+  assert.equal(
+    classifyRun(run, present, runner).producedNothing,
+    false,
+    'a RESULT.md was written — the run produced something, whatever matched in stderr',
+  );
+  assert.equal(
+    classifyRun(run, absent, runner).producedNothing,
+    true,
+    'no RESULT.md and nothing on stdout: unchanged, the pattern still means a dead start',
+  );
+});
+
+/**
+ * The other half, and the one that clears history already recorded: a `signal`
+ * is a measurement, and a record whose OUTCOME contradicts its own signal is
+ * not evidence of a runner that cannot run. `approve` and `revise` are reached
+ * only by parsing a verdict record — the very artefact the signal claims is
+ * absent.
+ */
+test('a no-output signal beside a real verdict outcome is self-contradictory and does not disable a runner', () => {
+  // j-20260907-16's exact shape, three times over: the author worked, and both
+  // review phases carry `no-output` beside verdicts the gate could only reach
+  // by reading the records that were written.
+  const contradicted = (i) =>
+    ledgerLine({
+      id: `j-${i}`,
+      runner: 'mock-frontier',
+      outcome: 'done',
+      phases: [
+        { role: 'author', runner: 'mock-frontier', mm: 24, killed: false, code: 0, outcome: 'done' },
+        { role: 'review1', runner: 'mock-reviewer', mm: 9, killed: false, code: 0, outcome: 'revise', signal: NO_OUTPUT_SIGNAL },
+        { role: 'review2', runner: 'mock-reviewer', mm: 4, killed: false, code: 0, outcome: 'approve', signal: NO_OUTPUT_SIGNAL },
+      ],
+    });
+  const ledger = [contradicted(1), contradicted(2), contradicted(3)];
+  assert.equal(
+    noOutputStreak(ledger, 'mock-reviewer').count,
+    0,
+    'six contradicted signals are six verdicts read, not six runs that produced nothing',
+  );
+  assert.equal(runnerHealthGate(ledger, 'mock-reviewer').ok, true);
+
+  // And the genuine article is untouched: `no-record` IS what a reviewer that
+  // wrote nothing leaves behind, and three of them still refuse the runner.
+  const genuine = (i) =>
+    ledgerLine({
+      id: `j-n${i}`,
+      runner: 'mock-frontier',
+      outcome: 'failed',
+      phases: [
+        { role: 'author', runner: 'mock-frontier', mm: 3, killed: false, code: 0, outcome: 'done' },
+        { role: 'review1', runner: 'mock-reviewer', mm: 1, killed: false, code: 1, outcome: 'no-record', signal: NO_OUTPUT_SIGNAL },
+      ],
+    });
+  const dead = [genuine(1), genuine(2), genuine(3)];
+  assert.equal(noOutputStreak(dead, 'mock-reviewer').count, 3);
+  assert.equal(runnerHealthGate(dead, 'mock-reviewer').ok, false);
+  // The author's own line-level case, likewise unchanged.
+  const authorDead = (i) =>
+    ledgerLine({ id: `j-a${i}`, runner: 'mock-frontier', outcome: 'interrupted', signal: NO_OUTPUT_SIGNAL, mm: 0 });
+  assert.equal(
+    runnerHealthGate([authorDead(1), authorDead(2), authorDead(3)], 'mock-frontier').ok,
+    false,
+  );
+});
