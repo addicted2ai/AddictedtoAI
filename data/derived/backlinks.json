@@ -62,12 +62,6 @@
         "title": "Nobody had to report the wiki incident, and OpenAI says it is now writing the rule that was missing",
         "type": "post",
         "file": "content/blog/nobody-had-to-report-the-wiki-incident.md"
-      },
-      {
-        "url": "/blog/pachocki-an-alien-mind-monitorability",
-        "title": "OpenAI's chief scientist says CoT monitoring is fading, and the Astra card measured it three days earlier",
-        "type": "post",
-        "file": "content/blog/pachocki-an-alien-mind-monitorability.md"
       }
     ],
     "concept/distillation": [
@@ -2054,12 +2048,6 @@
         "title": "GPT-6 Astra shipped, and OpenAI's system card says the model got harder to monitor",
         "type": "post",
         "file": "content/blog/openai-gpt-6-astra-system-card.md"
-      },
-      {
-        "url": "/blog/pachocki-an-alien-mind-monitorability",
-        "title": "OpenAI's chief scientist says CoT monitoring is fading, and the Astra card measured it three days earlier",
-        "type": "post",
-        "file": "content/blog/pachocki-an-alien-mind-monitorability.md"
       }
     ],
     "model/openai-gpt-5-6-sol-pro": [
@@ -2117,12 +2105,6 @@
       }
     ],
     "model/openai-gpt-6-astra": [
-      {
-        "url": "/blog/pachocki-an-alien-mind-monitorability",
-        "title": "OpenAI's chief scientist says CoT monitoring is fading, and the Astra card measured it three days earlier",
-        "type": "post",
-        "file": "content/blog/pachocki-an-alien-mind-monitorability.md"
-      },
       {
         "url": "/blog/same-weights-two-access-envelopes",
         "title": "Anthropic and Google each shipped one model in two safeguard tiers in three days, and OpenAI promised the second tier without shipping it. Two of the three describe the permissive cyber tier in the future tense.",
@@ -3020,12 +3002,6 @@
         "title": "GPT-6 Astra shipped, and OpenAI's system card says the model got harder to monitor",
         "type": "post",
         "file": "content/blog/openai-gpt-6-astra-system-card.md"
-      },
-      {
-        "url": "/blog/pachocki-an-alien-mind-monitorability",
-        "title": "OpenAI's chief scientist says CoT monitoring is fading, and the Astra card measured it three days earlier",
-        "type": "post",
-        "file": "content/blog/pachocki-an-alien-mind-monitorability.md"
       },
       {
         "url": "/blog/same-weights-two-access-envelopes",

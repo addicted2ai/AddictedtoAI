@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 675,
+  "count": 674,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -135,16 +135,6 @@
     {
       "u": "/blog/openai-gpt-6-astra-system-card",
       "t": "GPT-6 Astra shipped, and OpenAI's system card says the model got harder to monitor",
-      "k": "post",
-      "d": null,
-      "s": null,
-      "i": null,
-      "a": [],
-      "b": false
-    },
-    {
-      "u": "/blog/pachocki-an-alien-mind-monitorability",
-      "t": "OpenAI's chief scientist says CoT monitoring is fading, and the Astra card measured it three days earlier",
       "k": "post",
       "d": null,
       "s": null,
