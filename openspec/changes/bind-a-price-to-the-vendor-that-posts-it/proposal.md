@@ -20,7 +20,13 @@ Everything below was re-read or re-run in this worktree
 - The registry's robots record for `openrouter-models` is still dated
   **2026-08-28** and still says, verbatim: *"It is a public, unauthenticated JSON
   API and is fetched once per day."* That sentence is what a companion fetch
-  would falsify, which is ak9's cost 3 and it is unchanged.
+  would falsify, which is ak9's cost 3 and it is unchanged. Re-read on
+  2026-09-06, the record's whole shape is `url`, `checked_on`, `result` and
+  `detail` (`data/sources/registry.json:155–160`) — **the request volume exists
+  only inside that free-text `detail`**, where nothing can compare it to
+  anything. That is why the bar below is a new integer field rather than a test
+  on the prose: a check on whether `detail` "states a volume" passes on the
+  sentence quoted above at any volume the site later chooses to make.
 - `pulse/lib/diff.mjs:408–411` still names this issue as the thing that will
   clear the flag: *"When price events are re-keyed to vendor posted rates and
   become trustworthy, ak9 clears `event: false` in the registry and
@@ -97,8 +103,11 @@ would then be re-introduced in data.
 **The event is re-keyed to a vendor-posted rate, identified by provider *and*
 tier, or there is no event.** Absence is the house rule and it is applied without
 a fallback: a row whose author is absent from its own provider listing, or which
-posts several tiers with none declared canonical, has no vendor rate, emits no
-price event, and does **not** borrow the headline.
+posts at other tiers but not the one the source declares canonical, has no vendor
+rate, emits no price event, and does **not** borrow the headline. The identity
+that decides "the author" is the provider **slug** the source publishes against
+the author segment of the row's id, matched exactly — never the endpoint's
+display name, which is a label a rename or a lookalike can make match.
 
 **The vendor rate sits beside the listing rate; it does not replace it.** ak9
 asks this to be settled and the answer is beside. Replacing the catalog column
@@ -113,11 +122,15 @@ of them. The test is whose rate moved, never how far.
 
 **A companion fetch is a declared registry shape with a courtesy bar in front of
 it.** The registry gains the ability to declare a second, per-row URL with its
-own cadence and snapshot; and because that multiplies a source's request rate by
-the size of its covered set, declaring one is explicitly carved out of the
-"adding a source is an ordinary data change" sentence, and the build refuses one
-whose robots record has not been re-checked and re-dated at the new volume with
-that volume written into it.
+own cadence, its own snapshot, the local date it was declared on, and the service
+tier its rates are read at. Because that multiplies a source's request rate by
+the size of its covered set, the bar in front of it is a **build refusal** and
+not a reading instruction: a declaration is refused unless the source's robots
+record was checked on or after the declaration's `declared_on` and carries a
+`robots.requests_per_day` at least as large as the covered set measured from the
+snapshot. Comparing an integer to a measured count is something a build can do;
+reading a prose sentence for whether it "states a request volume" is not, and a
+sentence that was true at one request a day stays true-looking at three hundred.
 
 ## What this change deliberately does not do
 
@@ -126,19 +139,25 @@ that volume written into it.
   clearing it is one registry edit with no second switch to find, and that edit
   is a data change made after this change's tasks land, not part of the spec.
 - **It does not register the companion source or write its robots re-check.**
-  Both are ordinary data changes — under the modified requirement the *shape* is
-  specified and the *bar* is enforced by the build, and filling in the row and
-  re-fetching `robots.txt` is registry data like any other. The re-check is a
-  courtesy act with a request rate attached, and the honest place for it is the
-  day the fetch is switched on, not a week earlier in a spec.
+  Registering the row is a data change like any other — and it is a data change
+  the **build refuses** until the source's robots record has been re-fetched,
+  re-dated on or after the declaration's `declared_on`, and given a
+  `robots.requests_per_day` no smaller than the covered set the declaration's own
+  rule measures from the snapshot. That is the whole of the carve-out: the shape
+  is specified here, the bar is a build refusal rather than a sentence telling a
+  reader that this data change is special, and the day the row is filled in is
+  the day the re-check has to be true. The re-check is a courtesy act with a
+  request rate attached, and the honest place for it is the day the fetch is
+  switched on, not a week earlier in a spec.
 - **It does not change any surface's labelling of the price column.** How a
   catalog names two price fields to a reader is `directory`'s and `site`'s, and
   no delta here touches either. What this change fixes is the data: two values,
   distinctly named, neither standing in for the other.
 - **It does not model the whole tier landscape.** The rule is that a bound rate
-  names its tier and that an undeclared-canonical multi-tier row is absent. Which
-  tier a source declares canonical is registry data, per source, and deliberately
-  not decided in a spec.
+  names its tier, that every companion declaration names one canonical tier, and
+  that a row whose author posts nothing at that tier is absent. Which tier a
+  source declares canonical is registry data, per source, and deliberately not
+  decided in a spec.
 - **It does not resolve `addictedtoai-pfc` or `addictedtoai-k7d`.** Both are
   listed as blocked on this issue and both are prose-and-check problems downstream
   of the data existing; this change makes their fix possible and does not make it.

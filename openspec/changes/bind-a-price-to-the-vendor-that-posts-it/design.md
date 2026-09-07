@@ -38,7 +38,7 @@ defect.
 
 The measurement in `data/price-attribution-debt.json` is that one provider lists
 several tiers for one row, spanning 0.5×–2× for OpenAI and 1×–3.6× for Google AI
-Studio, with regional Azure endpoints at +10%. So `provider_name === author` is
+Studio, with regional Azure endpoints at +10%. So matching the author alone is
 not a unique match; it is a set.
 
 Two ways to resolve it. Compile a rule ("prefer the tier whose name is
@@ -50,9 +50,25 @@ reviewable"*. A tier-selection heuristic is a pricing judgment, and a pricing
 judgment compiled into a diff module is invisible to everyone who reads the
 prices.
 
-Where the registry declares none and the vendor posts several, the value is
-absent. Guessing there is how a site ends up printing a fast-tier rate under a
-sentence about standard pricing.
+**So `canonical_tier` is a required part of a companion declaration, not an
+optional one**, and the build refuses a block without it — a companion that
+declares no canonical tier can bind nothing, so allowing it would be allowing a
+fetch that costs the source hundreds of requests a day and produces no value.
+The residual absence is therefore the narrower one: the author is present in the
+listing but posts nothing at the declared tier. Guessing another of its tiers
+there is how a site ends up printing a fast-tier rate under a sentence about
+standard pricing.
+
+**And the author match is on slugs, not on labels.** The obvious implementation
+compares the endpoint's `provider_name` — a display string like `OpenAI` — to the
+row's author, case-folded. That is a label match, which this repository has
+already recorded as spoofable: a display name is settable by whoever writes the
+listing, several providers can carry one, and a rename silently makes or breaks
+an attribution. The comparison is between the two machine keys — the provider
+slug the source publishes for that endpoint and the author segment of the row's
+id — by exact equality after trimming and lower-casing. Nothing on this path
+reads the display name at all, which is why task 7 says so in the code rather
+than only here.
 
 ## D4. What a companion snapshot looks like, and why it is snapshotted at all
 
@@ -60,8 +76,8 @@ The requirement says the per-row listing is snapshotted like any other fetch, so
 a rate attributed to a vendor on a date can be re-checked after the vendor changes
 it. The shape follows the existing one: a single dated JSON document per fetch
 cycle, keyed by the slug fetched, holding for each slug only the fields the site
-reads — provider identity, tier, the posted rates, and the fetch's own status —
-not the whole upstream response.
+reads — the provider slug, the tier, the posted rates, and the fetch's own status
+— not the whole upstream response.
 
 Two reasons for the reduction rather than storing responses verbatim: the
 models snapshot is already 1.1 MB per rotation for 431 rows, and a full

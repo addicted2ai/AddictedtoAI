@@ -12,11 +12,23 @@ what happens on the many rows that have none, and what a price event may be keye
 to — and the one registry change it needs: a companion fetch, declared, with the
 courtesy bar that a 300-fold rise in request volume owes the source.
 
+The rotation is measured, on this corpus, at up to 14.7× across providers on one
+row and 4.9× between a reseller's headline and the vendor's own posted rate,
+which is why that field carries `event: false` — and why the site has emitted no
+price event of any kind since 2026-08-29, eight days as this is written. That is
+a gap, not a destination, and it is the reason this change exists rather than a
+property of the system it specifies.
+
 `addictedtoai-ak9` carries the three costs this pays and they are transcribed
 into the proposal rather than re-decided here. The registry modification exists
 because the live requirement's closing sentence — *adding or removing a source is
 an ordinary data change, not an OpenSpec change* — would otherwise cover a
-declaration that multiplies a source's request rate, and it must not.
+declaration that multiplies a source's request rate, and it must not. **That
+carve-out is rationale and it stays here**: what the built system does about it
+is refuse the declaration until the robots record has been re-checked at the new
+volume, and that refusal is the only thing written into the requirement. A
+sentence telling a reader how to read another sentence is not a mechanism, and
+this repository's guardrails are mechanisms.
 
 ## ADDED Requirements
 
@@ -26,17 +38,20 @@ The catalog's price column and every bound price fact read one number:
 `pricing.prompt` from the models feed, documented by its publisher as *"pricing
 from the top provider for this model"*. The top provider is re-chosen on a
 rolling 30-second outage window, so the value is verbatim while its referent
-moves — measured on this corpus at up to 14.7× across providers on one row, and
-4.9× between a reseller's headline and the vendor's own posted rate. A movement
-in it is a routing artifact, which is why it produces no changed-feed event
-today, and why the site has had no price event of any kind since 2026-08-29. That
-is a gap, not a destination.
+moves, and a movement in it is a routing artifact rather than a repricing.
 
 - A price event SHALL be keyed to a **vendor-posted rate**: the rate posted, on
   the source's per-provider endpoint listing for that row, by the provider whose
-  identity matches the row's own author, at a named service tier. A rate that
-  cannot be attributed to the row's author is not that vendor's price and SHALL
-  NOT be treated as one.
+  identity matches the row's own author, at the service tier the registry
+  declares canonical for that source. **The identity compared SHALL be the
+  provider *slug* the source itself publishes for that endpoint, against the
+  author segment of the row's own id — the two machine keys, matched by exact
+  equality after case-folding and trimming, and nothing else.** A display name is
+  not an identity: `provider_name` is a label a source may set to anything,
+  several providers may carry the same one, and matching on it makes an
+  attribution that a rename or a lookalike can forge. A rate that cannot be
+  attributed to the row's author under that comparison is not that vendor's price
+  and SHALL NOT be treated as one.
 - A price event SHALL NOT be derived from the top-provider headline, at any
   threshold. **No percentage threshold SHALL be used to decide whether a price
   movement is an event**: the measured failures are a 60% scheduled-window flip
@@ -48,12 +63,13 @@ is a gap, not a destination.
   tier at twice it — so a rate with no tier is under-specified even when the
   vendor is unambiguous, and a sentence naming the vendor and the number would be
   false about which of its prices it names.
-- Where the row's author is **absent** from that row's provider listing, or posts
-  several tiers with none of them declared canonical in the registry, the
+- Where the row's author is **absent** from that row's provider listing, or is
+  present but posts nothing at the tier the source declares canonical, the
   vendor-posted rate SHALL be **absent**. Absence SHALL produce no event, SHALL
-  render as absent, and SHALL NOT fall back to the headline: a fallback is how a
-  listing rate becomes a vendor attribution silently, which is the defect this
-  requirement exists to close.
+  be carried in the derived catalog row as an absent value with its date rather
+  than as a missing field, and SHALL NOT fall back to the headline: a fallback is
+  how a listing rate becomes a vendor attribution silently, which is the defect
+  this requirement exists to close.
 - The vendor-posted rate SHALL sit **beside** the listing rate in the derived
   catalog row, under its own name, and SHALL NOT overwrite it. Replacing the
   column would blank it on every row with no vendor endpoint; both values are
@@ -78,10 +94,17 @@ is a gap, not a destination.
 
 #### Scenario: An untiered rate is not a vendor price
 
-- **WHEN** the row's author posts several tiers and the registry declares none of
-  them canonical for that source
+- **WHEN** the row's author posts several tiers and none of them is the tier the
+  source declares canonical
 - **THEN** the vendor-posted rate is absent rather than guessed, and the
   ambiguity is reported rather than resolved
+
+#### Scenario: A matching display name is not a matching vendor
+
+- **WHEN** a provider whose slug differs from the row's author segment posts a
+  rate on that row's listing under a display name equal to the author's
+- **THEN** it does not resolve as the vendor-posted rate, because the comparison
+  is on the two slugs
 
 #### Scenario: The headline stays, and stays what it is
 
@@ -118,19 +141,31 @@ row, with its own cadence, its own snapshot, and its own robots/terms record.
 It exists for the case where the row-level feed carries a value whose referent is
 only recoverable per row.
 
-- A companion fetch SHALL declare which rows it covers, and the covered set
-  SHALL be computable from the snapshot alone rather than being a list somebody
-  maintains by hand.
-- **Declaring a companion fetch, or widening the set of rows it covers, is NOT
-  an ordinary data change.** It multiplies the source's request rate by the size
-  of that set, and the closing sentence above SHALL NOT be read to cover it.
+- A companion fetch SHALL declare: its URL template, its cadence, the rule that
+  computes which rows it covers, the snapshot it writes, **the local date it was
+  declared on (`declared_on`)**, and **which service tier of the companion
+  listing is canonical for this source**. A declaration missing any of these
+  SHALL fail the build naming the source. `declared_on` is what the robots
+  re-check is dated against; the canonical tier is what a bound rate is resolved
+  at, and a companion with none declared can bind nothing.
+- A companion fetch SHALL declare its covered rows as a rule over the source's
+  own snapshot — a field test and a key — and the covered set SHALL be
+  computable from the snapshot alone rather than being a list somebody maintains
+  by hand. The build SHALL refuse a declaration that enumerates row ids: a
+  hand-maintained list silently stops covering rows the feed adds, and a coverage
+  gap that nothing can detect is how an absent value becomes indistinguishable
+  from an unasked question.
 - A companion fetch SHALL NOT be enabled until the source's robots/terms record
-  has been **re-checked at the new volume**: re-fetched, re-dated, and rewritten
-  to state the request rate the site will actually make. The build SHALL refuse
-  a companion declaration whose source's robots record is dated before that
-  declaration or does not state a request volume. This is a courtesy question at
-  least as much as a compliance one, and a check made for one request a day is
-  not evidence about three hundred.
+  has been **re-checked at the new volume**: re-fetched, re-dated, and stating
+  the request rate the site will actually make as a number the build can compare
+  — `robots.requests_per_day`, an integer. The build SHALL refuse a companion
+  declaration whose source's `robots.checked_on` is earlier than the
+  declaration's `declared_on`, whose `robots.requests_per_day` is absent, or
+  whose `robots.requests_per_day` is less than the size of the covered set
+  measured from the latest snapshot. A number no smaller than what the site will
+  actually request is the only form of this claim a build can check; prose in
+  `robots.detail` stating a volume is a sentence, and no test can tell a true
+  one from a stale one.
 - A companion fetch's failures SHALL be per row and SHALL NOT fail the run: a
   row whose companion fetch errors or refuses SHALL yield an absent value for
   that row, recorded with its date, on the same terms as any other absence.
@@ -145,10 +180,18 @@ only recoverable per row.
 
 #### Scenario: A companion fetch cannot be switched on behind an old robots check
 
-- **WHEN** a source declares a companion fetch and its robots record predates
-  that declaration or states no request volume
-- **THEN** the build fails, naming the source and the missing re-check, and no
-  companion request is made
+- **WHEN** a source declares a companion fetch and its robots record's
+  `checked_on` is earlier than the declaration's `declared_on`, or carries no
+  `robots.requests_per_day`, or carries one smaller than the covered set
+  measured from the latest snapshot
+- **THEN** the build fails, naming the source and which of the three it failed,
+  and no companion request is made
+
+#### Scenario: A hand-maintained coverage list is refused
+
+- **WHEN** a companion declaration expresses its covered rows as a list of row
+  ids rather than as a rule over the snapshot
+- **THEN** the build fails, naming the source, and no companion request is made
 
 #### Scenario: One row's companion failure is one row's absence
 

@@ -1,9 +1,10 @@
 # Tasks
 
-Ten normative sentences are added in `specs/pulse` — six in the added
-requirement, four in the modified registry requirement. Each has an implementing
-task and a testing task below, and every testing task names the mutation that
-proves it measures something.
+Ten normative bullets are added in `specs/pulse` — six in the added requirement,
+four in the modified registry requirement (18 SHALL/MUST clauses when counted
+clause by clause, since several bullets state a rule and its refusal together).
+Each has an implementing task and a testing task below, and every testing task
+names the mutation that proves it measures something.
 
 Nothing in this change registers the companion source, re-checks a robots file,
 or clears `event: false`. Those are registry data changes made on the day the
@@ -12,19 +13,28 @@ fetch is switched on; the tasks below build the shape and the bar.
 ## The companion fetch, and the bar in front of it
 
 - [ ] 1. `pulse/lib/registry.mjs`: validate a `companion` block on a source entry
-      — a URL template, a cadence, a declaration of which rows it covers, and the
-      snapshot it writes. The covered set is expressed as a rule over the
-      snapshot (a field test and a key), never as a list of ids, and validation
-      refuses a hand-maintained list. Implements: *a companion fetch SHALL
-      declare which rows it covers, and the covered set SHALL be computable from
-      the snapshot alone*.
-- [ ] 2. `pulse/lib/registry.mjs`: refuse a `companion` declaration whose
-      source's `robots` record is dated before the declaration, or whose
-      `robots.detail` states no request volume. The refusal is a `throw` in the
-      same family as the existing `declined_fields` refusals, so it fails the
-      build naming the source. Implements: *a companion fetch SHALL NOT be
-      enabled until the source's robots/terms record has been re-checked at the
-      new volume … the build SHALL refuse*.
+      — a URL template, a cadence, a rule for which rows it covers, the snapshot
+      it writes, `declared_on` (a local date), and `canonical_tier` (the service
+      tier of the companion listing this source's rates are read at). Each of the
+      six is required and a block missing any of them throws naming the source
+      and the field. The covered set is expressed as a rule over the snapshot (a
+      field test and a key), never as a list of ids, and validation refuses a
+      hand-maintained list. Implements: *a companion fetch SHALL declare: its URL
+      template, its cadence, the rule …, `declared_on` …, and which service tier
+      … is canonical* and *the covered set SHALL be computable from the snapshot
+      alone … The build SHALL refuse a declaration that enumerates row ids*.
+- [ ] 2. `pulse/lib/registry.mjs`: refuse a `companion` declaration on three
+      independent, separately-named conditions — `robots.checked_on` earlier than
+      the block's `declared_on`; `robots.requests_per_day` absent; and
+      `robots.requests_per_day` less than the covered set's size measured from
+      the source's latest snapshot by running the block's own coverage rule over
+      it. Nothing here reads `robots.detail`: the volume claim is the integer,
+      because a build can compare an integer to a measured count and cannot tell
+      a true sentence from a stale one. The refusal is a `throw` in the same
+      family as the existing `declined_fields` refusals, so it fails the build
+      naming the source and which condition tripped. Implements: *a companion
+      fetch SHALL NOT be enabled until the source's robots/terms record has been
+      re-checked at the new volume … the build SHALL refuse*.
 - [ ] 3. `pulse/lib/sources.mjs`: fetch the companion once per covered key, keyed
       on `canonical_slug` rather than row id (design D1 — 335 keys against 404
       rows on the committed snapshot), writing one dated snapshot per cycle
@@ -37,29 +47,46 @@ fetch is switched on; the tasks below build the shape and the bar.
       recorded with its date, and the run continues. A refusal is recorded as a
       refusal under the existing rule. Implements: *a companion fetch's failures
       SHALL be per row and SHALL NOT fail the run*.
-- [ ] 5. `pulse/tests/registry.test.mjs`: a companion declaration with a robots
-      record dated after it and stating the volume validates; the same
-      declaration with a robots record dated before it is refused, naming the
-      source; and the same again with a dated record whose detail states no
-      volume is refused. Mutation: drop the date comparison and confirm the
-      second case passes while the third still fails — two refusals with
-      independent causes, not one condition described twice. Tests task 2.
+- [ ] 5. `pulse/tests/registry.test.mjs`: six cases over one companion
+      declaration. It validates when `robots.checked_on` is on or after
+      `declared_on` and `robots.requests_per_day` is at least the covered count.
+      It is refused, naming the source and the condition, when: the robots record
+      is dated before `declared_on`; `robots.requests_per_day` is absent;
+      `robots.requests_per_day` is one less than the covered set measured from
+      the fixture snapshot; the block names no `canonical_tier`; and the block
+      expresses its coverage as a list of row ids rather than a rule. Mutations:
+      drop the date comparison and confirm only the first refusal passes;
+      drop the count comparison and confirm only the third does — five refusals
+      with independent causes, not one condition described five times. Tests
+      tasks 1 and 2.
 - [ ] 6. `pulse/tests/sources.test.mjs`: a fixture whose snapshot holds four
       priced rows over three canonical slugs issues **three** companion fetches,
       not four; one of the three errors and only the rows it covers report an
-      absent value while the other two resolve; the run exits 0. Mutation: key
-      the fetch on row id and confirm the count assertion fails while the
-      absence assertions pass. Tests tasks 1, 3 and 4.
+      absent value while the other two resolve; the run exits 0. The snapshot
+      half, which is what makes the claim false-able later: a dated companion
+      snapshot is written under the source's own snapshot directory holding
+      **only** the bound fields — asserted on the written file's key set, not on
+      its existence — and `previous` is replaced only when the fetched rows
+      differ from `latest`, asserted by running the fixture twice unchanged and
+      reading `previous` both times. Mutations: key the fetch on row id and
+      confirm only the count assertion fails; rotate `previous` unconditionally
+      and confirm only the rotation assertion fails. Tests tasks 1, 3 and 4.
 
 ## The vendor-posted rate
 
-- [ ] 7. `pulse/lib/derive.mjs`: resolve a vendor-posted rate for a row —
-      the entry in that row's companion listing whose provider identity matches
-      the row's author, at the tier the registry declares canonical for that
-      source. The resolved value carries the provider and the tier alongside the
-      number. Implements: *a price event SHALL be keyed to a vendor-posted rate …
-      at a named service tier* and *a bound vendor-posted rate SHALL carry the
-      provider and the service tier it was posted at*.
+- [ ] 7. `pulse/lib/derive.mjs`: resolve a vendor-posted rate for a row — the
+      entry in that row's companion listing posted at the source's declared
+      `canonical_tier` whose **provider slug** equals the **author segment of the
+      row's id** (the text before the first `/`), compared by exact equality
+      after trimming and lower-casing both, and by nothing else. The endpoint's
+      display name is not read on this path at all; write that down in the code,
+      because reading it is the change a later edit will make by accident and it
+      is the one that turns an attribution into a label match. The resolved value
+      carries the provider slug and the tier alongside the number. Implements: *a
+      price event SHALL be keyed to a vendor-posted rate … the identity compared
+      SHALL be the provider slug … matched by exact equality* and *a bound
+      vendor-posted rate SHALL carry the provider and the service tier it was
+      posted at*.
 - [ ] 8. `pulse/lib/derive.mjs`: absence, with no fallback path in the code at
       all — author absent from the listing, or several tiers with none declared
       canonical, resolves to absent. There is no branch that reads
@@ -74,14 +101,19 @@ fetch is switched on; the tasks below build the shape and the bar.
       nothing else. No threshold appears anywhere on this path. Implements: *a
       price event SHALL NOT be derived from the top-provider headline, at any
       threshold* and *no percentage threshold SHALL be used*.
-- [ ] 11. `pulse/tests/derive.test.mjs`: four rows — author present at the
-      canonical tier (resolves, carrying provider and tier); author present at
-      three tiers with none declared canonical (absent); author absent from the
-      listing (absent); author present but the listing failed to fetch (absent,
-      dated). In every absent case assert the row's vendor field is absent **and**
-      that the listing rate is unchanged, which is the assertion that catches a
-      fallback. Mutation: add a fallback to `pricing.prompt` on the absent path
-      and confirm exactly the three absent cases fail. Tests tasks 7 and 8.
+- [ ] 11. `pulse/tests/derive.test.mjs`: five rows — author present at the
+      canonical tier (resolves, carrying the provider slug and the tier); author
+      present at three other tiers but not the canonical one (absent); author
+      absent from the listing (absent); author present but the listing failed to
+      fetch (absent); and the spoof control, a provider whose slug differs from
+      the author segment posting at the canonical tier under a **display name
+      equal to the author's** (absent — it must not resolve). In every absent
+      case assert the row's vendor field is present as a **dated absent value**
+      rather than missing, **and** that the listing rate is unchanged, which is
+      the assertion that catches a fallback. Mutations: add a fallback to
+      `pricing.prompt` on the absent path and confirm exactly the four absent
+      cases fail; compare display names instead of slugs and confirm only the
+      spoof control fails. Tests tasks 7 and 8.
 - [ ] 12. `pulse/tests/derive.test.mjs`: the catalog row carries both fields with
       their own names and the listing field is byte-identical to what the same
       fixture produces today. Mutation: overwrite the listing field with the
