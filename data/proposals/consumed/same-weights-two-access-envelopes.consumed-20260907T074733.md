@@ -122,3 +122,18 @@ sentence above comes from a vendor page fetched today.
 - If the writing job concludes the F5 flag does not hold on the evidence it
   can fetch, it drops the flag and says so in its record rather than
   publishing a flag it cannot defend.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-07
+- job: j-20260907-02 (post)
+- merged as: `2c7c54ced8af28d475fdd183ee8e34d78c060234`
+- produced: `content/blog/same-weights-two-access-envelopes.md`
+- was: `same-weights-two-access-envelopes.md` (slug `same-weights-two-access-envelopes`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.

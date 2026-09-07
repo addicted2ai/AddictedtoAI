@@ -1,6 +1,6 @@
 {
   "generated_from": "content/ at build time — names and titles only, never body text",
-  "count": 673,
+  "count": 674,
   "docs": [
     {
       "u": "/blog/anthropic-enterprise-frontier-safeguards",
@@ -135,6 +135,16 @@
     {
       "u": "/blog/openai-gpt-6-astra-system-card",
       "t": "GPT-6 Astra shipped, and OpenAI's system card says the model got harder to monitor",
+      "k": "post",
+      "d": null,
+      "s": null,
+      "i": null,
+      "a": [],
+      "b": false
+    },
+    {
+      "u": "/blog/same-weights-two-access-envelopes",
+      "t": "Anthropic and Google each shipped one model in two safeguard tiers in three days, and OpenAI promised the second tier without shipping it. Two of the three describe the permissive cyber tier in the future tense.",
       "k": "post",
       "d": null,
       "s": null,
