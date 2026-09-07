@@ -1,0 +1,74 @@
+# job j-20260906-18 — re-execution of the DESK-ORDER-001 §1 backfill check
+# node v24.13.0, 2026-09-07T05:05:24.632Z
+
+$ node tools/check-frontier-backfill.mjs
+# The vocabulary, read from lib/domains.mjs (not restated)
+DOMAINS           = coding, agents, image, video, audio, research, science-math, robotics
+FRONTIER_REASONS  = F1, F2, F3, F4, F5
+
+# 16 post files under content/blog/ (README.md excluded)
+
+| file | frontier | frontier_reason | domains (as parsed) | schema |
+|---|---|---|---|---|
+| anthropic-enterprise-frontier-safeguards.md | true | F5 | (absent = general) | ok |
+| anthropic-usage-policy-government-exceptions.md | false | — | (absent = general) | ok |
+| claude-session-theft-infostealers.md | false | — | (absent = general) | ok |
+| doj-statement-of-interest-llm-training-fair-use.md | false | — | (absent = general) | ok |
+| eu-ai-office-first-enforcement-rfis.md | false | — | (absent = general) | ok |
+| gitspawn-git-config-code-execution-coding-agents.md | false | — | (absent = general) | ok |
+| glm-5-3-license-revenue-gate.md | true | F5 | (absent = general) | ok |
+| ifm-k2-horizon-open-fleet.md | false | — | (absent = general) | ok |
+| minimax-h3-licence-excluded-territories.md | true | F5 | video | ok |
+| nemotron-ultra-cc-ioi-2026.md | true | F1 | coding | ok |
+| nobody-had-to-report-the-wiki-incident.md | false | — | (absent = general) | ok |
+| openai-astra-critical-designation.md | true | F4 | (absent = general) | ok |
+| openai-daybreak-frontline-defenders.md | false | — | (absent = general) | ok |
+| openai-gpt-6-astra-system-card.md | true | F3 | (absent = general) | ok |
+| thomson-reuters-thomson-model.md | false | — | (absent = general) | ok |
+| three-accounts-hugging-face-intrusion.md | false | — | (absent = general) | ok |
+
+# split: 6 flagged, 10 declined, 16 total
+
+# content/wiki/org/ — 24 entries
+aion-labs, alibaba-cloud, amazon, anthropic, bytedance-seed, cohere, deepseek, google-deepmind, inception-labs, inclusionai, meta-superintelligence-labs, microsoft, minimax, mistral-ai, moonshot-ai, nous-research, nvidia, openai, perplexity, poolside, spacexai, tencent, thinking-machines-lab, z-ai
+
+| organisation | has content/wiki/org/ entry |
+|---|---|
+| openai (F3, F4 flags) | yes |
+| anthropic (F5 flag) | yes |
+| z-ai (F5 flag) | yes |
+| minimax (F5 flag) | yes |
+| nvidia (F1 flag) | yes |
+| IFM / MBZUAI (decline) | NO |
+| MBZUAI (decline, alternate slug) | NO |
+| Thomson Reuters (decline) | NO |
+
+RESULT: every post satisfies postSchema and matches the committed decision table.
+exit=0
+
+# content/blog/ holds 16 post file(s) (README.md excluded)
+anthropic-enterprise-frontier-safeguards.md
+anthropic-usage-policy-government-exceptions.md
+claude-session-theft-infostealers.md
+doj-statement-of-interest-llm-training-fair-use.md
+eu-ai-office-first-enforcement-rfis.md
+gitspawn-git-config-code-execution-coding-agents.md
+glm-5-3-license-revenue-gate.md
+ifm-k2-horizon-open-fleet.md
+minimax-h3-licence-excluded-territories.md
+nemotron-ultra-cc-ioi-2026.md
+nobody-had-to-report-the-wiki-incident.md
+openai-astra-critical-designation.md
+openai-daybreak-frontline-defenders.md
+openai-gpt-6-astra-system-card.md
+thomson-reuters-thomson-model.md
+three-accounts-hugging-face-intrusion.md
+
+$ git log --oneline 78625a5..HEAD -- content/blog
+
+exit=0
+
+$ git diff --stat 78625a5..HEAD -- content/blog
+
+exit=0
+
