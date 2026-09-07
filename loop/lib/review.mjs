@@ -93,6 +93,47 @@ export function needsReadsHuman(type) {
 }
 
 /**
+ * The blog posts among a set of merged subjects (specs/review,
+ * addictedtoai-37rb).
+ *
+ * The voice obligation follows the MERGED SUBJECTS and not the job type — the
+ * type says what the job was for, the subjects say what it touched, and a job
+ * of any type may touch a post. `content/blog/<slug>.md` and nothing deeper:
+ * the requirement scopes the bar to a blog post, and a file nested under a
+ * post's directory is not one.
+ */
+export const BLOG_POST_PATH = /^content\/blog\/[^/]+\.md$/;
+
+export function blogPostSubjects(subjects) {
+  return (Array.isArray(subjects) ? subjects : [])
+    .map((s) => String(s ?? '').replace(/\\/g, '/'))
+    .filter((p) => BLOG_POST_PATH.test(p));
+}
+
+/**
+ * One review record, read by the NAME a carry-forward entry gives it.
+ *
+ * The name is normalised by `recordFileName` in `lib/reviews.mjs` — the module
+ * that owns the record store — so this gate and `scripts/verify-launch.mjs`
+ * resolve `j-20260902-20.pass2`, `j-20260902-20.pass2.md` and
+ * `data/reviews/j-20260902-20.pass2.md` to the same file.
+ */
+export function readRecordByName(ctx, name) {
+  const file = recordFileName(name);
+  if (!file) return null;
+  const p = join(ctx.reviewsDir, file);
+  if (!existsSync(p)) return null;
+  let text;
+  try {
+    text = readFileSync(p, 'utf8');
+  } catch {
+    return null;
+  }
+  const verdict = parseVerdict(text);
+  return { name: file, path: p, verdict, data: verdict.data };
+}
+
+/**
  * Refusal codes that mean **the record is unusable, not the work** — the
  * reviewer left a forced-judgment field blank or recycled someone else's
  * sentence. The fix is to re-issue the verdict; sending the AUTHOR into a
@@ -129,6 +170,13 @@ export const REISSUE_CODES = Object.freeze([
   'reads-human-empty',
   'reads-human-duplicate',
   'corrections-malformed',
+  // The carry-forward's two refusals join on the same argument (specs/review,
+  // beads addictedtoai-37rb): a reviewer that named the wrong anchor, or
+  // recycled its statement, made a clerical failure in a field ABOUT the
+  // record, not a defect in the work. Sending the AUTHOR into a revision pass
+  // to fix a reviewer's anchor is exactly the waste this list was built for.
+  'reads-human-from-unanchored',
+  'reads-human-from-duplicate',
 ]);
 
 export function isReissueRefusal(code) {
@@ -251,6 +299,7 @@ const CHECKLISTS = {
     `**THE FRONTIER FLAG, WHERE THE POST DECLARES ONE — check that it was EARNED, not merely well formed.** The build already refuses a flag with no criterion, a criterion outside F1-F5, or a domain outside the vocabulary; what it cannot judge is whether the story qualifies, and that is yours. The five criteria, exactly one of which a flagged post cites: ${FRONTIER_CRITERIA_LINES} **NOT QUALIFYING:** a new checkpoint, a price change, a benchmark post with no new artifact, a tool release. The test, stated as a test rather than as a list to be extended: *what every other AI news site already shows does not qualify on its own.* A flag on one of those is \`spec-violation\` **naming the not-qualifying list** — a price change is not F5, which is a change in ACCESS and not in price. \`domains\` is OPTIONAL flagged or not (${DOMAIN_VOCABULARY}): "general" is the UNMARKED default and \`text\` is not a value, so a flagged post carrying no \`domains\` is a general record and is NOT a defect to ask repaired.`,
     "**AN F2 RECORD CARRIES THE PUBLISHER'S ACT, NEVER THE PUBLISHER'S NUMBERS, and BOTH lists below are normative — neither may be dropped as redundant.** **PERMITTED in an F2 record's copy:** the publisher; the index name and its version; the date; the direction of the rescoring; the coverage change, as a count of rows scored before and after; the fact that a non-uniform rescoring can invert orderings. **FORBIDDEN in an F2 record's copy:** any index value, any ratio, any rank, any per-model score. A median is a value however it is aggregated; a leaderboard position is a rank. A draft carrying any of the forbidden four is `spec-violation` **naming the forbidden list** — those are derived from republished numbers, they belong in the review record where you can check the author's work, and never on a rendered page. Check the ANCHOR too: an F2 record anchors on the **publisher's own changelog or announcement** for the rescoring, cited and quoted verbatim, and a third-party write-up is not that anchor; where the publisher's page states the act but not its shape, the record says so and rests its shape on its own measurement. Why BOTH lists reach you rather than only the permitted one: a list that says only what is permitted is not a source test but a field-name test, and a field-name test has already failed in this corpus — an allow-list keyed on field names admitted a router's measured throughput and a third-party analysis site as vendor claims, because the names matched and the sources did not. A rescoring described by its numbers becomes a republished value BY ACCIDENT, with nobody having decided to republish anything.",
     '**Answer both questions in your own words: the send question in `would-cite` (who would send this, and to whom?) and the voice question in `reads-human` (where does this read machine-made, or why does it not?).** For a post, being worth citing alone does not publish — a correct, sourced, forgettable draft is `not-worth-reading`, in those words.',
+    '**WHERE THE DIFF IS A REPAIR TO AN ALREADY-APPROVED POST, say which branch you are taking.** A `reads-human` answers for the bytes its writer read, so a diff that changed them must either answer the voice question afresh or carry the prior answer forward in a `reads-human-from` entry — naming the post, the earlier approving record whose `reads-human` answered for it, and why this diff did not move that post\'s voice. **A diff that rewrites the post\'s prose is not a carry-forward:** carrying a verdict forward across a genuine rewrite is `spec-violation` against specs/review, and nothing mechanical catches it — the next reviewer of that piece is the only thing that does.',
   ],
   scout: [
     "**The charge is checked first, before anything else: bring back work the site could not have thought of by looking at itself.** If every filed candidate could have been written without leaving this repository — from the change feed, the snapshots, the corpus — reject the run `spec-violation` naming the charge. An inward run that is otherwise flawless still fails this.",
@@ -265,7 +314,15 @@ const CHECKLISTS = {
     'Prerequisites and the "after this you will understand" statement are honest.',
     'It beats the obvious alternative a reader would otherwise read.',
   ],
-  directory: ['Spot-check the changed rows against their sources.'],
+  directory: [
+    'Spot-check the changed rows against their sources.',
+    // The list a `repair` job actually gets (`CHECKLIST_FOR_TYPE.repair`), which
+    // is why this sentence lives here and not only on the post list: the bead's
+    // own instance (addictedtoai-37rb) is a `repair` whose diff landed on a
+    // published post, and a reviewer cannot answer a question it was never
+    // asked.
+    '**WHERE THE DIFF LANDS ON A BLOG POST — an already-approved one, as a repair usually does — say which branch you are taking.** A `reads-human` answers for the bytes its writer read, so this verdict must either answer the voice question afresh (where does this post read machine-made, or why does it not?) or carry the prior answer forward in a `reads-human-from` entry — naming the post, the earlier approving record whose `reads-human` answered for it, and why this diff did not move that post\'s voice. One entry per post. **A diff that rewrites the post\'s prose is not a carry-forward:** carrying a verdict forward across a genuine rewrite is `spec-violation` against specs/review, judged by the next reviewer of that piece and by nothing mechanical.',
+  ],
   machinery: [
     '**Run the changed check or script and confirm the claimed behaviour** — red before, green after where applicable.',
     'Every claim about what the change does is verified by executing it, not by reading it.',
@@ -551,7 +608,43 @@ So judge the prose, not the counters. You may cite the lint's warnings as
 evidence; a draft that trips no marker and still reads machine-made is still
 \`reads-as-generated\`, and a draft that trips several and reads like a person
 wrote it is not.
-` : ''}
+` : `
+## If your diff lands on a blog post — the voice question, and the two ways to answer it
+
+**This applies whatever kind of job this is.** The obligation follows what the
+diff MERGES, not what the job was for: if any \`content/blog/*.md\` file is in
+this diff, an \`approve\` must answer the voice question **for each such post**,
+in one of exactly two ways, and the merge refuses an \`approve\` that answers
+neither.
+
+1. **Answer it afresh** in a non-empty \`reads-human\`: where does this post read
+   machine-made, or why does it not? Same two mechanics as \`would-cite\` —
+   blank, or identical to another record's, is refused.
+2. **Carry the prior answer forward**, in a \`reads-human-from\` entry. A
+   \`reads-human\` answers for the bytes its writer read; this diff changed
+   them. So name the post, name the earlier approving record whose
+   \`reads-human\` answered for it, and say **in your own words** why this diff
+   did not move that post's voice.
+
+**One entry per post.** A single entry does not cover a second post in the same
+diff — that post is then unanswered and the merge refuses.
+
+**The anchor must itself answer, and a carry-forward is one hop and never a
+chain.** The record you name must exist, must name that same post, must record
+\`approve\`, and must carry a non-empty \`reads-human\` of its own. A record
+whose own answer is another \`reads-human-from\` is not an anchor; name the
+record that actually answered.
+
+**A diff that REWRITES the post's prose is not a carry-forward.** The
+carry-forward is for a diff with no voice in it — a licence correction, a fixed
+date, a broken link. If the prose moved, the old verdict no longer speaks for
+what is on the page, and carrying it forward is a \`spec-violation\` against
+specs/review, catchable by the next reviewer of that piece and by nothing
+mechanical. Your statement is held to the same rules \`would-cite\` is: it must
+be non-empty and must not be a sentence recycled from another review. Two of
+your own entries may share a statement when one correction really did land the
+same way on two posts.
+`}
 ## If your review surfaced a proposal
 
 You may note **at most one** proposal in the verdict record — an idea this
@@ -624,7 +717,12 @@ would-cite: >-
   <your own-words answer: who would link this, and in what argument>
 ${voice ? `reads-human: >-
   <your own-words answer: where does this read machine-made, or why does it not>
-` : ''}# proposal:                # optional, at most one — omit the key entirely if
+` : `# reads-human-from:         # required IF this diff merges a blog post and you
+#   - subject: ...           # are not answering the voice question afresh above:
+#     record: ...            # one entry per post — the post, the earlier
+#     why: ...               # approving record whose \`reads-human\` answered for
+#                            # it, and why this diff did not move its voice
+`}# proposal:                # optional, at most one — omit the key entirely if
 #   slug: ...               # your review surfaced nothing
 # carry:                    # optional, zero or more — omit the key entirely
 #   - title: ...             # if you are carrying nothing forward
@@ -671,7 +769,16 @@ export function existingWouldCites(ctx, excludeJobId) {
  * as `would-cite`'s — and two sweeps that agree today are how the two rules
  * stop agreeing later.
  *
- * @param {'wouldCite'|'readsHuman'} field the parsed key to collect
+ * ONE sweep for the LIST-shaped field too (`readsHumanFrom`), rather than a
+ * second walk of the same directory: a carry-forward's `why` is held to the
+ * same duplicate rule, so it is collected here, one row per entry, and compared
+ * with the same `normalizeField`. A record contributes as many rows as it
+ * carries entries; the same record's own rows are excluded by the same job-id
+ * rule, which is what lets two entries in ONE record share a statement (one job
+ * making the same trivial correction to two posts has one honest sentence to
+ * write about both) while a sentence recycled across reviews is refused.
+ *
+ * @param {'wouldCite'|'readsHuman'|'readsHumanFrom'} field the parsed key to collect
  * @returns {Array<{file: string, value: string}>}
  */
 export function existingFieldValues(ctx, excludeJobId, field) {
@@ -687,7 +794,12 @@ export function existingFieldValues(ctx, excludeJobId, field) {
       continue;
     }
     const v = parseVerdict(text);
-    if (v[field]) out.push({ file: name, value: normalizeField(v[field]) });
+    const val = v[field];
+    if (Array.isArray(val)) {
+      for (const e of val) if (e?.why) out.push({ file: name, value: normalizeField(e.why) });
+    } else if (val) {
+      out.push({ file: name, value: normalizeField(val) });
+    }
   }
   return out;
 }
@@ -811,6 +923,141 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed }) {
           `judgment about this one's prose.`,
         verdict: v,
       };
+    }
+  }
+  // ---------------------------------------------------------------------
+  // N1: an approving verdict on a job whose merged subjects include a blog
+  // post answers for EACH such post — afresh, or by carrying a named prior
+  // answer forward (specs/review, beads addictedtoai-37rb).
+  //
+  // KEYED ON `subjects`, NOT ON `type`, and that is the whole point of this
+  // branch. The type says what the job was FOR; the merged subjects say what it
+  // TOUCHED, and a job of any type may touch a post. Measured: j-20260902-23 is
+  // a `repair` (data/ledger.jsonl:68) whose record approves
+  // content/blog/glm-5-3-license-revenue-gate.md carrying no `reads-human` and
+  // saying so in its own prose — `needsReadsHuman(type)` above asks that
+  // reviewer for neither field, so a type-keyed gate never fires on the exact
+  // shape this change exists to stop.
+  //
+  // RESOLVED PER POST. One entry anywhere does not satisfy a record: a job
+  // merging two posts would then approve with an entry for post A while post B
+  // stayed bound and unanswered, and the launch check would report B as
+  // voice-missing — the two-ends drift this refusal exists to prevent. A fresh
+  // non-empty `reads-human` answers for every post the record carries no entry
+  // for; the requirement asks for one of the two answers, not exactly one.
+  //
+  // A call with no `subjects` measured is not gated here, exactly as the
+  // `reviewed:`/`subject:` equality check below is not.
+  const posts = blogPostSubjects(subjects);
+  if (posts.length && !v.readsHuman) {
+    const answeredFor = new Set(v.readsHumanFrom.map((e) => e.subject));
+    const unanswered = posts.filter((p) => !answeredFor.has(p));
+    if (unanswered.length) {
+      return {
+        ok: false,
+        code: 'reads-human-empty',
+        reason:
+          `\`approve\` on a job whose merged subjects include ${unanswered.join(', ')} answers ` +
+          `the voice question for neither of the two ways specs/review allows. A \`reads-human\` ` +
+          `answers for the bytes its writer read, and this diff changed them, so this verdict ` +
+          `must either answer the voice question afresh (where does this post read machine-made, ` +
+          `or why does it not?) or carry the prior answer forward in a \`reads-human-from\` entry ` +
+          `naming that post, the earlier approving record it stands on, and why this diff did ` +
+          `not move that post's voice. Unanswered post(s): ${unanswered.join(', ')}.` +
+          (v.readsHumanFromWarnings?.length
+            ? ` (Entries skipped as malformed: ${v.readsHumanFromWarnings.join('; ')}.)`
+            : ''),
+        verdict: v,
+      };
+    }
+  }
+  // N2: the anchor. Applied to EVERY entry whenever a `reads-human-from` is
+  // present — not only inside the branch above — so the three refusals are
+  // three separable mechanisms and a record cannot dodge the anchor check by
+  // carrying the field on a job the branch does not reach.
+  //
+  // ONE HOP, NEVER A CHAIN: an anchor whose own record answers only by carrying
+  // forward is refused, and the message says so, so the reviewer is sent to
+  // name the record that actually answered. Following the chain here would
+  // accept records the launch check must then either refuse (two ends
+  // disagreeing) or accept by walking the same chain (a hand-written record
+  // passing a check the merge refuses).
+  for (const [i, e] of v.readsHumanFrom.entries()) {
+    const at = `\`reads-human-from\` entry ${i + 1} (subject ${e.subject}, record ${e.record})`;
+    if (Array.isArray(subjects) && !subjects.map((s) => String(s).replace(/\\/g, '/')).includes(e.subject)) {
+      return {
+        ok: false,
+        code: 'reads-human-from-unanchored',
+        reason:
+          `${at} names a post this job did not merge. The merge measured: ` +
+          `${subjects.join(', ') || '(none)'}. A carry-forward answers for a post in THIS diff; ` +
+          `an entry for any other post answers nothing here.`,
+        verdict: v,
+      };
+    }
+    const anchor = readRecordByName(ctx, e.record);
+    if (!anchor) {
+      return {
+        ok: false,
+        code: 'reads-human-from-unanchored',
+        reason: `${at} names a record that does not exist in ${ctx.reviewsDir}. Name the record the voice verdict actually lives in.`,
+        verdict: v,
+      };
+    }
+    if (!recordNamesPath(anchor, e.subject)) {
+      return {
+        ok: false,
+        code: 'reads-human-from-unanchored',
+        reason: `${at} names a record that does not name this same piece — ${anchor.name} says nothing about ${e.subject}, so it cannot be where that post's voice verdict lives.`,
+        verdict: v,
+      };
+    }
+    if (anchor.verdict.verdict !== 'approve') {
+      return {
+        ok: false,
+        code: 'reads-human-from-unanchored',
+        reason: `${at} names ${anchor.name}, which records \`${anchor.verdict.verdict || 'no parseable verdict'}\` and not \`approve\`. A verdict that did not approve the post is not an answer to carry forward.`,
+        verdict: v,
+      };
+    }
+    if (!normalizeField(anchor.verdict.readsHuman)) {
+      return {
+        ok: false,
+        code: 'reads-human-from-unanchored',
+        reason:
+          `${at} names ${anchor.name}, which carries no non-empty \`reads-human\` of its own` +
+          (anchor.verdict.readsHumanFrom?.length
+            ? ' — it only carries a `reads-human-from` itself, and a carry-forward is one hop and never a chain'
+            : '') +
+          `. Name the record that actually answered the voice question for ${e.subject}.`,
+        verdict: v,
+      };
+    }
+  }
+  // N3: the statement, held to the two rules `reads-human` already carries.
+  // Non-empty is enforced by the parser (an entry with a blank `why` is dropped
+  // and its post is then unanswered above, which is the fail-closed direction);
+  // this is the duplicate half, through the ONE sweep and the ONE normaliser
+  // `would-cite` and `reads-human` use. Two entries in the SAME record may share
+  // a statement — one job making the same trivial correction to two posts has
+  // one honest sentence to write about both, and forcing variation there
+  // manufactures the judgment the rule exists to catch.
+  if (v.readsHumanFrom.length) {
+    const others = existingFieldValues(ctx, jobId, 'readsHumanFrom');
+    for (const e of v.readsHumanFrom) {
+      const mine = normalizeField(e.why);
+      const dup = others.find((o) => o.value === mine);
+      if (dup) {
+        return {
+          ok: false,
+          code: 'reads-human-from-duplicate',
+          reason:
+            `the \`reads-human-from\` statement for ${e.subject} is exactly identical (after ` +
+            `whitespace trimming) to the statement in ${dup.file}. A sentence pasted from another ` +
+            `review is not a judgment about why THIS diff did not move THIS post's voice.`,
+          verdict: v,
+        };
+      }
     }
   }
   if (Array.isArray(subjects)) {

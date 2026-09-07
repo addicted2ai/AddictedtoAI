@@ -46,7 +46,7 @@ that no test attempts is a refusal that has never run.
 
 ## The gate, which is where sentences N1–N3 become mechanisms
 
-- [ ] 3. **N1** — `loop/lib/review.mjs`, the merge gate beside the existing
+- [x] 3. **N1** — `loop/lib/review.mjs`, the merge gate beside the existing
       `reads-human-empty` branch (`review.mjs:682-706`). **The choose-one-of-two
       gate keys on `subjects`, not on `type`.** `mergeGate` already receives the
       merged subject list (`review.mjs:611`, the same list it compares against
@@ -76,7 +76,7 @@ that no test attempts is a refusal that has never run.
       every other job that lands on a post. A call with no `subjects` measured
       is not gated here, exactly as the `reviewed:`/`subject:` equality check at
       `:709` is not.
-- [ ] 4. **N2** — the anchor refusal, new code `reads-human-from-unanchored`,
+- [x] 4. **N2** — the anchor refusal, new code `reads-human-from-unanchored`,
       applied **to every entry**, whenever a `reads-human-from` is present and
       not only inside task 3's branch, so the three refusals are three separable
       mechanisms and a record cannot dodge the anchor check by carrying the
@@ -96,7 +96,7 @@ that no test attempts is a refusal that has never run.
       sent to name the record that actually answered. Do not follow the anchor's
       own carry-forward; the spec's refusal is the whole rule, and a resolver
       that walked a chain here would accept records the merge refuses.
-- [ ] 5. **N3** — the statement refusal, new code
+- [x] 5. **N3** — the statement refusal, new code
       `reads-human-from-duplicate`: each entry's `why` is held to the same two
       rules `reads-human` carries — non-empty after trimming, and not exactly
       identical after trimming to the `why` of any entry in any **other**
@@ -110,7 +110,7 @@ that no test attempts is a refusal that has never run.
       pastes the same "the diff did not move the voice" sentence into every
       repair is the exact failure the duplicate rule exists to catch, and it is
       the failure most likely here.
-- [ ] 6. Both new codes join `REISSUE_CODES` (`review.mjs:117-123`). They are
+- [x] 6. Both new codes join `REISSUE_CODES` (`review.mjs:117-123`). They are
       the reviewer's clerical failure in a field about the record, not a defect
       in the work: sending the **author** into a revision pass to fix a
       reviewer's anchor is the exact waste that list was built for
@@ -118,14 +118,14 @@ that no test attempts is a refusal that has never run.
 
 ## The brief and the checklist, because a reviewer is told or it cannot know
 
-- [ ] 7. `loop/lib/review.mjs`, the reviewer brief template (`review.mjs:433`
+- [x] 7. `loop/lib/review.mjs`, the reviewer brief template (`review.mjs:433`
       and the record skeleton at `:523`): document both branches — answer the
       voice question, or name the record you stand on and say why this diff did
       not move the voice — and say plainly that a diff which rewrites the post's
       prose is not a carry-forward. A mechanism a reviewer is not told about is
       a mechanism that does not run, which is the rule the `carry:` requirement
       already states in those words.
-- [ ] 8. `loop/lib/review.mjs`, `CHECKLISTS.post` and — the list a `repair` job
+- [x] 8. `loop/lib/review.mjs`, `CHECKLISTS.post` and — the list a `repair` job
       actually gets — `CHECKLISTS.directory` (`review.mjs:172`), reached through
       `CHECKLIST_FOR_TYPE.repair` (`review.mjs:187`); there is no list named
       `repair`, and editing one that does not exist is the way this task gets
