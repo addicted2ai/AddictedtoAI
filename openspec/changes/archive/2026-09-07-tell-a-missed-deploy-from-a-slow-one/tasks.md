@@ -187,7 +187,7 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
 - [x] 14. `openspec validate tell-a-missed-deploy-from-a-slow-one --type change
       --strict --no-interactive`, and `node scripts/check-spec-deltas.mjs
       --strict`. Run at drafting time.
-- [ ] 15. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
+- [x] 15. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
       `verify-surfaces`, `verify-analytics` on merged `main`. The
       orchestrator's, not a job's.
 
