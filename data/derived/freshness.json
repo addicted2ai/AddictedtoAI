@@ -55,10 +55,10 @@
     "confirm_after_failures": 2,
     "declined": 9,
     "drifted": 0,
-    "due": 42,
+    "due": 43,
     "excluded": 0,
     "interval_days": 30,
-    "redirected": 19,
+    "redirected": 18,
     "total": 694
   },
   "listings": [
@@ -520,18 +520,6 @@
   ],
   "overdue_facts": [],
   "redirected_links": [
-    {
-      "bytes": null,
-      "cited_by": [
-        "content/wiki/org/amazon.md"
-      ],
-      "final_url": "https://aws.amazon.com/nova/",
-      "kind": "same-site-move",
-      "last_checked": "2026-09-06",
-      "meta_refresh": null,
-      "url": "https://aws.amazon.com/ai/generative-ai/nova/",
-      "verdict_recorded": true
-    },
     {
       "bytes": 140588,
       "cited_by": [
