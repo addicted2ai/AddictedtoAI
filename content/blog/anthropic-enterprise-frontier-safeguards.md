@@ -8,6 +8,7 @@ mentions:
   - org/anthropic
   - model/anthropic-claude-fable-5
   - model/anthropic-claude-fable-5-1
+  - concept/covered-models
 frontier: true
 frontier_reason: "F5"
 ---
@@ -26,7 +27,7 @@ says EFS "will be rolling out to customers in phases, starting later this fall."
 That page is the announcement. Two Anthropic support pages, both updated in the
 same week, are the terms — and they are where the interesting sentences are.
 
-## If you run a ZDR workspace, you have already been locked out for three months
+## If you run a ZDR workspace, you have already been locked out for nearly three months
 
 The affected party is not "enterprises" in general. Anthropic's support article
 on retention names it exactly: the policy applies to "organizations that have set
@@ -48,7 +49,7 @@ retention article states the same effective date in its own words: "This policy,
 described below, goes into effect on June 9, 2026." So a bank with a ZDR
 workspace has had a choice between Anthropic's current top model and its
 retention posture for coming up on three months, and EFS does not end that this
-week. It ends it whenever "later this fall" turns out to mean.
+week. It ends it whatever "later this fall" turns out to mean.
 
 ## What moves is custody. What stays is the judgment.
 
