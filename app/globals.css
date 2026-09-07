@@ -672,7 +672,8 @@ main {
 .fetch-line,
 .delisted-note,
 .strip-empty,
-.deltas-summary {
+.deltas-summary,
+.category-note {
   font-family: var(--mono);
   font-size: var(--step--1);
   color: var(--muted);
