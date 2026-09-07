@@ -14,9 +14,35 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanup, jsonSource, makeRoot, paths, readJson, runPulse, writeEntry, writeJson } from './helpers.mjs';
+import { computeQueue } from '../lib/queue.mjs';
 
 const ARGS = ['--no-build', '--no-mint', '--offline'];
 const NOW = { PULSE_NOW: '2026-08-28' };
+
+test('broken-link reasons distinguish HTTP status from unreachable errors', (t) => {
+  const root = makeRoot([]);
+  t.after(() => cleanup(root));
+  const base = { consecutive_failures: 2, cited_by: ['content/wiki/model/example.md'] };
+  const reasonFor = (link) =>
+    computeQueue(root, {
+      freshness: { broken_links: [{ ...base, url: 'https://fixture.invalid/example', ...link }] },
+      changesFile: paths.changes(root),
+      at: new Date(2026, 7, 28),
+    }).items.find((item) => item.reason === 'broken-link').detail;
+
+  assert.equal(
+    reasonFor({ status: 404, error: null }),
+    'HTTP 404 on 2 consecutive check(s); cited by 1 file(s)',
+  );
+  assert.equal(
+    reasonFor({ status: null, error: 'TypeError: fetch failed (EADDRINUSE)' }),
+    'unreachable: TypeError: fetch failed (EADDRINUSE) on 2 consecutive check(s); cited by 1 file(s)',
+  );
+  assert.equal(
+    reasonFor({ status: null, error: null }),
+    'unreachable: unreachable on 2 consecutive check(s); cited by 1 file(s)',
+  );
+});
 
 function overdueEntry(root, slug, accessed = '2026-01-01') {
   writeEntry(root, `content/wiki/model/${slug}.md`, {
