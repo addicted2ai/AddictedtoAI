@@ -241,18 +241,36 @@ test('no built sitemap is "nothing changed", not a throw — a --no-build run mu
   assert.equal(fetchImpl.calls.length, 0);
 });
 
-test('a non-200 is reported and is NOT a failure of the deploy', async () => {
-  const fetchImpl = async () => ({ status: 429 });
-  const result = await submitIndexNow({
-    root: fixtureRoot(),
-    day: '2026-08-31',
-    siteUrl: SITE_URL,
-    config: { publish: true },
-    log: { step: () => {} },
-    fetchImpl,
-  });
-  assert.equal(result.submitted, false);
-  assert.equal(result.status, 429);
+test('200 and 202 are successful receipts, while protocol failures stay distinct', async () => {
+  const cases = [
+    [200, true, 'received'],
+    [202, true, 'validation pending'],
+    [400, false, 'bad request'],
+    [403, false, 'forbidden'],
+    [422, false, 'unprocessable'],
+    [429, false, 'too many requests'],
+    [500, false, 'unknown response'],
+  ];
+  for (const [status, submitted, expectedMessage] of cases) {
+    const messages = [];
+    const fetchImpl = async () => ({ status });
+    const result = await submitIndexNow({
+      root: fixtureRoot(),
+      day: '2026-08-31',
+      siteUrl: SITE_URL,
+      config: { publish: true },
+      log: { step: (_name, detail) => messages.push(detail) },
+      fetchImpl,
+    });
+    assert.equal(result.submitted, submitted, `HTTP ${status}`);
+    assert.equal(result.reason, `http-${status}`);
+    assert.equal(result.status, status);
+    assert.match(messages[0], new RegExp(expectedMessage), `HTTP ${status} report`);
+    if (status === 202) {
+      assert.ok(messages[0].includes(INDEXNOW_KEY_ROUTE), '202 report names the configured key file');
+      assert.doesNotMatch(messages[0], /not accepted/);
+    }
+  }
 });
 
 test('a thrown request is caught — a search engine outage never stops this site publishing', async () => {
