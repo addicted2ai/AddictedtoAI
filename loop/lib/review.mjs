@@ -970,6 +970,29 @@ export function mergeGate(ctx, { jobId, type, pass = 1, subjects, changed }) {
         verdict: v,
       };
     }
+  } else if (posts.length && v.readsHuman && !needsReadsHuman(type)) {
+    // The other half of "answer the question afresh, in a non-empty,
+    // non-duplicated `reads-human`, as above" (specs/review). The branch
+    // above enforces non-empty; a fresh field on a job whose TYPE does not
+    // itself demand `reads-human` (the `needsReadsHuman(type)` block above
+    // already covers the types that do) was never checked against
+    // `existingFieldValues` — so a repair merging a post could approve with
+    // a `reads-human` copied verbatim from another record's. Same sweep,
+    // same normaliser, same refusal code the type-keyed branch uses.
+    const mine = normalizeField(v.readsHuman);
+    const dup = existingFieldValues(ctx, jobId, 'readsHuman').find((e) => e.value === mine);
+    if (dup) {
+      return {
+        ok: false,
+        code: 'reads-human-duplicate',
+        reason:
+          `\`approve\` on a job whose merged subjects include ${posts.join(', ')} carries a ` +
+          `\`reads-human\` exactly identical (after whitespace trimming) to the field in ` +
+          `${dup.file}. A sentence pasted from another post's review is not a judgment about ` +
+          `this one's prose.`,
+        verdict: v,
+      };
+    }
   }
   // N2: the anchor. Applied to EVERY entry whenever a `reads-human-from` is
   // present — not only inside the branch above — so the three refusals are

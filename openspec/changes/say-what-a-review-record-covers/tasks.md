@@ -76,6 +76,16 @@ that no test attempts is a refusal that has never run.
       every other job that lands on a post. A call with no `subjects` measured
       is not gated here, exactly as the `reviewed:`/`subject:` equality check at
       `:709` is not.
+      **Correction (review round, 2026-09-07): this task's text named only the
+      non-empty half of the fresh answer.** The delta itself (specs/review,
+      "answer the question afresh, in a non-empty, non-duplicated
+      `reads-human`, as above") asks for both. A fresh, non-empty
+      `reads-human` on a job whose subjects include a post but whose type does
+      not itself demand the field (`!needsReadsHuman(type)`) is now swept
+      through `existingFieldValues` the same way the `post`-keyed branch
+      already sweeps it, and refused as `reads-human-duplicate` on a
+      collision — reusing the code the type-keyed branch already uses, so
+      nothing new joins `REISSUE_CODES`.
 - [x] 4. **N2** — the anchor refusal, new code `reads-human-from-unanchored`,
       applied **to every entry**, whenever a `reads-human-from` is present and
       not only inside task 3's branch, so the three refusals are three separable

@@ -893,6 +893,48 @@ test('37rb REFUSAL: a `why` identical to another record\'s statement', () => {
   ctx.cleanup();
 });
 
+test('MUST-FIX REFUSAL: a repair whose fresh `reads-human` duplicates another record\'s', () => {
+  // The subjects-keyed N1 branch enforced only the non-empty half of "answer
+  // the question afresh, in a non-empty, non-duplicated `reads-human`, as
+  // above" (specs/review) — the duplicate half never ran for a job whose TYPE
+  // does not itself demand the field. MEASURED: a `repair` approving POST_A
+  // with a `reads-human` byte-identical (after whitespace trimming) to
+  // j-anchor's used to merge, because `needsReadsHuman('repair')` is false so
+  // the type-keyed branch never checked it, and this branch's own condition
+  // required `!v.readsHuman`, which a fresh field never satisfies.
+  const ctx = ctxAt();
+  anchorFor(ctx);
+  record(ctx, 'j-repair', {
+    subject: POST_A,
+    wouldCite: 'a licence-tracking reader',
+    readsHuman: `\r\n  ${POST_A} argues with itself and the closing line is blunt; nothing narrates itself.  \n`,
+  });
+  const refused = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.code, 'reads-human-duplicate');
+  assert.match(refused.reason, /j-anchor\.md/, 'and it names the record it collided with');
+  assert.match(refused.reason, /content\/blog\/a-note\.md/, 'and it names the post');
+  assert.equal(needsReadsHuman('repair'), false, 'and the type-keyed rule still says nothing about it');
+  ctx.cleanup();
+});
+
+test('MUST-FIX CONTROL: a repair with a FRESH, non-duplicated `reads-human` still merges', () => {
+  const ctx = ctxAt();
+  anchorFor(ctx);
+  record(ctx, 'j-repair', {
+    subject: POST_A,
+    wouldCite: 'a licence-tracking reader',
+    readsHuman: 'This repair read the note fresh: the new sentence lands flat, and that flatness is a judgment.',
+  });
+  const gate = mergeGate(ctx, { jobId: 'j-repair', type: 'repair', subjects: [POST_A] });
+  assert.equal(gate.ok, true, gate.reason);
+  assert.equal(
+    gate.verdict.readsHuman,
+    'This repair read the note fresh: the new sentence lands flat, and that flatness is a judgment.',
+  );
+  ctx.cleanup();
+});
+
 test('37rb CONTROL: two entries in the SAME record may share a `why`', () => {
   // One job making the same trivial correction to two posts has one honest
   // sentence to write about both. Forcing variation there manufactures the
