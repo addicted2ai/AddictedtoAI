@@ -67,8 +67,19 @@ listing, several providers can carry one, and a rename silently makes or breaks
 an attribution. The comparison is between machine keys — the provider slug the
 source publishes for that endpoint and the slug declared for the author segment
 of the row's id — by exact equality after trimming and lower-casing. Nothing on
-this path reads the display name at all, which is why task 7 says so in the code
+this path reads the display name at all, which is why task 9 says so in the code
 rather than only here.
+
+**And "the provider slug the source publishes" is not a field this source's own
+listing carries, which an earlier draft of this design also assumed.** Measured
+on the source's own `/endpoints` response (`data/reviews/j-20260902-01.md:93`),
+an endpoint is `{"provider_name":"Anthropic","tag":"anthropic/fast", ...}` — no
+field named a slug alone. The one machine-readable field is `tag`, a provider
+slug with an optional `/`-suffixed tier (`residual_hazard`'s own `openai` bare /
+`openai/flex` / `openai/fast` triad is the same shape). So the registry
+declares which field carries it (`provider_field`) and the fixed split rule
+reads the slug and the tier out of one value (task 2) — the identity comparison
+below reads that split slug, never a field this source does not publish.
 
 **But the two machine keys are not the same key, and the first draft assumed they
 were.** Exact equality between the endpoint's provider slug and the row's raw

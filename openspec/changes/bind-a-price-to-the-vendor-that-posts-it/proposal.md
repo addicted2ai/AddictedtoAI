@@ -83,9 +83,18 @@ Everything below was re-read or re-run in this worktree
 
 **Not re-measurable here, and named rather than assumed.** ak9's cost 2 — "the
 vendor is often absent from its own model's provider list" — cannot be checked
-from disk, because no companion snapshot exists. It stays the bead's claim. This
-change does not depend on how often it happens: it specifies what an absent
-vendor rate does, and that behaviour is correct at any coverage level.
+from disk, because no full companion snapshot exists. It stays the bead's claim.
+This change does not depend on how often it happens: it specifies what an absent
+vendor rate does, and that behaviour is correct at any coverage level. One
+endpoint's shape from this source's own `/endpoints` listing **is** on disk,
+though, from an unrelated review job's evidence-gathering rather than from a
+companion fetch: `data/reviews/j-20260902-01.md:93` records
+`{"provider_name":"Anthropic","tag":"anthropic/fast","prompt":"0.00001",
+"completion":"0.00005"}`. That single example is what corrected the first
+draft's assumption that the listing carries a bare provider-slug field — it
+does not; the only machine-readable identity is `tag`, a provider slug with an
+optional `/`-suffixed tier — and it is the reason `provider_field` and its
+split rule exist in this delta (see the registry requirement).
 
 ## The findings
 

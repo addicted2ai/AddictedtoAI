@@ -43,11 +43,14 @@ moves, and a movement in it is a routing artifact rather than a repricing.
 - A price event SHALL be keyed to a **vendor-posted rate**: the rate posted, on
   the source's per-provider endpoint listing for that row, by the provider whose
   identity matches the row's own author, at the service tier the registry
-  declares canonical for that source. **The identity compared SHALL be the
-  provider *slug* the source itself publishes for that endpoint, against the
-  provider slug the source's declared author-identity map gives for the author
-  segment of the row's own id — the two machine keys, matched by exact equality
-  after case-folding and trimming, and nothing else.** A display name is not an
+  declares canonical for that source. **The identity and the tier compared
+  SHALL both be read from the endpoint's declared `provider_field` by the
+  registry's stated split rule (see `Sources live in a registry and refusals
+  are data`) — not from any other field the listing may also carry.** The
+  provider slug that reading yields is compared against the provider slug the
+  source's declared author-identity map gives for the author segment of the
+  row's own id — the two machine keys, matched by exact equality after
+  case-folding and trimming, and nothing else. A display name is not an
   identity: `provider_name` is a label a source may set to anything, several
   providers may carry the same one, and matching on it makes an attribution that
   a rename or a lookalike can forge. A rate that cannot be attributed to the
@@ -174,16 +177,32 @@ row-level feed carries a value whose referent is only recoverable per row.
 - A companion fetch SHALL declare: its URL template, its cadence, the rule that
   computes which rows it covers, the snapshot it writes, **the local date it was
   declared on (`declared_on`)**, **which service tier of the companion listing is
-  canonical for this source**, and **an author-identity map giving, for each
-  author segment of this source's row ids, the provider slug that author posts
-  under in the companion listing, each entry carrying the local date it was
-  declared on**. A declaration missing any of these SHALL fail the build naming
-  the source and the missing field. `declared_on` is what the robots re-check is
-  dated against; the canonical tier is what a bound rate is resolved at, and a
-  companion with none declared can bind nothing; the identity map is what stops
-  an attribution resting on two namespaces happening to spell a vendor the same
-  way. Both sides of every map entry SHALL be machine keys — an author segment
-  and a provider slug as the source publishes them — never a display name, and
+  canonical for this source**, **the field of a companion-listing row that
+  carries the provider identity (`provider_field`)**, and **an author-identity
+  map giving, for each author segment of this source's row ids, the provider
+  slug that author posts under in the companion listing, each entry carrying the
+  local date it was declared on**. A declaration missing any of these SHALL fail
+  the build naming the source and the missing field. `declared_on` is what the
+  robots re-check is dated against; the canonical tier is what a bound rate is
+  resolved at, and a companion with none declared can bind nothing.
+  `provider_field` exists because a bare provider slug is not a field this
+  source's own listing carries: measured on this source's `/endpoints` response
+  (`data/reviews/j-20260902-01.md:93`), an endpoint is
+  `{"provider_name":"Anthropic","tag":"anthropic/fast", ...}` — no field named
+  a slug alone — while `provider_slug`/`service_tier` exist only in a different
+  fetch (the model page's embedded payload) and disagree with the tag's own
+  suffix there on the same endpoint (`service_tier: "priority"` against a tag
+  ending `/fast`), so that field is not read here. **A `provider_field` value
+  SHALL be read as the provider slug and the tier by splitting it on its first
+  `/`: the text before the `/` is the provider slug and the text after it is
+  the tier; a value with no `/` names the provider slug alone and denotes that
+  provider's own standard tier** — the reading this site's own measured tier
+  spread already uses the word for
+  (`data/price-attribution-debt.json`'s `residual_hazard`: `openai` bare priced
+  at 1×, `openai/flex` at 0.5×, `openai/fast` at 2×). The identity map is what
+  stops an attribution resting on two namespaces happening to spell a vendor the
+  same way: both sides of every map entry SHALL be machine keys — an author
+  segment and a provider slug as read by that rule — never a display name, and
   the map SHALL NOT be consulted for anything but that comparison.
 - A companion fetch SHALL declare its covered rows as a rule over the source's
   own snapshot — a field test and a key — and the covered set SHALL be
@@ -204,9 +223,13 @@ row-level feed carries a value whose referent is only recoverable per row.
   request is the only form of this claim a build can check; prose in
   `robots.detail` stating a volume is a sentence, and no test can tell a true
   one from a stale one.
-- A companion fetch's failures SHALL be per row and SHALL NOT fail the run: a
-  row whose companion fetch errors or refuses SHALL yield an absent value for
-  that row, recorded with its date, on the same terms as any other absence.
+- A companion fetch's failures SHALL be per **key** and SHALL NOT fail the run: a
+  key whose companion fetch errors or refuses SHALL yield an absent value,
+  recorded with its date, for every row that key covers — on the same terms as
+  any other absence — and every row under a different key SHALL be unaffected.
+  A key covers however many rows share it, and the fetch that failed was the
+  one call made on that key's behalf; there is no per-row fetch beneath it to
+  fail independently.
 
 #### Scenario: A refusal is recorded, not routed around
 
@@ -229,7 +252,7 @@ row-level feed carries a value whose referent is only recoverable per row.
 
 - **WHEN** a companion declaration omits any one of its URL template, its
   cadence, its coverage rule, the snapshot it writes, `declared_on`, its
-  canonical tier, or its author-identity map
+  canonical tier, its `provider_field`, or its author-identity map
 - **THEN** the build fails, naming the source and the missing field, and no
   companion request is made
 
@@ -239,9 +262,23 @@ row-level feed carries a value whose referent is only recoverable per row.
   ids rather than as a rule over the snapshot
 - **THEN** the build fails, naming the source, and no companion request is made
 
-#### Scenario: One row's companion failure is one row's absence
+#### Scenario: A bare `provider_field` value denotes the standard tier
 
-- **WHEN** a companion fetch returns an error for one covered row and succeeds
+- **WHEN** an endpoint's `provider_field` value carries no `/`
+- **THEN** it is read as the provider slug alone, at that provider's own
+  standard tier, on the same terms as `openai` bare in the site's own measured
+  tier spread
+
+#### Scenario: A different fetch's field is never read for identity
+
+- **WHEN** a companion-listing endpoint carries `provider_slug`/`service_tier`
+  fields that disagree with its own declared `provider_field` value
+- **THEN** the identity and the tier are read from `provider_field` alone, and
+  the disagreeing fields are not consulted
+
+#### Scenario: One key's companion failure is every row that key covers, absent
+
+- **WHEN** a companion fetch returns an error for one covered key and succeeds
   for the rest
-- **THEN** that row's companion value is absent with its date, every other row is
-  unaffected, and the run completes
+- **THEN** every row that key covers has an absent companion value with its
+  date, every row under another key is unaffected, and the run completes

@@ -109,9 +109,17 @@ from the one join in `lib/reviews.mjs` and computing no second hash. It retires
 by recomputation: a newer record whose hash matches removes it. It needs no
 durable record because — unlike a withdrawn feed row, whose cause is the world's
 continuing absence and therefore permanent — its cause is a difference between
-two files in this repository, and the job that fixes it changes one of them.
-Three of `addictedtoai-ccky`'s four open questions are settled in the delta with
-their reasons; the fourth is settled here.
+two files in this repository, and the job that fixes it writes a new verdict
+record naming the piece, whether or not it also edits the piece itself: the
+honest finding is often that the file was already right and only the approval
+had lapsed, which changes the record, not the content. That is why this change
+also adds one requirement under `specs/loop` (below): the merge step that binds
+a verdict record's `subject:`/`reviewed:` reads the branch diff's own content
+paths, and a job with that honest finding merges a diff with none, so without
+the addition the record it writes binds nothing and the item is exactly the
+un-retirable immortal this paragraph says it must not be. Three of
+`addictedtoai-ccky`'s four open questions are settled in the delta with their
+reasons; the fourth is settled here.
 
 - **Job type: `verify`.** The work is establishing that an approved surface still
   says what was approved — a check against a record, not an authoring pass. It is
@@ -167,7 +175,15 @@ auditing.
   decision`.** `verify` is already on the list; re-measured above.
 - **It does not touch `specs/review`.** Nothing here changes how a review record
   is written, hashed, or what `reviewedSurface` covers. The queue becomes a
-  *reader* of the join, and readers are not the join's owner.
+  *reader* of the join, and readers are not the join's owner. **It does touch
+  `specs/loop`**, added on this review round: the retirement claim above
+  depends on the loop's own merge step binding a fresh record when the fixing
+  job's honest finding changes no file under `content/` — the common case for
+  this reason — and that binding is the merge step's mechanism, not the
+  review record's own shape, so the addition is a new requirement under
+  `specs/loop` rather than a second `MODIFIED` on `specs/review`'s "A review
+  record names the bytes it reviewed" (which `impl-spec-review`'s
+  `say-what-a-review-record-covers` already modifies in this cycle).
 - **It does not declare any `corroborates` pair.** Declaring the DeepSeek pair
   `addictedtoai-473` asked about is content work, and `cct`'s second and
   independent reason not to declare that particular one — a tensor total is not a
