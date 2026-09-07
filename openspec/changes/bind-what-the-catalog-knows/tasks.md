@@ -160,9 +160,10 @@ tested.
       `feed-rows.json`, and only those two do.
 - [ ] 8. Tests beside `lib/schema.mjs`, one per refusal, each asserting the
       field named in the error: a census fact carrying `value`; one carrying
-      `accessed`; one carrying `volatility: fast`; one naming an unregistered
-      census id; one whose `feed` disagrees with the census's own source; and
-      one naming the providers-count census — the kind that takes no scope —
+      `source_url`; one carrying `accessed`; one carrying `volatility: fast`;
+      one naming an unregistered census id; one whose `feed` disagrees with the
+      census's own source; and one naming the providers-count census — the kind
+      that takes no scope —
       while declaring a `scope`, asserting the error names the `scope` field and
       not merely the fact. Plus
       the controls without which those prove nothing: a valid census fact
@@ -254,6 +255,22 @@ tested.
       and the export gains no column. A vanished row resolves to its last-known
       instant, marked as-of, and the event stays on the timeline. No consumer is
       taught the two forms.
+      **A row with no last-known instant at all resolves to no date, never to
+      `undefined`.** `pulse/lib/derive.mjs:121-132` writes
+      `{$status:null,$as_of:null,$vanished:true}` for a declared row absent from
+      both the latest and the previous snapshot, and `lib/data-layer.mjs:76`'s
+      `row()` returns that object unchanged — truthy, with no date field a sort
+      can use. Resolve such an event's `date` to `''`: `lib/render/common.mjs:64`'s
+      `date()` helper already renders an empty string as nothing (`if (!iso)
+      return ''`), and `''.localeCompare(...)` sorts it as the oldest event on
+      the page rather than throwing, which is what `lib/render/entry.mjs:114`'s
+      `b.date.localeCompare(a.date)` needs. The same rule covers resolution
+      before any Pulse run has produced a data layer at all: `loadDataLayer()`
+      falls back to `feedRows ?? {}`, so `row()` returns `null` there too, and
+      `null` resolves to the same `date: ''` — with no repair finding, because
+      no Pulse run has happened yet to notice a missing row; the `$vanished`
+      case above already has one, via the entry's existing `feeds` binding, and
+      this change files no second one.
       If a later caller genuinely needs resolution without phase 2, give
       `loadCorpus` an **optional** `dataLayer` and state in this task what a
       feed-bound event resolves to when none is passed — do not change the
@@ -323,6 +340,20 @@ tested.
       filters to `undefined` and the stamp silently falls back to an `accessed`
       date or to `null`, which is the defect and is invisible without this
       assertion.
+      **Plus the two no-last-known-instant states, on the rendered page and not
+      only on the resolver's return.** First, a fixture entry whose feed-bound
+      event's declared row is absent from both the latest and the previous
+      snapshot: assert the page renders without throwing, the event still
+      appears (its `event` text and named source present, no date shown), it
+      sorts as the last item among entries carrying real dates, and
+      `data/vanished/` carries the record for that (source, row) with
+      `has_last_known: false` — the same single `vanished-feed-row` queue item
+      the ordinary vanished case already asserts, not a second one. Second, the
+      same fixture resolved with `emptyDataLayer()` in place of a built layer
+      (the before-first-Pulse state): assert the same no-throw, still-present,
+      no-date, sorts-last rendering, and that the recomputed queue holds **no**
+      `vanished-feed-row` item for it — nothing has run yet to notice a missing
+      row, so nothing is there to find one.
 - [ ] 20. Mutation proof, two mutations run separately: resolve the instant in
       local time instead of UTC and confirm only the zone test fails; drop the
       event from the timeline when its row has vanished and confirm only the
@@ -336,10 +367,14 @@ tested.
       (`loop/lib/review.mjs:129-178`) is keyed `entry`, `tutorial`, `post`,
       `scout`, `education`, `directory` and `machinery`, and
       `CHECKLIST_FOR_TYPE` (`:180-191`) routes `entry`/`interpret`/`prune` →
-      `entry`, `verify`/`tutorial` → `tutorial`, `post` → `post` and
-      `education` → `education`. The requirement's own scope is *wiki bodies,
-      education pages, tutorials, blog posts*, which is those **four** keys, so
-      the sentence goes in all four:
+      `entry`, `verify`/`tutorial` → `tutorial`, `post` → `post`,
+      `education` → `education` and `repair` → `directory`. The requirement's
+      own scope is *wiki bodies, education pages, tutorials, blog posts*, which
+      names those four surfaces, but `repair` is the job type that edits a wiki
+      entry's body outside `entry`/`interpret`/`prune` — it is the type of this
+      change's own `census-scope-unmatched` item (task 6) and of the existing
+      `vanished-feed-row` repair, both of which can retype a row count by hand
+      while fixing an entry — so the sentence goes in **five** keys, not four:
       - `entry` (`:130-135`) — beside the existing "Volatile values are
         transclusions or feed-bound, not literals." (`:132`), which is the
         item the census case extends.
@@ -351,6 +386,15 @@ tested.
         at all, and a typed row count is exactly the sentence a post is most
         likely to write. `post` is where the date confusion lands hardest, and
         its item says so: a date beside the numeral does not clear it.
+      - `directory` (`:172`) — **added, and it is the route this change's own
+        repair item travels.** Today the whole checklist is one line, "Spot-check
+        the changed rows against their sources."; a job routed here edits a
+        wiki entry (`loop/lib/specs.mjs:117`'s `repair` brief carries `pulse`,
+        `site` and `review` — no `wiki` spec text of its own) with no rule
+        telling its reviewer that a row count belongs in a census fact rather
+        than typed by hand, which is exactly the mistake a repair fixing a
+        `census-scope-unmatched` or `vanished-feed-row` finding is positioned to
+        make.
       The sentence itself, in whichever wording each checklist's voice takes: a
       row count typed as a numeral where a registered census could carry it is
       `spec-violation`, naming the census that would have carried it, and a
@@ -359,10 +403,13 @@ tested.
       reviewer applies. Tested in `loop/tests/` by the same shape the blog bar
       tests use: **one assertion per key** that the census sentence is present
       in `CHECKLISTS[key]`, and one that every job type `CHECKLIST_FOR_TYPE`
-      routes to one of those four keys reaches a checklist carrying it — so a
-      later job type added to a prose route cannot silently miss the rule. Four
-      keys asserted individually, not a substring search over the whole table,
-      which passes on one.
+      routes to one of those five keys reaches a checklist carrying it —
+      including an explicit assertion that `repair` routes to `directory` and
+      that `directory`'s checklist carries the sentence, so the one route this
+      change itself dispatches is not left to the general sweep — so a later
+      job type added to a prose route cannot silently miss the rule. Five keys
+      asserted individually, not a substring search over the whole table, which
+      passes on one.
 - [ ] 22. `loop/lib/brief.mjs`: the authoring brief for entry and prose work
       names the two bindings and when each applies — a count is a census fact,
       a catalog listing date is a bound timeline event — because a Desk job is

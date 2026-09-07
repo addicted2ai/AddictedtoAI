@@ -200,6 +200,16 @@ enters the derived queue — the same treatment a vanished row's facts receive.
 It SHALL NOT disappear from the timeline: an event that happened does not
 un-happen because the row was delisted.
 
+**A feed-bound event whose joined row carries no last-known instant at all
+SHALL resolve to no date rather than fail** — never `undefined`, so nothing
+downstream throws — and SHALL still render on the timeline, named and sourced,
+sorted as the oldest event on the page. Two states reach this: a declared row
+that has never appeared in any snapshot, which is `$vanished` from the moment
+it is first joined and carries the same repair finding a vanished row's facts
+already receive; and resolution running before any Pulse run has produced a
+data layer at all, which carries none — nothing has run yet to notice a
+missing row.
+
 #### Scenario: A listing date is bound rather than transcribed
 
 - **WHEN** an entry joined to a catalog row declares a timeline event bound to
