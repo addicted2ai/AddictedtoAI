@@ -184,7 +184,7 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
 
 ## Gates
 
-- [ ] 14. `openspec validate tell-a-missed-deploy-from-a-slow-one --type change
+- [x] 14. `openspec validate tell-a-missed-deploy-from-a-slow-one --type change
       --strict --no-interactive`, and `node scripts/check-spec-deltas.mjs
       --strict`. Run at drafting time.
 - [ ] 15. `npm test`, `npm run build`, `verify-launch`, `verify-design`,
