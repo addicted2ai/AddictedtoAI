@@ -1,16 +1,7 @@
 {
   "cap": 50,
-  "count": 12,
+  "count": 11,
   "items": [
-    {
-      "detail": "The body says \"The bound facts above render nothing rather than a dated last-known value\". The second half is right and I verified it — data/derived/feed-rows.json holds \"z-ai/glm-5.2:free\": {\"$as_of\":null,\"$status\":null,\"$vanished\":true} — but the first half is not what a reader sees. resolveFact returns state 'vanished' with a null value, and lib/facts.mjs:271-277 renders that branch as the ABSENT span plus the as-of note, so the page reads \"not published — last known value, as of an unrecorded date — the source no longer lists this row\". \"Render nothing\" would fix to something like \"render as not published, with no as-of date to show\". Worth correcting on its own terms, and doubly so because the standing proposal render-pinned-last-known-for-vanished-rows would make this paragraph flatly wrong if it lands.\n\n## Origin\n\nTranscribed by the loop from the verdict record for job j-20260907-04 (`j-20260907-04.md`), which is the one channel a review has: the reviewer's edits to the tree it reviewed are discarded, so a finding it noticed but did not block on reaches work sources only by being written in its record and copied here.\n\n## Retiring this item\n\nThis file's presence is what puts the finding in the Pulse's derived queue. Once it is fixed, delete this file as part of the same diff — that is what removes the item; leaving the file in place causes the same item to reappear on the next Pulse run.",
-      "rank": 25,
-      "reason": "carried-finding",
-      "subject": "content/wiki/model/z-ai-glm-5-2-free.md",
-      "target": "content/wiki/model/z-ai-glm-5-2-free.md",
-      "title": "Say what the vanished facts actually render, not \"nothing\"",
-      "type": "repair"
-    },
     {
       "detail": "2 findings carried by reviewers against `content/wiki/org/amazon.md`, batched into one job because they concern the same file. Each is stated below in the reviewing reviewer's own words. Fix every one, or say in `RESULT.md` which you did not and why — a finding you leave standing must keep its file.\n\n### \"the only endpoint\" should read \"the only endpoint provider\"\n\nCarried in `data/carried/j-20260906-02-carry-1.md`.\n\nThe body says \"Bedrock is also the only endpoint OpenRouter lists behind each Nova row\". Measured against https://openrouter.ai/api/v1/models/amazon/<slug>/endpoints on 2026-09-06: nova-2-lite-v1, nova-lite-v1, nova-micro-v1 and nova-pro-v1 each return TWO endpoint records and nova-premier-v1 returns one — every one of them with provider_name \"Amazon Bedrock\". The claim the measurement supports is about the provider, not the endpoint count, so \"the only endpoint provider OpenRouter lists behind each Nova row\" is the sentence that survives a reader checking it.\n\n### Re-point the two aws.amazon.com/ai/generative-ai/nova/ citations at their canonical URL\n\nCarried in `data/carried/j-20260906-02-carry-2.md`.\n\nThe `portfolio` and `internal_origin` facts both cite \"https://aws.amazon.com/ai/generative-ai/nova/\". Fetched 2026-09-06: status 200, but `res.url` came back as \"https://aws.amazon.com/nova/\" — AWS redirects that path. Both quoted strings are present at the destination, so nothing is unsupported; the citation just names a URL that is no longer the page's own address. Declaring https://aws.amazon.com/nova/ removes a redirect hop from the reader's path and from any future fetch check.\n\n### Retiring these findings\n\nThese files' presence is what puts the findings in the Pulse's derived queue. Delete the file for each finding you fixed, in the same diff as the fix — that is what removes the item, and a file left in place puts the same finding back on the next Pulse run:\n\n- `data/carried/j-20260906-02-carry-1.md`\n- `data/carried/j-20260906-02-carry-2.md`",
       "rank": 25,
@@ -111,5 +102,5 @@
       "type": "repair"
     }
   ],
-  "total_before_cap": 12
+  "total_before_cap": 11
 }
