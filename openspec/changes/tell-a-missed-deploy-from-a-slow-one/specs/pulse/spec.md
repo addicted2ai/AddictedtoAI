@@ -97,7 +97,10 @@ controlled by the `publish` flag in `data/config.json`:
   and SHALL leave `HOLD.md` byte-identical — a dry run that mutates a guardrail
   file has contradicted the only thing it promises, and the hold branch is
   reached before the dry-run branch, so the exemption has to be stated where the
-  re-test is.
+  re-test is. Under `publish: false` no re-test is performed and nothing is
+  printed or appended for the hold: the disabled line is the whole of that run's
+  report, and the re-test is part of deploy verification, which that mode
+  performs none of.
 - **The re-test SHALL NOT clear, weaken or rewrite the hold**, and SHALL NOT
   resume publishing. Breaker 2 keys on the file's existence and this appends to
   it; a brake that releases itself is not a brake, and clearing a diagnosed halt

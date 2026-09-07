@@ -121,10 +121,15 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       implementation would make `--dry-run` append to a guardrail file — which
       contradicts the line that branch already prints, `DRY RUN — nothing was
       committed and nothing was pushed`. `dryRun` is in scope at the hold branch
-      already. Implements: *a standing deploy hold SHALL be re-tested, and the
+      already. **The `publish: false` return stays ahead of this branch**
+      (`:561-566` returns before `:568`), so a run with publishing disabled
+      performs no re-test, reads no stamp, and appends and prints nothing for
+      the hold — the disabled line stays the whole of that run's report.
+      Implements: *a standing deploy hold SHALL be re-tested, and the
       re-test SHALL take no outward action … at most one observation per
       invocation*, *a standing hold carrying no such marker SHALL NOT be
-      re-tested*, and *a dry run SHALL append nothing*.
+      re-tested*, *a dry run SHALL append nothing*, and *under `publish: false`
+      no re-test is performed and nothing is printed or appended for the hold*.
 - [ ] 10. `pulse/lib/publish.mjs`: the re-test returns the same
       `{ published: false, reason: 'hold' }` it returns today. It removes
       nothing, rewrites nothing, and does not reach the push. Implements: *the
@@ -155,8 +160,18 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       with the live-stamp fetch
       spy recording **zero** calls — a re-test that reads the site to decide
       whether a reserved-path halt has cleared is asking a question that has no
-      answer. Mutation: key the re-test on the file's existence rather than on
-      the marker and confirm only this case fails. Tests task 9.
+      answer. Then the third negative, on the flag axis rather than the marker
+      axis: a **marked** hold standing under `publish: false`, one invocation —
+      the live-stamp fetch spy records **zero** calls, `HOLD.md` is
+      byte-identical compared by hash against a copy taken before the call, and
+      the run prints **exactly one** output line containing `publish`, which is
+      the assertion `pulse/tests/publish.test.mjs` already makes on such runs.
+      A mode that performs no deploy verification cannot perform the re-test,
+      which is part of it, and cannot add a second publish-step line. Mutations:
+      key the re-test on the file's existence rather than on
+      the marker and confirm only the reserved-path case fails; move the re-test
+      ahead of the `publish: false` return and confirm only the disabled case
+      fails, on all three of its assertions. Tests task 9.
 - [ ] 13. `pulse/tests/publish.test.mjs`: the dry run. With a marked hold
       standing, an invocation in dry-run mode prints the observation, the
       live-stamp fetch spy records **one** call, and `HOLD.md` is byte-identical
