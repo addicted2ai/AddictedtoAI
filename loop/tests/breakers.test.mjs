@@ -301,6 +301,31 @@ test('breaker 4 — a job that really edits runners.yml trips the breaker and do
   ctx.cleanup();
 });
 
+test('breaker 4 — the target branch moving under a job, merged in by the author, is not the job\'s edit', async () => {
+  // Measured 2026-09-07 on j-20260907-13: the author ran `git merge main`
+  // during its run, main had gained the maintainer's own runners.yml commit
+  // meanwhile, and the loop — diffing against the merge-base it measured
+  // BEFORE the runner started — booked that commit as the job's reserved-path
+  // edit and halted the Desk. The job is judged against the target branch as
+  // it stands when the run ends; a commit the target already has is never the
+  // job's, and this job's only work is one ordinary file.
+  const ctx = makeRepo({
+    now: () => NOW,
+    runners: runnersYaml({ command: mockCommand('merge-main-then-edit'), reviewerCommand: mockCommand('review-approve') }),
+  });
+  writeQueue(ctx, [{ type: 'machinery', title: 'a job under which the target branch moves' }]);
+  const res = await runLoop(ctx, { runner: 'mock-frontier', reviewer: 'mock-reviewer', noGates: true });
+  assert.equal(res.outcome, 'done', ctx.output());
+  assert.ok(!existsSync(ctx.holdPath), 'no HOLD.md: the reserved edit was the maintainer\'s, on the target branch\n' + ctx.output());
+  assert.match(ctx.output(), /base moved during the run: [0-9a-f]{7} -> [0-9a-f]{7} — the author merged/);
+  // the maintainer's edit is on the target branch exactly as the maintainer made it, once
+  const registry = readFileSync(join(ctx.repoRoot, 'runners.yml'), 'utf8');
+  assert.equal((registry.match(/the maintainer edited the registry on the target branch/g) || []).length, 1);
+  // and the job's own work merged
+  assert.ok(existsSync(join(ctx.repoRoot, 'site-note.md')), ctx.output());
+  ctx.cleanup();
+});
+
 // ---------------------------------------------------------------------------
 // Breaker 4's filesystem companion (beads addictedtoai-59q, addictedtoai-ut1).
 //

@@ -323,6 +323,10 @@ test('a brief is self-contained plain markdown carrying the RESULT.md instructio
   // is in the assembled brief.
   assert.match(unwrapped, /Never create or remove a git worktree, and never touch `node_modules`/);
   assert.match(unwrapped, /JUNCTION to the shared install/);
+  // 2026-09-07 (j-20260907-13): an author merged main into its branch, inherited
+  // the maintainer's registry commit, and tripped the reserved-path breaker.
+  assert.match(unwrapped, /Never merge, rebase, or pull `main` — or any other branch — into this branch/);
+  assert.match(unwrapped, /The loop merges; you do not/);
   assert.match(brief, /There is no prior conversation to recall and no session to resume/);
   // no harness-specific syntax anywhere in a brief
   for (const bad of [/<function_calls>/, /\bslash command\b/, /\/[a-z-]+\s+skill/i]) {

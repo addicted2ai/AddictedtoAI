@@ -146,8 +146,31 @@ async function executeJob(ctx, opts) {
     ledger,
   } = opts;
   const capMinutes = cfg.job_caps_minutes[job.type];
-  const base = opts.base;
+  let base = opts.base;
   const prior = opts.prior ?? { mm: 0, invocations: 0 };
+
+  // The job is judged against the target branch AS IT STANDS WHEN THE RUN
+  // ENDS, not as it stood when the job was selected. `opts.base` is the
+  // merge-base measured before the runner was invoked; if the author merges
+  // the target branch into its own during the run, that base goes stale and
+  // every commit the target gained since — none of them the job's — shows up
+  // in the job's diff. Measured 2026-09-07 on j-20260907-13: the author ran
+  // `git merge main` twice, the second merge carried the maintainer's own
+  // `runners.yml` commit, and breaker 4 halted the Desk for a reserved-path
+  // edit no job had made. So the base is re-measured after every executor
+  // pass, from the target REF (`opts.baseRef`); a runner without one keeps
+  // the measured SHA it was given.
+  const refreshBase = (who) => {
+    if (!opts.baseRef) return;
+    const live = mergeBase(ctx.repoRoot, opts.baseRef, branch);
+    if (live && live !== base) {
+      ctx.log(
+        `base moved during the run: ${base.slice(0, 7)} -> ${live.slice(0, 7)} — ${who} merged ` +
+          `${opts.baseRef} into ${branch}; ${opts.baseRef}'s own commits are not this job's diff`,
+      );
+      base = live;
+    }
+  };
 
   // -------------------------------------------------------------------------
   // THE JOB'S TOTAL BUDGET (beads addictedtoai-o5t).
@@ -292,6 +315,7 @@ async function executeJob(ctx, opts) {
     exclude: ['RESULT.md'],
   });
   if (committed.committed) ctx.log(`committed the executor's output to ${branch}`);
+  refreshBase('the author');
 
   const head = gitTry(ctx.repoRoot, ['rev-parse', branch]).stdout.trim();
   const changed = changedPathsWithStatus(ctx.repoRoot, base, branch).filter(
@@ -684,6 +708,7 @@ async function executeJob(ctx, opts) {
     phase('revision', runner, run2, 'unclassified');
     unlinkNodeModules(worktree);
     commitAll(ctx.repoRoot, worktree, `job ${jobId}: revision`, { exclude: ['RESULT.md'] });
+    refreshBase('the revision');
 
     // Both channels again, not just the brakes. Breaker 4 ran once, after the
     // AUTHOR run, and a revision is a second unattended invocation into the same
@@ -1279,6 +1304,10 @@ export async function runLoop(ctx, opts = {}) {
       gates: opts.noGates ? false : opts.gates,
       ledger,
       base: mergeBaseSha,
+      // The target ref itself, so the job runner can re-measure the base after
+      // each executor pass (see `refreshBase`); the SHA above is only where it
+      // starts.
+      baseRef: base,
       // What this job cost BEFORE this run. Zero for a new job; for a resumed
       // one, the sum of its earlier lines — without it every brief in a resumed
       // job would restate the running total as though the job had just started.

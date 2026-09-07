@@ -71,6 +71,15 @@ export const GROUND_RULES = `## Ground rules (non-negotiable)
   run was recorded \`interrupted\`, and the orphaned suite kept running inside
   the deleted worktree and held the machine-wide test lock against every other
   suite on the machine.
+- **Never merge, rebase, or pull \`main\` — or any other branch — into this
+  branch.** The loop merges; you do not. Your work is judged as the diff of
+  this branch against \`main\` as it stands when the run ends, and a merge
+  from \`main\` puts every commit \`main\` gained meanwhile — the maintainer's
+  own edits to reserved files included — into your branch's history, where a
+  reviewer reads them as yours. Measured on 2026-09-07 (job
+  \`j-20260907-13\`): an author ran \`git merge main\` twice to "freshen" its
+  branch, inherited a registry commit no job may make, and the reserved-path
+  breaker halted the Desk. If \`main\` has moved, that is not your concern.
 - **Never create or remove a git worktree, and never touch \`node_modules\`.**
   \`node_modules\` in this worktree is a JUNCTION to the shared install, so
   \`git worktree remove --force\`, \`rm -rf node_modules\`, \`npm ci\` and

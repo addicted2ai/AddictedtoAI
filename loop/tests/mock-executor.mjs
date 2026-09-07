@@ -16,7 +16,8 @@
  */
 
 import { writeFileSync, readFileSync, existsSync, appendFileSync, mkdirSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { dirname, join, resolve } from 'node:path';
 
 const [, , mode, promptPath] = process.argv;
 const cwd = process.cwd();
@@ -179,6 +180,27 @@ switch (mode) {
     appendFileSync(join(cwd, 'runners.yml'), '\n# edited by a job, which is forbidden\n');
     result('done\n\nEdited the registry.\n');
     break;
+
+  // The target branch moves UNDER the job — the maintainer commits to a
+  // reserved file on it while the job runs — and the author then merges the
+  // target branch into its own, which the brief forbids but which a runner
+  // did on 2026-09-07 (j-20260907-13). The job's own work is one ordinary
+  // file; the reserved edit is the maintainer's and reached the branch only
+  // through the merge. A loop that judges the branch against a stale base
+  // reads that edit as the job's and trips breaker 4 on a job that made no
+  // such edit.
+  case 'merge-main-then-edit': {
+    const common = resolve(cwd, execFileSync('git', ['rev-parse', '--git-common-dir'], { cwd, encoding: 'utf8' }).trim());
+    const repo = dirname(common);
+    const target = execFileSync('git', ['-C', repo, 'rev-parse', '--abbrev-ref', 'HEAD'], { encoding: 'utf8' }).trim();
+    appendFileSync(join(repo, 'runners.yml'), '\n# the maintainer edited the registry on the target branch while the job ran\n');
+    execFileSync('git', ['-C', repo, 'add', 'runners.yml']);
+    execFileSync('git', ['-C', repo, 'commit', '--quiet', '--no-verify', '-m', 'maintainer: registry edit on the target branch during a job']);
+    execFileSync('git', ['-C', cwd, 'merge', '--quiet', '--no-edit', '--no-verify', target]);
+    write('site-note.md', '# a real edit\n\nWritten by the mock author after merging the target branch.\n');
+    result('done\n\nMerged the target branch, then wrote site-note.md.\n');
+    break;
+  }
 
   // A job that writes the maintainer's brake into its own worktree, alongside
   // ordinary work so the run is otherwise mergeable. `STOP` is gitignored
