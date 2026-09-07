@@ -7,8 +7,11 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { assertIngested, cleanup, jsonSource, makeRoot, paths, readJson, readLines, runPulse, serve, writeJson } from './helpers.mjs';
-import { appendChanges, deriveStatus, isScheduled, VENDOR_BOUND } from '../lib/diff.mjs';
+import { appendChanges, deriveStatus, diffSnapshots, isScheduled, substitutionSuccessors, VENDOR_BOUND } from '../lib/diff.mjs';
 
 const ARGS = ['--no-build', '--no-mint'];
 
@@ -270,6 +273,216 @@ test('isScheduled fires on either side of a comparison, and only on governed fie
     isScheduled(source, { pricing: { prompt: '1', overrides: [{ prompt: '2', utc_days: [0, 6] }] } }, price),
     true,
     'utc_days alone is a window',
+  );
+});
+
+// ── a departure the publisher replaced is not a retirement ──────────────────
+
+/** The registry's substitution rule, as `openrouter-models` declares it. */
+const SUBSTITUTION_RULE = {
+  kind: 'dated_slug_stem',
+  path: 'canonical_slug',
+  variant_separator: ':',
+};
+
+function row(id, canonical_slug, name = id) {
+  return { id, name, canonical_slug, pricing: { prompt: '0.000001' }, context_length: 100000, expiration_date: null };
+}
+
+/**
+ * The 2026-09-05 fetch pair, in miniature. `acme/max` is the Qwen case — its
+ * name moves onto a newer snapshot, which arrives in the same fetch — and
+ * `acme/gone` is the Granite case, a withdrawal with no successor anywhere.
+ */
+const BEFORE_DEPARTURE = [row('acme/max', 'acme/max-20260803'), row('acme/gone', 'acme/gone-20260429')];
+const AFTER_DEPARTURE = [row('acme/max-0902', 'acme/max-20260902', 'Acme Max (0902)')];
+
+test('a replaced row reports a substitution naming its successor; a withdrawn one still retires', async (t) => {
+  // The control and the fix over identical worlds, so the only difference
+  // measured is the registry rule. The control IS the behaviour before this
+  // change: with no `substitution_rule` the departure loop is byte-for-byte
+  // what it was, which is the case the proposal says must not move.
+  let rows = [...BEFORE_DEPARTURE];
+  const control = await serve(() => ({ status: 200, body: catalogBody(rows) }));
+  const fixed = await serve(() => ({ status: 200, body: catalogBody(rows) }));
+  const controlRoot = makeRoot([jsonSource('models', `${control.url}/models`)]);
+  const fixedRoot = makeRoot([
+    jsonSource('models', `${fixed.url}/models`, { substitution_rule: SUBSTITUTION_RULE }),
+  ]);
+  t.after(async () => {
+    await control.close();
+    await fixed.close();
+    cleanup(controlRoot);
+    cleanup(fixedRoot);
+  });
+
+  for (const root of [controlRoot, fixedRoot]) {
+    assert.equal((await runPulse(root, ARGS)).status, 0);
+    assertIngested(root, 'models', 'first run, before the name is moved');
+  }
+  rows = [...AFTER_DEPARTURE];
+  for (const root of [controlRoot, fixedRoot]) {
+    assert.equal((await runPulse(root, [...ARGS, '--force'])).status, 0);
+    assertIngested(root, 'models', 'second run, after the name is moved');
+  }
+
+  const before = readLines(paths.changes(controlRoot)).filter((l) => l.row_id === 'acme/max');
+  assert.equal(before.length, 1);
+  assert.equal(before[0].kind, 'retirement', 'without the rule a replaced row is recorded as retired');
+
+  const after = readLines(paths.changes(fixedRoot));
+  const replaced = after.find((l) => l.row_id === 'acme/max');
+  assert.equal(replaced.kind, 'substitution', 'with the rule it is recorded as the substitution it was');
+  assert.deepEqual(
+    replaced.successors,
+    [{ row_id: 'acme/max-0902', display_name: 'Acme Max (0902)' }],
+    'and it hands on the arriving row id, which is what lets a surface say what the name now points at',
+  );
+
+  // The case that must not move, measured in the same run rather than argued.
+  const withdrawn = after.find((l) => l.row_id === 'acme/gone');
+  assert.equal(withdrawn.kind, 'retirement', 'a departure with no same-stem arrival is unchanged');
+  assert.equal(withdrawn.successors, undefined, 'and carries no successors key at all');
+  // Identical to the control's line in everything but the fixture's own port,
+  // which is the only thing that differs between the two roots.
+  const shape = (l) => ({ ...l, source_url: null });
+  assert.deepEqual(
+    shape(withdrawn),
+    shape(readLines(paths.changes(controlRoot)).find((l) => l.row_id === 'acme/gone')),
+    'the withdrawal line is byte-for-byte what the source without the rule wrote',
+  );
+
+  // The arrival is still an arrival: this change adds a word for the departure
+  // and takes nothing away from the other half of the publisher's act.
+  const arrival = after.find((l) => l.row_id === 'acme/max-0902');
+  assert.equal(arrival.kind, 'arrival');
+});
+
+test('one departure is one key, so reclassifying it cannot record it twice', async (t) => {
+  /*
+   * THE GUARD RAIL, TESTED BY ATTEMPTING WHAT IT FORBIDS. `changes.jsonl` is
+   * append-only history and the standing diff between `previous` and `latest`
+   * is recomputed on every run. If a substitution keyed differently from a
+   * retirement, a departure standing at the moment this change landed would
+   * be appended a SECOND time under the new word — two lines, both on the home
+   * feed, about one row leaving once. The key is a function of state and one
+   * departure is one state change, so both kinds carry the same marker.
+   */
+  const previous = { rows: { 'acme/max': row('acme/max', 'acme/max-20260803') } };
+  const latest = { rows: { 'acme/max-0902': row('acme/max-0902', 'acme/max-20260902') } };
+  const source = jsonSource('models', 'http://example.invalid/models');
+  const withRule = { ...source, substitution_rule: SUBSTITUTION_RULE };
+
+  const asRetirement = diffSnapshots(source, previous, latest, { date: '2026-09-05' });
+  const asSubstitution = diffSnapshots(withRule, previous, latest, { date: '2026-09-07' });
+  const departure = (lines) => lines.find((l) => l.row_id === 'acme/max');
+  assert.equal(departure(asRetirement).kind, 'retirement');
+  assert.equal(departure(asSubstitution).kind, 'substitution');
+  assert.equal(
+    departure(asSubstitution).key,
+    departure(asRetirement).key,
+    'the classification changes the word, never the identity of the event',
+  );
+
+  const dir = mkdtempSync(join(tmpdir(), 'diff-substitution-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const file = join(dir, 'changes.jsonl');
+  assert.equal(appendChanges(file, asRetirement).length, 2, 'the departure and the arrival land once');
+  assert.deepEqual(
+    appendChanges(file, asSubstitution),
+    [],
+    'and recomputing the same standing diff under the new word appends nothing at all',
+  );
+  assert.equal(readLines(file).length, 2, 'one row leaving once is one line, whatever it is called');
+});
+
+test('substitutionSuccessors pairs only what the two snapshots actually show', () => {
+  const source = { ...jsonSource('models', 'http://example.invalid/models'), substitution_rule: SUBSTITUTION_RULE };
+  const departed = row('acme/max', 'acme/max-20260803');
+  const successor = row('acme/max-0902', 'acme/max-20260902', 'Acme Max (0902)');
+  const call = (src, id, dep, arrivals) => substitutionSuccessors(src, id, dep, arrivals);
+
+  assert.deepEqual(
+    call(source, 'acme/max', departed, [['acme/max-0902', successor]]),
+    [{ row_id: 'acme/max-0902', display_name: 'Acme Max (0902)' }],
+  );
+  assert.deepEqual(
+    call({ ...source, substitution_rule: undefined }, 'acme/max', departed, [['acme/max-0902', successor]]),
+    [],
+    'no rule, no pairing — a source that never declared one behaves exactly as before',
+  );
+  assert.deepEqual(
+    call(source, 'acme/max', departed, [['acme/other-0902', row('acme/other-0902', 'acme/other-20260902')]]),
+    [],
+    'a different stem is a different name and pairs with nothing',
+  );
+  assert.deepEqual(
+    call(source, 'acme/max', row('acme/max', 'acme/max'), [['acme/max-0902', successor]]),
+    [],
+    'an undated departing slug has no stem to share, and is left as the withdrawal it reads as',
+  );
+  assert.deepEqual(
+    call(source, 'acme/max', departed, [['acme/max-next', row('acme/max-next', 'acme/max')]]),
+    [{ row_id: 'acme/max-next', display_name: 'acme/max-next' }],
+    'an ARRIVING slug need not be dated: moving a dated name onto a bare one is the same publisher act',
+  );
+
+  // The version-number tail, which is why only eight digits count. Folding
+  // `-3` away would make a departing `medium-3` pair with an arriving
+  // `medium-4` and invent a substitution out of a version bump.
+  assert.deepEqual(
+    call(source, 'acme/medium-3', row('acme/medium-3', 'acme/medium-3'), [
+      ['acme/medium-4', row('acme/medium-4', 'acme/medium-4')],
+    ]),
+    [],
+  );
+  // ...and the four-digit tail, on real shapes from the live snapshot.
+  assert.deepEqual(
+    call(source, 'deepseek/deepseek-chat-v3-0324', row('deepseek/deepseek-chat-v3-0324', 'deepseek/deepseek-chat-v3-0324'), [
+      ['deepseek/deepseek-chat-v3-0512', row('deepseek/deepseek-chat-v3-0512', 'deepseek/deepseek-chat-v3-0512')],
+    ]),
+    [],
+    'MMDD tails and version numbers are indistinguishable in the string, so neither is stripped',
+  );
+  assert.deepEqual(
+    call(source, 'acme/max-invalid', row('acme/max-invalid', 'acme/max-20260231'), [
+      ['acme/max-0902', successor],
+    ]),
+    [],
+    'an eight-digit suffix that overflows February is not a calendar date and cannot create a stem',
+  );
+  assert.deepEqual(
+    call(source, 'acme/max', departed, [
+      ['acme/max-invalid', row('acme/max-invalid', 'acme/max-20260231')],
+    ]),
+    [],
+    'an invalid dated arrival is not treated as a valid same-stem successor',
+  );
+
+  // The current 430-row snapshot has 270 singleton canonical-slug groups, 74
+  // two-row groups and 4 three-row groups. The three-row groups contain base,
+  // `:batch` and `:free`; some two-row groups are base plus `:free`, so the
+  // duplicate groups are not uniformly base+batch. Without the declared
+  // variant scoping each departure would pair with every arriving sibling.
+  const arrivals = [
+    ['acme/max-0902', successor],
+    ['acme/max-0902:batch', row('acme/max-0902:batch', 'acme/max-20260902', 'Acme Max (0902) batch')],
+  ];
+  assert.deepEqual(
+    call(source, 'acme/max', departed, arrivals).map((s) => s.row_id),
+    ['acme/max-0902'],
+    'a departing base row pairs with the arriving base row only',
+  );
+  assert.deepEqual(
+    call(source, 'acme/max:batch', row('acme/max:batch', 'acme/max-20260803'), arrivals).map((s) => s.row_id),
+    ['acme/max-0902:batch'],
+    'and a departing batch row with the arriving batch row',
+  );
+  assert.deepEqual(
+    call({ ...source, substitution_rule: { ...SUBSTITUTION_RULE, variant_separator: undefined } }, 'acme/max', departed, arrivals)
+      .map((s) => s.row_id),
+    ['acme/max-0902', 'acme/max-0902:batch'],
+    'without a declared separator nothing is scoped, and every same-stem arrival is named — sorted, never picked between',
   );
 });
 

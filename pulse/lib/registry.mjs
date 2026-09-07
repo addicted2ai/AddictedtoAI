@@ -41,7 +41,8 @@ const RADAR_FORMATS = new Set(['json', 'rss', 'atom']);
  * column, the entry-page fact and the changed-feed line (`derive.mjs`,
  * `mint.mjs`, `diff.mjs`); `mints` writes `content/wiki/**`; `seeds` writes
  * `data/changes.jsonl`; `rows_path`/`row_id_field`/`status_rule`/
- * `schedule_rule` only mean anything to a snapshot this engine fetched. A
+ * `schedule_rule`/`substitution_rule` only mean anything to a snapshot this
+ * engine fetched. A
  * radar row carrying one is not a radar row — it is a source pasted into the
  * wrong array, and the paste is exactly how this separation would be lost.
  */
@@ -54,6 +55,7 @@ const INGEST_ONLY_FIELDS = [
   'row_id_field',
   'status_rule',
   'schedule_rule',
+  'substitution_rule',
   'fetch_every_days',
   'expected_change_days',
   'emit_on_remove',
