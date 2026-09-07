@@ -96,3 +96,18 @@ The expiry is not urgency about the idea. `previous.json` rotates only when a
 fetch differs from `latest`, so the 2026-09-04 snapshot these counts are read
 from is days from being unrecoverable (`addictedtoai-64fk`). The row ids and
 canonical slugs are written out above so the argument survives the rotation.
+
+
+---
+
+## Consumed: this candidate produced merged work
+
+- date: 2026-09-07
+- job: j-20260907-16 (machinery)
+- merged as: `ceff7281113f1b766a383d692cb30b07436ac3bf`
+- produced: (the merge produced no joinable artifact)
+- was: `substituted-rows-report-as-retirements.md` (slug `substituted-rows-report-as-retirements`)
+
+A proposal that has been written, reviewed and merged is finished work. It was left selectable, and the run after the first post selected it again — which would have rewritten the same piece on every run until its `expires:` arrived. Retiring it is mechanical: no model was invoked and no inference was spent.
+
+`data/proposals/consumed/` is a record, never a block. This slug does not feed the rejection index, so the subject may be proposed again — being written about once is not a reason it may never be written about again.
