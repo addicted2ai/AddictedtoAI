@@ -19,8 +19,10 @@ that no test attempts is a refusal that has never run.
       reads the verdict and `carry:` independently, so a malformed
       carry-forward can never alter the verdict value itself. A record carrying
       neither `reads-human` nor `reads-human-from` parses exactly as it does
-      today — every one of the 358 records in `data/reviews/` is such a record
-      and none of them may start parsing differently.
+      today — every one of the 357 records in `data/reviews/` (358 `.md` files
+      less the `README.md` both loaders skip, `lib/reviews.mjs:143` and
+      `loop/lib/review.mjs:579`; re-counted 2026-09-06) is such a record and
+      none of them may start parsing differently.
 - [ ] 2. `loop/lib/verdict.mjs` + `loop/lib/review.mjs`
       (`writeVerdictRecord`): write `reads-human-from` only when given, on the
       same terms as `readsHuman` at `review.mjs:947-961` — an empty value
@@ -58,9 +60,13 @@ that no test attempts is a refusal that has never run.
       (through the join in `lib/reviews.mjs`, not a string compare on the
       subject line), must record `approve`, and must itself carry a non-empty
       `reads-human`. Any of the four failing is the refusal, and its message
-      names which. Chasing an anchor whose own answer is a carry-forward is a
-      chain: follow it, and refuse a chain that reaches no answering record or
-      that revisits a record it has already seen.
+      names which. **A carry-forward is one hop and never a chain: the anchor
+      must itself answer.** An anchor whose own record carries only a
+      `reads-human-from` is refused by the fourth leg — it "carries no non-empty
+      `reads-human` of its own" — and the message says so, so the reviewer is
+      sent to name the record that actually answered. Do not follow the anchor's
+      own carry-forward; the spec's refusal is the whole rule, and a resolver
+      that walked a chain here would accept records the merge refuses.
 - [ ] 5. **N3** — the statement refusal, new code
       `reads-human-from-duplicate`: the `why` half is held to the same two
       rules `reads-human` carries — non-empty after trimming, and not exactly
@@ -85,7 +91,11 @@ that no test attempts is a refusal that has never run.
       prose is not a carry-forward. A mechanism a reviewer is not told about is
       a mechanism that does not run, which is the rule the `carry:` requirement
       already states in those words.
-- [ ] 8. `loop/lib/review.mjs`, `CHECKLISTS.post` and the `repair` checklist:
+- [ ] 8. `loop/lib/review.mjs`, `CHECKLISTS.post` and — the list a `repair` job
+      actually gets — `CHECKLISTS.directory` (`review.mjs:172`), reached through
+      `CHECKLIST_FOR_TYPE.repair` (`review.mjs:187`); there is no list named
+      `repair`, and editing one that does not exist is the way this task gets
+      done wrong. In both:
       the reviewer of a repair to an already-approved post is asked which branch
       it is taking. The named rejection reason when a reviewer carries a verdict
       forward across a genuine rewrite is `spec-violation` against this
@@ -95,11 +105,16 @@ that no test attempts is a refusal that has never run.
 
 - [ ] 9. **N4** — `scripts/verify-launch.mjs:613-661`: the voice check follows
       the carry-forward. It must accept the **current** record when that record
-      carries a valid carry-forward chain reaching an approving record with a
-      non-empty `reads-human`, and report the piece exactly as it reports a bare
-      missing `reads-human` when the chain reaches none. Export the chain
-      resolver so it is testable without running a build — `hasProseBody` is
-      already exported from this file for that reason.
+      carries a valid carry-forward naming an approving record for this piece
+      with a non-empty `reads-human` of its own, and report the piece exactly as
+      it reports a bare missing `reads-human` when the named record is not one.
+      **One hop, resolved by the same rule the merge applies in task 4** — an
+      anchor that itself carries only a `reads-human-from` is not an answering
+      record here either, because a check that followed a chain would pass a
+      hand-written record the merge refuses, which is the two-ends drift this
+      change exists to stop. Export the carry-forward resolver so it is testable
+      without running a build — `hasProseBody` is already exported from this
+      file for that reason.
 - [ ] 10. **N7** — the same function, the `hit.declaredBy` reach-back at
       `verify-launch.mjs:632-637`, which today accepts any approving record
       naming the piece that carries a non-empty `reads-human` and is how the
@@ -150,23 +165,32 @@ that no test attempts is a refusal that has never run.
       the bead's own shape, and the one case a type-keyed gate lets through**;
       carry-forward naming a record that does not exist; naming one that names a
       different piece; naming one that records `revise`; naming one carrying no
-      `reads-human`; a chain that loops; a `why` that is blank; a `why`
-      identical after trimming to another record's.
+      `reads-human`; naming a record whose own answer is only a
+      `reads-human-from`, refused as an anchor that carries no `reads-human` of
+      its own; a `why` that is blank; a `why` identical after trimming to
+      another record's.
 - [ ] 14. The controls, without which task 13 proves nothing: a post `approve`
       with a normal non-empty `reads-human` and no carry-forward merges exactly
       as today; a valid carry-forward on a `repair` that touches a post merges;
       **a `repair` whose `subjects` contain no `content/blog/` path is asked for
       neither field and merges with both absent** — the boundary of the new
       branch, and the assertion that the gate keys on subjects rather than on
-      "not a post job"; and — the control that pins the parser — every record in
+      "not a post job"; **a record carrying BOTH a fresh non-empty
+      `reads-human` and a valid `reads-human-from` merges** — the requirement
+      asks for one of the two answers, not for exactly one, so carrying both is
+      not a refusal, and task 4's anchor check still runs on the carry-forward
+      it carries (an invalid anchor is still refused even beside a valid fresh
+      answer); and — the control that pins the parser — every record in
       `data/reviews/` parses to the same verdict, reasons, `would-cite` and
       `reads-human` values before and after task 1, compared field by field.
-- [ ] 15. **N4 and N7**, `scripts/verify-launch-voice-chain.test.mjs` (new): a
+- [ ] 15. **N4 and N7**, `scripts/verify-launch-voice-carry.test.mjs` (new): a
       post whose current record carries only a valid carry-forward passes the
-      voice check; one whose chain reaches no answering record fails it with the
-      same message shape as a bare missing `reads-human`; **a post whose current
-      approving record carries neither field and whose earlier approving record
-      carries a `reads-human` passes** (N7 — the state
+      voice check; one whose anchor is not an answering record — it does not
+      exist, does not approve this piece, or carries only a `reads-human-from`
+      of its own — fails it with the same message shape as a bare missing
+      `reads-human`; **a post whose current approving record carries neither
+      field and whose earlier approving record carries a `reads-human`
+      passes** (N7 — the state
       `data/reviews/j-20260902-23.md` is in on this tree today, asserted against
       that record and not only against a fixture); and a post whose ONLY
       approving record carries neither field fails, so the reach-back is a
@@ -198,10 +222,16 @@ that no test attempts is a refusal that has never run.
       witness that the obligation follows the subjects.
       **(b)** revert task 4's anchor check — only the anchor tests fail;
       **(c)** revert task 5's duplicate sweep — only the duplicate test fails;
-      **(d)** revert task 9 — only the launch-chain test fails;
-      **(e)** revert task 10's pre-existing-record gate so the reach-back is
-      unconditional — only task 15's "ONLY approving record carries neither
-      field" case fails;
+      **(d)** revert task 9 — only the launch carry-forward test fails;
+      **(e)** make the reach-back an **unconditional pass** — a post whose
+      current record carries neither field passes the voice check whether or not
+      any earlier record answered — and only task 15's "ONLY approving record
+      carries neither field" case fails. Written this way deliberately: merely
+      dropping task 10's pre-existing-record condition leaves that case still
+      finding no answering record and still failing, so the test would not bite
+      and the mutation would prove nothing. The other half of N7 — that a record
+      written **after** this requirement cannot enter that state — is mutation
+      (a)'s to prove, since the merge is what refuses it;
       **(f)** revert task 11's append — the body-less mismatch test fails while
       the `total`-count control and every existing reviews test still pass.
       Six mutations failing six disjoint sets is the evidence these are six

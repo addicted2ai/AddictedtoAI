@@ -52,7 +52,7 @@ claim in it now false.**
 - **And the write half already exists.** `loop/lib/review.mjs:840-851`,
   `joinableSubjects`, admits any `content/**.md` that is not a deletion — a
   body-less entry included — so the merge would write a `reviewed:` hash for one
-  it merged. Measured across all **358** records in `data/reviews/`: **0**
+  it merged. Measured across all **357** records in `data/reviews/`: **0**
   carry a `reviewed:` hash for a path outside the reviewable set, and **no
   record names a `content/wiki/tool/` file as a subject at all**. Nothing has
   ever exercised the write half, because no job has ever merged one of these
@@ -71,6 +71,15 @@ not one. Both are Pulse-written. A body-less entry's reviewed surface is
 therefore its front matter minus those two, which is where its sourced facts
 live — so a fact-only edit moves it, which is the property this change depends
 on.
+
+**One number in this proposal was wrong and is corrected here.** `data/reviews/`
+holds **357** review records, not 358: 358 `.md` files, of which `README.md` is
+documentation and is skipped by both loaders (`lib/reviews.mjs:143`,
+`loop/lib/review.mjs:579`). Re-counted 2026-09-06. The finding it carries is
+unchanged — 0 of the 357 bind a path outside the reviewable set, and none names
+a `content/wiki/tool/` file — but the count itself now matches what the code
+loads, since the parser control in `tasks.md` task 14 compares against exactly
+that set.
 
 ## The finding
 
@@ -123,7 +132,7 @@ across superseding records, so accepting means accepting a mechanism that
 actively returns an answer for bytes nobody checked, which is worse than the
 gap the bead described.
 
-**That refusal is about the mechanism's future, not about the 358 records
+**That refusal is about the mechanism's future, not about the 357 records
 already on disk, and the delta now says so.** A record written before this
 requirement could not have carried a carry-forward; `j-20260902-23` is one and
 it is the **current** approving record for the glm post today. A requirement

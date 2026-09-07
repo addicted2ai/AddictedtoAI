@@ -90,7 +90,7 @@ reviewer that ever answered the voice question read an older version. **The job
 type does not say whether that happened.** The type says what the job was for;
 the merged subjects say what it touched, and a job of any type may touch a post.
 So every **approving** verdict on a job whose merged subjects include a blog
-post SHALL do exactly one of two things, for each such post, and a verdict doing
+post SHALL do one of two things, for each such post, and a verdict doing
 neither is refused exactly as a blank `reads-human` is refused:
 
 - **answer the question afresh**, in a non-empty, non-duplicated
