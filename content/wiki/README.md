@@ -22,7 +22,7 @@ them, and the first place that gap bit was the catalog-coverage backlog.
 
 **Ruled 2026-09-05 (beads `addictedtoai-2ok0`).** `/frontier`'s Players Board
 joins `content/wiki/org/*.md` to catalog providers by alias
-(`lib/render/frontier.mjs:50`), so a provider no org entry matches never
+(`lib/render/frontier.mjs:93-104`), so a provider no org entry matches never
 surfaces on it. Replaying that join over `data/derived/catalog.json` on
 2026-09-05: 431 rows, all `"source": "openrouter-models"`, carrying 58 distinct
 `provider` values; 16 org entries match 24 of them and **34 are unmatched**.
@@ -173,7 +173,7 @@ it:
 |---|---|
 | `pulse/lib/corpus.mjs:219-235` — `feedBindings` / `declaredRowIds` scan `corpus.entries` whole | the row reads as already declared, so `pulse/lib/mint.mjs:139-142` mints no `model/` stub for it |
 | `pulse/lib/mint.mjs:258-263` builds its status index the same way | the model's mechanical `deprecated` / `retired` timeline events land on the organisation |
-| `lib/changes.mjs:60-67` — `feedRowIndex` keys one Map on `${source}\|${rowId}` | of the two entries claiming one row, whichever the loader reaches last silently wins the changed feed's entry link |
+| `lib/changes.mjs:111-119` — `feedRowIndex` keys one Map on `${source}\|${rowId}` | of the two entries claiming one row, whichever the loader reaches last silently wins the changed feed's entry link |
 
 Measured 2026-09-06: none of the 24 files in `content/wiki/org/` contains the
 string `feeds`, which is the corpus already agreeing with this ruling.
