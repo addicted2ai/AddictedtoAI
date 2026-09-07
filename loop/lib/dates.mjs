@@ -12,18 +12,26 @@
  *
  * RE-MEASURED on 2026-09-06 (beads addictedtoai-8tr0), by resolving every
  * relative import in `lib/`, `loop/`, `pulse/`, `scripts/` and `app/` to the
- * directory it lands in. The counts as of that date:
+ * directory it lands in — every one, static `from '...'` and dynamic
+ * `await import('...')` alike, because a dynamic edge is still an edge. Re-run
+ * that method and it returns these numbers exactly; count only the static
+ * specifiers and the last two rows read 13 across 9 and 3 across 3 instead —
+ * two dynamic edges are the whole of the difference, and they are named in the
+ * rows below. The counts as of that date:
  *
  *   scripts/ -> lib/     34 imports across 10 files (already open, already used
  *                        for exactly this: `verify-design` and
  *                        `verify-analytics` both import `todayIso`)
  *   loop/    -> lib/     10 imports across 6 files  (review records and
  *                        `lib/domains.mjs`, the shared frontier vocabulary)
- *   pulse/   -> lib/     13 imports across 9 files  — 9 of them in the ENGINE
+ *   pulse/   -> lib/     14 imports across 10 files — 9 of them in the ENGINE
  *                        (`derive`, `diff`, `domain-seeds`, `frontier` x2,
- *                        `indexnow` x2, `mint`, `queue`), 4 in its tests
- *   lib/     -> pulse/    3 imports (`site.mjs` and `declined-fields.mjs` read
- *                        the source registry; one test)
+ *                        `indexnow` x2, `mint`, `queue`), 5 in its tests — the
+ *                        fifth is the dynamic one, `mint.test.mjs:230`
+ *   lib/     -> pulse/    4 imports across 3 files (`site.mjs` and
+ *                        `declined-fields.mjs` read the source registry, the
+ *                        latter twice — `:73` static and `:294` dynamic; plus
+ *                        one test)
  *
  * THE 2026-08-31 VERSION OF THIS COMMENT SAID THAT LAST PAIR WAS "ZERO. Not one
  * import, in either direction", AND CALLED IT "the whole argument". It is no
@@ -35,12 +43,29 @@
  * THE ARGUMENT SURVIVES, BECAUSE IT WAS NEVER REALLY ABOUT THE COUNT. What
  * `pulse/` must not acquire is the SITE BUILD — its schema, its validation
  * stack, its content layer. Measured the same day: every `lib/` module the
- * Pulse now imports (`change-kinds.mjs`, `asset-routes.mjs`, `site-config.mjs`,
- * `domains.mjs`, `frontier-metrics.mjs`) has ZERO imports of its own. They are
+ * Pulse ENGINE imports (`change-kinds.mjs`, `asset-routes.mjs`,
+ * `site-config.mjs`, `domains.mjs`, `frontier-metrics.mjs`) has ZERO imports of
+ * its own — counted the same way, each returns zero import lines. They are
  * dependency-free leaf modules holding shared vocabulary — the closed list of
  * change kinds, the site's hosts, the domain names — and a constant that two
  * directories must agree on is exactly the thing that should have one
- * definition. `lib/facts.mjs`, where `todayIso()` lives, is the opposite shape
+ * definition.
+ *
+ * ENGINE IS LOAD-BEARING IN THAT SENTENCE AND IS NOT A HEDGE. The Pulse's
+ * TESTS, which the table above counts separately as its other 5 edges, already
+ * import three `lib/` modules that are NOT leaves: `review-hash.mjs` (3 imports
+ * of its own, incl. `./frontmatter.mjs`) and `reviews.mjs` (6, incl.
+ * `gray-matter` and `../loop/lib/verdict.mjs`) at
+ * `pulse/tests/domain-seeds.test.mjs:39-40`, and `schema.mjs` — zod itself, the
+ * exact acquisition this file argues against — at
+ * `pulse/tests/mint.test.mjs:230`. So the rule restated below binds the ENGINE
+ * and does not bind `pulse/tests/`: a test process is not the shipped
+ * model-free Pulse and never runs where the Pulse runs, so what a test may
+ * reach for is a different question from what the engine may. That records
+ * where the boundary actually sits today; it is not a grant, and whether the
+ * rule SHOULD bind the tests is open and is not answered here.
+ *
+ * `lib/facts.mjs`, where `todayIso()` lives, is the opposite shape
  * and that is what settles this file: it imports `lib/schema.mjs` (and with it
  * zod), `lib/data-layer.mjs` and `lib/units.mjs`, so the model-free Pulse would
  * acquire the site build's validation stack in order to learn what day it is.
