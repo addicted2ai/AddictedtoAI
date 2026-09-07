@@ -2146,17 +2146,6 @@
       "ok": true,
       "status": 200
     },
-    "https://aws.amazon.com/ai/generative-ai/nova/": {
-      "bytes": null,
-      "consecutive_failures": 0,
-      "error": null,
-      "final_url": "https://aws.amazon.com/nova/",
-      "last_checked": "2026-09-06",
-      "last_ok": "2026-09-06",
-      "meta_refresh": null,
-      "ok": true,
-      "status": 200
-    },
     "https://aws.amazon.com/blogs/aws/amazon-nova-premier-our-most-capable-model-for-complex-tasks-and-teacher-for-model-distillation/": {
       "bytes": null,
       "consecutive_failures": 0,
