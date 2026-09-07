@@ -222,6 +222,61 @@ runners:
       The machine-readable record is the authority; re-run after any change
       to this command.
 
+  - id: codex-gpt-luna-medium
+    provider: openai
+    tier: cheap
+    roles: [author]
+    model: gpt-5.6-luna
+    harness: codex-cli
+    command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="medium" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
+    capacity_stderr_pattern: '(rate.?limit|quota|usage limit|429|insufficient_quota)'
+    startup_failure_stderr_pattern: '(401|403|token.?expired|invalid api.?key|unauthorized|not authenticated|please run .{0,12}login|no credentials)'
+    conformance: unverified
+    note: >-
+      THE SAME MODEL AS `codex-gpt-luna`, AT MEDIUM REASONING EFFORT, so a job
+      can author cheaply and be reviewed thoroughly. Added 2026-09-07 on the
+      maintainer's question — can a Desk job put the author on medium and the
+      reviewer on max, the way the three-worker fleet did that afternoon.
+
+      IT NEEDS NO CODE, AND THAT IS THE DESIGN RATHER THAN A WORKAROUND.
+      Reasoning effort is part of the INVOCATION, and the invocation lives
+      here: this file is the only one in `loop/`, `pulse/`, `scripts/` and
+      `data/config.json` permitted to name a model, provider or harness, and
+      the command template is the entire interface between the Desk and a
+      model. An `--effort` flag on `loop/run.mjs` would move model
+      configuration into the machinery and break exactly the property that
+      makes a runner swappable in one file. Two entries differing only in
+      effort is the sanctioned shape; `loop/run.mjs` already selects per role
+      (`--runner` for the author, `--reviewer` for the reviewer), so nothing
+      else was needed.
+
+      HOW TO USE IT:
+        node loop/run.mjs --runner codex-gpt-luna-medium --reviewer codex-gpt-luna
+
+      `roles: [author]` is deliberate. This entry exists to be the CHEAP half
+      of that pair, and listing it as a reviewer would let a future run pick
+      the medium model for the judgment step, which is the half that should
+      not be cheapened. The reviewer role is served by `codex-gpt-luna`, whose
+      command carries `model_reasoning_effort="max"`.
+
+      THE REVISION PASS RUNS ON THE AUTHOR'S RUNNER — `loop/run.mjs` has no
+      separate revision runner — so a revision under this pairing is also
+      medium. That is the intended reading: the reviewer names what is wrong
+      at max effort, and applying named findings is the cheaper task.
+
+      LANE AND TIER are the same as `codex-gpt-luna`: one subscription, one
+      `provider: openai` lane, so a capacity pause on one pauses both, which
+      is correct — they are the same account. Cheap tier per the maintainer's
+      2026-09-07 rule that every Luna runner is cheap tier.
+
+      CONFORMANCE IS UNVERIFIED HERE AND THE JSON IS THE AUTHORITY. A new id
+      has no record in `data/conformance.json`, which the selector WARNS about
+      rather than refusing. Run `node loop/conformance.mjs --runner
+      codex-gpt-luna-medium` and commit the record before leaning on it: the
+      effort setting is the one thing that differs from the verified entry,
+      and a lower effort is exactly the condition under which a runner might
+      stop honouring the result protocol.
+
   - id: opencode-deepseek
     provider: opencode-go
     tier: cheap
