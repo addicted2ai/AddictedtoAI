@@ -3401,6 +3401,61 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/NousResearch/Hermes-4-14B/raw/main/README.md": {
+      "bytes": 9129,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/NousResearch/Hermes-4-14B/raw/main/README.md",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/NousResearch/Hermes-4-405B/raw/main/README.md": {
+      "bytes": 9247,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/NousResearch/Hermes-4-405B/raw/main/README.md",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/NousResearch/Hermes-4.3-36B/raw/main/README.md": {
+      "bytes": 9666,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/NousResearch/Hermes-4.3-36B/raw/main/README.md",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/NousResearch/nomos-1/raw/main/README.md": {
+      "bytes": 3594,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/NousResearch/nomos-1/raw/main/README.md",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/PsycheFoundation/consilience-40b-CqX3FUm4/raw/main/README.md": {
+      "bytes": 2630,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/PsycheFoundation/consilience-40b-CqX3FUm4/raw/main/README.md",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/Qwen/Qwen3.8-27B": {
       "bytes": 526586,
       "consecutive_failures": 0,
@@ -3434,6 +3489,50 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/aion-labs/Aion-RP-Llama-3.1-8B/raw/main/README.md": {
+      "bytes": 742,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/aion-labs/Aion-RP-Llama-3.1-8B/raw/main/README.md",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/alpindale/WizardLM-2-8x22B/raw/main/huggingface-metadata.txt": {
+      "bytes": 6217,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/alpindale/WizardLM-2-8x22B/raw/main/huggingface-metadata.txt",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/": {
+      "bytes": 535550,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/AtomicChat/Ling-3.0-flash-GGUF": {
+      "bytes": 12199,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/AtomicChat/Ling-3.0-flash-GGUF",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/api/models/MiniMaxAI/MiniMax-H3": {
       "bytes": 20815,
       "consecutive_failures": 0,
@@ -3452,6 +3551,39 @@
       "final_url": "https://huggingface.co/api/models/MiniMaxAI/MiniMax-H3/commits/main",
       "last_checked": "2026-09-01",
       "last_ok": "2026-09-01",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/NousResearch/Hermes-4-14B": {
+      "bytes": 7164,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/NousResearch/Hermes-4-14B",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/NousResearch/Hermes-4.3-36B": {
+      "bytes": 7611,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/NousResearch/Hermes-4.3-36B",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/NousResearch/nomos-1": {
+      "bytes": 6811,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/NousResearch/nomos-1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3478,6 +3610,17 @@
       "ok": true,
       "status": 200
     },
+    "https://huggingface.co/api/models/alpindale/WizardLM-2-8x22B": {
+      "bytes": 10536,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/alpindale/WizardLM-2-8x22B",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
     "https://huggingface.co/api/models/bartowski/thomsonreuters_Thomson-1.0-Small-GGUF": {
       "bytes": 11608,
       "consecutive_failures": 0,
@@ -3485,6 +3628,127 @@
       "final_url": "https://huggingface.co/api/models/bartowski/thomsonreuters_Thomson-1.0-Small-GGUF",
       "last_checked": "2026-09-04",
       "last_ok": "2026-09-04",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/inclusionAI/Ling-3.0-flash": {
+      "bytes": 9905,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/inclusionAI/Ling-3.0-flash",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/inclusionAI/Ling-3.0-flash-Fin": {
+      "bytes": 11721,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/inclusionAI/Ling-3.0-flash-Fin",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/inclusionAI/Ling-3.0-flash-GGUF": {
+      "bytes": 8317,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/inclusionAI/Ling-3.0-flash-GGUF",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/inclusionAI/Ling-3.0-tiny": {
+      "bytes": 9662,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/inclusionAI/Ling-3.0-tiny",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/microsoft/WizardLM-2-8x22B": {
+      "bytes": 41,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/microsoft/WizardLM-2-8x22B",
+      "last_checked": "2026-09-07",
+      "last_ok": null,
+      "meta_refresh": null,
+      "ok": null,
+      "status": 401
+    },
+    "https://huggingface.co/api/models/microsoft/phi-4": {
+      "bytes": 5606,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/microsoft/phi-4",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/microsoft/phi-4/commits/main": {
+      "bytes": 3964,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/microsoft/phi-4/commits/main",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/poolside/Laguna-M.1": {
+      "bytes": 13917,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/poolside/Laguna-M.1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/poolside/Laguna-S-2.1": {
+      "bytes": 13495,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/poolside/Laguna-S-2.1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/poolside/Laguna-XS-2.1": {
+      "bytes": 11497,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/poolside/Laguna-XS-2.1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models/poolside/Laguna-XS.2": {
+      "bytes": 10330,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models/poolside/Laguna-XS.2",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
@@ -3551,6 +3815,17 @@
       "final_url": "https://huggingface.co/api/models/zai-org/GLM-5.3/commits/main",
       "last_checked": "2026-09-03",
       "last_ok": "2026-09-03",
+      "meta_refresh": null,
+      "ok": true,
+      "status": 200
+    },
+    "https://huggingface.co/api/models?author=aion-labs&limit=100&sort=createdAt&direction=-1": {
+      "bytes": 641,
+      "consecutive_failures": 0,
+      "error": null,
+      "final_url": "https://huggingface.co/api/models?author=aion-labs&limit=100&sort=createdAt&direction=-1",
+      "last_checked": "2026-09-07",
+      "last_ok": "2026-09-07",
       "meta_refresh": null,
       "ok": true,
       "status": 200
