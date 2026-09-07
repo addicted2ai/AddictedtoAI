@@ -107,7 +107,7 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
 
 ## The read-only re-test of a standing hold
 
-- [ ] 9. `pulse/lib/publish.mjs`: at the standing-hold branch (`:568–570`
+- [x] 9. `pulse/lib/publish.mjs`: at the standing-hold branch (`:568–570`
       today, which returns before any live read), parse the file for task 7's
       `deploy-hold: <sha> <classification>` marker. **With no marker, return
       exactly as today and append nothing** — the hold belongs to another brake
@@ -130,12 +130,12 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       invocation*, *a standing hold carrying no such marker SHALL NOT be
       re-tested*, *a dry run SHALL append nothing*, and *under `publish: false`
       no re-test is performed and nothing is printed or appended for the hold*.
-- [ ] 10. `pulse/lib/publish.mjs`: the re-test returns the same
+- [x] 10. `pulse/lib/publish.mjs`: the re-test returns the same
       `{ published: false, reason: 'hold' }` it returns today. It removes
       nothing, rewrites nothing, and does not reach the push. Implements: *the
       re-test SHALL NOT clear, weaken or rewrite the hold, and SHALL NOT resume
       publishing*.
-- [ ] 11. `pulse/tests/publish.test.mjs`: with a marked hold standing and a live
+- [x] 11. `pulse/tests/publish.test.mjs`: with a marked hold standing and a live
       stamp that now contains the held commit, one invocation appends one
       observation naming the date and the stamp; a second invocation appends a
       second observation and leaves the first intact; the hold's original text is
@@ -149,7 +149,7 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       two failing assertions in disjoint places is the evidence that the append
       and the non-clearance are independent behaviours rather than one described
       twice. Tests tasks 9 and 10.
-- [ ] 12. `pulse/tests/publish.test.mjs`: the negative half — a marked hold
+- [x] 12. `pulse/tests/publish.test.mjs`: the negative half — a marked hold
       standing with a live stamp that does **not** contain the held commit
       appends an observation saying exactly that, and a run whose live read fails
       appends an observation saying the stamp was unreadable rather than
@@ -172,7 +172,7 @@ All work is in `pulse/lib/publish.mjs` and `pulse/tests/`. Nothing under
       the marker and confirm only the reserved-path case fails; move the re-test
       ahead of the `publish: false` return and confirm only the disabled case
       fails, on all three of its assertions. Tests task 9.
-- [ ] 13. `pulse/tests/publish.test.mjs`: the dry run. With a marked hold
+- [x] 13. `pulse/tests/publish.test.mjs`: the dry run. With a marked hold
       standing, an invocation in dry-run mode prints the observation, the
       live-stamp fetch spy records **one** call, and `HOLD.md` is byte-identical
       afterwards — compared by hash against a copy taken before the call, not by

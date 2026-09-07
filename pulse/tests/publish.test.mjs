@@ -34,11 +34,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { cleanup, makeRoot, runPulse } from './helpers.mjs';
 import { classifyWorkingTree, isEngineWrite, publishStep } from '../lib/publish.mjs';
+import { today } from '../lib/core.mjs';
+// Deliberately the REAL breaker, not a copy of the text it writes: the re-test's
+// whole job is to tell a deploy hold from the four the Desk writes, and a
+// hand-copied fixture would keep passing on the day breakers.mjs changed shape.
+// `pulse/tests/**` is outside the cross-boundary import guard in
+// `indexnow.test.mjs` (it ignores `tests/**`), which is why this is allowed here
+// and would not be in `pulse/lib/`.
+import { BREAKERS, writeHold as writeBreakerHold } from '../../loop/lib/breakers.mjs';
 
 const ARGS = ['--no-build', '--no-mint', '--offline'];
 
@@ -240,8 +249,12 @@ test('publishing is suspended while HOLD.md stands', async (t) => {
 // addictedtoai-ps3 — what the step is allowed to stage.
 // ---------------------------------------------------------------------------
 
-/** Milliseconds. The deploy never lands in these tests; the commit is the subject. */
-const FAST = { pollBudgetMs: 300, pollIntervalMs: 25 };
+/**
+ * Milliseconds. The deploy never lands in these tests; the commit is the
+ * subject. A run that never lands costs FOUR times this now, because the
+ * confirmation window is three times the first and both are polled.
+ */
+const FAST = { pollBudgetMs: 120, pollIntervalMs: 20 };
 const QUIET = { log: { step: () => {}, warn: () => {} } };
 
 /**
@@ -688,6 +701,229 @@ test('classifyWorkingTree reports "cannot tell" rather than guessing outside a r
   } finally {
     cleanup(root);
   }
+});
+
+// ---------------------------------------------------------------------------
+// addictedtoai-k2y0 — the read-only re-test of a standing deploy hold.
+//
+// The halt outlived its cause by three hours because the brake suspends the
+// very publishing whose success would have shown the cause had passed: this
+// branch returned before any live read. It now reads once and writes a fact.
+// It still clears nothing, and every test below asserts that separately from
+// the append, because they are two behaviours and not one described twice.
+// ---------------------------------------------------------------------------
+
+/** A build stamp in the shape `lib/stamp.mjs` writes and the live site serves. */
+function stampBody(commit) {
+  return JSON.stringify({ built_at: '2026-08-29T00:00:00Z', commit, dirty: true, stamp: `x · ${commit}` });
+}
+
+/**
+ * A loopback `/status.json` that COUNTS ITS REQUESTS.
+ *
+ * The count is the assertion for *"SHALL read the live build stamp once"* and
+ * for *"SHALL NOT be re-tested"* — one call, and zero calls, are both claims
+ * about the world that only a spy can make. `deadSite` above cannot: it does
+ * not count.
+ */
+async function liveSite(t, initialBody = null) {
+  let body = initialBody;
+  let hits = 0;
+  const server = createServer((_req, res) => {
+    hits++;
+    if (body === null) {
+      res.writeHead(503);
+      res.end('');
+      return;
+    }
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(body);
+  });
+  await new Promise((r) => server.listen(0, '127.0.0.1', r));
+  const prior = process.env.SITE_URL;
+  process.env.SITE_URL = `http://127.0.0.1:${server.address().port}`;
+  t.after(async () => {
+    if (prior === undefined) delete process.env.SITE_URL;
+    else process.env.SITE_URL = prior;
+    await new Promise((r) => server.close(r));
+  });
+  return {
+    get hits() {
+      return hits;
+    },
+    set: (b) => {
+      body = b;
+    },
+  };
+}
+
+/** A standing deploy hold, marker and all, exactly as `writeHold` writes one. */
+function markedHold(root, sha, classification = 'never-advanced') {
+  const text = [
+    '# HOLD',
+    '',
+    `deploy-hold: ${sha} ${classification}`,
+    '',
+    'Written by the publish step on 2026-09-01.',
+    '',
+    `- pushed commit: ${sha}`,
+    '- classification: never-advanced',
+    '',
+  ].join('\n');
+  write(root, 'HOLD.md', text);
+  return text;
+}
+
+const holdOf = (root) => readFileSync(join(root, 'HOLD.md'), 'utf8');
+const hashOf = (text) => createHash('sha256').update(text).digest('hex');
+/** The lines the re-test appended, and nothing the hold was written with. */
+const appended = (root, original) =>
+  holdOf(root).slice(original.length).split('\n').map((l) => l.trim()).filter(Boolean);
+
+/** A commit on top of `HEAD`, so the live site can be serving one that contains it. */
+function commitOnTop(root, rel) {
+  write(root, rel, '---\nid: later\n---\n');
+  git(root, ['add', '-A']);
+  git(root, ['commit', '-m', 'fixture: a later commit that contains the held one']);
+  return git(root, ['rev-parse', '--short=12', 'HEAD']);
+}
+
+test('a standing deploy hold is re-tested: one observation per invocation, appended, and the hold survives', async (t) => {
+  const { root, bare } = makeGitRoot();
+  t.after(() => dropRoot(root, bare));
+
+  const held = git(root, ['rev-parse', 'HEAD']);
+  const served = commitOnTop(root, 'content/wiki/model/later.md');
+  const original = markedHold(root, held);
+  const remoteBefore = git(bare, ['rev-parse', 'main']);
+  const site = await liveSite(t, stampBody(served));
+
+  const rec = recorder();
+  const first = await publishStep(root, { owned: [], ...FAST, log: rec.log });
+
+  assert.equal(first.reason, 'hold', rec.said());
+  assert.equal(site.hits, 1, 'the live build stamp is read exactly ONCE — a second read is a second outward action');
+  // Asserted BEFORE the file is read, so a re-test that cleared its own brake
+  // fails on this sentence rather than on an ENOENT three lines later.
+  assert.equal(existsSync(join(root, 'HOLD.md')), true, 'the hold is still standing after a positive observation');
+  assert.ok(holdOf(root).startsWith(original), `the hold's own text was rewritten:\n${holdOf(root)}`);
+  const afterOne = appended(root, original);
+  assert.equal(afterOne.length, 1, `expected one observation, got:\n${afterOne.join('\n')}`);
+  assert.match(afterOne[0], new RegExp(`^observation ${today()}: `), afterOne[0]);
+  assert.match(afterOne[0], new RegExp(`${served}.*${held.slice(0, 12)}.*now served`), afterOne[0]);
+
+  const second = await publishStep(root, { owned: [], ...FAST, log: rec.log });
+  assert.equal(second.reason, 'hold');
+  assert.equal(site.hits, 2, 'one read per invocation, and only one');
+  const afterTwo = appended(root, original);
+  assert.equal(afterTwo.length, 2, 'the second invocation appends rather than rewriting');
+  assert.equal(afterTwo[0], afterOne[0], 'the first observation is left intact — the file records how long this lasted');
+
+  // The two independent halves of "it clears nothing".
+  assert.equal(existsSync(join(root, 'HOLD.md')), true, 'the hold is still standing');
+  assert.equal(git(bare, ['rev-parse', 'main']), remoteBefore, 'and nothing was pushed');
+});
+
+test('the re-test records bad news too — a stamp that does not carry the held commit', async (t) => {
+  // An observation that only ever fires on good news is a log line, not a
+  // record.
+  const { root, bare } = makeGitRoot();
+  t.after(() => dropRoot(root, bare));
+
+  const held = git(root, ['rev-parse', 'HEAD']);
+  const original = markedHold(root, held, 'advanced-elsewhere');
+  const site = await liveSite(t, stampBody('ffffffffffff'));
+
+  const res = await publishStep(root, { owned: [], ...FAST, ...QUIET });
+  assert.equal(res.reason, 'hold');
+  assert.equal(site.hits, 1);
+  const [line] = appended(root, original);
+  assert.match(line, /does not carry/, line);
+  assert.match(line, new RegExp(held.slice(0, 12)), line);
+});
+
+test('the re-test records an unreadable site too, rather than appending nothing', async (t) => {
+  const { root, bare } = makeGitRoot();
+  t.after(() => dropRoot(root, bare));
+
+  const held = git(root, ['rev-parse', 'HEAD']);
+  const original = markedHold(root, held);
+  const site = await liveSite(t, null); // 503 on every request
+
+  const res = await publishStep(root, { owned: [], ...FAST, ...QUIET });
+  assert.equal(res.reason, 'hold');
+  assert.equal(site.hits, 1);
+  const [line] = appended(root, original);
+  assert.match(line, /could not be read/, line);
+  assert.match(line, /still unknown/, line);
+});
+
+test("a hold the Desk's reserved-path breaker wrote is left byte-identical, and no live stamp is read for it", async (t) => {
+  // The marker is the mechanism, not a convenience. None of the Desk's four
+  // breakers names a commit, so "is the commit this hold names now served" has
+  // no referent on any of them — and a re-test that read the site to decide
+  // whether a reserved-path halt had cleared would be asking an unanswerable
+  // question and then appending an answer that reads as progress on it.
+  const { root, bare } = makeGitRoot();
+  t.after(() => dropRoot(root, bare));
+
+  const holdPath = join(root, 'HOLD.md');
+  writeBreakerHold(
+    { holdPath, now: () => new Date('2026-09-01T09:47:00Z') },
+    BREAKERS.RESERVED_PATH,
+    'a job attempted to edit data/config.json.',
+  );
+  const before = hashOf(holdOf(root));
+  const site = await liveSite(t, stampBody('ffffffffffff'));
+
+  const res = await publishStep(root, { owned: [], ...FAST, ...QUIET });
+
+  assert.equal(res.reason, 'hold');
+  assert.equal(res.retest, undefined, 'a hold with no deploy marker is not re-tested at all');
+  assert.equal(site.hits, 0, 'no live stamp was read for a hold that names no commit');
+  assert.equal(hashOf(holdOf(root)), before, 'the other brake\'s hold is byte-identical');
+});
+
+test('under publish: false a MARKED hold gets no re-test, no read, and no second publish line', async (t) => {
+  // The flag axis rather than the marker axis. That mode performs no deploy
+  // verification, and the re-test is part of deploy verification.
+  const { root } = makeGitRoot({ publish: false, remote: false });
+  t.after(() => dropRoot(root));
+
+  const original = markedHold(root, git(root, ['rev-parse', 'HEAD']));
+  const before = hashOf(original);
+  const site = await liveSite(t, stampBody('ffffffffffff'));
+
+  const rec = recorder();
+  const res = await publishStep(root, { owned: [], ...FAST, log: rec.log });
+
+  assert.equal(res.reason, 'disabled');
+  assert.equal(site.hits, 0, 'a mode that performs no deploy verification cannot perform the re-test');
+  assert.equal(hashOf(holdOf(root)), before, 'HOLD.md is byte-identical');
+  const publishLines = rec.lines.filter((l) => l.includes('publish'));
+  assert.equal(publishLines.length, 1, `expected exactly one publish line, got:\n${publishLines.join('\n')}`);
+});
+
+test('a dry run reads the stamp, prints the observation, and leaves HOLD.md byte-identical', async (t) => {
+  // The hold branch is reached BEFORE the dry-run branch, so without an explicit
+  // exemption `--dry-run` would append to a guardrail file three lines above its
+  // own "nothing was committed and nothing was pushed".
+  const { root, bare } = makeGitRoot();
+  t.after(() => dropRoot(root, bare));
+
+  const held = git(root, ['rev-parse', 'HEAD']);
+  const served = commitOnTop(root, 'content/wiki/model/later.md');
+  const original = markedHold(root, held);
+  const before = hashOf(original);
+  const site = await liveSite(t, stampBody(served));
+
+  const rec = recorder();
+  const res = await publishStep(root, { owned: [], dryRun: true, ...FAST, log: rec.log });
+
+  assert.equal(res.reason, 'hold');
+  assert.equal(site.hits, 1, 'a dry run still READS — it is the append it must not do');
+  assert.match(rec.said(), new RegExp(`observation ${today()}: .*${served}`), rec.said());
+  assert.equal(hashOf(holdOf(root)), before, 'compared by hash, because an appended line is exactly what this forbids');
 });
 
 test('POSITIVE CONTROL — inside a repository the same call reads the tree rather than shrugging', () => {
