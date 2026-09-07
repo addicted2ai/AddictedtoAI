@@ -93,6 +93,59 @@
  * nothing. The raw values survive in the snapshot and in the catalog row
  * either way.
  *
+ * ## Departures: a retirement and a substitution are different events
+ *
+ * `emit_on_remove: true` used to make every departed row a `retirement`, and
+ * `lib/changes.mjs` renders that word to a reader as "retired". On 2026-09-05
+ * two rows left `openrouter-models` between the 06:00:03Z and 06:00:04Z fetches
+ * and `data/changes.jsonl` recorded both identically. Only one was a
+ * retirement. Alibaba Cloud's notice of 2026-09-02 says "the qwen3.8-max
+ * endpoint will automatically transition to the snapshot version
+ * qwen3.8-max-0902, with billing items and pricing remaining unchanged", and
+ * `openrouter.ai/qwen/qwen3.8-max` answers 307 to `/qwen/qwen3.8-max-0902`. The
+ * home feed printed "Qwen: Qwen3.8 Max (0902) arrival" and "Qwen: Qwen3.8 Max
+ * retired" on adjacent lines — the site's own named failure mode, a volatile
+ * value rendered as a settled fact, arriving through a verb instead of a number.
+ *
+ * The discriminator was already in the two snapshots the diff is computed from,
+ * and costs no network call, no model and no judgment about the world: a row
+ * DEPARTING and a row ARRIVING in the same fetch whose canonical slugs share a
+ * dated stem. `qwen/qwen3.8-max` carried `qwen/qwen3.8-max-20260803` and
+ * `qwen/qwen3.8-max-0902` carries `qwen/qwen3.8-max-20260902` — stem
+ * `qwen/qwen3.8-max`. No arrival shared a stem with
+ * `ibm-granite/granite-4.1-8b-20260429`, so Granite still reads as the
+ * withdrawal it was. That case — no same-stem arrival — must produce exactly
+ * what it produced before, and `substitutionSuccessors` returning `[]` is how.
+ *
+ * `substitution_rule` declares where the slug lives, beside `status_rule` and
+ * `schedule_rule` in the registry, for the same reason those live there: the
+ * vendor-specific facts are the registry's and this file stays generic. A
+ * source with no rule is untouched.
+ *
+ * ### Why the key still says `$retirement`
+ *
+ * The key is a dedupe identity and its shape is a function of state:
+ * `<source>|<hash>|<hash>|<row id>|<field>`. "Row X was in `previous` and is not
+ * in `latest`" is ONE event between one pair of snapshots; whether the history
+ * calls it a retirement or a substitution is a classification of that event, not
+ * a second one. Keying the substitution differently would make a departure that
+ * is standing at the moment this lands get recorded twice — once under each
+ * word, both on the feed, about one row. So the marker is unchanged and
+ * `appendChanges` dedupes a reclassified departure against the line already on
+ * disk. `data/changes.jsonl` is append-only: a line already written under the
+ * older word stays written, and an `interpret` annotation is how it gets
+ * corrected.
+ *
+ * ### Two things this does NOT do, deliberately
+ *
+ * It does not rebind any entry's `feeds:` map to the arriving row, and it does
+ * not decide what the site should *say* about a substitution beyond naming the
+ * arriving row. Both are judgments about whether two checkpoints are one
+ * subject, and the Qwen case is the argument that they are not always: the
+ * August 3 and September 2 checkpoints are distinct snapshots by the vendor's
+ * own description, with separate wiki entries, and a mechanical rebind would
+ * have moved one page's prices onto weights it does not describe.
+ *
  * ## Annotation lines (written by the loop, read here)
  *
  * An `interpret` job appends an annotation to this same file rather than
@@ -180,6 +233,86 @@ export function displayName(source, row) {
   return typeof v === 'string' && v !== '' ? v : null;
 }
 
+/**
+ * A trailing `-YYYYMMDD` on a canonical slug — a calendar date, not a version.
+ *
+ * EIGHT DIGITS AND A REAL CALENDAR DATE, both measured rather than guessed. Of
+ * the 430 `openrouter-models` rows in the 2026-09-07 06:00:03Z snapshot, 222
+ * canonical slugs end in eight digits and every one of them is a valid
+ * `YYYYMMDD`; zero end in eight digits that are not. The looser suffixes are the
+ * reason the rule is this tight and not tighter-looking-but-wider: 28 slugs end
+ * in four digits (`deepseek/deepseek-chat-v3-0324`, `mistralai/codestral-2508`),
+ * 42 in two (`openai/gpt-4o-2024-05-13`) and 6 in one
+ * (`microsoft/phi-4`, `mistralai/mistral-medium-3`). Some of those four-digit
+ * tails are `MMDD` dates and some are version numbers, and nothing in the string
+ * tells them apart — stripping them would fold `mistral-medium-3` and
+ * `mistral-medium` into one stem and invent a substitution out of a version bump.
+ */
+const DATED_SLUG_SUFFIX = /-(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])$/;
+
+/** The declared slug of one row, or null when the rule does not apply to it. */
+function ruleSlug(rule, row) {
+  if (!rule || rule.kind !== 'dated_slug_stem' || !row) return null;
+  const v = getPath(row, rule.path);
+  return typeof v === 'string' && v !== '' ? v : null;
+}
+
+/**
+ * The part of a row id that names a serving VARIANT rather than a model — the
+ * separator onwards, `':batch'` on `anthropic/claude-opus-5:batch`.
+ *
+ * Without this the pairing is ambiguous on real data, which is why it is here
+ * and not a refinement left for later. Measured on the 2026-09-07 snapshot: 87
+ * of the 430 rows carry a `:` variant, and 78 canonical slugs are shared by
+ * exactly two rows — in every case a base row and its `:batch` sibling, which
+ * publish the SAME `canonical_slug` byte for byte. So a departing base row would
+ * otherwise pair with both the arriving base row and the arriving batch row, and
+ * a departing batch row with both as well. Scoping the match to rows carrying
+ * the same variant keeps each departure paired with its own kind of row.
+ *
+ * Absent `variant_separator` means no scoping, and every row's variant is `''`.
+ */
+function ruleVariant(rule, rowId) {
+  const sep = rule?.variant_separator;
+  if (typeof sep !== 'string' || sep === '') return '';
+  const id = String(rowId ?? '');
+  const at = id.indexOf(sep);
+  return at === -1 ? '' : id.slice(at);
+}
+
+/**
+ * The rows arriving in this same fetch that continue a departing row's name.
+ *
+ * `arrivals` is `[rowId, row]` pairs — the rows present in `latest` and absent
+ * from `previous`, which the caller already has. Returns `[{ row_id,
+ * display_name }]` sorted by row id, or `[]` when this departure is a
+ * withdrawal like any other.
+ *
+ * The departing row's slug must ITSELF be dated. That is what makes the stem a
+ * stem and not the whole slug: without it, an undated departing slug would match
+ * an arriving row publishing the identical undated slug, which is a different
+ * signal that this change is not the argument for. An ARRIVING slug may be dated
+ * or not, because the publisher moving `…-20260803` onto a bare `…` is the same
+ * act as moving it onto `…-20260902`.
+ */
+export function substitutionSuccessors(source, departedId, departedRow, arrivals = []) {
+  const rule = source?.substitution_rule;
+  const slug = ruleSlug(rule, departedRow);
+  if (!slug || !DATED_SLUG_SUFFIX.test(slug)) return [];
+  const stem = slug.replace(DATED_SLUG_SUFFIX, '');
+  if (stem === '') return [];
+  const variant = ruleVariant(rule, departedId);
+
+  const out = [];
+  for (const [rowId, row] of arrivals) {
+    if (ruleVariant(rule, rowId) !== variant) continue;
+    const arriving = ruleSlug(rule, row);
+    if (!arriving || arriving.replace(DATED_SLUG_SUFFIX, '') !== stem) continue;
+    out.push({ row_id: rowId, display_name: displayName(source, row) });
+  }
+  return out.sort((a, b) => (a.row_id < b.row_id ? -1 : a.row_id > b.row_id ? 1 : 0));
+}
+
 /** A minimal excerpt of a row: the archived source reference. */
 export function excerptRow(source, row) {
   if (!row) return null;
@@ -255,18 +388,31 @@ export function diffSnapshots(source, previous, latest, { date = today() } = {})
   }
 
   if (source.emit_on_remove) {
+    // The arrival set is the departure comparison run the other way, and both
+    // halves of a substitution are in it. Computed once, outside the loop.
+    const arrivals = Object.keys(nextRows)
+      .filter((id) => !(id in prevRows))
+      .sort()
+      .map((id) => [id, nextRows[id]]);
+
     for (const rowId of Object.keys(prevRows).sort()) {
       if (rowId in nextRows) continue;
       const row = prevRows[rowId];
+      const successors = substitutionSuccessors(source, rowId, row, arrivals);
       changes.push({
         ...base,
+        // `$retirement`, on both kinds, deliberately — one departure is one
+        // event and gets one key. See the header section on this.
         key: key(rowId, '$retirement'),
-        kind: KIND.RETIREMENT,
+        kind: successors.length > 0 ? KIND.SUBSTITUTION : KIND.RETIREMENT,
         row_id: rowId,
         display_name: displayName(source, row),
         field: null,
         old: null,
         new: null,
+        // Absent on a retirement rather than present and empty: a reader of the
+        // history should not have to know that `[]` means "not that kind".
+        ...(successors.length > 0 ? { successors } : {}),
         excerpt: excerptRow(source, row),
       });
     }
