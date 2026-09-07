@@ -17,7 +17,7 @@ this change is small and why it is not nothing. Everything was read on
 | "The Desk discards a job's work on ANY gate failure" | **FALSE now.** `loop/run.mjs:443-495` runs the gates a second time on **any** failure and continues normally if the retry passes. Commits `9f9139a` and `637398d`, both present on this branch. |
 | `loop/lib/breakers.mjs:63-68` counts failed/discarded by type with no cause read | **TRUE, unchanged.** `checkConsecutiveFailures` reads `outcome` and `type` and nothing else; the file greps clean for `environmental`, `transport` and `TRANSPORT`. |
 | The marker to key on is `pulse/tests/helpers.mjs` | **MOVED.** The one declared wording is now `TRANSPORT_FAILURE_MARKER` in `loop/lib/gates.mjs:64`, and both emitting sites interpolate it. `loop/tests/gate-transport-retry.test.mjs:276` scans `pulse/` and fails on a re-invented wording. |
-| — | **NEW, and it is the finding this change acts on.** The retry, the classification and the note are described by **no requirement in `openspec/specs/loop/spec.md`.** The word "retry" appears there eleven times and never about the gates; `grep` over the file for `transport` returns nothing. |
+| — | **NEW, and it is the finding this change acts on.** The retry, the classification and the note are described by **no requirement in `openspec/specs/loop/spec.md`.** The word "retry" appears there eight times and never about the gates; `grep` over the file for `transport` returns nothing. |
 
 `loop/tests/gate-transport-retry.test.mjs` carries 18 tests over this
 mechanism, including that a retried-then-passed gate is not a failure toward
