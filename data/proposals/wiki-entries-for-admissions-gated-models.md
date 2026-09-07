@@ -39,6 +39,8 @@ evidence: >
   https://blog.google/innovation-and-ai/models-and-research/gemini-models/3-8-flash-and-3-8-flash-cyber/
   ("both of today's releases are powered by the same foundational
   intelligence"; the Fairwind Program paragraph).
+proposed_by_job: j-20260907-02
+proposed_by_type: post
 ---
 
 # The corpus has no record of two frontier models released last week
