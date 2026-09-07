@@ -10,11 +10,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync, mkdirSync, utimesSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { loadConfig } from '../lib/config.mjs';
+import { loadConfig, JOB_TYPES } from '../lib/config.mjs';
 import { loadRunners, pickRunner } from '../lib/runners.mjs';
 import { readLedger } from '../lib/ledger.mjs';
-import { selectJob, formatRefusals } from '../lib/select.mjs';
+import { selectJob, formatRefusals, runnerJobTypeGate } from '../lib/select.mjs';
 import { readProposals } from '../lib/proposals.mjs';
 import {
   makeRepo,
@@ -27,6 +28,9 @@ import {
 } from './helpers.mjs';
 
 const NOW = new Date('2026-09-10T12:00:00.000Z');
+
+/** This file lives at <repo>/loop/tests/, so the repository root is two up. */
+const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
 
 function select(ctx, { runnerId = 'mock-frontier' } = {}) {
   const cfg = loadConfig(ctx);
@@ -323,4 +327,122 @@ test('directives outrank the queue, and the queue outranks proposals', () => {
   assert.equal(select(ctx2).selected.source, 'queue');
   ctx.cleanup();
   ctx2.cleanup();
+});
+
+/**
+ * A RUNNER'S CLEARANCE FOR THE KIND OF WORK, the counterpart of `roles` for the
+ * kind of pass. The maintainer's decision, 2026-09-07, when a second entry was
+ * added for the same model at a lower reasoning effort: that entry may do the
+ * mechanical work and may not write a blog post.
+ *
+ * These are unit tests of the gate rather than whole-selector runs, because the
+ * property being asserted is a pure function of the runner entry and one
+ * candidate — and because the gate must be provable for a runner whose entry
+ * does not exist in the registry fixture.
+ */
+test('a runner declaring job_types may not be given a job type it is not cleared for', () => {
+  const restricted = {
+    id: 'mock-medium',
+    job_types: ['repair', 'machinery'],
+  };
+  const open = { id: 'mock-any' };
+
+  const post = { type: 'post', title: 'a post' };
+  const repair = { type: 'repair', title: 'a repair' };
+
+  const refused = runnerJobTypeGate(restricted, post);
+  assert.equal(refused.ok, false);
+  assert.equal(refused.rule, 'runner:job-type');
+  assert.match(refused.reason, /cleared for repair, machinery jobs and this is a post job/);
+  assert.match(
+    refused.reason,
+    /not a budget or a capacity refusal/,
+    'the refusal must not be mistakable for shedding or a ceiling — another runner can take this work',
+  );
+
+  assert.equal(runnerJobTypeGate(restricted, repair).ok, true, 'a cleared type passes');
+
+  // ABSENT MEANS EVERY TYPE: every entry written before this field existed must
+  // keep its behaviour exactly, which is the compatibility property.
+  assert.equal(runnerJobTypeGate(open, post).ok, true);
+  assert.equal(runnerJobTypeGate(open, repair).ok, true);
+  // A malformed value is not a silent allow-all here either: loadRunners
+  // refuses it at load time (see the registry test below), so by the time a
+  // candidate reaches this gate the list is either absent or valid.
+});
+
+test('the registry refuses a job_types list that is empty or names something that is not a job type', () => {
+  const ctx = makeRepo({ now: NOW });
+  const runnersPath = join(ctx.repoRoot, 'runners.yml');
+  const base = (extra) =>
+    [
+      'default: mock-a',
+      'runners:',
+      '  - id: mock-a',
+      '    provider: p',
+      '    tier: cheap',
+      '    roles: [author]',
+      ...extra,
+      "    command: 'echo {worktree} {prompt_file}'",
+    ].join('\n');
+
+  writeFileSync(runnersPath, base(['    job_types: [repair, machinery]']), 'utf8');
+  const okReg = loadRunners({ runnersPath });
+  assert.deepEqual(okReg.byId.get('mock-a').job_types, ['repair', 'machinery']);
+
+  writeFileSync(runnersPath, base(['    job_types: [repair, pots]']), 'utf8');
+  assert.throws(
+    () => loadRunners({ runnersPath }),
+    /unknown job type "pots"/,
+    'a typo must fail at load: an unknown string can never equal a candidate type, so it would silently refuse every job of that kind forever',
+  );
+
+  writeFileSync(runnersPath, base(['    job_types: []']), 'utf8');
+  assert.throws(
+    () => loadRunners({ runnersPath }),
+    /non-empty list when present/,
+    'an empty list is a runner cleared for nothing, which is never what anyone means',
+  );
+
+  writeFileSync(runnersPath, base([]), 'utf8');
+  assert.equal(
+    loadRunners({ runnersPath }).byId.get('mock-a').job_types,
+    undefined,
+    'omitting the field entirely is the unrestricted default',
+  );
+});
+
+test('every clearance the shipped registry declares is actually enforced by the gate', () => {
+  // Read the REAL registry rather than a fixture, so a clearance written in
+  // runners.yml is proved to be in force and not merely documented.
+  //
+  // THIS TEST NAMES NO RUNNER, and that is not squeamishness — the portability
+  // suite fails this directory for naming a model, provider, harness or runner
+  // id, including in a test, because the swap is only real while runners.yml is
+  // the single point of change. It caught an earlier draft of this very test.
+  // So the POLICY (which entry may not write a post) lives in runners.yml, which
+  // is the one file allowed to say it, and what belongs here is the MECHANISM:
+  // whatever any entry declares, the gate enforces exactly that.
+  const reg = loadRunners({ runnersPath: join(REPO_ROOT, 'runners.yml') });
+  const restricted = reg.runners.filter((r) => Array.isArray(r.job_types));
+  for (const r of restricted) {
+    for (const cleared of r.job_types) {
+      assert.equal(
+        runnerJobTypeGate(r, { type: cleared }).ok,
+        true,
+        `an entry declaring ${cleared} must be offered ${cleared} work`,
+      );
+    }
+    const withheld = JOB_TYPES.filter((t) => !r.job_types.includes(t));
+    for (const t of withheld) {
+      const refused = runnerJobTypeGate(r, { type: t });
+      assert.equal(refused.ok, false, `a type the entry does not declare must be refused`);
+      assert.equal(refused.rule, 'runner:job-type');
+    }
+  }
+  // An entry with no clearance is offered everything — the compatibility half,
+  // asserted against the real file so a future edit cannot quietly invert it.
+  for (const r of reg.runners.filter((x) => !Array.isArray(x.job_types))) {
+    for (const t of JOB_TYPES) assert.equal(runnerJobTypeGate(r, { type: t }).ok, true);
+  }
 });

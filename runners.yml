@@ -226,6 +226,7 @@ runners:
     provider: openai
     tier: cheap
     roles: [author]
+    job_types: [interpret, verify, entry, tutorial, education, repair, prune, machinery]
     model: gpt-5.6-luna
     harness: codex-cli
     command: 'codex exec -m gpt-5.6-luna -c model_reasoning_effort="medium" -c model_context_window=1000000 -c model_auto_compact_token_limit=900000 -c approval_policy="never" -s danger-full-access -C "{worktree}" < "{prompt_file}"'
@@ -258,6 +259,21 @@ runners:
       the medium model for the judgment step, which is the half that should
       not be cheapened. The reviewer role is served by `codex-gpt-luna`, whose
       command carries `model_reasoning_effort="max"`.
+
+      IT MAY NOT WRITE A BLOG POST, and that is the maintainer's decision,
+      2026-09-07: "I don't want the medium runner to write a blog post". The
+      `job_types` list above is the complete set of job types this entry may
+      author; `post` and `scout` are absent, so the selector refuses a post or
+      a scout candidate for this runner with rule `runner:job-type` before the
+      budget or the shed level is consulted, and another runner can still take
+      that work. `scout` is excluded with `post` because a scout job's product
+      is a proposal for new writing — the same judgment, one step earlier.
+
+      The field is optional and ABSENT MEANS EVERY TYPE, so every other entry
+      in this file is unaffected. It is declared here rather than in
+      `data/config.json` because it is a statement about what a particular
+      MODEL should be trusted with, and this file is the only one permitted to
+      describe a model.
 
       THE REVISION PASS RUNS ON THE AUTHOR'S RUNNER — `loop/run.mjs` has no
       separate revision runner — so a revision under this pairing is also

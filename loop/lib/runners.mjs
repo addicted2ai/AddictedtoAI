@@ -8,6 +8,8 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { parse as parseYaml } from 'yaml';
 
+import { JOB_TYPES } from './config.mjs';
+
 export const ROLES = Object.freeze(['author', 'reviewer']);
 export const TIERS = Object.freeze(['frontier', 'cheap']);
 
@@ -48,6 +50,29 @@ export function loadRunners(ctx) {
     }
     if (!r.command || typeof r.command !== 'string') {
       throw new Error(`${where}: missing "command" template`);
+    }
+    // OPTIONAL clearance: the complete set of job types this runner may author.
+    // ABSENT MEANS EVERY TYPE, so every entry written before this existed keeps
+    // its behaviour exactly. Validated against JOB_TYPES rather than accepted as
+    // free text, because the failure mode of a typo here is silent and wrong in
+    // the DANGEROUS direction: an unknown string can never equal a candidate's
+    // type, so `job_types: [pots]` would refuse every job forever, and
+    // `job_types: [post]` misspelt in the other direction would quietly clear
+    // nothing. A load-time error is the only honest reading of a name that is
+    // not a job type.
+    if (r.job_types !== undefined) {
+      if (!Array.isArray(r.job_types) || r.job_types.length === 0) {
+        throw new Error(
+          `${where}: "job_types" must be a non-empty list when present; omit it entirely to clear every type`,
+        );
+      }
+      for (const t of r.job_types) {
+        if (!JOB_TYPES.includes(t)) {
+          throw new Error(
+            `${where}: unknown job type "${t}" in "job_types" (expected one of ${JOB_TYPES.join(', ')})`,
+          );
+        }
+      }
     }
     for (const key of ['capacity_stderr_pattern', 'startup_failure_stderr_pattern']) {
       if (!r[key]) continue;

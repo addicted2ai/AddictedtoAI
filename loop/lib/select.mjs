@@ -110,6 +110,38 @@ export function gatherCandidates(ctx, { dryRun = false } = {}) {
  * @returns {{selected: object|null, refusals: Array, warnings: string[],
  *            notes: string[], shares: object, shed: object, lane: object}}
  */
+/**
+ * A runner's own clearance for the KIND of work, the exact counterpart of
+ * `roles` for the kind of PASS. `roles` already decides that a given entry may
+ * author but not review; this decides that it may author some job types and not
+ * others, and it is declared in the same place for the same reason — the runner
+ * registry is the only file permitted to describe a model, so a statement about
+ * what a particular model should be trusted with belongs there and nowhere in
+ * this directory.
+ *
+ * ABSENT MEANS EVERY TYPE. Every entry that predates this field keeps its
+ * behaviour, and the restriction only exists where someone wrote one down.
+ *
+ * IT IS FIRST IN THE GATE LIST DELIBERATELY. A candidate this runner may never
+ * take should be refused before the budget, the shed level or the upkeep floor
+ * have an opinion about it, so the refusal line a person reads names the real
+ * reason rather than whichever gate happened to fire first.
+ *
+ * @returns {{ok: true} | {ok: false, rule: string, reason: string}}
+ */
+export function runnerJobTypeGate(runner, candidate) {
+  const cleared = runner?.job_types;
+  if (!Array.isArray(cleared) || cleared.includes(candidate.type)) return { ok: true };
+  return {
+    ok: false,
+    rule: 'runner:job-type',
+    reason:
+      `runner "${runner.id}" is cleared for ${cleared.join(', ')} jobs and this is a ` +
+      `${candidate.type} job. That clearance is declared on the runner's own registry ` +
+      `entry, so another runner can take this work; it is not a budget or a capacity refusal`,
+  };
+}
+
 export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
   const now = ctx.now();
   const refusals = [];
@@ -165,6 +197,7 @@ export function selectJob(ctx, { cfg, ledger, runner, dryRun = false }) {
   const { candidates, warnings, notes } = gatherCandidates(ctx, { dryRun });
 
   const gates = [
+    (c) => runnerJobTypeGate(runner, c),
     (c) => degradationGate(cfg, shed, c),
     (c) => budgetGate(cfg, shares, c.type),
     // `blogCeilingGate` stood here and was removed with the ceiling itself
