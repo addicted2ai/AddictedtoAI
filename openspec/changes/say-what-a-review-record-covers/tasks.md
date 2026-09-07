@@ -322,7 +322,7 @@ that no test attempts is a refusal that has never run.
 
 ## Gates
 
-- [ ] 19. `openspec validate say-what-a-review-record-covers --type change
+- [x] 19. `openspec validate say-what-a-review-record-covers --type change
       --strict --no-interactive`, and `node scripts/check-spec-deltas.mjs
       --strict`. Run at drafting time.
 - [ ] 20. `npm test`, `npm run build`, `verify-launch`, `verify-design`,

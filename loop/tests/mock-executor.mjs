@@ -59,7 +59,17 @@ function writeVerdict({ verdict, reasons = [], wouldCite = '', readsHuman = null
   // gate's duplicate check — the same property a real reviewer's own-words
   // answer has, for the same reason. Modes that want a blank or a duplicate
   // pass `readsHuman` explicitly.
-  const asked = /Required, non-empty: `reads-human`/.test(brief);
+  // TWO ways the brief asks for the voice question, and the mock obeys both.
+  // A `post` brief asks for it by type ("Required, non-empty: `reads-human`").
+  // Since say-what-a-review-record-covers (addictedtoai-37rb) the obligation
+  // follows the merged SUBJECTS instead for every other type: a job of any type
+  // whose diff lands on a `content/blog/*.md` file must answer for that post,
+  // afresh or by carrying a prior answer forward. A mock reviewer has no prior
+  // record to stand on, so it answers afresh — which is what a real reviewer of
+  // a first-time post edit does too.
+  const asked =
+    /Required, non-empty: `reads-human`/.test(brief) ||
+    /^\+\+\+ b\/content\/blog\/[^/\s]+\.md$/m.test(brief);
   const value =
     readsHuman === null
       ? `The prose in ${p.replace(/\\/g, '/').split('/').pop()} varies its rhythm and is willing to be blunt; nothing here reads assembled.`
